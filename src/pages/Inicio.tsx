@@ -28,7 +28,7 @@ import { useNavigate } from "react-router-dom";
 const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido"));
 import {
   HandCoins, MagnifyingGlass, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
-  CaretRight, Cake, Receipt, ClipboardText, Storefront,
+  CaretRight, Cake, Receipt, ClipboardText,
   WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
@@ -960,13 +960,13 @@ export default function Inicio() {
 
         <div className="ini-nav-grid">
           {[
-            /* (22/10) só o que não está à mão em outro lugar: Nova venda é o "+", Financeiro está no menu de baixo,
-               Configurações no Menu, Ingredientes em Cadastros e Minhas receitas ainda não existe.
-               (23/10) Minha loja no lugar de Produtos (os produtos ficam dentro dela) */
+            /* (22/10) só o que não está à mão em outro lugar: Nova venda é o "+", Configurações no Menu,
+               Ingredientes em Cadastros e Minhas receitas ainda não existe.
+               (23/10) Minha loja foi para o menu de baixo (com os produtos dentro) e o Financeiro voltou para cá */
             { Icone: CalendarDots,   label: "Agenda",        sub: "Entregas por dia",      path: "/agenda",        key: "agenda" },
             { Icone: HandCoins,      label: "A receber",     sub: "Quem ainda deve",       path: "/financeiro/a-receber", key: "areceber" },
             { Icone: Users,          label: "Clientes",      sub: "Quem compra",   path: "/clientes",      key: "clientes" },
-            { Icone: Storefront,     label: "Minha loja",    sub: "Cardápio e entrega", path: "/cardapio",   key: "loja" },
+            { Icone: CurrencyDollar, label: "Financeiro",    sub: "Entradas e saídas", path: "/financeiro", key: "financeiro" },
             { Icone: ClipboardText,  label: "Ficha técnica", sub: "Custo e lucro",         path: "/ficha-tecnica", key: "ficha" },
             { Icone: TrendUp,        label: "Lucratividade", sub: "Seu lucro real",     path: "/lucratividade", key: "lucro" },
           ].map((item) => (

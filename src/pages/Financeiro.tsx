@@ -159,7 +159,7 @@ export default function Financeiro() {
   return (
     <>
       <AppPageHeader
-        title="Financeiro"
+        title="Financeiro" voltar="/inicio"
         subtitle="Seu dinheiro, sem mistério"
         infoIcon="💰" infoComo={COMO_FINANCEIRO} infoTour={TOUR_FINANCEIRO}
         rightActions={

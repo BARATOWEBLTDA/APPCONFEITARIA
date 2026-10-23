@@ -166,3 +166,4 @@
 .dl-emb .dl-li-acao[aria-disabled="true"] { opacity: .6; }
 .dl-emb .dl-li-acao { cursor: pointer; }
 .dl-emb { padding-top: 4px; }
+.dl-emb .ml-rank { flex: none; width: 24px; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); text-align: center; }

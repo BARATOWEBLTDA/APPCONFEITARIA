@@ -289,7 +289,8 @@ export default function Layout() {
               // (21/10) Início · Pedidos · [+] · Financeiro · Menu. Cadastros (com o cardápio digital dentro) fica no Menu
               { to: "/pedidos",  Icone: Receipt,     label: "Pedidos",  tour: undefined },
               { to: "/vendas/novo", Icone: Plus, label: "Nova venda", tour: undefined, mais: true },
-              { to: "/financeiro", Icone: CurrencyDollar, label: "Financeiro", tour: undefined },
+              // (23/10) Minha loja no lugar do Financeiro: cardápio, horário, entrega e produtos a um toque. O Financeiro foi para o Menu e para o Início
+              { to: "/cardapio", Icone: Storefront, label: "Minha loja", tour: undefined },
             ] as { to: string; Icone: Icon; label: string; tour?: string; mais?: boolean }[]).map((item) => {
               const irPara = (e: React.MouseEvent) => {
                 // (15/10) com o Mais aberto (o menu continua aparecendo), troca de tela e fecha o Mais.
@@ -308,7 +309,7 @@ export default function Layout() {
               const isActive = !maisOpen && (
                 location.pathname === item.to ||
                 location.pathname.startsWith(item.to + "/") ||
-                (item.to === "/financeiro" && ["/lucratividade", "/custos"].some(r => location.pathname.startsWith(r))));
+                (item.to === "/cardapio" && ["/cardapio-", "/produtos", "/categorias", "/complementos"].some(r => location.pathname.startsWith(r))));
               return (
                 <NavLink
                   key={item.to}

@@ -108,12 +108,12 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
         </div>
       </section>
       {!pro && (
-        <section className="dl-emb" aria-label="Desempenho">
+        <section className="dl-emb" aria-label="Mais vendidos">
           <h2 className="dl-emb-t">Desempenho</h2>
           <div className="dl-lista-c">
             <button type="button" className="dl-li" onClick={() => navigate("/assinar")}>
               <span className="dl-li-ic" aria-hidden="true"><ChartBar size={20} weight="bold" /></span>
-              <span className="dl-li-tx"><b>Métricas</b><small>Visitas e pedidos pelo link</small></span>
+              <span className="dl-li-tx"><b>Mais vendidos</b><small>Os produtos mais pedidos pelo link</small></span>
               <em className="dl-li-st dl-li-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</em>
               <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
             </button>

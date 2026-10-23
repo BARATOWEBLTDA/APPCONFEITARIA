@@ -1,18 +1,13 @@
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { COMO_CARDAPIO, COMO_MINHA_LOJA, TOUR_CARDAPIO } from "@/lib/comoTelas";
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
-import { useState, useEffect, useRef, type ReactElement } from "react";
+import { useState, useEffect, useRef } from "react";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
 import { useNavigate } from "react-router-dom";
-import {
-  ChartBar, Warning, Lightbulb,
-  TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
-  CaretRight, Package, WarningCircle,
-} from "@phosphor-icons/react";
+import { Package, WarningCircle } from "@phosphor-icons/react";
 import { Botao, TelaVazia } from "@/components/base";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
-import { validarCardapio } from "@/lib/cardapio-validacao";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -20,55 +15,25 @@ import PassoAPassoCardapio from "@/components/PassoAPassoCardapio";
 import CartaoLojaCelular from "@/components/cardapio/CartaoLojaCelular";
 import MinhaLoja from "@/components/cardapio/MinhaLoja";
 
-type Periodo = "hoje" | "7d" | "30d" | "tudo";
-
-interface MetricasData {
-  visitas: number;
-  pedidosCardapio: number;
-  receita: number;
-  topProdutos: Array<{ nome: string; qtd: number; imagem?: string }>;
-}
-
-interface Alerta {
-  tipo: "warning" | "info";
-  texto: string;
-  cta: string;
-  onClick: () => void;
-}
+type MaisVendido = { nome: string; qtd: number; imagem?: string };
 
 /**
- * Hub da seção Cardápio — versão completa (Entrega 2 da Proposta D).
- *
- * Reúne em uma única tela:
- * - Status do cardápio digital (link + compartilhamento)
- * - Métricas de performance (visitas, pedidos, receita, conversão)
- * - Top 3 produtos vendidos no cardápio
- * - Alertas que ajudam a melhorar o cardápio (gamificação leve)
- * - Atalhos para configurações detalhadas
- *
- * Substitui o antigo CardapioResumo.tsx (agora apenas redireciona pra cá).
+ * Tela Cardápio.
+ * Computador: Visão geral (VisaoGeralDesktop), com desempenho, visitas por dia e últimos pedidos.
+ * Celular (23/10): "Minha loja", no estilo do Dora: o cartão da loja, a loja para o cliente, como você vende,
+ * o que você vende e, para quem é PRO, os mais vendidos dos últimos 30 dias (sem os números e os gráficos).
  */
 export default function Cardapio() {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const pro = isPro(profile);
 
-  const [periodo, setPeriodo] = useState<Periodo>("7d");
-  const [metricas, setMetricas] = useState<MetricasData>({
-    visitas: 0,
-    pedidosCardapio: 0,
-    receita: 0,
-    topProdutos: [],
-  });
-  const [metricasAnterior, setMetricasAnterior] = useState({ visitas: 0, pedidos: 0, receita: 0 });
-  const [alertas, setAlertas] = useState<Alerta[]>([]);
-  const [loading, setLoading] = useState(true);
-  // (11/10) erro de leitura não vira mais zeros: mostra "Não deu pra carregar" com "Tentar de novo"
+  const [maisVendidos, setMaisVendidos] = useState<MaisVendido[]>([]);
+  const [loading, setLoading] = useState(false);
+  // (11/10) erro de leitura não vira lista vazia: mostra "Não deu para carregar" com "Tentar de novo"
   const [erroLeitura, setErroLeitura] = useState(false);
-  // (11/10) número da busca em andamento: resposta de uma busca antiga (período trocado rápido) é descartada
+  // resposta de uma busca antiga (saiu e voltou rápido) é descartada
   const buscaAtual = useRef(0);
-  const [copiado, setCopiado] = useState(false);
-  const [contadores, setContadores] = useState({ produtos: 0, produtosAtivos: 0, categorias: 0, promocoes: 0 });
-  const [visitasPop, setVisitasPop] = useState<number | null>(null); // +N flutuante quando chega visita nova
   const [passosOk, setPassosOk] = useState(false);
   // Computador (com o menu lateral do cardápio): Visão geral nova, sem as listas de atalhos (02/10)
   const [ehComputador, setEhComputador] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches);
@@ -80,221 +45,50 @@ export default function Cardapio() {
   }, []);
 
   // Nova arquitetura: cardápio publicado quando profile.codigo_publico existe.
-  // URL final: /c/[codigo]/[slug] — slug é "cardapio" (free) ou personalizado (PRO).
-  const codigo = profile?.codigo_publico || "";
   const linkCardapio = getCardapioUrl(profile);
-  const slugCanonico = isPro(profile) && profile?.slug_personalizado ? profile.slug_personalizado : "cardapio";
-  // Display: mostra sem "https://" para ficar mais limpo
-  const linkDisplay = linkCardapio ? linkCardapio.replace(/^https?:\/\//, "") : "Configure seu cardápio";
-  const publicado = !!codigo;
+  const publicado = !!profile?.codigo_publico;
 
-  // Cardápio só é considerado "pronto" pra compartilhar se tem essenciais
-  const validacao = validarCardapio(profile);
-  const podeCompartilhar = publicado && validacao.completo;
-  const tooltipBloqueio = validacao.completo
-    ? ""
-    : validacao.mensagem + " nas configurações do cardápio.";
-
-  // ─── Carregar métricas + alertas ───
-  useEffect(() => {
+  // ─── Mais vendidos pelo cardápio nos últimos 30 dias (só no celular e só PRO) ───
+  const carregarMaisVendidos = async () => {
     if (!profile?.id) return;
-    carregarTudo();
-    return () => { buscaAtual.current++; };
-  }, [profile?.id, periodo]);
-
-  // Contadores de catálogo (produtos ativos, categorias, promoções) — recarrega ao voltar pra tela
-  // (11/10) leitura que falha não vira "Nenhum produto ainda": mostra o aviso, e o "Tentar de novo" lê de novo
-  const [erroContadores, setErroContadores] = useState(false);
-  const [tentarContadores, setTentarContadores] = useState(0);
-  useEffect(() => {
-    if (!profile?.id) return;
-    (async () => {
-      const uid = profile.id;
-      const [prod, cat] = await Promise.all([
-        supabase.from("produtos").select("id, disponivel", { count: "exact" }).eq("user_id", uid),
-        supabase.from("categorias").select("id", { count: "exact", head: true }).eq("user_id", uid),
-      ]);
-      if (prod.error || cat.error) { setErroContadores(true); return; }
-      setErroContadores(false);
-      setContadores({
-        produtos: prod.count ?? 0,
-        produtosAtivos: (prod.data || []).filter((p: any) => p.disponivel !== false).length,
-        categorias: cat.count ?? 0,
-        promocoes: 0,
-      });
-    })();
-  }, [profile?.id, tentarContadores]);
-
-  // Visitas em tempo real — subscribe a novos inserts na tabela cardapio_visitas
-  useEffect(() => {
-    if (!profile?.id) return;
-    const canal = supabase
-      .channel(`visitas-live-${profile.id}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "cardapio_visitas", filter: `user_id=eq.${profile.id}` },
-        () => {
-          // Incrementa visitas do período atual + dispara pop "+1"
-          setMetricas((m) => ({ ...m, visitas: m.visitas + 1 }));
-          setVisitasPop(1);
-          window.setTimeout(() => setVisitasPop(null), 1200);
-        }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(canal); };
-  }, [profile?.id]);
-
-  const calcularDataLimite = (p: Periodo): Date => {
-    const d = new Date();
-    if (p === "hoje") d.setHours(0, 0, 0, 0);
-    else if (p === "7d") d.setDate(d.getDate() - 7);
-    else if (p === "30d") d.setDate(d.getDate() - 30);
-    else d.setFullYear(2000);
-    return d;
-  };
-
-  /** Período anterior pra comparar (mesma duração antes do início do atual). */
-  const calcularDataAnterior = (p: Periodo): { inicio: Date; fim: Date } | null => {
-    if (p === "tudo") return null;
-    const fim = calcularDataLimite(p);
-    const inicio = new Date(fim);
-    if (p === "hoje") {
-      // (11/10) hoje ainda está pela metade: compara com o mesmo trecho de ontem (da meia-noite até esta hora),
-      // e não com ontem inteiro
-      inicio.setDate(inicio.getDate() - 1);
-      const mesmaHoraOntem = new Date();
-      mesmaHoraOntem.setDate(mesmaHoraOntem.getDate() - 1);
-      return { inicio, fim: mesmaHoraOntem };
-    }
-    if (p === "7d") inicio.setDate(inicio.getDate() - 7);
-    else if (p === "30d") inicio.setDate(inicio.getDate() - 30);
-    return { inicio, fim };
-  };
-
-  const carregarTudo = async () => {
     const minha = ++buscaAtual.current;
     setLoading(true);
     try {
-      const userId = profile!.id;
-      const dataLimite = calcularDataLimite(periodo);
-      const dataAnterior = calcularDataAnterior(periodo);
-
-      // Queries em paralelo
-      const [
-        visitasRes,
-        pedidosRes,
-        produtosRes,
-        visitasAntRes,
-        pedidosAntRes,
-      ] = await Promise.all([
-        // Visitas no período
-        supabase
-          .from("cardapio_visitas")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .gte("created_at", dataLimite.toISOString()),
-        // Pedidos vindos do cardápio (11/10: de 1.000 em 1.000, senão o período "Tudo" vinha cortado)
-        buscarTudo<any>((de, ate) => supabase
-          .from("pedidos")
-          .select("id, valor_total, status, pedido_itens(nome_produto, quantidade, produtos(imagem_url))")
-          .eq("user_id", userId)
-          .eq("origem", "cardapio")
-          .gte("created_at", dataLimite.toISOString())
-          .order("id")
-          .range(de, ate)),
-        // Todos os produtos disponíveis (pra alertas)
-        supabase
-          .from("produtos")
-          .select("id, nome, imagem_url, preco_normal, disponivel")
-          .eq("user_id", userId),
-        // Comparação: visitas no período anterior
-        dataAnterior
-          ? supabase
-              .from("cardapio_visitas")
-              .select("id", { count: "exact", head: true })
-              .eq("user_id", userId)
-              .gte("created_at", dataAnterior.inicio.toISOString())
-              .lt("created_at", dataAnterior.fim.toISOString())
-          : Promise.resolve({ count: 0, data: null, error: null }),
-        // Comparação: pedidos no período anterior
-        dataAnterior
-          ? buscarTudo<any>((de, ate) => supabase
-              .from("pedidos")
-              .select("id, valor_total, status")
-              .eq("user_id", userId)
-              .eq("origem", "cardapio")
-              .gte("created_at", dataAnterior.inicio.toISOString())
-              .lt("created_at", dataAnterior.fim.toISOString())
-              .order("id")
-              .range(de, ate))
-          : Promise.resolve({ data: [] as any[], error: null }),
-      ]);
-
-      // (11/10) ela já trocou de período: esta resposta é velha e não pode ir pra tela
+      const desde = new Date(); desde.setDate(desde.getDate() - 30);
+      // (11/10) de 1.000 em 1.000, senão a lista vinha cortada
+      const res = await buscarTudo<any>((de, ate) => supabase
+        .from("pedidos")
+        .select("id, status, pedido_itens(nome_produto, quantidade, produtos(imagem_url))")
+        .eq("user_id", profile.id)
+        .eq("origem", "cardapio")
+        .gte("created_at", desde.toISOString())
+        .order("id")
+        .range(de, ate));
       if (minha !== buscaAtual.current) return;
-      // (11/10) falha de leitura não é "nenhum pedido": avisa em vez de mostrar zeros
-      const falha = visitasRes.error || pedidosRes.error || produtosRes.error || visitasAntRes.error || pedidosAntRes.error;
-      if (falha) throw falha;
-
-      const visitas = visitasRes.count || 0;
-      // 10/10: pedido cancelado não é venda: sai da contagem, do faturamento e dos mais vendidos (antes somava)
-      const semCancelados = (lista: any[] | null | undefined) => (lista || []).filter((p: any) => p.status !== "cancelado");
-      const pedidosLista = semCancelados(pedidosRes.data);
-      const pedidosAntLista = semCancelados(pedidosAntRes.data);
-      const pedidosCount = pedidosLista.length;
-      const receita = pedidosLista.reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
-
-      // Top 3 produtos
+      if (res.error) throw res.error;
+      // 10/10: pedido cancelado não é venda
       const contagem: Record<string, { qtd: number; imagem?: string }> = {};
-      pedidosLista.forEach((p: any) => {
+      (res.data || []).filter((p: any) => p.status !== "cancelado").forEach((p: any) => {
         p.pedido_itens?.forEach((item: any) => {
-          if (!contagem[item.nome_produto]) {
-            contagem[item.nome_produto] = { qtd: 0, imagem: item.produtos?.imagem_url };
-          }
+          if (!contagem[item.nome_produto]) contagem[item.nome_produto] = { qtd: 0, imagem: item.produtos?.imagem_url };
           contagem[item.nome_produto].qtd += Number(item.quantidade) || 0;
         });
       });
-      const topProdutos = Object.entries(contagem)
-        .sort((a, b) => b[1].qtd - a[1].qtd)
-        .slice(0, 3)
-        .map(([nome, info]) => ({ nome, qtd: info.qtd, imagem: info.imagem }));
-
-      setMetricas({ visitas, pedidosCardapio: pedidosCount, receita, topProdutos });
-      setMetricasAnterior({
-        visitas: visitasAntRes.count || 0,
-        pedidos: pedidosAntLista.length,
-        receita: pedidosAntLista.reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
-      });
-
-      // ─── Alertas ───
-      // Alertas de "cadastrar produto" e "adicionar foto" foram movidos pro
-      // passo a passo (PassoAPassoCardapio) no topo, evitando duplicação.
-      // Aqui ficam só os alertas operacionais (preço faltando etc).
-      const novosAlertas: Alerta[] = [];
-      const produtos = produtosRes.data || [];
-      const disponiveis = produtos.filter((p: any) => p.disponivel !== false);
-
-      const semPreco = disponiveis.filter((p: any) => !p.preco_normal || Number(p.preco_normal) <= 0).length;
-      if (semPreco > 0) {
-        novosAlertas.push({
-          tipo: "warning",
-          texto: `${semPreco} produto${semPreco === 1 ? "" : "s"} sem preço`,
-          cta: "Revisar",
-          onClick: () => navigate("/produtos"),
-        });
-      }
-      // Alertas de logo e descrição foram removidos daqui — agora estão no
-      // passo a passo no topo (PassoAPassoCardapio), evitando duplicação.
-
-      setAlertas(novosAlertas);
+      setMaisVendidos(Object.entries(contagem).sort((a, b) => b[1].qtd - a[1].qtd).slice(0, 3)
+        .map(([nome, info]) => ({ nome, qtd: info.qtd, imagem: info.imagem })));
       setErroLeitura(false);
     } catch (err) {
       if (minha !== buscaAtual.current) return;
-      console.error("Erro ao carregar dados do cardápio:", err);
+      console.error("Erro ao carregar os mais vendidos:", err);
       setErroLeitura(true);
     }
     setLoading(false);
   };
+  useEffect(() => {
+    if (!profile?.id || ehComputador || !pro) return;
+    carregarMaisVendidos();
+    return () => { buscaAtual.current++; };
+  }, [profile?.id, ehComputador, pro]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Ações ───
   const handleShare = async () => {
@@ -304,37 +98,6 @@ export default function Cardapio() {
     }
     await compartilharCardapio(linkCardapio, profile?.nome_loja); // (16/10) nativo; no computador copia
   };
-
-  const handleCopiar = () => {
-    if (!linkCardapio) return;
-    navigator.clipboard.writeText(linkCardapio);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 2000);
-  };
-
-  const handleVerComoCliente = () => {
-    if (!publicado) {
-      navigate("/cardapio-config");
-      return;
-    }
-    window.open(linkCardapio, "_blank", "noopener,noreferrer");
-  };
-
-  // ─── Helpers ───
-  const formatCurrency = (v: number) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
-
-  const variacao = (atual: number, anterior: number): { pct: number; tipo: "up" | "down" | "flat" } => {
-    if (anterior === 0 && atual === 0) return { pct: 0, tipo: "flat" };
-    if (anterior === 0) return { pct: 100, tipo: "up" };
-    const pct = ((atual - anterior) / anterior) * 100;
-    return { pct: Math.abs(pct), tipo: pct > 0 ? "up" : pct < 0 ? "down" : "flat" };
-  };
-
-  const conversao = metricas.visitas > 0
-    ? Math.min((metricas.pedidosCardapio / metricas.visitas) * 100, 100)
-    : 0;
-
 
   // ─── Render ───
   return (
@@ -369,683 +132,35 @@ export default function Cardapio() {
         />
       )}
       {/* (23/10) "Minha loja", no estilo do Dora: a loja para o cliente, como você vende e o que você vende, cada linha com o valor atual */}
-      <MinhaLoja uid={profile?.id} pro={isPro(profile)} />
+      <MinhaLoja uid={profile?.id} pro={pro} />
 
-      {/* ── Métricas de performance (função PRO) ── */}
-      {isPro(profile) ? (
-      <>
-      {/* Seletor de período */}
-      <div className="ch-periodo-tabs" role="tablist">
-        {([
-          { v: "hoje", l: "Hoje" },
-          { v: "7d",   l: "7 dias" },
-          { v: "30d",  l: "30 dias" },
-          { v: "tudo", l: "Tudo" },
-        ] as { v: Periodo; l: string }[]).map((opt) => (
-          <button
-            key={opt.v}
-            role="tab"
-            aria-selected={periodo === opt.v}
-            className={`ch-periodo-tab ${periodo === opt.v ? "active" : ""}`}
-            onClick={() => setPeriodo(opt.v)}
-          >
-            {opt.l}
-          </button>
-        ))}
-      </div>
-
-      {/* (11/10) Não leu: não mostra zeros como se fosse conta nova */}
-      {(erroLeitura || erroContadores) && (
-        <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar" texto="Confira a internet e tente de novo."
-          acao={<Botao variante="suave" tamanho="m" carregando={loading} onClick={() => { carregarTudo(); setTentarContadores(n => n + 1); }}>Tentar de novo</Botao>} />
+      {/* (23/10) no celular, do desempenho fica só o que ajuda a decidir: os mais vendidos (PRO), sem os números e o período.
+          Visitas, conversão e gráficos continuam no computador */}
+      {pro && erroLeitura && (
+        <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar os mais vendidos" texto="Confira a internet e tente de novo."
+          acao={<Botao variante="suave" tamanho="m" carregando={loading} onClick={() => carregarMaisVendidos()}>Tentar de novo</Botao>} />
       )}
-
-      {/* Métricas */}
-      {!erroLeitura && (
-      <div className="ch-metricas-grid">
-        {[
-          {
-            label: "Visitas",
-            value: metricas.visitas,
-            icon: <UsersIcon size={18} weight="duotone" />,
-            color: "#6366F1",
-            bg: "#EEF2FF",
-            varAtual: metricas.visitas,
-            varAnt: metricasAnterior.visitas,
-          },
-          {
-            label: "Pedidos",
-            value: metricas.pedidosCardapio,
-            icon: <ShoppingBag size={18} weight="duotone" />,
-            color: "var(--text-title)",
-            bg: "var(--primary-light)",
-            varAtual: metricas.pedidosCardapio,
-            varAnt: metricasAnterior.pedidos,
-          },
-          {
-            label: "Vendido",
-            value: formatCurrency(metricas.receita),
-            icon: <CurrencyDollar size={18} weight="duotone" />,
-            color: "#15803D",
-            bg: "#DCFCE7",
-            varAtual: metricas.receita,
-            varAnt: metricasAnterior.receita,
-            isCurrency: true,
-          },
-          {
-            label: "Conversão",
-            value: `${conversao.toFixed(1)}%`,
-            icon: <ChartBar size={18} weight="duotone" />,
-            color: "#A16207",
-            bg: "#FEF3C7",
-            noVar: true,
-          },
-        ].map((m, i) => {
-          const v = !m.noVar && periodo !== "tudo"
-            ? variacao(m.varAtual ?? 0, m.varAnt ?? 0)
-            : null;
-          return (
-            <div key={i} className="ch-metric-card">
-              <div className="ch-metric-icon" style={{ background: m.bg, color: m.color }}>
-                {m.icon}
-              </div>
-              <div className="ch-metric-body">
-                <p className="ch-metric-label">{m.label}</p>
-                {m.label === "Visitas" ? (
-                  <span className="ch-metric-value-wrap">
-                    <span className="ch-metric-value">{m.value}</span>
-                    {visitasPop !== null && <span className="ch-metric-pop">+{visitasPop}</span>}
-                  </span>
-                ) : (
-                  <p className="ch-metric-value">{m.value}</p>
-                )}
-                {v && v.tipo !== "flat" && (
-                  <p className={`ch-metric-var ${v.tipo}`}>
-                    {v.tipo === "up" ? <TrendUp size={11} weight="bold" /> : <TrendDown size={11} weight="bold" />}
-                    {v.pct.toFixed(0)}%
-                  </p>
-                )}
-              </div>
-              {m.label === "Visitas" && (
-                <span className="ch-live-badge">
-                  <span className="ch-live-dot" />
-                  Ao vivo
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-      )}
-
-      {/* Top 3 produtos */}
-      {!erroLeitura && metricas.topProdutos.length > 0 && (
-        <div className="ch-block ch-block--vendidos">
-          <h2 className="ch-block-title">Mais vendidos no cardápio</h2>
-          <div className="ch-top-list">
-            {metricas.topProdutos.map((p, idx) => (
-              <div key={p.nome} className="ch-top-item">
-                <span className="ch-top-rank">#{idx + 1}</span>
-                <div className="ch-top-img">
-                  {p.imagem ? <img src={p.imagem} alt={p.nome} /> : <Package size={20} weight="bold" />}
-                </div>
-                <div className="ch-top-info">
-                  <p className="ch-top-nome">{p.nome}</p>
-                  <p className="ch-top-qtd">{p.qtd} {p.qtd === 1 ? "venda" : "vendas"}</p>
-                </div>
+      {pro && !erroLeitura && maisVendidos.length > 0 && (
+        <section className="dl-emb ch-block--vendidos" aria-label="Mais vendidos nos últimos 30 dias">
+          <h2 className="dl-emb-t">Mais vendidos nos últimos 30 dias</h2>
+          <div className="dl-lista-c">
+            {maisVendidos.map((p, idx) => (
+              <div key={p.nome} className="dl-li dl-li--fixa">
+                <span className="ml-rank" aria-label={`${idx + 1}º lugar`}>{idx + 1}º</span>
+                {p.imagem ? <img className="dl-li-img" src={p.imagem} alt="" /> : <span className="dl-li-ic" aria-hidden="true"><Package size={20} weight="bold" /></span>}
+                <span className="dl-li-tx"><b>{p.nome}</b><small>{p.qtd} {p.qtd === 1 ? "venda" : "vendas"}</small></span>
               </div>
             ))}
           </div>
-        </div>
-      )}
-      </>
-      ) : null /* (17/10) grátis: as Métricas aparecem como item da lista do Catálogo, com o selo PRO */}
-
-      {/* Alertas */}
-      {alertas.length > 0 && (
-        <div className="ch-block ch-block--atencao">
-          <h2 className="ch-block-title">Atenção</h2>
-          <div className="ch-alertas">
-            {alertas.map((a, idx) => (
-              <button key={idx} className={`ch-alerta ch-alerta--${a.tipo}`} onClick={a.onClick}>
-                <span className="ch-alerta-icon">
-                  {a.tipo === "warning"
-                    ? <Warning size={16} weight="fill" />
-                    : <Lightbulb size={16} weight="fill" />}
-                </span>
-                <span className="ch-alerta-texto">{a.texto}</span>
-                <span className="ch-alerta-cta">{a.cta}<CaretRight size={14} weight="bold" /></span>
-              </button>
-            ))}
-          </div>
-        </div>
+        </section>
       )}
 
-      {loading && <div className="ch-loading">Carregando…</div>}
+      {pro && loading && <div className="ch-loading">Carregando…</div>}
 
       <style>{`
-        .cardapio-hub {
-          font-family: var(--font-base);
-          padding: var(--space-5) var(--space-4) 6rem;
-          display: flex; flex-direction: column; gap: var(--space-4);
-          max-width: 980px; margin: 0 auto;
-        }
-        .ch-header { display: flex; flex-direction: column; gap: var(--space-1); }
-        .ch-title {
-          font-size: var(--font-page-title);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          margin: 0;
-          letter-spacing: var(--ls-tight);
-        }
-        .ch-sub {
-          font-size: var(--font-page-subtitle);
-          color: var(--text-secondary);
-          margin: 0;
-        }
-
-        /* ── Status card (superfície vinho escura, mesma identidade nos dois temas) ── */
-        .ch-status-card {
-          padding: var(--space-4) var(--space-5);
-          background: linear-gradient(135deg, var(--text-title) 0%, var(--primary-dark) 100%);
-          border-radius: var(--radius-lg);
-          box-shadow: var(--shadow-md);
-          color: var(--ui-branco);
-          display: flex; flex-direction: column; gap: var(--space-3);
-        }
-        .ch-status-row { display: flex; align-items: center; gap: var(--space-2); }
-        .ch-status-badge {
-          display: inline-flex; align-items: center; gap: var(--space-1);
-          padding: var(--space-1) var(--space-3);
-          border-radius: var(--radius-full);
-          font-size: var(--font-caption); font-weight: var(--fw-bold);
-          letter-spacing: var(--ls-wide);
-        }
-        .ch-status-badge.publicado { background: rgba(34,197,94,0.25); color: #BBF7D0; }
-        .ch-status-badge.rascunho  { background: rgba(245,158,11,0.25); color: #FDE68A; }
-        .ch-link-url {
-          font-size: var(--font-input); font-weight: var(--fw-bold);
-          margin: 0;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-          opacity: 0.95;
-        }
-        .ch-actions { display: flex; gap: var(--space-2); }
-        .ch-btn-primary {
-          display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
-          flex: 1;
-          background: var(--ui-branco); color: var(--text-title);
-          border: none; border-radius: var(--radius-md);
-          padding: var(--space-3) var(--space-4);
-          font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold);
-          cursor: pointer;
-          box-shadow: var(--shadow-sm);
-          transition: transform var(--dur-fast) var(--ease-out);
-        }
-        .ch-btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
-        .ch-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-        .ch-btn-ghost {
-          width: 42px; height: 42px;
-          display: inline-flex; align-items: center; justify-content: center;
-          background: rgba(255,255,255,0.15); color: var(--ui-branco);
-          border: none; border-radius: var(--radius-md);
-          font-family: inherit;
-          cursor: pointer;
-          transition: background var(--dur-fast) var(--ease-out);
-        }
-        .ch-btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.25); }
-        .ch-btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* ── Seletor de período ── */
-        /* (22/10) período em pílulas cinza com a escolhida em branco (igual ao Financeiro) */
-        .ch-periodo-tabs {
-          display: flex; gap: 2px;
-          width: 100%; box-sizing: border-box;
-          padding: 3px;
-          background: rgba(42, 21, 32, .06);
-          border-radius: 12px;
-        }
-        .ch-periodo-tab {
-          flex: 1;
-          min-height: 40px;
-          padding: 0 var(--space-2);
-          text-align: center;
-          border: none;
-          border-radius: 9px;
-          background: transparent;
-          color: var(--ui-texto-2);
-          font-family: inherit; font-size: var(--font-helper); font-weight: 500;
-          cursor: pointer;
-          transition: background var(--dur-fast) var(--ease-out),
-                      color var(--dur-fast) var(--ease-out);
-        }
-        .ch-periodo-tab:hover:not(.active) { color: var(--text-title); }
-        .ch-periodo-tab.active {
-          background: var(--ui-branco);
-          color: var(--ui-texto);
-          font-weight: 600;
-          box-shadow: 0 1px 3px rgba(42, 21, 32, .1);
-        }
-
-        /* ── Métricas ── */
-        .ch-metricas-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr)); /* (22/10) minmax: o rótulo comprido não empurra a coluna pra fora da tela (B2) */
-          gap: var(--space-3);
-        }
-        @media (min-width: 720px) {
-          .ch-metricas-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        }
-        .ch-metric-card {
-          display: flex; align-items: flex-start; gap: var(--space-3);
-          padding: var(--pad-card);
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-lg);
-        }
-        .ch-metric-icon {
-          width: 36px; height: 36px;
-          border-radius: var(--radius-md);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        .ch-metric-body { min-width: 0; flex: 1; }
-        .ch-metric-label {
-          font-size: 12px; font-weight: 500;
-          color: var(--text-muted);
-          margin: 0 0 var(--space-1);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          line-height: 1.2;
-        }
-        .ch-metric-value {
-          font-size: var(--font-card-title);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          margin: 0;
-          line-height: var(--lh-tight);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          letter-spacing: var(--ls-tight);
-          display: inline-block;
-        }
-        @media (min-width: 720px) {
-          .ch-metric-value { font-size: var(--font-modal-title); }
-        }
-        .ch-metric-var {
-          display: inline-flex; align-items: center; gap: var(--space-1);
-          margin: var(--space-1) 0 0;
-          font-size: var(--font-caption); font-weight: var(--fw-bold);
-        }
-        .ch-metric-var.up   { color: var(--success); }
-        .ch-metric-var.down { color: var(--error); }
-
-        /* ── Badge "Ao vivo" + animação de +N incrementando ── */
-        .ch-metric-card { position: relative; }
-        /* o selo "Ao vivo" ficava em cima do rótulo "Visitas": reserva espaço pra ele */
-        .ch-metric-card:has(.ch-live-badge) { padding-top: 26px !important; }
-        .ch-live-badge {
-          position: absolute; top: 6px; right: 6px;
-          display: inline-flex; align-items: center; gap: 4px;
-          padding: 2px 8px 2px 6px;
-          background: var(--ui-verde-fundo); color: #14532d;
-          border-radius: 999px;
-          font-family: inherit;
-          font-size: 12px; font-weight: var(--fw-black);
-          line-height: 1;
-        }
-        .ch-live-dot {
-          width: 6px; height: 6px; border-radius: 50%;
-          background: #22c55e;
-          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
-          animation: chLiveDot 1.6s ease-in-out infinite;
-        }
-        @keyframes chLiveDot {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
-          50%      { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
-        }
-        .ch-metric-value-wrap { position: relative; display: inline-block; }
-        .ch-metric-pop {
-          position: absolute; top: -6px; right: -26px;
-          background: #22c55e; color: var(--ui-branco);
-          padding: 1px 7px; border-radius: 999px;
-          font-family: inherit;
-          font-size: 12px; font-weight: var(--fw-black);
-          line-height: 1.4;
-          pointer-events: none;
-          animation: chPopIn 1.2s ease-out forwards;
-        }
-        @keyframes chPopIn {
-          0%   { transform: translateY(6px) scale(0.6); opacity: 0; }
-          30%  { transform: translateY(-2px) scale(1.1); opacity: 1; }
-          70%  { transform: translateY(-4px) scale(1); opacity: 1; }
-          100% { transform: translateY(-12px) scale(0.9); opacity: 0; }
-        }
-
-        /* ── Blocos ── */
-        .ch-block {
-          display: flex; flex-direction: column; gap: var(--space-3);
-        }
-        .ch-block-title {
-          font-size: var(--font-button); font-weight: var(--fw-bold);
-          color: var(--text-title);
-          margin: 0;
-          letter-spacing: var(--ls-tight);
-        }
-
-        /* ── Lista tipo iOS Settings — 2 grupos temáticos ── */
-        .ch-list-section-title {
-          margin: var(--space-5) var(--space-1) var(--space-2);
-          font-size: 14px;
-          font-weight: 700;
-          letter-spacing: -0.01em;
-          color: var(--text-title);
-        }
-        .ch-list-section-title:first-of-type { margin-top: var(--space-2); }
-        .ch-list-group {
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-md);
-          overflow: hidden;
-        }
-        .ch-list-row {
-          display: flex; align-items: center; gap: 12px;
-          width: 100%;
-          padding: 12px 14px;
-          background: none;
-          border: none;
-          border-bottom: 1px solid var(--border);
-          cursor: pointer;
-          text-align: left;
-          font-family: inherit;
-          transition: background 0.15s;
-        }
-        .ch-list-row:last-child { border-bottom: none; }
-        .ch-list-row:hover, .ch-list-row:active { background: var(--bg-subtle); }
-        .ch-list-icon {
-          width: 32px; height: 32px;
-          border-radius: 9px;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        .ch-list-icon--primary { background: var(--primary-light); color: var(--primary); }
-        .ch-list-icon--accent  { background: #EEEDFE; color: #534AB7; }
-        .ch-list-icon--warning { background: var(--ui-laranja-fundo); color: #92400E; }
-        .ch-list-icon--muted   { background: var(--bg-subtle); color: var(--text-secondary); }
-        .ch-list-lbl {
-          flex: 1;
-          font-size: 14px;
-          font-weight: 700;
-          color: var(--text-title);
-          letter-spacing: -0.01em;
-        }
-        .ch-list-badge {
-          font-size: 12px;
-          font-weight: 700;
-          color: var(--text-muted);
-          font-variant-numeric: tabular-nums;
-          margin-right: 2px;
-        }
-        .ch-list-badge-sub {
-          font-weight: 500;
-          opacity: 0.7;
-        }
-        .ch-list-chev {
-          color: var(--border);
-          flex-shrink: 0;
-        }
-
-        /* ─── Cards de configuração/catálogo (padrão "Ações rápidas") ─── */
-        .cd-card {
-          background: var(--ui-branco);
-          border: 1px solid #F0EBED;
-          border-radius: 8px;
-          margin-bottom: var(--space-4);
-          overflow: hidden;
-        }
-
-        /* ─── Métricas locked (PRO upsell) ─── */
-        .cd-metricas-locked {
-          position: relative;
-          background: linear-gradient(135deg, #2D1F26, var(--text-primary));
-          color: var(--ui-branco);
-          border-radius: 8px;
-          padding: 18px 18px 16px;
-          margin-bottom: var(--space-4);
-          overflow: hidden;
-          cursor: pointer;
-          transition: transform 0.15s;
-        }
-        .cd-metricas-locked:active { transform: scale(0.995); }
-        .cd-metricas-locked-glow {
-          position: absolute;
-          top: -30px; right: -30px;
-          width: 140px; height: 140px;
-          background: radial-gradient(circle, rgba(255,201,71,0.28), transparent 70%);
-          pointer-events: none;
-        }
-        .cd-metricas-locked-top {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 6px;
-          position: relative;
-        }
-        .cd-metricas-locked-icon {
-          width: 32px; height: 32px;
-          border-radius: 8px;
-          background: linear-gradient(135deg, #FFC947, #DDAA00);
-          color: var(--ui-texto);
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 2px 0 rgba(0,0,0,0.25);
-          flex-shrink: 0;
-        }
-        .cd-metricas-locked-tag {
-          font-size: 12px;
-          font-weight: 700;
-          color: #FFC947;
-        }
-        .cd-metricas-locked-t {
-          font-size: 15px;
-          font-weight: 700;
-          margin: 0 0 3px;
-          position: relative;
-        }
-        .cd-metricas-locked-s {
-          font-size: 13px;
-          opacity: 0.75;
-          margin: 0 0 14px;
-          position: relative;
-          line-height: 1.4;
-        }
-        .cd-metricas-locked-preview {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 8px;
-          margin-bottom: 14px;
-          position: relative;
-          filter: blur(1.5px);
-          opacity: 0.6;
-          pointer-events: none;
-        }
-        .cd-metricas-locked-item {
-          background: rgba(255,255,255,0.08);
-          border-radius: 6px;
-          padding: 10px 8px;
-          text-align: center;
-        }
-        .cd-metricas-locked-lbl {
-          font-size: 12px;
-          opacity: 0.7;
-          font-weight: 700;
-        }
-        .cd-metricas-locked-val {
-          font-size: 18px;
-          font-weight: 700;
-          margin-top: 3px;
-        }
-        .cd-metricas-locked-cta {
-          width: 100%;
-          padding: 11px;
-          background: linear-gradient(135deg, #FFC947, #DDAA00);
-          color: var(--ui-texto);
-          font-size: 12.5px;
-          font-weight: 700;
-          border-radius: 6px;
-          border: none;
-          cursor: pointer;
-          font-family: inherit;
-          box-shadow: 0 2px 0 rgba(0,0,0,0.22);
-          position: relative;
-          transition: transform 0.15s;
-        }
-        .cd-metricas-locked-cta:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,0.22); }
-
-        /* ── Top produtos ── */
-        .ch-top-list {
-          display: flex; flex-direction: column; gap: var(--space-2);
-        }
-        .ch-top-item {
-          display: flex; align-items: center; gap: var(--space-3);
-          padding: var(--space-3);
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-md);
-        }
-        .ch-top-rank {
-          font-size: var(--font-button); font-weight: var(--fw-black);
-          color: var(--text-title);
-          width: 22px;
-        }
-        .ch-top-img {
-          width: 38px; height: 38px;
-          border-radius: var(--radius-md);
-          background: var(--bg-subtle);
-          display: flex; align-items: center; justify-content: center;
-          overflow: hidden;
-          flex-shrink: 0;
-          font-size: var(--font-modal-title);
-        }
-        .ch-top-img img { width: 100%; height: 100%; object-fit: cover; }
-        .ch-top-info { min-width: 0; flex: 1; }
-        .ch-top-nome {
-          font-size: var(--font-button); font-weight: var(--fw-bold);
-          color: var(--text-title);
-          margin: 0;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .ch-top-qtd {
-          font-size: var(--font-helper);
-          color: var(--text-muted);
-          margin: var(--space-1) 0 0;
-        }
-
-        /* ── Alertas ── */
-        .ch-alertas { display: flex; flex-direction: column; gap: var(--space-2); }
-        .ch-alerta {
-          display: flex; align-items: center; gap: var(--space-3);
-          padding: var(--space-3);
-          border-radius: var(--radius-md);
-          border: 1px solid transparent;
-          font-family: inherit;
-          cursor: pointer;
-          text-align: left;
-          transition: transform var(--dur-fast) var(--ease-out);
-        }
-        .ch-alerta:hover { transform: translateX(2px); }
-        .ch-alerta--warning {
-          background: var(--ui-laranja-fundo);
-          border-color: #FCD34D;
-          color: #92400E;
-        }
-        .ch-alerta--info {
-          background: #EEF2FF;
-          border-color: #C7D2FE;
-          color: #3730A3;
-        }
-        .ch-alerta-icon { display: inline-flex; flex-shrink: 0; }
-        .ch-alerta-texto {
-          flex: 1; min-width: 0;
-          font-size: var(--font-button); font-weight: 700;
-        }
-        .ch-alerta-cta {
-          font-size: var(--font-helper); font-weight: var(--fw-bold);
-          opacity: 0.85;
-          flex-shrink: 0;
-        }
-
-        /* ── Tiles compactos (Gerenciar) ── */
-        .ch-tiles {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: var(--space-1);
-          padding: var(--space-2);
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-lg);
-        }
-        @media (min-width: 600px) {
-          .ch-tiles { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (min-width: 900px) {
-          .ch-tiles { grid-template-columns: repeat(6, 1fr); }
-        }
-        .ch-tile-compact {
-          display: flex; align-items: center; gap: var(--space-2);
-          padding: var(--space-3);
-          background: transparent;
-          border: none;
-          border-radius: var(--radius-md);
-          font-family: inherit;
-          cursor: pointer;
-          text-align: left;
-          transition: background var(--dur-fast) var(--ease-out);
-        }
-        .ch-tile-compact:hover {
-          background: var(--bg-subtle);
-        }
-        .ch-tile-compact:active {
-          background: var(--primary-light);
-        }
-        .ch-tile-icon {
-          width: 30px; height: 30px;
-          border-radius: var(--radius-sm);
-          background: var(--primary-light);
-          color: var(--text-title);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        .ch-tile-label {
-          font-size: var(--font-helper); font-weight: 500;
-          color: var(--text-primary);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        /* ── 08/10 · 3.21: no padrão do guia (lista de 56px, títulos sem caixa alta, PRO em rosa) ── */
-        .cardapio-hub { padding: 16px 8px 112px; gap: 12px; }
-        /* (16/10) PRO: uma faixa fina no fim, não um cartão grande */
-        .cd-pro { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); font-family: var(--font-base); text-align: left; cursor: pointer; }
-        .cd-pro-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-        .cd-pro-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-        .cd-pro-tx b { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cd-pro-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cd-pro-bt { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 8px; background: var(--chocolate); color: var(--ui-branco); font-size: 12.5px; font-weight: 700; }
-        .ch-metric-label { font-size: 12.5px !important; text-transform: none !important; letter-spacing: 0 !important; }
-        .ch-live-badge, .ch-metric-pop { font-size: 12px !important; text-transform: none !important; letter-spacing: 0 !important; }
-        .ch-periodo-tab { min-height: 44px; }
-        .ch-alerta { min-height: 56px; }
-        .ch-alerta-cta { display: inline-flex; align-items: center; gap: 2px; }
-        .ch-top-img { color: var(--ui-rosa-escuro); }
-
-        .ch-loading {
-          text-align: center;
-          padding: var(--space-4);
-          color: var(--text-muted);
-          font-size: var(--font-button);
-        }
+        /* (23/10) Minha loja: os blocos usam as linhas de Dados da loja (dadosLoja.css); aqui só o espaço da tela */
+        .cardapio-hub { font-family: var(--font-base); display: flex; flex-direction: column; gap: 12px; max-width: 980px; margin: 0 auto; padding: 16px 8px 112px; }
+        .ch-loading { text-align: center; padding: var(--space-4); color: var(--text-muted); font-size: var(--font-button); }
       `}</style>
     </div>
     )}

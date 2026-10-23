@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
-  Megaphone, CalendarDots, Users, Stack, Truck, Storefront, Basket, ArrowsDownUp,
+  Megaphone, CalendarDots, Users, Stack, Truck, Basket, ArrowsDownUp, CurrencyDollar,
   HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Sparkle, Bell, ChartPieSlice, Shapes, Notebook, PaperPlaneRight,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
@@ -36,13 +36,13 @@ interface Grupo { label: string; items: Item[] }
 // inclusive as que também abrem pelo Início. Só ficam fora as que já estão no menu de baixo (Início, Pedidos, Cardápio, Doo IA).
 // (18/10) reorganizado pela prioridade do dia a dia: o que ela usa todo dia primeiro, o que mexe pouco no fim
 const GRUPOS: Grupo[] = [
-  // (21/10) o Financeiro foi pro menu de baixo e os cadastros (produtos, clientes, mensagens, cardápio digital) moram em Cadastros:
+  // (21/10) os cadastros (produtos, clientes, mensagens) moram em Cadastros; (23/10) a Minha loja está no menu de baixo:
   // aqui fica só o que não está em outro lugar, sem repetir
   {
     label: "Dia a dia",
     items: [
-      // (23/10) "Minha loja" em primeiro: cardápio, horário, entrega e produtos em uma tela só (o "Ver" do cardápio fica lá dentro)
-      { label: "Minha loja",   desc: "Cardápio, horário e entrega",       path: "/cardapio",  Icone: Storefront },
+      // (23/10) a Minha loja foi para o menu de baixo e o Financeiro veio para cá, em primeiro
+      { label: "Financeiro",   desc: "Entradas, saídas e lucro",          path: "/financeiro", Icone: CurrencyDollar },
       { label: "Agenda",       desc: "Entregas por dia",                  path: "/agenda",    Icone: CalendarDots },
       { label: "Cadastros",    desc: "Clientes, ingredientes e produtos", path: "/cadastros", Icone: Notebook },
     ],

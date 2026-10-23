@@ -154,14 +154,13 @@ export const COMO_CARDAPIO: Como = {
 export const COMO_MINHA_LOJA: Como = {
   tela: { nome: "Minha loja", Icone: Storefront },
   resumo: "Tudo da sua loja em uma tela: o link, o que o cliente vê, como você vende e o que você vende.",
-  tit: "Exemplo · últimos 7 dias",
-  linhas: [["Visitas no cardápio", "200"], ["Pedidos pelo cardápio", "14"]],
-  total: ["Conversão", "7%"],
-  fluxo: ["Seu link", "Cliente pede", "Pedidos"],
+  tit: "Exemplo · a linha mostra como está agora",
+  linhas: [["Horário", "Seg a Sex · 8h às 18h"], ["Entrega", "Retirada e entrega R$ 8,00"]],
+  fluxo: ["Toque na linha", "Altere", "Pronto"],
   dicas: [
     [ShareNetwork, <>Envie o <b>link</b> pelo WhatsApp e pelo Instagram. O <b>QR Code</b> é para imprimir.</>],
     [PauseCircle, <><b>Pausar pedidos</b> fecha o cardápio na hora, sem alterar o horário.</>],
-    [Palette, <>Cada linha mostra como está agora. Toque para alterar; o que falta aparece em <b>Falta</b>.</>],
+    [Palette, <>O que ainda falta configurar aparece marcado como <b>Falta</b>.</>],
   ],
 };
 
@@ -309,7 +308,7 @@ export const TOUR_CARDAPIO: PassoTour[] = [
   { el: ".ml-produtos", titulo: "O que você vende", texto: "Produtos, categorias e complementos que aparecem no cardápio." },
   { el: ".ch-metricas-grid, .vgd-kp", titulo: "Desempenho", texto: "Visitas, pedidos, valor vendido e conversão do cardápio no período escolhido." },
   { el: ".vgd-gr", titulo: "Visitas por dia", texto: "Quantas pessoas abriram o cardápio em cada dia do período." },
-  { el: ".ch-block--vendidos", titulo: "Mais vendidos", texto: "Os produtos mais pedidos pelo cardápio no período." },
+  { el: ".ch-block--vendidos", titulo: "Mais vendidos", texto: "Os produtos mais pedidos pelo cardápio nos últimos 30 dias." },
   { el: ".vgd-g2", titulo: "Últimos pedidos", texto: "Os pedidos mais recentes que chegaram pelo link do cardápio." },
 ];
 
