@@ -1,6 +1,7 @@
 import {
   ArrowDown, ArrowUp, Bell, CalendarBlank, ChartLineUp, Coins, Funnel, HandCoins, ListChecks, MagnifyingGlass, Palette,
   PauseCircle, ShareNetwork, Storefront, WarningCircle, ArrowRight, Circle, House, ClipboardText, CurrencyDollar, ShoppingBag, CheckCircle,
+  Users, UserPlus, Cake, ClockCounterClockwise, Camera, ToggleRight, Tag, Basket, TrendDown, ArrowsClockwise, CreditCard, Scales, ShoppingBagOpen,
 } from "@phosphor-icons/react";
 import type { Como } from "@/components/como/ComoFunciona";
 import type { PassoTour } from "@/components/como/tour";
@@ -140,3 +141,100 @@ export const COMO_CARDAPIO: Como = {
     [Storefront, <><b>Dados da loja:</b> horário, entrega, Pix e endereço.</>],
   ],
 };
+
+/* ══════ (23/10) Atalhos do Início: Clientes, Produtos, Ficha técnica e Lucratividade ══════ */
+
+export const COMO_CLIENTES: Como = {
+  tela: { nome: "Clientes", Icone: Users },
+  resumo: "Quem compra de você, com contato, aniversário e histórico de pedidos.",
+  tit: "Exemplo · uma cliente frequente",
+  linhas: [["Pedidos feitos", "8"], ["Total gasto", "R$ 960,00"]],
+  total: ["Ticket médio", "R$ 120,00"],
+  fluxo: ["Pedido", "Cadastro", "Histórico"],
+  dicas: [
+    [Storefront, <>Quem pede pelo <b>cardápio</b> é cadastrado automaticamente.</>],
+    [UserPlus, <>Cadastre quem compra pelo <b>WhatsApp</b> ou no <b>balcão</b> em Novo cliente.</>],
+    [Cake, <><b>Aniversários</b> dos próximos 30 dias aparecem em destaque, com o botão para enviar os parabéns.</>],
+    [ClockCounterClockwise, <>O filtro <b>Sem comprar há 60 dias</b> mostra quem vale a pena chamar de volta.</>],
+  ],
+};
+
+export const TOUR_CLIENTES: PassoTour[] = [
+  { el: ".cl9-faixa", titulo: "Seus números", texto: "Total de clientes, quem comprou nos últimos 30 dias e os aniversários dos próximos 30 dias." },
+  { el: ".cl9-nums", titulo: "Seus números", texto: "Total de clientes, quem comprou nos últimos 30 dias, os aniversários dos próximos 30 dias e o ticket médio." },
+  { el: ".cl9-niver", titulo: "Aniversários", texto: "Clientes que fazem aniversário nos próximos 30 dias. Envie os parabéns pelo WhatsApp." },
+  { el: ".cl9-busca", titulo: "Buscar", texto: "Encontre um cliente pelo nome, telefone ou e-mail." },
+  { el: ".cl9-acoes", titulo: "Novo cliente", texto: "Cadastre quem compra pelo WhatsApp ou no balcão. Quem pede pelo cardápio é cadastrado automaticamente." },
+  { el: ".cl9-chips", titulo: "Filtros", texto: "Veja aniversariantes, novos cadastros e clientes sem comprar há 60 dias." },
+  { el: ".cl9-lista, .cl9-tab", titulo: "Lista de clientes", texto: "Selecione um cliente para ver o histórico de pedidos e o total gasto. O ícone do WhatsApp abre a conversa." },
+];
+
+export const COMO_PRODUTOS: Como = {
+  tela: { nome: "Produtos", Icone: Cake },
+  resumo: "Tudo o que você vende, com foto, preço e opções. Os produtos ativos aparecem no seu cardápio digital.",
+  tit: "Exemplo · bolo de chocolate",
+  linhas: [["Preço de venda", "R$ 120,00"], ["Custo pela ficha técnica", "R$ 48,00"]],
+  total: ["Lucro por unidade", "R$ 72,00"],
+  fluxo: ["Cadastrar", "Ficha técnica", "No cardápio"],
+  dicas: [
+    [Camera, <><b>Fotos</b> boas vendem mais: use luz natural e um fundo limpo.</>],
+    [ToggleRight, <>A <b>chave</b> mostra ou oculta o produto no cardápio, sem precisar excluí-lo.</>],
+    [ListChecks, <>Monte a <b>ficha técnica</b> para ver o custo e o lucro de cada produto.</>],
+    [Tag, <>Organize por <b>categorias</b> para o cliente encontrar tudo com facilidade.</>],
+  ],
+};
+
+export const TOUR_PRODUTOS: PassoTour[] = [
+  { el: ".pl-busca", titulo: "Buscar", texto: "Encontre um produto pelo nome." },
+  { el: ".pl-novo", titulo: "Novo produto", texto: "Cadastre um produto com foto, preço, descrição e opções, como sabores e tamanhos." },
+  { el: ".pl-ord .ui-tit-acao", titulo: "Ordenar", texto: "Organize a lista por mais recentes, ordem alfabética, categoria ou preço." },
+  { el: ".prod-card", titulo: "Produto", texto: "Selecione um produto para editar as informações, as fotos e as opções." },
+  { el: ".pl-lin-chave, .pl-ficha-on", titulo: "Mostrar no cardápio", texto: "Ative ou desative para mostrar ou ocultar o produto no cardápio, sem precisar excluí-lo." },
+  { el: ".pl-lin-ficha, .pl-sem-ficha", titulo: "Ficha técnica", texto: "Monte a ficha técnica para descobrir o custo e o lucro de cada produto." },
+];
+
+export const COMO_FICHA: Como = {
+  tela: { nome: "Ficha técnica", Icone: ListChecks },
+  resumo: "Quanto custa fazer cada produto e quanto sobra de lucro no preço que você cobra.",
+  tit: "Exemplo · bolo de 1 kg",
+  linhas: [["Preço de venda", "R$ 120,00"], ["Custo total", "R$ 50,00"]],
+  total: ["Lucro · margem de 58%", "R$ 70,00"],
+  fluxo: ["Ingredientes", "Custo", "Lucro"],
+  dicas: [
+    [Basket, <>O custo soma os <b>ingredientes</b>, os custos invisíveis (gás, perdas e descartáveis) e a sua <b>mão de obra</b>.</>],
+    [Circle, <><b>Margem:</b> verde a partir de 30%, laranja abaixo disso e vermelho quando há prejuízo.</>],
+    [TrendDown, <>Produtos <b>dando prejuízo</b> aparecem em destaque no topo, para você ajustar o preço.</>],
+    [ArrowsClockwise, <>Quando o preço de um <b>ingrediente</b> muda, o custo das fichas é atualizado automaticamente.</>],
+  ],
+};
+
+export const TOUR_FICHA: PassoTour[] = [
+  { el: ".fl-alerta", titulo: "Prejuízo", texto: "Produtos com preço de venda abaixo do custo. Selecione para ver quais são e ajustar o preço." },
+  { el: ".cl9-busca", titulo: "Buscar", texto: "Encontre um produto pelo nome." },
+  { el: ".cl9-chips", titulo: "Filtros", texto: "Separe os produtos com ficha, sem ficha e os que estão dando prejuízo." },
+  { el: ".fl-l", titulo: "Produto", texto: "Mostra o custo, o lucro e a margem de cada produto. Selecione para montar ou ajustar a ficha técnica." },
+];
+
+export const COMO_LUCRATIVIDADE: Como = {
+  tela: { nome: "Lucratividade", Icone: ChartLineUp },
+  resumo: "Onde está o seu lucro de verdade: o que você vendeu menos todos os custos do mês.",
+  tit: "Exemplo · um mês",
+  linhas: [["Vendido", "R$ 5.000,00"], ["Ingredientes, taxas e despesas", "R$ 3.200,00"]],
+  total: ["Lucro do mês", "R$ 1.800,00"],
+  fluxo: ["Vendido", "Custos", "Lucro"],
+  dicas: [
+    [ShoppingBagOpen, <><b>Vendido</b> considera os pedidos entregues no mês.</>],
+    [CreditCard, <>A <b>taxa da maquininha</b> entra só nos pedidos pagos no cartão. Pix e dinheiro não têm taxa.</>],
+    [ListChecks, <>Produtos sem <b>ficha técnica</b> deixam o lucro maior do que é, porque o custo dos ingredientes não entra.</>],
+    [Scales, <>O <b>ponto de equilíbrio</b> mostra quanto vender no mês para pagar os custos fixos e o seu salário.</>],
+  ],
+};
+
+export const TOUR_LUCRATIVIDADE: PassoTour[] = [
+  { el: ".lu-mes", titulo: "Mês", texto: "Escolha o mês que deseja analisar." },
+  { el: ".lu-conta", titulo: "A conta do mês", texto: "O valor vendido menos o custo dos ingredientes, as taxas e embalagens e as despesas pagas." },
+  { el: ".lu-k--lucro", titulo: "Lucro do mês", texto: "O que sobrou de fato, com a margem sobre o valor vendido." },
+  { el: ".lu-aviso", titulo: "Sem ficha técnica", texto: "Produtos vendidos sem ficha técnica. Sem ela, o custo dos ingredientes não entra na conta e o lucro aparece maior do que é." },
+  { el: ".lu-pc", titulo: "Lucro por produto", texto: "Cada produto vendido no mês, com a quantidade, o valor vendido e o lucro pela ficha técnica." },
+  { el: ".lu-a-eq", titulo: "Ponto de equilíbrio", texto: "Quanto você precisa vender no mês para pagar os custos fixos e o seu salário." },
+];

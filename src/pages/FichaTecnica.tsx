@@ -11,6 +11,7 @@ import { useProfile } from "@/hooks/useProfile";
 import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
 import DooInfoModal from "@/components/DooInfoModal";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_FICHA, TOUR_FICHA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, WarningCircle, X } from "@phosphor-icons/react";
 import "./clientes.css";
@@ -956,7 +957,7 @@ export default function FichaTecnica() {
   return (
     <>
     <AppPageHeader voltar="/cadastros"
-      title="Ficha técnica"
+      title="Ficha técnica" infoComo={COMO_FICHA} infoTour={TOUR_FICHA}
       subtitle={produtos.length === 0 ? "O custo e o lucro de cada produto" : `${totalComFicha} de ${produtos.length} com ficha técnica`}
       infoContent={
         <>

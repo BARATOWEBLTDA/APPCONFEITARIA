@@ -32,6 +32,7 @@ import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import Categorias from "@/pages/Categorias";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_PRODUTOS, TOUR_PRODUTOS } from "@/lib/comoTelas";
 import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
@@ -1651,7 +1652,7 @@ export default function Produtos() {
       {limiteAberto && <LimitePlano tipo="produtos" limite={LIMITE_PRODUTOS_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader
       title="Produtos" voltar="/cadastros"
-      subtitle="O que aparece no seu cardápio"
+      subtitle="O que aparece no seu cardápio" infoComo={COMO_PRODUTOS} infoTour={TOUR_PRODUTOS}
       infoIcon="🎂"
       infoContent={
         <>

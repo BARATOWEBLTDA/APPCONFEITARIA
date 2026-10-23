@@ -11,6 +11,7 @@ import { explicarErro } from "@/lib/erros";
 import { digitosTelefone, digitosAoDigitar, linkWhatsApp } from "@/lib/telefone";
 import { useProfile, isPro, perfilAtual } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_CLIENTES, TOUR_CLIENTES } from "@/lib/comoTelas";
 import ReqTag from "@/components/ReqTag";
 import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
 import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, Crown, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, X } from "@phosphor-icons/react";
@@ -773,7 +774,7 @@ export default function Clientes() {
       {limiteAberto && <LimitePlano tipo="clientes" limite={LIMITE_CLIENTES_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader voltar="/cadastros"
       title="Clientes"
-      subtitle="Quem compra de você"
+      subtitle="Quem compra de você" infoComo={COMO_CLIENTES} infoTour={TOUR_CLIENTES}
       infoContent={
         <>
           <p>Aqui ficam as pessoas que compram de você: nome, WhatsApp, endereço, aniversário e o histórico de pedidos.</p>

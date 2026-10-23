@@ -7,6 +7,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
 import { CalendarBlank, CaretLeft, CaretRight, ChartLineUp, Equals, Minus, ShoppingBagOpen, Warning, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_LUCRATIVIDADE, TOUR_LUCRATIVIDADE } from "@/lib/comoTelas";
 import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
@@ -128,7 +129,7 @@ export default function Lucratividade() {
       <AppPageHeader
         title="Lucratividade"
         subtitle="Onde está o seu lucro de verdade"
-        onBack={() => navigate("/financeiro")}
+        onBack={() => navigate("/financeiro")} infoComo={COMO_LUCRATIVIDADE} infoTour={TOUR_LUCRATIVIDADE}
         infoIcon="📈"
         infoContent={<>
           <p>O lucro aqui é <strong>o mesmo do painel do Financeiro</strong>: o que você vendeu (pedidos entregues) menos o custo dos ingredientes (ficha técnica), as taxas da maquininha e a embalagem de cada pedido, e as despesas pagas do mês.</p>
