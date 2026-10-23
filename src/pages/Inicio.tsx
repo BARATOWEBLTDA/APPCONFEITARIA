@@ -4,6 +4,7 @@ import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import PraFazer from "@/components/PraFazer";
 import AppPageHeader from "@/components/AppPageHeader";
+import { COMO_INICIO } from "@/lib/comoTelas";
 import { abrirBuscaRapida } from "@/components/BuscaRapida";
 import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
@@ -659,7 +660,7 @@ export default function Inicio() {
   return (
     <>
     {/* (19/10) computador: a mesma barra de cima das outras telas (no celular fica o hero rosa) */}
-    <div className="ini-dk-cab"><AppPageHeader title="Início" subtitle="O resumo do seu dia" infoIcon="📈" infoContent={<>
+    <div className="ini-dk-cab"><AppPageHeader title="Início" subtitle="O resumo do seu dia" infoIcon="📈" infoComo={COMO_INICIO} infoContent={<>
       <p><strong>Recebido no mês:</strong> o dinheiro que entrou de verdade neste mês (sinais e pagamentos).</p>
       <p><strong>Pedidos na semana</strong> e <strong>ticket médio:</strong> os pedidos dos últimos 7 dias e quanto cada um vale, em média.</p>
       <p><strong>Entregas hoje:</strong> quantos pedidos saem hoje. A lista completa fica em Próximas entregas e na Agenda.</p>

@@ -1,4 +1,5 @@
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
+import { COMO_CARDAPIO } from "@/lib/comoTelas";
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { useState, useEffect, useRef, type ReactElement } from "react";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
@@ -341,7 +342,7 @@ export default function Cardapio() {
     <AppPageHeader
       title="Cardápio digital"
       subtitle="A loja online da sua confeitaria"
-      infoIcon="🛍️"
+      infoIcon="🛍️" infoComo={COMO_CARDAPIO}
       infoContent={
         <>
           <p>Este é o <strong>cardápio digital</strong> que seus clientes acessam. Personalize as cores, adicione produtos, configure entrega e pagamento.</p>

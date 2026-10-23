@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { COMO_AGENDA } from "@/lib/comoTelas";
 import { montarMensagem, dadosDoPedido } from "@/lib/mensagens";
 import { useNavigate, useNavigationType } from "react-router-dom";
 import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Printer, Trash, WarningCircle, X } from "@phosphor-icons/react";
@@ -527,7 +528,7 @@ export default function Agenda() {
     <AppPageHeader
       title="Agenda"
       subtitle="Seus pedidos por data de entrega"
-      infoIcon="📅"
+      infoIcon="📅" infoComo={COMO_AGENDA}
       infoContent={
         <>
           <p>Aqui ficam os seus <strong>pedidos por data de entrega</strong>. Veja o que precisa produzir hoje, amanhã e nos próximos dias.</p>

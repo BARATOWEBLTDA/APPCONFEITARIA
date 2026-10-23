@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Basket, Bell, BellSlash, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle } from "@phosphor-icons/react";
+import { Basket, Bell, BellSlash, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
@@ -9,6 +9,7 @@ import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "
 import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { Botao, Janela, avisar } from "@/components/base";
+import { ConteudoComo, type Como } from "@/components/como/ComoFunciona";
 
 /**
  * (15/10) "Pra fazer": um cartão só no Início, no lugar do "Complete seu app" e do "Suas atualizações".
@@ -34,7 +35,6 @@ const DIA = 86400000;
 const PESO = { urgente: 0, atencao: 1, normal: 2 };
 const VISIVEIS = 3;
 /** (22/10) "Como funciona": janelinha com um exemplo em números, o caminho e as dicas (igual às Pendências da Dora) */
-type Como = { nome: string; acao: string; tit: string; linhas: [string, string][]; total: [string, string]; fluxo: string[]; dicas: [Icon, ReactNode][] };
 const COMO: Record<string, Como> = {
   entrega: {
     nome: "Taxa de entrega", acao: "Definir a taxa de entrega",
@@ -204,7 +204,7 @@ export default function PraFazer() {
               <b>{x.t}</b>
               {x.alerta && <span className="pf-alerta">{x.alerta}</span>}
               <p>{x.txt || x.s}{x.comoFunciona && <> <button type="button" className="pf-como" aria-expanded={como === x.chave} onClick={() => setComo(c => c === x.chave ? null : x.chave)}>Como funciona <Info size={14} weight="bold" aria-hidden="true" /></button></>}</p>
-              {!cel && como === x.chave && x.comoFunciona && <ConteudoComo c={x.comoFunciona} rotulo={x.t} />}
+              {!cel && como === x.chave && x.comoFunciona && <ConteudoComo c={x.comoFunciona} rotulo={x.t} className="pf-cf" />}
               <div className="pf-bts">
                 {x.revisar ? (
                   <button type="button" className="pf-nao" onClick={() => navigate(x.link, { state: x.revisar })}>Revisar</button>
@@ -231,8 +231,8 @@ export default function PraFazer() {
         const c = x?.comoFunciona;
         return (
           <Janela aberta={!!(x && c)} aoFechar={() => setComo(null)} titulo={c?.nome || ""} tipo="conteudo" umaAcao
-            acoes={x && c ? <Botao cheio onClick={() => { setComo(null); ir(x); }}>{c.acao}</Botao> : undefined}>
-            {c && <div className="pf-cf-folha"><ConteudoComo c={c} rotulo={c.nome} /></div>}
+            acoes={x && c ? <Botao cheio onClick={() => { setComo(null); ir(x); }}>{c.acao || x.acao}</Botao> : undefined}>
+            {c && <div className="pf-cf-folha"><ConteudoComo c={c} rotulo={c.nome || ""} className="pf-cf" /></div>}
           </Janela>
         );
       })()}
@@ -243,24 +243,6 @@ export default function PraFazer() {
       )}
       <style>{CSS}</style>
     </section>
-  );
-}
-
-function ConteudoComo({ c, rotulo }: { c: Como; rotulo: string }) {
-  return (
-    <div className="pf-cf" role="group" aria-label={`Como funciona: ${rotulo}`}>
-      <div className="pf-cf-ex">
-        <p className="pf-cf-t">{c.tit}</p>
-        {c.linhas.map(([l, v]) => <div key={l} className="pf-cf-l"><span>{l}</span><span>{v}</span></div>)}
-        <div className="pf-cf-l pf-cf-tot"><span>{c.total[0]}</span><span>{c.total[1]}</span></div>
-        <div className="pf-cf-fluxo">
-          {c.fluxo.map((f, i) => <span key={f} className="pf-cf-pass">{i > 0 && <ArrowRight size={12} weight="bold" aria-hidden="true" />}<em className={i === 1 ? "on" : ""}>{f}</em></span>)}
-        </div>
-      </div>
-      <ul className="pf-cf-dicas">
-        {c.dicas.map(([Ic, t], i) => <li key={i}><Ic size={16} aria-hidden="true" /><span>{t}</span></li>)}
-      </ul>
-    </div>
   );
 }
 
@@ -288,18 +270,6 @@ const CSS = `
   .pf-cf, .pf-menu { scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); scroll-margin-top: 80px; }
   /* dentro do fluxo (empurra o resto pra baixo): perto do fim da tela, absoluta ficava atrás do menu de baixo sem dar pra rolar */
   .pf-cf { position: relative; z-index: 2; margin: 10px 0 0 -48px; overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 14px; box-shadow: 0 16px 40px rgba(20, 10, 7, .18); }
-  .pf-cf-ex { padding: 14px 16px 12px; background: #F7F6F6; border-bottom: 1px solid var(--ui-linha); }
-  .pf-cf-t { margin: 0 0 8px; font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ui-texto-3); }
-  .pf-cf-l { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; }
-  .pf-cf-tot { margin-top: 6px; padding-top: 8px; border-top: 1px solid #E8E4E6; font-weight: 700; color: var(--ui-texto); }
-  .pf-cf-fluxo { display: flex; align-items: center; flex-wrap: nowrap; gap: 3px; margin-top: 10px; }
-  .pf-cf-pass { display: inline-flex; align-items: center; gap: 3px; color: var(--ui-texto-3); }
-  .pf-cf-pass em { padding: 3px 6px; border: 1px solid var(--ui-borda); border-radius: 6px; background: var(--ui-branco); font-style: normal; font-size: 11.5px; color: var(--ui-texto-2); white-space: nowrap; }
-  .pf-cf-pass em.on { background: #ECE9EA; border-color: #E0DBDD; color: var(--ui-texto); font-weight: 600; }
-  .pf-cf-dicas { margin: 0; padding: 10px 16px 14px; list-style: none; display: flex; flex-direction: column; gap: 10px; }
-  .pf-cf-dicas li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
-  .pf-cf-dicas svg { flex: none; margin-top: 2px; color: var(--ui-texto-3); }
-  .pf-cf-dicas b { font-weight: 600; color: var(--ui-texto); }
   .pf-bts { position: relative; display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 10px; }
   .pf-nao-w { position: static; }
   .pf-nao { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; margin: 0; padding: 0 10px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { COMO_PEDIDOS } from "@/lib/comoTelas";
 import { compartilharTexto } from "@/lib/compartilharCardapio";
 import { montarMensagem, dadosDoPedido } from '@/lib/mensagens'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
@@ -511,7 +512,7 @@ export default function Pedidos() {
       <AppPageHeader
         title="Meus pedidos"
         subtitle="Acompanhe suas encomendas e produção"
-        infoIcon="📋"
+        infoIcon="📋" infoComo={COMO_PEDIDOS}
         infoContent={
           <>
             <p>Aqui ficam <strong>todas as suas encomendas</strong>, agrupadas por dia: o que está atrasado, o que entrega hoje, amanhã e nos próximos dias.</p>

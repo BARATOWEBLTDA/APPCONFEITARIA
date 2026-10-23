@@ -1,0 +1,23 @@
+/* (22/10) "Como funciona" no formato da Dora (Pra fazer e o (i) do topo) */
+.cf { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 14px; box-shadow: 0 16px 40px rgba(20, 10, 7, .18); font-family: var(--font-base); text-align: left; }
+.cf-ex { padding: 14px 16px 12px; background: #F7F6F6; border-bottom: 1px solid var(--ui-linha); }
+.cf-t { margin: 0 0 8px; font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ui-texto-3); }
+.cf-l { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.cf-l span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.cf-tot { margin-top: 6px; padding-top: 8px; border-top: 1px solid #E8E4E6; font-weight: 700; color: var(--ui-texto); }
+.cf-fluxo { display: flex; align-items: center; flex-wrap: nowrap; gap: 3px; margin-top: 10px; }
+.cf-pass { display: inline-flex; align-items: center; gap: 3px; color: var(--ui-texto-3); }
+.cf-pass em { padding: 3px 6px; border: 1px solid var(--ui-borda); border-radius: 6px; background: var(--ui-branco); font-style: normal; font-size: 11.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.cf-pass em.on { background: #ECE9EA; border-color: #E0DBDD; color: var(--ui-texto); font-weight: 600; }
+.cf-dicas { margin: 0; padding: 10px 16px 14px; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.cf-dicas li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
+.cf-dicas svg { flex: none; margin-top: 2px; color: var(--ui-texto-3); }
+.cf-dicas b { font-weight: 600; color: var(--ui-texto); }
+
+/* (i) do topo: a janelinha presa embaixo do título, com a setinha apontando pro (i) */
+.cab-linha { position: relative; }
+.cab-i.on { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); box-shadow: 0 0 0 2px rgba(var(--ui-rosa-rgb), .35); }
+.cab-pop { position: absolute; top: calc(100% + 12px); left: -4px; z-index: 300; width: min(380px, calc(100vw - 24px)); cursor: default; font-weight: 400; }
+.cab-pop-seta { position: absolute; top: -6px; width: 12px; height: 12px; background: #F7F6F6; border-left: 1px solid var(--ui-borda); border-top: 1px solid var(--ui-borda); transform: rotate(45deg); z-index: 1; }
+.cab-pop .cf-t:first-child { margin-top: 0; }
+@media (max-width: 900px) { .cab-pop { left: calc(-1 * var(--cab-pop-x, 4px)); } }
