@@ -92,16 +92,6 @@ i.atr { background: var(--ui-vermelho); }
 .ag3-pc-bts.um { grid-template-columns: minmax(0, 1fr); }
 .ag3-whats svg { color: #128C4A; }
 
-/* filtro */
-.ag3-fil { display: flex; flex-direction: column; gap: 4px; }
-.ag3-fil-it { position: relative; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 8px 12px; border-radius: var(--ui-raio); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-@media (hover: hover) { .ag3-fil-it:hover { background: var(--ui-linha); } }
-.ag3-esc { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); border: 0; opacity: 0; }
-.ag3-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid var(--ui-borda); border-radius: 7px; background: var(--ui-branco); color: transparent; box-sizing: border-box; }
-.ag3-fil-it.on .ag3-cx { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); }
-.ag3-esc:focus-visible + .ag3-cx { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
-.ag3-fil-n { flex: 1; font-size: 15px; font-weight: 500; }
-.ag3-fil-q { flex: none; min-width: 24px; padding: 2px 8px; border-radius: 8px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12.5px; font-weight: 700; text-align: center; }
 
 
 @media (min-width: 768px) {

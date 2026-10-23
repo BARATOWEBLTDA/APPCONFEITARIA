@@ -14,7 +14,7 @@ function parseLocalDate(dateStr: string): Date {
 }
 
 // ══════════════ Filtro em gaveta lateral (03/10) — sai da direita, altura toda ══════════════
-const SITUACOES_FILTRO = [
+export const SITUACOES_FILTRO = [
   { k: 'novo', label: 'Novo pedido', grupos: ['aguardando_pagamento', 'aguardando_aceite'], cor: '#854F0B' },
   { k: 'agendado', label: 'Agendado', grupos: ['agendado'], cor: '#185FA5' },
   { k: 'producao', label: 'Em produção', grupos: ['em_producao'], cor: '#993556' },
@@ -38,9 +38,11 @@ export function bateData(p: any, periodo: string, ini: string, fim: string): boo
   if (periodo === 'personalizado') return (!ini || data >= parseLocalDate(ini)) && (!fim || data <= parseLocalDate(fim))
   return true
 }
-export default function FiltroLateral({ statusSelecionados, setStatusSelecionados, periodoFiltro, setPeriodoFiltro, dataInicio, setDataInicio, dataFim, setDataFim, onClose, pedidos }: {
-  statusSelecionados: string[]; setStatusSelecionados: (v: string[]) => void; periodoFiltro: string; setPeriodoFiltro: (v: string) => void
-  dataInicio: string; setDataInicio: (v: string) => void; dataFim: string; setDataFim: (v: string) => void; onClose: () => void; pedidos: Pedido[]
+/** (23/10) Agenda usa a mesma gaveta, sem a parte de data (lá quem escolhe o dia é o calendário) */
+const nada = () => {}
+export default function FiltroLateral({ statusSelecionados, setStatusSelecionados, periodoFiltro = 'todos', setPeriodoFiltro = nada, dataInicio = '', setDataInicio = nada, dataFim = '', setDataFim = nada, onClose, pedidos, semData = false }: {
+  statusSelecionados: string[]; setStatusSelecionados: (v: string[]) => void; periodoFiltro?: string; setPeriodoFiltro?: (v: string) => void
+  dataInicio?: string; setDataInicio?: (v: string) => void; dataFim?: string; setDataFim?: (v: string) => void; onClose: () => void; pedidos: Pedido[]; semData?: boolean
 }) {
   const [st, setSt] = useState<string[]>(statusSelecionados)
   const [per, setPer] = useState(periodoFiltro === 'custom' ? 'personalizado' : periodoFiltro)
@@ -72,7 +74,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
               </button>
             ))}
           </div>
-          <div className="fl-sec"><b>Data da entrega</b></div>
+          {!semData && <><div className="fl-sec"><b>Data da entrega</b></div>
           <div className="fl-grp">
             {DATAS_FILTRO.map(([k, l]) => (
               <div key={k}>
@@ -85,7 +87,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
                 )}
               </div>
             ))}
-          </div>
+          </div></>}
         </div>
         <div className="fl-f"><button className="fl-limpar" onClick={limpar}>Limpar</button><button className="fl-ver" onClick={aplicar} disabled={resultado === 0}>{resultado === 0 ? 'Nenhum pedido' : `Ver ${resultado} ${resultado === 1 ? 'pedido' : 'pedidos'}`}</button></div>
       </div>

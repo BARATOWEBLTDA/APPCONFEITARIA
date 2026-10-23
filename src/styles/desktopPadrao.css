@@ -19,9 +19,6 @@
   html body .layout-main > .cl9, html body .cli-root > .cl9, html body .layout-main > .ag3, html body .layout-main > .nv3,
   html body .layout-main > .ct, html body .layout-main > .mk, html body .layout-main > .cf9, html body .layout-main > .ap,
   html body .layout-main > .dl-root { padding-left: 0 !important; padding-right: 0 !important; }
-  /* Lucratividade: a faixa rosa embaixo do topo saiu (era a única) */
-  html body .lu-faixa { display: none !important; }
-  html body .layout-main > .lu { margin-top: 0 !important; }
   /* a página do Doonly PRO fica na largura dos painéis */
   html body .layout-main > .pro9 { max-width: 1140px !important; }
 
@@ -45,8 +42,6 @@
   html body .ui-bt.pd-passo:active:not(:disabled), html body .ag3 .ui-bt--vinho:active:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--ui-rosa) !important; background: var(--ui-rosa-claro); }
   /* Registrar recebimento: verde */
   html body .ui-bt.tpd-receber { --bt-fundo: #15803D; --bt-cor: var(--ui-branco); --bt-sombra: #166534; }
-  /* Montar ficha técnica: rosa */
-  html body .lu-aviso-bt { background: var(--ui-rosa) !important; color: var(--ui-branco) !important; }
   /* Pagar: um estilo só, vermelho claro */
   html body .pf-bt--pagar, html body .ntf-acao--pagar, html body .fap-bts .ui-bt {
     background: #FEF2F2 !important; color: var(--ui-vermelho) !important; border-color: transparent !important; box-shadow: none !important;

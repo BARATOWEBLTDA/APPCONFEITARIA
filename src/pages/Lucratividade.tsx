@@ -138,8 +138,7 @@ export default function Lucratividade() {
         </>}
       />
       <EstiloFinanceiro />
-      {/* (4.29) mesmo desenho do Financeiro: o mês pousado na faixa rosa, a conta em 4 cartões e o lucro por produto em tabela */}
-      <div className="lu-faixa" aria-hidden="true" />
+      {/* (23/10) igual às outras telas do Financeiro: fundo cinza, sem a faixa rosa embaixo do topo */}
       <div className="lu">
         <div className="lu-per">
           <div className="lu-per-tx"><span className="lu-per-ic" aria-hidden="true"><CalendarBlank size={20} /></span><span><b>Mês</b><small>Pedidos entregues e despesas pagas no mês</small></span></div>
@@ -243,9 +242,7 @@ export default function Lucratividade() {
 }
 
 const CSS = `
-  .lu-faixa { height: 58px; background: var(--ui-rosa); width: 100vw; margin: 0 calc(50% - 50vw); }
-  .lu { position: relative; margin: -58px auto 0; max-width: 1160px; padding: 22px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
-  @media (min-width: 901px) { .lu-faixa { width: auto; margin: 0 -2rem; } }
+  .lu { position: relative; margin: 0 auto; max-width: 1160px; padding: 14px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
   .lu-per { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 10px 12px; }
   .lu-per-tx { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .lu-per-ic { flex: none; width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
@@ -260,7 +257,7 @@ const CSS = `
   .lu-vazio-ic { width: 60px; height: 60px; border-radius: 18px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: inline-flex; align-items: center; justify-content: center; }
   .lu-vazio b { display: block; font-size: 17px; font-weight: 600; margin-top: 12px; }
   .lu-vazio p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 400px; text-wrap: balance; }
-  .lu-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .lu-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   /* a conta em 4 cartões */
   .lu-conta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .lu-conta > .lu-k--lucro { grid-column: 1 / -1; }
@@ -280,7 +277,7 @@ const CSS = `
   /* aviso de ficha técnica: uma faixa só */
   .lu-aviso { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 14px; padding: 10px 12px; font-size: 13.5px; font-weight: 500; line-height: 1.45; }
   .lu-aviso > span { flex: 1 1 260px; } .lu-aviso svg { flex-shrink: 0; }
-  .lu-aviso-bt { flex: none; min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: #92400E; color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .lu-aviso-bt { flex: none; min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
   /* produto + equilíbrio */
   .lu-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "prod" "eq"; }
   @media (min-width: 1024px) { .lu-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); grid-template-areas: "prod eq"; align-items: start; gap: 16px; } }
@@ -307,6 +304,20 @@ const CSS = `
   .lu-sf-bt { display: inline-flex; align-items: center; gap: 2px; width: 100%; margin-top: 6px; color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 700; white-space: nowrap; }
   .lu-pc--bt { cursor: pointer; transition: border-color .15s; } .lu-pc--bt:hover { border-color: #F7C9DA; }
   .lu-pc--bt:focus-visible { outline: 3px solid rgba(236, 72, 153, .4); outline-offset: 2px; }
+  @media (max-width: 639px) {
+    .lu-pg { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .lu-pc { flex-direction: row; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid var(--ui-linha); border-radius: 0; padding: 10px 0; }
+    .lu-pc:last-child { border-bottom: 0; }
+    .lu-pc-foto { flex: none; width: 52px; height: 52px; aspect-ratio: auto; border-radius: 12px; overflow: hidden; }
+    .lu-pc-tx { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nm v" "sub m"; column-gap: 10px; row-gap: 2px; align-items: center; padding: 0; }
+    .lu-pc-nm { grid-area: nm; -webkit-line-clamp: 1; }
+    .lu-pc-tx small { grid-area: sub; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lu-pc-l { display: none; }
+    .lu-pc-tx strong { grid-area: v; justify-self: end; font-size: 15px; }
+    .lu-pc-m { grid-area: m; justify-self: end; white-space: nowrap; }
+    .lu-sf { grid-column: 1 / -1; justify-self: start; white-space: nowrap; }
+    .lu-pc-m .lu-p-bar, .lu-sf-bt { display: none; }
+  }
   .lu-eq-v { display: block; font-size: 26px; font-weight: 600; letter-spacing: -.02em; } .lu-eq-v small { font-size: 13px; font-weight: 400; color: var(--ui-texto-2); }
   .lu-eq-t { margin: 4px 0 0; font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; }
   .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }

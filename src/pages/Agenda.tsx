@@ -21,8 +21,9 @@ import { registrarEtapa } from "@/lib/historicoPedido";
 import AppPageHeader from "@/components/AppPageHeader";
 import CalendarioSheet from "@/components/CalendarioSheet";
 import { Botao, BotaoIcone, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
-import { avisoDaMudanca, formaDoItem, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDeProduto, nomeDoItem, precisaAceitar, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
+import { avisoDaMudanca, formaDoItem, grupoDoStatus, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDeProduto, nomeDoItem, precisaAceitar, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
 import { NomeComQtd } from "@/components/pedidos/CartaoPedido";
+import FiltroLateral, { SITUACOES_FILTRO, STATUS_PADRAO } from "@/components/pedidos/FiltroPedidos";
 import "@/components/pedidos/pedidos.css";
 import "./agenda.css";
 
@@ -65,18 +66,9 @@ const horaCurta = (h?: string | null) => {
 };
 
 /* Filtro por situação: os mesmos nomes da lista de Pedidos ("novo" e "aguardando_aceite" são o mesmo "Novo pedido") */
-const FILTROS: { nome: string; chaves: string[] }[] = [
-  { nome: "Novo pedido", chaves: ["aguardando_aceite", "novo"] },
-  { nome: "Aguardando pagamento", chaves: ["aguardando_pagamento"] },
-  { nome: "Agendado", chaves: ["agendado"] },
-  { nome: "Em produção", chaves: ["em_producao"] },
-  { nome: "Pronto", chaves: ["finalizado"] },
-  { nome: "Pronto pra retirar", chaves: ["aguardando_retirada"] },
-  { nome: "Saiu pra entrega", chaves: ["em_entrega"] },
-  { nome: "Entregue", chaves: ["entregue"] },
-  { nome: "Cancelado", chaves: ["cancelado"] },
-];
-const STATUS_FILTRAVEIS = FILTROS.flatMap(f => f.chaves);
+/* (23/10) filtro por situação: a mesma gaveta lateral de Meus pedidos, pelos grupos de situação (antes era uma janela
+   com a lista de situações cruas, e "concluido"/"pronto"/"a_caminho" ficavam de fora do filtro) */
+const TODAS_SITUACOES = [...new Set(SITUACOES_FILTRO.flatMap(s => s.grupos))];
 
 const SEMANA_CURTA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const SEMANA = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
@@ -164,7 +156,7 @@ export default function Agenda() {
   useEffect(() => { naTela.current = true; return () => { naTela.current = false; }; }, []);
 
   // Cancelados ficam de fora por padrão (dá pra ligar no filtro), igual ao total do dia
-  const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_FILTRAVEIS.filter(s => s !== "cancelado"));
+  const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_PADRAO);
   const [filtroAberto, setFiltroAberto] = useState(false);
   const [menuDe, setMenuDe] = useState<any | null>(null);
   const [reagendando, setReagendando] = useState<any | null>(null);
@@ -333,15 +325,9 @@ export default function Agenda() {
   );
 
   const pedidosDiaFiltrados = useMemo(
-    () => pedidosDoDia.filter((p: any) => statusSelecionados.includes(p.status)),
+    () => pedidosDoDia.filter((p: any) => statusSelecionados.includes(grupoDoStatus(p.status))),
     [pedidosDoDia, statusSelecionados]
   );
-
-  const countStatusDia = useMemo(() => {
-    const m: Record<string, number> = {};
-    pedidosBuscados.filter(p => p._diaAgenda === diaSel).forEach(p => { m[p.status] = (m[p.status] || 0) + 1; });
-    return m;
-  }, [pedidosBuscados, diaSel]);
 
   const irParaHoje = useCallback(() => {
     const h = new Date();
@@ -484,8 +470,8 @@ export default function Agenda() {
   const doMenu = (fn: (p: any) => void) => () => { const p = menuDe; setMenuDe(null); if (p) window.setTimeout(() => fn(p), 220); };
 
   // Cancelado escondido é o normal: o número no botão conta só as outras situações que foram escondidas
-  const filtrosDesligados = FILTROS.filter(f => f.nome !== "Cancelado" && !f.chaves.some(c => statusSelecionados.includes(c))).length;
-  const mostrarTodas = () => setStatusSelecionados([...STATUS_FILTRAVEIS]);
+  const filtrosDesligados = SITUACOES_FILTRO.filter(f => f.k !== "cancelado" && !f.grupos.every(g => statusSelecionados.includes(g))).length;
+  const mostrarTodas = () => setStatusSelecionados(TODAS_SITUACOES);
   // 4.08: a agenda não mostra o total vendido no dia (isso é do Financeiro); mostra só o que falta receber, quando existe
   const aReceberDoDia = pedidosDoDia.filter((p: any) => p.status !== "cancelado" && saldoPedido(p) > 0.009);
   const faltaDoDia = somarReais(aReceberDoDia.map((p: any) => saldoPedido(p))); // (11/10) soma em centavos certos
@@ -602,27 +588,11 @@ export default function Agenda() {
 
     </div>
 
-    {/* Filtro por situação */}
-    <Janela aberta={filtroAberto} aoFechar={() => setFiltroAberto(false)} tipo="conteudo" titulo="Ver quais situações?"
-      acoes={<>
-        <Botao variante="secundario" onClick={mostrarTodas}>Marcar todas</Botao>
-        <Botao onClick={() => setFiltroAberto(false)}>Ver pedidos</Botao>
-      </>}>
-      <div className="ag3-fil">
-        {FILTROS.map(f => {
-          const on = f.chaves.some(c => statusSelecionados.includes(c));
-          const qtd = f.chaves.reduce((s, c) => s + (countStatusDia[c] || 0), 0);
-          return (
-            <label key={f.nome} className={"ag3-fil-it" + (on ? " on" : "")}>
-              <input type="checkbox" className="ag3-esc" checked={on} onChange={() => setStatusSelecionados(prev => on ? prev.filter(x => !f.chaves.includes(x)) : [...prev, ...f.chaves.filter(c => !prev.includes(c))])} />
-              <span className="ag3-cx" aria-hidden="true"><Check size={16} weight="bold" /></span>
-              <span className="ag3-fil-n">{f.nome}</span>
-              {qtd > 0 && <span className="ag3-fil-q" aria-label={`${qtd} nesse dia`}>{qtd}</span>}
-            </label>
-          );
-        })}
-      </div>
-    </Janela>
+    {/* Filtro por situação: gaveta lateral, igual à de Meus pedidos; o "Ver X pedidos" conta os do dia escolhido */}
+    {filtroAberto && (
+      <FiltroLateral semData statusSelecionados={statusSelecionados} setStatusSelecionados={setStatusSelecionados}
+        onClose={() => setFiltroAberto(false)} pedidos={pedidosDoDia} />
+    )}
 
     {/* Mais ações do pedido */}
     <MenuAgenda p={menuDe} aoFechar={() => setMenuDe(null)}
