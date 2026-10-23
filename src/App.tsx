@@ -204,6 +204,8 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   // a tela "Complete seu cadastro" espera a próxima troca de tela, pra não entrar no meio de uma venda
   const appJaAberto = useRef(false);
   const completarDepois = useRef<null | { nome: string; loja: string; telefone: string }>(null);
+  // (23/10) o banco diz se esta conta já viu as boas-vindas: conta nova pelo Google vê a apresentação depois de completar o cadastro
+  const tutorialVistoBanco = useRef(true);
   useEffect(() => { if (perfilConferido) appJaAberto.current = true; }, [perfilConferido]);
   useEffect(() => {
     if (!completarDepois.current) return;
@@ -301,6 +303,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
           if (tentativa > 0 || appJaAberto.current) completarDepois.current = falta;
           else setCompletar(falta);
         } else completarDepois.current = null;
+        tutorialVistoBanco.current = !!data?.tutorial_visto;
         setPerfilConferido(true);
         if (data?.tutorial_visto) {
           // Banco diz que já viu — sincroniza localStorage e esconde
@@ -354,7 +357,20 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (completar) {
-    return <CompletarCadastro user={session.user} nomeInicial={completar.nome} lojaInicial={completar.loja} telefoneInicial={completar.telefone} onPronto={() => setCompletar(null)} />;
+    return <CompletarCadastro user={session.user} nomeInicial={completar.nome} lojaInicial={completar.loja} telefoneInicial={completar.telefone} onPronto={() => {
+      setCompletar(null);
+      // (23/10) conta criada pelo Google: o cadastro termina aqui (no e-mail, termina na tela de criar conta).
+      // As marcas de "já viu" ficam no aparelho e podem ser de outra conta: se o banco diz que esta não viu, abre as boas-vindas
+      if (!tutorialVistoBanco.current) {
+        try {
+          localStorage.removeItem("doonly_tutorial_visto");
+          localStorage.removeItem("doonly_tutorial_auto_aberto");
+          localStorage.removeItem("doonly_tour_inicio_visto");
+        } catch { /* sem armazenamento: abre do mesmo jeito */ }
+        setContaAtivaPendente(false);
+        setShowFirstTutorial(true);
+      }
+    }} />;
   }
 
   const primeiroNome = String(session.user?.user_metadata?.nome || session.user?.user_metadata?.full_name || session.user?.user_metadata?.name || "").trim().split(/\s+/)[0];
