@@ -2,11 +2,12 @@ import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   ArrowSquareOut, Bell, Cake, CalendarDots, Calculator, Camera, CaretLeft, ChartLineUp, Crown, CurrencyDollar, Info, Invoice, Lightbulb,
-  ListDashes, Newspaper, Package, PaintBrush, Receipt, ShoppingBag, ShoppingCart, SquaresFour, User, Users,
+  ListDashes, MagnifyingGlass, Newspaper, Package, PaintBrush, Receipt, ShoppingBag, ShoppingCart, SquaresFour, User, Users,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Janela } from '@/components/base'
 import MenuConta from '@/components/MenuConta'
+import { abrirBuscaRapida } from '@/components/BuscaRapida'
 import { ImageCropper } from '@/components/ui/ImageCropper'
 import { useProfile, avatarDaConta, getCardapioUrl } from '@/hooks/useProfile'
 import { useLojaPronta } from '@/lib/primeirosPassos'
@@ -115,6 +116,10 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
   return (
     <>
       <div className={`cab-foto-area ${className}`}>
+        {/* (22/10) busca rápida (Ctrl+K), só no computador */}
+        <button type="button" className="cab-busca" onClick={abrirBuscaRapida} aria-label="Buscar no app (Ctrl+K)">
+          <MagnifyingGlass size={15} weight="bold" aria-hidden="true" /><span>Buscar</span><kbd>Ctrl K</kbd>
+        </button>
         {linkCardapio && pronta && (
           <a className="cab-ver-cardapio" href={linkCardapio} target="_blank" rel="noopener noreferrer"><ArrowSquareOut size={12} weight="bold" aria-hidden="true" />Ver cardápio</a>
         )}

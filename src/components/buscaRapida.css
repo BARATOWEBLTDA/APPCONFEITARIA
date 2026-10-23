@@ -1,0 +1,48 @@
+/* (22/10) Busca rápida (Ctrl+K), como na Dora */
+.br-fundo { position: fixed; inset: 0; z-index: 3000; display: flex; justify-content: center; align-items: flex-start; padding: 12vh 16px 16px; background: rgba(20, 10, 7, .38); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: brAparece 120ms ease-out; }
+@keyframes brAparece { from { opacity: 0; } to { opacity: 1; } }
+.br { display: flex; flex-direction: column; width: 100%; max-width: 620px; max-height: min(560px, 76vh); overflow: hidden; background: var(--ui-branco); border-radius: 16px; box-shadow: 0 24px 60px rgba(20, 10, 7, .28); font-family: var(--font-base); color: var(--ui-texto); }
+.br-campo { flex: none; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--ui-linha); color: var(--ui-texto-3); }
+.br-campo input { flex: 1; min-width: 0; height: 54px; border: 0; outline: 0; background: none; font-family: inherit; font-size: 15px; color: var(--ui-texto); -webkit-appearance: none; appearance: none; }
+.br-campo input::placeholder { color: var(--ui-texto-3); }
+.br-campo input::-webkit-search-cancel-button { display: none; }
+.br-fechar { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-3); cursor: pointer; }
+.br-fechar:hover { background: #F6F3F4; color: var(--ui-texto); }
+.br-lista { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 6px 8px 8px; }
+.br-g { margin: 10px 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ui-texto-3); }
+.br-it { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; margin: 0; padding: 0 12px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.br-it svg { flex: none; color: var(--ui-texto-2); }
+.br-it.on { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.br-it.on svg { color: var(--ui-rosa-escuro); }
+.br-it-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.br-it-g { flex: none; font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; }
+.br-atual { flex: none; padding: 2px 8px; border-radius: 999px; background: var(--ui-branco); border: 1px solid var(--ui-borda); font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--ui-texto-2); }
+.br-nada { margin: 28px 12px; text-align: center; font-size: 14px; color: var(--ui-texto-2); }
+.br-pe { flex: none; display: flex; gap: 16px; padding: 10px 16px; border-top: 1px solid var(--ui-linha); font-size: 12px; color: var(--ui-texto-2); }
+.br-pe span { display: inline-flex; align-items: center; gap: 4px; }
+.br-pe kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; border: 1px solid var(--ui-borda); border-radius: 5px; background: #FAFAFA; font-family: inherit; font-size: 11px; color: var(--ui-texto-2); }
+/* celular: mais perto do topo, sem as dicas de teclado */
+@media (max-width: 900px) {
+  .br-fundo { padding: calc(12px + env(safe-area-inset-top, 0px)) 12px 12px; }
+  .br { max-height: 80vh; }
+  .br-pe { display: none; }
+  .br-campo input { font-size: 16px; } /* 16px: o iPhone não dá zoom ao tocar */
+}
+@media (prefers-reduced-motion: reduce) { .br-fundo { animation: none; } }
+
+/* campo que abre a busca: no topo do computador */
+.cab-busca { display: none; }
+@media (min-width: 901px) {
+  .cab-busca { display: inline-flex; align-items: center; gap: 8px; width: 240px; height: 34px; margin: 0; padding: 0 8px 0 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: #F7F7F8; font-family: var(--font-base); font-size: 13px; color: var(--ui-texto-3); cursor: pointer; text-align: left; }
+  .cab-busca:hover { background: #F1F2F2; color: var(--ui-texto-2); }
+  .cab-busca span { flex: 1; }
+  .cab-busca kbd { padding: 1px 6px; border: 1px solid var(--ui-borda); border-radius: 5px; background: var(--ui-branco); font-family: inherit; font-size: 11px; color: var(--ui-texto-3); }
+  .cab-busca:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+}
+@media (min-width: 901px) and (max-width: 1180px) { .cab-busca { width: 180px; } .cab-busca kbd { display: none; } }
+
+/* campo que abre a busca: no Início do celular */
+.ini-busca { display: flex; align-items: center; gap: 10px; width: 100%; height: 48px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); font-family: var(--font-base); font-size: 15px; color: var(--ui-texto-3); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; box-shadow: var(--ui-sombra-cartao); }
+.ini-busca svg { flex: none; color: var(--ui-texto-2); }
+.ini-busca span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ini-busca:active { background: #FAF7F8; }

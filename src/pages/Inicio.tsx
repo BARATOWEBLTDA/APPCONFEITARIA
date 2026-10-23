@@ -4,6 +4,7 @@ import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import PraFazer from "@/components/PraFazer";
 import AppPageHeader from "@/components/AppPageHeader";
+import { abrirBuscaRapida } from "@/components/BuscaRapida";
 import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
@@ -23,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 // (15/10) o gráfico (recharts) só é baixado quando aparece
 const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido"));
 import {
-  HandCoins, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
+  HandCoins, MagnifyingGlass, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
   CaretRight, Cake, Receipt, ClipboardText,
   WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle,
 } from "@phosphor-icons/react";
@@ -876,6 +877,13 @@ export default function Inicio() {
         {/* ── Coluna principal ── */}
         <div className="ini-main">
 
+      {/* (22/10) busca rápida, como na Dora: acha qualquer tela ou ação ("pix", "cupom", "horário"…) */}
+      <section className="ini-section ini-section--busca">
+        <button type="button" className="ini-busca" onClick={abrirBuscaRapida}>
+          <MagnifyingGlass size={20} aria-hidden="true" /><span>Buscar tela ou o que você quer fazer</span>
+        </button>
+      </section>
+
       {/* (16/10) celular: pedido novo pra aceitar e atrasados no topo, logo embaixo do "Olá" (antes uma faixa embaixo do Acesso rápido) */}
       {!loading && !erroCarga && (pedidosNovos.length > 0 || counts.pedidosAtrasados > 0) && (
         <section className="ini-section ini-section--novos">
@@ -1485,6 +1493,8 @@ export default function Inicio() {
         .ini-pp:empty { display: none; }
 
         .ini-section--nav     { order: 2; }
+        .ini-section--busca   { order: 1; }
+        .ini-root .ini-section.ini-section--busca { margin-top: var(--space-3) !important; }
         /* (22/10) celular: o Pra fazer vem logo depois do Acesso rápido (antes ficava em cima dele) */
         @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 3; } } /* (22/10) e depois das Próximas entregas (o dia vem antes das tarefas) */
         .ini-main > .ini-mobile-banner { order: 3; margin-top: var(--space-3); } /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */

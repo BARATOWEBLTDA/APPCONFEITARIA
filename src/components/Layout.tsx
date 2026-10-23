@@ -9,6 +9,7 @@ import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
+import BuscaRapida from "@/components/BuscaRapida";
 import PerguntaSons from "@/components/PerguntaSons";
 import { useState, useEffect, type ReactNode } from "react";
 import "@/styles/mobileClaro.css";
@@ -259,6 +260,7 @@ export default function Layout() {
 
       {/* ── Drawer "Mais" (Proposta D) ── */}
       <MaisDrawer open={maisOpen} onClose={() => setMaisOpen(false)} />
+      <BuscaRapida />
       <PerguntaSons />
 
       {/* Modal de crop da foto de perfil (aberto pelo ícone câmera do sidebar) */}
