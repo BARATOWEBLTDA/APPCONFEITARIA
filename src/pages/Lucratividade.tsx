@@ -5,19 +5,19 @@ import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useRef, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
-import { CalendarBlank, CaretLeft, CaretRight, ChartLineUp, Equals, Minus, ShoppingBagOpen, Warning, WarningCircle } from "@phosphor-icons/react";
+import { CaretRight, ChartLineUp, Equals, Minus, ShoppingBagOpen, Warning, WarningCircle } from "@phosphor-icons/react";
+import PeriodoFiltro, { iso as isoDia, periodoDoDia, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
+import { useDiaAtual } from "@/hooks/useAoVoltar";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_LUCRATIVIDADE, TOUR_LUCRATIVIDADE } from "@/lib/comoTelas";
 import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { calcularCustoLucro, lerMaoObraConta } from "@/lib/produto-precificacao";
-import { carregarMes, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, type MesFinanceiro } from "@/lib/painelFinanceiro";
+import { carregarIntervalo, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
 type Produto = { chave: string; nome: string; foto: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean };
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 /**
  * Quanto o custo total da ficha é maior que só os ingredientes, por produto (13/10).
@@ -44,8 +44,11 @@ async function fatorDaFicha(uid: string, ids: string[], mao: any): Promise<Recor
 
 export default function Lucratividade() {
   const navigate = useNavigate();
-  const h = new Date();
-  const [mes, setMes] = useState({ ano: h.getFullYear(), m: h.getMonth() });
+  // (23/10) o mesmo filtro de período do Financeiro e de Transações (abre no mês de hoje)
+  const [periodo, setPeriodo] = useState<Periodo>(periodoInicial);
+  const diaAtual = useDiaAtual();
+  useEffect(() => { setPeriodo(p => periodoDoDia(p)); }, [diaAtual]);
+  const ehMes = periodo.tipo === "mes";
   const [dados, setDados] = useState<MesFinanceiro | null>(null);
   const [produtos, setProdutos] = useState<Produto[] | null>(null);
   const [fixos, setFixos] = useState<{ custos: number; salario: number } | null>(null);
@@ -73,9 +76,11 @@ export default function Lucratividade() {
         uid = user.id;
       }
       const user = { id: uid };
-      const ini = iso(new Date(mes.ano, mes.m, 1)), fim = iso(new Date(mes.ano, mes.m + 1, 0));
+      // no Mês, o mês inteiro (como sempre foi: pedido do mês já entregue conta, mesmo com a data de entrega mais pra frente)
+      const ini = periodo.ini <= periodo.fim ? periodo.ini : periodo.fim;
+      const fim = periodo.tipo === "mes" ? isoDia(new Date(periodo.ano, periodo.mes + 1, 0)) : (periodo.ini <= periodo.fim ? periodo.fim : periodo.ini);
       const [d, peds, cf, mo] = await Promise.all([
-        carregarMes(user.id, mes.ano, mes.m),
+        carregarIntervalo(user.id, ini, fim),
         // de 1.000 em 1.000, igual ao painel (o Supabase corta em 1.000 linhas sem avisar)
         buscarTudo<any>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda, imagem_url))")
           .eq("user_id", user.id).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, ate)),
@@ -111,10 +116,8 @@ export default function Lucratividade() {
       if (!cancelado) { setDados(null); setErro(true); }
     });
     return () => { cancelado = true; clearTimeout(relogio); };
-  }, [mes, tentativa]);
+  }, [periodo.tipo, periodo.ini, periodo.fim, tentativa]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const ehMesAtual = mes.ano === h.getFullYear() && mes.m === h.getMonth();
-  const mudar = (d: number) => setMes(x => { const n = new Date(x.ano, x.m + d, 1); return { ano: n.getFullYear(), m: n.getMonth() }; });
   const despesasSemInsumos = dados ? dados.despesasPagas - dados.despesasInsumos : 0;
   // (13/10) o que sobra de cada venda já tira as taxas da maquininha e a embalagem
   const margemBruta = dados && dados.vendido > 0 ? (dados.vendido - dados.cmv - dados.custosVariaveis) / dados.vendido : 0;
@@ -140,14 +143,7 @@ export default function Lucratividade() {
       <EstiloFinanceiro />
       {/* (23/10) igual às outras telas do Financeiro: fundo cinza, sem a faixa rosa embaixo do topo */}
       <div className="lu">
-        <div className="lu-per">
-          <div className="lu-per-tx"><span className="lu-per-ic" aria-hidden="true"><CalendarBlank size={20} /></span><span><b>Mês</b><small>Pedidos entregues e despesas pagas no mês</small></span></div>
-          <div className="lu-mes">
-            <button type="button" onClick={() => mudar(-1)} aria-label="Mês anterior"><CaretLeft size={16} weight="bold" /></button>
-            <b>{MESES[mes.m]} de {mes.ano}</b>
-            <button type="button" onClick={() => mudar(1)} disabled={ehMesAtual} aria-label="Próximo mês"><CaretRight size={16} weight="bold" /></button>
-          </div>
-        </div>
+        <div className="lu-per"><PeriodoFiltro valor={periodo} onChange={setPeriodo} /></div>
 
         {erro ? (
           <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar a lucratividade" texto="Confira a internet e tente de novo."
@@ -155,12 +151,12 @@ export default function Lucratividade() {
         ) : !dados ? <div className="lu-ph" /> : dados.qtdVendidos === 0 ? (
           <div className="lu-vazio">
             <span className="lu-vazio-ic"><ChartLineUp size={30} weight="duotone" /></span>
-            <b>Nenhum pedido entregue em {MESES[mes.m].toLowerCase()}</b>
+            <b>Nenhum pedido entregue {rotuloPeriodo(periodo)}</b>
             <p>A lucratividade aparece quando você marca pedidos como <strong>entregues</strong>. Ela usa o valor do pedido e o custo da ficha técnica de cada produto.</p>
             <button type="button" className="lu-cta" onClick={() => navigate("/pedidos")}>Ver meus pedidos</button>
           </div>
         ) : (<>
-          {/* a conta do mês, da esquerda pra direita: vendido − ingredientes − despesas = lucro */}
+          {/* a conta do período, da esquerda pra direita: vendido − ingredientes − despesas = lucro */}
           <div className="lu-conta">
             <div className="lu-k"><span className="lu-ki n" aria-hidden="true"><ShoppingBagOpen size={15} weight="bold" /></span><small>Vendido</small><b>{brl(dados.vendido)}</b>
               <i>{dados.qtdVendidos} {dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}</i></div>
@@ -170,7 +166,7 @@ export default function Lucratividade() {
               <i>{dados.custosVariaveis > 0 ? "maquininha e custos por pedido" : <button type="button" className="lu-link" onClick={() => navigate("/custos")}>cadastrar em Custos</button>}</i></div>
             <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Despesas pagas</small><b className="s">{brl(despesasSemInsumos)}</b>
               <i>sem os ingredientes (já estão na ficha)</i></div>
-            <div className={`lu-k lu-k--lucro${dados.lucro < 0 ? " ruim" : ""}`}><span className="lu-ki l" aria-hidden="true"><Equals size={15} weight="bold" /></span><small>Lucro do mês</small><b>{brl(dados.lucro)}</b>
+            <div className={`lu-k lu-k--lucro${dados.lucro < 0 ? " ruim" : ""}`}><span className="lu-ki l" aria-hidden="true"><Equals size={15} weight="bold" /></span><small>{ehMes ? "Lucro do mês" : "Lucro do período"}</small><b>{brl(dados.lucro)}</b>
               <div className="lu-margem"><div className="lu-bar"><i style={{ width: `${Math.max(0, Math.min(100, dados.margem))}%` }} /></div><span>margem de <b>{dados.margem}%</b></span></div></div>
           </div>
 
@@ -217,8 +213,11 @@ export default function Lucratividade() {
             </section>
 
             <section className="lu-card lu-a-eq">
-              <p className="lu-ct">Ponto de equilíbrio <small>Quanto vender no mês pra pagar tudo</small></p>
-              {fixos && (fixos.custos + fixos.salario) > 0 && margemBruta > 0 ? (<>
+              <p className="lu-ct">Ponto de equilíbrio <small>Quanto vender no mês para pagar tudo</small></p>
+              {!ehMes ? (<>
+                <p className="lu-eq-t">O ponto de equilíbrio é uma meta mensal. Escolha um mês para ver quanto precisa vender.</p>
+                <button type="button" className="lu-sec" onClick={() => setPeriodo(periodoInicial())}>Ver o mês atual</button>
+              </>) : fixos && (fixos.custos + fixos.salario) > 0 && margemBruta > 0 ? (<>
                 <b className="lu-eq-v">{brl(metaEquilibrio)} <small>no mês</small></b>
                 <p className="lu-eq-t">pra pagar os custos fixos e o seu salário ({brl(fixos.custos + fixos.salario)})</p>
                 <div className="lu-bar grande"><i className={dados.vendido >= metaEquilibrio ? "ok" : ""} style={{ width: `${Math.min(100, (dados.vendido / metaEquilibrio) * 100)}%` }} /></div>
@@ -243,15 +242,6 @@ export default function Lucratividade() {
 
 const CSS = `
   .lu { position: relative; margin: 0 auto; max-width: 1160px; padding: 14px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
-  .lu-per { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 10px 12px; }
-  .lu-per-tx { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .lu-per-ic { flex: none; width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
-  .lu-per-tx b { display: block; font-size: 14.5px; font-weight: 600; } .lu-per-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); }
-  .lu-mes { display: flex; align-items: center; gap: 6px; background: #F4EEF1; border-radius: 12px; padding: 3px; }
-  .lu-mes b { min-width: 150px; text-align: center; font-size: 14px; font-weight: 600; }
-  .lu-mes button { width: 40px; height: 40px; border-radius: 9px; border: none; background: var(--ui-branco); color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .lu-mes button:disabled { opacity: .35; cursor: default; }
-  @media (max-width: 767px) { .lu-per-tx { display: none; } .lu-per { padding: 6px; } .lu-mes { width: 100%; justify-content: space-between; } }
   .lu-ph { height: 260px; background: #FAF7F8; border-radius: var(--ui-raio-cartao); }
   .lu-vazio { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 18px; padding: 30px 20px; text-align: center; }
   .lu-vazio-ic { width: 60px; height: 60px; border-radius: 18px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: inline-flex; align-items: center; justify-content: center; }

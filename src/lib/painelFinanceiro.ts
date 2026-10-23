@@ -163,12 +163,16 @@ export function multiplicadorDoItem(it: any, peloPeso: Set<string>): number {
 
 /** Os números do mês. Nunca lança: se algo falhar, devolve tudo zerado com erro: true (confira antes de mostrar). */
 export async function carregarMes(uid: string, ano: number, mes0: number): Promise<MesFinanceiro> {
-  try { return await calcularMes(uid, ano, mes0); }
-  catch (e) { console.error("[financeiro] não consegui carregar o mês:", e); return MES_COM_ERRO; }
+  return carregarIntervalo(uid, iso(new Date(ano, mes0, 1)), iso(new Date(ano, mes0 + 1, 0)));
+}
+/** (23/10) Os mesmos números para qualquer período (Hoje, 7 dias, 30 dias, um mês ou de–até). Nunca lança. */
+export async function carregarIntervalo(uid: string, ini: string, fim: string): Promise<MesFinanceiro> {
+  try { return await calcularIntervalo(uid, ini, fim); }
+  catch (e) { console.error("[financeiro] não consegui carregar o período:", e); return MES_COM_ERRO; }
 }
 
-async function calcularMes(uid: string, ano: number, mes0: number): Promise<MesFinanceiro> {
-  const ini = iso(new Date(ano, mes0, 1)), fim = iso(new Date(ano, mes0 + 1, 0)), hoje = iso(new Date());
+async function calcularIntervalo(uid: string, ini: string, fim: string): Promise<MesFinanceiro> {
+  const hoje = iso(new Date());
   const ate = fim < hoje ? fim : hoje;
 
   const [pag, fin, vend] = await Promise.all([
@@ -220,17 +224,22 @@ async function calcularMes(uid: string, ano: number, mes0: number): Promise<MesF
   const lucro = r2(vendido - cmv - custosVariaveis - (despesasPagas - despesasInsumos));
   const margem = vendido > 0 ? Math.round((lucro / vendido) * 100) : 0;
 
-  // ── Fluxo por semana (dias 1–7, 8–14, 15–21, 22–28, 29–fim) ──
-  const ult = new Date(ano, mes0 + 1, 0).getDate();
-  const faixas = [[1, 7], [8, 14], [15, 21], [22, 28], [29, ult]].filter(([a]) => a <= ult);
-  const dia = (d: string) => Number(d.slice(8, 10));
+  // ── Fluxo por semana: de 7 em 7 dias a partir do início (no mês: 1–7, 8–14, 15–21, 22–28, 29–fim) ──
+  const [ya, ma, da] = ini.split("-").map(Number), [yb, mb, db] = fim.split("-").map(Number);
+  const faixas: [string, string][] = [];
+  for (let d = new Date(ya, ma - 1, da), f = new Date(yb, mb - 1, db); d <= f; d.setDate(d.getDate() + 7)) {
+    const b7 = new Date(d); b7.setDate(b7.getDate() + 6);
+    faixas.push([iso(d), iso(b7 < f ? b7 : f)]);
+  }
+  const dd = (x: string) => String(Number(x.slice(8, 10)));
+  const dentro = (x: string, a: string, b: string) => x.slice(0, 10) >= a && x.slice(0, 10) <= b;
   let acumulado = 0;
   const semanas: Semana[] = faixas.map(([a, b]) => {
-    const e = recebimentos.filter(x => dia(x.data) >= a && dia(x.data) <= b).reduce((s, x) => s + x.valor, 0)
-            + entradasAv.filter(l => dia(l.data) >= a && dia(l.data) <= b).reduce((s, l) => s + (Number(l.valor) || 0), 0);
-    const sa = saidas.filter(l => dia(l.data) >= a && dia(l.data) <= b).reduce((s, l) => s + (Number(l.valor) || 0), 0);
+    const e = recebimentos.filter(x => dentro(x.data, a, b)).reduce((s, x) => s + x.valor, 0)
+            + entradasAv.filter(l => dentro(l.data, a, b)).reduce((s, l) => s + (Number(l.valor) || 0), 0);
+    const sa = saidas.filter(l => dentro(l.data, a, b)).reduce((s, l) => s + (Number(l.valor) || 0), 0);
     acumulado += e - sa;
-    return { label: a === b ? `${a}` : `${a}–${b}`, entradas: r2(e), saidas: r2(sa), acumulado: r2(acumulado) };
+    return { label: a === b ? dd(a) : `${dd(a)}–${dd(b)}`, entradas: r2(e), saidas: r2(sa), acumulado: r2(acumulado) };
   });
 
   return {

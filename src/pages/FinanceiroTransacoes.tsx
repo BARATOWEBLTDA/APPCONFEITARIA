@@ -8,7 +8,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_TRANSACOES, TOUR_TRANSACOES } from "@/lib/comoTelas";
 import { Botao, TelaVazia, avisar as avisarBase } from "@/components/base";
 import { erroDeConexao } from "@/lib/erros";
-import PeriodoFiltro, { iso as isoPeriodo, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
+import PeriodoFiltro, { periodoDoDia, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
 import Folha, { FOLHA_CSS } from "@/components/financeiro/Folha";
@@ -70,12 +70,7 @@ export default function FinanceiroTransacoes() {
   useAoVoltar(() => { carregar(true); });
   const hoje = useDiaAtual();
   useEffect(() => {
-    setPeriodo(p => {
-      if (p.tipo !== "hoje" && p.tipo !== "7dias") return p;
-      const d = new Date(); d.setDate(d.getDate() - (p.tipo === "7dias" ? 6 : 0));
-      const ini = isoPeriodo(d);
-      return p.fim === hoje && p.ini === ini ? p : { ...p, ini, fim: hoje };
-    });
+    setPeriodo(p => periodoDoDia(p)); // (23/10) Hoje, 7 e 30 dias e o mês de hoje andam com o dia
   }, [hoje]);
 
   const somar = (l: MovExtrato[], t: "entrada" | "saida") => l.filter(i => !i.estornado && i.tipo === t).reduce((s, i) => s + i.valor, 0);
@@ -231,11 +226,6 @@ function DetalheSheet({ m, semEstorno, onClose, onAbrirPedido, onEstornado }: { 
 }
 
 const CSS = `
-  .tx-per .pf-seg { background: rgba(42,21,32,.06); border-radius: 12px; }
-  .tx-per .pf-seg button { font-weight: 500; white-space: nowrap; }
-  .tx-per .pf-seg button.on { color: var(--ui-texto); font-weight: 600; }
-  .tx-per .pf-mes { border: 0; padding: 2px; }
-  .tx-per .pf-mes b { font-weight: 600; }
   .tx-hd { display: flex; align-items: center; gap: 8px; }
   .tx-hd-bt { display: flex; align-items: center; gap: 6px; min-height: 44px; border: none; border-radius: var(--ui-raio-botao); padding: 0 14px; font-family: var(--font-base); font-size: 14px; font-weight: 600; color: var(--ui-branco); cursor: pointer; white-space: nowrap; }
   .tx-hd-bt.e { background: #16A34A; } .tx-hd-bt.s { background: var(--ui-vinho-escuro); } .tx-hd-bt.n { background: var(--ui-branco); color: var(--ui-texto); }
@@ -243,10 +233,6 @@ const CSS = `
   @media (min-width: 900px) {
     .tx-topo .tx-per { flex: 1; }
     .tx-topo .tx-per .pf { max-width: none; }
-    .tx-per .pf { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-    .tx-per .pf-seg { width: 420px; }
-    .tx-per .pf-mes { width: 300px; }
-    .tx-per .pf-datas { width: 360px; }
   }
   .tx { position: relative; max-width: 980px; margin: 0 auto; padding: 14px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
   .tx-topo { display: flex; flex-direction: column; gap: 10px; }

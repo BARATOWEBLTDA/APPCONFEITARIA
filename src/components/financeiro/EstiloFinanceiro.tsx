@@ -7,7 +7,7 @@ const CARTOES = [
   ".fd-k", ".fd-k2", ".fd-card", ".fd-mes", ".fd-mais-g button", ".cxc-movs", ".pvc",
   ".far-k", ".far-it", ".far-vazio", ".fap-k", ".fap-it", ".fap-pagas", ".fap-vazio",
   ".tx-k", ".tx-lista", ".tx-vazio", ".pf-mes",
-  ".cu-k:not(.destaque)", ".cu-card", ".lu-card", ".lu-vazio", ".lu-mes",
+  ".cu-k:not(.destaque)", ".cu-card", ".lu-card", ".lu-vazio",
 ].join(", ");
 
 export default function EstiloFinanceiro() {
@@ -28,7 +28,7 @@ export default function EstiloFinanceiro() {
       .cu-k:not(.destaque) b, .cu-it-v, .cu-mo-l b, .lu-l b, .lu-eq-v, .lu-p-h span, .cxc-mv-v, .fd-fl-res b, .tx-dl b {
         font-weight: 700 !important;
       }
-      .pf-seg, .tx-seg, .fo-seg { background: #E9DFE4 !important; }
+      .tx-seg, .fo-seg { background: #E9DFE4 !important; }
     `}</style>
   );
 }

@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { ArrowUp, ArrowDown, CaretRight, ArrowsLeftRight, Calculator, CalendarBlank, ChartPieSlice, CurrencyCircleDollar, Plus } from "@phosphor-icons/react";
-import CampoData from "@/components/CampoData";
+import PeriodoFiltro, { periodoHoje, periodoDoDia, type Periodo } from "@/components/financeiro/PeriodoFiltro";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, avisar } from "@/components/base";
 import { useCaixa, SaldoSheet, CaixaEstilos } from "@/components/financeiro/CaixaCard";
@@ -27,7 +27,6 @@ const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "cu
 // 10/10: dinheiro sempre com centavos (antes os cards do mês mostravam "R$ 801" ao lado de "R$ 1.835,40")
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-type TipoPer = "hoje" | "7" | "30" | "mes" | "pers";
 type Per = { ini: string; ate: string; antIni: string; antAte: string; rotuloAnt: string; texto: string };
 const MES_CURTO = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const deIso = (s: string) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
@@ -38,22 +37,22 @@ const extenso = (ini: string, ate: string) => {
   if (ini === ate) return `${a.getDate()} de ${MESES[a.getMonth()].toLowerCase()}`;
   return a.getMonth() === b.getMonth() ? `${a.getDate()} a ${b.getDate()} de ${MESES[b.getMonth()].toLowerCase()}` : `${a.getDate()} de ${MES_CURTO[a.getMonth()]} a ${b.getDate()} de ${MES_CURTO[b.getMonth()]}`;
 };
-/** (4.29) O período escolhido e o período anterior do mesmo tamanho, pra comparar */
-function montarPeriodo(tipo: TipoPer, pIni: string, pAte: string): Per {
+/** (4.29) O período escolhido e o período anterior do mesmo tamanho, pra comparar.
+ *  (23/10) Vem do filtro padrão (o mesmo de Transações e Lucratividade); no Mês dá pra voltar aos meses anteriores. */
+function montarPeriodo(p: Periodo): Per {
   const hoje = isoDe(new Date());
-  let ini = hoje, ate = hoje, antIni = somar(hoje, -1), antAte = somar(hoje, -1), rotuloAnt = "que ontem";
-  if (tipo === "7" || tipo === "30") {
-    const n = Number(tipo);
-    ini = somar(hoje, -(n - 1)); antAte = somar(ini, -1); antIni = somar(antAte, -(n - 1)); rotuloAnt = `que nos ${n} dias anteriores`;
-  } else if (tipo === "mes") {
-    const h = new Date(); ini = isoDe(new Date(h.getFullYear(), h.getMonth(), 1));
-    const ultAnt = new Date(h.getFullYear(), h.getMonth(), 0).getDate();
-    antIni = isoDe(new Date(h.getFullYear(), h.getMonth() - 1, 1)); antAte = isoDe(new Date(h.getFullYear(), h.getMonth() - 1, Math.min(h.getDate(), ultAnt)));
-    rotuloAnt = "que no mesmo período do mês passado";
-  } else if (tipo === "pers") {
-    ini = pIni <= pAte ? pIni : pAte; ate = pIni <= pAte ? pAte : pIni;
+  let ini = p.ini <= p.fim ? p.ini : p.fim, ate = p.ini <= p.fim ? p.fim : p.ini;
+  if (ate > hoje) ate = hoje;
+  let antIni: string, antAte: string, rotuloAnt: string;
+  if (p.tipo === "hoje") { ini = ate = hoje; antIni = antAte = somar(hoje, -1); rotuloAnt = "que ontem"; }
+  else if (p.tipo === "mes") {
+    const n = diasEntre(ini, ate).length, ultAnt = new Date(p.ano, p.mes, 0).getDate();
+    antIni = isoDe(new Date(p.ano, p.mes - 1, 1)); antAte = isoDe(new Date(p.ano, p.mes - 1, Math.min(n, ultAnt)));
+    const h = new Date(); rotuloAnt = p.ano === h.getFullYear() && p.mes === h.getMonth() ? "que no mesmo período do mês passado" : "que no mês anterior";
+  } else {
     const n = diasEntre(ini, ate).length;
-    antAte = somar(ini, -1); antIni = somar(antAte, -(n - 1)); rotuloAnt = "que no período anterior";
+    antAte = somar(ini, -1); antIni = somar(antAte, -(n - 1));
+    rotuloAnt = p.tipo === "personalizado" ? "que no período anterior" : `que nos ${n} dias anteriores`;
   }
   return { ini, ate, antIni, antAte, rotuloAnt, texto: `${extenso(ini, ate)} · comparado com ${antIni === antAte ? dm(antIni) : `${dm(antIni)} a ${dm(antAte)}`}` };
 }
@@ -88,9 +87,8 @@ export default function Financeiro() {
   const [movs, setMovs] = useState<MovExtrato[] | null>(null);
   // (4.29) período: Hoje · 7 dias · 30 dias · Este mês · Personalizado (lembra a última escolha neste aparelho)
   // (13/10) sempre abre no dia de hoje (antes lembrava o último período escolhido)
-  const [tipo, setTipo] = useState<TipoPer>("hoje");
-  const [pIni, setPIni] = useState(() => somar(isoDe(new Date()), -14));
-  const [pAte, setPAte] = useState(() => isoDe(new Date()));
+  const [periodo, setPeriodo] = useState<Periodo>(periodoHoje);
+  const tipo = periodo.tipo;
   const [dados, setDados] = useState<PeriodoDados | null>(null);
   const [ant, setAnt] = useState<{ recebido: number; despesas: number } | null>(null);
   const [rec, setRec] = useState<{ total: number; qtd: number; semana: number; erro?: boolean } | null>(null);
@@ -98,9 +96,10 @@ export default function Financeiro() {
   const [versao, setVersao] = useState(0); // recarrega tudo depois de uma mudança
 
   const dia = useDiaAtual();
-  const per = montarPeriodo(tipo, pIni, pAte);
+  // (23/10) virou o dia com o app aberto: Hoje, 7 e 30 dias e o mês de hoje andam junto
+  useEffect(() => { setPeriodo(p => periodoDoDia(p)); }, [dia]);
+  const per = montarPeriodo(periodo);
   const chavePer = `${per.ini}|${per.ate}`;
-  const escolher = (t: TipoPer) => { setTipo(t); if (t !== "pers") { try { localStorage.setItem("doonly_fin_periodo", t); } catch { /* sem acesso */ } } };
 
   const perDosDados = useRef("");
   // só vale a resposta da última busca (trocar de período rápido não mistura os números)
@@ -144,15 +143,16 @@ export default function Financeiro() {
   const aposLancar = async (aviso: string, continuar?: boolean) => { if (!continuar) setNova(null); avisar(aviso, { tipo: "ok" }); await depoisDeMudar(); };
   const abrirReceber = (item: ItemReceber | null = null) => setReceber({ item });
 
-  const tituloPer = tipo === "hoje" ? "Hoje" : tipo === "7" ? "Últimos 7 dias" : tipo === "30" ? "Últimos 30 dias"
-    : tipo === "mes" ? `${MESES[new Date().getMonth()]} até hoje` : extenso(per.ini, per.ate);
+  const mesAtual = periodo.ano === new Date().getFullYear() && periodo.mes === new Date().getMonth();
+  const tituloPer = tipo === "hoje" ? "Hoje" : tipo === "7dias" ? "Últimos 7 dias" : tipo === "30dias" ? "Últimos 30 dias"
+    : tipo === "mes" ? (mesAtual ? `${MESES[periodo.mes]} até hoje` : `${MESES[periodo.mes]} de ${periodo.ano}`) : extenso(per.ini, per.ate);
   const maxRes = ok ? Math.max(ok.recebido, ok.despesas, 0.01) : 1;
   const pct = (v: number) => `${Math.max(v > 0 ? 3 : 0, Math.round((v / maxRes) * 100))}%`;
   const caixaOk = !!cx && !cx.erro && !cx.precisaSql && cx.configurado;
   const caixaNeg = caixaOk && !!cx && cx.saldo < -0.004;
-  const mesNome = MESES[new Date().getMonth()].toLowerCase();
-  const quandoPer = tipo === "hoje" ? "hoje" : tipo === "7" ? "nos últimos 7 dias" : tipo === "30" ? "nos últimos 30 dias"
-    : tipo === "mes" ? `em ${mesNome} até hoje` : `de ${extenso(per.ini, per.ate)}`;
+  const mesNome = MESES[periodo.mes].toLowerCase();
+  const quandoPer = tipo === "hoje" ? "hoje" : tipo === "7dias" ? "nos últimos 7 dias" : tipo === "30dias" ? "nos últimos 30 dias"
+    : tipo === "mes" ? (mesAtual ? `em ${mesNome} até hoje` : `em ${mesNome}`) : `de ${extenso(per.ini, per.ate)}`;
   // (22/10) período sem nenhum movimento: um aviso só no lugar de quatro cartões vazios
   const semMov = !!ok && movs !== null && movs.length === 0 && ok.recebido === 0 && ok.despesas === 0 && ok.maisVendidos.length === 0;
 
@@ -181,15 +181,8 @@ export default function Financeiro() {
       {/* (22/10) período em pílulas cinza sobre o fundo da tela (saiu a faixa rosa) */}
       <div className="fd-hero">
         <div className="fd-hero-in">
-          <div className="fd-hero-per" role="tablist" aria-label="Período">
-            {([["hoje", "Hoje", "Hoje"], ["7", "7 dias", "7 dias"], ["30", "30 dias", "30 dias"], ["mes", "Este mês", "Mês"], ["pers", "Outro", "Outro"]] as [TipoPer, string, string][]).map(([k, l, c]) => (
-              <button key={k} type="button" role="tab" aria-selected={tipo === k} className={tipo === k ? "on" : ""} onClick={() => escolher(k)} aria-label={l}><span className="fd-so-pc">{l}</span><span className="fd-so-cel">{c}</span></button>
-            ))}
-          </div>
-          {tipo === "pers" && <div className="fd-hero-datas"><div className="fd-per-datas">
-            <div><span>De</span><CampoData valor={pIni} max={pAte} titulo="Início do período" curto onChange={d => setPIni(d)} /></div>
-            <div><span>Até</span><CampoData valor={pAte} min={pIni} max={isoDe(new Date())} titulo="Fim do período" curto onChange={d => setPAte(d)} /></div>
-          </div></div>}
+          {/* (23/10) o mesmo filtro de Transações e Lucratividade */}
+          <PeriodoFiltro valor={periodo} onChange={setPeriodo} />
         </div>
       </div>
 
@@ -631,12 +624,7 @@ const CSS = `
   .fd-a-contas { display: none !important; }
   .fd-hero { padding: 14px 0 0; box-sizing: border-box; font-family: var(--font-base); }
   .fd-hero-in { max-width: 1160px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
-  .fd-hero-per { display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(42,21,32,.06); }
-  .fd-hero-per button { flex: 1; min-width: 0; min-height: 40px; padding: 0 8px; border: 0; border-radius: 9px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; cursor: pointer; }
-  .fd-hero-per button.on { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: 0 1px 3px rgba(42,21,32,.10); }
-  .fd-hero-per button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
-  .fd-hero-datas { padding: 8px; border-radius: 14px; background: var(--ui-branco); border: 1px solid #F0EBED; }
-  .fd-hero-datas .fd-per-datas { width: auto; margin: 0; }
+  .fd-hero .pf { flex: 1; min-width: 0; }
   .fd-hero .fd-so-cel { display: none; }
   @media (max-width: 767px) { .fd-hero .fd-so-pc { display: none; } .fd-hero .fd-so-cel { display: inline; } }
   /* cartão do resultado */
@@ -686,8 +674,6 @@ const CSS = `
     .fd { padding-bottom: 96px; grid-template-areas: "res" "tres" "listas" "fluxo" "movs" "formas" "vend" "mais"; }
     .fd.fd--neg { grid-template-areas: "res" "tres" "aviso" "listas" "fluxo" "movs" "formas" "vend" "mais"; }
     .fd-hero-in { flex-direction: row; align-items: center; justify-content: space-between; }
-    .fd-hero-per { width: 460px; }
-    .fd-hero-datas { width: 340px; }
   }
   @media (min-width: 901px) { .fd-hero { padding-top: 18px; } }
   @media (min-width: 1024px) {

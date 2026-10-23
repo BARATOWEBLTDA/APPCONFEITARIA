@@ -237,13 +237,13 @@ export const TOUR_FICHA: PassoTour[] = [
 
 export const COMO_LUCRATIVIDADE: Como = {
   tela: { nome: "Lucratividade", Icone: ChartLineUp },
-  resumo: "Onde está o seu lucro de verdade: o que você vendeu menos todos os custos do mês.",
+  resumo: "Onde está o seu lucro de verdade: o que você vendeu menos todos os custos do período.",
   tit: "Exemplo · um mês",
   linhas: [["Vendido", "R$ 5.000,00"], ["Ingredientes, taxas e despesas", "R$ 3.200,00"]],
   total: ["Lucro do mês", "R$ 1.800,00"],
   fluxo: ["Vendido", "Custos", "Lucro"],
   dicas: [
-    [ShoppingBagOpen, <><b>Vendido</b> considera os pedidos entregues no mês.</>],
+    [ShoppingBagOpen, <><b>Vendido</b> considera os pedidos entregues no período escolhido.</>],
     [CreditCard, <>A <b>taxa da maquininha</b> entra só nos pedidos pagos no cartão. Pix e dinheiro não têm taxa.</>],
     [ListChecks, <>Produtos sem <b>ficha técnica</b> deixam o lucro maior do que é, porque o custo dos ingredientes não entra.</>],
     [Scales, <>O <b>ponto de equilíbrio</b> mostra quanto vender no mês para pagar os custos fixos e o seu salário.</>],
@@ -251,13 +251,13 @@ export const COMO_LUCRATIVIDADE: Como = {
 };
 
 export const TOUR_LUCRATIVIDADE: PassoTour[] = [
-  { el: ".lu-mes", titulo: "Mês", texto: "Escolha o mês que deseja analisar." },
-  { el: ".lu-conta", titulo: "A conta do mês", texto: "O valor vendido menos o custo dos ingredientes, as taxas e embalagens e as despesas pagas.",
-    vazio: { el: ".lu-vazio", titulo: "Sem pedidos entregues", texto: "Ainda não há pedidos entregues neste mês. A conta aparece assim que você marcar pedidos como entregues." } },
-  { el: ".lu-k--lucro", titulo: "Lucro do mês", texto: "O que sobrou de fato, com a margem sobre o valor vendido." },
+  { el: ".lu-per", titulo: "Período", texto: "Escolha o período: hoje, últimos 7 ou 30 dias, um mês ou outro intervalo." },
+  { el: ".lu-conta", titulo: "A conta do período", texto: "O valor vendido menos o custo dos ingredientes, as taxas e embalagens e as despesas pagas.",
+    vazio: { el: ".lu-vazio", titulo: "Sem pedidos entregues", texto: "Ainda não há pedidos entregues neste período. A conta aparece assim que você marcar pedidos como entregues." } },
+  { el: ".lu-k--lucro", titulo: "Lucro", texto: "O que sobrou de fato no período, com a margem sobre o valor vendido." },
   { el: ".lu-aviso", titulo: "Sem ficha técnica", texto: "Produtos vendidos sem ficha técnica. Sem ela, o custo dos ingredientes não entra na conta e o lucro aparece maior do que é." },
-  { el: ".lu-pc", titulo: "Lucro por produto", texto: "Cada produto vendido no mês, com a quantidade, o valor vendido e o lucro pela ficha técnica." },
-  { el: ".lu-a-eq", titulo: "Ponto de equilíbrio", texto: "Quanto você precisa vender no mês para pagar os custos fixos e o seu salário." },
+  { el: ".lu-pc", titulo: "Lucro por produto", texto: "Cada produto vendido no período, com a quantidade, o valor vendido e o lucro pela ficha técnica." },
+  { el: ".lu-a-eq", titulo: "Ponto de equilíbrio", texto: "Quanto você precisa vender no mês para pagar os custos fixos e o seu salário. Aparece quando um mês está escolhido." },
 ];
 
 /* ══════ (23/10) Tours de Pedidos, Financeiro e Cardápio digital ══════ */
@@ -275,7 +275,7 @@ export const TOUR_PEDIDOS: PassoTour[] = [
 
 export const TOUR_FINANCEIRO: PassoTour[] = [
   { el: ".fd-hd, .fdp-barra", titulo: "Lançamentos", texto: "Registre uma entrada ou uma saída de dinheiro, ou receba o pagamento de um pedido." },
-  { el: ".fd-hero-per", titulo: "Período", texto: "Escolha o período: hoje, últimos 7 ou 30 dias, este mês ou outro intervalo." },
+  { el: ".fd-hero .pf", titulo: "Período", texto: "Escolha o período: hoje, últimos 7 ou 30 dias, um mês ou outro intervalo." },
   { el: ".fd-res", titulo: "Sobrou", texto: "O que entrou menos o que saiu no período. Aportes e retiradas ficam de fora, porque são dinheiro seu, não do negócio." },
   { el: ".fd-tres > .fd-t.esc", titulo: "Saldo em caixa", texto: "Informe uma vez quanto há no caixa. Depois, o saldo é atualizado a cada entrada e saída." },
   { el: ".fd-tres > .fd-t:nth-child(2)", titulo: "A receber", texto: "Total pendente dos pedidos. Selecione para ver a lista e registrar os pagamentos." },
@@ -398,7 +398,7 @@ export const COMO_TRANSACOES: Como = {
 };
 export const TOUR_TRANSACOES: PassoTour[] = [
   { el: ".tx-hd, .tx-bts", titulo: "Lançamentos", texto: "Registre uma entrada ou uma saída e exporte o extrato em planilha." },
-  { el: ".tx-per", titulo: "Período", texto: "Escolha o período: hoje, últimos 7 dias, o mês ou outro intervalo." },
+  { el: ".tx-per", titulo: "Período", texto: "Escolha o período: hoje, últimos 7 ou 30 dias, um mês ou outro intervalo." },
   { el: ".tx-res", titulo: "Totais", texto: "Entradas, saídas e a diferença do período." },
   { el: ".tx-seg", titulo: "Tipo", texto: "Veja todas as transações, apenas as entradas ou apenas as saídas." },
   { el: ".tx-busca", titulo: "Buscar", texto: "Encontre uma transação pelo cliente, pelo pedido ou pela despesa." },
