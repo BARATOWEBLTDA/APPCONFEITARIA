@@ -51,3 +51,9 @@
   html body .ini-root .ini-hero-ac--pro img { width: 22px !important; height: 17px !important; }
   html body .ini-root .ini-hero-bolinha { min-width: 17px !important; height: 17px !important; font-size: 10px !important; line-height: 13px !important; }
 }
+
+/* (22/10) o (?) do Início no celular, do lado do "Olá" */
+@media (max-width: 900px) {
+  html body .ini-root .ini-hero-greeting .ini-ajuda { flex: none; margin-left: 2px; }
+  html body .ini-root .ini-hero-greeting .ini-ajuda .cf-ajuda-bt { width: 24px; height: 24px; }
+}

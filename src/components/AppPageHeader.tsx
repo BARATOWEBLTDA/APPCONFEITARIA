@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   ArrowSquareOut, Bell, Cake, CalendarDots, Calculator, Camera, CaretLeft, ChartLineUp, Crown, CurrencyDollar, Info, Invoice, Lightbulb,
@@ -15,7 +15,8 @@ import { useAvatarUpload } from '@/hooks/useAvatarUpload'
 import { useNavigate } from 'react-router-dom'
 import { usePlano } from '@/hooks/usePlano'
 import { useNotifications } from '@/context/NotificationContext'
-import { ConteudoComo, type Como } from '@/components/como/ComoFunciona'
+import { BotaoAjuda, type Como } from '@/components/como/ComoFunciona'
+import type { PassoTour } from '@/components/como/tour'
 import './appPageHeader.css'
 
 /**
@@ -39,6 +40,8 @@ interface AppPageHeaderProps {
   infoTip?: ReactNode
   /** (22/10) o (i) no formato da Dora: abre uma janelinha embaixo do título (exemplo, caminho e dicas). Tem preferência sobre infoContent */
   infoComo?: Como
+  /** (22/10) passos do tour da tela (aparece "Fazer o tour" embaixo do (i)) */
+  infoTour?: PassoTour[]
   rightActions?: ReactNode
   /** Mostra botão de voltar à esquerda do título */
   onBack?: () => void
@@ -51,38 +54,11 @@ const ICONE_DO_EMOJI: Record<string, Icon> = {
   '📑': ListDashes, '📦': Package, '📰': Newspaper, '🔔': Bell, '🛍️': ShoppingBag, '🛒': ShoppingCart, '🧮': Calculator, '🧾': Invoice, '📋': Receipt,
 }
 
-export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, infoComo, rightActions, onBack, voltar }: AppPageHeaderProps) {
+export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, infoComo, infoTour, rightActions, onBack, voltar }: AppPageHeaderProps) {
   const navegar = useNavigate()
   const voltarCel = () => { if (((window.history.state as any)?.idx ?? 0) > 0) navegar(-1); else if (voltar) navegar(voltar) }
   const [mostrarInfo, setMostrarInfo] = useState(false)
   const IconeInfo = (infoIcon && ICONE_DO_EMOJI[infoIcon]) || Info
-  // (22/10) janelinha do (i): presa embaixo do título; no celular encosta nas margens da tela; a setinha aponta pro (i)
-  const [pop, setPop] = useState(false)
-  const linhaRef = useRef<HTMLDivElement>(null)
-  const iRef = useRef<HTMLButtonElement>(null)
-  const [pos, setPos] = useState<{ left: number; seta: number }>({ left: -4, seta: 12 })
-  useLayoutEffect(() => {
-    if (!pop) return
-    const medir = () => {
-      const l = linhaRef.current?.getBoundingClientRect(), i = iRef.current?.getBoundingClientRect()
-      if (!l || !i) return
-      const largura = Math.min(380, window.innerWidth - 24)
-      let left = -4
-      if (l.left + left + largura > window.innerWidth - 12) left = window.innerWidth - 12 - largura - l.left
-      if (l.left + left < 12) left = 12 - l.left
-      setPos({ left, seta: i.left + i.width / 2 - l.left - left - 6 })
-    }
-    medir(); window.addEventListener('resize', medir)
-    return () => window.removeEventListener('resize', medir)
-  }, [pop])
-  useEffect(() => {
-    if (!pop) return
-    // fecha só com um toque fora (rolar a tela não fecha) ou com Esc
-    const fora = (e: MouseEvent) => { const t = e.target as HTMLElement; if (!t?.closest?.('.cab-pop') && !t?.closest?.('.cab-i')) setPop(false) }
-    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setPop(false) }
-    document.addEventListener('click', fora); document.addEventListener('keydown', esc)
-    return () => { document.removeEventListener('click', fora); document.removeEventListener('keydown', esc) }
-  }, [pop])
 
   return (
     <>
@@ -95,22 +71,14 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
           <BotaoIcone rotulo="Voltar" variante="claro" className="cab-voltar cab-voltar--cel" onClick={voltarCel}><CaretLeft size={24} weight="bold" /></BotaoIcone>
         )}
         <div className="cab-txt">
-          <div className="cab-linha" ref={linhaRef}>
+          <div className="cab-linha">
             <h1 className="cab-t">{title}</h1>
             {infoComo ? (
-              <button type="button" ref={iRef} className={`cab-i${pop ? ' on' : ''}`} onClick={() => setPop(a => !a)} aria-label="Como funciona esta tela" title="Como funciona" aria-expanded={pop}>
-                <Info size={20} weight="bold" aria-hidden="true" />
-              </button>
+              <BotaoAjuda c={infoComo} rotulo={title} tour={infoTour} className="cab-ajuda" />
             ) : infoContent && (
               <button type="button" className="cab-i" onClick={() => setMostrarInfo(true)} aria-label="Sobre esta tela" title="Sobre esta tela" aria-haspopup="dialog">
                 <Info size={20} weight="bold" aria-hidden="true" />
               </button>
-            )}
-            {infoComo && pop && (
-              <div className="cab-pop" style={{ left: pos.left }}>
-                <span className="cab-pop-seta" style={{ left: pos.seta }} aria-hidden="true" />
-                <ConteudoComo c={infoComo} rotulo={title} />
-              </div>
             )}
           </div>
           <p className="cab-s">{subtitle}</p>

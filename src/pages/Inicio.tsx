@@ -4,7 +4,9 @@ import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import PraFazer from "@/components/PraFazer";
 import AppPageHeader from "@/components/AppPageHeader";
-import { COMO_INICIO } from "@/lib/comoTelas";
+import { COMO_INICIO, COMO_INICIO_CEL, TOUR_INICIO_CEL, TOUR_INICIO_PC } from "@/lib/comoTelas";
+import { BotaoAjuda } from "@/components/como/ComoFunciona";
+import { fazerTour, contarPassos } from "@/components/como/tour";
 import { abrirBuscaRapida } from "@/components/BuscaRapida";
 import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
@@ -84,6 +86,19 @@ export default function Inicio() {
   // e atualiza por trás, sem "Carregando…". Vale só pra mesma conta e o mesmo dia.
   const [c0] = useState(() => { const c = cacheInicio; const uid = perfilAtual()?.id; return c && uid && c.uid === uid && c.dia === dataISO(new Date()) ? c : null; });
   const [loading, setLoading] = useState(!c0);
+  // (22/10) celular, primeira vez no Início: o tour aparece sozinho uma vez (depois fica no "?" do Olá)
+  useEffect(() => {
+    if (computador || loading || !profile?.id) return;
+    const k = `doonly_tour_inicio_${profile.id}`;
+    try { if (localStorage.getItem(k)) return; } catch { return; }
+    const t = window.setTimeout(() => {
+      if (document.querySelector('.ui-veu, [role="dialog"], [role="alertdialog"]')) return; // tem janela aberta: tenta na próxima visita
+      if (contarPassos(TOUR_INICIO_CEL) < 2) return;
+      try { localStorage.setItem(k, "1"); } catch { /* sem armazenamento */ }
+      void fazerTour(TOUR_INICIO_CEL);
+    }, 1800);
+    return () => window.clearTimeout(t);
+  }, [computador, loading, profile?.id]);
   const [erroCarga, setErroCarga] = useState(false); // a busca do dia falhou (sem internet, por exemplo)
   const [counts, setCounts] = useState(c0?.dados.counts ?? {
     pedidosPendentes: 0,
@@ -660,7 +675,7 @@ export default function Inicio() {
   return (
     <>
     {/* (19/10) computador: a mesma barra de cima das outras telas (no celular fica o hero rosa) */}
-    <div className="ini-dk-cab"><AppPageHeader title="Início" subtitle="O resumo do seu dia" infoIcon="📈" infoComo={COMO_INICIO} infoContent={<>
+    <div className="ini-dk-cab"><AppPageHeader title="Início" subtitle="O resumo do seu dia" infoIcon="📈" infoComo={COMO_INICIO} infoTour={TOUR_INICIO_PC} infoContent={<>
       <p><strong>Recebido no mês:</strong> o dinheiro que entrou de verdade neste mês (sinais e pagamentos).</p>
       <p><strong>Pedidos na semana</strong> e <strong>ticket médio:</strong> os pedidos dos últimos 7 dias e quanto cada um vale, em média.</p>
       <p><strong>Entregas hoje:</strong> quantos pedidos saem hoje. A lista completa fica em Próximas entregas e na Agenda.</p>
@@ -761,6 +776,8 @@ export default function Inicio() {
                 <span className="ini-hero-name-skel" aria-hidden="true" />
               )}
             </span>
+            {/* (22/10) celular: o (?) do Início, como na Dora (o que tem na tela e o tour) */}
+            {!computador && <BotaoAjuda c={COMO_INICIO_CEL} rotulo="Início" tipo="pergunta" tour={TOUR_INICIO_CEL} className="ini-ajuda" />}
             {profile && (
               isPro ? (
                 <span className="ini-plan-tag ini-plan-tag--pc ini-plan-tag--pro" aria-label="Plano PRO">
