@@ -424,7 +424,7 @@ const CSS = `
   .cu-k b { display: block; font-size: clamp(16px, 4.6vw, 21px); font-weight: 600; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-k i { display: block; font-style: normal; font-size: 13px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-k small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cu-k.destaque { background: radial-gradient(130% 160% at 0 0, #6B2340, var(--ui-vinho-escuro) 70%); border: none; color: var(--ui-branco); }
+  .cu-k.destaque { background: radial-gradient(130% 160% at 0 0, #5A3626, var(--ui-vinho-escuro) 70%); border: none; color: var(--ui-branco); }
   .cu-k.destaque small, .cu-k.destaque i { color: rgba(255,255,255,.72); }
   .cu-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "fixos" "mo" "var" "cv"; }
   @media (min-width: 900px) { .cu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "fixos mo" "var cv"; align-items: start; } }

@@ -36,7 +36,6 @@ const RECEITAS_ATIVAS = false;
 import SolicitarRecurso from "@/pages/SolicitarRecurso";
 import RelatarProblema from "@/pages/RelatarProblema";
 import AssistenteVirtual from "@/pages/AssistenteVirtual";
-import Conquistas from "@/pages/Conquistas";
 import MinhaAssinatura from "@/pages/MinhaAssinatura";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminLayout from "@/pages/admin/AdminLayout";
@@ -459,7 +458,7 @@ export default function App() {
           <Route path="/solicitar-recurso" element={<SolicitarRecurso />} />
           <Route path="/relatar-problema" element={<RelatarProblema />} />
           <Route path="/assistente-virtual" element={<AssistenteVirtual />} />
-          <Route path="/conquistas" element={<Conquistas />} />
+          <Route path="/conquistas" element={<Navigate to="/inicio" replace />} /> {/* (23/10) Conquistas foi descontinuada */}
           <Route path="/minha-assinatura" element={<MinhaAssinatura />} />
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/produtos/categorias" element={<Navigate to="/categorias" replace />} />

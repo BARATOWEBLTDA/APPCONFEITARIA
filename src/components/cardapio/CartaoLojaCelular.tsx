@@ -85,7 +85,7 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
 }
 
 const CSS = `
-  .clc { position: relative; overflow: hidden; padding: 14px; border-radius: var(--ui-raio-cartao, 18px); color: var(--ui-branco); background: linear-gradient(135deg, var(--ui-vinho-escuro, #3B1620), #6B2340); box-shadow: 0 10px 24px -12px rgba(59, 22, 32, .7); font-family: var(--font-base); text-align: left; }
+  .clc { position: relative; overflow: hidden; padding: 14px; border-radius: var(--ui-raio-cartao, 18px); color: var(--ui-branco); background: linear-gradient(135deg, var(--ui-vinho-escuro, #22130E), #5A3626); box-shadow: 0 10px 24px -12px rgba(34, 19, 14, .7); font-family: var(--font-base); text-align: left; }
   .clc::after { content: ""; position: absolute; right: -40px; top: -50px; width: 150px; height: 150px; border-radius: 50%; background: rgba(255, 255, 255, .06); pointer-events: none; }
   .clc-top { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .clc-st { min-width: 0; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

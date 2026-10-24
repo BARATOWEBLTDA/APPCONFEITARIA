@@ -1,7 +1,7 @@
 /* Página do PRO (09/10): no padrão do app. Base em clientes.css (cl9-*). */
 .pro9 { padding-bottom: 180px; }
 .pro9 .cl9-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
-.pro9-hero { display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: var(--ui-raio-cartao); background: linear-gradient(135deg, var(--ui-vinho), var(--vinho-profundo, #1F0711)); color: var(--ui-branco); margin-bottom: 12px; }
+.pro9-hero { display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: var(--ui-raio-cartao); background: linear-gradient(135deg, var(--ui-vinho), var(--vinho-profundo, #1A0E0A)); color: var(--ui-branco); margin-bottom: 12px; }
 .pro9-hero img { flex: none; width: 96px; height: 110px; object-fit: contain; filter: drop-shadow(0 8px 18px rgba(232, 90, 140, .35)); }
 .pro9-hero h1 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
 .pro9-hero p { margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, .8); }

@@ -15,19 +15,20 @@
   --primary-rgb:      232, 90, 140;
 
   /* Vinho — a segunda cor da marca (03/10) */
-  --vinho:            #4B1528;
-  --vinho-escuro:     #2C1219;
-  --vinho-profundo:   #1F0711; /* menus de navegação (lateral do computador e de baixo do celular): vinho bem escuro, puxado pro vinho e não pro marrom (08/10) */
-  --vinho-claro:      #72243E;
-  --vinho-rgb:        75, 21, 40;
+  /* (23/10) a segunda cor da marca é o chocolate (decidido em 22/10): os nomes "vinho" ficam, os valores agora são chocolate */
+  --vinho:            #3A2219;
+  --vinho-escuro:     #22130E;
+  --vinho-profundo:   #1A0E0A; /* menus de navegação (lateral do computador e de baixo do celular): vinho bem escuro, puxado pro vinho e não pro marrom (08/10) */
+  --vinho-claro:      #5A3626;
+  --vinho-rgb:        58, 34, 25;
   /* (15/10) fundo de marca (login, criar conta, apresentação, termos): chocolate escuro no lugar do vinho (tinha cara de açaí) */
   --chocolate-escuro: #22130E;
   --chocolate:        #3A2219;
   --vinho-fundo:      radial-gradient(1000px 640px at 50% 38%, #3A2219 0%, #22130E 72%);
 
   /* Secundária — Vinho (03/10: a marca tem duas famílias, rosa e vinho) — PRO, valores, ênfases */
-  --accent:            #4B1528;
-  --accent-dark:       #2C1219;
+  --accent:            #3A2219;
+  --accent-dark:       #22130E;
   --accent-light:      #E8DEE3;
   --accent-bg:         #F5EEF0;
   --accent-text:       #FFFFFF;

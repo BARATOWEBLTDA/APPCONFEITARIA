@@ -1985,7 +1985,7 @@ export default function Inicio() {
           .ini-dk-bt:hover { transform: translateY(-1px); }
           .ini-dk-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 0; }
           .ini-dk-kpi { background: var(--ui-branco); border-radius: var(--ui-raio-cartao); padding: 16px; box-shadow: 0 8px 22px rgba(60,20,35,.08); border: 1px solid #F3ECEF; }
-          .ini-dk-kpi--dest { background: linear-gradient(150deg, #3B1620, #6B2340); border-color: transparent; }
+          .ini-dk-kpi--dest { background: linear-gradient(150deg, #22130E, #5A3626); border-color: transparent; }
           .ini-dk-kh { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
           .ini-dk-kh span { width: 30px; height: 30px; border-radius: 9px; background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
           .ini-dk-kpi--dest .ini-dk-kh { color: rgba(255,255,255,.8); } .ini-dk-kpi--dest .ini-dk-kh span { background: rgba(255,255,255,.15); color: var(--ui-branco); }

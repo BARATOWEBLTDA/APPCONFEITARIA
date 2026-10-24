@@ -239,7 +239,7 @@ export default function Layout() {
             <span className="nav-icon"><Sparkle size={20} weight={dooOpen ? "fill" : "bold"} /></span>
             <span className="nav-rotulo">Doo IA</span>
           </button>
-          <GrupoMenu id="conta" rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar", "/conquistas"]} recolhido={recolhido}>
+          <GrupoMenu id="conta" rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar"]} recolhido={recolhido}>
             <SubitemMenu to="/configuracoes" end icone={Gear}>Configurações</SubitemMenu>
             <SubitemMenu to={isPro ? "/minha-assinatura" : "/assinar"} icone={Crown} tambem={["/assinar", "/minha-assinatura"]}>Minha assinatura</SubitemMenu>
           </GrupoMenu>

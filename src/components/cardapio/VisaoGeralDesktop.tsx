@@ -221,7 +221,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 18px 20px; }
         .vgd-ct { margin: 0; font-size: 15.5px; font-weight: 700; } .vgd-cs { margin: 2px 0 0; font-size: 12.5px; color: var(--ui-texto-3); }
         .vgd-rowh { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-        .vgd-hero { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; border-radius: var(--ui-raio-cartao); padding: 20px 22px; color: var(--ui-branco); background: linear-gradient(135deg, var(--ui-vinho-escuro), #6B2340); }
+        .vgd-hero { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; border-radius: var(--ui-raio-cartao); padding: 20px 22px; color: var(--ui-branco); background: linear-gradient(135deg, var(--ui-vinho-escuro), #5A3626); }
         .vgd-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #86EFAC; background: rgba(134,239,172,.12); padding: 4px 10px; border-radius: 999px; }
         .vgd-st i { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; }
         .vgd-st.off { color: #FCD34D; background: rgba(252,211,77,.12); } .vgd-st.off i { background: #FBBF24; }
@@ -288,7 +288,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-k em { display: block; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .vgd-k { background: #FBF9FA; border-color: transparent; }
         .vgd-bar span, .vgd-bar em { font-size: 12px; }
-        .vgd-lock { border: 0; background: linear-gradient(150deg, #3B1620, #6B2340); color: var(--ui-branco); }
+        .vgd-lock { border: 0; background: linear-gradient(150deg, #22130E, #5A3626); color: var(--ui-branco); }
         .vgd-lock-ic { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; border-radius: var(--ui-raio); background: rgba(255,255,255,.14); }
         .vgd-lock b { color: var(--ui-branco); font-size: 16px; } .vgd-lock small { display: block; margin-top: 2px; font-size: 13.5px; color: rgba(255,255,255,.82); }
         .vgd-pe, .vgd-di { min-height: 56px; padding: 8px 0; }

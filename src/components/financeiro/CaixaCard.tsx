@@ -169,7 +169,7 @@ const CSS = `
   .cxs .cxs-dica { margin-top: 20px; }
   .cxs-av { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
   .cxs-av b { display: block; margin-bottom: 2px; font-size: 13.5px; color: var(--ui-texto); }
-  .cxc { background: radial-gradient(130% 160% at 0 0, #6B2340, var(--ui-vinho-escuro) 70%); color: var(--ui-branco); border-radius: 18px; padding: 16px 18px; font-family: var(--font-base); }
+  .cxc { background: radial-gradient(130% 160% at 0 0, #5A3626, var(--ui-vinho-escuro) 70%); color: var(--ui-branco); border-radius: 18px; padding: 16px 18px; font-family: var(--font-base); }
   .cxc--carregando { height: 132px; background: #EFE9EC; border-radius: 18px; }
   .cxc-top { display: flex; justify-content: space-between; align-items: center; }
   .cxc-top p { margin: 0; font-size: 12.5px; opacity: .82; } .cxc-top i { font-style: normal; background: rgba(255,255,255,.15); border-radius: 6px; padding: 1px 6px; margin-left: 4px; font-size: 12px; }

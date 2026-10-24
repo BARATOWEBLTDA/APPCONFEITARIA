@@ -4,7 +4,7 @@ import {
   Users, UserPlus, Cake, ClockCounterClockwise, Camera, ToggleRight, Tag, Basket, TrendDown, ArrowsClockwise, CreditCard, Scales, ShoppingBagOpen,
   SquaresFour, ArrowsDownUp, Info, PuzzlePiece, ArrowCounterClockwise, DownloadSimple, CalendarCheck, Buildings, X, Clock, Flame, Sparkle, Images,
   Eye, Ticket, FacebookLogo, Megaphone, Checks, SpeakerHigh, PushPin, Lightbulb, QrCode, Truck, CalendarDots, PencilSimple, ChatCircleText, Hash, Gear, Newspaper,
-  Receipt, Crown, Trophy, DeviceMobile,
+  Receipt, Crown, DeviceMobile,
 } from "@phosphor-icons/react";
 import type { Como } from "@/components/como/ComoFunciona";
 import type { PassoTour } from "@/components/como/tour";
@@ -599,7 +599,7 @@ export const TOUR_MENSAGENS: PassoTour[] = [
 
 
 /* ══════ (23/10) Telas que ainda não tinham o (i): perfil do cliente, pedido aberto, notificações e sons,
-   minha assinatura, Doo IA e conquistas ══════ */
+   minha assinatura e Doo IA ══════ */
 
 export const COMO_CLIENTE: Como = {
   tela: { nome: "Cliente", Icone: Users },
@@ -681,17 +681,4 @@ export const COMO_DOO: Como = {
 export const TOUR_DOO: PassoTour[] = [
   { el: ".av-hero", titulo: "Doo IA", texto: "A sua assistente. Toque em uma das opções abaixo ou abra a conversa e pergunte o que quiser." },
   { el: ".av-grid", titulo: "O que pedir", texto: "Atalhos para o que a Doo faz melhor: preço, pedido, receita, ingrediente e mensagens." },
-];
-
-export const COMO_CONQUISTAS: Como = {
-  tela: { nome: "Minhas conquistas", Icone: Trophy },
-  resumo: "Medalhas que você ganha usando o Doonly: pedidos, clientes, fichas técnicas e mais.",
-  dicas: [
-    [Trophy, <>As medalhas <b>coloridas</b> já são suas; as cinzas mostram quanto falta.</>],
-    [ChartLineUp, <>Cada medalha tem uma <b>barra</b> com o seu progresso.</>],
-  ],
-};
-export const TOUR_CONQUISTAS: PassoTour[] = [
-  { el: ".cqp-sum", titulo: "Seu progresso", texto: "Quantas medalhas você já conquistou do total." },
-  { el: ".cqp-grid", titulo: "Medalhas", texto: "Coloridas são as conquistadas. As cinzas mostram quanto falta para ganhar." },
 ];

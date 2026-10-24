@@ -924,7 +924,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             border-radius: 22px; box-shadow: 0 18px 60px rgba(44,18,25,.28); border: 1px solid rgba(110,53,72,.12);
           }
         }
-        .dz-hd { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 14px; background: radial-gradient(130% 160% at 0 0, #6B2340, var(--ui-vinho-escuro) 70%); color: var(--ui-branco); }
+        .dz-hd { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 14px; background: radial-gradient(130% 160% at 0 0, #5A3626, var(--ui-vinho-escuro) 70%); color: var(--ui-branco); }
         .dz-hb { width: 44px; height: 44px; border-radius: var(--ui-raio); border: none; background: rgba(255,255,255,.12); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .dz-hb:disabled { opacity: .35; cursor: default; }
         .dz-fechar { display: none; }

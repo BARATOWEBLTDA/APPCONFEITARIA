@@ -39,7 +39,7 @@ function esc(t: string): string {
 
 const PASSOS: [string, string][] = [
   ["Conte sobre a sua confeitaria", "Nome, logo, endereço e horário. É o que a cliente vê no topo do cardápio."],
-  ["Cadastre o primeiro produto", "Com foto e preço. Dá pra montar bolos por tamanho, sabor e recheio."],
+  ["Cadastre o primeiro produto", "Com foto e preço. Dá para montar bolos por tamanho, sabor e recheio."],
   ["Mande o link do cardápio", "Suas clientes pedem por ali e o pedido chega no seu WhatsApp e na sua agenda."],
 ];
 
@@ -53,14 +53,14 @@ export function textoBoasVindas(nome: string): string {
   return [
     n ? `Olá, ${n}!` : "Olá!",
     "",
-    "Sua conta no Doonly está pronta. Agora você organiza pedidos, clientes, cardápio e o financeiro da confeitaria num lugar só.",
+    "Sua conta no Doonly está pronta. Agora você organiza pedidos, clientes, cardápio e o financeiro da confeitaria em um lugar só.",
     "",
     "Comece por aqui:",
     ...PASSOS.map(([t, d], i) => `${i + 1}. ${t}: ${d}`),
     "",
     `Abrir o Doonly: ${APP_URL}`,
     "",
-    "Dica: instale o Doonly na tela inicial do celular pra abrir com um toque.",
+    "Dica: instale o Doonly na tela inicial do celular para abrir com um toque.",
     "",
     `Dúvida? Fale com a gente no WhatsApp: https://wa.me/${ZAP_EQUIPE} ou contato@doonly.com.br`,
     "",
@@ -99,7 +99,7 @@ function buildWelcomeEmailHTML(nome: string): string {
 </head>
 <body style="margin:0;padding:0;background-color:#F4EEF1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#2C1219;-webkit-font-smoothing:antialiased;">
   <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#F4EEF1;opacity:0;">
-    Sua conta está pronta. Veja os 3 primeiros passos pra começar a vender pelo cardápio.
+    Sua conta está pronta. Veja os 3 primeiros passos para começar a vender pelo cardápio.
   </div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EEF1;">
     <tr>
@@ -119,7 +119,7 @@ function buildWelcomeEmailHTML(nome: string): string {
             <td class="px" style="padding:32px 40px 8px;">
               <h1 class="h1" style="margin:0;font-size:26px;font-weight:800;line-height:1.25;color:#2C1219;">${n ? `Boas-vindas, ${n}!` : "Boas-vindas ao Doonly!"}</h1>
               <p style="margin:12px 0 0;font-size:16px;line-height:1.6;color:#4B3A42;">
-                Sua conta está pronta. Agora você organiza <strong style="color:#2C1219;">pedidos, clientes, cardápio e o financeiro</strong> da confeitaria num lugar só, com menos correria.
+                Sua conta está pronta. Agora você organiza <strong style="color:#2C1219;">pedidos, clientes, cardápio e o financeiro</strong> da confeitaria em um lugar só, com menos correria.
               </p>
             </td>
           </tr>
