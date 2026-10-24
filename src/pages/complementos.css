@@ -114,3 +114,10 @@
 /* (24/10) o exemplo é só desenho: não dá para selecionar o texto nem clicar (antes o clique duplo selecionava "Decoração") */
 .pz-cel-wrap { user-select: none; -webkit-user-select: none; }
 .pz-cel, .pz-balao { pointer-events: none; }
+
+/* (24/10) preço: o campo e a caixinha "Grátis" na mesma linha */
+.pz-preco-l { display: flex; align-items: flex-start; gap: 10px; }
+.pz-preco-l > .ui-campo { flex: 1; min-width: 0; }
+.pz-gratis { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 48px; margin: 23px 0 0; padding: 0 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); cursor: pointer; }
+.pz-gratis[aria-checked="true"] { border-color: var(--ui-verde); background: #F0FAF3; color: var(--ui-verde); }
+.pz-gratis[aria-checked="true"] .pz-chk { border-color: var(--ui-verde); background: var(--ui-verde); }

@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
-import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import "./categorias.css";
 import "./complementos.css";
 
@@ -27,6 +27,8 @@ function nomeBonito(nome: string): string {
 }
 const brl = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const lerPreco = (s: string) => { const d = s.replace(/\D/g, ""); return d ? parseInt(d, 10) / 100 : 0; };
+/** (24/10) a primeira foto do produto (o campo guarda várias separadas por vírgula; antes a lista inteira ia no src e a foto quebrava) */
+const primeiraFoto = (f?: string | null) => (f ? String(f).split(/,(?=\s*(?:https?:|\/))/)[0].trim() : "");
 
 export default function Complementos() {
   const navigate = useNavigate();
@@ -78,7 +80,7 @@ export default function Complementos() {
   const fechar = () => setAberta(false);
 
   const erroNome = tentou && !form.nome.trim() ? "Escreva o nome" : undefined;
-  const erroValor = tentou && !form.gratis && form.valor <= 0 ? 'Escreva o valor ou marque "Grátis"' : undefined;
+  const erroValor = tentou && !form.gratis && form.valor <= 0 ? 'Escreva o valor ou marque Grátis' : undefined;
   const erroProdutos = tentou && !form.todos && form.produtos.length === 0 ? "Marque pelo menos um produto" : undefined;
 
   const salvar = async () => {
@@ -217,20 +219,18 @@ export default function Complementos() {
         <div className="pz-form">
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: topo de bolo, escrita, papel de arroz" value={form.nome} maxLength={50} erro={erroNome}
             onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
-          <CampoArea rotulo="Explicação para o cliente" opcional placeholder="Ex.: escolha um tema ou envie sua imagem" value={form.descricao} maxLength={140} rows={2}
+          {/* (24/10) uma linha só (antes uma caixa de 3 linhas) */}
+          <Campo rotulo="Explicação para o cliente" opcional placeholder="Ex.: escolha o tema" value={form.descricao} maxLength={80}
             dica="Aparece embaixo do nome, no cardápio." onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
 
-          <div className="ui-campo">
-            <span className="ui-campo-r"><span>Preço</span></span>
-            <div className="pz-seg" role="radiogroup" aria-label="Preço">
-              <button type="button" role="radio" aria-checked={!form.gratis} onClick={() => setForm(f => ({ ...f, gratis: false }))}>Cobrar</button>
-              <button type="button" role="radio" aria-checked={form.gratis} onClick={() => setForm(f => ({ ...f, gratis: true }))}>Grátis</button>
-            </div>
+          {/* (24/10) o preço num campo só, com a caixinha "Grátis" ao lado (antes "Cobrar ou Grátis" e depois o valor) */}
+          <div className="pz-preco-l">
+            <Campo rotulo="Quanto soma no pedido" prefixo="R$" inputMode="numeric" placeholder={form.gratis ? "Grátis" : "0,00"} erro={erroValor} disabled={form.gratis}
+              value={!form.gratis && form.valor > 0 ? brl(form.valor) : ""} onChange={e => setForm(f => ({ ...f, valor: lerPreco(e.target.value) }))} />
+            <button type="button" role="checkbox" aria-checked={form.gratis} className="pz-gratis" onClick={() => setForm(f => ({ ...f, gratis: !f.gratis }))}>
+              <i className="pz-chk" aria-hidden="true">{form.gratis && <Check size={14} weight="bold" />}</i>Grátis
+            </button>
           </div>
-          {!form.gratis && (
-            <Campo rotulo="Quanto soma no pedido" prefixo="R$" inputMode="numeric" placeholder="0,00" erro={erroValor}
-              value={form.valor > 0 ? brl(form.valor) : ""} onChange={e => setForm(f => ({ ...f, valor: lerPreco(e.target.value) }))} />
-          )}
 
           {/* (19/10) prévia ao vivo: como o cliente vê no cardápio */}
           <div className="pz-prev" aria-hidden="true">
@@ -272,7 +272,7 @@ export default function Complementos() {
                   return (
                     <button key={p.id} type="button" role="checkbox" aria-checked={on} className="pz-prod" onClick={() => alternarProduto(p.id)}>
                       <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
-                      <span className="pz-prod-f">{p.imagem_url ? <img src={p.imagem_url} alt="" /> : <Camera size={20} weight="bold" aria-label="Sem foto" />}</span>
+                      <span className="pz-prod-f">{primeiraFoto(p.imagem_url) ? <img src={primeiraFoto(p.imagem_url)} alt="" /> : <Camera size={20} weight="bold" aria-label="Sem foto" />}</span>
                       <span className="pz-prod-n">{nomeBonito(p.nome)}</span>
                     </button>
                   );
