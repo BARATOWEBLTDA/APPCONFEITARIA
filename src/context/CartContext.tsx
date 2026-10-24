@@ -86,7 +86,7 @@ export function CartProvider({ children, loja }: { children: ReactNode; loja?: s
   const [items, setItems] = useState<CartItem[]>(guardada.itens)
 
   useEffect(() => {
-    if (guardada.semFoto) avisar('Sua sacola voltou, mas a foto de referência não. Mande a foto pra loja pelo WhatsApp.', { tipo: 'info', duracao: 7000 })
+    if (guardada.semFoto) avisar('Sua sacola voltou, mas a foto de referência não. Mande a foto para a loja pelo WhatsApp.', { tipo: 'info', duracao: 7000 })
   }, [guardada])
 
   useEffect(() => { if (loja) gravarSacola(loja, items) }, [loja, items])

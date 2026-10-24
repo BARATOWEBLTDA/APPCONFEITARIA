@@ -51,7 +51,7 @@ export type PedidoPDF = {
 const STATUS: Record<string, string> = {
   aguardando_pagamento: "Aguardando pagamento", aguardando_aceite: "Aguardando aceite", novo: "Aguardando aceite", pendente: "Aguardando aceite",
   agendado: "Agendado", confirmado: "Agendado", em_producao: "Em produção", em_preparo: "Em produção", finalizado: "Pronto", pronto: "Pronto",
-  aguardando_retirada: "Pronto pra retirar", em_entrega: "Saiu pra entrega", a_caminho: "Saiu pra entrega", entregue: "Entregue", concluido: "Entregue", cancelado: "Cancelado",
+  aguardando_retirada: "Pronto para retirar", em_entrega: "Saiu para entrega", a_caminho: "Saiu para entrega", entregue: "Entregue", concluido: "Entregue", cancelado: "Cancelado",
 };
 const PAGAMENTO: Record<string, string> = { pix: "Pix", PIX: "Pix", dinheiro: "Dinheiro", credito: "Cartão de crédito", debito: "Cartão de débito", cartao: "Cartão", link_pagamento: "Link de pagamento", mercado_pago: "Mercado Pago", pagamento_retirada: "Na retirada", boleto: "Boleto" };
 

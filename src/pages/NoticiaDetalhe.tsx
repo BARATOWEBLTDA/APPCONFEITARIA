@@ -133,7 +133,7 @@ export default function NoticiaDetalhe() {
     } catch {
       setGostou(era);
       setTotal(t => Math.max(0, t + (era ? 1 : -1)));
-      avisar("Não deu pra salvar. Tente de novo.", { tipo: "erro" });
+      avisar("Não deu para salvar. Tente de novo.", { tipo: "erro" });
     } finally {
       setSalvando(false);
     }
@@ -163,7 +163,7 @@ export default function NoticiaDetalhe() {
         ) : estado === "erro" ? (
           <TelaVazia
             icone={<WarningCircle size={30} />}
-            titulo="Não deu pra abrir"
+            titulo="Não deu para abrir"
             texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={carregar}>Tentar de novo</Botao>}
           />

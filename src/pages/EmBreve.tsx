@@ -16,7 +16,7 @@ const TELAS = {
   // 13/10: espaço pras ferramentas de divulgação que vêm depois
   marketing: {
     titulo: "Marketing", icone: Megaphone,
-    texto: "Aqui vão ficar as ferramentas pra divulgar sua confeitaria e vender mais. Conte pra gente o que você gostaria de ter.",
+    texto: "Aqui vão ficar as ferramentas para divulgar sua confeitaria e vender mais. Conte para a gente o que você gostaria de ter.",
   },
 } as const;
 

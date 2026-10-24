@@ -207,7 +207,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     } catch (err) {
       // Não gravou: continua pendente (tenta de novo na próxima mudança ou ao sair da tela)
       pendenteRef.current = true
-      avisar(explicarErro(err, 'Não deu pra salvar. Tente de novo.'), { tipo: 'erro' })
+      avisar(explicarErro(err, 'Não deu para salvar. Tente de novo.'), { tipo: 'erro' })
       return false
     }
   }
@@ -305,7 +305,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   }
   const excluirCupomEditando = async () => {
     if (editandoIndex === null || editandoIndex < 0) return
-    const ok = await confirmar({ titulo: `Excluir o cupom ${cupons[editandoIndex]?.codigo || ''}?`, texto: 'Ele para de funcionar no cardápio. Não dá pra desfazer.', rotulo: 'Excluir', rotuloVoltar: 'Cancelar', perigo: true })
+    const ok = await confirmar({ titulo: `Excluir o cupom ${cupons[editandoIndex]?.codigo || ''}?`, texto: 'Ele para de funcionar no cardápio. Não dá para desfazer.', rotulo: 'Excluir', rotuloVoltar: 'Cancelar', perigo: true })
     if (!ok) return
     setCupons(prev => prev.filter((_, idx) => idx !== editandoIndex))
     setEditandoIndex(null)
@@ -354,7 +354,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   if (erroCarga) return (
     <>
       {!embutido && <AppPageHeader title="Entrega e pagamento" subtitle="Pagamento, entrega e cupons" onBack={() => navigate(voltarPara)} />}
-      <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
+      <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
     </>
   )
   if (loading) return (
@@ -392,7 +392,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         </section>}
 
         {/* (20/10) Pix pelo cardápio */}
-        {so === 'pix' && !formasPagamento.includes('pix') && <p className="ep-pix-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />Marque Pix em Pagamento pra usar o Pix pelo cardápio.</p>}
+        {so === 'pix' && !formasPagamento.includes('pix') && <p className="ep-pix-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />Marque Pix em Pagamento para usar o Pix pelo cardápio.</p>}
         {(!so || so === 'pix') && formasPagamento.includes('pix') && (
         <section className="ep-card">
           <Cabeca Ic={QrCode} titulo="Pix pelo cardápio" apoio="O cliente paga com QR Code" />
@@ -443,7 +443,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                 </div>
               )}
               {faltaNoPix(pixTela)
-                ? <p className="ep-pix-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />{faltaNoPix(pixTela)} pra ligar.</p>
+                ? <p className="ep-pix-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />{faltaNoPix(pixTela)} para ligar.</p>
                 : <p className="ep-pix-ok"><Check size={18} weight="bold" aria-hidden="true" />Pronto: o cliente já vê o Pix.</p>}
             </div>
           )}
@@ -480,7 +480,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
  />
           {!cupomDisponivel(isPro) ? (
             <div className="ep-pro">
-              <p>Crie cupons pra atrair clientes novos e trazer de volta quem já comprou.</p>
+              <p>Crie cupons para atrair clientes novos e trazer de volta quem já comprou.</p>
               <Botao variante="vinho" icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
             </div>
           ) : cupons.length === 0 ? (

@@ -242,7 +242,7 @@ export default function Auth() {
       if (!navigator.onLine || /failed to fetch|networkerror|network request failed|load failed/i.test(msg)) {
         setError("Sem conexão. Confira a internet e tente de novo.");
       } else if (codigo === "email_not_confirmed" || /email not confirmed|email_not_confirmed/i.test(msg)) {
-        setError("Falta confirmar seu e-mail. Abra o link que enviamos pra você.");
+        setError("Falta confirmar seu e-mail. Abra o link que enviamos para você.");
       } else if (codigo === "user_banned" || /user is banned|user_banned/i.test(msg)) {
         setError("Esta conta está bloqueada. Fale com a equipe Doonly.");
       } else if (status === 429 || codigo === "over_request_rate_limit" || /rate limit|too many/i.test(msg)) {
@@ -487,7 +487,7 @@ export default function Auth() {
         setCadastroError("Muitas tentativas. Aguarde 1 minuto e tente novamente.");
       } else {
         // (11/10) sem internet diz "Sem internet" (antes era sempre "Erro ao criar conta")
-        setCadastroError(explicarErro(err, "Não deu pra criar a conta. Tente de novo."));
+        setCadastroError(explicarErro(err, "Não deu para criar a conta. Tente de novo."));
       }
       setCadastroLoading(false);
     }
@@ -507,7 +507,7 @@ export default function Auth() {
         <Mascote pose={showCadastro ? 'comemorando' : 'acenando'} className="auth-marca-masc" />
         <NomeDoonly cor="branco" className="auth-marca-nome" />
         <p className="auth-marca-frase">{showCadastro ? 'Vamos começar!' : 'Seus pedidos te esperam'}</p>
-        <p className="auth-marca-sub">{showCadastro ? 'Leva menos de 1 minuto.' : 'Pedidos, agenda e financeiro num só lugar.'}</p>
+        <p className="auth-marca-sub">{showCadastro ? 'Leva menos de 1 minuto.' : 'Pedidos, agenda e financeiro em um só lugar.'}</p>
         </div>
       </div>
 
@@ -519,7 +519,7 @@ export default function Auth() {
 
         <div className="auth-text-hdr">
           <h2 className="auth-h2"><span className="so-cel">Seus pedidos te esperam</span><span className="so-pc">Entrar na conta</span></h2>
-          <p className="auth-p so-cel-bloco">Pedidos, agenda e financeiro num só lugar.</p>
+          <p className="auth-p so-cel-bloco">Pedidos, agenda e financeiro em um só lugar.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
@@ -879,9 +879,9 @@ export default function Auth() {
         .auth-card {
           position: relative; z-index: 2; background: var(--bg-card); border-radius: 22px; padding: 56px 1.5rem 1.6rem;
           width: 100%; max-width: 440px; box-shadow: 0 14px 40px -12px rgba(60,10,30,.45);
-          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 108px auto 0; /* espaço pro mascote saindo do cartão (ele sobe 96px) + folga */
+          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 108px auto 0; /* espaço para o mascote saindo do cartão (ele sobe 96px) + folga */
         }
-        /* celular estreito (até 380px): um pouco menos de margem pra o título de 22px caber inteiro */
+        /* celular estreito (até 380px): um pouco menos de margem para o título de 22px caber inteiro */
         @media (max-width: 380px) {
           .auth-root { padding-left: 12px !important; padding-right: 12px !important; }
           .auth-card { padding-left: 18px !important; padding-right: 18px !important; }
@@ -1118,7 +1118,7 @@ export default function Auth() {
           .auth-card .auth-text-hdr { margin-bottom: 1.25rem; } /* o cartão já tem "Já tem conta? Entrar" no fim */
           /* Cadastro no computador (10/10): cabe inteiro em 800px de altura (antes o "Criar conta com Google" ficava cortado) */
           .auth-root { padding-top: 16px; padding-bottom: 16px; }
-          /* (15/10) mais respiro entre os campos (antes ficava apertado pra caber em 800px de altura) */
+          /* (15/10) mais respiro entre os campos (antes ficava apertado para caber em 800px de altura) */
           .cadastro-form { gap: 14px; padding-top: 0; }
           .auth-card:has(.cadastro-form) { padding: 28px 44px !important; max-width: none; } /* 13/10: ocupa a metade toda (antes ficava em 360px e os campos lado a lado cortavam o texto) */
           .auth-card:has(.cadastro-form) .auth-text-hdr { margin-bottom: 18px; }
@@ -1127,7 +1127,7 @@ export default function Auth() {
           .cadastro-form .cad-lb { margin-bottom: 6px; line-height: 1.3; }
           .cadastro-form .cad-field-wrap { gap: 4px; }
           .cad-par { display: grid; column-gap: 14px; row-gap: 10px; align-items: start; }
-          /* 13/10: minmax(0, …) e min-width 0: sem isso o campo da direita (WhatsApp, Confirmar a senha) passava pra fora do cartão */
+          /* 13/10: minmax(0, …) e min-width 0: sem isso o campo da direita (WhatsApp, Confirmar a senha) passava para fora do cartão */
           .cad-par--loja { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
           .cad-par--senha { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "senha conf" "regras regras"; }
           .cad-par > * { min-width: 0; }
@@ -1144,7 +1144,7 @@ export default function Auth() {
           /* (grid antigo de 1 coluna removido: agora são 2 colunas, acima) */
           /* Esconde coluna esquerda antiga (mascote lado) */
           .auth-card { margin: 0; }
-          /* (07/10) o link "Já tem conta? Entrar" aparece também no computador: sem ele não tinha como voltar pro login */
+          /* (07/10) o link "Já tem conta? Entrar" aparece também no computador: sem ele não tinha como voltar para o login */
           /* Restaura o topbar no desktop */
           /* (botão flutuante "Já tem conta?" desligado no computador: o cartão já tem o link) */
         }

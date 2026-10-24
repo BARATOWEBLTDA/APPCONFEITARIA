@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, Clock, CalendarBlank } from "@phosphor-icons/react";
+import { Clock, CalendarBlank } from "@phosphor-icons/react";
 import ListaChaves from "@/components/loja/ListaChaves";
 import HorarioSheet from "@/components/HorarioSheet";
 import { situacaoDaLoja, horaTexto } from "@/lib/agendaCardapio";
@@ -24,22 +24,13 @@ type End = { rua: string; numero: string; bairro: string; cidade: string; estado
 export type Mostrar = "completo" | "cidade" | "nada";
 
 /** "O que aparece no cardápio": cada opção mostra o texto que a cliente vê */
-export function OpcoesMostrar({ mostrar, onMudar, end, tituloClasse = "ppf-l" }: { mostrar: Mostrar; onMudar: (v: Mostrar) => void; end: End; tituloClasse?: string }) {
-  const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
-  const completo = [end.rua.trim() ? `${end.rua.trim()}${end.numero.trim() ? `, ${end.numero.trim()}` : ""}` : "", end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf;
+export function OpcoesMostrar({ mostrar, onMudar, tituloClasse = "ppf-l" }: { mostrar: Mostrar; onMudar: (v: Mostrar) => void; end?: End; tituloClasse?: string }) {
   return (
     <>
       <p className={tituloClasse} id="ed-mostrar">O que aparece no cardápio</p>
-      <div className="ppf-mos" role="radiogroup" aria-labelledby="ed-mostrar">
-        {([
-          ["completo", "Endereço completo", completo || "Rua, número e bairro", true],
-          ["cidade", "Só a cidade", cidadeUf || "Cidade e estado", true],
-          ["nada", "Não mostrar", "Bom para quem atende em casa", false],
-        ] as const).map(([v, t, sub, pino]) => (
-          <button type="button" role="radio" aria-checked={mostrar === v} key={v} className={mostrar === v ? "on" : ""} onClick={() => onMudar(v)}>
-            <i aria-hidden="true" />
-            <span><b>{t}</b><small>{pino && <MapPin size={13} weight="fill" aria-hidden="true" />}<em>{sub}</em></small></span>
-          </button>
+      <div className="edm-seg" role="radiogroup" aria-labelledby="ed-mostrar">
+        {([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Não mostrar"]] as const).map(([v, t]) => (
+          <button type="button" role="radio" aria-checked={mostrar === v} key={v} className={mostrar === v ? "on" : ""} onClick={() => onMudar(v)}>{t}</button>
         ))}
       </div>
     </>

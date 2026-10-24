@@ -57,7 +57,7 @@ export default function AdminBannerMobile() {
       <img src={row.imagem_url} alt="Banner promocional" />
       <style>{`
         /* Sem fundo, sem corte e sem proporção fixa: a arte manda.
-           PNG com transparência (ex.: personagem saindo pra fora) aparece inteiro. */
+           PNG com transparência (ex.: personagem saindo para fora) aparece inteiro. */
         .admin-banner-mobile {
           display: block;
           width: 100%;

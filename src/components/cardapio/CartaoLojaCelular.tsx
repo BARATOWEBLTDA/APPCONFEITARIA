@@ -42,7 +42,7 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
     if (error) {
       setLocal(null);
       const semColuna = /loja_pausada/i.test(String(error.message || "")) || error.code === "PGRST204" || error.code === "42703";
-      avisar(semColuna ? "Falta um ajuste no banco pra pausar os pedidos (SQL 4.27)." : explicarErro(error, "Não deu pra mudar agora. Tente de novo."), { tipo: "erro" });
+      avisar(semColuna ? "Falta um ajuste no banco para pausar os pedidos (SQL 4.27)." : explicarErro(error, "Não deu para mudar agora. Tente de novo."), { tipo: "erro" });
       return;
     }
     await refetch();
@@ -56,7 +56,7 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   };
   const copiar = async () => {
     try { await navigator.clipboard.writeText(link); avisar("Link copiado", { tipo: "ok" }); }
-    catch { avisar("Não deu pra copiar. Use o Compartilhar.", { tipo: "erro" }); }
+    catch { avisar("Não deu para copiar. Use o Compartilhar.", { tipo: "erro" }); }
   };
   const baixarQr = () => {
     if (!qr) return;

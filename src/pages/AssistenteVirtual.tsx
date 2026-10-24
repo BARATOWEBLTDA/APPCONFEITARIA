@@ -14,8 +14,8 @@ const EXEMPLOS = [
   { e: BookOpenText, t: "Criar receita", d: "Com as quantidades", p: "Criar receita de bolo" },
   { e: Package, t: "Ingrediente", d: "Cadastre com preço", p: "Cadastrar um ingrediente" },
   { e: PencilSimpleLine, t: "Legenda", d: "Pronta pro Instagram", p: "Criar legenda para o Instagram" },
-  { e: ChatCircleDots, t: "Responder", d: "Pro seu cliente", p: "Escrever uma mensagem para um cliente" },
-  { e: Cake, t: "Topo de bolo", d: "A arte pra imprimir", p: "Criar um topo de bolo" },
+  { e: ChatCircleDots, t: "Responder", d: "Para o seu cliente", p: "Escrever uma mensagem para um cliente" },
+  { e: Cake, t: "Topo de bolo", d: "A arte para imprimir", p: "Criar um topo de bolo" },
   { e: CalendarCheck, t: "Minha semana", d: "Produção e compras", p: "Planejar produção da semana" },
 ];
 
@@ -33,7 +33,7 @@ export default function AssistenteVirtual() {
           <h1>Sua assistente de confeitaria</h1>
           <p>Calcula preços, cria receitas, registra pedidos e escreve por você.</p>
         </div>
-        <p className="av-lbl">O que você pode pedir pra Doo</p>
+        <p className="av-lbl">O que você pode pedir para a Doo</p>
         <div className="av-grid">
           {EXEMPLOS.map(b => {
             const conteudo = (<>

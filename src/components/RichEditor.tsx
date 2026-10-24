@@ -127,7 +127,7 @@ export default function RichEditor({ content, onChange }: Props) {
       const { data } = supabase.storage.from("noticias-anexos").getPublicUrl(fileName);
       return data.publicUrl;
     } catch (err: any) {
-      avisar(explicarErro(err, "Não deu pra enviar o arquivo. Tente de novo."), { tipo: "erro" });
+      avisar(explicarErro(err, "Não deu para enviar o arquivo. Tente de novo."), { tipo: "erro" });
       return null;
     } finally {
       setUploading(null);
@@ -248,7 +248,7 @@ export default function RichEditor({ content, onChange }: Props) {
       <Janela aberta={linkAberto} aoFechar={() => setLinkAberto(false)} tipo="conteudo" titulo="Link"
         acoes={<><Botao variante="secundario" onClick={() => setLinkAberto(false)}>Cancelar</Botao><Botao onClick={salvarLink}>Salvar</Botao></>}>
         <Campo rotulo="Endereço do link" placeholder="https://" inputMode="url" autoCapitalize="off" autoCorrect="off" value={linkUrl}
-          dica="Deixe vazio pra tirar o link do texto." onChange={e => setLinkUrl(e.target.value)}
+          dica="Deixe vazio para tirar o link do texto." onChange={e => setLinkUrl(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarLink(); } }} />
       </Janela>
 

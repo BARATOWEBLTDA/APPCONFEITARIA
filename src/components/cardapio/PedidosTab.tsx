@@ -37,7 +37,7 @@ export function PedidosTab({ accent, corTopo, confeteiraUserId, onVerCardapio }:
 
       <div className="cc-rolo">
         {!cliente ? (
-          <SemConta cor={accent} titulo="Acompanhe seus pedidos" texto="Entre com o seu WhatsApp pra ver o andamento e o histórico dos seus pedidos." icone={<Receipt size={40} weight="duotone" />} aoEntrar={() => setEntrar(true)} />
+          <SemConta cor={accent} titulo="Acompanhe seus pedidos" texto="Entre com o seu WhatsApp para ver o andamento e o histórico dos seus pedidos." icone={<Receipt size={40} weight="duotone" />} aoEntrar={() => setEntrar(true)} />
         ) : carregando && pedidos.length === 0 ? (
           <div className="cc-carregando">{[0, 1].map(i => <span key={i} className="cc-ped cc-ped--esq" />)}</div>
         ) : pedidos.length === 0 ? (

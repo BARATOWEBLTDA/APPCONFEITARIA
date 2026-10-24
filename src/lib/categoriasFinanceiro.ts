@@ -4,7 +4,7 @@
  * mas ficam fora do recebido, das despesas, do resultado e do lucro.
  */
 export const APORTE = "Aporte (dinheiro seu)";
-export const RETIRADA = "Retirada pra você";
+export const RETIRADA = "Retirada para você";
 
 /** true = não conta como venda nem como despesa (aporte ou retirada da dona). */
 export const ehDinheiroDaDona = (cat?: string | null) => /^\s*(aporte|retirada pra)/i.test(cat || "");

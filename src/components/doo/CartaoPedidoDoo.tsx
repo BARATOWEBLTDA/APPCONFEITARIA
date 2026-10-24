@@ -70,7 +70,7 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
       if (res.aviso) avisar(res.aviso, { tipo: "erro" }); // (10/10) pedido salvo, recebimento não
       onFeito("salvo", { id: p.id, numero: p.numero, resumo: `${dados.clienteNome || "venda avulsa"}, ${brl(total)}` });
     } catch (e) {
-      setErro(explicarErro(e, "Não deu pra registrar o pedido. Tente de novo."));
+      setErro(explicarErro(e, "Não deu para registrar o pedido. Tente de novo."));
     } finally { travado.current = false; setSalvando(false); }
   };
 

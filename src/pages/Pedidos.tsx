@@ -40,7 +40,7 @@ import '@/components/pedidos/pedidos.css'
 const MEDIDA_COMPUTADOR = '(min-width: 901px)'
 type Sit = 'aceitar' | 'agenda' | 'prontos' | 'concluidos'
 const SITS: { k: Sit; nome: string }[] = [
-  { k: 'aceitar', nome: 'Pra aceitar' }, { k: 'agenda', nome: 'Agendados' }, { k: 'prontos', nome: 'Prontos' }, { k: 'concluidos', nome: 'Concluídos' },
+  { k: 'aceitar', nome: 'Para aceitar' }, { k: 'agenda', nome: 'Agendados' }, { k: 'prontos', nome: 'Prontos' }, { k: 'concluidos', nome: 'Concluídos' },
 ]
 /** Em que aba do celular o pedido fica: em produção e esperando pagamento ficam em Agendados */
 const sitDe = (p: Pedido): Sit => terminou(p) ? 'concluidos' : precisaAceitar(p) ? 'aceitar'
@@ -212,7 +212,7 @@ export default function Pedidos() {
     const pedido = pedidos.find(p => p.id === id)
     if (!pedido) return
     const statusAtual = grupoDoStatus(pedido.status)
-    const falhou = () => avisar('Não deu pra mudar a situação. Confira a internet e tente de novo.', { tipo: 'erro' })
+    const falhou = () => avisar('Não deu para mudar a situação. Confira a internet e tente de novo.', { tipo: 'erro' })
 
     // Regra 1 (Financeiro · Passo 0): entrar em Aguardando pagamento só muda a situação (um sinal já pago não some)
     if (status === 'aguardando_pagamento' && statusAtual !== 'aguardando_pagamento') {
@@ -230,7 +230,7 @@ export default function Pedidos() {
       // (11/10) Antes de registrar, relê o pedido no banco: a lista pode estar aberta há horas e o pagamento já ter
       // entrado (pelo cardápio, em outro aparelho). O valor registrado é o que falta DE VERDADE; se já está pago, não registra de novo.
       const { data: noBanco, error: errLer } = await supabase.from('pedidos').select('valor_total, valor_recebido, status_pagamento, status').eq('id', id).maybeSingle()
-      if (errLer || !noBanco) { avisar('Não deu pra conferir o pagamento deste pedido. Confira a internet e tente de novo.', { tipo: 'erro' }); return }
+      if (errLer || !noBanco) { avisar('Não deu para conferir o pagamento deste pedido. Confira a internet e tente de novo.', { tipo: 'erro' }); return }
       const atual = { ...pedido, ...(noBanco as any) } as Pedido
       if (grupoDoStatus(atual.status) !== 'aguardando_pagamento') {
         // já saiu de "Aguardando pagamento" em outro lugar: a lista só passa a mostrar o que está gravado
@@ -246,7 +246,7 @@ export default function Pedidos() {
         // relê o pedido: se o pagamento entrou e só a resposta se perdeu, a lista já mostra pago e o próximo toque não cobra de novo
         const { data: gravado } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', id).maybeSingle()
         if (gravado) mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, ...(gravado as any) } : p))
-        avisar(r.erro || 'Não deu pra registrar o recebimento. Confira a internet e tente de novo.', { tipo: 'erro' }); return
+        avisar(r.erro || 'Não deu para registrar o recebimento. Confira a internet e tente de novo.', { tipo: 'erro' }); return
       }
       const novo = !r ? { valor_total: atual.valor_total, valor_recebido: atual.valor_recebido, status_pagamento: atual.status_pagamento } // já estava pago: fica o que está gravado
         : r.status_pagamento ? { valor_total: atual.valor_total, valor_recebido: r.valor_recebido ?? atual.valor_total, status_pagamento: r.status_pagamento }
@@ -350,7 +350,7 @@ export default function Pedidos() {
     confirmandoPix.current = true
     try {
       const r = await registrarPagamento({ pedidoId: p.id, userId, valor: px.valor, forma: 'pix', tipo: px.tipo, origem: 'cardapio', observacao: 'Pix pelo cardápio' })
-      if (!r.ok) { avisar(r.erro || 'Não deu pra confirmar o Pix. Tente de novo.', { tipo: 'erro' }); return }
+      if (!r.ok) { avisar(r.erro || 'Não deu para confirmar o Pix. Tente de novo.', { tipo: 'erro' }); return }
       const { data } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', p.id).maybeSingle()
       mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...((data as any) || { valor_recebido: px.valor, status_pagamento: px.tipo === 'sinal' ? 'parcial' : 'pago' }) } : x))
       avisar(px.tipo === 'sinal' ? 'Sinal confirmado.' : 'Pix confirmado. Pedido pago.', { tipo: 'ok' })
@@ -427,7 +427,7 @@ export default function Pedidos() {
     ids.forEach(id => travar(id, true))
     try {
       const { error } = await supabase.from('pedidos').update({ status: 'agendado' }).in('id', ids)
-      if (error) { avisar('Não deu pra aceitar os pedidos. Confira a internet e tente de novo.', { tipo: 'erro' }); return }
+      if (error) { avisar('Não deu para aceitar os pedidos. Confira a internet e tente de novo.', { tipo: 'erro' }); return }
       ids.forEach(id => registrarEtapa(id, 'agendado'))
       mudarPedidos(prev => prev.map(p => ids.includes(p.id) ? { ...p, status: 'agendado' } : p))
       avisar(ids.length === 1 ? 'Pedido aceito.' : `${ids.length} pedidos aceitos.`)
@@ -463,7 +463,7 @@ export default function Pedidos() {
     const g: { chave: string; titulo: string; itens: Pedido[] }[] = []
     const add = (chave: string, titulo: string, itens: Pedido[]) => { if (itens.length) g.push({ chave, titulo, itens }) }
     // pedidos pra aceitar vêm primeiro, em destaque (3.14); os outros seguem agrupados por dia
-    add('aceitar', 'Pra aceitar', lista.filter(p => !terminou(p) && precisaAceitar(p)).sort(porHora))
+    add('aceitar', 'Para aceitar', lista.filter(p => !terminou(p) && precisaAceitar(p)).sort(porHora))
     const ativos = lista.filter(p => !terminou(p) && !precisaAceitar(p)).sort(porHora)
     // (11/10) "Atrasado" pela regra única (lib/pedidoStatus): a data passou E o pedido ainda não ficou pronto.
     // O que já está pronto (ou saiu pra entrega) e é de um dia anterior não é atraso: fica num grupo à parte, pra não sumir da lista.
@@ -507,8 +507,8 @@ export default function Pedidos() {
 
   const conteudo = () => {
     if (estado === 'carregando') return demorou ? <p className="pd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null
-    if (estado === 'erro') return <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os pedidos" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => userId && fetchPedidos(userId)}>Tentar de novo</Botao>} />
-    if (totalProdutos === 0 && pedidos.length === 0) return <TelaVazia icone={<Cake size={30} />} titulo="Cadastre um produto primeiro" texto="Pra registrar um pedido, você precisa ter pelo menos um produto." acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/produtos', { state: { abrirCadastro: true } })}>Cadastrar produto</Botao>} />
+    if (estado === 'erro') return <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar os pedidos" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => userId && fetchPedidos(userId)}>Tentar de novo</Botao>} />
+    if (totalProdutos === 0 && pedidos.length === 0) return <TelaVazia icone={<Cake size={30} />} titulo="Cadastre um produto primeiro" texto="Para registrar um pedido, você precisa ter pelo menos um produto." acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/produtos', { state: { abrirCadastro: true } })}>Cadastrar produto</Botao>} />
     // (19/10) sem pedido nenhum, a barra de cima (abas, busca, Lista/Quadro, Nova venda) fica: antes ela sumia e a tela "pulava"
     return null
   }
@@ -523,10 +523,10 @@ export default function Pedidos() {
         infoContent={
           <>
             <p>Aqui ficam <strong>todas as suas encomendas</strong>, agrupadas por dia: o que está atrasado, o que entrega hoje, amanhã e nos próximos dias.</p>
-            <p>O botão de cada pedido leva pro próximo passo: aceitar, produzir, marcar pronto, marcar entregue ou retirado.</p>
+            <p>O botão de cada pedido leva para o próximo passo: aceitar, produzir, marcar pronto, marcar entregue ou retirado.</p>
           </>
         }
-        infoTip={<>Abra um pedido pra ver tudo e marcar o pagamento.</>}
+        infoTip={<>Abra um pedido para ver tudo e marcar o pagamento.</>}
       />
 
       <div className={`pd${quadro ? " pd--quadro" : ""}`}>
@@ -575,7 +575,7 @@ export default function Pedidos() {
             {(computador ? (filtroAguardando || filtroAtrasados) : filtroAtrasados) && (
               <div className={`pd-rapido${filtroAtrasados ? ' atr' : ''}`}>
                 <div>
-                  <b>{filtroAtrasados ? 'Pedidos atrasados' : 'Pedidos pra aceitar'}</b>
+                  <b>{filtroAtrasados ? 'Pedidos atrasados' : 'Pedidos para aceitar'}</b>
                   <p>{filtroAtrasados ? 'A data de entrega passou e eles ainda não ficaram prontos.' : 'Os pedidos que esperam você aceitar ou o pagamento do cliente.'}</p>
                 </div>
                 <Botao variante="secundario" tamanho="p" onClick={sairDoFiltroRapido}>Ver todos</Botao>
@@ -595,8 +595,8 @@ export default function Pedidos() {
             ) : !computador ? (
               /* (22/10) celular: a aba da situação, em linhas compactas; dentro de Agendados e Prontos, separado por dia */
               gruposCel.length === 0 ? (
-                <TelaVazia icone={<Receipt size={30} />} titulo={sitAtual === 'aceitar' ? 'Nenhum pedido pra aceitar' : sitAtual === 'prontos' ? 'Nenhum pedido pronto' : sitAtual === 'concluidos' ? 'Nenhum pedido concluído' : 'Nenhum pedido agendado'}
-                  texto={sitAtual === 'aceitar' ? 'Os pedidos do cardápio aparecem aqui pra você aceitar.' : 'Quando tiver, eles aparecem aqui.'} />
+                <TelaVazia icone={<Receipt size={30} />} titulo={sitAtual === 'aceitar' ? 'Nenhum pedido para aceitar' : sitAtual === 'prontos' ? 'Nenhum pedido pronto' : sitAtual === 'concluidos' ? 'Nenhum pedido concluído' : 'Nenhum pedido agendado'}
+                  texto={sitAtual === 'aceitar' ? 'Os pedidos do cardápio aparecem aqui para você aceitar.' : 'Quando tiver, eles aparecem aqui.'} />
               ) : (
               <div className="pd-grupos pdk-grupos">
                 {gruposCel.map(g => {
@@ -618,7 +618,7 @@ export default function Pedidos() {
                 {computador && <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>}
                 {grupos.map(g => (
                   <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
-                    <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? (g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite pra entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite pra entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>
+                    <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? (g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite para entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite para entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>
                     <div className="pdl-tabela" role="table">{g.itens.map(p => <LinhaPedido key={p.id} {...props(p)} comDia={g.chave === 'concluidos' || g.chave === 'semdata' || g.chave === 'antes'} />)}</div>
                   </section>
                 ))}
@@ -643,7 +643,7 @@ export default function Pedidos() {
 
       <Janela
         aberta={semProdutos} aoFechar={() => setSemProdutos(false)}
-        titulo="Cadastre um produto primeiro" texto="Pra registrar um pedido, você precisa ter pelo menos um produto."
+        titulo="Cadastre um produto primeiro" texto="Para registrar um pedido, você precisa ter pelo menos um produto."
         icone={<Cake size={32} />}
         acoes={<>
           <Botao variante="secundario" onClick={() => setSemProdutos(false)}>Voltar</Botao>

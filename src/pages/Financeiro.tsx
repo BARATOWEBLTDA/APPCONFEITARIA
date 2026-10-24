@@ -188,7 +188,7 @@ export default function Financeiro() {
 
       {algumErro && (
         <div className="fd-erro" role="alert">
-          <span>Não deu pra carregar tudo. Confira a internet e tente de novo.</span>
+          <span>Não deu para carregar tudo. Confira a internet e tente de novo.</span>
           <Botao variante="secundario" tamanho="m" onClick={depoisDeMudar}>Tentar de novo</Botao>
         </div>
       )}
@@ -243,7 +243,7 @@ export default function Financeiro() {
         {/* computador: listas com o botão em cada linha */}
         <div className="fd-a-listas fd-listas">
           <div className="fd-card fd-lst">
-            <div className="fd-ct"><span><b>Pra receber</b><small className="fd-ct-sub">{!rec ? "…" : rec.erro ? "Não deu pra carregar" : rec.qtd ? `${brl(rec.total)} em ${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}` : "Tudo recebido"}</small></span>
+            <div className="fd-ct"><span><b>Para receber</b><small className="fd-ct-sub">{!rec ? "…" : rec.erro ? "Não deu para carregar" : rec.qtd ? `${brl(rec.total)} em ${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}` : "Tudo recebido"}</small></span>
               <button type="button" className="fd-ct-lk" onClick={() => navigate("/financeiro/a-receber")}>Ver todos<CaretRight size={13} weight="bold" /></button></div>
             {recItens && recItens.length === 0 && <p className="fd-vazio">Nenhum pedido com valor a receber.</p>}
             {(recItens || []).slice(0, 3).map(it => (
@@ -256,7 +256,7 @@ export default function Financeiro() {
             ))}
           </div>
           <div className="fd-card fd-lst">
-            <div className="fd-ct"><span><b>Pra pagar</b><small className="fd-ct-sub">{pag === undefined ? "…" : pag === null ? "Falta o SQL das contas a pagar" : pag.erro ? "Não deu pra carregar" : pag.qtd ? `${brl(pag.total)} em ${pag.qtd} ${pag.qtd === 1 ? "conta" : "contas"}` : "Nenhuma conta pendente"}</small></span>
+            <div className="fd-ct"><span><b>Para pagar</b><small className="fd-ct-sub">{pag === undefined ? "…" : pag === null ? "Falta o SQL das contas a pagar" : pag.erro ? "Não deu para carregar" : pag.qtd ? `${brl(pag.total)} em ${pag.qtd} ${pag.qtd === 1 ? "conta" : "contas"}` : "Nenhuma conta pendente"}</small></span>
               <button type="button" className="fd-ct-lk" onClick={() => navigate("/financeiro/a-pagar")}>Ver todas<CaretRight size={13} weight="bold" /></button></div>
             {(contas || []).map(c => {
               const venceu = c.vencimento < isoDia(0);
@@ -409,7 +409,7 @@ function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
     <div className="fd-fluxo" ref={caixa}>
       <div className={`fd-fl-dica${gs ? "" : " vazia"}`} aria-live="polite">
         {gs ? <><b>{gs.hoje && !porSemana ? "Hoje" : gs.titulo}</b><span><em className="e">+ {brl(gs.entradas)}</em> · <em className="s">− {brl(gs.saidas)}</em></span></>
-          : vazio ? "Nenhuma entrada ou saída neste período" : "Toque num dia pra ver os valores"}
+          : vazio ? "Nenhuma entrada ou saída neste período" : "Toque em um dia para ver os valores"}
       </div>
       <svg viewBox={`0 0 ${W} ${H + 22}`} width="100%" height={H + 22} role="img" aria-label={`Entradas e saídas ${porSemana ? "por semana" : "por dia"}`}
         onPointerLeave={e => { if (ehMouse(e)) setSel(null); }}>
@@ -548,7 +548,7 @@ const CSS = `
   .fd-var { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fd-k i, .fd-k2 i { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fd-k2 i span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  /* (4.29) listas Pra receber / Pra pagar (computador) */
+  /* (4.29) listas Para receber / Para pagar (computador) */
   .fd-listas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
   .fd-lst { display: flex; flex-direction: column; }
   .fd-lst-it { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 14px; align-items: center; padding: 10px 0; border-top: 1px solid #F6F1F3; }

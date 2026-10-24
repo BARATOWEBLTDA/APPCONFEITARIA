@@ -32,7 +32,7 @@ function inicioPeriodo(p: Periodo): Date | null {
 const STATUS: Record<string, [string, string]> = {
   novo: ["Novo pedido", "am"], aguardando_aceite: ["Novo pedido", "am"], aguardando_pagamento: ["Aguardando pagamento", "am"],
   agendado: ["Agendado", "bl"], confirmado: ["Agendado", "bl"], em_producao: ["Em produção", "rs"], finalizado: ["Pronto", "ok"],
-  aguardando_retirada: ["Pronto", "ok"], em_entrega: ["Saiu pra entrega", "bl"], entregue: ["Entregue", "ok"], concluido: ["Entregue", "ok"], cancelado: ["Cancelado", "cz"],
+  aguardando_retirada: ["Pronto", "ok"], em_entrega: ["Saiu para entrega", "bl"], entregue: ["Entregue", "ok"], concluido: ["Entregue", "ok"], cancelado: ["Cancelado", "cz"],
 };
 
 export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, onShare }: { profile: any; linkCardapio: string; publicado: boolean; onShare: () => void }) {
@@ -129,7 +129,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
           {qr && (
             <div className="vgd-qr">
               <img src={qr} alt="QR Code do cardápio" />
-              <button type="button" onClick={baixarQr}>QR Code pra imprimir · <u>Baixar</u></button>
+              <button type="button" onClick={baixarQr}>QR Code para imprimir · <u>Baixar</u></button>
             </div>
           )}
         </div>
@@ -169,7 +169,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
                 <p className="vgd-gt">Visitas por dia</p>
                 {metr.porDia.every(x => x.n === 0) ? (
                   <div className="vgd-gv">
-                    <span>Ninguém abriu o cardápio {periodo === "7d" ? "nos últimos 7 dias" : "nos últimos 30 dias"}. Mande o link pros seus clientes.</span>
+                    <span>Ninguém abriu o cardápio {periodo === "7d" ? "nos últimos 7 dias" : "nos últimos 30 dias"}. Mande o link para os seus clientes.</span>
                     <button type="button" className="vgd-b vgd-bw" onClick={onShare}>Enviar no WhatsApp</button>
                   </div>
                 ) : (
@@ -196,7 +196,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
             {ultimos.length > 0 && <Botao variante="link" iconeDepois={<CaretRight size={16} weight="bold" />} onClick={() => navigate("/pedidos")}>Ver todos</Botao>}
           </div>
           {!dados ? <p className="vgd-vazio">Carregando…</p> : ultimos.length === 0 ? (
-            <p className="vgd-vazio">Nenhum pedido pelo cardápio ainda. Compartilhe o link pra receber o primeiro.</p>
+            <p className="vgd-vazio">Nenhum pedido pelo cardápio ainda. Compartilhe o link para receber o primeiro.</p>
           ) : ultimos.map(p => {
             const [st0, cor] = STATUS[p.status] || ["Agendado", "bl"];
             const st = st0 === "Entregue" && p.tipo_entrega !== "entrega" ? "Retirado" : st0;

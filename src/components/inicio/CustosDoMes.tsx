@@ -41,11 +41,11 @@ export default function CustosDoMes({ recebido, fixos, mostrarVazio = false }: {
       </div>
       <p className="cdm-p">
         {vazio
-          ? <>Cadastre aluguel, luz, gás e internet pra ver quanto as entradas do mês já pagaram deles.</>
+          ? <>Cadastre aluguel, luz, gás e internet para ver quanto as entradas do mês já pagaram deles.</>
           : pago >= 100
-          ? <>As entradas do mês já cobrem todos os custos fixos ({real(fixos)}). Daqui pra frente, é lucro.</>
+          ? <>As entradas do mês já cobrem todos os custos fixos ({real(fixos)}). Daqui para frente, é lucro.</>
           : falta > 0.009
-          ? <>As entradas cobrem <b>{pago}%</b> dos custos fixos ({real(fixos)}). Pra chegar no esperado de hoje, faltam <b>{real(falta)}</b>.</>
+          ? <>As entradas cobrem <b>{pago}%</b> dos custos fixos ({real(fixos)}). Para chegar no esperado de hoje, faltam <b>{real(falta)}</b>.</>
           : <>As entradas cobrem <b>{pago}%</b> dos custos fixos ({real(fixos)}). Você está em dia com o mês.</>}
       </p>
       <button type="button" className="cdm-ver" onClick={() => navigate("/custos")}>{vazio ? "Cadastrar custos" : "Ver custos"} <CaretRight size={14} weight="bold" aria-hidden="true" /></button>

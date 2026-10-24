@@ -40,10 +40,10 @@ export default class TelaDeErro extends Component<{ children: ReactNode }, Estad
           <Mascote pose="senha" className="ne-masc" />
           <NomeDoonly className="ne-nome" />
           <h1 className="ne-h">Algo deu errado por aqui</h1>
-          <p className="ne-p">Não foi nada que você fez. Recarregue o app pra continuar de onde parou.</p>
+          <p className="ne-p">Não foi nada que você fez. Recarregue o app para continuar de onde parou.</p>
           <div className="sis-erro-acoes">
             <Botao cheio icone={<ArrowClockwise size={20} weight="bold" />} onClick={() => window.location.reload()}>Recarregar</Botao>
-            {!noInicio && <Botao cheio variante="secundario" onClick={() => { window.location.href = "/inicio"; }}>Voltar pro início</Botao>}
+            {!noInicio && <Botao cheio variante="secundario" onClick={() => { window.location.href = "/inicio"; }}>Voltar para o início</Botao>}
           </div>
         </main>
       </div>

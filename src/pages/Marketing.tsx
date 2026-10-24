@@ -38,7 +38,7 @@ export default function Marketing() {
     setSalvando(true);
     const { error } = await supabase.from("profiles").update({ facebook_pixel_id: valor }).eq("id", profile.id);
     setSalvando(false);
-    if (error) { avisar("Não deu pra salvar. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+    if (error) { avisar("Não deu para salvar. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
     await refreshProfile();
     avisar(valor ? "Pixel salvo. Ele já roda no seu cardápio." : "Pixel removido do cardápio", { tipo: "ok" });
   };
@@ -46,8 +46,8 @@ export default function Marketing() {
 
   return (
     <>
-      <AppPageHeader title="Marketing" subtitle="Ferramentas pra divulgar e vender mais" infoComo={COMO_MARKETING} infoTour={TOUR_MARKETING}
-        infoContent={<><p>Aqui ficam as ferramentas pra divulgar sua confeitaria.</p><p>O <strong>Pixel do Facebook</strong> conta pro Facebook e pro Instagram quem visitou o seu cardápio e quem fez pedido. Com isso os anúncios chegam em quem tem mais chance de comprar.</p></>} />
+      <AppPageHeader title="Marketing" subtitle="Ferramentas para divulgar e vender mais" infoComo={COMO_MARKETING} infoTour={TOUR_MARKETING}
+        infoContent={<><p>Aqui ficam as ferramentas para divulgar sua confeitaria.</p><p>O <strong>Pixel do Facebook</strong> conta pro Facebook e pro Instagram quem visitou o seu cardápio e quem fez pedido. Com isso os anúncios chegam em quem tem mais chance de comprar.</p></>} />
       <div className="mk">
         <div className="mk-abas" role="tablist" aria-label="Ferramentas de marketing">
           <button type="button" role="tab" aria-selected={aba === "cupons"} onClick={() => setAba("cupons")}><Ticket size={18} weight="bold" aria-hidden="true" />Cupons</button>
@@ -66,7 +66,7 @@ export default function Marketing() {
                 <span className={`mk-status${salvo ? " on" : ""}`}>{salvo ? "Ativo" : "Desligado"}</span>
               </div>
               <Campo rotulo="ID do pixel" placeholder="Ex.: 123456789012345" inputMode="numeric" autoComplete="off" maxLength={20}
-                value={id} erro={erro} dica="Só os números. Deixe vazio pra desligar."
+                value={id} erro={erro} dica="Só os números. Deixe vazio para desligar."
                 onChange={e => setId(e.target.value.replace(/\D/g, ""))} />
               <div className="mk-acoes">
                 <Botao onClick={salvar} carregando={salvando} disabled={!mudou && !!salvo}>Salvar</Botao>

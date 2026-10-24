@@ -115,7 +115,7 @@ export default function Custos() {
       <EstiloFinanceiro />
       <div className="cu">
         {erro ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os custos" texto="Confira a internet e tente de novo."
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os custos" texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={() => { setCarregando(true); carregar(); }}>Tentar de novo</Botao>} />
         ) : (<>
         <div className="cu-resumo">
@@ -241,7 +241,7 @@ function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFi
     // 11/10: confere se excluiu mesmo (antes a folha fechava e o custo reaparecia)
     const { error } = await supabase.from("custos_fixos").delete().eq("id", item.id);
     setOcupado(false);
-    if (error) { console.error("[custos] não excluiu:", error); setExcluir(false); setErro(explicarErro(error, "Não deu pra excluir. Tente de novo.")); return; }
+    if (error) { console.error("[custos] não excluiu:", error); setExcluir(false); setErro(explicarErro(error, "Não deu para excluir. Tente de novo.")); return; }
     onFeito();
   };
   return (
@@ -291,7 +291,7 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
     // 11/10: confere se excluiu mesmo (antes a folha fechava e o custo reaparecia)
     const { error } = await supabase.from("custos_variaveis").delete().eq("id", item.id);
     setOcupado(false);
-    if (error) { console.error("[custos] não excluiu:", error); setExcluir(false); setErro(explicarErro(error, "Não deu pra excluir. Tente de novo.")); return; }
+    if (error) { console.error("[custos] não excluiu:", error); setExcluir(false); setErro(explicarErro(error, "Não deu para excluir. Tente de novo.")); return; }
     onFeito();
   };
   return (
@@ -310,7 +310,7 @@ function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: Cus
           <button type="button" className={forma === "debito" ? "on" : ""} onClick={() => setForma("debito")}>Débito</button>
         </div>
       </>)}
-      {v > 0 && <div className="fo-dica">Numa venda de <b>R$ 100,00</b>, este custo é <b>{brl(tipo === "percentual" ? v : v)}</b>{tipo === "percentual" ? "" : " (por pedido, qualquer valor)"}.</div>}
+      {v > 0 && <div className="fo-dica">Em uma venda de <b>R$ 100,00</b>, este custo é <b>{brl(tipo === "percentual" ? v : v)}</b>{tipo === "percentual" ? "" : " (por pedido, qualquer valor)"}.</div>}
       <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no lucro do mês e na ficha técnica" : "Não entra nas contas enquanto estiver pausado"} />
       {erro && <p className="fo-erro">{erro}</p>}
       {excluir ? <Excluir nome={item?.nome || ""} ocupado={ocupado} onNao={() => setExcluir(false)} onSim={apagar} /> : (<>
@@ -366,7 +366,7 @@ function InvisiveisSheet({ uid, atual, onClose, onFeito }: { uid: string; atual:
     setOcupado(false);
     if (error) {
       const semColuna = error.code === "PGRST204" || error.code === "42703" || /custos_invisiveis_pct/i.test(String(error.message || ""));
-      setErro(semColuna ? "Falta um ajuste no banco pra salvar (SQL 4.30)." : "Não foi possível salvar agora."); return;
+      setErro(semColuna ? "Falta um ajuste no banco para salvar (SQL 4.30)." : "Não foi possível salvar agora."); return;
     }
     onFeito(v);
   };

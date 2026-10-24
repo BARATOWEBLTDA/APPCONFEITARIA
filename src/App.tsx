@@ -120,8 +120,8 @@ function SemInternetNaEntrada({ tentando, aoTentar }: { tentando: boolean; aoTen
         <Mascote pose="senha" className="ne-masc" />
         <NomeDoonly className="ne-nome" />
         {/* (11/10) o aparelho diz que tem conexão: o problema pode ser do servidor, não da internet dela */}
-        <h1 className="ne-h">{navigator.onLine !== false ? "Não deu pra conectar agora" : "Você está sem internet"}</h1>
-        <p className="ne-p">Sua conta continua aberta neste aparelho. Confira a conexão pra continuar.</p>
+        <h1 className="ne-h">{navigator.onLine !== false ? "Não deu para conectar agora" : "Você está sem internet"}</h1>
+        <p className="ne-p">Sua conta continua aberta neste aparelho. Confira a conexão para continuar.</p>
         <Botao cheio carregando={tentando} icone={<ArrowClockwise size={20} weight="bold" />} onClick={aoTentar}>Tentar de novo</Botao>
       </main>
     </div>

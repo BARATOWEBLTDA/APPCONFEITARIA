@@ -237,7 +237,7 @@ export function useAtualizacoes(): { updates: Update[]; loading: boolean } {
           titulo: nSemFoto === 1
             ? "1 produto sem foto"
             : `${nSemFoto} produtos sem foto`,
-          descricao: "Produto com foto vende mais. Adicione pra chamar atenção no cardápio.",
+          descricao: "Produto com foto vende mais. Adicione para chamar atenção no cardápio.",
           cta: "Ver produtos",
           path: "/produtos",
           prioridade: 30,
@@ -256,7 +256,7 @@ export function useAtualizacoes(): { updates: Update[]; loading: boolean } {
             categoria: "Oportunidade",
             categoriaCor: "rosa",
             titulo: `${sumidos} clientes sumidos`,
-            descricao: `Sem comprar há mais de 60 dias. Mande uma mensagem pra chamar de volta.`,
+            descricao: `Sem comprar há mais de 60 dias. Mande uma mensagem para chamar de volta.`,
             cta: "Ver clientes",
             path: "/clientes",
             prioridade: 20,

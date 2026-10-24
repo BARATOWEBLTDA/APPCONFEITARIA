@@ -55,7 +55,7 @@ export function validarCardapio(profile: any): CardapioValidacao {
 
   let mensagem = "";
   if (faltando.length === 0) {
-    mensagem = "Cardápio pronto pra publicar!";
+    mensagem = "Cardápio pronto para publicar!";
   } else if (faltando.length === 1) {
     mensagem = `Falta preencher: ${faltando[0]}`;
   } else {

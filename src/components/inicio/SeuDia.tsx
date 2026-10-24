@@ -120,7 +120,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
       )}
       {erro ? (
         <div className="sd-erro" role="alert">
-          <p>Não deu pra carregar o seu dia. Confira a internet e tente de novo.</p>
+          <p>Não deu para carregar o seu dia. Confira a internet e tente de novo.</p>
           <Botao variante="secundario" tamanho="m" onClick={aoTentar}>Tentar de novo</Botao>
         </div>
       ) : carregando ? (
@@ -131,7 +131,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
           <div>
             {/* (21/10) com pedido esperando, a frase diz o que fazer (antes "Sua agenda está livre" com 3 pedidos lá em cima) */}
             <b>Nada marcado nos próximos dias</b>
-            <span>{novos > 0 ? `Aceite ${novos === 1 ? "o pedido" : `os ${novos} pedidos`} pra ${novos === 1 ? "ele entrar" : "eles entrarem"} aqui` : "Os pedidos aceitos aparecem aqui"}</span>
+            <span>{novos > 0 ? `Aceite ${novos === 1 ? "o pedido" : `os ${novos} pedidos`} para ${novos === 1 ? "ele entrar" : "eles entrarem"} aqui` : "Os pedidos aceitos aparecem aqui"}</span>
           </div>
         </div>
       ) : (
@@ -139,7 +139,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
           {/* (16/10) dia vazio com a altura de uma entrega: o cartão não encolhe (antes o de baixo subia e parecia abrir) */}
           {doDia && lista.length === 0 && (
             <div className="sd-dvazio">
-              <span>{diaSel! < hoje ? "Nada entregue no dia" : "Nada marcado pro dia"} {Number(diaSel!.slice(8, 10))}</span>
+              <span>{diaSel! < hoje ? "Nada entregue no dia" : "Nada marcado para o dia"} {Number(diaSel!.slice(8, 10))}</span>
               <button type="button" onClick={() => setDiaSel(null)}>Ver todas</button>
             </div>
           )}

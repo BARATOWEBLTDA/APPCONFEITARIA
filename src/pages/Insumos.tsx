@@ -111,7 +111,7 @@ export default function Insumos() {
     // (11/10) se não der pra saber em quantas fichas ele está, não exclui (antes a pergunta dizia "Ele sai da sua lista"
     // pra ingrediente usado em fichas técnicas)
     const { data: usos, error: erroUsos } = await supabase.from("produto_insumos").select("produto_id").eq("insumo_id", i.id);
-    if (erroUsos || !usos) { avisar(explicarErro(erroUsos, "Não deu pra conferir as fichas técnicas. Tente de novo."), { tipo: "erro" }); return; }
+    if (erroUsos || !usos) { avisar(explicarErro(erroUsos, "Não deu para conferir as fichas técnicas. Tente de novo."), { tipo: "erro" }); return; }
     const n = new Set(usos.map((r: any) => r.produto_id)).size;
     const ok = await confirmar({
       titulo: `Excluir ${i.nome}?`,
@@ -125,8 +125,8 @@ export default function Insumos() {
     if (error) {
       // 23503: o banco não deixa apagar ingrediente que ainda está em ficha técnica
       avisar(error.code === "23503"
-        ? "Esse ingrediente está em fichas técnicas, por isso não dá pra excluir."
-        : explicarErro(error, "Não deu pra excluir. Tente de novo."), { tipo: "erro" });
+        ? "Esse ingrediente está em fichas técnicas, por isso não dá para excluir."
+        : explicarErro(error, "Não deu para excluir. Tente de novo."), { tipo: "erro" });
       return;
     }
     fecharForm();
@@ -137,10 +137,10 @@ export default function Insumos() {
   const cabecalho = (
     <AppPageHeader voltar="/cadastros"
       title="Ingredientes" infoComo={COMO_INGREDIENTES} infoTour={TOUR_INGREDIENTES}
-      subtitle={loading || insumos.length === 0 ? "O que você compra pra produzir" : `${insumos.length} ${insumos.length === 1 ? "cadastrado" : "cadastrados"}`}
+      subtitle={loading || insumos.length === 0 ? "O que você compra para produzir" : `${insumos.length} ${insumos.length === 1 ? "cadastrado" : "cadastrados"}`}
       infoContent={
         <>
-          <p>Aqui fica tudo o que você compra pra produzir: ingredientes, embalagens, decorações e descartáveis.</p>
+          <p>Aqui fica tudo o que você compra para produzir: ingredientes, embalagens, decorações e descartáveis.</p>
           <p>Com o preço de cada um, a ficha técnica calcula quanto custa cada produto e quanto você lucra de verdade.</p>
         </>
       }
@@ -155,11 +155,11 @@ export default function Insumos() {
         {loading ? (
           <div className="cl9-esq" aria-label="Carregando ingredientes">{[0, 1, 2, 3, 4].map(k => <span key={k} />)}</div>
         ) : erroCarga ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os ingredientes" texto={erroCarga}
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os ingredientes" texto={erroCarga}
             acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : insumos.length === 0 ? (
           <TelaVazia caixa icone={<Egg size={30} />} titulo="Nenhum ingrediente ainda"
-            texto="Cadastre o que você compra (leite condensado, chocolate, caixas…) com o preço pago. A ficha técnica usa isso pra calcular o custo de cada produto."
+            texto="Cadastre o que você compra (leite condensado, chocolate, caixas…) com o preço pago. A ficha técnica usa isso para calcular o custo de cada produto."
             acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrirForm(null)}>Cadastrar ingrediente</Botao>} />
         ) : (
           <section className="cl9-card">

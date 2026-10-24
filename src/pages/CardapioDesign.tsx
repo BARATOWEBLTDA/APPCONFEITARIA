@@ -60,7 +60,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       if (error) throw error;
       return true;
     } catch (err) {
-      avisar(explicarErro(err, "Não deu pra salvar. Tente de novo."), { tipo: "erro" });
+      avisar(explicarErro(err, "Não deu para salvar. Tente de novo."), { tipo: "erro" });
       return false;
     }
   };
@@ -222,7 +222,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (!userId) return;
     setUploading("capa");
     const url = await uploadImage(file, `banners/${userId}-capa-natal`);
-    if (!url) avisar("Não deu pra enviar a imagem. Confira a internet e tente de novo.", { tipo: "erro" });
+    if (!url) avisar("Não deu para enviar a imagem. Confira a internet e tente de novo.", { tipo: "erro" });
     else await salvarCapa(url);
     setUploading(null);
   };
@@ -262,7 +262,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         showSuccess();
       }
     } else {
-      avisar("Não deu pra enviar a logo. Confira a internet e tente de novo.", { tipo: "erro" });
+      avisar("Não deu para enviar a logo. Confira a internet e tente de novo.", { tipo: "erro" });
     }
     setUploading(null);
   };
@@ -272,7 +272,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     setUploading(`banner${index}`);
     const suffix = index === 0 ? "" : `-${index}`;
     const url = await uploadImage(file, `banners/${userId}${suffix}`);
-    if (!url) avisar("Não deu pra enviar a imagem. Confira a internet e tente de novo.", { tipo: "erro" });
+    if (!url) avisar("Não deu para enviar a imagem. Confira a internet e tente de novo.", { tipo: "erro" });
     if (url) {
       const fields = [setBannerUrl, setBanner1Url, setBanner2Url, setBanner3Url];
       const keys = ["banner_url", "banner1_url", "banner2_url", "banner3_url"];
@@ -328,7 +328,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (!userId) return;
     setUploading("banner-topo");
     const url = await uploadImage(file, `banners/${userId}-topo`);
-    if (!url) avisar("Não deu pra enviar a imagem. Confira a internet e tente de novo.", { tipo: "erro" });
+    if (!url) avisar("Não deu para enviar a imagem. Confira a internet e tente de novo.", { tipo: "erro" });
     if (url) {
       // (11/10) a foto nova só aparece na tela depois de gravar no perfil
       if (await gravar({ banner_topo_url: url })) {
@@ -443,7 +443,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         infoIcon="🎨" infoComo={COMO_APARENCIA} infoTour={TOUR_APARENCIA}
         infoContent={<>
           <p>Aqui você deixa o <strong>cardápio com a cara da sua confeitaria</strong>: a logo, os banners de promoção e as cores.</p>
-          <p>Tudo é salvo na hora e já aparece pros seus clientes. Use o <strong>"Ver meu cardápio"</strong> pra conferir como ficou.</p>
+          <p>Tudo é salvo na hora e já aparece para os seus clientes. Use o <strong>"Ver meu cardápio"</strong> para conferir como ficou.</p>
         </>}
         infoTip={<>As <strong>cores</strong> são do plano PRO.</>}
       />
@@ -473,7 +473,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               <div className="ap-capa-img" style={{ backgroundImage: `url(${temaCapa || CAPA_NATAL_PADRAO})` }}>
                 {!temaCapa && <span>Imagem padrão do tema</span>}
                 {uploading === "capa" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
-                {temaCapa && <BotaoIcone rotulo="Voltar pra imagem padrão" variante="neutro" tamanho="p" className="ap-tirar ap-capa-x" onClick={() => salvarCapa("")}><X size={18} weight="bold" /></BotaoIcone>}
+                {temaCapa && <BotaoIcone rotulo="Voltar para a imagem padrão" variante="neutro" tamanho="p" className="ap-tirar ap-capa-x" onClick={() => salvarCapa("")}><X size={18} weight="bold" /></BotaoIcone>}
               </div>
               <div className="ap-capa-bts">
                 <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => capaRef.current?.click()}>Enviar a minha</Botao>
@@ -648,7 +648,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
                       value={hexDigitando?.campo === it.campo ? hexDigitando.texto : it.valor}
                       onChange={e => digitarHex(it.campo, e.target.value, it.set)}
                       onBlur={() => setHexDigitando(null)} /></div>
-                    <BotaoIcone rotulo="Voltar pra cor padrão" variante="neutro" onClick={() => { setHexDigitando(null); handleColorChange(it.campo, PADRAO[it.campo], it.set); }}><ArrowCounterClockwise size={20} weight="bold" /></BotaoIcone>
+                    <BotaoIcone rotulo="Voltar para cor padrão" variante="neutro" onClick={() => { setHexDigitando(null); handleColorChange(it.campo, PADRAO[it.campo], it.set); }}><ArrowCounterClockwise size={20} weight="bold" /></BotaoIcone>
                     <Botao variante="suave" tamanho="m" onClick={() => setActivePicker(null)}>Pronto</Botao>
                   </div>
                 </div>
@@ -672,7 +672,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         {galeria.lista === null ? (
           <div className="ap-gal-vazio"><span className="ui-gira" aria-label="Carregando" /></div>
         ) : galeria.erro || galeria.lista.length === 0 ? (
-          <p className="ap-gal-vazio">{galeria.erro ? "Não deu pra abrir a galeria agora. Tente de novo." : "Ainda não há banners prontos. Em breve teremos novidades."}</p>
+          <p className="ap-gal-vazio">{galeria.erro ? "Não deu para abrir a galeria agora. Tente de novo." : "Ainda não há banners prontos. Em breve teremos novidades."}</p>
         ) : (() => {
           const cats = CATEGORIAS_BANNER.filter(c => galeria.lista!.some(b => b.categoria === c));
           const lista = galeria.lista!.filter(b => !galeria.cat || b.categoria === galeria.cat);
@@ -704,7 +704,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       <Janela aberta={capaGal.aberta} aoFechar={() => setCapaGal(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Imagens de Natal"
         acoes={<Botao variante="secundario" cheio onClick={() => setCapaGal(g => ({ ...g, aberta: false }))}>Fechar</Botao>} umaAcao>
         {capaGal.lista === null ? <div className="ap-gal-vazio"><span className="ui-gira" aria-label="Carregando" /></div>
-          : capaGal.erro || capaGal.lista.length === 0 ? <p className="ap-gal-vazio">{capaGal.erro ? "Não deu pra abrir agora. Tente de novo." : "Em breve teremos imagens de Natal aqui."}</p>
+          : capaGal.erro || capaGal.lista.length === 0 ? <p className="ap-gal-vazio">{capaGal.erro ? "Não deu para abrir agora. Tente de novo." : "Em breve teremos imagens de Natal aqui."}</p>
           : <div className="ap-capa-lista">{capaGal.lista.map(b => (
               <button key={b.id} type="button" className="ap-gal-it" onClick={async () => { if (b.so_pro && !isPro) { avisar("Essa imagem é do plano PRO.", { tipo: "info" }); return; } if (await salvarCapa(b.imagem_url)) setCapaGal(g => ({ ...g, aberta: false })); }}>
                 <img src={b.imagem_url} alt={b.titulo} loading="lazy" />

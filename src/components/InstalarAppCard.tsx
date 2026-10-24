@@ -79,7 +79,7 @@ export default function InstalarAppCard() {
         <div>
           <p className="ia-t">{pc ? "Instale o Doonly no computador" : "Instale o Doonly no celular"}</p>
           <p className="ia-d">{pc
-            ? "Abra o app direto da área de trabalho, numa janela só dele."
+            ? "Abra o app direto da área de trabalho, em uma janela só dele."
             : "Acesse com um toque direto da tela inicial e receba as novidades na hora."}</p>
         </div>
       </div>
@@ -99,10 +99,10 @@ export default function InstalarAppCard() {
       {modo === "inapp" && (
         <>
           <p className="ia-warn">
-            Pra instalar no iPhone, abra o Doonly no <b>Safari</b>. Aberto por dentro do Instagram ou do WhatsApp, a Apple não deixa instalar.
+            Para instalar no iPhone, abra o Doonly no <b>Safari</b>. Aberto por dentro do Instagram ou do WhatsApp, a Apple não deixa instalar.
           </p>
           <button className="ia-btn ia-btn--ghost" onClick={copiarLink}>
-            {copiado ? "Link copiado!" : "Copiar link pra colar no Safari"}
+            {copiado ? "Link copiado!" : "Copiar link para colar no Safari"}
           </button>
         </>
       )}

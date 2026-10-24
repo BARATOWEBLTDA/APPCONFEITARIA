@@ -292,10 +292,10 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       const res = await apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(termo)}`);
       const data = await res.json();
       if (data.images?.length) setImagens(data.images.slice(0, 3));
-      else avisar("Não achamos foto pra esse nome. Tente escolher do celular.", { tipo: "info" });
+      else avisar("Não achamos foto para esse nome. Tente escolher do celular.", { tipo: "info" });
     } catch (e) {
       console.error(e);
-      avisar("Não deu pra buscar agora. Confira a internet e tente de novo.", { tipo: "erro" });
+      avisar("Não deu para buscar agora. Confira a internet e tente de novo.", { tipo: "erro" });
     }
     setBuscandoImg(false);
   };
@@ -307,7 +307,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     const path = `insumos/${userId}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
     if (error) {
-      avisar("Não deu pra enviar a foto. Tente de novo.", { tipo: "erro" });
+      avisar("Não deu para enviar a foto. Tente de novo.", { tipo: "erro" });
       console.error(error);
     } else {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
@@ -361,7 +361,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     }
     setSaving(false);
 
-    if (error || !data) { avisar("Não deu pra salvar. Confira a internet e tente de novo.", { tipo: "erro" }); console.error(error); return; }
+    if (error || !data) { avisar("Não deu para salvar. Confira a internet e tente de novo.", { tipo: "erro" }); console.error(error); return; }
     onSaved({
       id: data.id,
       nome: data.nome,
@@ -442,7 +442,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         <div key={avisoNome} className="ig-aviso-meio" role="status">
           <MagnifyingGlass size={28} weight="bold" />
           <b>Escreva o nome primeiro</b>
-          <span>A Doo IA usa o nome e a marca pra achar a foto certa.</span>
+          <span>A Doo IA usa o nome e a marca para achar a foto certa.</span>
         </div>, document.body)}
 
       <Campo ref={nomeRef} rotulo="Nome" obrigatorio placeholder="Ex.: leite condensado" value={form.nome} erro={erroNome}
@@ -461,7 +461,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       <section className="ig-compra">
       <div className="ig-compra-cab">
         <b>Como você compra</b>
-        <small>Pra calcular quanto custa na receita</small>
+        <small>Para calcular quanto custa na receita</small>
       </div>
       <div>
         <p className="ig-rot">Vem em</p>
@@ -525,7 +525,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           </small>
         </div>
       ) : (
-        <p className="ig-dica">Coloque quanto vem e quanto pagou: o Doonly calcula o custo de cada {form.unidade === "un" ? "unidade" : "grama"} pra ficha técnica.</p>
+        <p className="ig-dica">Coloque quanto vem e quanto pagou: o Doonly calcula o custo de cada {form.unidade === "un" ? "unidade" : "grama"} para a ficha técnica.</p>
       )}
       </section>
 

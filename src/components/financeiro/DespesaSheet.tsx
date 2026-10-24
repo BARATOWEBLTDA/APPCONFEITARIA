@@ -86,7 +86,7 @@ export default function DespesaSheet({ onClose, onSalvo, onReceberPedido, tipo =
     if (!aPagar && (!data || data > isoDia())) { setErro(ehEntrada ? "Escolha uma data até hoje" : "Escolha uma data até hoje. Se ainda vai pagar, use Vou pagar."); return; }
     setSalvando(continuar ? "mais" : "um"); setErro("");
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setSalvando(""); setErro("Sua sessão expirou. Entre de novo pra lançar."); return; }
+    if (!user) { setSalvando(""); setErro("Sua sessão expirou. Entre de novo para lançar."); return; }
     const desc = descricao.trim() || nomeCategoriaFin(categoria);
     let error: any;
     if (aPagar) {
@@ -100,7 +100,7 @@ export default function DespesaSheet({ onClose, onSalvo, onReceberPedido, tipo =
     setSalvando("");
     if (error) {
       console.error("[financeiro] não consegui lançar:", error);
-      setErro(aPagar && faltaNoBanco(error) ? "Pra guardar contas a pagar, rode o SQL das contas a pagar no Supabase." : "Não deu pra salvar agora. Confira a internet e tente de novo.");
+      setErro(aPagar && faltaNoBanco(error) ? "Para guardar contas a pagar, rode o SQL das contas a pagar no Supabase." : "Não deu para salvar agora. Confira a internet e tente de novo.");
       return;
     }
     gravarUso(tipo, categoria);
@@ -112,7 +112,7 @@ export default function DespesaSheet({ onClose, onSalvo, onReceberPedido, tipo =
   };
 
   const notaCategoria = categoria === APORTE ? "Dinheiro seu colocado na confeitaria (aporte). Entra no saldo em caixa, mas não conta como venda."
-    : categoria === RETIRADA ? "Dinheiro que você tirou pra você. Sai do saldo em caixa, mas não conta como despesa do negócio." : "";
+    : categoria === RETIRADA ? "Dinheiro que você tirou para você. Sai do saldo em caixa, mas não conta como despesa do negócio." : "";
   const rotuloPrincipal = ehEntrada ? "Lançar entrada" : aPagar ? "Guardar conta a pagar" : "Lançar saída";
 
   return (
@@ -142,7 +142,7 @@ export default function DespesaSheet({ onClose, onSalvo, onReceberPedido, tipo =
       </>)}
       <label className="fo-lb" htmlFor="dsp-d">Descrição <em>(opcional)</em></label>
       <input id="dsp-d" className="fo-txt" autoComplete="off" maxLength={80}
-        placeholder={ehEntrada ? "Ex.: 30 brigadeiros pra vizinha" : aPagar ? "Ex.: aluguel da cozinha" : "Ex.: Atacadão, leite condensado"}
+        placeholder={ehEntrada ? "Ex.: 30 brigadeiros para a vizinha" : aPagar ? "Ex.: aluguel da cozinha" : "Ex.: Atacadão, leite condensado"}
         value={descricao} onChange={e => setDescricao(e.target.value)} />
       {aPagar ? (<>
         <p className="fo-lb">Vence quando?</p>

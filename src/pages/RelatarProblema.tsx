@@ -46,14 +46,14 @@ export default function RelatarProblema() {
       if (error) throw error;
       setOk(true);
     } catch (e: any) {
-      setErro("Não deu pra enviar agora. Confira a internet e tente de novo.");
+      setErro("Não deu para enviar agora. Confira a internet e tente de novo.");
       console.error(e);
     } finally { setEnviando(false); }
   };
 
   return (
     <>
-      <AppPageHeader title="Relatar um problema" subtitle="Conte pra gente o que não funcionou" onBack={() => voltarOuIr(navigate, "/configuracoes")} />
+      <AppPageHeader title="Relatar um problema" subtitle="Conte para a gente o que não funcionou" onBack={() => voltarOuIr(navigate, "/configuracoes")} />
       <div className="cl9 aj">
         {ok ? (
           <section className="cl9-card aj-ok">

@@ -62,7 +62,7 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
   }
   const copiar = async () => {
     if (await copiarTexto(codigo)) { setCopiado(true); avisar('Código copiado. Cole no app do seu banco.', { tipo: 'ok' }) }
-    else { avisar('Não deu pra copiar. Segure o código e copie, ou use o QR Code.', { tipo: 'erro' }) }
+    else { avisar('Não deu para copiar. Segure o código e copie, ou use o QR Code.', { tipo: 'erro' }) }
   }
 
   const jaPaguei = async () => {
@@ -74,7 +74,7 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
       const r: any = data
       aoPagar({ tipo: r?.tipo === 'sinal' ? 'sinal' : r?.tipo === 'total' ? 'total' : tipo, valor: Number(r?.valor) || valor })
     } catch {
-      avisar('Não deu pra avisar a loja. Confira a internet e toque de novo.', { tipo: 'erro' })
+      avisar('Não deu para avisar a loja. Confira a internet e toque de novo.', { tipo: 'erro' })
     } finally { setEnviando(false) }
   }
 

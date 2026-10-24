@@ -99,7 +99,7 @@ export default function Categorias() {
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
       setForm(f => ({ ...f, imagem_url: data.publicUrl }));
-    } else avisar("Não deu pra enviar a imagem. Tente de novo.", { tipo: "erro" });
+    } else avisar("Não deu para enviar a imagem. Tente de novo.", { tipo: "erro" });
     if (imgRef.current) imgRef.current.value = "";
     setUploading(null);
   };
@@ -118,7 +118,7 @@ export default function Categorias() {
       setSaving(false);
       // (4.24) o banco não deixa duas categorias com o mesmo nome
       if ((err as { code?: string } | null)?.code === "23505") { avisar("Já existe uma categoria com esse nome", { tipo: "erro" }); return; }
-      avisar(explicarErro(err, "Não deu pra salvar a categoria. Tente de novo."), { tipo: "erro" });
+      avisar(explicarErro(err, "Não deu para salvar a categoria. Tente de novo."), { tipo: "erro" });
     };
     if (form.id) {
       const antigo = categorias.find(c => c.id === form.id)?.nome;
@@ -158,18 +158,18 @@ export default function Categorias() {
     // (dava 0 e deixava excluir categoria com produtos). Se não der pra contar, não exclui.
     const { count, error: erroContar } = await supabase.from("produtos").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("categoria", cat.nome);
     if (erroContar || count == null) {
-      avisar(explicarErro(erroContar, "Não deu pra conferir os produtos da categoria. Tente de novo."), { tipo: "erro" });
+      avisar(explicarErro(erroContar, "Não deu para conferir os produtos da categoria. Tente de novo."), { tipo: "erro" });
       return;
     }
     const qtd = count;
     if (qtd > 0) {
-      await informar({ titulo: `${cat.nome} tem ${qtd} ${qtd === 1 ? "produto" : "produtos"}`, texto: `Mova ${qtd === 1 ? "o produto" : "os produtos"} pra outra categoria antes de excluir. Senão ${qtd === 1 ? "ele some" : "eles somem"} do cardápio.`, icone: "alerta" });
+      await informar({ titulo: `${cat.nome} tem ${qtd} ${qtd === 1 ? "produto" : "produtos"}`, texto: `Mova ${qtd === 1 ? "o produto" : "os produtos"} para outra categoria antes de excluir. Senão ${qtd === 1 ? "ele some" : "eles somem"} do cardápio.`, icone: "alerta" });
       return;
     }
-    const ok = await confirmar({ titulo: `Excluir a categoria ${cat.nome}?`, texto: "Ela sai do cardápio. Não dá pra desfazer.", rotulo: "Excluir", rotuloVoltar: "Cancelar", perigo: true });
+    const ok = await confirmar({ titulo: `Excluir a categoria ${cat.nome}?`, texto: "Ela sai do cardápio. Não dá para desfazer.", rotulo: "Excluir", rotuloVoltar: "Cancelar", perigo: true });
     if (!ok) return;
     const { error } = await supabase.from("categorias").delete().eq("id", cat.id!);
-    if (error) { avisar("Não deu pra excluir. Tente de novo.", { tipo: "erro" }); return; }
+    if (error) { avisar("Não deu para excluir. Tente de novo.", { tipo: "erro" }); return; }
     setCategorias(c => c.filter(x => x.id !== cat.id));
     avisar("Categoria excluída", { tipo: "ok" });
   };
@@ -199,7 +199,7 @@ export default function Categorias() {
         }
       } catch (e) {
         vezOrdem.current++;
-        avisar(explicarErro(e, "Não deu pra salvar a ordem. Tente de novo."), { tipo: "erro" });
+        avisar(explicarErro(e, "Não deu para salvar a ordem. Tente de novo."), { tipo: "erro" });
         if (userId) await loadCategorias(userId); // volta a mostrar a ordem que está gravada
       }
     });
@@ -228,7 +228,7 @@ export default function Categorias() {
         {loading ? (
           <div className="ct-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
         ) : erroCarga ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as categorias" texto={erroCarga}
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar as categorias" texto={erroCarga}
             acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : categorias.length === 0 ? (
           <TelaVazia caixa icone={<SquaresFour size={30} />} titulo="Nenhuma categoria ainda"

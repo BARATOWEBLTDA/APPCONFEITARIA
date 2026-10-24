@@ -86,10 +86,12 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
   );
-  const linha = (Ic: typeof Cake, titulo: string, sub: string, rota: string) => (
+  // (23/10) sem o cartão de Primeiros passos aqui: o que falta aparece como "Falta" na própria linha
+  const linha = (Ic: typeof Cake, titulo: string, sub: string, rota: string, falta = false) => (
     <button type="button" className="dl-li" onClick={() => navigate(rota)}>
       <span className="dl-li-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
-      <span className="dl-li-tx"><b>{titulo}</b><small>{sub}</small></span>
+      <span className="dl-li-tx"><b>{titulo}</b><small className={falta ? "falta" : ""}>{sub}</small></span>
+      {falta && <em className="dl-li-st falta">Falta</em>}
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
   );
@@ -102,7 +104,7 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
       <section className="dl-emb ml-produtos" aria-label="O que você vende">
         <h2 className="dl-emb-t">O que você vende</h2>
         <div className="dl-lista-c">
-          {linha(Cake, "Produtos", qtd(n?.produtos, "produto", "produtos", "Nenhum produto ainda"), "/produtos")}
+          {linha(Cake, "Produtos", qtd(n?.produtos, "produto", "produtos", "Nenhum ainda"), "/produtos", n?.produtos === 0)}
           {linha(SquaresFour, "Categorias", qtd(n?.categorias, "categoria", "categorias", "Nenhuma categoria ainda"), "/categorias")}
           {linha(Stack, "Complementos", qtd(n?.complementos, "complemento", "complementos", "Sabores, recheios e adicionais"), "/complementos")}
         </div>

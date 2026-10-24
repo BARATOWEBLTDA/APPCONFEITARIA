@@ -73,16 +73,16 @@ function etapasDo(p: Pedido): Etapa[] {
   } else if (p.pix_online) {
     e.push(p.pix_informado_em && Number(p.pix_informado_valor) > 0
       ? { titulo: `Pix enviado · ${dinheiro(Number(p.pix_informado_valor))}`, sub: 'A loja está conferindo', estado: 'feito' }
-      : { titulo: 'Aguardando o Pix', sub: 'Pague pra confirmar o pedido', estado: 'atencao' })
+      : { titulo: 'Aguardando o Pix', sub: 'Pague para confirmar o pedido', estado: 'atencao' })
   }
 
   e.push({ titulo: o >= 1 ? 'Aceito pela loja' : 'Esperando a loja aceitar', sub: o >= 1 ? quandoFoi(tempo(p, 'agendado', 'confirmado')) : 'A loja confirma em breve', estado: st(0) === 'agora' ? 'agora' : 'feito' })
   e.push({ titulo: 'Em produção', sub: o === 2 ? 'A loja avisa quando ficar pronto' : o > 2 ? quandoFoi(tempo(p, 'em_producao', 'em_preparo')) : undefined, estado: st(2) })
   if (ret) {
-    e.push({ titulo: 'Pronto pra retirar', sub: o >= 3 ? (quandoFoi(tempo(p, 'aguardando_retirada', 'finalizado', 'pronto')) || 'Já pode buscar') : undefined, estado: o >= 3 ? (o >= 5 ? 'feito' : 'agora') : 'depois' })
+    e.push({ titulo: 'Pronto para retirar', sub: o >= 3 ? (quandoFoi(tempo(p, 'aguardando_retirada', 'finalizado', 'pronto')) || 'Já pode buscar') : undefined, estado: o >= 3 ? (o >= 5 ? 'feito' : 'agora') : 'depois' })
     e.push({ titulo: 'Retirado', sub: diaCombinado(p, false) ? `Combinado ${diaCombinado(p, false)}` : undefined, estado: o >= 5 ? 'feito' : 'depois' })
   } else {
-    e.push({ titulo: 'Saiu pra entrega', sub: o === 3 ? 'Ficou pronto, sai em breve' : o === 4 ? (quandoFoi(tempo(p, 'em_entrega', 'a_caminho')) || 'A caminho') : undefined, estado: o >= 5 ? 'feito' : o >= 3 ? 'agora' : 'depois' })
+    e.push({ titulo: 'Saiu para entrega', sub: o === 3 ? 'Ficou pronto, sai em breve' : o === 4 ? (quandoFoi(tempo(p, 'em_entrega', 'a_caminho')) || 'A caminho') : undefined, estado: o >= 5 ? 'feito' : o >= 3 ? 'agora' : 'depois' })
     e.push({ titulo: 'Entregue', sub: diaCombinado(p, false) ? `Previsto ${diaCombinado(p, false)}` : undefined, estado: o >= 5 ? 'feito' : 'depois' })
   }
   return e
@@ -95,8 +95,8 @@ function frase(p: Pedido): string {
   if (o === 0) return p.pix_online && !pago && !p.pix_informado_em ? 'Falta pagar o Pix' : 'Esperando a loja aceitar'
   if (o === 1) return 'Pedido confirmado'
   if (o === 2) return 'Seu pedido está sendo feito'
-  if (o === 3) return ret ? 'Pronto pra retirar' : 'Ficou pronto'
-  if (o === 4) return 'Saiu pra entrega'
+  if (o === 3) return ret ? 'Pronto para retirar' : 'Ficou pronto'
+  if (o === 4) return 'Saiu para entrega'
   return ret ? 'Retirado' : 'Entregue'
 }
 

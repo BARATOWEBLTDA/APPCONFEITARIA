@@ -189,7 +189,7 @@ export default function ReceitasV2() {
       setCurti(s => comOuSem(s, r.id, ja));
       const volta = (x: Receita) => x.id === r.id ? { ...x, curtidas: Math.max(0, (x.curtidas || 0) - delta) } : x;
       setReceitas(l => l.map(volta)); setAberta(a => a && a.id === r.id ? volta(a) : a);
-      mostrarAviso("Não deu pra curtir agora. Tente de novo.", true);
+      mostrarAviso("Não deu para curtir agora. Tente de novo.", true);
     }
   };
   const alternarSalva = async (r: Receita) => {
@@ -204,7 +204,7 @@ export default function ReceitasV2() {
       : supabase.from("receitas_doonly_salvas").insert({ receita_id: r.id, user_id: userId })
     ).then(x => x, (e: unknown) => ({ error: e }));
     gravando.current.delete(chave);
-    if (error) { setSalvas(s => comOuSem(s, r.id, ja)); mostrarAviso("Não deu pra salvar agora. Tente de novo.", true); }
+    if (error) { setSalvas(s => comOuSem(s, r.id, ja)); mostrarAviso("Não deu para salvar agora. Tente de novo.", true); }
     else mostrarAviso(ja ? "Tirada das salvas" : "Guardada em Receitas salvas");
   };
   const compartilhar = async (r: Receita) => {
@@ -301,9 +301,9 @@ export default function ReceitasV2() {
   const grade = () => filtradas.length === 0 ? (
     vista.tipo === "salvas" && !q
       ? (erroSalvas
-        ? <TelaVazia compacta icone={<WarningCircle size={28} />} titulo="Não deu pra carregar as receitas salvas" texto="Tente de novo em instantes."
+        ? <TelaVazia compacta icone={<WarningCircle size={28} />} titulo="Não deu para carregar as receitas salvas" texto="Tente de novo em instantes."
             acao={<Botao onClick={() => { setVista({ tipo: "home" }); void carregar(); }}>Tentar de novo</Botao>} />
-        : <TelaVazia compacta icone={<BookmarkSimple size={28} />} titulo="Nenhuma receita salva" texto="Use o marcador dentro de uma receita pra guardar aqui." />)
+        : <TelaVazia compacta icone={<BookmarkSimple size={28} />} titulo="Nenhuma receita salva" texto="Use o marcador dentro de uma receita para guardar aqui." />)
       : <p className="cl9-semres">Nenhuma receita com esse nome ou ingrediente. Confira a busca.</p>
   ) : <div className="rv-grid">{filtradas.map(r => <Card key={r.id} r={r} />)}</div>;
 
@@ -339,17 +339,17 @@ export default function ReceitasV2() {
   // Tela inicial: categorias
   return (
     <>
-      <AppPageHeader title="Receitas" subtitle="Receitas prontas pra confeitaria"
+      <AppPageHeader title="Receitas" subtitle="Receitas prontas para confeitaria"
         infoContent={<>
           <p>Aqui ficam <strong>receitas prontas</strong> do Doonly: recheios, massas, coberturas e mais.</p>
-          <p>Use o marcador dentro de uma receita pra guardar nas suas salvas.</p>
+          <p>Use o marcador dentro de uma receita para guardar nas suas salvas.</p>
         </>} />
       <div className="rv-root">
         {campoBusca("Buscar receita ou ingrediente")}
         {loading ? (
           <div className="cl9-esq" aria-label="Carregando receitas">{[0, 1, 2, 3].map(k => <span key={k} />)}</div>
         ) : erroCarga ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as receitas" texto={erroCarga}
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar as receitas" texto={erroCarga}
             acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : q ? (
           <>

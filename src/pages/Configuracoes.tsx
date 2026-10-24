@@ -129,7 +129,7 @@ export default function Configuracoes() {
     const path = `avatars/${userId}.jpg`;
     const { error: uploadError } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
     if (uploadError) {
-      avisar("Não deu pra enviar a foto. Tente de novo.", { tipo: "erro" });
+      avisar("Não deu para enviar a foto. Tente de novo.", { tipo: "erro" });
       setPreview(form.foto_url || null);
     } else {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
@@ -138,7 +138,7 @@ export default function Configuracoes() {
       let erroGravar: unknown = null;
       try { erroGravar = (await supabase.from("profiles").update({ logo_url: publicUrl, foto_url: publicUrl }).eq("id", userId)).error; } catch (e) { erroGravar = e; }
       if (erroGravar) {
-        avisar(explicarErro(erroGravar, "Não deu pra salvar a foto. Tente de novo."), { tipo: "erro" });
+        avisar(explicarErro(erroGravar, "Não deu para salvar a foto. Tente de novo."), { tipo: "erro" });
         setPreview(form.foto_url || null);
       } else {
         setForm(f => ({ ...f, foto_url: publicUrl }));
@@ -158,7 +158,7 @@ export default function Configuracoes() {
     if (!nome) { setError("Escreva seu nome."); return; }
     setSaving(true); setError("");
     const { error: err } = await supabase.from("profiles").upsert({ id: userId, nome, nome_loja: form.nome_loja, foto_url: form.foto_url, telefone }, { onConflict: "id" });
-    if (err) setError("Não deu pra salvar. Confira a internet e tente de novo.");
+    if (err) setError("Não deu para salvar. Confira a internet e tente de novo.");
     else {
       setForm(f => ({ ...f, nome, telefone })); // gravou: agora sim o cartão de trás muda
       try { await supabase.auth.updateUser({ data: { nome, telefone } }); } catch { /* opcional */ }
@@ -182,22 +182,22 @@ export default function Configuracoes() {
       setSavingSenha(false);
       if (erroDeConexao(reauthErr)) return setSenhaMsg(SEM_INTERNET);
       const st = Number((reauthErr as { status?: number }).status) || 0;
-      if (st === 429 || st >= 500) return setSenhaMsg("Não deu pra conferir a senha agora. Tente de novo em instantes.");
+      if (st === 429 || st >= 500) return setSenhaMsg("Não deu para conferir a senha agora. Tente de novo em instantes.");
       return setSenhaMsg("A senha atual está errada.");
     }
     const { error } = await supabase.auth.updateUser({ password: novaSenha });
-    if (error) { setSavingSenha(false); return setSenhaMsg(explicarErro(error, "Não deu pra trocar a senha. Tente de novo.")); }
+    if (error) { setSavingSenha(false); return setSenhaMsg(explicarErro(error, "Não deu para trocar a senha. Tente de novo.")); }
     // sair dos outros aparelhos precisa do servidor: o signOut devolve o erro (não lança). Se falhar, avisa (10/10)
     let saiuDosOutros = false;
     try { saiuDosOutros = !(await supabase.auth.signOut({ scope: "others" })).error; } catch { /* avisa abaixo */ }
     setSavingSenha(false);
-    setSenhaMsg(saiuDosOutros ? "Senha alterada. Os outros aparelhos saíram da conta." : "Senha alterada. Não deu pra sair dos outros aparelhos agora.");
+    setSenhaMsg(saiuDosOutros ? "Senha alterada. Os outros aparelhos saíram da conta." : "Senha alterada. Não deu para sair dos outros aparelhos agora.");
     setSenhaAtual(""); setNovaSenha(""); setConfirmSenha("");
   };
 
   const sair = async () => {
     // (10/10) sai neste aparelho mesmo sem internet; só vai pro login quando a sessão daqui foi mesmo encerrada
-    if (!(await sairDaConta())) { avisar("Não deu pra sair agora. Tente de novo.", { tipo: "erro" }); return; }
+    if (!(await sairDaConta())) { avisar("Não deu para sair agora. Tente de novo.", { tipo: "erro" }); return; }
     navigate("/login");
   };
 
@@ -218,7 +218,7 @@ export default function Configuracoes() {
       await informar({ titulo: "Pedido recebido", texto: "Sua conta e todos os seus dados serão excluídos em até 7 dias. Se mudar de ideia, é só falar com a equipe Doonly.", icone: "ok" });
     } catch {
       setExcluindo(false);
-      avisar("Não deu pra registrar o pedido agora. Tente de novo ou fale com a equipe Doonly.", { tipo: "erro" });
+      avisar("Não deu para registrar o pedido agora. Tente de novo ou fale com a equipe Doonly.", { tipo: "erro" });
       return;
     }
     if (await sairDaConta()) navigate("/login");
@@ -236,7 +236,7 @@ export default function Configuracoes() {
         ) : (<>
           {/* Perfil não carregou: avisa e deixa tentar de novo (o resto da tela, com o Sair, continua) */}
           {erroCarregar && (
-            <TelaVazia caixa compacta icone={<WarningCircle size={30} />} titulo="Não deu pra carregar seu perfil" texto={erroCarregar}
+            <TelaVazia caixa compacta icone={<WarningCircle size={30} />} titulo="Não deu para carregar seu perfil" texto={erroCarregar}
               acao={<Botao tamanho="m" onClick={() => void carregar()}>Tentar de novo</Botao>} />
           )}
           {/* (14/10) Uma lista só, sem cards: Conta (minha conta e assinatura), App, Ajuda e Avançado. Sair embaixo. */}
@@ -345,8 +345,8 @@ export default function Configuracoes() {
           <Botao variante="perigo" onClick={excluirConta} carregando={excluindo} disabled={excluirConfirm.trim().toUpperCase() !== "EXCLUIR"}>Pedir a exclusão</Botao>
         </>}>
         <div className="cf9-exc">
-          <p>Sua conta, seu cardápio e todos os seus dados (produtos, pedidos, clientes) serão excluídos em até 7 dias. Não dá pra desfazer.</p>
-          <Campo rotulo='Pra confirmar, escreva "EXCLUIR"' placeholder="EXCLUIR" autoComplete="off" autoCapitalize="characters" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} />
+          <p>Sua conta, seu cardápio e todos os seus dados (produtos, pedidos, clientes) serão excluídos em até 7 dias. Não dá para desfazer.</p>
+          <Campo rotulo='Para confirmar, escreva "EXCLUIR"' placeholder="EXCLUIR" autoComplete="off" autoCapitalize="characters" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} />
         </div>
       </Janela>
     </>

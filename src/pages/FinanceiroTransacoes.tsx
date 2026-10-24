@@ -94,7 +94,7 @@ export default function FinanceiroTransacoes() {
   const avisar = (m: string) => avisarBase(m, { tipo: /^Não /.test(m) ? "erro" : "ok" });
   const exportar = () => {
     if (carregando) return;
-    if (erro) { avisar("Não deu pra carregar o extrato. Tente de novo."); return; }
+    if (erro) { avisar("Não deu para carregar o extrato. Tente de novo."); return; }
     // 10/10: os totais do cabeçalho saem das MESMAS linhas da planilha (a lista da tela, com os filtros) e não contam
     // as estornadas, que ficam marcadas na coluna Situação. Antes o cabeçalho era do período inteiro e não batia.
     const num = (v: number) => v.toFixed(2).replace(".", ",");
@@ -158,7 +158,7 @@ export default function FinanceiroTransacoes() {
         </div>
 
         {carregando ? <div className="tx-ph" /> : erro ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar o extrato" texto="Confira a internet e tente de novo."
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar o extrato" texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={carregar}>Tentar de novo</Botao>} />
         ) : lista.length === 0 ? (
           <div className="tx-vazio"><b>Nada por aqui {rotuloPeriodo(periodo)}</b><p>{itens.length ? "Nenhum item com esses filtros." : "Quando você receber um pedido ou lançar uma entrada ou saída, aparece aqui."}</p></div>
@@ -209,7 +209,7 @@ function DetalheSheet({ m, semEstorno, onClose, onAbrirPedido, onEstornado }: { 
       {m.pedidoId && <button type="button" className="fo-cta escuro" onClick={() => onAbrirPedido(m.pedidoId!)}><ArrowSquareOut size={16} weight="bold" style={{ verticalAlign: "-3px", marginRight: 6 }} />Abrir o pedido</button>}
       {!m.estornado && (confirmar ? (
         <div className="fo-dica" style={{ background: "#FEF2F2" }}>
-          <b>Estornar este lançamento?</b> {m.origem === "pagamento" ? "O valor sai do caixa e o pedido volta a ter esse valor a receber." : "O valor sai das contas do caixa e do mês. Se for o pagamento de uma conta, ela volta pra A pagar."} Nada é apagado: ele continua no extrato, riscado.
+          <b>Estornar este lançamento?</b> {m.origem === "pagamento" ? "O valor sai do caixa e o pedido volta a ter esse valor a receber." : "O valor sai das contas do caixa e do mês. Se for o pagamento de uma conta, ela volta para A pagar."} Nada é apagado: ele continua no extrato, riscado.
           <div className="fo-row" style={{ marginTop: 10 }}>
             <button type="button" className="fo-cta" style={{ marginTop: 0, background: "#fff", color: "#2C1219", border: "1.5px solid #EDE6E9", boxShadow: "none" }} onClick={() => setConfirmar(false)}>Voltar</button>
             <button type="button" className="fo-cta vermelho" style={{ marginTop: 0 }} onClick={fazer} disabled={ocupado}>{ocupado ? "Estornando…" : "Estornar"}</button>

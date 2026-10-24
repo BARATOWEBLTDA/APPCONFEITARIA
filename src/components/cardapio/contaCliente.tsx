@@ -100,11 +100,11 @@ export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta
     const { data: lista, error } = await supabase.rpc('cardapio_cliente', etapa === 'novo'
       ? { p_loja: loja, p_telefone: tel, p_nome: nome.trim() }
       : { p_loja: loja, p_telefone: digitos })
-    if (error) { setErro(explicarErro(error, 'Não deu pra entrar agora. Tente de novo.')); return }
+    if (error) { setErro(explicarErro(error, 'Não deu para entrar agora. Tente de novo.')); return }
     const r = Array.isArray(lista) ? lista[0] : null
     if (r) { const c = { id: r.id, nome: r.nome, telefone: r.telefone }; guardarCliente(loja, c); aoEntrar(c); aoFechar() }
     else if (etapa !== 'novo') setEtapa('novo')
-    else setErro('Não deu pra entrar agora. Tente de novo.')
+    else setErro('Não deu para entrar agora. Tente de novo.')
   }
 
   const entrar = async () => {
@@ -121,21 +121,21 @@ export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta
       })
       if (error && semFuncaoNova(error)) { await entrarAntigo(digitos); setIndo(false); return }
       // (11/10) falha na consulta (sem internet, banco fora) não é "número novo"
-      if (error) { setErro(explicarErro(error, 'Não deu pra entrar agora. Tente de novo.')); setIndo(false); return }
+      if (error) { setErro(explicarErro(error, 'Não deu para entrar agora. Tente de novo.')); setIndo(false); return }
       const r: any = data
       if (r?.status === 'ok' && r.cliente) {
         const c: Cliente = { id: r.cliente.id, nome: r.cliente.nome, telefone: r.cliente.telefone || tel, token: r.token }
         guardarCliente(loja, c); aoEntrar(c); aoFechar()
       } else if (r?.status === 'precisa_numero') setEtapa('numero')
       else if (r?.status === 'novo') setEtapa('novo')
-      else setErro(r?.erro || 'Não deu pra entrar agora. Tente de novo.')
-    } catch (err) { setErro(explicarErro(err, 'Não deu pra entrar agora. Tente de novo.')) }
+      else setErro(r?.erro || 'Não deu para entrar agora. Tente de novo.')
+    } catch (err) { setErro(explicarErro(err, 'Não deu para entrar agora. Tente de novo.')) }
     setIndo(false)
   }
 
   const titulo = etapa === 'novo' ? 'Primeira vez por aqui' : 'Entrar'
   const texto = etapa === 'novo' ? 'Não achamos pedidos desse número. Como você se chama?'
-    : etapa === 'numero' ? 'Pra sua segurança, confirme com o número de um pedido que você já fez aqui. Ele aparece na confirmação e na conversa do WhatsApp.'
+    : etapa === 'numero' ? 'Para sua segurança, confirme com o número de um pedido que você já fez aqui. Ele aparece na confirmação e na conversa do WhatsApp.'
     : 'Use o WhatsApp que você coloca nos pedidos. Assim você acompanha tudo por aqui.'
 
   return (
@@ -193,10 +193,10 @@ function situacao(p: Pedido): { txt: string; passo: number; tom: 'and' | 'ok' | 
     case 'em_producao':
     case 'em_preparo': return { txt: 'Em produção', passo: 2, tom: 'and' }
     case 'pronto':
-    case 'finalizado': return { txt: ret ? 'Pronto pra retirar' : 'Pronto', passo: 3, tom: 'and' }
-    case 'aguardando_retirada': return { txt: 'Pronto pra retirar', passo: 3, tom: 'and' }
+    case 'finalizado': return { txt: ret ? 'Pronto para retirar' : 'Pronto', passo: 3, tom: 'and' }
+    case 'aguardando_retirada': return { txt: 'Pronto para retirar', passo: 3, tom: 'and' }
     case 'a_caminho':
-    case 'em_entrega': return { txt: 'Saiu pra entrega', passo: 3, tom: 'and' }
+    case 'em_entrega': return { txt: 'Saiu para entrega', passo: 3, tom: 'and' }
     case 'concluido':
     case 'entregue': return { txt: ret ? 'Retirado' : 'Entregue', passo: 4, tom: 'ok' }
     case 'cancelado': return { txt: 'Cancelado', passo: 0, tom: 'off' }

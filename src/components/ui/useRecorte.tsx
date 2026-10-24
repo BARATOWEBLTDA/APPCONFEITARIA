@@ -30,7 +30,7 @@ export function useRecorte(enviar: (foto: File) => void, opcoes: { aspect?: numb
       onCropDone={blob => {
         setSrc(null)
         // (11/10) sem foto pronta, não envia (antes virava um arquivo quebrado de 4 bytes)
-        if (!blob || !blob.size) { avisar('Não deu pra preparar a foto. Tente outra imagem.', { tipo: 'erro' }); return }
+        if (!blob || !blob.size) { avisar('Não deu para preparar a foto. Tente outra imagem.', { tipo: 'erro' }); return }
         enviar(new File([blob], 'foto.jpg', { type: 'image/jpeg' }))
       }}
     />,

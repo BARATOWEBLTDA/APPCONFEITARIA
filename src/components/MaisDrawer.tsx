@@ -128,7 +128,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
               <form className="mais-doo-q" role="search" onSubmit={e => { e.preventDefault(); perguntarDoo(pergunta); }}>
                 <Sparkle size={20} weight="fill" className="mais-doo-q-ic" aria-hidden="true" />
                 <input type="text" enterKeyHint="send" autoComplete="off" aria-label="Pergunte ou peça algo à Doo IA" placeholder="Pergunte à Doo IA…" value={pergunta} onChange={e => setPergunta(e.target.value)} />
-                <button type="submit" className="mais-doo-q-env" aria-label="Enviar pra Doo IA" disabled={!pergunta.trim()}><PaperPlaneRight size={18} weight="fill" /></button>
+                <button type="submit" className="mais-doo-q-env" aria-label="Enviar para a Doo IA" disabled={!pergunta.trim()}><PaperPlaneRight size={18} weight="fill" /></button>
               </form>
               <div className="mais-doo-ch">
                 {["Registrar pedido", "Quanto vendi hoje?"].map(t => <button key={t} type="button" onClick={() => perguntarDoo(t)}>{t}</button>)}

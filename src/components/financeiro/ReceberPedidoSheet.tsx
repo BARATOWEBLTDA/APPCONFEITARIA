@@ -54,7 +54,7 @@ export default function ReceberPedidoSheet({ itens: dados, inicial, onClose, onF
       <div className="rp-busca"><MagnifyingGlass size={18} aria-hidden="true" />
         <input autoComplete="off" placeholder="Buscar cliente ou nº do pedido" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar pedido" /></div>
       {!itens && !erro && <p className="rp-msg">Carregando…</p>}
-      {erro && <p className="rp-msg">Não deu pra carregar. Confira a internet e tente de novo.</p>}
+      {erro && <p className="rp-msg">Não deu para carregar. Confira a internet e tente de novo.</p>}
       {itens && !erro && itens.length === 0 && <p className="rp-msg">Nenhum pedido com valor a receber.</p>}
       {itens && itens.length > 0 && lista.length === 0 && <p className="rp-msg">Nenhum pedido com esse nome ou número.</p>}
       <ul className="rp-lista">

@@ -83,7 +83,7 @@ function HeroPadrao() {
   );
 }
 
-const SUBTITULOS = ["Combos exclusivos para celebrar", "Perfeitos para presentear", "Feitos com carinho pra sua ceia", "Pra adoçar as festas", "Escolhidos a dedo pro Natal"];
+const SUBTITULOS = ["Combos exclusivos para celebrar", "Perfeitos para presentear", "Feitos com carinho para sua ceia", "Para adoçar as festas", "Escolhidos a dedo pro Natal"];
 
 function useAbrirProduto() {
   const [aberto, setAberto] = useState(false);
@@ -256,7 +256,7 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
           <button type="button" onClick={aoAbrirSobre}>Sobre a loja</button>
           {endereco && <><span aria-hidden="true">·</span><span className="ctn-cid"><MapPin size={15} weight="bold" aria-hidden="true" />{endereco.cidade}</span></>}
         </div>
-        {(config as any)?.loja_pausada && <p className="ctn-pausa">Pedidos pausados no momento. Pra encomendar, chame a loja no WhatsApp.</p>}
+        {(config as any)?.loja_pausada && <p className="ctn-pausa">Pedidos pausados no momento. Para encomendar, chame a loja no WhatsApp.</p>}
       </div>
     </div>
   );
@@ -270,7 +270,7 @@ export default function CatalogoNatal({ design, config, isPro, produtos, categor
     return (
       <div className="ctn-pag">
         <header className="ctn-faixa">
-          <button type="button" className="ctn-cab-loja" onClick={() => ir(0)} aria-label="Voltar pra capa">
+          <button type="button" className="ctn-cab-loja" onClick={() => ir(0)} aria-label="Voltar para capa">
             <span className="ctn-mini">{logo ? <img src={logo} alt="" /> : null}</span>
             <span><b>{design.nome_loja}</b><small>Cardápio de Natal</small></span>
           </button>

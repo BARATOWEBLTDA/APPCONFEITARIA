@@ -89,7 +89,7 @@ export async function reativarPushSeSaiu(): Promise<void> {
     if (!user || !j.endpoint || !j.keys?.p256dh || !j.keys?.auth) return
     const { error } = await salvarAparelho(user.id, j.endpoint, j.keys.p256dh, j.keys.auth)
     if (!error) localStorage.removeItem(MARCA_REATIVAR)
-  } catch (e) { console.warn('[Doonly] não deu pra religar os avisos:', e) }
+  } catch (e) { console.warn('[Doonly] não deu para religar os avisos:', e) }
 }
 
 export function usePushSubscription() {

@@ -39,7 +39,7 @@ export default function NaoEncontrada() {
           disabled={logado === null}
           onClick={() => navegar(logado ? "/inicio" : "/login", { replace: true })}
         >
-          Voltar pro início
+          Voltar para o início
         </Botao>
       </main>
     </div>

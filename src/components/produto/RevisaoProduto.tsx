@@ -124,7 +124,7 @@ export default function RevisaoProduto({ form }: { form: any }) {
 
       <p className="prod-section-label rev-tit">Antes de publicar</p>
       {r.avisos.length === 0
-        ? <p className="rev-ok"><CheckCircle size={18} weight="fill" aria-hidden="true" />Tudo certo pra ir pro cardápio</p>
+        ? <p className="rev-ok"><CheckCircle size={18} weight="fill" aria-hidden="true" />Tudo certo para ir para o cardápio</p>
         : <ul className="rev-avisos">{r.avisos.map(a => <li key={a}><Warning size={16} weight="fill" aria-hidden="true" /><span>{a}</span></li>)}</ul>}
     </div>
   );
@@ -158,7 +158,7 @@ export function ResumoProduto({ form }: { form: any }) {
     ...(temTam ? [["Tamanhos", tam!.opcoes!.map(o => o.nome).join(", ")] as [string, string]] : []),
     ["Preço", preco],
     ["Promoção", promo],
-    ["No cardápio", form.disponivel !== false ? "Aparece" : "Guardado só pra você"],
+    ["No cardápio", form.disponivel !== false ? "Aparece" : "Guardado só para você"],
     ["Entrega", entrega],
   ];
   return (

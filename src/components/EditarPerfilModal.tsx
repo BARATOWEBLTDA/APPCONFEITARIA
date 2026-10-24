@@ -57,7 +57,7 @@ export default function EditarPerfilModal({
 
         <Campo rotulo="Nome" placeholder="Seu nome" value={nome} autoComplete="name" onChange={e => onNomeChange(e.target.value)} />
         <Campo rotulo="WhatsApp" type="tel" inputMode="tel" placeholder="(41) 99999-8888" value={telefone} autoComplete="tel" onChange={e => onTelefoneChange(e.target.value)} />
-        <Campo rotulo="E-mail" type="email" value={email} disabled dica="Pra trocar o e-mail, fale com o suporte." onChange={() => {}} />
+        <Campo rotulo="E-mail" type="email" value={email} disabled dica="Para trocar o e-mail, fale com o suporte." onChange={() => {}} />
         {saveError && <p className="ep9-erro" role="alert">{saveError}</p>}
 
         <div className="ep9-senha">

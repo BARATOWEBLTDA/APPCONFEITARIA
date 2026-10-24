@@ -142,7 +142,7 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
   return (
     <section ref={el => { secoes.current[chave] = el }} className={`pm-g${falta ? ' falta' : ''}`}>
       <header className="pm-g-cab">
-        <span><b>{titulo}</b><small className={resumo && !falta ? 'pm-g-resumo' : undefined}>{falta ? `${regra} pra continuar` : resumo || regra}</small></span>
+        <span><b>{titulo}</b><small className={resumo && !falta ? 'pm-g-resumo' : undefined}>{falta ? `${regra} para continuar` : resumo || regra}</small></span>
         <span className="pm-g-dir">
           {multi && max > 1 && <em>{qtdMarcada}/{max}</em>}
           {obrig && (ok ? <i className="pm-ok" aria-label="Escolhido"><Check size={14} weight="bold" /></i> : <i className="pm-obr">Obrigatório</i>)}
@@ -270,7 +270,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       const reduzida = await reduzirFoto(file)
       if (vez === fotoVez.current) setFotoRef(reduzida)
     } catch {
-      if (vez === fotoVez.current) avisar('Não deu pra usar essa foto. Tente outra.', { tipo: 'erro' })
+      if (vez === fotoVez.current) avisar('Não deu para usar essa foto. Tente outra.', { tipo: 'erro' })
     }
     if (vez === fotoVez.current) setFotoRefUploading(false)
   }
@@ -686,7 +686,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
       {kitCfg && (
         <section ref={el => { secoes.current['kit'] = el }} className={`pm-g${faltou === 'kit' ? ' falta' : ''}`}>
-          <header className="pm-g-cab"><span><b>Monte o seu kit</b><small>{faltou === 'kit' ? 'Complete o kit pra continuar' : `Até ${(kitCfg as any).max_sabores || 1} ${((kitCfg as any).max_sabores || 1) === 1 ? 'sabor' : 'sabores'}, de ${Math.max(1, (kitCfg as any).passo_sabor || 1)} em ${Math.max(1, (kitCfg as any).passo_sabor || 1)}`}</small></span>
+          <header className="pm-g-cab"><span><b>Monte o seu kit</b><small>{faltou === 'kit' ? 'Complete o kit para continuar' : `Até ${(kitCfg as any).max_sabores || 1} ${((kitCfg as any).max_sabores || 1) === 1 ? 'sabor' : 'sabores'}, de ${Math.max(1, (kitCfg as any).passo_sabor || 1)} em ${Math.max(1, (kitCfg as any).passo_sabor || 1)}`}</small></span>
             {/* (21/10) "Obrigatório" discreto no kit: o botão de baixo já não deixa avançar sem montar */}
             <span className="pm-g-dir">{kitInfo?.completo ? <i className="pm-ok"><Check size={14} weight="bold" /></i> : <i className="pm-obr pm-obr--leve">Obrigatório</i>}</span></header>
           <div className="pm-kit"><KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} desconto={descPct} /></div>
@@ -725,7 +725,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
           <header className="pm-g-cab"><span><b>{refDoExtra && (product as any).aceita_referencia !== true ? `Foto de referência · ${refDoExtra.nome}` : 'Foto de referência'}</b><small>Mostre uma ideia do que você quer</small></span></header>
           <label className="pm-foto">
             {fotoRef ? <img src={fotoRef} alt="Foto de referência" /> : <span className="pm-foto-ic"><Camera size={20} weight="bold" /></span>}
-            <span className="pm-foto-tx"><b>{fotoRefUploading ? 'Carregando…' : fotoRef ? 'Foto anexada' : 'Enviar uma foto'}</b><small>{fotoRef ? 'Escolha outra pra trocar' : 'Opcional'}</small></span>
+            <span className="pm-foto-tx"><b>{fotoRefUploading ? 'Carregando…' : fotoRef ? 'Foto anexada' : 'Enviar uma foto'}</b><small>{fotoRef ? 'Escolha outra para trocar' : 'Opcional'}</small></span>
             {fotoRef && <button type="button" className="pm-foto-x" aria-label="Tirar a foto" onClick={ev => { ev.preventDefault(); ev.stopPropagation(); setFotoRef(null) }}><X size={18} weight="bold" /></button>}
             <input type="file" accept="image/*" onChange={handleFotoRef} hidden />
           </label>

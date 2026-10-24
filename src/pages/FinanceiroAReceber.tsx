@@ -89,7 +89,7 @@ export default function FinanceiroAReceber() {
     <div className="far-root">
       <AppPageHeader
         title="A receber"
-        subtitle={carregando ? "Carregando…" : erro ? "Não deu pra carregar" : itens.length ? `${brl(total)} em ${itens.length} ${itens.length === 1 ? "pedido" : "pedidos"}` : "Tudo recebido por aqui"}
+        subtitle={carregando ? "Carregando…" : erro ? "Não deu para carregar" : itens.length ? `${brl(total)} em ${itens.length} ${itens.length === 1 ? "pedido" : "pedidos"}` : "Tudo recebido por aqui"}
         onBack={() => navigate("/financeiro")}
         infoIcon="💰" infoComo={COMO_A_RECEBER} infoTour={TOUR_A_RECEBER}
         infoContent={<>
@@ -112,7 +112,7 @@ export default function FinanceiroAReceber() {
         {carregando && <p className="far-carregando">Carregando…</p>}
 
         {!carregando && erro && (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar o que falta receber" texto="Confira a internet e tente de novo."
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar o que falta receber" texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={tentarDeNovo}>Tentar de novo</Botao>} />
         )}
 
@@ -237,7 +237,7 @@ export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: 
 
 const CSS = `
   .far-root { font-family: var(--font-base); }
-  /* 10/10: mesma largura de conteúdo de Transações (antes 760px, numa coluna estreita no PC) */
+  /* 10/10: mesma largura de conteúdo de Transações (antes 760px, em uma coluna estreita no PC) */
   .far-wrap { max-width: 980px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
   .far-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .far-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 10px; min-width: 0; container-type: inline-size; }
@@ -280,7 +280,7 @@ const CSS = `
   .far-tg { flex-shrink: 0; font-size: 12px; font-weight: 700; color: #92400E; background: var(--ui-laranja-fundo); padding: 3px 8px; border-radius: 7px; }
   .far-tg--atr { color: var(--ui-vermelho-escuro); background: var(--ui-vermelho-fundo); }
   .far-it-v { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
-  .far-it-v small { font-size: 12.5px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; } /* numa linha só */
+  .far-it-v small { font-size: 12.5px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; } /* em uma linha só */
   .far-it-v b { font-size: 15.5px; font-weight: 700; color: var(--ui-laranja); white-space: nowrap; }
   .far-bar { height: 6px; border-radius: 9px; background: var(--ui-linha); margin-top: 9px; overflow: hidden; }
   .far-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; }

@@ -146,7 +146,7 @@ export default function Lucratividade() {
         <div className="lu-per"><PeriodoFiltro valor={periodo} onChange={setPeriodo} /></div>
 
         {erro ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar a lucratividade" texto="Confira a internet e tente de novo."
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar a lucratividade" texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
         ) : !dados ? <div className="lu-ph" /> : dados.qtdVendidos === 0 ? (
           <div className="lu-vazio">
@@ -186,7 +186,7 @@ export default function Lucratividade() {
             <section className="lu-card lu-a-prod">
               <p className="lu-ct">Lucro por produto <small>Pela ficha técnica, antes das despesas do mês</small></p>
               {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
-                <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> pra ver o lucro de cada um.</p>
+                <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> para ver o lucro de cada um.</p>
               ) : (
                 // (4.29) em cartões, como no cardápio: foto, nome e o lucro embaixo
                 <ul className="lu-pg">
@@ -219,16 +219,16 @@ export default function Lucratividade() {
                 <button type="button" className="lu-sec" onClick={() => setPeriodo(periodoInicial())}>Ver o mês atual</button>
               </>) : fixos && (fixos.custos + fixos.salario) > 0 && margemBruta > 0 ? (<>
                 <b className="lu-eq-v">{brl(metaEquilibrio)} <small>no mês</small></b>
-                <p className="lu-eq-t">pra pagar os custos fixos e o seu salário ({brl(fixos.custos + fixos.salario)})</p>
+                <p className="lu-eq-t">para pagar os custos fixos e o seu salário ({brl(fixos.custos + fixos.salario)})</p>
                 <div className="lu-bar grande"><i className={dados.vendido >= metaEquilibrio ? "ok" : ""} style={{ width: `${Math.min(100, (dados.vendido / metaEquilibrio) * 100)}%` }} /></div>
                 <p className="lu-eq-s">{dados.vendido >= metaEquilibrio ? `Bateu! ${brl(dados.vendido - metaEquilibrio)} acima do necessário.` : `Faltam ${brl(metaEquilibrio - dados.vendido)} em vendas (${Math.round((dados.vendido / metaEquilibrio) * 100)}% do caminho).`}</p>
                 <p className="lu-nota">Com a sua margem de ingredientes de {Math.round(margemBruta * 100)}%.</p>
               </>) : fixos && (fixos.custos + fixos.salario) > 0 ? (
                 <p className="lu-eq-t">{dados.vendido > 0
-                  ? `Neste mês, os ingredientes custaram ${dados.cmv > dados.vendido ? "mais do que" : "o mesmo que"} você vendeu. Assim não sobra pra pagar os custos fixos e o seu salário, e não existe ponto de equilíbrio.`
-                  : "Os pedidos entregues neste mês estão sem valor, então não dá pra calcular o ponto de equilíbrio."}</p>
+                  ? `Neste mês, os ingredientes custaram ${dados.cmv > dados.vendido ? "mais do que" : "o mesmo que"} você vendeu. Assim não sobra para pagar os custos fixos e o seu salário, e não existe ponto de equilíbrio.`
+                  : "Os pedidos entregues neste mês estão sem valor, então não dá para calcular o ponto de equilíbrio."}</p>
               ) : (<>
-                <p className="lu-eq-t">Cadastre seus custos fixos e o seu salário pra saber quanto precisa vender no mês pra fechar no azul.</p>
+                <p className="lu-eq-t">Cadastre seus custos fixos e o seu salário para saber quanto precisa vender no mês para fechar no azul.</p>
                 <button type="button" className="lu-sec" onClick={() => navigate("/custos")}>Cadastrar custos</button>
               </>)}
             </section>

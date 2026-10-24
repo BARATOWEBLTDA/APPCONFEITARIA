@@ -78,7 +78,7 @@ export default function Indicar() {
 
   const link = codigo ? `https://doonly.com.br/?ref=${codigo}` : "https://doonly.com.br";
   const mensagem =
-    `Oi! Tô usando o Doonly pra organizar minha confeitaria e recomendo demais.\n\n` +
+    `Oi! Tô usando o Doonly para organizar minha confeitaria e recomendo demais.\n\n` +
     `Se você entrar pelo meu link ganha:\n` +
     `70% de desconto no 1º mês do PRO\n\n` +
     link;
@@ -89,7 +89,7 @@ export default function Indicar() {
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2000);
     } catch {
-      avisar("Não deu pra copiar. Segure o link pra copiar.", { tipo: "erro" });
+      avisar("Não deu para copiar. Segure o link para copiar.", { tipo: "erro" });
     }
   };
 
@@ -161,7 +161,7 @@ export default function Indicar() {
           {proximo ? (<>
             <p>{conversoes === 0
               ? <>Com <b>{proximo.meta} assinantes</b> você ganha: {proximo.titulo.charAt(0).toLowerCase() + proximo.titulo.slice(1)}.</>
-              : <>Faltam <b>{proximo.meta - conversoes}</b> pro próximo prêmio: {proximo.titulo.charAt(0).toLowerCase() + proximo.titulo.slice(1)}.</>}</p>
+              : <>Faltam <b>{proximo.meta - conversoes}</b> para o próximo prêmio: {proximo.titulo.charAt(0).toLowerCase() + proximo.titulo.slice(1)}.</>}</p>
             <div className="in9-barra" role="progressbar" aria-valuemin={anterior} aria-valuemax={proximo.meta} aria-valuenow={conversoes} aria-label="Andamento até o próximo prêmio">
               <i style={{ width: `${Math.min(100, ((conversoes - anterior) / (proximo.meta - anterior)) * 100)}%` }} />
             </div>
@@ -200,7 +200,7 @@ export default function Indicar() {
         <section className="in9-card">
           <h2 className="in9-t">Como funciona</h2>
           <ol className="in9-passos">
-            <li><i>1</i><span>Mande seu link pra quem trabalha com confeitaria.</span></li>
+            <li><i>1</i><span>Mande seu link para quem trabalha com confeitaria.</span></li>
             <li><i>2</i><span>Quem se cadastra pelo seu link ganha 70% de desconto no 1º mês do PRO.</span></li>
             <li><i>3</i><span>Quando a pessoa assina o PRO, conta 1 indicação. Chegou na meta, o prêmio é seu.</span></li>
           </ol>

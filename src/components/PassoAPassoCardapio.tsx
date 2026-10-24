@@ -110,7 +110,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         {
           key: "descricao",
           label: "Preencher descrição da loja",
-          desc: "É a primeira coisa que o cliente lê no seu cardápio. Escreva ou peça pra IA.",
+          desc: "É a primeira coisa que o cliente lê no seu cardápio. Escreva ou peça para IA.",
           icon: <PencilLine size={18} weight="fill" />,
           done: !!(profileData?.descricao_loja && profileData.descricao_loja.trim().length > 0),
           path: "/cardapio-config",
@@ -626,7 +626,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           transition: width 0.4s ease;
         }
 
-        /* Hero destaque - GRAFITE ESCURO pra não competir com rosa da página */
+        /* Hero destaque - GRAFITE ESCURO para não competir com rosa da página */
         .pap-hero {
           position: relative;
           display: block;

@@ -197,7 +197,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
             {tela === 0 && (<>
               {/* o nome e o título são uma frase só: "Juliana, que bom ter você aqui" */}
               {nomeOk ? <><p className="bv-oi">{nomeOk},</p><h1 className="bv-h">que bom ter <em>você aqui</em></h1></> : <h1 className="bv-h">Que bom ter <em>você aqui</em></h1>}
-              <p className="bv-p">A partir de agora, seus pedidos, seu cardápio e seu dinheiro ficam num lugar só. Vem ver como funciona, leva 1 minuto.</p>
+              <p className="bv-p">A partir de agora, seus pedidos, seu cardápio e seu dinheiro ficam em um lugar só. Vem ver como funciona, leva 1 minuto.</p>
             </>)}
             {tela === 1 && (<>
               <p className="bv-sobre">Seus produtos em destaque</p>
@@ -231,7 +231,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
               <p className="bv-sobre">Agora é com você</p>
               {/* fecha com o nome, como abriu (sem nome válido, fica só "Sua confeitaria começa aqui") */}
               <h1 className="bv-h">{nomeOk ? <>{nomeOk}, sua confeitaria <em>começa aqui</em></> : <>Sua confeitaria <em>começa aqui</em></>}</h1>
-              <p className="bv-p">São poucos passos rápidos pra deixar seu cardápio no ar, pronto pra mandar no WhatsApp.</p>
+              <p className="bv-p">São poucos passos rápidos para deixar seu cardápio no ar, pronto para mandar no WhatsApp.</p>
             </>)}
           </div>
           <div className="bv-base">

@@ -124,7 +124,7 @@ export default function BuscaRapida() {
           <button type="button" className="br-fechar" onClick={() => setAberta(false)} aria-label="Fechar a busca"><X size={18} weight="bold" /></button>
         </div>
         <div className="br-lista" id="br-lista" role="listbox" ref={listaRef}>
-          {lista.length === 0 && <p className="br-nada">Nada encontrado pra “{q}”</p>}
+          {lista.length === 0 && <p className="br-nada">Nada encontrado para “{q}”</p>}
           {lista.map((i, k) => {
             const cab = i.g !== grupo ? (grupo = i.g) : null;
             return (

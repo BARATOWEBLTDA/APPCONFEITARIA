@@ -28,7 +28,7 @@ export default function AdminBannersProntos() {
   const salvar = async (id: string, patch: Partial<BannerPronto>) => {
     setLista(l => l.map(b => (b.id === id ? { ...b, ...patch } : b)));
     const { error } = await supabase.from("banners_prontos").update(patch).eq("id", id);
-    if (error) { avisar("Não deu pra salvar. Tente de novo.", { tipo: "erro" }); void carregar(); }
+    if (error) { avisar("Não deu para salvar. Tente de novo.", { tipo: "erro" }); void carregar(); }
   };
 
   const enviar = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,14 +64,14 @@ export default function AdminBannersProntos() {
     setLista(final);
     const mudou = final.filter(x => lista.find(y => y.id === x.id)?.ordem !== x.ordem);
     const r = await Promise.all(mudou.map(x => supabase.from("banners_prontos").update({ ordem: x.ordem }).eq("id", x.id)));
-    if (r.some(x => x.error)) { avisar("Não deu pra mudar a ordem. Tente de novo.", { tipo: "erro" }); void carregar(); }
+    if (r.some(x => x.error)) { avisar("Não deu para mudar a ordem. Tente de novo.", { tipo: "erro" }); void carregar(); }
   };
 
   const excluir = async (b: BannerPronto) => {
     const ok = await confirmar({ titulo: "Excluir este banner?", texto: "Ele sai da galeria. Quem já está usando continua com ele no cardápio.", rotulo: "Excluir", perigo: true });
     if (!ok) return;
     const { error } = await supabase.from("banners_prontos").delete().eq("id", b.id);
-    if (error) { avisar("Não deu pra excluir. Tente de novo.", { tipo: "erro" }); return; }
+    if (error) { avisar("Não deu para excluir. Tente de novo.", { tipo: "erro" }); return; }
     setLista(l => l.filter(x => x.id !== b.id));
   };
 
@@ -79,7 +79,7 @@ export default function AdminBannersProntos() {
 
   return (
     <div className="abp-root">
-      <Titulo nivel="tela" apoio={`A galeria que as confeiteiras escolhem em Aparência. Tamanho: ${TAMANHO_BANNER}, deitado, mesmo tamanho pra todos. Capa de Natal: em pé, 1080 × 1350.`}>Banners prontos</Titulo>
+      <Titulo nivel="tela" apoio={`A galeria que as confeiteiras escolhem em Aparência. Tamanho: ${TAMANHO_BANNER}, deitado, mesmo tamanho para todos. Capa de Natal: em pé, 1080 × 1350.`}>Banners prontos</Titulo>
 
       {semTabela ? (
         <p className="abp-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" /><span>A tabela de banners ainda não existe. Rode o SQL banners_prontos.sql no Supabase.</span></p>

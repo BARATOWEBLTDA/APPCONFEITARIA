@@ -78,7 +78,7 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
     } catch (e) {
       // (11/10) não chama onCropDone: nada é enviado
       console.error(e)
-      avisar('Não deu pra preparar a foto. Tente outra imagem.', { tipo: 'erro' })
+      avisar('Não deu para preparar a foto. Tente outra imagem.', { tipo: 'erro' })
     }
     setLoading(false)
   }
@@ -89,7 +89,7 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
         <div className="rf-topo">
           <div>
             <h2 id="rf-titulo">{cropShape === 'round' ? 'Ajustar a foto' : 'Ajustar a foto do produto'}</h2>
-            <p>Arraste pra posicionar. Aproxime com os dedos ou com a barra.</p>
+            <p>Arraste para posicionar. Aproxime com os dedos ou com a barra.</p>
           </div>
           <BotaoIcone rotulo="Fechar sem salvar" variante="limpo" onClick={cancelar} disabled={loading}><X size={20} weight="bold" /></BotaoIcone>
         </div>

@@ -42,7 +42,7 @@ const EVENTOS_META: { evento: string; icone: ReactNode; label: string; titulo: s
     icone: <Crown size={14} weight="bold" />,
     label: "Indicação · virou PRO",
     titulo: "Indicado(a) assinou o PRO",
-    descricao: "Vai quando alguém que você indicou vira PRO (conta pra meta).",
+    descricao: "Vai quando alguém que você indicou vira PRO (conta para a meta).",
     tom: "verde",
   },
 ];
@@ -91,7 +91,7 @@ export default function AdminNotifTemplates() {
       updated_at: new Date().toISOString(),
     }).eq("evento", evento);
     setSaving(s => ({ ...s, [evento]: false }));
-    if (error) return avisar("Não deu pra salvar: " + error.message, { tipo: "erro" });
+    if (error) return avisar("Não deu para salvar: " + error.message, { tipo: "erro" });
     setDirty(d => ({ ...d, [evento]: false }));
     avisar("Modelo salvo.");
   };
@@ -112,7 +112,7 @@ export default function AdminNotifTemplates() {
     return (
       <div className="ant">
         {titulo}
-        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os modelos"
+        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os modelos"
           texto={`Confira a internet e recarregue a página. Se continuar, a tabela de notificações pode não existir ainda (erro: ${erroCarregar}).`} />
       </div>
     );
@@ -169,7 +169,7 @@ export default function AdminNotifTemplates() {
                 rows={2}
                 value={t.corpo}
                 onChange={e => editar(meta.evento, "corpo", e.target.value)}
-                dica="Use {nome} pro nome da pessoa e {codigo} pro código de indicação."
+                dica="Use {nome} para o nome da pessoa e {codigo} para o código de indicação."
               />
               <div className="ant-som">
                 <label className="ant-som-c">

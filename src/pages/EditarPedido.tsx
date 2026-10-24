@@ -406,7 +406,7 @@ export default function EditarPedido() {
   // Excluir pedido (03/10): veio da janela da lista, que saiu; aqui fica longe do toque fácil
   const excluindoRef = useRef(false)
   const excluirPedido = async () => {
-    const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: 'Ele some da lista, da agenda e do financeiro. Não dá pra desfazer. Se o cliente só desistiu, prefira "Cancelar pedido".', icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
+    const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: 'Ele some da lista, da agenda e do financeiro. Não dá para desfazer. Se o cliente só desistiu, prefira "Cancelar pedido".', icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
     if (!ok || !pedido || excluindoRef.current) return
     // (10/10) a mesma regra da lista (lib/pedidosDoo): estorna os recebimentos antes e para se algum passo falhar
     excluindoRef.current = true
@@ -443,7 +443,7 @@ export default function EditarPedido() {
     setConfirmandoPix(true)
     try {
       const r = await registrarPagamento({ pedidoId: pedido.id, valor: px.valor, forma: 'pix', tipo: px.tipo, origem: 'cardapio', observacao: 'Pix pelo cardápio' })
-      if (!r.ok) { avisarBase(r.erro || 'Não deu pra confirmar o Pix. Tente de novo.', { tipo: 'erro' }); return }
+      if (!r.ok) { avisarBase(r.erro || 'Não deu para confirmar o Pix. Tente de novo.', { tipo: 'erro' }); return }
       await recarregarDinheiro(); await carregarPagamentos(pedido.id)
       avisarBase(px.tipo === 'sinal' ? 'Sinal confirmado.' : 'Pix confirmado. Pedido pago.', { tipo: 'ok' })
     } finally { setConfirmandoPix(false) }
@@ -741,7 +741,7 @@ export default function EditarPedido() {
   const handleConfirmarCancelamento = async () => {
     if (!pedido || cancelando) return
     // (11/10) sem conseguir ler os recebimentos não dá pra saber se há valor a devolver: não cancela às cegas
-    if (pagamentosFalhou && recebidoAtual > 0.009) { avisarJanela('Não deu pra carregar os recebimentos', 'Confira a internet e tente cancelar de novo.', 'erro'); return }
+    if (pagamentosFalhou && recebidoAtual > 0.009) { avisarJanela('Não deu para carregar os recebimentos', 'Confira a internet e tente cancelar de novo.', 'erro'); return }
     if (recebidoAtual > 0.009 && pagamentosOk && devolverSinal === null) { avisarJanela('Falta uma resposta', 'Escolha o que aconteceu com o valor que você já recebeu deste pedido.', 'alerta'); return }
     setCancelando(true)
     try {
@@ -752,7 +752,7 @@ export default function EditarPedido() {
       if (devolverSinal && pagamentosOk) {
         const { error: erroEstorno } = await supabase.from('pagamentos').update({ estornado_em: new Date().toISOString() }).eq('pedido_id', pedido.id).is('estornado_em', null)
         if (erroEstorno) {
-          avisarJanela('Não foi possível cancelar', explicarErro(erroEstorno, 'Não deu pra estornar o valor recebido, então o pedido não foi cancelado. Tente de novo.'), 'erro')
+          avisarJanela('Não foi possível cancelar', explicarErro(erroEstorno, 'Não deu para estornar o valor recebido, então o pedido não foi cancelado. Tente de novo.'), 'erro')
           setCancelando(false)
           return
         }
@@ -1095,7 +1095,7 @@ export default function EditarPedido() {
       if (idsAntigos.length > 0) {
         const { error: errDel } = await supabase.from('pedido_itens').delete().in('id', idsAntigos)
         if (errDel) {
-          avisarJanela('Os itens ficaram repetidos', `Os itens novos foram gravados, mas os antigos não saíram do pedido. ${explicarErro(errDel, 'Toque em Salvar de novo pra arrumar.')}`, 'erro')
+          avisarJanela('Os itens ficaram repetidos', `Os itens novos foram gravados, mas os antigos não saíram do pedido. ${explicarErro(errDel, 'Toque em Salvar de novo para arrumar.')}`, 'erro')
           setSalvando(false)
           return
         }
@@ -1240,8 +1240,8 @@ export default function EditarPedido() {
   // 10/10: o mesmo caminho da lista. Retirada: Em produção → Pronto pra retirar → Retirado.
   // Entrega: Em produção → Pronto → Saiu pra entrega → Entregue.
   const ETAPAS_PC: string[] = tipoEntrega === 'retirada'
-    ? ['Agendado', 'Em produção', 'Pronto pra retirar', 'Retirado']
-    : ['Agendado', 'Em produção', 'Pronto', 'Saiu pra entrega', 'Entregue']
+    ? ['Agendado', 'Em produção', 'Pronto para retirar', 'Retirado']
+    : ['Agendado', 'Em produção', 'Pronto', 'Saiu para entrega', 'Entregue']
   const posEtapaPc = (() => {
     const g = grupoDoStatus(statusPedido)
     if (g === 'em_producao') return 1
@@ -1292,11 +1292,11 @@ export default function EditarPedido() {
       // "Pular" sem nome e sem nome gravado antes: não há o que salvar
       const nadaASalvar = !nome.trim() && !(pedido as any)?.retirado_por
       const r = nadaASalvar ? 'ok' : await salvarQuemRetirou(nome)
-      if (r === 'erro') { avisarJanela('Não deu pra salvar quem retirou', 'Confira a internet e tente de novo.', 'erro'); return }
+      if (r === 'erro') { avisarJanela('Não deu para salvar quem retirou', 'Confira a internet e tente de novo.', 'erro'); return }
       if (depoisRetirada === 'etapa') {
         // segue a mudança de etapa normal, sem perguntar de novo
         await irParaEtapa('entregue', true)
-      } else if (r === 'sem-coluna') avisarJanela('Não deu pra salvar quem retirou', 'Esse campo ainda não está disponível na sua conta.', 'alerta')
+      } else if (r === 'sem-coluna') avisarJanela('Não deu para salvar quem retirou', 'Esse campo ainda não está disponível na sua conta.', 'alerta')
       else avisar('Quem retirou foi salvo')
     } finally { retirandoRef.current = false }
   }
@@ -1384,7 +1384,7 @@ export default function EditarPedido() {
               </Linha>
             )}
             {atrasadoHoje && <p className="tpd-aviso atr">A data de entrega já passou.</p>}
-            {novoPedido && <p className="tpd-aviso">Aceite pra entrar na sua agenda.</p>}
+            {novoPedido && <p className="tpd-aviso">Aceite para entrar na sua agenda.</p>}
           </div>
           <BotaoIcone rotulo="Mais ações" variante="limpo" className="tpd-mais" onClick={() => setMenuAberto(true)}><DotsThreeVertical size={24} weight="bold" /></BotaoIcone>
         </div>
@@ -1493,7 +1493,7 @@ export default function EditarPedido() {
                             <div>
                               <small>Recado do item</small>
                               {obs ? <p>“{obs}”</p> : <p>Foto de referência</p>}
-                              {p.foto_referencia && <span>Toque na foto pra ampliar</span>}
+                              {p.foto_referencia && <span>Toque na foto para ampliar</span>}
                             </div>
                           </div>
                         )}
@@ -1537,7 +1537,7 @@ export default function EditarPedido() {
                     <a className="ui-bt ui-bt--secundario ui-bt--m" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><MapTrifold size={20} weight="bold" /></span><span className="ui-bt-t">Ver no mapa</span></a>
                     <Botao variante="secundario" tamanho="m" icone={<Copy size={20} weight="bold" />} onClick={copiarEndereco}>Copiar</Botao>
                   </div>
-                  <a className="ui-bt ui-bt--secundario ui-bt--m ui-bt--cheio tpd-entregador" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><IconeWhatsApp size={20} className="tpd-zap" /></span><span className="ui-bt-t">Mandar pro entregador</span></a>
+                  <a className="ui-bt ui-bt--secundario ui-bt--m ui-bt--cheio tpd-entregador" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><IconeWhatsApp size={20} className="tpd-zap" /></span><span className="ui-bt-t">Mandar para o entregador</span></a>
                 </>) : (<>
                   {enderecoDaCliente && (
                     <button className="ep2-usar" onClick={usarEnderecoDaCliente}>Usar o endereço {clienteNome.trim() ? `de ${toTitleCase(clienteNome.trim().split(/\s+/)[0])}` : 'do cliente'}
@@ -1576,7 +1576,7 @@ export default function EditarPedido() {
                   <div className="ep2-addr tpd-end"><div><b>{lojaInfo.nome || 'Sua loja'}</b><small>{lojaInfo.endereco.linha1}</small>{lojaInfo.endereco.linha2 && <small>{lojaInfo.endereco.linha2}</small>}</div></div>
                   <p className="ep2-nota">O endereço vem dos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button>.</p>
                 </>) : (
-                  <p className="ep2-vazio">Cadastre o endereço da sua loja nos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button> pra ele aparecer aqui e na mensagem pro cliente.</p>
+                  <p className="ep2-vazio">Cadastre o endereço da sua loja nos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button> para ele aparecer aqui e na mensagem para o cliente.</p>
                 )}
               </div>
             )}
@@ -1632,7 +1632,7 @@ export default function EditarPedido() {
                 : <div className="ep2-pix"><p><b>Aguardando Pix</b></p><small>O cliente ainda não pagou pelo cardápio.</small></div>
             })()}
             {pagamentosFalhou ? (
-              <p className="ep2-vazio">Não deu pra carregar os recebimentos. Recebido até agora: <b>{formatMoney(recebidoAtual)}</b>. <button type="button" className="ep2-lk" onClick={() => carregarPagamentos(pedido.id)}>Tentar de novo</button></p>
+              <p className="ep2-vazio">Não deu para carregar os recebimentos. Recebido até agora: <b>{formatMoney(recebidoAtual)}</b>. <button type="button" className="ep2-lk" onClick={() => carregarPagamentos(pedido.id)}>Tentar de novo</button></p>
             ) : pagamentosOk ? (pagamentos.length === 0 ? <p className="ep2-vazio">Nenhum recebimento ainda.</p> : pagamentos.map(g => (
               <div key={g.id} className={`ep2-pg ${g.estornado_em ? 'est' : ''}`}>
                 <span className="ep2-pg-ic" aria-hidden="true"><ArrowUp size={20} weight="bold" /></span>
@@ -1649,8 +1649,8 @@ export default function EditarPedido() {
               </div>
               <Botao className="tpd-receber" cheio icone={<ArrowUp size={20} weight="bold" />} onClick={abrirReceber}>Registrar recebimento</Botao>
               <div className="tpd-comb">
-                <span className="ui-campo-r"><span>Combinado pra pagar o resto</span><small>opcional</small></span>
-                <CampoData valor={dataPrevistaPagamento || ''} onChange={setDataPrevistaPagamento} titulo="Combinado pra pagar" placeholder="Na entrega" />
+                <span className="ui-campo-r"><span>Combinado para pagar o resto</span><small>opcional</small></span>
+                <CampoData valor={dataPrevistaPagamento || ''} onChange={setDataPrevistaPagamento} titulo="Combinado para pagar" placeholder="Na entrega" />
               </div>
             </>) : recebidoAMais > 0.009 ? (
               /* (11/10) recebido maior que o total: aparece, com o que fazer (antes ficava escondido atrás de "Pedido pago") */
@@ -1840,7 +1840,7 @@ export default function EditarPedido() {
 
       {/* ═══ CANCELAR PEDIDO (3.16: janela padrão) ═══ */}
       {(() => {
-        const motivos = ['Sem ingredientes pra produzir', 'Não deu pra entregar na data', 'Fora da área de entrega', 'Pagamento não confirmado', 'O cliente desistiu']
+        const motivos = ['Sem ingredientes para produzir', 'Não deu para entregar na data', 'Fora da área de entrega', 'Pagamento não confirmado', 'O cliente desistiu']
         const temMotivo = !!motivoCancelamento.trim()
         return (
           <Janela
@@ -1860,13 +1860,13 @@ export default function EditarPedido() {
               <div className="ui-campo-c"><textarea rows={2} aria-label="Motivo do cancelamento" placeholder="Escreva o motivo ou escolha um acima" value={motivoCancelamento} onChange={e => setMotivoCancelamento(e.target.value)} /></div>
             </div>
             <label className={`tpj-chave${temMotivo ? '' : ' off'}`}>
-              <span><b>Mostrar o motivo pro cliente</b><small>{temMotivo ? 'Ele vê o motivo no acompanhamento do pedido.' : 'Escreva ou escolha um motivo pra ligar.'}</small></span>
+              <span><b>Mostrar o motivo para o cliente</b><small>{temMotivo ? 'Ele vê o motivo no acompanhamento do pedido.' : 'Escreva ou escolha um motivo para ligar.'}</small></span>
               <input type="checkbox" role="switch" checked={mostrarMotivoCliente && temMotivo} disabled={!temMotivo} onChange={e => setMostrarMotivoCliente(e.target.checked)} className="tpj-esc" /><i className="tpj-sw" aria-hidden="true" />
             </label>
             {recebidoAtual > 0.009 && pagamentosOk && (
               <div className="ui-campo tpj-bloco" role="radiogroup" aria-label="O que aconteceu com o dinheiro">
                 <span className="ui-campo-r"><span>O que aconteceu com os {formatMoney(recebidoAtual)}?</span></span>
-                <label className="tpj-op"><input type="radio" name="devol" checked={devolverSinal === true} onChange={() => setDevolverSinal(true)} className="tpj-esc" /><i className="tpj-rd" aria-hidden="true" /><span><b>Devolvi pro cliente</b><small>O valor sai do caixa.</small></span></label>
+                <label className="tpj-op"><input type="radio" name="devol" checked={devolverSinal === true} onChange={() => setDevolverSinal(true)} className="tpj-esc" /><i className="tpj-rd" aria-hidden="true" /><span><b>Devolvi para o cliente</b><small>O valor sai do caixa.</small></span></label>
                 <label className="tpj-op"><input type="radio" name="devol" checked={devolverSinal === false} onChange={() => setDevolverSinal(false)} className="tpj-esc" /><i className="tpj-rd" aria-hidden="true" /><span><b>Fiquei com ele</b><small>O valor continua no caixa.</small></span></label>
               </div>
             )}
@@ -1888,7 +1888,7 @@ export default function EditarPedido() {
         if (!dataDoPasso.criado && pedido?.created_at) dataDoPasso.criado = pedido.created_at
         // Pedido que já nasceu agendado (feito pela confeiteira) ou chegou pelo cardápio: a etapa começa na criação
         if (pedido?.created_at) { for (const k of ['aguardando_aceite', 'agendado']) if (!dataDoPasso[k] && seq.includes(k) && seq.indexOf(k) <= posAtual) dataDoPasso[k] = pedido.created_at }
-        const NOME_PASSO: Record<string, string> = { criado: 'Pedido feito', aguardando_aceite: 'Novo pedido', agendado: 'Agendado', em_producao: 'Em produção', finalizado: 'Pronto', aguardando_retirada: 'Pronto pra retirar', em_entrega: 'Saiu pra entrega', entregue: tipoEntrega === 'retirada' ? 'Retirado' : 'Entregue' }
+        const NOME_PASSO: Record<string, string> = { criado: 'Pedido feito', aguardando_aceite: 'Novo pedido', agendado: 'Agendado', em_producao: 'Em produção', finalizado: 'Pronto', aguardando_retirada: 'Pronto para retirar', em_entrega: 'Saiu para entrega', entregue: tipoEntrega === 'retirada' ? 'Retirado' : 'Entregue' }
         const quando = (iso: string) => { const d = new Date(iso); return dataLonga(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`) }
         return (
           <Janela aberta={timelineAberto} aoFechar={() => setTimelineAberto(false)} tipo="conteudo" titulo="Acompanhar pedido">
@@ -2391,7 +2391,7 @@ export default function EditarPedido() {
           padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
           box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
         }
-        /* Celular: a barra fica acima do menu de baixo (antes ficava atrás e não dava pra tocar em Salvar) */
+        /* Celular: a barra fica acima do menu de baixo (antes ficava atrás e não dava para tocar em Salvar) */
         @media (max-width: 767px) {
           .ep-footer { bottom: calc(56px + env(safe-area-inset-bottom, 0px)); padding-bottom: 12px; }
           /* iPhone com o teclado aberto: a barra fica logo acima do teclado (antes ficava escondida atrás) */
@@ -3870,7 +3870,7 @@ const EP2_CSS = `
   .ep2-cal button { border: none; background: none; border-radius: var(--ui-raio-p); padding: 8px 0; font-family: inherit; font-size: 14px; color: var(--ui-texto); cursor: pointer; }
   .ep2-cal button.hj { box-shadow: inset 0 0 0 1.5px var(--ui-rosa); } .ep2-cal button.sel { background: var(--ui-rosa); color: var(--ui-branco); font-weight: 700; }
   .ep2-cal-ok { width: 100%; margin-top: 14px; }
-  /* ══ itens do pedido (03/10): modelo aprovado — nome numa linha, campos com rótulo, adicionais em caixinhas
+  /* ══ itens do pedido (03/10): modelo aprovado — nome em uma linha, campos com rótulo, adicionais em caixinhas
         (uma por linha), referência grande e centralizada, valor no fim. Nada quebra linha (só o recado). ══ */
   .ep3 { background: var(--ui-branco); border-radius: var(--ui-raio-cartao); padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(44,18,25,.05), 0 8px 22px -6px rgba(44,18,25,.10); border: 1px solid var(--ui-borda); font-variant-numeric: tabular-nums; }
   .ep3-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; } .ep3-h b { font-size: 15.5px; font-weight: 700; color: var(--ui-texto); } .ep3-h span { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }

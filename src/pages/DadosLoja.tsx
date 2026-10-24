@@ -12,6 +12,7 @@ import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar } from "@/components/lo
 import { Botao, Campo, CampoArea, Gaveta, TelaVazia, Titulo, avisar } from "@/components/base";
 import { digitosTelefone, digitosAoDigitar } from "@/lib/telefone";
 import { limparFacebook, limparInstagram } from "@/lib/redesSociais";
+import ListaChaves from "@/components/loja/ListaChaves";
 import CheckoutConfigPage, { type EstadoEntregaPagamento } from "./CheckoutConfigPage";
 import "./dadosLoja.css";
 
@@ -266,7 +267,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
       const a = emMin(horario[campoAbre]);
       const f = emMin(horario[campoFecha]);
       if (a === null || f === null) return `${rotulo}: escolha o horário de abrir e o de fechar.`;
-      if ((f === 0 ? 24 * 60 : f) <= a) return `${rotulo}: o horário de fechar precisa ser depois do de abrir. Pra fechar à meia-noite, use 00:00.`;
+      if ((f === 0 ? 24 * 60 : f) <= a) return `${rotulo}: o horário de fechar precisa ser depois do de abrir. Para fechar à meia-noite, use 00:00.`;
     }
     return null;
   };
@@ -373,7 +374,6 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   }, [cel, embutido, loading, erroCarga, fotoAgora]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
-  const seloMapa = !busca ? "Digite o CEP pra achar sua loja" : mostrarLocal === "nada" ? "Endereço escondido no cardápio" : [mostrarLocal === "completo" ? end.bairro.trim() : "", cidadeUf].filter(Boolean).join(" · ");
 
   // (17/10) resumido: sem o texto de apoio e com "Editar" ao lado do título (o botão nunca fica por cima de nada)
   const Cabeca = ({ Ic, titulo, apoio, bloco }: { Ic: typeof Storefront; titulo: string; apoio: string; bloco?: Bloco }) => {
@@ -403,7 +403,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
 
   if (embutido && (loading || erroCarga)) {
     return loading ? <div className="dl-emb-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
-      : <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os dados da loja" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />;
+      : <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar os dados da loja" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />;
   }
   if (loading) {
     return (
@@ -417,7 +417,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     return (
       <>
         <AppPageHeader title="Dados da loja" subtitle="Loja, entrega e pagamento" onBack={() => navigate(voltarPara)} />
-        <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os dados da loja" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
+        <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar os dados da loja" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
       </>
     );
   }
@@ -487,14 +487,14 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
               </div>
             </>
           ) : (
-            <p className="dl-aviso-redes">Falta um ajuste no banco pra usar as redes sociais (SQL 4.25).</p>
+            <p className="dl-aviso-redes">Falta um ajuste no banco para usar as redes sociais (SQL 4.25).</p>
           )}
         </section>
   );
   const secEndereco = (
     <section className="dl-card" id="dl-endereco">
-          <Cabeca Ic={MapPin} titulo="Endereço" apoio="Pra calcular a entrega e mostrar no mapa" bloco="endereco" />
-          <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo={estaAberto("endereco") ? seloMapa : undefined} />
+          <Cabeca Ic={MapPin} titulo="Endereço" apoio="Para calcular a entrega e mostrar no mapa" bloco="endereco" />
+          {!estaAberto("endereco") && <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo="" />}
           {!estaAberto("endereco") ? (
             <div className="dl-res">
               <b className="dl-res-t">{[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", ") || cidadeUf}</b>
@@ -520,12 +520,10 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
           </div>
           <div className="dl-bloco">
             <OpcoesMostrar mostrar={mostrarLocal} onMudar={setMostrarLocal} end={end} tituloClasse="dl-tit" />
+            <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo={mostrarLocal === "nada" ? "O endereço não aparece no cardápio" : mostrarLocal === "completo" ? ([[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf) : cidadeUf} altura={124} />
+            <p className="dl-mapa-nota">{mostrarLocal === "nada" ? "Bom para quem atende em casa." : "É assim que o cliente vê, em Sobre a loja."}</p>
           </div>
-          <label className="dl-recebe">
-            <input type="checkbox" checked={recebeAqui} onChange={(e) => setRecebeAqui(e.target.checked)} />
-            <span className="dl-cx" aria-hidden="true">{recebeAqui && <Check size={16} weight="bold" />}</span>
-            <span><b>Recebo pedidos aqui</b><small>O endereço completo aparece pro cliente só quando ele escolhe retirar a encomenda.</small></span>
-          </label>
+          <ListaChaves itens={[{ chave: "recebe", Ic: Storefront, rotulo: "Recebo pedidos aqui", sub: "Endereço para quem vai retirar", on: recebeAqui, aoTocar: () => setRecebeAqui(v => !v) }]} />
           </>)}
         </section>
   );

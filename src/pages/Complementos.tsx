@@ -115,7 +115,7 @@ export default function Complementos() {
       avisar(editando ? "Complemento salvo" : "Complemento criado", { tipo: "ok" });
     } catch (err) {
       console.error(err);
-      avisar("Não deu pra salvar. Confira a internet e tente de novo.", { tipo: "erro" });
+      avisar("Não deu para salvar. Confira a internet e tente de novo.", { tipo: "erro" });
     } finally {
       setSaving(false);
     }
@@ -125,7 +125,7 @@ export default function Complementos() {
     const ok = await confirmar({ titulo: `Excluir ${c.nome}?`, texto: "Ele some de todos os produtos do cardápio. Pedidos antigos não mudam.", rotulo: "Excluir", perigo: true });
     if (!ok) return;
     const { error } = await supabase.from("biblioteca_extras").delete().eq("id", c.id).eq("user_id", userId);
-    if (error) { avisar("Não deu pra excluir. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+    if (error) { avisar("Não deu para excluir. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
     setItems(prev => prev.filter(i => i.id !== c.id));
     avisar("Complemento excluído", { tipo: "ok" });
   };
@@ -160,7 +160,7 @@ export default function Complementos() {
         {loading ? (
           <div className="ct-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
         ) : erroCarga ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os complementos" texto={erroCarga}
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os complementos" texto={erroCarga}
             acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : produtos.length === 0 ? (
           <TelaVazia caixa icone={<Package size={30} />} titulo="Cadastre um produto primeiro"
@@ -173,7 +173,7 @@ export default function Complementos() {
           {/* (19/10) sugestões do jeito que aparecem no cardápio: tocar abre o cadastro já preenchido */}
           <ListaSugestoes titulo="Comece por uma destas" lista={SUGESTOES} aoEscolher={usarSugestao} />
         </>) : (<>
-          <Titulo contagem={items.length} apoio="Escolha um complemento pra editar."
+          <Titulo contagem={items.length} apoio="Escolha um complemento para editar."
             acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>}>Seus complementos</Titulo>
           {items.length > 8 && (
             <label className="pz-busca">
@@ -201,7 +201,7 @@ export default function Complementos() {
               })}
             </section>
           )}
-          {sugestoesLivres.length > 0 && !termo && <ListaSugestoes titulo="Ideias pra adicionar" lista={sugestoesLivres} aoEscolher={usarSugestao} />}
+          {sugestoesLivres.length > 0 && !termo && <ListaSugestoes titulo="Ideias para adicionar" lista={sugestoesLivres} aoEscolher={usarSugestao} />}
           <p className="ct-dica"><Info size={20} weight="bold" aria-hidden="true" />O cliente vê os complementos na hora de escolher o produto no cardápio.</p>
         </>)}
       </div>
@@ -223,7 +223,7 @@ export default function Complementos() {
         <div className="pz-form">
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: topo de bolo, escrita, papel de arroz" value={form.nome} maxLength={50} erro={erroNome}
             onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
-          <CampoArea rotulo="Explicação pro cliente" opcional placeholder="Ex.: escolha um tema ou envie sua imagem" value={form.descricao} maxLength={140} rows={2}
+          <CampoArea rotulo="Explicação para o cliente" opcional placeholder="Ex.: escolha um tema ou envie sua imagem" value={form.descricao} maxLength={140} rows={2}
             dica="Aparece embaixo do nome, no cardápio." onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
 
           <div className="ui-campo">
@@ -240,7 +240,7 @@ export default function Complementos() {
 
           {/* (19/10) prévia ao vivo: como o cliente vê no cardápio */}
           <div className="pz-prev" aria-hidden="true">
-            <small>Assim aparece pro cliente</small>
+            <small>Assim aparece para o cliente</small>
             <div className="pz-ex-l on"><i><Check size={14} weight="bold" /></i>
               <span className="pz-prev-tx"><span>{form.nome.trim() || "Nome do complemento"}</span>{form.descricao.trim() && <em>{form.descricao.trim()}</em>}</span>
               <b className={form.gratis ? "g" : ""}>{form.gratis ? "Grátis" : `+ R$ ${brl(form.valor || 0)}`}</b></div>
@@ -299,7 +299,7 @@ type Sugestao = { nome: string; descricao: string; valor: number; pedeRef?: bool
 function ListaSugestoes({ titulo, lista, aoEscolher }: { titulo: string; lista: Sugestao[]; aoEscolher: (sg: Sugestao) => void }) {
   return (
     <section className="pz-ex pz-sg" aria-label={titulo}>
-      <div className="pz-sg-cab"><p className="pz-ex-t">{titulo}</p><small>Assim o cliente vê. Toque pra adicionar.</small></div>
+      <div className="pz-sg-cab"><p className="pz-ex-t">{titulo}</p><small>Assim o cliente vê. Toque para adicionar.</small></div>
       {lista.map(sg => (
         <button key={sg.nome} type="button" className="pz-ex-l pz-sg-l" onClick={() => aoEscolher(sg)} aria-label={`Adicionar ${sg.nome}`}>
           <i aria-hidden="true" />

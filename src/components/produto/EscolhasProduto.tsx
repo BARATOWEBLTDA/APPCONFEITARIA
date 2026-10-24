@@ -46,7 +46,7 @@ const QUANTOS: [string, number][] = [["Um", 1], ["Até 2", 2], ["Até 3", 3], ["
 
 // Tamanho: modelos prontos (um toque monta a escada)
 const MODELOS_UN: { nome: string; itens: string[] }[] = [
-  { nome: "do menor pro maior", itens: ["Pequeno", "Médio", "Grande"] },
+  { nome: "do menor para o maior", itens: ["Pequeno", "Médio", "Grande"] },
   { nome: "pelo aro", itens: ["Aro 15", "Aro 20", "Aro 25"] },
 ];
 // Por quilo (14/10): lista de pesos pra marcar, de 1 em 1 kg até 5 kg (todos já marcados), com o preço de cada um ao lado
@@ -242,11 +242,11 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
           <ProductModal isOpen previa onClose={() => setVerPrevia(false)} onAdicionar={() => setVerPrevia(false)} product={EXEMPLO_PRODUTO as any} />
         </CartProvider>
       )}
-      <p className="esc-s">Marque o que vale{nome ? <> pro <b>{nome}</b></> : null}. {edicao ? "Toque em Editar pra mudar." : "Você cadastra cada um em seguida."}</p>
+      <p className="esc-s">Marque o que vale{nome ? <> pro <b>{nome}</b></> : null}. {edicao ? "Toque em Editar para mudar." : "Você cadastra cada um em seguida."}</p>
       <ul className="esc-chks" role="group" aria-label="Escolhas">
         {TODAS_ESCOLHAS.map(linha)}
       </ul>
-      {(ativas.length === 0 || !edicao) && <p className={`esc-nota${ativas.length === 0 ? " esc-nota--forte" : ""}`}>{ativas.length === 0 ? "Sem marcar, o cliente só diz quantos quer." : `${ativas.length} ${ativas.length === 1 ? "escolha marcada" : "escolhas marcadas"}. ${edicao ? "" : "Continue pra cadastrar."}`}</p>}
+      {(ativas.length === 0 || !edicao) && <p className={`esc-nota${ativas.length === 0 ? " esc-nota--forte" : ""}`}>{ativas.length === 0 ? "Sem marcar, o cliente só diz quantos quer." : `${ativas.length} ${ativas.length === 1 ? "escolha marcada" : "escolhas marcadas"}. ${edicao ? "" : "Continue para cadastrar."}`}</p>}
     </div>
   );
 }
@@ -343,7 +343,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
         const nomeP = String(form.nome || "").trim().split(/\s+/)[0]?.toLowerCase() || "bolo";
         return (
           <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
-            <p><b>Sem valor, já vem no preço.</b>Só coloque valor no que custa a mais pro cliente.
+            <p><b>Sem valor, já vem no preço.</b>Só coloque valor no que custa a mais para o cliente.
               <span className="esc-aviso-ex">Ex.: {EX[chave]} + R$ 8,00 → {nomeP} de R$ {textoBRL(base)} sai por <em>R$ {textoBRL(base + 8)}</em></span></p></div>
         );
       })()}
@@ -395,7 +395,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
             <div className="esc-cks">
               <button type="button" className={`esc-ckl${g.min >= 1 ? " on" : ""}`} role="checkbox" aria-checked={g.min >= 1} onClick={() => set({ min: g.min >= 1 ? 0 : 1 })}>
                 <i aria-hidden="true">{g.min >= 1 && <Check size={14} weight="bold" />}</i>
-                <span><b>Obrigatório</b><small>{g.min >= 1 ? "Sem escolher, não dá pra pedir" : "Pode pedir sem escolher"}</small></span>
+                <span><b>Obrigatório</b><small>{g.min >= 1 ? "Sem escolher, não dá para pedir" : "Pode pedir sem escolher"}</small></span>
               </button>
               {chave === "sabor" && (
                 <button type="button" className={`esc-ckl${precoProprio ? " on" : ""}`} role="checkbox" aria-checked={precoProprio} onClick={() => set({ sabor_tem_preco_proprio: !precoProprio })}>

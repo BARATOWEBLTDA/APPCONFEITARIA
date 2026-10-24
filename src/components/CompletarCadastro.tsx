@@ -47,7 +47,7 @@ export default function CompletarCadastro({ user, nomeInicial, lojaInicial = "",
           Conectado com o Google</span></div>
         <div className="ccad-av">{(primeiroNome || "D").charAt(0).toUpperCase()}</div>
         <h1>{primeiroNome ? `Falta pouquinho, ${primeiroNome}!` : "Falta pouquinho!"}</h1>
-        <p className="ccad-sub">Conta pra gente o nome da sua confeitaria e o WhatsApp onde você quer receber os pedidos.</p>
+        <p className="ccad-sub">Conte para a gente o nome da sua confeitaria e o WhatsApp onde você quer receber os pedidos.</p>
 
         <div className="ccad-form">
           <Campo id="cc-nome" rotulo="Seu nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Como podemos te chamar?" autoComplete="off"

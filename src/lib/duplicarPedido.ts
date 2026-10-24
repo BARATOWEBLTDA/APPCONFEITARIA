@@ -13,7 +13,7 @@ const FORA_DO_PEDIDO = new Set([
   "cupom_codigo", "data_prevista_pagamento", "pedido_itens", "clientes", "origem",
 ]);
 const FORA_DO_ITEM = new Set(["id", "pedido_id", "created_at", "updated_at", "produtos"]);
-const ERRO_DUPLICAR = "Não deu pra duplicar o pedido. Tente de novo.";
+const ERRO_DUPLICAR = "Não deu para duplicar o pedido. Tente de novo.";
 
 /**
  * (11/10) A cópia nasce SEM cupom e SEM desconto nem acréscimo (os ajustes eram daquele pedido, daquela entrega):
@@ -23,7 +23,7 @@ const ERRO_DUPLICAR = "Não deu pra duplicar o pedido. Tente de novo.";
  */
 export async function duplicarPedido(id: string): Promise<{ id: string; aviso: string } | { erro: string }> {
   const { data: orig, error } = await supabase.from("pedidos").select("*, pedido_itens(*)").eq("id", id).maybeSingle();
-  if (error || !orig) return { erro: explicarErro(error, "Não deu pra carregar o pedido pra duplicar. Tente de novo.") };
+  if (error || !orig) return { erro: explicarErro(error, "Não deu para carregar o pedido para duplicar. Tente de novo.") };
 
   const novo: any = {};
   Object.entries(orig).forEach(([k, v]) => { if (!FORA_DO_PEDIDO.has(k)) novo[k] = v; });
@@ -60,7 +60,7 @@ export async function duplicarPedido(id: string): Promise<{ id: string; aviso: s
       // não deixa cópia pela metade (11/10: se nem apagar der, avisa qual pedido ficou sem produtos)
       const { data: apagada, error: e4 } = await supabase.from("pedidos").delete().eq("id", criado.id).select("id");
       if (e4 || !(apagada as any[] | null)?.length) {
-        if (e4) console.error("[Doonly] cópia sem produtos que não deu pra apagar:", e4);
+        if (e4) console.error("[Doonly] cópia sem produtos que não deu para apagar:", e4);
         return { erro: `A cópia${(criado as any).numero ? ` (pedido #${(criado as any).numero})` : ""} ficou salva sem os produtos. Abra a lista de pedidos e exclua essa cópia.` };
       }
       return { erro: falha };

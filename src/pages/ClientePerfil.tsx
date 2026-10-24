@@ -150,7 +150,7 @@ export default function ClientePerfil() {
     const path = `clientes/${cliente.user_id}-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
     if (error) {
-      avisar("Não deu pra enviar a foto. Tente de novo.", { tipo: "erro" });
+      avisar("Não deu para enviar a foto. Tente de novo.", { tipo: "erro" });
       setUploadingFoto(false);
       return;
     }
@@ -159,7 +159,7 @@ export default function ClientePerfil() {
     let erroGravar: unknown = null;
     try { erroGravar = (await supabase.from("clientes").update({ foto_url: data.publicUrl }).eq("id", cliente.id)).error; } catch (e) { erroGravar = e; }
     setUploadingFoto(false);
-    if (erroGravar) { avisar(explicarErro(erroGravar, "Não deu pra salvar a foto. Tente de novo."), { tipo: "erro" }); return; }
+    if (erroGravar) { avisar(explicarErro(erroGravar, "Não deu para salvar a foto. Tente de novo."), { tipo: "erro" }); return; }
     setCliente(c => (c && c.id === cliente.id ? { ...c, foto_url: data.publicUrl } : c));
     avisar("Foto trocada", { tipo: "ok" });
   };
@@ -176,7 +176,7 @@ export default function ClientePerfil() {
     <>
       <AppPageHeader title="Cliente" subtitle="Não carregou" onBack={() => navigate("/clientes")} />
       <div className="cl9">
-        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar esse cliente" texto={erroCarregar}
+        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar esse cliente" texto={erroCarregar}
           acao={<Botao onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />
       </div>
     </>
@@ -285,7 +285,7 @@ export default function ClientePerfil() {
             <Titulo contagem={pedidos.length || undefined}>Pedidos</Titulo>
             {pedidos.length === 0 ? (
               <TelaVazia compacta icone={<Receipt size={28} />} titulo="Ainda não tem pedido" texto="Quando ele comprar, os pedidos aparecem aqui."
-                acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Nova venda pra {primeiro}</Botao>} />
+                acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Nova venda para {primeiro}</Botao>} />
             ) : (<>
               {visiveis.map(p => {
                 const st = situacaoDe(p as any);

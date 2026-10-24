@@ -38,7 +38,7 @@ export default function SucessoProdutoTela(p: Props) {
 
   // próximos passos: o que falta, na ordem de importância (no máximo 2)
   const passos: { k: string; ic: ReactNode; t: string; s: string; on: () => void }[] = [];
-  if (p.lojaPronta === false && p.onTerminarLoja) passos.push({ k: "loja", ic: <Storefront size={18} weight="bold" />, t: "Terminar de abrir o cardápio", s: "Pros clientes verem seus produtos", on: p.onTerminarLoja });
+  if (p.lojaPronta === false && p.onTerminarLoja) passos.push({ k: "loja", ic: <Storefront size={18} weight="bold" />, t: "Terminar de abrir o cardápio", s: "Para os clientes verem seus produtos", on: p.onTerminarLoja });
   passos.push({ k: "custo", ic: <Calculator size={18} weight="bold" />, t: "Definir custo e lucro", s: "Monte a ficha técnica", on: p.onCusto });
   // (16/10) quem ainda não vende extras: vela e topo de bolo aumentam o valor de cada pedido
   if (p.semExtras && p.onExtras) passos.push({ k: "extras", ic: <Cake size={18} weight="bold" />, t: "Vender velas e topos", s: "Ganhe mais em cada pedido", on: p.onExtras });
@@ -57,9 +57,9 @@ export default function SucessoProdutoTela(p: Props) {
       <h2 className="spa-t" id="spa-t">{p.primeiro ? "Primeiro produto cadastrado!" : "Produto cadastrado!"}</h2>
       <p className="spa-x">
         {p.foraDoCardapio
-          ? <>O produto <b>{p.nome}</b> foi cadastrado e ficou guardado só pra você. Ele não aparece no cardápio até você mostrar.</>
+          ? <>O produto <b>{p.nome}</b> foi cadastrado e ficou guardado só para você. Ele não aparece no cardápio até você mostrar.</>
           : p.lojaPronta === false
-          ? <>O produto <b>{p.nome}</b> foi cadastrado com sucesso. Termine de abrir o cardápio pros clientes verem.</>
+          ? <>O produto <b>{p.nome}</b> foi cadastrado com sucesso. Termine de abrir o cardápio para os clientes verem.</>
           : <>O produto <b>{p.nome}</b> foi cadastrado com sucesso e já está disponível no seu cardápio.</>}
       </p>
 

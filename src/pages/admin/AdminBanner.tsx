@@ -96,7 +96,7 @@ export default function AdminBanner() {
     setCriandoId(aud);
     const { error } = await supabase.from("admin_banner").insert({ audiencia: aud, imagem_url: null, link_destino: "/assinar", ativo: false });
     setCriandoId(null);
-    if (error) { showMsg("Não deu pra criar o banner. Peça para rodar o SQL de configuração. (" + error.message + ")", "err"); return; }
+    if (error) { showMsg("Não deu para criar o banner. Peça para rodar o SQL de configuração. (" + error.message + ")", "err"); return; }
     showMsg("Banner criado", "ok");
     await load();
   };
@@ -189,8 +189,8 @@ export default function AdminBanner() {
       <Titulo nivel="tela" apoio="Aparece no Início do app (celular), entre o Acesso rápido e as Últimas atualizações.">Banner do celular</Titulo>
 
       <div className="ab-grid">
-        {renderCard("free", "Banner do plano grátis", "Aparece pra quem está no plano grátis (ex.: promoção do PRO).", freeRef)}
-        {renderCard("pro", "Banner do plano PRO", "Opcional. Aparece pra quem já é PRO. Inativo ou sem imagem, quem é PRO não vê banner.", proRef)}
+        {renderCard("free", "Banner do plano grátis", "Aparece para quem está no plano grátis (ex.: promoção do PRO).", freeRef)}
+        {renderCard("pro", "Banner do plano PRO", "Opcional. Aparece para quem já é PRO. Inativo ou sem imagem, quem é PRO não vê banner.", proRef)}
       </div>
     </div>
   );

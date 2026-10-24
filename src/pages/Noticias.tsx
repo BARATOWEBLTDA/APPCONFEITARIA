@@ -120,11 +120,11 @@ export default function Noticias() {
         infoIcon="📰"
         infoContent={
           <>
-            <p>Aqui ficam <strong>todas as novidades</strong> do Doonly: dicas pra vender mais, novidades do app, tutoriais passo a passo e avisos importantes.</p>
-            <p>A novidade <strong>fixada</strong> fica sempre no topo, em destaque. As outras aparecem da mais nova pra mais antiga.</p>
+            <p>Aqui ficam <strong>todas as novidades</strong> do Doonly: dicas para vender mais, novidades do app, tutoriais passo a passo e avisos importantes.</p>
+            <p>A novidade <strong>fixada</strong> fica sempre no topo, em destaque. As outras aparecem da mais nova para mais antiga.</p>
           </>
         }
-        infoTip={<>Escolha uma <strong>categoria</strong> pra ver só as dicas, as novidades ou os tutoriais.</>}
+        infoTip={<>Escolha uma <strong>categoria</strong> para ver só as dicas, as novidades ou os tutoriais.</>}
       />
       <div className="nl">
         {estado === "carregando" ? (
@@ -132,7 +132,7 @@ export default function Noticias() {
         ) : estado === "erro" ? (
           <TelaVazia
             icone={<WarningCircle size={30} />}
-            titulo="Não deu pra carregar as novidades"
+            titulo="Não deu para carregar as novidades"
             texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={carregar}>Tentar de novo</Botao>}
           />
@@ -143,7 +143,7 @@ export default function Noticias() {
               <Mascote pose="acenando" className="nl-vazia-m" />
               <div>
                 <h2>Nenhuma novidade por enquanto</h2>
-                <p>As dicas pra vender mais e as novidades do Doonly aparecem aqui. A gente avisa no sininho quando sair uma nova.</p>
+                <p>As dicas para vender mais e as novidades do Doonly aparecem aqui. A gente avisa no sininho quando sair uma nova.</p>
                 <button type="button" className="nl-vazia-bt" onClick={() => navigate("/inicio")}>Voltar pro Início</button>
               </div>
             </div>

@@ -6,7 +6,7 @@ import { explicarErro } from "@/lib/erros";
 /** (11/10) nome seguro pro caminho do arquivo: só a extensão, sem acento nem espaço */
 const extensaoSegura = (nome: string) => (nome.includes(".") ? nome.split(".").pop() || "" : "").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
 /** (11/10) avisa a falha de uma gravação; devolve true quando deu erro */
-const falhou = (error: unknown, frase = "Não deu pra salvar. Tente de novo."): boolean => {
+const falhou = (error: unknown, frase = "Não deu para salvar. Tente de novo."): boolean => {
   if (!error) return false;
   avisar(explicarErro(error, frase), { tipo: "erro" });
   return true;
@@ -36,7 +36,7 @@ export default function AdminReceitasDoonly() {
   const catAlvo = useRef<string | null>(null);
   const loadCategorias = async () => {
     const { data, error } = await supabase.from("receitas_categorias").select("*").order("ordem", { ascending: true });
-    if (falhou(error, "Não deu pra carregar as categorias.")) return;
+    if (falhou(error, "Não deu para carregar as categorias.")) return;
     setCategorias(data || []);
   };
   const addCategoria = async () => {
@@ -46,7 +46,7 @@ export default function AdminReceitasDoonly() {
     const ordem = (categorias.reduce((m, c) => Math.max(m, c.ordem || 0), 0) || 0) + 1;
     const { error } = await supabase.from("receitas_categorias").insert({ nome, ordem });
     ocupado.current = false;
-    if (falhou(error, "Não deu pra criar a categoria. Tente de novo.")) return; // o nome continua no campo
+    if (falhou(error, "Não deu para criar a categoria. Tente de novo.")) return; // o nome continua no campo
     setNovaCat(""); loadCategorias();
   };
   const moverCategoria = async (id: string, dir: -1 | 1) => {
@@ -61,7 +61,7 @@ export default function AdminReceitasDoonly() {
     if (r1.error || r2.error) {
       if (!r1.error) await supabase.from("receitas_categorias").update({ ordem: a.ordem ?? i }).eq("id", a.id);
       if (!r2.error) await supabase.from("receitas_categorias").update({ ordem: b.ordem ?? j }).eq("id", b.id);
-      falhou(r1.error || r2.error, "Não deu pra mudar a ordem. Tente de novo.");
+      falhou(r1.error || r2.error, "Não deu para mudar a ordem. Tente de novo.");
     }
     loadCategorias();
   };
@@ -74,23 +74,23 @@ export default function AdminReceitasDoonly() {
     const path = `receitas-categorias/${id}-${Date.now()}.${extensaoSegura(file.name)}`;
     let error: unknown = null;
     try { error = (await supabase.storage.from("profiles").upload(path, file, { upsert: true })).error; } catch (err) { error = err; }
-    if (!falhou(error, "Não deu pra enviar a foto. Tente de novo.")) {
+    if (!falhou(error, "Não deu para enviar a foto. Tente de novo.")) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       const { error: erroGravar } = await supabase.from("receitas_categorias").update({ imagem_url: data.publicUrl }).eq("id", id);
-      if (!falhou(erroGravar, "Não deu pra salvar a foto. Tente de novo.")) loadCategorias();
+      if (!falhou(erroGravar, "Não deu para salvar a foto. Tente de novo.")) loadCategorias();
     }
     setEnviandoCat(null);
   };
   const tirarFotoCategoria = async (id: string) => {
     const { error } = await supabase.from("receitas_categorias").update({ imagem_url: null }).eq("id", id);
-    if (!falhou(error, "Não deu pra tirar a foto. Tente de novo.")) loadCategorias();
+    if (!falhou(error, "Não deu para tirar a foto. Tente de novo.")) loadCategorias();
   };
   const apagarCategoria = async (c: any) => {
     const usadas = receitas.filter(r => r.categoria === c.nome).length;
     if (usadas > 0) { await informar({ titulo: `"${c.nome}" ainda tem receitas`, texto: `São ${usadas} receita${usadas === 1 ? "" : "s"} nela. Troque a categoria delas antes de apagar.`, icone: "alerta" }); return; }
     if (!(await confirmar({ titulo: `Apagar a categoria "${c.nome}"?`, texto: "Ela sai da tela de Receitas do app.", rotulo: "Apagar", perigo: true }))) return;
     const { error } = await supabase.from("receitas_categorias").delete().eq("id", c.id);
-    if (!falhou(error, "Não deu pra apagar a categoria. Tente de novo.")) loadCategorias();
+    if (!falhou(error, "Não deu para apagar a categoria. Tente de novo.")) loadCategorias();
   };
 
   useEffect(() => { load(); loadCategorias(); }, []);
@@ -112,7 +112,7 @@ export default function AdminReceitasDoonly() {
     let error: unknown = null;
     try { error = (await supabase.storage.from("profiles").upload(path, file, { upsert: true })).error; } catch (err) { error = err; }
     setEnviandoFoto(false);
-    if (!falhou(error, "Não deu pra enviar a foto. Tente de novo.")) {
+    if (!falhou(error, "Não deu para enviar a foto. Tente de novo.")) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       setForm(f => ({ ...f, foto_url: data.publicUrl }));
     } else {
@@ -132,7 +132,7 @@ export default function AdminReceitasDoonly() {
         : (await supabase.from("receitas_doonly").insert(form)).error;
     } catch (err) { error = err; }
     ocupado.current = false;
-    if (falhou(error, "Não deu pra salvar a receita. Tente de novo.")) { setSaving(false); return; }
+    if (falhou(error, "Não deu para salvar a receita. Tente de novo.")) { setSaving(false); return; }
     await load();
     setShowForm(false); setForm(emptyForm); setEditId(null); setPreview(null); setSaving(false);
   };
@@ -145,9 +145,9 @@ export default function AdminReceitasDoonly() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!(await confirmar({ titulo: "Excluir esta receita?", texto: "Ela some do app e não dá pra desfazer.", rotulo: "Excluir", perigo: true }))) return;
+    if (!(await confirmar({ titulo: "Excluir esta receita?", texto: "Ela some do app e não dá para desfazer.", rotulo: "Excluir", perigo: true }))) return;
     const { error } = await supabase.from("receitas_doonly").delete().eq("id", id);
-    if (!falhou(error, "Não deu pra excluir. Tente de novo.")) load();
+    if (!falhou(error, "Não deu para excluir. Tente de novo.")) load();
   };
 
   const novaReceita = () => { setForm(emptyForm); setPreview(null); setEditId(null); setShowForm(true); };
@@ -208,7 +208,7 @@ export default function AdminReceitasDoonly() {
           caixa
           icone={<Cake size={30} />}
           titulo="Nenhuma receita Doonly ainda"
-          texto="Publique a primeira e ela aparece pra todas as confeiteiras."
+          texto="Publique a primeira e ela aparece para todas as confeiteiras."
           acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={novaReceita}>Nova receita</Botao>}
         />
       ) : (

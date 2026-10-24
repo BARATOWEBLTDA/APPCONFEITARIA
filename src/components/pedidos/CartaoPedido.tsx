@@ -180,7 +180,7 @@ export function LinhaCompacta({ p, aoAbrir, aoAvancar, mudando }: Props) {
       <div className="pdk-tx">
         <p className="pdk-nome"><b>{nomeCliente(p)}</b><span>#{p.numero || '—'}</span></p>
         <p className="pdk-s">{resumoItens(p)}</p>
-        <p className={`pdk-s pdk-q${atr ? ' t-vermelho' : ''}`}>{atr ? `Atrasado · era pra ${dm}` : quando}</p>
+        <p className={`pdk-s pdk-q${atr ? ' t-vermelho' : ''}`}>{atr ? `Atrasado · era para ${dm}` : quando}</p>
         {cancelado
           ? <p className="pdk-pg">Cancelado</p>
           : <p className={`pdk-pg t-${pg.tom}`}>{pg.texto}</p>}

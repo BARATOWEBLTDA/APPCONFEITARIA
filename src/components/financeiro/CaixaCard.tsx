@@ -38,11 +38,11 @@ export function SaldoCaixa({ cx, onAcertar, onDepois, destaque, onTentar }: { cx
   if (!cx) return <div className="cxc cxc--carregando" aria-busy="true" />;
   // 10/10: falha de internet ou do servidor não vira saldo errado nem "falta o SQL"
   if (cx.erro) return (
-    <div className="cxc-convite" role="alert"><b>Saldo em caixa</b><p>Não deu pra carregar o saldo. Confira a internet e tente de novo.</p>
+    <div className="cxc-convite" role="alert"><b>Saldo em caixa</b><p>Não deu para carregar o saldo. Confira a internet e tente de novo.</p>
       {onTentar && <button type="button" className="cxc-cta" onClick={onTentar}>Tentar de novo</button>}</div>
   );
   if (cx.precisaSql) return (
-    <div className="cxc-convite"><b>Saldo em caixa</b><p>Falta um ajuste no banco de dados pra ativar o caixa (o SQL do Passo 4).</p></div>
+    <div className="cxc-convite"><b>Saldo em caixa</b><p>Falta um ajuste no banco de dados para ativar o caixa (o SQL do Passo 4).</p></div>
   );
   if (!cx.configurado) return (
     <div className={`cxc-convite${destaque ? " cxc-convite--foco" : ""}`}>
@@ -151,7 +151,7 @@ export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | n
             <ul>
               <li>O app soma o que entra e tira o que sai</li>
               <li>Você sabe quanto tem, todo dia</li>
-              <li>Dá pra mudar depois em Acertar</li>
+              <li>Dá para mudar depois em Acertar</li>
             </ul>
           </div>
           <div className="cxs-av"><b>Já recebeu sinal de alguma encomenda?</b>Ao cadastrar o pedido, coloque a data em que recebeu. Assim o app não conta duas vezes.</div>

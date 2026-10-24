@@ -12,7 +12,7 @@ import { faltaNoBanco } from "@/lib/pagamentos";
 export type TipoAjuste = "desconto" | "acrescimo";
 
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const ERRO_AJUSTE = "Não deu pra ajustar o valor. Tente de novo.";
+const ERRO_AJUSTE = "Não deu para ajustar o valor. Tente de novo.";
 
 /**
  * (11/10) A conta é feita em cima do que está NO BANCO agora, não do total que a tela mandou

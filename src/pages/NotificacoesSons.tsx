@@ -65,7 +65,7 @@ export default function NotificacoesSons() {
       <>
         No iPhone, as notificações só funcionam com o Doonly <b>instalado na tela de início</b>:
         <ol className="ns-passos">
-          <li>No Safari, toque em <b>Compartilhar</b> (o quadrado com a seta pra cima)</li>
+          <li>No Safari, toque em <b>Compartilhar</b> (o quadrado com a seta para cima)</li>
           <li>Toque em <b>"Adicionar à Tela de Início"</b></li>
           <li>Abra o Doonly pelo ícone novo e ative aqui</li>
         </ol>
@@ -74,7 +74,7 @@ export default function NotificacoesSons() {
     pushDescClass = "ns-desc ns-desc--warn";
   } else if (!isSupported) {
     pushDesc = ehIphone()
-      ? "Este iPhone não recebe notificações. Atualize pro iOS 16.4 ou mais novo."
+      ? "Este iPhone não recebe notificações. Atualize para o iOS 16.4 ou mais novo."
       : "Este navegador não recebe notificações. Use o Chrome ou instale o app.";
     pushDescClass = "ns-desc ns-desc--warn";
   } else if (permission === "denied") {
@@ -94,7 +94,7 @@ export default function NotificacoesSons() {
       ) : (
         <>
           Notificações bloqueadas no navegador.
-          <br />Pra liberar: clique no cadeado da barra de endereço, depois em Notificações e escolha Permitir.
+          <br />Para liberar: clique no cadeado da barra de endereço, depois em Notificações e escolha Permitir.
         </>
       );
     pushDescClass = celular ? "ns-desc ns-desc--atencao" : "ns-desc ns-desc--warn";

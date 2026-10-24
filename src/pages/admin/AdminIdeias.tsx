@@ -123,9 +123,9 @@ export default function AdminIdeias() {
     setSalvando(ideia.id);
     const { data, error } = await supabase.from("sugestoes").update({ status: novo }).eq("id", ideia.id).select("id");
     setSalvando(null);
-    if (error) { mostrarToast("Não deu pra salvar: " + error.message, "erro"); return; }
+    if (error) { mostrarToast("Não deu para salvar: " + error.message, "erro"); return; }
     // RLS bloqueando não dá erro, só não atualiza nada
-    if (!data || data.length === 0) { mostrarToast("Sem permissão pra alterar. Rode o SQL de permissões do admin.", "erro"); return; }
+    if (!data || data.length === 0) { mostrarToast("Sem permissão para alterar. Rode o SQL de permissões do admin.", "erro"); return; }
     setIdeias(prev => prev.map(i => (i.id === ideia.id ? { ...i, status: novo } : i)));
     const quem = (ideia.nome || "A confeiteira").split(" ")[0];
     mostrarToast(novo === "implementada"
@@ -190,14 +190,14 @@ export default function AdminIdeias() {
           </select>
         </div>
 
-        {erro && <p className="ai-erro" role="alert">Não deu pra carregar: {erro}</p>}
+        {erro && <p className="ai-erro" role="alert">Não deu para carregar: {erro}</p>}
 
         {loading ? (
           <div className="ai-esq" aria-busy="true"><span /><span /><span /></div>
         ) : visiveis.length === 0 ? (
           ideias.length === 0
             ? <TelaVazia compacta icone={<Lightbulb size={30} />} titulo="Nenhuma ideia ainda" texto="As sugestões das confeiteiras aparecem aqui." />
-            : <TelaVazia compacta icone={<Lightbulb size={30} />} titulo="Nenhuma ideia nesse filtro" texto="Troque o filtro ou a busca pra ver outras." />
+            : <TelaVazia compacta icone={<Lightbulb size={30} />} titulo="Nenhuma ideia nesse filtro" texto="Troque o filtro ou a busca para ver outras." />
         ) : (
           <div className="ai-list">
             {visiveis.map(i => {

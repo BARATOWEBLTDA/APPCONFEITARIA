@@ -174,7 +174,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
     <section className="cp-box cp-sacola">
       <h3>{cartCount === 0 ? 'Seu pedido' : `Sua sacola · ${cartCount} ${cartCount === 1 ? 'item' : 'itens'}`}</h3>
       {cartCount === 0 ? (
-        <div className="cp-vazio"><ShoppingBag size={32} aria-hidden="true" /><b>Seu pedido está vazio</b><small>Escolha um produto pra começar.</small></div>
+        <div className="cp-vazio"><ShoppingBag size={32} aria-hidden="true" /><b>Seu pedido está vazio</b><small>Escolha um produto para começar.</small></div>
       ) : (<>
         <div className="cp-sac-lista">
         {items.map((item: any) => {
@@ -362,7 +362,7 @@ function CardapioContent() {
       if (ogImage) setMetaName('twitter:image', ogImage)
       if (checkoutConfig) localStorage.setItem('cardapio_checkout_config', JSON.stringify(checkoutConfig))
       setLoading(false)
-    }).catch(e => { setError(explicarErro(e, 'Não deu pra abrir o cardápio agora. Tente de novo em instantes.')); setLoading(false) })
+    }).catch(e => { setError(explicarErro(e, 'Não deu para abrir o cardápio agora. Tente de novo em instantes.')); setLoading(false) })
   }, [codigo, slugAtual, isRotaNova])
 
   const toggleFavorite = (id: string) => setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
@@ -454,7 +454,7 @@ function CardapioContent() {
           </>
         )}
 {(config as any)?.loja_pausada && (
-          <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Pra encomendar, chame a loja no WhatsApp.</small></span></div>
+          <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Para encomendar, chame a loja no WhatsApp.</small></span></div>
         )}
                 {/* Espaço embaixo: menu (60px) e, com itens, a barra "Ver seu pedido" (~64px) não cobrem o último produto */}
         <div style={{ padding: `0 10px calc(${cartCount > 0 ? 148 : 84}px + env(safe-area-inset-bottom, 0px))` }}>
@@ -498,7 +498,7 @@ function CardapioContent() {
 
         <main className="cp-meio">
           {(config as any)?.loja_pausada && (
-          <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Pra encomendar, chame a loja no WhatsApp.</small></span></div>
+          <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Para encomendar, chame a loja no WhatsApp.</small></span></div>
         )}
           {produtos.length === 0 ? <EmptyState telefone={config?.telefone} /> : (<>
           <div className="cp-busca-linha">

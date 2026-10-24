@@ -437,7 +437,7 @@ export default function FichaTecnica() {
     const { error: errDel } = await supabase.from("produto_insumos").delete().eq("produto_id", selected.id);
     if (errDel) {
       setSaving(false);
-      avisar(explicarErro(errDel, "Não deu pra salvar a ficha técnica. Tente de novo."), { tipo: "erro" });
+      avisar(explicarErro(errDel, "Não deu para salvar a ficha técnica. Tente de novo."), { tipo: "erro" });
       return;
     }
     const itens = ficha
@@ -455,7 +455,7 @@ export default function FichaTecnica() {
       if (errIns) {
         // Não deixa a ficha "sumir" calada: avisa e para (os ingredientes continuam na tela pra tentar de novo)
         setSaving(false);
-        avisar(explicarErro(errIns, "Não deu pra salvar os ingredientes. Tente de novo."), { tipo: "erro" });
+        avisar(explicarErro(errIns, "Não deu para salvar os ingredientes. Tente de novo."), { tipo: "erro" });
         return;
       }
     }
@@ -610,7 +610,7 @@ export default function FichaTecnica() {
                 titulo={insumosCadastrados.length === 0 ? "Cadastre seus ingredientes" : "Nenhum ingrediente nesta ficha"}
                 texto={insumosCadastrados.length === 0
                   ? "A ficha soma o custo de cada ingrediente que vai no produto. Comece pelo que você mais usa: leite condensado, farinha, ovos…"
-                  : `Adicione o que vai no ${selected.nome} pra saber quanto ele custa.`}
+                  : `Adicione o que vai no ${selected.nome} para saber quanto ele custa.`}
                 acao={insumosCadastrados.length === 0
                   ? <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirCadastro}>Cadastrar ingrediente</Botao>
                   : <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirPicker}>Adicionar ingrediente</Botao>} />
@@ -665,15 +665,15 @@ export default function FichaTecnica() {
                 <Chave ligado={moAtivo} aoMudar={setMoAtivo} rotulo="Somar a mão de obra" />
               </div>
               {!moAtivo ? (
-                <p className="fd-dica">Ligue pra colocar o valor do seu tempo no custo do produto.</p>
+                <p className="fd-dica">Ligue para colocar o valor do seu tempo no custo do produto.</p>
               ) : (<>
                 <div className="fd-mo-conta">
                   {maoConta
                     ? <span><small>Sua hora, de Custos</small><b>R$ {fmt(custoHora)} por hora</b></span>
                     : <span><small>Sem salário em Custos</small><b>Cadastre lá</b></span>}
-                  <Botao variante="link" tamanho="m" onClick={() => navigate("/custos")}>{maoConta ? "Alterar" : "Ir pra Custos"}</Botao>
+                  <Botao variante="link" tamanho="m" onClick={() => navigate("/custos")}>{maoConta ? "Alterar" : "Ir para Custos"}</Botao>
                 </div>
-                <Campo rotulo="Tempo pra fazer esta receita" inputMode="numeric" placeholder="0" value={extras.tempo_preparo_min}
+                <Campo rotulo="Tempo para fazer esta receita" inputMode="numeric" placeholder="0" value={extras.tempo_preparo_min}
                   onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} depois={<span className="cl9-f-uf">min</span>} />
                 <p className="fd-mo">Nesta receita: <b>R$ {fmt(moLive)}</b></p>
               </>)}
@@ -687,7 +687,7 @@ export default function FichaTecnica() {
               <Chave ligado={infoAtivo} aoMudar={setInfoAtivo} rotulo="Mostrar informações do produto" />
             </div>
             {!infoAtivo ? (
-              <p className="fd-dica">Ligue pra anotar rendimento, validade, embalagem e observações.</p>
+              <p className="fd-dica">Ligue para anotar rendimento, validade, embalagem e observações.</p>
             ) : (<>
               <div className="cl9-f-2">
                 <Campo rotulo="Rende" opcional placeholder="Ex.: 20 brigadeiros" value={extras.rendimento_qtd} onChange={e => setExtras(s => ({ ...s, rendimento_qtd: e.target.value }))} />
@@ -933,7 +933,7 @@ export default function FichaTecnica() {
                     <strong style={{ color: "var(--text-title)" }}>R$ {fmt(custoLinha)}</strong>.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
-                    <strong>Dica:</strong> abra esse ingrediente em <strong>Ingredientes</strong> e refaça o cadastro pra que a explicação aqui fique completa.
+                    <strong>Dica:</strong> abra esse ingrediente em <strong>Ingredientes</strong> e refaça o cadastro para que a explicação aqui fique completa.
                   </p>
                 </>
               )}
@@ -965,11 +965,11 @@ export default function FichaTecnica() {
           <p>O custo soma os ingredientes, os custos invisíveis (gás do forno, perdas, descartáveis) e a sua mão de obra, que já inclui uma parte dos custos fixos.</p>
         </>
       }
-      infoTip={<>Escolha um produto pra montar ou ajustar a ficha.</>}
+      infoTip={<>Escolha um produto para montar ou ajustar a ficha.</>}
     />
     <div className="cl9 fl">
       {erroCarga ? (
-        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as fichas técnicas" texto={erroCarga}
+        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar as fichas técnicas" texto={erroCarga}
           acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
       ) : produtos.length === 0 ? (
         <TelaVazia caixa icone={<Receipt size={30} />} titulo="Nenhum produto ainda"

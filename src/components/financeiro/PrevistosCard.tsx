@@ -32,7 +32,7 @@ export default function PrevistosCard({ versao = 0 }: { versao?: number }) {
   if (erro) return (
     <div className="pvc pvc--erro" role="alert">
       <div className="pvc-h"><b>Recebimentos previstos</b></div>
-      <p>Não deu pra carregar. Tente de novo.</p>
+      <p>Não deu para carregar. Tente de novo.</p>
       <button type="button" onClick={() => { setErro(false); setTentativa(t => t + 1); }}>Tentar de novo</button>
       <style>{CSS}</style>
     </div>

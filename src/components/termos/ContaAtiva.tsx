@@ -13,7 +13,7 @@ import './termos.css'
 const RECURSOS = [
   { Ic: ListBullets, t: 'Cardápio digital vendendo 24h' },
   { Ic: CalendarDots, t: 'Agenda que lembra cada entrega' },
-  { Ic: Users, t: 'Seus clientes num lugar só' },
+  { Ic: Users, t: 'Seus clientes em um lugar só' },
   { Ic: CurrencyDollar, t: 'Preço sem erro e lucro na mão' },
 ]
 // confete parado no cabeçalho: [left %, top px, cor, giro]

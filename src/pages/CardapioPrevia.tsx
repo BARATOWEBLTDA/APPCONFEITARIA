@@ -75,7 +75,7 @@ export default function CardapioPrevia() {
       <span className="ui-gira" aria-hidden="true" />
       {demorou ? (
         <>
-          <p>A prévia está demorando pra carregar.</p>
+          <p>A prévia está demorando para carregar.</p>
           <Botao variante="secundario" tamanho="m" icone={<ArrowSquareOut size={20} weight="bold" />} onClick={abrir}>Abrir o cardápio em outra aba</Botao>
         </>
       ) : <p>Carregando a prévia…</p>}

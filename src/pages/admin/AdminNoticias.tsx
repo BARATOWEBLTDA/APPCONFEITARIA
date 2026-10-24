@@ -273,11 +273,11 @@ export default function AdminNoticias() {
     const outro = rows[outroIdx];
     // (11/10) confere as duas gravações: se a segunda falhar, desfaz a primeira (senão as duas ficam com a mesma ordem)
     const { error: e1 } = await supabase.from("admin_noticias").update({ ordem: outro.ordem }).eq("id", n.id);
-    if (e1) { showMsg(explicarErro(e1, "Não deu pra mudar a ordem. Tente de novo."), "err"); return; }
+    if (e1) { showMsg(explicarErro(e1, "Não deu para mudar a ordem. Tente de novo."), "err"); return; }
     const { error: e2 } = await supabase.from("admin_noticias").update({ ordem: n.ordem }).eq("id", outro.id);
     if (e2) {
       await supabase.from("admin_noticias").update({ ordem: n.ordem }).eq("id", n.id);
-      showMsg(explicarErro(e2, "Não deu pra mudar a ordem. Tente de novo."), "err");
+      showMsg(explicarErro(e2, "Não deu para mudar a ordem. Tente de novo."), "err");
     }
     await load();
   };
@@ -312,7 +312,7 @@ export default function AdminNoticias() {
 
       {rows.length === 0 ? (
         <TelaVazia caixa className="an-vazia" icone={<Newspaper size={30} />} titulo="Nenhuma notícia ainda"
-          texto="Crie a primeira pra ela aparecer no Início."
+          texto="Crie a primeira para ela aparecer no Início."
           acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={abrirNovo}>Criar notícia</Botao>} />
       ) : (
         <div className="an-list">
@@ -438,7 +438,7 @@ export default function AdminNoticias() {
               </div>
             ) : (
               <Campo rotulo="Autor" value={form.autor} onChange={e => setForm(f => ({ ...f, autor: e.target.value }))} placeholder="Ex.: Equipe Doonly"
-                dica="Cadastre autores em /admin/autores pra escolher aqui." />
+                dica="Cadastre autores em /admin/autores para escolher aqui." />
             )}
           </div>
           {autoresList.length > 0 && !form.autor_id && (
@@ -447,7 +447,7 @@ export default function AdminNoticias() {
 
           <Campo rotulo="Curtidas iniciais" opcional type="number" inputMode="numeric" min={0} value={form.likes_base}
             onChange={e => setForm(f => ({ ...f, likes_base: Math.max(0, parseInt(e.target.value) || 0) }))}
-            placeholder="Ex.: 42" dica="Somam às curtidas reais, pra não começar do zero." />
+            placeholder="Ex.: 42" dica="Somam às curtidas reais, para não começar do zero." />
 
           <CampoArea rotulo="Descrição curta" value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={2} maxLength={200}
             dica="Aparece no cartão do Início." />
@@ -467,7 +467,7 @@ export default function AdminNoticias() {
           <div className="an-checks">
             <label className="an-check">
               <input type="checkbox" checked={form.ativo} onChange={e => setForm(f => ({ ...f, ativo: e.target.checked }))} />
-              <span><b>Ativa</b><small>Aparece pras confeiteiras.</small></span>
+              <span><b>Ativa</b><small>Aparece para as confeiteiras.</small></span>
             </label>
             <label className="an-check">
               <input type="checkbox" checked={form.fixada} onChange={e => setForm(f => ({ ...f, fixada: e.target.checked }))} />
@@ -495,7 +495,7 @@ export default function AdminNoticias() {
                 <small>Aparece na aba Notificações e no celular de quem ativou.</small>
               </span>
             </label>
-            {!podeNotificar && <p className="an-notif-hint">Ative a notícia pra poder avisar.</p>}
+            {!podeNotificar && <p className="an-notif-hint">Ative a notícia para poder avisar.</p>}
 
             {notif.enviar && podeNotificar && (
               <>

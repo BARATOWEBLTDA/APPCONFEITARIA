@@ -50,7 +50,7 @@ export default function AdminPDFs() {
     } else {
       // (11/10) antes a falha era ignorada e o PDF era publicado sem a capa
       setCapaPreview(form.capa_url || null);
-      avisar(explicarErro(error, "Não deu pra enviar a capa. Tente de novo."), { tipo: "erro" });
+      avisar(explicarErro(error, "Não deu para enviar a capa. Tente de novo."), { tipo: "erro" });
     }
   };
 
@@ -71,7 +71,7 @@ export default function AdminPDFs() {
     } else {
       // (11/10) antes a falha era ignorada e o material era publicado sem arquivo
       setPdfName(nomeAntes);
-      avisar(explicarErro(error, "Não deu pra enviar o PDF. Tente de novo."), { tipo: "erro" });
+      avisar(explicarErro(error, "Não deu para enviar o PDF. Tente de novo."), { tipo: "erro" });
     }
   };
 
@@ -88,7 +88,7 @@ export default function AdminPDFs() {
         : (await supabase.from("biblioteca_pdf").insert(form)).error;
     } catch (err) { error = err; }
     salvandoRef.current = false;
-    if (error) { setSaving(false); avisar(explicarErro(error, "Não deu pra salvar o PDF. Tente de novo."), { tipo: "erro" }); return; }
+    if (error) { setSaving(false); avisar(explicarErro(error, "Não deu para salvar o PDF. Tente de novo."), { tipo: "erro" }); return; }
     await load();
     setShowForm(false); setForm(emptyForm); setEditId(null); setCapaPreview(null); setPdfName(""); setSaving(false);
   };
@@ -104,7 +104,7 @@ export default function AdminPDFs() {
   const handleDelete = async (id: string) => {
     if (!(await confirmar({ titulo: "Excluir este PDF?", texto: "Ele some da biblioteca do app.", rotulo: "Excluir", perigo: true }))) return;
     const { error } = await supabase.from("biblioteca_pdf").delete().eq("id", id);
-    if (error) { avisar(explicarErro(error, "Não deu pra excluir. Tente de novo."), { tipo: "erro" }); return; }
+    if (error) { avisar(explicarErro(error, "Não deu para excluir. Tente de novo."), { tipo: "erro" }); return; }
     load();
   };
 

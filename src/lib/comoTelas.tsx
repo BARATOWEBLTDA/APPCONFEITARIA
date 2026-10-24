@@ -20,7 +20,7 @@ export const COMO_INICIO_CEL: Como = {
     [MagnifyingGlass, <><b>Buscar:</b> encontre qualquer tela ou ação, como pix, cupom ou horário.</>],
     [ListChecks, <><b>Acesso rápido:</b> as telas mais usadas, a um toque.</>],
     [CalendarBlank, <><b>Próximas entregas:</b> toque em um dia para ver apenas os pedidos dele.</>],
-    [ListChecks, <><b>Pra fazer:</b> pendências da loja, com o botão para resolver na hora.</>],
+    [ListChecks, <><b>Para fazer:</b> pendências da loja, com o botão para resolver na hora.</>],
   ],
 };
 
@@ -30,7 +30,7 @@ export const COMO_INICIO: Como = {
   dicas: [
     [ChartLineUp, <><b>Números do topo:</b> recebido no mês, pedidos dos últimos 7 dias, entregas de hoje e ticket médio.</>],
     [CalendarBlank, <><b>Próximas entregas:</b> pedidos dos próximos dias, com horário e valor.</>],
-    [ListChecks, <><b>Pra fazer:</b> pendências da loja, com o botão para resolver na hora.</>],
+    [ListChecks, <><b>Para fazer:</b> pendências da loja, com o botão para resolver na hora.</>],
     [MagnifyingGlass, <><b>Buscar</b> (Ctrl + K): encontre qualquer tela ou ação, como pix, cupom ou horário.</>],
   ],
 };
@@ -41,7 +41,7 @@ export const TOUR_INICIO_CEL: PassoTour[] = [
   { el: ".ini-busca", titulo: "Buscar", texto: "Digite o que procura, como \"pix\", \"cupom\" ou \"horário\", e vá direto para a tela certa." },
   { el: ".ini-section--nav", titulo: "Acesso rápido", texto: "Atalhos para as telas mais usadas. As demais ficam no Menu, na barra inferior." },
   { el: ".ini-section--dia", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Toque em um dia para ver apenas os pedidos dele." },
-  { el: ".ini-falta .pf", titulo: "Pra fazer", texto: "Pendências da sua loja, com o botão para resolver na hora. Se preferir deixar para depois, toque em Agora não." },
+  { el: ".ini-falta .pf", titulo: "Para fazer", texto: "Pendências da sua loja, com o botão para resolver na hora. Se preferir deixar para depois, toque em Agora não." },
   { el: ".bn-novo-c", titulo: "Nova venda", texto: "Registre uma venda ou encomenda a qualquer momento. O botão aparece em todas as telas.", redondo: true },
 ];
 
@@ -49,7 +49,7 @@ export const TOUR_INICIO_CEL: PassoTour[] = [
 export const TOUR_INICIO_PC: PassoTour[] = [
   { el: ".ini-dk-kpis", titulo: "Seus números", texto: "Recebido no mês, pedidos dos últimos 7 dias, entregas de hoje e ticket médio." },
   { el: ".dkg-entregas", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Clique em um pedido para ver os detalhes." },
-  { el: ".dkg-fazer .pf", titulo: "Pra fazer", texto: "Pendências da sua loja, com o botão para resolver na hora." },
+  { el: ".dkg-fazer .pf", titulo: "Para fazer", texto: "Pendências da sua loja, com o botão para resolver na hora." },
   { el: ".cab-busca", titulo: "Buscar", texto: "Encontre qualquer tela ou ação do sistema. Atalho: Ctrl + K." },
   { el: ".sb-pausar", titulo: "Sua loja", texto: "Mostra se a loja está aberta e permite pausar ou retomar os pedidos pelo cardápio." },
 ];
@@ -62,7 +62,7 @@ export const COMO_PEDIDOS: Como = {
   total: ["Falta receber", "R$ 23,80"],
   fluxo: ["Aceitar", "Agendado", "Pronto", "Entregue"],
   dicas: [
-    [Bell, <>Pedidos novos do cardápio chegam em <b>Pra aceitar</b>. Ao aceitar, eles vão para a agenda.</>],
+    [Bell, <>Pedidos novos do cardápio chegam em <b>Para aceitar</b>. Ao aceitar, eles vão para a agenda.</>],
     [ArrowRight, <>O botão de cada pedido avança para a <b>próxima etapa</b>: Produzir, Pronto e Entregue.</>],
     [HandCoins, <>O valor que <b>falta receber</b> fica em destaque até você registrar o pagamento.</>],
     [Funnel, <>Use o <b>filtro</b> para escolher a situação e a data da entrega.</>],
@@ -280,7 +280,7 @@ export const TOUR_PEDIDOS: PassoTour[] = [
   { el: ".pd-abas", titulo: "Tipo de venda", texto: "Alterne entre encomendas e pronta entrega." },
   { el: ".pd-busca", titulo: "Buscar", texto: "Encontre um pedido pelo nome do cliente ou pelo número." },
   { el: ".pd-filtro", titulo: "Filtros", texto: "Filtre os pedidos por situação e por data de entrega." },
-  { el: ".pdk-abas", titulo: "Situações", texto: "Pra aceitar, Agendados, Prontos e Concluídos. O número mostra quantos pedidos há em cada uma." },
+  { el: ".pdk-abas", titulo: "Situações", texto: "Para aceitar, Agendados, Prontos e Concluídos. O número mostra quantos pedidos há em cada uma." },
   { el: ".pd-modo", titulo: "Lista ou quadro", texto: "Veja os pedidos em lista ou em quadro, com uma coluna para cada situação." },
   { el: ".pd-novo", titulo: "Nova venda", texto: "Registre uma venda ou encomenda feita pelo WhatsApp ou no balcão." },
   { el: ".pd-grupo", titulo: "Pedidos", texto: "Agrupados pelo dia da entrega, com os atrasados no topo. O botão de cada pedido avança para a próxima etapa.",

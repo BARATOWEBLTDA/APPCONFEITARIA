@@ -99,7 +99,7 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
               <ul className="sl-dias">
                 {dias.map(d => <li key={d.dia} className={d.hoje ? 'hoje' : ''}><span>{d.dia}{d.hoje && <small>hoje</small>}</span><span>{d.texto}</span></li>)}
               </ul>
-            ) : <p className="sl-vazio">A loja não informou o horário. Chame no WhatsApp pra combinar.</p>}
+            ) : <p className="sl-vazio">A loja não informou o horário. Chame no WhatsApp para combinar.</p>}
             {cfg.horario_retirada && <p className="sl-nota">Retirada: {cfg.horario_retirada}</p>}
 </>)
   const blocoPagamento = (<>

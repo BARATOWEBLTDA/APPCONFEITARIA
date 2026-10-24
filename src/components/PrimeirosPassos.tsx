@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
-import { EXEMPLO_DESCRICAO, EditorHorario, type Horario } from "@/components/loja/EditoresLoja";
+import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar, type Horario } from "@/components/loja/EditoresLoja";
 import { useNavigate } from "react-router-dom";
 import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, Camera, PixLogo, Money, CreditCard, Storefront, Moped } from "@phosphor-icons/react";
 import ListaChaves from "@/components/loja/ListaChaves";
@@ -207,7 +207,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
           <span className="ppb-n" aria-hidden="true">{atual + 1}</span>
           <span className="ppb-tx"><b>{p.t}</b><small>{p.s}</small></span>
           <button type="button" className="ppb-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}</button>
-          {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto pra vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
+          {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
         </div>
         {verTodos && <div className="ppb-lista">{passos.map((q, i) => i === atual ? null : (
           <button type="button" key={q.t} className={`pp-ps${q.feito ? " pp-ps--ok" : ""}`} onClick={q.feito ? undefined : q.abrir} disabled={q.feito}>
@@ -244,7 +244,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
               <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
             </div>
             <button type="button" className="pp-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}</button>
-            {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto pra vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
+            {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
           </div>
         ) : (
           <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.feito ? undefined : p.abrir} disabled={p.feito}>
@@ -375,7 +375,7 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
         <ul>
           <li>O app soma o que entra e tira o que sai</li>
           <li>Você sabe quanto tem, todo dia</li>
-          <li>Dá pra mudar depois no Financeiro</li>
+          <li>Dá para mudar depois no Financeiro</li>
         </ul>
       </div>
       <div className="ppf-cx-av"><b>Já recebeu sinal de alguma encomenda?</b>Ao cadastrar o pedido, coloque a data em que recebeu. Assim o app não conta duas vezes.</div>
@@ -653,12 +653,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
       </>)}
 
       {(achou || manual) && (<>
-        <p className="ppf-l ppf-e-tit" id="pp-mostrar">O que aparece no cardápio</p>
-        <div className="ppf-seg" role="radiogroup" aria-labelledby="pp-mostrar">
-          {([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Não mostrar"]] as const).map(([v, t]) => (
-            <button type="button" role="radio" aria-checked={mostrar === v} key={v} className={mostrar === v ? "on" : ""} onClick={() => setMostrar(v)}>{t}</button>
-          ))}
-        </div>
+        <OpcoesMostrar mostrar={mostrar} onMudar={setMostrar} tituloClasse="ppf-l ppf-e-tit" />
         <MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo} altura={124} />
         <p className="ppf-e-ajuda ppf-e-ajuda--p">{mostrar === "nada" ? "Bom para quem atende em casa." : "É assim que o cliente vê, em Sobre a loja."}</p>
       </>)}
@@ -731,7 +726,7 @@ const CSS = `
   .pp-ps--ok .pp-tx small { color: var(--ui-verde); font-weight: 700; }
   .pp-n { display: none; font-style: normal; }
   /* (15/10) celular: os passos viram checklist numerado (bolinha com número; feito = check verde e riscado),
-     pra não parecer com os atalhos do Início, que têm o quadrado rosa */
+     para não parecer com os atalhos do Início, que têm o quadrado rosa */
   @media (max-width: 767px) {
     .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }
     .pp-ic:not(.pp-ic--ok) svg { display: none; }
@@ -757,7 +752,7 @@ const CSS = `
   .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
   .pp-lnk--cinza { color: var(--ui-texto-3); font-weight: 500; }
 
-  /* (19/10) computador: duas colunas pra não esticar. Esquerda: título, barra e o passo da vez (igual ao celular);
+  /* (19/10) computador: duas colunas para não esticar. Esquerda: título, barra e o passo da vez (igual ao celular);
      direita: a lista dos passos. Cada coluna com a largura de um celular. */
   .pp-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
   .pp-col-a .pp-at { margin-top: 16px; }
@@ -826,9 +821,6 @@ const CSS = `
   .ppf-e-ajuda { margin: 8px 2px 0; font-size: 13px; color: var(--ui-texto-2); }
   .ppf-e-ajuda--p { font-size: 12.5px; color: var(--ui-texto-3); }
   .ppf-e-tit { margin: 18px 2px 8px; }
-  .ppf-seg { display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(42,21,32,.06); }
-  .ppf-seg button { flex: 1; min-width: 0; min-height: 40px; padding: 0 4px; border: 0; border-radius: 9px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; cursor: pointer; }
-  .ppf-seg button.on { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: 0 1px 3px rgba(42,21,32,.10); }
   .ppf-p-taxa { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: text; }
   .ppf-p-taxa > span:first-child { min-width: 0; display: flex; flex-direction: column; }
   .ppf-p-taxa b { font-size: 14px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }

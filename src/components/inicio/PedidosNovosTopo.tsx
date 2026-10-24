@@ -52,7 +52,7 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
     setAceitando(true);
     const { error } = await supabase.from("pedidos").update({ status: "agendado" }).eq("id", um.id);
     setAceitando(false);
-    if (error) { avisar("Não deu pra aceitar o pedido. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+    if (error) { avisar("Não deu para aceitar o pedido. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
     registrarEtapa(um.id, "agendado");
     // o Início mostra o destaque do "Pedidos" no 1º pedido aceito (aí o aviso curto não aparece por cima)
     if (!aoAceitar(um.id)) avisar(avisoDaMudanca({ numero: um.numero as any }, "agendado"));
@@ -78,7 +78,7 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
       {novos.length > 1 && (
         <div className="pnt-l">
           <span className="pnt-dot pnt-dot--ace" aria-hidden="true" />
-          <span className="pnt-tx"><b>{novos.length} pedidos pra aceitar</b><small>O mais antigo chegou {ha(maisAntigo, agora)}</small></span>
+          <span className="pnt-tx"><b>{novos.length} pedidos para aceitar</b><small>O mais antigo chegou {ha(maisAntigo, agora)}</small></span>
           <button type="button" className="pnt-bt" onClick={() => navigate("/pedidos?filtro=aguardando")}>Ver</button>
         </div>
       )}

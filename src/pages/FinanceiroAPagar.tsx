@@ -137,7 +137,7 @@ export default function FinanceiroAPagar() {
     <div className="fap-root">
       <AppPageHeader
         title="A pagar" infoComo={COMO_A_PAGAR} infoTour={TOUR_A_PAGAR}
-        subtitle={carregando ? "Carregando…" : erro ? "Não deu pra carregar" : contas.length ? `${brl(total)} em ${contas.length} ${contas.length === 1 ? "conta" : "contas"}` : "Nenhuma conta pendente"}
+        subtitle={carregando ? "Carregando…" : erro ? "Não deu para carregar" : contas.length ? `${brl(total)} em ${contas.length} ${contas.length === 1 ? "conta" : "contas"}` : "Nenhuma conta pendente"}
         onBack={() => navigate("/financeiro")}
         infoIcon="🧾"
         infoContent={<>
@@ -149,9 +149,9 @@ export default function FinanceiroAPagar() {
 
       <div className="fap-wrap">
         {precisaSql ? (
-          <div className="fap-vazio"><b>Falta um ajuste no banco</b><p>Rode o SQL do Passo 5 (contas a pagar) no Supabase pra ativar esta tela.</p></div>
+          <div className="fap-vazio"><b>Falta um ajuste no banco</b><p>Rode o SQL do Passo 5 (contas a pagar) no Supabase para ativar esta tela.</p></div>
         ) : erro && !carregando ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as contas" texto="Confira a internet e tente de novo."
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar as contas" texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={tentarDeNovo}>Tentar de novo</Botao>} />
         ) : (<>
           <div className="fap-topo">
@@ -289,7 +289,7 @@ function NovaContaSheet({ onClose, onFeito, conta, onCancelar }: { onClose: () =
   const [erro, setErro] = useState("");
   const salvar = async () => {
     const v = num(valor);
-    if (!descricao.trim()) { setErro("Dê um nome pra conta (ex.: Fornecedor de chocolate)"); return; }
+    if (!descricao.trim()) { setErro("Dê um nome para a conta (ex.: Fornecedor de chocolate)"); return; }
     if (v <= 0) { setErro("Digite o valor"); return; }
     if (!vencimento) { setErro("Escolha o vencimento"); return; }
     setSalvando(true); setErro("");
@@ -363,7 +363,7 @@ const CSS = `
   .fap-it > .fap-it-v { grid-area: v; justify-self: end; font-size: 15.5px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
   .fap-it > .fap-bts { grid-area: b; justify-self: end; display: flex; align-items: center; gap: 6px; }
   .fap-prev.fap-prev--neutro { background: var(--ui-cinza); border-color: var(--ui-borda); } .fap-prev.fap-prev--neutro b, .fap-prev.fap-prev--neutro small { color: var(--ui-texto-2); }
-  /* 10/10: mesma largura de conteúdo de Transações (antes 760px, numa coluna estreita no PC) */
+  /* 10/10: mesma largura de conteúdo de Transações (antes 760px, em uma coluna estreita no PC) */
   .fap-wrap { max-width: 980px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
   .fap-nova { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; border: 1.5px dashed #F3C9DA; background: #FFF6F9; color: var(--ui-rosa-escuro); border-radius: var(--ui-raio); padding: 11px 14px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
   .fap-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }

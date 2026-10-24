@@ -168,3 +168,4 @@
 .dl-emb { padding-top: 4px; }
 .dl-emb .ml-rank { flex: none; width: 24px; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); text-align: center; }
 .dl-bloco > .lch:first-child .lch-t { margin-top: 0; }
+.dl-mapa-nota { margin: 8px 2px 0; font-size: 12.5px; color: var(--ui-texto-3); }

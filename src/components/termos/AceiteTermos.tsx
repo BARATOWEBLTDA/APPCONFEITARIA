@@ -19,13 +19,13 @@ export function AceiteTermos({ userId, aoAceitar }: { userId: string; aoAceitar:
   const [doc, setDoc] = useState<null | 'termos' | 'privacidade'>(null)
 
   const aceitar = async () => {
-    if (!marcado) { avisar('Marque que você leu e concorda pra continuar.', { tipo: 'erro' }); return }
+    if (!marcado) { avisar('Marque que você leu e concorda para continuar.', { tipo: 'erro' }); return }
     setSalvando(true)
     const r = await supabase.rpc('aceitar_termos', { p_versao: TERMOS_VERSAO })
     const semFuncao = !!r.error && (r.error.code === 'PGRST202' || r.error.code === '42883' || /could not find the function/i.test(String(r.error.message || '')))
     if (r.error && !semFuncao) {
       setSalvando(false)
-      avisar(explicarErro(r.error, 'Não deu pra registrar o aceite. Tente de novo.'), { tipo: 'erro' })
+      avisar(explicarErro(r.error, 'Não deu para registrar o aceite. Tente de novo.'), { tipo: 'erro' })
       return
     }
     try { localStorage.setItem(`doonly_termos_${userId}`, TERMOS_VERSAO) } catch { /* sem storage */ }
@@ -42,7 +42,7 @@ export function AceiteTermos({ userId, aoAceitar }: { userId: string; aoAceitar:
         <p className="tm-sub">As regras do Doonly em poucas palavras: sua loja, os pedidos e os seus dados.</p>
         <div className="tm-cards">
           <div className="tm-card"><Storefront size={22} aria-hidden="true" /><span><b>Sua loja, suas regras</b><small>Você define produtos, preços e entregas. O Doonly organiza.</small></span></div>
-          <div className="tm-card"><CreditCard size={22} aria-hidden="true" /><span><b>Pedidos e pagamentos</b><small>Os pedidos chegam pelo cardápio. O dinheiro das vendas vai direto pra você.</small></span></div>
+          <div className="tm-card"><CreditCard size={22} aria-hidden="true" /><span><b>Pedidos e pagamentos</b><small>Os pedidos chegam pelo cardápio. O dinheiro das vendas vai direto para você.</small></span></div>
           <div className="tm-card"><ShieldCheck size={22} aria-hidden="true" /><span><b>Seus dados protegidos</b><small>Os seus dados e os dos seus clientes ficam seguros e não são vendidos.</small></span></div>
         </div>
       </div>

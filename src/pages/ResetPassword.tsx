@@ -149,7 +149,7 @@ export default function ResetPassword() {
   const Req = ({ ok, children }: { ok: boolean; children: string }) => (
     <li className={ok ? "ok" : ""}>{ok ? <Check size={14} weight="bold" aria-hidden="true" /> : <Circle size={14} weight="bold" aria-hidden="true" />}<span>{children}</span></li>
   );
-  const voltar = <Botao variante="link" icone={<ArrowLeft size={16} weight="bold" />} onClick={handleVoltarLogin}>Voltar pro login</Botao>;
+  const voltar = <Botao variante="link" icone={<ArrowLeft size={16} weight="bold" />} onClick={handleVoltarLogin}>Voltar para o login</Botao>;
 
   return (
     <TelaConta
@@ -192,7 +192,7 @@ export default function ResetPassword() {
       {status === "ready" && (
         <>
           <h1 className="tc-h">Criar nova senha</h1>
-          {emailConta ? <p className="tc-selo"><span>Conta:</span> <b>{emailConta}</b></p> : <p className="tc-p">Escolha uma senha nova pra sua conta.</p>}
+          {emailConta ? <p className="tc-selo"><span>Conta:</span> <b>{emailConta}</b></p> : <p className="tc-p">Escolha uma senha nova para sua conta.</p>}
           <form onSubmit={handleSubmit} className="tc-form" noValidate>
             <div>
               <Campo

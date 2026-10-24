@@ -27,22 +27,22 @@ const PRECO_1O_MES = "R$ 8,97"; // 70% de desconto no 1º mês (30% de R$ 29,90)
 type Beneficio = [Icon, string, string, string, string, string | null];
 const BENEFICIOS: Beneficio[] = [
   [Calculator, "Preço certo em tudo que você vende", "Bolos, doces ou salgados: a precificação calcula custo, margem e lucro. Chega de vender no prejuízo.", "Preço certo de tudo", "A ficha técnica calcula sozinha", "/ficha-tecnica"],
-  [ChartLineUp, "Saiba quanto você lucra de verdade", "Relatórios de lucratividade por produto e por mês, pra decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
-  [Robot, "Uma assistente que trabalha por você", "A Doo IA calcula preços, sugere receitas e escreve legendas e respostas pros seus clientes.", "Doo IA, sua assistente", "Calcula, sugere e responde", "doo"],
+  [ChartLineUp, "Saiba quanto você lucra de verdade", "Relatórios de lucratividade por produto e por mês, para decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
+  [Robot, "Uma assistente que trabalha por você", "A Doo IA calcula preços, sugere receitas e escreve legendas e respostas para os seus clientes.", "Doo IA, sua assistente", "Calcula, sugere e responde", "doo"],
   [Bell, "Avisos no celular", "Receba os avisos do Doonly no celular, mesmo com o app fechado.", "Avisos no celular", "Pedido novo na hora", "/configuracoes/notificacoes"],
   [Eye, "Veja quem visita e quem compra", "Visitas, pedidos pelo cardápio e conversão, de hoje e do mês.", "Quem visita e compra", "Visitas e pedidos do cardápio", "/cardapio"],
-  [Tag, "Cupons que trazem cliente de volta", "Crie cupons de desconto pra atrair novos clientes e fazer os antigos voltarem.", "Cupons de desconto", "Traga cliente de volta", "/marketing"],
+  [Tag, "Cupons que trazem cliente de volta", "Crie cupons de desconto para atrair novos clientes e fazer os antigos voltarem.", "Cupons de desconto", "Traga cliente de volta", "/marketing"],
   [Palette, "Cardápio com a cara da sua marca", "Qualquer cor no topo da loja, até 4 fotos por produto e um link com o nome da sua loja.", "Cardápio com a sua marca", "Qualquer cor e até 4 fotos", "/cardapio-design"],
-  [ImageSquare, "Banners que vendem", "Até 4 banners em carrossel pra destacar promoções e lançamentos.", "Banners que vendem", "Até 4 em carrossel", "/cardapio-design"],
-  [SealCheck, "Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar.", "Selo de loja verificada", "Mais confiança pro cliente", null],
+  [ImageSquare, "Banners que vendem", "Até 4 banners em carrossel para destacar promoções e lançamentos.", "Banners que vendem", "Até 4 em carrossel", "/cardapio-design"],
+  [SealCheck, "Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar.", "Selo de loja verificada", "Mais confiança para o cliente", null],
   [Crown, "Sem marca d'água", "O cardápio só com a sua marca, sem o \"Feito com Doonly\".", "Sem marca d'água", "Só a sua marca no cardápio", null],
   [Infinito, "Produtos e clientes sem limite", "Cadastre todo o cardápio e guarde toda a clientela com o histórico de compras.", "Sem limite", "Produtos e clientes à vontade", null],
   [AddressBook, "Importe clientes dos contatos", "Traga os contatos direto da agenda do celular (Android).", "Importar contatos", "Traga da agenda do celular", "/clientes"],
-  [FilePdf, "Relatórios em PDF", "Agenda do dia, pedidos e fichas técnicas prontos pra mandar ou imprimir.", "Relatórios em PDF", "Agenda, pedidos e fichas", null],
+  [FilePdf, "Relatórios em PDF", "Agenda do dia, pedidos e fichas técnicas prontos para mandar ou imprimir.", "Relatórios em PDF", "Agenda, pedidos e fichas", null],
 ];
 const DUVIDAS: [string, string][] = [
   ["Posso cancelar?", "Sim, quando quiser, sem multa."],
-  ["E os meus dados?", "Continuam salvos, mesmo se você voltar pro plano grátis."],
+  ["E os meus dados?", "Continuam salvos, mesmo se você voltar para o plano grátis."],
   ["Como pago?", "Pela Hotmart, um site seguro de pagamentos. Use o mesmo e-mail da sua conta: assim o PRO liga sozinho."],
 ];
 const dataBR = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -87,7 +87,7 @@ export default function Assinar() {
 
   return (
     <>
-      <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo pra sua confeitaria vender mais"} onBack={computador ? undefined : () => voltarOuIr(navigate)} />
+      <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo para sua confeitaria vender mais"} onBack={computador ? undefined : () => voltarOuIr(navigate)} />
       {isPro ? (
         /* ══ (21/10) Quem já é PRO: o status primeiro, a lista compacta e as dúvidas ══ */
         <div className="cl9 pro9 pro9--pro">

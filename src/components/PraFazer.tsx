@@ -45,8 +45,8 @@ const COMO: Record<string, Como> = {
     total: ["Sai do seu bolso", "R$ 2,00"],
     fluxo: ["Você define", "Cardápio", "Cliente paga"],
     dicas: [
-      [Truck, <><b>Taxa fixa:</b> um valor só pra toda entrega.</>],
-      [MapPin, <><b>Por bairro:</b> um valor pra cada bairro.</>],
+      [Truck, <><b>Taxa fixa:</b> um valor só para toda entrega.</>],
+      [MapPin, <><b>Por bairro:</b> um valor para cada bairro.</>],
       [Storefront, <>Retirada no local continua <b>sem taxa</b>.</>],
       [WarningCircle, <>Sem taxa, o cardápio mostra <b>entrega grátis</b> e os R$ 12,00 saem do seu lucro.</>],
     ],
@@ -80,11 +80,11 @@ const COMO: Record<string, Como> = {
 };
 /** (16/10) texto de cada novidade aqui: do tamanho de 2 linhas cheias no celular (sem 1 palavra sobrando embaixo) */
 const TEXTO_NOVIDADE: Record<string, string> = {
-  "aniversarios": "Mande uma mensagem de parabéns e ofereça um bolo especial pro dia.",
+  "aniversarios": "Mande uma mensagem de parabéns e ofereça um bolo especial para o dia.",
   "faturamento-up": "Você vendeu mais que nos mesmos dias do mês passado. Continue assim!",
   "faturamento-down": "Vendeu menos que nos mesmos dias do mês passado. Que tal uma promoção?",
-  "produtos-sem-foto": "Produto com foto vende mais. Adicione pra chamar atenção no cardápio.",
-  "clientes-sumidos": "Sem comprar há mais de 60 dias. Mande uma mensagem pra chamar de volta.",
+  "produtos-sem-foto": "Produto com foto vende mais. Adicione para chamar atenção no cardápio.",
+  "clientes-sumidos": "Sem comprar há mais de 60 dias. Mande uma mensagem para chamar de volta.",
 };
 
 export default function PraFazer() {
@@ -161,8 +161,8 @@ export default function PraFazer() {
   }] : uid && push.isSupported && !push.isSubscribed ? [{
     chave: "ativar_notificacoes", nivel: "atencao", Ic: Bell, ordem: -100, acao: push.permission === "denied" ? "Liberar" : "Ativar", link: "/configuracoes/notificacoes", fechar: false,
     t: push.permission === "denied" ? "Notificações bloqueadas" : "Ativar notificações",
-    s: push.permission === "denied" ? "Libere pra ver pedido novo" : "Pra não perder nenhum pedido",
-    txt: "Libere pra o celular tocar quando chegar pedido, mesmo com o app fechado.",
+    s: push.permission === "denied" ? "Libere para ver pedido novo" : "Para não perder nenhum pedido",
+    txt: "Libere para o celular tocar quando chegar pedido, mesmo com o app fechado.",
     aoTocar: () => { void ativarNotif(); },
   }] : [];
 
@@ -182,7 +182,7 @@ export default function PraFazer() {
       chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, estado: a.estado, ordem: i,
       acao: ACAO[a.icone] || "Ver", fechar: a.icone !== "conta",
       // conta: o vencimento em vermelho e, no lugar do "Agora não", o "Revisar" (digitou errado ou a conta não existe)
-      txt: a.icone === "conta" ? "Pague ou marque como paga pro caixa ficar certo." : a.texto,
+      txt: a.icone === "conta" ? "Pague ou marque como paga para o caixa ficar certo." : a.texto,
       alerta: a.icone === "conta" ? a.curto.s : undefined,
       comoFunciona: COMO[a.icone],
       revisar: a.icone === "conta" && a.estado?.abrir?.startsWith("pagar:") ? { abrir: `revisar:${a.estado.abrir.slice(6)}` } : undefined,
@@ -208,9 +208,9 @@ export default function PraFazer() {
     avisar(dias === "nunca" ? "Pronto, não aparece mais neste aparelho." : dias === 1 ? "Volta amanhã." : "Volta daqui a uma semana.", { tipo: "ok" });
   };
   return (
-    <section className="pf" aria-label="Pra fazer" ref={raiz}>
+    <section className="pf" aria-label="Para fazer" ref={raiz}>
       <div className="pf-cab">
-        <b className="pf-t">Pra fazer</b>
+        <b className="pf-t">Para fazer</b>
         <span className="pf-n" aria-label={`${itens.length} ${itens.length === 1 ? "item" : "itens"}`}>{itens.length}</span>
       </div>
       <ul className="pf-lista">
@@ -285,7 +285,7 @@ const CSS = `
   /* na gaveta do celular: o mesmo conteúdo, sem sombra (a gaveta já é a caixa) */
   .pf-cf-folha .pf-cf { margin: 0; box-shadow: none; }
   .pf-cf, .pf-menu { scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); scroll-margin-top: 80px; }
-  /* dentro do fluxo (empurra o resto pra baixo): perto do fim da tela, absoluta ficava atrás do menu de baixo sem dar pra rolar */
+  /* dentro do fluxo (empurra o resto para baixo): perto do fim da tela, absoluta ficava atrás do menu de baixo sem dar para rolar */
   .pf-cf { position: relative; z-index: 2; margin: 10px 0 0 -48px; overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 14px; box-shadow: 0 16px 40px rgba(20, 10, 7, .18); }
   .pf-bts { position: relative; display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 10px; }
   .pf-nao-w { position: static; }

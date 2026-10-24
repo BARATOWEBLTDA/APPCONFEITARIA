@@ -52,17 +52,17 @@ export default function Conquistas() {
 
   return (
     <div className="cqp">
-      <AppPageHeader title="Minhas conquistas" subtitle={r ? `${feitas} de ${CONQUISTAS.length} conquistadas` : erro ? "Não deu pra carregar" : "Carregando…"} onBack={() => voltarOuIr(navigate)} />
+      <AppPageHeader title="Minhas conquistas" subtitle={r ? `${feitas} de ${CONQUISTAS.length} conquistadas` : erro ? "Não deu para carregar" : "Carregando…"} onBack={() => voltarOuIr(navigate)} />
       <div className="cqp-wrap">
         {erro && !r ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar as conquistas" texto="Confira a internet e tente de novo."
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar as conquistas" texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={tentarDeNovo}>Tentar de novo</Botao>} />
         ) : (
         <div className="cqp-sum">
           <div className="cqp-ring" style={{ background: `conic-gradient(#E85A8C ${(feitas / CONQUISTAS.length) * 360}deg, #F5E1EA 0)` }}>
             <div><b>{feitas}</b><small>/{CONQUISTAS.length}</small></div>
           </div>
-          <div><b>{frase}</b><p>Continue vendendo e cadastrando pra desbloquear as próximas medalhas.</p></div>
+          <div><b>{frase}</b><p>Continue vendendo e cadastrando para desbloquear as próximas medalhas.</p></div>
         </div>
         )}
         {r && SECOES.map(sec => (

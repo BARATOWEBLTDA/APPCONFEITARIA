@@ -242,7 +242,7 @@ function CartContent({
   const enviandoRef = useRef(false)
   const enviarFinalizar = async () => {
     if (enviando || enviandoRef.current || enviandoPedido) return
-    if (config.loja_pausada) { avisar('A loja pausou os pedidos por enquanto. Chame no WhatsApp pra combinar.', { tipo: 'erro' }); return }
+    if (config.loja_pausada) { avisar('A loja pausou os pedidos por enquanto. Chame no WhatsApp para combinar.', { tipo: 'erro' }); return }
     let falta: typeof feErro = ''
     // (11/10) confere a data e a hora com o relógio de AGORA (a tela pode ter ficado aberta um tempão):
     // precisa estar dentro do expediente e respeitar a antecedência a partir deste momento
@@ -430,7 +430,7 @@ function CartContent({
         if (!valendo || error) return
         const r: any = data
         if (r?.ok) setCupomAplicado({ codigo: r.codigo, tipo: r.tipo, valor: Number(r.valor) || 0 })
-        else { setCupomAplicado(null); avisar(r?.erro || 'O cupom não vale mais pra essa sacola.', { tipo: 'info' }) }
+        else { setCupomAplicado(null); avisar(r?.erro || 'O cupom não vale mais para essa sacola.', { tipo: 'info' }) }
       } catch { /* sem internet: mantém o cupom */ }
     })()
     return () => { valendo = false }
@@ -443,7 +443,7 @@ function CartContent({
       try {
         const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: lojaAtualId(), p_codigo: cupomAplicado.codigo, p_subtotal: totalPrice, p_telefone: telefone.replace(/\D/g, '') })
         const r: any = data
-        if (!error && r && !r.ok) { setCupomAplicado(null); esquecerCupomEscolhido(); return avisar(`${r.erro || 'O cupom não vale pra esse pedido'}. Tiramos o cupom: confira o total e envie de novo.`, { tipo: 'erro' }) }
+        if (!error && r && !r.ok) { setCupomAplicado(null); esquecerCupomEscolhido(); return avisar(`${r.erro || 'O cupom não vale para esse pedido'}. Tiramos o cupom: confira o total e envie de novo.`, { tipo: 'erro' }) }
       } catch { /* sem internet: o banco confere ao criar o pedido */ }
     }
     if (!formaEntrega) return avisar('Escolha como vai receber', { tipo: 'erro' })
@@ -516,7 +516,7 @@ function CartContent({
         ? `Pix pelo cardápio (${pixTipo === 'sinal' ? `sinal de ${formatCurrency(valorDoSinal(totalFinal, config.pix.pct))}` : 'tudo'})`
         : (LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento)
       m += `*Pagamento:* ${pgtoLabel}`
-      if (formaPagamento === 'dinheiro' && trocoParaStr) m += ` (troco pra R$ ${trocoParaStr})`
+      if (formaPagamento === 'dinheiro' && trocoParaStr) m += ` (troco para R$ ${trocoParaStr})`
       m += `\n\n`
 
       if (formaEntrega === 'retirada') {
@@ -541,13 +541,13 @@ function CartContent({
     const falhou = (err: unknown) => {
       // (4.24) recusas do banco com motivo: explica em vez do "tente de novo" genérico
       const msg = String((err as { message?: unknown } | null)?.message ?? '')
-      if (/loja_pausada/.test(msg)) return avisar('A loja pausou os pedidos agora há pouco. Chame no WhatsApp pra combinar.', { tipo: 'erro' })
+      if (/loja_pausada/.test(msg)) return avisar('A loja pausou os pedidos agora há pouco. Chame no WhatsApp para combinar.', { tipo: 'erro' })
       if (/cupom_esgotado/.test(msg)) return avisar('Este cupom acabou de esgotar. Tire o cupom e envie de novo.', { tipo: 'erro' })
       // (17/10) o servidor confere a data e a forma de entrega
       if (/data_invalida/.test(msg)) return avisar('A data escolhida já passou. Escolha outra data e envie de novo.', { tipo: 'erro' })
       if (/entrega_invalida/.test(msg)) return avisar('A forma de entrega mudou na loja. Escolha de novo como receber e envie.', { tipo: 'erro' })
       if (/item_invalido/.test(msg)) return avisar('Um produto da sacola mudou ou saiu do cardápio. Confira a sacola e envie de novo.', { tipo: 'erro' })
-      avisar(explicarErro(err, 'Não deu pra enviar o pedido. Tente de novo.'), { tipo: 'erro' })
+      avisar(explicarErro(err, 'Não deu para enviar o pedido. Tente de novo.'), { tipo: 'erro' })
     }
     if (!confeteiraUserId) return falhou(null)
     if (items.length === 0) return avisar('Sua sacola está vazia', { tipo: 'erro' })
@@ -765,7 +765,7 @@ function CartContent({
             {pc.numero > 0 && <span className="scf-num">Pedido #{pc.numero}</span>}
             {/* (21/10) o que acontece agora, em passos curtos (cada um numa linha) */}
             <ol className="scf-passos">
-              <li className="ok"><i><Check size={12} weight="bold" /></i><span>{pixPago ? <>Pix de <b>{formatCurrency(pixPago.valor)}</b> enviado</> : 'Pedido enviado pra loja'}</span></li>
+              <li className="ok"><i><Check size={12} weight="bold" /></i><span>{pixPago ? <>Pix de <b>{formatCurrency(pixPago.valor)}</b> enviado</> : 'Pedido enviado para a loja'}</span></li>
               <li><i>2</i><span>{pixPago ? 'A loja confere o Pix e confirma' : pixFeito === 'depois' ? 'Combine o Pix com a loja no WhatsApp' : 'A loja confirma pelo WhatsApp'}</span></li>
               <li><i>3</i><span>Você acompanha cada etapa por aqui</span></li>
             </ol>
@@ -833,7 +833,7 @@ function CartContent({
       {step === 'finalizar'
         ? (direto
           ? <button type="button" className="sc-bt" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button>
-          : <button type="button" className="sc-bt" aria-label="Voltar pra sacola" onClick={() => { setStep('cart'); setFeErro('') }}><ArrowLeft size={22} weight="bold" /></button>)
+          : <button type="button" className="sc-bt" aria-label="Voltar para a sacola" onClick={() => { setStep('cart'); setFeErro('') }}><ArrowLeft size={22} weight="bold" /></button>)
         : <button type="button" className="sc-bt" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button>}
       <span><b>{step === 'finalizar' ? 'Finalizar pedido' : 'Sacola'}</b>{nomeLoja && <small>{nomeLoja}</small>}</span>
       <span />
@@ -849,7 +849,7 @@ function CartContent({
           <div className="sc-vazia">
             <span className="sc-vazia-ic"><Sacola size={32} weight="bold" /></span>
             <b>Sua sacola está vazia</b>
-            <p>Escolha um produto no cardápio pra começar.</p>
+            <p>Escolha um produto no cardápio para começar.</p>
             <button type="button" className="sc-bt-pri" style={{ background: accent }} onClick={onClose}>Ver o cardápio</button>
           </div>
         ) : (
@@ -912,7 +912,7 @@ function CartContent({
         <footer className="sc-pe">
           <span className="sc-pe-tot"><small>{rotuloTotal}</small><b>{formatCurrency(subtotalCupom)}</b><em>{count} {count === 1 ? 'item' : 'itens'}</em></span>
           {config.loja_pausada
-            ? <button type="button" className="sc-bt-pri sc-bt-pausada" onClick={() => avisar('A loja pausou os pedidos por enquanto. Chame no WhatsApp pra combinar.', { tipo: 'info' })}>Pedidos pausados</button>
+            ? <button type="button" className="sc-bt-pri sc-bt-pausada" onClick={() => avisar('A loja pausou os pedidos por enquanto. Chame no WhatsApp para combinar.', { tipo: 'info' })}>Pedidos pausados</button>
             : <button type="button" className="sc-bt-pri" style={{ background: accent }} onClick={() => { pixelEvento('InitiateCheckout', { value: totalPrice, num_items: items.length }); setStep('finalizar') }}>Continuar</button>}
         </footer>
       )}
@@ -1007,7 +1007,7 @@ function CartContent({
         <section ref={refAgenda}>
           {/* (20/10) título curto e o prazo numa linha só (antes quebrava em duas) */}
           <Cab t={tipo === 'retirada' ? 'Quando busca?' : 'Quando chega?'} sub={regras.horas > 0 ? `${antTexto} de antecedência` : `Escolha o dia e o horário da ${tipo}`} obr ok={okQuando}
-            falta={feErro === 'agenda' ? 'Escolha a data e o horário pra continuar' : undefined} />
+            falta={feErro === 'agenda' ? 'Escolha a data e o horário para continuar' : undefined} />
           <div className="sc-quando">
             <button type="button" className={`sc-campo${feErro === 'agenda' && !dataEntrega ? ' err' : ''}`} onClick={() => { acertarRelogio(); setCalAberto(true) }}>
               <CalendarBlank size={20} weight="bold" /><span><small>Data</small><b className={dataEntrega ? '' : 'ph'}>{dataEntrega ? dataCurta(dataEntrega) : 'Escolher'}</b></span>
@@ -1057,14 +1057,14 @@ function CartContent({
           )}
           {formaPagamento === 'dinheiro' && config.exibir_campo_troco && (
             <div className="sc-troco">
-              <Campo rotulo="Troco pra quanto?" dica="Deixe em branco se não precisar de troco." prefixo="R$" inputMode="decimal" value={trocoParaStr} onChange={e => setTrocoParaStr(e.target.value.replace(/[^0-9.,]/g, ''))} />
+              <Campo rotulo="Troco para quanto?" dica="Deixe em branco se não precisar de troco." prefixo="R$" inputMode="decimal" value={trocoParaStr} onChange={e => setTrocoParaStr(e.target.value.replace(/[^0-9.,]/g, ''))} />
             </div>
           )}
         </section>
 
         {/* Seus dados */}
         <section ref={refDados}>
-          <Cab t="Seus dados" sub="Pra loja falar com você" obr ok={okDados} falta={feErro === 'dados' ? 'Preencha o seu nome e o WhatsApp' : undefined} />
+          <Cab t="Seus dados" sub="Para a loja falar com você" obr ok={okDados} falta={feErro === 'dados' ? 'Preencha o seu nome e o WhatsApp' : undefined} />
           <div className="sc-campos">
             <Campo rotulo="Nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Como você se chama?" autoComplete="name"
               erro={feErro === 'dados' && !nome.trim() ? 'Falta o seu nome' : undefined} />
@@ -1076,9 +1076,9 @@ function CartContent({
 
         {/* Recado */}
         <section>
-          <Cab t="Recado pra loja" opc />
+          <Cab t="Recado para a loja" opc />
           <div className="sc-campos sc-recado">
-            <CampoArea rotulo="" aria-label="Recado pra loja" value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder='Ex.: escrever "Parabéns, Lia!" no bolo' rows={3} />
+            <CampoArea rotulo="" aria-label="Recado para a loja" value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder='Ex.: escrever "Parabéns, Lia!" no bolo' rows={3} />
           </div>
         </section>
 

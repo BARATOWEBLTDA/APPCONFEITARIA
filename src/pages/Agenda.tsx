@@ -236,7 +236,7 @@ export default function Agenda() {
         setErroCarregar(explicarErro(erro, "Tente de novo em instantes."));
         setLoading(emBusca.current.size > 0);
         // o dia escolhido já está na tela: o erro é só do mês novo, avisa embaixo
-        if (diaCarregado) avisar("Não deu pra carregar os pedidos desse mês.", { tipo: "erro", acao: { rotulo: "Tentar de novo", aoTocar: () => setTentativa(t => t + 1) } });
+        if (diaCarregado) avisar("Não deu para carregar os pedidos desse mês.", { tipo: "erro", acao: { rotulo: "Tentar de novo", aoTocar: () => setTentativa(t => t + 1) } });
         return;
       }
 
@@ -345,7 +345,7 @@ export default function Agenda() {
       // o mesmo caminho da lista e da tela do pedido (10/10): retirada vai pra "Pronto pra retirar"; entrega, pra "Pronto"
       const novo = p.tipo_entrega === "entrega" ? "finalizado" : "aguardando_retirada";
       const { error } = await supabase.from("pedidos").update({ status: novo }).eq("id", p.id);
-      if (error) { avisar("Não deu pra mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+      if (error) { avisar("Não deu para mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
       registrarEtapa(p.id, novo);
       mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: novo } : x));
       avisar(avisoDaMudanca(p, novo));
@@ -358,7 +358,7 @@ export default function Agenda() {
     ocupar(p.id, true);
     try {
       const { error } = await supabase.from("pedidos").update({ status: novo }).eq("id", p.id);
-      if (error) { avisar("Não deu pra mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+      if (error) { avisar("Não deu para mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
       registrarEtapa(p.id, novo);
       mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: novo } : x));
       avisar(avisoDaMudanca(p, novo));
@@ -388,7 +388,7 @@ export default function Agenda() {
   };
 
   const excluirPedido = async (p: any) => {
-    const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ""}?`, texto: "Ele some da agenda, da lista de pedidos e do financeiro. Não dá pra desfazer.", rotulo: "Excluir", perigo: true });
+    const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ""}?`, texto: "Ele some da agenda, da lista de pedidos e do financeiro. Não dá para desfazer.", rotulo: "Excluir", perigo: true });
     if (!ok) return;
     // (10/10) pela função única: estorna os recebimentos antes de apagar (antes o dinheiro continuava no financeiro)
     versao.current++;
@@ -410,9 +410,9 @@ export default function Agenda() {
       const pagaNaEntrega = !!entregaAntiga && !!p.data_prevista_pagamento && String(p.data_prevista_pagamento).slice(0, 10) === entregaAntiga;
       const mudanca = pagaNaEntrega ? { data_entrega: novaData, data_prevista_pagamento: null } : { data_entrega: novaData };
       const { error } = await supabase.from("pedidos").update(mudanca).eq("id", p.id);
-      if (error) { avisar("Não deu pra mudar a data. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+      if (error) { avisar("Não deu para mudar a data. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
       mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...mudanca, _diaAgenda: novaData } : x));
-      avisar(`Pedido #${p.numero || ""} foi pra ${diaPorExtenso(novaData).toLowerCase()}.`);
+      avisar(`Pedido #${p.numero || ""} foi para ${diaPorExtenso(novaData).toLowerCase()}.`);
     } finally { ocupar(p.id, false); }
   };
 
@@ -431,7 +431,7 @@ export default function Agenda() {
     const diaTxt = dia.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" });
     const STATUS_PDF: Record<string, [string, "ok" | "am" | "rd" | "bl"]> = {
       finalizado: ["Pronto", "ok"], pronto: ["Pronto", "ok"], aguardando_retirada: ["Pronto", "ok"], entregue: ["Entregue", "ok"], concluido: ["Entregue", "ok"],
-      em_producao: ["Em produção", "am"], em_preparo: ["Em produção", "am"], em_entrega: ["Saiu pra entrega", "am"], a_caminho: ["Saiu pra entrega", "am"],
+      em_producao: ["Em produção", "am"], em_preparo: ["Em produção", "am"], em_entrega: ["Saiu para entrega", "am"], a_caminho: ["Saiu para entrega", "am"],
       aguardando_pagamento: ["Aguardando pagamento", "rd"], aguardando_aceite: ["Novo pedido", "rd"], novo: ["Novo pedido", "rd"],
     };
     const nomeOp = (v: any) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
@@ -462,7 +462,7 @@ export default function Agenda() {
       sub: `${lista.length} pedido${lista.length !== 1 ? "s" : ""}`,
       corpo: pdf.kpis([["Pedidos", String(lista.length)], ["Entregas", String(entregas)], ["Retiradas", String(lista.length - entregas)]])
         + pdf.card("Pedidos do dia", lista.length ? `<table class="tb"><tr><th>Hora</th><th>Cliente</th><th>Itens</th><th>Situação</th><th class="c">Feito</th></tr>${linhas}</table>` : `<p class="vazio">Nenhum pedido neste dia.</p>`)
-        + (prod.length ? pdf.card("Pra produzir hoje", pdf.kv(prod.map(([n, q]) => [n, pdf.esc(q)] as [string, string]))) : ""),
+        + (prod.length ? pdf.card("Para produzir hoje", pdf.kv(prod.map(([n, q]) => [n, pdf.esc(q)] as [string, string]))) : ""),
     }));
   };
 
@@ -521,7 +521,7 @@ export default function Agenda() {
           <p>As bolinhas no calendário mostram a situação dos pedidos de cada dia. Vermelho quer dizer que tem pedido atrasado.</p>
         </>
       }
-      infoTip={<>Escolha um dia no calendário pra ver os <strong>pedidos daquele dia</strong>.</>}
+      infoTip={<>Escolha um dia no calendário para ver os <strong>pedidos daquele dia</strong>.</>}
     />
     <div className="ag3">
       {/* Busca + filtro */}
@@ -559,7 +559,7 @@ export default function Agenda() {
           {/* Pedidos do dia */}
           {!diaCarregado && (erroCarregar || !loading) ? (
             /* (10/10) também quando o mês do dia escolhido não carregou e outro mês carregou: antes a lista ficava em branco */
-            <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os pedidos" texto={erroCarregar || "Tente de novo em instantes."} acao={<Botao variante="suave" tamanho="m" onClick={() => { setRefDate(parseISO(diaSel)); setTentativa(t => t + 1); }}>Tentar de novo</Botao>} />
+            <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar os pedidos" texto={erroCarregar || "Tente de novo em instantes."} acao={<Botao variante="suave" tamanho="m" onClick={() => { setRefDate(parseISO(diaSel)); setTentativa(t => t + 1); }}>Tentar de novo</Botao>} />
           ) : !diaCarregado ? (
             demorou ? <p className="ag3-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null
           ) : pedidosDoDia.length === 0 ? (
@@ -632,7 +632,7 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
   const hojeISO = isoDate(new Date());
   const mesNome = MESES[refDate.getMonth()];
   const ehMesDeHoje = refDate.getMonth() === new Date().getMonth() && refDate.getFullYear() === new Date().getFullYear();
-  const NOME_SIT: Record<Sit, string> = { atr: "atrasado", ace: "pra aceitar", age: "na agenda", ok: "concluído" };
+  const NOME_SIT: Record<Sit, string> = { atr: "atrasado", ace: "para aceitar", age: "na agenda", ok: "concluído" };
 
   return (
     <section className="ag3-card ag3-cal" aria-label="Calendário">
@@ -684,7 +684,7 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
 
       <div className="ag3-leg" aria-hidden="true">
         <span><i className="atr" />Atrasado</span>
-        <span><i className="ace" />Pra aceitar</span>
+        <span><i className="ace" />Para aceitar</span>
         <span><i className="age" />Na agenda</span>
         <span><i className="ok" />Concluído</span>
       </div>

@@ -951,7 +951,7 @@ export default function Produtos() {
       .then(r => r, (e: unknown) => ({ error: e }));
     setSavingCat(false);
     // 23505 = o banco já tem essa categoria (outro aparelho): vale como criada
-    if (error && (error as { code?: string })?.code !== "23505") { avisar(explicarErro(error, `Não deu pra criar a categoria ${sug.nome}.`), { tipo: "erro" }); return; }
+    if (error && (error as { code?: string })?.code !== "23505") { avisar(explicarErro(error, `Não deu para criar a categoria ${sug.nome}.`), { tipo: "erro" }); return; }
     setCategorias(prev => (prev.includes(sug.nome) ? prev : [...prev, sug.nome].sort()));
     setForm(f => ({ ...f, categoria: sug.nome }));
   };
@@ -1091,7 +1091,7 @@ export default function Produtos() {
     const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: 'image/jpeg' }).catch((e: unknown) => ({ error: e }));
     if (abertura.current !== vez) return;
     // 10/10: a falha no envio não avisava (a foto simplesmente não aparecia)
-    if (error) avisar(explicarErro(error, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" });
+    if (error) avisar(explicarErro(error, "Não deu para enviar a foto. Tente de novo."), { tipo: "erro" });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
@@ -1114,7 +1114,7 @@ export default function Produtos() {
     const path = `produtos/${userId}-${Date.now()}-v-${safeName}.jpg`;
     const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true, contentType: file.type }).catch((e: unknown) => ({ error: e }));
     if (abertura.current !== vez) return;
-    if (error) avisar(explicarErro(error, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" });
+    if (error) avisar(explicarErro(error, "Não deu para enviar a foto. Tente de novo."), { tipo: "erro" });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
@@ -1154,7 +1154,7 @@ export default function Produtos() {
       showToast("error", "Não deu certo", explicarErro(error));
       return;
     }
-    showToast("success", novo ? "Produto no cardápio" : "Produto fora do cardápio", novo ? "Os clientes já veem e podem pedir." : "Fica guardado só pra você.");
+    showToast("success", novo ? "Produto no cardápio" : "Produto fora do cardápio", novo ? "Os clientes já veem e podem pedir." : "Fica guardado só para você.");
   };
 
   // ═══ AÇÕES EM MASSA (bulk) ═══
@@ -1228,7 +1228,7 @@ export default function Produtos() {
     const { error } = await supabase.from("produtos").delete().in("id", ids);
     setBulkLoading(false);
     setConfirmBulkDelete(false);
-    if (error) { showToast("error", "Não deu pra excluir", explicarErro(error)); return; }
+    if (error) { showToast("error", "Não deu para excluir", explicarErro(error)); return; }
     await loadProdutos(userId);
     clearSelection();
     showToast("success", `${ids.length} ${ids.length > 1 ? "produtos removidos" : "produto removido"}`, "Essa ação é definitiva. Se precisar novamente, cadastre outra vez.");
@@ -1425,7 +1425,7 @@ export default function Produtos() {
       if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou toque em Gerar."); setSaving(false); return; }
       if (error) {
         console.error("Erro ao atualizar produto:", error);
-        showToast("error", "Não deu pra salvar", explicarErro(error));
+        showToast("error", "Não deu para salvar", explicarErro(error));
         setSaving(false);
         return;
       }
@@ -1436,7 +1436,7 @@ export default function Produtos() {
       if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou toque em Gerar."); setSaving(false); return; }
       if (error) {
         console.error("Erro ao criar produto:", error);
-        showToast("error", "Não deu pra criar", explicarErro(error));
+        showToast("error", "Não deu para criar", explicarErro(error));
         setSaving(false);
         return;
       }
@@ -1528,7 +1528,7 @@ export default function Produtos() {
     const { error } = await supabase.from("produtos").delete().eq("id", id);
     setDeleteConfirm(null);
     // 10/10: se o banco recusar, o produto continua na lista (antes sumia da tela e voltava ao recarregar)
-    if (error) { showToast("error", "Não deu pra excluir", explicarErro(error)); return; }
+    if (error) { showToast("error", "Não deu para excluir", explicarErro(error)); return; }
     setProdutos(p => p.filter(x => x.id !== id));
   };
 
@@ -1549,7 +1549,7 @@ export default function Produtos() {
     const lista = await loadCategorias(userId);
     if (!lista) {
       setSavingCat(false);
-      return avisar("Não deu pra criar a categoria. Confira a internet e tente de novo.", { tipo: "erro" });
+      return avisar("Não deu para criar a categoria. Confira a internet e tente de novo.", { tipo: "erro" });
     }
     const repetida = lista.find(c => igual(c, nome));
     if (repetida) {
@@ -1566,7 +1566,7 @@ export default function Produtos() {
       user_id: userId
     }).then(r => r, (e: unknown) => ({ error: e }));
     setSavingCat(false);
-    if (error && (error as { code?: string })?.code !== "23505") return avisar(explicarErro(error, "Não deu pra criar a categoria. Tente de novo."), { tipo: "erro" });
+    if (error && (error as { code?: string })?.code !== "23505") return avisar(explicarErro(error, "Não deu para criar a categoria. Tente de novo."), { tipo: "erro" });
     setCategorias(prev => (prev.includes(nome) ? prev : [...prev, nome].sort()));
     setForm(f => ({ ...f, categoria: nome }));
     setNovaCategoria(""); setNovaCategoriaIcone(""); setShowCatInput(false);
@@ -1657,10 +1657,10 @@ export default function Produtos() {
       infoContent={
         <>
           <p>Aqui você <strong>cadastra e organiza tudo que vende</strong> na sua confeitaria — bolos, doces, cupcakes, kits de festa e mais.</p>
-          <p>Cada produto pode ter foto, preço, descrição, sabores e variações. Você organiza por <strong>categorias</strong> pra ficar fácil de encontrar e mostrar no seu cardápio digital.</p>
+          <p>Cada produto pode ter foto, preço, descrição, sabores e variações. Você organiza por <strong>categorias</strong> para ficar fácil de encontrar e mostrar no seu cardápio digital.</p>
         </>
       }
-      infoTip={<>Clique em <strong>"Novo produto"</strong> pra cadastrar. Depois é só compartilhar seu cardápio com os clientes.</>}
+      infoTip={<>Clique em <strong>"Novo produto"</strong> para cadastrar. Depois é só compartilhar seu cardápio com os clientes.</>}
     />
     {cropSrc && (
       <ImageCropper
@@ -1755,7 +1755,7 @@ export default function Produtos() {
           <span className="prod-spinner" />
         </div>
       ) : erroCarga ? (
-        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os produtos" texto={erroCarga}
+        <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os produtos" texto={erroCarga}
           acao={<Botao onClick={() => void carregarTudo()}>Tentar de novo</Botao>} />
       ) : produtos.length > 0 && produtosFiltrados.length === 0 ? (
         // (11/10) busca sem resultado não é conta nova (antes aparecia "Cadastre seu primeiro produto")
@@ -1992,7 +1992,7 @@ export default function Produtos() {
                   <p className="pcab-info">{form.id ? "Toque em Editar na parte que quer mudar e depois em Salvar. O cardápio atualiza na hora."
                     : wizardStep <= 2 ? "O nome e a categoria são o que o cliente vê primeiro. A descrição ajuda a vender: conte o que vem no produto."
                     : escAtual ? `Cadastre as opções de ${ROT[escAtual].toLowerCase()}. No cardápio, o cliente escolhe entre elas ao fazer o pedido.`
-                    : wizardStep === 3 ? "Marque o que o cliente escolhe ao pedir, como tamanho ou sabor. Cada escolha marcada vira uma tela pra você cadastrar as opções."
+                    : wizardStep === 3 ? "Marque o que o cliente escolhe ao pedir, como tamanho ou sabor. Cada escolha marcada vira uma tela para você cadastrar as opções."
                     : wizardStep === 4 ? "A foto principal é a que aparece no cardápio. Produto com foto vende mais."
                     : wizardStep === 5 ? "Coloque o preço, uma promoção se quiser, e diga se o produto é pronta entrega ou encomenda."
                     : "Veja como o produto aparece no cardápio e confira tudo antes de publicar."}</p>
@@ -2078,9 +2078,9 @@ export default function Produtos() {
                             if (data?.error === "limite_diario") { avisar(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo.", { tipo: "info" }); return; }
                             const desc = data.content?.[0]?.text?.trim() || "";
                             if (desc) setForm(f => ({ ...f, descricao: desc }));
-                            else avisar("Não deu pra gerar a descrição. Tente de novo.", { tipo: "erro" });
+                            else avisar("Não deu para gerar a descrição. Tente de novo.", { tipo: "erro" });
                           } catch (e) {
-                            if (abertura.current === vez) avisar(explicarErro(e, "Não deu pra gerar a descrição. Tente de novo."), { tipo: "erro" });
+                            if (abertura.current === vez) avisar(explicarErro(e, "Não deu para gerar a descrição. Tente de novo."), { tipo: "erro" });
                           } finally {
                             if (abertura.current === vez) setGerandoDesc(null);
                           }
@@ -2234,7 +2234,7 @@ export default function Produtos() {
                       })}
                     </div>
 
-                    <p className="prod-section-label prod-dicas-t">Dicas pra foto que vende</p>
+                    <p className="prod-section-label prod-dicas-t">Dicas para a foto que vende</p>
                     <ul className="prod-dicas">
                       <li><Sun size={18} weight="bold" aria-hidden="true" />Luz de janela, sem flash</li>
                       <li><FrameCorners size={18} weight="bold" aria-hidden="true" />Fundo limpo, sem bagunça</li>
@@ -2277,7 +2277,7 @@ export default function Produtos() {
                       Fotos das variações <span style={{fontSize: 12, fontWeight: 500, color: "#6B5D64", marginLeft: 6}}>(opcional)</span>
                     </p>
                     <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
-                      Adicione uma foto pra cada variação (mostrada no cardápio quando o cliente escolher).
+                      Adicione uma foto para cada variação (mostrada no cardápio quando o cliente escolher).
                     </p>
 
                     {!isPro ? (
@@ -2728,13 +2728,13 @@ export default function Produtos() {
                       )}
                     </div>
                     <div className="prod-opcs">
-                      {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só pra você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false })))}
+                      {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só para você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false })))}
                       <div className="prod-so-pc">
                       {op(form.pronta_entrega === true, "Pronta entrega", "Tem feito, sai na hora", () => setForm(f => ({ ...(f as any), pronta_entrega: !(f as any).pronta_entrega, antecedencia: !(f as any).pronta_entrega ? null : (f as any).antecedencia ?? null })))}
                       {op(enc, "Precisa encomendar antes", enc ? "O cardápio mostra \"Pedir antes\"" : "O cliente pede com antecedência", () => setForm(f => ({ ...(f as any), antecedencia: (f as any).antecedencia ? null : "48h", pronta_entrega: (f as any).antecedencia ? (f as any).pronta_entrega : false })))}
                       </div>
                       {/* (19/10) foto de referência só nos produtos que pedem (personalizados, topos de bolo) */}
-                      {op((form as any).aceita_referencia === true, "Aceita foto de referência", "Pra bolos personalizados e topos", () => setForm(f => ({ ...(f as any), aceita_referencia: !(f as any).aceita_referencia })))}
+                      {op((form as any).aceita_referencia === true, "Aceita foto de referência", "Para bolos personalizados e topos", () => setForm(f => ({ ...(f as any), aceita_referencia: !(f as any).aceita_referencia })))}
                     </div>
                     {enc && (
                       <div className="prod-field prod-so-pc" style={{ marginTop: 12 }}>
@@ -3051,7 +3051,7 @@ export default function Produtos() {
                             .select("id")
                             .single();
                           if (error) {
-                            showToast("error", "Não deu pra duplicar", explicarErro(error));
+                            showToast("error", "Não deu para duplicar", explicarErro(error));
                             return;
                           }
                           // Se tinha ficha técnica, clona também (11/10: confere se copiou)
@@ -3077,7 +3077,7 @@ export default function Produtos() {
                           // 10/10: o link usa o código público do cardápio, como no resto do app (com o id da conta não abria)
                           const url = getCardapioUrl(profile);
                           if (!url) {
-                            avisar("Seu cardápio ainda não tem link. Publique o cardápio primeiro.", { tipo: "info", acao: { rotulo: "Ir pro cardápio", aoTocar: () => irFechandoJanela(() => navigate("/cardapio")) } });
+                            avisar("Seu cardápio ainda não tem link. Publique o cardápio primeiro.", { tipo: "info", acao: { rotulo: "Ir para o cardápio", aoTocar: () => irFechandoJanela(() => navigate("/cardapio")) } });
                             return;
                           }
                           try { await navigator.clipboard.writeText(url); avisar("Link do cardápio copiado!", { tipo: "ok" }); }
@@ -3124,7 +3124,7 @@ export default function Produtos() {
                             {previewProduto.disponivel !== false ? "Tirar do cardápio" : "Mostrar no cardápio"}
                           </div>
                           <div className="prod-preview-menu-sub">
-                            {previewProduto.disponivel !== false ? "Fica guardado, sem aparecer pros clientes" : "Volta a aparecer pros clientes"}
+                            {previewProduto.disponivel !== false ? "Fica guardado, sem aparecer para os clientes" : "Volta a aparecer para os clientes"}
                           </div>
                         </span>
                       </button>
@@ -3327,7 +3327,7 @@ export default function Produtos() {
           margin: 0;
         }
 
-        /* ═══ Desktop: split 1fr / 1.2fr — vídeo vai pra direita ═══ */
+        /* ═══ Desktop: split 1fr / 1.2fr — vídeo vai para direita ═══ */
         @media (min-width: 900px) {
           .prod-hero-split {
             min-height: calc(100vh - 5rem);
@@ -3481,7 +3481,7 @@ export default function Produtos() {
         .prod-card-cat { font-size: 0.75rem; color:var(--text-muted); font-weight: var(--fw-medium); margin:0 0 0.15rem; }
         .prod-card-nome { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.25rem; line-height:1.3; }
         .prod-card-preco { font-size: var(--font-button); font-weight: 700; color:var(--success); margin:0; }
-        /* 09/10: preço "de/por" não quebra mais no meio ("R$" numa linha e o valor na outra) */
+        /* 09/10: preço "de/por" não quebra mais no meio ("R$" em uma linha e o valor na outra) */
         .prod-card-preco { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 0; }
         .prod-card-por { white-space: nowrap; }
         .prod-card-por small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
@@ -3807,7 +3807,7 @@ export default function Produtos() {
             to   { opacity: 1; transform: scale(1); }
           }
         }
-        /* Desktop: overlay em row pra caber preview ao lado */
+        /* Desktop: overlay em row para caber preview ao lado */
         @media (min-width: 900px) {
           .prod-modal-overlay {
             flex-direction: row !important;
@@ -3820,7 +3820,7 @@ export default function Produtos() {
 
         @media (min-width: 900px) {
           .prod-modal-overlay {
-            /* precisa reservar espaço pro preview lateral */
+            /* precisa reservar espaço para o preview lateral */
             gap: 16px;
           }
         }
@@ -3838,7 +3838,7 @@ export default function Produtos() {
         .prod-modal-body {
           padding: 8px 32px 24px !important;
           gap: 22px !important;
-          /* min-height REMOVIDO — estava empurrando o footer pra fora
+          /* min-height REMOVIDO — estava empurrando o footer para fora
              do overflow:hidden do modal quando conteúdo era grande */
         }
         @media (max-width: 640px) {
@@ -4087,7 +4087,7 @@ export default function Produtos() {
           .prod-modal--novo .prod-modal-header-novo {
             padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
           }
-          /* Descrição: altura suficiente pro exemplo do placeholder aparecer inteiro */
+          /* Descrição: altura suficiente para o exemplo do placeholder aparecer inteiro */
           .prod-modal--novo #prod-desc-input { min-height: 176px !important; }
           .prod-modal--novo .prod-modal-footer--novo {
             background: var(--text-title) !important; /* mesma cor do menu de navegação do celular */
@@ -4109,7 +4109,7 @@ export default function Produtos() {
           .prod-modal--novo .prod-mchk-wrap { padding-bottom: 4px; }
           .prod-modal--novo .prod-mchk-list { margin-bottom: 0; }
         }
-        /* Celulares mais baixos (ou com barra do navegador): aperta o checklist pra caber sem rolar */
+        /* Celulares mais baixos (ou com barra do navegador): aperta o checklist para caber sem rolar */
         @media (max-width: 640px) and (max-height: 760px) {
           .prod-modal--novo .pv3-header { margin-top: 10px; margin-bottom: 14px; }
           .prod-modal--novo .prod-mchk-list { gap: 8px; }
@@ -4440,7 +4440,7 @@ export default function Produtos() {
            TOGGLE "OFEREÇO DESCONTO POR PACOTE?" + PREÇO COM TAG
            ═══════════════════════════════════════════════════════════ */
 
-        /* Responsivo mobile pro toggle */
+        /* Responsivo mobile para o toggle */
 
         @keyframes prodDiscOvIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes prodDiscBoxIn {
@@ -4482,7 +4482,7 @@ export default function Produtos() {
             margin: 0 auto;
           }
           /* Quando página está em empty state (só o hero), zera padding/gap
-             pra o hero ocupar tudo e centralizar de verdade */
+             para o hero ocupar tudo e centralizar de verdade */
           .prod-root:has(> .prod-hero-split) {
             padding: 0;
             gap: 0;

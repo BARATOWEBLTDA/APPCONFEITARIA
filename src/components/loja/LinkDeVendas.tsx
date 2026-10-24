@@ -18,7 +18,7 @@ export function LinkDeVendas() {
 
   const copiar = async () => {
     try { await navigator.clipboard.writeText(link); setCopiado(true); setTimeout(() => setCopiado(false), 2000) }
-    catch { avisar('Não deu pra copiar. Segure no link pra copiar.', { tipo: 'erro' }) }
+    catch { avisar('Não deu para copiar. Segure no link para copiar.', { tipo: 'erro' }) }
   }
 
   const zap = `https://wa.me/?text=${encodeURIComponent(`Faça seu pedido pelo nosso cardápio: ${link}`)}`
@@ -28,7 +28,7 @@ export function LinkDeVendas() {
       <span className="lj-link-tx">
         <small>Seu link de vendas</small>
         <b title={link}>{link.replace(/^https?:\/\//, '')}</b>
-        <em>Mande pros clientes pedirem pelo cardápio</em>
+        <em>Mande para os clientes pedirem pelo cardápio</em>
       </span>
       <span className="lj-link-bts">
         <button type="button" className="lj-bt" onClick={copiar}>{copiado ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}{copiado ? 'Copiado' : 'Copiar link'}</button>

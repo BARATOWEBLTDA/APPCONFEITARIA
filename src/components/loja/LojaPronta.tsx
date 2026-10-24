@@ -20,7 +20,7 @@ export function LojaProntaCartao({ profile, onFechar }: { profile: any; onFechar
       <button type="button" className="lpc-x" onClick={onFechar} aria-label="Fechar"><X size={14} weight="bold" /></button>
       <div className="lpc-top">
         <span className="lpc-ic" aria-hidden="true"><Check size={22} weight="bold" /></span>
-        <span className="lpc-tx"><b>Seu cardápio está no ar!</b><small>Mande o link pros seus clientes</small></span>
+        <span className="lpc-tx"><b>Seu cardápio está no ar!</b><small>Mande o link para os seus clientes</small></span>
       </div>
       <div className="lpc-bts">
         <button type="button" className="lpc-b lpc-b--pri" onClick={compartilhar}><ShareNetwork size={18} weight="bold" aria-hidden="true" />Compartilhar</button>

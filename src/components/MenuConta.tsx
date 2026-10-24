@@ -69,7 +69,7 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
     // (10/10) sai neste aparelho mesmo sem internet; só vai pro login quando a sessão daqui foi mesmo encerrada
     const saiu = await sairDaConta();
     setSaindo(false); setPerguntando(false);
-    if (!saiu) { avisar("Não deu pra sair agora. Tente de novo.", { tipo: "erro" }); return; }
+    if (!saiu) { avisar("Não deu para sair agora. Tente de novo.", { tipo: "erro" }); return; }
     navigate("/login");
   };
 

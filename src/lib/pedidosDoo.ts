@@ -166,7 +166,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     if (!errCli && (cliNovo as any)?.id) clienteIdFinal = (cliNovo as any).id;
     else {
       // (11/10) antes só ia pro console: o pedido saía sem cliente ligada e ninguém ficava sabendo
-      console.error("[Doonly] não deu pra cadastrar o cliente novo:", errCli);
+      console.error("[Doonly] não deu para cadastrar o cliente novo:", errCli);
       avisos.push("Pedido salvo, mas a cliente não foi cadastrada.");
     }
   }
@@ -216,7 +216,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
       novoPedido = pedidoGravado; error = null; // gravou sem os produtos: segue e grava os produtos agora
     }
   }
-  if (error || !novoPedido) return { ok: false, clienteId: clienteIdFinal, erro: explicarErro(error, "Não deu pra registrar a venda. Tente de novo.") };
+  if (error || !novoPedido) return { ok: false, clienteId: clienteIdFinal, erro: explicarErro(error, "Não deu para registrar a venda. Tente de novo.") };
   const pid = (novoPedido as any).id;
 
   const itensInsert = d.itens.map(it => ({
@@ -235,10 +235,10 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
   if (errItens) {
     // (11/10) Sem os produtos o pedido não vale: antes ficava gravado vazio, com tela de sucesso e o dinheiro lançado.
     // Apaga o pedido recém-criado (ainda sem histórico nem recebimento) e devolve o erro, pra ela tentar de novo.
-    const falha = explicarErro(errItens, "Não deu pra salvar os produtos do pedido, então a venda não foi registrada. Tente de novo.");
+    const falha = explicarErro(errItens, "Não deu para salvar os produtos do pedido, então a venda não foi registrada. Tente de novo.");
     const { data: apagado, error: errApagar } = await supabase.from("pedidos").delete().eq("id", pid).select("id");
     if (errApagar || !(apagado as any[] | null)?.length) {
-      if (errApagar) console.error("[Doonly] pedido sem produtos que não deu pra apagar:", errApagar);
+      if (errApagar) console.error("[Doonly] pedido sem produtos que não deu para apagar:", errApagar);
       const n = (novoPedido as any).numero ? ` #${(novoPedido as any).numero}` : "";
       return { ok: false, clienteId: clienteIdFinal, erro: `O pedido${n} ficou salvo sem os produtos. Abra a lista de pedidos e confira esse pedido antes de registrar de novo.` };
     }
@@ -292,12 +292,12 @@ export async function excluirPedido(pedidoId: string): Promise<{ ok: true } | { 
   const { data: ativos, error: errPag } = await supabase.from("pagamentos")
     .select("id").eq("pedido_id", pedidoId).is("estornado_em", null);
   if (errPag && !faltaNoBanco(errPag)) {
-    return { ok: false, estornou: false, erro: explicarErro(errPag, "Não deu pra conferir os recebimentos deste pedido, então ele não foi excluído. Tente de novo.") };
+    return { ok: false, estornou: false, erro: explicarErro(errPag, "Não deu para conferir os recebimentos deste pedido, então ele não foi excluído. Tente de novo.") };
   }
   let estornou = false;
   if (!errPag && (ativos || []).length > 0) {
     const r = await ajustarRecebido({ pedidoId, alvo: 0 }); // alvo zero = estorna todos os ativos (nada é apagado)
-    if (!r.ok) return { ok: false, estornou: true, erro: "Não deu pra estornar os recebimentos deste pedido, então ele não foi excluído. Confira os pagamentos do pedido e tente de novo." };
+    if (!r.ok) return { ok: false, estornou: true, erro: "Não deu para estornar os recebimentos deste pedido, então ele não foi excluído. Confira os pagamentos do pedido e tente de novo." };
     estornou = true;
     // marca que o estorno veio da exclusão (não é devolução de dinheiro): o saldo em caixa informado antes não mexe por isso
     const { error: errMarca } = await supabase.from("pagamentos").update({ observacao: ESTORNO_POR_EXCLUSAO }).in("id", (ativos as any[]).map(a => a.id));
@@ -306,10 +306,10 @@ export async function excluirPedido(pedidoId: string): Promise<{ ok: true } | { 
   const depoisDoEstorno = estornou ? " Os recebimentos dele já foram estornados." : "";
   // 2) itens (antes o erro daqui era ignorado)
   const { error: errItens } = await supabase.from("pedido_itens").delete().eq("pedido_id", pedidoId);
-  if (errItens) return { ok: false, estornou, erro: explicarErro(errItens, "Não deu pra excluir o pedido. Tente de novo.") + depoisDoEstorno };
+  if (errItens) return { ok: false, estornou, erro: explicarErro(errItens, "Não deu para excluir o pedido. Tente de novo.") + depoisDoEstorno };
   // 3) o pedido
   const { error } = await supabase.from("pedidos").delete().eq("id", pedidoId);
-  if (error) return { ok: false, estornou, erro: explicarErro(error, "Não deu pra excluir o pedido. Tente de novo.") + depoisDoEstorno };
+  if (error) return { ok: false, estornou, erro: explicarErro(error, "Não deu para excluir o pedido. Tente de novo.") + depoisDoEstorno };
   return { ok: true };
 }
 

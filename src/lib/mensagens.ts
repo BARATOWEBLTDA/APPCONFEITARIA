@@ -27,7 +27,7 @@ export const MODELOS: Modelo[] = [
   {
     chave: "pedido_cardapio",
     titulo: "Pedido feito pelo cardápio",
-    quando: "O cliente manda pro seu WhatsApp quando termina o pedido no cardápio",
+    quando: "O cliente manda para o seu WhatsApp quando termina o pedido no cardápio",
     padrao: "Oi, *{loja}*! Acabei de fazer um pedido pelo cardápio.\n\n{pedido}",
     etiquetas: [
       { k: "pedido", rotulo: "Itens do pedido", exemplo: PEDIDO_EXEMPLO },

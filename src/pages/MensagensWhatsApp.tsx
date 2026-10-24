@@ -79,7 +79,7 @@ export default function MensagensWhatsApp() {
       }
     } catch (err) {
       setSalvando(false);
-      avisar(explicarErro(err, "Não deu pra salvar. Tente de novo."), { tipo: "erro" });
+      avisar(explicarErro(err, "Não deu para salvar. Tente de novo."), { tipo: "erro" });
       return;
     }
     setSalvando(false);

@@ -47,7 +47,7 @@ export async function buscarLoja(): Promise<Loja> {
 export function abrirJanela(): Window | null {
   const w = window.open("", "_blank");
   if (w) { try { w.document.write('<p style="font-family:sans-serif;color:#9A8E94;padding:40px;text-align:center">Preparando o documento…</p>'); } catch {} }
-  else avisar("Libere as janelas (pop-up) do navegador pra gerar o PDF.", { tipo: "erro" });
+  else avisar("Libere as janelas (pop-up) do navegador para gerar o PDF.", { tipo: "erro" });
   return w;
 }
 

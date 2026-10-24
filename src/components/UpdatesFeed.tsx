@@ -143,7 +143,7 @@ export default function UpdatesFeed({ linha = false }: { linha?: boolean }) {
         </div>
       )}
       <style>{`
-        /* (07/10 · 3.05) no padrão do guia: letras de 12,5px pra cima, "Ver todas" com toque de 44px, cores pelo themes.css */
+        /* (07/10 · 3.05) no padrão do guia: letras de 12,5px para cima, "Ver todas" com toque de 44px, cores pelo themes.css */
         .uf-root { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); }
         .uf-header { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 8px 2px 16px; }
         .uf-root--vazio { padding-bottom: 16px; }

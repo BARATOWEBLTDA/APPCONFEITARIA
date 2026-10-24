@@ -1,8 +1,6 @@
-import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { COMO_CARDAPIO, COMO_MINHA_LOJA, TOUR_CARDAPIO } from "@/lib/comoTelas";
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { useState, useEffect, useRef } from "react";
-import PrimeirosPassos from "@/components/PrimeirosPassos";
 import VisaoGeralDesktop from "@/components/cardapio/VisaoGeralDesktop";
 import { useNavigate } from "react-router-dom";
 import { Package, WarningCircle } from "@phosphor-icons/react";
@@ -34,7 +32,6 @@ export default function Cardapio() {
   const [erroLeitura, setErroLeitura] = useState(false);
   // resposta de uma busca antiga (saiu e voltou rápido) é descartada
   const buscaAtual = useRef(0);
-  const [passosOk, setPassosOk] = useState(false);
   // Computador (com o menu lateral do cardápio): Visão geral nova, sem as listas de atalhos (02/10)
   const [ehComputador, setEhComputador] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches);
   useEffect(() => {
@@ -118,18 +115,10 @@ export default function Cardapio() {
       <VisaoGeralDesktop profile={profile} linkCardapio={linkCardapio} publicado={publicado} onShare={handleShare} />
     ) : (
     <div className="cardapio-hub">
-      {/* Passo a passo único (02/10): o mesmo cartão do Início. Pronto → cartão do link */}
-      {/* (16/10) pronto: um cartão só com a situação, a chave de pausar, o link, Compartilhar, Ver e QR Code */}
-      {!passosOk && <PausarPedidos />}
-      <PrimeirosPassos local="cardapio" onEstado={setPassosOk} />
-      {passosOk && publicado && linkCardapio && <CartaoLojaCelular link={linkCardapio} />}
-      {passosOk && !(publicado && linkCardapio) && (
-        <PassoAPassoCardapio
-          userId={profile?.id}
-          publicado={publicado}
-          linkCardapio={linkCardapio}
-          onShareClick={handleShare}
-        />
+      {/* (23/10) sem o cartão de Primeiros passos (ele fica no Início): o que falta aparece como "Falta" em cada linha.
+          No topo, o cartão da loja: situação, chave de pausar, Compartilhar, Ver e QR Code */}
+      {publicado && linkCardapio ? <CartaoLojaCelular link={linkCardapio} /> : (
+        <PassoAPassoCardapio userId={profile?.id} publicado={publicado} linkCardapio={linkCardapio} onShareClick={handleShare} />
       )}
       {/* (23/10) "Minha loja", no estilo do Dora: a loja para o cliente, como você vende e o que você vende, cada linha com o valor atual */}
       <MinhaLoja uid={profile?.id} pro={pro} />

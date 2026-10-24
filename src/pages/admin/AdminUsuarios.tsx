@@ -68,7 +68,7 @@ export default function AdminUsuarios() {
         .eq("id", u.id)
         .select();
       console.log("[PRO] Desativar resposta:", { data, error });
-      if (error) { informar({ titulo: "Não deu pra desativar o PRO", texto: error.message, icone: "erro" }); return; }
+      if (error) { informar({ titulo: "Não deu para desativar o PRO", texto: error.message, icone: "erro" }); return; }
       if (!data || data.length === 0) { informar({ titulo: "Nenhuma linha foi atualizada", texto: "Provável causa: a policy RLS está bloqueando (sem permissão de admin em profiles). Rode o SQL de policy admin.", icone: "alerta" }); return; }
       avisar("PRO desativado.");
       await load();
@@ -93,7 +93,7 @@ export default function AdminUsuarios() {
       .select();
     console.log("[PRO] Ativar resposta:", { data, error, expira: expira.toISOString() });
     setProSalvando(false);
-    if (error) { informar({ titulo: "Não deu pra ativar o PRO", texto: error.message, icone: "erro" }); return; }
+    if (error) { informar({ titulo: "Não deu para ativar o PRO", texto: error.message, icone: "erro" }); return; }
     if (!data || data.length === 0) { informar({ titulo: "Nenhuma linha foi atualizada", texto: "Provável causa: a policy RLS está bloqueando (sem permissão de admin em profiles). Rode o SQL de policy admin.", icone: "alerta" }); return; }
 
     // Se a pessoa foi indicada, dispara push pra quem indicou.
@@ -215,7 +215,7 @@ export default function AdminUsuarios() {
           <TelaVazia
             compacta
             icone={<Users size={30} />}
-            titulo="Não deu pra carregar os usuários"
+            titulo="Não deu para carregar os usuários"
             texto={erroCarregar}
             acao={<Botao tamanho="m" onClick={() => load()}>Tentar de novo</Botao>}
           />
@@ -353,7 +353,7 @@ export default function AdminUsuarios() {
         aberta={!!confirmDelete}
         aoFechar={() => setConfirmDelete(null)}
         titulo="Excluir o usuário?"
-        texto={confirmDelete ? `${confirmDelete.email} some do Doonly. Não dá pra desfazer.` : undefined}
+        texto={confirmDelete ? `${confirmDelete.email} some do Doonly. Não dá para desfazer.` : undefined}
         icone={<Trash size={32} />}
         tom="vermelho"
         acoes={<>
@@ -382,7 +382,7 @@ export default function AdminUsuarios() {
 
         .au-lista { margin-top: 8px; }
         .au-cab { display: none; }
-        /* celular: nome e botões em cima; plano, status e data numa linha embaixo */
+        /* celular: nome e botões em cima; plano, status e data em uma linha embaixo */
         .au-l { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 12px 0; border-top: 1px solid var(--ui-linha); }
         .au-cab + .au-l { border-top: 0; }
         .au-l::after { content: ""; order: 2; flex-basis: 100%; height: 0; }
@@ -405,7 +405,7 @@ export default function AdminUsuarios() {
         .au-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-weight: 700; white-space: nowrap; }
         .au-tag em { font-style: normal; font-weight: 500; }
         .au-tag--pro { background: var(--ui-vinho); color: var(--ui-branco); }
-        .au-tag--pro em { color: rgba(255,255,255,.8); }
+        .au-tag--para o em { color: rgba(255,255,255,.8); }
         .au-tag--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
         .au-tag--bloq { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
         .au-tag--admin { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }

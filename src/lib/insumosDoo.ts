@@ -99,9 +99,9 @@ export async function salvarInsumoDoo(uid: string, r: RascunhoInsumo, soPrecoDe?
       unidade: r.unidade, valor_compra: r.valor_compra, qtd_embalagem: r.qtd_embalagem,
       custo_unitario: r.valor_compra / r.qtd_embalagem, updated_at: new Date().toISOString(),
     }).eq("id", r.insumo_id).eq("user_id", uid).select("id");
-    if (error) return { ok: false, erro: explicarErro(error, "Não deu pra atualizar o ingrediente. Tente de novo.") };
+    if (error) return { ok: false, erro: explicarErro(error, "Não deu para atualizar o ingrediente. Tente de novo.") };
     if ((mudou as any[] | null)?.length) return { ok: true, id: r.insumo_id };
-    return { ok: false, erro: "Esse ingrediente não está mais no cadastro. Feche e peça de novo pra Doo." };
+    return { ok: false, erro: "Esse ingrediente não está mais no cadastro. Feche e peça de novo para a Doo." };
   }
   const payload: any = {
     nome: r.nome.trim(), marca: (r.marca || "").trim(), categoria: r.categoria || "Ingredientes",
@@ -115,10 +115,10 @@ export async function salvarInsumoDoo(uid: string, r: RascunhoInsumo, soPrecoDe?
     // (11/10) confere se a linha mudou mesmo: com um id que não existe (a IA errou, ou o ingrediente foi apagado)
     // o banco não reclama e a tela dizia "atualizado" sem gravar nada. Nesse caso, cadastra como ingrediente novo.
     const { data: mudou, error } = await supabase.from("insumos").update(payload).eq("id", r.insumo_id).eq("user_id", uid).select("id");
-    if (error) return { ok: false, erro: explicarErro(error, "Não deu pra atualizar o ingrediente. Tente de novo.") };
+    if (error) return { ok: false, erro: explicarErro(error, "Não deu para atualizar o ingrediente. Tente de novo.") };
     if ((mudou as any[] | null)?.length) return { ok: true, id: r.insumo_id };
   }
   const { data, error } = await supabase.from("insumos")
     .insert({ imagem_url: "", ...payload, user_id: uid, quantidade_estoque: 0, estoque_minimo: 0 }).select("id").single();
-  return error || !data ? { ok: false, erro: explicarErro(error, "Não deu pra cadastrar o ingrediente. Tente de novo.") } : { ok: true, id: (data as any).id };
+  return error || !data ? { ok: false, erro: explicarErro(error, "Não deu para cadastrar o ingrediente. Tente de novo.") } : { ok: true, id: (data as any).id };
 }

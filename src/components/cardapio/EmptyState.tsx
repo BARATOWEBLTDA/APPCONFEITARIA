@@ -11,7 +11,7 @@ export function EmptyState({ telefone }: { telefone?: string | null }) {
     <div className="cl-vazio cl-vazio--loja">
       <span className="cl-vazio-ic"><Cake size={36} weight="duotone" aria-hidden="true" /></span>
       <b>O cardápio está sendo preparado</b>
-      <span>{zap ? 'Volte daqui a pouco ou fale com a loja pelo WhatsApp.' : 'Volte daqui a pouco pra ver as delícias da loja.'}</span>
+      <span>{zap ? 'Volte daqui a pouco ou fale com a loja pelo WhatsApp.' : 'Volte daqui a pouco para ver as delícias da loja.'}</span>
       {zap && (
         <a className="cl-vazio-zap" href={zap} target="_blank" rel="noopener noreferrer">
           <IconeWhatsApp size={20} />Chamar no WhatsApp

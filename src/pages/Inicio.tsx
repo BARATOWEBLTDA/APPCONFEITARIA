@@ -183,7 +183,7 @@ export default function Inicio() {
       await refetchProfile();
     } catch (err: any) {
       console.error("[foto] erro no upload:", err);
-      informar({ titulo: "Não deu pra trocar a foto", texto: "Confira a internet e tente de novo.", icone: "erro" });
+      informar({ titulo: "Não deu para trocar a foto", texto: "Confira a internet e tente de novo.", icone: "erro" });
     } finally {
       setUploadingFoto(false);
     }
@@ -208,7 +208,7 @@ export default function Inicio() {
     "Bora deixar tudo redondo hoje?",
     "Como está sua confeitaria hoje?",
     "Bora fazer um dia produtivo?", // (15/10) sem gênero (era "Pronta pra…")
-    "Algum pedido especial pra hoje?",
+    "Algum pedido especial para hoje?",
     "Um dia doce começa aqui",
     "Vamos doçar esse dia?",
     "Que tal organizar a semana?",
@@ -859,7 +859,7 @@ export default function Inicio() {
                   )}
                 </div>
                 <p>
-                  {loading ? "Carregando…" : erroCarga ? <>Não deu pra carregar o seu dia. Confira a internet. <button type="button" className="ini-dk-atr" onClick={tentarDeNovo}>Tentar de novo</button></> : !partes.length ? (txtAtrasados ? "Nenhuma entrega hoje" : "Nenhuma entrega hoje · aproveite pra divulgar seu cardápio")
+                  {loading ? "Carregando…" : erroCarga ? <>Não deu para carregar o seu dia. Confira a internet. <button type="button" className="ini-dk-atr" onClick={tentarDeNovo}>Tentar de novo</button></> : !partes.length ? (txtAtrasados ? "Nenhuma entrega hoje" : "Nenhuma entrega hoje · aproveite para divulgar seu cardápio")
                     : partes.join(" · ")}
                 </p>
               </div>
@@ -1003,7 +1003,7 @@ export default function Inicio() {
             {(() => {
               const temDados = chartData.some(d => (d.valor || 0) > 0);
               // (15/10) sem internet não mostra "Nada recebido ainda": avisa o erro; carregando também não
-              if (erroCarga) return <p className="ini-dk-vazio">Não deu pra carregar o gráfico. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>;
+              if (erroCarga) return <p className="ini-dk-vazio">Não deu para carregar o gráfico. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>;
               if (loading && !temDados) return <p className="ini-dk-vazio">Carregando…</p>;
               return temDados ? (
                 <div className="ini-chart-inner" style={{ width: "100%", height: 220, minWidth: 0, minHeight: 200 }}>
@@ -1041,7 +1041,7 @@ export default function Inicio() {
               {(() => {
                 const temDados = chartData.some(d => (d.valor || 0) > 0);
                 // (15/10) sem internet não mostra "Nada recebido ainda": avisa o erro; carregando também não
-                if (erroCarga) return <p className="ini-dk-vazio">Não deu pra carregar o gráfico. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>;
+                if (erroCarga) return <p className="ini-dk-vazio">Não deu para carregar o gráfico. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>;
                 if (loading && !temDados) return <p className="ini-dk-vazio">Carregando…</p>;
                 return temDados ? (
                   <div className="ini-chart-inner" style={{ width: "100%", height: 220, minWidth: 0, minHeight: 200 }}>
@@ -1063,11 +1063,11 @@ export default function Inicio() {
             <div className="ini-dk-ct"><span>Próximas entregas</span><button type="button" onClick={() => navigate("/agenda")}>Ver agenda <CaretRight size={16} weight="bold" aria-hidden="true" /></button></div>
             {/* (15/10) carregando e erro não aparecem como "Nenhuma entrega" */}
             {erroCarga ? (
-              <p className="ini-dk-vazio">Não deu pra carregar as entregas. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>
+              <p className="ini-dk-vazio">Não deu para carregar as entregas. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>
             ) : loading && proximasEntregas.length === 0 ? (
               <p className="ini-dk-vazio">Carregando…</p>
             ) : proximasEntregas.length === 0 ? (
-              <p className="ini-dk-vazio">{counts.pedidosPendentes > 0 ? `Nada marcado. Aceite ${counts.pedidosPendentes === 1 ? "o pedido" : `os ${counts.pedidosPendentes} pedidos`} pra ${counts.pedidosPendentes === 1 ? "ele entrar" : "eles entrarem"} aqui.` : "Nada marcado. Os pedidos aceitos aparecem aqui."}</p>
+              <p className="ini-dk-vazio">{counts.pedidosPendentes > 0 ? `Nada marcado. Aceite ${counts.pedidosPendentes === 1 ? "o pedido" : `os ${counts.pedidosPendentes} pedidos`} para ${counts.pedidosPendentes === 1 ? "ele entrar" : "eles entrarem"} aqui.` : "Nada marcado. Os pedidos aceitos aparecem aqui."}</p>
             ) : proximasEntregas.map(e => {
               const d = new Date(e.data + "T12:00:00");
               const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
@@ -1265,7 +1265,7 @@ export default function Inicio() {
           line-height: 1;
         }
 
-        /* Badge de câmera — atalho pra trocar/adicionar foto */
+        /* Badge de câmera — atalho para trocar/adicionar foto */
         .ini-profile-cam {
           position: absolute;
           bottom: -2px; right: -2px;
@@ -1368,7 +1368,7 @@ export default function Inicio() {
         @keyframes iniSpin { to { transform: rotate(360deg); } }
 
         /* Variante à direita — quando o menu abre a partir do sino.
-           Usa position:fixed pra escapar do stacking context do hero,
+           Usa position:fixed para escapar do stacking context do hero,
            garantindo que fica acima de qualquer card sobreposto. */
 
         /* Toggle "Ativar notificações" — barra estilo iOS */
@@ -1514,7 +1514,7 @@ export default function Inicio() {
         .ini-section--nav     { order: 2; }
         .ini-section--busca   { order: 1; }
         .ini-root .ini-section.ini-section--busca { margin-top: var(--space-3) !important; }
-        /* (22/10) celular: o Pra fazer vem logo depois do Acesso rápido (antes ficava em cima dele) */
+        /* (22/10) celular: o Para fazer vem logo depois do Acesso rápido (antes ficava em cima dele) */
         @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 3; } } /* (22/10) e depois das Próximas entregas (o dia vem antes das tarefas) */
         .ini-main > .ini-mobile-banner { order: 3; margin-top: var(--space-3); } /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
         .ini-section--novos { order: -1; }
@@ -1664,7 +1664,7 @@ export default function Inicio() {
           .ini-main  { grid-area: main; min-width: 0; width: 100%; }
           .ini-aside { display: none; }
 
-          /* Empurra o conteúdo pra baixo */
+          /* Empurra o conteúdo para baixo */
 
           /* Updates e engajamento são exclusivos do mobile */
           .ini-mobile-updates { display: none; }
@@ -1934,7 +1934,7 @@ export default function Inicio() {
             color: var(--ui-branco) !important;
           }
           .ini-root .ini-nav-icon svg { width: 24px; height: 24px; }
-          /* celular pequeno: sem a setinha, pra "Configurações" caber inteiro */
+          /* celular pequeno: sem a setinha, para "Configurações" caber inteiro */
           @media (max-width: 439px) { .ini-root .ini-nav-card, .ini-root .ini-nav-card[data-nav] { padding-right: 8px; } .ini-root .ini-nav-arrow { display: none; } }
           .ini-root .ini-nav-meta { margin-left: 10px; gap: 0; }
           .ini-root .ini-nav-card .ini-nav-label {
@@ -1956,7 +1956,7 @@ export default function Inicio() {
           }
         }
 
-        /* ══════ Início no computador (de 901px pra cima) — redesenho 30/09 ══════ */
+        /* ══════ Início no computador (de 901px para cima) — redesenho 30/09 ══════ */
         .ini-dk, .ini-dk-side, .ini-dk-cab { display: none; }
         @media (min-width: 901px) {
           .ini-dk { display: block; margin: 0 0 4px; }
@@ -2024,14 +2024,14 @@ export default function Inicio() {
           .ini-root .ini-section--nav .ini-nav-sub { display: block !important; font-size: 12.5px !important; color: var(--ui-texto-3) !important; line-height: 1.3 !important; }
           .ini-root .ini-section--nav .ini-nav-arrow { display: block !important; position: static !important; color: #C4B8BE !important; margin-left: auto; flex-shrink: 0; }
 
-          /* textos numa linha (o cartão não cresce); seta só em telas bem largas */
+          /* textos em uma linha (o cartão não cresce); seta só em telas bem largas */
           .ini-root .ini-section--nav .ini-nav-label, .ini-root .ini-section--nav .ini-nav-sub { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
           .ini-root .ini-section--nav .ini-nav-card { min-height: 64px !important; height: auto !important; }
           .ini-root .ini-section--nav .ini-nav-icon svg { width: 20px !important; height: 20px !important; }
         }
         /* (07/10 · 3.06) O layout de computador do Início começava em 1100px, mas o menu lateral aparece em 901px:
            nesse meio ficava uma faixa rosa solta e a saudação repetida. Agora o computador começa em 901px;
-           de 901 a 1279px ele vai numa coluna só, com os quatro números em duas linhas. As duas colunas ficam pra 1280px em diante
+           de 901 a 1279px ele vai em uma coluna só, com os quatro números em duas linhas. As duas colunas ficam para 1280px em diante
            (em 1100px a coluna do meio tinha 300px e os cartões quebravam uma palavra por linha). */
         @media (min-width: 901px) and (max-width: 1279px) {
           .ini-root { padding-left: 0; padding-right: 0; }
@@ -2050,7 +2050,7 @@ export default function Inicio() {
         .ini-dkg > .dkg-entregas { grid-column: span 3; }
         .ini-dkg > .dkg-fazer { grid-column: span 3; }
         .ini-dkg > :empty { display: none; }
-        /* sem custos (erro) o gráfico ocupa a linha; sem nada pra fazer, as entregas ocupam a linha */
+        /* sem custos (erro) o gráfico ocupa a linha; sem nada para fazer, as entregas ocupam a linha */
         .ini-dkg:not(:has(> .dkg-custos)) > .dkg-graf, .ini-dkg:has(> .dkg-fazer:empty) > .dkg-entregas { grid-column: 1 / -1; }
         .ini-dkg .dkg-graf .ini-chart-card { max-width: none; margin: 0; }
         /* próximas entregas maior */
@@ -2068,7 +2068,7 @@ export default function Inicio() {
         /* (18/10) Minhas receitas: igual aos outros, só não reage ao toque */
         .ini-nav-card--off { cursor: default; pointer-events: none; }
         /* (10/10) Acesso rápido no computador: todos os cartões iguais em qualquer largura — ícone em cima, nome embaixo,
-           centralizados na altura, mesma altura, nome numa linha só e sem reticências (a descrição e a seta não cabiam e cortavam) */
+           centralizados na altura, mesma altura, nome em uma linha só e sem reticências (a descrição e a seta não cabiam e cortavam) */
         @media (min-width: 901px) {
           .ini-root .ini-section--nav .ini-nav-grid { grid-auto-rows: 1fr; }
           .ini-root .ini-section--nav .ini-nav-arrow { display: none !important; }
@@ -2098,7 +2098,7 @@ export default function Inicio() {
           .ini-root .ini-main > .ini-section.ini-section--novos { margin-top: 0 !important; }
           .ini-mobile-conquistas { order: 5; }
         }
-        /* (15/10) atalhos: ícone rosa forte (diferente dos primeiros passos) e textos numa linha */
+        /* (15/10) atalhos: ícone rosa forte (diferente dos primeiros passos) e textos em uma linha */
         .ini-root .ini-nav-label, .ini-root .ini-nav-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         @media (max-width: 439px) {
           .ini-root .ini-nav-card .ini-nav-icon, .ini-root .ini-nav-card[data-nav] .ini-nav-icon { width: 36px; height: 36px; }

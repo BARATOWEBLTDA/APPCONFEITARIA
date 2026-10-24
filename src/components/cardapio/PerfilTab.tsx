@@ -102,7 +102,7 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
 
       <div className="cc-rolo">
         {!cliente ? (
-          <SemConta cor={accent} titulo="Entre na sua conta" texto="Com o seu WhatsApp, você acompanha os pedidos e salva endereços pra pedir mais rápido." aoEntrar={() => setEntrar(true)} />
+          <SemConta cor={accent} titulo="Entre na sua conta" texto="Com o seu WhatsApp, você acompanha os pedidos e salva endereços para pedir mais rápido." aoEntrar={() => setEntrar(true)} />
         ) : (
           <>
             <div className="cc-eu">
@@ -161,7 +161,7 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
         acoes={<button type="button" className="cc-bt" style={{ background: accent }} onClick={salvarNome}>Salvar</button>}>
         <div className="cc-form">
           <Campo rotulo="Nome" autoComplete="name" value={nomeNovo} onChange={ev => setNomeNovo(ev.target.value)} />
-          <div className="cc-zap-fixo"><span>WhatsApp</span><b>{mascaraTel(cliente?.telefone || '')}</b><small>Pra usar outro número, saia e entre com ele.</small></div>
+          <div className="cc-zap-fixo"><span>WhatsApp</span><b>{mascaraTel(cliente?.telefone || '')}</b><small>Para usar outro número, saia e entre com ele.</small></div>
         </div>
       </Janela>
 

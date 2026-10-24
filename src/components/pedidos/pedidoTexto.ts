@@ -70,8 +70,8 @@ export const SITUACOES: { chave: string; nome: string; tom?: Tom }[] = [
   { chave: 'agendado', nome: 'Agendado', tom: 'azul' },
   { chave: 'em_producao', nome: 'Em produção', tom: 'rosa' },
   { chave: 'finalizado', nome: 'Pronto', tom: 'verde' },
-  { chave: 'aguardando_retirada', nome: 'Pronto pra retirar', tom: 'verde' },
-  { chave: 'em_entrega', nome: 'Saiu pra entrega', tom: 'azul' },
+  { chave: 'aguardando_retirada', nome: 'Pronto para retirar', tom: 'verde' },
+  { chave: 'em_entrega', nome: 'Saiu para entrega', tom: 'azul' },
   { chave: 'entregue', nome: 'Entregue' },
   { chave: 'cancelado', nome: 'Cancelado', tom: 'vermelho' },
 ]
@@ -94,7 +94,7 @@ export function situacaoDe(p: Pedido): { nome: string; tom?: Tom } {
  */
 export const VERBOS = {
   receber: 'Recebi', aceitar: 'Aceitar', produzir: 'Produzir', pronto: 'Marcar pronto',
-  saiu: 'Saiu pra entrega', entregue: 'Marcar entregue', retirado: 'Marcar retirado',
+  saiu: 'Saiu para entrega', entregue: 'Marcar entregue', retirado: 'Marcar retirado',
 } as const
 export function proximoPasso(status: string, tipoEntrega?: string | null, origem?: string | null): { rotulo: string; proximo: string; pago?: boolean } | null {
   const g = grupoDoStatus(status)
@@ -124,8 +124,8 @@ export function avisoDaMudanca(p: Pick<Pedido, 'numero'> & { tipo_entrega?: stri
     case 'agendado': return `Pedido ${n} aceito.`
     case 'em_producao': return `Pedido ${n} em produção.`
     case 'finalizado': return `Pedido ${n} pronto.`
-    case 'aguardando_retirada': return `Pedido ${n} pronto pra retirar.`
-    case 'em_entrega': return `Pedido ${n} saiu pra entrega.`
+    case 'aguardando_retirada': return `Pedido ${n} pronto para retirar.`
+    case 'em_entrega': return `Pedido ${n} saiu para entrega.`
     case 'entregue': return p.tipo_entrega === 'retirada' ? `Pedido ${n} retirado.` : `Pedido ${n} entregue.`
     case 'cancelado': return `Pedido ${n} cancelado.`
     default: return `Pedido ${n}: ${nomeDaSituacao(status)}.`

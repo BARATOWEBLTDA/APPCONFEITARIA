@@ -41,7 +41,7 @@ const SUGGESTIONS = [
   'Calcular o preço de um bolo',
   'Criar legenda para o Instagram',
   'Planejar produção da semana',
-  'Criar mensagem para cliente',
+  'Criar mensagem para o cliente',
   'Sugerir promoção sazonal',
   'Cadastrar um ingrediente',
   'Registrar um pedido',
@@ -51,18 +51,18 @@ const SUGGESTIONS = [
 const SUGESTOES_CARTOES = [
   { Ic: CurrencyCircleDollar, t: 'Calcular preço', s: 'de um bolo ou doce', p: 'Calcular o preço de um bolo' },
   { Ic: BookOpenText, t: 'Criar receita', s: 'com o que você tem', p: 'Criar receita de bolo' },
-  { Ic: InstagramLogo, t: 'Legenda pro Instagram', s: 'pronta pra postar', p: 'Criar legenda para o Instagram' },
+  { Ic: InstagramLogo, t: 'Legenda pro Instagram', s: 'pronta para postar', p: 'Criar legenda para o Instagram' },
   { Ic: CalendarCheck, t: 'Planejar a semana', s: 'produção e compras', p: 'Planejar produção da semana' },
   { Ic: Receipt, t: 'Registrar pedido', s: 'direto pela conversa', p: 'Registrar um pedido' },
   { Ic: Package, t: 'Cadastrar ingrediente', s: 'com preço e custo', p: 'Cadastrar um ingrediente' },
 ]
 
 const PLACEHOLDERS = [
-  'Pergunte qualquer coisa pra Doo…',
+  'Pergunte qualquer coisa para a Doo…',
   'Calcular preço de bolo...',
   'Criar legenda para Instagram...',
   'Planejar produção da semana...',
-  'Mensagem para cliente...',
+  'Mensagem para o cliente...',
 ]
 
 const buildSystemPrompt = (nome: string) => `Você é Doo, a assistente inteligente oficial do Doonly.
@@ -278,10 +278,10 @@ ${nome ? `A confeiteira se chama ${nome}. Chame-a pelo nome quando fizer sentido
 const regrasInsumo = (lista: InsumoResumo[]) => `
 
 # AÇÃO: CADASTRAR OU ATUALIZAR INSUMO (ingrediente, embalagem, decoração)
-Quando a confeiteira pedir pra cadastrar um insumo, ou contar que comprou algo com preço (ex.: "comprei 5 kg de chocolate por R$ 164,50"), você PREPARA o cadastro. Você NÃO salva nada: o app mostra um cartão pra ela conferir e confirmar.
+Quando a confeiteira pedir para cadastrar um insumo, ou contar que comprou algo com preço (ex.: "comprei 5 kg de chocolate por R$ 164,50"), você PREPARA o cadastro. Você NÃO salva nada: o app mostra um cartão para ela conferir e confirmar.
 
 Você precisa de 3 informações: o NOME, a QUANTIDADE DA EMBALAGEM com a unidade (g, kg, ml, L ou un) e o VALOR PAGO.
-- Se faltar alguma, pergunte SÓ o que falta, numa frase curta (ex.: "Quantos quilos vieram nesse pacote?"). Não invente valores.
+- Se faltar alguma, pergunte SÓ o que falta, em uma frase curta (ex.: "Quantos quilos vieram nesse pacote?"). Não invente valores.
 - "Lata de 395 g" → 395 g. "2 litros" → 2 L. "Dúzia de ovos" → 12 un. "5 kg" → 5 kg (mantenha a unidade que ela falou).
 - Se o insumo JÁ EXISTE na lista abaixo (mesmo ingrediente, mesmo que escrito um pouco diferente), use o "id" dele em insumo_id: vira uma ATUALIZAÇÃO de preço, não um novo cadastro.
 
@@ -306,7 +306,7 @@ const regrasPedido = (catTxt: string) => {
   return `
 
 # AÇÃO: REGISTRAR PEDIDO
-Hoje é ${hoje} (${iso}). Quando a confeiteira pedir pra registrar um pedido (ou mandar o print de uma conversa com cliente pedindo isso), você PREPARA o pedido seguindo as mesmas etapas da tela "Nova venda". Você NÃO salva nada: o app mostra um cartão pra ela conferir e confirmar.
+Hoje é ${hoje} (${iso}). Quando a confeiteira pedir para registrar um pedido (ou mandar o print de uma conversa com cliente pedindo isso), você PREPARA o pedido seguindo as mesmas etapas da tela "Nova venda". Você NÃO salva nada: o app mostra um cartão para ela conferir e confirmar.
 
 Etapas (pergunte SÓ o que falta, de forma curta, juntando no máximo 2 perguntas por mensagem):
 1. VENDA: é encomenda (tem data) ou pronta entrega (é agora)? Quais produtos e quantidades?
@@ -315,7 +315,7 @@ Etapas (pergunte SÓ o que falta, de forma curta, juntando no máximo 2 pergunta
    - Detalhes como recheio, massa, sabor, frase no bolo vão em "observacoes" do item.
    - NUNCA invente preço: o app usa o preço do cardápio.
 2. CLIENTE: o nome. Se existir na lista, use o id. Se houver mais de uma com nome parecido, pergunte qual. Se for nova, use só nome (e telefone, se ela disser). Pode ser venda sem cliente se ela disser.
-3. ENTREGA: retirada ou entrega? Encomenda PRECISA de data (e horário, se ela souber). Datas como "sábado" e "amanhã" você converte pra AAAA-MM-DD a partir de hoje. Se for ENTREGA, precisa do endereço (rua e número; bairro e cidade se souber) e da taxa de entrega se ela disser (senão 0).
+3. ENTREGA: retirada ou entrega? Encomenda PRECISA de data (e horário, se ela souber). Datas como "sábado" e "amanhã" você converte para AAAA-MM-DD a partir de hoje. Se for ENTREGA, precisa do endereço (rua e número; bairro e cidade se souber) e da taxa de entrega se ela disser (senão 0).
 4. PAGAMENTO: forma (PIX, Dinheiro, Crédito ou Débito) e situação:
    - "total" = já pagou tudo; "parcial" = deu um sinal (precisa do VALOR RECEBIDO); "na_entrega" = paga quando buscar ou receber o pedido; "fiado" = vai pagar depois, em outra data (data prevista, se souber).
    - Desconto só se ela falar.
@@ -324,7 +324,7 @@ Etapas (pergunte SÓ o que falta, de forma curta, juntando no máximo 2 pergunta
 {"acao":"pedido","tipo":"encomenda","itens":[{"produto_id":"ID","opcao":"M","quantidade":1,"observacoes":"recheio de morango"}],"cliente":{"id":"ID ou null","nome":"Ana","telefone":""},"tipo_entrega":"retirada","data_entrega":"2026-10-04","horario_entrega":"14:00","endereco":null,"taxa_entrega":0,"desconto":0,"forma_pagamento":"PIX","situacao":"parcial","valor_recebido":50,"data_prevista_pagamento":null,"observacoes":""}
 \`\`\`
 Regras do bloco: números com ponto, opcao null quando o produto não tem opções, endereco {"rua","numero","bairro","cidade","complemento"} só na entrega, nada depois do bloco. Nunca diga que "registrou": quem registra é ela.
-Num print de conversa: use só o que estiver claro no print; o resto você pergunta. Nunca invente.
+Em um print de conversa: use só o que estiver claro no print; o resto você pergunta. Nunca invente.
 
 ${catTxt}
 `
@@ -429,7 +429,7 @@ function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'ima
   if (errorType === 'limite_diario') return caso === 'imagem' ? 'Você chegou ao limite de imagens de hoje. Amanhã libera de novo.' : 'Você chegou ao limite de mensagens de hoje. Amanhã libera de novo.'
   if (status === 429 || errorType === 'rate_limit_error') return 'Muitas mensagens em seguida. Aguarde um momento e tente novamente.'
   // (11/10) só o erro de plano mostra o "Assine o PRO" (outro 403 cai no aviso genérico)
-  if (errorType === 'pro_required') return 'A Doo faz parte do plano PRO. Assine o PRO pra continuar.'
+  if (errorType === 'pro_required') return 'A Doo faz parte do plano PRO. Assine o PRO para continuar.'
   if (status === 401 || errorType === 'authentication_error') return 'Problema de autenticação. Contate o suporte do Doonly.'
   if (status === 413 || errorType === 'too_large' || errorType === 'request_too_large') {
     return caso === 'foto' ? 'A foto ficou grande demais. Tente outra.' : `A conversa ficou grande demais. ${PEDE_NOVA_CONVERSA}`
@@ -588,9 +588,9 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     } catch {
       // o aparelho não conseguiu abrir a foto pra reduzir: se ela for pequena e de um tipo aceito, vai como está
       const aceito = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)
-      if (!aceito || file.size > 2.5 * 1024 * 1024) { avisar('Não deu pra abrir essa foto. Tente outra.', { tipo: 'erro' }); return }
+      if (!aceito || file.size > 2.5 * 1024 * 1024) { avisar('Não deu para abrir essa foto. Tente outra.', { tipo: 'erro' }); return }
       try { pronta = { base64: await fileToBase64(file), mediaType: file.type } }
-      catch { avisar('Não deu pra abrir essa foto. Tente outra.', { tipo: 'erro' }); return }
+      catch { avisar('Não deu para abrir essa foto. Tente outra.', { tipo: 'erro' }); return }
     }
     const preview = URL.createObjectURL(file)
     setPendingImage({ ...pronta, preview })
@@ -666,7 +666,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           fetch(imageUrl).then(r => (r.ok ? r.blob() : null)).then(b => { if (b) blobsImagem.current[imageUrl] = b }).catch(() => {})
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: 'Aqui está a imagem. Toque em "Baixar imagem" pra guardar; se ela abrir em outra aba, salve por lá. Baixe logo: o endereço dela vale por pouco tempo. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
+            content: 'Aqui está a imagem. Toque em "Baixar imagem" para guardar; se ela abrir em outra aba, salve por lá. Baixe logo: o endereço dela vale por pouco tempo. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
             imageUrl,
             isImage: true
           }])
@@ -822,7 +822,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                     {msg.imageUrl && <img src={msg.imageUrl} alt="Imagem gerada" className="dz-gerada" />}
                     <span dangerouslySetInnerHTML={{ __html: formatText(msg.content.replace(NOTA_DO_APP, '')) }} />
                   </div>
-                  {msg.cortada && <p className="dz-corte">A resposta ficou longa e foi cortada. Peça pra continuar.</p>}
+                  {msg.cortada && <p className="dz-corte">A resposta ficou longa e foi cortada. Peça para continuar.</p>}
                   {/* (11/10) "Editar" levou o rascunho pra Nova venda: o cartão fica resolvido (antes continuava pendente e,
                       ao reabrir a Doo, um toque registrava o pedido de novo) */}
                   {msg.acao && msg.acao.acao === 'pedido' && msg.acaoEstado === 'editando' && (
@@ -831,7 +831,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                   {msg.acao && uid && msg.acao.acao === 'pedido' && msg.acaoEstado !== 'editando' && (
                     <CartaoPedidoDoo uid={uid} rascunho={msg.acao as RascunhoPedido} catalogo={catalogo} estado={msg.acaoEstado || 'pendente'} numero={msg.acaoNumero}
                       onEditar={(dados) => {
-                        setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: 'editando', content: m.content + '\n\n[A confeiteira abriu esse pedido na tela Nova venda pra terminar por lá.]' } : m))
+                        setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: 'editando', content: m.content + '\n\n[A confeiteira abriu esse pedido na tela Nova venda para terminar por lá.]' } : m))
                         // a Doo guarda uma entrada no histórico pro "voltar"; a Nova venda entra no lugar dela
                         const substituir = !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela
                         handleClose(); navigateDoo('/vendas/novo', { state: { rascunhoDoo: dados }, replace: substituir })

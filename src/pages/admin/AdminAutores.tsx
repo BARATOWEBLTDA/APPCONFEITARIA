@@ -107,7 +107,7 @@ export default function AdminAutores() {
 
   const toggleAtivo = async (a: Autor) => {
     const { error } = await supabase.from("admin_autores").update({ ativo: !a.ativo }).eq("id", a.id);
-    if (error) return showMsg("Não deu pra mudar. Tente de novo.", "err"); // (11/10) antes a falha passava em silêncio
+    if (error) return showMsg("Não deu para mudar. Tente de novo.", "err"); // (11/10) antes a falha passava em silêncio
     carregar();
   };
 
@@ -124,7 +124,7 @@ export default function AdminAutores() {
         <div className="aa-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
       ) : autores.length === 0 ? (
         <TelaVazia caixa icone={<User size={30} />} titulo="Nenhum autor ainda"
-          texto="Cadastre quem escreve as notícias pra escolher na hora de publicar."
+          texto="Cadastre quem escreve as notícias para escolher na hora de publicar."
           acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={abrirNovo}>Cadastrar autor</Botao>} />
       ) : (
         <section className="aa-card">

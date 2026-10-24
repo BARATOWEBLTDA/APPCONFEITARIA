@@ -388,7 +388,7 @@ export default function Clientes() {
       setCompleto(f => ({ ...f, foto_url: data.publicUrl }));
     } else {
       setPreview(completo.foto_url || null);
-      avisar(explicarErro(error, "Não deu pra enviar a foto. Tente de novo."), { tipo: "erro" });
+      avisar(explicarErro(error, "Não deu para enviar a foto. Tente de novo."), { tipo: "erro" });
     }
     setEnviandoFoto(false);
   };
@@ -446,14 +446,14 @@ export default function Clientes() {
     if (editando) {
       const { error } = await supabase.from("clientes").update(payload).eq("id", editando);
       if (error) {
-        avisar("Não deu pra salvar agora. Confira a internet e tente de novo.", { tipo: "erro" });
+        avisar("Não deu para salvar agora. Confira a internet e tente de novo.", { tipo: "erro" });
         setSaving(false);
         return;
       }
     } else {
       const { data: inserted, error } = await supabase.from("clientes").insert(payload).select("id").single();
       if (error) {
-        avisar("Não deu pra cadastrar agora. Confira a internet e tente de novo.", { tipo: "erro" });
+        avisar("Não deu para cadastrar agora. Confira a internet e tente de novo.", { tipo: "erro" });
         setSaving(false);
         return;
       }
@@ -532,8 +532,8 @@ export default function Clientes() {
     excluindo.current = false;
     if (error) {
       avisar(error.code === "23503"
-        ? "Esse cliente tem pedidos, por isso não dá pra excluir."
-        : explicarErro(error, "Não deu pra excluir o cliente. Tente de novo."), { tipo: "erro" });
+        ? "Esse cliente tem pedidos, por isso não dá para excluir."
+        : explicarErro(error, "Não deu para excluir o cliente. Tente de novo."), { tipo: "erro" });
       return;
     }
     voltarPerfil.current = null; // a cliente foi excluída: fica na lista
@@ -607,7 +607,7 @@ export default function Clientes() {
       console.error("Erro ao selecionar contatos:", err);
       // Fechar a lista de contatos do Android sem escolher não é erro
       if (err?.name === "AbortError") return;
-      avisar(err?.name === "SecurityError" ? "O celular não deixou abrir os contatos. Libere o acesso e tente de novo." : "Não deu pra abrir os contatos. Tente de novo.", { tipo: "erro" });
+      avisar(err?.name === "SecurityError" ? "O celular não deixou abrir os contatos. Libere o acesso e tente de novo." : "Não deu para abrir os contatos. Tente de novo.", { tipo: "erro" });
     }
   };
 
@@ -645,7 +645,7 @@ export default function Clientes() {
     setImporting(false);
 
     if (error) {
-      avisar("Não deu pra importar agora. Confira a internet e tente de novo.", { tipo: "erro" });
+      avisar("Não deu para importar agora. Confira a internet e tente de novo.", { tipo: "erro" });
       return;
     }
 
@@ -715,14 +715,14 @@ export default function Clientes() {
         {clienteRepetido && (
           <div className="cl9-f-dup" role="status">
             <WarningCircle size={22} weight="bold" />
-            <span><b>Esse número já é de {clienteRepetido.nome}</b><small>Pra não ficar repetido, abra o cadastro.</small></span>
+            <span><b>Esse número já é de {clienteRepetido.nome}</b><small>Para não ficar repetido, abra o cadastro.</small></span>
             <button type="button" onClick={() => { setShowForm(false); setEditando(null); navigate(`/clientes/${clienteRepetido.id}`); }}>Abrir</button>
           </div>
         )}
         <div className="cl9-f-data">
           <Campo rotulo="Aniversário" opcional readOnly placeholder="Escolher a data" value={completo.data_nascimento ? rotuloNascimento(completo.data_nascimento) : ""}
             icone={<CalendarBlank size={20} weight="bold" />} onClick={() => setNiverAberto(true)}
-            dica="A gente avisa uns dias antes, pra você mandar os parabéns." />
+            dica="A gente avisa uns dias antes, para você mandar os parabéns." />
           {completo.data_nascimento && <button type="button" className="cl9-f-limpar" aria-label="Tirar o aniversário" onClick={() => setCompleto(f => ({ ...f, data_nascimento: "" }))}><X size={18} weight="bold" /></button>}
         </div>
         {niverAberto && <DataNascimentoSheet valor={completo.data_nascimento || ""} onEscolher={v => setCompleto(f => ({ ...f, data_nascimento: v }))} onClose={() => setNiverAberto(false)} />}
@@ -750,7 +750,7 @@ export default function Clientes() {
 
             <p className="cl9-f-sec">Contato e documento</p>
             <Campo rotulo="E-mail" opcional type="email" inputMode="email" placeholder="nome@email.com" autoComplete="off" value={completo.email} onChange={e => setCompleto(f => ({ ...f, email: e.target.value }))} />
-            <Campo rotulo="CPF ou CNPJ" opcional inputMode="numeric" placeholder="Pra nota ou recibo" autoComplete="off" value={completo.cpf_cnpj} onChange={e => setCompleto(f => ({ ...f, cpf_cnpj: e.target.value }))} />
+            <Campo rotulo="CPF ou CNPJ" opcional inputMode="numeric" placeholder="Para nota ou recibo" autoComplete="off" value={completo.cpf_cnpj} onChange={e => setCompleto(f => ({ ...f, cpf_cnpj: e.target.value }))} />
 
             <p className="cl9-f-sec">Como conheceu a sua loja</p>
             <div className="cl9-f-chips">
@@ -781,7 +781,7 @@ export default function Clientes() {
           <p>Quem pede pelo cardápio entra aqui sozinho. Quem compra pelo WhatsApp ou no balcão, você cadastra.</p>
         </>
       }
-      infoTip={<>Abra um cliente pra ver os <strong>pedidos</strong> e quanto ele já gastou.</>}
+      infoTip={<>Abra um cliente para ver os <strong>pedidos</strong> e quanto ele já gastou.</>}
     />
     <div className="cli-root">
 
@@ -790,7 +790,7 @@ export default function Clientes() {
         <div className="cl9"><div className="cl9-esq" aria-label="Carregando clientes">{[0, 1, 2, 3, 4].map(i => <span key={i} />)}</div></div>
       ) : erroCarregar ? (
         <div className="cl9">
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu pra carregar os clientes" texto={erroCarregar}
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os clientes" texto={erroCarregar}
             acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         </div>
       ) : (

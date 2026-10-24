@@ -19,7 +19,7 @@ export const SITUACOES_FILTRO = [
   { k: 'agendado', label: 'Agendado', grupos: ['agendado'], cor: '#185FA5' },
   { k: 'producao', label: 'Em produção', grupos: ['em_producao'], cor: '#993556' },
   { k: 'pronto', label: 'Pronto', grupos: ['finalizado', 'aguardando_retirada'], cor: '#0F6E56' },
-  { k: 'saiu', label: 'Saiu pra entrega', grupos: ['em_entrega'], cor: '#185FA5' },
+  { k: 'saiu', label: 'Saiu para entrega', grupos: ['em_entrega'], cor: '#185FA5' },
   { k: 'entregue', label: 'Entregue', grupos: ['entregue'], cor: '#5F5E5A' },
   { k: 'cancelado', label: 'Cancelado', grupos: ['cancelado'], cor: '#791F1F' },
 ]

@@ -197,7 +197,7 @@ export default function Layout() {
       <aside className="sidebar">
         {/* (13/10) topo do menu: a marca Doonly (branca) e o sino. A logo da loja fica no canto direito da faixa rosa. */}
         <div className="sb-topo">
-          <button type="button" className="sb-marca" onClick={() => navigate("/inicio")} aria-label="Doonly, ir pro início">
+          <button type="button" className="sb-marca" onClick={() => navigate("/inicio")} aria-label="Doonly, ir para o início">
             {recolhido ? <Mascote pose="acenando" className="sb-marca-masc" /> : <NomeDoonly cor="branco" className="sb-marca-nome" />}
           </button>
           {computador && <SinoMenu />}
@@ -489,7 +489,7 @@ export default function Layout() {
         /* (07/10 · 2.95) Menu lateral no padrão do guia: itens de 44px, ícone de 20px (cheio e rosa na tela atual),
            foco visível pelo teclado e fundo vinho (o grafite antigo saiu). */
         .sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; min-height: 0; overflow-y: auto; margin-right: -8px; padding-right: 8px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.22) transparent; }
-        /* (10/10) Sombra no fim do menu: avisa que tem mais itens pra baixo quando a tela é baixa */
+        /* (10/10) Sombra no fim do menu: avisa que tem mais itens para baixo quando a tela é baixa */
         .sidebar-nav::after { content: ""; position: sticky; bottom: 0; flex-shrink: 0; min-height: 28px; margin-top: -28px; background: linear-gradient(to bottom, transparent, var(--sidebar-bg)); pointer-events: none; }
         @media (max-height: 820px) {
           .sidebar { padding-top: 0.5rem; padding-bottom: 0.75rem; }
@@ -518,7 +518,7 @@ export default function Layout() {
         .nav-item.active .nav-icon, .nav-item--group.active-parent .nav-icon { color: #FF9DC4; }
         .nav-item--group.active-parent { color: var(--ui-branco); font-weight: var(--fw-bold); }
 
-        /* (13/10) topo numa linha: logo, saudação + plano, sino */
+        /* (13/10) topo em uma linha: logo, saudação + plano, sino */
         .sb-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 2px 0 12px 4px; margin: 0 0 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
         .sb-marca { display: flex; align-items: center; padding: 0; border: 0; background: none; cursor: pointer; }
         .sb-marca:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: 3px; border-radius: 6px; }
@@ -532,7 +532,7 @@ export default function Layout() {
         .sb-quem { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
         .sb-ola { display: block; max-width: 100%; font-size: 14px; font-weight: 700; color: var(--ui-branco); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sb-plano { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border: 0; border-radius: 6px; font-family: inherit; font-size: 11px; font-weight: 700; line-height: 1; white-space: nowrap; }
-        .sb-plano--pro { background: rgba(255,255,255,0.10); color: var(--ui-branco); } .sb-plano--pro svg { color: #FF9DC4; }
+        .sb-plano--pro { background: rgba(255,255,255,0.10); color: var(--ui-branco); } .sb-plano--para o svg { color: #FF9DC4; }
         .sb-plano--seja { background: var(--ui-branco); color: var(--primary); cursor: pointer; } .sb-plano--seja:hover { transform: translateY(-1px); }
         .sb-plano--skel { width: 56px; height: 17px; background: rgba(255,255,255,0.12); }
         .sb-linha2 { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }

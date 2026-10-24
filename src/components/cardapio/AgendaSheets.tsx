@@ -144,7 +144,7 @@ const CSS = `
   .ags-d { min-width: 0; height: 44px; border: none; border-radius: var(--ui-raio); background: none; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); cursor: pointer; }
   .ags-d:disabled { color: #C9BCC2; text-decoration: line-through; cursor: default; }
   .ags-d { position: relative; }
-  /* Hoje: só um pontinho discreto embaixo do número (sem contorno, pra não parecer seleção) */
+  /* Hoje: só um pontinho discreto embaixo do número (sem contorno, para não parecer seleção) */
   .ags-d.hoje::after { content: ""; position: absolute; left: 50%; bottom: 5px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
   .ags-d.hoje:not(:disabled) { font-weight: 700; }
   .ags-d.sel { background: var(--ui-rosa); color: var(--ui-branco); font-weight: 700; box-shadow: none; }

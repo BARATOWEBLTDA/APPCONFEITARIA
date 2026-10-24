@@ -40,15 +40,15 @@ export default function AdminReceitas() {
   const handleStatus = async (id: string, status: Status) => {
     // (11/10) só fecha se gravou (antes fechava mesmo com erro e a receita continuava como estava)
     const { error } = await supabase.from("receitas_comunidade").update({ status }).eq("id", id);
-    if (error) { avisar(explicarErro(error, "Não deu pra salvar. Tente de novo."), { tipo: "erro" }); return; }
+    if (error) { avisar(explicarErro(error, "Não deu para salvar. Tente de novo."), { tipo: "erro" }); return; }
     fechar();
     load();
   };
 
   const handleDelete = async (id: string) => {
-    if (!(await confirmar({ titulo: "Excluir esta receita?", texto: "Ela some do app e não dá pra desfazer.", rotulo: "Excluir", perigo: true }))) return;
+    if (!(await confirmar({ titulo: "Excluir esta receita?", texto: "Ela some do app e não dá para desfazer.", rotulo: "Excluir", perigo: true }))) return;
     const { error } = await supabase.from("receitas_comunidade").delete().eq("id", id);
-    if (error) { avisar(explicarErro(error, "Não deu pra excluir. Tente de novo."), { tipo: "erro" }); return; }
+    if (error) { avisar(explicarErro(error, "Não deu para excluir. Tente de novo."), { tipo: "erro" }); return; }
     fechar();
     load();
   };
