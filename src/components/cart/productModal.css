@@ -222,3 +222,6 @@
 .pm-frase small { font-size: 12px; color: var(--ui-texto-3); }
 .pm-frase input { flex: 1 1 100%; order: 3; height: 42px; margin: 0; padding: 0 10px; border: 1px solid var(--ui-borda-campo); border-radius: 10px; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: #fff; outline: 0; }
 .pm-frase input:focus { border-color: var(--ui-rosa); }
+/* (24/10) aviso: a foto de referência vai no fim do pedido */
+.pm-ref-aviso { display: flex; align-items: center; gap: 8px; margin: 10px 16px; padding: 10px 12px; border-radius: var(--ui-raio); background: #FFF6FA; font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--ui-rosa-escuro); }
+.pm-ref-aviso svg { flex: none; }

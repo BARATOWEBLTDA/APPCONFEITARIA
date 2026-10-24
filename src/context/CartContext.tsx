@@ -13,6 +13,8 @@ interface CartContextType {
   updateObservations: (id: string, observations: string) => void
   removeItem: (id: string) => void
   clearCart: () => void
+  /** (24/10) a foto de referência agora é enviada no fim do pedido, antes de pagar */
+  updateFotoReferencia: (id: string, foto: string | null) => void
 }
 
 const CartContext = createContext<CartContextType | null>(null)
@@ -150,6 +152,10 @@ export function CartProvider({ children, loja }: { children: ReactNode; loja?: s
     setItems(prev => prev.filter(i => !mesmaLinha(i, id)))
   }, [])
 
+  const updateFotoReferencia = useCallback((id: string, foto: string | null) => {
+    setItems(prev => prev.map(i => mesmaLinha(i, id) ? ({ ...i, fotoReferencia: foto || undefined } as CartItem) : i))
+  }, [])
+
   const clearCart = useCallback(() => setItems([]), [])
 
   const totalItems = items.reduce((acc, i) => acc + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
@@ -157,7 +163,7 @@ export function CartProvider({ children, loja }: { children: ReactNode; loja?: s
   const totalPrice = subtotalSacola(items)
 
   return (
-    <CartContext.Provider value={{ items, totalItems, totalPrice, addItem, updateQuantity, updateObservations, removeItem, clearCart }}>
+    <CartContext.Provider value={{ items, totalItems, totalPrice, addItem, updateQuantity, updateObservations, removeItem, clearCart, updateFotoReferencia }}>
       {children}
     </CartContext.Provider>
   )

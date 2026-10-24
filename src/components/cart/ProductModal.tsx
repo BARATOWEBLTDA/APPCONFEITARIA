@@ -49,37 +49,6 @@ interface Props {
   previa?: boolean
 }
 
-/**
- * Foto de referência (11/10): reduz pra no máximo 1280 px no lado maior e devolve em JPEG (qualidade 0,8).
- * Dá erro quando o arquivo não é uma imagem que o aparelho consegue abrir.
- */
-function reduzirFoto(file: File, ladoMaximo = 1280, qualidade = 0.8): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      try {
-        const largura = img.naturalWidth, altura = img.naturalHeight
-        if (!largura || !altura) throw new Error('imagem sem tamanho')
-        const escala = Math.min(1, ladoMaximo / Math.max(largura, altura))
-        const canvas = document.createElement('canvas')
-        canvas.width = Math.max(1, Math.round(largura * escala))
-        canvas.height = Math.max(1, Math.round(altura * escala))
-        const ctx = canvas.getContext('2d')
-        if (!ctx) throw new Error('sem canvas')
-        // fundo branco: imagem com transparência não fica preta no JPEG
-        ctx.fillStyle = '#fff'
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        const dados = canvas.toDataURL('image/jpeg', qualidade)
-        if (!dados.startsWith('data:image/jpeg')) throw new Error('não gerou a imagem')
-        resolve(dados)
-      } catch (err) { reject(err) } finally { URL.revokeObjectURL(url) }
-    }
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('não é uma imagem')) }
-    img.src = url
-  })
-}
 
 /** Texto do botão enquanto falta uma escolha obrigatória */
 const TEXTO_FALTA: Record<string, string> = {
@@ -200,18 +169,12 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const [extrasBiblioteca, setExtrasBiblioteca] = useState<ExtraBiblioteca[]>([])
   const [extrasMarcados, setExtrasMarcados] = useState<Set<string>>(new Set())
   const extrasDoProduto = useRef<string | null>(null)
-  const [fotoRef, setFotoRef] = useState<string | null>(null)
   // (24/10) frase escrita pelo cliente no complemento que pede frase (ex.: Escrita no bolo)
   const [frases, setFrases] = useState<Record<string, string>>({})
-  const [fotoRefUploading, setFotoRefUploading] = useState(false)
-  const fotoVez = useRef(0)
 
   useEffect(() => {
     if (!isOpen || !product) {
       setExtrasMarcados(new Set())
-      fotoVez.current++ // foto que ainda estava sendo preparada não entra depois de fechar
-      setFotoRefUploading(false)
-      setFotoRef(null)
       return
     }
     // (11/10) trocou de produto: a lista de adicionais do produto anterior sai da tela na hora
@@ -262,25 +225,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
   // Upload da foto de referência (opcional). Cliente escolhe uma imagem
   // pra ilustrar o que quer (ex: "queria um bolo assim").
-  const handleFotoRef = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const campo = e.target
-    const file = campo.files?.[0]
-    campo.value = '' // escolher a mesma foto de novo volta a funcionar
-    if (!file || !product) return
-    // (11/10) só imagem, e reduzida antes de guardar (antes ia inteira, sem limite de tamanho)
-    if (file.type && !file.type.startsWith('image/')) { avisar('Escolha uma foto. Outros arquivos não entram aqui.', { tipo: 'erro' }); return }
-    const vez = ++fotoVez.current
-    setFotoRefUploading(true)
-    try {
-      // Fica em base64 no state e só é enviada junto do pedido
-      // (pra guardar no storage precisaria de login do cliente).
-      const reduzida = await reduzirFoto(file)
-      if (vez === fotoVez.current) setFotoRef(reduzida)
-    } catch {
-      if (vez === fotoVez.current) avisar('Não deu para usar essa foto. Tente outra.', { tipo: 'erro' })
-    }
-    if (vez === fotoVez.current) setFotoRefUploading(false)
-  }
+
 
   // ═══ Carrega grupos usando o helper (V3 ou fallback antigo) ═══════
   const grupos = useMemo<GrupoOpcoes[]>(() => {
@@ -555,7 +500,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       precoBreakdown: calculo,
       // Personalização (biblioteca de extras)
       extrasBiblioteca: extrasEscolhidos.length > 0 ? extrasEscolhidos : undefined,
-      fotoReferencia: fotoRef || undefined,
+      // (24/10) o item aceita foto de referência: o Finalizar pedido mostra o campo para enviar
+      pedeReferencia: !onAdicionar && ((product as any).aceita_referencia === true || !!refDoExtra) ? (refDoExtra && (product as any).aceita_referencia !== true ? refDoExtra.nome : 'Foto de referência') : undefined,
     } as any)
     onClose()
   }
@@ -741,16 +687,9 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
         </section>
       )}
 
+      {/* (24/10) a foto de referência é enviada no fim do pedido, antes de pagar (aqui só avisa) */}
       {!onAdicionar && !previa && ((product as any).aceita_referencia === true || refDoExtra) && (
-        <section className="pm-g">
-          <header className="pm-g-cab"><span><b>{refDoExtra && (product as any).aceita_referencia !== true ? `Foto de referência · ${refDoExtra.nome}` : 'Foto de referência'}</b><small>Mostre uma ideia do que você quer</small></span></header>
-          <label className="pm-foto">
-            {fotoRef ? <img src={fotoRef} alt="Foto de referência" /> : <span className="pm-foto-ic"><Camera size={20} weight="bold" /></span>}
-            <span className="pm-foto-tx"><b>{fotoRefUploading ? 'Carregando…' : fotoRef ? 'Foto anexada' : 'Enviar uma foto'}</b><small>{fotoRef ? 'Escolha outra para trocar' : 'Opcional'}</small></span>
-            {fotoRef && <button type="button" className="pm-foto-x" aria-label="Tirar a foto" onClick={ev => { ev.preventDefault(); ev.stopPropagation(); setFotoRef(null) }}><X size={18} weight="bold" /></button>}
-            <input type="file" accept="image/*" onChange={handleFotoRef} hidden />
-          </label>
-        </section>
+        <p className="pm-ref-aviso"><Camera size={16} weight="bold" aria-hidden="true" />A foto de referência vai no fim do pedido</p>
       )}
 
       {/* (20/10) a observação saiu daqui: o recado vai no fim do pedido, antes de pagar */}

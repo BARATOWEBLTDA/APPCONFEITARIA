@@ -5,7 +5,7 @@ import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
 import { antecedenciaHoras, calcularRegras, deIso, horarioPermitido, primeiraData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Cake, CalendarBlank, CaretRight, Check, ImageSquare, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
+import { ArrowLeft, Cake, Camera, CalendarBlank, CaretRight, Check, ImageSquare, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { useCart } from '@/hooks/useCart'
 import { CartItemComponent, unidadeItem } from '@/components/cart/CartItemComponent'
@@ -30,6 +30,7 @@ import type { Produto } from '@/types/database'
 import { corClara } from '@/lib/coresCardapio'
 import { pixelEvento } from '@/lib/facebookPixel'
 import { PixPagamento } from './PixPagamento'
+import { reduzirFoto } from '@/lib/reduzirFoto'
 import { valorDoSinal } from '@/lib/pix'
 import '@/components/cart/sacola.css'
 
@@ -172,10 +173,24 @@ function SugestaoSacola({ produto, cor }: { produto: Produto; cor: string }) {
 
 /* ─── Conteúdo interno do carrinho (reutilizado em mobile e desktop) ─── */
 function CartContent({
-  step, setStep, items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart,
+  step, setStep, items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart, updateFotoReferencia,
   config, onClose, corBotao, corTopo, logoUrl, sugestoes = [], verificada = false, direto = false, aoMostrarMenu,
 }: any) {
   const [limparPergunta, setLimparPergunta] = useState(false)
+  // (24/10) itens que aceitam foto de referência (o produto pede ou o complemento marcado pede)
+  const itensComRef = (items || []).filter((it: any) => it.pedeReferencia || it.fotoReferencia)
+  const [refCarregando, setRefCarregando] = useState<string | null>(null)
+  const enviarRef = async (linha: string, ev: React.ChangeEvent<HTMLInputElement>) => {
+    const campo = ev.target
+    const file = campo.files?.[0]
+    campo.value = ''
+    if (!file) return
+    if (file.type && !file.type.startsWith('image/')) { avisar('Escolha uma foto. Outros arquivos não entram aqui.', { tipo: 'erro' }); return }
+    setRefCarregando(linha)
+    try { updateFotoReferencia?.(linha, await reduzirFoto(file)) }
+    catch { avisar('Não deu para usar essa foto. Tente outra.', { tipo: 'erro' }) }
+    setRefCarregando(null)
+  }
   const [dataEntrega, setDataEntrega] = useState('')
   const [horaEntrega, setHoraEntrega] = useState('')
   const [observacoes, setObservacoes] = useState('')
@@ -1025,6 +1040,33 @@ function CartContent({
           )}
         </section>
 
+        {/* (24/10) Foto de referência: enviada aqui, antes de pagar (antes era dentro do produto, na hora de escolher) */}
+        {itensComRef.length > 0 && (
+          <section>
+            <Cab t={itensComRef.length === 1 ? 'Foto de referência' : 'Fotos de referência'} sub="Mostre a ideia que você quer" opc />
+            <div className="sc-refs">
+              {itensComRef.map((it: any) => {
+                const linha = it.lineId ?? it.id
+                const foto = it.fotoReferencia as string | undefined
+                const carregando = refCarregando === linha
+                return (
+                  <label key={linha} className={`sc-ref${foto ? ' on' : ''}`} style={foto ? { borderColor: accent } : undefined}>
+                    <span className="sc-ref-ft">{foto ? <img src={foto} alt="Foto de referência" /> : <Camera size={22} weight="bold" />}</span>
+                    <span className="sc-ref-tx">
+                      <b>{it.name}</b>
+                      <small>{carregando ? 'Carregando…' : foto ? 'Foto anexada' : `${it.pedeReferencia !== 'Foto de referência' ? `${it.pedeReferencia} · ` : ''}Enviar uma foto`}</small>
+                    </span>
+                    {foto
+                      ? <button type="button" className="sc-ref-x" aria-label={`Tirar a foto de ${it.name}`} onClick={ev => { ev.preventDefault(); updateFotoReferencia?.(linha, null) }}><X size={18} weight="bold" /></button>
+                      : <span className="sc-ref-bt" style={{ color: accent }}>Enviar</span>}
+                    <input type="file" accept="image/*" hidden onChange={ev => { void enviarRef(linha, ev) }} />
+                  </label>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
         {/* Pagamento */}
         <section ref={refPagamento}>
           <Cab t="Pagamento" sub={pixOnline ? 'Pix: você paga no próximo passo' : `Você paga na ${tipo}`} obr ok={!!formaPagamento} falta={feErro === 'pagamento' ? 'Escolha como vai pagar' : undefined} />
@@ -1121,7 +1163,7 @@ function CartContent({
 /* ─── Componente principal ─── */
 /* ─── Componente principal ─── */
 export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes, verificada }: { corBotao?: string; /** a página está no layout de celular? (10/10) */ celular?: boolean; /** (19/10) a sacola com a cara da loja */ corTopo?: string; logoUrl?: string; sugestoes?: Produto[]; verificada?: boolean }) {
-  const { items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart } = useCart()
+  const { items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart, updateFotoReferencia } = useCart()
   const [isOpen, setIsOpen] = useState(false)
   // (21/10) Pedido enviado: o menu de baixo fica visível por baixo da tela (só no celular)
   const [menuNaSacola, setMenuNaSacola] = useState(false)
@@ -1188,7 +1230,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
 
   const sharedProps = {
     step, setStep, items, totalPrice,
-    updateQuantity, updateObservations, removeItem, clearCart,
+    updateQuantity, updateObservations, removeItem, clearCart, updateFotoReferencia,
     config, onClose: handleClose, corBotao: accent, corTopo, logoUrl, sugestoes, verificada, direto,
     aoMostrarMenu: isMobile ? setMenuNaSacola : undefined,
   }
