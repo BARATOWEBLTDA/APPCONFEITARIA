@@ -4,23 +4,15 @@
   /* ── 1. Fundo cinza (igual ao celular) e o conteúdo começando na mesma linha do título ── */
   html body, html body .layout-root, html body .layout-main { background-color: #F1F2F2 !important; }
   html body .layout-main > :not(.cab):not(style) { margin-left: 0 !important; margin-right: auto !important; }
-  /* painéis e tabelas: até 1.140px */
-  html body .layout-main > .pd, html body .layout-main > .ep-wrap, html body .layout-main > .nv3, html body .layout-main > .ag3,
-  html body .layout-main > .fd, html body .layout-main > .fd-hero, html body .layout-main > .tx, html body .layout-main > .cu, html body .layout-main > .lu,
-  html body .layout-main > .prod-root, html body .layout-main > .cl9, html body .layout-main > .cli-root, html body .layout-main > .vgd,
-  html body .layout-main > .ntf-root, html body .layout-main > .nl, html body .layout-main > .ini-root,
-  html body .layout-main > .far-root, html body .layout-main > .fap-root, html body .layout-main > .mas-root { max-width: 1140px !important; }
+  /* (23/10) o conteúdo ocupa a largura toda da tela (antes parava em 1.140px ou 760px e sobrava um espaço enorme à direita).
+     Só em tela muito larga (acima de ~1.900px de conteúdo) para de crescer, para as linhas não ficarem compridas demais. */
+  html body .layout-main > :not(.cab):not(style) { max-width: 1680px !important; }
   html body .fd-hero-in { max-width: none !important; }
-  html body .far-wrap, html body .fap-wrap, html body .mas-wrap, html body .cli-root > .cl9 { max-width: 1140px !important; margin-left: 0 !important; margin-right: auto !important; }
-  /* formulários e listas curtas: 760px */
-  html body .layout-main > .ct, html body .layout-main > .ns-root, html body .layout-main > .mz, html body .layout-main > .cf9,
-  html body .layout-main > .ap, html body .layout-main > .mk { max-width: 760px !important; }
+  html body .far-wrap, html body .fap-wrap, html body .mas-wrap, html body .cli-root > .cl9 { max-width: none !important; margin-left: 0 !important; margin-right: auto !important; }
   /* sem respiro lateral extra: tudo começa na linha do título */
   html body .layout-main > .cl9, html body .cli-root > .cl9, html body .layout-main > .ag3, html body .layout-main > .nv3,
   html body .layout-main > .ct, html body .layout-main > .mk, html body .layout-main > .cf9, html body .layout-main > .ap,
   html body .layout-main > .dl-root { padding-left: 0 !important; padding-right: 0 !important; }
-  /* a página do Doonly PRO fica na largura dos painéis */
-  html body .layout-main > .pro9 { max-width: 1140px !important; }
 
   /* ── 3. Início: o cartão "Seu cardápio está no ar" sai (o link de vendas fica); o que pede ação sobe ── */
   html body .ini-dkg > .ini-pp:has(.lpc) { display: none !important; }
