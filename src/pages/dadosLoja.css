@@ -158,13 +158,10 @@
 .dl-emb { display: flex; flex-direction: column; gap: 8px; font-family: var(--font-base); }
 .dl-emb-t { margin: 0 4px; font-size: 15px; font-weight: 700; color: var(--ui-texto); line-height: 1.3; }
 .dl-emb .dl-li-img { flex: none; width: 40px; height: 40px; border-radius: var(--ui-raio); object-fit: cover; background: #F3EEF1; }
-.dl-emb .dl-li-acao { flex: none; min-height: 36px; padding: 0 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio-p); background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; display: flex; align-items: center; }
 .dl-emb-carregando { display: flex; justify-content: center; padding: 32px 0; }
 .dl-emb .dl-li--fixa { cursor: default; }
 .dl-emb .dl-li--fixa:active { background: none; }
 .dl-emb .dl-li-pro { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 7px; background: var(--chocolate, #3A2219); color: #F5C76B; white-space: nowrap; }
-.dl-emb .dl-li-acao[aria-disabled="true"] { opacity: .6; }
-.dl-emb .dl-li-acao { cursor: pointer; }
 .dl-emb { padding-top: 4px; }
 .dl-emb .ml-rank { flex: none; width: 24px; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); text-align: center; }
 .dl-bloco > .lch:first-child .lch-t { margin-top: 0; }

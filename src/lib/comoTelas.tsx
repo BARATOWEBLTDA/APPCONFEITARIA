@@ -303,7 +303,7 @@ export const TOUR_CARDAPIO: PassoTour[] = [
   { el: ".clc-bts", titulo: "Divulgar", texto: "Compartilhe o link, copie, veja o cardápio como cliente ou baixe o QR Code para imprimir." },
   { el: ".vgd-hero", titulo: "Seu cardápio", texto: "A situação da loja, o link do cardápio e os botões para enviar pelo WhatsApp, copiar o link ou ver como cliente." },
   { el: ".vgd-qr", titulo: "QR Code", texto: "Baixe e imprima para os clientes abrirem o cardápio pelo celular." },
-  { el: ".ml-cliente", titulo: "A loja para o cliente", texto: "Logo, nome e WhatsApp, aparência e redes sociais: o que o cliente vê no cardápio. Cada linha mostra como está agora." },
+  { el: ".ml-cliente", titulo: "A loja para o cliente", texto: "Logo, sobre a loja (nome, WhatsApp e descrição), aparência e redes sociais: o que o cliente vê no cardápio. Cada linha mostra como está agora." },
   { el: ".ml-vende", titulo: "Como você vende", texto: "Horário, entrega, pagamento, Pix e endereço. O que ainda falta configurar aparece marcado como Falta." },
   { el: ".ml-produtos", titulo: "O que você vende", texto: "Produtos, categorias e complementos que aparecem no cardápio." },
   { el: ".ch-metricas-grid, .vgd-kp", titulo: "Desempenho", texto: "Visitas, pedidos, valor vendido e conversão do cardápio no período escolhido." },

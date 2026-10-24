@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cake, CaretRight, ChartBar, Crown, PaintBrush, SquaresFour, Stack, Storefront } from "@phosphor-icons/react";
+import { ImageSquare, Cake, CaretRight, ChartBar, Crown, PaintBrush, SquaresFour, Stack } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { useRecorte } from "@/components/ui/useRecorte";
@@ -69,15 +69,16 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
   }, { aspect: 1, forma: "round" });
 
   const img = vis?.logo || vis?.foto;
+  // (23/10) a logo segue o mesmo padrão das outras linhas: toque na linha para escolher a foto; sem logo, "Falta"
+  const semLogo = !!vis && !vis.logo;
   const linhaLogo = (
-    <div className="dl-li dl-li--fixa">
-      {img ? <img className="dl-li-img" src={img} alt="" /> : <span className="dl-li-ic" aria-hidden="true"><Storefront size={20} weight="bold" /></span>}
-      <span className="dl-li-tx"><b>Logo</b><small className={vis && !vis.logo ? "falta" : ""}>{!vis ? "…" : vis.logo ? "Na loja e no cardápio" : "Falta a logo da loja"}</small></span>
-      <label className="dl-li-acao" aria-disabled={enviando}>
-        {enviando ? "Enviando…" : vis?.logo ? "Trocar" : "Enviar"}
-        <input type="file" accept="image/*" hidden disabled={enviando} onChange={recorte.escolher} />
-      </label>
-    </div>
+    <label className={`dl-li${enviando ? " dl-li--fixa" : ""}`} aria-disabled={enviando}>
+      {img ? <img className="dl-li-img" src={img} alt="" /> : <span className="dl-li-ic" aria-hidden="true"><ImageSquare size={20} weight="bold" /></span>}
+      <span className="dl-li-tx"><b>Logo</b><small className={semLogo ? "falta" : ""}>{!vis ? "…" : enviando ? "Enviando…" : vis.logo ? "Toque para trocar" : "Falta a logo da loja"}</small></span>
+      {semLogo && !enviando && <em className="dl-li-st falta">Falta</em>}
+      <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
+      <input type="file" accept="image/*" hidden disabled={enviando} onChange={recorte.escolher} />
+    </label>
   );
   const linhaAparencia = (
     <button type="button" className="dl-li" onClick={() => navigate("/cardapio-design")}>

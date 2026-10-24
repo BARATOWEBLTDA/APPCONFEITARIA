@@ -551,7 +551,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   const redesTxt = [instaOn && instagram.trim() ? "Instagram" : "", faceOn && facebook.trim() ? "Facebook" : ""].filter(Boolean);
   type Linha = { k: Parte; Ic: typeof Storefront; t: string; sub: string; st: "ok" | "falta" | "op" };
   const linhas: Linha[] = [
-    { k: "loja", Ic: Storefront, t: "Sua loja", sub: okDe("loja") ? [nome.trim(), telefone].filter(Boolean).join(" · ") : `Falta ${listaBR(itens.slice(0, 3).filter(i => !i.ok).map(i => i.nome.toLowerCase()))}`, st: okDe("loja") ? "ok" : "falta" },
+    { k: "loja", Ic: Storefront, t: "Sua loja", sub: okDe("loja") ? [nome.trim(), telefone].filter(Boolean).join(" · ") : `Falta ${listaBR(itens.slice(0, 3).filter(i => !i.ok).map(i => i.nome === "WhatsApp" ? "o WhatsApp" : i.nome === "Nome" ? "o nome" : "a descrição"))}`, st: okDe("loja") ? "ok" : "falta" },
     { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? `${listaBR(redesTxt)} no cardápio` : "Nenhuma aparece no cardápio", st: redesTxt.length ? "ok" : "op" },
     { k: "endereco", Ic: MapPin, t: "Endereço", sub: itens[3].ok ? [[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf : "Falta o endereço da loja", st: itens[3].ok ? "ok" : "falta" },
     { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorario().join(" · ") : "Falta o horário de funcionamento", st: itens[4].ok ? "ok" : "falta" },
@@ -559,7 +559,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · cliente paga o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : `Ligado · sinal de ${ep!.pixPct}% ou o total`) : "Desligado · paga pelo WhatsApp", st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
     { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta definir a taxa de entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.porBairro ? "entrega por bairro" : `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa ? "falta" : "ok" },
   ];
-  const TITULO: Record<Parte, string> = { loja: "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
+  const TITULO: Record<Parte, string> = { loja: embutido ? "Sobre a loja" : "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
   const gaveta = (
     <Gaveta aberta={!!parte} aoFechar={fecharParte} titulo={parte ? TITULO[parte] : ""}
       rodape={<Botao cheio carregando={fechando} onClick={fecharParte}>{fechando ? "Salvando…" : "Pronto"}</Botao>}>
@@ -590,7 +590,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
       <>
         <section className="dl-emb ml-cliente" aria-label="A loja para o cliente">
           <h2 className="dl-emb-t">A loja para o cliente</h2>
-          <div className="dl-lista-c">{extras?.antes}{linhaEmb("loja", "Nome e WhatsApp")}{extras?.depois}{linhaEmb("redes")}</div>
+          <div className="dl-lista-c">{extras?.antes}{linhaEmb("loja", "Sobre a loja")}{extras?.depois}{linhaEmb("redes")}</div>
         </section>
         <section className="dl-emb ml-vende" aria-label="Como você vende">
           <h2 className="dl-emb-t">Como você vende</h2>
