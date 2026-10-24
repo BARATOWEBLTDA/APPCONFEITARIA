@@ -18,10 +18,11 @@ import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { linkWhatsApp } from "@/lib/telefone";
 import { excluirPedido as excluirPedidoNoBanco } from "@/lib/pedidosDoo";
 import { registrarEtapa } from "@/lib/historicoPedido";
+import { avisarDesfeito, avisarMudanca } from "@/lib/avisoPedido";
 import AppPageHeader from "@/components/AppPageHeader";
 import CalendarioSheet from "@/components/CalendarioSheet";
 import { Botao, BotaoIcone, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
-import { avisoDaMudanca, formaDoItem, grupoDoStatus, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDeProduto, nomeDoItem, precisaAceitar, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
+import { formaDoItem, grupoDoStatus, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDeProduto, nomeDoItem, precisaAceitar, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
 import { NomeComQtd } from "@/components/pedidos/CartaoPedido";
 import FiltroLateral, { SITUACOES_FILTRO, STATUS_PADRAO } from "@/components/pedidos/FiltroPedidos";
 import "@/components/pedidos/pedidos.css";
@@ -349,6 +350,20 @@ export default function Agenda() {
   /* ── Ações (as mesmas de antes) ── */
   const abrirEditar = (id: string) => navigate(`/pedidos/${id}/editar`);
 
+  // (24/10) aviso em cartão com "Desfazer" (volta para a situação de antes)
+  const avisarComDesfazer = (p: any, novo: string) => {
+    const anterior = p.status;
+    avisarMudanca(p, novo, {
+      desfazer: anterior && anterior !== novo ? async () => {
+        const { error } = await supabase.from("pedidos").update({ status: anterior }).eq("id", p.id);
+        if (error) { avisar("Não deu para desfazer. Confira a internet e mude a situação no pedido.", { tipo: "erro" }); return; }
+        mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: anterior } : x));
+        registrarEtapa(p.id, anterior, `Desfeito: voltou para "${nomeDaSituacao(anterior)}"`);
+        avisarDesfeito(p, anterior);
+      } : undefined,
+    });
+  };
+
   const marcarComoPronto = async (p: any) => {
     if (ocupadosRef.current.has(p.id)) return; // (11/10) toque duplo: a situação muda uma vez só
     ocupar(p.id, true);
@@ -359,7 +374,7 @@ export default function Agenda() {
       if (error) { avisar("Não deu para mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
       registrarEtapa(p.id, novo);
       mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: novo } : x));
-      avisar(avisoDaMudanca(p, novo));
+      avisarComDesfazer(p, novo);
     } finally { ocupar(p.id, false); }
   };
 
@@ -372,7 +387,7 @@ export default function Agenda() {
       if (error) { avisar("Não deu para mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
       registrarEtapa(p.id, novo);
       mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: novo } : x));
-      avisar(avisoDaMudanca(p, novo));
+      avisarComDesfazer(p, novo);
     } finally { ocupar(p.id, false); }
   };
 

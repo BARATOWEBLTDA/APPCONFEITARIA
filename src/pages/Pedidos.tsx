@@ -13,7 +13,7 @@ import MenuPedido from '@/components/pedidos/MenuPedido'
 import type { AcaoMenu } from '@/components/pedidos/MenuPedido'
 import QuadroPedidos from '@/components/pedidos/QuadroPedidos'
 import type { Pedido } from '@/components/pedidos/pedidoTexto'
-import { pixDoPedido, acaoDe, avisoDaMudanca, formaDoItem, itemComQtd, precisaAceitar, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDoItem, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
+import { pixDoPedido, acaoDe, formaDoItem, itemComQtd, precisaAceitar, dataISO, grupoDoStatus, nomeCliente, nomeDaSituacao, nomeDoItem, recebidoPedido, rs, saldoPedido, terminou } from '@/components/pedidos/pedidoTexto'
 import { registrarPagamento } from '@/lib/pagamentos'
 import { duplicarPedido } from '@/lib/duplicarPedido'
 import { excluirPedido as excluirPedidoNoBanco } from '@/lib/pedidosDoo'
@@ -24,6 +24,7 @@ import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { supabase } from '@/lib/supabase'
 import { registrarEtapa } from "@/lib/historicoPedido";
+import { avisarDesfeito, avisarMudanca } from '@/lib/avisoPedido'
 import { semAcento } from '@/lib/noticias'
 import { tocarSom } from '@/hooks/useSom'
 import { useAoVoltar, useDiaAtual } from '@/hooks/useAoVoltar'
@@ -202,10 +203,24 @@ export default function Pedidos() {
   const irDaJanela = (para: string) => navigate(para, { replace: !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela })
 
   /** Confirmação de que deu certo (3.14): aviso curto sempre; som quando o pedido termina (respeita o som ligado/desligado em Notificações) */
-  const confirmarMudanca = (p: Pedido, status: string, pago = false) => {
+  // (24/10) aviso em cartão com "Desfazer": volta a situação anterior se tocou sem querer (só quando foi só a situação que
+  // mudou; com pagamento registrado, o botão é "Ver", que abre o pedido)
+  const confirmarMudanca = (p: Pedido, status: string, pago = false, podeDesfazer = true) => {
     registrarEtapa(p.id, status)
-    avisar(avisoDaMudanca(p, status, pago))
+    const anterior = p.status
+    avisarMudanca(p, status, {
+      pago,
+      ver: pago ? () => navigate(`/pedidos/${p.id}/editar`) : undefined,
+      desfazer: !pago && podeDesfazer && anterior && anterior !== status ? () => { void desfazerMudanca(p, anterior) } : undefined,
+    })
     if (status === 'entregue') tocarSom('sucesso')
+  }
+  const desfazerMudanca = async (p: Pedido, anterior: string) => {
+    const { error } = await supabase.from('pedidos').update({ status: anterior }).eq('id', p.id)
+    if (error) { avisar('Não deu para desfazer. Confira a internet e mude a situação no pedido.', { tipo: 'erro' }); return }
+    mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: anterior } : x))
+    registrarEtapa(p.id, anterior, `Desfeito: voltou para "${nomeDaSituacao(anterior)}"`)
+    avisarDesfeito(p, anterior)
   }
 
   const updateStatus = async (id: string, status: string, pagoDireto = false) => {
@@ -659,7 +674,7 @@ export default function Pedidos() {
           aguardandoPagamento={grupoDoStatus(pendingPag.pedido.status) === 'aguardando_pagamento'}
           onCancelar={() => setPendingPag(null)}
           onParcial={(r) => mudarPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p))}
-          onConcluido={(r) => { mudarPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p)); confirmarMudanca(pendingPag.pedido, pendingPag.novoStatus); setPendingPag(null) }}
+          onConcluido={(r) => { mudarPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p)); confirmarMudanca(pendingPag.pedido, pendingPag.novoStatus, false, false); setPendingPag(null) }}
         />
       )}
     </>

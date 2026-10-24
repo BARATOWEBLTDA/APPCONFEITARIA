@@ -8,7 +8,8 @@ import { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, Titulo, avisar as avisarBase, confirmar, informar } from '@/components/base'
 import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, MagnifyingGlass, Package, Truck } from '@phosphor-icons/react'
-import { pixDoPedido, SITUACOES, VERBOS, avisoDaMudanca, dataCurta, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto, itemComQtd, proximoPasso, telefoneValido } from '@/components/pedidos/pedidoTexto'
+import { pixDoPedido, SITUACOES, VERBOS, dataCurta, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto, itemComQtd, proximoPasso, telefoneValido } from '@/components/pedidos/pedidoTexto'
+import { avisarDesfeito, avisarMudanca } from '@/lib/avisoPedido'
 import { NomeComQtd } from '@/components/pedidos/CartaoPedido'
 import { tocarSom } from '@/hooks/useSom'
 import '@/components/pedidos/telaPedido.css'
@@ -1315,9 +1316,21 @@ export default function EditarPedido() {
       if (error) { avisarJanela('Não foi possível mudar a etapa', explicarErro(error, 'Tente de novo em instantes.'), 'erro'); return }
       const label = (STATUS_CONFIG[novo] || {}).label || novo
       supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: label, descricao: `Status alterado para "${label}"` }).then(() => {}, () => {})
+      const anterior = statusPedido
       setStatusPedido(novo); setPedido(p => p ? { ...p, status: novo } : p)
       void atualizarVersao()
-      avisar(avisoDaMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega }, novo))
+      // (24/10) aviso em cartão com "Desfazer": volta para a etapa de antes
+      avisarMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega, cliente_nome: pedido.cliente_nome }, novo, {
+        desfazer: anterior && anterior !== novo ? async () => {
+          const { error: e2 } = await supabase.from('pedidos').update({ status: anterior }).eq('id', pedido.id)
+          if (e2) { avisarBase('Não deu para desfazer. Confira a internet e tente de novo.', { tipo: 'erro' }); return }
+          const rot = (STATUS_CONFIG[anterior] || {}).label || anterior
+          supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: rot, descricao: `Desfeito: voltou para "${rot}"` }).then(() => {}, () => {})
+          setStatusPedido(anterior); setPedido(p => p ? { ...p, status: anterior } : p)
+          void atualizarVersao()
+          avisarDesfeito({ numero: pedido.numero }, anterior)
+        } : undefined,
+      })
       if (novo === 'entregue') tocarSom('sucesso')
     } finally { mudandoEtapaRef.current = false; setMudandoEtapa(false) }
   }
@@ -1772,7 +1785,7 @@ export default function EditarPedido() {
         novoStatus="entregue" novoStatusLabel="Entregue"
         onCancelar={() => setFinalizarAberto(false)}
         onParcial={() => { recarregarDinheiro() }}
-        onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisar(avisoDaMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega }, 'entregue')); tocarSom('sucesso'); if (tipoEntrega === 'retirada') { setQuemRetirou(''); setDepoisRetirada('editar'); setRetiradaAberta(true) } }} />}
+        onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisarMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega, cliente_nome: pedido.cliente_nome }, 'entregue'); tocarSom('sucesso'); if (tipoEntrega === 'retirada') { setQuemRetirou(''); setDepoisRetirada('editar'); setRetiradaAberta(true) } }} />}
 
       <style>{EP2_CSS}{FOLHA_CSS}</style>
 

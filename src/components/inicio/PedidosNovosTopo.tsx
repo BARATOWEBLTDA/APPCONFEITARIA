@@ -4,7 +4,8 @@ import { Cake, CaretRight } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { registrarEtapa } from "@/lib/historicoPedido";
-import { avisoDaMudanca, grupoDoStatus } from "@/components/pedidos/pedidoTexto";
+import { grupoDoStatus } from "@/components/pedidos/pedidoTexto";
+import { avisarMudanca } from "@/lib/avisoPedido";
 import { useAgora } from "./entregasDeHoje";
 
 /**
@@ -55,7 +56,7 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
     if (error) { avisar("Não deu para aceitar o pedido. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
     registrarEtapa(um.id, "agendado");
     // o Início mostra o destaque do "Pedidos" no 1º pedido aceito (aí o aviso curto não aparece por cima)
-    if (!aoAceitar(um.id)) avisar(avisoDaMudanca({ numero: um.numero as any }, "agendado"));
+    if (!aoAceitar(um.id)) avisarMudanca({ numero: um.numero as any, cliente_nome: (um as any).cliente_nome || (um as any).cliente || null }, "agendado");
   };
   const maisAntigo = novos.reduce((a, p) => (!a || p.criado < a ? p.criado : a), "");
 
