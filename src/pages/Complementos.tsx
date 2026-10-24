@@ -156,9 +156,13 @@ export default function Complementos() {
           /* (24/10) tela vazia com o exemplo de como fica no cardápio do celular, ao lado (as sugestões "Comece por uma destas" saíram) */
           <section className="pz-vazio">
             <div className="pz-vazio-tx">
-              <span className="pz-vazio-ic" aria-hidden="true"><PuzzlePiece size={30} /></span>
               <h2>Venda mais em cada pedido</h2>
-              <p>Topo de bolo, velas e balões que o cliente escolhe na hora de pedir. O valor soma sozinho no total.</p>
+              <p>Topo de bolo, velas e balões que o cliente escolhe na hora de pedir.</p>
+              <ul className="pz-vazio-lista">
+                <li><Check size={16} weight="bold" aria-hidden="true" />O valor soma sozinho no total</li>
+                <li><Check size={16} weight="bold" aria-hidden="true" />Você escolhe onde ele aparece</li>
+                <li><Check size={16} weight="bold" aria-hidden="true" />O cliente manda a foto da ideia junto</li>
+              </ul>
               <Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>
             </div>
             <ExemploCardapio />
@@ -290,8 +294,8 @@ function ExemploCardapio() {
     <figure className="pz-cel-wrap" aria-label="Exemplo de como o cliente vê os complementos no cardápio">
       <div className="pz-cel" aria-hidden="true">
         <div className="pz-cel-tela">
-          <img className="pz-cel-foto" src="/tutorial/boas-vindas/produtos/bolo-aniversario.webp" alt="" />
-          <div className="pz-cel-prod"><b>Bolo de aniversário</b><span>R$ 120,00</span></div>
+          <img className="pz-cel-foto" src="/tutorial/complementos-bolo.webp" alt="" />
+          <div className="pz-cel-prod"><b>Bolo Floresta Negra</b><span>R$ 120,00</span></div>
           <div className="pz-cel-cab"><b>Adicionais</b><small>Escolha quantos quiser</small></div>
           <div className="pz-cel-op on"><span><b>Topo de bolo</b><small>Com o tema e o nome</small></span><em>+ R$ 15,00</em><i><Check size={11} weight="bold" /></i></div>
           <div className="pz-cel-ref"><Camera size={13} weight="bold" />Enviar foto de referência</div>
@@ -301,7 +305,7 @@ function ExemploCardapio() {
         </div>
       </div>
       {/* (24/10) balão do diferencial: o cliente manda a foto da ideia (só no computador) */}
-      <div className="pz-balao" aria-hidden="true"><small>Menos WhatsApp</small><b>O cliente já manda a foto da ideia junto com o pedido</b></div>
+      <div className="pz-balao" aria-hidden="true"><small>Menos WhatsApp</small><b>A foto da ideia já vem no pedido</b></div>
       <figcaption>Assim o cliente vê no cardápio</figcaption>
     </figure>
   );
