@@ -65,20 +65,6 @@ export default function Complementos() {
   };
   useEffect(() => { void carregar(); }, []);
 
-  // (19/10) sugestões prontas: um toque abre o cadastro já preenchido
-  const SUGESTOES: Sugestao[] = [
-    { nome: "Topo de bolo", descricao: "Anexe uma foto de referência", valor: 15, pedeRef: true },
-    { nome: "Velas decorativas", descricao: "", valor: 5 },
-    { nome: "Balões personalizados", descricao: "", valor: 25 },
-    { nome: "Decoração simples", descricao: "", valor: 0 },
-  ];
-  const usarSugestao = (sg: Sugestao) => {
-    setEditando(null); setTentou(false); setBuscaProd("");
-    setForm({ ...FORM_VAZIO, nome: sg.nome, descricao: sg.descricao, valor: sg.valor, gratis: sg.valor <= 0, pedeRef: !!sg.pedeRef });
-    setAberta(true);
-  };
-  const sugestoesLivres = SUGESTOES.filter(sg => !items.some(i => i.nome.trim().toLowerCase() === sg.nome.toLowerCase()));
-
   const abrir = (c: Complemento | null, escolherProdutos = false) => {
     setEditando(c);
     setTentou(false);
@@ -166,13 +152,18 @@ export default function Complementos() {
           <TelaVazia caixa icone={<Package size={30} />} titulo="Cadastre um produto primeiro"
             texto="O complemento aparece dentro dos produtos do cardápio. Cadastre pelo menos um produto antes."
             acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/produtos")}>Cadastrar produto</Botao>} />
-        ) : items.length === 0 ? (<>
-          <TelaVazia caixa icone={<PuzzlePiece size={30} />} titulo="Nenhum complemento ainda"
-            texto="Cadastre extras como topo de bolo, escrita e papel de arroz. O cliente escolhe na hora de pedir e o valor soma no total."
-            acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>} />
-          {/* (19/10) sugestões do jeito que aparecem no cardápio: tocar abre o cadastro já preenchido */}
-          <ListaSugestoes titulo="Comece por uma destas" lista={SUGESTOES} aoEscolher={usarSugestao} />
-        </>) : (<>
+        ) : items.length === 0 ? (
+          /* (24/10) tela vazia com o exemplo de como fica no cardápio do celular, ao lado (as sugestões "Comece por uma destas" saíram) */
+          <section className="pz-vazio">
+            <div className="pz-vazio-tx">
+              <span className="pz-vazio-ic" aria-hidden="true"><PuzzlePiece size={30} /></span>
+              <h2>Venda mais em cada pedido</h2>
+              <p>Topo de bolo, velas e balões que o cliente escolhe na hora de pedir. O valor soma sozinho no total.</p>
+              <Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>
+            </div>
+            <ExemploCardapio />
+          </section>
+        ) : (<>
           <Titulo contagem={items.length} apoio="Escolha um complemento para editar."
             acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>}>Seus complementos</Titulo>
           {items.length > 8 && (
@@ -201,7 +192,6 @@ export default function Complementos() {
               })}
             </section>
           )}
-          {sugestoesLivres.length > 0 && !termo && <ListaSugestoes titulo="Ideias para adicionar" lista={sugestoesLivres} aoEscolher={usarSugestao} />}
           <p className="ct-dica"><Info size={20} weight="bold" aria-hidden="true" />O cliente vê os complementos na hora de escolher o produto no cardápio.</p>
         </>)}
       </div>
@@ -294,19 +284,25 @@ export default function Complementos() {
   );
 }
 
-/** (19/10) As sugestões no mesmo desenho da escolha de complementos do cardápio (caixinha, nome, explicação e preço). */
-type Sugestao = { nome: string; descricao: string; valor: number; pedeRef?: boolean };
-function ListaSugestoes({ titulo, lista, aoEscolher }: { titulo: string; lista: Sugestao[]; aoEscolher: (sg: Sugestao) => void }) {
+/** (24/10) Exemplo, num celular, de como os complementos aparecem para o cliente no produto do cardápio */
+function ExemploCardapio() {
   return (
-    <section className="pz-ex pz-sg" aria-label={titulo}>
-      <div className="pz-sg-cab"><p className="pz-ex-t">{titulo}</p><small>Assim o cliente vê. Marque para adicionar.</small></div>
-      {lista.map(sg => (
-        <button key={sg.nome} type="button" className="pz-ex-l pz-sg-l" onClick={() => aoEscolher(sg)} aria-label={`Adicionar ${sg.nome}`}>
-          <i aria-hidden="true" />
-          <span className="pz-prev-tx"><span>{sg.nome}</span>{sg.descricao && <em>{sg.descricao}</em>}</span>
-          <b className={sg.valor > 0 ? "" : "g"}>{sg.valor > 0 ? `+ R$ ${brl(sg.valor)}` : "Grátis"}</b>
-        </button>
-      ))}
-    </section>
+    <figure className="pz-cel-wrap" aria-label="Exemplo de como o cliente vê os complementos no cardápio">
+      <div className="pz-cel" aria-hidden="true">
+        <div className="pz-cel-tela">
+          <img className="pz-cel-foto" src="/tutorial/boas-vindas/produtos/bolo-aniversario.webp" alt="" />
+          <div className="pz-cel-prod"><b>Bolo de aniversário</b><span>R$ 120,00</span></div>
+          <div className="pz-cel-cab"><b>Adicionais</b><small>Escolha quantos quiser</small></div>
+          <div className="pz-cel-op on"><span><b>Topo de bolo</b><small>Com o tema e o nome</small></span><em>+ R$ 15,00</em><i><Check size={11} weight="bold" /></i></div>
+          <div className="pz-cel-ref"><Camera size={13} weight="bold" />Enviar foto de referência</div>
+          <div className="pz-cel-op"><span><b>Velas decorativas</b></span><em>+ R$ 5,00</em><i /></div>
+          <div className="pz-cel-op"><span><b>Decoração simples</b></span><em className="g">Grátis</em><i /></div>
+          <div className="pz-cel-bt">Adicionar · R$ 135,00</div>
+        </div>
+      </div>
+      {/* (24/10) balão do diferencial: o cliente manda a foto da ideia (só no computador) */}
+      <div className="pz-balao" aria-hidden="true"><small>Menos WhatsApp</small><b>O cliente já manda a foto da ideia junto com o pedido</b></div>
+      <figcaption>Assim o cliente vê no cardápio</figcaption>
+    </figure>
   );
 }

@@ -39,15 +39,6 @@
 .pz-prods-l .pz-semres { margin: 12px; }
 .pz-erro { margin-top: 6px; color: var(--ui-vermelho); }
 
-/* (19/10) sugestões no desenho do cardápio */
-.pz-sg { margin-top: 12px; }
-.pz-sg-cab { display: flex; flex-direction: column; gap: 1px; margin-bottom: 4px; }
-.pz-sg-cab .pz-ex-t { margin: 0; }
-.pz-sg-cab small { font-size: 12px; color: var(--ui-texto-3); white-space: nowrap; }
-.pz-sg-l { width: 100%; margin: 0; padding: 6px 0; border: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
-.pz-sg .pz-sg-l + .pz-sg-l { border-top: 1px solid var(--ui-linha); }
-.pz-sg-l:hover i { border-color: var(--ui-rosa); }
-.pz-sg-l b { flex: none; white-space: nowrap; }
 /* prévia ao vivo dentro do cadastro */
 .pz-prev { border: 1px solid #F0E6EA; border-radius: 12px; background: #FFF8FB; padding: 10px 12px 4px; }
 .pz-prev small { display: block; font-size: 12px; font-weight: 600; color: var(--ui-texto-3); margin-bottom: 2px; }
@@ -65,3 +56,54 @@
 .pz-ref .pz-chk { flex: none; }
 .pz-prev-ref { display: flex; align-items: center; gap: 8px; margin: 2px 0 8px 34px; padding: 8px 10px; border: 1.5px dashed #E7C2D2; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--ui-rosa-escuro); background: #fff; }
 .pz-ref[aria-checked="true"] .pz-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+
+/* (24/10) tela vazia: o texto e, ao lado, um celular com o exemplo de como o cliente vê no cardápio */
+.pz-vazio { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 28px 20px 24px; border: 1px dashed var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); font-family: var(--font-base); color: var(--ui-texto); }
+.pz-vazio-tx { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.pz-vazio-ic { display: inline-flex; align-items: center; justify-content: center; width: 68px; height: 68px; margin-bottom: 12px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa); }
+.pz-vazio-tx h2 { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.3; }
+.pz-vazio-tx p { max-width: 300px; margin: 4px 0 16px; font-size: 13.5px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); text-wrap: balance; }
+@media (min-width: 768px) {
+  .pz-vazio { flex-direction: row; justify-content: center; gap: 56px; padding: 32px 40px; }
+  .pz-vazio-tx { align-items: flex-start; text-align: left; max-width: 340px; }
+  .pz-vazio-tx p { max-width: none; text-wrap: pretty; }
+}
+.pz-cel-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0; }
+.pz-cel-wrap figcaption { font-size: 12.5px; font-weight: 600; color: var(--ui-texto-3); }
+.pz-cel { width: 248px; padding: 6px; border-radius: 34px; background: #1E1215; box-shadow: 0 16px 40px rgba(60, 20, 35, .18); }
+.pz-cel-tela { display: flex; flex-direction: column; overflow: hidden; border-radius: 28px; background: var(--ui-branco); text-align: left; }
+.pz-cel-foto { display: block; width: 100%; height: 118px; object-fit: cover; }
+.pz-cel-prod { display: flex; flex-direction: column; gap: 1px; padding: 10px 14px 12px; }
+.pz-cel-prod b { font-size: 14px; font-weight: 700; }
+.pz-cel-prod span { font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+.pz-cel-cab { display: flex; flex-direction: column; padding: 8px 14px; background: #F4EFF1; }
+.pz-cel-cab b { font-size: 12.5px; font-weight: 700; }
+.pz-cel-cab small { font-size: 10.5px; color: var(--ui-texto-2); }
+.pz-cel-op { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 14px; }
+.pz-cel-op + .pz-cel-op, .pz-cel-ref + .pz-cel-op { border-top: 1px solid var(--ui-linha); }
+.pz-cel-op > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pz-cel-op b { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pz-cel-op small { font-size: 10px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pz-cel-op em { flex: none; font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+.pz-cel-op em.g { color: var(--ui-verde); }
+.pz-cel-op i { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border: 1.5px solid var(--ui-borda-campo); border-radius: 5px; color: var(--ui-branco); }
+.pz-cel-op.on i { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.pz-cel-ref { display: flex; align-items: center; gap: 6px; margin: 0 14px 8px; padding: 7px 9px; border: 1.5px dashed #E7C2D2; border-radius: 9px; font-size: 10.5px; font-weight: 600; color: var(--ui-rosa-escuro); }
+.pz-cel-bt { margin: 10px 12px 14px; padding: 10px 0; border-radius: 12px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12.5px; font-weight: 700; text-align: center; }
+
+/* (24/10) balão flutuando ao lado do "Enviar foto de referência" (computador) */
+.pz-cel-wrap { position: relative; }
+.pz-balao { display: none; }
+@media (min-width: 768px) {
+  .pz-balao { position: absolute; top: 270px; left: calc(100% + 18px); display: flex; flex-direction: column; gap: 2px; width: 176px; padding: 10px 12px; border-radius: 14px; background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 10px 24px rgba(232, 90, 140, .35); text-align: left; }
+  .pz-balao::before { content: ""; position: absolute; top: 18px; left: -7px; width: 14px; height: 14px; border-radius: 3px; background: var(--ui-rosa); transform: rotate(45deg); }
+  .pz-balao small { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .85; }
+  .pz-balao b { font-size: 13.5px; font-weight: 700; line-height: 1.3; }
+  @media (prefers-reduced-motion: no-preference) { .pz-balao { animation: pzBoia 2.8s ease-in-out infinite alternate; } }
+}
+@keyframes pzBoia { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+/* (24/10) celular: o exemplo sem a moldura preta, como uma tela de borda infinita */
+@media (max-width: 767px) {
+  .pz-cel { width: 100%; max-width: 300px; padding: 0; border-radius: 26px; background: none; box-shadow: 0 14px 34px rgba(60, 20, 35, .14), 0 0 0 1px rgba(60, 20, 35, .06); }
+  .pz-cel-tela { border-radius: 26px; }
+}
