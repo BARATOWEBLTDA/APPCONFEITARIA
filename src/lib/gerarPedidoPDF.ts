@@ -3,6 +3,7 @@
 // Usado em Pedidos, Editar pedido e Nova venda. Grátis pra todos.
 // ─────────────────────────────────────────────────────────────────────────────
 import { gerarDocumento, abrirJanela, esc, brl, dataBR, card, kv, pill } from "@/lib/pdfDoonly";
+import { nomeExtra } from "@/lib/kitTexto";
 import { formaDoItem, qtdCurta, saldoPedido, tamanhoDoItem } from "@/components/pedidos/pedidoTexto";
 import { r2, somarReais } from "@/lib/moeda";
 
@@ -69,7 +70,7 @@ function escolhas(pz: any): string {
   if (rec) p.push(`Recheio ${rec}`);
   if (nome(pz.cobertura)) p.push(`Cobertura ${nome(pz.cobertura)}`);
   if (pz.kit?.sabores?.length) p.push(pz.kit.sabores.map((x: any) => `${x.nome} × ${x.qtd}`).join(" · "));
-  if (Array.isArray(pz.extras) && pz.extras.length) p.push(`Adicionais: ${pz.extras.map(nome).filter(Boolean).join(", ")}`);
+  if (Array.isArray(pz.extras) && pz.extras.length) p.push(`Adicionais: ${pz.extras.map((x: any) => nomeExtra(x)).filter(Boolean).join(", ")}`);
   return p.join(" · ");
 }
 

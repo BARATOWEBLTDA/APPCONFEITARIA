@@ -1,4 +1,4 @@
-import { textoSaboresKit } from '@/lib/kitTexto'
+import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
 import { Cake, Minus, Plus, Trash } from '@phosphor-icons/react'
 import { CartItem } from '@/types/cart'
 import { formatCurrency } from '@/utils/helpers'
@@ -52,7 +52,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
         ) : null}
         {/* (19/10) uma escolha por linha (tamanho, massa, recheios...) e os adicionais com "+" */}
         {escolhasLinhas.length > 0 && <ul className="sc-it-det">{escolhasLinhas.map((d, k) => <li key={k}>{d}</li>)}</ul>}
-        {adicionais.length > 0 && <ul className="sc-it-det sc-it-add">{adicionais.map((x: any, k: number) => <li key={k}>+ {x.nome}</li>)}</ul>}
+        {adicionais.length > 0 && <ul className="sc-it-det sc-it-add">{adicionais.map((x: any, k: number) => <li key={k}>+ {nomeExtra(x)}</li>)}</ul>}
         {item.observations && <small className="sc-it-obs">Obs.: {item.observations}</small>}
         {temReferencia && <small className="sc-it-ref">Foto de referência anexada</small>}
       </div>

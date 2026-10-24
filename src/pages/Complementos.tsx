@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, Check, DotsThreeVertical, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Camera, Check, DotsThreeVertical, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { precoCardapioComPromocao } from "@/lib/precoCardapio";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
@@ -14,12 +15,12 @@ import "./complementos.css";
  * Extras que o cliente escolhe ao pedir (topo de bolo, escrita, papel de arroz). Cadastra uma vez e escolhe em quais produtos aparece.
  * Na tabela biblioteca_extras, "categorias" guarda os IDs dos produtos (vazio = aparece em todos).
  */
-type Complemento = { id: string; nome: string; descricao?: string; valor: number; categorias: string[]; pede_referencia?: boolean; categorias_cardapio?: string[] | null };
+type Complemento = { id: string; nome: string; descricao?: string; valor: number; categorias: string[]; pede_referencia?: boolean; pede_frase?: boolean; categorias_cardapio?: string[] | null };
 /** (24/10) onde aparece: em todos, nas categorias marcadas (pelo nome, como os produtos guardam) ou nos produtos marcados */
 type Onde = "todos" | "categorias" | "produtos";
 type ProdutoLite = { id: string; nome: string; categoria?: string; imagem_url?: string | null };
-type Form = { nome: string; descricao: string; valor: number; gratis: boolean; onde: Onde; cats: string[]; produtos: string[]; pedeRef: boolean };
-const FORM_VAZIO: Form = { nome: "", descricao: "", valor: 0, gratis: false, onde: "todos", cats: [], produtos: [], pedeRef: false };
+type Form = { nome: string; descricao: string; valor: number; gratis: boolean; onde: Onde; cats: string[]; produtos: string[]; pedeRef: boolean; pedeFrase: boolean };
+const FORM_VAZIO: Form = { nome: "", descricao: "", valor: 0, gratis: false, onde: "todos", cats: [], produtos: [], pedeRef: false, pedeFrase: false };
 const ondeDe = (c: Complemento): Onde => ((c.categorias_cardapio || []).length ? "categorias" : (c.categorias || []).length ? "produtos" : "todos");
 
 /** "BOLO DE PAÇOCA" → "Bolo de Paçoca" */
@@ -53,6 +54,7 @@ export default function Complementos() {
   const [items, setItems] = useState<Complemento[]>([]);
   const [produtos, setProdutos] = useState<ProdutoLite[]>([]);
   const [categorias, setCategorias] = useState<{ nome: string }[]>([]);
+  const [temFrase, setTemFrase] = useState(false);
   const [busca, setBusca] = useState("");
   const [buscaProd, setBuscaProd] = useState("");
   const [menuDe, setMenuDe] = useState<Complemento | null>(null);
@@ -73,10 +75,13 @@ export default function Complementos() {
       setUserId(uid);
       const [{ data, error }, { data: prods, error: erroProds }, { data: cats }] = await Promise.all([
         supabase.from("biblioteca_extras").select("*").eq("user_id", uid).order("nome"),
-        supabase.from("produtos").select("id, nome, categoria, imagem_url").eq("user_id", uid).order("nome"),
+        supabase.from("produtos").select("*").eq("user_id", uid).order("nome"),
         supabase.from("categorias").select("nome, ordem").eq("user_id", uid).order("ordem"),
       ]);
       setCategorias((cats as { nome: string }[]) || []);
+      // (24/10) a opção "Uma frase" só aparece quando o banco já tem a coluna pede_frase (liga sozinha depois do SQL)
+      const { error: semFrase } = await supabase.from("biblioteca_extras").select("pede_frase").limit(1);
+      setTemFrase(!semFrase);
       if (error || erroProds || !data || !prods) setErroCarga(explicarErro(error || erroProds, "Tente de novo em instantes."));
       else { setItems(data as Complemento[]); setProdutos(prods as ProdutoLite[]); }
     } catch (e) {
@@ -92,7 +97,7 @@ export default function Complementos() {
     setBuscaProd("");
     setForm(c ? {
       nome: c.nome, descricao: c.descricao || "", valor: Number(c.valor) || 0, gratis: !(Number(c.valor) > 0),
-      onde: escolherProdutos && ondeDe(c) === "todos" ? "categorias" : ondeDe(c), cats: c.categorias_cardapio || [], produtos: c.categorias || [], pedeRef: c.pede_referencia === true,
+      onde: escolherProdutos && ondeDe(c) === "todos" ? "categorias" : ondeDe(c), cats: c.categorias_cardapio || [], produtos: c.categorias || [], pedeRef: c.pede_referencia === true, pedeFrase: c.pede_frase === true,
     } : FORM_VAZIO);
     setAberta(true);
   };
@@ -107,7 +112,7 @@ export default function Complementos() {
     setTentou(true);
     const nome = form.nome.trim();
     if (!nome || (!form.gratis && form.valor <= 0) || (form.onde === "produtos" && form.produtos.length === 0) || (form.onde === "categorias" && form.cats.length === 0)) return;
-    const dados = { nome, descricao: form.descricao.trim() || null, valor: form.gratis ? 0 : form.valor, pede_referencia: form.pedeRef,
+    const dados = { nome, descricao: form.descricao.trim() || null, valor: form.gratis ? 0 : form.valor, pede_referencia: form.pedeRef, ...(temFrase ? { pede_frase: form.pedeFrase } : {}),
       categorias: form.onde === "produtos" ? form.produtos : [], categorias_cardapio: form.onde === "categorias" ? form.cats : [] };
     setSaving(true);
     try {
@@ -202,37 +207,66 @@ export default function Complementos() {
             </div>
             <ExemploCardapio />
           </section>
-        ) : (<>
-          <Titulo contagem={items.length} apoio="Escolha um complemento para editar."
-            acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>}>Seus complementos</Titulo>
-          {items.length > 8 && (
-            <label className="pz-busca">
-              <MagnifyingGlass size={20} weight="bold" />
-              <input type="search" placeholder="Buscar complemento" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar complemento" autoComplete="off" />
-              {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
-            </label>
-          )}
-          {filtrados.length === 0 ? (
-            <p className="pz-semres">Nenhum complemento com esse nome.</p>
-          ) : (
-            <section className="ct-card">
-              {filtrados.map(c => {
-                const gratis = !(Number(c.valor) > 0);
-                return (
-                  <div key={c.id} className="ct-row">
-                    <button type="button" className="ct-row-b" onClick={() => abrir(c)}>
-                      <span className="ct-ic"><PuzzlePiece size={24} weight="duotone" /></span>
-                      <span className="ct-row-tx"><b>{c.nome}</b><small>{ondeAparece(c)}</small></span>
-                      <span className={`pz-preco${gratis ? " g" : ""}`}>{gratis ? "Grátis" : `+ R$ ${brl(Number(c.valor))}`}</span>
-                    </button>
-                    <BotaoIcone rotulo={`Opções de ${c.nome}`} variante="limpo" onClick={() => setMenuDe(c)}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
-                  </div>
-                );
-              })}
-            </section>
-          )}
-          <p className="ct-dica"><Info size={20} weight="bold" aria-hidden="true" />O cliente vê os complementos na hora de escolher o produto no cardápio.</p>
-        </>)}
+        ) : (
+          /* (24/10) com complementos: a lista à esquerda e, ao lado, o celular com os complementos dela num produto de verdade */
+          <div className="pz-cheio">
+            <div className="pz-cheio-l">
+              <Titulo contagem={items.length} apoio="Escolha um complemento para editar."
+                acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>}>Seus complementos</Titulo>
+              {items.length > 8 && (
+                <label className="pz-busca">
+                  <MagnifyingGlass size={20} weight="bold" />
+                  <input type="search" placeholder="Buscar complemento" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar complemento" autoComplete="off" />
+                  {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
+                </label>
+              )}
+              {filtrados.length === 0 ? (
+                <p className="pz-semres">Nenhum complemento com esse nome.</p>
+              ) : (
+                <>
+                {/* (24/10) computador e tablet: cartões em grade, como em Produtos. Celular: a lista */}
+                <section className="pz-grade">
+                  {filtrados.map(c => {
+                    const gratis = !(Number(c.valor) > 0);
+                    const pede = [c.pede_referencia ? "Foto" : "", c.pede_frase ? "Frase" : ""].filter(Boolean).join(" e ");
+                    return (
+                      <div key={c.id} className="pz-cc">
+                        <button type="button" className="pz-cc-b" onClick={() => abrir(c)} aria-label={`Editar ${c.nome}`}>
+                          <span className="pz-cc-top" aria-hidden="true">{c.pede_referencia ? <Camera size={34} weight="duotone" /> : c.pede_frase ? <TextT size={34} weight="duotone" /> : <PuzzlePiece size={34} weight="duotone" />}</span>
+                          <span className="pz-cc-in">
+                            <b className="pz-cc-nome" title={c.nome}>{c.nome}</b>
+                            <span className="pz-cc-l"><small>Preço</small><em className={gratis ? "g" : ""}>{gratis ? "Grátis" : `+ R$ ${brl(Number(c.valor))}`}</em></span>
+                            <span className="pz-cc-l"><small>Aparece</small><em>{ondeAparece(c).replace(/^Em /, "")}</em></span>
+                            <span className="pz-cc-l"><small>O cliente manda</small><em className={pede ? "r" : "n"}>{pede || "Nada"}</em></span>
+                          </span>
+                        </button>
+                        <BotaoIcone className="pz-cc-menu" rotulo={`Opções de ${c.nome}`} variante="limpo" onClick={() => setMenuDe(c)}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
+                      </div>
+                    );
+                  })}
+                </section>
+                <section className="pz-lista">
+                  {filtrados.map(c => {
+                    const gratis = !(Number(c.valor) > 0);
+                    const pede = [c.pede_referencia ? "Pede foto" : "", c.pede_frase ? "Pede frase" : ""].filter(Boolean).join(" · ");
+                    return (
+                      <div key={c.id} className="pz-li">
+                        <button type="button" className="pz-li-b" onClick={() => abrir(c)}>
+                          <span className="pz-li-ic" aria-hidden="true">{c.pede_referencia ? <Camera size={22} weight="duotone" /> : c.pede_frase ? <TextT size={22} weight="duotone" /> : <PuzzlePiece size={22} weight="duotone" />}</span>
+                          <span className="pz-li-tx"><b>{c.nome}</b><small>{ondeAparece(c)}</small>{pede && <small className="pz-li-pede">{pede}</small>}</span>
+                          <span className={`pz-preco${gratis ? " g" : ""}`}>{gratis ? "Grátis" : `+ R$ ${brl(Number(c.valor))}`}</span>
+                        </button>
+                        <BotaoIcone rotulo={`Opções de ${c.nome}`} variante="limpo" onClick={() => setMenuDe(c)}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
+                      </div>
+                    );
+                  })}
+                </section>
+                </>
+              )}
+            </div>
+            <PreviaReal itens={items} produtos={produtos} />
+          </div>
+        )}
       </div>
 
       {/* menu */}
@@ -283,13 +317,22 @@ export default function Complementos() {
               <span className="pz-prev-tx"><span>{form.nome.trim() || "Nome do complemento"}</span>{form.descricao.trim() && <em>{form.descricao.trim()}</em>}</span>
               <b className={form.gratis ? "g" : ""}>{form.gratis ? "Grátis" : `+ R$ ${brl(form.valor || 0)}`}</b></div>
             {form.pedeRef && <div className="pz-prev-ref"><Camera size={16} weight="bold" aria-hidden="true" />Enviar foto de referência</div>}
+            {form.pedeFrase && <div className="pz-prev-ref pz-prev-frase"><TextT size={16} weight="bold" aria-hidden="true" />Qual frase vai no bolo?</div>}
           </div>
 
           {/* (19/10) complemento que pede foto (ex.: Topo de bolo): no cardápio, ao marcar, o cliente anexa a referência */}
-          <button type="button" role="checkbox" aria-checked={form.pedeRef} className="pz-ref" onClick={() => setForm(f => ({ ...f, pedeRef: !f.pedeRef }))}>
+          {/* (24/10) o que o complemento pede ao cliente: foto e/ou frase, num quadro só */}
+          <div className="pz-pede">
+            <span className="pz-pede-t">O cliente precisa mandar</span>
+          <button type="button" role="checkbox" aria-checked={form.pedeRef} className="pz-ref pz-ref--l" onClick={() => setForm(f => ({ ...f, pedeRef: !f.pedeRef }))}>
             <i className="pz-chk" aria-hidden="true">{form.pedeRef && <Check size={14} weight="bold" />}</i>
-            <span><b>Pedir foto de referência</b><small>Ao marcar, o cliente anexa uma foto</small></span>
+            <span><b>Uma foto de referência</b><small>Ex.: topo de bolo, papel de arroz</small></span>
           </button>
+            {temFrase && <button type="button" role="checkbox" aria-checked={form.pedeFrase} className="pz-ref pz-ref--l" onClick={() => setForm(f => ({ ...f, pedeFrase: !f.pedeFrase }))}>
+              <i className="pz-chk" aria-hidden="true">{form.pedeFrase && <Check size={14} weight="bold" />}</i>
+              <span><b>Uma frase</b><small>Ex.: escrita no bolo, cartão</small></span>
+            </button>}
+          </div>
 
           {/* (24/10) onde aparece: 3 opções em lista (antes "Em todos / Escolher" e uma lista solta de produtos) */}
           <div className="ui-campo">
@@ -391,6 +434,47 @@ function ExemploCardapio() {
       {/* (24/10) balão do diferencial: o cliente manda a foto da ideia (só no computador) */}
       <div className="pz-balao" aria-hidden="true"><small>Menos WhatsApp</small><b>A foto da ideia já vem no pedido</b></div>
       <figcaption>Assim o cliente vê no cardápio</figcaption>
+    </figure>
+  );
+}
+
+/** (24/10) Os complementos dela, como o cliente vê, dentro de um produto em que eles aparecem */
+function PreviaReal({ itens, produtos }: { itens: Complemento[]; produtos: ProdutoLite[] }) {
+  const aparece = (c: Complemento, p: ProdutoLite) => {
+    const cc = c.categorias_cardapio || [];
+    if (cc.length) return cc.includes(p.categoria || "");
+    return !(c.categorias || []).length || (c.categorias || []).includes(p.id);
+  };
+  // o produto com mais complementos (empate: o que tem foto)
+  const prod = [...produtos].sort((a, b) => (itens.filter(c => aparece(c, b)).length - itens.filter(c => aparece(c, a)).length) || (primeiraFoto(b.imagem_url) ? 1 : 0) - (primeiraFoto(a.imagem_url) ? 1 : 0))[0];
+  if (!prod) return null;
+  const lista = itens.filter(c => aparece(c, prod)).slice(0, 4);
+  if (!lista.length) return null;
+  const preco = precoCardapioComPromocao(prod as any);
+  const marcado = lista[0];
+  const total = preco.final + (Number(marcado.valor) || 0);
+  const rs = (v: number) => `R$ ${brl(v)}`;
+  return (
+    <figure className="pz-cel-wrap pz-cel-wrap--real" aria-label={`Como o cliente vê os complementos em ${prod.nome}`}>
+      <figcaption>Assim o cliente vê no cardápio</figcaption>
+      <div className="pz-cel" aria-hidden="true">
+        <div className="pz-cel-tela">
+          {primeiraFoto(prod.imagem_url) ? <img className="pz-cel-foto" src={primeiraFoto(prod.imagem_url)} alt="" /> : <div className="pz-cel-foto pz-cel-foto--sem"><Camera size={28} /></div>}
+          <div className="pz-cel-prod"><b>{prod.nome}</b><span>{preco.aPartir ? "a partir de " : ""}{rs(preco.final)}</span></div>
+          <div className="pz-cel-cab"><b>Adicionais</b><small>Escolha quantos quiser</small></div>
+          {lista.map((c, k) => {
+            const g = !(Number(c.valor) > 0);
+            return (
+              <Fragment key={c.id}>
+                <div className={`pz-cel-op${k === 0 ? " on" : ""}`}><span><b>{c.nome}</b>{c.descricao && <small>{c.descricao}</small>}</span><em className={g ? "g" : ""}>{g ? "Grátis" : `+ ${rs(Number(c.valor))}`}</em><i>{k === 0 && <Check size={11} weight="bold" />}</i></div>
+                {k === 0 && c.pede_referencia && <div className="pz-cel-ref"><Camera size={13} weight="bold" />Enviar foto de referência</div>}
+                {k === 0 && c.pede_frase && <div className="pz-cel-ref"><TextT size={13} weight="bold" />Qual frase vai no bolo?</div>}
+              </Fragment>
+            );
+          })}
+          <div className="pz-cel-bt">Adicionar · {rs(total)}</div>
+        </div>
+      </div>
     </figure>
   );
 }

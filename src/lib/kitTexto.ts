@@ -24,3 +24,10 @@ export function pluralSabor(nome: string, qtd: number): string {
 export function textoSaboresKit(sabores: { nome: string; qtd: number }[] | null | undefined, sep = ' · '): string {
   return (sabores || []).filter(x => Number(x?.qtd) > 0).map(x => `${x.qtd} ${pluralSabor(x.nome, Number(x.qtd))}`).join(sep)
 }
+
+/** (24/10) Nome do complemento com a frase que o cliente escreveu: 'Escrita no bolo: "Parabéns, Ana!"' */
+export function nomeExtra(x: any): string {
+  const nome = String((x && (x.nome || x.name)) || '').trim()
+  const frase = String((x && x.frase) || '').trim()
+  return frase ? `${nome}: “${frase}”` : nome
+}

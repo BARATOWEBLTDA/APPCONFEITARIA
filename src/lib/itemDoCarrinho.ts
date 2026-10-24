@@ -29,7 +29,7 @@ export function itemDoCarrinhoParaPedido(item: any) {
   const personalizacoesFinal = (temExtras || item.fotoReferencia)
     ? {
         ...(personalizacoes || {}),
-        ...(temExtras ? { extras: item.extrasBiblioteca.map((x: any) => ({ nome: x.nome, valor: Number(x.valor) || 0 })) } : {}),
+        ...(temExtras ? { extras: item.extrasBiblioteca.map((x: any) => ({ nome: x.nome, valor: Number(x.valor) || 0, ...(x.frase ? { frase: x.frase } : {}) })) } : {}),
         ...(item.fotoReferencia ? { foto_referencia: item.fotoReferencia } : {}),
       }
     : personalizacoes

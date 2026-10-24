@@ -24,7 +24,7 @@ import { ProductModal } from '@/components/cart/ProductModal'
 import { CartProvider } from '@/context/CartContext'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
 import { carregarGruposDoBanco } from '@/lib/produto-grupos'
-import { textoSaboresKit } from '@/lib/kitTexto'
+import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
 import '@/components/pedidos/telaPedido.css'
 import './novaVenda.css'
 
@@ -58,7 +58,7 @@ function linhasDoItem(it: ItemVenda): string[] {
   if (rec.length) l.push(`${rec.length > 1 ? 'Recheios' : 'Recheio'} ${rec.join(' e ')}`)
   if (nm(p.cobertura)) l.push(`Cobertura ${nm(p.cobertura)}`)
   if (nm(p.sabor)) l.push(`Sabor ${nm(p.sabor)}`)
-  for (const x of (Array.isArray(p.extras) ? p.extras : [])) if (nm(x)) l.push(`+ ${nm(x)}`)
+  for (const x of (Array.isArray(p.extras) ? p.extras : [])) if (nm(x)) l.push(`+ ${nomeExtra(x)}`)
   if (!l.length && it.opcaoLabel) l.push(it.opcaoLabel)
   return l
 }

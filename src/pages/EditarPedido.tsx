@@ -1,4 +1,4 @@
-import { textoSaboresKit } from '@/lib/kitTexto'
+import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
 import { COMO_PEDIDO, TOUR_PEDIDO } from "@/lib/comoTelas";
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { explicarErro } from '@/lib/erros'
@@ -1484,7 +1484,7 @@ export default function EditarPedido() {
                     if (Array.isArray(p.recheios) && p.recheios.length) campos.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: any) => r.nome).join(', ')])
                     if (p.cobertura?.nome) campos.push(['Cobertura', p.cobertura.nome])
                     if (sabores.length) campos.push(['Sabores', textoSaboresKit(sabores)])
-                    if (extras.length) campos.push(['Adicionais', extras.map((e: any) => e.nome).join(', ')])
+                    if (extras.length) campos.push(['Adicionais', extras.map((e: any) => nomeExtra(e)).join(', ')])
                     const obs = (it.observacoes || '').trim()
                     const foto = fotoDoItem(it)
                     return (
@@ -1616,7 +1616,7 @@ export default function EditarPedido() {
                   {c.fecha ? (
                     <div className="ep3-pv-d">
                       <p><span>Produto{q > 1 ? ` · ${q} × ${formatMoney(c.base)}` : ''}</span><b>{formatMoney(c.base * q)}</b></p>
-                      {extras.filter(e => Number(e.valor) > 0).map((e, i) => <p key={i}><span>+ {e.nome}{q > 1 ? ` · ${q} × ${formatMoney(Number(e.valor))}` : ''}</span><b>{formatMoney(Number(e.valor) * q)}</b></p>)}
+                      {extras.filter(e => Number(e.valor) > 0).map((e, i) => <p key={i}><span>+ {nomeExtra(e)}{q > 1 ? ` · ${q} × ${formatMoney(Number(e.valor))}` : ''}</span><b>{formatMoney(Number(e.valor) * q)}</b></p>)}
                       {c.desconto > 0 && <p className="pr"><span><Tag size={13} weight="bold" />Promoção{c.pct ? ` ${c.pct}%` : ''}</span><b>− {formatMoney(c.desconto * q)}</b></p>}
                     </div>
                   ) : origem.length > 0 && <p className="ep3-pv-u">{origem.join(' · ')}</p>}

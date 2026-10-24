@@ -216,3 +216,9 @@
   .pm-tambem-tx em { font-style: normal; font-size: 13.5px; font-weight: 700; color: #15803D; white-space: nowrap; }
   .pm-tambem-tx em small { display: block; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
 }
+/* (24/10) frase do complemento (ex.: Escrita no bolo) */
+.pm-frase { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0 16px 10px; padding: 10px 12px; border: 1.5px dashed #E5DDE1; border-radius: var(--ui-raio); }
+.pm-frase > span { flex: 1; font-size: 13px; font-weight: 600; color: var(--ui-texto); }
+.pm-frase small { font-size: 12px; color: var(--ui-texto-3); }
+.pm-frase input { flex: 1 1 100%; order: 3; height: 42px; margin: 0; padding: 0 10px; border: 1px solid var(--ui-borda-campo); border-radius: 10px; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: #fff; outline: 0; }
+.pm-frase input:focus { border-color: var(--ui-rosa); }

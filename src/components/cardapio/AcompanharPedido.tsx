@@ -1,4 +1,4 @@
-import { textoSaboresKit } from '@/lib/kitTexto'
+import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
 import type { CSSProperties } from 'react'
 import { Cake, Check, ImageSquare } from '@phosphor-icons/react'
 import { renderItemFromSnapshot } from '@/lib/pedido-snapshot'
@@ -139,7 +139,7 @@ export function AcompanharPedido({ p, cor, corTopo }: { p: Pedido; cor: string; 
                 <span className="acp-it-l1"><b>{it.nome_produto}</b><em>{dinheiro((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 1))}</em></span>
                 {(Number(it.quantidade) !== 1 || it.produtos?.forma_venda === 'kg') && <small>{qtdTexto(Number(it.quantidade) || 1, it.produtos?.forma_venda)}</small>}
                 {linhas.map((t, n) => <small key={n}>{t}</small>)}
-                {extras.map((x, n) => <span key={`x${n}`} className="acp-extra"><span>+ {x.nome}</span></span>)}
+                {extras.map((x, n) => <span key={`x${n}`} className="acp-extra"><span>+ {nomeExtra(x)}</span></span>)}
                 {it.tem_foto_referencia && <small className="acp-ref"><ImageSquare size={14} weight="bold" />Foto de referência enviada</small>}
                 {it.observacoes && <small className="acp-obs">Obs.: {it.observacoes}</small>}
               </span>

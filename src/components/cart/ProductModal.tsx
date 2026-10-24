@@ -7,7 +7,7 @@ import { pesoDoNome, pesoDoTamanho } from '@/lib/itemSacola'
 import { r2 } from '@/lib/moeda'
 import { avisar } from '@/components/base'
 import { kitAtivo, calcularKit, selecaoInicial, kitUnico, kitsValidos, palavraKit, type KitSelecao } from '@/lib/kitQuantidade'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { Fragment, useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowLeft, CalendarBlank, Camera, CaretLeft, CaretRight, Check, Fire, Lightning, Minus, Plus, X } from '@phosphor-icons/react'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
@@ -31,6 +31,7 @@ interface ExtraBiblioteca {
   id: string
   nome: string
   valor: number
+  pede_frase?: boolean
   descricao?: string | null
   categorias: string[] // IDs dos produtos vinculados (vazio = todos)
   pede_referencia?: boolean // (19/10) marcado no cardápio, abre o anexo da foto de referência (ex.: Topo de bolo)
@@ -200,6 +201,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const [extrasMarcados, setExtrasMarcados] = useState<Set<string>>(new Set())
   const extrasDoProduto = useRef<string | null>(null)
   const [fotoRef, setFotoRef] = useState<string | null>(null)
+  // (24/10) frase escrita pelo cliente no complemento que pede frase (ex.: Escrita no bolo)
+  const [frases, setFrases] = useState<Record<string, string>>({})
   const [fotoRefUploading, setFotoRefUploading] = useState(false)
   const fotoVez = useRef(0)
 
@@ -535,7 +538,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     // Extras da biblioteca (aba /complementos) — nome + valor de cada marcado
     const extrasEscolhidos = extrasBiblioteca
       .filter(e => extrasMarcados.has(e.id))
-      .map(e => ({ id: e.id, nome: e.nome, valor: Number(e.valor) || 0 }))
+      .map(e => ({ id: e.id, nome: e.nome, valor: Number(e.valor) || 0, ...(e.pede_frase && (frases[e.id] || '').trim() ? { frase: frases[e.id].trim() } : {}) }))
 
     ;(onAdicionar || addItem)({
       id: product.id, name: product.nome, description: product.descricao || '',
@@ -717,12 +720,22 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
             const on = extrasMarcados.has(e.id)
             const gratis = !e.valor || Number(e.valor) === 0
             return (
-              <button key={e.id} type="button" className="pm-op" role="checkbox" aria-checked={on} onClick={() => toggleExtra(e.id)}>
+              <Fragment key={e.id}>
+              <button type="button" className="pm-op" role="checkbox" aria-checked={on} onClick={() => toggleExtra(e.id)}>
                 <span className="pm-op-tx"><b>{e.nome}</b>{e.descricao && <small>{e.descricao}</small>}</span>
                 {/* (11/10) com promoção, o adicional também entra com desconto no total: mostra o que é cobrado */}
                 <span className={`pm-op-p${gratis ? ' gratis' : ''}`}>{gratis ? 'Grátis' : `+ ${formatCurrency(comDesconto(Number(e.valor), descPct))}`}</span>
                 <span className="pm-ctl cx" style={on ? { borderColor: corBotao, background: corBotao } : undefined} aria-hidden="true">{on && <Check size={14} weight="bold" color="#fff" />}</span>
               </button>
+              {/* (24/10) complemento que pede frase: ao marcar, abre o campo logo embaixo */}
+              {on && e.pede_frase && (
+                <label className="pm-frase">
+                  <span>Qual frase vai no bolo?</span>
+                  <input type="text" maxLength={40} placeholder="Ex.: Parabéns, Ana!" value={frases[e.id] || ''} onChange={ev => setFrases(f => ({ ...f, [e.id]: ev.target.value }))} />
+                  <small>{(frases[e.id] || '').length}/40</small>
+                </label>
+              )}
+              </Fragment>
             )
           })}
         </section>

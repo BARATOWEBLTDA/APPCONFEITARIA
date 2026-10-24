@@ -5,6 +5,7 @@
  */
 
 import { r2, somarReais } from '@/lib/moeda'
+import { nomeExtra } from '@/lib/kitTexto'
 
 /**
  * Valor de uma linha da sacola (11/10): preço × quantidade, já em centavos certos.
@@ -101,6 +102,6 @@ export function detalhesItem(item: any): string[] {
     if (item?.selectedRecheio) ls.push(`Recheio ${item.selectedRecheio}`)
     if (item?.selectedCobertura) ls.push(`Cobertura ${item.selectedCobertura}`)
   }
-  if (Array.isArray(item?.extrasBiblioteca)) item.extrasBiblioteca.forEach((x: any) => ls.push(x.nome))
+  if (Array.isArray(item?.extrasBiblioteca)) item.extrasBiblioteca.forEach((x: any) => ls.push(nomeExtra(x)))
   return ls
 }

@@ -1,4 +1,4 @@
-import { textoSaboresKit } from '@/lib/kitTexto'
+import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
 import { NeveNatal, temaNatalLigado } from '@/components/tema/Natal'
 import { useState, useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
@@ -500,7 +500,7 @@ function CartContent({
         if (detalhes.length) m += `_${detalhes.join(' · ')}_\n`
         // Adicionais cadastrados pela confeiteira (topo de bolo, vela...)
         if (Array.isArray(item.extrasBiblioteca) && item.extrasBiblioteca.length) {
-          m += `Adicionais: ${item.extrasBiblioteca.map((x: any) => x.valor > 0 ? `${x.nome} (+${formatCurrency(x.valor)})` : x.nome).join(', ')}\n`
+          m += `Adicionais: ${item.extrasBiblioteca.map((x: any) => x.valor > 0 ? `${nomeExtra(x)} (+${formatCurrency(x.valor)})` : nomeExtra(x)).join(', ')}\n`
         }
         if (item.observations) m += `Obs.: ${item.observations}\n`
         // 10/10: a foto vai gravada no pedido; na mensagem só entra se for um link (nunca a imagem em texto)
@@ -787,7 +787,7 @@ function CartContent({
                     <div className="scf-it">
                       <p className="scf-it-l1"><b>{qtdItem(it)} {it.name}</b><em>{formatCurrency(valorLinha(it))}</em></p>
                       {escolhas.map((t, n) => <small key={n}>{t}</small>)}
-                      {extras.map((x, n) => <span key={`x${n}`} className="scf-extra"><span>+ {x.nome}</span>{Number(x.valor) > 0 && <em>{formatCurrency(Number(x.valor))}</em>}</span>)}
+                      {extras.map((x, n) => <span key={`x${n}`} className="scf-extra"><span>+ {nomeExtra(x)}</span>{Number(x.valor) > 0 && <em>{formatCurrency(Number(x.valor))}</em>}</span>)}
                       {it.fotoReferencia && <small className="scf-ref"><ImageSquare size={14} weight="bold" />Foto de referência enviada</small>}
                       {it.observations && <small className="scf-obs">Obs.: {it.observations}</small>}
                     </div>
