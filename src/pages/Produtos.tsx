@@ -1889,7 +1889,7 @@ export default function Produtos() {
                 </div>
               </div>
               <div className="prod-card-info">
-                <p className="prod-card-nome">{p.nome}</p>
+                <p className="prod-card-nome" title={p.nome}>{p.nome}</p>
                 {/* (21/10) celular: lista, uma informação por linha (preço ativo, tipo, lucro estimado ou Criar ficha) */}
                 {(() => {
                   const pl = precoDaLista(p);
@@ -1929,7 +1929,8 @@ export default function Produtos() {
                   return (
                     <dl className="pl-ficha">
                       <div><dt>{rotulo}</dt><dd>R$&nbsp;{formatPreco(cheio)}</dd></div>
-                      {pl.de > 0 && <div><dt>Promoção</dt><dd className="pl-ficha-promo">R$&nbsp;{formatPreco(pl.final)}</dd></div>}
+                      {/* (24/10) sem promoção a linha fica reservada (vazia) no computador: Tipo e Cardápio ficam na mesma altura em todos os cartões */}
+                      {pl.de > 0 ? <div><dt>Promoção</dt><dd className="pl-ficha-promo">R$&nbsp;{formatPreco(pl.final)}</dd></div> : <div className="pl-ficha-vaga" aria-hidden="true" />}
                       {/* Mesma regra do cardápio: só é encomenda quando tem antecedência marcada */}
                       <div><dt>Tipo</dt><dd>{(p as any).antecedencia ? "Encomenda" : "Pronta entrega"}</dd></div>
                       <div className="pl-ficha-on"><dt>Cardápio</dt><dd>
