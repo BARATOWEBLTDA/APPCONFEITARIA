@@ -111,3 +111,6 @@
   .pz-cel-wrap figcaption { width: 290px; text-align: center; }
   .pz-balao { left: calc(24px + var(--pz-esq) + 266px); max-width: calc(100% - 24px - var(--pz-esq) - 266px - 12px); white-space: normal; }
 }
+/* (24/10) o exemplo é só desenho: não dá para selecionar o texto nem clicar (antes o clique duplo selecionava "Decoração") */
+.pz-cel-wrap { user-select: none; -webkit-user-select: none; }
+.pz-cel, .pz-balao { pointer-events: none; }
