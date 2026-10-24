@@ -117,7 +117,8 @@ export type Secao = { id: string; nome: string; tipo: 'promo' | 'lista'; produto
 
 /**
  * Monta as seções: Promoções (cartões) e depois uma lista por categoria, na ordem das categorias.
- * Produto em promoção fica só em Promoções. Sem categoria vai pra "Outros produtos"
+ * (24/10) Produto em promoção aparece em Promoções E na categoria dele (antes só em Promoções: quem tocava
+ * na aba Bolos não achava o bolo em promoção). Sem categoria vai pra "Outros produtos"
  * (ou "Todos os produtos" quando a loja não usa categorias).
  */
 export function montarSecoes(produtos: Produto[], categorias: string[], agrupar: boolean): Secao[] {
@@ -125,7 +126,7 @@ export function montarSecoes(produtos: Produto[], categorias: string[], agrupar:
   // com tamanhos de preço fixo não dá desconto, então o produto fica na categoria dele
   const emPromocao = (p: Produto) => descontoCardapio(p) > 0
   const promo = produtos.filter(emPromocao)
-  const resto = produtos.filter(p => !emPromocao(p))
+  const resto = produtos
   const secoes: Secao[] = []
   if (promo.length) secoes.push({ id: 'sec-promocoes', nome: 'Promoções', tipo: 'promo', produtos: promo })
   if (!agrupar || categorias.length === 0) {
@@ -144,7 +145,8 @@ export function montarSecoes(produtos: Produto[], categorias: string[], agrupar:
 export function SecaoCardapio({ secao, cor, pc = false }: { secao: Secao; cor: string; pc?: boolean }) {
   return (
     <section id={secao.id} className={`ic-sec${pc ? ' ic-sec--pc' : ''}`}>
-      <h2 className="ic-h2">{secao.nome}</h2>
+      {/* (24/10) o título diz quantos produtos tem a categoria; uma linha separa uma categoria da outra (CSS) */}
+      <h2 className="ic-h2">{secao.nome}{secao.tipo === 'lista' && <small>{secao.produtos.length === 1 ? '1 produto' : `${secao.produtos.length} produtos`}</small>}</h2>
       {secao.tipo === 'promo'
         ? <div className="ic-grade">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc={pc} />)}</div>
         : <div className="ic-lista">{secao.produtos.map(p => <LinhaProduto key={p.id} produto={p} cor={cor} pc={pc} />)}</div>}
