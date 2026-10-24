@@ -140,12 +140,19 @@ export default function Categorias() {
             // A janela fica aberta e a lista continua com o nome antigo: salvar de novo leva os produtos junto.
             console.error("[Doonly]", errVolta);
             setSaving(false);
-            avisar("A categoria mudou de nome, mas os produtos não acompanharam. Toque em Salvar de novo.", { tipo: "erro" });
+            avisar("A categoria mudou de nome, mas os produtos não acompanharam. Salve de novo.", { tipo: "erro" });
             return;
           }
           await loadCategorias(userId);
           return falhou(errProd);
         }
+        // (24/10) os complementos que aparecem nesta categoria acompanham o nome novo
+        try {
+          const { data: comps } = await supabase.from("biblioteca_extras").select("id, categorias_cardapio").eq("user_id", userId);
+          for (const c of ((comps as { id: string; categorias_cardapio?: string[] | null }[]) || []).filter(c => (c.categorias_cardapio || []).includes(antigo))) {
+            await supabase.from("biblioteca_extras").update({ categorias_cardapio: (c.categorias_cardapio || []).map(n => (n === antigo ? novo : n)) }).eq("id", c.id);
+          }
+        } catch { /* sem a coluna nova: segue sem */ }
         await loadProdutos(userId);
       }
     } else {

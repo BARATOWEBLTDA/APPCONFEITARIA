@@ -121,3 +121,33 @@
 .pz-gratis { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 48px; margin: 23px 0 0; padding: 0 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); cursor: pointer; }
 .pz-gratis[aria-checked="true"] { border-color: var(--ui-verde); background: #F0FAF3; color: var(--ui-verde); }
 .pz-gratis[aria-checked="true"] .pz-chk { border-color: var(--ui-verde); background: var(--ui-verde); }
+/* (24/10) "Onde aparece no cardápio": 3 opções em lista; a escolhida abre as categorias ou os produtos logo embaixo */
+.pz-onde { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
+.pz-onde-op + .pz-onde-op { border-top: 1px solid var(--ui-linha); }
+.pz-onde-b { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin: 0; padding: 8px 14px; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.pz-onde-b > i { flex: none; width: 22px; height: 22px; border: 2px solid var(--ui-borda-campo); border-radius: 50%; box-sizing: border-box; }
+.pz-onde-op.on .pz-onde-b > i { border: 7px solid var(--ui-rosa); }
+.pz-onde-b > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.pz-onde-b b { font-size: 15px; font-weight: 600; }
+.pz-onde-b small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pz-onde-op.on { background: #FFF8FB; }
+.pz-onde-l { display: flex; flex-direction: column; margin: 0 12px 12px; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); }
+.pz-it { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 54px; margin: 0; padding: 6px 12px; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.pz-it + .pz-it, .pz-grupo + .pz-it, .pz-grupo + .pz-grupo { border-top: 1px solid var(--ui-linha); }
+.pz-it[aria-checked="true"] .pz-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.pz-it-f { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: 10px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.pz-it-f img { width: 100%; height: 100%; object-fit: cover; }
+.pz-it-n { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pz-it-n b { font-size: 14.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pz-it-n small { font-size: 12.5px; color: var(--ui-texto-2); }
+.pz-grupo-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; padding: 0 12px; background: #F7F3F5; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
+.pz-grupo-cab button { margin: 0; padding: 6px 0; border: 0; background: none; font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+.pz-grupo .pz-it + .pz-it { border-top: 1px solid var(--ui-linha); }
+.pz-busca--p { margin: 10px 10px 6px; min-height: 42px; }
+.pz-busca--p input { height: 40px; font-size: 15px; }
+
+/* (24/10) sugestões da explicação: cada uma numa linha, um toque preenche */
+.pz-sug { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-top: 8px; }
+.pz-sug small { font-size: 12px; font-weight: 600; color: var(--ui-texto-3); }
+.pz-sug button { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 32px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.pz-sug button svg { flex: none; }

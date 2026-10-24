@@ -14,10 +14,13 @@ import "./complementos.css";
  * Extras que o cliente escolhe ao pedir (topo de bolo, escrita, papel de arroz). Cadastra uma vez e escolhe em quais produtos aparece.
  * Na tabela biblioteca_extras, "categorias" guarda os IDs dos produtos (vazio = aparece em todos).
  */
-type Complemento = { id: string; nome: string; descricao?: string; valor: number; categorias: string[]; pede_referencia?: boolean };
+type Complemento = { id: string; nome: string; descricao?: string; valor: number; categorias: string[]; pede_referencia?: boolean; categorias_cardapio?: string[] | null };
+/** (24/10) onde aparece: em todos, nas categorias marcadas (pelo nome, como os produtos guardam) ou nos produtos marcados */
+type Onde = "todos" | "categorias" | "produtos";
 type ProdutoLite = { id: string; nome: string; categoria?: string; imagem_url?: string | null };
-type Form = { nome: string; descricao: string; valor: number; gratis: boolean; todos: boolean; produtos: string[]; pedeRef: boolean };
-const FORM_VAZIO: Form = { nome: "", descricao: "", valor: 0, gratis: false, todos: true, produtos: [], pedeRef: false };
+type Form = { nome: string; descricao: string; valor: number; gratis: boolean; onde: Onde; cats: string[]; produtos: string[]; pedeRef: boolean };
+const FORM_VAZIO: Form = { nome: "", descricao: "", valor: 0, gratis: false, onde: "todos", cats: [], produtos: [], pedeRef: false };
+const ondeDe = (c: Complemento): Onde => ((c.categorias_cardapio || []).length ? "categorias" : (c.categorias || []).length ? "produtos" : "todos");
 
 /** "BOLO DE PAÇOCA" → "Bolo de Paçoca" */
 function nomeBonito(nome: string): string {
@@ -27,6 +30,19 @@ function nomeBonito(nome: string): string {
 }
 const brl = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const lerPreco = (s: string) => { const d = s.replace(/\D/g, ""); return d ? parseInt(d, 10) / 100 : 0; };
+/** (24/10) sugestões de explicação: pelas palavras do nome; sem nome conhecido, as mais usadas */
+function sugestoesDeExplicacao(nome: string): string[] {
+  const n = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const tem = (...p: string[]) => p.some(x => n.includes(x));
+  if (tem("topo", "papel", "arroz", "tema")) return ["Escolha um tema ou envie sua imagem", "Com o tema e o nome que você quiser"];
+  if (tem("escrita", "frase", "nome", "mensagem")) return ["Escreva a frase que vai no bolo", "Até 20 letras, no recado do pedido"];
+  if (tem("vela")) return ["Diga a idade no recado do pedido", "Vela de número ou de faísca"];
+  if (tem("balao", "baloes")) return ["Nas cores da festa", "Com o nome do aniversariante"];
+  if (tem("decoracao", "decorado")) return ["Base clássica da confeitaria", "Do jeito que sai na foto"];
+  if (tem("embalagem", "caixa", "presente", "laco")) return ["Pronto para presentear", "Caixa com laço de fita"];
+  if (tem("cartao", "bilhete")) return ["Escreva a mensagem no recado do pedido"];
+  return ["Escolha um tema ou envie sua imagem", "Base clássica da confeitaria", "Escreva a frase que vai no bolo"];
+}
 /** (24/10) a primeira foto do produto (o campo guarda várias separadas por vírgula; antes a lista inteira ia no src e a foto quebrava) */
 const primeiraFoto = (f?: string | null) => (f ? String(f).split(/,(?=\s*(?:https?:|\/))/)[0].trim() : "");
 
@@ -36,6 +52,7 @@ export default function Complementos() {
   const [userId, setUserId] = useState("");
   const [items, setItems] = useState<Complemento[]>([]);
   const [produtos, setProdutos] = useState<ProdutoLite[]>([]);
+  const [categorias, setCategorias] = useState<{ nome: string }[]>([]);
   const [busca, setBusca] = useState("");
   const [buscaProd, setBuscaProd] = useState("");
   const [menuDe, setMenuDe] = useState<Complemento | null>(null);
@@ -54,10 +71,12 @@ export default function Complementos() {
       const uid = userData.user?.id;
       if (!uid) { setErroCarga("Tente de novo em instantes."); setLoading(false); return; }
       setUserId(uid);
-      const [{ data, error }, { data: prods, error: erroProds }] = await Promise.all([
+      const [{ data, error }, { data: prods, error: erroProds }, { data: cats }] = await Promise.all([
         supabase.from("biblioteca_extras").select("*").eq("user_id", uid).order("nome"),
         supabase.from("produtos").select("id, nome, categoria, imagem_url").eq("user_id", uid).order("nome"),
+        supabase.from("categorias").select("nome, ordem").eq("user_id", uid).order("ordem"),
       ]);
+      setCategorias((cats as { nome: string }[]) || []);
       if (error || erroProds || !data || !prods) setErroCarga(explicarErro(error || erroProds, "Tente de novo em instantes."));
       else { setItems(data as Complemento[]); setProdutos(prods as ProdutoLite[]); }
     } catch (e) {
@@ -73,7 +92,7 @@ export default function Complementos() {
     setBuscaProd("");
     setForm(c ? {
       nome: c.nome, descricao: c.descricao || "", valor: Number(c.valor) || 0, gratis: !(Number(c.valor) > 0),
-      todos: escolherProdutos ? false : !(c.categorias || []).length, produtos: c.categorias || [], pedeRef: c.pede_referencia === true,
+      onde: escolherProdutos && ondeDe(c) === "todos" ? "categorias" : ondeDe(c), cats: c.categorias_cardapio || [], produtos: c.categorias || [], pedeRef: c.pede_referencia === true,
     } : FORM_VAZIO);
     setAberta(true);
   };
@@ -81,13 +100,15 @@ export default function Complementos() {
 
   const erroNome = tentou && !form.nome.trim() ? "Escreva o nome" : undefined;
   const erroValor = tentou && !form.gratis && form.valor <= 0 ? 'Escreva o valor ou marque Grátis' : undefined;
-  const erroProdutos = tentou && !form.todos && form.produtos.length === 0 ? "Marque pelo menos um produto" : undefined;
+  const erroProdutos = tentou && form.onde === "produtos" && form.produtos.length === 0 ? "Marque pelo menos um produto"
+    : tentou && form.onde === "categorias" && form.cats.length === 0 ? "Marque pelo menos uma categoria" : undefined;
 
   const salvar = async () => {
     setTentou(true);
     const nome = form.nome.trim();
-    if (!nome || (!form.gratis && form.valor <= 0) || (!form.todos && form.produtos.length === 0)) return;
-    const dados = { nome, descricao: form.descricao.trim() || null, valor: form.gratis ? 0 : form.valor, categorias: form.todos ? [] : form.produtos, pede_referencia: form.pedeRef };
+    if (!nome || (!form.gratis && form.valor <= 0) || (form.onde === "produtos" && form.produtos.length === 0) || (form.onde === "categorias" && form.cats.length === 0)) return;
+    const dados = { nome, descricao: form.descricao.trim() || null, valor: form.gratis ? 0 : form.valor, pede_referencia: form.pedeRef,
+      categorias: form.onde === "produtos" ? form.produtos : [], categorias_cardapio: form.onde === "categorias" ? form.cats : [] };
     setSaving(true);
     try {
       if (editando) {
@@ -119,7 +140,19 @@ export default function Complementos() {
   };
 
   const alternarProduto = (id: string) => setForm(f => ({ ...f, produtos: f.produtos.includes(id) ? f.produtos.filter(x => x !== id) : [...f.produtos, id] }));
+  const alternarCat = (nome: string) => setForm(f => ({ ...f, cats: f.cats.includes(nome) ? f.cats.filter(x => x !== nome) : [...f.cats, nome] }));
+  // as categorias com produto, na ordem do cardápio, com a quantidade e a foto do primeiro produto
+  const catsComProdutos = (() => {
+    const nomes = [...categorias.map(c => c.nome), ...produtos.map(p => p.categoria || "").filter(n => n && !categorias.some(c => c.nome === n))];
+    return [...new Set(nomes)].map(nome => {
+      const dela = produtos.filter(p => (p.categoria || "") === nome);
+      return { nome, n: dela.length, foto: primeiraFoto(dela.find(p => primeiraFoto(p.imagem_url))?.imagem_url) };
+    }).filter(c => c.n > 0);
+  })();
+  const listaDeNomes = (l: string[]) => (l.length <= 1 ? l.join("") : `${l.slice(0, -1).join(", ")} e ${l[l.length - 1]}`);
   const ondeAparece = (c: Complemento) => {
+    const cc = c.categorias_cardapio || [];
+    if (cc.length) return cc.length <= 2 ? `Em ${listaDeNomes(cc)}` : `Em ${cc.length} categorias`;
     const n = (c.categorias || []).filter(id => produtos.some(p => p.id === id)).length;
     if (!(c.categorias || []).length) return "Em todos os produtos";
     return n === 1 ? "Em 1 produto" : `Em ${n} produtos`;
@@ -220,8 +253,19 @@ export default function Complementos() {
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: topo de bolo, escrita, papel de arroz" value={form.nome} maxLength={50} erro={erroNome}
             onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
           {/* (24/10) uma linha só (antes uma caixa de 3 linhas) */}
-          <Campo rotulo="Explicação para o cliente" opcional placeholder="Ex.: escolha o tema" value={form.descricao} maxLength={80}
-            dica="Aparece embaixo do nome, no cardápio." onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
+          <div>
+            <Campo rotulo="Explicação para o cliente" opcional placeholder="Ex.: escolha o tema" value={form.descricao} maxLength={80}
+              dica={form.descricao.trim() ? "Aparece embaixo do nome, no cardápio." : undefined} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
+            {/* (24/10) sugestões prontas pelo nome do complemento: um toque preenche */}
+            {!form.descricao.trim() && (
+              <div className="pz-sug">
+                <small>Sugestões</small>
+                {sugestoesDeExplicacao(form.nome).map(t => (
+                  <button key={t} type="button" onClick={() => setForm(f => ({ ...f, descricao: t }))}><Plus size={14} weight="bold" aria-hidden="true" />{t}</button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* (24/10) o preço num campo só, com a caixinha "Grátis" ao lado (antes "Cobrar ou Grátis" e depois o valor) */}
           <div className="pz-preco-l">
@@ -247,41 +291,81 @@ export default function Complementos() {
             <span><b>Pedir foto de referência</b><small>Ao marcar, o cliente anexa uma foto</small></span>
           </button>
 
+          {/* (24/10) onde aparece: 3 opções em lista (antes "Em todos / Escolher" e uma lista solta de produtos) */}
           <div className="ui-campo">
-            <span className="ui-campo-r"><span>Em quais produtos aparece</span></span>
-            <div className="pz-seg" role="radiogroup" aria-label="Em quais produtos aparece">
-              <button type="button" role="radio" aria-checked={form.todos} onClick={() => setForm(f => ({ ...f, todos: true }))}>Em todos</button>
-              <button type="button" role="radio" aria-checked={!form.todos} onClick={() => setForm(f => ({ ...f, todos: false }))}>Escolher</button>
+            <span className="ui-campo-r"><span>Onde aparece no cardápio</span></span>
+            <div className="pz-onde" role="radiogroup" aria-label="Onde aparece no cardápio">
+              {([
+                ["todos", "Em todos os produtos", `${produtos.length} ${produtos.length === 1 ? "produto" : "produtos"}`],
+                ["categorias", "Em categorias", form.cats.length ? listaDeNomes(form.cats) : "Produto novo da categoria já recebe"],
+                ["produtos", "Em produtos escolhidos", form.produtos.length ? `${form.produtos.length} ${form.produtos.length === 1 ? "marcado" : "marcados"}` : "Marque um por um"],
+              ] as [Onde, string, string][]).map(([k, t, d]) => (
+                <div key={k} className={`pz-onde-op${form.onde === k ? " on" : ""}`}>
+                  <button type="button" role="radio" aria-checked={form.onde === k} className="pz-onde-b" onClick={() => setForm(f => ({ ...f, onde: k }))}>
+                    <i aria-hidden="true" /><span><b>{t}</b><small>{d}</small></span>
+                  </button>
+                  {form.onde === k && k === "categorias" && (
+                    <div className="pz-onde-l">
+                      {catsComProdutos.map(c => {
+                        const on = form.cats.includes(c.nome);
+                        return (
+                          <button key={c.nome} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarCat(c.nome)}>
+                            <span className="pz-it-f">{c.foto ? <img src={c.foto} alt="" /> : <Camera size={18} weight="bold" aria-label="Sem foto" />}</span>
+                            <span className="pz-it-n"><b>{c.nome}</b><small>{c.n} {c.n === 1 ? "produto" : "produtos"}</small></span>
+                            <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {form.onde === k && k === "produtos" && (
+                    <div className="pz-onde-l">
+                      {produtos.length > 8 && (
+                        <label className="pz-busca pz-busca--p">
+                          <MagnifyingGlass size={18} weight="bold" />
+                          <input type="search" placeholder="Buscar produto" value={buscaProd} onChange={e => setBuscaProd(e.target.value)} aria-label="Buscar produto" autoComplete="off" />
+                        </label>
+                      )}
+                      {catsComProdutos.map(c => {
+                        const dela = produtosFiltrados.filter(p => (p.categoria || "") === c.nome);
+                        if (!dela.length) return null;
+                        const todosOn = dela.every(p => form.produtos.includes(p.id));
+                        return (
+                          <div key={c.nome} className="pz-grupo">
+                            <div className="pz-grupo-cab"><span>{c.nome}</span>
+                              <button type="button" onClick={() => setForm(f => ({ ...f, produtos: todosOn ? f.produtos.filter(id => !dela.some(p => p.id === id)) : [...new Set([...f.produtos, ...dela.map(p => p.id)])] }))}>{todosOn ? "Desmarcar" : "Marcar todos"}</button>
+                            </div>
+                            {dela.map(p => {
+                              const on = form.produtos.includes(p.id);
+                              return (
+                                <button key={p.id} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarProduto(p.id)}>
+                                  <span className="pz-it-f">{primeiraFoto(p.imagem_url) ? <img src={primeiraFoto(p.imagem_url)} alt="" /> : <Camera size={18} weight="bold" aria-label="Sem foto" />}</span>
+                                  <span className="pz-it-n"><b>{nomeBonito(p.nome)}</b></span>
+                                  <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                      {produtosFiltrados.filter(p => !catsComProdutos.some(c => c.nome === (p.categoria || ""))).map(p => {
+                        const on = form.produtos.includes(p.id);
+                        return (
+                          <button key={p.id} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarProduto(p.id)}>
+                            <span className="pz-it-f">{primeiraFoto(p.imagem_url) ? <img src={primeiraFoto(p.imagem_url)} alt="" /> : <Camera size={18} weight="bold" aria-label="Sem foto" />}</span>
+                            <span className="pz-it-n"><b>{nomeBonito(p.nome)}</b></span>
+                            <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
+                          </button>
+                        );
+                      })}
+                      {produtosFiltrados.length === 0 && <p className="pz-semres">Nenhum produto com esse nome.</p>}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
+            {erroProdutos && <p className="ui-campo-msg pz-erro" role="alert">{erroProdutos}</p>}
           </div>
-          {!form.todos && (
-            <div className="pz-prods">
-              <div className="pz-prods-cab">
-                <span>{form.produtos.length === 0 ? "Nenhum marcado" : form.produtos.length === 1 ? "1 marcado" : `${form.produtos.length} marcados`}</span>
-                {form.produtos.length > 0 && <Botao variante="link" tamanho="p" onClick={() => setForm(f => ({ ...f, produtos: [] }))}>Desmarcar todos</Botao>}
-              </div>
-              {produtos.length > 8 && (
-                <label className="pz-busca">
-                  <MagnifyingGlass size={20} weight="bold" />
-                  <input type="search" placeholder="Buscar produto" value={buscaProd} onChange={e => setBuscaProd(e.target.value)} aria-label="Buscar produto" autoComplete="off" />
-                </label>
-              )}
-              <div className="pz-prods-l">
-                {produtosFiltrados.map(p => {
-                  const on = form.produtos.includes(p.id);
-                  return (
-                    <button key={p.id} type="button" role="checkbox" aria-checked={on} className="pz-prod" onClick={() => alternarProduto(p.id)}>
-                      <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
-                      <span className="pz-prod-f">{primeiraFoto(p.imagem_url) ? <img src={primeiraFoto(p.imagem_url)} alt="" /> : <Camera size={20} weight="bold" aria-label="Sem foto" />}</span>
-                      <span className="pz-prod-n">{nomeBonito(p.nome)}</span>
-                    </button>
-                  );
-                })}
-                {produtosFiltrados.length === 0 && <p className="pz-semres">Nenhum produto com esse nome.</p>}
-              </div>
-              {erroProdutos && <p className="ui-campo-msg pz-erro" role="alert">{erroProdutos}</p>}
-            </div>
-          )}
         </div>
       </Janela>
     </>

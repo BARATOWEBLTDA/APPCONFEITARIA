@@ -222,20 +222,24 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     ;(async () => {
       let data: any[] | null = null
       // (19/10) a v2 também diz se o complemento pede foto de referência; sem ela, a antiga
-      const r2 = await supabase.rpc('cardapio_extras_v2', { p_loja: uid })
+      // (24/10) a v3 também traz as categorias em que o complemento aparece
+      const r3 = await supabase.rpc('cardapio_extras_v3', { p_loja: uid })
+      const r2 = !r3.error && Array.isArray(r3.data) ? r3 : await supabase.rpc('cardapio_extras_v2', { p_loja: uid })
       const r = !r2.error && Array.isArray(r2.data) ? r2 : await supabase.rpc('cardapio_extras', { p_loja: uid })
       if (!r.error && Array.isArray(r.data)) data = r.data
       else {
-        const d = await supabase.from('biblioteca_extras').select('id, nome, valor, descricao, categorias, pede_referencia').eq('user_id', uid)
+        const d = await supabase.from('biblioteca_extras').select('*').eq('user_id', uid)
         data = (d.data as any[]) || null
       }
       return { data }
     })().then(({ data }) => {
         if (!valendo) return
         if (!data) { setExtrasBiblioteca([]); return }
-        // Filtra: sem categorias (aparece em todos) ou vinculado a esse produto
+        // Filtra: (24/10) nas categorias marcadas (pelo nome da categoria do produto), nos produtos marcados ou em todos
         const filtrados = (data as ExtraBiblioteca[]).filter(e => {
           const cats: string[] = Array.isArray(e.categorias) ? e.categorias : []
+          const doCardapio: string[] = Array.isArray((e as any).categorias_cardapio) ? (e as any).categorias_cardapio : []
+          if (doCardapio.length > 0) return doCardapio.includes(String((product as any).categoria || ''))
           return cats.length === 0 || cats.includes(product.id)
         })
         setExtrasBiblioteca(filtrados)
