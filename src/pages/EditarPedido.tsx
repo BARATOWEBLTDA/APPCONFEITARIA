@@ -1,3 +1,4 @@
+import { textoSaboresKit } from '@/lib/kitTexto'
 import { COMO_PEDIDO, TOUR_PEDIDO } from "@/lib/comoTelas";
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { explicarErro } from '@/lib/erros'
@@ -1482,7 +1483,7 @@ export default function EditarPedido() {
                     if (p.sabor?.nome) campos.push(['Sabor', p.sabor.nome])
                     if (Array.isArray(p.recheios) && p.recheios.length) campos.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: any) => r.nome).join(', ')])
                     if (p.cobertura?.nome) campos.push(['Cobertura', p.cobertura.nome])
-                    if (sabores.length) campos.push(['Sabores', sabores.map((x: any) => `${x.qtd} de ${String(x.nome).toLowerCase()}`).join(', ')])
+                    if (sabores.length) campos.push(['Sabores', textoSaboresKit(sabores)])
                     if (extras.length) campos.push(['Adicionais', extras.map((e: any) => e.nome).join(', ')])
                     const obs = (it.observacoes || '').trim()
                     const foto = fotoDoItem(it)
@@ -1505,8 +1506,9 @@ export default function EditarPedido() {
                               </a>
                             )}
                             <div>
-                              <small>Recado do item</small>
-                              {obs ? <p>“{obs}”</p> : <p>Foto de referência</p>}
+                              {/* (24/10) só a foto: o título é "Foto de referência" (antes vinha "Recado do item" em cima dela) */}
+                              <small>{obs ? "Recado do item" : "Foto de referência"}</small>
+                              {obs ? <p>“{obs}”</p> : <p>O cliente mandou esta foto</p>}
                               {p.foto_referencia && <span>Toque na foto para ampliar</span>}
                             </div>
                           </div>

@@ -1,3 +1,5 @@
+import { precoCardapioComPromocao, ehCentoLivre } from "@/lib/precoCardapio";
+import { unidadePreco } from "@/lib/formaVenda";
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { criarPedido, novoIdTentativa, lerProdutosDeVenda, opcoesDoProduto as opcoesDoProdutoLib, opcaoKitLivre, quantidadesSugeridas, precoDeVenda, totalDe, type DadosPedido } from '@/lib/pedidosDoo'
@@ -1150,7 +1152,7 @@ export default function NovaVenda() {
     <Janela aberta={!!escolhaProduto} aoFechar={() => { setEscolhaProduto(null); setQtdLivre(null); setOutro({ aberto: false, peso: '', valor: 0 }) }} tipo="conteudo" titulo={escolhaProduto ? nomeDeProduto(escolhaProduto.p.nome) : ''}>
       {escolhaProduto && (
         <>
-          <p className="tpj-txt">{escolhaProduto.p.kit_qtd?.ativo ? (escolhaProduto.p.kit_qtd?.modo === 'livre' ? 'Quantas unidades o cliente levou?' : 'Qual kit o cliente levou?') : 'Qual tamanho?'}</p>
+          <p className="tpj-txt">{escolhaProduto.p.kit_qtd?.ativo ? (escolhaProduto.p.kit_qtd?.modo === 'livre' ? 'Quantas unidades o cliente levou?' : 'Qual kit o cliente levou?') : escolhaProduto.opcoes[0]?.pers?.sabor ? 'Qual sabor?' : 'Qual tamanho?'}</p>
           {/* (14/10) kit "ele escolhe": quantidades redondas em botões + campo pra qualquer outra (antes era uma lista de 100, 150, 200…) */}
           {escolhaProduto.p.kit_qtd?.modo === 'livre' ? (() => {
             const p = escolhaProduto.p
@@ -1180,6 +1182,7 @@ export default function NovaVenda() {
             )
           })() : (() => {
             const kit = !!escolhaProduto.p.kit_qtd?.ativo
+            const porSabor = !kit && !!escolhaProduto.opcoes[0]?.pers?.sabor // (24/10) "cada sabor tem o seu preço"
             const ops: any[] = (escolhaProduto.p as any).grupo_tamanhos?.opcoes || []
             const dados = (o: { label: string }) => ops.find(x => String(x?.nome || '').trim() === o.label) || {}
             const serveDe = (o: { label: string }) => { const v = String(dados(o).serve || '').trim(); return /^\d+$/.test(v) ? `${v} pessoas` : v }
@@ -1194,11 +1197,13 @@ export default function NovaVenda() {
             }
             return (
               <>
-              <div className={`nv3-tab${comServe ? ' nv3-tab--3' : ''}`} role="table" aria-label={kit ? 'Kits' : 'Tamanhos'}>
-                <div className="nv3-tab-l nv3-tab-h" role="row"><span role="columnheader">{kit ? 'Kit' : 'Tamanho'}</span>{comServe && <span role="columnheader">Serve até</span>}<span role="columnheader">Preço</span></div>
+              <div className={`nv3-tab${comServe ? ' nv3-tab--3' : ''}`} role="table" aria-label={kit ? 'Kits' : porSabor ? 'Sabores' : 'Tamanhos'}>
+                <div className="nv3-tab-l nv3-tab-h" role="row"><span role="columnheader">{kit ? 'Kit' : porSabor ? 'Sabor' : 'Tamanho'}</span>{comServe && <span role="columnheader">Serve até</span>}<span role="columnheader">Preço</span></div>
                 {escolhaProduto.opcoes.map(o => {
                   const esg = !!dados(o).esgotado
-                  const peso = o.pers?.tamanho?.peso_kg && o.pers.tamanho.peso_kg + '' !== o.label ? `${String(o.pers.tamanho.peso_kg).replace('.', ',')} kg` : ''
+                  // (24/10) o peso embaixo só quando o nome não é o próprio peso (antes "1 kg / 1 kg")
+                  const pesoTx = o.pers?.tamanho?.peso_kg ? `${String(o.pers.tamanho.peso_kg).replace('.', ',')} kg` : ''
+                  const peso = pesoTx && pesoTx.replace(/\s/g, '').toLowerCase() !== String(o.label).replace(/\s/g, '').toLowerCase() ? pesoTx : ''
                   return (
                     <button type="button" role="row" key={o.label} className={`nv3-tab-l${esg ? ' esg' : ''}`} onClick={() => addProduto(escolhaProduto.p, o)}>
                       <span role="cell" className="nv3-tab-n"><i className="nv3-radio" aria-hidden="true" /><span><b>{o.label}</b>{(peso || esg) && <small>{[peso, esg ? 'Esgotado' : ''].filter(Boolean).join(' · ')}</small>}</span></span>
@@ -1207,7 +1212,7 @@ export default function NovaVenda() {
                     </button>
                   )
                 })}
-                {!kit && (
+                {!kit && !porSabor && (
                   <button type="button" role="row" className={`nv3-tab-l nv3-tab-outro${outro.aberto ? ' on' : ''}`} aria-expanded={outro.aberto} onClick={() => setOutro(o => ({ ...o, aberto: !o.aberto }))}>
                     <span role="cell" className="nv3-tab-n"><i className="nv3-radio" aria-hidden="true" /><span><b>Outro tamanho</b><small>{precoKg ? `${rs(precoKg)} o kg` : 'Você digita o preço'}</small></span></span>
                   </button>
@@ -1254,7 +1259,12 @@ export default function NovaVenda() {
                   <span className="tpj-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                   <span className="tpj-tx"><b>{nomeDeProduto(p.nome || 'Produto sem nome')}</b>{p.categoria && <small>{p.categoria}</small>}</span>
                   {/* (11/10) produto simples: o preço já com a promoção, o mesmo que entra na venda (com tamanhos ou kit, o preço aparece na escolha) */}
-                  <span className="tpj-preco">{rs(opcoesDoProduto(p).length ? p.preco_normal : precoDeVenda(p))}</span>
+                  {/* (24/10) o mesmo preço do cartão do cardápio: com a promoção, "a partir de" quando tem tamanho/kit, e a unidade (o kg, o cento) */}
+                  {(() => {
+                    const pc = precoCardapioComPromocao(p)
+                    const un = ehCentoLivre(p) ? 'o cento' : pc.aPartir || (p as any).grupo_tamanhos?.ativo ? '' : unidadePreco(p.forma_venda)
+                    return <span className="tpj-preco">{pc.aPartir && <small>a partir de</small>}{rs(pc.final)}{un && <small>{un}</small>}</span>
+                  })()}
                 </button>
               )
             })}
@@ -1266,7 +1276,7 @@ export default function NovaVenda() {
 
     {/* calendário e horário do app */}
     {/* encomenda (e pagamento combinado) não aceita dia que já passou */}
-    {calNv && <CalendarioSheet valor={calNv === 'entrega' ? dataEntrega : dataPrevistaPagamento} min={hojeISO()} titulo={calNv === 'entrega' ? (ehEntrega ? 'Data da entrega' : 'Data da retirada') : 'Pagamento combinado pra'}
+    {calNv && <CalendarioSheet valor={calNv === 'entrega' ? dataEntrega : dataPrevistaPagamento} min={hojeISO()} titulo={calNv === 'entrega' ? (ehEntrega ? 'Data da entrega' : 'Data da retirada') : 'Pagamento combinado para'}
       onClose={() => setCalNv(null)} onConfirmar={d => { if (calNv === 'entrega') setDataEntrega(d); else setDataPrevistaPagamento(d); setCalNv(null) }} />}
     {horaSheetAberto && (
       <HorarioSheet value={horarioEntrega} onChange={setHorarioEntrega} onClose={() => setHoraSheetAberto(false)} titulo={ehEntrega ? 'Horário da entrega' : 'Horário da retirada'} />

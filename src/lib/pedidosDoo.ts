@@ -9,7 +9,7 @@ import { pesoDoTamanho } from "@/lib/itemSacola";
 import { supabase } from "@/lib/supabase";
 import { criarPersonalizacoesV1, criarBreakdownV1, SNAPSHOT_VERSION_ATUAL } from "@/lib/pedido-snapshot";
 import { r2, somarReais } from "@/lib/moeda";
-import { comDesconto, descontoCardapio } from "@/lib/precoCardapio";
+import { comDesconto, descontoCardapio, precosDosSabores } from "@/lib/precoCardapio";
 import { precoLivre } from "@/lib/kitQuantidade";
 
 export const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Crédito", "Débito"] as const;
@@ -74,6 +74,13 @@ export function opcoesDoProduto(p: any): { label: string; valor: number; pers: a
     return kq.kits.filter((k: any) => (k.qtd || 0) > 0 && (k.preco || 0) > 0).map((k: any) => ({
       label: `${k.qtd} unidades`, valor: comDesconto(Number(k.preco), desc), pers: { kit: { modo: "fechado", total: k.qtd, sabores: [] } },
     }));
+  }
+  // (24/10) "cada sabor tem o seu preço": o sabor é a escolha (antes entrava o preço do mais barato sem perguntar)
+  if (precosDosSabores(p)) {
+    return (p.grupo_sabores.opcoes || []).filter((o: any) => !o?.esgotado && (Number(o?.preco) || 0) > 0 && String(o?.nome || "").trim()).map((o: any) => {
+      const valor = comDesconto(Number(o.preco), desc);
+      return { label: o.nome, valor, pers: { sabor: { id: o.id, nome: o.nome, adicional: 0, preco_proprio: Number(o.preco) } } };
+    });
   }
   return [];
 }

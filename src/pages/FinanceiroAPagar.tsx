@@ -3,6 +3,7 @@ import { useAbrirPedido } from "@/hooks/useAbrirPedido";
 import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
@@ -114,6 +115,7 @@ export default function FinanceiroAPagar() {
 
   // (13/10) filtro por dias: Atrasadas, Esta semana, Este mês e Todas
   const [filtro, setFiltro] = useState<Filtro>("mes");
+  const [filtroAberto, setFiltroAberto] = useState(false);
   const fimMes = useMemo(() => { const d = new Date(); return `${competencia(0)}-${String(new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()).padStart(2, "0")}`; }, [hoje]); // eslint-disable-line react-hooks/exhaustive-deps
   const doFiltro = useCallback((f: Filtro) => contas.filter(c =>
     f === "atrasadas" ? c.vencimento < hoje : f === "semana" ? c.vencimento <= isoDia(6) : f === "mes" ? c.vencimento <= fimMes : true), [contas, hoje, fimMes]);
@@ -155,18 +157,16 @@ export default function FinanceiroAPagar() {
             acao={<Botao variante="suave" tamanho="m" onClick={tentarDeNovo}>Tentar de novo</Botao>} />
         ) : (<>
           <div className="fap-topo">
-            <div className="tx-seg fap-seg" role="tablist" aria-label="Mostrar contas">
-              {FILTROS.map(([k, l, c]) => {
-                const n = doFiltro(k).length;
-                return (
-                  <button key={k} type="button" role="tab" aria-selected={filtro === k} className={filtro === k ? "on" : ""} onClick={() => setFiltro(k)}>
-                    <span className="fap-l-g">{l}</span><span className="fap-l-c">{c}</span>{n > 0 && <i className={k === "atrasadas" ? "atr" : ""}>{n}</i>}
-                  </button>
-                );
-              })}
-            </div>
+            {/* (24/10) filtro padrão do app: botão que abre na lateral (antes as abas Atrasadas/Semana/Mês/Todas) */}
             <Botao icone={<Plus size={18} weight="bold" />} onClick={() => setNova(true)} className="fap-nova-bt">Nova conta</Botao>
+            <BotaoFiltro className="fap-filtro" ativos={filtro === "mes" ? 0 : 1} onClick={() => setFiltroAberto(true)} />
           </div>
+          {filtroAberto && <GavetaFiltro valor={{ mostrar: filtro }} padrao={{ mostrar: "mes" }}
+            grupos={[{ id: "mostrar", titulo: "Vencimento", tipo: "radio", opcoes: FILTROS.map(([k, l]) => ({ k, label: l, n: doFiltro(k).length, cor: k === "atrasadas" ? "var(--ui-vermelho)" : undefined })) }]}
+            contar={v => doFiltro(v.mostrar).length}
+            rotulo={n => n === 0 ? "Nenhuma conta" : `Ver ${n} ${n === 1 ? "conta" : "contas"}`}
+            aoAplicar={v => setFiltro(v.mostrar)} aoFechar={() => setFiltroAberto(false)} />}
+          {filtro !== "todas" && <p className="fap-mostrando">{filtro === "atrasadas" ? "Mostrando as atrasadas" : filtro === "semana" ? "Mostrando até o fim desta semana" : "Mostrando até o fim deste mês"} · <button type="button" className="fap-link" onClick={() => setFiltro("todas")}>ver todas</button></p>}
 
           {carregando && <p className="fap-carregando">Carregando…</p>}
           {!carregando && contas.length === 0 && (
@@ -351,10 +351,13 @@ const CSS = `
   .fap-l-c { display: none; }
   @media (max-width: 599px) { .fap-l-g { display: none; } .fap-l-c { display: inline; } }
   .fap-nova-bt { flex: none; }
+  .fap-topo { flex-direction: row !important; align-items: center; } .fap-topo .fap-nova-bt { flex: 1; } @media (min-width: 900px) { .fap-topo .fap-nova-bt { flex: none; margin-left: auto; } .fap-topo { justify-content: flex-end !important; } }
+  .fap-mostrando { margin: -8px 2px 0; font-size: 13px; color: var(--ui-texto-2); } .fap-mostrando .fap-link { font-size: 13px; }
   .fap-revisar-cancelar { display: block; width: 100%; min-height: 44px; margin: 14px 0 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-vermelho); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   @media (max-width: 899px) { .fap-nova-bt { width: 100%; } }
   .fap-vazio--p { padding: 22px 16px; } .fap-vazio--p b { margin-top: 0; }
-  .fap-it { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "d m v" "d m b"; align-items: center; column-gap: 12px; row-gap: 8px; }
+  /* (24/10) o nome e a situação ocupam a linha toda; o valor e os botões vão para a linha de baixo (antes cortava "Fornecedor de …") */
+  .fap-it { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "d m m" "d v b"; align-items: center; column-gap: 12px; row-gap: 8px; }
   .fap-it-d { grid-area: d; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; height: 56px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
   .fap-it-d b { font-size: 19px; font-weight: 700; line-height: 1; color: var(--ui-texto); } .fap-it-d small { font-size: 12px; color: var(--ui-texto-2); margin-top: 3px; }
   .fap-it--atr .fap-it-d { background: var(--ui-vermelho-fundo); } .fap-it--atr .fap-it-d b, .fap-it--atr .fap-it-d small { color: var(--ui-vermelho); }
@@ -362,7 +365,7 @@ const CSS = `
   .fap-it-m b { font-size: 15px; font-weight: 600; color: var(--ui-texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fap-it-m small { font-size: 13px; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fap-it-m small .atr { color: var(--ui-vermelho); font-weight: 600; } .fap-it-m small .logo { color: #B45309; font-weight: 600; }
-  .fap-it > .fap-it-v { grid-area: v; justify-self: end; font-size: 15.5px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+  .fap-it > .fap-it-v { grid-area: v; justify-self: start; font-size: 15.5px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
   .fap-it > .fap-bts { grid-area: b; justify-self: end; display: flex; align-items: center; gap: 6px; }
   .fap-prev.fap-prev--neutro { background: var(--ui-cinza); border-color: var(--ui-borda); } .fap-prev.fap-prev--neutro b, .fap-prev.fap-prev--neutro small { color: var(--ui-texto-2); }
   /* 10/10: mesma largura de conteúdo de Transações (antes 760px, em uma coluna estreita no PC) */

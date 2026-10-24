@@ -68,7 +68,9 @@ function Variacao({ atual, anterior, rotulo, bomSubir = true }: { atual: number;
   const pct = Math.round(((atual - anterior) / Math.abs(anterior)) * 100);
   if (pct === 0) return <span className="fd-var neu">{dois(`Igual ${rotulo.replace(/^que nos /, "aos ").replace(/^que no /, "ao ").replace(/^que /, "a ")}`, "Igual ao anterior")}</span>;
   const bom = pct > 0 === bomSubir;
-  const n = `${pct > 0 ? "+" : ""}${pct}%`;
+  // (24/10) porcentagem gigante (ontem quase zero) não diz nada ("+7472%"): mostra a diferença em reais
+  const dif = atual - anterior;
+  const n = Math.abs(pct) >= 1000 ? `${dif > 0 ? "+" : "−"} ${Math.abs(dif).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}` : `${pct > 0 ? "+" : ""}${pct}%`;
   return <span className={`fd-var ${bom ? "up" : "dn"}`}>{dois(`${n} ${rotulo}`, `${n} que antes`)}</span>;
 }
 

@@ -1,3 +1,4 @@
+import { pluralSabor } from "@/lib/kitTexto";
 import { useState } from "react";
 import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
 import { Cookie, ForkKnife, PencilSimple, X } from "@phosphor-icons/react";
@@ -119,12 +120,12 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
   // Sem preço aqui (semPreco): os preços dos kits ficam no passo Preço.
   return (
     <div className="kq-tela kq-v2">
-      <p className="kq-lbl">Sabores do kit</p>
+      <p className="kq-lbl">{k.modo === "livre" ? "Sabores" : "Sabores do kit"}</p>
       {/* (14/10) no padrão das outras escolhas: aviso cinza + tabela com cabeçalho e "Cadastrar" na última linha (sem os botões de sugestão nem o "Trocar o modelo") */}
       <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
-        <p>Os sabores que o cliente pode misturar no kit. O preço de cada kit fica no último passo.</p></div>
+        <p>{k.modo === "livre" ? "Os sabores que o cliente pode misturar. O preço do cento fica no último passo." : "Os sabores que o cliente pode misturar no kit. O preço de cada kit fica no último passo."}</p></div>
       <div className="esc-tab esc-tab--1" role="table" aria-label="Sabores do kit">
-        <div className="esc-tab-l esc-tab-h" role="row"><span role="columnheader">Sabor</span><span role="columnheader" aria-label="Tirar" /></div>
+        {sabores.length > 0 && <div className="esc-tab-l esc-tab-h" role="row"><span role="columnheader">Sabor</span><span role="columnheader" aria-label="Tirar" /></div>}
         {k.sabores.map(s => s.nome.trim() && (
           <div key={s.id} className="esc-tab-l" role="row">
             <span role="cell" className="esc-tab-nm">{s.nome}</span>
@@ -132,7 +133,7 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
           </div>
         ))}
         <div className="esc-tab-add kq-addrow">
-          <input placeholder={k.modelo === "salgados" ? "Outro sabor… (ex.: coxinha)" : "Outro sabor…"} value={novoSabor} aria-label="Outro sabor"
+          <input placeholder="Outro sabor…" value={novoSabor} aria-label="Outro sabor"
             onChange={e => setNovoSabor(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSabor(novoSabor); } }} />
           <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={() => addSabor(novoSabor)} disabled={!novoSabor.trim()}>Cadastrar</button>
         </div>
@@ -168,7 +169,7 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
         <ul className="kq-lista">
           <li className="kq-reg"><span>Mínimo</span><input className="kq-box" inputMode="numeric" value={k.livre.min || ""} aria-label="Mínimo" onChange={e => set({ livre: { ...k.livre, min: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
           <li className="kq-reg"><span>Máximo</span><input className="kq-box" inputMode="numeric" value={k.livre.max || ""} aria-label="Máximo" onChange={e => set({ livre: { ...k.livre, max: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
-          <li className="kq-reg"><span>Sobe de quanto em quanto</span><input className="kq-box" inputMode="numeric" value={k.livre.passo || ""} aria-label="De quanto em quanto" onChange={e => set({ livre: { ...k.livre, passo: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
+          <li className="kq-reg"><span>De quanto em quanto</span><input className="kq-box" inputMode="numeric" value={k.livre.passo || ""} aria-label="De quanto em quanto" onChange={e => set({ livre: { ...k.livre, passo: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
           {!semPreco && (
             <li className="kq-reg"><span>Preço do cento</span><span className={`kq-box kq-box--rs${k.livre.preco_cento > 0 ? " ok" : " falta"}`}>R$ <input inputMode="numeric" value={textoBRL(k.livre.preco_cento)} placeholder="0,00" aria-label="Preço do cento"
               onChange={e => set({ livre: { ...k.livre, preco_cento: lerBRL(mascaraBRL(e.target.value)) } })} /></span></li>
@@ -179,18 +180,19 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
 
       <p className="kq-lbl">Como ele pode montar</p>
       <ul className="kq-lista">
-        <li className="kq-reg"><span>Sabores no mesmo kit</span><input className="kq-box" inputMode="numeric" value={k.max_sabores || ""} aria-label="Máximo de sabores" onChange={e => set({ max_sabores: Math.round(num(e.target.value)) })} /><em>no máx.</em></li>
+        <li className="kq-reg"><span>{k.modo === "livre" ? "Sabores por pedido" : "Sabores no mesmo kit"}</span><input className="kq-box" inputMode="numeric" value={k.max_sabores || ""} aria-label="Máximo de sabores" onChange={e => set({ max_sabores: Math.round(num(e.target.value)) })} /><em>no máx.</em></li>
         <li className="kq-reg"><span>Cada sabor vem de</span><input className="kq-box" inputMode="numeric" value={k.passo_sabor || ""} aria-label="De quanto em quanto cada sabor" onChange={e => set({ passo_sabor: Math.round(num(e.target.value)) })} /><em>em {k.passo_sabor || "–"}</em></li>
       </ul>
-      <div className="esc-aviso kq-nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Exemplo no kit de {kitEx}: {exB > 0 && <><b>{exA} {ex1} + {exB} {ex2}</b>, ou </>}{kitEx} de um sabor só.
+      <div className="esc-aviso kq-nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>{k.modo === "livre" ? `Exemplo com ${kitEx} unidades: ` : `Exemplo no kit de ${kitEx}: `}{exB > 0 && <><b className="kq-ex">{exA} {pluralSabor(ex1, exA)} + {exB} {pluralSabor(ex2, exB)}</b>, ou </>}{kitEx} de um sabor só.
         {kitQuebrado ? ` O kit de ${kitQuebrado} não fecha de ${passoS} em ${passoS}: o último passo completa o que faltar.` : livreQuebrado ? ` Nem toda quantidade fecha de ${passoS} em ${passoS}: o último passo completa o que faltar.` : ""}
-        {semPreco ? " O preço dos kits você coloca no último passo." : ""}</p></div>
+        {semPreco ? (k.modo === "livre" ? " O preço do cento você coloca no último passo." : " O preço dos kits você coloca no último passo.") : ""}</p></div>
       <style>{CSS}</style>
     </div>
   );
 }
 
 const CSS = `
+  .esc-aviso b.kq-ex { display: inline; margin: 0; font-size: inherit; }
 
   .kq-tela { font-family: var(--font-base); color: var(--ui-texto); padding-bottom: 8px; }
   .kq-q { font-size: 22px; font-weight: 700; text-align: left; margin: 0 0 4px; color: var(--ui-texto); letter-spacing: -.02em; text-wrap: balance; }

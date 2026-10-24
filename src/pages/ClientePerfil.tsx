@@ -249,7 +249,7 @@ export default function ClientePerfil() {
           <section className="cl9-card cp9-dados cp9-o4">
             <Titulo>Dados</Titulo>
             {!temDados ? (
-              <p className="cp9-falta">Só tem o nome e o WhatsApp. Com o aniversário e o endereço, fica mais fácil lembrar de {primeiro} e fazer entregas.
+              <p className="cp9-falta">{zap ? "Só tem o nome e o WhatsApp." : "Só tem o nome."} Com o aniversário e o endereço, fica mais fácil lembrar de {primeiro} e fazer entregas.
                 <button type="button" onClick={editar}>Completar cadastro</button></p>
             ) : (<>
               {temEndereco && (

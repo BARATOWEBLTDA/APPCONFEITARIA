@@ -16,7 +16,7 @@ import { buscarTudo } from "@/lib/buscarTudo";
 import { calcularCustoLucro, lerMaoObraConta } from "@/lib/produto-precificacao";
 import { carregarIntervalo, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
-type Produto = { chave: string; nome: string; foto: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean };
+type Produto = { chave: string; nome: string; foto: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean; kg?: boolean };
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 /**
@@ -99,7 +99,7 @@ export default function Lucratividade() {
       const mapa: Record<string, Produto> = {};
       for (const it of itens) {
         const id = it.produtos?.id; const chave = id || `nome:${it.nome_produto}`;
-        const p = mapa[chave] || (mapa[chave] = { chave, nome: it.produtos?.nome || it.nome_produto || "Produto", foto: String(it.produtos?.imagem_url || "").split(",")[0].trim(), qtd: 0, vendido: 0, custo: 0, lucro: 0, margem: 0, semFicha: false });
+        const p = mapa[chave] || (mapa[chave] = { chave, nome: it.produtos?.nome || it.nome_produto || "Produto", foto: String(it.produtos?.imagem_url || "").split(",")[0].trim(), qtd: 0, vendido: 0, custo: 0, lucro: 0, margem: 0, semFicha: false, kg: it.produtos?.forma_venda === "kg" && !it.personalizacoes?.tamanho } as Produto);
         const q = Number(it.quantidade) || 0;
         p.qtd += q; p.vendido += (Number(it.valor_unitario) || 0) * q;
         const c = id ? custo[id] : 0;
@@ -198,7 +198,7 @@ export default function Lucratividade() {
                       <span className="lu-pc-foto">{p.foto ? <img src={p.foto} alt="" loading="lazy" /> : <ShoppingBagOpen size={28} aria-hidden="true" />}</span>
                       <span className="lu-pc-tx">
                         <b className="lu-pc-nm">{p.nome}</b>
-                        <small>{p.qtd} {p.qtd === 1 ? "vendido" : "vendidos"} · {brl(p.vendido)}</small>
+                        <small>{(p as any).kg ? `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} kg vendidos` : `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} ${p.qtd === 1 ? "vendido" : "vendidos"}`} · {brl(p.vendido)}</small>
                         <span className="lu-pc-l">Lucro</span>
                         {/* sem ficha o custo é zero: mostrar "lucro = preço" engana, então fica um traço */}
                         <strong className={p.semFicha ? "sf" : p.lucro < 0 ? "ruim" : ""}>{p.semFicha ? "—" : brl(p.lucro)}</strong>

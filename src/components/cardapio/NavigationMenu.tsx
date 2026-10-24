@@ -1,3 +1,4 @@
+import { textoSaboresKit } from '@/lib/kitTexto'
 import { NeveNatal, temaNatalLigado } from '@/components/tema/Natal'
 import { useState, useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
@@ -490,7 +491,7 @@ function CartContent({
             detalhes.push(`Recheio${nomes.length > 1 ? 's' : ''}: ${lista}`)
           }
           if (e.cobertura?.nome) detalhes.push(`Cobertura ${e.cobertura.nome}`)
-          if (e.kit?.sabores?.length) detalhes.push(`Kit ${e.kit.total} un: ${e.kit.sabores.map((s: any) => `${s.nome} × ${s.qtd}`).join(', ')}`)
+          if (e.kit?.sabores?.length) detalhes.push(`${e.kit.total} un. · ${textoSaboresKit(e.kit.sabores)}`)
         } else {
           if (item.selectedMassa) detalhes.push(`Massa ${item.selectedMassa}`)
           if (item.selectedRecheio) detalhes.push(`Recheio: ${item.selectedRecheio}`)
@@ -778,7 +779,7 @@ function CartContent({
                 const extras: any[] = Array.isArray(it.extrasBiblioteca) ? it.extrasBiblioteca : []
                 const escolhas = detalhesItem(it).slice(0, detalhesItem(it).length - extras.length)
                 const kit = it.escolhas?.kit
-                if (kit?.sabores?.length) escolhas.push(`${kit.total} un: ${kit.sabores.map((x: any) => `${x.qtd} ${x.nome}`).join(', ')}`)
+                if (kit?.sabores?.length) escolhas.push(`${kit.total} un. · ${textoSaboresKit(kit.sabores)}`)
                 const foto = it.imageUrl ? String(it.imageUrl).split(',')[0] : ''
                 return (
                   <li key={k}>
@@ -1084,7 +1085,9 @@ function CartContent({
 
         <div className="sc-valores">
           <b>Resumo de valores</b>
-          <span>Subtotal<em>{formatCurrency(totalPrice)}</em></span>
+          {/* (24/10) igual ao resumo da Sacola: subtotal cheio e a linha da promoção (antes o subtotal já vinha com desconto e a promoção sumia) */}
+          <span>Subtotal<em>{formatCurrency(somarReais([totalPrice, economia]))}</em></span>
+          {economia > 0 && <span className="ok">Promoção<em>− {formatCurrency(economia)}</em></span>}
           {ehEntrega && <span>Entrega<em className={freteTexto === 'Grátis' ? 'ok' : ''}>{freteTexto}</em></span>}
           {desconto > 0 && <span className="ok">Cupom {cupomAplicado?.codigo}<em>− {formatCurrency(desconto)}</em></span>}
           <span className="t">Total<em>{formatCurrency(totalFinal)}</em></span>

@@ -51,7 +51,7 @@ const SUGGESTIONS = [
 const SUGESTOES_CARTOES = [
   { Ic: CurrencyCircleDollar, t: 'Calcular preço', s: 'de um bolo ou doce', p: 'Calcular o preço de um bolo' },
   { Ic: BookOpenText, t: 'Criar receita', s: 'com o que você tem', p: 'Criar receita de bolo' },
-  { Ic: InstagramLogo, t: 'Legenda pro Instagram', s: 'pronta para postar', p: 'Criar legenda para o Instagram' },
+  { Ic: InstagramLogo, t: 'Legenda para o Instagram', s: 'pronta para postar', p: 'Criar legenda para o Instagram' },
   { Ic: CalendarCheck, t: 'Planejar a semana', s: 'produção e compras', p: 'Planejar produção da semana' },
   { Ic: Receipt, t: 'Registrar pedido', s: 'direto pela conversa', p: 'Registrar um pedido' },
   { Ic: Package, t: 'Cadastrar ingrediente', s: 'com preço e custo', p: 'Cadastrar um ingrediente' },
@@ -755,7 +755,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           <img src="/Sistema/doo.png" alt="" className="dz-pw-ft" />
           <p>Sua assistente de confeitaria. Ela calcula preços, cria receitas, registra pedidos e planeja a produção. Faz parte do <b>plano PRO</b>.</p>
           <ul>
-            {['Receitas com as quantidades certas', 'Preço com a margem ideal', 'Legendas prontas pro Instagram', 'Produção da semana planejada'].map(t => (
+            {['Receitas com as quantidades certas', 'Preço com a margem ideal', 'Legendas prontas para o Instagram', 'Produção da semana planejada'].map(t => (
               <li key={t}><Check size={16} weight="bold" aria-hidden="true" />{t}</li>
             ))}
           </ul>

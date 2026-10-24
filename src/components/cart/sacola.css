@@ -204,3 +204,7 @@
 .sc-it-det { margin: 2px 0 0; padding: 0; list-style: none; }
 .sc-it-det li { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 .sc-it-add li { color: var(--ui-texto); font-weight: 600; }
+
+/* (24/10) preço cheio riscado e foto de referência anexada */
+.sc-it-pr s.sc-it-de { font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; }
+.sc-it-tx small.sc-it-ref { color: var(--ui-rosa-escuro); font-weight: 600; }

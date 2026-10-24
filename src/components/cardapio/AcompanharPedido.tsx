@@ -1,3 +1,4 @@
+import { textoSaboresKit } from '@/lib/kitTexto'
 import type { CSSProperties } from 'react'
 import { Cake, Check, ImageSquare } from '@phosphor-icons/react'
 import { renderItemFromSnapshot } from '@/lib/pedido-snapshot'
@@ -130,7 +131,7 @@ export function AcompanharPedido({ p, cor, corTopo }: { p: Pedido; cor: string; 
           const pz = it.personalizacoes || {}
           const extras: any[] = Array.isArray(pz.extras) ? pz.extras : []
           const linhas = r.personalizacoesRender.map(l => `${l.label} ${l.valor}`)
-          if (pz.kit?.sabores?.length) linhas.push(`${pz.kit.total} un: ${pz.kit.sabores.map((x: any) => `${x.qtd} ${x.nome}`).join(', ')}`)
+          if (pz.kit?.sabores?.length) linhas.push(`${pz.kit.total} un. · ${textoSaboresKit(pz.kit.sabores)}`)
           return (
             <li key={i}>
               <span className="acp-foto">{it.produtos?.imagem_url ? <img src={String(it.produtos.imagem_url).split(',')[0]} alt="" loading="lazy" /> : <Cake size={22} weight="duotone" />}</span>

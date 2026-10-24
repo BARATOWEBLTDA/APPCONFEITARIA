@@ -306,7 +306,8 @@ body .prod-modal--novo .rev-resumo + .rev { margin-top: 20px; }
 .esc-predef-sel select:focus { outline: none; border-color: var(--ui-rosa); }
 .esc-predef-sel svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ui-texto-2); }
 /* (14/10) "Sem marcar nada…" com mais destaque */
-.esc-nota.esc-nota--forte { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 0; background: #4A4046; color: #fff; font-size: 13.5px; font-weight: 500; }
+/* (24/10) mesmo jeito do aviso com escolhas marcadas (antes era uma caixa escura, parecia outro elemento) */
+.esc-nota.esc-nota--forte { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* (14/10) "Predefinição ativada: Pudins" cabe numa linha */
 .esc-rend-linha { gap: 10px; }
 .esc-rend-linha .esc-tx small { display: block; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

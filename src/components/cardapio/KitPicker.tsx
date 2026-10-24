@@ -1,4 +1,3 @@
-import { Heart } from '@phosphor-icons/react'
 import { formatCurrency } from '@/utils/helpers'
 import { KitQtdConfig, KitSelecao, calcularKit, kitsValidos, kitUnico, palavraKit, precoLivre, proximaQtdLivre, anteriorQtdLivre } from '@/lib/kitQuantidade'
 import { comDesconto } from '@/lib/precoCardapio'
@@ -52,7 +51,7 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
       )}
 
       {/* (21/10) as regras dos sabores foram pro título da seção; aqui fica só o kit livre (mínimo e de quanto em quanto) */}
-      {kit.modo === 'livre' && <div className="kp-regra">Mínimo <b>{l.min}</b>, de {l.passo} em {l.passo}, até {l.max}.</div>}
+      {kit.modo === 'livre' && <div className="kp-regra">Mínimo <b>{Number(l.min).toLocaleString('pt-BR')}</b>, de {l.passo} em {l.passo}, até {Number(l.max).toLocaleString('pt-BR')}.</div>}
 
       {/* (21/10) um contador só (antes: regra, "Total do kit" e "Faltam X unidades") */}
       <div className="kp-tot">
@@ -71,7 +70,7 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         const podeMais = falta > 0 && (q > 0 || c.usados < (kit.max_sabores || 1))
         return (
           <div className="kp-sabor" key={s.id}>
-            <span className="kp-sab-nome"><Heart size={16} weight="duotone" aria-hidden="true" />{s.nome}</span>
+            <span className="kp-sab-nome">{s.nome}</span>
             <div className="kp-stp">
               <button type="button" aria-label={`Menos ${s.nome}`} disabled={q <= 0} onClick={() => setQtd(s.id, q - menos)}>−</button>
               <b>{q} un</b>

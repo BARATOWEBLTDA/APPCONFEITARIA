@@ -16,6 +16,7 @@ import ReqTag from "@/components/ReqTag";
 import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
 import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, Crown, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, X } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
+import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import "./clientes.css";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -211,6 +212,7 @@ export default function Clientes() {
   const [search,        setSearch]        = useState("");
   const [userId,        setUserId]        = useState<string | null>(null);
   const [filtroChip,    setFiltroChip]    = useState<"todos" | "aniversariantes" | "recentes" | "sumidas">("todos");
+  const [filtroAberto, setFiltroAberto] = useState(false);
 
   // Importação de contatos
   const [importSheet,   setImportSheet]   = useState<ImportContato[] | null>(null);
@@ -275,7 +277,7 @@ export default function Clientes() {
     const [{ data: cls, error: erroCls }, { data: peds, error: erroPeds }] = await Promise.all([
       buscarTudo<Cliente>((de, ate) => supabase.from("clientes").select("*").eq("user_id", uid).order("nome").order("id").range(de, ate)),
       buscarTudo<any>((de, ate) => supabase.from("pedidos")
-        .select("cliente_id, valor_total, valor_recebido, data_entrega, created_at, status")
+        .select("cliente_id, cliente_nome, valor_total, valor_recebido, data_entrega, created_at, status")
         .eq("user_id", uid).order("id").range(de, ate)),
     ]);
     if (erroCls || erroPeds) { setLoading(false); return erroCls || erroPeds; }
@@ -285,9 +287,12 @@ export default function Clientes() {
       type Agg = { total: number; totalValor: number; ultima: string | null };
       const map = new Map<string, Agg>();
       (peds || []).forEach((p: any) => {
-        if (!p.cliente_id) return;
+        // (24/10) pedido antigo sem cliente_id conta pelo nome, como no perfil do cliente (antes a lista dizia
+        // "Ainda não comprou" e o perfil mostrava os pedidos)
+        const chave = p.cliente_id || (String(p.cliente_nome || "").trim() ? `nome:${String(p.cliente_nome).trim().toLowerCase()}` : "");
+        if (!chave) return;
         if (p.status === "cancelado") return; // ignora cancelados
-        const agg = map.get(p.cliente_id) || { total: 0, totalValor: 0, ultima: null };
+        const agg = map.get(chave) || { total: 0, totalValor: 0, ultima: null };
         agg.total += 1;
         agg.totalValor += Number(p.valor_total) || 0;
         // Última compra = quando o pedido foi feito (08/10: antes usava a data de entrega,
@@ -296,12 +301,13 @@ export default function Clientes() {
         if (dataRef && (!agg.ultima || dataRef > agg.ultima)) {
           agg.ultima = dataRef;
         }
-        map.set(p.cliente_id, agg);
+        map.set(chave, agg);
       });
 
       // Enriquece cada cliente com as métricas
       const enriquecidos: Cliente[] = cls.map((c: Cliente) => {
-        const a = map.get(c.id);
+        const a1 = map.get(c.id), a2 = map.get(`nome:${String(c.nome || "").trim().toLowerCase()}`);
+        const a = a1 && a2 ? { total: a1.total + a2.total, totalValor: a1.totalValor + a2.totalValor, ultima: (a1.ultima || "") > (a2.ultima || "") ? a1.ultima : a2.ultima } : a1 || a2;
         if (!a) {
           return { ...c, _totalPedidos: 0, _totalGasto: 0, _ticketMedio: 0, _ultimaCompra: null };
         }
@@ -840,7 +846,8 @@ export default function Clientes() {
         const ultimaTxt = (c: Cliente) => { const t = formatUltimaCompra(c._ultimaCompra); return t ? t.charAt(0).toUpperCase() + t.slice(1) : "—"; };
         const linha2 = (c: Cliente) => {
           const n = c._totalPedidos || 0;
-          return n ? `${n} ${n === 1 ? "pedido" : "pedidos"} · comprou ${formatUltimaCompra(c._ultimaCompra)}` : "Ainda não comprou";
+          const t = formatUltimaCompra(c._ultimaCompra) || ""; // (24/10) "3 pedidos · há 1 semana" (com "comprou há 1 semana" cortava no celular)
+          return n ? `${n} ${n === 1 ? "pedido" : "pedidos"} · ${/^há /.test(t) ? t : `comprou ${t}`}` : "Ainda não comprou";
         };
         const BotaoZap = ({ c }: { c: Cliente }) => {
           const wa = linkWhats(c);
@@ -870,7 +877,7 @@ export default function Clientes() {
               <button type="button" className="cl9-niver" onClick={() => setShowNiver(true)}>
                 <span className="cl9-niver-ic"><Cake size={24} weight="bold" /></span>
                 <span>
-                  <b>{aniversariantes.length === 1 ? "1 aniversário" : `${aniversariantes.length} aniversários`} nos próximos 30 dias</b>
+                  <b>{aniversariantes.length === 1 ? "1 aniversário" : `${aniversariantes.length} aniversários`} em 30 dias</b>
                   <small>{aniversariantes.slice(0, 3).map(c => primeiroNome(c.nome)).join(", ")}{aniversariantes.length > 3 ? ` e mais ${aniversariantes.length - 3}` : ""} · mande os parabéns</small>
                 </span>
                 <CaretRight size={20} weight="bold" />
@@ -881,22 +888,22 @@ export default function Clientes() {
               <div className={`cl9-barra${suportaContatos ? " cl9-barra--imp" : ""}`}>
                 <label className="cl9-busca">
                   <MagnifyingGlass size={20} weight="bold" />
-                  <input type="search" placeholder="Buscar cliente" value={search} onChange={e => setSearch(e.target.value)} aria-label="Buscar cliente" autoComplete="off" />
+                  <input type="search" placeholder="Buscar" value={search} onChange={e => setSearch(e.target.value)} aria-label="Buscar cliente" autoComplete="off" />
                   {search && <button type="button" aria-label="Limpar a busca" onClick={() => setSearch("")}><X size={18} weight="bold" /></button>}
                 </label>
+                {/* (24/10) filtro padrão do app: botão ao lado da busca, abre na lateral */}
+                <BotaoFiltro className="cl9-filtro" ativos={filtroChip === "todos" ? 0 : 1} onClick={() => setFiltroAberto(true)} />
                 <div className="cl9-acoes">
                   {suportaContatos && <Botao variante="secundario" tamanho="m" icone={<AddressBook size={20} weight="bold" />} onClick={importarContatos}>Importar<i className="cl9-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</i></Botao>}
                   <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => openNew()}><span className="cl9-g">Novo cliente</span><span className="cl9-c">Novo</span></Botao>
                 </div>
               </div>
 
-              <div className="cl9-chips" role="tablist" aria-label="Filtrar clientes">
-                {([["todos", "Todos"], ["aniversariantes", "Aniversário"], ["recentes", "Novos cadastros"], ["sumidas", "Sem comprar há 60 dias"]] as const).map(([k, t]) => (
-                  (k === "todos" || qtdFiltro[k] > 0 || filtroChip === k) && (
-                    <button key={k} type="button" role="tab" aria-selected={filtroChip === k} onClick={() => setFiltroChip(k)}>{t}<i>{qtdFiltro[k]}</i></button>
-                  )
-                ))}
-              </div>
+              {filtroAberto && <GavetaFiltro valor={{ mostrar: filtroChip }} padrao={{ mostrar: "todos" }}
+                grupos={[{ id: "mostrar", titulo: "Mostrar", tipo: "radio", opcoes: ([["todos", "Todos os clientes"], ["aniversariantes", "Aniversário em 30 dias"], ["recentes", "Novos cadastros"], ["sumidas", "Sem comprar há 60 dias"]] as const).map(([k, t]) => ({ k, label: t, n: k === "todos" ? clientes.length : qtdFiltro[k] })) }]}
+                contar={v => v.mostrar === "todos" ? clientes.length : qtdFiltro[v.mostrar as "aniversariantes"]}
+                rotulo={n => n === 0 ? "Nenhum cliente" : `Ver ${n} ${n === 1 ? "cliente" : "clientes"}`}
+                aoAplicar={v => setFiltroChip(v.mostrar)} aoFechar={() => setFiltroAberto(false)} />}
 
               {filtered.length === 0 ? (
                 <p className="cl9-semres">{search ? "Ninguém com esse nome ou telefone. Confira a busca." : "Ninguém nesse filtro por enquanto."}</p>

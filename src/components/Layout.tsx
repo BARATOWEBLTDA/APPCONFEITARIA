@@ -532,7 +532,7 @@ export default function Layout() {
         .sb-quem { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
         .sb-ola { display: block; max-width: 100%; font-size: 14px; font-weight: 700; color: var(--ui-branco); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sb-plano { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border: 0; border-radius: 6px; font-family: inherit; font-size: 11px; font-weight: 700; line-height: 1; white-space: nowrap; }
-        .sb-plano--pro { background: rgba(255,255,255,0.10); color: var(--ui-branco); } .sb-plano--para o svg { color: #FF9DC4; }
+        .sb-plano--pro { background: rgba(255,255,255,0.10); color: var(--ui-branco); } .sb-plano--pro svg { color: #FF9DC4; }
         .sb-plano--seja { background: var(--ui-branco); color: var(--primary); cursor: pointer; } .sb-plano--seja:hover { transform: translateY(-1px); }
         .sb-plano--skel { width: 56px; height: 17px; background: rgba(255,255,255,0.12); }
         .sb-linha2 { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; }

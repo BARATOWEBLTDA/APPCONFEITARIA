@@ -211,6 +211,9 @@
 .tpj-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 700; line-height: 1.3; }
 .tpj-tx small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .tpj-preco { flex: none; font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+/* (24/10) "a partir de" em cima e a unidade embaixo, pequenos */
+.tpj-preco { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; }
+.tpj-preco small { font-size: 11.5px; font-weight: 500; color: var(--ui-texto-3); }
 .tpj-vz { margin: 0; padding: 16px 8px; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); text-align: center; }
 .tpj-vz p { margin: 0 0 12px; }
 .tpj-cats { display: flex; gap: 8px; margin: 0 -20px 12px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; }

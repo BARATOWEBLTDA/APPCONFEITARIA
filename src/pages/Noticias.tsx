@@ -211,7 +211,7 @@ export default function Noticias() {
               <div>
                 <h2>Nenhuma novidade por enquanto</h2>
                 <p>As dicas para vender mais e as novidades do Doonly aparecem aqui. A gente avisa no sininho quando sair uma nova.</p>
-                <button type="button" className="nl-vazia-bt" onClick={() => navigate("/inicio")}>Voltar pro Início</button>
+                <button type="button" className="nl-vazia-bt" onClick={() => navigate("/inicio")}>Voltar para o Início</button>
               </div>
             </div>
             <div className="nl-convs">

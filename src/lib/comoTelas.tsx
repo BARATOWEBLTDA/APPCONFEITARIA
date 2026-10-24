@@ -188,7 +188,7 @@ export const TOUR_CLIENTES: PassoTour[] = [
   { el: ".cl9-niver", titulo: "Aniversários", texto: "Clientes que fazem aniversário nos próximos 30 dias. Envie os parabéns pelo WhatsApp." },
   { el: ".cl9-busca", titulo: "Buscar", texto: "Encontre um cliente pelo nome, telefone ou e-mail." },
   { el: ".cl9-acoes", titulo: "Novo cliente", texto: "Cadastre quem compra pelo WhatsApp ou no balcão. Quem pede pelo cardápio é cadastrado automaticamente." },
-  { el: ".cl9-chips", titulo: "Filtros", texto: "Filtre a lista por aniversário, novos cadastros ou clientes sem comprar há 60 dias. Cada filtro aparece quando há clientes nele." },
+  { el: ".cl9-filtro", titulo: "Filtro", texto: "Abre na lateral: mostre só quem faz aniversário, os novos cadastros ou quem está sem comprar há 60 dias." },
   { el: ".cl9-lista, .cl9-tab", titulo: "Lista de clientes", texto: "Selecione um cliente para ver o histórico de pedidos e o total gasto. O ícone do WhatsApp abre a conversa.",
     vazio: [
       { el: ".cl9-semres", texto: "Nenhum cliente com esta busca ou filtro. Confira o que foi digitado ou volte para Todos." },
@@ -214,7 +214,7 @@ export const COMO_PRODUTOS: Como = {
 export const TOUR_PRODUTOS: PassoTour[] = [
   { el: ".pl-busca", titulo: "Buscar", texto: "Encontre um produto pelo nome." },
   { el: ".pl-novo", titulo: "Novo produto", texto: "Cadastre um produto com foto, preço, descrição e opções, como sabores e tamanhos." },
-  { el: ".pl-ord .ui-tit-acao", titulo: "Ordenar", texto: "Organize a lista por mais recentes, ordem alfabética, categoria ou preço." },
+  { el: ".pl-filtro", titulo: "Filtro", texto: "Abre na lateral: ordene a lista (mais recentes, nome, categoria ou preço) e mostre só as categorias que quiser." },
   { el: ".prod-card", titulo: "Produto", texto: "Selecione um produto para editar as informações, as fotos e as opções.",
     vazio: [
       { el: ".prod-root .ui-vazia", texto: "Nenhum produto com esta busca. Confira o nome digitado." },
@@ -242,7 +242,7 @@ export const COMO_FICHA: Como = {
 export const TOUR_FICHA: PassoTour[] = [
   { el: ".fl-alerta", titulo: "Prejuízo", texto: "Produtos com preço de venda abaixo do custo. Selecione para ver quais são e ajustar o preço." },
   { el: ".cl9-busca", titulo: "Buscar", texto: "Encontre um produto pelo nome." },
-  { el: ".cl9-chips", titulo: "Filtros", texto: "Separe os produtos com ficha, sem ficha e os que estão dando prejuízo." },
+  { el: ".fl-filtro", titulo: "Filtro", texto: "Abre na lateral: separe os produtos com ficha, sem ficha e os que estão dando prejuízo." },
   { el: ".fl-l", titulo: "Produto", texto: "Mostra o custo, o lucro e a margem de cada produto. Selecione para montar ou ajustar a ficha técnica.",
     vazio: [
       { el: ".cl9.fl .cl9-semres", texto: "Nenhum produto com esta busca ou filtro. Confira o nome digitado ou volte para Todos." },
@@ -394,7 +394,7 @@ export const TOUR_INGREDIENTES: PassoTour[] = [
   { el: ".cl9-busca", titulo: "Buscar", texto: "Encontre um ingrediente pelo nome ou pela marca.",
     vazio: { el: ".cl9 > .ui-vazia", titulo: "Ingredientes", texto: "Ainda não há ingredientes. Use Cadastrar ingrediente para adicionar o primeiro." } },
   { el: ".cl9-acoes", titulo: "Novo ingrediente", texto: "Cadastre um item com a quantidade da embalagem e o preço pago." },
-  { el: ".cl9-chips", titulo: "Categorias", texto: "Filtre a lista por categoria, como ingredientes, embalagens e decorações." },
+  { el: ".ig-filtro", titulo: "Filtro", texto: "Abre na lateral: mostre só uma categoria, como ingredientes, embalagens ou decorações." },
   { el: ".ig-l", titulo: "Ingrediente", texto: "Mostra o preço da compra e o custo na receita. Selecione para editar ou atualizar o preço.",
     vazio: { el: ".cl9-card .cl9-semres", texto: "Nenhum ingrediente com este filtro. Confira a busca ou escolha outra categoria." } },
 ];
@@ -404,24 +404,22 @@ export const COMO_TRANSACOES: Como = {
   resumo: "O extrato de todo o dinheiro que entrou e saiu, dia a dia.",
   tit: "Exemplo · uma semana",
   linhas: [["Entradas", "R$ 1.200,00"], ["Saídas", "R$ 450,00"]],
-  total: ["Diferença", "R$ 750,00"],
+  total: ["Saldo", "R$ 750,00"],
   fluxo: ["Lançamento", "Extrato", "Planilha"],
   dicas: [
     [ArrowUp, <>Os recebimentos de pedidos entram na <b>data em que foram recebidos</b>.</>],
     [ArrowCounterClockwise, <>Lançou errado? Abra o item e use <b>Estornar</b>. Ele sai das contas, mas continua no histórico.</>],
-    [Info, <>Aqui também entram <b>aportes e retiradas</b>, por isso a diferença pode não bater com o Sobrou do Financeiro.</>],
-    [DownloadSimple, <><b>Exportar</b> gera uma planilha com as transações da lista, já com os filtros.</>],
+    [Info, <>Aqui também entram <b>aportes e retiradas</b>, por isso o saldo pode não bater com o Sobrou do Financeiro.</>],
+    [DownloadSimple, <>No filtro, <b>Baixar a planilha</b> gera a planilha dos lançamentos da lista, já com os filtros.</>],
   ],
 };
 export const TOUR_TRANSACOES: PassoTour[] = [
-  { el: ".tx-hd, .tx-bts", titulo: "Lançamentos", texto: "Registre uma entrada ou uma saída e exporte o extrato em planilha." },
-  { el: ".tx-per", titulo: "Período", texto: "Escolha o período: hoje, últimos 7 ou 30 dias, um mês ou outro intervalo." },
-  { el: ".tx-res", titulo: "Totais", texto: "Entradas, saídas e a diferença do período." },
-  { el: ".tx-seg", titulo: "Tipo", texto: "Veja todas as transações, apenas as entradas ou apenas as saídas." },
-  { el: ".tx-busca", titulo: "Buscar", texto: "Encontre uma transação pelo cliente, pelo pedido ou pela despesa." },
-  { el: ".tx-chips", titulo: "Forma de pagamento", texto: "Filtre as entradas por Pix, dinheiro, crédito ou débito." },
-  { el: ".tx-dia", titulo: "Extrato", texto: "As transações agrupadas por dia. Selecione uma para ver os detalhes ou estornar.",
-    vazio: { el: ".tx-vazio", texto: "Não há transações neste período. Recebimentos, entradas e saídas aparecem aqui." } },
+  { el: ".tx-saldo", titulo: "Saldo", texto: "O que entrou menos o que saiu no período, com as entradas e as saídas embaixo. As setas trocam o mês." },
+  { el: ".tx-busca", titulo: "Buscar", texto: "Encontre um lançamento pelo cliente, pelo pedido ou pela despesa." },
+  { el: ".tx-bb .gf-bt", titulo: "Filtro", texto: "Abre na lateral: período, só entradas ou só saídas, forma de pagamento e a planilha para baixar." },
+  { el: ".tx-dia", titulo: "Extrato", texto: "Os lançamentos por dia, com o saldo de cada dia. Selecione um para ver os detalhes ou estornar.",
+    vazio: { el: ".tx-vazio", texto: "Não há lançamentos neste período. Recebimentos, entradas e saídas aparecem aqui." } },
+  { el: ".txp-barra, .tx-hd", titulo: "Lançamentos", texto: "Registre uma entrada ou uma saída de dinheiro." },
 ];
 
 export const COMO_A_PAGAR: Como = {
@@ -439,7 +437,7 @@ export const COMO_A_PAGAR: Como = {
   ],
 };
 export const TOUR_A_PAGAR: PassoTour[] = [
-  { el: ".fap-seg", titulo: "Período", texto: "Veja as contas atrasadas, as da semana, as do mês ou todas." },
+  { el: ".fap-filtro", titulo: "Filtro", texto: "Abre na lateral: veja as contas atrasadas, as da semana, as do mês ou todas." },
   { el: ".fap-nova-bt", titulo: "Nova conta", texto: "Lance uma conta com descrição, valor e vencimento." },
   { el: ".fap-it", titulo: "Conta", texto: "Mostra o vencimento, a descrição e o valor de cada conta.",
     vazio: { el: ".fap-vazio", texto: "Não há contas a pagar neste período. Use Nova conta para lançar uma." } },

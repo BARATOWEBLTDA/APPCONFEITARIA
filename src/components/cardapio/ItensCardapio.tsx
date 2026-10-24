@@ -5,7 +5,7 @@ import { ProductModal } from '@/components/cart/ProductModal'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { unidadePreco } from '@/lib/formaVenda'
-import { tamanhosEsgotados, descontoCardapio, precoCardapioComPromocao } from '@/lib/precoCardapio'
+import { tamanhosEsgotados, descontoCardapio, precoCardapioComPromocao, ehCentoLivre } from '@/lib/precoCardapio'
 // (o cartão antigo ProductCard saiu; o CSS dele continua carregando por aqui, na mesma ordem)
 import './cardapioLista.css'
 import './itensCardapio.css'
@@ -23,7 +23,7 @@ export function precoDoCartao(product: Produto) {
   // promoção em valor não entra em produto com tamanhos de preço fixo nem em kit
   const pc = precoCardapioComPromocao(product)
   // Com tamanhos ou kit o preço é o do menor; aí a unidade não vale (não é "por kg")
-  const unidade = pc.aPartir || p?.grupo_tamanhos?.ativo ? '' : unidadePreco(product.forma_venda)
+  const unidade = ehCentoLivre(p) ? 'o cento' : pc.aPartir || p?.grupo_tamanhos?.ativo ? '' : unidadePreco(product.forma_venda)
   // Com mais de um tamanho (ou kit) o valor é o menor: "a partir de R$ 120,00", como no produto aberto
   return { de: pc.de, final: pc.final, unidade, aPartir: pc.aPartir }
 }

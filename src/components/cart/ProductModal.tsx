@@ -567,7 +567,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   // Quantidade: produto por kg (sem tamanho) anda de 0,5 kg; o resto, de 1 em 1.
   // Por kg COM tamanho a quantidade fica 1 (o tamanho já define o peso).
   const kgLivre = isKg && !gTamanho && !kitCfg
-  const semQuantidade = isKg && !kgLivre
+  // (24/10) kit "ele escolhe" (cento): a quantidade já é escolhida em unidades lá em cima; o contador "1 kit" embaixo confundia e cortava o botão
+  const semQuantidade = (isKg && !kgLivre) || (!!kitCfg && (kitCfg as any).modo === 'livre')
   const passo = kgLivre ? 0.5 : 1
   const minimo = kgLivre ? 0.5 : 1
   // (21/10) kit: "1 kit" (antes só "1": não dava pra saber se era 1 kit ou 1 doce)
@@ -604,7 +605,10 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const precosTam = semTamanho ? (gTamanho!.opcoes || [])
     .map((o: any) => comDesconto(precoDoTamanho(o, tamanhoPorPeso, porKg), descPct))
     .filter((v: number) => v > 0) : []
-  const valorTopo = semTamanho ? comDesconto(precoCardapio(product).valor, descPct) : calculo.final
+  // (24/10) "cada sabor tem o seu preço" sem sabor escolhido: mostra o sabor mais barato (na prévia do cadastro
+  // o preço do produto ainda é 0 e aparecia "R$ 0,00 conforme o sabor")
+  const precosSabor = saborComPreco && !opSabor && !gTamanho ? ((gSabor as any)?.opcoes || []).map((o: any) => Number(o?.preco) || 0).filter((v: number) => v > 0) : []
+  const valorTopo = semTamanho ? comDesconto(precoCardapio(product).valor, descPct) : precosSabor.length && !(calculo.final > 0) ? comDesconto(Math.min(...precosSabor), descPct) : calculo.final
   const pMin = precosTam.length ? Math.min(...precosTam) : valorTopo
   const pMax = precosTam.length ? Math.max(...precosTam) : valorTopo
   // (20/10) os tamanhos têm preços diferentes? (decide se a linha do "a partir de" existe, escolhido ou não)
@@ -686,7 +690,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
       {kitCfg && (
         <section ref={el => { secoes.current['kit'] = el }} className={`pm-g${faltou === 'kit' ? ' falta' : ''}`}>
-          <header className="pm-g-cab"><span><b>Monte o seu kit</b><small>{faltou === 'kit' ? 'Complete o kit para continuar' : `Até ${(kitCfg as any).max_sabores || 1} ${((kitCfg as any).max_sabores || 1) === 1 ? 'sabor' : 'sabores'}, de ${Math.max(1, (kitCfg as any).passo_sabor || 1)} em ${Math.max(1, (kitCfg as any).passo_sabor || 1)}`}</small></span>
+          <header className="pm-g-cab"><span><b>{(kitCfg as any).modo === 'livre' ? 'Quantidade e sabores' : 'Monte o seu kit'}</b><small>{faltou === 'kit' ? 'Complete o kit para continuar' : `Até ${(kitCfg as any).max_sabores || 1} ${((kitCfg as any).max_sabores || 1) === 1 ? 'sabor' : 'sabores'}, de ${Math.max(1, (kitCfg as any).passo_sabor || 1)} em ${Math.max(1, (kitCfg as any).passo_sabor || 1)}`}</small></span>
             {/* (21/10) "Obrigatório" discreto no kit: o botão de baixo já não deixa avançar sem montar */}
             <span className="pm-g-dir">{kitInfo?.completo ? <i className="pm-ok"><Check size={14} weight="bold" /></i> : <i className="pm-obr pm-obr--leve">Obrigatório</i>}</span></header>
           <div className="pm-kit"><KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} desconto={descPct} /></div>

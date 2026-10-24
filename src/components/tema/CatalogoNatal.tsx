@@ -83,7 +83,7 @@ function HeroPadrao() {
   );
 }
 
-const SUBTITULOS = ["Combos exclusivos para celebrar", "Perfeitos para presentear", "Feitos com carinho para sua ceia", "Para adoçar as festas", "Escolhidos a dedo pro Natal"];
+const SUBTITULOS = ["Combos exclusivos para celebrar", "Perfeitos para presentear", "Feitos com carinho para sua ceia", "Para adoçar as festas", "Escolhidos a dedo para o Natal"];
 
 function useAbrirProduto() {
   const [aberto, setAberto] = useState(false);

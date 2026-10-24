@@ -6,6 +6,7 @@ import QuickAddInsumo, { InsumoQuick, custoNaReceita, descreverCompra, formatarC
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_INGREDIENTES, TOUR_INGREDIENTES } from "@/lib/comoTelas";
 import { Botao, TelaVazia, avisar, confirmar } from "@/components/base";
+import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import "./clientes.css";
 import "@/components/ingredientes.css";
 
@@ -46,6 +47,7 @@ export default function Insumos() {
   const [erroCarga, setErroCarga] = useState("");
   const [busca, setBusca] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("Todos");
+  const [filtroAberto, setFiltroAberto] = useState(false);
 
   // Janela de cadastro/edição: "form" fica montado durante a animação de saída
   const [form, setForm] = useState<{ editando: Insumo | null; chave: number } | null>(null);
@@ -166,23 +168,20 @@ export default function Insumos() {
             <div className="cl9-barra">
               <label className="cl9-busca">
                 <MagnifyingGlass size={20} weight="bold" />
-                <input type="search" placeholder="Buscar ingrediente" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar ingrediente" autoComplete="off" />
+                <input type="search" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar ingrediente" autoComplete="off" />
                 {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
               </label>
+              {/* (24/10) filtro padrão do app: abre na lateral */}
+              {chips.length > 1 && <BotaoFiltro className="ig-filtro" ativos={filtroCategoria === "Todos" ? 0 : 1} onClick={() => setFiltroAberto(true)} />}
               <div className="cl9-acoes">
                 <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrirForm(null)}><span className="cl9-g">Novo ingrediente</span><span className="cl9-c">Novo</span></Botao>
               </div>
             </div>
-
-            {chips.length > 1 && (
-              <div className="cl9-chips" role="tablist" aria-label="Filtrar por categoria">
-                {["Todos", ...chips].map(c => (
-                  <button key={c} type="button" role="tab" aria-selected={filtroCategoria === c} onClick={() => setFiltroCategoria(c)}>
-                    {rotuloCategoria(c)}<i>{c === "Todos" ? insumos.length : contagem[c]}</i>
-                  </button>
-                ))}
-              </div>
-            )}
+            {filtroAberto && <GavetaFiltro valor={{ cat: filtroCategoria }} padrao={{ cat: "Todos" }}
+              grupos={[{ id: "cat", titulo: "Categoria", tipo: "radio", opcoes: ["Todos", ...chips].map(c => ({ k: c, label: c === "Todos" ? "Todas" : rotuloCategoria(c), n: c === "Todos" ? insumos.length : contagem[c] })) }]}
+              contar={v => v.cat === "Todos" ? insumos.length : contagem[v.cat] || 0}
+              rotulo={n => n === 0 ? "Nenhum ingrediente" : `Ver ${n} ${n === 1 ? "ingrediente" : "ingredientes"}`}
+              aoAplicar={v => setFiltroCategoria(v.cat)} aoFechar={() => setFiltroAberto(false)} />}
 
             {filtrados.length === 0 ? (
               <p className="cl9-semres">{termo ? "Nenhum ingrediente com esse nome ou marca. Confira a busca." : "Nenhum ingrediente nessa categoria."}</p>
@@ -198,7 +197,7 @@ export default function Insumos() {
                     <span className="ig-l-tx">
                       <b>{i.nome}</b>
                       <small className="ig-pc">{[i.marca, rotuloCategoria(i.categoria)].filter(Boolean).join(" · ")}</small>
-                      <small className="ig-cel">{preco} · {compra}</small>
+                      <small className="ig-cel">{preco} · {compra.replace(/^.*?\b(de|com)\s+/, "")}</small>{/* (24/10) celular: só a quantidade (cabe numa linha) */}
                     </span>
                     <span className="ig-l-compra"><b>{preco}</b><small>{compra}</small></span>
                     <span className="ig-l-custo"><b>{formatarCusto(c.valor)}</b><small>{c.por.replace(/ (?=\S+$)/, "\u00a0")}</small></span>

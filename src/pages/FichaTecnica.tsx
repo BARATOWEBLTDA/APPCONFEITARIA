@@ -13,6 +13,7 @@ import DooInfoModal from "@/components/DooInfoModal";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_FICHA, TOUR_FICHA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, WarningCircle, X } from "@phosphor-icons/react";
 import "./clientes.css";
 import "./fichaLista.css";
@@ -207,6 +208,7 @@ export default function FichaTecnica() {
   const [selected, setSelected] = useState<Produto | null>(null);
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState<"todos" | "com" | "sem" | "prejuizo">("todos");
+  const [filtroAberto, setFiltroAberto] = useState(false);
 
   // Edicao da ficha
   const [insumosCadastrados, setInsumosCadastrados] = useState<Insumo[]>([]);
@@ -993,14 +995,14 @@ export default function FichaTecnica() {
               <input type="search" placeholder="Buscar produto" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar produto" autoComplete="off" />
               {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
             </label>
+            {/* (24/10) filtro padrão do app: abre na lateral */}
+            <BotaoFiltro className="fl-filtro" ativos={filtro === "todos" ? 0 : 1} onClick={() => setFiltroAberto(true)} />
           </div>
-          {chipsFiltro.length > 1 && (
-            <div className="cl9-chips" role="tablist" aria-label="Filtrar produtos">
-              {chipsFiltro.map(([k, t, n]) => (
-                <button key={k} type="button" role="tab" aria-selected={filtro === k} onClick={() => setFiltro(k)}>{t}<i>{n}</i></button>
-              ))}
-            </div>
-          )}
+          {filtroAberto && <GavetaFiltro valor={{ mostrar: filtro }} padrao={{ mostrar: "todos" }}
+            grupos={[{ id: "mostrar", titulo: "Mostrar", tipo: "radio", opcoes: chipsFiltro.map(([k, t, n]) => ({ k, label: k === "todos" ? "Todos os produtos" : t, n })) }]}
+            contar={v => (chipsFiltro.find(([k]) => k === v.mostrar)?.[2] as number) ?? 0}
+            rotulo={n => n === 0 ? "Nenhum produto" : `Ver ${n} ${n === 1 ? "produto" : "produtos"}`}
+            aoAplicar={v => setFiltro(v.mostrar)} aoFechar={() => setFiltroAberto(false)} />}
           {filtrados.length === 0 ? (
             <p className="cl9-semres">{busca.trim() ? "Nenhum produto com esse nome. Confira a busca." : "Nenhum produto nesse filtro."}</p>
           ) : (<>

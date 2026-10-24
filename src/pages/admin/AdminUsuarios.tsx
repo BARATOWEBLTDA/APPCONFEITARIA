@@ -405,7 +405,7 @@ export default function AdminUsuarios() {
         .au-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-weight: 700; white-space: nowrap; }
         .au-tag em { font-style: normal; font-weight: 500; }
         .au-tag--pro { background: var(--ui-vinho); color: var(--ui-branco); }
-        .au-tag--para o em { color: rgba(255,255,255,.8); }
+        .au-tag--pro em { color: rgba(255,255,255,.8); }
         .au-tag--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
         .au-tag--bloq { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
         .au-tag--admin { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }

@@ -787,7 +787,7 @@ function CartaoAgenda({ p, ocupado, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
   const cancelado = p.status === "cancelado";
   const pagamento = cancelado ? null
     : falta <= 0.009 ? { t: "Pago", tom: "verde" as const }
-    : recebido > 0 ? { t: `Sinal de ${rs(recebido)}, falta ${rs(falta)}`, tom: "laranja" as const }
+    : recebido > 0 ? { t: `Sinal ${rs(recebido).replace(" ", "\u00A0")} · falta ${rs(falta).replace(" ", "\u00A0")}`, tom: "laranja" as const } // (24/10) mais curto e sem quebrar o valor no meio
     : { t: `Falta receber ${rs(falta)}`, tom: "laranja" as const };
   const nome = p.cliente_nome ? nomeDeGente(p.cliente_nome) : "Cliente não informado";
   const ref = useRef<HTMLElement>(null);

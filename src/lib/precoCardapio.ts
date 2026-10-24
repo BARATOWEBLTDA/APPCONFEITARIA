@@ -73,6 +73,8 @@ export function comDesconto(valor: number, desconto: number): number {
  * - Sem nada: o preço do produto
  */
 export function precoCardapio(p: any): { valor: number; aPartir: boolean } {
+  // (24/10) "ele escolhe" (cento): o preço é o do cento, sem "a partir de" (igual ao produto vendido pelo cento)
+  if (kitAtivo(p?.kit_qtd) && p.kit_qtd.modo === 'livre' && Number(p.kit_qtd.livre?.preco_cento) > 0) return { valor: r2(Number(p.kit_qtd.livre.preco_cento)), aPartir: false }
   if (kitAtivo(p?.kit_qtd)) return { valor: r2(precoMinKit(p.kit_qtd)), aPartir: true }
   const gt = p?.grupo_tamanhos
   const todas: any[] = gt?.ativo ? (gt.opcoes || []) : []
@@ -108,4 +110,9 @@ export function precoCardapioComPromocao(p: any): { de: number; final: number; a
   const d = descontoCardapio(p)
   const final = comDesconto(pc.valor, d)
   return { de: d > 0 && final < pc.valor ? pc.valor : 0, final, aPartir: pc.aPartir }
+}
+
+/** (24/10) Kit "ele escolhe" (o cliente diz quantos quer): o preço do cartão é "o cento" */
+export function ehCentoLivre(p: any): boolean {
+  return kitAtivo(p?.kit_qtd) && p.kit_qtd.modo === 'livre' && Number(p.kit_qtd.livre?.preco_cento) > 0
 }

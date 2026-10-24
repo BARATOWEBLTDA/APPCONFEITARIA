@@ -255,7 +255,7 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
           <ProductModal isOpen previa onClose={() => setVerPrevia(false)} onAdicionar={() => setVerPrevia(false)} product={EXEMPLO_PRODUTO as any} />
         </CartProvider>
       )}
-      <p className="esc-s">Marque o que vale{nome ? <> pro <b>{nome}</b></> : null}. {edicao ? "Toque em Editar para mudar." : "Você cadastra cada um em seguida."}</p>
+      <p className="esc-s">Marque o que vale{nome ? <> para o <b>{nome}</b></> : null}. {edicao ? "Toque em Editar para mudar." : "Você cadastra cada um em seguida."}</p>
       <ul className="esc-chks" role="group" aria-label="Escolhas">
         {TODAS_ESCOLHAS.map(linha)}
       </ul>
@@ -357,7 +357,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
         return (
           <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
             <p><b>Sem valor, já vem no preço.</b>Só coloque valor no que custa a mais para o cliente.
-              <span className="esc-aviso-ex">Ex.: {EX[chave]} + R$ 8,00 → {nomeP} de R$ {textoBRL(base)} sai por <em>R$ {textoBRL(base + 8)}</em></span></p></div>
+              <span className="esc-aviso-ex">Ex.: {EX[chave]} +{"\u00A0"}R${"\u00A0"}8,00 → {nomeP} de R${"\u00A0"}{textoBRL(base)} sai por <em>R${"\u00A0"}{textoBRL(base + 8)}</em></span></p></div>
         );
       })()}
       {(
@@ -388,7 +388,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
       <button type="button" className="esc-rend-linha esc-av-linha" onClick={() => setAvancado(true)}>
         <span className="esc-av-ic" aria-hidden="true"><GearSix size={20} weight="bold" /></span>
         <span className="esc-tx"><b>Avançado</b>
-          <small>{quantosAtual === 1 ? "Escolhe 1" : quantosAtual >= 99 ? "À vontade" : `Escolhe até ${quantosAtual}`} · {g.min >= 1 ? "Obrigatório" : "Opcional"}</small></span>
+          <small>{quantosAtual === 1 ? "Escolhe 1" : quantosAtual >= 99 ? "À vontade" : `Escolhe até ${quantosAtual}`} · {g.min >= 1 ? "Obrigatório" : "Opcional"}{(g as any).sabor_tem_preco_proprio ? " · Preço por sabor" : ""}</small></span>
         <span className="esc-rend-bt">Editar</span>
       </button>
       <Janela aberta={avancado} aoFechar={() => setAvancado(false)} titulo="Avançado" tipo="conteudo" umaAcao
@@ -731,7 +731,7 @@ function JanelaRendimento({ g, set, onFechar, nomeProduto = "" }: { g: GrupoTam;
           ))}
         </ul>
 
-        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>No cardápio aparece "Serve até 10 {un}".</p></div>
+        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>No cardápio aparece “Serve até 10{"\u00A0"}{un}”.</p></div>
       </div>
       {/* tocar fora ou no X só fecha a pergunta (volta pro rendimento, sem salvar nada) */}
       <Janela aberta={perguntar} aoFechar={() => setPerguntar(false)} titulo="Salvar como predefinição?" tipo="aviso"

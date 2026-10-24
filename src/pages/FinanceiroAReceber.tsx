@@ -138,7 +138,7 @@ export default function FinanceiroAReceber() {
                       <span className={`far-tg ${it.dias !== null && it.dias < 0 ? "far-tg--atr" : ""}`}>{quando(it.dias)}</span>
                     </div>
                     <div className="far-it-v">
-                      <small>{it.recebido > 0 ? `${brl(it.total)} · pago ${brl(it.recebido)}` : `Total ${brl(it.total)}`}</small>
+                      <small>{it.recebido > 0 ? `Pago ${brl(it.recebido)}` : `Total ${brl(it.total)}`}</small>
                       <b>falta {brl(it.falta)}</b>
                     </div>
                     <div className="far-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, (it.recebido / (it.total || 1)) * 100)}%` }} /></div>

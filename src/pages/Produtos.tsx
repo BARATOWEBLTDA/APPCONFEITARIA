@@ -15,7 +15,7 @@ import ResumoEdicao from "@/components/produto/ResumoEdicao";
 import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
-import { precoCardapioComPromocao, precosDosSabores } from "@/lib/precoCardapio";
+import { precoCardapioComPromocao, precosDosSabores, ehCentoLivre } from "@/lib/precoCardapio";
 import { supabase } from "@/lib/supabase";
 import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grupos";
 import {
@@ -34,7 +34,7 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import Categorias from "@/pages/Categorias";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_PRODUTOS, TOUR_PRODUTOS } from "@/lib/comoTelas";
-import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Lightning, CalendarBlank } from "@phosphor-icons/react";
+import { ArrowLeft as ArrowLeftIc, Camera, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Lightning, CalendarBlank } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
@@ -64,10 +64,11 @@ const skusDe = (lista: any[]) => new Set(lista.map(p => String(p?.sku || "").tri
 const precoDaLista = (prod: any) => {
   // (11/10) pela função única do cardápio: mesma regra de promoção e mesmo arredondamento do cartão da cliente
   const pc = precoCardapioComPromocao(prod);
-  const unidade = pc.aPartir || prod?.grupo_tamanhos?.ativo ? "" : unidadeDoPreco(prod?.forma_venda);
+  const unidade = ehCentoLivre(prod) ? "o cento" : pc.aPartir || prod?.grupo_tamanhos?.ativo ? "" : unidadeDoPreco(prod?.forma_venda);
   return { de: pc.de, final: pc.final, unidade, aPartir: pc.aPartir };
 };
 import ReqTag, { OptTag } from "@/components/ReqTag";
+import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import { apiFetch } from "@/lib/apiFetch";
 
 // ── Helpers de conversão de unidades (ficha técnica) ──
@@ -782,6 +783,8 @@ export default function Produtos() {
   // Tela de sucesso depois de publicar um produto novo
   const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; imagem?: string; primeiro: boolean; fora?: boolean; pronta?: boolean | null; semExtras?: boolean }>(null);
   const [form, setForm] = useState<Produto>(EMPTY);
+  // (24/10) produto simples no cadastro novo (sem tamanhos, sem kit e sem preço pelo sabor): a promoção vem com a caixinha
+  const simplesNovo = !form.id && !((form.grupo_tamanhos as any)?.ativo && ((form.grupo_tamanhos as any).opcoes?.length || 0) > 0) && !kitAtivo((form as any).kit_qtd) && !precosDosSabores(form);
   useEffect(() => { setEscTela(0); }, [form.id]); // (14/10) outro produto: as escolhas abrem na lista
 
   // Auto-sync: se modo do tamanho é por_peso, forma_venda vira kg automaticamente.
@@ -808,7 +811,8 @@ export default function Produtos() {
 
   const DRAFT_KEY = "doonly_produto_draft_v1";
   const [ordenarPor, setOrdenarPor] = useState<"recentes"|"alfabetica"|"categoria"|"preco">("recentes");
-  const [showOrdenar, setShowOrdenar] = useState(false);
+  const [catsFiltro, setCatsFiltro] = useState<string[] | null>(null); // (24/10) null = todas as categorias
+  const [filtroProdAberto, setFiltroProdAberto] = useState(false);
   const [filtroOrfaos, setFiltroOrfaos] = useState(false);
   const [novaCategoria, setNovaCategoria] = useState("");
   const [novaCategoriaIcone, setNovaCategoriaIcone] = useState("");
@@ -985,7 +989,7 @@ export default function Produtos() {
     if (sug.existe) { setForm(f => ({ ...f, categoria: sug.nome })); return; }
     if (!userId) return;
     setSavingCat(true);
-    const { error } = await supabase.from("categorias").insert({ nome: sug.nome, imagem_url: `/categoriaicones/icone (${sug.icone}).png`, ordem: categorias.length, user_id: userId })
+    const { error } = await supabase.from("categorias").insert({ nome: sug.nome, imagem_url: null /* (24/10) foto automática: a do primeiro produto */, ordem: categorias.length, user_id: userId })
       .then(r => r, (e: unknown) => ({ error: e }));
     setSavingCat(false);
     // 23505 = o banco já tem essa categoria (outro aparelho): vale como criada
@@ -1599,7 +1603,7 @@ export default function Produtos() {
     }
     const { error } = await supabase.from("categorias").insert({
       nome,
-      imagem_url: icone,
+      imagem_url: null /* (24/10) foto automática */,
       ordem: lista.length,
       user_id: userId
     }).then(r => r, (e: unknown) => ({ error: e }));
@@ -1615,6 +1619,7 @@ export default function Produtos() {
 
   const produtosFiltrados = (() => {
     let lista = [...produtos];
+    if (catsFiltro) lista = lista.filter(p => catsFiltro.includes(p.categoria || "__sem"));
     if (buscaTexto.trim()) {
       const t = buscaTexto.toLowerCase();
       lista = lista.filter(p => p.nome.toLowerCase().includes(t) || p.descricao?.toLowerCase().includes(t) || String((p as any).sku || "").toLowerCase().includes(t));
@@ -1731,11 +1736,26 @@ export default function Produtos() {
       <div className="pl-topo">
         <div className="ui-campo-c pl-busca" onClick={e => { if (e.target === e.currentTarget) (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus(); }}>
           <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-          <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar produto" placeholder="Buscar produto" value={buscaTexto} onChange={e => setBuscaTexto(e.target.value)} />
+          <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar produto" placeholder="Buscar" value={buscaTexto} onChange={e => setBuscaTexto(e.target.value)} />
           {buscaTexto && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBuscaTexto("")}><XIc size={20} weight="bold" /></BotaoIcone>}
         </div>
+        {/* (24/10) filtro padrão do app: ordenar e categoria na lateral */}
+        <BotaoFiltro className="pl-filtro" ativos={(ordenarPor !== "recentes" ? 1 : 0) + (catsFiltro ? 1 : 0)} onClick={() => setFiltroProdAberto(true)} />
         <Botao icone={<PlusIc size={20} weight="bold" />} onClick={openNovo} className="pl-novo"><span className="pl-novo-g">Novo produto</span><span className="pl-novo-c">Novo</span></Botao>
       </div>
+      {filtroProdAberto && (() => {
+        const cats = [...todasCategorias, ...(produtos.some(p => !p.categoria) ? ["__sem"] : [])];
+        const nCat = (c: string) => produtos.filter(p => (p.categoria || "__sem") === c).length;
+        return <GavetaFiltro valor={{ ordem: ordenarPor, cats: catsFiltro || cats }} padrao={{ ordem: "recentes", cats }}
+          grupos={[
+            { id: "ordem", titulo: "Ordenar", tipo: "radio", opcoes: [{ k: "recentes", label: "Mais recentes" }, { k: "alfabetica", label: "Nome (A a Z)" }, { k: "categoria", label: "Categoria" }, { k: "preco", label: "Menor preço" }] },
+            { id: "cats", titulo: "Categoria", tipo: "check", todas: true, opcoes: cats.map(c => ({ k: c, label: c === "__sem" ? "Sem categoria" : c, n: nCat(c) })) },
+          ]}
+          contar={v => produtos.filter(p => (v.cats as string[]).includes(p.categoria || "__sem")).length}
+          rotulo={n => n === 0 ? "Nenhum produto" : `Ver ${n} ${n === 1 ? "produto" : "produtos"}`}
+          aoAplicar={v => { setOrdenarPor(v.ordem); setCatsFiltro((v.cats as string[]).length === cats.length ? null : v.cats); setFiltroOrfaos(false); }}
+          aoFechar={() => setFiltroProdAberto(false)} />;
+      })()}
 
       {/* Aviso de produtos sem categoria válida */}
       {(() => {
@@ -1752,38 +1772,9 @@ export default function Produtos() {
         );
       })()}
 
-      {/* Seus produtos + ordenar */}
+      {/* Seus produtos (24/10: o ordenar foi para o filtro da lateral) */}
       <div className="pl-ord">
-        <TituloUi contagem={filtroOrfaos ? produtos.filter(p => p.categoria && !categorias.includes(p.categoria)).length : produtosFiltrados.length} acao={
-          <Botao variante="link" icone={<SortAscending size={16} weight="bold" />} iconeDepois={<CaretDown size={14} weight="bold" />} aria-expanded={showOrdenar} onClick={() => setShowOrdenar(!showOrdenar)}>
-            {{ recentes: "Mais recentes", alfabetica: "Alfabética", categoria: "Categoria", preco: "Preço" }[ordenarPor]}
-          </Botao>
-        }>Seus produtos</TituloUi>
-        {showOrdenar && (
-          <>
-            <div onClick={() => setShowOrdenar(false)} style={{ position: "fixed", inset: 0, zIndex: 99 }} />
-            <div className="pl-ord-menu" role="menu">
-              {([
-                { value: "recentes", label: "Mais recentes" },
-                { value: "alfabetica", label: "Alfabética" },
-                { value: "categoria", label: "Categoria" },
-                { value: "preco", label: "Preço" },
-              ] as const).map(opt => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked={ordenarPor === opt.value}
-                  className={`pl-ord-it${ordenarPor === opt.value ? " on" : ""}`}
-                  onClick={() => { setOrdenarPor(opt.value); setShowOrdenar(false); setFiltroOrfaos(false); }}
-                >
-                  {opt.label}
-                  {ordenarPor === opt.value && <CheckIc size={16} weight="bold" aria-hidden="true" />}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+        <TituloUi contagem={filtroOrfaos ? produtos.filter(p => p.categoria && !categorias.includes(p.categoria)).length : produtosFiltrados.length}>Seus produtos</TituloUi>
       </div>
       </>
       )}
@@ -1933,7 +1924,7 @@ export default function Produtos() {
                 {(() => {
                   const pl = precoDaLista(p);
                   // unidade vira o rótulo ("O kg", "O cento"…), pra o valor caber numa linha; "a unidade" fica só "Preço"
-                  const rotulo = pl.aPartir ? "A partir de" : !pl.unidade || pl.unidade === "a unidade" ? "Preço" : pl.unidade.replace(/^por /, "o ").replace(/^./, l => l.toUpperCase());
+                  const rotulo = pl.aPartir ? "A partir de" : !pl.unidade || pl.unidade === "a unidade" ? "Preço" : `Preço ${pl.unidade.replace(/^por /, "o ").replace(/^o /, "do ").replace(/^a /, "da ")}`; // (24/10) "Preço do kg", "Preço do cento" (antes "O kg")
                   const cheio = pl.de > 0 ? pl.de : pl.final;
                   return (
                     <dl className="pl-ficha">
@@ -2536,6 +2527,7 @@ export default function Produtos() {
                     )}
                     <div>
                       <p className="prod-section-label prod-section-label--novo prod-lbl-sep">Promoção</p>
+                      {!form.id && <p className="prod-kg-promo-t">{primeiroNome ? `${primeiroNome}, gostaria` : "Gostaria"} de colocar uma promoção?</p>}
 <div className="prod-opcs">
                       <button type="button" className={`prod-opc${promoOn ? " on" : ""}`} role="checkbox" aria-checked={promoOn}
                         onClick={() => setForm(f => ({ ...f, promocao: !promoOn, tipo_promocao: "percentual", desconto_percentual: !promoOn ? (f.desconto_percentual || 10) : 0, preco_promocional: 0 }))}>
@@ -2604,7 +2596,7 @@ export default function Produtos() {
                   })()}
                   {/* (14/10) preço cheio e promocional lado a lado; "Vendido por" embaixo, numa linha só dele */}
                   {/* (14/10) preço pelo sabor: sem preço cheio; o preço de cada sabor vem na tabela abaixo */}
-                  {precosDosSabores(form) ? null : <div className="prod-row-2">
+                  {precosDosSabores(form) ? null : <div className={`prod-row-2${simplesNovo ? " prod-row-1" : ""}`}>
                     {!(!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && <div className="prod-field">
                       <label>Preço cheio</label>
                       <div className="prod-preco-input prod-preco-input--big">
@@ -2620,7 +2612,7 @@ export default function Produtos() {
                         }} />
                       </div>
                     </div>}
-                    {(form.id || !(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") || kgPromo || Number(form.preco_promocional) > 0) && <div className="prod-field">
+                    {!simplesNovo && (form.id || !(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") || kgPromo || Number(form.preco_promocional) > 0) && <div className="prod-field">
                       <label>{!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? "Preço promocional do kg" : "Preço promocional"}</label>
                       <div className={`prod-preco-input prod-preco-input--big prod-preco-input--promo${Number(form.preco_promocional) > 0 ? " prod-promo-tem" : ""}`}>
                         <span>R$</span>
@@ -2655,6 +2647,32 @@ export default function Produtos() {
                         </select>
                     </div>
                   )}
+                  {/* (24/10) produto simples: a promoção no mesmo jeito do kg, dos tamanhos e do kit (pergunta + caixinha + preço) */}
+                  {simplesNovo && (() => {
+                    const pp = Number(form.preco_promocional) || 0, cheio = Number(form.preco_normal) || 0;
+                    const ligada = kgPromo || pp > 0;
+                    const pct = cheio > 0 && pp > 0 && pp < cheio ? Math.round((1 - pp / cheio) * 100) : 0;
+                    return (<>
+                      <p className="prod-section-label prod-section-label--novo prod-lbl-sep">Promoção</p>
+                      <p className="prod-kg-promo-t">{primeiroNome ? `${primeiroNome}, gostaria` : "Gostaria"} de colocar uma promoção?</p>
+                      <button type="button" className={`prod-opc${ligada ? " on" : ""}`} role="checkbox" aria-checked={ligada}
+                        onClick={() => { setKgPromo(!ligada); if (ligada) setForm(f => ({ ...f, preco_promocional: 0, promocao: false })); }}>
+                        <i aria-hidden="true">{ligada && <CheckIc size={14} weight="bold" />}</i>
+                        <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                      </button>
+                      {ligada && (
+                        <div className="prod-field" style={{ marginTop: 12 }}>
+                          <label>Preço promocional</label>
+                          <div className={`prod-preco-input prod-preco-input--big prod-preco-input--promo${pp > 0 ? " prod-promo-tem" : ""}`}>
+                            <span>R$</span>
+                            <input type="text" inputMode="numeric" placeholder="0,00" aria-label="Preço promocional" value={pp > 0 ? formatPreco(pp) : ""}
+                              onChange={e => { const v = parsePreco(e.target.value); setForm(f => ({ ...f, preco_promocional: v, promocao: v > 0 && v < f.preco_normal, tipo_promocao: 'fixo' })); }} />
+                          </div>
+                          {pct > 0 ? <small className="prod-promo-info">{pct}% de desconto</small> : pp > 0 && pp >= cheio && cheio > 0 ? <small className="prod-promo-info prod-promo-info--erro">Precisa ser menor que o cheio</small> : null}
+                        </div>
+                      )}
+                    </>);
+                  })()}
 
 
                 </div>
@@ -2761,7 +2779,7 @@ export default function Produtos() {
                     {/* (24/10) quando usar a foto de referência */}
                     <p className="prod-ref-dica">
                       {(form as any).aceita_referencia === true
-                        ? <>No pedido aparece um campo para o cliente <b>anexar uma foto de inspiração</b>. Ela chega junto com o pedido para você ver.</>
+                        ? <>No pedido aparece um campo para o cliente <b>anexar uma foto de referência</b>. Ela chega junto com o pedido para você ver.</>
                         : <>Ligue em produtos <b>personalizados</b>, como bolos decorados, topos de bolo e kits temáticos. Em produtos de linha, deixe desligado.</>}
                     </p>
                     {enc && <div className="prod-so-pc"><PrazoEncomenda valor={(form as any).antecedencia ?? null} aoMudar={v => setForm(f => ({ ...(f as any), antecedencia: v }))} /></div>}
@@ -3937,6 +3955,7 @@ export default function Produtos() {
         .prod-field input:focus, .prod-field select:focus, .prod-field textarea:focus { border-color: var(--border-focus); }
         .prod-field textarea { resize: none; }
         .prod-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-stack); }
+        .prod-row-2.prod-row-1 { grid-template-columns: 1fr; }
         .prod-preco-input { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-input); transition: border-color var(--dur-fast) var(--ease-out); }
         .prod-preco-input span { padding: 0 var(--space-3); font-weight: var(--fw-bold); color: var(--success); font-size: var(--font-input); flex-shrink: 0; }
         .prod-preco-input input { border: none !important; border-radius: 0 !important; flex: 1; padding: var(--space-3) var(--space-2) var(--space-3) 0 !important; outline: none !important; box-shadow: none !important; }

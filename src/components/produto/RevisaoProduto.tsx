@@ -1,3 +1,4 @@
+import { sufixoVenda } from "@/lib/formaVenda";
 import { rotuloAntecedencia } from "@/lib/entregaProduto";
 import { precosDosSabores } from "@/lib/precoCardapio";
 import { CheckCircle, Warning } from "@phosphor-icons/react";
@@ -16,6 +17,7 @@ const GRUPOS: [string, string, string][] = [
   ["grupo_massas", "massa", "massas"], ["grupo_recheios", "recheio", "recheios"],
   ["grupo_coberturas", "cobertura", "coberturas"], ["grupo_sabores", "sabor", "sabores"],
 ];
+const UNIDADE_REV: Record<string, string> = { un: "a unidade", kg: "o kg", cento: "o cento", caixa: "a caixa", fatia: "a fatia", kit: "o kit" };
 const rs = (v: number) => `R$ ${textoBRL(v) || "0,00"}`;
 const pesoDe = (o: Op) => Number(o.peso_kg) || Number(String(o.nome).replace(",", ".").match(/(\d+(?:\.\d+)?)/)?.[1]) || 0;
 
@@ -56,13 +58,13 @@ export function resumoRevisao(form: any) {
 
   // o que o cliente escolhe
   const escolhas: string[] = [];
-  if (kitAtivo(kit)) escolhas.push("quantidade", `até ${kit!.max_sabores} ${kit!.max_sabores === 1 ? "sabor" : "sabores"}`);
+  if (kitAtivo(kit)) escolhas.push("quantidade", `até ${kit!.max_sabores}\u00A0${kit!.max_sabores === 1 ? "sabor" : "sabores"}`);
   if (temTam) escolhas.push("tamanho");
   GRUPOS.forEach(([campo, um, varios]) => {
     const g = form[campo] as G | undefined;
     if (!g?.ativo || !(g.opcoes?.length)) return;
     const max = Number(g.max) || 1;
-    escolhas.push(max >= 99 ? varios : max === 1 ? um : `até ${max} ${varios}`);
+    escolhas.push(max >= 99 ? varios : max === 1 ? um : `até ${max}\u00A0${varios}`);
   });
 
   // pedido de exemplo: o primeiro de cada escolha
@@ -84,6 +86,13 @@ export function resumoRevisao(form: any) {
     const v = g.sabor_tem_preco_proprio ? (temTam && !porPeso && (g as any).regra_conflito_tamanho !== "preco_sabor" && (g as any).regra_conflito_tamanho !== "tamanho_base_sabor_adicional" ? 0 : Number(o.preco) || 0) : Number(o.adicional) || 0;
     linhas.push({ nome: o.nome, valor: v });
   });
+  // (24/10) promoção em %: o cardápio tira o desconto de tudo (tamanho, kit, sabor e o que custa a mais).
+  // O preço fixo e o do kg já vêm com o desconto em `base`; o resto recebe aqui (antes o exemplo saía sem o desconto)
+  const pctP = Number(form.desconto_percentual) || 0;
+  if (form.promocao && form.tipo_promocao === "percentual" && pctP > 0 && pctP < 100) {
+    const jaTem = !kitAtivo(kit) && (!temTam || porPeso) && !precosDosSabores(form);
+    linhas.forEach((l, i) => { if (i > 0 || !jaTem) l.valor = Math.round(l.valor * (100 - pctP)) / 100; });
+  }
   const total = linhas.reduce((s, l) => s + l.valor, 0);
 
   // antes de publicar
@@ -142,11 +151,11 @@ export function ResumoProduto({ form }: { form: any }) {
   const pct = Number(form.desconto_percentual) || 0;
   const promoPct = !!form.promocao && form.tipo_promocao === "percentual" && pct > 0;
   const promoValor = Number(form.preco_promocional) || 0;
-  const preco = kitAtivo(kit) ? `A partir de ${rs(r.aPartir)}`
+  const preco = kitAtivo(kit) ? (kit!.modo === "livre" ? `${rs(Number(kit!.livre?.preco_cento) || 0)} o cento` : `A partir de ${rs(r.aPartir)}`)
     : porPeso ? `${rs(Number(form.preco_normal) || 0)} o kg`
     : temTam ? (r.aPartir > 0 ? `A partir de ${rs(r.aPartir)}` : "Falta o preço")
     : precosDosSabores(form) ? (r.aPartir > 0 ? `A partir de ${rs(r.aPartir)}` : "Falta o preço dos sabores")
-    : `${rs(Number(form.preco_normal) || 0)}${form.forma_venda === "kg" ? " o kg" : ""}`; // (14/10) vendido por kg: diz
+    : `${rs(Number(form.preco_normal) || 0)} ${UNIDADE_REV[sufixoVenda(form.forma_venda)] || "a unidade"}`; // (24/10) diz por quê: a unidade, o kg, o cento…
   const promo = !form.promocao ? "Sem promoção" : promoPct ? `${pct}% de desconto` : promoValor > 0 && promoValor < (Number(form.preco_normal) || 0) ? `${rs(promoValor)}${porPeso ? " o kg" : ""}` : "Sem promoção";
   const entrega = form.pronta_entrega === true ? "Pronta entrega" : form.antecedencia ? `Pedir ${rotuloAntecedencia(form.antecedencia)} antes` : "Falta escolher";
   const linhas: [string, string][] = [
@@ -159,6 +168,7 @@ export function ResumoProduto({ form }: { form: any }) {
     ["Preço", preco],
     ["Promoção", promo],
     ["No cardápio", form.disponivel !== false ? "Aparece" : "Guardado só para você"],
+    ...(form.aceita_referencia === true ? [["Foto de referência", "O cliente pode mandar"] as [string, string]] : []),
     ["Entrega", entrega],
   ];
   return (

@@ -60,3 +60,27 @@
 /* (22/10) foto do primeiro produto no lugar do ícone padrão: preenche o quadrado */
 .ct-ic.foto { overflow: hidden; padding: 0; }
 .ct-ic.foto img { width: 100%; height: 100%; object-fit: cover; }
+
+/* (24/10) categoria com foto: lista e janela de editar */
+.ct-ic.vazio { background: var(--ui-ic-fundo); }
+.ct-ic.g.foto img { width: 100%; height: 100%; }
+.ct-ic.g { width: 96px; height: 96px; }
+.ct-fo-topo { display: flex; align-items: center; gap: 14px; }
+.ct-fo-topo b { display: block; font-size: 16px; font-weight: 700; }
+.ct-fo-topo small { display: block; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); }
+.ct-fotos { border: 1px solid #F0EBED; border-radius: 14px; overflow: hidden; background: var(--ui-branco); }
+.ct-fo { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 12px; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.ct-fotos > .ct-fo:first-child { border-top: 0; }
+.ct-fo-g .ct-fo { border-top: 1px solid var(--ui-linha); }
+.ct-fo > i { flex: none; position: relative; width: 22px; height: 22px; border-radius: 50%; border: 1.8px solid #D6CBD0; }
+.ct-fo.on > i { border-color: var(--ui-rosa); } .ct-fo.on > i::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--ui-rosa); }
+.ct-fo > span:not(.ct-fo-trocar) { flex: 1; min-width: 0; }
+.ct-fo b { display: block; font-size: 14.5px; font-weight: 600; } .ct-fo.on b { color: var(--ui-rosa-escuro); font-weight: 700; }
+.ct-fo small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--ui-texto-2); }
+.ct-fo:disabled { cursor: default; } .ct-fo:disabled b { color: var(--ui-texto-3); }
+.ct-fo-trocar { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 10px; background: var(--ui-linha); font-size: 13.5px; font-weight: 700; color: var(--ui-texto); }
+.ct-fo-mini { display: flex; gap: 8px; overflow-x: auto; padding: 0 12px 12px 46px; }
+.ct-fo-mini button { flex: none; width: 56px; height: 56px; margin: 0; padding: 0; border: 2px solid transparent; border-radius: 12px; overflow: hidden; background: var(--ui-linha); cursor: pointer; }
+.ct-fo-mini button[aria-pressed="true"] { border-color: var(--ui-rosa); }
+.ct-fo-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ct-fo-nota { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }

@@ -47,7 +47,7 @@ export default function Marketing() {
   return (
     <>
       <AppPageHeader title="Marketing" voltar="/inicio" subtitle="Ferramentas para divulgar e vender mais" infoComo={COMO_MARKETING} infoTour={TOUR_MARKETING}
-        infoContent={<><p>Aqui ficam as ferramentas para divulgar sua confeitaria.</p><p>O <strong>Pixel do Facebook</strong> conta pro Facebook e pro Instagram quem visitou o seu cardápio e quem fez pedido. Com isso os anúncios chegam em quem tem mais chance de comprar.</p></>} />
+        infoContent={<><p>Aqui ficam as ferramentas para divulgar sua confeitaria.</p><p>O <strong>Pixel do Facebook</strong> conta para o Facebook e o Instagram quem visitou o seu cardápio e quem fez pedido. Com isso os anúncios chegam em quem tem mais chance de comprar.</p></>} />
       <div className="mk">
         <div className="mk-abas" role="tablist" aria-label="Ferramentas de marketing">
           <button type="button" role="tab" aria-selected={aba === "cupons"} onClick={() => setAba("cupons")}><Ticket size={18} weight="bold" aria-hidden="true" />Cupons</button>

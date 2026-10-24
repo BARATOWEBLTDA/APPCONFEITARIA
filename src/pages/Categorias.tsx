@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowUp, DotsThreeVertical, Image as ImageIcon, Info, PencilSimple, Plus, SquaresFour, Trash, UploadSimple, WarningCircle } from "@phosphor-icons/react";
+import { ArrowDown, ArrowUp, DotsThreeVertical, Info, PencilSimple, Plus, SquaresFour, Trash, UploadSimple, WarningCircle } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -14,7 +14,7 @@ import "./categorias.css";
  * Uma tela só: a aba "Categorias" de Produtos abre esta mesma tela (/categorias).
  * No celular e no tablet ela mostra as abas Produtos | Categorias no topo.
  * O que faz continua igual: criar, editar (renomear leva os produtos junto), subir/descer na ordem,
- * excluir só sem produtos, enviar imagem ou escolher um ícone pronto.
+ * excluir só sem produtos. (24/10) Foto: automática (a do primeiro produto), a de um produto ou uma enviada.
  */
 
 type Categoria = {
@@ -25,12 +25,15 @@ type Categoria = {
   ordem?: number;
 };
 
-// Ícones prontos (os repetidos da pasta ficam de fora da galeria; categoria antiga com eles continua mostrando)
-const ICONES_PRONTOS = [28, 1, 3, 10, 2, 14, 20, 25, 26, 27, 31, 32, 33, 34, 29, 35, 36, 37, 6, 9, 30, 38, 39, 40, 5, 8, 12].map(n => `/categoriaicones/icone (${n}).png`);
+// (24/10) categoria com foto de verdade (a galeria de ícones saiu). Sem foto escolhida = "Automática":
+// a foto do primeiro produto da categoria. Os ícones antigos (/categoriaicones/) também viram automática.
+const ehIconeAntigo = (u?: string | null) => !!u && u.includes("/categoriaicones/");
+const primeiraFoto = (u?: string | null) => String(u || "").split(",")[0].trim();
+type ModoFoto = "auto" | "produto" | "enviar";
 
-function Icone({ src, grande, foto }: { src?: string; grande?: boolean; foto?: boolean }) {
+function Icone({ src, grande }: { src?: string; grande?: boolean }) {
   return (
-    <span className={`ct-ic${grande ? " g" : ""}${foto ? " foto" : ""}`} aria-hidden="true">
+    <span className={`ct-ic foto${grande ? " g" : ""}${src ? "" : " vazio"}`} aria-hidden="true">
       {src ? <img src={src} alt="" /> : <SquaresFour size={grande ? 28 : 22} weight="bold" />}
     </span>
   );
@@ -46,7 +49,7 @@ export default function Categorias() {
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState<Categoria>({ nome: "", imagem_url: "", ordem: 0 });
   const [saving, setSaving] = useState(false);
-  const [showGaleria, setShowGaleria] = useState(false);
+  const [modoFoto, setModoFoto] = useState<ModoFoto>("auto");
   const [menuDe, setMenuDe] = useState<Categoria | null>(null);
   const imgRef = useRef<HTMLInputElement>(null);
 
@@ -82,13 +85,15 @@ export default function Categorias() {
   };
 
   const contarProdutos = (nome: string) => produtos.filter(p => p.categoria === nome).length;
-  // (22/10) categoria sem imagem: mostra a foto do primeiro produto dela (quem escolheu ícone ou imagem continua com o seu)
-  const [cel] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches) // só no celular
-  const fotoDe = (nome: string) => (cel ? produtos.find(p => p.categoria === nome && p.imagem_url)?.imagem_url || undefined : undefined);
+  // fotos dos produtos de uma categoria (a primeira de cada produto, sem repetir)
+  const fotosDe = (nome: string) => [...new Set(produtos.filter(p => p.categoria === nome).map(p => primeiraFoto(p.imagem_url)).filter(Boolean))];
+  /** a foto que a categoria mostra: a escolhida, ou a do primeiro produto (Automática) */
+  const fotoDaCategoria = (c: Categoria) => (c.imagem_url && !ehIconeAntigo(c.imagem_url) ? c.imagem_url : fotosDe(c.nome)[0]) || undefined;
 
-  const openNova = () => { setForm({ nome: "", imagem_url: "", ordem: categorias.length }); setShowGaleria(false); setModal(true); };
-  const openEditar = (c: Categoria) => { setForm({ ...c }); setShowGaleria(false); setModal(true); };
-  const fecharModal = () => { setModal(false); setShowGaleria(false); setForm({ nome: "", imagem_url: "", ordem: 0 }); };
+  const modoDe = (c: Categoria): ModoFoto => !c.imagem_url || ehIconeAntigo(c.imagem_url) ? "auto" : fotosDe(c.nome).includes(c.imagem_url) ? "produto" : "enviar";
+  const openNova = () => { setForm({ nome: "", imagem_url: "", ordem: categorias.length }); setModoFoto("auto"); setModal(true); };
+  const openEditar = (c: Categoria) => { setForm({ ...c, imagem_url: ehIconeAntigo(c.imagem_url) ? "" : c.imagem_url }); setModoFoto(modoDe(c)); setModal(true); };
+  const fecharModal = () => { setModal(false); setModoFoto("auto"); setForm({ nome: "", imagem_url: "", ordem: 0 }); };
 
   const handleImageUpload = async (file: File) => {
     if (!file || !userId) return;
@@ -98,7 +103,7 @@ export default function Categorias() {
     const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
-      setForm(f => ({ ...f, imagem_url: data.publicUrl }));
+      setForm(f => ({ ...f, imagem_url: data.publicUrl })); setModoFoto("enviar");
     } else avisar("Não deu para enviar a imagem. Tente de novo.", { tipo: "erro" });
     if (imgRef.current) imgRef.current.value = "";
     setUploading(null);
@@ -122,7 +127,7 @@ export default function Categorias() {
     };
     if (form.id) {
       const antigo = categorias.find(c => c.id === form.id)?.nome;
-      const { error } = await supabase.from("categorias").update({ nome: novo, imagem_url: form.imagem_url || null, ordem: form.ordem }).eq("id", form.id);
+      const { error } = await supabase.from("categorias").update({ nome: novo, imagem_url: modoFoto === "auto" ? null : form.imagem_url || null, ordem: form.ordem }).eq("id", form.id);
       if (error) return falhou(error);
       // Os produtos guardam o NOME da categoria: renomeou, eles acompanham (antes ficavam numa categoria que não existia mais)
       if (antigo && antigo !== novo) {
@@ -144,7 +149,7 @@ export default function Categorias() {
         await loadProdutos(userId);
       }
     } else {
-      const { error } = await supabase.from("categorias").insert({ nome: novo, imagem_url: form.imagem_url || null, ordem: form.ordem, user_id: userId });
+      const { error } = await supabase.from("categorias").insert({ nome: novo, imagem_url: modoFoto === "auto" ? null : form.imagem_url || null, ordem: form.ordem, user_id: userId });
       if (error) return falhou(error);
     }
     await loadCategorias(userId);
@@ -210,6 +215,8 @@ export default function Categorias() {
   const nomeOriginal = form.id ? categorias.find(c => c.id === form.id)?.nome : undefined;
   const qtdOriginal = nomeOriginal ? contarProdutos(nomeOriginal) : 0;
   const mudouNome = !!nomeOriginal && form.nome.trim() !== "" && form.nome.trim() !== nomeOriginal;
+  const fotosForm = nomeOriginal ? fotosDe(nomeOriginal) : [];
+  const fotoForm = modoFoto === "auto" ? fotosForm[0] : form.imagem_url || undefined;
 
   return (
     <>
@@ -241,7 +248,7 @@ export default function Categorias() {
             {categorias.map(cat => (
               <div key={cat.id} className="ct-row">
                 <button type="button" className="ct-row-b" onClick={() => openEditar(cat)}>
-                  <Icone src={cat.imagem_url || fotoDe(cat.nome)} foto={!cat.imagem_url && !!fotoDe(cat.nome)} />
+                  <Icone src={fotoDaCategoria(cat)} />
                   <span className="ct-row-tx"><b>{cat.nome}</b><small>{qtdTexto(contarProdutos(cat.nome))}</small></span>
                 </button>
                 <BotaoIcone rotulo={`Opções de ${cat.nome}`} variante="limpo" onClick={() => setMenuDe(cat)}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
@@ -268,39 +275,43 @@ export default function Categorias() {
       <Janela aberta={modal} aoFechar={fecharModal} tipo="conteudo" travada titulo={form.id ? "Editar categoria" : "Nova categoria"}
         acoes={<><Botao variante="secundario" onClick={fecharModal}>Cancelar</Botao><Botao onClick={handleSalvar} carregando={saving}>{form.id ? "Salvar" : "Criar categoria"}</Botao></>}>
         <div className="ct-form">
+          <div className="ct-fo-topo">
+            <Icone src={fotoForm} grande />
+            <span><b>{form.nome.trim() || "Nova categoria"}</b><small>{modoFoto === "auto" ? (fotoForm ? "Foto do primeiro produto" : "Sem foto: aparece quando tiver produto com foto") : modoFoto === "produto" ? "Foto de um produto" : "Foto enviada"}</small></span>
+          </div>
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: bolos, doces, salgados" value={form.nome} maxLength={40}
             onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
           {mudouNome && qtdOriginal > 0 && <p className="ct-aviso-nome">{qtdOriginal === 1 ? `O produto de ${nomeOriginal} muda junto.` : `Os ${qtdOriginal} produtos de ${nomeOriginal} mudam junto.`}</p>}
+          {/* (24/10) foto da categoria: Automática, foto de um produto ou enviar uma foto (sem a galeria de ícones) */}
           <div className="ui-campo">
-            <span className="ui-campo-r"><span>Ícone</span><small>opcional</small></span>
-            <div className="ct-esc">
-              <Icone src={form.imagem_url} grande />
-              <div>
-                <b>{form.imagem_url ? "Ícone escolhido" : "Nenhum ícone escolhido"}</b>
-                <small>Aparece em cima do nome no cardápio</small>
-                {form.imagem_url && <Botao variante="link" tamanho="p" onClick={() => setForm(f => ({ ...f, imagem_url: "" }))}>Tirar o ícone</Botao>}
-              </div>
-            </div>
-            <div className="ct-abas ct-abas--janela" role="tablist" aria-label="De onde vem o ícone">
-              <button type="button" role="tab" aria-selected={!showGaleria} onClick={() => setShowGaleria(false)}><UploadSimple size={20} weight="bold" />Enviar imagem</button>
-              <button type="button" role="tab" aria-selected={showGaleria} onClick={() => setShowGaleria(true)}><ImageIcon size={20} weight="bold" />Ícones prontos</button>
-            </div>
-            {showGaleria ? (
-              <div className="ct-gal">
-                {ICONES_PRONTOS.map((src, i) => (
-                  <button key={src} type="button" aria-pressed={form.imagem_url === src} aria-label={`Ícone ${i + 1}`} onClick={() => setForm(f => ({ ...f, imagem_url: src }))}>
-                    <img src={src} alt="" onError={e => { e.currentTarget.parentElement!.style.display = "none"; }} />
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <button type="button" className="ct-up" onClick={() => !uploading && imgRef.current?.click()} disabled={!!uploading}>
-                {uploading ? <span className="ui-gira" aria-label="Enviando" /> : <><UploadSimple size={24} weight="bold" /><b>Escolher imagem</b><small>PNG com fundo transparente fica melhor</small></>}
+            <span className="ui-campo-r"><span>Foto da categoria</span></span>
+            <div className="ct-fotos" role="radiogroup" aria-label="Foto da categoria">
+              <button type="button" role="radio" aria-checked={modoFoto === "auto"} className={`ct-fo${modoFoto === "auto" ? " on" : ""}`} onClick={() => setModoFoto("auto")}>
+                <i aria-hidden="true" /><span><b>Automática</b><small>Usa a foto do primeiro produto</small></span>
               </button>
-            )}
+              <div className={`ct-fo-g${modoFoto === "produto" ? " on" : ""}`}>
+                <button type="button" role="radio" aria-checked={modoFoto === "produto"} disabled={!fotosForm.length} className={`ct-fo${modoFoto === "produto" ? " on" : ""}`}
+                  onClick={() => { setModoFoto("produto"); if (!fotosForm.includes(form.imagem_url || "")) setForm(f => ({ ...f, imagem_url: fotosForm[0] })); }}>
+                  <i aria-hidden="true" /><span><b>Foto de um produto</b><small>{fotosForm.length ? "Escolha abaixo qual produto" : "Nenhum produto com foto nesta categoria"}</small></span>
+                </button>
+                {modoFoto === "produto" && (
+                  <div className="ct-fo-mini">
+                    {fotosForm.map((u, i) => (
+                      <button key={u} type="button" aria-pressed={form.imagem_url === u} aria-label={`Foto ${i + 1}`} onClick={() => setForm(f => ({ ...f, imagem_url: u }))}><img src={u} alt="" /></button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button type="button" role="radio" aria-checked={modoFoto === "enviar"} className={`ct-fo${modoFoto === "enviar" ? " on" : ""}`}
+                onClick={() => { if (modoFoto === "enviar" && form.imagem_url) { setModoFoto("enviar"); return; } if (!uploading) imgRef.current?.click(); }}>
+                <i aria-hidden="true" /><span><b>Enviar uma foto</b><small>{uploading ? "Enviando…" : modoFoto === "enviar" && form.imagem_url ? "Toque de novo para trocar" : "Da galeria do celular"}</small></span>
+                {modoFoto === "enviar" && form.imagem_url && <span className="ct-fo-trocar" onClick={e => { e.stopPropagation(); if (!uploading) imgRef.current?.click(); }}><UploadSimple size={18} weight="bold" />Trocar</span>}
+              </button>
+            </div>
             <input ref={imgRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
       {recorte.janela}
           </div>
+          {form.id && <p className="ct-fo-nota">{qtdOriginal === 0 ? "Nenhum produto nesta categoria ainda." : `${qtdOriginal} ${qtdOriginal === 1 ? "produto" : "produtos"} nesta categoria.`} Para mudar a ordem, use os 3 pontinhos na lista.</p>}
         </div>
       </Janela>
     </>

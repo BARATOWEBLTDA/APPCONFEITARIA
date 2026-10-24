@@ -97,3 +97,6 @@
 .ig-aviso-meio b { font-size: 16px; font-weight: 600; }
 .ig-aviso-meio span { font-size: 14px; line-height: 1.4; color: rgba(255,255,255,.8); }
 @keyframes ig-aviso { 0% { opacity: 0; transform: translate(-50%, -46%); } 8%, 85% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; } }
+
+/* (24/10) no celular, o preço e a quantidade numa linha só */
+.ig-l-tx small.ig-cel { white-space: nowrap; }

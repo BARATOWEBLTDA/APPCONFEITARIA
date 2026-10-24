@@ -68,7 +68,7 @@ export default function Cardapio() {
       (res.data || []).filter((p: any) => p.status !== "cancelado").forEach((p: any) => {
         p.pedido_itens?.forEach((item: any) => {
           if (!contagem[item.nome_produto]) contagem[item.nome_produto] = { qtd: 0, imagem: item.produtos?.imagem_url };
-          contagem[item.nome_produto].qtd += Number(item.quantidade) || 0;
+          contagem[item.nome_produto].qtd += 1; // (24/10) uma venda por pedido (a quantidade em kg dava "42.5 vendas")
         });
       });
       setMaisVendidos(Object.entries(contagem).sort((a, b) => b[1].qtd - a[1].qtd).slice(0, 3)

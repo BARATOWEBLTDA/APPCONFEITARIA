@@ -1,3 +1,4 @@
+import { textoSaboresKit } from '@/lib/kitTexto'
 import { Cake, Minus, Plus, Trash } from '@phosphor-icons/react'
 import { CartItem } from '@/types/cart'
 import { formatCurrency } from '@/utils/helpers'
@@ -11,23 +12,6 @@ import { sufixoVenda, unidadeCliente } from '@/lib/formaVenda'
 export function unidadeItem(item: any): string {
   if (!item || kgLivre(item) || item?.escolhas?.tamanho || item?.escolhas?.kit) return ''
   return sufixoVenda(item.saleType) === 'un' ? '' : unidadeCliente(item.saleType)
-}
-
-/** "Brigadeiro" → "brigadeiros", "Beijinho de coco" → "beijinhos de coco", "Pão de mel" → "pães de mel" */
-function pluralSabor(nome: string, qtd: number): string {
-  const n = String(nome || '').trim()
-  if (!n) return ''
-  const [p1, ...resto] = n.split(' ')
-  let w = p1.charAt(0).toLowerCase() + p1.slice(1)
-  if (qtd > 1) {
-    if (/^pão$/i.test(w)) w = 'pães'
-    else if (/ão$/i.test(w)) w = w.replace(/ão$/i, 'ões')
-    else if (/[aeiouáéíóú]$/i.test(w)) w = w + 's'
-    else if (/[rzs]$/i.test(w)) w = /s$/i.test(w) ? w : w + 'es'
-    else if (/l$/i.test(w)) w = w.replace(/l$/i, 'is')
-    else if (/m$/i.test(w)) w = w.replace(/m$/i, 'ns')
-  }
-  return [w, ...resto].join(' ')
 }
 
 interface Props {
@@ -55,6 +39,8 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
   const escolhasLinhas = detalhes.slice(0, detalhes.length - adicionais.length)
   const unidade = unidadeItem(item)
   const total = valorLinha(item)
+  const descontoLinha = Math.round((Number((item as any)?.precoBreakdown?.desconto) || 0) * (Number(item.quantity) || 0) * 100) / 100
+  const temReferencia = !!((item as any).referencia_url || (item as any).fotoReferencia || (item as any).escolhas?.referencia)
 
   return (
     <div className="sc-it">
@@ -62,17 +48,20 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
       <div className="sc-it-tx">
         <b>{item.name}{kit?.total ? ` · ${kit.total} un.` : ''}</b>
         {kit?.sabores?.length ? (
-          <small>{kit.sabores.filter((x: any) => x.qtd > 0).map((x: any) => `${x.qtd} ${pluralSabor(x.nome, x.qtd)}`).join(' · ')}</small>
+          <small>{textoSaboresKit(kit.sabores)}</small>
         ) : null}
         {/* (19/10) uma escolha por linha (tamanho, massa, recheios...) e os adicionais com "+" */}
         {escolhasLinhas.length > 0 && <ul className="sc-it-det">{escolhasLinhas.map((d, k) => <li key={k}>{d}</li>)}</ul>}
         {adicionais.length > 0 && <ul className="sc-it-det sc-it-add">{adicionais.map((x: any, k: number) => <li key={k}>+ {x.nome}</li>)}</ul>}
         {item.observations && <small className="sc-it-obs">Obs.: {item.observations}</small>}
+        {temReferencia && <small className="sc-it-ref">Foto de referência anexada</small>}
       </div>
       {/* (20/10) o preço aparece uma vez só, com o seletor ao lado; o preço do kg/unidade só quando a quantidade não é 1 */}
       <div className="sc-it-pr">
         {livre && item.quantity !== 1 && <small>{formatCurrency(item.price)} o kg</small>}
         {unidade && item.quantity !== 1 && <small>{formatCurrency(item.price)} {unidade}</small>}
+        {/* (24/10) em promoção: o preço cheio riscado em cima (a sacola soma o cheio no Subtotal e tira na linha Promoção) */}
+        {descontoLinha > 0 && <s className="sc-it-de">{formatCurrency(total + descontoLinha)}</s>}
         <strong>{formatCurrency(total)}{unidade && item.quantity === 1 && <em className="sc-it-un"> {unidade}</em>}</strong>
       </div>
       <div className="sc-qtd">

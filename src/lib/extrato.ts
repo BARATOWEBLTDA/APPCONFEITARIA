@@ -18,7 +18,10 @@ export type MovExtrato = {
   /** a informação que sobra, sem repetir o título: forma de pagamento (pedido) ou categoria (manual) */
   detalhe: string;
   forma: string | null; categoria: string | null; pedidoId: string | null; estornado: boolean; ordem: string;
+  /** (24/10) extrato: quem pagou (ou o que foi), o número do pedido e a hora do lançamento */
+  quem?: string; pedidoNumero?: number | null; hora?: string;
 };
+const horaDe = (iso?: string | null) => { if (!iso || !/T|\s\d{2}:/.test(iso)) return ""; const d = new Date(iso); return isNaN(d.getTime()) ? "" : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
 
 const FORMA: Record<string, string> = { pix: "Pix", dinheiro: "Dinheiro", credito: "Crédito", debito: "Débito", boleto: "Boleto" };
 const TIPO: Record<string, string> = { sinal: "Sinal", parcial: "Parcial", restante: "Restante", total: "Pagamento", pagamento: "Pagamento", migracao: "Pagamento" };
@@ -74,6 +77,7 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
       subtipo: TIPO[g.tipo] || "Pagamento",
       detalhe: nomeForma(g.forma),
       forma: g.forma || null, categoria: "Pedidos", pedidoId: g.pedido_id || null, estornado: !!g.estornado_em, ordem: `${g.recebido_em} ${g.created_at || ""}`,
+      quem: n?.cliente || "", pedidoNumero: n?.numero ?? null, hora: horaDe(g.created_at),
     });
   }
   for (const l of fin.data) {
@@ -87,6 +91,7 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
       subtipo: entrada ? "Entrada" : "Saída",
       detalhe: [cat && cat.toLowerCase() !== titulo.toLowerCase() ? nomeCategoriaFin(cat) : "", nomeForma(l.forma)].filter(Boolean).join(" · "),
       forma: l.forma || null, categoria: l.categoria || null, pedidoId: null, estornado: !!l.estornado_em, ordem: `${l.data} ${l.created_at || ""}`,
+      quem: titulo, hora: horaDe(l.created_at),
     });
   }
   itens.sort((a, b) => b.ordem.localeCompare(a.ordem));
