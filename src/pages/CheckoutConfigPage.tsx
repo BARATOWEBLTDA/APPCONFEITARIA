@@ -2,11 +2,14 @@
 // O que salva continua igual (salva sozinho 2s depois de mexer; cupons na tabela loja_cupons).
 // Mudou o visual: campos e botões do app, cupom novo/editar numa janela, convite pro PRO sem borrão.
 import CampoData from '@/components/CampoData'
-import { CalendarBlank, CaretRight, Check, Crown, PencilSimple, CurrencyCircleDollar, Plus, QrCode, Tag, Ticket, Truck, UserPlus, Users, Wallet, WarningCircle, PixLogo, Money, CreditCard, Storefront, Moped, Motorcycle, Car, ChatCircleText } from "@phosphor-icons/react"
+import { Check, Crown, PencilSimple, Plus, QrCode, ShareNetwork, Ticket, Truck, Wallet, WarningCircle, PixLogo, Money, CreditCard, Storefront, Moped, Motorcycle, Car, ChatCircleText } from "@phosphor-icons/react"
 import type { Icon } from "@phosphor-icons/react"
 import ListaChaves from "@/components/loja/ListaChaves"
 import { normalizarChave, problemaNaChave, tipoDaChave, type TipoChave } from '@/lib/pix'
-import { cupomDisponivel, MAX_CUPONS_ATIVOS } from '@/lib/cupons'
+import { cupomDisponivel, MAX_CUPONS_ATIVOS, regraCupom, textoDesconto } from '@/lib/cupons'
+import type { DadosImagemCupom } from '@/lib/imagemCupom'
+import ImagemCupom from '@/components/marketing/ImagemCupom'
+import { fotoDaLoja, getCardapioUrl, useProfile } from '@/hooks/useProfile'
 import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
 import "@/components/loja/editoresLoja.css"
 import "./entregaPagamento.css"
@@ -65,6 +68,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
   const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio"
   const { isPro } = usePlano()
+  const { profile } = useProfile()
+  const [imagemCupom, setImagemCupom] = useState<DadosImagemCupom | null>(null)
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [savingCupons, setSavingCupons] = useState(false)
@@ -327,6 +332,33 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     return `${d}/${m}/${y.slice(2)}`
   }
 
+  // (23/10) ticket do cupom: as regras em uma linha só ("Só no 1º pedido · 12 de 50 usos · até 25/12") e a situação
+  const diaMes = (iso: string) => { const [, m, d] = iso.split('-'); return `${d}/${m}` }
+  const hojeIso = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` })()
+  const detalheCupom = (c: typeof cupons[number]) => {
+    const p: string[] = []
+    if (c.publico === 'primeiro_pedido') p.push('só no 1º pedido')
+    if (c.valor_minimo && numBR(c.valor_minimo) > 0) p.push(`acima de R$ ${dinheiroBR(c.valor_minimo)}`)
+    if (c.limite_uso) p.push(`${c.usos || 0} de ${c.limite_uso} usos`)
+    else if (c.usos) p.push(`${c.usos} ${c.usos === 1 ? 'uso' : 'usos'}`)
+    if (c.data_inicio && c.data_inicio > hojeIso) p.push(`a partir de ${diaMes(c.data_inicio)}`)
+    if (c.data_fim) p.push(`até ${diaMes(c.data_fim)}`)
+    const t = p.length ? p.join(' · ') : 'vale em qualquer pedido'
+    return t.charAt(0).toUpperCase() + t.slice(1)
+  }
+  const situacaoCupom = (c: typeof cupons[number]) => !c.ativo ? 'Pausado' : c.data_fim && c.data_fim < hojeIso ? 'Vencido' : c.limite_uso && (c.usos || 0) >= Number(c.limite_uso) ? 'Esgotado' : 'Ativo'
+  const abrirImagemCupom = (c: typeof cupons[number]) => {
+    const vitrine = { codigo: c.codigo, tipo: c.tipo, valor: numBR(c.valor), valor_minimo: c.valor_minimo ? numBR(c.valor_minimo) : null, data_fim: c.data_fim || null, publico: c.publico === 'primeiro_pedido' ? 'primeiro_pedido' as const : 'todos' as const }
+    const regra = regraCupom(vitrine)
+    const p: any = profile || {}
+    setImagemCupom({
+      nomeLoja: p.nome_loja || '', logo: fotoDaLoja(p), cor: p.cor_botao || '',
+      desconto: textoDesconto(c), regra: regra.charAt(0).toUpperCase() + regra.slice(1),
+      validade: c.data_fim && !regra.startsWith('até') ? `Válido até ${diaMes(c.data_fim)}` : undefined,
+      codigo: c.codigo, link: getCardapioUrl(profile),
+    })
+  }
+
   // (17/10) já preenchido aparece resumido, com "Editar" (o mesmo padrão de Dados da loja). Tudo continua salvando sozinho.
   const [resumidoTela, setResumido] = useState<{ pag: boolean; ent: boolean } | null>(null)
   // (22/10) celular: cada parte abre sozinha numa gaveta, já no formulário (sem o resumo com Editar)
@@ -348,7 +380,6 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     </button>
   )
   const dinheiroBR = (v: string) => { const n = numBR(v); return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
-  const descontoDe = (c: { tipo: string; valor: string }) => c.tipo === 'percentual' ? `${c.valor}% de desconto` : `R$ ${dinheiroBR(c.valor)} de desconto`
 
   // com erro, "loading" continua ligado: o salvamento automático só arma depois de uma leitura que deu certo
   if (erroCarga) return (
@@ -490,26 +521,23 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
             </div>
           ) : (
             <>
+              {/* (23/10) cada cupom é um ticket, igual ao que o cliente vê no topo do cardápio; "Compartilhar" monta a imagem do cupom */}
               <div className="ep-cupons">
-                {cupons.map((c, i) => (
-                  <button key={i} type="button" className={`ep-cupom${c.ativo ? '' : ' off'}`} onClick={() => abrirEditarCupom(i)}>
-                    <span className="ep-cupom-ic" aria-hidden="true"><Tag size={20} weight="bold" /></span>
-                    <span className="ep-cupom-tx">
-                      <b>{c.codigo}</b>
-                      <span className="ep-cupom-d">{descontoDe(c)}</span>
-                      {(c.publico === 'primeiro_pedido' || c.data_inicio || c.data_fim || c.limite_uso || c.valor_minimo) && (
-                        <span className="ep-cupom-tags">
-                          {c.publico === 'primeiro_pedido' && <small><UserPlus size={14} weight="bold" />Só no 1º pedido</small>}
-                          {(c.data_inicio || c.data_fim) && <small><CalendarBlank size={14} weight="bold" />{c.data_inicio && c.data_fim ? `${formatDate(c.data_inicio)} a ${formatDate(c.data_fim)}` : c.data_fim ? `Até ${formatDate(c.data_fim)}` : `A partir de ${formatDate(c.data_inicio!)}`}</small>}
-                          {c.limite_uso && <small><Users size={14} weight="bold" />{c.usos || 0} de {c.limite_uso} usos</small>}
-                          {c.valor_minimo && <small><CurrencyCircleDollar size={14} weight="bold" />Mínimo R$ {dinheiroBR(c.valor_minimo)}</small>}
-                        </span>
-                      )}
-                    </span>
-                    <span className={`ep-cupom-sit ${c.ativo ? 'on' : ''}`}>{c.ativo ? 'Ativo' : 'Pausado'}</span>
-                    <CaretRight size={16} weight="bold" className="ep-seta" aria-hidden="true" />
-                  </button>
-                ))}
+                {cupons.map((c, i) => {
+                  const sit = situacaoCupom(c)
+                  return (
+                    <div key={i} className={`epv${sit === 'Ativo' ? '' : ' off'}`}>
+                      <button type="button" className="epv-t" onClick={() => abrirEditarCupom(i)} aria-label={`Editar o cupom ${c.codigo}`}>
+                        <span className="epv-tx"><b>{textoDesconto(c)}</b><small>{detalheCupom(c)}</small></span>
+                        <span className={`epv-sit${sit === 'Ativo' ? ' on' : ''}`}><i aria-hidden="true" />{sit}</span>
+                      </button>
+                      <div className="epv-c">
+                        <b>{c.codigo}</b>
+                        <button type="button" className="epv-sh" onClick={() => abrirImagemCupom(c)}><ShareNetwork size={16} weight="bold" aria-hidden="true" />Compartilhar</button>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
               <div className="ep-cupons-pe">
                 <Botao variante="suave" icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}>Novo cupom</Botao>
@@ -519,6 +547,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
           )}
         </section>}
       </div>
+
+      <ImagemCupom dados={imagemCupom} aoFechar={() => setImagemCupom(null)} />
 
       {/* Novo / editar cupom */}
       <Janela aberta={formAberto} aoFechar={cancelarEdicao} tipo="conteudo" travada titulo={editandoIndex === -1 ? 'Novo cupom' : 'Editar cupom'}

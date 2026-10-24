@@ -198,7 +198,7 @@ export default function SolicitarRecurso() {
               <p className="aj-fluxo" style={{ marginTop: 12 }}>
                 <span className="aj-st aj-st--rec">Recebida</span><CaretRight size={14} weight="bold" />
                 <span className="aj-st aj-st--analise">Em análise</span><CaretRight size={14} weight="bold" />
-                <span className="aj-st aj-st--ok"><CheckCircle size={14} weight="fill" />Implementada</span>
+                <span className="aj-st aj-st--ok">Implementada</span>
               </p>
               {historico.map(s => {
                 const st = STATUS[s.status || "recebida"] || STATUS.recebida;

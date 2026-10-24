@@ -99,6 +99,7 @@ const criadoEmTexto = (created_at: string) => {
   const d = new Date(created_at);
   return `${d.getDate()} de ${MESES[d.getMonth()]} às ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 };
+const ANTIGOS: Record<string, string> = { confirmado: "agendado", pronto: "finalizado", a_caminho: "em_entrega", concluido: "entregue", em_preparo: "em_producao" };
 const primeiraFoto = (f?: string | null) => (f ? String(f).split(/,(?=\s*https?:)/)[0].trim() : "");
 /**
  * Forma de venda do item pra escrever a quantidade (11/10): só é "kg" quando o produto por kg é de PESO LIVRE.
@@ -131,6 +132,8 @@ export default function Agenda() {
   const [refDate, setRefDate] = useState(new Date());
   const [diaSel, setDiaSel] = useState(isoDate(new Date()));
   const [busca, setBusca] = useState("");
+  const [resAberto, setResAberto] = useState(false); // (23/10) lista de resultados embaixo da busca
+  const topoRef = useRef<HTMLDivElement>(null);
 
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,6 +157,15 @@ export default function Agenda() {
   };
   const naTela = useRef(true);
   useEffect(() => { naTela.current = true; return () => { naTela.current = false; }; }, []);
+  // (23/10) toque fora da busca ou Esc fecha a lista de resultados (tocar no campo abre de novo)
+  useEffect(() => {
+    if (!resAberto) return;
+    const fora = (e: PointerEvent) => { if (topoRef.current && !topoRef.current.contains(e.target as Node)) setResAberto(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setResAberto(false); };
+    document.addEventListener("pointerdown", fora);
+    document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("pointerdown", fora); document.removeEventListener("keydown", esc); };
+  }, [resAberto]);
 
   // Cancelados ficam de fora por padrão (dá pra ligar no filtro), igual ao total do dia
   const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_PADRAO);
@@ -241,7 +253,6 @@ export default function Agenda() {
       }
 
       // Status antigos viram os atuais (senão somem da lista do dia — igual à tela de Pedidos)
-      const ANTIGOS: Record<string, string> = { confirmado: "agendado", pronto: "finalizado", a_caminho: "em_entrega", concluido: "entregue", em_preparo: "em_producao" };
       const pedidosNormalizados = [...comData.data, ...semData.data].map((p: any) => ({
         ...p,
         status: ANTIGOS[p.status] || p.status,
@@ -526,16 +537,17 @@ export default function Agenda() {
     />
     <div className="ag3">
       {/* Busca + filtro */}
-      <div className="ag3-topo">
+      <div className="ag3-topo" ref={topoRef}>
         <div className="ui-campo-c ag3-busca" onClick={e => { if (e.target === e.currentTarget) (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus(); }}>
           <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-          <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar cliente ou número" value={busca} onChange={e => setBusca(e.target.value)} />
+          <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar cliente ou número" value={busca} onChange={e => { setBusca(e.target.value); setResAberto(true); }} onFocus={() => setResAberto(true)} />
           {busca && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca("")}><X size={20} weight="bold" /></BotaoIcone>}
         </div>
         <BotaoIcone className={"ag3-filtro" + (filtrosDesligados > 0 ? " on" : "")} rotulo={filtrosDesligados > 0 ? `Filtrar por situação (${filtrosDesligados} escondida${filtrosDesligados > 1 ? "s" : ""})` : "Filtrar por situação"} onClick={() => setFiltroAberto(true)}>
           <Funnel size={20} weight={filtrosDesligados > 0 ? "fill" : "bold"} />
           {filtrosDesligados > 0 && <span className="ag3-filtro-n" aria-hidden="true">{filtrosDesligados}</span>}
         </BotaoIcone>
+        {resAberto && busca.trim() && <ResultadosBusca userId={userId} busca={busca} comCancelados={statusSelecionados.includes("cancelado")} onAbrir={abrirEditar} />}
       </div>
 
       <div className="ag3-grade">
@@ -834,5 +846,96 @@ function MenuAgenda({ p: atual, aoFechar, itens, aoExcluir }: { p: any; aoFechar
         </>
       )}
     </Janela>
+  );
+}
+
+/* ── (23/10) Busca: enquanto digita, uma lista logo abaixo com os pedidos de QUALQUER dia ──
+   Busca no banco (não só no mês que o calendário carregou): nome da cliente, número do pedido (#1010) e telefone (6 dígitos ou mais).
+   Mostra até 5, do mais novo para o mais antigo; "Ver os N pedidos" abre até 50 na própria lista. Tocar abre o pedido. */
+const fotoDoPedido = (p: any) => {
+  for (const it of p.pedido_itens || []) { const f = primeiraFoto(it.imagem_url) || primeiraFoto(it.produtos?.imagem_url); if (f) return f; }
+  return "";
+};
+/** Igual ao quandoEntrega, com o ano quando não é o ano de agora */
+const quandoBusca = (p: any) => {
+  const t = quandoEntrega(p);
+  if (!p.data_entrega || relativo(p.data_entrega)) return t;
+  const ano = parseISO(p.data_entrega).getFullYear();
+  return ano === new Date().getFullYear() ? t : t.replace(/^(\d+ de \S+)/, `$1 de ${ano}`);
+};
+const LIMITE_INICIAL = 5, LIMITE_TUDO = 50;
+
+function ResultadosBusca({ userId, busca, comCancelados, onAbrir }: { userId: string; busca: string; comCancelados: boolean; onAbrir: (id: string) => void }) {
+  const q = busca.trim();
+  const [limite, setLimite] = useState(LIMITE_INICIAL);
+  const [res, setRes] = useState<{ q: string; itens: any[]; total: number } | null>(null);
+  const [erro, setErro] = useState(false);
+  useEffect(() => { setLimite(LIMITE_INICIAL); }, [q]);
+  useEffect(() => {
+    if (!userId || !q) return;
+    let vivo = true;
+    // espera ela parar de digitar um instante para não buscar a cada letra
+    const t = window.setTimeout(async () => {
+      const semEspaco = q.replace(/\s/g, "");
+      const soNumero = /^#?\d+$/.test(semEspaco);
+      const digitos = semEspaco.replace(/\D/g, "");
+      const nome = q.replace(/[,()*%\\.:]/g, " ").replace(/\s+/g, " ").trim();
+      const conds: string[] = [];
+      if (!soNumero && nome) conds.push(`cliente_nome.ilike.%${nome}%`);
+      if (soNumero && digitos.length <= 9) conds.push(`numero.eq.${Number(digitos)}`);
+      if (digitos.length >= 6) { const tel = `%${digitos.split("").join("%")}%`; conds.push(`cliente_telefone.ilike.${tel}`, `cliente_whatsapp.ilike.${tel}`); }
+      if (!conds.length) { setRes({ q, itens: [], total: 0 }); setErro(false); return; }
+      let consulta = supabase.from("pedidos")
+        .select("id, numero, cliente_nome, data_entrega, horario_entrega, status, created_at, pedido_itens(imagem_url, produtos(imagem_url))", { count: "exact" })
+        .eq("user_id", userId).or(conds.join(","));
+      if (!comCancelados) consulta = consulta.neq("status", "cancelado");
+      const { data, error, count } = await consulta
+        .order("data_entrega", { ascending: false, nullsFirst: false })
+        .order("horario_entrega", { ascending: false, nullsFirst: false })
+        .limit(limite);
+      if (!vivo) return;
+      if (error) { setErro(true); return; }
+      setErro(false);
+      setRes({ q, itens: data || [], total: count ?? (data || []).length });
+    }, 250);
+    return () => { vivo = false; window.clearTimeout(t); };
+  }, [userId, q, comCancelados, limite]);
+
+  // enquanto busca a palavra nova, continua mostrando o resultado anterior (sem piscar)
+  const itens = res?.itens || [];
+  const titulo = erro ? "Não deu para buscar. Confira a internet."
+    : !res ? "Buscando…"
+    : res.total === 0 ? `Nenhum pedido com “${res.q}”`
+    : `${res.total} ${res.total === 1 ? "pedido encontrado" : "pedidos encontrados"}`;
+  return (
+    <div className="ag3-res" role="region" aria-label="Resultados da busca">
+      <p className="ag3-res-t" aria-live="polite">{titulo}</p>
+      {!erro && itens.length > 0 && (
+        <ul className={"ag3-res-l" + (limite > LIMITE_INICIAL ? " rola" : "")}>
+          {itens.map((p: any) => {
+            const atr = pedidoAtrasado({ data_entrega: p.data_entrega, status: ANTIGOS[p.status] || p.status });
+            const foto = fotoDoPedido(p);
+            return (
+              <li key={p.id}>
+                <button type="button" className="ag3-res-i" onClick={() => onAbrir(p.id)}>
+                  {foto ? <img src={foto} alt="" loading="lazy" /> : <span className="ag3-res-sem" aria-hidden="true"><Package size={20} weight="bold" /></span>}
+                  <span className="ag3-res-tx">
+                    <b><span>{nomeDeGente(p.cliente_nome || "") || "Sem nome"}</span>{p.numero != null && <em> #{p.numero}</em>}</b>
+                    <small className={atr ? "atr" : ""}>{atr ? "Atrasado · " : ""}{quandoBusca(p)}</small>
+                  </span>
+                  <CaretRight size={16} weight="bold" className="ag3-res-seta" aria-hidden="true" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {!erro && res && res.total > itens.length && limite === LIMITE_INICIAL && (
+        <button type="button" className="ag3-res-mais" onClick={() => setLimite(LIMITE_TUDO)}>Ver os {res.total} pedidos</button>
+      )}
+      {!erro && res && limite > LIMITE_INICIAL && res.total > itens.length && (
+        <p className="ag3-res-nota">Mostrando os {itens.length} mais novos. Digite mais do nome para achar o resto.</p>
+      )}
+    </div>
   );
 }

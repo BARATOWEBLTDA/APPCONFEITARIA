@@ -20,12 +20,15 @@
 .aj-ok h2 { margin: 0; font-size: 20px; font-weight: 700; }
 .aj-ok p { margin: -8px 0 4px; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
 .aj-ok .ui-bt { width: 100%; }
-.aj-fluxo { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 12px; font-size: 13px; color: var(--ui-texto-3); }
-.aj-st { display: inline-flex; align-items: center; gap: 4px; min-height: 26px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 700; }
-.aj-st--rec { background: var(--ui-cinza); color: var(--ui-texto-2); }
-.aj-st--analise { background: var(--ui-laranja-fundo); color: #92400E; }
-.aj-st--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
-.aj-st--no { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
+/* (23/10) situação da ideia em texto com bolinha (sem etiqueta arredondada); a legenda das etapas cabe em uma linha */
+.aj-fluxo { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; margin: 0 0 12px; font-size: 13px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; }
+.aj-fluxo svg { flex: none; }
+.aj-st { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.aj-st::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.aj-st--rec { color: var(--ui-texto-3); }
+.aj-st--analise { color: #B45309; }
+.aj-st--ok { color: var(--ui-verde); }
+.aj-st--no { color: var(--ui-vermelho-escuro); }
 .aj-hist { display: flex; flex-direction: column; gap: 10px; }
 .aj-h { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
 .aj-h-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }

@@ -140,3 +140,26 @@ i.atr { background: var(--ui-vermelho); }
 .ag3-at-it.atr .ag3-at-tx > span { color: var(--ui-vermelho); font-weight: 600; }
 .ag3-at-it .ui-bt { flex: none; }
 .ag3-at-ver { align-self: flex-start; }
+
+/* (23/10) resultados da busca: lista logo abaixo do campo, com pedidos de qualquer dia */
+.ag3-topo { position: relative; }
+.ag3-res { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 30; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: 0 10px 28px rgba(34, 19, 14, .16); }
+.ag3-res-t { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--ui-linha); font-size: 13px; font-weight: 600; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ag3-res-l { margin: 0; padding: 0; list-style: none; }
+.ag3-res-l.rola { max-height: min(60vh, 460px); overflow-y: auto; overscroll-behavior: contain; }
+.ag3-res-l li + li { border-top: 1px solid var(--ui-linha); }
+.ag3-res-i { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 58px; margin: 0; padding: 8px 12px 8px 14px; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+@media (hover: hover) { .ag3-res-i:hover { background: var(--ui-linha); } }
+.ag3-res-i:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
+.ag3-res-i img, .ag3-res-sem { flex: none; width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+.ag3-res-sem { display: flex; align-items: center; justify-content: center; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); }
+.ag3-res-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.ag3-res-tx b { display: flex; min-width: 0; font-size: 15px; font-weight: 600; white-space: nowrap; }
+.ag3-res-tx b > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ag3-res-tx em { flex: none; font-style: normal; font-weight: 500; color: var(--ui-texto-3); white-space: pre; }
+.ag3-res-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ag3-res-tx small.atr { color: var(--ui-vermelho); }
+.ag3-res-seta { flex: none; color: var(--ui-texto-3); }
+.ag3-res-mais { display: block; width: 100%; min-height: 46px; margin: 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+.ag3-res-nota { margin: 0; padding: 10px 14px; border-top: 1px solid var(--ui-linha); font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 768px) { .ag3-res { right: 56px; } }

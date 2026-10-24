@@ -1,0 +1,7 @@
+/* (23/10) Janela "Imagem do cupom" */
+.icp { display: flex; flex-direction: column; align-items: center; font-family: var(--font-base); }
+.icp-sub { align-self: stretch; margin: 0 0 12px; font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icp-img { display: flex; align-items: center; justify-content: center; width: min(260px, 72vw); aspect-ratio: 1080 / 1350; overflow: hidden; border-radius: 14px; background: var(--ui-linha); box-shadow: 0 6px 18px rgba(34, 19, 14, .16); }
+.icp-img img { display: block; width: 100%; height: 100%; }
+.icp-erro { padding: 16px; font-size: 14px; color: var(--ui-texto-2); text-align: center; }
+@media (max-height: 700px) { .icp-img { width: min(210px, 60vw); } }
