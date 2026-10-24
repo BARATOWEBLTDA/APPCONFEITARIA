@@ -41,7 +41,7 @@ import "./inicioAtalhos.css";
 import AdminBannerMobile from "@/components/AdminBannerMobile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 
-interface ChartPoint { dia: string; valor: number; }
+interface ChartPoint { iso: string; dia: string; valor: number; }
 
 // Status atuais do app (+ os antigos, pra pedidos velhos). Antes faltavam "agendado", "aguardando_aceite",
 // "finalizado"… e os pedidos sumiam de "Entregas hoje", "Próximas entregas" e "Atrasados" (30/09)
@@ -445,6 +445,8 @@ export default function Inicio() {
       const inicio7d = new Date(hoje); inicio7d.setDate(hoje.getDate() - 7);
       const inicio14d = new Date(hoje); inicio14d.setDate(hoje.getDate() - 14);
       const inicio30d = new Date(hoje); inicio30d.setDate(hoje.getDate() - 30);
+      // (23/10) o gráfico compara com o período anterior: busca 60 dias (os 30 do gráfico e os 30 de antes)
+      const inicio60d = new Date(hoje); inicio60d.setDate(hoje.getDate() - 59);
       const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
       const [
@@ -498,8 +500,8 @@ export default function Inicio() {
           .lt("created_at", inicio7d.toISOString())
           .neq("status", "cancelado"),
         // O que entrou no caixa (07/10 · 3.08): a mesma regra do "Recebido no mês" do Financeiro. Uma busca só serve
-        // o número do mês e o gráfico de 30 dias; por isso começa no dia mais antigo dos dois.
-        entradasNoPeriodo(userId, dataISO(inicio30d < inicioMes ? inicio30d : inicioMes), hojeISO),
+        // o número do mês e o gráfico (60 dias: o período e o anterior); por isso começa no dia mais antigo dos dois.
+        entradasNoPeriodo(userId, dataISO(inicio60d < inicioMes ? inicio60d : inicioMes), hojeISO),
         // Próximas entregas DEPOIS de hoje (15/10): as de hoje já vêm na última busca; antes vinham duas vezes
         supabase
           .from("pedidos")
@@ -567,8 +569,8 @@ export default function Inicio() {
       const vendasAnt = (pedidosSemanaAntRes.data || [])
         .reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
 
-      // Gráfico 30 dias — o que entrou em cada dia
-      const chart = construirChart30d(entradasRes.itens);
+      // Gráfico — o que entrou em cada dia nos últimos 60 dias (o gráfico mostra 7 ou 30 e compara com o período anterior)
+      const chart = construirChart60d(entradasRes.itens);
 
       // Recebido no mês: do dia 1 até hoje (igual ao Financeiro)
       const inicioMesISO = dataISO(inicioMes);
@@ -642,17 +644,18 @@ export default function Inicio() {
       .sort((a, b) => a.dias - b.dias);
   };
 
-  /** Série diária dos últimos 30 dias: quanto entrou no caixa em cada dia. */
-  const construirChart30d = (entradas: { valor: number; data: string }[]): ChartPoint[] => {
+  /** Série diária dos últimos 60 dias (do mais antigo para hoje): quanto entrou no caixa em cada dia. */
+  const construirChart60d = (entradas: { valor: number; data: string }[]): ChartPoint[] => {
     const hoje = new Date();
     const mapa: Record<string, number> = {};
     entradas.forEach(e => { mapa[e.data] = (mapa[e.data] || 0) + e.valor; });
     const result: ChartPoint[] = [];
-    for (let i = 29; i >= 0; i--) {
+    for (let i = 59; i >= 0; i--) {
       const d = new Date(hoje);
       d.setDate(hoje.getDate() - i);
       const iso = dataISO(d);
       result.push({
+        iso,
         dia: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
         valor: mapa[iso] || 0,
       });
@@ -996,9 +999,11 @@ export default function Inicio() {
       {/* ── Recebido nos últimos 30 dias (o que entrou no caixa, igual ao Financeiro) ── */}
       {!computador && (
         <section className="ini-section ini-section--chart">
-          <div className="ini-chart-header">
-            <h2 className="ini-section-title">Recebido (30 dias)</h2>
-          </div>
+          {!chartData.some(d => (d.valor || 0) > 0) && (
+            <div className="ini-chart-header">
+              <h2 className="ini-section-title">Recebido (30 dias)</h2>
+            </div>
+          )}
           <div className="ini-chart-card">
             {(() => {
               const temDados = chartData.some(d => (d.valor || 0) > 0);
@@ -1006,7 +1011,7 @@ export default function Inicio() {
               if (erroCarga) return <p className="ini-dk-vazio">Não deu para carregar o gráfico. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>;
               if (loading && !temDados) return <p className="ini-dk-vazio">Carregando…</p>;
               return temDados ? (
-                <div className="ini-chart-inner" style={{ width: "100%", height: 220, minWidth: 0, minHeight: 200 }}>
+                <div className="ini-chart-inner" style={{ width: "100%", minWidth: 0 }}>
                   {/* initialDimension: evita o aviso "width(-1) and height(-1)" no primeiro desenho, antes de medir o espaço */}
                   <Suspense fallback={null}><GraficoRecebido dados={chartData as any} /></Suspense>
                 </div>
@@ -1034,9 +1039,12 @@ export default function Inicio() {
           <div className="dkg-cheio dkg-link"><LinkDeVendas /></div>
           {/* Recebido nos últimos 30 dias (o que entrou no caixa, igual ao Financeiro) */}
           <section className="ini-section ini-section--chart dkg-graf">
-            <div className="ini-chart-header">
-              <h2 className="ini-section-title">Recebido (30 dias)</h2>
-            </div>
+            {/* (23/10) com recebimentos, o próprio gráfico mostra o título, o total e a comparação */}
+            {!chartData.some(d => (d.valor || 0) > 0) && (
+              <div className="ini-chart-header">
+                <h2 className="ini-section-title">Recebido (30 dias)</h2>
+              </div>
+            )}
             <div className="ini-chart-card">
               {(() => {
                 const temDados = chartData.some(d => (d.valor || 0) > 0);
@@ -1044,7 +1052,7 @@ export default function Inicio() {
                 if (erroCarga) return <p className="ini-dk-vazio">Não deu para carregar o gráfico. <button type="button" className="ini-dk-tentar" onClick={tentarDeNovo}>Tentar de novo</button></p>;
                 if (loading && !temDados) return <p className="ini-dk-vazio">Carregando…</p>;
                 return temDados ? (
-                  <div className="ini-chart-inner" style={{ width: "100%", height: 220, minWidth: 0, minHeight: 200 }}>
+                  <div className="ini-chart-inner" style={{ width: "100%", minWidth: 0 }}>
                     {/* initialDimension: evita o aviso "width(-1) and height(-1)" no primeiro desenho, antes de medir o espaço */}
                     <Suspense fallback={null}><GraficoRecebido dados={chartData as any} /></Suspense>
                   </div>
@@ -1742,7 +1750,7 @@ export default function Inicio() {
           }
           .ini-main .ini-chart-card, .ini-dkg .ini-chart-card { max-width: none; margin: 0; border: none; padding: 0; }
           .ini-main .ini-chart-card > div, .ini-dkg .ini-chart-card > div { width: 100% !important; min-width: 0; }
-          .ini-main .ini-chart-inner, .ini-dkg .ini-chart-inner { height: 240px !important; }
+          .ini-main .ini-chart-inner, .ini-dkg .ini-chart-inner { height: auto !important; }
 
 }
 
