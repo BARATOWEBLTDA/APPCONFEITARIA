@@ -4,6 +4,7 @@ import {
   Users, UserPlus, Cake, ClockCounterClockwise, Camera, ToggleRight, Tag, Basket, TrendDown, ArrowsClockwise, CreditCard, Scales, ShoppingBagOpen,
   SquaresFour, ArrowsDownUp, Info, PuzzlePiece, ArrowCounterClockwise, DownloadSimple, CalendarCheck, Buildings, X, Clock, Flame, Sparkle, Images,
   Eye, Ticket, FacebookLogo, Megaphone, Checks, SpeakerHigh, PushPin, Lightbulb, QrCode, Truck, CalendarDots, PencilSimple, ChatCircleText, Hash, Gear, Newspaper,
+  Receipt, Crown, Trophy, DeviceMobile,
 } from "@phosphor-icons/react";
 import type { Como } from "@/components/como/ComoFunciona";
 import type { PassoTour } from "@/components/como/tour";
@@ -20,7 +21,7 @@ export const COMO_INICIO_CEL: Como = {
     [MagnifyingGlass, <><b>Buscar:</b> encontre qualquer tela ou ação, como pix, cupom ou horário.</>],
     [ListChecks, <><b>Acesso rápido:</b> as telas mais usadas, a um toque.</>],
     [CalendarBlank, <><b>Próximas entregas:</b> toque em um dia para ver apenas os pedidos dele.</>],
-    [ListChecks, <><b>Para fazer:</b> pendências da loja, com o botão para resolver na hora.</>],
+    [ListChecks, <><b>Seus próximos passos:</b> pendências da loja, com o botão para resolver na hora.</>],
   ],
 };
 
@@ -30,7 +31,7 @@ export const COMO_INICIO: Como = {
   dicas: [
     [ChartLineUp, <><b>Números do topo:</b> recebido no mês, pedidos dos últimos 7 dias, entregas de hoje e ticket médio.</>],
     [CalendarBlank, <><b>Próximas entregas:</b> pedidos dos próximos dias, com horário e valor.</>],
-    [ListChecks, <><b>Para fazer:</b> pendências da loja, com o botão para resolver na hora.</>],
+    [ListChecks, <><b>Seus próximos passos:</b> pendências da loja, com o botão para resolver na hora.</>],
     [MagnifyingGlass, <><b>Buscar</b> (Ctrl + K): encontre qualquer tela ou ação, como pix, cupom ou horário.</>],
   ],
 };
@@ -41,7 +42,7 @@ export const TOUR_INICIO_CEL: PassoTour[] = [
   { el: ".ini-busca", titulo: "Buscar", texto: "Digite o que procura, como \"pix\", \"cupom\" ou \"horário\", e vá direto para a tela certa." },
   { el: ".ini-section--nav", titulo: "Acesso rápido", texto: "Atalhos para as telas mais usadas. As demais ficam no Menu, na barra inferior." },
   { el: ".ini-section--dia", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Toque em um dia para ver apenas os pedidos dele." },
-  { el: ".ini-falta .pf", titulo: "Para fazer", texto: "Pendências da sua loja, com o botão para resolver na hora. Se preferir deixar para depois, toque em Agora não." },
+  { el: ".ini-falta .pf", titulo: "Seus próximos passos", texto: "Pendências da sua loja, com o botão para resolver na hora. Se preferir deixar para depois, toque em Agora não." },
   { el: ".bn-novo-c", titulo: "Nova venda", texto: "Registre uma venda ou encomenda a qualquer momento. O botão aparece em todas as telas.", redondo: true },
 ];
 
@@ -49,7 +50,7 @@ export const TOUR_INICIO_CEL: PassoTour[] = [
 export const TOUR_INICIO_PC: PassoTour[] = [
   { el: ".ini-dk-kpis", titulo: "Seus números", texto: "Recebido no mês, pedidos dos últimos 7 dias, entregas de hoje e ticket médio." },
   { el: ".dkg-entregas", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Clique em um pedido para ver os detalhes." },
-  { el: ".dkg-fazer .pf", titulo: "Para fazer", texto: "Pendências da sua loja, com o botão para resolver na hora." },
+  { el: ".dkg-fazer .pf", titulo: "Seus próximos passos", texto: "Pendências da sua loja, com o botão para resolver na hora." },
   { el: ".cab-busca", titulo: "Buscar", texto: "Encontre qualquer tela ou ação do sistema. Atalho: Ctrl + K." },
   { el: ".sb-pausar", titulo: "Sua loja", texto: "Mostra se a loja está aberta e permite pausar ou retomar os pedidos pelo cardápio." },
 ];
@@ -594,4 +595,103 @@ export const COMO_MENSAGENS: Como = {
 export const TOUR_MENSAGENS: PassoTour[] = [
   { el: ".mz-intro", titulo: "Como funciona", texto: "O app abre o WhatsApp com a mensagem pronta. Aqui você personaliza cada texto." },
   { el: ".mz-item", titulo: "Mensagem", texto: "Mostra quando o texto é usado e se está no padrão ou personalizado. Selecione para editar." },
+];
+
+
+/* ══════ (23/10) Telas que ainda não tinham o (i): perfil do cliente, pedido aberto, notificações e sons,
+   minha assinatura, Doo IA e conquistas ══════ */
+
+export const COMO_CLIENTE: Como = {
+  tela: { nome: "Cliente", Icone: Users },
+  resumo: "Tudo de um cliente em uma tela: contato, aniversário, quanto já comprou e os pedidos.",
+  tit: "Exemplo · uma cliente frequente",
+  linhas: [["Pedidos", "8"], ["Total gasto", "R$ 960,00"]],
+  total: ["Ticket médio", "R$ 120,00"],
+  fluxo: ["Cliente", "Nova venda", "Pedido"],
+  dicas: [
+    [Receipt, <><b>Nova venda</b> já abre com o cliente escolhido.</>],
+    [ChatCircleText, <>O botão do <b>WhatsApp</b> abre a conversa com a mensagem pronta.</>],
+    [Cake, <>Com o <b>aniversário</b> cadastrado, o app lembra você de mandar os parabéns.</>],
+  ],
+};
+export const TOUR_CLIENTE: PassoTour[] = [
+  { el: ".cp9-eu", titulo: "O cliente", texto: "Nome, WhatsApp e há quanto tempo compra com você." },
+  { el: ".cp9-acoes", titulo: "Ações", texto: "Comece uma nova venda para este cliente ou fale com ele pelo WhatsApp." },
+  { el: ".cp9-nums", titulo: "Números", texto: "Quantos pedidos ele fez, quanto já gastou e o valor médio de cada pedido." },
+  { el: ".cp9-o3", titulo: "Pedidos", texto: "Os pedidos deste cliente, do mais novo para o mais antigo. Toque para abrir." },
+  { el: ".cp9-dados", titulo: "Dados", texto: "Aniversário, endereço e observações. Toque em Editar para completar." },
+];
+
+export const COMO_PEDIDO: Como = {
+  tela: { nome: "Pedido", Icone: Receipt },
+  resumo: "O pedido aberto: em que etapa está, o que foi pedido, a entrega e o pagamento.",
+  tit: "Exemplo · bolo de aniversário",
+  linhas: [["Total", "R$ 180,00"], ["Sinal pago", "R$ 90,00"]],
+  total: ["Falta receber", "R$ 90,00"],
+  fluxo: ["Aceitar", "Produzir", "Entregar"],
+  dicas: [
+    [Checks, <>O botão grande leva o pedido para a <b>próxima etapa</b>.</>],
+    [Truck, <>Em <b>Entrega</b> ficam a data, o horário e o endereço.</>],
+    [CreditCard, <>Em <b>Pagamento</b> você registra o que recebeu e vê quanto falta.</>],
+  ],
+};
+export const TOUR_PEDIDO: PassoTour[] = [
+  { el: ".tpd-sit", titulo: "Situação", texto: "Em que etapa o pedido está e o próximo passo. O botão leva para a etapa seguinte." },
+  { el: ".tpd-abas", titulo: "Partes do pedido", texto: "Itens, entrega (ou retirada) e pagamento. Toque para ver e alterar cada parte." },
+  { el: ".tpd-cli", titulo: "Cliente", texto: "Quem fez o pedido. Toque para abrir o perfil do cliente." },
+];
+
+export const COMO_NOTIFICACOES: Como = {
+  tela: { nome: "Notificações e sons", Icone: Bell },
+  resumo: "Os avisos e os sons deste aparelho. Cada celular ou computador tem a sua configuração.",
+  dicas: [
+    [Bell, <>Com as <b>notificações</b> ligadas, o celular avisa quando chega pedido, mesmo com o app fechado.</>],
+    [DeviceMobile, <>No <b>iPhone</b>, o app precisa estar instalado na tela inicial para receber avisos.</>],
+    [SpeakerHigh, <><b>Sons do app</b> tocam enquanto você usa o Doonly, como ao registrar uma venda.</>],
+  ],
+};
+export const TOUR_NOTIFICACOES: PassoTour[] = [
+  { el: ".ns-card", titulo: "Notificações", texto: "Mostra se os avisos estão ligados neste aparelho e como ligar quando estiverem bloqueados." },
+  { el: ".ns-toggle", titulo: "Sons", texto: "Liga ou desliga os sons do app neste aparelho." },
+];
+
+export const COMO_ASSINATURA: Como = {
+  tela: { nome: "Minha assinatura", Icone: Crown },
+  resumo: "O seu plano PRO: quanto custa, quando renova e o que está liberado.",
+  dicas: [
+    [CalendarBlank, <>A <b>próxima cobrança</b> mostra a data e quantos dias faltam.</>],
+    [Checks, <>Em <b>O que está liberado</b> você vê todos os recursos do PRO.</>],
+    [ChatCircleText, <>Dúvidas ou cancelamento: fale com a equipe Doonly pelo <b>WhatsApp</b>.</>],
+  ],
+};
+export const TOUR_ASSINATURA: PassoTour[] = [
+  { el: ".mas-c", titulo: "Seu plano", texto: "Valor, desde quando você assina, forma de pagamento e a próxima cobrança." },
+];
+
+export const COMO_DOO: Como = {
+  tela: { nome: "Doo IA", Icone: Sparkle },
+  resumo: "A assistente do Doonly: calcula preços, cria receitas, registra pedidos e escreve por você.",
+  fluxo: ["Pergunte", "A Doo responde", "Use no app"],
+  dicas: [
+    [Receipt, <>Mande o <b>print de uma conversa</b> e a Doo registra o pedido.</>],
+    [Coins, <>Peça o <b>preço</b> de um bolo ou doce: ela usa os seus ingredientes.</>],
+    [ChatCircleText, <>Ela também escreve <b>legendas</b> e <b>respostas</b> para os seus clientes.</>],
+  ],
+};
+export const TOUR_DOO: PassoTour[] = [
+  { el: ".av-hero", titulo: "Doo IA", texto: "A sua assistente. Toque em uma das opções abaixo ou abra a conversa e pergunte o que quiser." },
+  { el: ".av-grid", titulo: "O que pedir", texto: "Atalhos para o que a Doo faz melhor: preço, pedido, receita, ingrediente e mensagens." },
+];
+
+export const COMO_CONQUISTAS: Como = {
+  tela: { nome: "Minhas conquistas", Icone: Trophy },
+  resumo: "Medalhas que você ganha usando o Doonly: pedidos, clientes, fichas técnicas e mais.",
+  dicas: [
+    [Trophy, <>As medalhas <b>coloridas</b> já são suas; as cinzas mostram quanto falta.</>],
+    [ChartLineUp, <>Cada medalha tem uma <b>barra</b> com o seu progresso.</>],
+  ],
+};
+export const TOUR_CONQUISTAS: PassoTour[] = [
+  { el: ".cqp-sum", titulo: "Seu progresso", texto: "Quantas medalhas você já conquistou do total." },
+  { el: ".cqp-grid", titulo: "Medalhas", texto: "Coloridas são as conquistadas. As cinzas mostram quanto falta para ganhar." },
 ];

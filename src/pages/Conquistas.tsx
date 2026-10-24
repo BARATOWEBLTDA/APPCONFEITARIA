@@ -1,3 +1,4 @@
+import { COMO_CONQUISTAS, TOUR_CONQUISTAS } from "@/lib/comoTelas";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -52,7 +53,7 @@ export default function Conquistas() {
 
   return (
     <div className="cqp">
-      <AppPageHeader title="Minhas conquistas" subtitle={r ? `${feitas} de ${CONQUISTAS.length} conquistadas` : erro ? "Não deu para carregar" : "Carregando…"} onBack={() => voltarOuIr(navigate)} />
+      <AppPageHeader title="Minhas conquistas" subtitle={r ? `${feitas} de ${CONQUISTAS.length} conquistadas` : erro ? "Não deu para carregar" : "Carregando…"} onBack={() => voltarOuIr(navigate)} infoComo={COMO_CONQUISTAS} infoTour={TOUR_CONQUISTAS} />
       <div className="cqp-wrap">
         {erro && !r ? (
           <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar as conquistas" texto="Confira a internet e tente de novo."

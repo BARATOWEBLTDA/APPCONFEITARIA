@@ -1,3 +1,4 @@
+import { COMO_CLIENTE, TOUR_CLIENTE } from "@/lib/comoTelas";
 import { useState, useEffect, useRef } from "react";
 import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate, useParams } from "react-router-dom";
@@ -213,7 +214,7 @@ export default function ClientePerfil() {
 
   return (
     <>
-      <AppPageHeader title="Cliente" subtitle={`Cliente desde ${mesAno(cliente.created_at)}`} onBack={() => navigate("/clientes")} />
+      <AppPageHeader title="Cliente" subtitle={`Cliente desde ${mesAno(cliente.created_at)}`} onBack={() => navigate("/clientes")} infoComo={COMO_CLIENTE} infoTour={TOUR_CLIENTE} />
       <div className="cl9 cp9">
         <div className="cp9-col">
           {/* a cliente */}

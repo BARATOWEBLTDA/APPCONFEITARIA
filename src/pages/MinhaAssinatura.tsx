@@ -1,3 +1,4 @@
+import { COMO_ASSINATURA, TOUR_ASSINATURA } from "@/lib/comoTelas";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -55,7 +56,7 @@ export default function MinhaAssinatura() {
 
   return (
     <div className="mas-root">
-      <AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" onBack={computador ? undefined : () => voltarOuIr(navigate, "/configuracoes")} />
+      <AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" onBack={computador ? undefined : () => voltarOuIr(navigate, "/configuracoes")} infoComo={COMO_ASSINATURA} infoTour={TOUR_ASSINATURA} />
       <div className="mas-wrap">
         <div className="mas-col">
           <section className="mas-c">
@@ -99,7 +100,7 @@ export default function MinhaAssinatura() {
         .mas-top { display: flex; align-items: center; gap: 12px; }
         .mas-cr { flex: none; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 14px; background: var(--chocolate); color: #F5C76B; }
         .mas-top b { flex: 1; font-size: 17px; font-weight: 700; }
-        .mas-at { padding: 4px 10px; border-radius: 999px; background: #E7F6EC; color: #15803D; font-size: 13px; font-weight: 700; }
+        .mas-at { padding: 4px 10px; border-radius: 6px; background: #E7F6EC; color: #15803D; font-size: 13px; font-weight: 700; }
         .mas-v { margin: 14px 0 6px; font-size: 28px; font-weight: 700; color: var(--ui-texto); }
         .mas-v small { font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
         .mas-l { display: flex; justify-content: space-between; gap: 10px; padding: 11px 0; border-top: 1px solid var(--ui-linha); font-size: 14.5px; color: var(--ui-texto-2); }

@@ -229,7 +229,7 @@ export default function Configuracoes() {
 
   return (
     <>
-      <AppPageHeader title="Configurações" subtitle="Sua conta e o app" infoComo={COMO_CONFIGURACOES} infoTour={TOUR_CONFIGURACOES} />
+      <AppPageHeader title="Configurações" voltar="/inicio" subtitle="Sua conta e o app" infoComo={COMO_CONFIGURACOES} infoTour={TOUR_CONFIGURACOES} />
       <div className="cf9">
         {loading ? (
           <div className="cl9-esq" aria-label="Carregando">{[0, 1, 2].map(k => <span key={k} />)}</div>

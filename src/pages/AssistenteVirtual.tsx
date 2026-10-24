@@ -1,3 +1,4 @@
+import { COMO_DOO, TOUR_DOO } from "@/lib/comoTelas";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -26,7 +27,7 @@ export default function AssistenteVirtual() {
   useEffect(() => { const mq = window.matchMedia("(min-width: 901px)"); const f = () => setComputador(mq.matches); mq.addEventListener("change", f); return () => mq.removeEventListener("change", f); }, []);
   return (
     <div className="av-root">
-      <AppPageHeader title="Doo IA" subtitle="Sua assistente de confeitaria" onBack={computador ? undefined : () => voltarOuIr(navigate)} />
+      <AppPageHeader title="Doo IA" subtitle="Sua assistente de confeitaria" onBack={computador ? undefined : () => voltarOuIr(navigate)} infoComo={COMO_DOO} infoTour={TOUR_DOO} />
       <div className="av-wrap">
         <div className="av-hero">
           <img src="/Sistema/doo.png" alt="" className="av-doo" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
@@ -73,7 +74,7 @@ export default function AssistenteVirtual() {
         .av-e { width: 40px; height: 40px; border-radius: var(--ui-raio); background: #FCE7F3; color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: 2px; }
         .av-item b, .av-item small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
         .av-item b { font-size: 14.5px; } .av-item small { font-size: 12.5px; color: var(--ui-texto-2); }
-        .av-novo { position: absolute; top: 10px; right: 10px; padding: 2px 8px; border-radius: 999px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 11.5px; font-weight: 700; }
+        .av-novo { position: absolute; top: 10px; right: 10px; padding: 2px 8px; border-radius: 6px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 11.5px; font-weight: 700; }
         .av-aviso { margin: 14px 0 0; text-align: center; font-size: 12.5px; color: var(--ui-texto-3); }
         .av-cta { width: 100%; height: 52px; margin-top: 18px; border: none; border-radius: var(--ui-raio); background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; gap: 8px; }
         .av-sub { text-align: center; font-size: 12.5px; color: var(--ui-texto-3); margin: 10px 0 0; }

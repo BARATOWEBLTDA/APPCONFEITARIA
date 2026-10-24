@@ -13,6 +13,9 @@ export type Etiqueta = { k: string; rotulo: string; exemplo: string };
 export type Modelo = {
   chave: ChaveMensagem;
   titulo: string;
+  /** (23/10) título e explicação curtos, em uma linha, para a lista do celular */
+  curto: string;
+  resumo: string;
   quando: string;
   padrao: string;
   etiquetas: Etiqueta[];
@@ -27,6 +30,8 @@ export const MODELOS: Modelo[] = [
   {
     chave: "pedido_cardapio",
     titulo: "Pedido feito pelo cardápio",
+    curto: "Pedido pelo cardápio",
+    resumo: "O cliente manda ao fazer o pedido",
     quando: "O cliente manda para o seu WhatsApp quando termina o pedido no cardápio",
     padrao: "Oi, *{loja}*! Acabei de fazer um pedido pelo cardápio.\n\n{pedido}",
     etiquetas: [
@@ -41,6 +46,8 @@ export const MODELOS: Modelo[] = [
   {
     chave: "sobre_pedido",
     titulo: "Falar com o cliente sobre o pedido",
+    curto: "Sobre o pedido",
+    resumo: "Você manda pelos pedidos",
     quando: "Você manda pelo botão de WhatsApp na Agenda e em Pedidos",
     padrao: "Olá {nome}! Sobre o seu pedido #{numero}, tudo certo?",
     etiquetas: [
@@ -56,6 +63,8 @@ export const MODELOS: Modelo[] = [
   {
     chave: "aniversario",
     titulo: "Parabéns de aniversário",
+    curto: "Parabéns de aniversário",
+    resumo: "Você manda em Clientes",
     quando: "Você manda pelo botão de parabéns em Clientes",
     padrao: "Feliz aniversário, {nome}! Que o seu dia seja muito doce.",
     etiquetas: [

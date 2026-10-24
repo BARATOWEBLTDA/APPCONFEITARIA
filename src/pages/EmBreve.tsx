@@ -26,7 +26,7 @@ export default function EmBreve({ tela }: { tela: keyof typeof TELAS }) {
   const Icone = t.icone;
   return (
     <>
-      <AppPageHeader title={t.titulo} subtitle="Em breve" />
+      <AppPageHeader title={t.titulo} voltar="/inicio" subtitle="Em breve" />
       <div className="cl9">
         <TelaVazia caixa icone={<Icone size={30} />} titulo="Estamos preparando esta tela" texto={t.texto}
           acao={<Botao variante="secundario" icone={<Lightbulb size={20} weight="bold" />} onClick={() => navigate("/solicitar-recurso")}>Contar o que você precisa</Botao>} />

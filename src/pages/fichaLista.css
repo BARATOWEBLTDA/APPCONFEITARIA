@@ -34,10 +34,7 @@
   .fl-cel { display: none !important; }
   .fl-lucro { text-align: left; }
 }
-/* 09/10: no celular a segunda linha quebra em vez de cortar ("margem -0,4…") */
-.fl-tx small { white-space: normal; }
-/* 10/10: o nome do produto quebra em até 2 linhas em vez de cortar ("Salgadinhos frit...") por causa do "Montar ficha" */
-.fl-tx b { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; line-height: 1.3; }
+/* (23/10) padrão do app: nome e segunda linha em uma linha só, cortando com "…" (antes quebrava em 2 linhas) */
 .fl-montar { white-space: nowrap; }
 @media (max-width: 380px) {
   /* Tela bem estreita: "Montar ficha" desce pra baixo do nome */

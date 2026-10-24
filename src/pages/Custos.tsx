@@ -127,7 +127,7 @@ export default function Custos() {
 
         <div className="cu-grid">
           <section className="cu-card cu-a-fixos">
-            <div className="cu-ct"><span className="cu-ic"><Buildings size={18} weight="duotone" /></span><div><b>Custos fixos</b><small>Todo mês, vendendo ou não</small></div>
+            <div className="cu-ct"><span className="cu-ic"><Buildings size={18} weight="duotone" /></span><div><b>Custos fixos</b><small>Pagos todo mês</small></div>
               <button type="button" className="cu-add" onClick={() => setEditFixo("novo")}><Plus size={14} weight="bold" />Adicionar</button></div>
             {carregando ? <div className="cu-ph" /> : fixos.length === 0 ? (
               <p className="cu-vazio">Nenhum ainda. Ex.: aluguel, internet, conta de luz.</p>

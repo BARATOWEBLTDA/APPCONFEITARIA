@@ -102,9 +102,10 @@ export default function MensagensWhatsApp() {
               <button key={m.chave} type="button" className="mz-item" onClick={() => abrir(m)}>
                 <span className="mz-ic" aria-hidden="true"><ChatCircleText size={22} weight="bold" /></span>
                 <span className="mz-tx">
-                  <b>{m.titulo}</b>
-                  <small>{m.quando}</small>
-                  <em className={personalizada ? "on" : ""}>{personalizada ? "Personalizada" : "Texto padrão"}</em>
+                  <b>{m.curto}</b>
+                  <small>{m.resumo}</small>
+                  {/* (23/10) texto com rótulo no lugar da etiqueta em pílula */}
+                  <em className={personalizada ? "on" : ""}>{personalizada ? "Texto: personalizado" : "Texto: padrão do app"}</em>
                 </span>
                 <CaretRight size={18} weight="bold" className="mz-seta" aria-hidden="true" />
               </button>

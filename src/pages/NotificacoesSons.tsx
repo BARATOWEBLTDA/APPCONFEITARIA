@@ -1,3 +1,4 @@
+import { COMO_NOTIFICACOES, TOUR_NOTIFICACOES } from "@/lib/comoTelas";
 import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { DeviceMobile, SpeakerHigh, CashRegister, PaperPlaneTilt } from "@phosphor-icons/react";
@@ -123,6 +124,7 @@ export default function NotificacoesSons() {
         title="Notificações e sons"
         subtitle="Preferências deste aparelho"
         onBack={() => navigate("/configuracoes")}
+        infoComo={COMO_NOTIFICACOES} infoTour={TOUR_NOTIFICACOES}
       />
 
       <div className="ns-root">
@@ -159,7 +161,7 @@ export default function NotificacoesSons() {
             <span className="ns-ico"><SpeakerHigh size={20} /></span>
             <div className="ns-txt">
               <div className="ns-name">Sons do app</div>
-              <div className="ns-desc">Efeitos sonoros enquanto você usa o app</div>
+              <div className="ns-desc">Efeitos ao usar o app</div>
             </div>
             <label className="ns-toggle">
               <input type="checkbox" checked={somGeral} onChange={toggleSomGeral} aria-label="Sons do app" />

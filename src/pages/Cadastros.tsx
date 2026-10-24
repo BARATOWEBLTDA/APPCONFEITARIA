@@ -70,7 +70,7 @@ export default function Cadastros() {
 
   return (
     <>
-      <AppPageHeader title="Cadastros" subtitle="Produtos, clientes e cardápio" infoComo={COMO_CADASTROS} infoTour={TOUR_CADASTROS} />
+      <AppPageHeader title="Cadastros" voltar="/inicio" subtitle="Produtos, clientes e cardápio" infoComo={COMO_CADASTROS} infoTour={TOUR_CADASTROS} />
       <div className="cad">
         {n && n.semFicha > 0 && (
           <button type="button" className="cad-at" onClick={() => navigate("/ficha-tecnica")}>

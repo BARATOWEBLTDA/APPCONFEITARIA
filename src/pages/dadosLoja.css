@@ -126,7 +126,7 @@
 .dl-li-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dl-li-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dl-li-tx small.falta { color: #9A4A06; font-weight: 600; }
-.dl-li-st { flex: none; padding: 3px 8px; border-radius: 999px; font-style: normal; font-size: 12px; font-weight: 700; }
+.dl-li-st { flex: none; padding: 3px 8px; border-radius: 6px; font-style: normal; font-size: 12px; font-weight: 700; }
 .dl-li-st.ok { background: #DDF3E4; color: #157A3C; }
 .dl-li-st.falta { background: #FDECD3; color: #9A4A06; }
 .dl-li-st.op { background: #F3EEF1; color: var(--ui-texto-3); font-weight: 600; }

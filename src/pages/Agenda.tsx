@@ -512,6 +512,7 @@ export default function Agenda() {
   return (
     <>
     <AppPageHeader
+      voltar="/inicio"
       title="Agenda"
       subtitle="Seus pedidos por data de entrega"
       infoIcon="📅" infoComo={COMO_AGENDA} infoTour={TOUR_AGENDA}

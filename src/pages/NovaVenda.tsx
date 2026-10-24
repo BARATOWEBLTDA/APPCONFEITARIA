@@ -783,10 +783,10 @@ export default function NovaVenda() {
             <Titulo>Que tipo de venda é?</Titulo>
             <div className="nv3-tipos" role="group" aria-label="Tipo de venda">
               <button type="button" aria-pressed={tipo === 'encomenda'} onClick={() => setTipo('encomenda')}>
-                <CalendarDots size={24} weight={tipo === 'encomenda' ? 'fill' : 'bold'} /><b>Encomenda</b><small>Para entregar ou retirar em outro dia</small>
+                <CalendarDots size={24} weight={tipo === 'encomenda' ? 'fill' : 'bold'} /><b>Encomenda</b><small>Para outro dia</small>
               </button>
               <button type="button" aria-pressed={tipo === 'pronta_entrega'} onClick={() => setTipo('pronta_entrega')}>
-                <Lightning size={24} weight={tipo === 'pronta_entrega' ? 'fill' : 'bold'} /><b>Pronta entrega</b><small>Já está pronto, não precisa fazer</small>
+                <Lightning size={24} weight={tipo === 'pronta_entrega' ? 'fill' : 'bold'} /><b>Pronta entrega</b><small>Já está pronto</small>
               </button>
             </div>
             {!tipo && (itens.length > 0 || tentou) && <p className="nv3-dica nv3-falta">Escolha o tipo de venda para continuar.</p>}

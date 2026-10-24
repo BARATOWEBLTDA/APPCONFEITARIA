@@ -1,3 +1,4 @@
+import { COMO_PEDIDO, TOUR_PEDIDO } from "@/lib/comoTelas";
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { explicarErro } from '@/lib/erros'
 import CampoData from '@/components/CampoData'
@@ -1369,7 +1370,7 @@ export default function EditarPedido() {
 
   return (
     <>
-    <AppPageHeader title={`Pedido #${pedido.numero || '—'}`} subtitle={subtituloTopo} onBack={voltarPraLista} />
+    <AppPageHeader title={`Pedido #${pedido.numero || '—'}`} subtitle={subtituloTopo} onBack={voltarPraLista} infoComo={COMO_PEDIDO} infoTour={TOUR_PEDIDO} />
     {/* (11/10) enquanto salva e recarrega, a tela não aceita toque nem digitação */}
     <div className="ep-wrap ep2 tpd" aria-busy={salvando || undefined} inert={salvando || undefined} style={salvando ? { pointerEvents: 'none' } : undefined}>
       <section className={`tpd-sit${novoPedido ? ' aceitar' : ''}${atrasadoHoje ? ' atr' : ''}`} aria-label="Situação do pedido">

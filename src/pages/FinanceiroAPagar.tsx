@@ -344,6 +344,8 @@ const CSS = `
   .tx-seg { display: flex; background: #EFE9EC; border-radius: var(--ui-raio); padding: 3px; }
   .tx-seg button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; border: none; background: none; border-radius: var(--ui-raio-p); padding: 8px 6px; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; white-space: nowrap; }
   .tx-seg button.on { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  /* (23/10) celular 360: cada aba do tamanho do texto (antes "Atrasadas 1" não cabia e cortava na borda) */
+  .tx-seg.fap-seg button { flex: 1 1 auto; gap: 4px; padding: 8px 4px; }
   .fap-seg i { font-style: normal; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #E3D9DE; color: var(--ui-texto-2); font-size: 11px; font-weight: 700; line-height: 18px; }
   .fap-seg i.atr { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
   .fap-l-c { display: none; }

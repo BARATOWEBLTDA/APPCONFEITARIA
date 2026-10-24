@@ -208,9 +208,9 @@ export default function PraFazer() {
     avisar(dias === "nunca" ? "Pronto, não aparece mais neste aparelho." : dias === 1 ? "Volta amanhã." : "Volta daqui a uma semana.", { tipo: "ok" });
   };
   return (
-    <section className="pf" aria-label="Para fazer" ref={raiz}>
+    <section className="pf" aria-label="Seus próximos passos" ref={raiz}>
       <div className="pf-cab">
-        <b className="pf-t">Para fazer</b>
+        <b className="pf-t">Seus próximos passos</b>
         <span className="pf-n" aria-label={`${itens.length} ${itens.length === 1 ? "item" : "itens"}`}>{itens.length}</span>
       </div>
       <ul className="pf-lista">

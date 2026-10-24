@@ -160,12 +160,12 @@ export default function Lucratividade() {
           <div className="lu-conta">
             <div className="lu-k"><span className="lu-ki n" aria-hidden="true"><ShoppingBagOpen size={15} weight="bold" /></span><small>Vendido</small><b>{brl(dados.vendido)}</b>
               <i>{dados.qtdVendidos} {dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}</i></div>
-            <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Custo dos ingredientes</small><b className="s">{brl(dados.cmv)}</b>
+            <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Ingredientes</small><b className="s">{brl(dados.cmv)}</b>
               <i>pela ficha técnica</i></div>
-            <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Taxas e embalagem</small><b className="s">{brl(dados.custosVariaveis)}</b>
-              <i>{dados.custosVariaveis > 0 ? "maquininha e custos por pedido" : <button type="button" className="lu-link" onClick={() => navigate("/custos")}>cadastrar em Custos</button>}</i></div>
-            <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Despesas pagas</small><b className="s">{brl(despesasSemInsumos)}</b>
-              <i>sem os ingredientes (já estão na ficha)</i></div>
+            <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Taxas</small><b className="s">{brl(dados.custosVariaveis)}</b>
+              <i>{dados.custosVariaveis > 0 ? "cobradas por pedido" : <button type="button" className="lu-link" onClick={() => navigate("/custos")}>cadastrar em Custos</button>}</i></div>
+            <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Despesas</small><b className="s">{brl(despesasSemInsumos)}</b>
+              <i>sem os ingredientes</i></div>
             <div className={`lu-k lu-k--lucro${dados.lucro < 0 ? " ruim" : ""}`}><span className="lu-ki l" aria-hidden="true"><Equals size={15} weight="bold" /></span><small>{ehMes ? "Lucro do mês" : "Lucro do período"}</small><b>{brl(dados.lucro)}</b>
               <div className="lu-margem"><div className="lu-bar"><i style={{ width: `${Math.max(0, Math.min(100, dados.margem))}%` }} /></div><span>margem de <b>{dados.margem}%</b></span></div></div>
           </div>
@@ -253,10 +253,10 @@ const CSS = `
   .lu-conta > .lu-k--lucro { grid-column: 1 / -1; }
   @media (min-width: 1024px) { .lu-conta { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; } .lu-conta > .lu-k--lucro { grid-column: auto; } }
   .lu-k { position: relative; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 14px; min-width: 0; }
-  .lu-k small { display: block; padding-right: 32px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+  .lu-k small { display: block; padding-right: 32px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lu-k > b { display: block; margin: 6px 0 4px; font-size: clamp(17px, 4.6vw, 26px); font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lu-k > b.s { color: var(--ui-vermelho); }
-  .lu-k i { display: block; font-style: normal; font-size: 12.5px; color: var(--ui-texto-2); line-height: 1.35; }
+  .lu-k i { display: block; font-style: normal; font-size: 12.5px; color: var(--ui-texto-2); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lu-ki { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
   .lu-ki.n { background: var(--ui-cinza); color: var(--ui-texto-2); } .lu-ki.s { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); } .lu-ki.l { background: #FCE7F3; color: var(--ui-rosa-escuro); }
   .lu-k--lucro { border-color: #F7C9DA; background: #FFF8FB; } .lu-k--lucro > b { color: var(--ui-rosa-escuro); } .lu-k--lucro.ruim > b { color: var(--ui-vermelho); }
