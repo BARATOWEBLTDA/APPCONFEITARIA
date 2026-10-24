@@ -130,8 +130,11 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
           <img src="/marca/leve/acenando.webp" alt="" width={56} height={56} />
           <div>
             {/* (21/10) com pedido esperando, a frase diz o que fazer (antes "Sua agenda está livre" com 3 pedidos lá em cima) */}
-            <b>Nada marcado nos próximos dias</b>
-            <span>{novos > 0 ? `Aceite ${novos === 1 ? "o pedido" : `os ${novos} pedidos`} para ${novos === 1 ? "ele entrar" : "eles entrarem"} aqui` : "Os pedidos aceitos aparecem aqui"}</span>
+            {/* (24/10) título curto (o de antes quebrava em 2 linhas no celular) e a explicação em até 3 linhas */}
+            <b>Nenhuma entrega marcada</b>
+            <span>{novos > 0
+              ? `${novos === 1 ? "Tem 1 pedido esperando" : `Tem ${novos} pedidos esperando`} você aceitar. Depois de ${novos === 1 ? "aceito, ele aparece" : "aceitos, eles aparecem"} aqui com o dia e a hora da entrega.`
+              : "Quando um pedido for aceito, ele aparece aqui com o dia e a hora da entrega. Que tal divulgar seu cardápio?"}</span>
           </div>
         </div>
       ) : (

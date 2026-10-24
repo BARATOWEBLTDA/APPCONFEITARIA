@@ -121,7 +121,18 @@ html body .layout-root[data-rota="/noticias"], html body .layout-root[data-rota=
 .nd-acao { margin-top: 24px; }
 .nd-gostei { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--ui-linha); }
 .nd-gostei p { margin: 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
-.nd-fim { display: flex; justify-content: center; margin-top: 12px; }
+.nd-fim { display: flex; justify-content: center; margin-top: 16px; }
+/* (24/10) Mais novidades no fim da notícia */
+.nd-mais { margin-top: 24px; }
+.nd-mais h2 { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+.nd-mais ul { margin: 0; padding: 0; list-style: none; border: 1px solid var(--ui-borda); border-radius: 14px; overflow: hidden; background: var(--ui-branco); }
+.nd-mais li + li { border-top: 1px solid var(--ui-linha); }
+.nd-mais a { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 12px; color: var(--ui-texto); text-decoration: none; }
+.nd-mais a:active { background: var(--ui-linha); }
+.nd-mais b { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nd-mais svg:last-child { flex: none; color: var(--ui-texto-3); }
+.nd-mais-img { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; overflow: hidden; border-radius: 6px; background: #FDE7F0; color: var(--ui-rosa-escuro); }
+.nd-mais-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 @media (min-width: 768px) {
   .nd { padding: 24px 16px 16px; }
@@ -129,3 +140,11 @@ html body .layout-root[data-rota="/noticias"], html body .layout-root[data-rota=
   .nd-capa { max-height: 360px; margin-bottom: 24px; }
 }
 @media (min-width: 901px) { .nd { padding: 24px 0 0; } }
+
+/* (24/10) arrastar para o lado para excluir (celular); X ao passar o mouse (computador) */
+.nl-sw { position: relative; overflow: hidden; list-style: none; transition: max-height .2s ease, opacity .2s ease; max-height: 400px; }
+.nl-sw--sai { max-height: 0; opacity: 0; }
+.nl-sw-fundo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-right: 24px; background: var(--ui-vermelho); color: #fff; font-size: 14px; font-weight: 700; }
+.nl-sw-it { position: relative; z-index: 1; touch-action: pan-y; transition: transform .2s ease; }
+.nl-sw-x { position: absolute; z-index: 2; top: 50%; right: 12px; transform: translateY(-50%); display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 50%; background: #fff; color: var(--ui-texto-2); box-shadow: 0 1px 4px rgba(0,0,0,.15); cursor: pointer; }
+@media (hover: hover) and (pointer: fine) { .nl-sw:hover .nl-sw-x, .nl-sw-x:focus-visible { display: flex; } .nl-sw:hover time { visibility: hidden; } }

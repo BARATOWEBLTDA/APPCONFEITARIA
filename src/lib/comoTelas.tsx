@@ -4,7 +4,7 @@ import {
   Users, UserPlus, Cake, ClockCounterClockwise, Camera, ToggleRight, Tag, Basket, TrendDown, ArrowsClockwise, CreditCard, Scales, ShoppingBagOpen,
   SquaresFour, ArrowsDownUp, Info, PuzzlePiece, ArrowCounterClockwise, DownloadSimple, CalendarCheck, Buildings, X, Clock, Flame, Sparkle, Images,
   Eye, Ticket, FacebookLogo, Megaphone, Checks, SpeakerHigh, PushPin, Lightbulb, QrCode, Truck, CalendarDots, PencilSimple, ChatCircleText, Hash, Gear, Newspaper,
-  Receipt, Crown, DeviceMobile,
+  Receipt, Crown, DeviceMobile, Heart, HandSwipeLeft,
 } from "@phosphor-icons/react";
 import type { Como } from "@/components/como/ComoFunciona";
 import type { PassoTour } from "@/components/como/tour";
@@ -218,7 +218,7 @@ export const TOUR_PRODUTOS: PassoTour[] = [
   { el: ".prod-card", titulo: "Produto", texto: "Selecione um produto para editar as informações, as fotos e as opções.",
     vazio: [
       { el: ".prod-root .ui-vazia", texto: "Nenhum produto com esta busca. Confira o nome digitado." },
-      { el: ".prod-hero-left", texto: "Ainda não há produtos. Cadastre o primeiro em Novo produto para ele aparecer na lista e no cardápio." },
+      { el: ".prod-hero-btn-primary", texto: "Ainda não há produtos. Toque em Cadastrar produto para criar o primeiro: ele aparece aqui na lista e no seu cardápio." },
     ] },
   { el: ".pl-lin-chave, .pl-ficha-on", titulo: "Mostrar no cardápio", texto: "Ative ou desative para mostrar ou ocultar o produto no cardápio, sem precisar excluí-lo." },
   { el: ".pl-lin-ficha, .pl-sem-ficha", titulo: "Ficha técnica", texto: "Monte a ficha técnica para descobrir o custo e o lucro de cada produto." },
@@ -289,7 +289,7 @@ export const TOUR_PEDIDOS: PassoTour[] = [
 ];
 
 export const TOUR_FINANCEIRO: PassoTour[] = [
-  { el: ".fd-hd, .fdp-barra", titulo: "Lançamentos", texto: "Registre uma entrada ou uma saída de dinheiro, ou receba o pagamento de um pedido." },
+  { el: ".fd-hd, .fdp-bts", titulo: "Lançamentos", texto: "Registre uma entrada ou uma saída de dinheiro, ou receba o pagamento de um pedido." },
   { el: ".fd-hero .pf", titulo: "Período", texto: "Escolha o período: hoje, últimos 7 ou 30 dias, um mês ou outro intervalo." },
   { el: ".fd-res", titulo: "Sobrou", texto: "O que entrou menos o que saiu no período. Aportes e retiradas ficam de fora, porque são dinheiro seu, não do negócio." },
   { el: ".fd-tres > .fd-t.esc", titulo: "Saldo em caixa", texto: "Informe uma vez quanto há no caixa. Depois, o saldo é atualizado a cada entrada e saída." },
@@ -511,17 +511,19 @@ export const TOUR_MARKETING: PassoTour[] = [
 
 export const COMO_NOVIDADES: Como = {
   tela: { nome: "Novidades", Icone: Newspaper },
-  resumo: "Dicas para vender mais, novidades do app, tutoriais e avisos importantes do Doonly.",
+  resumo: "Dicas para vender mais, novidades do app, tutoriais e avisos importantes da equipe Doonly.",
   fluxo: ["Publicada", "Aviso no celular", "Leitura"],
   dicas: [
     [Bell, <>Cada novidade nova chega como <b>aviso no celular</b>. O toque abre o texto completo.</>],
     [Circle, <>As <b>não lidas</b> ficam em branco. Depois de abertas, ficam em cinza.</>],
+    [HandSwipeLeft, <><b>Arraste para o lado</b> para tirar uma novidade da lista. Dá para desfazer no aviso que aparece.</>],
+    [Heart, <>Gostou de uma dica? Toque em <b>Gostei</b> dentro da novidade.</>],
     [PushPin, <>A novidade <b>fixada</b> fica sempre no topo.</>],
-    [Lightbulb, <>Tem uma ideia? Use <b>Sugerir uma melhoria</b>, no Menu.</>],
   ],
 };
 export const TOUR_NOVIDADES: PassoTour[] = [
   { el: ".nl-lista > li:first-child", titulo: "Novidade", texto: "Imagem, título, resumo e quando foi publicada. Toque para ler o texto completo." },
+  { el: ".nl-lista > li:first-child", titulo: "Arraste para excluir", texto: "Arraste a novidade para o lado para tirar da lista. No computador, use o X que aparece ao passar o mouse. Dá para desfazer no aviso." },
   { el: ".nl-it--lida", titulo: "Já lida", texto: "Depois de aberta, a novidade fica em cinza. As não lidas ficam em branco." },
   { el: ".cab-cel-ac:not(.cab-cel-ac--pro), .sidebar-sino", titulo: "Sino", texto: "O número no sino mostra quantas novidades você ainda não leu." },
 ];

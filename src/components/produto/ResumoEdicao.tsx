@@ -1,4 +1,4 @@
-import { ANTECEDENCIA } from "@/lib/entregaProduto";
+import { rotuloAntecedencia } from "@/lib/entregaProduto";
 import type { ReactNode } from "react";
 import { Cake, CurrencyCircleDollar, Image as ImageIc, ListChecks, PencilSimple, Storefront } from "@phosphor-icons/react";
 import { precoCardapioComPromocao, tamanhosEsgotados } from "@/lib/precoCardapio";
@@ -41,7 +41,7 @@ export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: 
     : nFotos === 1 ? "1 foto cadastrada" : `${nFotos} fotos cadastradas`;
   const semEntrega = !(form.pronta_entrega === true || form.antecedencia);
   const comoRecebe = form.pronta_entrega === true ? "É pronta entrega"
-    : form.antecedencia ? `Pedir ${ANTECEDENCIA[form.antecedencia] || form.antecedencia} antes`
+    : form.antecedencia ? `Pedir ${rotuloAntecedencia(form.antecedencia)} antes`
     : "Falta a forma de entrega";
   const entrega = form.disponivel !== false ? comoRecebe : "Fora do cardápio";
   const textoInfo = !form.categoria ? "Falta escolher a categoria"

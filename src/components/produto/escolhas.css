@@ -429,3 +429,10 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .esc-dica-l b { font-size: 13px; font-weight: 700; color: var(--ui-texto); }
 .esc-dica-l em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--ui-rosa-escuro); }
 .esc-dica-l i { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #D9C9CF; }
+
+/* (24/10) (i) do "O que o cliente escolhe": explica antes de mostrar o exemplo */
+.esc-exp { font-family: var(--font-base); font-size: 14.5px; line-height: 1.5; color: var(--ui-texto); }
+.esc-exp p { margin: 0 0 10px; }
+.esc-exp-ex { padding: 10px 12px; border-radius: 12px; background: #FBF6F8; font-size: 14px; }
+.esc-exp ul { margin: 0; padding-left: 18px; color: var(--ui-texto-2); font-size: 14px; }
+.esc-exp li + li { margin-top: 4px; }

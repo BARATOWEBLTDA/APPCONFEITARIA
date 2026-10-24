@@ -1,3 +1,4 @@
+import { horasAntecedencia } from "@/lib/entregaProduto";
 /**
  * Regras do agendamento na "Finalizar encomenda" do cardápio (02/10).
  *  - Dias e horários: os de funcionamento da loja (Dados da loja → Horário), de hora em hora.
@@ -16,7 +17,6 @@ export type HorarioLoja = {
 export type InfoEntregaProduto = { ant?: string | null; pronta?: boolean | null };
 
 const DIAS_SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-const HORAS_ANT: Record<string, number> = { "24h": 24, "48h": 48, "3d": 72, "5d": 120, "7d": 168, "15d": 360 };
 // (11/10) o mesmo padrão da tela Dados da loja: sábado e domingo fechados até a loja marcar.
 // Antes o sábado vinha aberto aqui: loja sem horário salvo (ou salvo sem esses campos) aceitava agendamento no sábado.
 const PADRAO = {
@@ -60,7 +60,7 @@ export function antecedenciaHoras(itensIds: string[], info: Record<string, InfoE
   for (const id of itensIds) {
     const p = info?.[id];
     let h = 0;
-    if (p?.ant && HORAS_ANT[p.ant]) h = HORAS_ANT[p.ant];
+    if (p?.ant && horasAntecedencia(p.ant) > 0) h = horasAntecedencia(p.ant); // (24/10) aceita o prazo personalizado ("10d")
     else if (p?.pronta === true) h = 0;
     else h = 0; // 02/10: o agendamento é definido no produto (o prazo geral da loja saiu de Entrega e pagamento)
     maior = Math.max(maior, h);

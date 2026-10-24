@@ -333,11 +333,12 @@ export default function Financeiro() {
       </div>
 
       {/* celular: os botões ficam presos no rodapé, sempre à mão */}
-      {createPortal(<div className="fdp-barra">
+      {/* (24/10) os botões num bloco só (fdp-bts): o tour destaca só eles, sem a faixa transparente de cima da barra */}
+      {createPortal(<div className="fdp-barra"><div className="fdp-bts">
         <button type="button" className="e" onClick={() => setNova("entrada")}><ArrowUp size={16} weight="bold" />Entrou</button>
         <button type="button" className="s" onClick={() => setNova("saida")}><ArrowDown size={16} weight="bold" />Saiu</button>
         <button type="button" className="r" onClick={() => abrirReceber()}><CurrencyCircleDollar size={18} weight="bold" />Receber{qtdReceber > 0 && <em>{qtdReceber}</em>}</button>
-      </div>, document.body)}
+      </div></div>, document.body)}
 
       {definir && uid && cx && <SaldoSheet atual={cx.configurado ? cx.saldo : null} uid={uid} onClose={() => setDefinir(false)} onSalvo={async () => { setDefinir(false); await depoisDeMudar(); }} />}
       {nova && <DespesaSheet tipo={nova === "entrada" ? "entrada" : "saida"} inicialAPagar={nova === "apagar"} inicioCaixa={caixaOk && cx?.inicio ? isoDe(new Date(cx.inicio)) : null}
@@ -655,6 +656,7 @@ const CSS = `
   .fd-t.esc { background: var(--ui-vinho-escuro, #1F1117); border-color: transparent; } .fd-t.esc small { color: #CBB8C1; } .fd-t.esc b { color: var(--ui-branco); } .fd-t.esc em { color: #9C8A92; }
   /* botões presos no rodapé (celular) */
   .fdp-barra { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 51; display: flex; align-items: stretch; gap: 6px; padding: 14px 12px 10px; box-sizing: border-box; background: linear-gradient(rgba(244,238,241,0), var(--ui-fundo, #F4EEF1) 35%); font-family: var(--font-base); }
+  .fdp-bts { flex: 1; min-width: 0; display: flex; align-items: stretch; gap: 6px; border-radius: 14px; }
   .fdp-barra button { position: relative; flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; height: 48px; padding: 0 8px; border: 0; border-radius: 14px; font-family: inherit; font-size: 14.5px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 4px 14px rgba(42,21,32,.14); }
   .fdp-barra .e { background: #16A34A; color: var(--ui-branco); } .fdp-barra .s { background: var(--ui-vinho-escuro, #1F1117); color: var(--ui-branco); } .fdp-barra .r { flex-grow: 1.25; background: var(--ui-branco); color: #B45309; }
   .fdp-barra em { min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: #B45309; color: var(--ui-branco); font-style: normal; font-size: 11px; display: flex; align-items: center; justify-content: center; }

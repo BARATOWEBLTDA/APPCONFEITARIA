@@ -16,13 +16,32 @@ export const ANTECEDENCIA: Record<string, string> = {
   "15d": "15 dias",
 };
 
+/** (24/10) prazo em horas de qualquer valor ("24h", "48h", "3d", "10d" do Personalizado) */
+export function horasAntecedencia(v?: string | null): number {
+  const m = /^(\d+)\s*(h|d)$/i.exec(String(v || "").trim());
+  if (!m) return 0;
+  const n = Number(m[1]);
+  return m[2].toLowerCase() === "h" ? n : n * 24;
+}
+/** (24/10) o texto do prazo de qualquer valor: "1 dia", "2 dias", "1 semana", "10 dias" */
+export function rotuloAntecedencia(v?: string | null): string {
+  if (!v) return "";
+  if (ANTECEDENCIA[v]) return ANTECEDENCIA[v];
+  const h = horasAntecedencia(v);
+  if (!h) return String(v);
+  const d = Math.round(h / 24);
+  if (d <= 1) return "1 dia";
+  if (d % 7 === 0) return d === 7 ? "1 semana" : `${d / 7} semanas`;
+  return `${d} dias`;
+}
+
 export type SeloEntrega =
   | { tipo: "pronta" }
   | { tipo: "encomenda"; prazo: string };
 
 export function seloEntrega(produto: any): SeloEntrega | null {
   const ant = produto?.antecedencia as string | undefined;
-  if (ant && ANTECEDENCIA[ant]) return { tipo: "encomenda", prazo: ANTECEDENCIA[ant] };
+  if (ant && horasAntecedencia(ant) > 0) return { tipo: "encomenda", prazo: rotuloAntecedencia(ant) };
   if (produto?.pronta_entrega === true) return { tipo: "pronta" };
   return null;
 }

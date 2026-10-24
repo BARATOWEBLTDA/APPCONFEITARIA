@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { MapPin, Lightning, CalendarBlank, Truck, Storefront, CaretRight } from '@phosphor-icons/react'
 import { DesignSettings, Configuracoes } from '@/types/database'
-import { seloEntrega, ANTECEDENCIA } from '@/lib/entregaProduto'
+import { seloEntrega, horasAntecedencia, rotuloAntecedencia } from '@/lib/entregaProduto'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
 import './cardapioModelo1.css'
 import { Vouchers } from './Vouchers'
@@ -61,7 +61,6 @@ export function getEnderecoData(config: Configuracoes | null): { linha: string; 
 
 /** (20/10) Faixa com o que o cliente quer saber antes de pedir, com os dados que a loja já cadastrou:
  *  quanto custa a entrega, o menor prazo das encomendas e se tem pronta entrega. */
-const ORDEM_PRAZO = ['24h', '48h', '3d', '5d', '7d', '15d']
 export function faixaDaLoja(config: Configuracoes | null, produtos: any[] = []) {
   const c: any = config || {}
   const formas: string[] = c.formas_entrega || []
@@ -74,8 +73,8 @@ export function faixaDaLoja(config: Configuracoes | null, produtos: any[] = []) 
   if (entrega && retirada) itens.push({ Ic: Truck, v: 'Entrega', t: 'e retirada', igual: true }) // as 2 linhas na mesma fonte e cor
   else if (entrega) itens.push({ Ic: Truck, v: 'Realiza', t: 'entregas' })
   else if (retirada) itens.push({ Ic: Storefront, v: 'Retirada', t: 'no local' })
-  const prazos = produtos.map(p => String(p?.antecedencia || '')).filter(a => ORDEM_PRAZO.includes(a)).sort((x, y) => ORDEM_PRAZO.indexOf(x) - ORDEM_PRAZO.indexOf(y))
-  if (prazos.length) itens.push({ Ic: CalendarBlank, v: ANTECEDENCIA[prazos[0]], t: 'encomendas' })
+  const prazos = produtos.map(p => String(p?.antecedencia || '')).filter(a => horasAntecedencia(a) > 0).sort((x, y) => horasAntecedencia(x) - horasAntecedencia(y))
+  if (prazos.length) itens.push({ Ic: CalendarBlank, v: rotuloAntecedencia(prazos[0]), t: 'encomendas' })
   if (produtos.some(p => seloEntrega(p)?.tipo === 'pronta')) itens.push({ Ic: Lightning, v: 'Hoje', t: 'pronta entrega' })
   return itens
 }

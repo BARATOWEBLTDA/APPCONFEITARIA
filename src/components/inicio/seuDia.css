@@ -52,7 +52,8 @@
 /* agenda vazia */
 .sd-vazio { display: flex; align-items: center; gap: 14px; margin: 6px 12px 8px; padding: 16px; border-radius: var(--ui-raio-cartao); background: #FBF6F8; }
 .sd-vazio img { flex: none; object-fit: contain; }
-.sd-vazio b { display: block; font-size: 15px; font-weight: 500; }
+.sd-vazio b { display: block; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sd-vazio > div { min-width: 0; }
 .sd-vazio span { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 
 @media (prefers-reduced-motion: reduce) { .sd-prox { transition-duration: 1ms; } .sd-prox:active { transform: none; } }

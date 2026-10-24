@@ -78,3 +78,8 @@
 .mais-doo-ch { display: flex; gap: 8px; padding-left: 4px; }
 .mais-doo-ch button { min-height: 34px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 @media (hover: hover) { .mais-doo-ch button:hover { background: var(--ui-linha); } }
+/* (24/10) com o Menu aberto, o "+" do menu de baixo ficava cortado pela gaveta (ela ficava por cima da bolinha).
+   Enquanto a gaveta está aberta, o menu de baixo fica por cima dela. */
+@media (max-width: 900px) {
+  html:has(.mais-veu) .bottom-nav { z-index: 10085 !important; }
+}

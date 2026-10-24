@@ -163,6 +163,7 @@ const EXEMPLO_PRODUTO = {
 
 export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outros, tela = 0, setTela, edicao = false }: Props) {
   const [verPrevia, setVerPrevia] = useState(false); // (14/10) (i): o produto aberto como o cliente vê
+  const [explicar, setExplicar] = useState(false); // (24/10) o (i) primeiro explica o que é; o exemplo abre pelo botão
   const nome = String(form.nome || "").trim();
   const kit = form.kit_qtd as KitQtdConfig | null;
   const temKit = kitAtivo(kit);
@@ -235,8 +236,20 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
   return (
     <div className="esc">
       <h2 className="esc-h esc-h--info">O que o cliente escolhe?
-        <button type="button" className="esc-info" onClick={() => setVerPrevia(true)} aria-label="Ver onde isso aparece no cardápio"><Info size={20} weight="bold" /></button>
+        <button type="button" className="esc-info" onClick={() => setExplicar(true)} aria-label="O que é isso?"><Info size={20} weight="bold" /></button>
       </h2>
+      <Janela aberta={explicar} aoFechar={() => setExplicar(false)} titulo="O que o cliente escolhe" tipo="conteudo"
+        acoes={<><Botao variante="secundario" onClick={() => setExplicar(false)}>Entendi</Botao><Botao onClick={() => { setExplicar(false); setVerPrevia(true); }}>Ver no cardápio</Botao></>}>
+        <div className="esc-exp">
+          <p>São as opções que o cliente escolhe quando pede <b>{nome || "este produto"}</b> no seu cardápio.</p>
+          <p className="esc-exp-ex"><b>Exemplo, um bolo:</b> Tamanho (P, M ou G), Massa (baunilha ou chocolate), Recheio e Cobertura.</p>
+          <ul>
+            <li>Cada item marcado vira uma tela para você cadastrar as opções.</li>
+            <li>Em cada opção dá para pôr um valor a mais (ex.: recheio de Nutella + R$ 10).</li>
+            <li>Sem marcar nada, o cliente só escolhe a quantidade.</li>
+          </ul>
+        </div>
+      </Janela>
       {verPrevia && (
         <CartProvider>
           <ProductModal isOpen previa onClose={() => setVerPrevia(false)} onAdicionar={() => setVerPrevia(false)} product={EXEMPLO_PRODUTO as any} />

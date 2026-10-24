@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowRight, CaretLeft, Heart, Newspaper, WarningCircle } from "@phosphor-icons/react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowRight, CaretRight, Heart, Newspaper, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia, avisar } from "@/components/base";
 import { RichContent } from "@/components/RichEditor";
@@ -62,6 +62,8 @@ export default function NoticiaDetalhe() {
   const [gostou, setGostou] = useState(false);
   const [total, setTotal] = useState(0);
   const [salvando, setSalvando] = useState(false);
+  // (24/10) "Mais novidades": as 3 mais novas, menos a aberta e as que ela tirou da lista
+  const [outras, setOutras] = useState<{ id: string; titulo: string; slug: string; categoria: string | null; imagem_capa: string | null; icone_url: string | null }[]>([]);
 
   // (11/10) cada abertura tem um número: resposta atrasada de outra notícia (ela trocou de notícia no meio) é ignorada
   const pedido = useRef(0);
@@ -97,6 +99,16 @@ export default function NoticiaDetalhe() {
       if (user) supabase.from("noticias_lidas").upsert({ user_id: user.id, noticia_id: n.id }, { onConflict: "user_id,noticia_id" }).then(() => { window.dispatchEvent(new CustomEvent("doonly:notif-mudou")); });
       setEstado("pronto");
       window.scrollTo(0, 0);
+      void (async () => {
+        const { data: lista } = await supabase.from("admin_noticias").select("id, titulo, slug, categoria, imagem_capa, icone_url")
+          .eq("ativo", true).neq("id", n.id).order("publicado_em", { ascending: false }).limit(8);
+        let fora = new Set<string>();
+        if (user) {
+          const r = await supabase.from("noticias_lidas").select("noticia_id, excluida_em").not("excluida_em", "is", null);
+          if (!r.error && r.data) fora = new Set(r.data.map((x: any) => x.noticia_id));
+        }
+        if (!velho()) setOutras(((lista || []) as any[]).filter(x => !fora.has(x.id)).slice(0, 3));
+      })();
     } catch {
       if (!velho()) setEstado("erro");
     }
@@ -220,8 +232,24 @@ export default function NoticiaDetalhe() {
               </div>
             </article>
 
+            {outras.length > 0 && (
+              <section className="nd-mais" aria-label="Mais novidades">
+                <h2>Mais novidades</h2>
+                <ul>
+                  {outras.map(o => (
+                    <li key={o.id}>
+                      <Link to={`/noticias/${o.slug}`}>
+                        <span className="nd-mais-img" aria-hidden="true"><Newspaper size={20} weight="duotone" />{(o.imagem_capa || o.icone_url) && <img src={(o.imagem_capa || o.icone_url)!} alt="" loading="lazy" />}</span>
+                        <b>{tituloSemCategoria(o.titulo, o.categoria)}</b>
+                        <CaretRight size={16} weight="bold" aria-hidden="true" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             <div className="nd-fim">
-              <Botao variante="link" icone={<CaretLeft size={16} weight="bold" />} onClick={() => navigate("/noticias")}>Ver todas as novidades</Botao>
+              <Botao variante="secundario" cheio onClick={() => navigate("/noticias")}>Ver todas as novidades</Botao>
             </div>
           </>
         )}

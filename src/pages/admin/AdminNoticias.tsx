@@ -91,7 +91,8 @@ export default function AdminNoticias() {
 
   const abrirNovo = () => {
     setEditing(null);
-    const inicial = { emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 0 };
+    // (24/10) novidade nova já começa com 10 a 30 "Gostei" (dá para trocar no campo)
+    const inicial = { emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 10 + Math.floor(Math.random() * 21) };
     setForm(inicial);
     formAoAbrir.current = JSON.stringify(inicial);
     setNotif(NOTIF_VAZIA);

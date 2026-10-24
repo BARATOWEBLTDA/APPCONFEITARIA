@@ -1,4 +1,4 @@
-import { ANTECEDENCIA } from "@/lib/entregaProduto";
+import { rotuloAntecedencia } from "@/lib/entregaProduto";
 import { precosDosSabores } from "@/lib/precoCardapio";
 import { CheckCircle, Warning } from "@phosphor-icons/react";
 import { kitAtivo, kitsValidos, precoMinKit, precoLivre, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -148,7 +148,7 @@ export function ResumoProduto({ form }: { form: any }) {
     : precosDosSabores(form) ? (r.aPartir > 0 ? `A partir de ${rs(r.aPartir)}` : "Falta o preço dos sabores")
     : `${rs(Number(form.preco_normal) || 0)}${form.forma_venda === "kg" ? " o kg" : ""}`; // (14/10) vendido por kg: diz
   const promo = !form.promocao ? "Sem promoção" : promoPct ? `${pct}% de desconto` : promoValor > 0 && promoValor < (Number(form.preco_normal) || 0) ? `${rs(promoValor)}${porPeso ? " o kg" : ""}` : "Sem promoção";
-  const entrega = form.pronta_entrega === true ? "Pronta entrega" : form.antecedencia ? `Pedir ${ANTECEDENCIA[form.antecedencia] || form.antecedencia} antes` : "Falta escolher";
+  const entrega = form.pronta_entrega === true ? "Pronta entrega" : form.antecedencia ? `Pedir ${rotuloAntecedencia(form.antecedencia)} antes` : "Falta escolher";
   const linhas: [string, string][] = [
     ["Nome", String(form.nome || "").trim() || "Sem nome"],
     ["Categoria", String(form.categoria || "").trim() || "Sem categoria"],

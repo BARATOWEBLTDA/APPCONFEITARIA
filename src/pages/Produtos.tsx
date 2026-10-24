@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { horasAntecedencia } from "@/lib/entregaProduto";
 import { explicarErro } from "@/lib/erros";
 import LimitePlano from "@/components/billing/LimitePlano";
 import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
@@ -33,7 +34,7 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import Categorias from "@/pages/Categorias";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_PRODUTOS, TOUR_PRODUTOS } from "@/lib/comoTelas";
-import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Lightbulb, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent } from "@phosphor-icons/react";
+import { ArrowLeft as ArrowLeftIc, Camera, CaretDown, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, SortAscending, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Lightning, CalendarBlank } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
@@ -628,6 +629,8 @@ const EMPTY: Produto = {
   permite_personalizacao: false,
   massas_disponiveis: [], recheios_disponiveis: [], coberturas_disponiveis: [],
   tamanhos_disponiveis: [], precos_variacoes: {}, fotos_variacoes: {}, usar_foto_variacao: false, oferece_pacote: false, pronta_entrega: undefined,
+  // (24/10) produto novo vem como encomenda com 2 dias de antecedência marcado (antes vinha "Sem prazo")
+  ...({ antecedencia: "48h" } as any),
   kit_itens: [], kit_serve_pessoas: "", kit_prazo_encomenda: "",
   zero_acucar: false,
   tem_vela: false, valor_vela: 0,
@@ -649,6 +652,41 @@ const EMPTY: Produto = {
   grupo_sabores: { ...GRUPO_SABORES_VAZIO },
   grupo_tamanhos: { ...GRUPO_TAMANHOS_VAZIO },
 };
+
+/**
+ * (24/10) "Quantos dias antes?" da encomenda: as opções principais (24h, 2 dias, 3 dias) e "Personalizado",
+ * que abre um contador de dias (1 a 60). Grava no mesmo formato de antes ("24h", "48h", "3d", "10d").
+ */
+function PrazoEncomenda({ valor, aoMudar }: { valor: string | null; aoMudar: (v: string) => void }) {
+  const PRINC = [{ v: "24h", r: "24 horas" }, { v: "48h", r: "2 dias" }, { v: "3d", r: "3 dias" }];
+  const principal = PRINC.some(p => p.v === valor);
+  const [perso, setPerso] = useState(!!valor && !principal);
+  const dias = Math.max(1, Math.round(horasAntecedencia(valor) / 24) || 4);
+  const mudarDias = (n: number) => aoMudar(`${Math.min(60, Math.max(1, n))}d`);
+  return (
+    <div className="prod-field" style={{ marginTop: 12 }}>
+      <label>Quantos dias antes?</label>
+      <div className="prod-prazo" role="radiogroup" aria-label="Quantos dias antes">
+        {PRINC.map(p => (
+          <button key={p.v} type="button" role="radio" aria-checked={!perso && valor === p.v} className={!perso && valor === p.v ? "on" : ""}
+            onClick={() => { setPerso(false); aoMudar(p.v); }}>{p.r}</button>
+        ))}
+        <button type="button" role="radio" aria-checked={perso} className={perso ? "on" : ""}
+          onClick={() => { setPerso(true); if (principal || !valor) mudarDias(principal ? Math.max(4, dias) : 4); }}>Personalizado</button>
+      </div>
+      {perso && (
+        <div className="prod-prazo-n">
+          <div className="prod-prazo-cont">
+            <button type="button" aria-label="Menos um dia" onClick={() => mudarDias(dias - 1)} disabled={dias <= 1}>−</button>
+            <b>{dias} {dias === 1 ? "dia" : "dias"}</b>
+            <button type="button" aria-label="Mais um dia" onClick={() => mudarDias(dias + 1)} disabled={dias >= 60}>+</button>
+          </div>
+          <span>O cliente pede com {dias} {dias === 1 ? "dia" : "dias"} de antecedência</span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Produtos() {
   const location = useLocation();
@@ -1778,16 +1816,10 @@ export default function Produtos() {
               </button>
               {/* 13/10: o "Ver tutorial" saiu: o vídeo ainda não existe e o botão só avisava "chega em breve" */}
             </div>
-            <div className="prod-hero-tip">
-              <div className="prod-hero-tip-icon"><Lightbulb size={22} weight="duotone" /></div>
-              <div>
-                <p className="prod-hero-tip-t">Dica: fotos boas vendem 3x mais</p>
-                <p className="prod-hero-tip-d">Use luz natural, fundo branco, e mostre o produto de ângulos diferentes.</p>
-              </div>
-            </div>
+            {/* (24/10) a dica da foto saiu daqui (fica no cadastro do produto) */}
           </div>
 
-          {/* ── Lado direito: vídeo grande ── */}
+          {/* ── Vídeo (24/10: em pé, no formato do celular, e menor) ── */}
           <aside className="prod-hero-right" aria-label="Vídeo tutorial">
             <div className="prod-hero-video-thumb">
               <button
@@ -1802,8 +1834,8 @@ export default function Produtos() {
               </button>
             </div>
             <div className="prod-hero-video-footer">
-              <span className="prod-hero-video-t">Tutorial completo</span>
-              <span className="prod-hero-video-badge">EM BREVE</span>
+              <span className="prod-hero-video-t">Tutorial</span>
+              <span className="prod-hero-video-badge">Em breve</span>
             </div>
           </aside>
         </div>
@@ -2603,13 +2635,13 @@ export default function Produtos() {
                             setForm(f => ({ ...f, preco_promocional: v, promocao: v > 0 && v < f.preco_normal, tipo_promocao: 'fixo' }));
                           }}
                         />
-                        {/* (14/10) a % de desconto dentro do campo verde */}
-                        {(() => {
-                          const cheio = Number(form.preco_normal) || 0, pp = Number(form.preco_promocional) || 0;
-                          const pct = cheio > 0 && pp > 0 && pp < cheio ? Math.round((1 - pp / cheio) * 100) : 0;
-                          return pct > 0 ? <em className="prod-promo-pct">-{pct}%</em> : null;
-                        })()}
                       </div>
+                      {/* (24/10) o desconto embaixo do campo, em texto (a % no canto do campo ficava estranha) */}
+                      {(() => {
+                        const cheio = Number(form.preco_normal) || 0, pp = Number(form.preco_promocional) || 0;
+                        const pct = cheio > 0 && pp > 0 && pp < cheio ? Math.round((1 - pp / cheio) * 100) : 0;
+                        return pct > 0 ? <small className="prod-promo-info">{pct}% de desconto</small> : pp > 0 && pp >= cheio && cheio > 0 ? <small className="prod-promo-info prod-promo-info--erro">Precisa ser menor que o cheio</small> : null;
+                      })()}
                     </div>}
                   </div>}
                   {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && (
@@ -2711,21 +2743,11 @@ export default function Produtos() {
                     <div className="prod-so-cel">
                       <div className="prod-tipo" role="radiogroup" aria-label="Como você vende este produto">
                         <button type="button" role="radio" aria-checked={form.pronta_entrega === true} className={form.pronta_entrega === true ? "on" : ""}
-                          onClick={() => setForm(f => ({ ...(f as any), pronta_entrega: true, antecedencia: null }))}><b>Pronta entrega</b><small>Tem feito, sai na hora</small></button>
+                          onClick={() => setForm(f => ({ ...(f as any), pronta_entrega: true, antecedencia: null }))}><span className="prod-tipo-ic" aria-hidden="true"><Lightning size={22} weight="fill" /></span><b>Pronta entrega</b><small>Tem feito, sai na hora</small></button>
                         <button type="button" role="radio" aria-checked={form.pronta_entrega !== true} className={form.pronta_entrega !== true ? "on" : ""}
-                          onClick={() => setForm(f => ({ ...(f as any), pronta_entrega: false, antecedencia: (f as any).pronta_entrega ? "48h" : (f as any).antecedencia ?? null }))}><b>Sob encomenda</b><small>O cliente pede antes</small></button>
+                          onClick={() => setForm(f => ({ ...(f as any), pronta_entrega: false, antecedencia: (f as any).pronta_entrega || !(f as any).antecedencia ? "48h" : (f as any).antecedencia }))}><span className="prod-tipo-ic" aria-hidden="true"><CalendarBlank size={22} weight="fill" /></span><b>Sob encomenda</b><small>O cliente pede antes</small></button>
                       </div>
-                      {form.pronta_entrega !== true && (
-                        <div className="prod-field" style={{ marginTop: 12 }}>
-                          <label>Quantos dias antes?</label>
-                          <div className="prod-antecedencia-grid">
-                            {[{ valor: null as string | null, label: "Sem prazo" }, { valor: "24h", label: "1 dia" }, { valor: "48h", label: "2 dias" }, { valor: "3d", label: "3 dias" }, { valor: "5d", label: "5 dias" }, { valor: "7d", label: "1 semana" }, { valor: "15d", label: "15 dias" }].map(opt => (
-                              <button key={opt.label} type="button" className={`prod-antecedencia-chip ${((form as any).antecedencia ?? null) === opt.valor ? "prod-antecedencia-chip--on" : ""}`}
-                                onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}>{opt.label}</button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      {form.pronta_entrega !== true && <PrazoEncomenda valor={(form as any).antecedencia ?? null} aoMudar={v => setForm(f => ({ ...(f as any), antecedencia: v }))} />}
                     </div>
                     <div className="prod-opcs">
                       {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só para você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false })))}
@@ -2734,19 +2756,15 @@ export default function Produtos() {
                       {op(enc, "Precisa encomendar antes", enc ? "O cardápio mostra \"Pedir antes\"" : "O cliente pede com antecedência", () => setForm(f => ({ ...(f as any), antecedencia: (f as any).antecedencia ? null : "48h", pronta_entrega: (f as any).antecedencia ? (f as any).pronta_entrega : false })))}
                       </div>
                       {/* (19/10) foto de referência só nos produtos que pedem (personalizados, topos de bolo) */}
-                      {op((form as any).aceita_referencia === true, "Aceita foto de referência", "Para bolos personalizados e topos", () => setForm(f => ({ ...(f as any), aceita_referencia: !(f as any).aceita_referencia })))}
+                      {op((form as any).aceita_referencia === true, "Aceita foto de referência", "O cliente manda uma foto de como quer", () => setForm(f => ({ ...(f as any), aceita_referencia: !(f as any).aceita_referencia })))}
                     </div>
-                    {enc && (
-                      <div className="prod-field prod-so-pc" style={{ marginTop: 12 }}>
-                        <label>Quantos dias antes?</label>
-                        <div className="prod-antecedencia-grid">
-                          {[{ valor: "24h", label: "1 dia" }, { valor: "48h", label: "2 dias" }, { valor: "3d", label: "3 dias" }, { valor: "5d", label: "5 dias" }, { valor: "7d", label: "1 semana" }, { valor: "15d", label: "15 dias" }].map(opt => (
-                            <button key={opt.valor} type="button" className={`prod-antecedencia-chip ${(form as any).antecedencia === opt.valor ? "prod-antecedencia-chip--on" : ""}`}
-                              onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}>{opt.label}</button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    {/* (24/10) quando usar a foto de referência */}
+                    <p className="prod-ref-dica">
+                      {(form as any).aceita_referencia === true
+                        ? <>No pedido aparece um campo para o cliente <b>anexar uma foto de inspiração</b>. Ela chega junto com o pedido para você ver.</>
+                        : <>Ligue em produtos <b>personalizados</b>, como bolos decorados, topos de bolo e kits temáticos. Em produtos de linha, deixe desligado.</>}
+                    </p>
+                    {enc && <div className="prod-so-pc"><PrazoEncomenda valor={(form as any).antecedencia ?? null} aoMudar={v => setForm(f => ({ ...(f as any), antecedencia: v }))} /></div>}
                   </div>
                 );
               })()}
@@ -3327,6 +3345,14 @@ export default function Produtos() {
           margin: 0;
         }
 
+        /* (24/10) vídeo em pé (o tutorial vai ser gravado no celular) e menor */
+        .prod-hero-right { align-self: center; width: 156px; padding: 6px; border-radius: 18px; }
+        .prod-hero-video-thumb { aspect-ratio: 9 / 16; max-height: none; border-radius: 13px; }
+        .prod-hero-video-play { width: 44px; height: 44px; }
+        .prod-hero-video-footer { gap: 6px; padding: 8px 4px 2px; }
+        .prod-hero-video-t { font-size: 12.5px; white-space: nowrap; }
+        .prod-hero-video-badge { padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+
         /* ═══ Desktop: split 1fr / 1.2fr — vídeo vai para direita ═══ */
         @media (min-width: 900px) {
           .prod-hero-split {
@@ -3347,9 +3373,10 @@ export default function Produtos() {
           }
           .prod-hero-right {
             order: 2;
-            padding: var(--space-2);
-            flex: 1 1 340px;
-            max-width: 460px;
+            padding: 8px;
+            flex: 0 0 220px;
+            width: 220px;
+            max-width: 220px;
             min-width: 0;
           }
           .prod-hero-eyebrow { font-size: var(--text-sm); }
@@ -3914,35 +3941,6 @@ export default function Produtos() {
         .prod-preco-input span { padding: 0 var(--space-3); font-weight: var(--fw-bold); color: var(--success); font-size: var(--font-input); flex-shrink: 0; }
         .prod-preco-input input { border: none !important; border-radius: 0 !important; flex: 1; padding: var(--space-3) var(--space-2) var(--space-3) 0 !important; outline: none !important; box-shadow: none !important; }
         .prod-preco-input:focus-within { border-color: var(--border-focus); }
-
-        /* Chips de antecedência (quando "Pronta entrega" está OFF) */
-        .prod-antecedencia-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 6px;
-          margin-top: 4px;
-        }
-        .prod-antecedencia-chip {
-          all: unset;
-          box-sizing: border-box;
-          text-align: center;
-          padding: 10px 6px;
-          background: var(--ui-branco);
-          border: 1.5px solid #E5D8DE;
-          border-radius: var(--ui-raio-p);
-          font-size: 12.5px;
-          font-weight: 700;
-          color: var(--ui-texto-2);
-          cursor: pointer;
-          font-family: inherit;
-          transition: all 0.15s;
-        }
-        .prod-antecedencia-chip:hover { border-color: #F5B8CD; }
-        .prod-antecedencia-chip--on {
-          background: #FDF3F7;
-          border-color: var(--ui-rosa);
-          color: var(--ui-rosa-escuro);
-        }
 
         /* ═══ Preço grande no modo simples ═══ */
         .prod-preco-input--big {
