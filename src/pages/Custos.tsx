@@ -90,7 +90,13 @@ export default function Custos() {
   const ativosVar = variaveis.filter(v => v.ativo);
   // 10/10: o card de variáveis no mesmo formato dos outros (valor em reais + quantos ativos)
   const varPorPedido = ativosVar.filter(v => v.tipo === "fixo").reduce((s, v) => s + v.valor, 0);
-  const varPct = Math.round(ativosVar.filter(v => v.tipo === "percentual").reduce((s, v) => s + v.valor, 0) * 100) / 100;
+  // (24/10) a taxa da maquininha depende da forma de pagamento: cada venda paga uma só (crédito OU débito).
+  // Somava as duas (4,99% + 1,99% = 6,98%); agora soma só as que valem para toda venda + a maior das formas ("até").
+  const pctVar = ativosVar.filter(v => v.tipo === "percentual");
+  const pctPorForma: Record<string, number> = {};
+  for (const v of pctVar) if (v.forma) pctPorForma[v.forma] = (pctPorForma[v.forma] || 0) + v.valor;
+  const temPctPorForma = Object.keys(pctPorForma).length > 0;
+  const varPct = Math.round((pctVar.filter(v => !v.forma).reduce((s, v) => s + v.valor, 0) + Math.max(0, ...Object.values(pctPorForma))) * 100) / 100;
   const qtdFixosAtivos = fixos.filter(f => f.ativo).length;
   const diasTxt = (arr: number[]) => {
     const s = [...arr].sort((a, b) => a - b);
@@ -122,7 +128,7 @@ export default function Custos() {
           <div className="cu-k"><small>Fixos por mês</small><b>{brl(totalFixos)}</b><i>{qtdFixosAtivos} {qtdFixosAtivos === 1 ? "ativo" : "ativos"}</i></div>
           <div className="cu-k"><small>Seu salário</small><b>{brl(mo.salario_mensal)}</b><i>mão de obra</i></div>
           <div className="cu-k destaque"><small>Custo da sua hora</small><b>{brl(custoHora)}</b><i>fixos + salário</i></div>
-          <div className="cu-k"><small>Variáveis por pedido</small><b>{brl(varPorPedido)}</b><i>{varPct > 0 ? `+ ${String(varPct).replace(".", ",")}% da venda · ` : ""}{ativosVar.length} {ativosVar.length === 1 ? "ativo" : "ativos"}</i></div>
+          <div className="cu-k"><small>Variáveis por pedido</small><b>{brl(varPorPedido)}</b><i>{varPct > 0 ? `+ ${temPctPorForma ? "até " : ""}${String(varPct).replace(".", ",")}% da venda · ` : ""}{ativosVar.length} {ativosVar.length === 1 ? "ativo" : "ativos"}</i></div>
         </div>
 
         <div className="cu-grid">

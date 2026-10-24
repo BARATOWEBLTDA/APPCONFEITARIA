@@ -1444,7 +1444,7 @@ export default function Produtos() {
       formLimpo.sku = String(formLimpo.sku).trim().toUpperCase();
       const dono = produtos.find((p: any) => p.id !== form.id && String(p.sku || "").trim().toUpperCase() === formLimpo.sku);
       if (dono) {
-        showToast("error", "Esse SKU já está em uso", `O código ${formLimpo.sku} já está no produto "${dono.nome}". Escreva outro ou toque em Gerar.`);
+        showToast("error", "Esse SKU já está em uso", `O código ${formLimpo.sku} já está no produto "${dono.nome}". Escreva outro ou use Gerar.`);
         setSaving(false);
         return;
       }
@@ -1464,7 +1464,7 @@ export default function Produtos() {
     if (form.id) {
       let { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
       if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ error } = await supabase.from("produtos").update(sem).eq("id", form.id)); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
-      if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou toque em Gerar."); setSaving(false); return; }
+      if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou use Gerar."); setSaving(false); return; }
       if (error) {
         console.error("Erro ao atualizar produto:", error);
         showToast("error", "Não deu para salvar", explicarErro(error));
@@ -1475,7 +1475,7 @@ export default function Produtos() {
       if (passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
       let { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
       if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ data: novo, error } = await supabase.from("produtos").insert({ ...sem, user_id: userId }).select("id").single()); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
-      if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou toque em Gerar."); setSaving(false); return; }
+      if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou use Gerar."); setSaving(false); return; }
       if (error) {
         console.error("Erro ao criar produto:", error);
         showToast("error", "Não deu para criar", explicarErro(error));
@@ -2012,7 +2012,7 @@ export default function Produtos() {
                 {!form.id && <div className="pcab-barra" aria-hidden="true"><i style={{ width: `${Math.round((atual / total) * 100)}%` }} /></div>}
                 <Janela aberta={infoPasso} aoFechar={() => setInfoPasso(false)} titulo={form.id ? "Editar produto" : nomePasso}
                   icone={<Info size={32} />} umaAcao acoes={<Botao onClick={() => setInfoPasso(false)} data-foco-inicial>Entendi</Botao>}>
-                  <p className="pcab-info">{form.id ? "Toque em Editar na parte que quer mudar e depois em Salvar. O cardápio atualiza na hora."
+                  <p className="pcab-info">{form.id ? "Use Editar na parte que quer mudar e depois Salvar. O cardápio atualiza na hora."
                     : wizardStep <= 2 ? "O nome e a categoria são o que o cliente vê primeiro. A descrição ajuda a vender: conte o que vem no produto."
                     : escAtual ? `Cadastre as opções de ${ROT[escAtual].toLowerCase()}. No cardápio, o cliente escolhe entre elas ao fazer o pedido.`
                     : wizardStep === 3 ? "Marque o que o cliente escolhe ao pedir, como tamanho ou sabor. Cada escolha marcada vira uma tela para você cadastrar as opções."

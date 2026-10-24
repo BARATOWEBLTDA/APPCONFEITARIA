@@ -113,7 +113,7 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
           <ol className="px-passos">
             <li><i>1</i><span>Copie o código Pix</span></li>
             <li><i>2</i><span>No banco, use <b>Pix copia e cola</b></span></li>
-            <li><i>3</i><span>Volte e toque em <b>Já paguei</b></span></li>
+            <li><i>3</i><span>Volte aqui e aperte <b>Já paguei</b></span></li>
           </ol>
         </section>
 

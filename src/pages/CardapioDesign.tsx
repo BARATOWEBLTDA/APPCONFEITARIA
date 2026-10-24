@@ -494,7 +494,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             <div className="ui-campo-c"><input id="ap-aviso" value={temaAviso} maxLength={40} placeholder={AVISO_NATAL_PADRAO} onChange={e => mudarAviso(e.target.value)} /></div>
             <small className="ap-tema-dica">Fica embaixo do nome. Vazio, não aparece.</small>
             <div className="ap-tema-auto">
-              <span><b>Ligar e desligar sozinho</b><small>Fora dessas datas volta pro Normal</small></span>
+              <span><b>Ligar e desligar sozinho</b><small>Fora dessas datas volta para o Normal</small></span>
               <button type="button" role="switch" aria-checked={temaAuto} aria-label="Ligar e desligar sozinho" className="ap-chave" onClick={() => mudarAuto(!temaAuto)}><span /></button>
             </div>
             {temaAuto && (

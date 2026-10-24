@@ -1062,7 +1062,7 @@ export default function EditarPedido() {
       // (o próximo salvar lê todos os que estão no banco, grava os da tela e apaga os lidos).
       const { data: antigos, error: errLer } = await supabase.from('pedido_itens').select('id').eq('pedido_id', pedido!.id)
       if (errLer) {
-        avisarJanela('Salvo pela metade', `Os dados do pedido foram salvos, mas os itens não foram atualizados. ${explicarErro(errLer, 'Toque em Salvar de novo.')}`, 'erro')
+        avisarJanela('Salvo pela metade', `Os dados do pedido foram salvos, mas os itens não foram atualizados. ${explicarErro(errLer, 'Salve de novo.')}`, 'erro')
         setSalvando(false)
         return
       }
@@ -1089,7 +1089,7 @@ export default function EditarPedido() {
         }))
         const { error: errIns } = await supabase.from('pedido_itens').insert(itensInsert)
         if (errIns) {
-          avisarJanela('Salvo pela metade', `Os dados do pedido foram salvos, mas os itens não foram atualizados (continuam os de antes). ${explicarErro(errIns, 'Toque em Salvar de novo.')}`, 'erro')
+          avisarJanela('Salvo pela metade', `Os dados do pedido foram salvos, mas os itens não foram atualizados (continuam os de antes). ${explicarErro(errIns, 'Salve de novo.')}`, 'erro')
           setSalvando(false)
           return
         }
@@ -1098,7 +1098,7 @@ export default function EditarPedido() {
       if (idsAntigos.length > 0) {
         const { error: errDel } = await supabase.from('pedido_itens').delete().in('id', idsAntigos)
         if (errDel) {
-          avisarJanela('Os itens ficaram repetidos', `Os itens novos foram gravados, mas os antigos não saíram do pedido. ${explicarErro(errDel, 'Toque em Salvar de novo para arrumar.')}`, 'erro')
+          avisarJanela('Os itens ficaram repetidos', `Os itens novos foram gravados, mas os antigos não saíram do pedido. ${explicarErro(errDel, 'Salve de novo para arrumar.')}`, 'erro')
           setSalvando(false)
           return
         }
@@ -1469,7 +1469,7 @@ export default function EditarPedido() {
 
             <section className="ep2-card tpd-card">
               <Titulo contagem={itens.length} acao={<Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setModalProduto(true)}><span className="tpd-add-g">Adicionar item</span><span className="tpd-add-c">Adicionar</span></Botao>}>Itens do pedido</Titulo>
-              {itens.length === 0 ? <p className="tpd-vz">Nenhum item. Toque em Adicionar item.</p> : (
+              {itens.length === 0 ? <p className="tpd-vz">Nenhum item ainda: use o Adicionar item.</p> : (
                 <ul className="tpd-itens">
                   {itens.map((it: any, idx) => {
                     const p = it.personalizacoes || {}
@@ -1509,7 +1509,7 @@ export default function EditarPedido() {
                               {/* (24/10) só a foto: o título é "Foto de referência" (antes vinha "Recado do item" em cima dela) */}
                               <small>{obs ? "Recado do item" : "Foto de referência"}</small>
                               {obs ? <p>“{obs}”</p> : <p>O cliente mandou esta foto</p>}
-                              {p.foto_referencia && <span>Toque na foto para ampliar</span>}
+                              {p.foto_referencia && <span>Abra a foto para ampliar</span>}
                             </div>
                           </div>
                         )}

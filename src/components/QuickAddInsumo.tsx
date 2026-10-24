@@ -421,7 +421,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       {(imagens.length > 0 || form.imagem_url) && (
         <div className="ig-foto">
           {imagens.length > 0 && (<>
-            <p className="ig-rot">Toque na foto que combina</p>
+            <p className="ig-rot">Escolha a foto que combina</p>
             <div className="ig-foto-grade">
               {imagens.map((url, idx) => (
                 <button key={idx} type="button" aria-pressed={form.imagem_url === url} aria-label={`Usar a foto ${idx + 1}`}

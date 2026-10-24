@@ -666,7 +666,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           fetch(imageUrl).then(r => (r.ok ? r.blob() : null)).then(b => { if (b) blobsImagem.current[imageUrl] = b }).catch(() => {})
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: 'Aqui está a imagem. Toque em "Baixar imagem" para guardar; se ela abrir em outra aba, salve por lá. Baixe logo: o endereço dela vale por pouco tempo. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
+            content: 'Aqui está a imagem. Use "Baixar imagem" para guardar; se ela abrir em outra aba, salve por lá. Baixe logo: o endereço dela vale por pouco tempo. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
             imageUrl,
             isImage: true
           }])

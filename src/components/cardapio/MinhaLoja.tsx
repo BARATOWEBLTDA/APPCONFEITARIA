@@ -107,7 +107,7 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
         <div className="dl-lista-c">
           {linha(Cake, "Produtos", qtd(n?.produtos, "produto", "produtos", "Nenhum ainda"), "/produtos", n?.produtos === 0)}
           {linha(SquaresFour, "Categorias", qtd(n?.categorias, "categoria", "categorias", "Nenhuma categoria ainda"), "/categorias")}
-          {linha(Stack, "Complementos", qtd(n?.complementos, "complemento", "complementos", "Sabores, recheios e adicionais"), "/complementos")}
+          {linha(Stack, "Complementos", qtd(n?.complementos, "complemento", "complementos", "Topo, velas e outros extras"), "/complementos")}
         </div>
       </section>
       {!pro && (

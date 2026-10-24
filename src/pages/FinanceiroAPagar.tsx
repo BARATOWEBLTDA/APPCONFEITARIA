@@ -8,7 +8,7 @@ import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
-import { CalendarBlank, CheckCircle, Plus, Receipt, WarningCircle, X } from "@phosphor-icons/react";
+import { CalendarBlank, CheckCircle, MagnifyingGlass, Plus, Receipt, WarningCircle, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_A_PAGAR, TOUR_A_PAGAR } from "@/lib/comoTelas";
 import { supabase } from "@/lib/supabase";
@@ -119,7 +119,11 @@ export default function FinanceiroAPagar() {
   const fimMes = useMemo(() => { const d = new Date(); return `${competencia(0)}-${String(new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()).padStart(2, "0")}`; }, [hoje]); // eslint-disable-line react-hooks/exhaustive-deps
   const doFiltro = useCallback((f: Filtro) => contas.filter(c =>
     f === "atrasadas" ? c.vencimento < hoje : f === "semana" ? c.vencimento <= isoDia(6) : f === "mes" ? c.vencimento <= fimMes : true), [contas, hoje, fimMes]);
-  const visiveis = doFiltro(filtro);
+  // (24/10) busca, igual ao A receber (pelo nome da conta ou pela categoria)
+  const [busca, setBusca] = useState("");
+  const termo = busca.trim().toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const casa = (c: Conta) => !termo || `${c.descricao || ""} ${c.categoria || ""}`.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(termo);
+  const visiveis = doFiltro(filtro).filter(casa);
   const grupos = useMemo(() => ({
     vencidas: visiveis.filter(c => c.vencimento < hoje),
     aVencer: visiveis.filter(c => c.vencimento >= hoje),
@@ -158,8 +162,11 @@ export default function FinanceiroAPagar() {
         ) : (<>
           <div className="fap-topo">
             {/* (24/10) filtro padrão do app: botão que abre na lateral (antes as abas Atrasadas/Semana/Mês/Todas) */}
-            <Botao icone={<Plus size={18} weight="bold" />} onClick={() => setNova(true)} className="fap-nova-bt">Nova conta</Botao>
+            {/* (24/10) a mesma ordem das outras telas: busca, filtro e o botão de cadastrar */}
+            <label className="fap-busca"><MagnifyingGlass size={18} /><input type="search" aria-label="Buscar conta" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} />
+              {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={16} weight="bold" /></button>}</label>
             <BotaoFiltro className="fap-filtro" ativos={filtro === "mes" ? 0 : 1} onClick={() => setFiltroAberto(true)} />
+            <Botao icone={<Plus size={18} weight="bold" />} onClick={() => setNova(true)} className="fap-nova-bt">Nova conta</Botao>
           </div>
           {filtroAberto && <GavetaFiltro valor={{ mostrar: filtro }} padrao={{ mostrar: "mes" }}
             grupos={[{ id: "mostrar", titulo: "Vencimento", tipo: "radio", opcoes: FILTROS.map(([k, l]) => ({ k, label: l, n: doFiltro(k).length, cor: k === "atrasadas" ? "var(--ui-vermelho)" : undefined })) }]}
@@ -178,8 +185,8 @@ export default function FinanceiroAPagar() {
           )}
           {!carregando && contas.length > 0 && visiveis.length === 0 && (
             <div className="fap-vazio fap-vazio--p">
-              <b>{filtro === "atrasadas" ? "Nenhuma conta atrasada" : filtro === "semana" ? "Nada vence esta semana" : "Nada vence este mês"}</b>
-              <p><button type="button" className="fap-link" onClick={() => setFiltro("todas")}>Ver todas as contas</button></p>
+              <b>{termo ? "Nenhuma conta com esse nome" : filtro === "atrasadas" ? "Nenhuma conta atrasada" : filtro === "semana" ? "Nada vence esta semana" : "Nada vence este mês"}</b>
+              <p>{termo ? <button type="button" className="fap-link" onClick={() => setBusca("")}>Limpar a busca</button> : <button type="button" className="fap-link" onClick={() => setFiltro("todas")}>Ver todas as contas</button>}</p>
             </div>
           )}
 
@@ -355,6 +362,14 @@ const CSS = `
   .fap-mostrando { margin: -8px 2px 0; font-size: 13px; color: var(--ui-texto-2); } .fap-mostrando .fap-link { font-size: 13px; }
   .fap-revisar-cancelar { display: block; width: 100%; min-height: 44px; margin: 14px 0 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-vermelho); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   @media (max-width: 899px) { .fap-nova-bt { width: 100%; } }
+  /* (24/10) busca + filtro + Nova conta. No celular, a busca e o filtro numa linha e o Nova conta embaixo */
+  .fap-topo { flex-wrap: wrap; }
+  .fap-busca { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 12px; background: var(--ui-branco); border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); color: var(--ui-texto-3); box-sizing: border-box; }
+  .fap-busca input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: none; }
+  .fap-busca input::-webkit-search-cancel-button { display: none; }
+  .fap-busca button { display: flex; padding: 6px; border: 0; background: none; color: var(--ui-texto-3); cursor: pointer; }
+  @media (max-width: 899px) { .fap-topo .fap-nova-bt { flex: 1 1 100%; } }
+  @media (min-width: 900px) { .fap-topo .fap-nova-bt { margin-left: 0; } .fap-topo { justify-content: flex-start !important; flex-wrap: nowrap; } }
   .fap-vazio--p { padding: 22px 16px; } .fap-vazio--p b { margin-top: 0; }
   /* (24/10) o nome e a situação ocupam a linha toda; o valor e os botões vão para a linha de baixo (antes cortava "Fornecedor de …") */
   .fap-it { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "d m m" "d v b"; align-items: center; column-gap: 12px; row-gap: 8px; }

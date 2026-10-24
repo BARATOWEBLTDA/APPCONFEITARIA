@@ -266,7 +266,7 @@ const CSS = `
   .lu-bar.grande { height: 12px; margin: 14px 0 8px; } .lu-bar i.ok { background: #16A34A; }
   /* aviso de ficha técnica: uma faixa só */
   .lu-aviso { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 14px; padding: 10px 12px; font-size: 13.5px; font-weight: 500; line-height: 1.45; }
-  .lu-aviso > span { flex: 1 1 260px; } .lu-aviso svg { flex-shrink: 0; }
+  .lu-aviso > span { flex: 1 1 260px; text-wrap: balance; } .lu-aviso svg { flex-shrink: 0; } /* (24/10) balance: as duas linhas do mesmo tamanho (antes sobrava "é." sozinho na 2ª linha) */
   .lu-aviso-bt { flex: none; min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
   /* produto + equilíbrio */
   .lu-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "prod" "eq"; }
@@ -277,7 +277,8 @@ const CSS = `
   .lu-vz { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
   .lu-pg { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   @media (min-width: 640px) { .lu-pg { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; } }
-  @media (min-width: 1280px) { .lu-pg { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  /* (24/10) computador: cartões de pelo menos 200 px (com 4 colunas no notebook o nome e "16 vendidos · R$ 10.400,00" quebravam) */
+  @media (min-width: 1024px) { .lu-pg { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
   .lu-pc { overflow: hidden; border: 1px solid #F0EBED; border-radius: 14px; background: var(--ui-branco); display: flex; flex-direction: column; }
   .lu-pc-foto { aspect-ratio: 4 / 3; background: #F8F3F5; color: #C9B8BF; display: flex; align-items: center; justify-content: center; }
   .lu-pc-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }

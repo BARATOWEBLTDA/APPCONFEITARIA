@@ -144,6 +144,16 @@
 .cp-sacola .cp-it { padding: 8px 0; border-bottom: 1px solid #F5F0F2; }
 .cp-sacola .cp-it:last-child { border-bottom: 0; }
 .cp-sacola .cp-it > span:not(.cp-qtd) { flex: 1; }
+/* (24/10) sacola do computador: foto | nome e escolhas (largura toda) / preço e quantidade na linha de baixo */
+.cp-sacola .cp-it { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; grid-template-areas: "ft tx tx" "ft pr qt"; column-gap: 10px; row-gap: 4px; align-items: center; }
+.cp-sacola .cp-it > img, .cp-sacola .cp-it > .cp-it-sem { grid-area: ft; align-self: start; }
+.cp-sacola .cp-it-tx { grid-area: tx; }
+.cp-sacola .cp-it-tx b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.cp-sacola .cp-it-tx .cp-it-det { white-space: normal; }
+.cp-sacola .cp-it-pr { grid-area: pr; display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 6px; }
+.cp-sacola .cp-it-pr s { font-size: 12.5px; color: var(--ui-texto-3); }
+.cp-sacola .cp-it-pr small { font-weight: 600; color: var(--ui-texto); }
+.cp-sacola .cp-qtd { grid-area: qt; }
 .cp-qtd { display: inline-flex; align-items: center; gap: 6px; flex: none; height: 34px; padding: 0 4px; border: 1px solid #E5DDE1; border-radius: 10px; background: #fff; }
 .cp-qtd button { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; margin: 0; padding: 0; border: 0; border-radius: 7px; background: none; color: var(--ui-texto-2); cursor: pointer; }
 .cp-qtd button:hover:not(:disabled) { background: #F7F4F5; }

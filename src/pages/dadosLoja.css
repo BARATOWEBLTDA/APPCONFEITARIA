@@ -166,3 +166,8 @@
 .dl-emb .ml-rank { flex: none; width: 24px; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); text-align: center; }
 .dl-bloco > .lch:first-child .lch-t { margin-top: 0; }
 .dl-mapa-nota { margin: 8px 2px 0; font-size: 12.5px; color: var(--ui-texto-3); }
+
+/* (24/10) computador: a parte escolhida usa a largura toda do quadro (a Entrega ficava numa coluna de 288 px e cortava
+   "Combinar pelo Wha…"), e o resumo da lista pode ir para a 2ª linha (o Horário cortava "… · D…") */
+.dl-painel .ep.ep--embutido { display: flex; flex-direction: column; align-items: stretch; max-width: none; }
+.dl-lista--pc .dl-li-tx small { white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }

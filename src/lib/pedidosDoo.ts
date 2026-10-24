@@ -136,7 +136,7 @@ export function pendenciasPedido(d: DadosPedido): string[] {
   if (!d.itens.length) p.push("Escolha pelo menos um produto");
   if (d.tipo === "encomenda" && !d.dataEntrega) p.push("Falta a data da entrega");
   // (11/10) a Nova venda não aceita dia que já passou; o pedido da Doo também não
-  else if (d.tipo === "encomenda" && d.dataEntrega < hojeISO()) p.push("A data da entrega já passou. Toque em Editar e escolha outra");
+  else if (d.tipo === "encomenda" && d.dataEntrega < hojeISO()) p.push("A data da entrega já passou. Use Editar e escolha outra");
   if (d.tipoEntrega === "entrega" && !d.endereco.rua.trim()) p.push("Falta o endereço da entrega");
   if (d.situacaoPag === "parcial") {
     const total = totalDe(d), sinal = r2(d.valorParcial);
@@ -427,7 +427,7 @@ export function montarPedido(r: RascunhoPedido, cat: { produtos: ProdutoCat[]; c
   if (!existente && nomeDito) {
     const iguais = cat.clientes.filter(x => nomeLimpo(x.nome) === nomeDito);
     if (iguais.length === 1) existente = iguais[0];
-    else if (iguais.length > 1) ambigua = true, problemas.push(`Você tem mais de uma cliente chamada ${String(c?.nome).trim()}. Toque em Editar e escolha qual é`);
+    else if (iguais.length > 1) ambigua = true, problemas.push(`Você tem mais de uma cliente chamada ${String(c?.nome).trim()}. Use Editar e escolha qual é`);
   }
   const nome = existente?.nome || String(c?.nome || "").trim();
   const e = r.endereco || {};

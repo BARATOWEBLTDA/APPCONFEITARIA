@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { Funnel } from "@phosphor-icons/react";
 import { useSobreposicao } from "./useSobreposicao";
 import "./gavetaFiltro.css";
 
@@ -106,7 +107,8 @@ export function BotaoFiltro({ ativos, onClick, className = "" }: { ativos: numbe
   return (
     <button type="button" className={`gf-bt${ativos > 0 ? " on" : ""} ${className}`} onClick={onClick}
       aria-label={ativos > 0 ? `Filtrar (${ativos} ${ativos === 1 ? "filtro ligado" : "filtros ligados"})` : "Filtrar"}>
-      <svg width="20" height="20" viewBox="0 0 256 256" aria-hidden="true"><path d="M40 72h176M72 128h112M104 184h48" stroke="currentColor" strokeWidth="22" strokeLinecap="round" fill="none" /></svg>
+      {/* (24/10) o mesmo funil de Pedidos e Agenda (antes eram três risquinhos: dois ícones para o mesmo botão) */}
+      <Funnel size={20} weight={ativos > 0 ? "fill" : "bold"} aria-hidden="true" />
       {ativos > 0 && <span className="gf-bt-n" aria-hidden="true">{ativos}</span>}
     </button>
   );

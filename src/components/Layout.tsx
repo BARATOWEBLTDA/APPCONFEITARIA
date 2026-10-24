@@ -11,7 +11,7 @@ import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import BuscaRapida from "@/components/BuscaRapida";
 import PerguntaSons from "@/components/PerguntaSons";
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import "@/styles/mobileClaro.css";
 import "@/styles/desktopPadrao.css";
 import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, CaretDoubleLeft, CaretDoubleRight,
@@ -180,6 +180,20 @@ export default function Layout() {
     return () => { mq.removeEventListener("change", aplicar); meta.setAttribute("content", antes); };
   }, []);
   const isPrevia = location.pathname === "/cardapio-preview";
+  // (24/10) notebook (1366 × 768) com um grupo aberto: os últimos itens (Marketing, Doo IA, Minha conta) ficavam escondidos
+  // atrás do cartão da loja, e só a sombra avisava. Agora aparece "Mais opções", que rola o menu até o fim.
+  const navRef = useRef<HTMLElement>(null);
+  const [navTemMais, setNavTemMais] = useState(false);
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const medir = () => setNavTemMais(nav.scrollHeight - nav.clientHeight - nav.scrollTop > 12);
+    medir();
+    nav.addEventListener("scroll", medir, { passive: true });
+    const ro = new ResizeObserver(medir); ro.observe(nav);
+    const mo = new MutationObserver(medir); mo.observe(nav, { childList: true, subtree: true });
+    return () => { nav.removeEventListener("scroll", medir); ro.disconnect(); mo.disconnect(); };
+  }, [recolhido]);
 
   // Scroll pro topo ao mudar de rota (fix: antes ficava na posição anterior)
   // (11/10) menos ao VOLTAR ("POP"): a lista volta no ponto em que ela estava, em vez de pular pro topo
@@ -203,7 +217,7 @@ export default function Layout() {
           {computador && <SinoMenu />}
         </div>
 
-        <nav className="sidebar-nav" aria-label="Menu principal">
+        <nav ref={navRef} className="sidebar-nav" aria-label="Menu principal">
           <ItemMenu to="/inicio" icone={House}>Início</ItemMenu>
           <ItemMenu to="/vendas/novo" icone={Plus}>Nova venda</ItemMenu>
           <ItemMenu to="/pedidos" icone={Receipt}>Pedidos</ItemMenu>
@@ -245,6 +259,11 @@ export default function Layout() {
           </GrupoMenu>
           {/* (19/10) Notificações (já está em Configurações) e Conquistas (escondida nas Configurações) saíram do menu. */}
         </nav>
+        {navTemMais && (
+          <button type="button" className="sb-mais" onClick={() => navRef.current?.scrollTo({ top: navRef.current.scrollHeight, behavior: "smooth" })} aria-label="Ver mais opções do menu" title="Mais opções">
+            <CaretDown size={14} weight="bold" aria-hidden="true" />{!recolhido && "Mais opções"}
+          </button>
+        )}
         {/* (22/10) o cartão da loja fica fixo embaixo, fora do menu que rola: no notebook (1366 × 768) ele ficava cortado */}
         <div className="sb-pe">
           {!recolhido && <div className="sb-pausar"><PausarPedidos escuro /></div>}
@@ -549,6 +568,9 @@ export default function Layout() {
         .nav-grupo .nav-group-body { margin-left: 12px; padding-left: 8px; }
         .nav-grupo .nav-group-body .nav-subitem { min-height: 36px; padding: 0 8px; gap: 7px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .nav-sec { margin: 8px 0 2px 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+        .sb-mais { all: unset; box-sizing: border-box; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 6px; height: 30px; margin-top: 2px; border-radius: 8px; font-family: var(--font-base); font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.06); cursor: pointer; }
+        .sb-mais:hover { background: rgba(255,255,255,0.12); color: var(--ui-branco); }
+        .sb-mais:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: -3px; }
         .sb-pe { flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); }
         .sb-pe-l { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
         .sb-versao { padding-left: 6px; font-size: 11.5px; color: rgba(255,255,255,0.45); }

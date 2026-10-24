@@ -85,7 +85,7 @@ export function PausarPedidos({ compacto = false, escuro = false }: { compacto?:
       {!cheio && <span className="lj-pausa-luz" aria-hidden="true" />}
       <span className="lj-pausa-tx">
         <b>{cheio && <span className="lj-pausa-luz" aria-hidden="true" />}{escuro ? (pausada ? 'Loja pausada' : 'Loja aberta') : pausada ? 'Pedidos pausados' : 'Recebendo pedidos'}</b>
-        <small>{escuro ? (pausada ? 'Sem pedidos pelo cardápio' : 'Recebendo pedidos') : cheio ? (pausada ? 'O cardápio mostra a loja fechada. Toque para voltar a receber.' : 'Seu cardápio está aberto. Pause em um dia de folga ou com a agenda cheia.') : pausada ? 'O cardápio mostra a loja fechada e não aceita pedidos.' : 'Pause em um dia de folga ou com a agenda cheia.'}</small>
+        <small>{escuro ? (pausada ? 'Sem pedidos pelo cardápio' : 'Recebendo pedidos') : cheio ? (pausada ? 'O cardápio mostra a loja fechada. Ligue de novo para voltar a receber.' : 'Seu cardápio está aberto. Pause em um dia de folga ou com a agenda cheia.') : pausada ? 'O cardápio mostra a loja fechada e não aceita pedidos.' : 'Pause em um dia de folga ou com a agenda cheia.'}</small>
       </span>
       <button type="button" role="switch" aria-checked={!pausada} aria-label={pausada ? 'Abrir a loja' : 'Pausar os pedidos'}
         className="lj-chave" disabled={salvando} onClick={alternar}><span /></button>

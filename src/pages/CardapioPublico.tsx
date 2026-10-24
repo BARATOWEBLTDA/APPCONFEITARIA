@@ -165,6 +165,7 @@ function DeskCategorias({ categories, counts, total, selectedCategory, onSelectC
 }
 
 /* ── Sua sacola (coluna da direita) ── */
+const descontoDaLinha = (it: any) => Math.round((Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0) * 100) / 100
 // (20/10) a coluna é a sacola de verdade: muda a quantidade aqui e "Finalizar pedido" vai direto pro finalizar
 function DeskSacola({ cartCount, cartTotal, design, items }: any) {
   const { updateQuantity, removeItem } = useCart()
@@ -188,7 +189,9 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           return (
             <div key={linha} className="cp-it">
               {img ? <img src={img} alt="" /> : <span className="cp-it-sem"><ShoppingBag size={20} /></span>}
-              <span><b>{item.name}</b>{detalhesItem(item).length > 0 && <small className="cp-it-det">{detalhesItem(item).join(' · ')}</small>}<small>{formatCurrency(valorLinha(item))}{unidadeItem(item) && (item.quantity === 1 ? ` ${unidadeItem(item)}` : ` · ${formatCurrency(item.price)} ${unidadeItem(item)}`)}</small></span>
+              {/* (24/10) nome e escolhas com a largura toda (antes cortavam: "Bolo Floresta Ne…") e o preço cheio riscado, como na sacola do celular */}
+              <span className="cp-it-tx"><b>{item.name}</b>{detalhesItem(item).length > 0 && <small className="cp-it-det">{detalhesItem(item).join(' · ')}</small>}</span>
+              <span className="cp-it-pr">{descontoDaLinha(item) > 0 && <s>{formatCurrency(valorLinha(item) + descontoDaLinha(item))}</s>}<small>{formatCurrency(valorLinha(item))}{unidadeItem(item) && (item.quantity === 1 ? ` ${unidadeItem(item)}` : ` · ${formatCurrency(item.price)} ${unidadeItem(item)}`)}</small></span>
               <span className="cp-qtd">
                 <button type="button" aria-label={ultimo ? `Tirar ${item.name} da sacola` : `Diminuir ${item.name}`} onClick={() => (ultimo ? removeItem(linha) : updateQuantity(linha, Math.round((item.quantity - passo) * 10) / 10))}>
                   {ultimo ? <Trash size={16} weight="bold" /> : <Minus size={16} weight="bold" />}

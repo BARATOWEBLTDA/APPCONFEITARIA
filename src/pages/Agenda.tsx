@@ -777,6 +777,9 @@ function CartaoAgenda({ p, ocupado, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
   const itens = p.pedido_itens || [];
   const total = Number(p.valor_total) || 0;
   const desconto = Number(p.desconto) || 0;
+  // (24/10) a taxa de entrega e o acréscimo também aparecem: sem eles os itens não fechavam com o total
+  const taxaEntrega = p.tipo_entrega === "entrega" ? Number(p.taxa_entrega) || 0 : 0;
+  const acrescimo = Number(p.acrescimo) || 0;
   const recebido = recebidoPedido(p);
   const falta = saldoPedido(p);
   const primeiro = itens[0];
@@ -823,6 +826,8 @@ function CartaoAgenda({ p, ocupado, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
           {itens.map((it: any, i: number) => (
             <p key={i}><span><NomeComQtd nome={nomeDoItem(it)} qtd={Number(it.quantidade) || 1} forma={formaNaAgenda(it)} /></span><span>{rs(r2((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 0)))}</span></p>
           ))}
+          {taxaEntrega > 0 && <p className="dim"><span>Taxa de entrega</span><span>{rs(taxaEntrega)}</span></p>}
+          {acrescimo > 0 && <p className="dim"><span>Acréscimo</span><span>{rs(acrescimo)}</span></p>}
           {desconto > 0 && <p className="dim"><span>Desconto</span><span>− {rs(desconto)}</span></p>}
           <p className="tot"><span>Total</span><span>{rs(total)}</span></p>
         </div>

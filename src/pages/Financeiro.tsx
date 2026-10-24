@@ -202,7 +202,7 @@ export default function Financeiro() {
           {ok ? <Variacao atual={ok.resultado} anterior={ant ? r2(ant.recebido - ant.despesas) : null} rotulo={per.rotuloAnt} /> : <span className="fd-var neu">&nbsp;</span>}
           <div className="fd-pilha" aria-hidden="true">
             {ok && ok.recebido + ok.despesas > 0
-              ? <><i className="e" style={{ flexGrow: Math.max(ok.recebido, 0.0001) }} /><i className="s" style={{ flexGrow: Math.max(ok.despesas, 0.0001) }} /></>
+              ? <>{ok.recebido > 0 && <i className="e" style={{ flexGrow: ok.recebido }} />}{ok.despesas > 0 && <i className="s" style={{ flexGrow: ok.despesas }} />}</> /* (24/10) sem a parte de quem é zero (sobrava um pedacinho vermelho com Saiu R$ 0,00) */
               : <i className="z" />}
           </div>
           <div className="fd-leg">
@@ -216,7 +216,7 @@ export default function Financeiro() {
           <button type="button" className={`fd-t esc${caixaNeg ? " neg" : ""}`} onClick={() => setDefinir(true)}>
             <span><small><span className="fd-so-pc">Saldo em caixa</span><span className="fd-so-cel">Em caixa</span></small>
               <b>{!cx ? "…" : cx.erro ? "—" : cx.precisaSql ? "—" : cx.configurado ? brl(cx.saldo) : "Informar"}</b></span>
-            <em>{caixaNeg ? "confira" : cx && cx.configurado && !cx.erro ? "agora" : cx && !cx.configurado && !cx.erro && !cx.precisaSql ? "toque aqui" : ""}</em>
+            <em>{caixaNeg ? "confira" : cx && cx.configurado && !cx.erro ? "agora" : ""}</em>
           </button>
           <button type="button" className="fd-t" onClick={() => navigate("/financeiro/a-receber")}>
             <span><small>A receber</small><b>{!rec ? "…" : rec.erro ? "—" : brl(rec.total)}</b></span>
@@ -412,7 +412,7 @@ function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
     <div className="fd-fluxo" ref={caixa}>
       <div className={`fd-fl-dica${gs ? "" : " vazia"}`} aria-live="polite">
         {gs ? <><b>{gs.hoje && !porSemana ? "Hoje" : gs.titulo}</b><span><em className="e">+ {brl(gs.entradas)}</em> · <em className="s">− {brl(gs.saidas)}</em></span></>
-          : vazio ? "Nenhuma entrada ou saída neste período" : "Toque em um dia para ver os valores"}
+          : vazio ? "Nenhuma entrada ou saída neste período" : "Escolha um dia para ver os valores"}
       </div>
       <svg viewBox={`0 0 ${W} ${H + 22}`} width="100%" height={H + 22} role="img" aria-label={`Entradas e saídas ${porSemana ? "por semana" : "por dia"}`}
         onPointerLeave={e => { if (ehMouse(e)) setSel(null); }}>

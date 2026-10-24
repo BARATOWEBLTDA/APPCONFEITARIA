@@ -299,7 +299,7 @@ type Sugestao = { nome: string; descricao: string; valor: number; pedeRef?: bool
 function ListaSugestoes({ titulo, lista, aoEscolher }: { titulo: string; lista: Sugestao[]; aoEscolher: (sg: Sugestao) => void }) {
   return (
     <section className="pz-ex pz-sg" aria-label={titulo}>
-      <div className="pz-sg-cab"><p className="pz-ex-t">{titulo}</p><small>Assim o cliente vê. Toque para adicionar.</small></div>
+      <div className="pz-sg-cab"><p className="pz-ex-t">{titulo}</p><small>Assim o cliente vê. Marque para adicionar.</small></div>
       {lista.map(sg => (
         <button key={sg.nome} type="button" className="pz-ex-l pz-sg-l" onClick={() => aoEscolher(sg)} aria-label={`Adicionar ${sg.nome}`}>
           <i aria-hidden="true" />

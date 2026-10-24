@@ -200,9 +200,13 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
           ) : ultimos.map(p => {
             const [st0, cor] = STATUS[p.status] || ["Agendado", "bl"];
             const st = st0 === "Entregue" && p.tipo_entrega !== "entrega" ? "Retirado" : st0;
-            const itens = (p.pedido_itens || []).map((i: any) => `${i.nome_produto}${Number(i.quantidade) > 1 ? ` × ${i.quantidade}` : ""}`).join(" + ");
+            // (24/10) o mesmo produto em várias linhas vira um só, com a quantidade somada (antes "Kit festa + Kit festa + Kit festa × 2")
+            const somados = new Map<string, number>();
+            for (const i of p.pedido_itens || []) { const n = String(i.nome_produto || "Produto"); somados.set(n, (somados.get(n) || 0) + (Number(i.quantidade) || 1)); }
+            const itens = [...somados].map(([n, qt]) => `${n}${qt > 1 ? ` × ${qt.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}` : ""}`).join(" + ");
+            // (24/10) a data é de quando o pedido chegou: agora diz isso ("feito em 07/11")
             const quando = new Date(p.created_at); const hoje = new Date();
-            const q = quando.toDateString() === hoje.toDateString() ? `hoje ${quando.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : quando.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+            const q = quando.toDateString() === hoje.toDateString() ? `feito hoje às ${quando.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : `feito em ${quando.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`;
             return (
               <button type="button" className="vgd-pe" key={p.id} onClick={() => navigate(`/pedidos/${p.id}/editar`)}>
                 <span className="vgd-pa">{String(p.cliente_nome || "C").trim().charAt(0).toUpperCase()}</span>

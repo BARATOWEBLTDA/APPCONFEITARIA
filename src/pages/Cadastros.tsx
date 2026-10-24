@@ -84,7 +84,7 @@ export default function Cadastros() {
         <div className="cad-c cad-c--vende">
           {linha(Cake, "Produtos", n && n.semFicha > 0 ? `${n.semFicha} sem ficha técnica` : "Cadastre e gerencie seus produtos", () => navigate("/produtos"), n?.produtos, n && n.semFicha > 0 ? "lar" : "", ["produto", "produtos"])}
           {linha(SquaresFour, "Categorias", "Organize seus produtos", () => navigate("/categorias"), n?.categorias, "", ["categoria", "categorias"])}
-          {linha(Stack, "Complementos", "Sabores, recheios e adicionais", () => navigate("/complementos"), n?.complementos, "", ["complemento", "complementos"])}
+          {linha(Stack, "Complementos", "Topo, velas e outros extras", () => navigate("/complementos"), n?.complementos, "", ["complemento", "complementos"])}
           {linha(cel ? Storefront : ShoppingBag, cel ? "Minha loja" : "Cardápio digital", loja.txt, () => navigate("/cardapio"), undefined, loja.tom)}
         </div>
 

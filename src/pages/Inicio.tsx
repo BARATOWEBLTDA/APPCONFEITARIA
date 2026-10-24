@@ -850,7 +850,8 @@ export default function Inicio() {
         if (counts.entregasHoje > 0) partes.push(`${counts.entregasHoje} ${counts.entregasHoje === 1 ? "entrega" : "entregas"} hoje`);
         const txtAtrasados = counts.pedidosAtrasados > 0 ? `${counts.pedidosAtrasados} ${counts.pedidosAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}` : "";
         // (21/10) o atraso saiu da frase: virou um selo vermelho ao lado do "Bom dia"
-        if (aReceberHoje > 0) partes.push(`${formatCurrency(aReceberHoje)} em entregas hoje`);
+        // (24/10) "2 entregas hoje · R$ 765,80 em entregas hoje" repetia; agora "2 entregas hoje, somando R$ 765,80"
+        if (aReceberHoje > 0) { if (partes.length) partes[partes.length - 1] += `, somando ${formatCurrency(aReceberHoje)}`; else partes.push(`${formatCurrency(aReceberHoje)} em entregas hoje`); }
         return (
           <div className="ini-dk">
             <div className="ini-dk-top">

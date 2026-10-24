@@ -304,7 +304,7 @@ export default function Categorias() {
               </div>
               <button type="button" role="radio" aria-checked={modoFoto === "enviar"} className={`ct-fo${modoFoto === "enviar" ? " on" : ""}`}
                 onClick={() => { if (modoFoto === "enviar" && form.imagem_url) { setModoFoto("enviar"); return; } if (!uploading) imgRef.current?.click(); }}>
-                <i aria-hidden="true" /><span><b>Enviar uma foto</b><small>{uploading ? "Enviando…" : modoFoto === "enviar" && form.imagem_url ? "Toque de novo para trocar" : "Da galeria do celular"}</small></span>
+                <i aria-hidden="true" /><span><b>Enviar uma foto</b><small>{uploading ? "Enviando…" : modoFoto === "enviar" && form.imagem_url ? "Escolha de novo para trocar" : "Do celular ou do computador"}</small></span>
                 {modoFoto === "enviar" && form.imagem_url && <span className="ct-fo-trocar" onClick={e => { e.stopPropagation(); if (!uploading) imgRef.current?.click(); }}><UploadSimple size={18} weight="bold" />Trocar</span>}
               </button>
             </div>

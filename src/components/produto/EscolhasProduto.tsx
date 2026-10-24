@@ -255,7 +255,7 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
           <ProductModal isOpen previa onClose={() => setVerPrevia(false)} onAdicionar={() => setVerPrevia(false)} product={EXEMPLO_PRODUTO as any} />
         </CartProvider>
       )}
-      <p className="esc-s">Marque o que vale{nome ? <> para o <b>{nome}</b></> : null}. {edicao ? "Toque em Editar para mudar." : "Você cadastra cada um em seguida."}</p>
+      <p className="esc-s">Marque o que vale{nome ? <> para o <b>{nome}</b></> : null}. {edicao ? "Use Editar para mudar." : "Você cadastra cada um em seguida."}</p>
       <ul className="esc-chks" role="group" aria-label="Escolhas">
         {TODAS_ESCOLHAS.map(linha)}
       </ul>

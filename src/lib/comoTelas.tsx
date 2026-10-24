@@ -19,8 +19,8 @@ export const COMO_INICIO_CEL: Como = {
   dicas: [
     [Bell, <><b>Avisos:</b> pedidos atrasados e pedidos para aceitar aparecem primeiro.</>],
     [MagnifyingGlass, <><b>Buscar:</b> encontre qualquer tela ou ação, como pix, cupom ou horário.</>],
-    [ListChecks, <><b>Acesso rápido:</b> as telas mais usadas, a um toque.</>],
-    [CalendarBlank, <><b>Próximas entregas:</b> toque em um dia para ver apenas os pedidos dele.</>],
+    [ListChecks, <><b>Acesso rápido:</b> as telas mais usadas, sempre à mão.</>],
+    [CalendarBlank, <><b>Próximas entregas:</b> escolha um dia para ver apenas os pedidos dele.</>],
     [ListChecks, <><b>Seus próximos passos:</b> pendências da loja, com o botão para resolver na hora.</>],
   ],
 };
@@ -41,8 +41,8 @@ export const TOUR_INICIO_CEL: PassoTour[] = [
   { el: ".ini-section--novos", titulo: "Avisos", texto: "Pedidos novos para aceitar e pedidos atrasados aparecem aqui primeiro." },
   { el: ".ini-busca", titulo: "Buscar", texto: "Digite o que procura, como \"pix\", \"cupom\" ou \"horário\", e vá direto para a tela certa." },
   { el: ".ini-section--nav", titulo: "Acesso rápido", texto: "Atalhos para as telas mais usadas. As demais ficam no Menu, na barra inferior." },
-  { el: ".ini-section--dia", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Toque em um dia para ver apenas os pedidos dele." },
-  { el: ".ini-falta .pf", titulo: "Seus próximos passos", texto: "Pendências da sua loja, com o botão para resolver na hora. Se preferir deixar para depois, toque em Agora não." },
+  { el: ".ini-section--dia", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Escolha um dia para ver apenas os pedidos dele." },
+  { el: ".ini-falta .pf", titulo: "Seus próximos passos", texto: "Pendências da sua loja, com o botão para resolver na hora. Se preferir deixar para depois, use Agora não." },
   { el: ".bn-novo-c", titulo: "Nova venda", texto: "Registre uma venda ou encomenda a qualquer momento. O botão aparece em todas as telas.", redondo: true },
 ];
 
@@ -158,7 +158,7 @@ export const COMO_MINHA_LOJA: Como = {
   resumo: "Tudo da sua loja em uma tela: o link, o que o cliente vê, como você vende e o que você vende.",
   tit: "Exemplo · a linha mostra como está agora",
   linhas: [["Horário", "Seg a Sex · 8h às 18h"], ["Entrega", "Retirada e entrega R$ 8,00"]],
-  fluxo: ["Toque na linha", "Altere", "Pronto"],
+  fluxo: ["Abra a linha", "Altere", "Pronto"],
   dicas: [
     [ShareNetwork, <>Envie o <b>link</b> pelo WhatsApp e pelo Instagram. O <b>QR Code</b> é para imprimir.</>],
     [PauseCircle, <><b>Pausar pedidos</b> fecha o cardápio na hora, sem alterar o horário.</>],
@@ -219,7 +219,7 @@ export const TOUR_PRODUTOS: PassoTour[] = [
   { el: ".prod-card", titulo: "Produto", texto: "Selecione um produto para editar as informações, as fotos e as opções.",
     vazio: [
       { el: ".prod-root .ui-vazia", texto: "Nenhum produto com esta busca. Confira o nome digitado." },
-      { el: ".prod-hero-btn-primary", texto: "Ainda não há produtos. Toque em Cadastrar produto para criar o primeiro: ele aparece aqui na lista e no seu cardápio." },
+      { el: ".prod-hero-btn-primary", texto: "Ainda não há produtos. Use Cadastrar produto para criar o primeiro: ele aparece aqui na lista e no seu cardápio." },
     ] },
   { el: ".pl-lin-chave, .pl-ficha-on", titulo: "Mostrar no cardápio", texto: "Ative ou desative para mostrar ou ocultar o produto no cardápio, sem precisar excluí-lo." },
   { el: ".pl-lin-ficha, .pl-sem-ficha", titulo: "Ficha técnica", texto: "Monte a ficha técnica para descobrir o custo e o lucro de cada produto." },
@@ -513,15 +513,15 @@ export const COMO_NOVIDADES: Como = {
   resumo: "Dicas para vender mais, novidades do app, tutoriais e avisos importantes da equipe Doonly.",
   fluxo: ["Publicada", "Aviso no celular", "Leitura"],
   dicas: [
-    [Bell, <>Cada novidade nova chega como <b>aviso no celular</b>. O toque abre o texto completo.</>],
+    [Bell, <>Cada novidade nova chega como <b>aviso no celular</b>. Ao abrir, aparece o texto completo.</>],
     [Circle, <>As <b>não lidas</b> ficam em branco. Depois de abertas, ficam em cinza.</>],
     [HandSwipeLeft, <><b>Arraste para o lado</b> para tirar uma novidade da lista. Dá para desfazer no aviso que aparece.</>],
-    [Heart, <>Gostou de uma dica? Toque em <b>Gostei</b> dentro da novidade.</>],
+    [Heart, <>Gostou de uma dica? Use o <b>Gostei</b> dentro da novidade.</>],
     [PushPin, <>A novidade <b>fixada</b> fica sempre no topo.</>],
   ],
 };
 export const TOUR_NOVIDADES: PassoTour[] = [
-  { el: ".nl-lista > li:first-child", titulo: "Novidade", texto: "Imagem, título, resumo e quando foi publicada. Toque para ler o texto completo." },
+  { el: ".nl-lista > li:first-child", titulo: "Novidade", texto: "Imagem, título, resumo e quando foi publicada. Abra para ler o texto completo." },
   { el: ".nl-lista > li:first-child", titulo: "Arraste para excluir", texto: "Arraste a novidade para o lado para tirar da lista. No computador, use o X que aparece ao passar o mouse. Dá para desfazer no aviso." },
   { el: ".nl-it--lida", titulo: "Já lida", texto: "Depois de aberta, a novidade fica em cinza. As não lidas ficam em branco." },
   { el: ".cab-cel-ac:not(.cab-cel-ac--pro), .sidebar-sino", titulo: "Sino", texto: "O número no sino mostra quantas novidades você ainda não leu." },
@@ -619,8 +619,8 @@ export const TOUR_CLIENTE: PassoTour[] = [
   { el: ".cp9-eu", titulo: "O cliente", texto: "Nome, WhatsApp e há quanto tempo compra com você." },
   { el: ".cp9-acoes", titulo: "Ações", texto: "Comece uma nova venda para este cliente ou fale com ele pelo WhatsApp." },
   { el: ".cp9-nums", titulo: "Números", texto: "Quantos pedidos ele fez, quanto já gastou e o valor médio de cada pedido." },
-  { el: ".cp9-o3", titulo: "Pedidos", texto: "Os pedidos deste cliente, do mais novo para o mais antigo. Toque para abrir." },
-  { el: ".cp9-dados", titulo: "Dados", texto: "Aniversário, endereço e observações. Toque em Editar para completar." },
+  { el: ".cp9-o3", titulo: "Pedidos", texto: "Os pedidos deste cliente, do mais novo para o mais antigo. Abra um deles para ver." },
+  { el: ".cp9-dados", titulo: "Dados", texto: "Aniversário, endereço e observações. Use Editar para completar." },
 ];
 
 export const COMO_PEDIDO: Como = {
@@ -638,8 +638,8 @@ export const COMO_PEDIDO: Como = {
 };
 export const TOUR_PEDIDO: PassoTour[] = [
   { el: ".tpd-sit", titulo: "Situação", texto: "Em que etapa o pedido está e o próximo passo. O botão leva para a etapa seguinte." },
-  { el: ".tpd-abas", titulo: "Partes do pedido", texto: "Itens, entrega (ou retirada) e pagamento. Toque para ver e alterar cada parte." },
-  { el: ".tpd-cli", titulo: "Cliente", texto: "Quem fez o pedido. Toque para abrir o perfil do cliente." },
+  { el: ".tpd-abas", titulo: "Partes do pedido", texto: "Itens, entrega (ou retirada) e pagamento. Abra cada parte para ver e alterar." },
+  { el: ".tpd-cli", titulo: "Cliente", texto: "Quem fez o pedido. Abra para ver o perfil do cliente." },
 ];
 
 export const COMO_NOTIFICACOES: Como = {
@@ -680,6 +680,6 @@ export const COMO_DOO: Como = {
   ],
 };
 export const TOUR_DOO: PassoTour[] = [
-  { el: ".av-hero", titulo: "Doo IA", texto: "A sua assistente. Toque em uma das opções abaixo ou abra a conversa e pergunte o que quiser." },
+  { el: ".av-hero", titulo: "Doo IA", texto: "A sua assistente. Escolha uma das opções abaixo ou abra a conversa e pergunte o que quiser." },
   { el: ".av-grid", titulo: "O que pedir", texto: "Atalhos para o que a Doo faz melhor: preço, pedido, receita, ingrediente e mensagens." },
 ];

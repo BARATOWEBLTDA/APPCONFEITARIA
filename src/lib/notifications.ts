@@ -87,7 +87,7 @@ export async function enableNotifications(): Promise<boolean> {
   if (Notification.permission === "denied") {
     informar({ titulo: "Notificações bloqueadas", icone: "alerta", texto: ehIphone()
       ? "Para ligar: abra Ajustes, depois Notificações, Doonly e Permitir Notificações."
-      : "Para ativar: toque no cadeado ao lado do endereço do site, vá em Notificações e escolha “Permitir”." });
+      : "Para ativar: abra o cadeado ao lado do endereço do site, vá em Notificações e escolha “Permitir”." });
     return false;
   }
 

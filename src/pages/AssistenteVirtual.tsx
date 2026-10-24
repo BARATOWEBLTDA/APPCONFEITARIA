@@ -14,7 +14,7 @@ const EXEMPLOS = [
   { e: Receipt, t: "Registrar pedido", d: "Direto pela conversa", p: "Registrar um pedido", novo: true },
   { e: BookOpenText, t: "Criar receita", d: "Com as quantidades", p: "Criar receita de bolo" },
   { e: Package, t: "Ingrediente", d: "Cadastre com preço", p: "Cadastrar um ingrediente" },
-  { e: PencilSimpleLine, t: "Legenda", d: "Pronta pro Instagram", p: "Criar legenda para o Instagram" },
+  { e: PencilSimpleLine, t: "Legenda", d: "Para o Instagram", p: "Criar legenda para o Instagram" },
   { e: ChatCircleDots, t: "Responder", d: "Para o seu cliente", p: "Escrever uma mensagem para um cliente" },
   { e: Cake, t: "Topo de bolo", d: "A arte para imprimir", p: "Criar um topo de bolo" },
   { e: CalendarCheck, t: "Minha semana", d: "Produção e compras", p: "Planejar produção da semana" },

@@ -84,7 +84,7 @@ export default function Marketing() {
               <b className="mk-t">Onde achar o ID do pixel</b>
               <ol>
                 <li>Abra o <strong>Gerenciador de Eventos</strong> da Meta (business.facebook.com).</li>
-                <li>Em <strong>Fontes de dados</strong>, escolha o seu pixel. Se não tiver, toque em <strong>Conectar dados</strong> e crie um.</li>
+                <li>Em <strong>Fontes de dados</strong>, escolha o seu pixel. Se não tiver, escolha <strong>Conectar dados</strong> e crie um.</li>
                 <li>Copie o número que aparece embaixo do nome do pixel e cole aqui.</li>
               </ol>
               <p className="mk-dica"><Lightbulb size={18} weight="bold" aria-hidden="true" />Depois de salvar, abra o seu cardápio uma vez. Em alguns minutos o Gerenciador de Eventos mostra a primeira visita.</p>
