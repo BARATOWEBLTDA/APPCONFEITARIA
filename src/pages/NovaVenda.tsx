@@ -20,6 +20,11 @@ import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, TelaVazia, Titulo, 
 import { historicoAssentado } from '@/components/base/useSobreposicao'
 import { dataLonga, itemComQtd, nomeDeProduto, recebidoPedido, rs, saldoPedido, telefoneBonito } from '@/components/pedidos/pedidoTexto'
 import { pesoLivre } from '@/lib/itemPedido'
+import { ProductModal } from '@/components/cart/ProductModal'
+import { CartProvider } from '@/context/CartContext'
+import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
+import { carregarGruposDoBanco } from '@/lib/produto-grupos'
+import { textoSaboresKit } from '@/lib/kitTexto'
 import '@/components/pedidos/telaPedido.css'
 import './novaVenda.css'
 
@@ -39,6 +44,23 @@ interface ItemVenda {
   /** Tamanho ou kit escolhido (vai pro pedido como as escolhas do item) */
   opcaoLabel?: string
   personalizacoes?: any
+}
+
+/** (24/10) as escolhas do item, uma por linha: "2 kg", "Recheio Ninho", "Cobertura Chantilly", "100 un. · 50 coxinhas · 50 risoles" */
+function linhasDoItem(it: ItemVenda): string[] {
+  const p = it.personalizacoes || {}
+  const l: string[] = []
+  const nm = (x: any) => String(x?.nome || '').trim()
+  if (nm(p.tamanho)) l.push(nm(p.tamanho))
+  if (p.kit?.total) { const sab = textoSaboresKit(p.kit.sabores); l.push(`${p.kit.total} un.${sab ? ` · ${sab}` : ''}`) }
+  if (nm(p.massa)) l.push(`Massa ${nm(p.massa)}`)
+  const rec = (Array.isArray(p.recheios) ? p.recheios : []).map(nm).filter(Boolean)
+  if (rec.length) l.push(`${rec.length > 1 ? 'Recheios' : 'Recheio'} ${rec.join(' e ')}`)
+  if (nm(p.cobertura)) l.push(`Cobertura ${nm(p.cobertura)}`)
+  if (nm(p.sabor)) l.push(`Sabor ${nm(p.sabor)}`)
+  for (const x of (Array.isArray(p.extras) ? p.extras : [])) if (nm(x)) l.push(`+ ${nm(x)}`)
+  if (!l.length && it.opcaoLabel) l.push(it.opcaoLabel)
+  return l
 }
 
 interface Cliente {
@@ -442,6 +464,19 @@ export default function NovaVenda() {
   // (16/10) "Outro tamanho": vendeu um peso que não está na lista (o preço sai do preço do kg, e dá pra mudar)
   const [outro, setOutro] = useState<{ aberto: boolean; peso: string; valor: number }>({ aberto: false, peso: '', valor: 0 })
   const [escolhaProduto, setEscolhaProduto] = useState<{ p: Produto; opcoes: { label: string; valor: number; pers: any }[] } | null>(null)
+  // (24/10) produto com massa, recheio, cobertura, sabor ou kit: abre a mesma janela de escolhas do cardápio
+  // (igual ao "Adicionar item" do pedido). Só tamanho continua na tabela de tamanhos (com o "Outro tamanho").
+  const [produtoOpcoes, setProdutoOpcoes] = useState<any | null>(null)
+  const abrirProduto = async (p: Produto) => {
+    const { data } = await supabase.from('produtos').select('*').eq('id', p.id).maybeSingle()
+    const completo: any = data || p
+    const grupos = carregarGruposDoBanco(completo).filter(g => g.ativo && g.opcoes.length > 0)
+    const soTamanho = grupos.length > 0 && grupos.every(g => g.tipo === 'tamanho')
+    if ((grupos.length > 0 && !soTamanho) || (completo.kit_qtd?.ativo)) {
+      setModalProduto(false); setBuscaProduto(''); setFiltroCategoria(null); setProdutoOpcoes(completo); return
+    }
+    addProduto(p)
+  }
   const addProduto = (p: Produto, escolha?: { label: string; valor: number; pers: any }) => {
     if (!escolha) {
       const ops = opcoesDoProduto(p)
@@ -815,9 +850,10 @@ export default function NovaVenda() {
                       <div className="nv3-it">
                         <span className="nv3-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                         <div className="nv3-it-tx">
-                          {/* (14/10) nome em cima; embaixo "Tamanho: Pequeno · R$ 15,00" */}
+                          {/* (24/10) nome em cima, cada escolha numa linha (igual à sacola do cliente) e o preço embaixo */}
                           <b>{nome}</b>
-                          <span>{it.opcaoLabel ? `${it.personalizacoes?.kit ? 'Kit' : 'Tamanho'}: ${it.opcaoLabel} · ` : ''}{rs(r2(it.valor_unitario * it.quantidade))}{it.quantidade > 1 ? ` (${rs(it.valor_unitario)} cada)` : ''}</span>
+                          {linhasDoItem(it).map((l, k) => <small key={k}>{l}</small>)}
+                          <span>{rs(r2(it.valor_unitario * it.quantidade))}{it.quantidade > 1 ? ` (${rs(it.valor_unitario)} cada)` : ''}</span>
                         </div>
                       </div>
                       <div className="nv3-it-ctl">
@@ -1073,7 +1109,7 @@ export default function NovaVenda() {
             <div className="nv3-contas">
               {itens.map((it, idx) => (
                 <div key={idx}>
-                  <p><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}`, it.quantidade, it.forma_venda === 'kg' && !pesoLivre(it, 'kg') ? null : it.forma_venda)}</span><span>{rs(r2(it.valor_unitario * it.quantidade))}</span></p>
+                  <p><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${linhasDoItem(it)[0] ? ` · ${linhasDoItem(it)[0]}` : ''}`, it.quantidade, it.forma_venda === 'kg' && !pesoLivre(it, 'kg') ? null : it.forma_venda)}</span><span>{rs(r2(it.valor_unitario * it.quantidade))}</span></p>
                   {it.observacoes && <p className="rec"><span>Recado: {it.observacoes}</span></p>}
                 </div>
               ))}
@@ -1102,7 +1138,7 @@ export default function NovaVenda() {
             <div className="nv3-lado-its">
               {itens.map((it, idx) => (
                 <div key={idx}>
-                  <p><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${it.opcaoLabel ? ` · ${it.opcaoLabel}` : ''}`, it.quantidade, it.forma_venda === 'kg' && !pesoLivre(it, 'kg') ? null : it.forma_venda)}</span><span>{rs(r2(it.valor_unitario * it.quantidade))}</span></p>
+                  <p><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${linhasDoItem(it)[0] ? ` · ${linhasDoItem(it)[0]}` : ''}`, it.quantidade, it.forma_venda === 'kg' && !pesoLivre(it, 'kg') ? null : it.forma_venda)}</span><span>{rs(r2(it.valor_unitario * it.quantidade))}</span></p>
                   {it.observacoes && <p className="rec"><span>Recado: {it.observacoes}</span></p>}
                 </div>
               ))}
@@ -1148,6 +1184,17 @@ export default function NovaVenda() {
       </div>
     </div>}
 
+    {produtoOpcoes && (
+      <CartProvider>
+        <ProductModal isOpen product={produtoOpcoes} onClose={() => setProdutoOpcoes(null)} corBotao="#E85A8C" rotuloAdicionar="Adicionar"
+          onAdicionar={(item: any) => {
+            const it = itemDoCarrinhoParaPedido(item)
+            setItens(prev => [...prev, { produto_id: it.produto_id, nome_produto: it.nome_produto, quantidade: it.quantidade, valor_unitario: it.valor_unitario,
+              imagem_url: produtoOpcoes.imagem_url, forma_venda: produtoOpcoes.forma_venda, observacoes: item.observations || '', personalizacoes: it.personalizacoes }])
+            setProdutoOpcoes(null)
+          }} />
+      </CartProvider>
+    )}
     {/* ═══ Escolher o tamanho ou o kit ═══ */}
     <Janela aberta={!!escolhaProduto} aoFechar={() => { setEscolhaProduto(null); setQtdLivre(null); setOutro({ aberto: false, peso: '', valor: 0 }) }} tipo="conteudo" titulo={escolhaProduto ? nomeDeProduto(escolhaProduto.p.nome) : ''}>
       {escolhaProduto && (
@@ -1255,7 +1302,7 @@ export default function NovaVenda() {
             {lista.map(p => {
               const foto = primeiraFoto(p.imagem_url)
               return (
-                <button key={p.id} type="button" className="tpj-it" onClick={() => addProduto(p)}>
+                <button key={p.id} type="button" className="tpj-it" onClick={() => { void abrirProduto(p) }}>
                   <span className="tpj-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                   <span className="tpj-tx"><b>{nomeDeProduto(p.nome || 'Produto sem nome')}</b>{p.categoria && <small>{p.categoria}</small>}</span>
                   {/* (11/10) produto simples: o preço já com a promoção, o mesmo que entra na venda (com tamanhos ou kit, o preço aparece na escolha) */}

@@ -131,6 +131,7 @@ export const COMO_A_RECEBER: Como = {
 export const TOUR_A_RECEBER: PassoTour[] = [
   { el: ".far-resumo", titulo: "Resumo", texto: "Total pendente, separado em atrasados, próximos 7 dias e depois.",
     vazio: { el: ".far-vazio", titulo: "Nada a receber", texto: "Não há valores a receber no momento. Quando um pedido tiver sinal ou ficar para pagar depois, o valor que falta aparece aqui." } },
+  { el: ".far-bb", titulo: "Buscar e filtrar", texto: "Ache um pedido pelo cliente ou pelo número. O filtro abre na lateral: atrasados, próximos 7 dias ou depois." },
   { el: ".far-grupo", titulo: "Pedidos com saldo", texto: "Cada pedido mostra o valor total, o que já foi pago e o que falta. Os atrasados aparecem primeiro." },
   { el: ".far-rec", titulo: "Receber", texto: "Registre o pagamento quando o cliente pagar. É possível receber o valor total ou apenas uma parte." },
   { el: ".far-ver", titulo: "Abrir pedido", texto: "Abre o pedido completo, com os itens, a entrega e o histórico de pagamentos." },

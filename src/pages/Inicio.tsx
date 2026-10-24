@@ -771,11 +771,12 @@ export default function Inicio() {
           <h1>
             <span>
               {/* 11/10: sem o perfil e com erro, "Olá!" (antes ficava "Olá," com o nome carregando pra sempre) */}
-              {!profile && erroCarga ? "Olá!" : <>Olá,{" "}</>}
-              {!profile && erroCarga ? null : profile ? (
+              {/* (24/10) igual ao computador: "Boa tarde, Bruno". Sem o nome da pessoa, "Olá, <loja>" */}
+              {!profile && erroCarga ? "Olá!" : profile && nome.trim() ? saudacao : <>Olá,{" "}</>}
+              {!profile && erroCarga ? null : profile && nome.trim() ? null : profile ? (
                 // 02/10: o nome da confeitaria (o pessoal só se a loja ainda não tiver nome)
                 // 09/10 · 4.01: só o nome da loja, sem "Confeitaria", "Doceria" etc., pra caber com a etiqueta do plano
-                (nomeCurtoLoja((profile as any).nome_loja) || (nome ? nome.split(" ")[0] : "!"))
+                (nomeCurtoLoja((profile as any).nome_loja) || "!")
               ) : (
                 <span className="ini-hero-name-skel" aria-hidden="true" />
               )}

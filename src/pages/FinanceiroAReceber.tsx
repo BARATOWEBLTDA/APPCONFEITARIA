@@ -6,7 +6,8 @@ import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
-import { CalendarBlank, CheckCircle, ArrowSquareOut, Wallet, WarningCircle } from "@phosphor-icons/react";
+import { CalendarBlank, CheckCircle, ArrowSquareOut, MagnifyingGlass, Wallet, WarningCircle, X } from "@phosphor-icons/react";
+import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_A_RECEBER, TOUR_A_RECEBER } from "@/lib/comoTelas";
 import { Botao, TelaVazia, avisar as avisarBase } from "@/components/base";
@@ -68,17 +69,25 @@ export default function FinanceiroAReceber() {
   useAoVoltar(() => { carregar(true); });
   const tentarDeNovo = () => { setCarregando(true); carregar(); };
 
+  // (24/10) busca (cliente ou número do pedido) e o filtro padrão da lateral
+  const [busca, setBusca] = useState("");
+  const [mostrar, setMostrar] = useState<"todos" | "atrasados" | "semana" | "depois">("todos");
+  const [filtroAberto, setFiltroAberto] = useState(false);
+  const buscados = useMemo(() => {
+    const q = busca.trim().toLowerCase().replace(/^#/, "");
+    return q ? itens.filter(it => `${it.cliente_nome || ""} ${it.numero ?? ""}`.toLowerCase().includes(q)) : itens;
+  }, [itens, busca]);
   const grupos = useMemo(() => {
     const em7 = isoMais(6);
     const g = { atrasados: [] as Item[], semana: [] as Item[], depois: [] as Item[], semData: [] as Item[] };
-    for (const it of itens) {
+    for (const it of buscados) {
       if (!it.dataRef) g.semData.push(it);
       else if (it.dataRef < hoje) g.atrasados.push(it);
       else if (it.dataRef <= em7) g.semana.push(it);
       else g.depois.push(it);
     }
     return g;
-  }, [itens, hoje]);
+  }, [buscados, hoje]);
   const soma = (l: Item[]) => l.reduce((s, x) => s + x.falta, 0);
   const total = soma(itens);
   // 11/10: os 3 valores do resumo usam a mesma letra, do tamanho em que o MAIOR cabe inteiro (em 360 px "R$ 105.302,13" virava "R$ 105.30…")
@@ -109,6 +118,25 @@ export default function FinanceiroAReceber() {
           </div>
         )}
 
+        {!carregando && itens.length > 0 && (
+          <div className="far-bb">
+            <label className="far-busca"><MagnifyingGlass size={18} /><input type="search" aria-label="Buscar cliente ou número do pedido" placeholder="Buscar cliente ou número" value={busca} onChange={e => setBusca(e.target.value)} />
+              {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={16} weight="bold" /></button>}</label>
+            <BotaoFiltro className="far-filtro" ativos={mostrar === "todos" ? 0 : 1} onClick={() => setFiltroAberto(true)} />
+          </div>
+        )}
+        {filtroAberto && <GavetaFiltro valor={{ mostrar }} padrao={{ mostrar: "todos" }}
+          grupos={[{ id: "mostrar", titulo: "Mostrar", tipo: "radio", opcoes: [
+            { k: "todos", label: "Todos", n: buscados.length },
+            { k: "atrasados", label: "Atrasados", n: grupos.atrasados.length, cor: "var(--ui-vermelho)" },
+            { k: "semana", label: "Próximos 7 dias", n: grupos.semana.length },
+            { k: "depois", label: "Depois", n: grupos.depois.length + grupos.semData.length },
+          ] }]}
+          contar={v => v.mostrar === "todos" ? buscados.length : v.mostrar === "depois" ? grupos.depois.length + grupos.semData.length : grupos[v.mostrar as "atrasados" | "semana"].length}
+          rotulo={n => n === 0 ? "Nenhum pedido" : `Ver ${n} ${n === 1 ? "pedido" : "pedidos"}`}
+          aoAplicar={v => setMostrar(v.mostrar)} aoFechar={() => setFiltroAberto(false)} />}
+        {!carregando && itens.length > 0 && buscados.length === 0 && <p className="far-semres">Nenhum pedido com essa busca.</p>}
+
         {carregando && <p className="far-carregando">Carregando…</p>}
 
         {!carregando && erro && (
@@ -124,8 +152,8 @@ export default function FinanceiroAReceber() {
           </div>
         )}
 
-        {([["Atrasados", grupos.atrasados], ["Próximos 7 dias", grupos.semana], ["Depois", grupos.depois], ["Sem data combinada", grupos.semData]] as [string, Item[]][])
-          .filter(([, l]) => l.length > 0)
+        {([["Atrasados", grupos.atrasados, "atrasados"], ["Próximos 7 dias", grupos.semana, "semana"], ["Depois", grupos.depois, "depois"], ["Sem data combinada", grupos.semData, "depois"]] as [string, Item[], string][])
+          .filter(([, l, k]) => l.length > 0 && (mostrar === "todos" || mostrar === k))
           .map(([titulo, lista]) => (
             <section key={titulo} className="far-grupo">
               {/* "Atrasados" e "Próximos 7 dias" já têm o valor no card de cima: não repete */}
@@ -236,6 +264,14 @@ export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: 
 }
 
 const CSS = `
+  /* (24/10) busca + filtro da lateral */
+  .far-bb { display: flex; gap: 8px; align-items: center; }
+  .far-busca { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; height: 48px; background: var(--ui-branco); border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 0 12px; color: var(--ui-texto-3); box-sizing: border-box; }
+  .far-busca input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: none; }
+  .far-busca input::-webkit-search-cancel-button { display: none; }
+  .far-busca button { border: 0; background: none; color: var(--ui-texto-3); display: flex; padding: 6px; cursor: pointer; }
+  .far-semres { text-align: center; color: var(--ui-texto-2); font-size: 14px; margin: 8px 0; }
+
   .far-root { font-family: var(--font-base); }
   /* 10/10: mesma largura de conteúdo de Transações (antes 760px, em uma coluna estreita no PC) */
   .far-wrap { max-width: 980px; margin: 0 auto; padding: 22px 0 96px; display: flex; flex-direction: column; gap: 20px; }
