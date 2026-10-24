@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
-import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar, type Horario } from "@/components/loja/EditoresLoja";
+import { EXEMPLO_DESCRICAO, EditorHorario, type Horario } from "@/components/loja/EditoresLoja";
 import { useNavigate } from "react-router-dom";
-import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, Camera } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, Camera, PixLogo, Money, CreditCard, Storefront, Moped } from "@phosphor-icons/react";
+import ListaChaves from "@/components/loja/ListaChaves";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { useProfile, refreshProfile } from "@/hooks/useProfile";
@@ -10,7 +11,6 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import Janelinha from "@/components/financeiro/Folha";
 import Destaque from "@/components/Destaque";
 import { marcarPagamentoConferido } from "@/lib/primeirosPassos";
-import { criarNotificacaoPessoal } from "@/lib/notificacoesUsuario";
 import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 import { Botao, avisar } from "@/components/base";
@@ -18,7 +18,7 @@ import { LojaProntaCartao } from "@/components/loja/LojaPronta";
 import PreviaTopoCardapio, { type DadosPrevia } from "@/components/cardapio/PreviaTopoCardapio";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { definirSaldoInicial } from "@/lib/caixa";
-import { mascaraBRL, lerBRL } from "@/lib/moeda";
+import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
  * 7 passos (13/10: + "Pagamento e entrega"); os que dá pra preencher abrem numa janelinha que sobe de baixo, sem sair da tela:
@@ -176,18 +176,17 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
 
   const I = (C: any) => <C size={20} weight="regular" />;
   const passos: { feito: boolean; ic: ReactNode; t: string; s: string; abrir: () => void }[] = [
-    { feito: true, ic: I(Check), t: "Criar sua conta", s: "Pronto! Boas-vindas ao Doonly", abrir: () => {} },
-    { feito: estado.logo, ic: I(ImageSquare), t: "Colocar o logo da loja", s: "Ou use a sua foto de perfil", abrir: () => setFolha("logo") },
-    { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Sobre a sua confeitaria", s: "Uma frase no topo do cardápio", abrir: () => setFolha("descricao") },
-    { feito: estado.endereco, ic: I(MapPin), t: "Endereço da loja", s: "Pra calcular a entrega", abrir: () => setFolha("endereco") },
-    { feito: estado.horario, ic: I(Clock), t: "Horário de funcionamento", s: "Mostra \"Aberto agora\" no cardápio", abrir: () => setFolha("horario") },
-    { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga e recebe", abrir: () => abrirPasso("pagamento") },
+    // (23/10) "Criar sua conta" saiu (já está feito e não é configurar o cardápio); nomes curtos que cabem inteiros no celular
+    { feito: estado.logo, ic: I(ImageSquare), t: "Logo da loja", s: "No topo do cardápio", abrir: () => setFolha("logo") },
+    { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Sobre a confeitaria", s: "Uma frase sobre você", abrir: () => setFolha("descricao") },
+    { feito: estado.endereco, ic: I(MapPin), t: "Endereço", s: "Para calcular a entrega", abrir: () => setFolha("endereco") },
+    { feito: estado.horario, ic: I(Clock), t: "Horário", s: "Aberto agora no cardápio", abrir: () => setFolha("horario") },
+    { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga", abrir: () => abrirPasso("pagamento") },
     { feito: estado.caixa, ic: I(Coins), t: "Saldo do caixa", s: "Quanto tem em caixa hoje", abrir: () => setFolha("caixa") },
-    // (13/10) quando só falta o produto, o texto chama pro cardápio ir pro ar
-    { feito: estado.produto, ic: I(Basket), t: "Cadastrar um produto", s: "", abrir: () => navigate("/produtos") },
+    { feito: estado.produto, ic: I(Basket), t: "Primeiro produto", s: "", abrir: () => navigate("/produtos") },
   ];
   const ultimoQueFalta = passos.filter(p => !p.feito).length === 1;
-  passos[passos.length - 1].s = ultimoQueFalta ? "Falta só isso pro cardápio ir pro ar" : "Seu primeiro doce no cardápio";
+  passos[passos.length - 1].s = ultimoQueFalta ? "Falta só isso" : "Seu primeiro doce";
   const feitos = passos.filter(p => p.feito).length;
   const atual = passos.findIndex(p => !p.feito);
   const colunas = largo && local === "inicio";
@@ -201,13 +200,13 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         <div className="ppb-topo">
           <img src="/Sistema/banner-passos.webp" alt="" aria-hidden="true" className="ppb-img" />
           <b className="ppb-t">{faltam === 1 ? "Falta só 1 passo" : "Seu cardápio quase no ar"}</b>
-          <small className="ppb-sub">{faltam === 1 ? "Pro cardápio ir pro ar" : `Faltam ${faltam} passos`} · {feitos} de {passos.length} prontos</small>
+          <small className="ppb-sub">{feitos === 0 ? `${passos.length} passos rápidos, uns 5 minutos` : `${feitos} de ${passos.length} prontos`}</small>
           <div className="ppb-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
         </div>
         <div className="ppb-at" ref={atRef}>
           <span className="ppb-n" aria-hidden="true">{atual + 1}</span>
           <span className="ppb-tx"><b>{p.t}</b><small>{p.s}</small></span>
-          <button type="button" className="ppb-btn" ref={btnRef} onClick={p.abrir}>{feitos <= 1 ? "Começar" : "Fazer agora"}</button>
+          <button type="button" className="ppb-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}</button>
           {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto pra vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
         </div>
         {verTodos && <div className="ppb-lista">{passos.map((q, i) => i === atual ? null : (
@@ -235,7 +234,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       {(() => {
         const cab = <>
           <b className="pp-t">Primeiros passos</b>
-          <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 passo pra abrir o cardápio." : `Faltam ${passos.length - feitos} passos pra abrir o cardápio.`}</p>
+          <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 passo para abrir o cardápio." : `Faltam ${passos.length - feitos} passos para abrir o cardápio.`}</p>
           <div className="pp-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
         </>;
         const item = (p: typeof passos[number], i: number) => i === atual ? (
@@ -244,7 +243,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
               <span className="pp-ic pp-ic--at">{p.ic}<i className="pp-n">{i + 1}</i></span>
               <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
             </div>
-            <button type="button" className="pp-btn" ref={btnRef} onClick={p.abrir}>{feitos <= 1 ? "Começar" : "Fazer agora"}</button>
+            <button type="button" className="pp-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}</button>
             {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto pra vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
           </div>
         ) : (
@@ -275,7 +274,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
 }
 
 
-const PAGA: [string, string][] = [["pix", "Pix"], ["dinheiro", "Dinheiro"], ["credito", "Crédito"], ["debito", "Débito"]];
+const PAGA: [string, string][] = [["pix", "Pix"], ["dinheiro", "Dinheiro"], ["credito", "Cartão de crédito"], ["debito", "Cartão de débito"]];
 
 /**
  * (13/10) Passo 5: só as opções, já vindo tudo marcado (ela desmarca o que não usa).
@@ -284,7 +283,9 @@ const PAGA: [string, string][] = [["pix", "Pix"], ["dinheiro", "Dinheiro"], ["cr
 function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const [paga, setPaga] = useState<string[]>(PAGA.map(([k]) => k));
   const [entrega, setEntrega] = useState<string[]>(["retirada", "entrega_propria"]);
-  const [taxaAtual, setTaxaAtual] = useState(0);
+  // (23/10) a taxa da entrega própria já fica aqui (antes ela só descobria depois, por um aviso)
+  const [taxa, setTaxa] = useState("");
+  const [porBairro, setPorBairro] = useState(false);
   const [carregou, setCarregou] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -298,7 +299,8 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
       const fe: string[] = Array.isArray(d.formas_entrega) ? d.formas_entrega : [];
       if (fp.length && !(fp.length === 1 && fp[0] === "pix")) setPaga(fp);
       if (fe.length && !(fe.length === 1 && fe[0] === "retirada")) setEntrega(fe);
-      setTaxaAtual(Number(d.valor_entrega_propria) > 0 || (Array.isArray(d.entrega_por_bairro) && d.entrega_por_bairro.length) ? 1 : 0);
+      setTaxa(textoBRL(Number(d.valor_entrega_propria) || 0));
+      setPorBairro(Array.isArray(d.entrega_por_bairro) && d.entrega_por_bairro.length > 0);
       setCarregou(true);
     }, () => { if (vivo) setCarregou(true); });
     return () => { vivo = false; };
@@ -314,37 +316,32 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const salvar = async () => {
     if (!pronto) return;
     setSalvando(true); setErro("");
-    const { error } = await supabase.from("profiles").update({ formas_pagamento: paga, formas_entrega: entrega }).eq("id", uid);
+    const campos: Record<string, unknown> = { formas_pagamento: paga, formas_entrega: entrega };
+    if (entrega.includes("entrega_propria") && !porBairro) campos.valor_entrega_propria = lerBRL(taxa || "0");
+    const { error } = await supabase.from("profiles").update(campos).eq("id", uid);
     setSalvando(false);
     if (error) { setErro(erroDeConexao(error) ? SEM_INTERNET : "Não foi possível salvar agora. Tente de novo."); return; }
     marcarPagamentoConferido(uid);
-    if (entrega.includes("entrega_propria") && !taxaAtual) {
-      criarNotificacaoPessoal({ tipo: "aviso", titulo: "Defina a taxa de entrega", mensagem: "Você marcou entrega. Enquanto não tiver taxa, o cardápio mostra entrega grátis.", link: "/checkout-config", chave: "taxa_entrega_pendente" }).catch(() => {});
-    }
     onSalvo();
   };
-  const opc = (on: boolean, rot: string, fn: () => void) => (
-    <button type="button" key={rot} className={on ? "on" : ""} aria-pressed={on} onClick={fn}><i>{on && <Check size={13} weight="bold" />}</i>{rot}</button>
-  );
+  const ICONE_PAGA: Record<string, typeof PixLogo> = { pix: PixLogo, dinheiro: Money, credito: CreditCard, debito: CreditCard };
+  const SUB_PAGA: Record<string, string> = { pix: "Na hora, sem taxa", dinheiro: "Na entrega ou na retirada", credito: "Na maquininha", debito: "Na maquininha" };
+  const campoTaxa = porBairro
+    ? <p className="ppf-p-taxa-b">Taxa por bairro, em Minha loja</p>
+    : <label className="ppf-p-taxa"><span><b>Taxa de entrega</b><small>Zero para grátis</small></span>
+        <span className="ppf-p-taxa-in"><em>R$</em><input inputMode="numeric" autoComplete="off" placeholder="0,00" value={taxa} aria-label="Taxa de entrega em reais"
+          onChange={e => setTaxa(mascaraBRL(e.target.value))} /></span></label>;
   return (
     <Janelinha foco titulo="Pagamento e entrega" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="pagamento" />
-      <p className="ppf-l ppf-h-tit">Como o cliente paga?</p>
-      <div className="ppf-p-opc">{PAGA.map(([k, n]) => opc(paga.includes(k), n, () => trocarPaga(k)))}</div>
-      {/* (15/10) retirada e entrega em linhas, igual ao endereço e ao horário */}
-      <p className="ppf-l ppf-h-tit">Como ele recebe?</p>
-      <div className="ppf-mos ppf-mos--chk">
-        {([
-          ["retirada", "Retirada", "O cliente busca no seu endereço", entrega.includes("retirada")],
-          ["entrega", "Entrega", "Você leva até o cliente", temEntrega],
-        ] as const).map(([k, t, sub, on]) => (
-          <button type="button" role="checkbox" aria-checked={on} key={k} className={on ? "on" : ""} onClick={() => trocarEntrega(k)}>
-            <i aria-hidden="true">{on && <Check size={13} weight="bold" />}</i><span><b>{t}</b><small><em>{sub}</em></small></span>
-          </button>
-        ))}
-      </div>
-      <p className="ppf-p-dica">Desmarque o que você não usa.</p>
+      {/* (23/10) lista com chave, igual aos apps de delivery (antes: caixinhas rosa) */}
+      <ListaChaves titulo="Como o cliente paga" id="pp-paga" itens={PAGA.map(([k, n]) => ({ chave: k, Ic: ICONE_PAGA[k], rotulo: n, sub: SUB_PAGA[k], on: paga.includes(k), aoTocar: () => trocarPaga(k) }))} />
+      <ListaChaves titulo="Como o cliente recebe" id="pp-recebe" itens={[
+        { chave: "retirada", Ic: Storefront, rotulo: "Retirada no local", sub: "Busca no seu endereço", on: entrega.includes("retirada"), aoTocar: () => trocarEntrega("retirada") },
+        { chave: "entrega", Ic: Moped, rotulo: "Entrega própria", sub: "Você leva até o cliente", on: temEntrega, aoTocar: () => trocarEntrega("entrega"), depois: campoTaxa },
+      ]} />
+      <p className="ppf-p-dica">Motoboy e Uber Flash ficam em Minha loja.</p>
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
   );
@@ -621,7 +618,8 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
     const t = window.setTimeout(() => setBusca(end.cidade.trim() && (achou || manual) ? { rua: end.rua.trim(), numero: end.numero.trim(), cidade: end.cidade.trim(), estado: end.estado.trim() } : null), 700);
     return () => window.clearTimeout(t);
   }, [end.rua, end.numero, end.cidade, end.estado, achou, manual]);
-  const selo = !busca ? "Digite o CEP pra achar sua loja" : mostrar === "nada" ? "Endereço escondido no cardápio" : [mostrar === "completo" ? end.bairro.trim() : "", cidadeUf].filter(Boolean).join(" · ");
+  const ruaNum = [end.rua.trim(), end.numero.trim()].filter(Boolean).join(", ");
+  const selo = !busca ? "" : mostrar === "nada" ? "O endereço não aparece no cardápio" : mostrar === "completo" ? ([ruaNum, end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf) : cidadeUf;
   const campo = (k: keyof typeof end, rotulo: string, ph = "", extra: any = {}) => (
     <div className="ppf-f"><label className="ppf-l" htmlFor={`pp-${k}`}>{rotulo}</label>
       <input id={`pp-${k}`} className="ppf-in" autoComplete="off" value={end[k]} placeholder={ph} onChange={e => setEnd(x => ({ ...x, [k]: e.target.value }))} {...extra} /></div>
@@ -630,21 +628,20 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
     <Janelinha foco titulo="Endereço da loja" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="endereco" />
-      <MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo} />
-
+      {/* (23/10) o CEP vem primeiro; o mapa só aparece depois que acha o endereço, embaixo, mostrando o que o cliente vê */}
       {!manual && (<>
-        <div className="ppf-f"><label className="ppf-l" htmlFor="pp-cep">CEP</label>
+        <div className="ppf-f ppf-e-cep">
+          <div className="ppf-e-cab"><label className="ppf-l" htmlFor="pp-cep">CEP da loja</label>{!achou && <button type="button" className="ppf-e-lnk" onClick={() => setManual(true)}>Não sei o CEP</button>}</div>
           <div className="ppf-wrap"><input id="pp-cep" className="ppf-in ppf-in--g" inputMode="numeric" autoComplete="off" value={end.cep} placeholder="00000-000" onChange={e => mudarCep(e.target.value)} />
-            {(buscando || achou) && <small className="ppf-cep">{buscando ? "Procurando…" : "✓ achamos"}</small>}</div></div>
-        {achou ? (<>
+            {(buscando || achou) && <small className={`ppf-cep${achou ? " ok" : ""}`}>{buscando ? "Procurando…" : <><Check size={14} weight="bold" aria-hidden="true" />Encontrado</>}</small>}</div></div>
+        {!achou && <p className="ppf-e-ajuda">Com o CEP, o app preenche a rua, o bairro e a cidade.</p>}
+        {achou && (<>
           <div className="ppf-e-achado">
             <span><b>{end.rua || "Rua"}</b><small>{[end.bairro, [end.cidade, end.estado].filter(Boolean).join(", ")].filter(Boolean).join(" · ")}</small></span>
             <button type="button" onClick={() => setManual(true)}>Editar</button>
           </div>
           <div className="ppf-row">{campo("numero", "Número", "Ex.: 500", { inputMode: "numeric" })}{campo("complemento", "Complemento", "Opcional")}</div>
-        </>) : (
-          <button type="button" className="ppf-e-lnk" onClick={() => setManual(true)}>Não sei o CEP</button>
-        )}
+        </>)}
       </>)}
 
       {manual && (<>
@@ -656,7 +653,14 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
       </>)}
 
       {(achou || manual) && (<>
-        <OpcoesMostrar mostrar={mostrar} onMudar={setMostrar} end={end} tituloClasse="ppf-l ppf-h-tit" />
+        <p className="ppf-l ppf-e-tit" id="pp-mostrar">O que aparece no cardápio</p>
+        <div className="ppf-seg" role="radiogroup" aria-labelledby="pp-mostrar">
+          {([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Não mostrar"]] as const).map(([v, t]) => (
+            <button type="button" role="radio" aria-checked={mostrar === v} key={v} className={mostrar === v ? "on" : ""} onClick={() => setMostrar(v)}>{t}</button>
+          ))}
+        </div>
+        <MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo} altura={124} />
+        <p className="ppf-e-ajuda ppf-e-ajuda--p">{mostrar === "nada" ? "Bom para quem atende em casa." : "É assim que o cliente vê, em Sobre a loja."}</p>
       </>)}
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
@@ -813,6 +817,27 @@ const CSS = `
   .ppf-ia-outras { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); white-space: nowrap; cursor: pointer; }
   .ppf-ia-outras:disabled { opacity: .6; }
   .ppf-d-voltar { min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
+  .ppf-e-cep { margin-top: 16px; }
+  .ppf-e-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .ppf-e-cab .ppf-l { margin: 0; }
+  .ppf-e-cab .ppf-e-lnk { min-height: 36px; margin: 0; white-space: nowrap; }
+  .ppf-e-cep .ppf-wrap { margin-top: 6px; }
+  .ppf-cep.ok { display: inline-flex; align-items: center; gap: 4px; color: #16803C; font-weight: 600; }
+  .ppf-e-ajuda { margin: 8px 2px 0; font-size: 13px; color: var(--ui-texto-2); }
+  .ppf-e-ajuda--p { font-size: 12.5px; color: var(--ui-texto-3); }
+  .ppf-e-tit { margin: 18px 2px 8px; }
+  .ppf-seg { display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(42,21,32,.06); }
+  .ppf-seg button { flex: 1; min-width: 0; min-height: 40px; padding: 0 4px; border: 0; border-radius: 9px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; cursor: pointer; }
+  .ppf-seg button.on { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: 0 1px 3px rgba(42,21,32,.10); }
+  .ppf-p-taxa { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: text; }
+  .ppf-p-taxa > span:first-child { min-width: 0; display: flex; flex-direction: column; }
+  .ppf-p-taxa b { font-size: 14px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
+  .ppf-p-taxa small { font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; }
+  .ppf-p-taxa-in { flex: none; display: flex; align-items: center; gap: 6px; width: 108px; height: 44px; padding: 0 10px; box-sizing: border-box; border: 1.5px solid var(--ui-borda-campo); border-radius: 10px; background: var(--ui-branco); }
+  .ppf-p-taxa-in:focus-within { border-color: var(--ui-rosa); }
+  .ppf-p-taxa-in em { font-style: normal; font-size: 14px; color: var(--ui-texto-3); }
+  .ppf-p-taxa-in input { width: 100%; min-width: 0; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); }
+  .ppf-p-taxa-b { margin: 0; font-size: 13px; color: var(--ui-texto-2); }
   .ppf-in--g { min-height: 52px; font-size: 17px; }
   .ppf-e-lnk { min-height: 44px; margin-top: 4px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
   .ppf-e-achado { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--ui-cinza); }
@@ -822,12 +847,6 @@ const CSS = `
   .ppf-e-achado button { flex: none; min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
   .ppf-e-aviso { margin: 12px 0 0; font-size: 13.5px; font-weight: 600; color: var(--ui-laranja); }
   .ppf-row--uf > .ppf-f:last-child { flex: 0 0 76px; }
-  .ppf-p-opc { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .ppf-p-opc button { display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 12px; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco);
-    font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; text-align: left; }
-  .ppf-p-opc button i { flex: none; width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #D7CBD0; display: flex; align-items: center; justify-content: center; color: var(--ui-branco); }
-  .ppf-p-opc button.on { border-color: var(--ui-rosa); background: #FFF5F9; font-weight: 600; }
-  .ppf-p-opc button.on i { background: var(--ui-rosa); border-color: var(--ui-rosa); }
   .ppf-p-dica { margin: 14px 0 0; font-size: 13px; color: var(--ui-texto-3); }
   .ppf-cx { display: flex; align-items: center; gap: 8px; height: 60px; padding: 0 16px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); }
   .ppf-cx:focus-within { border-color: var(--ui-rosa); }

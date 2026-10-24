@@ -134,7 +134,7 @@
 .dl-lista-salva { display: flex; align-items: center; gap: 6px; margin: 12px 4px 0; font-size: 13px; color: var(--ui-texto-2); }
 .dl-lista-salva svg { color: var(--ui-verde); }
 /* dentro da gaveta: a parte aparece sem o cartão e sem o título repetido */
-.dl-folha .dl-card, .dl-folha .ep-card { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.dl-folha .dl-card, .dl-folha .ep-card { margin: 0; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; } /* (23/10) !important: o cartoesConfig.css também usa */
 .dl-folha .dl-cab, .dl-folha .ep-cab { display: none; }
 .dl-folha .ep { padding: 0; max-width: none; }
 .ui-gaveta:has(.dl-folha) { width: 100vw; border-radius: 0; }
@@ -167,3 +167,4 @@
 .dl-emb .dl-li-acao { cursor: pointer; }
 .dl-emb { padding-top: 4px; }
 .dl-emb .ml-rank { flex: none; width: 24px; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); text-align: center; }
+.dl-bloco > .lch:first-child .lch-t { margin-top: 0; }

@@ -2,7 +2,9 @@
 // O que salva continua igual (salva sozinho 2s depois de mexer; cupons na tabela loja_cupons).
 // Mudou o visual: campos e botões do app, cupom novo/editar numa janela, convite pro PRO sem borrão.
 import CampoData from '@/components/CampoData'
-import { CalendarBlank, CaretRight, Check, Crown, PencilSimple, CurrencyCircleDollar, Plus, QrCode, Tag, Ticket, Truck, UserPlus, Users, Wallet, WarningCircle } from "@phosphor-icons/react"
+import { CalendarBlank, CaretRight, Check, Crown, PencilSimple, CurrencyCircleDollar, Plus, QrCode, Tag, Ticket, Truck, UserPlus, Users, Wallet, WarningCircle, PixLogo, Money, CreditCard, Storefront, Moped, Motorcycle, Car, ChatCircleText } from "@phosphor-icons/react"
+import type { Icon } from "@phosphor-icons/react"
+import ListaChaves from "@/components/loja/ListaChaves"
 import { normalizarChave, problemaNaChave, tipoDaChave, type TipoChave } from '@/lib/pix'
 import { cupomDisponivel, MAX_CUPONS_ATIVOS } from '@/lib/cupons'
 import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
@@ -25,10 +27,13 @@ const PAGAMENTOS = [
   // 02/10: só as 4 formas (as mesmas que o cliente vê na finalização). As antigas continuam salvas, mas não aparecem.
 ]
 
+const ICONE_PAG: Record<string, Icon> = { pix: PixLogo, dinheiro: Money, credito: CreditCard, debito: CreditCard }
+const ICONE_ENT: Record<string, Icon> = { retirada: Storefront, entrega_propria: Moped, motoboy: Motorcycle, uber_flash: Car, combinar: ChatCircleText }
+
 const ENTREGAS = [
-  { key: 'retirada',        label: 'Retirada no local', sub: 'O cliente busca no seu endereço' },
+  { key: 'retirada',        label: 'Retirada no local', sub: 'Busca no seu endereço' },
   { key: 'entrega_propria', label: 'Entrega própria', sub: 'Você leva até o cliente' },
-  { key: 'motoboy',         label: 'Motoboy', sub: 'Um entregador leva pra você' },
+  { key: 'motoboy',         label: 'Motoboy', sub: 'Um entregador leva para você' },
   { key: 'uber_flash',      label: 'Uber Flash', sub: 'Você chama pelo app da Uber' },
   { key: 'combinar',        label: 'Combinar pelo WhatsApp', sub: 'Vocês acertam na conversa' },
 ]
@@ -337,12 +342,6 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const Cabeca = ({ Ic, titulo, apoio, acao }: { Ic: typeof Wallet; titulo: string; apoio?: string; acao?: React.ReactNode }) => (
     <div className="ep-cab"><span className="ep-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio} acao={acao}>{titulo}</Titulo></div>
   )
-  // (15/10) mesmo visual dos primeiros passos: caixinha à esquerda, nome e uma linha explicando
-  const Marcar = ({ on, rotulo, sub, aoTocar }: { on: boolean; rotulo: string; sub?: string; aoTocar: () => void }) => (
-    <button type="button" role="checkbox" aria-checked={on} className={on ? "on" : ""} onClick={aoTocar}>
-      <i aria-hidden="true">{on && <Check size={13} weight="bold" />}</i><span><b>{rotulo}</b>{sub && <small><em>{sub}</em></small>}</span>
-    </button>
-  )
   const Chave = ({ on, rotulo, apoio, aoMudar }: { on: boolean; rotulo: string; apoio?: string; aoMudar: (v: boolean) => void }) => (
     <button type="button" role="switch" aria-checked={on} className="ep-sw-l" onClick={() => aoMudar(!on)}>
       <span className="ep-sw-tx"><b>{rotulo}</b>{apoio && <small>{apoio}</small>}</span><span className="ep-sw" aria-hidden="true" />
@@ -384,11 +383,10 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
               {formasPagamento.includes('dinheiro') && exibirCampoTroco && <small className="ep-res-obs">Pergunta o troco no dinheiro</small>}
             </div>
           ) : (<>
-          <div className="ppf-mos ppf-mos--chk">
-            {PAGAMENTOS.map(p => <Marcar key={p.key} on={formasPagamento.includes(p.key)} rotulo={p.label} sub={p.sub} aoTocar={() => togglePagamento(p.key)} />)}
-          </div>
+          {/* (23/10) lista com chave, igual ao passo "Pagamento e entrega" (antes: caixinhas rosa) */}
+          <ListaChaves itens={PAGAMENTOS.map(p => ({ chave: p.key, Ic: ICONE_PAG[p.key] || Wallet, rotulo: p.label, sub: p.sub, on: formasPagamento.includes(p.key), aoTocar: () => togglePagamento(p.key) }))} />
           {formasPagamento.includes('dinheiro') && (
-            <Chave on={exibirCampoTroco} rotulo='Perguntar "Troco pra quanto?"' apoio="Quando o cliente pagar em dinheiro" aoMudar={setExibirCampoTroco} />
+            <Chave on={exibirCampoTroco} rotulo='Perguntar "Troco para quanto?"' apoio="Quando o cliente pagar em dinheiro" aoMudar={setExibirCampoTroco} />
           )}
           </>)}
         </section>}
@@ -463,9 +461,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
               ))}
             </div>
           ) : (<>
-          <div className="ppf-mos ppf-mos--chk">
-            {ENTREGAS.map(e => <Marcar key={e.key} on={formasEntrega.includes(e.key)} rotulo={e.label} sub={e.sub} aoTocar={() => toggleEntrega(e.key)} />)}
-          </div>
+          <ListaChaves itens={ENTREGAS.map(e => ({ chave: e.key, Ic: ICONE_ENT[e.key] || Truck, rotulo: e.label, sub: e.sub, on: formasEntrega.includes(e.key), aoTocar: () => toggleEntrega(e.key) }))} />
           {formasEntrega.includes('entrega_propria') && (
             <div className="ep-taxa">
               <Campo rotulo="Taxa da entrega própria" prefixo="R$" inputMode="decimal" placeholder="0,00" value={valorEntregaPropria}

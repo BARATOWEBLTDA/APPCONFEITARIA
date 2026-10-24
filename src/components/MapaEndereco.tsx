@@ -39,7 +39,7 @@ async function localizar(b: NonNullable<BuscaMapa>, soCidade: boolean): Promise<
   return p3 ? { p: p3, rua: false } : null;
 }
 
-export default function MapaEndereco({ busca, soCidade, selo }: { busca: BuscaMapa; soCidade: boolean; selo: string }) {
+export default function MapaEndereco({ busca, soCidade, selo, altura }: { busca: BuscaMapa; soCidade: boolean; selo: string; altura?: number }) {
   const caixa = useRef<HTMLDivElement>(null);
   const mapa = useRef<LMapa | null>(null);
   const pino = useRef<Marker | null>(null);
@@ -87,7 +87,7 @@ export default function MapaEndereco({ busca, soCidade, selo }: { busca: BuscaMa
   }, [pronto, chave]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="mpe" aria-hidden="true">
+    <div className="mpe" aria-hidden="true" style={altura ? { height: altura, marginTop: 10 } : undefined}>
       <div ref={caixa} className="mpe-mapa" />
       {selo && <span className="mpe-selo">{selo}</span>}
       <style>{`
