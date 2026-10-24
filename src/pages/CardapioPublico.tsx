@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { trocarFaviconPelaLoja, voltarFaviconDoApp } from '@/lib/faviconLoja'
 import { iniciarPixel } from '@/lib/facebookPixel'
 import { explicarErro } from '@/lib/erros'
 import { SeloVerificado } from '@/components/cardapio/SeloVerificado'
@@ -245,6 +246,8 @@ function CardapioContent() {
 
   const [design, setDesign] = useState<DesignSettings | null>(null)
   useClasseTema(design?.tema) // (18/10) liga os enfeites do tema (Natal) na página
+  // (23/10) ao sair do cardápio, a aba volta a ter o ícone e o nome do app
+  useEffect(() => { const t = document.title; return () => { voltarFaviconDoApp(); document.title = t } }, [])
   const [config, setConfig] = useState<Configuracoes | null>(null)
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [isPro, setIsPro] = useState(false)
@@ -348,7 +351,9 @@ function CardapioContent() {
       const pageUrl   = window.location.href
       const ogImage   = (design as any).og_image_url || design.logo_url || ''
 
-      document.title = pageTitle
+      // (23/10) aba do navegador: "Cardápio Confeitaria Doce Formiga" e a logo da loja no lugar do ícone do Doonly
+      document.title = `Cardápio ${String(design.nome_loja || '').trim() || 'online'}`
+      trocarFaviconPelaLoja(design.logo_url)
       setMeta('og:title',       pageTitle)
       setMeta('og:description', pageDesc)
       setMeta('og:url',         pageUrl)

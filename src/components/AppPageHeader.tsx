@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   ArrowSquareOut, Bell, Cake, CalendarDots, Calculator, Camera, CaretLeft, ChartLineUp, Crown, CurrencyDollar, Info, Invoice, Lightbulb,
@@ -57,6 +57,14 @@ const ICONE_DO_EMOJI: Record<string, Icon> = {
 }
 
 export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, infoComo, infoTour, rightActions, onBack, voltar, centro }: AppPageHeaderProps) {
+  // (23/10) nome da aba do navegador: o título da tela ("Pedidos · Doonly"), no lugar de "Doonly - Confeitaria Inteligente" em todas
+  useEffect(() => {
+    const t = String(title || '').trim()
+    if (!t) return
+    const antes = document.title
+    document.title = `${t} · Doonly`
+    return () => { document.title = antes }
+  }, [title])
   const navegar = useNavigate()
   const voltarCel = () => { if (((window.history.state as any)?.idx ?? 0) > 0) navegar(-1); else if (voltar) navegar(voltar) }
   const [mostrarInfo, setMostrarInfo] = useState(false)

@@ -445,8 +445,9 @@ export default function Inicio() {
       const inicio7d = new Date(hoje); inicio7d.setDate(hoje.getDate() - 7);
       const inicio14d = new Date(hoje); inicio14d.setDate(hoje.getDate() - 14);
       const inicio30d = new Date(hoje); inicio30d.setDate(hoje.getDate() - 30);
-      // (23/10) o gráfico compara com o período anterior: busca 60 dias (os 30 do gráfico e os 30 de antes)
-      const inicio60d = new Date(hoje); inicio60d.setDate(hoje.getDate() - 59);
+      // (23/10) o gráfico compara com o período anterior: busca 62 dias (os 30 do gráfico e os 30 de antes;
+      // no "Este mês", o mês passado inteiro desde o dia 1)
+      const inicio60d = new Date(hoje); inicio60d.setDate(hoje.getDate() - 61);
       const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
       const [
@@ -644,13 +645,13 @@ export default function Inicio() {
       .sort((a, b) => a.dias - b.dias);
   };
 
-  /** Série diária dos últimos 60 dias (do mais antigo para hoje): quanto entrou no caixa em cada dia. */
+  /** Série diária dos últimos 62 dias (do mais antigo para hoje): quanto entrou no caixa em cada dia. */
   const construirChart60d = (entradas: { valor: number; data: string }[]): ChartPoint[] => {
     const hoje = new Date();
     const mapa: Record<string, number> = {};
     entradas.forEach(e => { mapa[e.data] = (mapa[e.data] || 0) + e.valor; });
     const result: ChartPoint[] = [];
-    for (let i = 59; i >= 0; i--) {
+    for (let i = 61; i >= 0; i--) {
       const d = new Date(hoje);
       d.setDate(hoje.getDate() - i);
       const iso = dataISO(d);

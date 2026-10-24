@@ -655,6 +655,7 @@ export default function NovaVenda() {
     : situacaoPag === 'na_entrega' ? (ehEntrega ? 'Paga na entrega' : 'Paga na retirada')
     : situacaoPag === 'fiado' ? `Vai pagar depois${dataPrevistaPagamento ? ` · até ${dataDoCampo(dataPrevistaPagamento, true)}` : ''}`
     : 'Falta escolher'
+  const pagamentoNoResumo = !!situacaoPag && etapa >= etapas.indexOf('Pagamento') + 1
   const enderecoTexto = [[enderecoRua, enderecoNumero].filter(Boolean).join(', '), enderecoBairro].filter(Boolean).join(' · ')
   // subtítulo (10/10): no passo 1 explica a escolha; depois mostra o tipo escolhido; no fim, que a venda foi registrada
   const subtituloTopo = sucessoAberto ? 'Venda registrada' : etapa === 1 || !tipo ? 'Encomenda ou pronta entrega' : tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'
@@ -1115,10 +1116,12 @@ export default function NovaVenda() {
             etapa < 3 ? 'Falta escolher'
             : tipo === 'encomenda' || buscaDepois ? (dataEntrega ? dataLonga(dataEntrega, horarioEntrega) : 'Falta escolher')
             : jaLevou ? 'Já levou' : ehEntrega ? 'Entrega' : 'Retirada'}</b></p>
-          <p><span>Pagamento</span><b className={!situacaoPag ? 'falta' : situacaoPag === 'total' ? 'ok' : 'lar'}>{textoPagamento}</b></p>
+          {/* (23/10) igual a Cliente e Entrega: antes de chegar no passo Pagamento, "Falta escolher". A pronta entrega já vem
+              marcada como paga no passo, e o resumo mostrava "Pago · Pix" logo depois de escolher o tipo, sem ela ter escolhido nada */}
+          <p><span>Pagamento</span><b className={!pagamentoNoResumo ? 'falta' : situacaoPag === 'total' ? 'ok' : 'lar'}>{pagamentoNoResumo ? textoPagamento : 'Falta escolher'}</b></p>
         </div>
         <p className="nv3-lado-tot"><span>Total</span><b>{rs(total)}</b></p>
-        {situacaoPag && situacaoPag !== 'total' && itens.length > 0 && <p className="nv3-lado-falta"><span>Falta receber</span><b>{rs(falta)}</b></p>}
+        {pagamentoNoResumo && situacaoPag !== 'total' && itens.length > 0 && <p className="nv3-lado-falta"><span>Falta receber</span><b>{rs(falta)}</b></p>}
         <div className="nv3-lado-bts">
           {isUltima
             ? <Botao cheio onClick={finalizarVenda} carregando={salvando}>Registrar venda</Botao>

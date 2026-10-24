@@ -24,14 +24,31 @@ const diaLongo = (iso?: string, dia?: string) => {
   return `${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`;
 };
 
+type Periodo = 7 | 30 | "mes";
+const MESES_LONGOS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const isoDe = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
 export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
-  const [periodo, setPeriodo] = useState<7 | 30>(30);
+  const [periodo, setPeriodo] = useState<Periodo>(30);
 
   const g = useMemo(() => {
-    const atual = dados.slice(-periodo);
-    // o período anterior: os dias logo antes (se faltar dia, conta como zero)
-    const antes = dados.slice(Math.max(0, dados.length - 2 * periodo), dados.length - periodo);
-    const faltam = periodo - antes.length;
+    let atual: Ponto[], antes: Ponto[];
+    const hoje = new Date();
+    if (periodo === "mes") {
+      // (23/10) "Este mês": do dia 1 até hoje, comparado com os mesmos dias do mês passado (até o último dia dele)
+      const dia = hoje.getDate();
+      const iniMes = isoDe(new Date(hoje.getFullYear(), hoje.getMonth(), 1));
+      const iniAnt = isoDe(new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1));
+      const fimAnt = isoDe(new Date(hoje.getFullYear(), hoje.getMonth() - 1, Math.min(dia, new Date(hoje.getFullYear(), hoje.getMonth(), 0).getDate())));
+      atual = dados.filter(p => (p.iso || "") >= iniMes);
+      antes = dados.filter(p => (p.iso || "") >= iniAnt && (p.iso || "") <= fimAnt);
+    } else {
+      atual = dados.slice(-periodo);
+      // o período anterior: os dias logo antes
+      antes = dados.slice(Math.max(0, dados.length - 2 * periodo), dados.length - periodo);
+    }
+    // alinha pelo fim: se faltar dia no anterior, os primeiros contam como zero
+    const faltam = atual.length - antes.length;
     let a = 0, b = 0;
     const serie = atual.map((p, i) => {
       a += p.valor || 0;
@@ -41,8 +58,15 @@ export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
     });
     const total = a, totalAntes = b;
     const pct = totalAntes > 0 ? Math.round(((total - totalAntes) / totalAntes) * 100) : null;
-    return { serie, total, totalAntes, pct };
+    const hojeValor = dados.find(p => p.iso === isoDe(hoje))?.valor ?? dados[dados.length - 1]?.valor ?? 0;
+    return { serie, total, totalAntes, pct, hojeValor };
   }, [dados, periodo]);
+
+  const mes = MESES_LONGOS[new Date().getMonth()];
+  const mesAnt = MESES_LONGOS[(new Date().getMonth() + 11) % 12];
+  const txt = periodo === "mes"
+    ? { titulo: `Recebido em ${mes}`, compara: `em relação ao mesmo período de ${mesAnt}`, nada: `Nada recebido no mesmo período de ${mesAnt}`, legA: "Este mês", legB: "Mês passado", dica: "Mês passado" }
+    : { titulo: `Recebido nos últimos ${periodo} dias`, compara: `em relação aos ${periodo} dias anteriores`, nada: `Nada recebido nos ${periodo} dias anteriores`, legA: `Últimos ${periodo} dias`, legB: `${periodo} dias anteriores`, dica: "Período anterior" };
 
   const Dica = ({ active, payload }: any) => {
     if (!active || !payload?.length) return null;
@@ -51,39 +75,42 @@ export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
       <div className="grf-dica">
         <small>{diaLongo(p.iso, p.dia)}</small>
         <b>{brl(p.acum)}</b>
-        <span>Período anterior: {brl(p.antes)}</span>
+        <span>{txt.dica}: {brl(p.antes)}</span>
       </div>
     );
   };
 
-  const { serie, total, totalAntes, pct } = g;
+  const { serie, total, totalAntes, pct, hojeValor } = g;
+  const n = serie.length;
+  const intervalo = n > 10 ? Math.ceil(n / 7) - 1 : 0;
   return (
     <div className="grf">
       <div className="grf-topo">
         <div className="grf-tot">
-          <small>Recebido nos últimos {periodo} dias</small>
+          <small>{txt.titulo}</small>
           <b>{brl(total)}</b>
           {pct !== null ? (
             <span className={pct >= 0 ? "sobe" : "desce"}>
-              {pct >= 0 ? "▲" : "▼"} {Math.abs(pct).toLocaleString("pt-BR")}% <em>em relação aos {periodo} dias anteriores</em>
+              {pct >= 0 ? "▲" : "▼"} {Math.abs(pct).toLocaleString("pt-BR")}% <em>{txt.compara}</em>
             </span>
           ) : (
-            <span><em>{total > 0 ? `Nada recebido nos ${periodo} dias anteriores` : ""}</em></span>
+            <span><em>{total > 0 ? txt.nada : ""}</em></span>
           )}
+          <span className="grf-hoje"><em>Hoje:</em> {brl(hojeValor)}</span>
         </div>
         <div className="grf-seg" role="tablist" aria-label="Período do gráfico">
-          {([7, 30] as const).map(n => (
-            <button key={n} type="button" role="tab" aria-selected={periodo === n} onClick={() => setPeriodo(n)}>{n} dias</button>
+          {([[7, "7 dias"], [30, "30 dias"], ["mes", "Este mês"]] as [Periodo, string][]).map(([k, rot]) => (
+            <button key={String(k)} type="button" role="tab" aria-selected={periodo === k} onClick={() => setPeriodo(k)}>{rot}</button>
           ))}
         </div>
       </div>
       <div className="grf-leg" aria-hidden="true">
-        <span><i className="a" />Últimos {periodo} dias</span>
-        <span><i className="b" />{periodo} dias anteriores</span>
+        <span><i className="a" />{txt.legA}</span>
+        <span><i className="b" />{txt.legB}</span>
       </div>
-      <div className="grf-g" role="img" aria-label={`Recebido nos últimos ${periodo} dias: ${brl(total)}. Nos ${periodo} dias anteriores: ${brl(totalAntes)}.`}>
+      <div className="grf-g" role="img" aria-label={`${txt.titulo}: ${brl(total)}. ${txt.legB}: ${brl(totalAntes)}.`}>
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 600, height: 210 }}>
-          <AreaChart key={periodo} data={serie} margin={{ top: 8, right: 18, bottom: 0, left: 0 }}>
+          <AreaChart key={String(periodo)} data={serie} margin={{ top: 8, right: 18, bottom: 0, left: 0 }}>
             <defs>
               <linearGradient id="grfArea" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--ui-rosa)" stopOpacity={0.28} />
@@ -91,7 +118,7 @@ export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
               </linearGradient>
             </defs>
             <CartesianGrid stroke="var(--ui-linha)" vertical={false} />
-            <XAxis dataKey="dia" tick={{ fontSize: 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} interval={periodo === 30 ? 4 : 0} padding={{ left: 4, right: 4 }} />
+            <XAxis dataKey="dia" tick={{ fontSize: 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} interval={intervalo} padding={{ left: 4, right: 4 }} />
             <YAxis width={78} tick={{ fontSize: 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} tickFormatter={curto} tickCount={4} allowDecimals={false} />
             <Tooltip content={<Dica />} cursor={{ stroke: "var(--ui-rosa)", strokeDasharray: "4 4" }} isAnimationActive={false} />
             <Line type="monotone" dataKey="antes" stroke="#B9AFB3" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} isAnimationActive={false} />
