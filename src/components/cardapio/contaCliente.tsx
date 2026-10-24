@@ -85,15 +85,14 @@ export function usePedidosCliente(loja: string, cliente: Cliente | null) {
   return { pedidos, carregando, buscar: () => buscar() }
 }
 
-/* ─── Entrar (4.23): o WhatsApp; quem já pediu confirma com o número de um pedido; quem nunca pediu diz o nome ─── */
+/* ─── Entrar (4.23): o WhatsApp; quem nunca pediu diz o nome. (24/10) Não pede mais o número de um pedido ─── */
 export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta: boolean; aoFechar: () => void; loja: string; cor: string; aoEntrar: (c: Cliente) => void }) {
   const [tel, setTel] = useState('')
   const [nome, setNome] = useState('')
-  const [numero, setNumero] = useState('')
-  const [etapa, setEtapa] = useState<'tel' | 'numero' | 'novo'>('tel')
+  const [etapa, setEtapa] = useState<'tel' | 'novo'>('tel')
   const [erro, setErro] = useState('')
   const [indo, setIndo] = useState(false)
-  useEffect(() => { if (aberta) { setTel(''); setNome(''); setNumero(''); setEtapa('tel'); setErro('') } }, [aberta])
+  useEffect(() => { if (aberta) { setTel(''); setNome(''); setEtapa('tel'); setErro('') } }, [aberta])
 
   // Jeito antigo (sem a função cardapio_entrar no banco): procura pelo telefone e, se for novo, pede o nome
   const entrarAntigo = async (digitos: string) => {
@@ -112,12 +111,10 @@ export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta
     const digitos = tel.replace(/\D/g, '')
     if (digitos.length < 10) { setErro('Coloque o número com DDD'); return }
     if (etapa === 'novo' && !nome.trim()) { setErro('Falta o seu nome'); return }
-    const num = parseInt(numero.replace(/\D/g, ''), 10)
-    if (etapa === 'numero' && !num) { setErro('Coloque o número de um pedido seu'); return }
     setIndo(true)
     try {
       const { data, error } = await supabase.rpc('cardapio_entrar', {
-        p_loja: loja, p_telefone: tel, p_numero: etapa === 'numero' ? num : null, p_nome: etapa === 'novo' ? nome.trim() : null,
+        p_loja: loja, p_telefone: tel, p_numero: null, p_nome: etapa === 'novo' ? nome.trim() : null,
       })
       if (error && semFuncaoNova(error)) { await entrarAntigo(digitos); setIndo(false); return }
       // (11/10) falha na consulta (sem internet, banco fora) não é "número novo"
@@ -126,8 +123,7 @@ export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta
       if (r?.status === 'ok' && r.cliente) {
         const c: Cliente = { id: r.cliente.id, nome: r.cliente.nome, telefone: r.cliente.telefone || tel, token: r.token }
         guardarCliente(loja, c); aoEntrar(c); aoFechar()
-      } else if (r?.status === 'precisa_numero') setEtapa('numero')
-      else if (r?.status === 'novo') setEtapa('novo')
+      } else if (r?.status === 'novo') setEtapa('novo')
       else setErro(r?.erro || 'Não deu para entrar agora. Tente de novo.')
     } catch (err) { setErro(explicarErro(err, 'Não deu para entrar agora. Tente de novo.')) }
     setIndo(false)
@@ -135,24 +131,17 @@ export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta
 
   const titulo = etapa === 'novo' ? 'Primeira vez por aqui' : 'Entrar'
   const texto = etapa === 'novo' ? 'Não achamos pedidos desse número. Como você se chama?'
-    : etapa === 'numero' ? 'Para sua segurança, confirme com o número de um pedido que você já fez aqui. Ele aparece na confirmação e na conversa do WhatsApp.'
     : 'Use o WhatsApp que você coloca nos pedidos. Assim você acompanha tudo por aqui.'
 
   return (
     <Janela aberta={aberta} aoFechar={aoFechar} tipo="conteudo" titulo={titulo}
-      acoes={<button type="button" className="cc-bt" style={{ background: cor }} disabled={indo} onClick={entrar}>{indo ? 'Entrando…' : etapa === 'novo' ? 'Criar e entrar' : etapa === 'numero' ? 'Entrar' : 'Continuar'}</button>} umaAcao>
+      acoes={<button type="button" className="cc-bt" style={{ background: cor }} disabled={indo} onClick={entrar}>{indo ? 'Entrando…' : etapa === 'novo' ? 'Criar e entrar' : 'Entrar'}</button>} umaAcao>
       <div className="cc-entrar">
         <p>{texto}</p>
         <Campo rotulo="WhatsApp" value={tel} inputMode="tel" autoComplete="tel" placeholder="(41) 9 9999-0000"
           onChange={e => { setTel(mascaraTel(e.target.value, true)); setEtapa('tel'); setErro('') }}
           onKeyDown={e => { if (e.key === 'Enter') entrar() }}
           erro={etapa === 'tel' && erro ? erro : undefined} />
-        {etapa === 'numero' && (
-          <Campo rotulo="Número de um pedido seu" value={numero} inputMode="numeric" placeholder="Ex.: 1049"
-            onChange={e => { setNumero(e.target.value.replace(/\D/g, '').slice(0, 9)); setErro('') }}
-            onKeyDown={e => { if (e.key === 'Enter') entrar() }}
-            erro={erro || undefined} />
-        )}
         {etapa === 'novo' && (
           <Campo rotulo="Nome" value={nome} autoComplete="name" placeholder="Como você se chama?"
             onChange={e => { setNome(e.target.value); setErro('') }}
