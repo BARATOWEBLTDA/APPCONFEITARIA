@@ -41,3 +41,17 @@
   .fl-l--sem { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "t n s" "t l s"; }
   .fl-montar { justify-self: start; font-size: 13px; }
 }
+/* (24/10) progresso das fichas + "Montar a próxima" */
+.fl-prog { display: flex; flex-direction: column; gap: 12px; margin: 0 0 12px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.fl-prog-tx { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.fl-prog-tx b { font-size: 16px; font-weight: 700; color: var(--ui-texto); }
+.fl-prog-bar { display: block; height: 8px; overflow: hidden; border-radius: 999px; background: var(--ui-cinza); }
+.fl-prog-bar i { display: block; height: 100%; border-radius: 999px; background: var(--ui-rosa); }
+.fl-prog-tx small { font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
+.fl-prog .ui-bt { width: 100%; }
+@media (min-width: 768px) {
+  .fl-prog { flex-direction: row; align-items: center; gap: 24px; padding: 18px 20px; }
+  .fl-prog-tx { flex: 1; }
+  .fl-prog-bar { max-width: 520px; }
+  .fl-prog .ui-bt { width: auto; flex: none; }
+}

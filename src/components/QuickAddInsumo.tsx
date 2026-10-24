@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { Camera, Image as ImagemIc, MagnifyingGlass, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Camera, CaretDown, Image as ImagemIc, MagnifyingGlass, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { parseNumBR } from "@/lib/numeroBR";
 
 // 13/10: "Quanto pagou" igual aos outros campos de dinheiro: digita 749 e aparece 7,49
@@ -253,6 +253,8 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const [tentouSalvar, setTentouSalvar] = useState(false);
   const [categorias, setCategorias] = useState<string[]>(CATEGORIAS_DEFAULT);
   const [verOutras, setVerOutras] = useState(() => EMB_OUTRAS.includes(form.embalagem_tipo));
+  // (24/10) marca, categoria e embalagem ficam em "Mais detalhes" (não mudam o custo)
+  const [verDetalhes, setVerDetalhes] = useState(false);
   const [usadoEm, setUsadoEm] = useState(0);
 
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -402,21 +404,20 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       {/* Foto (opcional) */}
       <input ref={galleryRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
       {recorte.janela}
-      <div className="ig-foto2">
-        <span className="ig-foto2-th">{form.imagem_url ? <img src={form.imagem_url} alt="" /> : <Camera size={26} />}</span>
-        <div className="ig-foto2-tx">
-          <b>Foto <small>essencial</small></b>
-          <div className="ig-foto2-bts">
-            <button type="button" className="ig-bt-net" disabled={buscandoImg || uploadingImg} onClick={() => handleBuscarImagem()}>
-              {buscandoImg ? <span className="ig-gira" aria-hidden="true" /> : <MagnifyingGlass size={18} weight="bold" />}
-              {buscandoImg ? "Buscando..." : "Buscar com Doo IA"}
-            </button>
-            <button type="button" className="ig-bt-cel" disabled={buscandoImg || uploadingImg} onClick={() => galleryRef.current?.click()}>
-              {uploadingImg ? <span className="ig-gira" aria-hidden="true" /> : <ImagemIc size={18} weight="bold" />}
-              Do celular
-            </button>
-          </div>
-        </div>
+      {/* (24/10) o nome primeiro, com a foto ao lado (antes a foto vinha em cima, marcada "essencial") */}
+      <div className="ig-nome">
+        <button type="button" className="ig-nome-th" aria-label={form.imagem_url ? "Trocar a foto" : "Escolher uma foto do aparelho"} disabled={uploadingImg} onClick={() => galleryRef.current?.click()}>
+          {form.imagem_url ? <img src={form.imagem_url} alt="" /> : uploadingImg ? <span className="ig-gira" aria-hidden="true" /> : <Camera size={24} />}
+        </button>
+        <Campo ref={nomeRef} rotulo="Nome" obrigatorio placeholder="Ex.: leite condensado" value={form.nome} erro={erroNome}
+          onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
+      </div>
+      <div className="ig-foto-links">
+        <button type="button" disabled={buscandoImg || uploadingImg} onClick={() => handleBuscarImagem()}>
+          {buscandoImg ? <span className="ig-gira" aria-hidden="true" /> : <MagnifyingGlass size={16} weight="bold" />}{buscandoImg ? "Buscando..." : "Buscar foto com a Doo IA"}
+        </button>
+        <span aria-hidden="true">·</span>
+        <button type="button" disabled={buscandoImg || uploadingImg} onClick={() => galleryRef.current?.click()}><ImagemIc size={16} weight="bold" />Do aparelho</button>
       </div>
       {(imagens.length > 0 || form.imagem_url) && (
         <div className="ig-foto">
@@ -445,40 +446,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           <span>A Doo IA usa o nome e a marca para achar a foto certa.</span>
         </div>, document.body)}
 
-      <Campo ref={nomeRef} rotulo="Nome" obrigatorio placeholder="Ex.: leite condensado" value={form.nome} erro={erroNome}
-        onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
-      <Campo rotulo="Marca" opcional placeholder="Ex.: Moça" value={form.marca}
-        onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} />
-      <div>
-        <p className="ig-rot">Categoria</p>
-        <div className="ig-chips ig-chips-cat">
-          {categorias.map(c => (
-            <button key={c} type="button" aria-pressed={form.categoria === c} onClick={() => setForm(f => ({ ...f, categoria: c }))}>{rotuloCategoria(c)}</button>
-          ))}
-        </div>
-      </div>
-
-      <section className="ig-compra">
-      <div className="ig-compra-cab">
-        <b>Como você compra</b>
-        <small>Para calcular quanto custa na receita</small>
-      </div>
-      <div>
-        <p className="ig-rot">Vem em</p>
-        <div className="ig-chips">
-          {EMB_PRINCIPAIS.map(o => (
-            <button key={o} type="button" aria-pressed={emb === o} onClick={() => { setVerOutras(false); setForm(f => ({ ...f, embalagem_tipo: o })); }}>{o}</button>
-          ))}
-          <button type="button" aria-pressed={EMB_OUTRAS.includes(emb)} aria-expanded={verOutras || EMB_OUTRAS.includes(emb)} onClick={() => setVerOutras(v => !v)}>Outra</button>
-        </div>
-        {(verOutras || EMB_OUTRAS.includes(emb)) && (
-          <div className="ig-chips ig-outras">
-            {EMB_OUTRAS.map(o => (
-              <button key={o} type="button" aria-pressed={emb === o} onClick={() => setForm(f => ({ ...f, embalagem_tipo: o }))}>{o}</button>
-            ))}
-          </div>
-        )}
-      </div>
+      <section className="ig-compra ig-compra--simples">
       <div>
         <p className="ig-rot">Medida</p>
         <div className="ig-seg" role="radiogroup" aria-label="Medida">
@@ -528,6 +496,45 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         <p className="ig-dica">Coloque quanto vem e quanto pagou: o Doonly calcula o custo de cada {form.unidade === "un" ? "unidade" : "grama"} para a ficha técnica.</p>
       )}
       </section>
+
+      {/* (24/10) Mais detalhes: marca, categoria e embalagem (opcionais) */}
+      <div className={`ig-det${verDetalhes ? " on" : ""}`}>
+        <button type="button" className="ig-det-b" aria-expanded={verDetalhes} onClick={() => setVerDetalhes(v => !v)}>
+          <span><b>Mais detalhes</b><small>{[form.marca.trim(), rotuloCategoria(form.categoria), form.embalagem_tipo !== "Avulso" ? form.embalagem_tipo : ""].filter(Boolean).join(" · ") || "Marca, categoria e embalagem"}</small></span>
+          <CaretDown size={18} weight="bold" aria-hidden="true" />
+        </button>
+        {verDetalhes && (
+          <div className="ig-det-c">
+      <Campo rotulo="Marca" opcional placeholder="Ex.: Moça" value={form.marca}
+        onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} />
+      <div>
+        <p className="ig-rot">Categoria</p>
+        <div className="ig-chips ig-chips-cat">
+          {categorias.map(c => (
+            <button key={c} type="button" aria-pressed={form.categoria === c} onClick={() => setForm(f => ({ ...f, categoria: c }))}>{rotuloCategoria(c)}</button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="ig-rot">Vem em</p>
+        <div className="ig-chips">
+          {EMB_PRINCIPAIS.map(o => (
+            <button key={o} type="button" aria-pressed={emb === o} onClick={() => { setVerOutras(false); setForm(f => ({ ...f, embalagem_tipo: o })); }}>{o}</button>
+          ))}
+          <button type="button" aria-pressed={EMB_OUTRAS.includes(emb)} aria-expanded={verOutras || EMB_OUTRAS.includes(emb)} onClick={() => setVerOutras(v => !v)}>Outra</button>
+        </div>
+        {(verOutras || EMB_OUTRAS.includes(emb)) && (
+          <div className="ig-chips ig-outras">
+            {EMB_OUTRAS.map(o => (
+              <button key={o} type="button" aria-pressed={emb === o} onClick={() => setForm(f => ({ ...f, embalagem_tipo: o }))}>{o}</button>
+            ))}
+          </div>
+        )}
+      </div>
+          </div>
+        )}
+      </div>
 
       {isEditing && onDelete && (
         <button type="button" className="cl9-f-excluir" onClick={onDelete} disabled={saving}><Trash size={20} weight="bold" />Excluir ingrediente</button>

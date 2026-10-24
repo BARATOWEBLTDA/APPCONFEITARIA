@@ -284,6 +284,20 @@ export default function FichaTecnica() {
   };
   // (16/10) salário, jornada e custos fixos vêm da tela Custos (a mesma hora lá e aqui)
   const loadMaoConta = async (uid: string) => { setMaoConta(await lerMaoObraConta(uid).catch(() => null)); };
+  // (24/10) quanto cada produto vendeu nos últimos 30 dias: o "Montar a próxima" abre o mais vendido sem ficha
+  const [vendidos, setVendidos] = useState<Record<string, number>>({});
+  const loadVendidos = async (uid: string) => {
+    try {
+      const desde = new Date(Date.now() - 30 * 86400000).toISOString();
+      const { data } = await supabase.from("pedidos").select("status, created_at, pedido_itens(produto_id, quantidade)").eq("user_id", uid).gte("created_at", desde);
+      const m: Record<string, number> = {};
+      for (const p of (data as any[]) || []) {
+        if (p.status === "cancelado") continue;
+        for (const it of p.pedido_itens || []) if (it.produto_id) m[it.produto_id] = (m[it.produto_id] || 0) + 1;
+      }
+      setVendidos(m);
+    } catch { /* sem a contagem: segue pela ordem da lista */ }
+  };
   // Devolve o erro da leitura (null = leu). Se falhar, a lista que está na tela continua como estava.
   const loadProdutos = async (uid: string): Promise<unknown> => {
     const { data, error } = await supabase
@@ -308,7 +322,7 @@ export default function FichaTecnica() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setErroCarga("Tente de novo em instantes."); setLoading(false); return; }
       setUserId(user.id);
-      const [erroProdutos] = await Promise.all([loadProdutos(user.id), loadInsumos(user.id), loadMaoConta(user.id), loadCvConta(user.id), loadVenda(user.id)]);
+      const [erroProdutos] = await Promise.all([loadProdutos(user.id), loadInsumos(user.id), loadMaoConta(user.id), loadCvConta(user.id), loadVenda(user.id), loadVendidos(user.id)]);
       if (erroProdutos) setErroCarga(explicarErro(erroProdutos, "Tente de novo em instantes."));
     } catch (e) {
       setErroCarga(explicarErro(e, "Tente de novo em instantes."));
@@ -506,6 +520,8 @@ export default function FichaTecnica() {
     return true;
   });
   const totalComFicha = produtos.filter(p => (p.produto_insumos || []).length > 0).length;
+  // (24/10) o próximo a montar: o mais vendido sem ficha (empate: a ordem da lista)
+  const proximo = produtos.filter(p => (p.produto_insumos || []).length === 0).sort((a, b) => (vendidos[b.id] || 0) - (vendidos[a.id] || 0))[0];
 
   if (loading) return <><AppPageHeader title="Ficha técnica" subtitle="O custo e o lucro de cada produto" voltar="/cadastros" /><div className="cl9"><div className="cl9-esq" aria-label="Carregando">{[0, 1, 2, 3].map(k => <span key={k} />)}</div></div></>;
 
@@ -987,6 +1003,17 @@ export default function FichaTecnica() {
             </span>
             <CaretRight size={20} weight="bold" />
           </button>
+        )}
+        {/* (24/10) progresso: quantos têm ficha e o botão que abre o próximo (o mais vendido sem ficha) */}
+        {proximo && (
+          <section className="fl-prog">
+            <div className="fl-prog-tx">
+              <b>{totalComFicha} de {produtos.length} produtos com ficha técnica</b>
+              <span className="fl-prog-bar" aria-hidden="true"><i style={{ width: `${Math.max(3, (totalComFicha / produtos.length) * 100)}%` }} /></span>
+              <small>Sem ficha, o lucro aparece maior do que é.{vendidos[proximo.id] ? ` Comece pelo ${proximo.nome}: ${vendidos[proximo.id]} ${vendidos[proximo.id] === 1 ? "pedido" : "pedidos"} no mês.` : ""}</small>
+            </div>
+            <Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrirFicha(proximo)}>Montar a próxima</Botao>
+          </section>
         )}
         <section className="cl9-card">
           <div className="cl9-barra">
