@@ -219,3 +219,7 @@
 .sc-ref-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sc-ref-bt { flex: none; font-size: 14px; font-weight: 700; }
 .sc-ref-x { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: 0; padding: 0; border: 0; border-radius: 10px; background: #F3EEF0; color: var(--ui-texto-2); cursor: pointer; }
+/* (24/10) bolinha de escolha em "Retirar na loja / Entrega" (na cor da loja) */
+.sc-receber button { position: relative; padding-right: 40px; }
+.sc-r { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border: 2px solid var(--ui-borda-campo); border-radius: 50%; background: #fff; box-sizing: border-box; }
+.sc-receber button[aria-pressed="true"] .sc-r { border-width: 7px; }

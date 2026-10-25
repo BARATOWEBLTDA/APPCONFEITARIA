@@ -950,12 +950,14 @@ function CartContent({
               <button type="button" aria-pressed={formaEntrega === 'retirada'} style={formaEntrega === 'retirada' ? { borderColor: accent } : undefined}
                 onClick={() => { setFormaEntrega('retirada'); setBairroSelecionado(''); setFeErro('') }}>
                 <Storefront size={22} weight="bold" /><b>Retirar na loja</b>
+                <i className="sc-r" aria-hidden="true" style={formaEntrega === 'retirada' ? { borderColor: accent } : undefined} />
               </button>
             )}
             {opsEntrega.ent && (
               <button type="button" aria-pressed={ehEntrega} style={ehEntrega ? { borderColor: accent } : undefined}
                 onClick={() => { setFormaEntrega(opsEntrega.ent); setFeErro('') }}>
                 <Truck size={22} weight="bold" /><b>Entrega</b><small>{opsEntrega.ent === 'entrega_propria' ? entregaTexto : LABEL_ENTREGA[opsEntrega.ent]?.label || 'A combinar'}</small>
+                <i className="sc-r" aria-hidden="true" style={ehEntrega ? { borderColor: accent } : undefined} />
               </button>
             )}
           </div>

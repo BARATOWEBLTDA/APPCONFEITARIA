@@ -821,10 +821,10 @@ export default function NovaVenda() {
             <Titulo>Que tipo de venda é?</Titulo>
             <div className="nv3-tipos" role="group" aria-label="Tipo de venda">
               <button type="button" aria-pressed={tipo === 'encomenda'} onClick={() => setTipo('encomenda')}>
-                <CalendarDots size={24} weight={tipo === 'encomenda' ? 'fill' : 'bold'} /><b>Encomenda</b><small>Para outro dia</small>
+                <span className="nv3-tipo-ic" aria-hidden="true"><CalendarDots size={24} weight={tipo === 'encomenda' ? 'fill' : 'bold'} /></span><span className="nv3-tipo-tx"><b>Encomenda</b><small>Para outro dia</small></span><i className="nv3-tipo-r" aria-hidden="true" />
               </button>
               <button type="button" aria-pressed={tipo === 'pronta_entrega'} onClick={() => setTipo('pronta_entrega')}>
-                <Lightning size={24} weight={tipo === 'pronta_entrega' ? 'fill' : 'bold'} /><b>Pronta entrega</b><small>Já está pronto</small>
+                <span className="nv3-tipo-ic" aria-hidden="true"><Lightning size={24} weight={tipo === 'pronta_entrega' ? 'fill' : 'bold'} /></span><span className="nv3-tipo-tx"><b>Pronta entrega</b><small>Já está pronto</small></span><i className="nv3-tipo-r" aria-hidden="true" />
               </button>
             </div>
             {!tipo && (itens.length > 0 || tentou) && <p className="nv3-dica nv3-falta">Escolha o tipo de venda para continuar.</p>}
@@ -1068,6 +1068,7 @@ export default function NovaVenda() {
               {([['PIX', 'Pix', QrCode], ['Dinheiro', 'Dinheiro', Money], ['Crédito', 'Crédito', CreditCard], ['Débito', 'Débito', Bank]] as const).map(([chave, nome, Icone]) => (
                 <button key={chave} type="button" aria-pressed={formaPagamento === chave} onClick={() => setFormaPagamento(chave)}>
                   <Icone size={24} weight={formaPagamento === chave ? 'fill' : 'bold'} />{nome}
+                  <i className="nv3-tipo-r" aria-hidden="true" />
                 </button>
               ))}
             </div>
