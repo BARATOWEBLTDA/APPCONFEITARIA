@@ -176,8 +176,8 @@
 .orp-card h2 { margin: 0 0 12px; font-size: 16px; font-weight: 700; }
 .orp-sub { margin: 4px 0 14px; font-size: 14px; line-height: 1.45; color: var(--ui-texto-2); }
 .orp-rot { margin: 0 0 8px; font-size: 13.5px; font-weight: 600; } .orp-rot small { margin-left: 4px; font-weight: 400; font-style: italic; color: var(--ui-texto-3); }
-.orp-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 14px; }
-@media (max-width: 380px) { .orp-chips { grid-template-columns: 1fr 1fr; } }
+.orp-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+@media (min-width: 600px) { .orp-chips { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .orp-chips button { min-height: 42px; margin: 0; padding: 0 4px; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto); cursor: pointer; white-space: nowrap; }
 .orp-chips button[aria-checked="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .orp-campos { display: flex; flex-direction: column; gap: 14px; }
@@ -222,3 +222,7 @@
 }
 /* computador: a prévia acompanha a rolagem */
 @media (min-width: 1024px) { .orc-ed-lado { position: sticky; top: 76px; max-height: calc(100vh - 170px); overflow-y: auto; scrollbar-width: thin; } }
+
+/* (25/10) "opcional" logo depois do nome (não colado no campo do lado) e sem o canto de esticar a caixa */
+.orp .ui-campo-r { justify-content: flex-start; gap: 6px; }
+.orp textarea { resize: none; }

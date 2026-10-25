@@ -5,7 +5,7 @@
  *   · fica pelo menos MINIMO ms no ar (pra não piscar em celular rápido)
  *   · se algo travar, some sozinha em LIMITE ms (nunca prende a pessoa)
  */
-const MINIMO = 1500 // 1,5 s (07/10, pedido do Bruno: testar)
+const MINIMO = 0 // (25/10) sem espera fixa: some assim que a primeira tela está pronta (antes 1,5 s)
 /** Páginas de leitura abertas direto pelo link (Termos, Privacidade): saem assim que carregam, sem o tempo mínimo */
 const SEM_MINIMO = /^\/(termos|privacidade)\/?$/
 const LIMITE = 8000
