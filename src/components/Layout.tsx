@@ -18,7 +18,7 @@ import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquare
   House, CalendarDots, ShoppingBag, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown, Cake,
   SquaresFour, Camera, Plus,
-  Receipt, Sparkle, Crown, Bell,
+  Receipt, Sparkle, Crown, Bell, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile, avatarDaConta, getCardapioUrl } from "@/hooks/useProfile";
@@ -222,6 +222,7 @@ export default function Layout() {
           <ItemMenu to="/vendas/novo" icone={Plus}>Nova venda</ItemMenu>
           <ItemMenu to="/pedidos" icone={Receipt}>Pedidos</ItemMenu>
           <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
+          <ItemMenu to="/orcamentos" icone={FileText}>Orçamentos</ItemMenu>
           {/* (13/10) as telas do Cardápio digital viraram um grupo do menu (antes eram abas na faixa rosa) */}
           {/* (14/10) Produtos, Categorias e Personalização foram pra Cadastros: aqui fica só o que é da loja online */}
           <GrupoMenu id="cardapio" rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO.filter(r => !ROTAS_CATALOGO.includes(r)), "/cardapio-preview"]} recolhido={recolhido}>

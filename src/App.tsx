@@ -62,6 +62,10 @@ import Categorias from "@/pages/Categorias";
 import Clientes from "@/pages/Clientes";
 import Cadastros from "@/pages/Cadastros";
 import Complementos from "@/pages/Complementos";
+import Orcamentos from "@/pages/Orcamentos";
+import OrcamentoEditar from "@/pages/OrcamentoEditar";
+import OrcamentoPedir from "@/pages/OrcamentoPedir";
+import OrcamentoVer from "@/pages/OrcamentoVer";
 import Marketing from "@/pages/Marketing";
 import ClientePerfil from "@/pages/ClientePerfil";
 import CardapioDesign from "@/pages/CardapioDesign";
@@ -434,6 +438,9 @@ export default function App() {
         {/* Rota pública do cardápio — nova estrutura: /c/[codigo]/[slug?] */}
         <Route path="/c/:codigo" element={<><FaixaComoCliente /><CardapioPublico /></>} />
         <Route path="/c/:codigo/:slug" element={<><FaixaComoCliente /><CardapioPublico /></>} />
+        {/* (24/10) Orçamentos: a cliente pede pelo link da loja e responde a proposta pelo link dela */}
+        <Route path="/o/:codigo" element={<OrcamentoPedir />} />
+        <Route path="/orcamento/:token" element={<OrcamentoVer />} />
         {/* Fallback: rota antiga /cardapio/:slug — mantida por compat, redireciona internamente */}
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />
@@ -470,6 +477,8 @@ export default function App() {
           {/* O formulário antigo (PedidoForm) usava status antigos: /pedidos/:id agora abre o detalhe na lista */}
           <Route path="/pedidos/:id" element={<PedidoVerRedirect />} />
           <Route path="/agenda" element={<Agenda />} />
+          <Route path="/orcamentos" element={<Orcamentos />} />
+          <Route path="/orcamentos/:id" element={<OrcamentoEditar />} />
           <Route path="/insumos" element={<Insumos />} />
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />
           <Route path="/clientes" element={<Clientes />} />

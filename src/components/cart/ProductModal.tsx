@@ -189,7 +189,9 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       let data: any[] | null = null
       // (19/10) a v2 também diz se o complemento pede foto de referência; sem ela, a antiga
       // (24/10) a v3 também traz as categorias em que o complemento aparece
-      const r3 = await supabase.rpc('cardapio_extras_v3', { p_loja: uid })
+      // (24/10) a v4 traz também se o complemento pede uma frase
+      const r4 = await supabase.rpc('cardapio_extras_v4', { p_loja: uid })
+      const r3 = !r4.error && Array.isArray(r4.data) ? r4 : await supabase.rpc('cardapio_extras_v3', { p_loja: uid })
       const r2 = !r3.error && Array.isArray(r3.data) ? r3 : await supabase.rpc('cardapio_extras_v2', { p_loja: uid })
       const r = !r2.error && Array.isArray(r2.data) ? r2 : await supabase.rpc('cardapio_extras', { p_loja: uid })
       if (!r.error && Array.isArray(r.data)) data = r.data

@@ -23,7 +23,7 @@ import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
 import { PerfilTab } from '@/components/cardapio/PerfilTab'
 import { PedidosTab } from '@/components/cardapio/PedidosTab'
-import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X, Lightning, CalendarBlank, Minus, Plus, Trash } from '@phosphor-icons/react'
+import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X, Lightning, CalendarBlank, Minus, Plus, Trash, FileText, CaretRight } from '@phosphor-icons/react'
 import { lerCliente } from '@/components/cardapio/contaCliente'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { SobreLoja } from '@/components/cardapio/SobreLoja'
@@ -212,6 +212,18 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
         <button type="button" className="cp-finalizar" style={{ background: cor }} onClick={() => window.dispatchEvent(new Event('open-checkout'))}>Finalizar pedido</button>
       </>)}
     </section>
+  )
+}
+
+/* (24/10) Pedir orçamento: só nas lojas PRO, leva para o link de orçamento da loja (/o/:codigo) */
+function PedirOrcamento({ codigo, cor, pc }: { codigo: string; cor: string; pc?: boolean }) {
+  if (!codigo) return null
+  return (
+    <a className={`cp-orc${pc ? ' cp-orc--pc' : ''}`} href={`/o/${codigo}`}>
+      <span className="cp-orc-ic" style={{ color: cor }} aria-hidden="true"><FileText size={22} weight="duotone" /></span>
+      <span className="cp-orc-tx"><b>Quer algo diferente?</b><small>{pc ? 'Peça um orçamento' : 'Conte a sua ideia e peça um orçamento'}</small></span>
+      <CaretRight size={18} weight="bold" aria-hidden="true" />
+    </a>
   )
 }
 
@@ -483,6 +495,7 @@ function CardapioContent() {
               telefone={config?.telefone}
             />
           ) : <EmptyState telefone={config?.telefone} />}
+          {isPro && isRotaNova && <PedirOrcamento codigo={codigo} cor={design.cor_botao || design.cor_borda || '#E85A8C'} />}
         </div>
         <Footer textoRodape={design.texto_rodape} />
       </div>
@@ -553,6 +566,7 @@ function CardapioContent() {
           {/* (20/10) cupons da loja (até 2), entre o banner e a sacola */}
           {(config?.cupons_vitrine?.length || 0) > 0 && <div className="cp-vouchers"><Vouchers cupons={config!.cupons_vitrine!} cor={design?.cor_botao && !/^#?f{3,6}$/i.test(design.cor_botao) ? design.cor_botao : '#EC4899'} /></div>}
           <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
+          {isPro && isRotaNova && <PedirOrcamento codigo={codigo} cor={cor} pc />}
           {/* 10/10: saiu o aviso de "Programa de fidelidade" (a fidelidade ainda não existe no app) */}
         </aside>
       </div>
