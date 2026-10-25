@@ -523,7 +523,7 @@ export default function Pedidos() {
   const conteudo = () => {
     if (estado === 'carregando') return demorou ? <p className="pd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null
     if (estado === 'erro') return <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar os pedidos" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => userId && fetchPedidos(userId)}>Tentar de novo</Botao>} />
-    if (totalProdutos === 0 && pedidos.length === 0) return <TelaVazia icone={<Cake size={30} />} titulo="Cadastre um produto primeiro" texto="Para registrar um pedido, você precisa ter pelo menos um produto." acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/produtos', { state: { abrirCadastro: true } })}>Cadastrar produto</Botao>} />
+    if (totalProdutos === 0 && pedidos.length === 0) return <TelaVazia className="pd-sem-produto" icone={<Cake size={30} />} titulo="Cadastre um produto primeiro" texto="Para registrar um pedido, você precisa ter pelo menos um produto." acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/produtos', { state: { abrirCadastro: true } })}>Cadastrar produto</Botao>} />
     // (19/10) sem pedido nenhum, a barra de cima (abas, busca, Lista/Quadro, Nova venda) fica: antes ela sumia e a tela "pulava"
     return null
   }

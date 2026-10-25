@@ -15,6 +15,7 @@ import { usePlano } from '@/hooks/usePlano'
 import { linkWhatsApp } from '@/lib/telefone'
 import { compartilharTexto } from '@/lib/compartilharCardapio'
 import { brl, dataCurta, linkPedirOrcamento, semResposta, textoPedirOrcamento, totalOrcamento, type Orcamento } from '@/lib/orcamentos'
+import { COMO_ORCAMENTOS, TOUR_ORCAMENTOS } from '@/lib/comoTelas'
 import './orcamentos.css'
 
 type Aba = 'novos' | 'enviados' | 'aprovados' | 'recusados'
@@ -57,12 +58,8 @@ export default function Orcamentos() {
   }
 
   const cab = (
-    <AppPageHeader title="Orçamentos" voltar="/pedidos"
-      subtitle={contagem.novos ? `${contagem.novos} ${contagem.novos === 1 ? 'pedido novo' : 'pedidos novos'}` : 'Monte propostas e envie por link'}
-      infoContent={<>
-        <p>A cliente pede o orçamento pelo seu link (ou pelo botão do cardápio), sem escolher produto nem ver preço.</p>
-        <p>Você monta a proposta com os seus produtos ou itens personalizados e manda o link. Quando ela aprova, vira pedido na Agenda.</p>
-      </>} />
+    <AppPageHeader title="Orçamentos" voltar="/pedidos" infoComo={COMO_ORCAMENTOS} infoTour={TOUR_ORCAMENTOS}
+      subtitle={contagem.novos ? `${contagem.novos} ${contagem.novos === 1 ? 'pedido novo' : 'pedidos novos'}` : 'Monte propostas e envie por link'} />
   )
 
   if (!carregandoPlano && !isPro) {

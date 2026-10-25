@@ -4,7 +4,7 @@ import {
   Users, UserPlus, Cake, ClockCounterClockwise, Camera, ToggleRight, Tag, Basket, TrendDown, ArrowsClockwise, CreditCard, Scales, ShoppingBagOpen,
   SquaresFour, ArrowsDownUp, Info, PuzzlePiece, ArrowCounterClockwise, DownloadSimple, CalendarCheck, Buildings, X, Clock, Flame, Sparkle, Images,
   Eye, Ticket, FacebookLogo, Megaphone, Checks, SpeakerHigh, PushPin, Lightbulb, QrCode, Truck, CalendarDots, PencilSimple, ChatCircleText, Hash, Gear, Newspaper,
-  Receipt, Crown, DeviceMobile, Heart, HandSwipeLeft,
+  Receipt, Crown, DeviceMobile, Heart, HandSwipeLeft, FileText, LinkSimple, Plus,
 } from "@phosphor-icons/react";
 import type { Como } from "@/components/como/ComoFunciona";
 import type { PassoTour } from "@/components/como/tour";
@@ -41,7 +41,7 @@ export const TOUR_INICIO_CEL: PassoTour[] = [
   { el: ".ini-section--novos", titulo: "Avisos", texto: "Pedidos novos para aceitar e pedidos atrasados aparecem aqui primeiro." },
   { el: ".ini-busca", titulo: "Buscar", texto: "Digite o que procura, como \"pix\", \"cupom\" ou \"horário\", e vá direto para a tela certa." },
   { el: ".ini-section--nav", titulo: "Acesso rápido", texto: "Atalhos para as telas mais usadas. As demais ficam no Menu, na barra inferior." },
-  { el: ".ini-section--dia", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Escolha um dia para ver apenas os pedidos dele." },
+  { el: ".ini-section--dia .sd-sem || .ini-section--dia", titulo: "Próximas entregas", texto: "Os próximos dias, com quantos pedidos tem em cada um. Escolha um dia para ver só os pedidos dele." },
   { el: ".ini-falta .pf", titulo: "Seus próximos passos", texto: "Pendências da sua loja, com o botão para resolver na hora. Se preferir deixar para depois, use Agora não." },
   { el: ".bn-novo-c", titulo: "Nova venda", texto: "Registre uma venda ou encomenda a qualquer momento. O botão aparece em todas as telas.", redondo: true },
 ];
@@ -93,7 +93,7 @@ export const TOUR_AGENDA: PassoTour[] = [
   { el: ".ag3-dia", titulo: "Dia escolhido", texto: "Mostra o dia selecionado e quanto ainda falta receber dos pedidos desse dia." },
   { el: ".ag3-at--atr", titulo: "Precisa de atenção", texto: "Pedidos com entrega atrasada. Use o botão ao lado para avançar cada um para a próxima etapa." },
   { el: ".ag3-at--prox", titulo: "Próximos dias", texto: "Quando o dia selecionado não tem pedidos, aqui aparecem as próximas entregas." },
-  { el: ".ag3-lista", titulo: "Pedidos do dia", texto: "Selecione um pedido para ver os detalhes. Marcar como pronto e chamar o cliente no WhatsApp ficam no próprio cartão.",
+  { el: ".ag3-pc || .ag3-lista", titulo: "Pedidos do dia", texto: "Selecione um pedido para ver os detalhes. Marcar como pronto e chamar o cliente no WhatsApp ficam no próprio cartão.",
     vazio: { el: ".ag3-lado > .ui-vazia", texto: "Não há pedidos para mostrar neste dia. Selecione outro dia no calendário para ver os pedidos dele." } },
 ];
 
@@ -132,7 +132,7 @@ export const TOUR_A_RECEBER: PassoTour[] = [
   { el: ".far-resumo", titulo: "Resumo", texto: "Total pendente, separado em atrasados, próximos 7 dias e depois.",
     vazio: { el: ".far-vazio", titulo: "Nada a receber", texto: "Não há valores a receber no momento. Quando um pedido tiver sinal ou ficar para pagar depois, o valor que falta aparece aqui." } },
   { el: ".far-bb", titulo: "Buscar e filtrar", texto: "Ache um pedido pelo cliente ou pelo número. O filtro abre na lateral: atrasados, próximos 7 dias ou depois." },
-  { el: ".far-grupo", titulo: "Pedidos com saldo", texto: "Cada pedido mostra o valor total, o que já foi pago e o que falta. Os atrasados aparecem primeiro." },
+  { el: ".far-it || .far-tr:not(.far-th) || .far-grupo", titulo: "Pedidos com saldo", texto: "Cada pedido mostra o valor total, o que já foi pago e o que falta. Os atrasados aparecem primeiro." },
   { el: ".far-rec", titulo: "Receber", texto: "Registre o pagamento quando o cliente pagar. É possível receber o valor total ou apenas uma parte." },
   { el: ".far-ver", titulo: "Abrir pedido", texto: "Abre o pedido completo, com os itens, a entrega e o histórico de pagamentos." },
 ];
@@ -190,7 +190,7 @@ export const TOUR_CLIENTES: PassoTour[] = [
   { el: ".cl9-busca", titulo: "Buscar", texto: "Encontre um cliente pelo nome, telefone ou e-mail." },
   { el: ".cl9-acoes", titulo: "Novo cliente", texto: "Cadastre quem compra pelo WhatsApp ou no balcão. Quem pede pelo cardápio é cadastrado automaticamente." },
   { el: ".cl9-filtro", titulo: "Filtro", texto: "Abre na lateral: mostre só quem faz aniversário, os novos cadastros ou quem está sem comprar há 60 dias." },
-  { el: ".cl9-lista, .cl9-tab", titulo: "Lista de clientes", texto: "Selecione um cliente para ver o histórico de pedidos e o total gasto. O ícone do WhatsApp abre a conversa.",
+  { el: ".cl9-l || .cl9-tab-l || .cl9-tab", titulo: "Lista de clientes", texto: "Selecione um cliente para ver o histórico de pedidos e o total gasto. O ícone do WhatsApp abre a conversa.",
     vazio: [
       { el: ".cl9-semres", texto: "Nenhum cliente com esta busca ou filtro. Confira o que foi digitado ou volte para Todos." },
       { el: ".cli-root .ui-vazia", texto: "Ainda não há clientes. Quem pede pelo cardápio é cadastrado automaticamente, e os demais você cadastra manualmente." },
@@ -285,8 +285,11 @@ export const TOUR_PEDIDOS: PassoTour[] = [
   { el: ".pdk-abas", titulo: "Situações", texto: "Para aceitar, Agendados, Prontos e Concluídos. O número mostra quantos pedidos há em cada uma." },
   { el: ".pd-modo", titulo: "Lista ou quadro", texto: "Veja os pedidos em lista ou em quadro, com uma coluna para cada situação." },
   { el: ".pd-novo", titulo: "Nova venda", texto: "Registre uma venda ou encomenda feita pelo WhatsApp ou no balcão." },
-  { el: ".pd-grupo", titulo: "Pedidos", texto: "Agrupados pelo dia da entrega, com os atrasados no topo. O botão de cada pedido avança para a próxima etapa.",
-    vazio: { el: ".pd .ui-vazia", texto: "Não há pedidos para mostrar aqui. Quando houver, eles aparecem agrupados pelo dia da entrega." } },
+  { el: ".pdk || .pdl-tabela > .pdl || .pd-grupo", titulo: "Pedidos", texto: "Ficam agrupados pelo dia da entrega, com os atrasados no topo. O botão de cada pedido avança para a próxima etapa.",
+    vazio: [
+      { el: ".pd-sem-produto", titulo: "Primeiro, um produto", texto: "Para registrar pedidos, cadastre pelo menos um produto. Depois os pedidos do cardápio e as vendas aparecem aqui." },
+      { el: ".pd .ui-vazia", texto: "Não há pedidos para mostrar aqui. Quando houver, eles aparecem agrupados pelo dia da entrega." },
+    ] },
 ];
 
 export const TOUR_FINANCEIRO: PassoTour[] = [
@@ -369,12 +372,15 @@ export const COMO_COMPLEMENTOS: Como = {
   ],
 };
 export const TOUR_COMPLEMENTOS: PassoTour[] = [
-  { el: ".ct .ui-tit-acao", titulo: "Novo complemento", texto: "Cadastre um extra com nome, preço e os produtos em que ele aparece.",
-    vazio: { el: ".ct .ui-vazia", titulo: "Complementos", texto: "Ainda não há complementos. Siga a orientação deste aviso para cadastrar o primeiro." } },
+  { el: ".ct .ui-tit-acao", titulo: "Novo complemento", texto: "Cadastre um extra com nome, preço, onde aparece no cardápio e o que o cliente precisa mandar.",
+    vazio: [
+      { el: ".pz-vazio", titulo: "Complementos", texto: "Ainda não há complementos. Comece pelo topo de bolo: o cliente já manda a foto da ideia junto com o pedido." },
+      { el: ".ct .ui-vazia", titulo: "Primeiro, um produto", texto: "Os complementos aparecem junto dos produtos no cardápio. Cadastre um produto e volte aqui." },
+    ] },
   { el: ".pz-busca", titulo: "Buscar", texto: "Encontre um complemento pelo nome." },
-  { el: ".ct-row-b", titulo: "Complemento", texto: "Mostra em quais produtos aparece e o valor. Selecione para editar." },
-  { el: ".ct-row .ui-bti", titulo: "Opções", texto: "Edite, escolha os produtos em que aparece ou exclua." },
-  { el: ".pz-sg", titulo: "Sugestões", texto: "Selecione uma sugestão para abrir o cadastro já preenchido." },
+  { el: ".pz-li-b || .pz-cc-b", titulo: "Complemento", texto: "Mostra em que parte do cardápio aparece e se o cliente precisa mandar foto ou frase. Selecione para editar." },
+  { el: ".pz-li .ui-bti || .pz-cc-menu", titulo: "Opções", texto: "Edite, escolha onde aparece no cardápio ou exclua." },
+  { el: ".pz-cheio .pz-cel || .pz-cheio", titulo: "Assim o cliente vê", texto: "A prévia de como os complementos aparecem para o cliente na hora de escolher o produto." },
 ];
 
 export const COMO_INGREDIENTES: Como = {
@@ -418,7 +424,7 @@ export const TOUR_TRANSACOES: PassoTour[] = [
   { el: ".tx-saldo", titulo: "Saldo", texto: "O que entrou menos o que saiu no período, com as entradas e as saídas embaixo. As setas trocam o mês." },
   { el: ".tx-busca", titulo: "Buscar", texto: "Encontre um lançamento pelo cliente, pelo pedido ou pela despesa." },
   { el: ".tx-bb .gf-bt", titulo: "Filtro", texto: "Abre na lateral: período, só entradas ou só saídas, forma de pagamento e a planilha para baixar." },
-  { el: ".tx-dia", titulo: "Extrato", texto: "Os lançamentos por dia, com o saldo de cada dia. Selecione um para ver os detalhes ou estornar.",
+  { el: ".tx-it || .tx-dia", titulo: "Extrato", texto: "Os lançamentos ficam por dia, com o saldo de cada dia. Selecione um para ver os detalhes ou estornar.",
     vazio: { el: ".tx-vazio", texto: "Não há lançamentos neste período. Recebimentos, entradas e saídas aparecem aqui." } },
   { el: ".txp-barra, .tx-hd", titulo: "Lançamentos", texto: "Registre uma entrada ou uma saída de dinheiro." },
 ];
@@ -560,7 +566,8 @@ export const COMO_NOVA_VENDA: Como = {
   ],
 };
 export const TOUR_NOVA_VENDA: PassoTour[] = [
-  { el: ".nv3-passos", titulo: "Etapas", texto: "A venda é registrada em cinco etapas: venda, cliente, entrega, pagamento e revisão." },
+  { el: ".nv3-passos", titulo: "Etapas", texto: "A venda é registrada em cinco etapas: venda, cliente, entrega, pagamento e revisão.",
+    vazio: { el: ".nv3 .ui-vazia", titulo: "Primeiro, um produto", texto: "Para registrar uma venda, cadastre pelo menos um produto. Depois é só voltar aqui." } },
   { el: ".nv3-tipos", titulo: "Tipo de venda", texto: "Encomenda é para entregar ou retirar em outro dia. Pronta entrega é para o que já está pronto." },
   { el: ".nv3-card--produtos", titulo: "Produtos", texto: "Adicione os produtos que o cliente pediu, com quantidade e opções." },
   { el: ".nv3-lado", titulo: "Resumo da venda", texto: "Os itens, o total e o que ainda falta preencher, sempre à vista." },
@@ -682,4 +689,47 @@ export const COMO_DOO: Como = {
 export const TOUR_DOO: PassoTour[] = [
   { el: ".av-hero", titulo: "Doo IA", texto: "A sua assistente. Escolha uma das opções abaixo ou abra a conversa e pergunte o que quiser." },
   { el: ".av-grid", titulo: "O que pedir", texto: "Atalhos para o que a Doo faz melhor: preço, pedido, receita, ingrediente e mensagens." },
+];
+
+/** (25/10) Orçamentos: a lista (pedidos que chegaram pelo link, enviados e respondidos) */
+export const COMO_ORCAMENTOS: Como = {
+  tela: { nome: "Orçamentos", Icone: FileText },
+  resumo: "A cliente pede pelo seu link, você monta a proposta e ela aprova pelo celular. Aprovou, vira pedido na Agenda.",
+  fluxo: ["Ela pede", "Você monta", "Ela aprova", "Vira pedido"],
+  dicas: [
+    [LinkSimple, <>Compartilhe o <b>link de orçamento</b> no Instagram e no WhatsApp. O cardápio também tem o botão <b>Quer algo diferente?</b></>],
+    [Bell, <>Chegou pedido de orçamento, você recebe o <b>aviso no celular</b>.</>],
+    [Clock, <>Passou de 3 dias sem resposta, aparece o <b>Pedir retorno</b> pelo WhatsApp.</>],
+    [Plus, <>Use <b>Novo orçamento</b> para montar uma proposta para quem pediu pelo WhatsApp.</>],
+  ],
+};
+export const TOUR_ORCAMENTOS: PassoTour[] = [
+  { el: ".orc-link", titulo: "Seu link de orçamento", texto: "Copie ou compartilhe. Quem abre conta a ideia e o pedido chega aqui." },
+  { el: ".orc-novo", titulo: "Novo orçamento", texto: "Monte uma proposta para quem pediu pelo WhatsApp ou no balcão." },
+  { el: ".orc-abas", titulo: "Situações", texto: "Novos são os que chegaram pelo link. Enviados esperam a resposta da cliente. Aprovados já viraram pedido." },
+  { el: ".orc-it", titulo: "Orçamento", texto: "Mostra a cliente, a ocasião, a data e o valor. Selecione para abrir.",
+    vazio: { el: ".orc .ui-vazia", titulo: "Lista", texto: "Ainda não há orçamentos nesta aba. Quando houver, eles aparecem aqui." } },
+];
+
+/** (25/10) montar o orçamento (3 etapas) */
+export const COMO_ORCAMENTO: Como = {
+  tela: { nome: "Montar orçamento", Icone: FileText },
+  resumo: "Em 3 etapas: os itens e o valor, as condições e o envio do link para a cliente aprovar.",
+  tit: "Exemplo · proposta",
+  linhas: [["Bolo 2 andares", "R$ 380,00"], ["100 docinhos", "R$ 150,00"], ["Entrega", "R$ 20,00"]],
+  total: ["Total", "R$ 550,00"],
+  fluxo: ["Proposta", "Condições", "Enviar"],
+  dicas: [
+    [Cake, <>Use itens <b>do cardápio</b> ou <b>personalizados</b>, com o valor que quiser.</>],
+    [ChartLineUp, <>Com a ficha técnica dos produtos, aparece o <b>lucro estimado</b>.</>],
+    [CalendarCheck, <>Aprovado, vira pedido na <b>Agenda</b> com os itens e o sinal.</>],
+  ],
+};
+export const TOUR_ORCAMENTO: PassoTour[] = [
+  { el: ".orc-etapas", titulo: "Etapas", texto: "Proposta, Condições e Enviar. Dá para voltar a qualquer etapa." },
+  { el: ".orc-so-cel .orc-pediu || .orc-ed-lado .orc-pediu", titulo: "O que ela pediu", texto: "A ideia, a data, quanto quer gastar e as fotos que ela mandou pelo link." },
+  { el: ".orc-item || .orc-add", titulo: "Itens", texto: "Ajuste a quantidade, o valor e escreva um detalhe, como sabor ou tema." },
+  { el: ".orc-ext", titulo: "Desconto, acréscimo e entrega", texto: "Ligue o que precisar e coloque o valor. O total muda na hora." },
+  { el: ".orc-tot", titulo: "Total", texto: "O valor que a cliente vai ver na proposta." },
+  { el: ".orc-pe-in", titulo: "Continuar", texto: "Salva e vai para a próxima etapa. Rascunho guarda para terminar depois." },
 ];

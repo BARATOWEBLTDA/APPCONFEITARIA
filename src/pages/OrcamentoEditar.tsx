@@ -22,6 +22,7 @@ import {
   FORMA_ORC, brl, textoEntrega, dataLonga, linkProposta, maisDias, somarItens, textoCondicoes, textoProposta, totalOrcamento, valorSinal,
   type ItemOrcamento, type Orcamento,
 } from '@/lib/orcamentos'
+import { COMO_ORCAMENTO, TOUR_ORCAMENTO } from '@/lib/comoTelas'
 import './orcamentos.css'
 
 type Prod = { id: string; nome: string; categoria?: string | null; imagem_url?: string | null; [k: string]: any }
@@ -250,7 +251,7 @@ export default function OrcamentoEditar() {
   // ── respondido: só o resumo ──
   if (respondido) {
     return (<>
-      <AppPageHeader title={titulo} subtitle={o.numero ? `Orçamento #${o.numero}` : 'Monte a proposta e envie o link'} voltar="/orcamentos" />
+      <AppPageHeader title={titulo} subtitle={o.numero ? `Orçamento #${o.numero}` : 'Monte a proposta e envie o link'} voltar="/orcamentos" infoComo={COMO_ORCAMENTO} />
       <div className="orc orc-ed">
         <div className="orc-ed-main">
           <section className={`orc-res orc-res--${o.status}`}>
@@ -270,7 +271,7 @@ export default function OrcamentoEditar() {
   const prodsFiltrados = produtos.filter(p => !busca.trim() || p.nome.toLowerCase().includes(busca.trim().toLowerCase()))
 
   return (<>
-    <AppPageHeader title={titulo} subtitle={o.numero ? `Orçamento #${o.numero}` : 'Monte a proposta e envie o link'} voltar="/orcamentos" />
+    <AppPageHeader title={titulo} subtitle={o.numero ? `Orçamento #${o.numero}` : 'Monte a proposta e envie o link'} voltar="/orcamentos" infoComo={COMO_ORCAMENTO} infoTour={TOUR_ORCAMENTO} />
     <div className="orc orc-ed">
       <div className="orc-ed-main">
         <ol className="orc-etapas" aria-label="Etapas">

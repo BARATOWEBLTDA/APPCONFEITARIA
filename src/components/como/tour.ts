@@ -9,7 +9,42 @@ type Vazio = { el: string; texto: string; titulo?: string };
 type Resolvido = { alvo: HTMLElement; titulo: string; texto: string; redondo?: boolean };
 
 /** (23/10) o primeiro que está visível (telas com versão de celular e de computador na página, uma delas escondida) */
-const achar = (sel: string) => [...document.querySelectorAll<HTMLElement>(sel)].find(e => e.getClientRects().length > 0);
+// (25/10) "a || b": tenta "a" primeiro (ex.: o primeiro cartão da lista) e só usa "b" (a lista inteira) se "a" não existir
+const achar = (sel: string): HTMLElement | undefined => {
+  for (const s of sel.split("||")) {
+    const e = [...document.querySelectorAll<HTMLElement>(s.trim())].find(x => x.getClientRects().length > 0);
+    if (e) return e;
+  }
+  return undefined;
+};
+
+/**
+ * (25/10) Antes de acender uma parte, rola a tela para ela ficar entre o topo fixo e a barra de baixo.
+ * Sem isso, uma parte embaixo da barra de baixo ficava com a barra por cima dela, acesa e sem o fundo escuro.
+ */
+function encaixar(el: HTMLElement) {
+  const vh = window.innerHeight, vw = window.innerWidth;
+  let topo = 0, baixo = vh;
+  for (const f of document.querySelectorAll<HTMLElement>("body *")) {
+    if (f.contains(el) || el.contains(f) || f.closest(".driver-popover")) continue;
+    const st = getComputedStyle(f);
+    if (st.position !== "fixed" && st.position !== "sticky") continue;
+    if (st.visibility === "hidden" || st.display === "none" || Number(st.opacity) === 0) continue;
+    const b = f.getBoundingClientRect();
+    if (b.width < vw * 0.5 || b.height > 160 || b.height < 20) continue;
+    // barras presas no alto (topo da tela) ou na parte de baixo (menu de baixo, barra de botões em cima dele)
+    if (b.top <= 100 && b.bottom < vh * 0.4) topo = Math.max(topo, b.bottom);
+    else if (b.top > vh * 0.6) baixo = Math.min(baixo, b.top);
+  }
+  const b = el.getBoundingClientRect();
+  const livreTopo = topo + 10, livreBaixo = baixo - 10;
+  let delta = 0;
+  if (b.height <= livreBaixo - livreTopo) {
+    if (b.bottom > livreBaixo) delta = b.bottom - livreBaixo;
+    else if (b.top < livreTopo) delta = b.top - livreTopo;
+  } else delta = b.top - livreTopo;
+  if (Math.abs(delta) > 1) window.scrollBy({ top: delta, behavior: "auto" });
+}
 function resolver(passos: PassoTour[]): Resolvido[] {
   const usados = new Set<HTMLElement>();
   const out: Resolvido[] = [];
@@ -51,6 +86,7 @@ export async function fazerTour(passos: PassoTour[]) {
     // (22/10) botão redondo (o + da barra de baixo): o recorte aceso é o próprio círculo dele, com a borda escura (antes vazava o que estava atrás)
     onHighlightStarted: (el) => {
       const p = ok.find(x => x.alvo === el);
+      if (el && !p?.redondo) encaixar(el as HTMLElement);
       const raio = p?.redondo ? 999 : 16;
       if (d.getConfig().stageRadius !== raio) d.setConfig({ ...d.getConfig(), stageRadius: raio, stagePadding: p?.redondo ? 4 : 6 });
     },
