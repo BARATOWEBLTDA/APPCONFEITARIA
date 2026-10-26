@@ -80,3 +80,7 @@
 .ca-tela .ca-fig img { border: 1px solid var(--ui-borda); border-radius: 16px; box-shadow: 0 6px 18px rgba(44, 18, 25, .10); }
 .ca-tela .ca-fig--alta { max-width: 260px; }
 @media (min-width: 700px) { .ca-tela .ca-fig { width: 320px; } .ca-tela .ca-fig--alta { width: 240px; } }
+
+/* (26/10) nada quebra em duas linhas: títulos, cenas, passos e dicas numa linha só */
+.ca-sec h2, .ca-ex, .ca-marcas li span, .ca-dica span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ca-marcas li { align-items: center; }

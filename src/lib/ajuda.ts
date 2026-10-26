@@ -40,29 +40,29 @@ export const ARTIGOS: ArtigoAjuda[] = [
   {
     slug: 'pedidos',
     tema: 'vendas',
-    titulo: 'Pedidos: do pedido novo à entrega',
-    resumo: 'Aqui ficam todos os seus pedidos. Siga o pedido da Daniela e veja onde tocar em cada etapa.',
+    titulo: 'Como usar os Pedidos',
+    resumo: 'Siga o pedido da Daniela, passo a passo.',
     minutos: 2,
     abrir: { rota: '/pedidos', rotulo: 'Abrir Pedidos' },
     secoes: [
       {
         id: 'aceitar',
         titulo: 'Aceitar o pedido',
-        exemplo: 'A Daniela pediu um cento de salgados pelo cardápio.',
+        exemplo: 'A Daniela pediu salgados pelo cardápio.',
         imagens: [{ src: '/ajuda/pedidos-aceitar.webp', alt: 'Aba Para aceitar com o pedido da Daniela', marcas: [
-          'Abra a aba **Para aceitar**.',
-          'Toque em **Aceitar** no pedido.',
+          'Abra **Para aceitar**.',
+          'Toque em **Aceitar**.',
           'Ou aceite **todos** de uma vez.',
         ] }],
-        dica: 'O pedido aceito vai para **Agendados** e aparece na **Agenda**.',
+        dica: 'Aceito, ele vai para **Agendados**.',
       },
       {
         id: 'produzir',
         titulo: 'Começar a fazer',
         imagens: [{ src: '/ajuda/pedidos-produzir.webp', alt: 'Pedido da Daniela em Agendados com o botão Produzir', marcas: [
           'Começou? Toque em **Produzir**.',
-          'Aqui aparece quanto **falta receber**.',
         ] }],
+        dica: 'Em laranja: o que **falta receber**.',
       },
       {
         id: 'pronto',
@@ -75,40 +75,41 @@ export const ARTIGOS: ArtigoAjuda[] = [
         id: 'entregar',
         titulo: 'Entregar',
         imagens: [{ src: '/ajuda/pedidos-entregar.webp', alt: 'Aba Prontos com o botão Retirado', marcas: [
-          'O pedido passa para a aba **Prontos**.',
-          'A Daniela buscou? Toque em **Retirado**. Se for entrega, o botão é **Saiu para entrega**.',
+          'Ele vai para a aba **Prontos**.',
+          'Buscou? Toque em **Retirado**.',
         ] }],
-        dica: 'Se ainda faltar receber, o app pergunta se a cliente pagou.',
+        dica: 'Na entrega: **Saiu para entrega**.',
       },
       {
         id: 'achar',
         titulo: 'Achar um pedido',
         imagens: [
           { src: '/ajuda/pedidos-buscar.webp', alt: 'Busca e botão de filtro', marcas: [
-            'Busque pelo **nome** ou pelo **número**.',
+            'Busque por **nome** ou **número**.',
             'Abra o **filtro**.',
           ] },
           { src: '/ajuda/pedidos-filtro.webp', alt: 'Filtro aberto na lateral', alta: true, marcas: [
             'Escolha as **situações**.',
-            'Escolha a **data da entrega**.',
-            'Toque para **ver os pedidos**.',
+            'Escolha a **data**.',
+            'Toque em **Ver pedidos**.',
           ] },
         ],
       },
       {
         id: 'dentro',
         titulo: 'Dentro do pedido',
-        exemplo: 'Toque em qualquer pedido para abrir.',
+        exemplo: 'Toque no pedido para abrir.',
         imagens: [{ src: '/ajuda/pedidos-dentro.webp', alt: 'Pedido aberto', marcas: [
-          'O botão leva para a **próxima etapa**.',
-          'Nos **três pontinhos**: PDF, mudar a etapa, cancelar e excluir.',
+          'Leva para a **próxima etapa**.',
+          '**Mais ações**: PDF, cancelar…',
         ] }],
       },
       {
         id: 'nova',
-        titulo: 'Pedido do WhatsApp ou do balcão',
+        titulo: 'Pedido do balcão',
+        exemplo: 'Chegou pelo WhatsApp ou balcão?',
         imagens: [{ src: '/ajuda/pedidos-nova-venda.webp', alt: 'Botão mais no menu de baixo', marcas: [
-          'Toque no **+** e registre em **Nova venda**.',
+          'Toque no **+**: **Nova venda**.',
         ] }],
       },
     ],
