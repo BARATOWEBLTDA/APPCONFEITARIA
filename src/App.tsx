@@ -63,6 +63,8 @@ import Clientes from "@/pages/Clientes";
 import Cadastros from "@/pages/Cadastros";
 import Complementos from "@/pages/Complementos";
 import Orcamentos from "@/pages/Orcamentos";
+import Ajuda from "@/pages/Ajuda";
+import AjudaArtigo from "@/pages/AjudaArtigo";
 import OrcamentoEditar from "@/pages/OrcamentoEditar";
 import OrcamentoPedir from "@/pages/OrcamentoPedir";
 import OrcamentoVer from "@/pages/OrcamentoVer";
@@ -478,6 +480,9 @@ export default function App() {
           <Route path="/pedidos/:id" element={<PedidoVerRedirect />} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/orcamentos" element={<Orcamentos />} />
+          <Route path="/ajuda" element={<Ajuda />} />
+          <Route path="/ajuda/tema/:tema" element={<Ajuda />} />
+          <Route path="/ajuda/:slug" element={<AjudaArtigo />} />
           <Route path="/orcamentos/:id" element={<OrcamentoEditar />} />
           <Route path="/insumos" element={<Insumos />} />
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />

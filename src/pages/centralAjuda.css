@@ -1,0 +1,82 @@
+/* (25/10) Central de Ajuda */
+.ca { max-width: 760px; margin: 0 auto; padding: 16px 12px 110px; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.ca-h2 { margin: 18px 4px 10px; font-size: 17px; font-weight: 700; }
+.ca-vazio { margin: 12px 4px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+
+.ca-busca { display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); color: var(--ui-rosa); }
+.ca-busca input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); }
+.ca-busca button { display: flex; padding: 6px; border: 0; background: none; color: var(--ui-texto-3); cursor: pointer; }
+
+.ca-temas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (min-width: 700px) { .ca-temas { grid-template-columns: repeat(4, 1fr); } }
+.ca-tema { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 128px; margin: 0; padding: 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.ca-tema b { margin-top: auto; font-size: 15px; font-weight: 700; line-height: 1.25; }
+.ca-tema small { font-size: 13px; color: var(--ui-texto-2); }
+.ca-tema--breve small { color: var(--ui-texto-3); }
+.ca-tema-ic { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+@media (hover: hover) { .ca-tema:hover, .ca-art:hover { border-color: #E7C2D2; } }
+
+.ca-tema-cab { display: flex; align-items: center; gap: 12px; margin: 0 4px 14px; }
+.ca-tema-cab > span:last-child { display: flex; flex-direction: column; }
+.ca-tema-cab b { font-size: 18px; } .ca-tema-cab small { font-size: 13.5px; color: var(--ui-texto-2); }
+
+.ca-lista { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
+.ca-art { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 68px; margin: 0; padding: 12px 14px; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.ca-art:first-child { border-top: 0; }
+.ca-art > svg { flex: none; color: var(--ui-texto-3); }
+.ca-art-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ca-art-tx b { font-size: 15px; font-weight: 600; }
+.ca-art-tx small { font-size: 13px; color: var(--ui-texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.ca-sup { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
+.ca-sup-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: #E9F9EF; }
+.ca-sup-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; } .ca-sup-tx b { font-size: 14.5px; } .ca-sup-tx small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; color: var(--ui-texto-2); }
+.ca-sup-bt { flex: none; display: flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 12px; background: var(--ui-cinza); font-size: 14px; font-weight: 700; color: var(--ui-texto); text-decoration: none; }
+
+/* artigo */
+.ca-card { margin: 0 0 12px; padding: 18px 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); scroll-margin-top: 76px; }
+.ca-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.ca-tag { padding: 4px 10px; border-radius: 8px; background: var(--ui-texto); color: #fff; font-size: 12.5px; font-weight: 700; }
+.ca-min { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--ui-texto-2); }
+.ca-tit { margin: 0 0 8px; font-size: 21px; font-weight: 700; line-height: 1.25; }
+.ca-resumo { margin: 0 0 14px; font-size: 15px; line-height: 1.55; color: var(--ui-texto-2); }
+.ca-ind { margin-top: 12px; border: 1px solid var(--ui-borda); border-radius: 12px; }
+.ca-ind-bt { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; margin: 0; padding: 0 14px; border: 0; background: none; font-family: inherit; color: var(--ui-texto); cursor: pointer; text-align: left; }
+.ca-ind-bt b { font-size: 15px; } .ca-ind-bt small { flex: 1; font-size: 13px; color: var(--ui-texto-3); }
+.ca-ind-bt svg:last-child { transition: transform .2s; color: var(--ui-texto-3); }
+.ca-ind.on .ca-ind-bt svg:last-child { transform: rotate(180deg); }
+.ca-ind ol { list-style: decimal; margin: 0; padding: 0 14px 10px 36px; }
+.ca-ind li button { padding: 7px 0; border: 0; background: none; font-family: inherit; font-size: 14.5px; color: var(--ui-rosa-escuro); text-align: left; cursor: pointer; }
+
+.ca-sec h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 18px; font-weight: 700; }
+.ca-sec h2 i { flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-style: normal; font-size: 14px; }
+.ca-sec p { margin: 0 0 10px; font-size: 15px; line-height: 1.6; }
+.ca-passos { list-style: decimal; margin: 0 0 10px; padding-left: 22px; font-size: 15px; line-height: 1.6; }
+.ca-passos li { margin-bottom: 8px; padding-left: 4px; }
+.ca-passos li::marker { font-weight: 700; color: var(--ui-rosa-escuro); }
+.ca-fig { margin: 14px auto 6px; max-width: 280px; text-align: center; }
+.ca-fig img { display: block; width: 100%; border: 6px solid #2B1A15; border-radius: 26px; box-shadow: 0 10px 28px rgba(44, 18, 25, .18); background: #fff; }
+.ca-fig figcaption { margin-top: 8px; font-size: 12.5px; line-height: 1.4; color: var(--ui-texto-2); }
+.ca-dica { display: flex; gap: 10px; margin: 12px 0 0 !important; padding: 12px 14px; border-radius: 12px; background: #FFF8E6; color: #7A4A00; font-size: 14px !important; line-height: 1.5 !important; }
+.ca-dica svg { flex: none; margin-top: 2px; }
+
+.ca-voto { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ca-voto b { font-size: 15px; }
+.ca-voto div { display: flex; gap: 8px; }
+.ca-voto button { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 14.5px; font-weight: 600; color: var(--ui-texto); cursor: pointer; }
+.ca-voto button[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+
+/* (26/10) tutorial visual: cena de exemplo, print com anéis numerados e a legenda de cada número */
+.ca-ex { margin: -2px 0 12px !important; padding: 10px 12px; border-radius: 12px; background: var(--ui-cinza); font-size: 14px !important; color: var(--ui-texto-2); }
+.ca-tela { display: flex; flex-direction: column; gap: 12px; margin: 4px 0 8px; }
+.ca-tela + .ca-tela { margin-top: 18px; padding-top: 18px; border-top: 1px dashed var(--ui-borda); }
+.ca-tela .ca-fig { margin: 0 auto; max-width: 250px; }
+.ca-marcas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ca-marcas li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.45; }
+.ca-marcas i { flex: none; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: #E85A8C; color: #fff; font-style: normal; font-size: 14px; font-weight: 700; }
+@media (min-width: 700px) { .ca-tela { flex-direction: row; align-items: center; gap: 24px; } .ca-tela .ca-fig { margin: 0; flex: none; width: 240px; } .ca-marcas { flex: 1; } }
+/* (26/10) os prints são recortes da parte da tela onde se toca: sem moldura de celular, maiores */
+.ca-tela .ca-fig { max-width: 360px; width: 100%; }
+.ca-tela .ca-fig img { border: 1px solid var(--ui-borda); border-radius: 16px; box-shadow: 0 6px 18px rgba(44, 18, 25, .10); }
+.ca-tela .ca-fig--alta { max-width: 260px; }
+@media (min-width: 700px) { .ca-tela .ca-fig { width: 320px; } .ca-tela .ca-fig--alta { width: 240px; } }

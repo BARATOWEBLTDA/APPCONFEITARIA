@@ -62,6 +62,7 @@ export const COMO_PEDIDOS: Como = {
   linhas: [["Bolo brigadeiro 1 kg", "R$ 47,61"], ["Sinal pago no Pix", "R$ 23,81"]],
   total: ["Falta receber", "R$ 23,80"],
   fluxo: ["Aceitar", "Agendado", "Pronto", "Entregue"],
+  artigo: "pedidos",
   dicas: [
     [Bell, <>Pedidos novos do cardápio chegam em <b>Para aceitar</b>. Ao aceitar, eles vão para a agenda.</>],
     [ArrowRight, <>O botão de cada pedido avança para a <b>próxima etapa</b>: Produzir, Pronto e Entregue.</>],

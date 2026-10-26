@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
-import { Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb,  SignOut, SlidersHorizontal, Storefront, Bug, Truck, User, WarningCircle, MagnifyingGlass } from "@phosphor-icons/react";
+import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb,  SignOut, SlidersHorizontal, Storefront, Bug, Truck, User, WarningCircle, MagnifyingGlass } from "@phosphor-icons/react";
 import { isStandalone } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -63,6 +63,7 @@ const INDICE: Achado[] = [
   { nome: "Categorias do cardápio", onde: "Cadastros › Categorias", palavras: "grupos ordem secoes", ir: "/categorias" },
   { nome: "Notificações e sons", onde: "App", palavras: "avisos som alerta pedido novo", ir: "notif" },
   { nome: "Instalar o app", onde: "App", palavras: "tela inicial atalho celular", ir: "instalar" },
+  { nome: "Central de Ajuda", onde: "Ajuda", palavras: "tutorial como usar artigos duvidas passo a passo", ir: "/ajuda" },
   { nome: "Fale com o suporte", onde: "Ajuda", palavras: "whatsapp ajuda atendimento", ir: "suporte" },
   { nome: "Termos e privacidade", onde: "Ajuda", palavras: "lgpd dados contrato", ir: "termos" },
   { nome: "Excluir a conta", onde: "App › Avançado", palavras: "apagar deletar encerrar", ir: "avancado" },
@@ -287,6 +288,7 @@ export default function Configuracoes() {
             {INDICACAO_ATIVA && <ItemConfig icone={<Gift size={20} weight="bold" />} nome="Indique e ganhe" apoio="Ganhe prêmios indicando" onClick={() => navigate("/indicar")} />}
 
             <h2 className="cf9-sec">Ajuda</h2>
+            <ItemConfig icone={<Lifebuoy size={20} weight="bold" />} nome="Central de Ajuda" apoio="Tutoriais de cada tela" onClick={() => navigate("/ajuda")} />
             <ItemConfig icone={<IconeWhatsApp size={20} />} nome="Fale com o suporte" apoio="Pelo WhatsApp" onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
             <ItemConfig icone={<Bug size={20} weight="bold" />} nome="Relatar um problema" apoio="Algo não funcionou?" onClick={() => navigate("/relatar-problema")} />
             <ItemConfig icone={<Lightbulb size={20} weight="bold" />} nome="Sugerir uma melhoria" apoio="Conte o que falta no app" onClick={() => navigate("/solicitar-recurso")} />

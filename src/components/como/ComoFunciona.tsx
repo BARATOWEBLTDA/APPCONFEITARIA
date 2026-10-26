@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, Check, Info, PlayCircle, Question } from "@phosphor-icons/react";
+import { ArrowRight, BookOpen, Check, Info, PlayCircle, Question } from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
 import type { Icon } from "@phosphor-icons/react";
 import { contarPassos, fazerTour, travarFundo, type PassoTour } from "./tour";
 import "./comoFunciona.css";
@@ -24,6 +25,8 @@ export type Como = {
   dicas: [Icon, ReactNode][];
   /** dicas com check verde (lista do que tem na tela) no lugar dos ícones */
   checks?: boolean;
+  /** (25/10) artigo da Central de Ajuda desta tela */
+  artigo?: string;
 };
 
 export function ConteudoComo({ c, rotulo, className = "", tour }: { c: Como; rotulo: string; className?: string; tour?: { passos: number; fazer: () => void } }) {
@@ -52,6 +55,7 @@ export function ConteudoComo({ c, rotulo, className = "", tour }: { c: Como; rot
       <ul className={`cf-dicas${c.checks ? " cf-dicas--check" : ""}`}>
         {c.dicas.map(([Ic, t], i) => <li key={i}>{c.checks ? <Check size={16} weight="bold" aria-hidden="true" /> : <Ic size={16} aria-hidden="true" />}<span>{t}</span></li>)}
       </ul>
+      {c.artigo && <Link className="cf-artigo" to={`/ajuda/${c.artigo}`}><BookOpen size={18} weight="bold" aria-hidden="true" />Ver o tutorial completo<ArrowRight size={16} weight="bold" aria-hidden="true" /></Link>}
       {tour && (
         <button type="button" className="cf-tour" onClick={tour.fazer}>
           <PlayCircle size={22} aria-hidden="true" />
