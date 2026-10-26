@@ -118,3 +118,7 @@
 .ig-det-b svg { flex: none; color: var(--ui-texto-2); transition: transform .15s; }
 .ig-det.on .ig-det-b svg { transform: rotate(180deg); }
 .ig-det-c { display: flex; flex-direction: column; gap: 16px; padding: 4px 14px 16px; }
+
+/* (26/10) Poppins: "unidade" cabe no seletor de medida (as opções ganham a largura do texto) */
+.ig-seg button { flex: 1 1 auto; padding: 0 6px; font-size: 14.5px; white-space: nowrap; }
+.ig-foto-links { flex-wrap: nowrap; white-space: nowrap; }

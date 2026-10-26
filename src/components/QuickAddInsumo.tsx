@@ -253,7 +253,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const [tentouSalvar, setTentouSalvar] = useState(false);
   const [categorias, setCategorias] = useState<string[]>(CATEGORIAS_DEFAULT);
   const [verOutras, setVerOutras] = useState(() => EMB_OUTRAS.includes(form.embalagem_tipo));
-  // (24/10) marca, categoria e embalagem ficam em "Mais detalhes" (não mudam o custo)
+  // (24/10) categoria e embalagem ficam em "Mais detalhes" (não mudam o custo); a marca fica embaixo do nome (26/10)
   const [verDetalhes, setVerDetalhes] = useState(false);
   const [usadoEm, setUsadoEm] = useState(0);
 
@@ -412,9 +412,12 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         <Campo ref={nomeRef} rotulo="Nome" obrigatorio placeholder="Ex.: leite condensado" value={form.nome} erro={erroNome}
           onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
       </div>
+      {/* (26/10) a marca logo abaixo do nome: a Doo IA busca a foto pelos dois (antes ficava escondida em "Mais detalhes") */}
+      <Campo rotulo="Marca" opcional placeholder="Ex.: Moça" value={form.marca}
+        onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} />
       <div className="ig-foto-links">
         <button type="button" disabled={buscandoImg || uploadingImg} onClick={() => handleBuscarImagem()}>
-          {buscandoImg ? <span className="ig-gira" aria-hidden="true" /> : <MagnifyingGlass size={16} weight="bold" />}{buscandoImg ? "Buscando..." : "Buscar foto com a Doo IA"}
+          {buscandoImg ? <span className="ig-gira" aria-hidden="true" /> : <MagnifyingGlass size={16} weight="bold" />}{buscandoImg ? "Buscando..." : "Achar foto com IA"}
         </button>
         <span aria-hidden="true">·</span>
         <button type="button" disabled={buscandoImg || uploadingImg} onClick={() => galleryRef.current?.click()}><ImagemIc size={16} weight="bold" />Do aparelho</button>
@@ -493,20 +496,18 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           </small>
         </div>
       ) : (
-        <p className="ig-dica">Coloque quanto vem e quanto pagou: o Doonly calcula o custo de cada {form.unidade === "un" ? "unidade" : "grama"} para a ficha técnica.</p>
+        <p className="ig-dica">O Doonly calcula o custo por {form.unidade === "un" ? "unidade" : "grama"}.</p>
       )}
       </section>
 
-      {/* (24/10) Mais detalhes: marca, categoria e embalagem (opcionais) */}
+      {/* (24/10) Mais detalhes: categoria e embalagem (opcionais) */}
       <div className={`ig-det${verDetalhes ? " on" : ""}`}>
         <button type="button" className="ig-det-b" aria-expanded={verDetalhes} onClick={() => setVerDetalhes(v => !v)}>
-          <span><b>Mais detalhes</b><small>{[form.marca.trim(), rotuloCategoria(form.categoria), form.embalagem_tipo !== "Avulso" ? form.embalagem_tipo : ""].filter(Boolean).join(" · ") || "Marca, categoria e embalagem"}</small></span>
+          <span><b>Mais detalhes</b><small>{[rotuloCategoria(form.categoria), form.embalagem_tipo !== "Avulso" ? form.embalagem_tipo : ""].filter(Boolean).join(" · ") || "Categoria e embalagem"}</small></span>
           <CaretDown size={18} weight="bold" aria-hidden="true" />
         </button>
         {verDetalhes && (
           <div className="ig-det-c">
-      <Campo rotulo="Marca" opcional placeholder="Ex.: Moça" value={form.marca}
-        onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} />
       <div>
         <p className="ig-rot">Categoria</p>
         <div className="ig-chips ig-chips-cat">
