@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import {
@@ -253,7 +253,7 @@ export default function AdminLayout() {
 
       {/* Main content */}
       <main className="adm-main">
-        <Outlet />
+        <Suspense fallback={null}><Outlet /></Suspense>
       </main>
 
       <style>{`

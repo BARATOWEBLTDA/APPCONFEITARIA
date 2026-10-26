@@ -41,14 +41,14 @@ export const ARTIGOS: ArtigoAjuda[] = [
     slug: 'pedidos',
     tema: 'vendas',
     titulo: 'Como usar os Pedidos',
-    resumo: 'Siga o pedido da Daniela, passo a passo.',
+    resumo: 'Do pedido novo à entrega.',
     minutos: 2,
     abrir: { rota: '/pedidos', rotulo: 'Abrir Pedidos' },
     secoes: [
       {
         id: 'aceitar',
         titulo: 'Aceitar o pedido',
-        exemplo: 'A Daniela pediu salgados pelo cardápio.',
+        exemplo: 'A Daniela pediu salgados.',
         imagens: [{ src: '/ajuda/pedidos-aceitar.webp', alt: 'Aba Para aceitar com o pedido da Daniela', marcas: [
           'Abra **Para aceitar**.',
           'Toque em **Aceitar**.',
@@ -107,7 +107,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'nova',
         titulo: 'Pedido do balcão',
-        exemplo: 'Chegou pelo WhatsApp ou balcão?',
+        exemplo: 'Veio pelo WhatsApp?',
         imagens: [{ src: '/ajuda/pedidos-nova-venda.webp', alt: 'Botão mais no menu de baixo', marcas: [
           'Toque no **+**: **Nova venda**.',
         ] }],

@@ -904,7 +904,7 @@ export default function Inicio() {
       {/* (22/10) busca rápida, como na Dora: acha qualquer tela ou ação ("pix", "cupom", "horário"…) */}
       <section className="ini-section ini-section--busca">
         <button type="button" className="ini-busca" onClick={abrirBuscaRapida}>
-          <MagnifyingGlass size={20} aria-hidden="true" /><span>Buscar tela ou o que você quer fazer</span>
+          <MagnifyingGlass size={20} aria-hidden="true" /><span>Buscar no app</span>
         </button>
       </section>
 

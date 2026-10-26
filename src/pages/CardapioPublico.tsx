@@ -221,7 +221,7 @@ function PedirOrcamento({ codigo, cor, pc }: { codigo: string; cor: string; pc?:
   return (
     <a className={`cp-orc${pc ? ' cp-orc--pc' : ''}`} href={`/o/${codigo}`}>
       <span className="cp-orc-ic" style={{ color: cor }} aria-hidden="true"><FileText size={22} weight="duotone" /></span>
-      <span className="cp-orc-tx"><b>Quer algo diferente?</b><small>{pc ? 'Peça um orçamento' : 'Conte a sua ideia e peça um orçamento'}</small></span>
+      <span className="cp-orc-tx"><b>Quer algo diferente?</b><small>Peça um orçamento</small></span>
       <CaretRight size={18} weight="bold" aria-hidden="true" />
     </a>
   )

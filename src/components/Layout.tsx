@@ -11,7 +11,7 @@ import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import BuscaRapida from "@/components/BuscaRapida";
 import PerguntaSons from "@/components/PerguntaSons";
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { Suspense, useState, useEffect, useRef, type ReactNode } from "react";
 import "@/styles/mobileClaro.css";
 import "@/styles/desktopPadrao.css";
 import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, CaretDoubleLeft, CaretDoubleRight,
@@ -156,7 +156,7 @@ export default function Layout() {
   useEffect(() => {
     document.documentElement.style.setProperty("--sidebar-w", recolhido ? "72px" : "236px");
   }, [recolhido]);
-  // (22/10) letra mais leve e títulos menos pretos só no app da confeiteira (ver index.css, "Geist App")
+  // classe do app da confeiteira (cores do texto em index.css)
   useEffect(() => {
     document.documentElement.classList.add("app-conf");
     return () => document.documentElement.classList.remove("app-conf");
@@ -280,7 +280,7 @@ export default function Layout() {
       <main className="layout-main">
         {/* (07/10 · 2.99) O sininho e a janelinha de avisos saíram: o botão ficava escondido em todos os tamanhos de tela.
             As notificações continuam na tela "Notificações", pelo menu da foto. */}
-        <Outlet />
+        <Suspense fallback={null}><Outlet /></Suspense>
       </main>
 
       {/* ── Drawer "Mais" (Proposta D) ── */}

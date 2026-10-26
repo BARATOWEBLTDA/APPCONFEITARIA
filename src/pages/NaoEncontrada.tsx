@@ -32,7 +32,7 @@ export default function NaoEncontrada() {
         <Mascote pose="senha" className="ne-masc" />
         <NomeDoonly className="ne-nome" />
         <h1 className="ne-h">Essa página não existe</h1>
-        <p className="ne-p">O link pode estar errado ou a página mudou de lugar.</p>
+        <p className="ne-p">Confira o link ou volte ao início.</p>
         <Botao
           cheio
           icone={<House size={20} weight="bold" />}

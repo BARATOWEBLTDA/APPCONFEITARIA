@@ -110,7 +110,7 @@ export default function AdminLayout() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
-        .adm-root { display: flex; min-height: 100vh; font-family: 'Geist', sans-serif; background: #f9fafb; }
+        .adm-root { display: flex; min-height: 100vh; font-family: 'Poppins', sans-serif; background: #f9fafb; }
 
         /* Sidebar */
         .adm-sidebar { width: 240px; min-height: 100vh; background: #181419; display: flex; flex-direction: column; position: fixed; left: 0; top: 0; z-index: 30; }
@@ -118,16 +118,16 @@ export default function AdminLayout() {
         .adm-admin-badge { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; font-size: var(--font-caption); font-weight: var(--fw-bold); padding: 0.2rem 0.6rem; border-radius: var(--radius-xl); letter-spacing: 0.5px; }
 
         .adm-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; }
-        .adm-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.9rem; border-radius: var(--radius-md); border: none; background: none; cursor: pointer; font-family: 'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-medium); color: rgba(255,255,255,0.6); width: 100%; text-align: left; transition: all 0.15s; }
+        .adm-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.9rem; border-radius: var(--radius-md); border: none; background: none; cursor: pointer; font-family: 'Poppins', sans-serif; font-size: var(--font-button); font-weight: var(--fw-medium); color: rgba(255,255,255,0.6); width: 100%; text-align: left; transition: all 0.15s; }
         .adm-nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
         .adm-nav-item.active { background: rgba(249,0,122,0.15); color: #f9007a; border-left: 3px solid #f9007a; padding-left: calc(0.9rem - 3px); }
         .adm-nav-emoji { font-size: var(--font-input); }
         .adm-nav-label { font-size: var(--font-helper); }
 
         .adm-sidebar-bottom { padding: 1rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 0.5rem; }
-        .adm-app-btn { padding: 0.6rem 0.9rem; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: none; border-radius: var(--radius-sm); font-family: 'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-medium); cursor: pointer; text-align: left; transition: background 0.15s; }
+        .adm-app-btn { padding: 0.6rem 0.9rem; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: none; border-radius: var(--radius-sm); font-family: 'Poppins', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-medium); cursor: pointer; text-align: left; transition: background 0.15s; }
         .adm-app-btn:hover { background: rgba(255,255,255,0.12); }
-        .adm-logout-btn { padding: 0.6rem 0.9rem; background: rgba(239,68,68,0.1); color: #ef4444; border: none; border-radius: var(--radius-sm); font-family: 'Geist', sans-serif; font-size: var(--font-helper); font-weight: 700; cursor: pointer; text-align: left; }
+        .adm-logout-btn { padding: 0.6rem 0.9rem; background: rgba(239,68,68,0.1); color: #ef4444; border: none; border-radius: var(--radius-sm); font-family: 'Poppins', sans-serif; font-size: var(--font-helper); font-weight: 700; cursor: pointer; text-align: left; }
 
         .adm-main { margin-left: 240px; flex: 1; padding: 2rem; min-height: 100vh; }
 

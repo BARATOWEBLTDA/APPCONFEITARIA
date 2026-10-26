@@ -202,7 +202,7 @@ export default function FinanceiroTransacoes() {
           const sd = g.itens.filter(i => !i.estornado).reduce((s, i) => s + (i.tipo === "entrada" ? i.valor : -i.valor), 0);
           return (
             <section key={`${g.dia}-${gi}`} className="tx-dia">
-              <p className="tx-dia-t"><b>{rotuloDia(g.dia)}</b><span>Saldo do dia <em>{comSinal(sd)}</em></span></p>
+              <p className="tx-dia-t"><b>{rotuloDia(g.dia)}</b><span>Saldo <em>{comSinal(sd)}</em></span></p>
               <div className="tx-lista">
                 {g.itens.map((i, ii) => {
                   const sub = i.origem === "pagamento"

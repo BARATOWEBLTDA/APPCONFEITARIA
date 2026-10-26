@@ -249,7 +249,7 @@ export default function Categorias() {
             texto='Crie categorias como "Bolos", "Doces" e "Salgados". No cardápio, o cliente acha o que quer mais rápido.'
             acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={openNova}>Criar categoria</Botao>} />
         ) : (<>
-          <Titulo contagem={categorias.length} apoio="O cardápio mostra as categorias nesta ordem."
+          <Titulo contagem={categorias.length} apoio="Nesta ordem no cardápio."
             acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={openNova}><span className="ct-g">Nova categoria</span><span className="ct-c">Nova</span></Botao>}>Suas categorias</Titulo>
           <section className="ct-card">
             {categorias.map(cat => (
@@ -262,7 +262,7 @@ export default function Categorias() {
               </div>
             ))}
           </section>
-          <p className="ct-dica"><Info size={20} weight="bold" aria-hidden="true" />Produto sem categoria só aparece em "Todos" no cardápio.</p>
+          <p className="ct-dica"><Info size={20} weight="bold" aria-hidden="true" />Sem categoria, só aparece em "Todos".</p>
         </>)}
       </div>
 
@@ -284,7 +284,7 @@ export default function Categorias() {
         <div className="ct-form">
           <div className="ct-fo-topo">
             <Icone src={fotoForm} grande />
-            <span><b>{form.nome.trim() || "Nova categoria"}</b><small>{modoFoto === "auto" ? (fotoForm ? "Foto do primeiro produto" : "Sem foto: aparece quando tiver produto com foto") : modoFoto === "produto" ? "Foto de um produto" : "Foto enviada"}</small></span>
+            <span><b>{form.nome.trim() || "Nova categoria"}</b><small>{modoFoto === "auto" ? (fotoForm ? "Foto do primeiro produto" : "Sem foto por enquanto") : modoFoto === "produto" ? "Foto de um produto" : "Foto enviada"}</small></span>
           </div>
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: bolos, doces, salgados" value={form.nome} maxLength={40}
             onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
@@ -299,7 +299,7 @@ export default function Categorias() {
               <div className={`ct-fo-g${modoFoto === "produto" ? " on" : ""}`}>
                 <button type="button" role="radio" aria-checked={modoFoto === "produto"} disabled={!fotosForm.length} className={`ct-fo${modoFoto === "produto" ? " on" : ""}`}
                   onClick={() => { setModoFoto("produto"); if (!fotosForm.includes(form.imagem_url || "")) setForm(f => ({ ...f, imagem_url: fotosForm[0] })); }}>
-                  <i aria-hidden="true" /><span><b>Foto de um produto</b><small>{fotosForm.length ? "Escolha abaixo qual produto" : "Nenhum produto com foto nesta categoria"}</small></span>
+                  <i aria-hidden="true" /><span><b>Foto de um produto</b><small>{fotosForm.length ? "Escolha abaixo qual produto" : "Nenhum produto com foto"}</small></span>
                 </button>
                 {modoFoto === "produto" && (
                   <div className="ct-fo-mini">

@@ -74,8 +74,8 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
           className="clc-chave" disabled={salvando} onClick={alternar}><span /></button>
       </div>
       <div className="clc-bts">
-        <button type="button" className="clc-b clc-b--pri" onClick={compartilhar}><ShareNetwork size={20} weight="bold" aria-hidden="true" /><span>Compartilhar</span></button>
-        <button type="button" className="clc-b" onClick={copiar}><Copy size={20} weight="bold" aria-hidden="true" /><span>Copiar link</span></button>
+        <button type="button" className="clc-b clc-b--pri" onClick={compartilhar}><ShareNetwork size={20} weight="bold" aria-hidden="true" /><span>Enviar</span></button>
+        <button type="button" className="clc-b" onClick={copiar}><Copy size={20} weight="bold" aria-hidden="true" /><span>Copiar</span></button>
         <button type="button" className="clc-b" onClick={() => navigate("/cardapio-preview")}><Eye size={20} weight="bold" aria-hidden="true" /><span>Ver</span></button>
         <button type="button" className="clc-b" onClick={baixarQr} disabled={!qr}><QrCode size={20} weight="bold" aria-hidden="true" /><span>QR Code</span></button>
       </div>

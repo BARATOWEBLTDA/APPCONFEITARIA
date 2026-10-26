@@ -128,7 +128,7 @@ export default function Custos() {
           <div className="cu-k"><small>Fixos por mês</small><b>{brl(totalFixos)}</b><i>{qtdFixosAtivos} {qtdFixosAtivos === 1 ? "ativo" : "ativos"}</i></div>
           <div className="cu-k"><small>Seu salário</small><b>{brl(mo.salario_mensal)}</b><i>mão de obra</i></div>
           <div className="cu-k destaque"><small>Custo da sua hora</small><b>{brl(custoHora)}</b><i>fixos + salário</i></div>
-          <div className="cu-k"><small>Variáveis por pedido</small><b>{brl(varPorPedido)}</b><i>{varPct > 0 ? `+ ${temPctPorForma ? "até " : ""}${String(varPct).replace(".", ",")}% da venda · ` : ""}{ativosVar.length} {ativosVar.length === 1 ? "ativo" : "ativos"}</i></div>
+          <div className="cu-k"><small>Por pedido</small><b>{brl(varPorPedido)}</b><i>{varPct > 0 ? `+ ${temPctPorForma ? "até " : ""}${String(varPct).replace(".", ",")}% da venda` : `${ativosVar.length} ${ativosVar.length === 1 ? "ativo" : "ativos"}`}</i></div>
         </div>
 
         <div className="cu-grid">
@@ -136,7 +136,7 @@ export default function Custos() {
             <div className="cu-ct"><span className="cu-ic"><Buildings size={18} weight="duotone" /></span><div><b>Custos fixos</b><small>Pagos todo mês</small></div>
               <button type="button" className="cu-add" onClick={() => setEditFixo("novo")}><Plus size={14} weight="bold" />Adicionar</button></div>
             {carregando ? <div className="cu-ph" /> : fixos.length === 0 ? (
-              <p className="cu-vazio">Nenhum ainda. Ex.: aluguel, internet, conta de luz.</p>
+              <p className="cu-vazio">Ex.: aluguel, internet, luz.</p>
             ) : fixos.map(f => (
               <button type="button" key={f.id} className={`cu-it ${f.ativo ? "" : "off"}`} onClick={() => setEditFixo(f)}>
                 <div className="cu-it-t"><b>{f.nome}</b>
@@ -159,7 +159,7 @@ export default function Custos() {
           </section>
 
           <section className="cu-card cu-a-var">
-            <div className="cu-ct"><span className="cu-ic"><Percent size={18} weight="duotone" /></span><div><b>Custos variáveis</b><small>Acompanham cada venda</small></div>
+            <div className="cu-ct"><span className="cu-ic"><Percent size={18} weight="duotone" /></span><div><b>Custos variáveis</b><small>A cada venda</small></div>
               <button type="button" className="cu-add" onClick={() => setEditVar("novo")}><Plus size={14} weight="bold" />Adicionar</button></div>
             {carregando ? <div className="cu-ph" /> : variaveis.length === 0 ? (
               <p className="cu-vazio">Nenhum ainda. Ex.: maquininha, embalagem.</p>
@@ -251,7 +251,7 @@ function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFi
     onFeito();
   };
   return (
-    <Folha titulo={item ? "Editar custo fixo" : "Novo custo fixo"} sub="Um gasto que vem todo mês, no mesmo valor" onClose={onClose}>
+    <Folha titulo={item ? "Editar custo fixo" : "Novo custo fixo"} sub="Todo mês, no mesmo valor" onClose={onClose}>
       <label className="fo-lb" htmlFor="cf-n">Nome</label>
       <input id="cf-n" className="fo-txt" placeholder="Ex.: Aluguel do ateliê" value={nome} onChange={e => { setNome(e.target.value); setErro(""); }} />
       <div className="fo-row">
@@ -259,7 +259,7 @@ function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFi
         <div><label className="fo-lb" htmlFor="cf-d">Vence dia <em>(opcional)</em></label><div className="fo-in"><input id="cf-d" inputMode="numeric" placeholder="Ex.: 5" value={dia} onChange={e => { const d = e.target.value.replace(/\D/g, "").slice(0, 2); if (Number(d) > 31) { setErro("O dia de vencimento vai de 1 a 31"); return; } setDia(d); setErro(""); }} /></div></div>
       </div>
       <div className="fo-dica">{Number(dia) >= 1 && Number(dia) <= 31 ? <>Todo mês, uma conta de <b>{brl(num(valor))}</b> vencendo no <b>dia {Number(dia)}</b> aparece em <b>A pagar</b>. Ela só sai do caixa quando você pagar.</> : <>Com o dia de vencimento, este custo vira uma conta em <b>A pagar</b> todo mês, sozinho.</>}</div>
-      <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no custo da sua hora e gera a conta do mês" : "Não conta nem gera conta enquanto estiver pausado"} />
+      <Switch ligado={ativo} onToggle={() => setAtivo(a => !a)} titulo={ativo ? "Ativo" : "Pausado"} sub={ativo ? "Entra no custo da hora e no mês" : "Não entra nas contas"} />
       {erro && <p className="fo-erro">{erro}</p>}
       {excluir ? <Excluir nome={item?.nome || ""} ocupado={ocupado} onNao={() => setExcluir(false)} onSim={apagar} /> : (<>
         <button type="button" className="fo-cta" onClick={salvar} disabled={ocupado}>{ocupado ? "Salvando…" : item ? "Salvar" : "Cadastrar custo fixo"}</button>

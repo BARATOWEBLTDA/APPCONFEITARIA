@@ -10,14 +10,14 @@ import { BookOpenText, Cake, CalendarCheck, ChatCircleDots, Crown, CurrencyCircl
 /** "Doo IA" (21/10, antes "Assistente virtual"): o que dá pra pedir pra Doo. Aparece pra quem ainda não é PRO;
  *  quem é PRO toca num exemplo e a conversa abre já com o pedido escrito. */
 const EXEMPLOS = [
-  { e: CurrencyCircleDollar, t: "Calcular preço", d: "De um bolo ou doce", p: "Calcular o preço de um bolo" },
-  { e: Receipt, t: "Registrar pedido", d: "Direto pela conversa", p: "Registrar um pedido", novo: true },
-  { e: BookOpenText, t: "Criar receita", d: "Com as quantidades", p: "Criar receita de bolo" },
-  { e: Package, t: "Ingrediente", d: "Cadastre com preço", p: "Cadastrar um ingrediente" },
-  { e: PencilSimpleLine, t: "Legenda", d: "Para o Instagram", p: "Criar legenda para o Instagram" },
-  { e: ChatCircleDots, t: "Responder", d: "Para o seu cliente", p: "Escrever uma mensagem para um cliente" },
-  { e: Cake, t: "Topo de bolo", d: "A arte para imprimir", p: "Criar um topo de bolo" },
-  { e: CalendarCheck, t: "Minha semana", d: "Produção e compras", p: "Planejar produção da semana" },
+  { e: CurrencyCircleDollar, t: "Calcular preço", d: "Bolo ou doce", p: "Calcular o preço de um bolo" },
+  { e: Receipt, t: "Novo pedido", d: "Pela conversa", p: "Registrar um pedido", novo: true },
+  { e: BookOpenText, t: "Criar receita", d: "Com quantidades", p: "Criar receita de bolo" },
+  { e: Package, t: "Ingrediente", d: "Com o preço", p: "Cadastrar um ingrediente" },
+  { e: PencilSimpleLine, t: "Legenda", d: "Instagram", p: "Criar legenda para o Instagram" },
+  { e: ChatCircleDots, t: "Responder", d: "Seu cliente", p: "Escrever uma mensagem para um cliente" },
+  { e: Cake, t: "Topo de bolo", d: "Para imprimir", p: "Criar um topo de bolo" },
+  { e: CalendarCheck, t: "Minha semana", d: "Produção", p: "Planejar produção da semana" },
 ];
 
 export default function AssistenteVirtual() {
@@ -31,8 +31,8 @@ export default function AssistenteVirtual() {
       <div className="av-wrap">
         <div className="av-hero">
           <img src="/Sistema/doo.png" alt="" className="av-doo" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-          <h1>Sua assistente de confeitaria</h1>
-          <p>Calcula preços, cria receitas, registra pedidos e escreve por você.</p>
+          <h1>Oi! Eu sou a Doo</h1>
+          <p>Preços, receitas, pedidos e textos.</p>
         </div>
         <p className="av-lbl">O que você pode pedir para a Doo</p>
         <div className="av-grid">

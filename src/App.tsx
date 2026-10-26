@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import CompletarCadastro from "@/components/CompletarCadastro";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
 import { erroDeConexao } from "@/lib/erros";
@@ -15,82 +15,144 @@ import { AceiteTermos } from "@/components/termos/AceiteTermos";
 import { ContaAtiva } from "@/components/termos/ContaAtiva";
 import { TERMOS_VERSAO } from "@/lib/termos";
 import Auth from "@/pages/Auth";
-import EsqueciSenha from "@/pages/EsqueciSenha";
-import ResetPassword from "@/pages/ResetPassword";
-import Termos from "@/pages/Termos";
-import Privacidade from "@/pages/Privacidade";
 import Layout from "@/components/Layout";
-import Pedidos from "@/pages/Pedidos";
 import { useParams } from "react-router-dom";
 function PedidoVerRedirect() { const { id } = useParams(); return <Navigate to={`/pedidos/${id}/editar`} replace />; }
-import EditarPedido from "@/pages/EditarPedido";
-import NovaVenda from "@/pages/NovaVenda";
 import Inicio from "@/pages/Inicio";
-import Noticias from "@/pages/Noticias";
-import NoticiaDetalhe from "@/pages/NoticiaDetalhe";
-import Agenda from "@/pages/Agenda";
-import Insumos from "@/pages/Insumos";
-import Assinar from "@/pages/Assinar";
-import ReceitasV2 from "@/pages/ReceitasV2";
 const RECEITAS_ATIVAS = false;
-import SolicitarRecurso from "@/pages/SolicitarRecurso";
-import RelatarProblema from "@/pages/RelatarProblema";
-import AssistenteVirtual from "@/pages/AssistenteVirtual";
-import MinhaAssinatura from "@/pages/MinhaAssinatura";
-import AdminLogin from "@/pages/admin/AdminLogin";
-import AdminLayout from "@/pages/admin/AdminLayout";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminUsuarios from "@/pages/admin/AdminUsuarios";
-import AdminReceitas from "@/pages/admin/AdminReceitas";
-import AdminReceitasDoonly from "@/pages/admin/AdminReceitasDoonly";
-import AdminPDFs from "@/pages/admin/AdminPDFs";
-import AdminNotifTemplates from "@/pages/admin/AdminNotifTemplates";
-import AdminBanner from "@/pages/admin/AdminBanner";
-import AdminBannersProntos from "@/pages/admin/AdminBannersProntos";
-import AdminNoticias from "@/pages/admin/AdminNoticias";
-import AdminIdeias from "@/pages/admin/AdminIdeias";
-import AdminAutores from "@/pages/admin/AdminAutores";
-import AdminRelatorios from "@/pages/admin/AdminRelatorios";
-import AdminAjuda from "@/pages/admin/AdminAjuda";
-import Configuracoes from "@/pages/Configuracoes";
-import NotificacoesSons from "@/pages/NotificacoesSons";
-import MensagensWhatsApp from "@/pages/MensagensWhatsApp";
-import Indicar from "@/pages/Indicar";
-import CardapioPrevia from "@/pages/CardapioPrevia";
-import CardapioResumo from "@/pages/CardapioResumo";
-import Produtos from "@/pages/Produtos";
-import Categorias from "@/pages/Categorias";
-import Clientes from "@/pages/Clientes";
-import Cadastros from "@/pages/Cadastros";
-import Complementos from "@/pages/Complementos";
-import Orcamentos from "@/pages/Orcamentos";
-import Ajuda from "@/pages/Ajuda";
-import AjudaArtigo from "@/pages/AjudaArtigo";
-import OrcamentoEditar from "@/pages/OrcamentoEditar";
-import OrcamentoPedir from "@/pages/OrcamentoPedir";
-import OrcamentoVer from "@/pages/OrcamentoVer";
-import Marketing from "@/pages/Marketing";
-import ClientePerfil from "@/pages/ClientePerfil";
-import CardapioDesign from "@/pages/CardapioDesign";
 /** (17/10) "Entrega e pagamento" agora fica dentro de Dados da loja: o link antigo abre lá, já nessa parte */
 function IrParaEntrega() {
   const de = (useLocation().state as any)?.de;
   return <Navigate to="/cardapio-config" replace state={{ secao: "entrega", ...(de ? { de } : {}) }} />;
 }
-import DadosLoja from "@/pages/DadosLoja";
-import CardapioPublico from "@/pages/CardapioPublico";
 import FaixaComoCliente from "@/components/cardapio/FaixaComoCliente";
-import Cardapio from "@/pages/Cardapio";
-import Financeiro from "@/pages/Financeiro";
-import FinanceiroTransacoes from "@/pages/FinanceiroTransacoes";
-import FinanceiroAReceber from "@/pages/FinanceiroAReceber";
-import FinanceiroAPagar from "@/pages/FinanceiroAPagar";
-import Custos from "@/pages/Custos";
-import EmBreve from "@/pages/EmBreve";
-import Lucratividade from "@/pages/Lucratividade";
-import FichaTecnica from "@/pages/FichaTecnica";
-import NaoEncontrada from "@/pages/NaoEncontrada";
 import SemInternet from "@/components/sistema/SemInternet";
+
+/* (26/10) cada tela vira um pedaço separado do app: abre só o necessário (antes eram 3,6 MB de uma vez, o que segurava a abertura).
+   Depois que a primeira tela aparece, as outras são baixadas em segundo plano (preCarregarTelas), então trocar de tela continua rápido. */
+const EsqueciSenha = lazy(() => import("@/pages/EsqueciSenha"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const Termos = lazy(() => import("@/pages/Termos"));
+const Privacidade = lazy(() => import("@/pages/Privacidade"));
+const Pedidos = lazy(() => import("@/pages/Pedidos"));
+const EditarPedido = lazy(() => import("@/pages/EditarPedido"));
+const NovaVenda = lazy(() => import("@/pages/NovaVenda"));
+const Noticias = lazy(() => import("@/pages/Noticias"));
+const NoticiaDetalhe = lazy(() => import("@/pages/NoticiaDetalhe"));
+const Agenda = lazy(() => import("@/pages/Agenda"));
+const Insumos = lazy(() => import("@/pages/Insumos"));
+const Assinar = lazy(() => import("@/pages/Assinar"));
+const ReceitasV2 = lazy(() => import("@/pages/ReceitasV2"));
+const SolicitarRecurso = lazy(() => import("@/pages/SolicitarRecurso"));
+const RelatarProblema = lazy(() => import("@/pages/RelatarProblema"));
+const AssistenteVirtual = lazy(() => import("@/pages/AssistenteVirtual"));
+const MinhaAssinatura = lazy(() => import("@/pages/MinhaAssinatura"));
+const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
+const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const AdminUsuarios = lazy(() => import("@/pages/admin/AdminUsuarios"));
+const AdminReceitas = lazy(() => import("@/pages/admin/AdminReceitas"));
+const AdminReceitasDoonly = lazy(() => import("@/pages/admin/AdminReceitasDoonly"));
+const AdminPDFs = lazy(() => import("@/pages/admin/AdminPDFs"));
+const AdminNotifTemplates = lazy(() => import("@/pages/admin/AdminNotifTemplates"));
+const AdminBanner = lazy(() => import("@/pages/admin/AdminBanner"));
+const AdminBannersProntos = lazy(() => import("@/pages/admin/AdminBannersProntos"));
+const AdminNoticias = lazy(() => import("@/pages/admin/AdminNoticias"));
+const AdminIdeias = lazy(() => import("@/pages/admin/AdminIdeias"));
+const AdminAutores = lazy(() => import("@/pages/admin/AdminAutores"));
+const AdminRelatorios = lazy(() => import("@/pages/admin/AdminRelatorios"));
+const AdminAjuda = lazy(() => import("@/pages/admin/AdminAjuda"));
+const Configuracoes = lazy(() => import("@/pages/Configuracoes"));
+const NotificacoesSons = lazy(() => import("@/pages/NotificacoesSons"));
+const MensagensWhatsApp = lazy(() => import("@/pages/MensagensWhatsApp"));
+const Indicar = lazy(() => import("@/pages/Indicar"));
+const CardapioPrevia = lazy(() => import("@/pages/CardapioPrevia"));
+const CardapioResumo = lazy(() => import("@/pages/CardapioResumo"));
+const Produtos = lazy(() => import("@/pages/Produtos"));
+const Categorias = lazy(() => import("@/pages/Categorias"));
+const Clientes = lazy(() => import("@/pages/Clientes"));
+const Cadastros = lazy(() => import("@/pages/Cadastros"));
+const Complementos = lazy(() => import("@/pages/Complementos"));
+const Orcamentos = lazy(() => import("@/pages/Orcamentos"));
+const Ajuda = lazy(() => import("@/pages/Ajuda"));
+const AjudaArtigo = lazy(() => import("@/pages/AjudaArtigo"));
+const OrcamentoEditar = lazy(() => import("@/pages/OrcamentoEditar"));
+const OrcamentoPedir = lazy(() => import("@/pages/OrcamentoPedir"));
+const OrcamentoVer = lazy(() => import("@/pages/OrcamentoVer"));
+const Marketing = lazy(() => import("@/pages/Marketing"));
+const ClientePerfil = lazy(() => import("@/pages/ClientePerfil"));
+const CardapioDesign = lazy(() => import("@/pages/CardapioDesign"));
+const DadosLoja = lazy(() => import("@/pages/DadosLoja"));
+const CardapioPublico = lazy(() => import("@/pages/CardapioPublico"));
+const Cardapio = lazy(() => import("@/pages/Cardapio"));
+const Financeiro = lazy(() => import("@/pages/Financeiro"));
+const FinanceiroTransacoes = lazy(() => import("@/pages/FinanceiroTransacoes"));
+const FinanceiroAReceber = lazy(() => import("@/pages/FinanceiroAReceber"));
+const FinanceiroAPagar = lazy(() => import("@/pages/FinanceiroAPagar"));
+const Custos = lazy(() => import("@/pages/Custos"));
+const EmBreve = lazy(() => import("@/pages/EmBreve"));
+const Lucratividade = lazy(() => import("@/pages/Lucratividade"));
+const FichaTecnica = lazy(() => import("@/pages/FichaTecnica"));
+const NaoEncontrada = lazy(() => import("@/pages/NaoEncontrada"));
+const PRE_CARREGAR: (() => Promise<unknown>)[] = [
+  () => import("@/pages/EsqueciSenha"),
+  () => import("@/pages/ResetPassword"),
+  () => import("@/pages/Termos"),
+  () => import("@/pages/Privacidade"),
+  () => import("@/pages/Pedidos"),
+  () => import("@/pages/EditarPedido"),
+  () => import("@/pages/NovaVenda"),
+  () => import("@/pages/Noticias"),
+  () => import("@/pages/NoticiaDetalhe"),
+  () => import("@/pages/Agenda"),
+  () => import("@/pages/Insumos"),
+  () => import("@/pages/Assinar"),
+  () => import("@/pages/ReceitasV2"),
+  () => import("@/pages/SolicitarRecurso"),
+  () => import("@/pages/RelatarProblema"),
+  () => import("@/pages/AssistenteVirtual"),
+  () => import("@/pages/MinhaAssinatura"),
+  () => import("@/pages/Configuracoes"),
+  () => import("@/pages/NotificacoesSons"),
+  () => import("@/pages/MensagensWhatsApp"),
+  () => import("@/pages/Indicar"),
+  () => import("@/pages/CardapioPrevia"),
+  () => import("@/pages/CardapioResumo"),
+  () => import("@/pages/Produtos"),
+  () => import("@/pages/Categorias"),
+  () => import("@/pages/Clientes"),
+  () => import("@/pages/Cadastros"),
+  () => import("@/pages/Complementos"),
+  () => import("@/pages/Orcamentos"),
+  () => import("@/pages/Ajuda"),
+  () => import("@/pages/AjudaArtigo"),
+  () => import("@/pages/OrcamentoEditar"),
+  () => import("@/pages/OrcamentoPedir"),
+  () => import("@/pages/OrcamentoVer"),
+  () => import("@/pages/Marketing"),
+  () => import("@/pages/ClientePerfil"),
+  () => import("@/pages/CardapioDesign"),
+  () => import("@/pages/DadosLoja"),
+  () => import("@/pages/CardapioPublico"),
+  () => import("@/pages/Cardapio"),
+  () => import("@/pages/Financeiro"),
+  () => import("@/pages/FinanceiroTransacoes"),
+  () => import("@/pages/FinanceiroAReceber"),
+  () => import("@/pages/FinanceiroAPagar"),
+  () => import("@/pages/Custos"),
+  () => import("@/pages/EmBreve"),
+  () => import("@/pages/Lucratividade"),
+  () => import("@/pages/FichaTecnica"),
+  () => import("@/pages/NaoEncontrada"),
+];
+let preCarregou = false;
+function preCarregarTelas() {
+  if (preCarregou) return; preCarregou = true;
+  let i = 0;
+  const proximo = () => { if (i >= PRE_CARREGAR.length) return; PRE_CARREGAR[i++]().catch(() => {}).finally(() => window.setTimeout(proximo, 40)); };
+  const ocioso = (window as any).requestIdleCallback || ((f: () => void) => window.setTimeout(f, 1500));
+  window.setTimeout(() => ocioso(proximo), 1500);
+}
 
 
 
@@ -429,10 +491,13 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  // (26/10) quem está logado no app: baixa as outras telas em segundo plano (cardápio do cliente e orçamento público não)
+  useEffect(() => { if (temSessaoGuardada() && !/^\/(c|o|orcamento|admin|termos|privacidade)(\/|$)/.test(window.location.pathname)) preCarregarTelas(); }, []);
   // (07/10) a abertura agora é uma tela só, no index.html; quem tira ela do ar é o src/lib/abertura.ts
   return (
     <NotificationProvider>
     <BrowserRouter>
+      <Suspense fallback={null}>
       <Routes>
         <Route path="/login" element={<Auth />} />
         <Route path="/cadastro" element={<Auth />} />
@@ -539,6 +604,7 @@ export default function App() {
             A raiz "/" com ?ref= continua na rota de cima. */}
         <Route path="*" element={<NaoEncontrada />} />
       </Routes>
+      </Suspense>
       <SemInternet />
       <AbrirPelaNotificacao />
       <Analytics />

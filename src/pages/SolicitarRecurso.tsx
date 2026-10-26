@@ -180,7 +180,7 @@ export default function SolicitarRecurso() {
               </div>
               {erro && <p className="aj-erro" role="alert">{erro}</p>}
               <Botao cheio carregando={enviando} disabled={!podeEnviar} icone={<PaperPlaneTilt size={20} weight="fill" />} onClick={enviar}>Enviar ideia</Botao>
-              {titulo.trim().length < 3 && <p className="aj-dica">Escreva o que você gostaria para poder enviar.</p>}
+              {titulo.trim().length < 3 && <p className="aj-dica">Escreva sua ideia para enviar.</p>}
             </section>
           )
         )}

@@ -615,7 +615,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
               </button>
             ))}
           </div>
-          <p className="dl-lista-salva"><Check size={16} weight="bold" aria-hidden="true" />Tudo salva sozinho quando você fecha a parte.</p>
+          <p className="dl-lista-salva"><Check size={16} weight="bold" aria-hidden="true" />Salva sozinho ao fechar a parte.</p>
         </div>
         {gaveta}
       </>

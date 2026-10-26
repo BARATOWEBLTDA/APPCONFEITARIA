@@ -277,7 +277,7 @@ export function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose:
       <div className="fo-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quandoPg === q ? "on" : ""} onClick={() => setQuandoPg(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
       {quandoPg === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outra} onChange={setOutra} max={isoDia()} titulo="Data do pagamento" /></div>}
       {doCaixa
-        ? <div className="fap-prev"><b>Sai do caixa: {brl(num(valor))}</b><small>A saída entra no financeiro na data do pagamento.</small></div>
+        ? <div className="fap-prev"><b>Sai do caixa: {brl(num(valor))}</b><small>Entra no caixa na data do pagamento.</small></div>
         : <div className="fap-prev fap-prev--neutro"><b>O caixa não muda</b><small>A conta fica como paga e não entra saída no financeiro.</small></div>}
       {erro && <p className="fo-erro">{erro}</p>}
     </Folha>
@@ -391,7 +391,7 @@ const CSS = `
   .fap-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .fap-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 700; color: var(--ui-texto); margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* 11/10: o valor cabe inteiro, igual em A receber (a letra encolhe até o maior dos 3 valores caber no cartão) */
-  .fap-k b { font-size: max(10px, min(clamp(13.5px, 3.9vw, 17px), calc(100cqi / (var(--fap-n, 11) * .57)))); }
+  .fap-k b { font-size: max(10px, min(clamp(13.5px, 3.9vw, 17px), calc(100cqi / (var(--fap-n, 11) * .64)))); }
   .fap-k i { font-style: normal; font-size: 13px; color: #888780; }
   .fap-k--atr { border-color: #FECACA; background: #FFF7F7; } .fap-k--atr b { color: var(--ui-vermelho); }
   .fap-k--zero b { color: var(--ui-texto-3); }

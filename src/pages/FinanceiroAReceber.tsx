@@ -171,7 +171,7 @@ export default function FinanceiroAReceber() {
                     </div>
                     <div className="far-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, (it.recebido / (it.total || 1)) * 100)}%` }} /></div>
                     <div className="far-it-a">
-                      <span><CalendarBlank size={15} />{it.data_entrega ? `entrega ${dataCurta(it.data_entrega)}` : "sem data de entrega"}</span>
+                      <span><CalendarBlank size={15} />{it.data_entrega ? `entrega ${dataCurta(it.data_entrega)}` : "sem data"}</span>
                       <div className="far-bts">
                         <button type="button" className="far-ver" onClick={() => navigate(`/pedidos/${it.id}/editar`)} aria-label={`Abrir o pedido${it.numero ? ` #${it.numero}` : ""}`}><ArrowSquareOut size={16} aria-hidden="true" /><span>Abrir</span></button>
                         <button type="button" className="far-rec" onClick={() => setReceber(it)}>Receber</button>
@@ -280,8 +280,8 @@ const CSS = `
   .far-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .far-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 700; color: var(--ui-laranja); margin: 3px 0 1px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* 11/10: o valor cabe inteiro. A letra encolhe até caber na largura do cartão (--far-n = letras do maior valor;
-     0,57 = largura média de cada letra de um valor em reais na Geist Bold). Nunca passa do tamanho de antes nem fica menor que 10px. */
-  .far-k b { font-size: max(10px, min(clamp(13.5px, 3.9vw, 17px), calc(100cqi / (var(--far-n, 11) * .57)))); }
+     0,64 = largura média de cada letra de um valor em reais na Poppins Bold). Nunca passa do tamanho de antes nem fica menor que 10px. */
+  .far-k b { font-size: max(10px, min(clamp(13.5px, 3.9vw, 17px), calc(100cqi / (var(--far-n, 11) * .64)))); }
   .far-k i { font-style: normal; font-size: 13px; color: #888780; }
   .far-k--atr { border-color: #FECACA; background: #FFF7F7; } .far-k--atr b { color: var(--ui-vermelho); }
   .far-k--zero b { color: var(--ui-texto-3); }

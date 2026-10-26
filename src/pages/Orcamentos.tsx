@@ -107,7 +107,7 @@ export default function Orcamentos() {
         <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os orçamentos" texto={erro} acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
       ) : visiveis.length === 0 ? (
         <TelaVazia caixa icone={<FileText size={30} />}
-          titulo={aba === 'novos' ? 'Nenhum pedido de orçamento novo' : aba === 'enviados' ? 'Nenhum orçamento esperando resposta' : aba === 'aprovados' ? 'Nenhum orçamento aprovado ainda' : 'Nenhum orçamento recusado'}
+          titulo={aba === 'novos' ? 'Nenhum orçamento novo' : aba === 'enviados' ? 'Nenhum orçamento esperando resposta' : aba === 'aprovados' ? 'Nenhum orçamento aprovado ainda' : 'Nenhum orçamento recusado'}
           texto={aba === 'novos' ? 'Compartilhe o seu link: os pedidos chegam aqui e você recebe o aviso no celular.' : undefined} />
       ) : (
         <section className="orc-lista">

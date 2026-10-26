@@ -151,7 +151,7 @@ export default function Lucratividade() {
         ) : !dados ? <div className="lu-ph" /> : dados.qtdVendidos === 0 ? (
           <div className="lu-vazio">
             <span className="lu-vazio-ic"><ChartLineUp size={30} weight="duotone" /></span>
-            <b>Nenhum pedido entregue {rotuloPeriodo(periodo)}</b>
+            <b>Nada entregue {rotuloPeriodo(periodo)}</b>
             <p>A lucratividade aparece quando você marca pedidos como <strong>entregues</strong>. Ela usa o valor do pedido e o custo da ficha técnica de cada produto.</p>
             <button type="button" className="lu-cta" onClick={() => navigate("/pedidos")}>Ver meus pedidos</button>
           </div>
@@ -159,7 +159,7 @@ export default function Lucratividade() {
           {/* a conta do período, da esquerda pra direita: vendido − ingredientes − despesas = lucro */}
           <div className="lu-conta">
             <div className="lu-k"><span className="lu-ki n" aria-hidden="true"><ShoppingBagOpen size={15} weight="bold" /></span><small>Vendido</small><b>{brl(dados.vendido)}</b>
-              <i>{dados.qtdVendidos} {dados.qtdVendidos === 1 ? "pedido entregue" : "pedidos entregues"}</i></div>
+              <i>{dados.qtdVendidos} {dados.qtdVendidos === 1 ? "entregue" : "entregues"}</i></div>
             <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Ingredientes</small><b className="s">{brl(dados.cmv)}</b>
               <i>pela ficha técnica</i></div>
             <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Taxas</small><b className="s">{brl(dados.custosVariaveis)}</b>
@@ -184,7 +184,7 @@ export default function Lucratividade() {
 
           <div className="lu-grid">
             <section className="lu-card lu-a-prod">
-              <p className="lu-ct">Lucro por produto <small>Pela ficha técnica, antes das despesas do mês</small></p>
+              <p className="lu-ct">Lucro por produto <small>Pela ficha técnica, sem despesas</small></p>
               {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
                 <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> para ver o lucro de cada um.</p>
               ) : (
@@ -219,7 +219,7 @@ export default function Lucratividade() {
                 <button type="button" className="lu-sec" onClick={() => setPeriodo(periodoInicial())}>Ver o mês atual</button>
               </>) : fixos && (fixos.custos + fixos.salario) > 0 && margemBruta > 0 ? (<>
                 <b className="lu-eq-v">{brl(metaEquilibrio)} <small>no mês</small></b>
-                <p className="lu-eq-t">para pagar os custos fixos e o seu salário ({brl(fixos.custos + fixos.salario)})</p>
+                <p className="lu-eq-t">custos fixos + salário ({brl(fixos.custos + fixos.salario)})</p>
                 <div className="lu-bar grande"><i className={dados.vendido >= metaEquilibrio ? "ok" : ""} style={{ width: `${Math.min(100, (dados.vendido / metaEquilibrio) * 100)}%` }} /></div>
                 <p className="lu-eq-s">{dados.vendido >= metaEquilibrio ? `Bateu! ${brl(dados.vendido - metaEquilibrio)} acima do necessário.` : `Faltam ${brl(metaEquilibrio - dados.vendido)} em vendas (${Math.round((dados.vendido / metaEquilibrio) * 100)}% do caminho).`}</p>
                 <p className="lu-nota">Com a sua margem de ingredientes de {Math.round(margemBruta * 100)}%.</p>

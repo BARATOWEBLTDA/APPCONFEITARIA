@@ -331,7 +331,7 @@ export default function RichEditor({ content, onChange }: Props) {
           overflow-y: auto;
         }
         .rich-content-editor {
-          font-family: 'Geist', -apple-system, sans-serif;
+          font-family: var(--font-base, 'Poppins', sans-serif);
           font-size: 14.5px;
           line-height: 1.65;
           color: var(--ui-texto);
@@ -425,7 +425,7 @@ export function RichContent({ content }: { content: any }) {
       <EditorContent editor={editor} />
       <style>{`
         .ProseMirror {
-          font-family: 'Geist', -apple-system, sans-serif;
+          font-family: var(--font-base, 'Poppins', sans-serif);
           font-size: 15px;
           line-height: 1.7;
           color: var(--ui-texto);

@@ -103,7 +103,7 @@ export default function EsqueciSenha() {
             <Campo
               id="reset-email"
               rotulo="E-mail da conta"
-              dica={emailError ? undefined : "O mesmo e-mail que você usou para criar a conta"}
+              dica={emailError ? undefined : "O e-mail da sua conta"}
               type="email"
               placeholder="seu@email.com"
               value={email}

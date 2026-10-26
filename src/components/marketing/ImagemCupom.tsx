@@ -52,7 +52,7 @@ export default function ImagemCupom({ dados, aoFechar }: { dados: DadosImagemCup
         <Botao icone={<ShareNetwork size={20} weight="bold" />} onClick={compartilhar} disabled={!img}>Compartilhar</Botao>
       </>}>
       <div className="icp">
-        <p className="icp-sub">Para postar no status do WhatsApp e no Instagram</p>
+        <p className="icp-sub">Para o status e o Instagram</p>
         <div className="icp-img">
           {img ? <img src={img.url} alt={`Imagem do cupom ${dados?.codigo || ""}`} />
             : erro ? <span className="icp-erro">Não deu para montar a imagem. Feche e tente de novo.</span>

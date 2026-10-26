@@ -728,13 +728,13 @@ export default function Clientes() {
         <div className="cl9-f-data">
           <Campo rotulo="Aniversário" opcional readOnly placeholder="Escolher a data" value={completo.data_nascimento ? rotuloNascimento(completo.data_nascimento) : ""}
             icone={<CalendarBlank size={20} weight="bold" />} onClick={() => setNiverAberto(true)}
-            dica="A gente avisa uns dias antes, para você mandar os parabéns." />
+            dica="Avisamos antes, para mandar os parabéns." />
           {completo.data_nascimento && <button type="button" className="cl9-f-limpar" aria-label="Tirar o aniversário" onClick={() => setCompleto(f => ({ ...f, data_nascimento: "" }))}><X size={18} weight="bold" /></button>}
         </div>
         {niverAberto && <DataNascimentoSheet valor={completo.data_nascimento || ""} onEscolher={v => setCompleto(f => ({ ...f, data_nascimento: v }))} onClose={() => setNiverAberto(false)} />}
 
         <button type="button" className={`cl9-f-mais${avancadoOpen ? " on" : ""}`} aria-expanded={avancadoOpen} onClick={() => setAvancadoOpen(o => !o)}>
-          <span><b>Mais detalhes</b><small>Endereço, e-mail, CPF, como conheceu e observações</small></span>
+          <span><b>Mais detalhes</b><small>Endereço, e-mail, CPF e mais</small></span>
           <CaretDown size={20} weight="bold" />
         </button>
         {avancadoOpen && (
@@ -1013,7 +1013,7 @@ export default function Clientes() {
       {/* ═══════════════════════ STYLES ═══════════════════════ */}
       <style>{`
         * { box-sizing: border-box; }
-        .cli-root { font-family: var(--font-base, 'Geist', sans-serif); }
+        .cli-root { font-family: var(--font-base, 'Poppins', sans-serif); }
         @media (min-width: 900px) {
           .cli-root { padding-top: 40px; }
         }

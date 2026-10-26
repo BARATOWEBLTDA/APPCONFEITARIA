@@ -581,15 +581,15 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
 
             <p className="ep-sep">Se quiser, limite o cupom</p>
             <div className="ep-g2">
-              <div className="ui-campo"><span className="ui-campo-r"><span>Vale a partir de</span><small>opcional</small></span>
-                <CampoData valor={cupomForm.data_inicio} onChange={d => setCupomForm({ ...cupomForm, data_inicio: d })} max={cupomForm.data_fim || undefined} titulo="Cupom vale a partir de" placeholder="Sem começo" curto /></div>
+              <div className="ui-campo"><span className="ui-campo-r"><span>Começa em</span><small>opcional</small></span>
+                <CampoData valor={cupomForm.data_inicio} onChange={d => setCupomForm({ ...cupomForm, data_inicio: d })} max={cupomForm.data_fim || undefined} titulo="Cupom vale a partir de" placeholder="Hoje" curto /></div>
               <div className="ui-campo"><span className="ui-campo-r"><span>Vale até</span><small>opcional</small></span>
                 <CampoData valor={cupomForm.data_fim} onChange={d => setCupomForm({ ...cupomForm, data_fim: d })} min={cupomForm.data_inicio || undefined} titulo="Cupom vale até" placeholder="Sem fim" curto /></div>
             </div>
             <div className="ep-g2">
-              <Campo rotulo="Limite de usos" opcional inputMode="numeric" placeholder="Sem limite" value={cupomForm.limite_uso}
+              <Campo rotulo="Limite" opcional inputMode="numeric" placeholder="Sem limite" value={cupomForm.limite_uso}
                 onChange={e => setCupomForm({ ...cupomForm, limite_uso: e.target.value.replace(/\D/g, '') })} />
-              <Campo rotulo="Pedido mínimo" opcional prefixo="R$" inputMode="decimal" placeholder="0,00" value={cupomForm.valor_minimo}
+              <Campo rotulo="Mínimo" opcional prefixo="R$" inputMode="decimal" placeholder="0,00" value={cupomForm.valor_minimo}
                 onChange={e => setCupomForm({ ...cupomForm, valor_minimo: e.target.value.replace(/[^0-9.,]/g, '') })} />
             </div>
             <Chave on={cupomForm.ativo} rotulo="Cupom ativo" apoio="Desligado, o cliente não consegue usar" aoMudar={v => setCupomForm({ ...cupomForm, ativo: v })} />

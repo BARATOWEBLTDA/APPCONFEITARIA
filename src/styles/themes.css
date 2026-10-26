@@ -167,7 +167,7 @@
   --radius-input:     999px;
 
   /* Fonte */
-  --font-base: 'Geist', sans-serif;
+  --font-base: 'Poppins', sans-serif;
 
   /* ─────────────────────────────────────────────
      TIPOGRAFIA — SISTEMA
@@ -455,7 +455,7 @@
   --shadow-lg:        0 10px 30px rgba(0,0,0,0.6);
   --shadow-pink:      0 6px 20px rgba(242,125,168,0.3);
 
-  --font-base: 'Geist', sans-serif;
+  --font-base: 'Poppins', sans-serif;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -570,7 +570,7 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   font-size: 12px;
   font-weight: 500;
   font-style: italic; /* (14/10) obrigatório / opcional / recomendado: discretos, cinza e itálico em todo o app */
-  font-family: 'Geist', sans-serif;
+  font-family: var(--font-base, 'Poppins', sans-serif);
   vertical-align: middle;
   margin-left: 6px;
   letter-spacing: 0;

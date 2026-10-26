@@ -452,7 +452,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       {/* (18/10) Tema do cardápio: Normal ou Natal (outros temas depois) */}
       <section className="ap-card ap-largo ap-sec-tema">
-        <Cabeca Ic={Sparkle} titulo="Tema do cardápio" apoio="Enfeita o cardápio nas datas especiais" />
+        <Cabeca Ic={Sparkle} titulo="Tema do cardápio" apoio="Para as datas especiais" />
         <div className="ap-temas" role="radiogroup" aria-label="Tema do cardápio">
           <button type="button" role="radio" aria-checked={tema === "normal"} className="ap-tema" onClick={() => escolherTema("normal")}>
             <span className="ap-tema-th" style={{ background: topoEscurecido(corDoItem("cor_navbar", corNavbar, isPro)) }}><span className="ap-tema-lo" style={{ borderColor: corDoItem("cor_borda", corBorda, isPro) }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span></span>
@@ -604,7 +604,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       {/* Cores (18/10): só as três do topo da loja. Grátis: cores prontas; PRO: qualquer cor */}
       <section className={`ap-card ap-largo ap-sec-cores${tema === "natal" ? " ap-cores-off" : ""}`}>
-        <Cabeca Ic={Palette} titulo="Cores do topo" apoio="Os números mostram onde cada cor fica" />
+        <Cabeca Ic={Palette} titulo="Cores do topo" apoio="Veja onde cada cor fica" />
         {tema === "natal" && <p className="ap-cores-tema"><Info size={16} weight="bold" aria-hidden="true" />O tema de Natal está usando as cores dele</p>}
         <div className="ap-mini" aria-hidden="true">
           <div className="ap-mini-topo" style={{ background: topoEscurecido(corAtual("cor_navbar", corNavbar)) }}><span className="ap-mini-n" style={{ left: 10, top: 10 }}>1</span></div>

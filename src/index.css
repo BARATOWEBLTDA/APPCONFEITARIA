@@ -39,14 +39,14 @@
   font-display: swap;
 }
 
-/* (22/10) App da confeiteira mais leve (pedido do dono, opção B): o negrito (700) usa o SemiBold e os títulos
-   saem do quase preto (#2C1219) pra um marrom acinzentado (#4A3A40). Só dentro do app (classe no <html>, posta
-   pelo Layout): o cardápio do cliente e o admin continuam iguais. */
-@font-face { font-family: 'Geist App'; src: url('/fonts/Geist-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: 'Geist App'; src: url('/fonts/Geist-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
-@font-face { font-family: 'Geist App'; src: url('/fonts/Geist-SemiBold.woff2') format('woff2'); font-weight: 600 700; font-style: normal; font-display: swap; }
-@font-face { font-family: 'Geist App'; src: url('/fonts/Geist-Bold.woff2') format('woff2'); font-weight: 800 900; font-style: normal; font-display: swap; }
-html.app-conf { --font-base: 'Geist App', sans-serif; --text-title: #4A3A40; --ui-texto: #4A3A40; }
+/* (26/10) Poppins no app todo (pedido do dono, igual ao Dora): letra mais redonda e aberta, negrito de verdade
+   e texto quase preto. Substitui o "app mais leve" de 22/10 (Geist com negrito em SemiBold e títulos #4A3A40). */
+@font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-500.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-600.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-700.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-800.woff2') format('woff2'); font-weight: 800 900; font-style: normal; font-display: swap; }
+html.app-conf { --text-title: #231A1D; --ui-texto: #231A1D; --ui-texto-2: #5A4E53; }
 
 * {
   box-sizing: border-box;
@@ -60,7 +60,7 @@ html {
 }
 
 body {
-  font-family: var(--font-base, 'Geist', sans-serif);
+  font-family: var(--font-base, 'Poppins', sans-serif);
   background-color: var(--bg-body, #f5f5f5);
   color: var(--text-primary, #1f2937);
   -webkit-font-smoothing: antialiased;

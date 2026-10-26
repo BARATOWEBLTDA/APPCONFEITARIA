@@ -85,7 +85,7 @@ const diffDias = (isoAlvo: string) => {
 };
 const relativo = (iso: string) => { const d = diffDias(iso); return d === 0 ? "Hoje" : d === 1 ? "Amanhã" : d === -1 ? "Ontem" : ""; };
 /** "Quinta-feira, 8 de outubro" */
-const diaPorExtenso = (iso: string) => { const d = parseISO(iso); return `${SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`; };
+const diaPorExtenso = (iso: string) => { const d = parseISO(iso); return `${SEMANA[d.getDay()].replace("-feira", "")}, ${d.getDate()} de ${MESES[d.getMonth()]}`; }; // (26/10) "Segunda, 26 de outubro": cabe ao lado do "Falta receber"
 /** "Hoje às 10:00", "Amanhã", "20 de outubro às 14:00" */
 const quandoEntrega = (p: any) => {
   if (!p.data_entrega) return "Sem data";
@@ -98,7 +98,7 @@ const quandoEntrega = (p: any) => {
 const criadoEmTexto = (created_at: string) => {
   if (!created_at) return "";
   const d = new Date(created_at);
-  return `${d.getDate()} de ${MESES[d.getMonth()]} às ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")} às ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 };
 const ANTIGOS: Record<string, string> = { confirmado: "agendado", pronto: "finalizado", a_caminho: "em_entrega", concluido: "entregue", em_preparo: "em_producao" };
 const primeiraFoto = (f?: string | null) => (f ? String(f).split(/,(?=\s*https?:)/)[0].trim() : "");
@@ -595,7 +595,7 @@ export default function Agenda() {
             : mostrarAtencao && temAtencao ? (
               <Atencao atr={atencao!.atr} prox={atencao!.prox} hoje={hoje} ocupados={ocupados} acaoDe={acaoAtencao} aoAbrir={(p: any) => abrirEditar(p.id)} aoVerDia={irParaDia} />
             ) : (
-              <TelaVazia icone={<CalendarBlank size={30} />} titulo="Nenhum pedido nesse dia" texto={busca.trim() ? `Nada com “${busca.trim()}” nesse dia.` : "Os pedidos com entrega nesse dia aparecem aqui."} />
+              <TelaVazia icone={<CalendarBlank size={30} />} titulo="Nenhum pedido nesse dia" texto={busca.trim() ? `Nada com “${busca.trim()}” nesse dia.` : "Os pedidos desse dia aparecem aqui."} />
             )
           ) : pedidosDiaFiltrados.length === 0 ? (
             <TelaVazia icone={<Funnel size={30} />} titulo="Nenhum pedido com esse filtro" texto="Tem pedido nesse dia, mas as situações dele estão escondidas." acao={<Botao variante="suave" tamanho="m" onClick={mostrarTodas}>Mostrar todas as situações</Botao>} />

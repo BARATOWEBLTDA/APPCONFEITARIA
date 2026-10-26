@@ -75,7 +75,7 @@ export default function EmptyDoo({
           border: 1.5px dashed var(--border);
           border-radius: var(--radius-lg);
           margin-top: 0.5rem;
-          font-family: 'Geist', sans-serif;
+          font-family: var(--font-base, 'Poppins', sans-serif);
         }
         .empty-doo-avatar {
           width: 96px;

@@ -50,7 +50,7 @@ export default function Cadastros() {
   }, [profile?.id]);
 
   const loja = useMemo(() => {
-    const resto = cel ? "cardápio e entrega" : "link e aparência";
+    const resto = cel ? "cardápio" : "link e aparência";
     if ((profile as any)?.loja_pausada === true) return { txt: `Pausado · ${resto}`, tom: "lar" };
     const s = situacaoLoja((profile as any)?.horario);
     if (!s) return { txt: cel ? "Cardápio, horário e entrega" : "Link, aparência e compartilhar", tom: "" };

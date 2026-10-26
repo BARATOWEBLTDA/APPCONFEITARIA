@@ -507,7 +507,7 @@ export default function Auth() {
         <Mascote pose={showCadastro ? 'comemorando' : 'acenando'} className="auth-marca-masc" />
         <NomeDoonly cor="branco" className="auth-marca-nome" />
         <p className="auth-marca-frase">{showCadastro ? 'Vamos começar!' : 'Seus pedidos te esperam'}</p>
-        <p className="auth-marca-sub">{showCadastro ? 'Leva menos de 1 minuto.' : 'Pedidos, agenda e financeiro em um só lugar.'}</p>
+        <p className="auth-marca-sub">{showCadastro ? 'Leva menos de 1 minuto.' : 'Pedidos, agenda e financeiro.'}</p>
         </div>
       </div>
 

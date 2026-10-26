@@ -182,7 +182,7 @@ export default function PraFazer() {
       chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, estado: a.estado, ordem: i,
       acao: ACAO[a.icone] || "Ver", fechar: a.icone !== "conta",
       // conta: o vencimento em vermelho e, no lugar do "Agora não", o "Revisar" (digitou errado ou a conta não existe)
-      txt: a.icone === "conta" ? "Pague ou marque como paga para o caixa ficar certo." : a.texto,
+      txt: a.icone === "conta" ? "Pague ou marque como paga." : a.texto,
       alerta: a.icone === "conta" ? a.curto.s : undefined,
       comoFunciona: COMO[a.icone],
       revisar: a.icone === "conta" && a.estado?.abrir?.startsWith("pagar:") ? { abrir: `revisar:${a.estado.abrir.slice(6)}` } : undefined,

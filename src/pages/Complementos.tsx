@@ -211,7 +211,7 @@ export default function Complementos() {
           /* (24/10) com complementos: a lista à esquerda e, ao lado, o celular com os complementos dela num produto de verdade */
           <div className="pz-cheio">
             <div className="pz-cheio-l">
-              <Titulo contagem={items.length} apoio="Escolha um complemento para editar."
+              <Titulo contagem={items.length} apoio="Toque em um para editar."
                 acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>}>Seus complementos</Titulo>
               {items.length > 8 && (
                 <label className="pz-busca">

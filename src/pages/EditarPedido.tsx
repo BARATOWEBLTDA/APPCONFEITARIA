@@ -1394,7 +1394,7 @@ export default function EditarPedido() {
             <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{cel ? dataCurta(dataEntrega, horarioEntrega) : dataLonga(dataEntrega, horarioEntrega)}</Linha>
             {tipoEntrega === 'retirada' && statusPedido === 'entregue' && (
               <Linha rotulo="Retirado por">
-                {(pedido as any).retirado_por || 'Não informado'}{' '}
+                {(pedido as any).retirado_por ? <>{(pedido as any).retirado_por}{' '}</> : null}
                 <button type="button" className="tpd-ret-bt" onClick={() => { setQuemRetirou((pedido as any).retirado_por || ''); setDepoisRetirada('editar'); setRetiradaAberta(true) }}>{(pedido as any).retirado_por ? 'Mudar' : 'Informar'}</button>
               </Linha>
             )}
