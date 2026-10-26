@@ -51,6 +51,7 @@ import AdminNoticias from "@/pages/admin/AdminNoticias";
 import AdminIdeias from "@/pages/admin/AdminIdeias";
 import AdminAutores from "@/pages/admin/AdminAutores";
 import AdminRelatorios from "@/pages/admin/AdminRelatorios";
+import AdminAjuda from "@/pages/admin/AdminAjuda";
 import Configuracoes from "@/pages/Configuracoes";
 import NotificacoesSons from "@/pages/NotificacoesSons";
 import MensagensWhatsApp from "@/pages/MensagensWhatsApp";
@@ -530,6 +531,7 @@ export default function App() {
           <Route path="ideias" element={<AdminIdeias />} />
           <Route path="autores" element={<AdminAutores />} />
           <Route path="relatorios" element={<AdminRelatorios />} />
+          <Route path="ajuda" element={<AdminAjuda />} />
         </Route>
 
         <Route path="/" element={<NavigateWithSearch to="/inicio" replace />} />

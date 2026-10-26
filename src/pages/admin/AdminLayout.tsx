@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import {
   ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images,
-  Cake, Medal, FilePdf, ChartBar, Lightbulb,
+  Cake, Medal, FilePdf, ChartBar, Lightbulb, Lifebuoy,
   ArrowLeft, SignOut, DotsThreeOutline, CaretRight, X,
 } from "@phosphor-icons/react";
 
@@ -52,6 +52,7 @@ const menuSections: MenuSection[] = [
     title: "Análise",
     items: [
       { path: "/admin/relatorios", label: "Relatórios", icon: <ChartBar size={20} weight="bold" /> },
+      { path: "/admin/ajuda", label: "Central de Ajuda", icon: <Lifebuoy size={20} weight="bold" /> },
     ],
   },
 ];

@@ -24,6 +24,8 @@ export default function AjudaArtigo() {
   const a = artigoPorSlug(slug)
   const [indice, setIndice] = useState(false)
   const [voto, setVoto] = useState<boolean | null>(null)
+  const [motivo, setMotivo] = useState('')
+  const [enviado, setEnviado] = useState(false)
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
@@ -39,7 +41,19 @@ export default function AjudaArtigo() {
   const tema = TEMAS.find(t => t.id === a.tema)
   const votar = async (util: boolean) => {
     setVoto(util)
-    await supabase.from('ajuda_votos').upsert({ artigo: a.slug, util }, { onConflict: 'user_id,artigo' })
+    setEnviado(false)
+    await salvar({ util, motivo: null })
+  }
+  /** grava o voto; se o banco ainda não tiver a coluna "motivo", grava só o sim/não */
+  const salvar = async (extra: { util: boolean; motivo: string | null }) => {
+    const { error } = await supabase.from('ajuda_votos').upsert({ artigo: a.slug, ...extra, updated_at: new Date().toISOString() }, { onConflict: 'user_id,artigo' })
+    if (error) await supabase.from('ajuda_votos').upsert({ artigo: a.slug, util: extra.util }, { onConflict: 'user_id,artigo' })
+  }
+  const enviarMotivo = async () => {
+    const t = motivo.trim()
+    if (!t) return
+    setEnviado(true)
+    await salvar({ util: false, motivo: t.slice(0, 500) })
   }
   const irPara = (id: string) => {
     setIndice(false)
@@ -54,7 +68,6 @@ export default function AjudaArtigo() {
         <div className="ca-meta">{tema && <span className="ca-tag">{tema.nome}</span>}<span className="ca-min"><Clock size={16} aria-hidden="true" />{a.minutos} min de leitura</span></div>
         <h1 className="ca-tit">{a.titulo}</h1>
         <p className="ca-resumo">{a.resumo}</p>
-        {a.abrir && <Botao cheio iconeDepois={<ArrowUpRight size={18} weight="bold" />} onClick={() => navigate(a.abrir!.rota)}>{a.abrir.rotulo}</Botao>}
         <div className={`ca-ind${indice ? ' on' : ''}`}>
           <button type="button" className="ca-ind-bt" aria-expanded={indice} onClick={() => setIndice(v => !v)}>
             <ListBullets size={20} weight="bold" aria-hidden="true" /><b>Nesta página</b><small>· {a.secoes.length} partes</small><CaretDown size={18} weight="bold" aria-hidden="true" />
@@ -81,12 +94,22 @@ export default function AjudaArtigo() {
         </section>
       ))}
 
-      <section className="ca-card ca-voto">
-        <b>{voto === null ? 'Isto ajudou?' : voto ? 'Que bom! Obrigado por avisar.' : 'Obrigado. Vamos melhorar este artigo.'}</b>
-        <div>
-          <button type="button" aria-pressed={voto === true} onClick={() => void votar(true)}><ThumbsUp size={20} weight={voto === true ? 'fill' : 'bold'} />Sim</button>
-          <button type="button" aria-pressed={voto === false} onClick={() => void votar(false)}><ThumbsDown size={20} weight={voto === false ? 'fill' : 'bold'} />Não</button>
+      {a.abrir && <div className="ca-abrir"><Botao cheio iconeDepois={<ArrowUpRight size={18} weight="bold" />} onClick={() => navigate(a.abrir!.rota)}>{a.abrir.rotulo}</Botao></div>}
+
+      <section className="ca-card ca-voto-card">
+        <div className="ca-voto">
+          <b>{voto === null ? 'Isto ajudou?' : voto ? 'Que bom! Obrigado.' : enviado ? 'Obrigado por contar.' : 'O que faltou?'}</b>
+          <div>
+            <button type="button" aria-pressed={voto === true} onClick={() => void votar(true)}><ThumbsUp size={20} weight={voto === true ? 'fill' : 'bold'} />Sim</button>
+            <button type="button" aria-pressed={voto === false} onClick={() => void votar(false)}><ThumbsDown size={20} weight={voto === false ? 'fill' : 'bold'} />Não</button>
+          </div>
         </div>
+        {voto === false && !enviado && (
+          <div className="ca-motivo">
+            <textarea value={motivo} onChange={e => setMotivo(e.target.value)} maxLength={500} rows={3} placeholder="Conte o que não ficou claro" aria-label="O que faltou neste artigo" autoFocus />
+            <Botao cheio disabled={!motivo.trim()} onClick={() => void enviarMotivo()}>Enviar</Botao>
+          </div>
+        )}
       </section>
 
       {!!a.relacionadas?.length && (<>

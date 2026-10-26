@@ -84,3 +84,11 @@
 /* (26/10) nada quebra em duas linhas: títulos, cenas, passos e dicas numa linha só */
 .ca-sec h2, .ca-ex, .ca-marcas li span, .ca-dica span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .ca-marcas li { align-items: center; }
+/* (26/10) botão de abrir a tela no fim do artigo; "Não" abre o campo do motivo */
+.ca-abrir { margin: 4px 0 16px; }
+.ca-abrir .ui-bt { width: 100%; }
+.ca-voto { flex-wrap: nowrap; }
+.ca-voto b { white-space: nowrap; }
+.ca-motivo { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--ui-linha, var(--ui-borda)); }
+.ca-motivo textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 16px; line-height: 1.45; color: var(--ui-texto); resize: none; }
+.ca-motivo textarea:focus { outline: none; border-color: var(--ui-rosa); box-shadow: 0 0 0 3px var(--ui-rosa-claro); }
