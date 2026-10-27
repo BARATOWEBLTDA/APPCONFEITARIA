@@ -148,7 +148,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
               width="100%"
               height="200"
               style={{ border: 'none', display: 'block' }}
-              src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=${encodeURIComponent(enderecoCompleto)}`}
+              src={/* (27/10) sem chave: a chave da API dava "não autorizada" e o mapa não abria */ `https://www.google.com/maps?q=${encodeURIComponent(enderecoCompleto)}&output=embed`}
               allowFullScreen
             />
 

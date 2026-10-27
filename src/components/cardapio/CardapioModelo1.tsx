@@ -161,7 +161,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
         <div className="cm1-mapa-veu" onClick={() => setModalEndereco(false)}>
           <div className="cm1-mapa" role="dialog" aria-modal="true" aria-label="Endereço da loja" onClick={e => e.stopPropagation()}>
             <iframe width="100%" height="200" style={{ border: 'none', display: 'block' }} title="Mapa"
-              src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=${encodeURIComponent(endereco.completo)}`} allowFullScreen />
+              src={`https://www.google.com/maps?q=${encodeURIComponent(endereco.completo)}&output=embed`} allowFullScreen />
             <div className="cm1-mapa-corpo">
               <p className="cm1-mapa-end"><MapPin size={20} weight="bold" color={corIcone} aria-hidden="true" />{endereco.completo}</p>
               <div className="cm1-mapa-bts">
