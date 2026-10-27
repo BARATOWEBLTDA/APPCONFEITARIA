@@ -58,9 +58,10 @@ export default function Indicar() {
 
       if (ind && ind.length) {
         const ids = ind.map(i => i.indicada_id);
-        const { data: perfis } = await supabase.from("profiles")
-          .select("id, nome").in("id", ids);
-        const mapa = new Map((perfis || []).map(p => [p.id, p.nome]));
+        // (27/10) o primeiro nome vem da função do banco (a tela não consegue ler o perfil de outra conta)
+        const { data: nomes, error: eNomes } = await supabase.rpc("minhas_indicadas_nomes");
+        const perfis = eNomes ? ((await supabase.from("profiles").select("id, nome").in("id", ids)).data || []) : ((nomes as any[]) || []);
+        const mapa = new Map((perfis as any[]).map(p => [p.id, p.nome]));
         setAmigas(ind.map((i: any) => ({
           id: i.indicada_id,
           nome: mapa.get(i.indicada_id) || null,
