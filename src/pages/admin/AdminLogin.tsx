@@ -17,8 +17,14 @@ export default function AdminLogin() {
     setError("");
     try {
       const ADMIN_EMAILS = ["gestao@doonly.com.br"];
+      // (27/10) e-mail que não é do admin nem tenta entrar: antes entrava e saía, e derrubava a sessão da confeiteira no app
+      if (!ADMIN_EMAILS.includes(email.trim().toLowerCase())) {
+        setError("Acesso negado. Você não tem permissão de administrador.");
+        setLoading(false);
+        return;
+      }
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
       if (error) throw error;
 
       if (!ADMIN_EMAILS.includes(data.user.email || "")) {

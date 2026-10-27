@@ -326,7 +326,7 @@ export async function excluirPedido(pedidoId: string): Promise<{ ok: true } | { 
 
 /* ── Doo IA: catálogo, clientes e o rascunho que ela prepara ─────────────── */
 export type ProdutoCat = {
-  id: string; nome: string; preco_normal: number; forma_venda?: string; imagem_url?: string; categoria?: string; grupo_tamanhos?: any; kit_qtd?: any;
+  id: string; nome: string; preco_normal: number; forma_venda?: string; imagem_url?: string; categoria?: string; grupo_tamanhos?: any; grupo_sabores?: any; kit_qtd?: any;
   promocao?: boolean | null; tipo_promocao?: string | null; desconto_percentual?: number | null; preco_promocional?: number | null;
 };
 export type ClienteCat = { id: string; nome: string; telefone?: string; whatsapp?: string; rua?: string; numero?: string; bairro?: string; cidade?: string; complemento?: string };
@@ -335,7 +335,8 @@ export type ClienteCat = { id: string; nome: string; telefone?: string; whatsapp
 // Cliente que passar do teto ainda é achada pelo nome na hora de montar o cartão (procurarClientesPorNome).
 const TETO_PRODUTOS_DOO = 400;
 const TETO_CLIENTES_DOO = 1000;
-const CAMPOS_PRODUTO = "id,nome,preco_normal,forma_venda,imagem_url,categoria,grupo_tamanhos,kit_qtd";
+// (27/10) grupo_sabores: sem ele o "cada sabor tem o seu preço" nunca valia e a Doo e a Nova venda cobravam o preço base
+const CAMPOS_PRODUTO = "id,nome,preco_normal,forma_venda,imagem_url,categoria,grupo_tamanhos,grupo_sabores,kit_qtd";
 /** Campos da promoção (11/10): sem eles a Nova venda e a Doo cobravam o preço cheio. */
 const CAMPOS_PROMOCAO = "promocao,tipo_promocao,desconto_percentual,preco_promocional";
 const CAMPOS_CLIENTE = "id,nome,telefone,whatsapp,rua,numero,bairro,cidade,complemento";
@@ -417,7 +418,10 @@ export function montarPedido(r: RascunhoPedido, cat: { produtos: ProdutoCat[]; c
     }
     itens.push({
       ...(escolha ? { opcaoLabel: escolha.label, personalizacoes: escolha.pers } : {}),
-      produto_id: p.id, nome_produto: p.nome, quantidade: Math.max(1, Math.round(Number(it.quantidade) || 1)),
+      // (27/10) peso livre (por kg, sem tamanho) guarda a fração: "1,5 kg" virava 2 kg
+      produto_id: p.id, nome_produto: p.nome, quantidade: !escolha && p.forma_venda === "kg"
+        ? Math.max(0.1, Math.round((Number(it.quantidade) || 1) * 10) / 10)
+        : Math.max(1, Math.round(Number(it.quantidade) || 1)),
       valor_unitario: escolha ? escolha.valor : precoDeVenda(p), // (11/10) com a promoção
       imagem_url: p.imagem_url, forma_venda: p.forma_venda, observacoes: String(it.observacoes || "").trim(),
     });
@@ -454,7 +458,8 @@ export function montarPedido(r: RascunhoPedido, cat: { produtos: ProdutoCat[]; c
     desconto: r2(Math.max(0, Number(r.desconto) || 0)),
     acrescimo: 0,
     formaPagamento: (FORMAS_PAGAMENTO as readonly string[]).includes(String(r.forma_pagamento)) ? String(r.forma_pagamento) : "PIX",
-    situacaoPag: r.situacao === "parcial" || r.situacao === "fiado" || r.situacao === "na_entrega" ? r.situacao : "total",
+    // (27/10) sem dizer como pagou não é "pago": antes o pedido entrava no caixa como Pago · PIX
+    situacaoPag: r.situacao === "parcial" || r.situacao === "fiado" || r.situacao === "total" ? r.situacao : "na_entrega",
     valorParcial: r2(Math.max(0, Number(r.valor_recebido) || 0)),
     dataPrevistaPagamento: r.data_prevista_pagamento || "",
     statusPedido: "agendado",
@@ -469,7 +474,7 @@ export function catalogoParaDoo(cat: { produtos: ProdutoCat[]; clientes: Cliente
   const brl = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
   const prods = cat.produtos.slice(0, TETO_PRODUTOS_DOO).map(p => {
     const ops = opcoesDoProduto(p);
-    return `- ${p.id} · ${p.nome}${p.categoria ? ` (${p.categoria})` : ""} · ${ops.length ? "opções: " + ops.map(o => `${o.label} ${brl(o.valor)}`).join(" | ") : brl(precoDeVenda(p))}`;
+    return `- ${p.id} · ${p.nome}${p.categoria ? ` (${p.categoria})` : ""} · ${ops.length ? "opções: " + ops.map(o => `${o.label} ${brl(o.valor)}`).join(" | ") : `${brl(precoDeVenda(p))}${p.forma_venda === "kg" ? " o kg (quantidade em kg, pode ser 1.5)" : ""}`}`;
   }).join("\n") || "- (nenhum produto cadastrado)";
   const clis = cat.clientes.slice(0, TETO_CLIENTES_DOO).map(c => `- ${c.id} · ${c.nome}`).join("\n") || "- (nenhuma cliente cadastrada)";
   return `Produtos do cardápio (id · nome · preço ou opções):\n${prods}\n\nClientes cadastradas (id · nome):\n${clis}`;

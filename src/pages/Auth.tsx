@@ -9,6 +9,7 @@ import { definirSessaoTemporaria } from "@/lib/sessaoTemporaria";
 import { mascaraTelefone } from "@/lib/telefone";
 import { explicarErro, erroDeConexao } from "@/lib/erros";
 import { Eye, EyeSlash, Check } from "@phosphor-icons/react";
+import { destinoDepoisDoLogin } from "@/lib/destinoLogin";
 
 // ───────────────────────────────────────────────────────────────
 // Links de download do app (desktop ≥1200px)
@@ -228,8 +229,9 @@ export default function Auth() {
       // "Lembrar de mim" desmarcado: a sessão vale só enquanto o app estiver aberto (ver main.tsx)
       definirSessaoTemporaria(!keepConnected);
       const userId = signInData.user?.id;
-      const { data: prof } = await supabase.from("profiles").select("is_admin").eq("id", userId).single();
-      const dest = prof?.is_admin === true ? "/admin" : "/inicio";
+      // (27/10) a mesma regra do painel do admin (o e-mail da gestão): outra conta com is_admin caía num ciclo de telas
+      void userId;
+      const dest = (signInData.user?.email || "").toLowerCase() === "gestao@doonly.com.br" ? "/admin" : (destinoDepoisDoLogin() || "/inicio");
       setFading(true);
       setTimeout(() => navigate(dest), 700);
     } catch (err: any) {

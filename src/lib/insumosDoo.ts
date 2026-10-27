@@ -112,6 +112,10 @@ export async function salvarInsumoDoo(uid: string, r: RascunhoInsumo, soPrecoDe?
     ...(r.imagem_url ? { imagem_url: r.imagem_url } : {}),
   };
   if (r.insumo_id) {
+    // (27/10) a mesma trava do caminho de cima: unidade de outra família (g × un) com o ingrediente já cadastrado não grava
+    const { data: atual } = await supabase.from("insumos").select("nome, unidade").eq("id", r.insumo_id).eq("user_id", uid).maybeSingle();
+    if (atual && familiaUnidade(String((atual as any).unidade || "")) !== familiaUnidade(r.unidade))
+      return { ok: false, erro: `No cadastro, ${(atual as any).nome} está em ${(atual as any).unidade}. Atualize pela tela de Insumos.` };
     // (11/10) confere se a linha mudou mesmo: com um id que não existe (a IA errou, ou o ingrediente foi apagado)
     // o banco não reclama e a tela dizia "atualizado" sem gravar nada. Nesse caso, cadastra como ingrediente novo.
     const { data: mudou, error } = await supabase.from("insumos").update(payload).eq("id", r.insumo_id).eq("user_id", uid).select("id");

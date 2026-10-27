@@ -491,7 +491,7 @@ export default function Inicio() {
           .select("id, valor_total")
           .eq("user_id", userId)
           .gte("created_at", inicio7d.toISOString())
-          .neq("status", "cancelado"),
+          .not("status", "in", "(cancelado,recusado,aguardando_aceite,novo,pendente)"), // (27/10) pedido ainda não aceito não é venda
         // Vendas dos 7 dias anteriores (pra variação)
         supabase
           .from("pedidos")
@@ -499,7 +499,7 @@ export default function Inicio() {
           .eq("user_id", userId)
           .gte("created_at", inicio14d.toISOString())
           .lt("created_at", inicio7d.toISOString())
-          .neq("status", "cancelado"),
+          .not("status", "in", "(cancelado,recusado,aguardando_aceite,novo,pendente)"), // (27/10) pedido ainda não aceito não é venda
         // O que entrou no caixa (07/10 · 3.08): a mesma regra do "Recebido no mês" do Financeiro. Uma busca só serve
         // o número do mês e o gráfico (60 dias: o período e o anterior); por isso começa no dia mais antigo dos dois.
         entradasNoPeriodo(userId, dataISO(inicio60d < inicioMes ? inicio60d : inicioMes), hojeISO),
@@ -557,6 +557,7 @@ export default function Inicio() {
         tipo: p.tipo_entrega || null,
         // 4.29: número do pedido e a foto do primeiro produto que tem foto (lista de Próximas entregas)
         numero: p.numero ?? null,
+        status: p.status ?? null,
         foto: String((p.pedido_itens || []).map((it: any) => (Array.isArray(it.produtos) ? it.produtos[0] : it.produtos)?.imagem_url).find((u: any) => !!u) || "").split(",")[0].trim() || null,
       });
 

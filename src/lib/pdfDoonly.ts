@@ -26,8 +26,10 @@ export async function buscarLoja(): Promise<Loja> {
   const { data: { user } } = await supabase.auth.getUser();
   let p: any = null;
   if (user) {
-    const { data } = await supabase.from("profiles")
+    const { data, error } = await supabase.from("profiles")
       .select("nome, nome_loja, telefone, endereco, logo_url, foto_url, plano, pro_expira_em").eq("id", user.id).maybeSingle();
+    // (27/10) não leu o perfil: para com o aviso de "tente de novo" (antes o PDF de uma conta PRO saía com a marca do Doonly)
+    if (error || !data) throw error || new Error("perfil não carregou");
     p = data;
   }
   const nome = (p?.nome_loja || p?.nome || "Minha confeitaria").trim();

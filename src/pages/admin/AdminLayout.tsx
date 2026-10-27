@@ -96,7 +96,7 @@ export default function AdminLayout() {
     const check = async () => {
       const ADMIN_EMAILS = ["gestao@doonly.com.br"];
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/admin/login"); setLoading(false); return; }
+      if (!session) { navigate("/admin/login", { replace: true }); setLoading(false); return; }
       if (ADMIN_EMAILS.includes(session.user.email || "")) {
         setAuthorized(true);
         setUserEmail(session.user.email || "");
@@ -104,7 +104,8 @@ export default function AdminLayout() {
         const NOMES: Record<string, string> = { gestao: "Gestão" };
         setUserName(NOMES[usuario] || (usuario.charAt(0).toUpperCase() + usuario.slice(1)));
       } else {
-        navigate("/admin/login");
+        // (27/10) conta que não é admin volta pro app (antes ia pro login do admin e o voltar ficava preso entre as duas)
+        navigate("/inicio", { replace: true });
       }
       setLoading(false);
     };

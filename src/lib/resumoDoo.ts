@@ -17,7 +17,8 @@ export async function resumoDoNegocio(uid: string): Promise<string> {
   const em7 = new Date(agora); em7.setDate(em7.getDate() + 7);
   const CAMPOS = "numero, cliente_nome, valor_total, status, status_pagamento, valor_recebido, data_entrega, horario_entrega, created_at, origem";
   const [mes, prox] = await Promise.all([
-    supabase.from("pedidos").select(CAMPOS).eq("user_id", uid).gte("created_at", iniMes.toISOString()).neq("status", "cancelado").limit(2000),
+    // (27/10) "Quanto vendi" não conta pedido ainda não aceito
+    supabase.from("pedidos").select(CAMPOS).eq("user_id", uid).gte("created_at", iniMes.toISOString()).not("status", "in", "(cancelado,recusado,aguardando_aceite,novo,pendente)").limit(2000),
     supabase.from("pedidos").select(CAMPOS).eq("user_id", uid).gte("data_entrega", hoje).lte("data_entrega", iso(em7)).neq("status", "cancelado")
       .order("data_entrega", { ascending: true }).order("horario_entrega", { ascending: true, nullsFirst: false }).limit(40),
   ]);

@@ -357,9 +357,13 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
   return { texto, acao }
 }
 
+/** (27/10) Só pedido claro de imagem ("cria uma imagem", "gera o topo", "desenha uma arte").
+ *  Antes "como desenhar com glacê?" virava imagem e gastava o limite do dia. Pergunta ("como...?") nunca é. */
 function isImageRequest(text: string): boolean {
-  const keywords = ['gerar imagem', 'criar imagem', 'gera imagem', 'cria imagem', 'gerar topo', 'criar topo', 'ilustração', 'desenha', 'desenhar', 'arte para']
-  return keywords.some(k => text.toLowerCase().includes(k))
+  const t = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+  if (/^(como|qual|quais|onde|porque|por que|quanto)\b/.test(t)) return false
+  if (/^(desenha|desenhe|desenhar)\s+(um|uma|o|a)\s+\w+/.test(t)) return true // "desenha um bolo"
+  return /\b(gera|gerar|gere|cria|criar|crie|faz|fazer|faca|desenha|desenhar|desenhe|monta|montar|monte)\s+(um|uma|o|a|meu|minha)?\s*(imagem|foto|topo|arte|ilustracao|desenho|logo|banner)\b/.test(t)
 }
 
 function buildImagePrompt(userMessage: string): string {
@@ -528,10 +532,17 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   }, [messages, chaveConversa, conversaCarregada])
   const [insumos, setInsumos] = useState<InsumoResumo[]>([])
   const [catalogo, setCatalogo] = useState<{ produtos: ProdutoCat[]; clientes: ClienteCat[] }>({ produtos: [], clientes: [] })
+  // (27/10) a 1ª mensagem (ex.: "Registrar pedido" do Menu) espera o cardápio carregar: antes ia com a lista vazia
+  // e a Doo dizia que o produto não estava no cardápio
+  const catRef = useRef(catalogo); catRef.current = catalogo
+  const insRef = useRef(insumos); insRef.current = insumos
+  const carregandoCat = useRef<Promise<unknown> | null>(null)
   useEffect(() => {
     if (!open || !uid) return
-    listarInsumosResumo(uid).then(setInsumos).catch(() => {})
-    listarCatalogo(uid).then(c => setCatalogo({ produtos: c.produtos, clientes: c.clientes })).catch(() => {})
+    carregandoCat.current = Promise.all([
+      listarInsumosResumo(uid).then(l => { insRef.current = l; setInsumos(l) }).catch(() => {}),
+      listarCatalogo(uid).then(c => { const v = { produtos: c.produtos, clientes: c.clientes }; catRef.current = v; setCatalogo(v) }).catch(() => {}),
+    ])
   }, [open, uid])
 
   // Busca nome da confeiteira
@@ -692,11 +703,12 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
         // (21/10) os números do negócio vão junto (vendas, a receber, entregas); se demorar mais de 4 s, segue sem eles
         const negocio = uid ? await Promise.race([resumoDoNegocio(uid).catch(() => ''), new Promise<string>(r => setTimeout(() => r(''), 4000))]) : ''
+        if (carregandoCat.current) await Promise.race([carregandoCat.current, new Promise(r => setTimeout(r, 6000))]) // o cardápio da Doo
         const res = await apiFetch('/api/doo-chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system: buildSystemPrompt(nomeConfeiteira) + negocio + regrasInsumo(insumos) + regrasPedido(catalogoParaDoo(catalogo)),
+            system: buildSystemPrompt(nomeConfeiteira) + negocio + regrasInsumo(insRef.current) + regrasPedido(catalogoParaDoo(catRef.current)),
             messages: historyForApi.map(m => ({ role: m.role, content: buildContent(m) }))
           })
         })

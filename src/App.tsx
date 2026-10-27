@@ -27,6 +27,7 @@ function IrParaEntrega() {
 }
 import FaixaComoCliente from "@/components/cardapio/FaixaComoCliente";
 import SemInternet from "@/components/sistema/SemInternet";
+import { guardarDestinoDoLogin } from "@/lib/destinoLogin";
 
 /* (26/10) cada tela vira um pedaço separado do app: abre só o necessário (antes eram 3,6 MB de uma vez, o que segurava a abertura).
    Depois que a primeira tela aparece, as outras são baixadas em segundo plano (preCarregarTelas), então trocar de tela continua rápido. */
@@ -164,6 +165,7 @@ function preCarregarTelas() {
  */
 function NavigateWithSearch({ to, replace }: { to: string; replace?: boolean }) {
   const location = useLocation();
+  if (to === "/login") guardarDestinoDoLogin(location.pathname + location.hash); // (27/10) volta pra cá depois de entrar
   return <Navigate to={{ pathname: to, search: location.search }} replace={replace} />;
 }
 

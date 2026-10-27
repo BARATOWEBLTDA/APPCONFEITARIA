@@ -18,6 +18,8 @@ export interface EntregaResumo {
   hora?: string | null; produto?: string | null; tipo?: string | null;
   /** 4.29: número do pedido e foto do produto, pra lista */
   numero?: number | null; foto?: string | null;
+  /** (27/10) pra o total do dia não contar o que já foi entregue */
+  status?: string | null;
 }
 
 interface Props {
@@ -91,7 +93,9 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
     if (g) g.itens.push(e); else grupos.push({ data: e.data, titulo: tituloDia(e.data), itens: [e], total: 0 });
   }
 
-  grupos.forEach(g => { g.total = Math.max(g.itens.length, (semana || []).filter(e => e.data === g.data).length); });
+  // (27/10) o total do dia conta só o que falta entregar (antes "Hoje · 3 entregas" aparecia em cima de 1)
+  const falta = (e: EntregaResumo) => !['entregue', 'concluido', 'cancelado'].includes(String(e.status || ''));
+  grupos.forEach(g => { g.total = Math.max(g.itens.length, (semana || []).filter(e => e.data === g.data && falta(e)).length); });
 
   // 4.29: sem etiquetas (pedido do dono): só o título, o link da Agenda e os pedidos
   const nadaMarcado = !doDia && lista.length === 0;

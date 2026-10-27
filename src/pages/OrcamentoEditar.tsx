@@ -203,11 +203,12 @@ export default function OrcamentoEditar() {
         o.mensagem ? card('Recado', `<p>${esc(o.mensagem)}</p>`) : '',
         card('Evento', kv([['Cliente', esc(o.cliente_nome || '')], ['Evento', esc(o.nome_evento || '')], ['Data', esc(dataLonga(o.data_evento))], ['Pessoas', o.pessoas ? String(o.pessoas) : ''], ['Local', esc(o.local_evento || '')]])),
         card('Itens', kv([
-          ...(o.itens || []).map(i => [`${i.quantidade > 1 ? `${i.quantidade} × ` : ''}${esc(i.nome)}`, brl(i.quantidade * i.valor_unitario)] as [string, string]),
+          // (27/10) o nome vai sem esc: o kv já protege o rótulo ("Bolo & Cia" saía "&amp;" e o Total saía com <b> escrito)
+          ...(o.itens || []).map(i => [`${i.quantidade > 1 ? `${i.quantidade} × ` : ''}${i.nome}`, brl(i.quantidade * i.valor_unitario)] as [string, string]),
           ...(extras.desconto && o.desconto > 0 ? [['Desconto', `− ${brl(o.desconto)}`] as [string, string]] : []),
           ...(extras.acrescimo && o.acrescimo > 0 ? [['Acréscimo', brl(o.acrescimo)] as [string, string]] : []),
           ...(extras.entrega ? [['Entrega', textoEntrega(o.taxa_entrega)] as [string, string]] : []),
-          ['<b>Total</b>', `<b>${brl(total)}</b>`],
+          ['Total', `<b>${brl(total)}</b>`],
         ])),
         card('Condições', `<p>${esc(textoCondicoes(o, total))}</p>`),
       ].join(''),

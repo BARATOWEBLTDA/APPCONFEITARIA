@@ -51,9 +51,12 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
   const aceitar = async () => {
     if (!um || aceitando) return;
     setAceitando(true);
-    const { error } = await supabase.from("pedidos").update({ status: "agendado" }).eq("id", um.id);
+    // (27/10) só aceita se ainda está esperando aceite no banco (cancelado em outro aparelho não volta pra agenda)
+    const { data: feitos, error } = await supabase.from("pedidos").update({ status: "agendado" }).eq("id", um.id)
+      .in("status", ["aguardando_aceite", "novo", "pendente"]).select("id");
     setAceitando(false);
     if (error) { avisar("Não deu para aceitar o pedido. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+    if (!feitos?.length) { avisar(`O pedido #${um.numero ?? ""} já tinha mudado. Abra Pedidos para ver como está.`, { tipo: "info" }); return; }
     registrarEtapa(um.id, "agendado");
     // o Início mostra o destaque do "Pedidos" no 1º pedido aceito (aí o aviso curto não aparece por cima)
     if (!aoAceitar(um.id)) avisarMudanca({ numero: um.numero as any, cliente_nome: (um as any).cliente_nome || (um as any).cliente || null }, "agendado");

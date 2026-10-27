@@ -8,6 +8,7 @@ import {
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
+import { useSobreposicao } from "@/components/base/useSobreposicao";
 import "./buscaRapida.css";
 
 /**
@@ -97,12 +98,16 @@ export default function BuscaRapida() {
   useEffect(() => { setSel(0); }, [q]);
   useEffect(() => { listaRef.current?.querySelector<HTMLElement>(`[data-i="${sel}"]`)?.scrollIntoView({ block: "nearest" }); }, [sel]);
 
+  // (27/10) voltar do Android e Esc fecham só a busca (antes saíam da tela ou fechavam o app)
+  const caixaRef = useRef<HTMLDivElement>(null);
+  useSobreposicao(aberta, () => setAberta(false), caixaRef);
   if (!aberta) return null;
 
   const abrir = (i: Item) => {
+    const substituir = !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela; // a busca guardou uma entrada pro "voltar"
     setAberta(false);
     if (i.fazer) { i.fazer(); return; }
-    if (i.rota) navigate(i.rota, i.estado ? { state: i.estado } : undefined);
+    if (i.rota) navigate(i.rota, { ...(i.estado ? { state: i.estado } : {}), replace: substituir });
   };
   const aoTeclar = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") { e.preventDefault(); setSel(s => Math.min(lista.length - 1, s + 1)); }
@@ -115,7 +120,7 @@ export default function BuscaRapida() {
   let grupo = "";
   return (
     <div className="br-fundo" onMouseDown={e => { if (e.target === e.currentTarget) setAberta(false); }}>
-      <div className="br" role="dialog" aria-modal="true" aria-label="Buscar no app">
+      <div ref={caixaRef} tabIndex={-1} className="br" role="dialog" aria-modal="true" aria-label="Buscar no app">
         <div className="br-campo">
           <MagnifyingGlass size={20} aria-hidden="true" />
           <input ref={inputRef} type="search" value={q} onChange={e => setQ(e.target.value)} onKeyDown={aoTeclar}
