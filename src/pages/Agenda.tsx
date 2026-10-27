@@ -4,7 +4,7 @@ import { montarMensagem, dadosDoPedido } from "@/lib/mensagens";
 import { useNavigate, useNavigationType } from "react-router-dom";
 import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Printer, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
-import { pedidoAtrasado, STATUS_AINDA_NAO_PRONTO } from "@/lib/pedidoStatus";
+import { pedidoAtrasado, STATUS_AINDA_NAO_PRONTO, STATUS_PODE_FICAR_PRONTO } from "@/lib/pedidoStatus";
 import { duplicarPedido as duplicarPedidoLib } from "@/lib/duplicarPedido";
 import { gerarPedidoPDF } from "@/lib/gerarPedidoPDF";
 import * as pdf from "@/lib/pdfDoonly";
@@ -528,8 +528,9 @@ export default function Agenda() {
   const temAtencao = !!atencao && (atencao.atr.length > 0 || atencao.prox.length > 0);
   const irParaDia = (iso: string) => { setRefDate(parseISO(iso)); setDiaSel(iso); };
   const acaoAtencao = (p: any, atr: boolean) => {
-    if (atr || p.status === "em_producao") return { t: "Pronto", fn: () => marcarComoPronto(p) };
+    // (27/10) primeiro aceitar: "Pronto" só em pedido já aceito
     if (precisaAceitar(p)) return { t: "Aceitar", fn: () => mudarSituacao(p, "agendado"), principal: true };
+    if ((atr || p.status === "em_producao") && STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado")) return { t: "Pronto", fn: () => marcarComoPronto(p) };
     if (grupoDe(p.status) === "agendado" && p.status !== "aguardando_pagamento") return { t: "Produzir", fn: () => mudarSituacao(p, "em_producao") };
     return null;
   };
@@ -626,7 +627,7 @@ export default function Agenda() {
     <MenuAgenda p={menuDe} aoFechar={() => setMenuDe(null)}
       itens={[
         { nome: "Editar pedido", Ic: PencilSimple, fn: doMenu(p => abrirEditar(p.id)) },
-        ...(menuDe && STATUS_AINDA_NAO_PRONTO.includes(menuDe.status || "agendado") ? [{ nome: "Marcar pronto", Ic: Check, fn: doMenu(marcarComoPronto) }] : []),
+        ...(menuDe && STATUS_PODE_FICAR_PRONTO.includes(menuDe.status || "agendado") ? [{ nome: "Marcar pronto", Ic: Check, fn: doMenu(marcarComoPronto) }] : []),
         { nome: "Mudar a data da entrega", Ic: CalendarBlank, fn: doMenu(p => setReagendando(p)) },
         { nome: "Duplicar pedido", Ic: Copy, fn: doMenu(duplicarPedido) },
         { nome: "Baixar PDF", Ic: FilePdf, fn: doMenu(baixarPdf) },
@@ -785,12 +786,12 @@ function CartaoAgenda({ p, ocupado, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
   const primeiro = itens[0];
   const foto = primeiraFoto(primeiro?.imagem_url || primeiro?.produtos?.imagem_url);
   const extras = Math.max(0, itens.length - 1);
-  const podePronto = STATUS_AINDA_NAO_PRONTO.includes(p.status || "agendado");
+  const podePronto = STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado");
   const temTel = telefoneValido(p.cliente_whatsapp) || telefoneValido(p.cliente_telefone);
   const cancelado = p.status === "cancelado";
   const pagamento = cancelado ? null
     : falta <= 0.009 ? { t: "Pago", tom: "verde" as const }
-    : recebido > 0 ? { t: `Sinal ${rs(recebido).replace(" ", "\u00A0")} · falta ${rs(falta).replace(" ", "\u00A0")}`, tom: "laranja" as const } // (24/10) mais curto e sem quebrar o valor no meio
+    : recebido > 0 ? { t: `Falta ${rs(falta).replace(" ", "\u00A0")} · sinal pago`, tom: "laranja" as const } // (27/10) o que falta vem primeiro: com valor de 4 dígitos o fim era cortado
     : { t: `Falta receber ${rs(falta)}`, tom: "laranja" as const };
   const nome = p.cliente_nome ? nomeDeGente(p.cliente_nome) : "Cliente não informado";
   const ref = useRef<HTMLElement>(null);

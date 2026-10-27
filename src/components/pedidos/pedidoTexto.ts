@@ -56,7 +56,9 @@ export type Tom = 'azul' | 'laranja' | 'verde' | 'vermelho' | 'rosa'
 /** Situações do banco (com os nomes antigos que ainda podem existir) */
 export function grupoDoStatus(status: string): string {
   const s = status || 'aguardando_aceite'
-  if (s === 'novo') return 'aguardando_aceite'
+  if (s === 'novo' || s === 'pendente') return 'aguardando_aceite' // (27/10) situações antigas também aparecem na lista
+  if (s === 'em_preparo') return 'em_producao'
+  if (s === 'aguardando_entrega') return 'finalizado'
   if (s === 'confirmado') return 'agendado'
   if (s === 'pronto') return 'finalizado'
   if (s === 'a_caminho') return 'em_entrega'

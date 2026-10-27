@@ -8,6 +8,10 @@ export const STATUS_AINDA_NAO_PRONTO = [
   "agendado", "confirmado", "em_producao", "em_preparo",
 ];
 
+/** (27/10) Só pedido aceito (agendado ou em produção) pode ser marcado pronto. Antes o "Marcar pronto" da Agenda
+ *  aparecia até em pedido sem aceitar ou esperando o Pix, e pulava o aceite e o "cliente pagou?". */
+export const STATUS_PODE_FICAR_PRONTO = ["agendado", "confirmado", "em_producao", "em_preparo"];
+
 /**
  * Uma data no formato AAAA-MM-DD, no horário do aparelho (o do Brasil).
  * Nunca use toISOString().slice(0, 10) pra isso: ele converte pro horário de Londres e, depois das 21h, já devolve o dia seguinte.

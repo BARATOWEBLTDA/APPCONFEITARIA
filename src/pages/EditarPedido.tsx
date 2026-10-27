@@ -28,7 +28,7 @@ import { valorRecebidoPedido } from '@/lib/financeiroPedido'
 import { useTravarRolagem } from '@/hooks/useTravarRolagem'
 // ── EditarPedido.tsx ─────────────────────────────────────────────────────────
 import { ajustarRecebido, faltaNoBanco, registrarPagamento } from '@/lib/pagamentos'
-import { excluirPedido as excluirPedidoNoBanco } from '@/lib/pedidosDoo'
+import { excluirPedido as excluirPedidoNoBanco, precoDeVenda } from '@/lib/pedidosDoo'
 import { digitosTelefone, linkWhatsApp, mascaraTelefone } from '@/lib/telefone'
 import { pesoLivre } from '@/lib/itemPedido'
 import { pedidoAtrasado } from '@/lib/pedidoStatus'
@@ -409,7 +409,7 @@ export default function EditarPedido() {
   // Excluir pedido (03/10): veio da janela da lista, que saiu; aqui fica longe do toque fácil
   const excluindoRef = useRef(false)
   const excluirPedido = async () => {
-    const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: 'Ele some da lista, da agenda e do financeiro. Não dá para desfazer. Se o cliente só desistiu, prefira "Cancelar pedido".', icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
+    const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: pedido?.status === 'cancelado' && recebidoAtual > 0 ? 'Ele some da lista. O sinal que você ficou continua no caixa. Não dá para desfazer.' : 'Ele some da lista, da agenda e do financeiro. Não dá para desfazer. Se o cliente só desistiu, prefira "Cancelar pedido".', icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
     if (!ok || !pedido || excluindoRef.current) return
     // (10/10) a mesma regra da lista (lib/pedidosDoo): estorna os recebimentos antes e para se algum passo falhar
     excluindoRef.current = true
@@ -513,7 +513,7 @@ export default function EditarPedido() {
     const completo: any = data || p
     const temOpcoes = carregarGruposDoBanco(completo).some(g => g.ativo && g.opcoes.length > 0) || kitAtivo(completo.kit_qtd)
     if (temOpcoes) { setModalProduto(false); setBuscaProduto(''); setCatDropdownAberto(false); setProdutoOpcoes(completo); return }
-    addItem(p)
+    addItem(completo)
     avisar(`${p.nome} adicionado.`)
   }
 
@@ -707,7 +707,7 @@ export default function EditarPedido() {
       if (user?.user) {
         const [{ data: cls }, { data: prds }] = await Promise.all([
           supabase.from('clientes').select('id,nome,telefone,whatsapp,rua,numero,bairro,cidade,complemento').eq('user_id', user.user.id).order('nome'),
-          supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url,categoria').eq('user_id', user.user.id).order('nome'),
+          supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url,categoria,promocao,tipo_promocao,desconto_percentual,preco_promocional,kit_qtd,grupo_tamanhos').eq('user_id', user.user.id).order('nome'), // (27/10) com a promoção
         ])
         if (!cancelado) {
           setClientes(cls || [])
@@ -1005,7 +1005,49 @@ export default function EditarPedido() {
           : previstaParaGravar,
       }
 
-      // ── 1) UPDATE do pedido ─────────────────────────────────────────
+      // ── 1) Itens novos (27/10: ANTES do pedido; se falharem, nada muda e o total não fica diferente dos itens)
+      // (11/10) grava os NOVOS primeiro e só depois apaga os antigos, pelos ids lidos agora.
+      // Antes era "apaga tudo, grava tudo": se a conexão caísse no meio, o pedido ficava sem itens.
+      // Se gravar os novos falhar, nada se perdeu. Se apagar os antigos falhar, ficam repetidos até salvar de novo
+      // (o próximo salvar lê todos os que estão no banco, grava os da tela e apaga os lidos).
+      const { data: antigos, error: errLer } = await supabase.from('pedido_itens').select('id').eq('pedido_id', pedido!.id)
+      if (errLer) {
+        avisarJanela('Não foi possível salvar', explicarErro(errLer, 'Nada foi alterado. Tente de novo em instantes.'), 'erro')
+        setSalvando(false)
+        return
+      }
+      const idsAntigos: string[] = ((antigos as any[]) || []).map(x => x.id).filter(Boolean)
+      let idsNovos: string[] = []
+
+      if (itens.length > 0) {
+        const itensInsert = itens.map(it => ({
+          pedido_id: pedido!.id,
+          produto_id: it.produto_id || null,
+          nome_produto: it.nome_produto,
+          quantidade: it.quantidade,
+          valor_unitario: it.valor_unitario,
+          observacoes: it.observacoes || '',
+          imagem_url: it.imagem_url || null,
+          // ─── Snapshot Passo 0A ─────────────────────────────────────
+          // EditarPedido preserva o snapshot original de cada item se existir,
+          // e cria snapshot básico pra itens novos adicionados na edição
+          // Mantém TUDO o que o item já tinha (kit, adicionais, foto de referência…); só completa o formato
+          personalizacoes: (it as any).personalizacoes && typeof (it as any).personalizacoes === 'object'
+            ? { ...criarPersonalizacoesV1((it as any).personalizacoes), ...(it as any).personalizacoes }
+            : criarPersonalizacoesV1({}),
+          preco_breakdown: (it as any).preco_breakdown || criarBreakdownV1({ final: it.valor_unitario }),
+          snapshot_version: (it as any).snapshot_version || SNAPSHOT_VERSION_ATUAL,
+        }))
+        const { data: novos, error: errIns } = await supabase.from('pedido_itens').insert(itensInsert).select('id')
+        idsNovos = ((novos as any[]) || []).map(x => x.id).filter(Boolean)
+        if (errIns) {
+          avisarJanela('Não foi possível salvar', explicarErro(errIns, 'Nada foi alterado. Tente de novo em instantes.'), 'erro')
+          setSalvando(false)
+          return
+        }
+      }
+
+      // ── 2) UPDATE do pedido ─────────────────────────────────────────
       let { error: errPedido } = await supabase
         .from('pedidos')
         .update(payloadCompleto)
@@ -1020,6 +1062,8 @@ export default function EditarPedido() {
       }
 
       if (errPedido) {
+        // os itens novos já tinham entrado: tira eles, pra o pedido ficar como estava
+        if (idsNovos.length) await supabase.from('pedido_itens').delete().in('id', idsNovos).then(() => {}, () => {})
         avisarJanela('Não foi possível salvar', explicarErro(errPedido, 'Nada foi alterado. Tente de novo em instantes.'), 'erro')
         setSalvando(false)
         return
@@ -1056,49 +1100,11 @@ export default function EditarPedido() {
         }).then(() => {}, () => {})
       }
 
-      // ── 2) Trocar os itens (11/10): grava os NOVOS primeiro e só depois apaga os antigos, pelos ids lidos agora.
-      // Antes era "apaga tudo, grava tudo": se a conexão caísse no meio, o pedido ficava sem itens.
-      // Se gravar os novos falhar, nada se perdeu. Se apagar os antigos falhar, ficam repetidos até salvar de novo
-      // (o próximo salvar lê todos os que estão no banco, grava os da tela e apaga os lidos).
-      const { data: antigos, error: errLer } = await supabase.from('pedido_itens').select('id').eq('pedido_id', pedido!.id)
-      if (errLer) {
-        avisarJanela('Salvo pela metade', `Os dados do pedido foram salvos, mas os itens não foram atualizados. ${explicarErro(errLer, 'Salve de novo.')}`, 'erro')
-        setSalvando(false)
-        return
-      }
-      const idsAntigos: string[] = ((antigos as any[]) || []).map(x => x.id).filter(Boolean)
-
-      if (itens.length > 0) {
-        const itensInsert = itens.map(it => ({
-          pedido_id: pedido!.id,
-          produto_id: it.produto_id || null,
-          nome_produto: it.nome_produto,
-          quantidade: it.quantidade,
-          valor_unitario: it.valor_unitario,
-          observacoes: it.observacoes || '',
-          imagem_url: it.imagem_url || null,
-          // ─── Snapshot Passo 0A ─────────────────────────────────────
-          // EditarPedido preserva o snapshot original de cada item se existir,
-          // e cria snapshot básico pra itens novos adicionados na edição
-          // Mantém TUDO o que o item já tinha (kit, adicionais, foto de referência…); só completa o formato
-          personalizacoes: (it as any).personalizacoes && typeof (it as any).personalizacoes === 'object'
-            ? { ...criarPersonalizacoesV1((it as any).personalizacoes), ...(it as any).personalizacoes }
-            : criarPersonalizacoesV1({}),
-          preco_breakdown: (it as any).preco_breakdown || criarBreakdownV1({ final: it.valor_unitario }),
-          snapshot_version: (it as any).snapshot_version || SNAPSHOT_VERSION_ATUAL,
-        }))
-        const { error: errIns } = await supabase.from('pedido_itens').insert(itensInsert)
-        if (errIns) {
-          avisarJanela('Salvo pela metade', `Os dados do pedido foram salvos, mas os itens não foram atualizados (continuam os de antes). ${explicarErro(errIns, 'Salve de novo.')}`, 'erro')
-          setSalvando(false)
-          return
-        }
-      }
-
       if (idsAntigos.length > 0) {
         const { error: errDel } = await supabase.from('pedido_itens').delete().in('id', idsAntigos)
         if (errDel) {
           avisarJanela('Os itens ficaram repetidos', `Os itens novos foram gravados, mas os antigos não saíram do pedido. ${explicarErro(errDel, 'Salve de novo para arrumar.')}`, 'erro')
+          void atualizarVersao() // (27/10) a mudança foi daqui: o próximo salvar não acusa "outro aparelho"
           setSalvando(false)
           return
         }
@@ -1123,7 +1129,7 @@ export default function EditarPedido() {
       produto_id: p.id,
       nome_produto: p.nome,
       quantidade: 1,
-      valor_unitario: p.preco_normal || 0,
+      valor_unitario: precoDeVenda(p), // (27/10) com a promoção, igual à Nova venda (antes entrava o preço cheio)
       observacoes: '',
       imagem_url: p.imagem_url || null,
     }])
@@ -1841,7 +1847,7 @@ export default function EditarPedido() {
                   <button key={p.id} type="button" className="tpj-it" onClick={() => escolherProduto(p)}>
                     <span className="tpj-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                     <span className="tpj-tx"><b>{nomeDeProduto(p.nome || 'Produto sem nome')}</b>{p.categoria && <small>{p.categoria}</small>}</span>
-                    <span className="tpj-preco">{formatMoney(p.preco_normal)}</span>
+                    <span className="tpj-preco">{formatMoney(precoDeVenda(p))}</span>
                   </button>
                 )
               })}

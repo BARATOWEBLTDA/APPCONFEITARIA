@@ -301,8 +301,12 @@ export async function excluirPedido(pedidoId: string): Promise<{ ok: true } | { 
   if (errPag && !faltaNoBanco(errPag)) {
     return { ok: false, estornou: false, erro: explicarErro(errPag, "Não deu para conferir os recebimentos deste pedido, então ele não foi excluído. Tente de novo.") };
   }
+  // (27/10) pedido cancelado em que ela ficou com o sinal: o dinheiro continua no caixa (o recebimento fica sem pedido).
+  // Antes a exclusão estornava e o saldo e o "Recebido no mês" caíam com o dinheiro ainda na mão dela.
+  const { data: ped } = await supabase.from("pedidos").select("status").eq("id", pedidoId).maybeSingle();
+  const cancelado = (ped as any)?.status === "cancelado";
   let estornou = false;
-  if (!errPag && (ativos || []).length > 0) {
+  if (!errPag && !cancelado && (ativos || []).length > 0) {
     const r = await ajustarRecebido({ pedidoId, alvo: 0 }); // alvo zero = estorna todos os ativos (nada é apagado)
     if (!r.ok) return { ok: false, estornou: true, erro: "Não deu para estornar os recebimentos deste pedido, então ele não foi excluído. Confira os pagamentos do pedido e tente de novo." };
     estornou = true;

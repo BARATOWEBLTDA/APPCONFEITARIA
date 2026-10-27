@@ -11,6 +11,10 @@ import { r2, somarReais } from "@/lib/moeda";
 const FORA_DO_PEDIDO = new Set([
   "id", "numero", "created_at", "updated_at", "status", "status_pagamento", "valor_recebido",
   "cupom_codigo", "data_prevista_pagamento", "pedido_itens", "clientes", "origem",
+  // (27/10) o Pix, os horários das etapas e o cancelamento eram do pedido original: a cópia vinha com
+  // "Confirmar Pix" de um Pix que nunca existiu (um toque punha esse dinheiro no caixa)
+  "pix_online", "pix_informado_valor", "pix_informado_tipo", "pix_informado_em", "status_tempos",
+  "motivo_cancelamento", "mostrar_motivo_ao_cliente", "retirado_por", "valor_original", "valor_sinal", "data_sinal",
 ]);
 const FORA_DO_ITEM = new Set(["id", "pedido_id", "created_at", "updated_at", "produtos"]);
 const ERRO_DUPLICAR = "Não deu para duplicar o pedido. Tente de novo.";

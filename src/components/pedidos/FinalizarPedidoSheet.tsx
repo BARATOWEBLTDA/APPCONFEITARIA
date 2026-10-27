@@ -192,7 +192,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         {erro && <p className="fps-erro">{erro}</p>}
 
         <button type="button" className="fps-cta" onClick={() => concluir(true)} disabled={salvando}>
-          <Wallet size={18} weight="bold" />{salvando ? "Salvando…" : saldo > 0.009 && recebe > 0 ? "Confirmar e lançar no financeiro" : "Confirmar"}
+          <Wallet size={18} weight="bold" />{salvando ? "Salvando…" : saldo > 0.009 && recebe > 0 ? "Confirmar recebimento" : "Confirmar"}
         </button>
         {saldo > 0.009 && <button type="button" className="fps-sec" onClick={() => concluir(false)} disabled={salvando}>Ainda não recebi</button>}
       </div>
@@ -236,7 +236,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         .fps-prev b { display: block; font-size: 13.5px; color: #92400E; } .fps-prev small { font-size: 12px; color: #92400E; }
         .fps-prev--ok { background: #F0FDF4; border-color: #BBF7D0; } .fps-prev--ok b, .fps-prev--ok small { color: #166534; }
         .fps-erro { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: var(--ui-vermelho); }
-        .fps-cta { margin-top: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: var(--ui-raio-botao); padding: 15px; background: #16A34A; color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+        .fps-cta { margin-top: 14px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: var(--ui-raio-botao); padding: 15px; background: #16A34A; color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
         .fps-sec { margin-top: 6px; width: 100%; border: none; background: none; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
         .fps-cta:disabled, .fps-sec:disabled { opacity: .6; cursor: default; }
       `}</style>

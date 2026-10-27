@@ -205,8 +205,8 @@ export default function Pedidos() {
   /** Confirmação de que deu certo (3.14): aviso curto sempre; som quando o pedido termina (respeita o som ligado/desligado em Notificações) */
   // (24/10) aviso em cartão com "Desfazer": volta a situação anterior se tocou sem querer (só quando foi só a situação que
   // mudou; com pagamento registrado, o botão é "Ver", que abre o pedido)
-  const confirmarMudanca = (p: Pedido, status: string, pago = false, podeDesfazer = true) => {
-    registrarEtapa(p.id, status)
+  const confirmarMudanca = (p: Pedido, status: string, pago = false, podeDesfazer = true, etapaJaRegistrada = false) => {
+    if (!etapaJaRegistrada) registrarEtapa(p.id, status) // (27/10) a janela de finalizar já registra: antes "Entregue" saía 2 vezes
     const anterior = p.status
     avisarMudanca(p, status, {
       pago,
@@ -254,6 +254,11 @@ export default function Pedidos() {
         return
       }
       const falta = saldoPedido(atual)
+      // (27/10) pergunta antes de lançar no caixa (antes um toque errado na lista já registrava o dinheiro)
+      if (falta > 0) {
+        const ok = await confirmar({ titulo: `Recebeu ${rs(falta)}?`, texto: `${nomeCliente(atual)} · pedido #${atual.numero || ''}. O valor entra no caixa.`, rotulo: 'Recebi', rotuloVoltar: 'Voltar' })
+        if (!ok) return
+      }
       const r = falta > 0
         ? await registrarPagamento({ pedidoId: id, valor: falta, forma: atual.forma_pagamento, tipo: recebidoPedido(atual) > 0 ? 'restante' : 'total' })
         : null
@@ -425,7 +430,7 @@ export default function Pedidos() {
       fechar(); return
     }
     if (acao === 'excluir') {
-      const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ''}?`, texto: 'Ele some da lista, da agenda e do financeiro.', rotulo: 'Excluir', perigo: true })
+      const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ''}?`, texto: p.status === 'cancelado' && recebidoPedido(p) > 0 ? 'Ele some da lista. O sinal que você ficou continua no caixa.' : 'Ele some da lista, da agenda e do financeiro.', rotulo: 'Excluir', perigo: true })
       if (!ok) return
       if (await excluirPedido(p)) fechar()
     }
@@ -441,11 +446,15 @@ export default function Pedidos() {
     aceitandoTodos.current = true
     ids.forEach(id => travar(id, true))
     try {
-      const { error } = await supabase.from('pedidos').update({ status: 'agendado' }).in('id', ids)
+      // (27/10) só aceita o que ainda está esperando aceite no banco (cancelado em outro aparelho não volta pra agenda)
+      const { data: aceitos, error } = await supabase.from('pedidos').update({ status: 'agendado' }).in('id', ids)
+        .in('status', ['aguardando_aceite', 'novo', 'pendente']).select('id')
       if (error) { avisar('Não deu para aceitar os pedidos. Confira a internet e tente de novo.', { tipo: 'erro' }); return }
-      ids.forEach(id => registrarEtapa(id, 'agendado'))
-      mudarPedidos(prev => prev.map(p => ids.includes(p.id) ? { ...p, status: 'agendado' } : p))
-      avisar(ids.length === 1 ? 'Pedido aceito.' : `${ids.length} pedidos aceitos.`)
+      const feitos = (aceitos || []).map((r: any) => r.id as string)
+      feitos.forEach(id => registrarEtapa(id, 'agendado'))
+      mudarPedidos(prev => prev.map(p => feitos.includes(p.id) ? { ...p, status: 'agendado' } : p))
+      if (feitos.length < ids.length && userId) void fetchPedidos(userId, true) // algum mudou em outro aparelho: mostra como está
+      avisar(feitos.length === 1 ? 'Pedido aceito.' : `${feitos.length} pedidos aceitos.`)
       setSit(null) // a aba vazia some: volta pra aba que tem pedido (Agendados)
     } finally { ids.forEach(id => travar(id, false)); aceitandoTodos.current = false }
   }
@@ -674,7 +683,7 @@ export default function Pedidos() {
           aguardandoPagamento={grupoDoStatus(pendingPag.pedido.status) === 'aguardando_pagamento'}
           onCancelar={() => setPendingPag(null)}
           onParcial={(r) => mudarPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p))}
-          onConcluido={(r) => { mudarPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p)); confirmarMudanca(pendingPag.pedido, pendingPag.novoStatus, false, false); setPendingPag(null) }}
+          onConcluido={(r) => { mudarPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p)); confirmarMudanca(pendingPag.pedido, pendingPag.novoStatus, false, false, true); setPendingPag(null) }}
         />
       )}
     </>
