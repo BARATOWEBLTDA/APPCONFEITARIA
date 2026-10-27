@@ -58,7 +58,7 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
   const itens: { nome: string; Icone: Icon; acao: () => void }[] = [
     { nome: "Novidades", Icone: Newspaper, acao: () => ir("/noticias") }, // (21/10) caminho fixo pras novidades do Doonly
     { nome: "Configurações", Icone: Gear, acao: () => ir("/configuracoes") },
-    { nome: "Doo IA", Icone: Sparkle, acao: () => { if (isPro) { aoFechar(); abrirDooIA(); } else ir("/assistente-virtual"); } },
+    { nome: "Doo IA", Icone: Sparkle, acao: () => { aoFechar(); abrirDooIA(); } },
     { nome: "Sugerir uma melhoria", Icone: Lightbulb, acao: () => ir("/solicitar-recurso") },
     { nome: "Relatar um problema", Icone: WarningCircle, acao: () => ir("/relatar-problema") },
   ];

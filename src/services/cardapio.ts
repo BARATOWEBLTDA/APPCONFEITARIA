@@ -79,7 +79,7 @@ export async function getCardapioBySlug(slug: string): Promise<CardapioData> {
 async function fetchByUserId(userId: string, profile: any): Promise<CardapioData> {
   // (17/10) Produtos e categorias pelas funções do banco (SQL cardapio_produtos): o cliente sem login
   // não conseguia ler as tabelas direto e o cardápio aparecia vazio. As funções também não entregam
-  // os campos internos da ficha técnica (custo, salário desejado…). Sem o SQL rodado, lê como antes.
+  // os campos internos da ficha técnica (custo, salário desejado…).
   const [rProd, rCat, { data: temCupom }, rVitrine] = await Promise.all([
     supabase.rpc('cardapio_produtos', { p_loja: userId }),
     supabase.rpc('cardapio_categorias', { p_loja: userId }),
@@ -88,11 +88,8 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     // (20/10) até 2 cupons ativos pra vitrine do cardápio (esses códigos são públicos de propósito)
     supabase.rpc('cardapio_cupons_vitrine', { p_loja: userId }),
   ])
-  let produtos: any[] | null = Array.isArray(rProd.data) ? rProd.data : null
-  if (rProd.error && funcaoFaltando(rProd.error)) {
-    const { data } = await supabase.from('produtos').select('*').eq('user_id', userId).eq('disponivel', true).order('created_at', { ascending: false })
-    produtos = data
-  }
+  // (27/10) sem leitura direta da tabela: ela trazia custo e salário da ficha técnica para o navegador do cliente
+  const produtos: any[] | null = Array.isArray(rProd.data) ? rProd.data : null
   let categorias: any[] | null = Array.isArray(rCat.data) ? rCat.data : null
   if (rCat.error && funcaoFaltando(rCat.error)) {
     const { data } = await supabase.from('categorias').select('nome, imagem_url').eq('user_id', userId).order('ordem').order('nome')

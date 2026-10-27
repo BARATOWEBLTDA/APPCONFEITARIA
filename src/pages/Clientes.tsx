@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { montarMensagem } from "@/lib/mensagens";
 import { useRecorte } from "@/components/ui/useRecorte";
 import DataNascimentoSheet, { rotuloNascimento } from "@/components/DataNascimentoSheet";
-import LimitePlano from "@/components/billing/LimitePlano";
-import { LIMITE_CLIENTES_GRATIS } from "@/lib/limitesPlano";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
@@ -205,8 +203,6 @@ export default function Clientes() {
   const { profile } = useProfile();
   const [searchParams, setSearchParams] = useSearchParams();
   const [clientes,      setClientes]      = useState<Cliente[]>([]);
-  // Plano grátis: até 50 clientes (quem já tinha mais continua com tudo; só não cria novos)
-  const [limiteAberto, setLimiteAberto] = useState(false);
   const [loading,       setLoading]       = useState(true);
   const [erroCarregar,  setErroCarregar]  = useState(""); // não deu pra carregar: mostra o erro com "Tentar de novo"
   const [search,        setSearch]        = useState("");
@@ -344,7 +340,6 @@ export default function Clientes() {
   // ── Form helpers ──────────────────────────────────────────────────────────
 
   const openNew = (_mode?: FormMode) => {
-    if (!usuarioEhPro && clientes.length >= LIMITE_CLIENTES_GRATIS) { setLimiteAberto(true); return; }
     aberturaForm.current++; setEnviandoFoto(false);
     setFormMode("completo");
     setEditando(null);
@@ -638,7 +633,6 @@ export default function Clientes() {
       return true;
     });
     if (paraCadastrar.length === 0) return;
-    if (!usuarioEhPro && clientes.length + paraCadastrar.length > LIMITE_CLIENTES_GRATIS) { setLimiteAberto(true); return; }
 
     setImporting(true);
     const payloads = paraCadastrar.map(c => ({
@@ -777,7 +771,6 @@ export default function Clientes() {
 
   return (
     <>
-      {limiteAberto && <LimitePlano tipo="clientes" limite={LIMITE_CLIENTES_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader voltar="/cadastros"
       title="Clientes"
       subtitle="Quem compra de você" infoComo={COMO_CLIENTES} infoTour={TOUR_CLIENTES}

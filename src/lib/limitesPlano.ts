@@ -1,7 +1,6 @@
 /**
- * Limites do plano grátis (decididos em 02/10).
- * Quem já tinha mais que isso continua com tudo: o limite só vale pra CRIAR novos.
+ * Limites do plano grátis (27/10, decisão de 25/10).
+ * Produtos: até 10 NO CARDÁPIO ao mesmo tempo; guardados fora do cardápio não contam. Clientes: sem limite.
  * No PRO não tem limite.
  */
 export const LIMITE_PRODUTOS_GRATIS = 10;
-export const LIMITE_CLIENTES_GRATIS = 50;

@@ -59,7 +59,7 @@ export async function planoDoUsuario(req: Request, usuario: UsuarioLogado): Prom
  * (4.23) Conta um uso da IA no limite diário da conta (função ia_usar do banco, com o token da própria usuária).
  * "ok" = pode usar · "limite" = acabou o limite de hoje · Se a função ainda não existe no banco, deixa passar.
  */
-export async function usarCota(req: Request, tipo: "chat" | "imagem" | "descricao" | "buscar_imagem"): Promise<{ ok: boolean; limite?: number }> {
+export async function usarCota(req: Request, tipo: "chat" | "imagem" | "descricao" | "buscar_imagem"): Promise<{ ok: boolean; limite?: number; periodo?: "dia" | "mes"; ticket?: string }> {
   const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
   const e = env();
   const url = e.SUPABASE_URL || e.VITE_SUPABASE_URL;
@@ -73,14 +73,34 @@ export async function usarCota(req: Request, tipo: "chat" | "imagem" | "descrica
     });
     if (!res.ok) return { ok: true }; // função ainda não criada (404) ou instabilidade: não trava a IA por isso
     const r = await res.json();
-    return r?.ok === false && r?.erro === "limite" ? { ok: false, limite: Number(r.limite) || 0 } : { ok: true };
+    return r?.ok === false && r?.erro === "limite" ? { ok: false, limite: Number(r.limite) || 0, periodo: r.periodo === "mes" ? "mes" : "dia" } : { ok: true, ticket: typeof r?.ticket === "string" ? r.ticket : undefined };
   } catch {
     return { ok: true };
   }
 }
 
+/** (27/10) Erro da IA não gasta mensagem: devolve o uso contado (função ia_devolver do banco, com o ticket
+ * que o ia_usar entregou só para o servidor; sem ticket não devolve nada). Nunca lança. */
+export async function devolverCota(req: Request, ticket: string | undefined): Promise<void> {
+  if (!ticket) return;
+  const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  const e = env();
+  const url = e.SUPABASE_URL || e.VITE_SUPABASE_URL;
+  const anon = e.SUPABASE_ANON_KEY || e.VITE_SUPABASE_ANON_KEY;
+  if (!token || !url || !anon) return;
+  try {
+    await fetch(`${url}/rest/v1/rpc/ia_devolver`, {
+      method: "POST",
+      headers: { apikey: anon, Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_ticket: ticket }),
+    });
+  } catch { /* não atrapalha a resposta */ }
+}
+
 /** Resposta de limite de uso da IA atingido (429) */
-export function respostaLimite(limite: number | undefined, headers: Record<string, string> = {}): Response {
+export function respostaLimite(limite: number | undefined, headers: Record<string, string> = {}, periodo: "dia" | "mes" = "dia"): Response {
+  // (27/10) grátis da Doo: 10 mensagens por mês
+  if (periodo === "mes") return respostaJson({ error: "limite_mensal", message: `Você usou as ${limite} mensagens do mês do plano grátis. No PRO são 150 por dia.` }, 429, headers);
   return respostaJson({ error: "limite_diario", message: limite ? `Você chegou ao limite de ${limite} usos de hoje. Amanhã libera de novo.` : "Esse recurso é do plano PRO." }, 429, headers);
 }
 

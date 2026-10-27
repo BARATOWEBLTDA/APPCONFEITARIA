@@ -123,8 +123,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
             <button type="button" onClick={() => ir(isPro ? "/minha-assinatura" : "/assinar")}><Crown size={20} weight="fill" aria-hidden="true" />Assinatura</button>
           </div>
           {/* (16/10) o Doo IA saiu do menu de baixo (lá entrou o "+ Nova venda"): fica no topo do Mais */}
-          {/* (21/10) PRO: a Doo já vem como campo de pergunta (jeito busca do Google); sem PRO, o cartão que leva pra ela */}
-          {isPro ? (
+          {/* (21/10) a Doo já vem como campo de pergunta (jeito busca do Google) · (27/10) para todos os planos */}
             <div className="mais-doo-bx">
               <form className="mais-doo-q" role="search" onSubmit={e => { e.preventDefault(); perguntarDoo(pergunta); }}>
                 <Sparkle size={20} weight="fill" className="mais-doo-q-ic" aria-hidden="true" />
@@ -135,13 +134,6 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
                 {["Registrar pedido", "Quanto vendi hoje?"].map(t => <button key={t} type="button" onClick={() => perguntarDoo(t)}>{t}</button>)}
               </div>
             </div>
-          ) : (
-            <button type="button" className="mais-doo" onClick={() => { onClose(); abrirDooIA(); }}>
-              <span className="mais-doo-ic" aria-hidden="true"><Sparkle size={20} weight="fill" /></span>
-              <span className="mais-it-txt"><b>Doo IA</b><small>Sua assistente de confeitaria</small></span>
-              <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
-            </button>
-          )}
           {/* (21/10) uma lista só, sem título de grupo (sobraram poucos itens) */}
           {[{ label: "Telas", items: GRUPOS.flatMap(g => g.items) }].map(grupo => (
             <section key={grupo.label} className="mais-grupo" aria-label="Telas do app">

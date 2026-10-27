@@ -426,6 +426,8 @@ const PEDE_NOVA_CONVERSA = 'Comece uma nova conversa e tente de novo.'
 /** caso: 'foto' = a mensagem levava uma foto · 'imagem' = pedido de criar imagem · 'texto' = conversa normal */
 function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'imagem' | 'texto' = 'texto'): string {
   // (4.23) limite diário de uso da Doo
+  // (27/10) grátis: 10 mensagens por mês
+  if (errorType === 'limite_mensal') return 'Você usou as 10 mensagens do mês do plano grátis. No PRO são 150 por dia. No começo do mês que vem libera de novo.'
   if (errorType === 'limite_diario') return caso === 'imagem' ? 'Você chegou ao limite de imagens de hoje. Amanhã libera de novo.' : 'Você chegou ao limite de mensagens de hoje. Amanhã libera de novo.'
   if (status === 429 || errorType === 'rate_limit_error') return 'Muitas mensagens em seguida. Aguarde um momento e tente novamente.'
   // (11/10) só o erro de plano mostra o "Assine o PRO" (outro 403 cai no aviso genérico)
@@ -546,7 +548,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   // (11/10) Antes a Doo travava a rolagem por conta própria e brigava com a trava da <Janela> (o aviso do PRO):
   // ao fechar, a tela ficava sem rolar e deslocada. Agora usa a mesma peça das janelas do app: a tela de trás
   // não rola, o Esc e o "voltar" do Android fecham a Doo (antes o voltar trocava a tela de trás e ela ficava aberta).
-  useSobreposicao(open && isPro, handleClose, painelRef)
+  useSobreposicao(open, handleClose, painelRef)
 
   // Scroll para última mensagem
   useEffect(() => {
@@ -649,7 +651,11 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     const historyForApi = recorte.slice(Math.max(0, recorte.findIndex(m => m.role === 'user')))
 
     try {
-      if (!imgPayload && isImageRequest(text)) {
+      if (!imgPayload && isImageRequest(text) && !isPro) {
+        // (27/10) no grátis a Doo conversa, mas criar imagem é do PRO (não chama a API nem gasta mensagem)
+        setLoading(false)
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Criar imagens é do plano PRO. No grátis eu ajudo com receitas, preços, legendas e pedidos. Quer que eu escreva uma legenda para esse post?' }])
+      } else if (!imgPayload && isImageRequest(text)) {
         setLoading(false)
         setGeneratingImage(true)
 
@@ -745,25 +751,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }} />
 
 
-      {/* ── Quem não é PRO: a janela padrão do app apresentando a Doo (08/10 · 3.19) ── */}
-      <Janela aberta={open && !isPro} aoFechar={handleClose} tipo="conteudo" titulo="Conheça a Doo"
-        acoes={<>
-          <Botao variante="secundario" onClick={handleClose}>Agora não</Botao>
-          <Botao onClick={() => { handleClose(); navigate('/assinar') }}>Conhecer o PRO</Botao>
-        </>}>
-        <div className="dz-pw">
-          <img src="/Sistema/doo.png" alt="" className="dz-pw-ft" />
-          <p>Sua assistente de confeitaria. Ela calcula preços, cria receitas, registra pedidos e planeja a produção. Faz parte do <b>plano PRO</b>.</p>
-          <ul>
-            {['Receitas com as quantidades certas', 'Preço com a margem ideal', 'Legendas prontas para o Instagram', 'Produção da semana planejada'].map(t => (
-              <li key={t}><Check size={16} weight="bold" aria-hidden="true" />{t}</li>
-            ))}
-          </ul>
-        </div>
-      </Janela>
-
       {/* ── Overlay blur ── */}
-      {open && isPro && (
+      {open && (
         <div onClick={handleClose} style={{
           position: 'fixed', inset: 0,
           backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
@@ -774,7 +763,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
       )}
 
       {/* ── Janela do chat (02/10): tela cheia no celular, painel alto do lado direito no computador ── */}
-      {open && isPro && (
+      {open && (
         <div ref={painelRef} tabIndex={-1} className="dooia-panel" role="dialog" aria-label="Doo IA">
 
           {/* Cabeçalho */}
@@ -782,7 +771,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             <button type="button" className="dz-hb dz-voltar" onClick={handleClose} aria-label="Fechar a Doo"><CaretLeft size={20} weight="bold" /></button>
             <div className="dz-hav"><img src="/Sistema/doo.png" alt="" /><i aria-hidden="true" /></div>
             <div className="dz-ht">
-              <b>Doo IA <em>PRO</em></b>
+              <b>Doo IA{isPro && <> <em>PRO</em></>}</b>
               <small className={loading || generatingImage ? 'dz-esc' : ''}><i aria-hidden="true" />{loading ? 'Escrevendo…' : generatingImage ? 'Criando a imagem…' : 'Online · responde na hora'}</small>
             </div>
             {messages.length > 0 && (

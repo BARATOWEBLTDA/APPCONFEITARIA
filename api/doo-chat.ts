@@ -1,4 +1,4 @@
-import { usuarioDoToken, respostaNaoAutorizado, planoDoUsuario, usarCota, respostaLimite, respostaJson, lerCorpo, chaveAnthropic } from "./_auth";
+import { usuarioDoToken, respostaNaoAutorizado, usarCota, devolverCota, respostaLimite, respostaJson, lerCorpo, chaveAnthropic } from "./_auth";
 
 // (11/10) limites do pedido: a foto já sai reduzida do app (bem menos de 1 MB)
 const LIMITE_CORPO = 4 * 1024 * 1024;
@@ -22,24 +22,21 @@ export default async function handler(req: Request) {
   const usuario = await usuarioDoToken(req);
   if (!usuario) return respostaNaoAutorizado(CORS);
 
-  // (11/10) a Doo é do plano PRO: antes bastava estar logada pra gastar crédito da IA
-  const plano = await planoDoUsuario(req, usuario);
-  if (plano === "erro") return respostaJson({ error: "api_error" }, 503, CORS);
-  if (plano !== "pro") return respostaJson({ error: "pro_required" }, 403, CORS);
-  // (4.23) limite de uso por dia
+  // (27/10) a Doo vale nos dois planos: grátis 10 mensagens por mês, PRO 150 por dia (quem confere é o banco, ia_usar)
   const cota = await usarCota(req, "chat");
-  if (!cota.ok) return respostaLimite(cota.limite, CORS);
+  if (!cota.ok) return respostaLimite(cota.limite, CORS, cota.periodo);
 
   const apiKey = chaveAnthropic();
-  if (!apiKey) return new Response(JSON.stringify({ error: "missing_key" }), { status: 500, headers: CORS });
+  if (!apiKey) { await devolverCota(req, cota.ticket); return new Response(JSON.stringify({ error: "missing_key" }), { status: 500, headers: CORS }); }
 
   const cru = await lerCorpo(req, LIMITE_CORPO);
-  if (cru === null) return respostaJson({ error: "too_large", message: "O pedido ficou grande demais." }, 413, CORS);
+  if (cru === null) { await devolverCota(req, cota.ticket); return respostaJson({ error: "too_large", message: "O pedido ficou grande demais." }, 413, CORS); }
   let corpo: any;
-  try { corpo = JSON.parse(cru); } catch { return respostaJson({ error: "invalid_request_error" }, 400, CORS); }
+  try { corpo = JSON.parse(cru); } catch { await devolverCota(req, cota.ticket); return respostaJson({ error: "invalid_request_error" }, 400, CORS); }
   const { messages, system } = corpo || {};
-  if (!Array.isArray(messages) || messages.length === 0) return respostaJson({ error: "invalid_request_error" }, 400, CORS);
+  if (!Array.isArray(messages) || messages.length === 0) { await devolverCota(req, cota.ticket); return respostaJson({ error: "invalid_request_error" }, 400, CORS); }
   if (messages.length > MAX_MENSAGENS || (typeof system === "string" && system.length > MAX_SISTEMA)) {
+    await devolverCota(req, cota.ticket);
     return respostaJson({ error: "too_large", message: "A conversa ficou grande demais." }, 413, CORS);
   }
 
@@ -80,6 +77,8 @@ export default async function handler(req: Request) {
         saida = { error: "api_error", status: 502 };
       }
       clearInterval(relogio);
+      // (27/10) erro da IA não gasta mensagem
+      if ((saida as any)?.error || controle.signal.aborted) await devolverCota(req, cota.ticket);
       if (controle.signal.aborted) return;
       try { ctrl.enqueue(enc.encode(JSON.stringify(saida))); ctrl.close(); } catch { /* quem pediu já foi embora */ }
     },

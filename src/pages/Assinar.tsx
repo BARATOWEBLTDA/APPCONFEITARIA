@@ -28,7 +28,7 @@ type Beneficio = [Icon, string, string, string, string, string | null];
 const BENEFICIOS: Beneficio[] = [
   [Calculator, "Preço certo em tudo que você vende", "Bolos, doces ou salgados: a precificação calcula custo, margem e lucro. Chega de vender no prejuízo.", "Preço certo de tudo", "A ficha técnica calcula sozinha", "/ficha-tecnica"],
   [ChartLineUp, "Saiba quanto você lucra de verdade", "Relatórios de lucratividade por produto e por mês, para decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
-  [Robot, "Uma assistente que trabalha por você", "A Doo IA calcula preços, sugere receitas e escreve legendas e respostas para os seus clientes.", "Doo IA, sua assistente", "Calcula, sugere e responde", "doo"],
+  [Robot, "A Doo IA sem aperto", "No PRO a Doo IA responde até 150 mensagens por dia e cria imagens. No grátis são 10 mensagens por mês.", "Doo IA 150 por dia", "E cria imagens", "doo"],
   [Bell, "Avisos no celular", "Receba os avisos do Doonly no celular, mesmo com o app fechado.", "Avisos no celular", "Pedido novo na hora", "/configuracoes/notificacoes"],
   [Eye, "Veja quem visita e quem compra", "Visitas, pedidos pelo cardápio e conversão, de hoje e do mês.", "Quem visita e compra", "Visitas e pedidos do cardápio", "/cardapio"],
   [Tag, "Cupons que trazem cliente de volta", "Crie cupons de desconto para atrair novos clientes e fazer os antigos voltarem.", "Cupons de desconto", "Traga cliente de volta", "/marketing"],

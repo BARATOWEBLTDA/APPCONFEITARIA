@@ -5,10 +5,10 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { usePlano } from "@/hooks/usePlano";
 import { abrirDooIA } from "@/components/MenuContaItens";
 import { voltarOuIr } from "@/lib/voltar"; // 11/10: seta de voltar que funciona com a tela aberta direto
-import { BookOpenText, Cake, CalendarCheck, ChatCircleDots, Crown, CurrencyCircleDollar, Package, PencilSimpleLine, Receipt } from "@phosphor-icons/react";
+import { BookOpenText, Cake, CalendarCheck, ChatCircleDots, CurrencyCircleDollar, Package, PencilSimpleLine, Receipt } from "@phosphor-icons/react";
 
-/** "Doo IA" (21/10, antes "Assistente virtual"): o que dá pra pedir pra Doo. Aparece pra quem ainda não é PRO;
- *  quem é PRO toca num exemplo e a conversa abre já com o pedido escrito. */
+/** "Doo IA" (21/10, antes "Assistente virtual"): o que dá pra pedir pra Doo. Toca num exemplo e a conversa abre
+ *  já com o pedido escrito. (27/10) Vale nos dois planos: grátis 10 mensagens por mês, PRO 150 por dia e imagens. */
 const EXEMPLOS = [
   { e: CurrencyCircleDollar, t: "Calcular preço", d: "Bolo ou doce", p: "Calcular o preço de um bolo" },
   { e: Receipt, t: "Novo pedido", d: "Pela conversa", p: "Registrar um pedido", novo: true },
@@ -42,20 +42,12 @@ export default function AssistenteVirtual() {
               <span className="av-e" aria-hidden="true"><b.e size={22} weight="bold" /></span>
               <b>{b.t}</b><small>{b.d}</small>
             </>);
-            return isPro
-              ? <button type="button" className="av-item av-item--bt" key={b.t} onClick={() => abrirDooIA(b.p)}>{conteudo}</button>
-              : <div className="av-item" key={b.t}>{conteudo}</div>;
+            return <button type="button" className="av-item av-item--bt" key={b.t} onClick={() => abrirDooIA(b.p)}>{conteudo}</button>;
           })}
         </div>
-        {isPro ? (
-          <button type="button" className="av-cta" onClick={() => abrirDooIA()}>Conversar com a Doo IA</button>
-        ) : (
-          <>
-            <button type="button" className="av-cta" onClick={() => navigate("/assinar")}>
-              <Crown size={20} weight="fill" aria-hidden="true" /> Liberar a Doo IA com o PRO
-            </button>
-            <p className="av-sub">A Doo IA faz parte do plano PRO.</p>
-          </>
+        <button type="button" className="av-cta" onClick={() => abrirDooIA()}>Conversar com a Doo IA</button>
+        {!isPro && (
+          <p className="av-sub">No grátis: 10 mensagens por mês. <button type="button" className="av-link" onClick={() => navigate("/assinar")}>No PRO: 150 por dia e imagens.</button></p>
         )}
         <p className="av-aviso">A Doo pode errar: confira os valores.</p>
       </div>
@@ -78,6 +70,7 @@ export default function AssistenteVirtual() {
         .av-aviso { margin: 14px 0 0; text-align: center; font-size: 12.5px; color: var(--ui-texto-3); }
         .av-cta { width: 100%; height: 52px; margin-top: 18px; border: none; border-radius: var(--ui-raio); background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; gap: 8px; }
         .av-sub { text-align: center; font-size: 12.5px; color: var(--ui-texto-3); margin: 10px 0 0; }
+        .av-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
       `}</style>
     </div>
   );

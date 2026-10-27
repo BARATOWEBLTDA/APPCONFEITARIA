@@ -967,9 +967,10 @@ export default function Produtos() {
   // Rascunho automático DESLIGADO (causava bug: pulava a tela de tipos). Limpa o que ficou salvo.
   useEffect(() => { try { localStorage.removeItem(DRAFT_KEY); } catch {} }, []);
 
-  const passouDoLimite = (novos = 1) => !isPro && produtos.length + novos > LIMITE_PRODUTOS_GRATIS;
+  // (27/10) Grátis: até 10 produtos NO CARDÁPIO ao mesmo tempo (os guardados fora do cardápio não contam)
+  const ativosNoCardapio = produtos.filter(p => p.disponivel !== false).length;
+  const passouDoLimite = (novos = 1) => !isPro && ativosNoCardapio + novos > LIMITE_PRODUTOS_GRATIS;
   const openNovo = () => {
-    if (passouDoLimite()) { setLimiteAberto(true); return; }
     fichaLida.current = null; fichaPedida.current = null;
     abertura.current++; setGerandoDesc(null); setUploading(false);
     setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setTipoCadastro(null); setModal(true);
@@ -1189,6 +1190,7 @@ export default function Produtos() {
   const alternarNoCardapio = async (p: Produto) => {
     if (!p.id) return;
     const novo = p.disponivel === false;
+    if (novo && passouDoLimite()) { setLimiteAberto(true); return; }
     setProdutos(l => l.map(x => (x.id === p.id ? { ...x, disponivel: novo } : x)));
     const { error } = await supabase.from("produtos").update({ disponivel: novo }).eq("id", p.id);
     if (error) {
@@ -1204,6 +1206,7 @@ export default function Produtos() {
     if (selecionados.length === 0) return;
     setBulkLoading(true);
     const ids = selecionados.map(p => p.id!).filter(Boolean);
+    if (publicar && passouDoLimite(selecionados.filter(p => p.disponivel === false).length)) { setBulkLoading(false); setLimiteAberto(true); return; }
     const { error } = await supabase.from("produtos").update({ disponivel: publicar }).in("id", ids);
     setBulkLoading(false);
     if (error) { showToast("error", "Não deu certo", explicarErro(error)); return; }
@@ -1236,7 +1239,6 @@ export default function Produtos() {
 
   const handleBulkDuplicar = async () => {
     if (selecionados.length === 0 || !userId) return;
-    if (passouDoLimite(selecionados.length)) { setLimiteAberto(true); return; }
     setBulkLoading(true);
     let ok = 0, falhas = 0, semFicha = 0;
     const usadosSku = skusDe(produtos); // (21/10) a cópia ganha um SKU novo (nunca repete)
@@ -1462,6 +1464,8 @@ export default function Produtos() {
     };
     let produtoId = form.id;
     if (form.id) {
+      const estavaFora = produtos.find(x => x.id === form.id)?.disponivel === false;
+      if (estavaFora && (payload as any).disponivel !== false && passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
       let { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
       if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ error } = await supabase.from("produtos").update(sem).eq("id", form.id)); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
       if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou use Gerar."); setSaving(false); return; }
@@ -1472,7 +1476,7 @@ export default function Produtos() {
         return;
       }
     } else {
-      if (passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
+      if ((payload as any).disponivel !== false && passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
       let { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
       if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ data: novo, error } = await supabase.from("produtos").insert({ ...sem, user_id: userId }).select("id").single()); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
       if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou use Gerar."); setSaving(false); return; }
@@ -3069,8 +3073,6 @@ export default function Produtos() {
                         onClick={async () => {
                           setPreviewMenu(false);
                           if (!userId) return;
-                          // 10/10: mesma trava do plano grátis de "Novo produto" e do duplicar em massa
-                          if (passouDoLimite()) { setPreviewProduto(null); setLimiteAberto(true); return; }
                           // Limpa TODOS os campos que não pertencem à tabela produtos
                           const {
                             id, created_at, updated_at, produto_insumos, user_id, ...limpo
@@ -3134,6 +3136,7 @@ export default function Produtos() {
                         onClick={async () => {
                           setPreviewMenu(false);
                           const novoDisponivel = !(previewProduto.disponivel !== false);
+                          if (novoDisponivel && passouDoLimite()) { setPreviewProduto(null); setLimiteAberto(true); return; }
                           const { error } = await supabase.from("produtos").update({ disponivel: novoDisponivel }).eq("id", previewProduto.id!);
                           if (error) { showToast("error", "Não deu certo", explicarErro(error)); return; }
                           await loadProdutos(userId);
