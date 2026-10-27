@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
-import { diaDisponivel, horariosDoDia, horariosLivres, horariosParaMostrar, inicioDoDia, isoDia, deIso, somarDias } from "@/lib/agendaCardapio";
+import { agoraLoja, diaDisponivel, horariosDoDia, horariosLivres, horariosParaMostrar, inicioDoDia, isoDia, deIso, somarDias } from "@/lib/agendaCardapio";
 
 /** Janelinha que sobe de baixo (no computador, fica centralizada). */
 // (11/10) o conteúdo rola e o rodapé (botão de confirmar) fica sempre à vista: com o celular deitado o botão ficava fora da tela
@@ -29,7 +29,7 @@ const SEMANA = ["D", "S", "T", "Q", "Q", "S", "S"];
 export function CalendarioSheet({ titulo, horario, minimo, valor, onEscolher, onClose }: {
   titulo: string; horario: any; minimo: Date; valor: string; onEscolher: (iso: string) => void; onClose: () => void;
 }) {
-  const hoje = inicioDoDia(new Date());
+  const hoje = inicioDoDia(agoraLoja()); // (27/10) horário de Brasília
   const base = valor ? deIso(valor) : (inicioDoDia(minimo) > hoje ? inicioDoDia(minimo) : hoje);
   const [mes, setMes] = useState(new Date(base.getFullYear(), base.getMonth(), 1));
   // (11/10) a data que já estava escolhida só vem marcada se ainda está disponível

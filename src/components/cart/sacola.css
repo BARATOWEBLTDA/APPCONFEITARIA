@@ -66,7 +66,10 @@
 .sc-pe-tot b { font-size: 18px; font-weight: 700; }
 .sc-pe-tot em { font-style: normal; font-size: 13px; color: var(--ui-texto-2); }
 .sc-bt-pri { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; margin: 0; padding: 0 24px; border: 0; border-radius: var(--ui-raio); color: var(--ui-branco); font-size: 16px; font-weight: 700; }
-.sc-bt-pri.cheio { flex: 1; justify-content: space-between; }
+.sc-bt-pri.cheio { flex: 1; min-width: 0; justify-content: space-between; padding: 0 16px; }
+/* (27/10) texto e valor sempre numa linha ("Ir para o pagamento" + R$ 1.234,56 em celular de 360px) */
+.sc-bt-pri.cheio span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-bt-pri.cheio b { flex: none; white-space: nowrap; }
 .sc-bt-pri:disabled { opacity: .6; cursor: default; }
 .sc-bt-pri.treme { animation: scTreme .35s; }
 @keyframes scTreme { 0%,100% { transform: none; } 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-3px); } }
@@ -93,9 +96,10 @@
 
 .sc-receber { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 16px; }
 .sc-receber.um { grid-template-columns: 1fr; }
-.sc-receber button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 84px; margin: 0; padding: 12px; border: 2px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); text-align: left; color: var(--ui-texto); }
+.sc-receber button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; min-height: 84px; margin: 0; padding: 12px; border: 2px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); text-align: left; color: var(--ui-texto); }
 .sc-receber svg { margin-bottom: 4px; color: var(--ui-texto-2); }
 .sc-receber b { font-size: 15px; font-weight: 700; }
+.sc-receber b, .sc-receber small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* (27/10) sem quebra no "Depende do bairro" */
 .sc-receber small { font-size: 13px; color: var(--ui-texto-2); }
 .sc-nota { display: flex; align-items: flex-start; gap: 8px; margin: 0 16px 12px; font-size: 14px; line-height: 1.4; color: var(--ui-texto-2); }
 .sc-nota svg { flex: none; margin-top: 1px; }
@@ -113,7 +117,7 @@
 .sc-salvo i { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #CFC3C9; border-radius: 50%; }
 .sc-mais { align-self: flex-start; display: flex; align-items: center; gap: 6px; min-height: 44px; margin: 0; padding: 0; border: 0; background: none; font-size: 15px; font-weight: 700; }
 .sc-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.sc-chips button { min-height: 44px; margin: 0; padding: 0 14px; border: 2px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-size: 14px; font-weight: 700; color: var(--ui-texto); }
+.sc-chips button { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-height: 44px; margin: 0; padding: 0 14px; border: 2px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-size: 14px; font-weight: 700; color: var(--ui-texto); }
 .sc-quando { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 16px 16px; }
 .sc-campo { display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 56px; margin: 0; padding: 0 12px; border: 1px solid #E5DDE1; border-radius: var(--ui-raio); background: var(--ui-branco); text-align: left; color: var(--ui-texto); }
 .sc-campo > span { min-width: 0; }
@@ -223,3 +227,6 @@
 .sc-receber button { position: relative; padding-right: 40px; }
 .sc-r { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border: 2px solid var(--ui-borda-campo); border-radius: 50%; background: #fff; box-sizing: border-box; }
 .sc-receber button[aria-pressed="true"] .sc-r { border-width: 7px; }
+
+/* (27/10) cupom no Finalizar do computador */
+.sc-cupom-fin { padding: 4px 0; }

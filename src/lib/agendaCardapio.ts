@@ -16,6 +16,21 @@ export type HorarioLoja = {
 
 export type InfoEntregaProduto = { ant?: string | null; pronta?: boolean | null };
 
+/**
+ * (27/10) "Agora" no horário de Brasília, com os campos locais (getHours, getDay…) já no horário da loja.
+ * Antes valia o relógio do celular da cliente: em outro fuso, a loja aparecia aberta ou fechada na hora errada.
+ */
+export function agoraLoja(): Date {
+  try {
+    const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+    }).formatToParts(new Date()).map(x => [x.type, x.value]));
+    const d = new Date(Number(p.year), Number(p.month) - 1, Number(p.day), Number(p.hour) % 24, Number(p.minute), Number(p.second));
+    return isNaN(d.getTime()) ? new Date() : d;
+  } catch { return new Date(); }
+}
+
 const DIAS_SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 // (11/10) o mesmo padrão da tela Dados da loja: sábado e domingo fechados até a loja marcar.
 // Antes o sábado vinha aberto aqui: loja sem horário salvo (ou salvo sem esses campos) aceitava agendamento no sábado.
@@ -156,7 +171,7 @@ export type SituacaoLoja = {
   abre: { dias: number; diaSemana: number; minutos: number } | null; // só quando está fechado
 };
 
-export function situacaoDaLoja(horarioBruto: any, agora: Date = new Date()): SituacaoLoja | null {
+export function situacaoDaLoja(horarioBruto: any, agora: Date = agoraLoja()): SituacaoLoja | null {
   if (!horarioBruto) return null;
   let h = horarioBruto;
   if (typeof h === "string") { try { h = JSON.parse(h); } catch { return null; } }

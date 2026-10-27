@@ -25,11 +25,12 @@ export function itemDoCarrinhoParaPedido(item: any) {
   // (11/10) preço do item em centavos certos: é dele que saem a linha, o subtotal e o total do pedido
   const preco = r2(item.price)
   const breakdown = item.precoBreakdown ? item.precoBreakdown : criarBreakdownV1({ final: preco })
+  // (27/10) o complemento vai com o id: o banco confere o preço pelo id (pelo nome, dois iguais contavam duas vezes)
   const temExtras = Array.isArray(item.extrasBiblioteca) && item.extrasBiblioteca.length > 0
   const personalizacoesFinal = (temExtras || item.fotoReferencia)
     ? {
         ...(personalizacoes || {}),
-        ...(temExtras ? { extras: item.extrasBiblioteca.map((x: any) => ({ nome: x.nome, valor: Number(x.valor) || 0, ...(x.frase ? { frase: x.frase } : {}) })) } : {}),
+        ...(temExtras ? { extras: item.extrasBiblioteca.map((x: any) => ({ ...(x.id ? { id: x.id } : {}), nome: x.nome, valor: Number(x.valor) || 0, ...(x.frase ? { frase: x.frase } : {}) })) } : {}),
         ...(item.fotoReferencia ? { foto_referencia: item.fotoReferencia } : {}),
       }
     : personalizacoes

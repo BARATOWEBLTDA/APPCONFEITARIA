@@ -4,6 +4,9 @@ import { subtotalSacola } from '@/lib/itemSacola'
 import { avisar } from '@/components/base'
 import { pixelEvento } from '@/lib/facebookPixel'
 
+/** Quantidade máxima de um item no pedido do cardápio (o banco recusa acima disso) */
+export const QTD_MAXIMA = 50
+
 interface CartContextType {
   items: CartItem[]
   totalItems: number
@@ -118,6 +121,8 @@ export function CartProvider({ children, loja }: { children: ReactNode; loja?: s
     return `${it.id}#${(h >>> 0).toString(36)}`
   }
   const mesmaLinha = (i: CartItem, alvo: string) => (i.lineId ?? i.id) === alvo
+  // (27/10) até 50 por item, o mesmo limite do banco (acima disso o pedido era recusado com "o produto mudou")
+  const ate50 = (q: number) => Math.min(QTD_MAXIMA, q)
 
   const addItem = useCallback((newItem: CartItem) => {
     setItems(prev => {
@@ -127,21 +132,21 @@ export function CartProvider({ children, loja }: { children: ReactNode; loja?: s
       if (existing) {
         // Mesma personalização: apenas soma a quantidade
         return prev.map(i =>
-          i === existing ? { ...i, quantity: i.quantity + newItem.quantity } : i
+          i === existing ? { ...i, quantity: ate50(i.quantity + newItem.quantity) } : i
         )
       }
 
       // (19/10) Pixel do Facebook: produto na sacola
       pixelEvento('AddToCart', { content_name: newItem.name, value: Number(newItem.price) * Number(newItem.quantity || 1), content_ids: [newItem.id], content_type: 'product' })
       // Item novo: adiciona ao carrinho e dispara evento
-      const updated = [...prev, { ...newItem, lineId }]
+      const updated = [...prev, { ...newItem, quantity: ate50(newItem.quantity), lineId }]
       window.dispatchEvent(new CustomEvent('cartUpdated', { detail: updated }))
       return updated
     })
   }, [])
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
-    setItems(prev => prev.map(i => mesmaLinha(i, id) ? { ...i, quantity } : i))
+    setItems(prev => prev.map(i => mesmaLinha(i, id) ? { ...i, quantity: ate50(quantity) } : i))
   }, [])
 
   const updateObservations = useCallback((id: string, observations: string) => {

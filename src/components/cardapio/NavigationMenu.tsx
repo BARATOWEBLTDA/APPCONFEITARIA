@@ -3,7 +3,7 @@ import { NeveNatal, temaNatalLigado } from '@/components/tema/Natal'
 import { useState, useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
-import { antecedenciaHoras, calcularRegras, deIso, horarioPermitido, primeiraData } from '@/lib/agendaCardapio'
+import { agoraLoja, antecedenciaHoras, calcularRegras, deIso, horarioPermitido, primeiraData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Cake, Camera, CalendarBlank, CaretRight, Check, ImageSquare, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
@@ -13,6 +13,7 @@ import { formatCurrency } from '@/utils/helpers'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { PerfilTab } from './PerfilTab'
 import { PedidosTab } from './PedidosTab'
+import { guardarCliente } from './contaCliente'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
 import { contarItens, detalhesItem, qtdItem, semMeioEmoji, valorLinha } from '@/lib/itemSacola'
 import { r2, somarReais } from '@/lib/moeda'
@@ -55,6 +56,17 @@ let enviandoPedido = false
 const novoIdPedido = (): string => (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
   ? crypto.randomUUID()
   : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16) })
+
+/** (27/10) Motivo do cupom recusado em poucas palavras (o aviso cabe numa linha no celular) */
+function cupomCurto(erro: string): string {
+  const e = erro.toLowerCase()
+  if (/esgot/.test(e)) return 'Cupom esgotou'
+  if (/expir/.test(e)) return 'Cupom expirou'
+  if (/primeiro/.test(e)) return 'Cupom só no 1º pedido'
+  if (/ainda não/.test(e)) return 'Cupom ainda não vale'
+  if (/a partir de/.test(e)) return 'Falta valor para o cupom'
+  return 'Cupom não vale mais'
+}
 
 /** Tira um pedido que ficou sem os itens. Só diz "sim" quando o banco confirma que apagou. */
 async function desfazerPedido(id: string): Promise<boolean> {
@@ -243,7 +255,7 @@ function CartContent({
   // Agora o relógio é lido de novo ao abrir a data ou o horário (e mais uma vez na hora de enviar).
   const [relogio, setRelogio] = useState(0)
   const acertarRelogio = () => setRelogio(Date.now())
-  const regras = useMemo(() => calcularRegras(new Date(), config.horario, horasAnt), [config.horario, horasAnt, step, relogio])
+  const regras = useMemo(() => calcularRegras(agoraLoja(), config.horario, horasAnt), [config.horario, horasAnt, step, relogio])
   const primeiraDisp = useMemo(() => primeiraData(config.horario, regras.minimo), [config.horario, regras])
   const ehEntrega = !!formaEntrega && formaEntrega !== 'retirada'
   useEffect(() => {
@@ -264,7 +276,7 @@ function CartContent({
     // precisa estar dentro do expediente e respeitar a antecedência a partir deste momento
     let horarioVenceu = ''
     if (dataEntrega && horaEntrega) {
-      const agora = new Date()
+      const agora = agoraLoja()
       if (!horarioPermitido(dataEntrega, horaEntrega, config.horario, calcularRegras(new Date(agora.getTime() - 15 * 60_000), config.horario, horasAnt).minimo)) { // 15 min de folga: o horário que a tela ofereceu há pouco continua valendo
         const [h, m] = horaEntrega.split(':').map(Number)
         const escolhido = deIso(dataEntrega); escolhido.setHours(h || 0, m || 0, 0, 0)
@@ -459,7 +471,7 @@ function CartContent({
       try {
         const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: lojaAtualId(), p_codigo: cupomAplicado.codigo, p_subtotal: totalPrice, p_telefone: telefone.replace(/\D/g, '') })
         const r: any = data
-        if (!error && r && !r.ok) { setCupomAplicado(null); esquecerCupomEscolhido(); return avisar(`${r.erro || 'O cupom não vale para esse pedido'}. Tiramos o cupom: confira o total e envie de novo.`, { tipo: 'erro' }) }
+        if (!error && r && !r.ok) { setCupomAplicado(null); esquecerCupomEscolhido(); return avisar(`${cupomCurto(r.erro || '')}. Confira o novo total.`, { tipo: 'erro' }) }
       } catch { /* sem internet: o banco confere ao criar o pedido */ }
     }
     if (!formaEntrega) return avisar('Escolha como vai receber', { tipo: 'erro' })
@@ -524,9 +536,9 @@ function CartContent({
       })
 
       m += `Subtotal: ${formatCurrency(totalPrice)}\n`
-      if (freteValor > 0) m += `Entrega: ${formatCurrency(freteValor)}\n`
-      if (desconto > 0) m += `${cupomAplicado ? `Cupom ${cupomAplicado.codigo}` : 'Desconto'}: − ${formatCurrency(desconto)}\n`
-      m += `*Total: ${formatCurrency(totalFinal)}*\n\n`
+      if (freteMsg > 0) m += `Entrega: ${formatCurrency(freteMsg)}\n`
+      if (descontoMsg > 0) m += `${cupomAplicado ? `Cupom ${cupomAplicado.codigo}` : 'Desconto'}: − ${formatCurrency(descontoMsg)}\n`
+      m += `*Total: ${formatCurrency(totalCriado)}*\n\n`
 
       const pgtoLabel = config.pix && formaPagamento === 'pix'
         ? `Pix pelo cardápio (${pixTipo === 'sinal' ? `sinal de ${formatCurrency(valorDoSinal(totalFinal, config.pix.pct))}` : 'tudo'})`
@@ -558,7 +570,11 @@ function CartContent({
       // (4.24) recusas do banco com motivo: explica em vez do "tente de novo" genérico
       const msg = String((err as { message?: unknown } | null)?.message ?? '')
       if (/loja_pausada/.test(msg)) return avisar('A loja pausou os pedidos agora há pouco. Chame no WhatsApp para combinar.', { tipo: 'erro' })
-      if (/cupom_esgotado/.test(msg)) return avisar('Este cupom acabou de esgotar. Tire o cupom e envie de novo.', { tipo: 'erro' })
+      // (27/10) cupom que não vale mais: o banco recusa com o motivo (antes tirava o desconto calado e o total mudava)
+      if (/cupom_esgotado|cupom_invalido/.test(msg)) {
+        setCupomAplicado(null); esquecerCupomEscolhido()
+        return avisar(`${cupomCurto(/cupom_esgotado/.test(msg) ? 'esgotou' : String((err as { details?: unknown } | null)?.details || ''))}. Confira o novo total.`, { tipo: 'erro' })
+      }
       // (17/10) o servidor confere a data e a forma de entrega
       if (/data_invalida/.test(msg)) return avisar('A data escolhida já passou. Escolha outra data e envie de novo.', { tipo: 'erro' })
       if (/entrega_invalida/.test(msg)) return avisar('A forma de entrega mudou na loja. Escolha de novo como receber e envie.', { tipo: 'erro' })
@@ -570,16 +586,15 @@ function CartContent({
     let numeroPedido = 0
     let pedidoIdCriado = ''
     let totalCriado = totalFinal
+    // (27/10) a mensagem e o "Pedido enviado" usam os valores que o banco gravou
+    let freteMsg = freteValor
+    let descontoMsg = desconto
     try {
+      // (27/10) o banco acha ou cria a cliente pelo telefone ao gravar o pedido (devolve o id)
       let clienteId: string | null = null
-      // Função segura no banco: acha o cliente pelo telefone ou cria (sem ler a tabela direto)
-      const { data: listaCliente } = await supabase.rpc('cardapio_cliente', {
-        p_loja: confeteiraUserId, p_telefone: telefone.trim(), p_nome: nome.trim(),
-      })
-      if (Array.isArray(listaCliente) && listaCliente[0]) clienteId = listaCliente[0].id
 
       const dadosPedido = {
-        user_id: confeteiraUserId, cliente_id: clienteId,
+        user_id: confeteiraUserId,
         cliente_nome: nome.trim(), cliente_telefone: telefone.trim(), cliente_whatsapp: telefone.trim(),
         status: 'novo', origem: 'cardapio', prioridade: 'media',
         data_entrega: dataEntrega || null, horario_entrega: horaEntrega || null,
@@ -599,13 +614,14 @@ function CartContent({
 
       // O id é gerado aqui, então o pedido é gravado sem precisar ler a tabela de volta.
       // Tentando de novo com os mesmos dados, o id é o mesmo (não cria outro pedido na loja).
-      const tentativa = await abrirTentativa(JSON.stringify(dadosPedido))
+      // (27/10) a assinatura leva os itens: trocou um item por outro do mesmo preço, é outro pedido
+      const itensSemId = items.map((item: any) => itemDoCarrinhoParaPedido(item))
+      const tentativa = await abrirTentativa(JSON.stringify({ dadosPedido, itensSemId }))
       const novoPedidoId = tentativa.id
 
-      const itensDoPedido = items.map((item: any) => ({
+      const itensDoPedido = itensSemId.map(it => ({
         // Tudo o que o cliente escolheu vai pro pedido (regra única em lib/itemDoCarrinho)
-        pedido_id: novoPedidoId, user_id: confeteiraUserId, desconto: 0,
-        ...itemDoCarrinhoParaPedido(item),
+        pedido_id: novoPedidoId, user_id: confeteiraUserId, desconto: 0, ...it,
       }))
 
       // (4.22) O banco cria o pedido e os itens de uma vez (função cardapio_criar_pedido): confere a loja e os produtos,
@@ -617,7 +633,13 @@ function CartContent({
       if (viaBanco.error && !semFuncao) return falhou(viaBanco.error)
       pedidoIdCriado = novoPedidoId
       // o Pix sai com o total que o banco calculou (é o que fica no pedido)
-      if (Number((viaBanco.data as any)?.valor_total) > 0) totalCriado = r2(Number((viaBanco.data as any).valor_total))
+      const srv: any = viaBanco.data
+      if (srv && Number.isFinite(Number(srv.valor_total))) {
+        totalCriado = r2(Number(srv.valor_total))
+        if (Number.isFinite(Number(srv.taxa_entrega))) freteMsg = r2(Number(srv.taxa_entrega))
+        if (Number.isFinite(Number(srv.cupom_desconto))) descontoMsg = r2(Number(srv.cupom_desconto))
+      }
+      if (srv?.cliente_id) clienteId = srv.cliente_id
 
       if (semFuncao) {
         if (!tentativa.gravado) {
@@ -647,10 +669,9 @@ function CartContent({
         const acesso: string | undefined = (viaBanco.data as any)?.acesso || undefined
         const salvo = (() => { try { return JSON.parse(localStorage.getItem(`cardapio_cliente_${confeteiraUserId}`) || 'null') } catch { return null } })()
         const mesmoTel = salvo && String(salvo.telefone || '').replace(/\D/g, '').slice(-11) === telefone.replace(/\D/g, '').slice(-11)
-        if (clienteId && (!salvo || (mesmoTel && acesso))) {
-          localStorage.setItem(`cardapio_cliente_${confeteiraUserId}`, JSON.stringify({
-            id: clienteId, nome: nome.trim(), telefone: telefone.trim(), ...(acesso ? { token: acesso } : {}),
-          }))
+        // (27/10) com o código de acesso a cliente já fica logada (antes dependia do id e às vezes pedia pra entrar)
+        if (acesso && (!salvo || mesmoTel)) {
+          guardarCliente(confeteiraUserId, { id: clienteId || salvo?.id || '', nome: nome.trim(), telefone: telefone.trim(), token: acesso })
         }
         // Entrega: guarda o endereço em "Dados pessoais" pra próxima compra (sem repetir)
         if (formaEntrega === 'entrega_propria' && rua.trim()) {
@@ -671,12 +692,7 @@ function CartContent({
         // Número do pedido (função segura no banco)
         const { data: num } = await supabase.rpc('cardapio_numero_pedido', { p_pedido: novoPedidoId })
         if (typeof num === 'number') numeroPedido = num
-        // O histórico é só um registro: se falhar, o pedido vale do mesmo jeito
-        const { error: erroHistorico } = await supabase.from('pedido_historico').insert({
-          pedido_id: novoPedidoId, user_id: confeteiraUserId,
-          evento: 'Pedido criado', descricao: 'Pedido recebido pelo Cardápio Digital',
-        })
-        if (erroHistorico) console.error('[Doonly] histórico do pedido:', erroHistorico)
+        else if (typeof (viaBanco.data as any)?.numero === 'number') numeroPedido = (viaBanco.data as any).numero
       } catch (err) { console.error('[Doonly] depois de gravar o pedido:', err) }
     } catch (err) {
       return falhou(err)
@@ -686,8 +702,10 @@ function CartContent({
     // (11/10) "meio emoji" em qualquer texto (observação, recado, nome) fazia o link dar erro e o WhatsApp abria sem a mensagem
     const mensagem = (() => { try { return montarMensagem(numeroPedido) } catch { return '' } })()
     const whatsappUrl = (() => { try { return linkWhatsApp(whatsapp, semMeioEmoji(mensagem)) } catch { return linkWhatsApp(whatsapp) } })()
-    pixelEvento('Purchase', { value: totalFinal, num_items: items.length }) // (19/10) Pixel do Facebook: pedido enviado
+    pixelEvento('Purchase', { value: totalCriado, num_items: items.length }) // (19/10) Pixel do Facebook: pedido enviado
     clearCart()
+    // (27/10) o cupom tocado na vitrine vale para este pedido só (antes voltava no próximo)
+    esquecerCupomEscolhido(); setCupomAplicado(null); setCupomDigitado('')
     setStep('cart')
     // (21/10) curto pra caber numa linha: "Retirada qua, 28/10 às 20:00"
     const quandoTxt = (() => {
@@ -699,7 +717,7 @@ function CartContent({
     })()
     setPixFeito(null)
     setPixPara(config.pix && formaPagamento === 'pix' && pedidoIdCriado ? { pedidoId: pedidoIdCriado, total: totalCriado, retirada: formaEntrega === 'retirada', tipo: pixTipo } : null)
-    setPedidoConfirmado({ numero: numeroPedido, itens: items, whatsapp: whatsappUrl, storeName, total: totalFinal, quando: quandoTxt, zap: whatsapp, mensagem })
+    setPedidoConfirmado({ numero: numeroPedido, itens: items, whatsapp: whatsappUrl, storeName, total: totalCriado, quando: quandoTxt, zap: whatsapp, mensagem })
   }
 
 
@@ -711,6 +729,26 @@ function CartContent({
   const pagarAgora = pixOnline && pixTipo === 'sinal' ? pixSinal : totalFinal
   const nomeLoja = lojaAtualNome()
   const temCupom = !!(config.tem_cupom || config.cupons_desconto.length > 0)
+  // (27/10) o mesmo bloco do cupom aparece no Finalizar do computador (lá a sacola pula direto para o finalizar)
+  const blocoCupom = temCupom && (cupomAplicado ? (
+              <button type="button" className="sc-linha ok" onClick={removerCupom}>
+                <Tag size={20} weight="bold" /><span><b>Cupom {cupomAplicado.codigo}</b><small>− {formatCurrency(desconto)} · tirar o cupom</small></span><X size={18} weight="bold" />
+              </button>
+            ) : cupomAberto ? (
+              <>
+                <div className="sc-cupom">
+                  <Campo rotulo="Código do cupom" value={cupomDigitado} autoCapitalize="characters" placeholder="Ex.: DOCE10"
+                    onChange={e => { setCupomDigitado(e.target.value.toUpperCase()); setCupomErro('') }}
+                    onKeyDown={e => { if (e.key === 'Enter') aplicarCupom() }} />
+                  <button type="button" className="sc-cupom-bt" style={{ alignSelf: 'flex-end' }} onClick={() => aplicarCupom()} disabled={!cupomDigitado.trim() || validandoCupom}>{validandoCupom ? '…' : 'Aplicar'}</button>
+                </div>
+                {cupomErro && <p className="sc-erro" role="alert">{cupomErro}</p>}
+              </>
+            ) : (
+              <button type="button" className="sc-linha" onClick={() => setCupomAberto(true)}>
+                <Tag size={20} weight="bold" /><span><b>Cupom</b><small>Tem um código? Coloque aqui</small></span><CaretRight size={18} weight="bold" />
+              </button>
+            ))
 
   // Entrega na sacola (08/10): segue o que a loja configurou
   //   só retirada → nem aparece · fixa → o valor · grátis → "Grátis" · por bairro → "Depende do bairro" · motoboy/combinar → "A combinar"
@@ -892,25 +930,7 @@ function CartContent({
             )}
 
             {/* Cupom: só quando a loja tem cupom ativo */}
-            {temCupom && (cupomAplicado ? (
-              <button type="button" className="sc-linha ok" onClick={removerCupom}>
-                <Tag size={20} weight="bold" /><span><b>Cupom {cupomAplicado.codigo}</b><small>− {formatCurrency(desconto)} · tirar o cupom</small></span><X size={18} weight="bold" />
-              </button>
-            ) : cupomAberto ? (
-              <>
-                <div className="sc-cupom">
-                  <Campo rotulo="Código do cupom" value={cupomDigitado} autoCapitalize="characters" placeholder="Ex.: DOCE10"
-                    onChange={e => { setCupomDigitado(e.target.value.toUpperCase()); setCupomErro('') }}
-                    onKeyDown={e => { if (e.key === 'Enter') aplicarCupom() }} />
-                  <button type="button" className="sc-cupom-bt" style={{ alignSelf: 'flex-end' }} onClick={() => aplicarCupom()} disabled={!cupomDigitado.trim() || validandoCupom}>{validandoCupom ? '…' : 'Aplicar'}</button>
-                </div>
-                {cupomErro && <p className="sc-erro" role="alert">{cupomErro}</p>}
-              </>
-            ) : (
-              <button type="button" className="sc-linha" onClick={() => setCupomAberto(true)}>
-                <Tag size={20} weight="bold" /><span><b>Cupom</b><small>Tem um código? Coloque aqui</small></span><CaretRight size={18} weight="bold" />
-              </button>
-            ))}
+            {blocoCupom}
 
             <div className="sc-valores">
               <b>Resumo</b>
@@ -1126,6 +1146,8 @@ function CartContent({
             <CampoArea rotulo="" aria-label="Recado para a loja" value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder='Ex.: escrever "Parabéns, Lia!" no bolo' rows={3} />
           </div>
         </section>
+
+        {direto && blocoCupom && <section className="sc-cupom-fin">{blocoCupom}</section>}
 
         <div className="sc-valores">
           <b>Resumo de valores</b>

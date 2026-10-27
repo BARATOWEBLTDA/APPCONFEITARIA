@@ -271,6 +271,7 @@ function CardapioContent() {
   const [categoriasList, setCategoriasList] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [falhaCarga, setFalhaCarga] = useState(false) // (27/10) erro de internet/banco: mostra "Tentar de novo"
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   // (20/10) computador: filtro de entrega (o prazo saiu dos cartões e fica só dentro do produto)
@@ -382,7 +383,7 @@ function CardapioContent() {
       if (ogImage) setMetaName('twitter:image', ogImage)
       if (checkoutConfig) localStorage.setItem('cardapio_checkout_config', JSON.stringify(checkoutConfig))
       setLoading(false)
-    }).catch(e => { setError(explicarErro(e, 'Não deu para abrir o cardápio agora. Tente de novo em instantes.')); setLoading(false) })
+    }).catch(e => { setFalhaCarga(true); setError(explicarErro(e, 'Não deu para abrir o cardápio agora. Tente de novo em instantes.')); setLoading(false) })
   }, [codigo, slugAtual, isRotaNova])
 
   const toggleFavorite = (id: string) => setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
@@ -424,8 +425,14 @@ function CardapioContent() {
   if (error || !design) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-body)' }}>
       <div style={{ textAlign:'center' }}>
-        <h1 style={{ fontSize:'24px', fontWeight:700, color:'var(--text-title)' }}>Cardápio não encontrado</h1>
+        <h1 style={{ fontSize:'24px', fontWeight:700, color:'var(--text-title)' }}>{falhaCarga ? 'Não deu para abrir o cardápio' : 'Cardápio não encontrado'}</h1>
         <p style={{ color:'var(--text-secondary)' }}>{error || 'Verifique o link e tente novamente.'}</p>
+        {falhaCarga && (
+          <button type="button" onClick={() => window.location.reload()}
+            style={{ marginTop: 16, height: 48, padding: '0 28px', border: 'none', borderRadius: 12, background: '#E85A8C', color: '#fff', fontFamily: 'inherit', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+            Tentar de novo
+          </button>
+        )}
       </div>
     </div>
   )

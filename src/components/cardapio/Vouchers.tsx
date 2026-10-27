@@ -14,7 +14,7 @@ export function Vouchers({ cupons, cor = '#EC4899' }: { cupons: CupomVitrine[]; 
   const usar = async (c: CupomVitrine) => {
     try { await navigator.clipboard?.writeText(c.codigo) } catch { /* sem permissão: o cupom vai aplicado do mesmo jeito */ }
     guardarCupomEscolhido(c.codigo)
-    avisar(`Cupom ${c.codigo} aplicado na sacola`, { tipo: 'ok' })
+    avisar(`Cupom ${c.codigo} guardado para a sacola`, { tipo: 'ok' }) // (27/10) antes dizia "aplicado" até com a sacola vazia
   }
   return (
     <div className={`vc-l${um ? ' vc-l--um' : ''}${lista.length > 2 ? ' vc-l--rola' : ''}`} style={{ ['--vc-cor' as any]: cor }} aria-label="Cupons de desconto">

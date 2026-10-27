@@ -89,6 +89,8 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     supabase.rpc('cardapio_cupons_vitrine', { p_loja: userId }),
   ])
   // (27/10) sem leitura direta da tabela: ela trazia custo e salário da ficha técnica para o navegador do cliente
+  // (27/10) falha ao buscar os produtos vira erro (com "Tentar de novo"), não uma loja vazia
+  if (rProd.error) throw rProd.error
   const produtos: any[] | null = Array.isArray(rProd.data) ? rProd.data : null
   let categorias: any[] | null = Array.isArray(rCat.data) ? rCat.data : null
   if (rCat.error && funcaoFaltando(rCat.error)) {

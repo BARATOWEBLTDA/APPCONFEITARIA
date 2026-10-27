@@ -54,6 +54,18 @@ export function guardarCliente(loja: string, c: Cliente | null) {
 /** A função nova ainda não existe no banco (SQL 4.23 não rodado) */
 export const semFuncaoNova = (e: any) => !!e && (e.code === 'PGRST202' || e.code === '42883' || /could not find the function/i.test(String(e.message || '')))
 
+/** (27/10) Novo código de acesso para quem já entrou com o WhatsApp (o antigo venceu ou foi trocado) */
+async function renovarAcesso(loja: string, cliente: Cliente): Promise<Cliente | null> {
+  try {
+    const { data, error } = await supabase.rpc('cardapio_entrar', { p_loja: loja, p_telefone: cliente.telefone, p_numero: null, p_nome: cliente.nome || null })
+    const r: any = data
+    if (error || r?.status !== 'ok' || !r.token) return null
+    const novo: Cliente = { ...cliente, id: r.cliente?.id || cliente.id, token: r.token }
+    guardarCliente(loja, novo)
+    return novo
+  } catch { return null }
+}
+
 /** Pedidos desse telefone nessa loja (função segura no banco) */
 export function usePedidosCliente(loja: string, cliente: Cliente | null) {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
@@ -65,7 +77,11 @@ export function usePedidosCliente(loja: string, cliente: Cliente | null) {
     try {
       // (4.23) com o código de acesso; sem a função nova no banco, busca do jeito antigo
       let { data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', { p_loja: loja, p_telefone: cliente.telefone, p_token: cliente.token || '' })
-      if (error && semFuncaoNova(error)) ({ data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', { p_loja: loja, p_telefone: cliente.telefone }))
+      // (27/10) acesso vencido: renova a entrada pelo WhatsApp e busca de novo (antes aparecia "Nenhum pedido ainda")
+      if (!error && (data as any)?.erro === 'token_invalido') {
+        const novo = await renovarAcesso(loja, cliente)
+        if (novo) ({ data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', { p_loja: loja, p_telefone: novo.telefone, p_token: novo.token || '' }))
+      }
       if (error) console.error('Erro ao buscar pedidos:', error)
       if (!(quieto && (error || !Array.isArray(data)))) setPedidos(Array.isArray(data) ? data : [])
     } catch (err) { console.error('Erro ao buscar pedidos:', err) }
