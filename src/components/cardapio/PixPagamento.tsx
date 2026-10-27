@@ -30,11 +30,15 @@ type Props = {
   quando: string
   aoPagar: (info: { tipo: 'sinal' | 'total'; valor: number }) => void
   aoDepois: () => void
+  /** (27/10) aberto de novo pelo acompanhamento: troca entre sinal e tudo (loja que deixa escolher) */
+  aoTrocarTipo?: (tipo: 'sinal' | 'total') => void
+  /** texto do botão de baixo (padrão: "Pagar depois, pelo WhatsApp") */
+  textoDepois?: string
 }
 
 const NOME_CHAVE = { cpf: 'CPF/CNPJ', celular: 'celular', email: 'e-mail', aleatoria: 'aleatória' } as const
 
-export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, corTopo, logoUrl, verificada, quando, aoPagar, aoDepois }: Props) {
+export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, corTopo, logoUrl, verificada, quando, aoPagar, aoDepois, aoTrocarTipo, textoDepois }: Props) {
   const sinal = valorDoSinal(total, pix.pct)
   const valor = tipo === 'sinal' ? sinal : total
   const resto = Math.round((total - sinal) * 100) / 100
@@ -96,6 +100,11 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
           <span>{tipo === 'sinal' ? `Sinal de ${pix.pct}% no Pix` : 'Total no Pix'}</span>
           <b>{formatCurrency(valor)}</b>
           {tipo === 'sinal' && resto > 0.009 && <em>Falta {formatCurrency(resto)} na {quando}</em>}
+          {aoTrocarTipo && resto > 0.009 && (
+            <button type="button" className="px-trocar" onClick={() => aoTrocarTipo(tipo === 'sinal' ? 'total' : 'sinal')}>
+              {tipo === 'sinal' ? `Pagar tudo: ${formatCurrency(total)}` : `Pagar só o sinal: ${formatCurrency(sinal)}`}
+            </button>
+          )}
         </section>
 
         {/* (21/10) QR sempre aberto (fechado ficava escondido); embaixo, o copia e cola */}
@@ -124,7 +133,7 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
         <button type="button" className="sc-bt-pri cheio px-pago" style={{ background: cor }} disabled={enviando} onClick={jaPaguei}>
           <span>{enviando ? 'Avisando a loja…' : 'Já paguei'}</span>
         </button>
-        <button type="button" className="px-depois" onClick={aoDepois}>Pagar depois, pelo WhatsApp</button>
+        <button type="button" className="px-depois" onClick={aoDepois}>{textoDepois || 'Pagar depois, pelo WhatsApp'}</button>
       </footer>
     </div>
   )

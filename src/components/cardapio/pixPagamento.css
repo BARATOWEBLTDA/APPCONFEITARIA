@@ -86,3 +86,8 @@
 .scf-pe { gap: 8px; }
 .scf-zap { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; margin: 0; border: 1.5px solid #16a34a; border-radius: var(--ui-raio); background: #EAF7EE; color: #166534; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
 .scf-passos li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* (27/10) trocar entre sinal e tudo (Pix aberto pelo acompanhamento) */
+.px-trocar { margin: 8px 0 0; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 700; color: var(--px-cor); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; cursor: pointer; }
+/* (27/10) Pix por cima do acompanhamento do pedido */
+.px-cobre { position: fixed; inset: 0; z-index: 1300; display: flex; flex-direction: column; background: #F7F4F5; }

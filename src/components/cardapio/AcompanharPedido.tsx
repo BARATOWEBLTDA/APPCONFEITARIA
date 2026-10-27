@@ -1,10 +1,15 @@
 import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
-import type { CSSProperties } from 'react'
-import { Cake, Check, ImageSquare } from '@phosphor-icons/react'
+import { useRef, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
+import { Cake, Check, ImageSquare, PixLogo } from '@phosphor-icons/react'
+import type { PixLoja } from '@/lib/pix'
+import { PixPagamento } from './PixPagamento'
+import { useSobreposicao } from '@/components/base/useSobreposicao'
+import '@/components/cart/sacola.css'
 import { renderItemFromSnapshot } from '@/lib/pedido-snapshot'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { linkWhatsApp } from '@/lib/telefone'
-import { lojaAtualNome, lojaAtualWhatsApp } from './lojaAtual'
+import { lojaAtualCheckout, lojaAtualNome, lojaAtualWhatsApp } from './lojaAtual'
 import { dinheiro, type Pedido } from './contaCliente'
 import './acompanharPedido.css'
 
@@ -101,7 +106,19 @@ function frase(p: Pedido): string {
   return ret ? 'Retirado' : 'Entregue'
 }
 
-export function AcompanharPedido({ p, cor, corTopo }: { p: Pedido; cor: string; corTopo?: string }) {
+/** (27/10) Pix ainda não pago nem avisado: dá pra abrir o código de novo (antes, fechou a tela, perdeu o código) */
+function pixParaPagar(p: Pedido): PixLoja | null {
+  const pix = (lojaAtualCheckout() as { pix?: PixLoja | null } | null)?.pix
+  if (!pix?.chave || !p.pix_online || p.pix_informado_em) return null
+  if (['cancelado', 'recusado'].includes(p.status) || p.status_pagamento === 'pago' || Number(p.valor_recebido) > 0) return null
+  return Number(p.valor_total) > 0 ? pix : null
+}
+
+export function AcompanharPedido({ p, cor, corTopo, aoAtualizar }: { p: Pedido; cor: string; corTopo?: string; aoAtualizar?: () => void }) {
+  const pix = pixParaPagar(p)
+  const [pagando, setPagando] = useState<'sinal' | 'total' | null>(null)
+  const cobreRef = useRef<HTMLDivElement>(null)
+  useSobreposicao(!!pagando, () => setPagando(null), cobreRef) // voltar do Android e Esc fecham o Pix
   const ret = p.tipo_entrega === 'retirada'
   const etapas = etapasDo(p)
   const itens = p.pedido_itens || []
@@ -124,6 +141,21 @@ export function AcompanharPedido({ p, cor, corTopo }: { p: Pedido; cor: string; 
           </li>
         ))}
       </ol>
+
+      {pix && (
+        <button type="button" className="acp-pix" style={{ background: cor }} onClick={() => setPagando(pix.modo === 'total' ? 'total' : 'sinal')}>
+          <PixLogo size={20} weight="fill" />Pagar com Pix
+        </button>
+      )}
+      {pix && pagando && createPortal(
+        <div ref={cobreRef} tabIndex={-1} className="px-cobre" role="dialog" aria-modal="true" aria-label="Pagar com Pix">
+          <PixPagamento pix={pix} pedidoId={p.id} numero={p.numero} total={Number(p.valor_total) || 0} tipo={pagando}
+            loja={loja} cor={cor} corTopo={corTopo} quando={ret ? 'retirada' : 'entrega'}
+            aoTrocarTipo={pix.modo === 'escolha' ? setPagando : undefined}
+            aoPagar={() => { setPagando(null); aoAtualizar?.() }} aoDepois={() => setPagando(null)} textoDepois="Voltar para o pedido" />
+        </div>,
+        document.body,
+      )}
 
       <ul className="acp-itens">
         {itens.map((it, i) => {

@@ -53,7 +53,7 @@ export function PedidosTab({ accent, corTopo, confeteiraUserId, onVerCardapio }:
             <div className="cc-periodo"><PeriodoFiltro valor={periodo} onChange={setPeriodo} /></div>
             {noPeriodo.length === 0 && <p className="cc-filtro-vazio">Nenhum pedido {rotuloPeriodo(periodo)}.</p>}
             {andamento.length > 0 && <h3 className="cc-sec">Em andamento</h3>}
-            {andamento.map(p => <AcompanharPedido key={p.id} p={p} cor={accent} corTopo={corTopo} />)}
+            {andamento.map(p => <AcompanharPedido key={p.id} p={p} cor={accent} corTopo={corTopo} aoAtualizar={buscar} />)}
             {anteriores.length > 0 && <h3 className="cc-sec">Anteriores</h3>}
             {anteriores.map(p => <CartaoPedido key={p.id} p={p} cor={accent} />)}
           </>

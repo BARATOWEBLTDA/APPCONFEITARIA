@@ -44,3 +44,6 @@
 .acp-it-nome .acp-ref { display: flex; align-items: center; gap: 4px; color: var(--acp-cor); font-weight: 700; }
 .acp-it-nome .acp-obs { font-style: italic; }
 .acp-itens .acp-total { align-items: center; }
+
+/* (27/10) Pix ainda não pago: abre o código de novo */
+.acp-pix { display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 24px); min-height: 52px; margin: 0 12px 12px; border: 0; border-radius: var(--ui-raio); color: var(--ui-branco); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
