@@ -309,7 +309,9 @@ function NovaContaSheet({ onClose, onFeito, conta, onCancelar }: { onClose: () =
     const { data: { user } } = await supabase.auth.getUser();
     if (fixa) {
       const dia = Number(vencimento.slice(8, 10));
-      const { error } = await supabase.from("custos_fixos").insert({ user_id: user?.id, nome: descricao.trim(), valor: v, ativo: true, dia_vencimento: dia });
+      // (27/10) "inicio" = o primeiro vencimento escolhido: a conta deste mês não nasce atrasada
+      let { error } = await supabase.from("custos_fixos").insert({ user_id: user?.id, nome: descricao.trim(), valor: v, ativo: true, dia_vencimento: dia, inicio: vencimento });
+      if (error && /inicio|PGRST204|42703/i.test(`${error.code} ${error.message}`)) ({ error } = await supabase.from("custos_fixos").insert({ user_id: user?.id, nome: descricao.trim(), valor: v, ativo: true, dia_vencimento: dia }));
       setSalvando(false);
       if (error) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
       onFeito(true); return;

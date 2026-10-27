@@ -17,10 +17,17 @@ import { supabase } from "@/lib/supabase";
 import { nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
 import { carregarExtrato, type MovExtrato } from "@/lib/extrato";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
-import { resumoAPagar, type ResumoAPagar } from "@/lib/painelFinanceiro";
+import { resumoAPagar, umaPorContaFixa, type ResumoAPagar } from "@/lib/painelFinanceiro";
 import { carregarPeriodo, totaisDoPeriodo, diasEntre, isoDe, type DiaFluxo, type Periodo as PeriodoDados } from "@/lib/painelPeriodo";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { carregarAReceber, isoDia, type ItemReceber } from "@/lib/contasReceber";
+
+/** (27/10) Valor dos 3 cartõezinhos (em caixa · a receber · a pagar): de R$ 10 mil pra cima vira "R$ 12,3 mil".
+ *  No celular de 360px o valor inteiro era cortado ("R$ 12.3…") e parecia outro número. */
+const celularEstreito = () => { try { return window.matchMedia("(max-width: 900px)").matches; } catch { return false; } };
+const brlCartao = (v: number) => Math.abs(v) >= 10000 && celularEstreito() // no computador o valor cabe inteiro
+  ? `${v < 0 ? "−" : ""}R$ ${(Math.floor(Math.abs(v) / 100) / 10).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mil`
+  : (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -127,8 +134,8 @@ export default function Financeiro() {
     resumoAPagar(uid, dia0).then(r => { if (!cancelado) setPag(r); }, () => { if (!cancelado) setPag({ total: 0, qtd: 0, vencidas: 0, proxima: null, erro: true }); });
     // as 3 próximas contas (lista do computador)
     supabase.from("contas_pagar").select("id, descricao, categoria, valor, vencimento, status, pago_em, valor_pago, custo_fixo_id")
-      .eq("user_id", uid).eq("status", "pendente").order("vencimento", { ascending: true }).order("id").range(0, 2)
-      .then(({ data, error }) => { if (!cancelado) setContas(error ? null : (data as Conta[]) || []); });
+      .eq("user_id", uid).eq("status", "pendente").order("vencimento", { ascending: true }).order("id").range(0, 29)
+      .then(({ data, error }) => { if (!cancelado) setContas(error ? null : umaPorContaFixa((data as Conta[]) || []).slice(0, 3)); }); // (27/10) sem repetir a conta fixa
     return () => { cancelado = true; };
   }, [uid, versao, dia]);
 
@@ -215,15 +222,15 @@ export default function Financeiro() {
         <div className="fd-a-tres fd-tres">
           <button type="button" className={`fd-t esc${caixaNeg ? " neg" : ""}`} onClick={() => setDefinir(true)}>
             <span><small><span className="fd-so-pc">Saldo em caixa</span><span className="fd-so-cel">Em caixa</span></small>
-              <b>{!cx ? "…" : cx.erro ? "—" : cx.precisaSql ? "—" : cx.configurado ? brl(cx.saldo) : "Informar"}</b></span>
+              <b>{!cx ? "…" : cx.erro ? "—" : cx.precisaSql ? "—" : cx.configurado ? brlCartao(cx.saldo) : "Informar"}</b></span>
             <em>{caixaNeg ? "confira" : cx && cx.configurado && !cx.erro ? "agora" : ""}</em>
           </button>
           <button type="button" className="fd-t" onClick={() => navigate("/financeiro/a-receber")}>
-            <span><small>A receber</small><b>{!rec ? "…" : rec.erro ? "—" : brl(rec.total)}</b></span>
+            <span><small>A receber</small><b>{!rec ? "…" : rec.erro ? "—" : brlCartao(rec.total)}</b></span>
             <em>{rec && !rec.erro ? `${rec.qtd} ${rec.qtd === 1 ? "pedido" : "pedidos"}` : ""}</em>
           </button>
           <button type="button" className="fd-t" onClick={() => navigate("/financeiro/a-pagar")}>
-            <span><small>A pagar</small><b className={pag && !pag.erro && pag.total > 0 ? "s" : ""}>{pag === undefined ? "…" : pag && !pag.erro ? brl(pag.total) : "—"}</b></span>
+            <span><small>A pagar</small><b className={pag && !pag.erro && pag.total > 0 ? "s" : ""}>{pag === undefined ? "…" : pag && !pag.erro ? brlCartao(pag.total) : "—"}</b></span>
             <em>{pag && !pag.erro ? (pag.vencidas > 0 ? `${pag.vencidas} ${pag.vencidas === 1 ? "vencida" : "vencidas"}` : `${pag.qtd} ${pag.qtd === 1 ? "conta" : "contas"}`) : ""}</em>
           </button>
         </div>

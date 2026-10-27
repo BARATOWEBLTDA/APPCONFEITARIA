@@ -102,10 +102,12 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
 export async function estornar(m: MovExtrato): Promise<{ ok: boolean; erro?: string }> {
   const agora = new Date().toISOString();
   if (m.origem === "pagamento") {
-    const { error } = await supabase.from("pagamentos").update({ estornado_em: agora }).eq("id", m.ref);
+    // (27/10) só estorna o que ainda não foi estornado (em outra aba): antes regravava a hora e o caixa contava a saída de novo
+    const { error } = await supabase.from("pagamentos").update({ estornado_em: agora }).eq("id", m.ref).is("estornado_em", null);
     return error ? { ok: false, erro: "Não foi possível estornar agora." } : { ok: true };
   }
-  const { error } = await supabase.from("financeiro").update({ estornado_em: agora }).eq("id", m.ref);
+  const { data: feito, error } = await supabase.from("financeiro").update({ estornado_em: agora }).eq("id", m.ref).is("estornado_em", null).select("id");
+  if (!error && Array.isArray(feito) && feito.length === 0) return { ok: true }; // já estava estornado: nada a mudar
   if (error) return { ok: false, erro: /estornado_em/i.test(error.message) ? "Para estornar lançamentos, rode o SQL do estorno no Supabase." : "Não foi possível estornar agora." };
   // se era o pagamento de uma conta, ela volta pra "A pagar"
   // 11/10: confere se voltou mesmo. Antes o erro era engolido: o dinheiro voltava pro caixa e a conta seguia "paga".

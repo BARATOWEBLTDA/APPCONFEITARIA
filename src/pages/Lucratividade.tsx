@@ -4,6 +4,7 @@
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useRef, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
+import { usePlano } from "@/hooks/usePlano";
 import { useNavigate } from "react-router-dom";
 import { CaretRight, ChartLineUp, Equals, Minus, ShoppingBagOpen, Warning, WarningCircle } from "@phosphor-icons/react";
 import PeriodoFiltro, { iso as isoDia, periodoDoDia, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
@@ -42,7 +43,23 @@ async function fatorDaFicha(uid: string, ids: string[], mao: any): Promise<Recor
   return out;
 }
 
+/** (27/10) Lucratividade é do PRO: a conta grátis vê o que a tela mostra e o "Conhecer o PRO" */
 export default function Lucratividade() {
+  const { isPro, loading } = usePlano();
+  const navigate = useNavigate();
+  if (loading) return null;
+  if (isPro) return <LucratividadeTela />;
+  return (
+    <>
+      <AppPageHeader title="Lucratividade" subtitle="Onde está o seu lucro de verdade" onBack={() => navigate("/financeiro")} />
+      <TelaVazia icone={<ChartLineUp size={30} weight="duotone" />} titulo="Lucratividade é do PRO"
+        texto="Veja quanto sobra de cada produto e do mês, já tirando ingredientes, taxas da maquininha e despesas."
+        acao={<Botao tamanho="m" onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>} />
+    </>
+  );
+}
+
+function LucratividadeTela() {
   const navigate = useNavigate();
   // (23/10) o mesmo filtro de período do Financeiro e de Transações (abre no mês de hoje)
   const [periodo, setPeriodo] = useState<Periodo>(periodoInicial);

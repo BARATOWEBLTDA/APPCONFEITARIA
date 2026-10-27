@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
-import { faltaNoBanco, ESTORNO_POR_EXCLUSAO } from "@/lib/pagamentos";
+import { faltaNoBanco, ESTORNO_POR_EXCLUSAO, SUBSTITUI_RECEBIMENTO } from "@/lib/pagamentos";
 import { nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
 
 /**
@@ -55,7 +55,7 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
     .eq("user_id", uid).gte("created_at", inicio).gte("data", diaInicio).lte("data", hoje).order("id").range(de, ate));
   // lançamento com data no futuro ainda não saiu do caixa; (4.29) com data ANTES do dia em que ela contou o caixa também não
   // mexe: esse dinheiro já estava (ou já não estava) na conta quando ela informou o saldo
-  const [pag, fin0, pagEst, finEst] = await Promise.all([
+  const [pag, fin0, pagEst, finEst, pagExtra] = await Promise.all([
     buscarTudo<any>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at")
       .eq("user_id", uid).is("estornado_em", null).gte("created_at", inicio).gte("recebido_em", diaInicio).lte("recebido_em", hoje).order("id").range(de, ate)),
     finDesde("id, tipo, categoria, descricao, valor, data, created_at, estornado_em"),
@@ -64,6 +64,11 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
       .eq("user_id", uid).lt("created_at", inicio).gte("estornado_em", inicio).order("id").range(de, ate)),
     buscarTudo<any>((de, ate) => supabase.from("financeiro").select("id, tipo, categoria, descricao, valor, estornado_em")
       .eq("user_id", uid).lt("created_at", inicio).gte("estornado_em", inicio).lte("data", diaInicio).order("id").range(de, ate)),
+    // (27/10) registrados depois do início que o caixa contava errado:
+    //  · o que sobrou ao diminuir um recebimento antigo (fica com a data antiga, então caía fora do "desde o início")
+    //  · recebimentos estornados porque o pedido foi excluído (não é devolução: o dinheiro continua na gaveta)
+    buscarTudo<any>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at, estornado_em, observacao")
+      .eq("user_id", uid).gte("created_at", inicio).in("observacao", [SUBSTITUI_RECEBIMENTO, ESTORNO_POR_EXCLUSAO]).order("id").range(de, ate)),
   ]);
   // sem a coluna de estorno (SQL não rodado), busca sem ela. 10/10: só quando o erro é mesmo de coluna
   const fin = fin0.error && faltaNoBanco(fin0.error) ? await finDesde("id, tipo, categoria, descricao, valor, data, created_at") : fin0;
@@ -71,7 +76,10 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
   // 10/10: outro erro (internet, servidor) não vira saldo: antes os recebimentos sumiam ou os estornados voltavam a contar
   if ((pag.error && !semPagamentos) || fin.error
     || (pagEst.error && !faltaNoBanco(pagEst.error)) || (finEst.error && !faltaNoBanco(finEst.error))) return { ...vazio, erro: true };
-  const pagamentos: any[] = semPagamentos ? [] : pag.data;
+  const extras: any[] = pagExtra.error ? [] : pagExtra.data.filter((g: any) => g.observacao === ESTORNO_POR_EXCLUSAO
+    ? !!g.estornado_em && g.recebido_em >= diaInicio && g.recebido_em <= hoje
+    : !g.estornado_em && g.recebido_em < diaInicio);
+  const pagamentos: any[] = semPagamentos ? [] : [...pag.data, ...extras.map(g => g.observacao === SUBSTITUI_RECEBIMENTO ? { ...g, recebido_em: diaLocal(g.created_at) } : g)];
   const lancamentos: any[] = fin.data.filter(l => !l.estornado_em); // estornado não conta
   // estorno feito porque o pedido foi excluído não é devolução: o dinheiro contado no saldo informado continua lá
   const pagDesfeitos: any[] = pagEst.error ? [] : pagEst.data.filter((g: any) => g.observacao !== ESTORNO_POR_EXCLUSAO);

@@ -19,6 +19,8 @@ const tabelaNaoExiste = (e: any) => !!e && (e.code === "42P01" || e.code === "PG
 
 /** Texto gravado na observação do recebimento estornado porque o PEDIDO FOI EXCLUÍDO (10/10). Não é devolução de dinheiro: o caixa lê isso. */
 export const ESTORNO_POR_EXCLUSAO = "Pedido excluído";
+/** (27/10) recebimento que SUBSTITUI um estornado (o que sobrou ao diminuir um pagamento): o caixa conta ele mesmo com a data antiga */
+export const SUBSTITUI_RECEBIMENTO = "Ajuste no Editar pedido · substitui um recebimento";
 
 /**
  * O erro é de coluna ou tabela que ainda não existe no banco (SQL não rodado)? (10/10)
@@ -87,9 +89,10 @@ export async function registrarPagamento(opts: {
   }
   // (17/10 · R06) o banco recusou porque esse mesmo recebimento acabou de entrar (dois toques, duas abas, nova tentativa):
   // não é erro, o dinheiro já está registrado uma vez
+  // (27/10) não diz mais "registrado": dois pagamentos iguais de verdade (dois Pix de R$ 50) perdiam o segundo sem aviso
   if (/pagamento_repetido/.test(String(error.message || ""))) {
-    const { data: p } = await supabase.from("pedidos").select("valor_recebido, status_pagamento").eq("id", opts.pedidoId).maybeSingle();
-    return { ok: true, legado: false, valor_recebido: Number((p as any)?.valor_recebido) || 0, status_pagamento: (p as any)?.status_pagamento };
+    const v = valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    return { ok: false, legado: false, erro: `Um recebimento igual (${v}) acabou de entrar neste pedido. Se é outro pagamento, espere 15 segundos e registre de novo.` };
   }
   if (/recebido_acima_do_total/.test(String(error.message || ""))) {
     return { ok: false, legado: false, erro: "Esse valor passa do total do pedido. Confira o que já foi recebido (talvez já tenha sido registrado em outra tela)." };
@@ -134,7 +137,7 @@ export async function ajustarRecebido(opts: { pedidoId: string; alvo: number; fo
     soma = r2(soma - (Number(p.valor) || 0));
   }
   if (alvo > soma + 0.009) {
-    const r = await registrarPagamento({ pedidoId: opts.pedidoId, userId: opts.userId, valor: alvo - soma, forma: opts.forma, tipo: "pagamento", observacao: "Ajuste no Editar pedido", recebidoEm: dataSubstituida });
+    const r = await registrarPagamento({ pedidoId: opts.pedidoId, userId: opts.userId, valor: alvo - soma, forma: opts.forma, tipo: "pagamento", observacao: dataSubstituida ? SUBSTITUI_RECEBIMENTO : "Ajuste no Editar pedido", recebidoEm: dataSubstituida });
     return { ok: r.ok, legado: r.legado };
   }
   return { ok: true, legado: false };

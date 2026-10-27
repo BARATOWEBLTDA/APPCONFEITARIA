@@ -171,7 +171,8 @@ export default function Custos() {
             ))}
             {/* (13/10) atalho: a taxa da maquininha com o débito e o crédito separados */}
             {/* (16/10) a maquininha que falta vira uma linha como as outras (antes um botão tracejado comprido) */}
-            {!carregando && !variaveis.some(v => v.forma) && (
+            {/* (27/10) taxa antiga com "maquininha" no nome também conta (antes pedia de novo e a taxa saía em dobro) */}
+            {!carregando && !variaveis.some(v => v.forma || /maquin/i.test(v.nome || "")) && (
               <button type="button" className="cu-it cu-it--falta" onClick={() => setEditMaq(true)}>
                 <span className="cu-it-ic" aria-hidden="true"><CreditCard size={16} weight="bold" /></span>
                 <div className="cu-it-t"><b>Taxa da maquininha</b><small>Débito e crédito · falta cadastrar</small></div>
@@ -338,12 +339,19 @@ function MaquininhaSheet({ uid, onClose, onFeito }: { uid: string; onClose: () =
     if (d <= 0 && c <= 0) { setErro("Digite a taxa do débito ou do crédito"); return; }
     if (d > 100 || c > 100) { setErro("A porcentagem vai até 100%"); return; }
     setOcupado(true);
+    // (27/10) o que já existe é atualizado (tentar de novo depois de um erro não duplica a taxa)
+    const { data: atuais } = await supabase.from("custos_variaveis").select("id, nome, forma").eq("user_id", uid);
+    const lista = ((atuais as any[]) || []);
     const linhas: [string, number, FormaCusto][] = [["Maquininha (débito)", d, "debito"], ["Maquininha (crédito)", c, "credito"]];
     for (const [nome, valor, forma] of linhas) {
       if (valor <= 0) continue;
-      const { error } = await gravarVariavel(null, uid, { nome, tipo: "percentual", valor, ativo: true, forma });
+      const ja = lista.find(v => v.forma === forma);
+      const { error } = await gravarVariavel(ja?.id || null, uid, { nome, tipo: "percentual", valor, ativo: true, forma });
       if (error) { setOcupado(false); setErro(explicarErro(error, "Não foi possível salvar agora.")); return; }
     }
+    // a taxa antiga sem débito/crédito ("Maquininha 3%") é pausada: senão somava com a nova
+    const antigas = lista.filter(v => !v.forma && /maquin/i.test(String(v.nome || ""))).map(v => v.id);
+    if (antigas.length) await supabase.from("custos_variaveis").update({ ativo: false }).in("id", antigas).then(() => {}, () => {});
     setOcupado(false);
     onFeito();
   };

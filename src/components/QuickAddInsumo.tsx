@@ -61,6 +61,8 @@ const MEDIDAS = [
   { sigla: "L", nome: "L" },
   { sigla: "un", nome: "unidade" },
 ];
+/** (27/10) g e kg pesam, ml e L medem volume, unidade conta: dentro da mesma família a ficha técnica converte sozinha */
+const familiaDaMedida = (u?: string | null) => (u === "g" || u === "kg" ? "peso" : u === "ml" || u === "L" || u === "l" ? "volume" : "un");
 
 /** Embalagens (mesmos valores salvos de antes). As mais usadas aparecem direto; o resto fica em "Outra". */
 const EMB_PRINCIPAIS = ["Avulso", "Pacote", "Caixa", "Lata", "Pote", "Garrafa", "Bandeja"];
@@ -453,11 +455,16 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       <div>
         <p className="ig-rot">Medida</p>
         <div className="ig-seg" role="radiogroup" aria-label="Medida">
-          {MEDIDAS.map(u => (
-            <button key={u.sigla} type="button" role="radio" aria-checked={form.unidade === u.sigla}
-              onClick={() => { setUnidadeTocadaManualmente(true); setForm(f => ({ ...f, unidade: u.sigla })); }}>{u.nome}</button>
-          ))}
+          {MEDIDAS.map(u => {
+            // (27/10) ingrediente usado em ficha técnica não troca de família (de g para unidade, o custo ficava 1000 vezes diferente)
+            const travada = isEditing && usadoEm > 0 && familiaDaMedida(u.sigla) !== familiaDaMedida(inicial.current.unidade);
+            return (
+              <button key={u.sigla} type="button" role="radio" aria-checked={form.unidade === u.sigla} disabled={travada}
+                onClick={() => { setUnidadeTocadaManualmente(true); setForm(f => ({ ...f, unidade: u.sigla })); }}>{u.nome}</button>
+            );
+          })}
         </div>
+        {isEditing && usadoEm > 0 && <p className="ig-sug">Está em fichas técnicas: {({ peso: "só g ou kg", volume: "só ml ou L", un: "só unidade" } as Record<string, string>)[familiaDaMedida(inicial.current.unidade)]}</p>}
         {sugerida && <p className="ig-sug">Escolhida pelo nome. Escolha outra se for diferente.</p>}
       </div>
 

@@ -14,6 +14,10 @@ import { erroDeConexao } from "@/lib/erros";
 import { MESES, iso as isoData, periodoDoDia, periodoDoMes, periodoHoje, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
+import RecursoPro from "@/components/billing/RecursoPro";
+import { usePlano } from "@/hooks/usePlano";
+import { useProfile } from "@/hooks/useProfile";
+import { isoDe } from "@/lib/painelPeriodo";
 import Folha, { FOLHA_CSS } from "@/components/financeiro/Folha";
 import { supabase } from "@/lib/supabase";
 import { carregarExtrato, estornar, type MovExtrato } from "@/lib/extrato";
@@ -60,6 +64,11 @@ export default function FinanceiroTransacoes() {
   const [busca, setBusca] = useState("");
   const [verEstornados, setVerEstornados] = useState(false);
   const [aberto, setAberto] = useState<MovExtrato | null>(null);
+  const { isPro } = usePlano();
+  const { profile } = useProfile();
+  // (27/10) o mesmo aviso do Financeiro: lançamento com data antes do caixa não muda o saldo
+  const inicioCaixa = (profile as any)?.caixa_inicio_em ? isoDe(new Date((profile as any).caixa_inicio_em)) : null;
+  const [proAberto, setProAberto] = useState(false); // (27/10) baixar a planilha é do PRO
   const [nova, setNova] = useState<"entrada" | "saida" | null>(null);
   const [filtroAberto, setFiltroAberto] = useState(false);
 
@@ -117,6 +126,7 @@ export default function FinanceiroTransacoes() {
 
   const avisar = (m: string) => avisarBase(m, { tipo: /^Não /.test(m) ? "erro" : "ok" });
   const exportar = () => {
+    if (!isPro) { setFiltroAberto(false); setProAberto(true); return; }
     if (carregando) return;
     if (erro) { avisar("Não deu para carregar o extrato. Tente de novo."); return; }
     // 10/10: os totais do cabeçalho saem das MESMAS linhas da planilha (a lista da tela, com os filtros) e não contam
@@ -248,9 +258,11 @@ export default function FinanceiroTransacoes() {
         rodape={<button type="button" className="gf-link" onClick={exportar}><DownloadSimple size={18} weight="bold" />Baixar a planilha</button>}
       />}
 
+      {proAberto && <RecursoPro titulo="Planilha do PRO" texto="No PRO você baixa o extrato do período em planilha, pronto para abrir no Excel ou mandar para o contador." onClose={() => setProAberto(false)} />}
+
       {aberto && <DetalheSheet m={aberto} semEstorno={semEstorno} onClose={() => setAberto(null)} onAbrirPedido={id => navigate(`/pedidos/${id}/editar`)}
         onEstornado={msg => { setAberto(null); avisar(msg); carregar(); }} />}
-      {nova && uid && <DespesaSheet tipo={nova} onClose={() => setNova(null)} onSalvo={(aviso, continuar) => { if (!continuar) setNova(null); avisar(aviso); carregar(); }} onReceberPedido={() => navigate("/financeiro/a-receber")} />}
+      {nova && uid && <DespesaSheet tipo={nova} inicioCaixa={inicioCaixa} onClose={() => setNova(null)} onSalvo={(aviso, continuar) => { if (!continuar) setNova(null); avisar(aviso); carregar(); }} onReceberPedido={() => navigate("/financeiro/a-receber")} />}
       <style>{CSS}{FOLHA_CSS}</style>
     </>
   );
