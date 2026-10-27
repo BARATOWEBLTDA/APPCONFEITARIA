@@ -16,7 +16,7 @@ import "./entregaPagamento.css"
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { explicarErro } from "@/lib/erros"
-import { parseNumBR } from "@/lib/numeroBR"
+import { parseNumBR, mascaraReais, reaisParaCampo } from "@/lib/numeroBR"
 import { marcarPagamentoConferido } from "@/lib/primeirosPassos"
 import { useNavigate, useLocation } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
@@ -77,6 +77,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [savingCupons, setSavingCupons] = useState(false)
+  const cuponsAntigosNoPerfil = useRef(false) // (27/10) os cupons ainda vieram do perfil antigo: o próximo salvar limpa a cópia de lá
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [formasPagamento, setFormasPagamento] = useState<string[]>(['pix'])
@@ -122,8 +123,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       if (data) {
         setFormasPagamento(data.formas_pagamento || ['pix'])
         setFormasEntrega(data.formas_entrega || ['retirada'])
-        setValorEntregaPropria(data.valor_entrega_propria ? data.valor_entrega_propria.toString() : '')
-        setEntregaPorBairro((data.entrega_por_bairro || []).map((b: any) => ({ bairro: b.bairro, valor: b.valor?.toString() || '0' })))
+        setValorEntregaPropria(reaisParaCampo(data.valor_entrega_propria))
+        setEntregaPorBairro((data.entrega_por_bairro || []).map((b: any) => ({ bairro: b.bairro, valor: reaisParaCampo(b.valor) || '0,00' })))
         setEnderecoRetirada(data.endereco_retirada || '')
         setHorarioRetirada(data.horario_retirada || '')
         setExibirCampoTroco(data.exibir_campo_troco !== false)
@@ -131,6 +132,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         const { data: lc, error: erroCupons } = await supabase.from('loja_cupons').select('cupons').eq('user_id', user.id).maybeSingle()
         if (erroCupons) { setErroCarga(true); return }
         const listaCupons = Array.isArray(lc?.cupons) ? lc!.cupons : (data.cupons_desconto || [])
+        cuponsAntigosNoPerfil.current = !Array.isArray(lc?.cupons) && Array.isArray(data.cupons_desconto) && data.cupons_desconto.length > 0
         setCupons((listaCupons || []).map((c: any) => ({
           codigo: c.codigo || '',
           tipo: c.tipo || 'percentual',
@@ -139,7 +141,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
           data_inicio: c.data_inicio || '',
           data_fim: c.data_fim || '',
           limite_uso: c.limite_uso?.toString() || '',
-          valor_minimo: c.valor_minimo?.toString() || '',
+          valor_minimo: reaisParaCampo(c.valor_minimo),
           usos: c.usos || 0,
           publico: c.publico === 'primeiro_pedido' ? 'primeiro_pedido' : 'todos',
         })))
@@ -152,7 +154,10 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         setPixChave(tipo === 'celular' ? String(d.pix_chave || '').replace(/^\+55/, '') : (d.pix_chave || ''))
         // nome e cidade já vêm da loja (dá pra trocar)
         setPixNome(d.pix_nome || d.nome_loja || '')
-        setPixCidade(d.pix_cidade || d.endereco?.cidade || '')
+        // (27/10) o endereço da loja fica gravado como texto JSON: lê a cidade dele (antes vinha sempre vazia)
+        let cidadeLoja = ''
+        try { const e = typeof d.endereco === 'string' ? JSON.parse(d.endereco) : d.endereco; cidadeLoja = String(e?.cidade || '') } catch { /* endereço antigo em texto livre */ }
+        setPixCidade(d.pix_cidade || cidadeLoja.slice(0, 15))
         setPixModo(d.pix_modo === 'sinal' || d.pix_modo === 'total' ? d.pix_modo : 'escolha')
         setPixPct(String(d.pix_sinal_pct || 50))
         setPctOutro(![30, 50].includes(Number(d.pix_sinal_pct || 50)))
@@ -218,9 +223,10 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       if (erroCupons) throw erroCupons
       // Limpa a cópia antiga do perfil (o cardápio público consegue ler o perfil). Só depois de a tabela nova gravar:
       // se limpasse antes e o upsert falhasse, os cupons sumiam dos dois lugares.
-      if (opcoes.limparCuponsDoPerfil) {
+      if (opcoes.limparCuponsDoPerfil || cuponsAntigosNoPerfil.current) {
         const { error: erroLimpar } = await supabase.from('profiles').update({ cupons_desconto: [] }).eq('id', t.userId)
         if (erroLimpar) console.error('[Doonly] cupons antigos do perfil:', erroLimpar)
+        else cuponsAntigosNoPerfil.current = false
       }
       avisar(opcoes.aviso || 'Salvo', { tipo: 'ok' })
       return true
@@ -537,15 +543,15 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                 <button type="button" role="radio" aria-checked={porBairro} onClick={() => { if (!porBairro) { setPorBairro(true); if (!entregaPorBairro.length) setEntregaPorBairro([{ bairro: '', valor: '' }]) } }}>Por bairro</button>
               </div>
               {!porBairro ? (
-                <Campo rotulo="Taxa da entrega própria" prefixo="R$" inputMode="decimal" placeholder="0,00" value={valorEntregaPropria}
+                <Campo rotulo="Taxa da entrega própria" prefixo="R$" inputMode="numeric" placeholder="0,00" value={valorEntregaPropria}
                   dica="Cobrada em todo pedido com entrega própria"
-                  onChange={e => setValorEntregaPropria(e.target.value.replace(/[^0-9.,]/g, ''))} />
+                  onChange={e => setValorEntregaPropria(mascaraReais(e.target.value))} />
               ) : (
                 <div className="ep-bairros">
                   {entregaPorBairro.map((b, i) => (
                     <div key={i} className="ep-bairro">
                       <Campo rotulo="" aria-label="Bairro" placeholder="Bairro" value={b.bairro} onChange={e => mudarBairro(i, 'bairro', e.target.value)} />
-                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="decimal" placeholder="0,00" value={b.valor} onChange={e => mudarBairro(i, 'valor', e.target.value)} />
+                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={b.valor} onChange={e => mudarBairro(i, 'valor', mascaraReais(e.target.value))} />
                       <button type="button" className="ep-bairro-x" aria-label={`Tirar ${b.bairro || 'este bairro'}`} onClick={() => setEntregaPorBairro(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
                     </div>
                   ))}
@@ -563,7 +569,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
 
         {/* Cupons */}
         {verCupons && <section className="ep-card ep-largo">
-          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio={`${isPro ? `Até ${MAX_CUPONS_ATIVOS} ativos` : '1 ativo'} por vez. Os ativos aparecem no topo do cardápio, e o cliente usa 1 por pedido.`}
+          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio={isPro ? 'Quantos quiser. Os 2 mais novos aparecem no topo do cardápio, e o cliente usa 1 por pedido.' : '1 ativo por vez. Ele aparece no topo do cardápio, e o cliente usa 1 por pedido.'}
  />
           {!cupomDisponivel(isPro) ? (
             <div className="ep-pro">
@@ -597,7 +603,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
               </div>
               <div className="ep-cupons-pe">
                 <Botao variante="suave" icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}>Novo cupom</Botao>
-                <Botao variante="secundario" carregando={savingCupons} onClick={handleSalvarCupons}>{savingCupons ? 'Salvando…' : 'Salvar cupons'}</Botao>
+                {/* (27/10) o "Salvar cupons" saiu: a tela já salva sozinha (o botão confundia depois de criar o cupom) */}
               </div>
             </>
           )}
@@ -645,8 +651,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
             <div className="ep-g2">
               <Campo rotulo="Limite" opcional inputMode="numeric" placeholder="Sem limite" value={cupomForm.limite_uso}
                 onChange={e => setCupomForm({ ...cupomForm, limite_uso: e.target.value.replace(/\D/g, '') })} />
-              <Campo rotulo="Mínimo" opcional prefixo="R$" inputMode="decimal" placeholder="0,00" value={cupomForm.valor_minimo}
-                onChange={e => setCupomForm({ ...cupomForm, valor_minimo: e.target.value.replace(/[^0-9.,]/g, '') })} />
+              <Campo rotulo="Mínimo" opcional prefixo="R$" inputMode="numeric" placeholder="0,00" value={cupomForm.valor_minimo}
+                onChange={e => setCupomForm({ ...cupomForm, valor_minimo: mascaraReais(e.target.value) })} />
             </div>
             <Chave on={cupomForm.ativo} rotulo="Cupom ativo" apoio="Desligado, o cliente não consegue usar" aoMudar={v => setCupomForm({ ...cupomForm, ativo: v })} />
             {editandoIndex !== null && editandoIndex >= 0 && (

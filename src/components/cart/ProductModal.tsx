@@ -361,12 +361,14 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       const e = extrasBiblioteca.find(x => x.id === id)
       if (e) extrasBibliotecaTotal += Number(e.valor) || 0
     })
+    // (27/10) complementos (topo, vela…) sempre no preço cheio: a promoção é do produto.
+    // Antes o topo de R$ 25 aparecia "+ R$ 22,17" num produto com 11% de desconto.
     adicionaisTotal += extrasBibliotecaTotal
 
     // (11/10) centavos por uma conta só (r2 + comDesconto), a mesma do cartão e do preço ao lado de cada opção.
     // Antes era toFixed aqui e Math.round lá: 0,5 kg de R$ 31,99 dava R$ 16,00 no cartão e R$ 15,99 no botão.
     const subtotal = r2(baseEfetivo + adicionaisTotal)
-    const final = comDesconto(subtotal, descPct)
+    const final = r2(comDesconto(r2(baseEfetivo + adicionaisTotal - extrasBibliotecaTotal), descPct) + extrasBibliotecaTotal)
     const desconto = r2(subtotal - final)
 
     return {
@@ -669,8 +671,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
               <Fragment key={e.id}>
               <button type="button" className="pm-op" role="checkbox" aria-checked={on} onClick={() => toggleExtra(e.id)}>
                 <span className="pm-op-tx"><b>{e.nome}</b>{e.descricao && <small>{e.descricao}</small>}</span>
-                {/* (11/10) com promoção, o adicional também entra com desconto no total: mostra o que é cobrado */}
-                <span className={`pm-op-p${gratis ? ' gratis' : ''}`}>{gratis ? 'Grátis' : `+ ${formatCurrency(comDesconto(Number(e.valor), descPct))}`}</span>
+                {/* (27/10) complemento no preço cheio, igual ao cadastro (a promoção é só do produto) */}
+                <span className={`pm-op-p${gratis ? ' gratis' : ''}`}>{gratis ? 'Grátis' : `+ ${formatCurrency(Number(e.valor))}`}</span>
                 <span className="pm-ctl cx" style={on ? { borderColor: corBotao, background: corBotao } : undefined} aria-hidden="true">{on && <Check size={14} weight="bold" color="#fff" />}</span>
               </button>
               {/* (24/10) complemento que pede frase: ao marcar, abre o campo logo embaixo */}

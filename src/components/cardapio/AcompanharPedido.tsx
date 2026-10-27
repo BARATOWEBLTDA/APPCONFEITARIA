@@ -9,7 +9,7 @@ import '@/components/cart/sacola.css'
 import { renderItemFromSnapshot } from '@/lib/pedido-snapshot'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { linkWhatsApp } from '@/lib/telefone'
-import { lojaAtualCheckout, lojaAtualNome, lojaAtualWhatsApp } from './lojaAtual'
+import { lojaAtualCheckout, lojaAtualNome, lojaAtualWhatsApp, lojaAtualLogo, lojaAtualVerificada } from './lojaAtual'
 import { dinheiro, type Pedido } from './contaCliente'
 import './acompanharPedido.css'
 
@@ -150,7 +150,7 @@ export function AcompanharPedido({ p, cor, corTopo, aoAtualizar }: { p: Pedido; 
       {pix && pagando && createPortal(
         <div ref={cobreRef} tabIndex={-1} className="px-cobre" role="dialog" aria-modal="true" aria-label="Pagar com Pix">
           <PixPagamento pix={pix} pedidoId={p.id} numero={p.numero} total={Number(p.valor_total) || 0} tipo={pagando}
-            loja={loja} cor={cor} corTopo={corTopo} quando={ret ? 'retirada' : 'entrega'}
+            loja={loja} cor={cor} corTopo={corTopo} logoUrl={lojaAtualLogo()} verificada={lojaAtualVerificada()} quando={ret ? 'retirada' : 'entrega'}
             aoTrocarTipo={pix.modo === 'escolha' ? setPagando : undefined}
             aoPagar={() => { setPagando(null); aoAtualizar?.() }} aoDepois={() => setPagando(null)} textoDepois="Voltar para o pedido" />
         </div>,

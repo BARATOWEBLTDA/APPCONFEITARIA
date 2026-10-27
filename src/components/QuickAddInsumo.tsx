@@ -320,7 +320,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     }
     setUploadingImg(false);
   };
-  const recorte = useRecorte(f => { void handleUploadFile(f); }, { forma: "rect" });
+  const recorte = useRecorte(f => { void handleUploadFile(f); }, { forma: "rect", titulo: "Ajustar a foto do ingrediente" });
 
   const valorNum = parseNumBR(form.valor_compra);
   // 10/10: em g, kg, ml e L "quanto vem" é obrigatório (vazio virava 1 e o custo saía por 1 g).

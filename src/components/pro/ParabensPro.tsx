@@ -56,7 +56,7 @@ export default function ParabensPro() {
   return (
     <Janela aberta aoFechar={fechar} titulo={nome ? `Boas-vindas ao PRO, ${nome}!` : "Boas-vindas ao PRO!"}
       texto="Sua assinatura está ativa e tudo já está liberado: cores do cardápio, cupons de desconto, Doo IA e o lucro de cada produto. Agradecemos por confiar no Doonly." icone={<img src="/coroa.png" alt="" className="ppr-coroa" />} tom="laranja"
-      acoes={<><Botao variante="secundario" onClick={() => { fechar(); navigate("/minha-assinatura"); }}>Ver assinatura</Botao><Botao onClick={fechar} data-foco-inicial>Começar a usar</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={() => { fechar(); navigate("/minha-assinatura"); }}>Assinatura</Botao><Botao onClick={fechar} data-foco-inicial>Começar a usar</Botao></>}>
       <style>{`.ppr-coroa { width: 46px; height: auto; display: block; }`}</style>
     </Janela>
   );

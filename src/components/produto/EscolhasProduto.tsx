@@ -613,7 +613,7 @@ function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: P
     const t = window.setTimeout(() => { marcarDestaque("rendimento"); setDica(true); }, 600);
     return () => window.clearTimeout(t);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const exemplo = g.opcoes.slice(0, 2).map((o, i) => ({ nome: `${o.nome || (i ? "Grande" : "Pequeno")}${Number((o as any).peso_kg) > 0 ? ` · ${String((o as any).peso_kg).replace(".", ",")} kg` : ""}`, serve: i ? "Serve até 20 pessoas" : "Serve até 10 pessoas" }));
+  const exemplo = g.opcoes.slice(0, 2).map((o, i) => ({ nome: `${o.nome || (i ? "Grande" : "Pequeno")}${Number((o as any).peso_kg) > 0 && !/kg|\d\s*g\b/i.test(o.nome || "") ? ` · ${String((o as any).peso_kg).replace(".", ",")} kg` : ""}` /* (27/10) "1 kg" em vez de "1 kg · 1 kg" */, serve: i ? "Serve até 20 pessoas" : "Serve até 10 pessoas" }));
   return (<>
     {dica && (
       <Destaque alvo={linhaRef} sobreJanela mascote raio={14} semNao titulo="Defina o rendimento" acao="Entendi"

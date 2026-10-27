@@ -2,8 +2,9 @@
  * ReqTag — marca "obrigatório" ao lado do rótulo, igual à do campo padrão do app (08/10 · 3.22: sem a estrela).
  * Uso: <label>Nome <ReqTag /></label>
  */
+/** (27/10) não mostra mais nada: o "obrigatório" em todo campo poluía o cadastro (o aviso aparece se faltar) */
 export default function ReqTag() {
-  return <span className="req-tag">obrigatório</span>;
+  return null;
 }
 
 /** (14/10) a mesma marca, pro campo opcional: mesmo lugar e tamanho, em cinza (igual ao "opcional" dos campos do guia) */

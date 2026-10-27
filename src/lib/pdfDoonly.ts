@@ -1,7 +1,7 @@
 // ── pdfDoonly.ts ─────────────────────────────────────────────────────────────
 // Modelo padrão de PDF do Doonly (aprovado 02/10). Todos os relatórios usam este
 // modelo: faixa rosa da loja (logo, nome, WhatsApp, cidade), cartões claros, os
-// números importantes num bloco vinho e o mesmo rodapé. Fonte Geist.
+// números importantes num bloco vinho e o mesmo rodapé. Fonte Poppins, a mesma do app (27/10: era Geist).
 // Abre uma janela com o documento e chama a impressão (dá pra salvar em PDF,
 // inclusive no iPhone). A janela é aberta ANTES de buscar os dados, senão o
 // navegador bloqueia como pop-up.
@@ -60,7 +60,7 @@ export function montarHtml(loja: Loja, d: Doc): string {
   const av = loja.logo ? `<img src="${esc(loja.logo)}" alt="">` : esc(loja.inicial);
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(d.titulo)} · ${esc(loja.nome)}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>${fontesPoppins()}</style>
 <style>${CSS}</style></head><body>
 <div class="bar-acoes"><button onclick="window.print()">Salvar PDF / Imprimir</button></div>
 <div class="pg">
@@ -94,12 +94,19 @@ export const kpis = (itens: [string, string, boolean?][]) =>
   `<div class="kpis k${itens.length}">${itens.map(([l, v, hi]) => `<div class="${hi ? "hi" : ""}"><small>${esc(l)}</small><b>${v}</b></div>`).join("")}</div>`;
 export const pill = (txt: string, cor: "ok" | "am" | "rd" | "bl" = "bl") => `<span class="pill ${cor}">${esc(txt)}</span>`;
 
+/** (27/10) a Poppins do próprio app (os arquivos já estão no site), sem depender do Google Fonts */
+function fontesPoppins(): string {
+  const base = typeof location !== "undefined" ? location.origin : "";
+  const f = (arq: string, peso: string) => `@font-face{font-family:'Poppins';src:url('${base}/fonts/Poppins-${arq}.woff2') format('woff2');font-weight:${peso};font-display:swap}`;
+  return f("400", "400") + f("500", "500") + f("600", "600 700") + f("700", "800 900");
+}
+
 const CSS = `
 @page { size: A4; margin: 12mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-html, body { font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #2C1219; background: #EFE9EC; font-size: 12.5px; line-height: 1.45; }
+html, body { font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #2C1219; background: #EFE9EC; font-size: 12.5px; line-height: 1.45; }
 .bar-acoes { position: sticky; top: 0; z-index: 5; display: flex; justify-content: center; padding: 10px; background: rgba(239,233,236,.92); }
-.bar-acoes button { border: none; border-radius: 10px; padding: 10px 18px; background: linear-gradient(90deg,#E85A8C,#C33A6E); color: #fff; font: 800 13px "Geist", sans-serif; cursor: pointer; }
+.bar-acoes button { border: none; border-radius: 10px; padding: 10px 18px; background: linear-gradient(90deg,#E85A8C,#C33A6E); color: #fff; font: 700 13px "Poppins", sans-serif; cursor: pointer; }
 .pg { max-width: 794px; margin: 0 auto 30px; background: #fff; padding: 32px 32px 26px; border-radius: 6px; box-shadow: 0 10px 30px rgba(60,20,35,.12); }
 @media print { html, body { background: #fff; } .bar-acoes { display: none; } .pg { box-shadow: none; border-radius: 0; margin: 0; padding: 0; max-width: none; } }
 .hd { display: flex; justify-content: space-between; gap: 18px; padding: 22px 24px; border-radius: 16px; color: #fff; background: linear-gradient(135deg,#E85A8C,#C33A6E); margin-bottom: 18px; }

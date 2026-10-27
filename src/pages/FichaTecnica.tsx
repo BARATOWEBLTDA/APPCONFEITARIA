@@ -1043,7 +1043,7 @@ export default function FichaTecnica() {
                   <span className="fl-tx">
                     <b>{p.nome}</b>
                     <small className="fl-cel">
-                      {c.temFicha ? `Margem de ${fmtPct(c.margemLucro)}%` : "Sem ficha técnica"}
+                      {c.temFicha ? `Margem ${fmtPct(c.margemLucro)}%` : "Sem ficha técnica"}
                     </small>
                   </span>
                   <span className="fl-pc fl-col">{c.temFicha ? reais(c.custoTotal) : "—"}</span>

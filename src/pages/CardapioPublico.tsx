@@ -337,7 +337,7 @@ function CardapioContent() {
         horario: (config as any).horario || null,
         antecedencias: Object.fromEntries((produtos || []).map((p: any) => [p.id, { ant: p.antecedencia || null, pronta: p.pronta_entrega ?? null }])),
       } : null
-      definirLojaAtual({ userId: design.user_id || '', whatsapp: config?.telefone || '', nome: design.nome_loja || '', checkout: checkoutConfig })
+      definirLojaAtual({ userId: design.user_id || '', whatsapp: config?.telefone || '', nome: design.nome_loja || '', checkout: checkoutConfig, logo: design.logo_url || null, verificada: !!isPro })
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
       if (design?.user_id) {

@@ -14,6 +14,10 @@
 .ig-l-custo { grid-area: c; text-align: right; }
 .ig-l-custo b { color: var(--ui-verde); }
 .ig-l > svg { grid-area: s; color: var(--ui-texto-3); }
+/* (27/10) celular: o custo fica curto ("/100 g") e o nome do ingrediente ganha espaço (antes "Açúcar refina…") */
+.ig-por-l { display: none; }
+@media (min-width: 901px) { .ig-por-l { display: inline; } .ig-por-c { display: none; } }
+@media (max-width: 900px) { .ig-l { gap: 2px 10px; } }
 .ig-pc { display: none !important; }
 @media (min-width: 1000px) {
   .ig-tab-cab { display: grid; grid-template-columns: 48px minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1fr) 24px; gap: 12px; margin-top: 8px; padding: 10px 12px; border-radius: var(--ui-raio-p); background: var(--ui-cinza); font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }

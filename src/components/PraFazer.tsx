@@ -237,7 +237,7 @@ export default function PraFazer() {
                     )}
                   </div>
                 ) : null}
-                <button type="button" className={x.acao === "Pagar" ? "pf-bt pf-bt--pagar" : "pf-bt"} disabled={x.aoTocar ? push.loading : false} onClick={() => ir(x)}>{x.acao}</button>
+                <button type="button" className="pf-bt" disabled={x.aoTocar ? push.loading : false} onClick={() => ir(x)}>{x.acao}</button>
               </div>
             </div>
           </li>
@@ -255,7 +255,7 @@ export default function PraFazer() {
       })()}
       {resto > 0 && (
         <button type="button" className="pf-ver" onClick={() => setAberto(a => !a)} aria-expanded={aberto}>
-          {aberto ? "Ver menos" : resto === 1 ? "Ver o outro" : `Ver os outros ${resto}`}
+          {aberto ? "Ver menos" : `Ver mais ${resto}`}
         </button>
       )}
       <style>{CSS}</style>

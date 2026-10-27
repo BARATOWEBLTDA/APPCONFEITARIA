@@ -18,6 +18,10 @@ interface Props {
   cropShape?: 'rect' | 'round'
   onCancel: () => void
   onCropDone: (croppedBlob: Blob) => void
+  /** (27/10) título da janela (topo, banner…); sem ele: "Ajustar a foto" / "Ajustar a foto do produto" */
+  titulo?: string
+  /** (27/10) deixa afastar até caber a imagem inteira (o que sobra fica branco): banner pronto do Canva não é mais cortado */
+  encaixar?: boolean
 }
 
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -46,7 +50,9 @@ async function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<Blob> {
   ctx.fillStyle = '#fff'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
   ctx.imageSmoothingQuality = 'high'
-  ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, canvas.width, canvas.height)
+  // (27/10) desenha a foto inteira deslocada: funciona também quando o recorte passa da borda (imagem encaixada inteira)
+  ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight,
+    -pixelCrop.x * escala, -pixelCrop.y * escala, image.naturalWidth * escala, image.naturalHeight * escala)
   // (11/10) Sem foto pronta (blob nulo ou vazio), recusa: quem chama avisa e não envia nada
   return new Promise((resolve, reject) => canvas.toBlob(
     blob => (blob && blob.size > 0 ? resolve(blob) : reject(new Error('foto não ficou pronta'))),
@@ -54,7 +60,8 @@ async function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<Blob> {
   ))
 }
 
-export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCancel, onCropDone }: Props) {
+export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCancel, onCropDone, titulo, encaixar = false }: Props) {
+  const MIN = encaixar ? 0.6 : 1
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
@@ -67,7 +74,7 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
     setCroppedAreaPixels(pixels)
   }, [])
 
-  const mudarZoom = (d: number) => setZoom(z => Math.min(3, Math.max(1, Math.round((z + d) * 100) / 100)))
+  const mudarZoom = (d: number) => setZoom(z => Math.min(3, Math.max(MIN, Math.round((z + d) * 100) / 100)))
 
   const handleDone = async () => {
     if (!croppedAreaPixels || loading) return
@@ -88,8 +95,8 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
       <div className="rf" ref={caixa} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="rf-titulo">
         <div className="rf-topo">
           <div>
-            <h2 id="rf-titulo">{cropShape === 'round' ? 'Ajustar a foto' : 'Ajustar a foto do produto'}</h2>
-            <p>Arraste para posicionar. Aproxime com os dedos ou com a barra.</p>
+            <h2 id="rf-titulo">{titulo || (cropShape === 'round' ? 'Ajustar a foto' : 'Ajustar a foto do produto')}</h2>
+            <p>{encaixar ? 'Arraste para posicionar. Afaste para caber a imagem inteira.' : 'Arraste para posicionar. Aproxime com os dedos ou com a barra.'}</p>
           </div>
           <BotaoIcone rotulo="Fechar sem salvar" variante="limpo" onClick={cancelar} disabled={loading}><X size={20} weight="bold" /></BotaoIcone>
         </div>
@@ -99,6 +106,8 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
             image={imageSrc}
             crop={crop}
             zoom={zoom}
+            minZoom={MIN}
+            restrictPosition={!encaixar}
             aspect={aspect}
             cropShape={cropShape}
             showGrid={false}
@@ -113,12 +122,12 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
         </div>
 
         <div className="rf-zoom">
-          <BotaoIcone rotulo="Afastar" onClick={() => mudarZoom(-0.2)} disabled={zoom <= 1}><MagnifyingGlassMinus size={20} weight="bold" /></BotaoIcone>
+          <BotaoIcone rotulo="Afastar" onClick={() => mudarZoom(-0.2)} disabled={zoom <= MIN}><MagnifyingGlassMinus size={20} weight="bold" /></BotaoIcone>
           <input
-            type="range" min={1} max={3} step={0.05} value={zoom}
+            type="range" min={MIN} max={3} step={0.05} value={zoom}
             onChange={e => setZoom(Number(e.target.value))}
             aria-label="Aproximar a foto"
-            style={{ ['--fill' as any]: `${((zoom - 1) / 2 * 100).toFixed(1)}%` }}
+            style={{ ['--fill' as any]: `${((zoom - MIN) / (3 - MIN) * 100).toFixed(1)}%` }}
           />
           <BotaoIcone rotulo="Aproximar" onClick={() => mudarZoom(0.2)} disabled={zoom >= 3}><MagnifyingGlassPlus size={20} weight="bold" /></BotaoIcone>
         </div>

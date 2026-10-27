@@ -332,8 +332,9 @@ body .prod-modal--novo .rev-resumo + .rev { margin-top: 20px; }
 .red-ft img { width: 100%; height: 100%; object-fit: cover; }
 .red-prev-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
 .red-prev-tx b { max-width: 100%; font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.red-tag { padding: 2px 6px; border-radius: 6px; background: #E3F5EA; color: #15803D; font-size: 11.5px; font-weight: 700; }
-.red-tag.off { background: #EAE4E7; color: var(--ui-texto-2); }
+/* (27/10) situação em texto colorido, sem etiqueta (padrão "Situação: No cardápio") */
+.red-tag { padding: 0; background: none; color: var(--ui-verde); font-size: 12.5px; font-weight: 700; }
+.red-tag.off { background: none; color: var(--ui-laranja); }
 .red-prev-tx small { font-size: 12.5px; line-height: 1.35; color: var(--ui-texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .red-prev-tx em { font-style: normal; font-size: 14px; font-weight: 700; color: var(--ui-texto); }
 .red-prev-tx em i { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }

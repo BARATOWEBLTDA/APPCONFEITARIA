@@ -7,8 +7,8 @@
 export const CUPOM_LIBERADO_FREE = true
 export const cupomDisponivel = (isPro: boolean) => isPro || CUPOM_LIBERADO_FREE
 
-/** Até 2 cupons ativos por vez (o cliente usa 1 por pedido) */
-export const MAX_CUPONS_ATIVOS = 2
+/** (27/10) PRO: cupons ativos sem limite, como promete a página do PRO (o cliente usa 1 por pedido; o topo do cardápio mostra os 2 mais novos) */
+export const MAX_CUPONS_ATIVOS = Infinity
 
 export type PublicoCupom = 'todos' | 'primeiro_pedido'
 export type CupomVitrine = { codigo: string; tipo: string; valor: number; valor_minimo?: number | null; data_fim?: string | null; publico?: PublicoCupom }

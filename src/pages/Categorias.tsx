@@ -111,7 +111,7 @@ export default function Categorias() {
     if (imgRef.current) imgRef.current.value = "";
     setUploading(null);
   };
-  const recorte = useRecorte(f => { void handleImageUpload(f); }, { forma: "rect" });
+  const recorte = useRecorte(f => { void handleImageUpload(f); }, { forma: "rect", titulo: "Ajustar a foto da categoria" });
 
   const handleSalvar = async () => {
     if (uploading) return avisar("Espere a foto terminar de enviar", { tipo: "info" }); // (27/10) salvar no meio do envio perdia a foto

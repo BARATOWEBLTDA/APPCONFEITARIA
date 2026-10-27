@@ -56,6 +56,7 @@
 .sc-valores span { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: var(--ui-texto-2); }
 .sc-valores em { font-style: normal; font-weight: 700; text-align: right; }
 .sc-valores .ok { color: var(--ui-verde); font-weight: 700; }
+.sc-val-nota { font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-3); text-align: right; }
 .sc-valores .t { margin-top: 4px; font-size: 17px; font-weight: 700; color: var(--ui-texto); }
 .sc-valores .t em { font-weight: 700; }
 
@@ -87,7 +88,7 @@
 .sc-g-cab b { display: block; font-size: 16px; font-weight: 700; }
 .sc-g-cab small { display: block; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); }
 .sc-obr { flex: none; padding: 3px 8px; border-radius: 6px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-size: 12px; font-weight: 700; font-style: normal; }
-.sc-opc { background: var(--ui-branco); color: var(--ui-texto-2); box-shadow: inset 0 0 0 1px #E5DDE1; }
+.sc-opc { background: none; color: var(--ui-texto-3); box-shadow: none; padding: 0; font-weight: 500; } /* (27/10) "Opcional" em texto, sem a etiqueta com borda */
 .sc-recado .ui-campo-r { display: none; }
 .sc-ok { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #16a34a; color: var(--ui-branco); }
 .sc-g-cab.falta { background: var(--ui-vermelho-fundo); box-shadow: inset 4px 0 0 var(--ui-vermelho); }

@@ -501,7 +501,7 @@ export const COMO_MARKETING: Como = {
   total: ["Cliente paga", "R$ 90,00"],
   fluxo: ["Criar cupom", "Divulgar", "Cliente usa"],
   dicas: [
-    [Ticket, <>Até <b>dois cupons</b> ficam ativos por vez e aparecem no topo do cardápio.</>],
+    [Ticket, <>No PRO, <b>quantos cupons quiser</b>; os 2 mais novos aparecem no topo do cardápio. No grátis, 1 ativo por vez.</>],
     [Users, <>O cliente usa <b>um cupom por pedido</b>. Dá para limitar ao primeiro pedido.</>],
     [FacebookLogo, <>O <b>Pixel do Facebook</b> informa ao Facebook e ao Instagram quem visitou o cardápio e quem fez pedido.</>],
     [Megaphone, <>Com o Pixel, os <b>anúncios</b> chegam a quem tem mais chance de comprar.</>],
@@ -509,7 +509,7 @@ export const COMO_MARKETING: Como = {
 };
 export const TOUR_MARKETING: PassoTour[] = [
   { el: ".mk-abas", titulo: "Ferramentas", texto: "Alterne entre os cupons de desconto e o Pixel do Facebook." },
-  { el: ".ep-cupons", titulo: "Seus cupons", texto: "Cada cupom mostra o código, o desconto e se está ativo. Até dois ficam ativos por vez. Selecione um cupom para editar.",
+  { el: ".ep-cupons", titulo: "Seus cupons", texto: "Cada cupom mostra o código, o desconto e se está ativo. Selecione um cupom para editar.",
     vazio: { el: ".mk-cupons .ep-vazio, .mk-cupons .ep-pro", texto: "Ainda não há cupons para mostrar. Siga a orientação deste aviso para criar o primeiro." } },
   { el: ".ep-cupons-pe", titulo: "Novo cupom", texto: "Crie um cupom e use Salvar cupons para aplicar as alterações." },
   { el: ".mk-card", titulo: "Pixel do Facebook", texto: "Informe o código do Pixel para os anúncios do Facebook e do Instagram chegarem a quem visitou o cardápio." },

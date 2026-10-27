@@ -152,7 +152,7 @@
 .cl9-f-sec { margin: 8px 0 -4px; font-size: 15px; font-weight: 700; }
 .cl9-f-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .cl9-f-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.cl9-f-chips button { min-height: 44px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; }
+.cl9-f-chips button { min-height: 44px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; }
 .cl9-f-chips button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
 .cl9-f-excluir { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin: 8px 0 0; border: 0; border-radius: var(--ui-raio); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); font-size: 15px; font-weight: 700; }
 .cl9-f-data { position: relative; }

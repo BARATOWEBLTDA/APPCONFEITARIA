@@ -24,6 +24,7 @@ import { explicarErro } from '@/lib/erros'
 import { linkWhatsApp } from '@/lib/telefone'
 import { lojaAtualCheckout, lojaAtualId, lojaAtualNome, lojaAtualWhatsApp } from './lojaAtual'
 import { digitosAoDigitar } from './telefoneDigitado'
+import { mascaraReais } from '@/lib/numeroBR'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { precoDoCartao } from './ItensCardapio'
 import { SeloVerificado } from './SeloVerificado'
@@ -938,8 +939,10 @@ function CartContent({
               <span>Subtotal<em>{formatCurrency(somarReais([totalPrice, economia]))}</em></span>
               {economia > 0 && <span className="ok">Promoção<em>− {formatCurrency(economia)}</em></span>}
               {desconto > 0 && <span className="ok">Cupom {cupomAplicado?.codigo}<em>− {formatCurrency(desconto)}</em></span>}
-              {opsEntrega.ent && <span>Entrega<em className={entregaGratis ? 'ok' : ''}>{entregaTexto}</em></span>}
+              {/* (27/10) a entrega só entra no total no próximo passo: a linha fica embaixo do total, como aviso (antes somava na vista e o total era outro) */}
+              {opsEntrega.ent && entregaGratis && <span>Entrega<em className="ok">Grátis</em></span>}
               <span className="t">{rotuloTotal}<em>{formatCurrency(subtotalCupom)}</em></span>
+              {opsEntrega.ent && !entregaGratis && <small className="sc-val-nota">Entrega: {entregaTexto === 'Depende do bairro' || entregaTexto === 'A combinar' ? entregaTexto.toLowerCase() : `+ ${entregaTexto}`}, se for receber em casa</small>}
             </div>
           </>
         )}
@@ -1122,7 +1125,7 @@ function CartContent({
           )}
           {formaPagamento === 'dinheiro' && config.exibir_campo_troco && (
             <div className="sc-troco">
-              <Campo rotulo="Troco para quanto?" dica="Deixe em branco se não precisar de troco." prefixo="R$" inputMode="decimal" value={trocoParaStr} onChange={e => setTrocoParaStr(e.target.value.replace(/[^0-9.,]/g, ''))} />
+              <Campo rotulo="Troco para quanto?" dica="Deixe em branco se não precisar de troco." prefixo="R$" inputMode="numeric" placeholder="0,00" value={trocoParaStr} onChange={e => setTrocoParaStr(mascaraReais(e.target.value))} />
             </div>
           )}
         </section>

@@ -8,7 +8,9 @@
 .orc-pro-ic { display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; margin-bottom: 8px; border-radius: 16px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .orc-pro h2 { margin: 0; font-size: 19px; font-weight: 700; }
 .orc-pro p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
-.orc-pro ul { margin: 8px 0 14px; padding-left: 18px; font-size: 14px; line-height: 1.7; }
+.orc-pro ul { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 14px; padding: 0; list-style: none; font-size: 14px; line-height: 1.4; }
+.orc-pro li { display: flex; align-items: flex-start; gap: 8px; }
+.orc-pro li svg { flex: none; margin-top: 1px; color: var(--ui-verde); }
 
 /* topo: link + novo */
 .orc-topo { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }

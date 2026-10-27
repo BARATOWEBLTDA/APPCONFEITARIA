@@ -373,6 +373,10 @@ export default function EditarPedido() {
 
   // ── Modais ────────────────────────────────────────────────────────────
   const [modalCliente, setModalCliente] = useState(false)
+  // (27/10) recado do cliente para o pedido todo (vem do cardápio): antes ficava gravado e não aparecia em lugar nenhum
+  const [recadoAberto, setRecadoAberto] = useState(false)
+  const [recadoTexto, setRecadoTexto] = useState('')
+  const [salvandoRecado, setSalvandoRecado] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [buscaCliente, setBuscaCliente] = useState('')
   const [statusDropdownAberto, setStatusDropdownAberto] = useState(false)
@@ -696,6 +700,8 @@ export default function EditarPedido() {
         // As escolhas do item (tamanho, massa, recheios, kit, adicionais, foto de referência) vão junto:
         // antes não eram carregadas, e salvar a edição apagava todas elas.
         personalizacoes: (it as any).personalizacoes ?? null,
+        // (27/10) a foto de referência fica na coluna própria (as listas de pedidos não baixam a foto)
+        foto_referencia: (it as any).foto_referencia || (it as any).personalizacoes?.foto_referencia || null,
         preco_breakdown: (it as any).preco_breakdown ?? null,
         snapshot_version: (it as any).snapshot_version ?? null,
       })))
@@ -1028,6 +1034,7 @@ export default function EditarPedido() {
           valor_unitario: it.valor_unitario,
           observacoes: it.observacoes || '',
           imagem_url: it.imagem_url || null,
+          foto_referencia: (it as any).foto_referencia || null,
           // ─── Snapshot Passo 0A ─────────────────────────────────────
           // EditarPedido preserva o snapshot original de cada item se existir,
           // e cria snapshot básico pra itens novos adicionados na edição
@@ -1280,6 +1287,17 @@ export default function EditarPedido() {
     const { data } = await supabase.from('pedidos').select('updated_at').eq('id', pedido.id).maybeSingle()
     if (data) setPedido(p => p ? ({ ...p, updated_at: (data as any).updated_at } as any) : p)
   }
+  const salvarRecado = async () => {
+    if (!pedido || salvandoRecado) return
+    const limpo = recadoTexto.trim()
+    setSalvandoRecado(true)
+    const { error } = await supabase.from('pedidos').update({ observacoes: limpo || null }).eq('id', pedido.id)
+    setSalvandoRecado(false)
+    if (error) { avisarJanela('Não foi possível salvar o recado', explicarErro(error, 'Tente de novo em instantes.'), 'erro'); return }
+    setPedido(p => p ? ({ ...p, observacoes: limpo || undefined } as any) : p)
+    void atualizarVersao()
+    setRecadoAberto(false)
+  }
   const salvarQuemRetirou = async (nome: string): Promise<'ok' | 'sem-coluna' | 'erro'> => {
     if (!pedido) return 'erro'
     const limpo = nome.trim()
@@ -1473,6 +1491,12 @@ export default function EditarPedido() {
               </>)}
             </section>
 
+            {(pedido.observacoes || '').trim() && (
+              <section className="ep2-card tpd-card tpd-recado-ped">
+                <Titulo acao={<Botao variante="link" icone={<PencilSimple size={16} weight="bold" />} onClick={() => { setRecadoTexto(pedido.observacoes || ''); setRecadoAberto(true) }}>Editar</Botao>}>Recado do cliente</Titulo>
+                <p>“{(pedido.observacoes || '').trim()}”</p>
+              </section>
+            )}
             <section className="ep2-card tpd-card">
               <Titulo contagem={itens.length} acao={<Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setModalProduto(true)}><span className="tpd-add-g">Adicionar item</span><span className="tpd-add-c">Adicionar</span></Botao>}>Itens do pedido</Titulo>
               {itens.length === 0 ? <p className="tpd-vz">Nenhum item ainda: use o Adicionar item.</p> : (
@@ -1493,6 +1517,7 @@ export default function EditarPedido() {
                     if (extras.length) campos.push(['Adicionais', extras.map((e: any) => nomeExtra(e)).join(', ')])
                     const obs = (it.observacoes || '').trim()
                     const foto = fotoDoItem(it)
+                    const fotoRef: string = it.foto_referencia || p.foto_referencia || ''
                     return (
                       <li key={it.id || `n${idx}`}>
                         <div className="tpd-it-topo">
@@ -1504,18 +1529,18 @@ export default function EditarPedido() {
                           <BotaoIcone rotulo={`Opções de ${it.nome_produto}`} variante="limpo" tamanho="p" onClick={() => setItemMenu(idx)}><DotsThree size={20} weight="bold" /></BotaoIcone>
                         </div>
                         {campos.length > 0 && <div className="tpd-it-esc">{campos.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>}
-                        {(p.foto_referencia || obs) && (
+                        {(fotoRef || obs) && (
                           <div className="tpd-recado">
-                            {p.foto_referencia && (
-                              <a className="tpd-ref" href={p.foto_referencia} target="_blank" rel="noreferrer" aria-label="Ampliar a foto de referência">
-                                <ImageIcon size={24} aria-hidden="true" /><img src={p.foto_referencia} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />
+                            {fotoRef && (
+                              <a className="tpd-ref" href={fotoRef} target="_blank" rel="noreferrer" aria-label="Ampliar a foto de referência">
+                                <ImageIcon size={24} aria-hidden="true" /><img src={fotoRef} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />
                               </a>
                             )}
                             <div>
                               {/* (24/10) só a foto: o título é "Foto de referência" (antes vinha "Recado do item" em cima dela) */}
                               <small>{obs ? "Recado do item" : "Foto de referência"}</small>
                               {obs ? <p>“{obs}”</p> : <p>O cliente mandou esta foto</p>}
-                              {p.foto_referencia && <span>Abra a foto para ampliar</span>}
+                              {fotoRef && <span>Abra a foto para ampliar</span>}
                             </div>
                           </div>
                         )}
@@ -1780,6 +1805,10 @@ export default function EditarPedido() {
         total, recebido: recebidoAtual, falta: faltaReceber, dataRef: null, dias: null,
       } as any} onClose={() => setReceberAberto(false)} onFeito={async (msg) => { setReceberAberto(false); await recarregarDinheiro(); avisar(msg) }} />}
 
+      <Janela aberta={recadoAberto} aoFechar={() => setRecadoAberto(false)} tipo="conteudo" titulo="Recado do cliente"
+        acoes={<><Botao variante="secundario" onClick={() => setRecadoAberto(false)}>Cancelar</Botao><Botao carregando={salvandoRecado} onClick={salvarRecado}>Salvar</Botao></>}>
+        <CampoArea rotulo="Recado" rows={3} placeholder="Ex.: caprichar no topo" value={recadoTexto} onChange={e => setRecadoTexto(e.target.value)} />
+      </Janela>
       <Janela aberta={retiradaAberta} aoFechar={() => setRetiradaAberta(false)} tipo="conteudo" titulo="Quem retirou?"
         acoes={<><Botao variante="secundario" onClick={() => { if (depoisRetirada === 'etapa') confirmarRetirada(''); else setRetiradaAberta(false) }}>{depoisRetirada === 'etapa' ? 'Pular' : 'Agora não'}</Botao><Botao onClick={() => confirmarRetirada()}>{depoisRetirada === 'etapa' ? 'Marcar como retirado' : 'Salvar'}</Botao></>}>
         <div className="tpj-ret">
@@ -3929,7 +3958,7 @@ const EP2_CSS = `
   .ep3-pv p { margin: 2px 0 0; font-size: 12.5px; color: #8A7E84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ep3-pv-d { margin-top: 4px; }
   .ep3-pv-d p { display: flex; justify-content: space-between; gap: 10px; margin: 0; font-size: 12.5px; line-height: 1.65; color: #8A7E84; white-space: nowrap; }
-  .ep3-pv-d p span { min-width: 0; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; } .ep3-pv-d p b { font-weight: 500; color: var(--ui-texto-2); flex-shrink: 0; }
+  .ep3-pv-d p span { min-width: 0; overflow: hidden; text-overflow: ellipsis; display: block; } .ep3-pv-d p.pr span { display: flex; align-items: center; gap: 4px; } /* (27/10) bloco: o "…" volta a aparecer no texto longo */ .ep3-pv-d p b { font-weight: 500; color: var(--ui-texto-2); flex-shrink: 0; }
   .ep3-pv-d p.pr span, .ep3-pv-d p.pr b { color: var(--ui-verde); }
   .ep3-pv-itens { margin-top: 6px; }
   .ep3-tot { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--ui-texto); } .ep3-tot > span { font-size: 12px; color: var(--ui-texto-3); }

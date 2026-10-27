@@ -8,7 +8,7 @@ import { avisar } from '@/components/base'
  * Uso: const recorte = useRecorte(enviar); <input type="file" onChange={recorte.escolher} />; {recorte.janela}
  * "enviar" recebe a foto já recortada (jpg).
  */
-export function useRecorte(enviar: (foto: File) => void, opcoes: { aspect?: number; forma?: 'rect' | 'round' } = {}) {
+export function useRecorte(enviar: (foto: File) => void, opcoes: { aspect?: number; forma?: 'rect' | 'round'; titulo?: string; encaixar?: boolean } = {}) {
   const [src, setSrc] = useState<string | null>(null)
   useEffect(() => () => { if (src) URL.revokeObjectURL(src) }, [src])
 
@@ -26,6 +26,8 @@ export function useRecorte(enviar: (foto: File) => void, opcoes: { aspect?: numb
       imageSrc={src}
       aspect={opcoes.aspect ?? 1}
       cropShape={opcoes.forma ?? 'round'}
+      titulo={opcoes.titulo}
+      encaixar={opcoes.encaixar}
       onCancel={() => setSrc(null)}
       onCropDone={blob => {
         setSrc(null)

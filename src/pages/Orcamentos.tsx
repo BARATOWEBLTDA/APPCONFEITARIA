@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CaretRight, Copy, Crown, FileText, Plus, ShareNetwork, WarningCircle } from '@phosphor-icons/react'
+import { CaretRight, Check, Copy, Crown, FileText, Plus, ShareNetwork, WarningCircle } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { Botao, TelaVazia, avisar } from '@/components/base'
@@ -70,10 +70,11 @@ export default function Orcamentos() {
           <span className="orc-pro-ic" aria-hidden="true"><FileText size={30} weight="duotone" /></span>
           <h2>Orçamentos é um recurso do PRO</h2>
           <p>A cliente conta a ideia pelo seu link, você monta a proposta em minutos e ela aprova pelo celular. Aprovou, vira pedido na Agenda.</p>
+          {/* (27/10) com o ícone de certo (a lista aparecia sem marcador) */}
           <ul>
-            <li>Link fixo para pedir orçamento</li>
-            <li>Proposta com os seus produtos ou itens personalizados</li>
-            <li>A cliente aprova pelo link e pode baixar em PDF</li>
+            {['Link fixo para pedir orçamento', 'Proposta com os seus produtos ou itens personalizados', 'A cliente aprova pelo link e pode baixar em PDF'].map(t => (
+              <li key={t}><Check size={16} weight="bold" aria-hidden="true" />{t}</li>
+            ))}
           </ul>
           <Botao icone={<Crown size={20} weight="fill" />} onClick={() => navigate('/assinar')}>Conhecer o PRO</Botao>
         </section>

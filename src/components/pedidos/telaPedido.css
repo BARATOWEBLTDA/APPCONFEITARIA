@@ -84,6 +84,7 @@
 .tpd-it-tx span { display: block; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); font-variant-numeric: tabular-nums; }
 .tpd-it-esc { margin: 8px 0 0 60px; }
 .tpd-it-esc .ui-linha > b { white-space: normal; }
+.tpd-recado-ped p { margin: 4px 0 0; font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--ui-texto); overflow-wrap: anywhere; }
 .tpd-recado { display: flex; gap: 12px; margin: 8px 0 0 60px; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
 .tpd-ref { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; overflow: hidden; border-radius: var(--ui-raio-p); background: var(--ui-borda); color: var(--ui-texto-3); cursor: zoom-in; }
 .tpd-ref img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -279,7 +280,12 @@
 @media (max-width: 900px) {
   .tpd-passos li { font-size: 12px; letter-spacing: -.01em; }
   .tpd-passos li span { white-space: nowrap; }
+  /* (27/10) a trilha usa também o respiro do cartão: no celular pequeno "Agendado" e "Produção" encostavam */
+  .tpd-passos { margin-left: -10px; margin-right: -10px; }
   .tpd-passos li.atual { font-weight: 600; }
   .tpd-passos li.atual.novo { color: #B45309; }
   .tpd-passos li.atual.novo i { background: #EA8A1A; color: var(--ui-branco); box-shadow: 0 0 0 4px #FDECD3; }
+}
+@media (max-width: 380px) {
+  .tpd-passos li { font-size: 11.5px; letter-spacing: -.02em; }
 }

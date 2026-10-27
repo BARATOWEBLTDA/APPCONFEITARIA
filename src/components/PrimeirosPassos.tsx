@@ -44,11 +44,12 @@ const proximoPasso = (e: EstadoPassos, feitoAgora?: Passo, pulados: Set<Passo> =
 
 /** (13/10) Topo de cada card: "Passo 2 de 6" e a barrinha */
 function PassoTopo({ k }: { k: Passo }) {
-  const n = SEQ.indexOf(k) + 1;
+  // (27/10) conta os 7 passos, igual ao cartão do Início ("1 de 7 prontos"); antes dizia "Passo 2 de 6"
+  const n = ORDEM.indexOf(k) + 1;
   return (
-    <div className="ppf-topo" aria-label={`Passo ${n} de ${SEQ.length}`}>
-      <span>Passo <b>{n} de {SEQ.length}</b></span>
-      <div className="ppf-barra" aria-hidden="true">{SEQ.map((x, i) => <i key={x} className={i < n ? "on" : ""} />)}</div>
+    <div className="ppf-topo" aria-label={`Passo ${n} de ${ORDEM.length}`}>
+      <span>Passo <b>{n} de {ORDEM.length}</b></span>
+      <div className="ppf-barra" aria-hidden="true">{ORDEM.map((x, i) => <i key={x} className={i < n ? "on" : ""} />)}</div>
     </div>
   );
 }
@@ -587,19 +588,19 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
   // (13/10) começa só com o CEP; achou → quadrinho com rua/bairro/cidade e só falta o número; "Não sei o CEP" ou "Editar" → todos os campos
   const [achou, setAchou] = useState(!!(e0.cep && e0.cidade));
   const [manual, setManual] = useState(!!(e0.cidade && !e0.cep));
-  const [naoAchou, setNaoAchou] = useState(false);
+  const [naoAchou, setNaoAchou] = useState<"" | "cep" | "rede">("");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   const mudarCep = async (v: string) => {
-    const cep = maskCep(v); setEnd(e => ({ ...e, cep })); setAchou(false); setNaoAchou(false);
+    const cep = maskCep(v); setEnd(e => ({ ...e, cep })); setAchou(false); setNaoAchou("");
     const d = cep.replace(/\D/g, "");
     if (d.length !== 8) return;
     setBuscando(true);
     try {
       const r = await fetch(`https://viacep.com.br/ws/${d}/json/`); const j = await r.json();
       if (!j.erro) { setEnd(e => ({ ...e, rua: j.logradouro || "", bairro: j.bairro || "", cidade: j.localidade || "", estado: j.uf || "" })); setAchou(true); }
-      else { setNaoAchou(true); setManual(true); }
-    } catch { setNaoAchou(true); setManual(true); /* sem internet: ela digita */ }
+      else { setNaoAchou("cep"); setManual(true); }
+    } catch { setNaoAchou("rede"); setManual(true); /* sem internet: ela digita */ }
     setBuscando(false);
   };
   const pronto = !!end.cidade.trim() && !!(end.rua.trim() || end.cep.trim());
@@ -645,7 +646,10 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
       </>)}
 
       {manual && (<>
-        {naoAchou && <p className="ppf-e-aviso">Não achamos esse CEP. Escreva o endereço.</p>}
+        {naoAchou && <p className="ppf-e-aviso">{naoAchou === "rede" ? "Não deu para buscar o CEP agora. Escreva o endereço." : "Não achamos esse CEP. Confira o número ou escreva o endereço."}</p>}
+        {/* (27/10) o CEP continua aqui: antes sumia e não dava para corrigir um número errado */}
+        <div className="ppf-f"><label className="ppf-l" htmlFor="pp-cep">CEP</label>
+          <input id="pp-cep" className="ppf-in" inputMode="numeric" autoComplete="off" value={end.cep} placeholder="00000-000" onChange={e => mudarCep(e.target.value)} /></div>
         {campo("rua", "Rua", "Nome da rua")}
         <div className="ppf-row">{campo("numero", "Número", "Ex.: 500", { inputMode: "numeric" })}{campo("bairro", "Bairro")}</div>
         <div className="ppf-row ppf-row--uf">{campo("cidade", "Cidade")}{campo("estado", "UF", "SP", { maxLength: 2 })}</div>

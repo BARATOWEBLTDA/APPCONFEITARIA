@@ -345,10 +345,10 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     setUploading(null);
   };
   // 09/10: banners e foto do topo passam pelo recorte, já no formato em que aparecem no cardápio
-  const recorteTopo = useRecorte(f => { void handleBannerTopoUpload(f); }, { aspect: 3, forma: "rect" });
+  const recorteTopo = useRecorte(f => { void handleBannerTopoUpload(f); }, { aspect: 3, forma: "rect", titulo: "Ajustar a foto do topo", encaixar: true });
   const bannerIdx = useRef(0);
-  const recorteBanner = useRecorte(f => { void handleBannerUpload(f, bannerIdx.current); }, { aspect: 16 / 9, forma: "rect" });
-  const recorteCapa = useRecorte(f => { void enviarCapa(f); }, { aspect: 4 / 5, forma: "rect" });
+  const recorteBanner = useRecorte(f => { void handleBannerUpload(f, bannerIdx.current); }, { aspect: 16 / 9, forma: "rect", titulo: "Ajustar o banner", encaixar: true });
+  const recorteCapa = useRecorte(f => { void enviarCapa(f); }, { aspect: 4 / 5, forma: "rect", titulo: "Ajustar a capa" });
   const handleRemoveBannerTopo = async () => {
     if (!userId || travas.current.has("tirar-topo")) return;
     travas.current.add("tirar-topo");

@@ -962,7 +962,7 @@ export default function Inicio() {
       <section className="ini-section ini-section--nav">
         {/* Título da grade — muda de "Acesso rápido" pra "Explorar" durante onboarding */}
         <h2 className="ini-section-title">
-          {!onboarding.loading && onboarding.produtosCount === 0 ? "Explorar" : "Acesso rápido"}
+          Acesso rápido{/* (27/10) um nome só (antes virava "Explorar" na conta nova) */}
         </h2>
 
         <div className="ini-nav-grid">

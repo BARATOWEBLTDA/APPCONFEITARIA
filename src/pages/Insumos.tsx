@@ -200,7 +200,7 @@ export default function Insumos() {
                       <small className="ig-cel">{preco} · {compra.replace(/^.*?\b(de|com)\s+/, "")}</small>{/* (24/10) celular: só a quantidade (cabe numa linha) */}
                     </span>
                     <span className="ig-l-compra"><b>{preco}</b><small>{compra}</small></span>
-                    <span className="ig-l-custo"><b>{formatarCusto(c.valor)}</b><small>{c.por.replace(/ (?=\S+$)/, "\u00a0")}</small></span>
+                    <span className="ig-l-custo"><b>{formatarCusto(c.valor)}</b><small><span className="ig-por-l">{c.por.replace(/ (?=\S+$)/, "\u00a0")}</span><span className="ig-por-c">{/^a cada /i.test(c.por) ? c.por.replace(/^a cada /i, "/").replace(/ (?=\S+$)/, "\u00a0") : c.por === "cada" ? "/un." : c.por}</span></small></span>
                     <CaretRight size={18} weight="bold" />
                   </button>
                 );

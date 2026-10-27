@@ -1821,25 +1821,10 @@ export default function Produtos() {
             {/* (24/10) a dica da foto saiu daqui (fica no cadastro do produto) */}
           </div>
 
-          {/* ── Vídeo (24/10: em pé, no formato do celular, e menor) ── */}
-          <aside className="prod-hero-right" aria-label="Vídeo tutorial">
-            <div className="prod-hero-video-thumb">
-              <button
-                type="button"
-                className="prod-hero-video-play"
-                onClick={() => avisar("O vídeo de explicação chega em breve.", { tipo: "info" })}
-                aria-label="Assistir tutorial"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              </button>
-            </div>
-            <div className="prod-hero-video-footer">
-              <span className="prod-hero-video-t">Tutorial</span>
-              <span className="prod-hero-video-badge">Em breve</span>
-            </div>
-          </aside>
+          {/* (27/10) o "vídeo tutorial · Em breve" (roxo, não abria nada) virou o mascote com a caixa */}
+          <div className="prod-hero-right prod-hero-masc" aria-hidden="true">
+            <img src="/Sistema/produtos-vazio.webp" alt="" width={200} height={200} />
+          </div>
         </div>
       ) : (
         <div className="prod-grid">
@@ -2070,7 +2055,7 @@ export default function Produtos() {
 
                 {/* 3. Descrição — com CTA IA (V3) — gera ou melhora */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo" htmlFor="prod-desc-input">Descrição <span className="esc-rec">recomendado</span></label>
+                  <label className="prod-field-label-novo" htmlFor="prod-desc-input">Descrição</label>
                   {/* (13/10) o botão da IA fica dentro da caixa, no canto de baixo */}
                   <div className="prod-desc-caixa">
                     <textarea
@@ -2187,8 +2172,8 @@ export default function Produtos() {
                     <p className="prod-cat-auto">Escolhida pelo nome do produto</p>
                   )}
                 </div>
-                {/* (14/10) SKU: código pra organizar os produtos (opcional), com "Gerar" */}
-                <div className="prod-field">
+                {/* (14/10) SKU: código pra organizar os produtos (opcional), com "Gerar" · (27/10) só na edição: no cadastro novo era um termo técnico logo no 1º passo */}
+                {form.id && <div className="prod-field">
                   <label className="prod-field-label-novo" htmlFor="prod-sku-input">SKU <OptTag /></label>
                   <div className="prod-sku">
                     <input id="prod-sku-input" placeholder="Ex.: BOL-0427" value={(form as any).sku || ""} maxLength={24} autoCapitalize="characters"
@@ -2198,7 +2183,7 @@ export default function Produtos() {
                       setForm(f => ({ ...(f as any), sku: skuLivre(pre, skusDe(produtos)) }));
                     }}>Gerar</button>
                   </div>
-                </div>
+                </div>}
               </div>
             </div>
             )}
@@ -3240,6 +3225,8 @@ export default function Produtos() {
           text-align: center;
           align-items: center;
         }
+        .prod-hero-masc { background: none !important; box-shadow: none !important; padding: 0 !important; align-items: center; }
+        .prod-hero-masc img { width: 200px; height: auto; display: block; margin: 0 auto; }
         .prod-hero-right {
           display: flex;
           flex-direction: column;

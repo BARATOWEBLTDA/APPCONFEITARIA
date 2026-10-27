@@ -38,3 +38,16 @@ export function lerPesoKg(v: string | number | null | undefined): number {
   const kg = emKg ? n : emG || n >= 100 ? n / 1000 : n;
   return Math.round(kg * 1000) / 1000;
 }
+
+/** (27/10) Campo de dinheiro igual ao resto do app: os números entram pelos centavos ("1000" → "10,00"). Vazio fica vazio. */
+export function mascaraReais(v: string): string {
+  const d = String(v ?? "").replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+  if (!d) return "";
+  const n = parseInt(d, 10) / 100;
+  return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+/** Valor salvo (número) para o texto do campo de dinheiro: 0.1 → "0,10" (antes aparecia "0.1"). */
+export function reaisParaCampo(v: number | string | null | undefined): string {
+  const n = typeof v === "number" ? v : parseNumBR(v as any);
+  return n > 0 ? n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "";
+}

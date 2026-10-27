@@ -10,6 +10,9 @@ export type LojaAtual = {
   nome: string
   /** o mesmo objeto gravado em cardapio_checkout_config (null = loja sem configuração) */
   checkout: Record<string, unknown> | null
+  /** (27/10) a logo e o selo, para a tela do Pix aberta pelo Acompanhar pedido (antes aparecia só a inicial) */
+  logo?: string | null
+  verificada?: boolean
 }
 
 let atual: LojaAtual | null = null
@@ -22,6 +25,8 @@ export function definirLojaAtual(loja: LojaAtual) { atual = loja }
 export const lojaAtualId = (): string => atual?.userId || ler('cardapio_user_id')
 export const lojaAtualWhatsApp = (): string => (atual ? atual.whatsapp : ler('cardapio_whatsapp'))
 export const lojaAtualNome = (): string => (atual ? atual.nome : ler('cardapio_nome'))
+export const lojaAtualLogo = (): string | null => atual?.logo || null
+export const lojaAtualVerificada = (): boolean => !!atual?.verificada
 
 /** Entrega e pagamento da loja desta aba (null = usa o padrão). */
 export function lojaAtualCheckout(): Record<string, unknown> | null {

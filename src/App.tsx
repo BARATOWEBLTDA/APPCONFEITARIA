@@ -68,7 +68,6 @@ const NotificacoesSons = lazy(() => import("@/pages/NotificacoesSons"));
 const MensagensWhatsApp = lazy(() => import("@/pages/MensagensWhatsApp"));
 const Indicar = lazy(() => import("@/pages/Indicar"));
 const CardapioPrevia = lazy(() => import("@/pages/CardapioPrevia"));
-const CardapioResumo = lazy(() => import("@/pages/CardapioResumo"));
 const Produtos = lazy(() => import("@/pages/Produtos"));
 const Categorias = lazy(() => import("@/pages/Categorias"));
 const Clientes = lazy(() => import("@/pages/Clientes"));
@@ -91,7 +90,6 @@ const FinanceiroTransacoes = lazy(() => import("@/pages/FinanceiroTransacoes"));
 const FinanceiroAReceber = lazy(() => import("@/pages/FinanceiroAReceber"));
 const FinanceiroAPagar = lazy(() => import("@/pages/FinanceiroAPagar"));
 const Custos = lazy(() => import("@/pages/Custos"));
-const EmBreve = lazy(() => import("@/pages/EmBreve"));
 const Lucratividade = lazy(() => import("@/pages/Lucratividade"));
 const FichaTecnica = lazy(() => import("@/pages/FichaTecnica"));
 const NaoEncontrada = lazy(() => import("@/pages/NaoEncontrada"));
@@ -118,7 +116,6 @@ const PRE_CARREGAR: (() => Promise<unknown>)[] = [
   () => import("@/pages/MensagensWhatsApp"),
   () => import("@/pages/Indicar"),
   () => import("@/pages/CardapioPrevia"),
-  () => import("@/pages/CardapioResumo"),
   () => import("@/pages/Produtos"),
   () => import("@/pages/Categorias"),
   () => import("@/pages/Clientes"),
@@ -141,7 +138,6 @@ const PRE_CARREGAR: (() => Promise<unknown>)[] = [
   () => import("@/pages/FinanceiroAReceber"),
   () => import("@/pages/FinanceiroAPagar"),
   () => import("@/pages/Custos"),
-  () => import("@/pages/EmBreve"),
   () => import("@/pages/Lucratividade"),
   () => import("@/pages/FichaTecnica"),
   () => import("@/pages/NaoEncontrada"),
@@ -569,11 +565,11 @@ export default function App() {
           <Route path="/promocoes" element={<Navigate to="/cardapio" replace />} />
           <Route path="/cardapio" element={<Cardapio />} />
           <Route path="/cardapio-config" element={<DadosLoja />} />
-          <Route path="/cardapio-resumo" element={<CardapioResumo />} />
+          <Route path="/cardapio-resumo" element={<Navigate to="/cardapio" replace />} />{/* (27/10) tela sem uso: vai para Minha loja */}
           <Route path="/cardapio-preview" element={<CardapioPrevia />} />
           <Route path="/cardapio-design" element={<CardapioDesign />} />
           <Route path="/checkout-config" element={<IrParaEntrega />} />
-          <Route path="/estoque" element={<EmBreve tela="estoque" />} />
+          <Route path="/estoque" element={<Navigate to="/inicio" replace />} />{/* (24/10) Estoque saiu dos planos */}
           <Route path="/marketing" element={<Marketing />} />
           <Route path="/arquivos" element={<Navigate to="/" replace />} />
           <Route path="/configuracoes" element={<Configuracoes />} />

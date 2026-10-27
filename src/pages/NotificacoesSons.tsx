@@ -215,6 +215,10 @@ export default function NotificacoesSons() {
         .ns-desc--atencao { color: #B45309; font-weight: 600; }
         .ns-passos { list-style: none; margin: 10px 0 0; padding: 10px 12px; border: 1px solid #F5C99B; border-radius: 12px; background: #FFF8EF; font-weight: 400; font-size: 13.5px; line-height: 1.6; color: var(--ui-texto); }
         .ns-passos li { white-space: nowrap; }
+        /* (27/10) a caixa dos passos usa a largura do cartão inteiro (passava da borda no celular pequeno) */
+        .ns-txt .ns-passos { margin-left: -52px; font-size: 13px; }
+        .ns-row:has(.ns-passos) { align-items: flex-start; }
+        @media (max-width: 340px) { .ns-passos li { white-space: normal; } }
         .ns-row--off .ns-name, .ns-row--off .ns-ico { opacity: 0.45; }
         .ns-note {
           margin: 0 16px 14px; padding: 10px 12px; border-radius: var(--ui-raio-p);

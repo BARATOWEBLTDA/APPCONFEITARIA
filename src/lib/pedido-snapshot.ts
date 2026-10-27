@@ -138,7 +138,8 @@ function personalizacoesV1ToLinhas(p: PersonalizacoesV1): Array<{ label: string;
   const linhas: Array<{ label: string; valor: string; adicional?: number }> = []
 
   if (p.tamanho?.nome) {
-    const extra = p.tamanho.peso_kg ? ` (~${p.tamanho.peso_kg.toString().replace(".", ",")} kg)` : ""
+    // (27/10) não repete o peso quando o nome já é o peso ("2 kg" em vez de "2 kg (~2 kg)")
+    const extra = p.tamanho.peso_kg && !/kg|\d\s*g\b/i.test(p.tamanho.nome) ? ` (~${p.tamanho.peso_kg.toString().replace(".", ",")} kg)` : ""
     linhas.push({ label: "Tamanho", valor: p.tamanho.nome + extra })
   }
   if (p.sabor?.nome) {

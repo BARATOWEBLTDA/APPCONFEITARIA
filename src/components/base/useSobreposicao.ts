@@ -131,7 +131,9 @@ export function useSobreposicao(aberta: boolean, aoFechar: () => void, caixa: Re
     // (22/10) sem abrir o teclado sozinho: se o foco inicial é um campo de digitar, o foco fica na janela (o teclado só abre quando ela tocar no campo)
     const ini = el?.querySelector<HTMLElement>('[data-foco-inicial]')
     const ehCampo = !!ini && ini.matches('input, textarea, select, [contenteditable="true"]')
-    if (el) ((ini && !ehCampo) ? ini : el).focus({ preventScroll: true })
+    // (27/10) no celular o foco fica na janela, não no botão: o botão aparecia com contorno de foco sem ninguém ter tocado nele
+    const toque = typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches
+    if (el) ((ini && !ehCampo && !toque) ? ini : el).focus({ preventScroll: true })
     const prender = (e: KeyboardEvent) => {
       const dentro = caixa.current
       if (e.key !== 'Tab' || !dentro || pilha[pilha.length - 1] !== eu) return

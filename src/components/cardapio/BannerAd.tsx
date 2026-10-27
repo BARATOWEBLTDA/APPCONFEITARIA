@@ -61,6 +61,9 @@ export function BannerAd({ bannerUrl, banner1Url, banner2Url, banner3Url, isPro 
           {banners.map((_, i) => (
             <button
               key={i}
+              type="button"
+              aria-label={`Ver o banner ${i + 1}`}
+              aria-current={i === current ? 'true' : undefined}
               onClick={() => setCurrent(i)}
               style={{
                 width: i === current ? '20px' : '8px',
