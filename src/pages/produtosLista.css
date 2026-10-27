@@ -15,6 +15,8 @@ body .prod-tab-novo.active { background: var(--ui-branco); color: var(--ui-rosa-
 @media (min-width: 768px) { .pl-novo-g { display: inline; } .pl-novo-c { display: none; } }
 
 /* aviso dos produtos sem categoria */
+.pl-aviso.pl-aviso--dq { background: #FFF6E5; color: #8A5A0B; } .pl-aviso--dq p { flex: 1; margin: 0; font-size: 14px; }
+.prod-card-nome--dq::before { content: "★"; margin-right: 5px; color: #E8A23A; } /* (27/10) produto em destaque */
 .pl-aviso { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
 .pl-aviso > svg { flex: none; }
 .pl-aviso p { flex: 1; min-width: 0; margin: 0; font-size: 13.5px; line-height: 1.4; color: var(--ui-texto); }

@@ -34,7 +34,7 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import Categorias from "@/pages/Categorias";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_PRODUTOS, TOUR_PRODUTOS } from "@/lib/comoTelas";
-import { ArrowLeft as ArrowLeftIc, Camera, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Lightning, CalendarBlank } from "@phosphor-icons/react";
+import { ArrowLeft as ArrowLeftIc, Camera, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Lightning, CalendarBlank, Star } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
@@ -815,6 +815,8 @@ export default function Produtos() {
   const [catsFiltro, setCatsFiltro] = useState<string[] | null>(null); // (24/10) null = todas as categorias
   const [filtroProdAberto, setFiltroProdAberto] = useState(false);
   const [filtroOrfaos, setFiltroOrfaos] = useState(false);
+  // (27/10) Destaques do cardápio: até 6 (o banco também confere)
+  const [soDestaques, setSoDestaques] = useState(false);
   const [novaCategoria, setNovaCategoria] = useState("");
   const [novaCategoriaIcone, setNovaCategoriaIcone] = useState("");
   const [showCatInput, setShowCatInput] = useState(false);
@@ -1192,11 +1194,33 @@ export default function Produtos() {
   };
 
   // (17/10) Liga/desliga do cartão: um toque tira ou põe no cardápio, sem abrir o produto
+  const MAX_DESTAQUES = 6;
+  const qtdDestaques = (semId?: string) => produtos.filter(x => (x as any).destaque === true && x.id !== semId).length;
+  // no cadastro aberto não tem o "Ver destaques" (fecharia a tela e perderia o que ela mexeu)
+  const avisarLimiteDestaques = (comAcao = true) => avisar(`Já tem ${MAX_DESTAQUES} destaques`, {
+    tipo: "erro", detalhe: "Tire um para destacar este.", ...(comAcao ? { acao: { rotulo: "Ver destaques", aoTocar: () => { setPreviewProduto(null); setSoDestaques(true); setFiltroOrfaos(false); } } } : {}) });
+  const alternarDestaque = async (p: Produto) => {
+    if (!p.id) return;
+    const novo = (p as any).destaque !== true;
+    if (novo && p.disponivel === false) { showToast("error", "Produto fora do cardápio", "Mostre o produto no cardápio para poder destacar."); return false; }
+    if (novo && qtdDestaques(p.id) >= MAX_DESTAQUES) { avisarLimiteDestaques(); return false; }
+    setProdutos(l => l.map(x => (x.id === p.id ? ({ ...x, destaque: novo } as any) : x)));
+    const { error } = await supabase.from("produtos").update({ destaque: novo } as any).eq("id", p.id);
+    if (error) {
+      setProdutos(l => l.map(x => (x.id === p.id ? ({ ...x, destaque: !novo } as any) : x)));
+      if (/limite_destaques/.test(`${error.message} ${(error as any).hint || ""}`)) avisarLimiteDestaques();
+      else showToast("error", "Não deu certo", explicarErro(error));
+      return false;
+    }
+    showToast("success", novo ? "Produto em destaque" : "Saiu dos destaques", novo ? "Aparece no topo do cardápio, em cartão grande." : "Continua no cardápio, na categoria dele.");
+    return true;
+  };
   const alternarNoCardapio = async (p: Produto) => {
     if (!p.id) return;
     const novo = p.disponivel === false;
     if (novo && passouDoLimite()) { setLimiteAberto(true); return; }
-    setProdutos(l => l.map(x => (x.id === p.id ? { ...x, disponivel: novo } : x)));
+    // (27/10) fora do cardápio sai também dos destaques (o banco faz o mesmo)
+    setProdutos(l => l.map(x => (x.id === p.id ? ({ ...x, disponivel: novo, ...(novo ? {} : { destaque: false }) } as any) : x)));
     const { error } = await supabase.from("produtos").update({ disponivel: novo }).eq("id", p.id);
     if (error) {
       setProdutos(l => l.map(x => (x.id === p.id ? { ...x, disponivel: !novo } : x)));
@@ -1476,6 +1500,7 @@ export default function Produtos() {
       let { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
       if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ error } = await supabase.from("produtos").update(sem).eq("id", form.id)); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
       if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou use Gerar."); setSaving(false); return; }
+      if (error && /limite_destaques/.test(`${error.message} ${(error as any).hint || ""}`)) { avisarLimiteDestaques(false); setSaving(false); return; }
       if (error) {
         console.error("Erro ao atualizar produto:", error);
         showToast("error", "Não deu para salvar", explicarErro(error));
@@ -1487,6 +1512,7 @@ export default function Produtos() {
       let { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
       if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ data: novo, error } = await supabase.from("produtos").insert({ ...sem, user_id: userId }).select("id").single()); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
       if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou use Gerar."); setSaving(false); return; }
+      if (error && /limite_destaques/.test(`${error.message} ${(error as any).hint || ""}`)) { avisarLimiteDestaques(false); setSaving(false); return; }
       if (error) {
         console.error("Erro ao criar produto:", error);
         showToast("error", "Não deu para criar", explicarErro(error));
@@ -1630,6 +1656,7 @@ export default function Produtos() {
 
   const produtosFiltrados = (() => {
     let lista = [...produtos];
+    if (soDestaques) lista = lista.filter(p => (p as any).destaque === true);
     if (catsFiltro) lista = lista.filter(p => catsFiltro.includes(p.categoria || "__sem"));
     if (buscaTexto.trim()) {
       const t = buscaTexto.toLowerCase();
@@ -1768,6 +1795,14 @@ export default function Produtos() {
           aoFechar={() => setFiltroProdAberto(false)} />;
       })()}
 
+      {/* (27/10) "Ver destaques": a lista só com os produtos em destaque */}
+      {soDestaques && (
+        <div className="pl-aviso pl-aviso--dq" role="status">
+          <Star size={20} weight="fill" aria-hidden="true" />
+          <p><b>Destaques: {qtdDestaques()} de {MAX_DESTAQUES}.</b> Aparecem no topo do cardápio.</p>
+          <Botao variante="link" onClick={() => setSoDestaques(false)}>Ver todos</Botao>
+        </div>
+      )}
       {/* Aviso de produtos sem categoria válida */}
       {(() => {
         const orfaos = produtos.filter(p => p.categoria && !categorias.includes(p.categoria));
@@ -1885,7 +1920,7 @@ export default function Produtos() {
                 </div>
               </div>
               <div className="prod-card-info">
-                <p className="prod-card-nome" title={p.nome}>{p.nome}</p>
+                <p className={`prod-card-nome${(p as any).destaque === true ? " prod-card-nome--dq" : ""}`} title={(p as any).destaque === true ? `${p.nome} (em destaque)` : p.nome}>{p.nome}</p>
                 {/* (21/10) celular: lista, uma informação por linha (preço ativo, tipo, lucro estimado ou Criar ficha) */}
                 {(() => {
                   const pl = precoDaLista(p);
@@ -2765,7 +2800,14 @@ export default function Produtos() {
                       {form.pronta_entrega !== true && <PrazoEncomenda valor={(form as any).antecedencia ?? null} aoMudar={v => setForm(f => ({ ...(f as any), antecedencia: v }))} />}
                     </div>
                     <div className="prod-opcs">
-                      {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só para você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false })))}
+                      {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só para você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false, ...(f.disponivel !== false ? { destaque: false } : {}) } as any)))}
+                      {/* (27/10) Destaques: até 6, no topo do cardápio em cartão grande */}
+                      {op((form as any).destaque === true, "Destacar no cardápio", `${qtdDestaques(form.id) + ((form as any).destaque === true ? 1 : 0)} de ${MAX_DESTAQUES} destaques · no topo, em cartão grande`, () => {
+                        const ligar = (form as any).destaque !== true;
+                        if (ligar && form.disponivel === false) { avisar("Mostre o produto no cardápio para poder destacar.", { tipo: "erro" }); return; }
+                        if (ligar && qtdDestaques(form.id) >= MAX_DESTAQUES) { avisarLimiteDestaques(false); return; }
+                        setForm(f => ({ ...(f as any), destaque: ligar }));
+                      })}
                       <div className="prod-so-pc">
                       {op(form.pronta_entrega === true, "Pronta entrega", "Tem feito, sai na hora", () => setForm(f => ({ ...(f as any), pronta_entrega: !(f as any).pronta_entrega, antecedencia: !(f as any).pronta_entrega ? null : (f as any).antecedencia ?? null })))}
                       {op(enc, "Precisa encomendar antes", enc ? "O cardápio mostra \"Pedir antes\"" : "O cliente pede com antecedência", () => setForm(f => ({ ...(f as any), antecedencia: (f as any).antecedencia ? null : "48h", pronta_entrega: (f as any).antecedencia ? (f as any).pronta_entrega : false })))}
@@ -3121,6 +3163,20 @@ export default function Produtos() {
                         <span>
                           <div className="prod-preview-menu-title">Compartilhar link</div>
                           <div className="prod-preview-menu-sub">Copia o link do cardápio</div>
+                        </span>
+                      </button>
+                      <button
+                        className="prod-preview-menu-item"
+                        onClick={async () => {
+                          setPreviewMenu(false);
+                          const ok = await alternarDestaque(previewProduto);
+                          if (ok) setPreviewProduto({ ...previewProduto, destaque: (previewProduto as any).destaque !== true } as any);
+                        }}
+                      >
+                        <span className="prod-preview-menu-ico" style={{ color: "#E8A23A" }}><Star size={18} weight={(previewProduto as any).destaque === true ? "regular" : "fill"} /></span>
+                        <span>
+                          <div className="prod-preview-menu-title">{(previewProduto as any).destaque === true ? "Tirar do destaque" : "Destacar no cardápio"}</div>
+                          <div className="prod-preview-menu-sub">{(previewProduto as any).destaque === true ? "Continua no cardápio, na categoria" : `No topo do cardápio · ${qtdDestaques(previewProduto.id)} de ${MAX_DESTAQUES}`}</div>
                         </span>
                       </button>
                       <button

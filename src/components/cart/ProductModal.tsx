@@ -798,22 +798,16 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
         <div className="pm-dir">
           <div ref={roloRef} className="pm-rolo" onScroll={aoRolar}>
             {images.length > 0 && (
-              <div className={`pm-ft${grade ? ' pm-ft--grade' : ''}`}>
+              <div className="pm-ft">
                 <div ref={trilhoRef} className="pm-ft-trilho" onScroll={aoArrastarFoto} onTouchStart={pausar} onPointerDown={pausar}>
                   {images.map((src, i) => <img key={src + i} src={src} alt={i === 0 ? nome : ''} />)}
                 </div>
                 <button type="button" className="pm-voltar" aria-label="Voltar" onClick={onClose}><ArrowLeft size={22} weight="bold" /></button>
                 {images.length > 1 && (<>
                   <span className="pm-ft-n">{imgIndex + 1}/{images.length}</span>
-                  {!grade && <span className="pm-ft-pts" aria-hidden="true">{images.map((_, i) => <i key={i} className={i === imgIndex ? 'on' : ''} />)}</span>}
+                  {/* (27/10) celular: a foto inteira desliza, com bolinhas e o "1/4" (antes 3 miniaturas grandes cobriam a foto) */}
+                  <span className="pm-ft-pts" aria-hidden="true">{images.map((_, i) => <i key={i} className={i === imgIndex ? 'on' : ''} />)}</span>
                 </>)}
-                {grade && (
-                  <div className="pm-ft-outras">
-                    {outras.map(x => (
-                      <button key={x.src + x.i} type="button" aria-label={`Ver a foto ${x.i + 1}`} onClick={() => verFoto(x.i)}><img src={x.src} alt="" /></button>
-                    ))}
-                  </div>
-                )}
               </div>
             )}
             {!images.length && <div className="pm-espaco" />}

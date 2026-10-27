@@ -52,8 +52,7 @@
 .mais-doo .mais-it-seta { color: rgba(255, 255, 255, .7); }
 .mais-doo-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: rgba(255, 255, 255, .14); color: #FF9DC4; }
 
-/* (18/10) ícones em rosa forte com desenho branco, igual ao resto do app */
-.mais-it-ic { background: var(--ui-rosa); color: var(--ui-branco); }
+.mais-it-ic { background: var(--primary-light); color: var(--ui-rosa-escuro); } /* (27/10) rosa no fundo clarinho; a tela atual continua rosa forte */
 
 /* (21/10) celular: atalhos no topo e as telas em grade de 3 colunas (ícone e nome; a explicação some) */
 .mais-at { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }

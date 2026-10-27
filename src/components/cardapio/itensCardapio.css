@@ -134,3 +134,16 @@
 .ic-sec + .ic-sec > .ic-h2 { margin-top: 20px; }
 .ic-h2 { display: flex; align-items: baseline; gap: 8px; }
 .ic-h2 small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--ui-texto-3); white-space: nowrap; }
+
+/* (27/10) celular: Destaques e Promoções numa fileira que desliza para o lado (como as "Ofertas" do iFood).
+   O cartão seguinte aparece pela metade, pra mostrar que tem mais. No computador continua a grade. */
+.ic-h2-estrela { margin-left: 6px; color: #E8A23A; vertical-align: -3px; }
+@media (max-width: 767px) {
+  .ic-sec:not(.ic-sec--pc) .ic-fila { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -14px; padding: 0 14px 6px; scroll-padding: 0 14px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .ic-sec:not(.ic-sec--pc) .ic-fila::-webkit-scrollbar { display: none; }
+  .ic-sec:not(.ic-sec--pc) .ic-fila > .ic-cp { flex: 0 0 43%; scroll-snap-align: start; }
+  .ic-sec:not(.ic-sec--pc) .ic-fila--dq > .ic-cp { flex-basis: 80%; }
+  .ic-cp--dq .ic-cp-ft { aspect-ratio: 1.55; }
+  .ic-cp--dq .ic-cp-nome { font-size: 16.5px; -webkit-line-clamp: 1; }
+  .ic-cp--dq .ic-cp-desc { -webkit-line-clamp: 1; }
+}

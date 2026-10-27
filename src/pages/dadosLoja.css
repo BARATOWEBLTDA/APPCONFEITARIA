@@ -121,7 +121,7 @@
 .dl-li + .dl-li { border-top: 1px solid var(--ui-linha); }
 .dl-li:active { background: #F7F1F3; }
 .dl-li:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
-.dl-li-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa); color: var(--ui-branco); }
+.dl-li-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--primary-light); color: var(--ui-rosa-escuro); } /* (27/10) ícone rosa no fundo clarinho: o rosa cheio fica nos botões */
 .dl-li-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .dl-li-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dl-li-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
