@@ -91,16 +91,19 @@ export default function Categorias() {
   const fotoDaCategoria = (c: Categoria) => (c.imagem_url && !ehIconeAntigo(c.imagem_url) ? c.imagem_url : fotosDe(c.nome)[0]) || undefined;
 
   const modoDe = (c: Categoria): ModoFoto => !c.imagem_url || ehIconeAntigo(c.imagem_url) ? "auto" : fotosDe(c.nome).includes(c.imagem_url) ? "produto" : "enviar";
-  const openNova = () => { setForm({ nome: "", imagem_url: "", ordem: categorias.length }); setModoFoto("auto"); setModal(true); };
-  const openEditar = (c: Categoria) => { setForm({ ...c, imagem_url: ehIconeAntigo(c.imagem_url) ? "" : c.imagem_url }); setModoFoto(modoDe(c)); setModal(true); };
-  const fecharModal = () => { setModal(false); setModoFoto("auto"); setForm({ nome: "", imagem_url: "", ordem: 0 }); };
+  const abertura = useRef(0) // (27/10) foto que termina de enviar depois de fechar a janela não entra em outra categoria
+  const openNova = () => { abertura.current++; setForm({ nome: "", imagem_url: "", ordem: categorias.length }); setModoFoto("auto"); setModal(true); };
+  const openEditar = (c: Categoria) => { abertura.current++; setForm({ ...c, imagem_url: ehIconeAntigo(c.imagem_url) ? "" : c.imagem_url }); setModoFoto(modoDe(c)); setModal(true); };
+  const fecharModal = () => { abertura.current++; setModal(false); setModoFoto("auto"); setForm({ nome: "", imagem_url: "", ordem: 0 }); };
 
   const handleImageUpload = async (file: File) => {
     if (!file || !userId) return;
     setUploading("img");
+    const vez = abertura.current;
     const ext = file.name.split(".").pop();
     const path = `categorias/${userId}-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true });
+    if (vez !== abertura.current) { setUploading(null); return; }
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
       setForm(f => ({ ...f, imagem_url: data.publicUrl })); setModoFoto("enviar");
@@ -111,6 +114,7 @@ export default function Categorias() {
   const recorte = useRecorte(f => { void handleImageUpload(f); }, { forma: "rect" });
 
   const handleSalvar = async () => {
+    if (uploading) return avisar("Espere a foto terminar de enviar", { tipo: "info" }); // (27/10) salvar no meio do envio perdia a foto
     const novo = form.nome.trim();
     if (!novo) return avisar("Escreva o nome da categoria", { tipo: "erro" });
     // 10/10: nome repetido não salva (os produtos guardam o NOME da categoria: duas iguais se misturavam)
@@ -150,7 +154,9 @@ export default function Categorias() {
         try {
           const { data: comps } = await supabase.from("biblioteca_extras").select("id, categorias_cardapio").eq("user_id", userId);
           for (const c of ((comps as { id: string; categorias_cardapio?: string[] | null }[]) || []).filter(c => (c.categorias_cardapio || []).includes(antigo))) {
-            await supabase.from("biblioteca_extras").update({ categorias_cardapio: (c.categorias_cardapio || []).map(n => (n === antigo ? novo : n)) }).eq("id", c.id);
+            const { error: eComp } = await supabase.from("biblioteca_extras").update({ categorias_cardapio: (c.categorias_cardapio || []).map(n => (n === antigo ? novo : n)) }).eq("id", c.id);
+            // (27/10) antes o erro era ignorado e o complemento sumia da categoria no cardápio sem aviso
+            if (eComp) avisar("A categoria mudou de nome, mas um complemento não acompanhou. Confira em Complementos.", { tipo: "erro" });
           }
         } catch { /* sem a coluna nova: segue sem */ }
         await loadProdutos(userId);

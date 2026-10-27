@@ -7,6 +7,9 @@ import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { usePlano } from "@/hooks/usePlano";
+import { LIMITE_COMPLEMENTOS_GRATIS } from "@/lib/limitesPlano";
+import RecursoPro from "@/components/billing/RecursoPro";
 import "./categorias.css";
 import "./complementos.css";
 
@@ -63,6 +66,10 @@ export default function Complementos() {
   const [form, setForm] = useState<Form>(FORM_VAZIO);
   const [tentou, setTentou] = useState(false);
   const [saving, setSaving] = useState(false);
+  // (27/10) plano grátis: até 3 complementos (decisão de 25/10)
+  const { isPro } = usePlano();
+  const [limiteAberto, setLimiteAberto] = useState(false);
+  const passouDoLimite = () => !isPro && items.length >= LIMITE_COMPLEMENTOS_GRATIS;
 
   // (11/10) a leitura falhou: mostra o erro com "Tentar de novo" em vez de "Cadastre um produto primeiro" ou "Nenhum complemento ainda"
   const [erroCarga, setErroCarga] = useState("");
@@ -92,12 +99,15 @@ export default function Complementos() {
   useEffect(() => { void carregar(); }, []);
 
   const abrir = (c: Complemento | null, escolherProdutos = false) => {
+    if (!c && passouDoLimite()) { setLimiteAberto(true); return; }
     setEditando(c);
     setTentou(false);
     setBuscaProd("");
     setForm(c ? {
       nome: c.nome, descricao: c.descricao || "", valor: Number(c.valor) || 0, gratis: !(Number(c.valor) > 0),
-      onde: escolherProdutos && ondeDe(c) === "todos" ? "categorias" : ondeDe(c), cats: c.categorias_cardapio || [], produtos: c.categorias || [], pedeRef: c.pede_referencia === true, pedeFrase: c.pede_frase === true,
+      onde: escolherProdutos && ondeDe(c) === "todos" ? "categorias" : ondeDe(c),
+      // (27/10) categoria ou produto que foi apagado sai daqui (antes ficava escondido e o complemento não aparecia em lugar nenhum)
+      cats: (c.categorias_cardapio || []).filter(n => categorias.some(k => k.nome === n)), produtos: (c.categorias || []).filter(id => produtos.some(p => p.id === id)), pedeRef: c.pede_referencia === true, pedeFrase: c.pede_frase === true,
     } : FORM_VAZIO);
     setAberta(true);
   };
@@ -121,6 +131,7 @@ export default function Complementos() {
         if (error) throw error;
         if (data) setItems(prev => prev.map(i => (i.id === editando.id ? (data as Complemento) : i)).sort((a, b) => a.nome.localeCompare(b.nome)));
       } else {
+        if (passouDoLimite()) { setLimiteAberto(true); return; }
         const { data, error } = await supabase.from("biblioteca_extras").insert({ user_id: userId, ...dados }).select().single();
         if (error) throw error;
         if (data) setItems(prev => [...prev, data as Complemento].sort((a, b) => a.nome.localeCompare(b.nome)));
@@ -281,6 +292,7 @@ export default function Complementos() {
       </Janela>
 
       {/* nova / editar */}
+      {limiteAberto && <RecursoPro titulo={`${LIMITE_COMPLEMENTOS_GRATIS} complementos no plano grátis`} texto={`No plano grátis, a loja tem até ${LIMITE_COMPLEMENTOS_GRATIS} complementos. Apague um para criar outro, ou assine o PRO para ter quantos quiser.`} onClose={() => setLimiteAberto(false)} />}
       <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada titulo={editando ? "Editar complemento" : "Novo complemento"}
         acoes={<><Botao variante="secundario" onClick={fechar}>Cancelar</Botao><Botao onClick={salvar} carregando={saving}>{editando ? "Salvar" : "Criar"}</Botao></>}>
         <div className="pz-form">

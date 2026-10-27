@@ -31,11 +31,27 @@ export function tipoDaChave(chave: string): TipoChave {
   return 'cpf'
 }
 
+/** Dígitos verificadores do CPF */
+export function cpfValido(d: string): boolean {
+  if (!/^\d{11}$/.test(d) || /^(\d)\1{10}$/.test(d)) return false
+  const dv = (n: number) => { let s = 0; for (let i = 0; i < n; i++) s += Number(d[i]) * (n + 1 - i); const r = (s * 10) % 11; return r === 10 ? 0 : r }
+  return dv(9) === Number(d[9]) && dv(10) === Number(d[10])
+}
+/** Dígitos verificadores do CNPJ */
+export function cnpjValido(d: string): boolean {
+  if (!/^\d{14}$/.test(d) || /^(\d)\1{13}$/.test(d)) return false
+  const dv = (n: number) => { const pesos = n === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]; const s = pesos.reduce((t, p, i) => t + Number(d[i]) * p, 0); const r = s % 11; return r < 2 ? 0 : 11 - r }
+  return dv(12) === Number(d[12]) && dv(13) === Number(d[13])
+}
+
 /** A chave está no formato certo? Devolve o problema em palavras (ou '' se estiver certa). */
 export function problemaNaChave(chave: string, tipo: TipoChave): string {
   const c = normalizarChave(chave, tipo)
   if (!c) return 'Escreva a chave Pix'
   if (tipo === 'cpf' && c.length !== 11 && c.length !== 14) return 'CPF tem 11 números e CNPJ tem 14'
+  // (27/10) confere os dígitos: o celular (11 números) passava como CPF e o Pix saía com uma chave que não existe
+  if (tipo === 'cpf' && c.length === 11 && !cpfValido(c)) return 'CPF inválido. Se for celular, use a aba Celular'
+  if (tipo === 'cpf' && c.length === 14 && !cnpjValido(c)) return 'CNPJ inválido. Confira os números'
   if (tipo === 'celular' && !/^\+55\d{10,11}$/.test(c)) return 'Coloque o celular com DDD'
   if (tipo === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c)) return 'Confira o e-mail'
   if (tipo === 'aleatoria' && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(c)) return 'A chave aleatória tem 32 letras e números, com tracinhos'

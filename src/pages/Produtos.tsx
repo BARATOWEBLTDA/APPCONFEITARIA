@@ -70,6 +70,7 @@ const precoDaLista = (prod: any) => {
 import ReqTag, { OptTag } from "@/components/ReqTag";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import { apiFetch } from "@/lib/apiFetch";
+import { reduzirFoto } from "@/lib/reduzirFoto";
 
 // ── Helpers de conversão de unidades (ficha técnica) ──
 const UNIT_FAMILIES_MAP: Record<string, { family: string; base: string; toBase: number }> = {
@@ -1150,13 +1151,18 @@ export default function Produtos() {
   // Novo: upload de foto pra variação por chave (sabor|tamanho / sabor| / |tamanho)
   const uploadFotoVariacaoKey = async (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file || !userId) return;
     const vez = abertura.current; // (11/10) envio de outra abertura do cadastro é descartado
     setUploading(true);
     const safeName = key.replace(/[^a-zA-Z0-9]/g, "_");
     const path = `produtos/${userId}-${Date.now()}-v-${safeName}.jpg`;
-    const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true, contentType: file.type }).catch((e: unknown) => ({ error: e }));
-    if (abertura.current !== vez) return;
+    // (27/10) reduz e vira JPEG antes de enviar (foto de 10 MB ou HEIC do iPhone não abria no Android)
+    let blob: Blob;
+    try { blob = await (await fetch(await reduzirFoto(file, 1600, 0.85))).blob(); }
+    catch { setUploading(false); avisar("Não deu para abrir essa foto. Tente outra.", { tipo: "erro" }); return; }
+    const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: "image/jpeg" }).catch((e: unknown) => ({ error: e }));
+    if (abertura.current !== vez) { setUploading(false); return; }
     if (error) avisar(explicarErro(error, "Não deu para enviar a foto. Tente de novo."), { tipo: "erro" });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
@@ -1167,7 +1173,6 @@ export default function Produtos() {
       }));
     }
     setUploading(false);
-    e.target.value = "";
   };
 
   const removeFotoVariacaoKey = (key: string) => {
@@ -1285,7 +1290,7 @@ export default function Produtos() {
     if (gerandoDesc) return avisar("Espere a descrição ficar pronta.", { tipo: "info" });
     const eraPrimeiro = !form.id && produtos.length === 0;
     if (!form.nome.trim()) return avisar("Dê um nome ao produto", { tipo: "erro" });
-    if (!form.categoria.trim()) return avisar("Escolha a categoria do produto", { tipo: "erro" });
+    if (!(form.categoria || "").trim()) return avisar("Escolha a categoria do produto", { tipo: "erro" }); // (27/10) categoria vazia no banco vinha como null e travava o salvar
     // (14/10) todo produto diz se é pronta entrega ou encomenda (na edição fica na aba Fotos, em "Como o cliente recebe")
     if (!((form as any).pronta_entrega === true || (form as any).antecedencia)) {
       if (form.id) setEditTab("entrega");
@@ -1431,8 +1436,10 @@ export default function Produtos() {
     const { produto_insumos, created_at, ...formLimpo } = formSalvar as any;
 
     // Edição: se mexeu nos preços dos tamanhos (preço fixo), o "a partir de" acompanha
-    if (form.id && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.modo_preco_tamanho || "preco_fixo") === "preco_fixo") {
-      const pt = (form.grupo_tamanhos.opcoes || []).map((o: any) => o.preco).filter((p: number) => p > 0);
+    // (27/10) lê os tamanhos que vão ser gravados (com "só o sabor" os preços dos tamanhos já foram zerados)
+    const gtSalvar = (formSalvar as any).grupo_tamanhos;
+    if (form.id && gtSalvar?.ativo && (gtSalvar.modo_preco_tamanho || "preco_fixo") === "preco_fixo") {
+      const pt = (gtSalvar.opcoes || []).map((o: any) => Number(o.preco)).filter((p: number) => p > 0);
       if (pt.length) precoBase = Math.min(...pt);
     }
 
@@ -2818,7 +2825,7 @@ export default function Produtos() {
                   // Step 2: Informações — nome + categoria obrigatórios
                   if (wizardStep === 2) {
                     if (!form.nome.trim()) return { msg: "Dê um nome ao produto", alvo: "#prod-nome-input" };
-                    if (!form.categoria.trim()) return { msg: "Escolha a categoria do produto", alvo: "#prod-categoria-campo" };
+                    if (!(form.categoria || "").trim()) return { msg: "Escolha a categoria do produto", alvo: "#prod-categoria-campo" };
                     return null;
                   }
                   // Step 3: Opções — valida só as personalizações

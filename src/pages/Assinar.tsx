@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
-  Bell, ChartLineUp, CheckCircle, Crown, Eye, FilePdf, ImageSquare, Infinity as Infinito, Lock, Palette,
-  Robot, SealCheck, Sparkle, Tag, Calculator, AddressBook, CaretDown, CaretRight, Check, type Icon,
+  ChartLineUp, CheckCircle, Crown, Eye, FilePdf, ImageSquare, Infinity as Infinito, Lock, Palette,
+  Robot, SealCheck, Sparkle, Tag, AddressBook, CaretDown, CaretRight, Check, type Icon,
 } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -26,17 +26,15 @@ const PRECO_1O_MES = "R$ 8,97"; // 70% de desconto no 1º mês (30% de R$ 29,90)
  *  (21/10) quem já é PRO vê a lista compacta (título curto + uma linha); com tela própria ganha a seta, sem ela o visto verde. */
 type Beneficio = [Icon, string, string, string, string, string | null];
 const BENEFICIOS: Beneficio[] = [
-  [Calculator, "Preço certo em tudo que você vende", "Bolos, doces ou salgados: a precificação calcula custo, margem e lucro. Chega de vender no prejuízo.", "Preço certo de tudo", "A ficha técnica calcula sozinha", "/ficha-tecnica"],
   [ChartLineUp, "Saiba quanto você lucra de verdade", "Relatórios de lucratividade por produto e por mês, para decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
   [Robot, "A Doo IA sem aperto", "No PRO a Doo IA responde até 150 mensagens por dia e cria imagens. No grátis são 10 mensagens por mês.", "Doo IA 150 por dia", "E cria imagens", "doo"],
-  [Bell, "Avisos no celular", "Receba os avisos do Doonly no celular, mesmo com o app fechado.", "Avisos no celular", "Pedido novo na hora", "/configuracoes/notificacoes"],
   [Eye, "Veja quem visita e quem compra", "Visitas, pedidos pelo cardápio e conversão, de hoje e do mês.", "Quem visita e compra", "Visitas e pedidos do cardápio", "/cardapio"],
-  [Tag, "Cupons que trazem cliente de volta", "Crie cupons de desconto para atrair novos clientes e fazer os antigos voltarem.", "Cupons de desconto", "Traga cliente de volta", "/marketing"],
+  [Tag, "Cupons e complementos sem limite", "No grátis são 1 cupom ativo e 3 complementos. No PRO, quantos quiser.", "Cupons e complementos", "Sem limite", "/marketing"],
   [Palette, "Cardápio com a cara da sua marca", "Qualquer cor no topo da loja, até 4 fotos por produto e um link com o nome da sua loja.", "Cardápio com a sua marca", "Qualquer cor e até 4 fotos", "/cardapio-design"],
   [ImageSquare, "Banners que vendem", "Até 4 banners em carrossel para destacar promoções e lançamentos.", "Banners que vendem", "Até 4 em carrossel", "/cardapio-design"],
   [SealCheck, "Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar.", "Selo de loja verificada", "Mais confiança para o cliente", null],
   [Crown, "Sem marca d'água", "O cardápio só com a sua marca, sem o \"Feito com Doonly\".", "Sem marca d'água", "Só a sua marca no cardápio", null],
-  [Infinito, "Produtos e clientes sem limite", "Cadastre todo o cardápio e guarde toda a clientela com o histórico de compras.", "Sem limite", "Produtos e clientes à vontade", null],
+  [Infinito, "Todo o cardápio no ar", "No grátis, até 10 produtos no cardápio ao mesmo tempo. No PRO, todos.", "Produtos sem limite", "Todo o cardápio no ar", null],
   [AddressBook, "Importe clientes dos contatos", "Traga os contatos direto da agenda do celular (Android).", "Importar contatos", "Traga da agenda do celular", "/clientes"],
   [FilePdf, "Relatórios em PDF", "Agenda do dia, pedidos e fichas técnicas prontos para mandar ou imprimir.", "Relatórios em PDF", "Agenda, pedidos e fichas", null],
 ];

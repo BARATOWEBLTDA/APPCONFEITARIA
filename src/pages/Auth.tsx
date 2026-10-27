@@ -221,7 +221,7 @@ export default function Auth() {
     setError("");
     try {
       const { data: signInData, error } = await supabase.auth.signInWithPassword({
-        email: form.email,
+        email: form.email.trim(), // (27/10) o preenchimento automático às vezes deixa um espaço no fim
         password: form.senha,
       });
       if (error) throw error;
@@ -326,7 +326,7 @@ export default function Auth() {
       // (handle_new_user) cria row em public.profiles automaticamente.
       // Como "Confirm email" está OFF no dashboard, signUp retorna sessão imediata.
       const { data: signUpData, error } = await supabase.auth.signUp({
-        email: cadastroForm.email,
+        email: cadastroForm.email.trim(),
         password: cadastroForm.senha,
         options: {
           data: {

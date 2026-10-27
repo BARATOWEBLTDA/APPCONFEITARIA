@@ -136,7 +136,9 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
         // 02/10: sem endereço salvo ainda, já vem "Mostrar endereço completo"
         const jaTemEndereco = !!(addr.rua || addr.cep || addr.cidade);
         setMostrarLocal(!jaTemEndereco ? "completo" : data.mostrar_localizacao ? "completo" : data.mostrar_apenas_cidade ? "cidade" : "nada");
-        setRecebeAqui(!jaTemEndereco || !!(data as any).endereco_retirada || ((data as any).formas_entrega || ["retirada"]).includes("retirada"));
+        // (27/10) só pelo endereço de retirada salvo: antes "retirada" nas formas de entrega (o padrão) ligava de novo
+        // depois que ela desligava, e o próximo salvar punha o endereço da casa dela de volta no cardápio
+        setRecebeAqui(!jaTemEndereco || !!(data as any).endereco_retirada);
         if (data.horario) {
           try {
             const h = typeof data.horario === "string" ? JSON.parse(data.horario) : data.horario;
@@ -305,7 +307,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     if (!error && redesNoBanco) {
       const r = await supabase.from("profiles").update({ instagram: insta || null, facebook: face || null }).eq("id", userId);
       erroRedes = !!r.error;
-      if (!r.error) { if (insta) setInstagram("@" + insta); if (face) setFacebook(face); if (!insta) setInstaOn(false); if (!face) setFaceOn(false); }
+      if (!r.error) { if (insta) setInstagram("@" + insta); if (face) setFacebook(face); if (!insta && quieto !== true) setInstaOn(false); if (!face && quieto !== true) setFaceOn(false); } // (27/10) o salvar sozinho do computador não desliga o botão antes dela digitar
     }
     setSalvando(false);
     if (error) { mostrarAviso("Não foi possível salvar. Tente de novo.", "err"); return false; }
@@ -369,9 +371,14 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     if (cel || embutido || loading || erroCarga) return;
     if (!salvoPc.current) { salvoPc.current = fotoAgora; return; }
     if (fotoAgora === salvoPc.current) return;
-    const t = window.setTimeout(async () => { if (await salvar({ silencioso: true })) salvoPc.current = fotoAgora; }, 900);
+    pendentePc.current = true;
+    const t = window.setTimeout(async () => { if (await salvar({ silencioso: true })) { salvoPc.current = fotoAgora; pendentePc.current = false; } }, 900);
     return () => window.clearTimeout(t);
   }, [cel, embutido, loading, erroCarga, fotoAgora]); // eslint-disable-line react-hooks/exhaustive-deps
+  // (27/10) saiu da tela antes dos 900 ms: salva o que ficou (antes a última mudança se perdia)
+  const pendentePc = useRef(false);
+  const salvarRef = useRef(salvar); salvarRef.current = salvar;
+  useEffect(() => () => { if (pendentePc.current) void salvarRef.current({ silencioso: true }); }, []);
 
   const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
 

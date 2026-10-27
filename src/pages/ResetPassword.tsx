@@ -37,7 +37,9 @@ export default function ResetPassword() {
 
     const processCallback = async () => {
       try {
-        const errorCode = searchParams.get("error_code") || searchParams.get("error");
+        // (27/10) o Supabase manda o erro depois do "#" (link vencido aparecia como "já foi usado")
+        const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        const errorCode = searchParams.get("error_code") || hash.get("error_code") || searchParams.get("error") || hash.get("error");
         if (errorCode) {
           if (/expired|otp_expired/i.test(errorCode)) {
             if (mounted) setStatus("expired");

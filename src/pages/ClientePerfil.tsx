@@ -133,7 +133,12 @@ export default function ClientePerfil() {
         if (cancelado) return;
         if (porId.error || porNome.error) { falhou(porId.error || porNome.error); return; }
         const vistos = new Set<string>();
-        const lista = [...(porId.data || []), ...(porNome.data || [])]
+        // (27/10) pedido sem cadastro com o mesmo nome só entra se o telefone bate (ou se o pedido não tem telefone):
+        // antes duas clientes "Maria" somavam os pedidos uma da outra
+        const dig = (t: any) => String(t || "").replace(/\D/g, "").slice(-11);
+        const telsCliente = [dig((cData as any).telefone), dig((cData as any).whatsapp)].filter(t => t.length >= 10);
+        const doMesmoTel = (p: any) => { const t = [dig(p.cliente_whatsapp), dig(p.cliente_telefone)].filter(x => x.length >= 10); return !t.length || !telsCliente.length || t.some(x => telsCliente.includes(x)); };
+        const lista = [...(porId.data || []), ...(porNome.data || []).filter(doMesmoTel)]
           .filter((p: any) => (vistos.has(p.id) ? false : (vistos.add(p.id), true)))
           .sort((a: any, b: any) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
         setPedidos(lista as any);

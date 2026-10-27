@@ -341,6 +341,15 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     const custoUnit = valor / qtdEmb;
 
     setSaving(true);
+    // (27/10) confere de novo na hora de salvar: a trava da tela depende de uma leitura que pode não ter chegado
+    if (isEditing && editing?.id && familiaDaMedida(form.unidade) !== familiaDaMedida(inicial.current.unidade)) {
+      const { count, error: eUso } = await supabase.from("produto_insumos").select("id", { count: "exact", head: true }).eq("insumo_id", editing.id);
+      if (eUso || (count || 0) > 0) {
+        setSaving(false);
+        avisar(eUso ? "Não deu para conferir. Tente de novo." : "Está em fichas: use medida do mesmo tipo", { tipo: "erro" });
+        return;
+      }
+    }
     const payload: any = {
       nome: form.nome.trim(),
       marca: form.marca.trim(),

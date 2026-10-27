@@ -2,7 +2,7 @@
 // O que salva continua igual (salva sozinho 2s depois de mexer; cupons na tabela loja_cupons).
 // Mudou o visual: campos e botões do app, cupom novo/editar numa janela, convite pro PRO sem borrão.
 import CampoData from '@/components/CampoData'
-import { Check, Crown, PencilSimple, Plus, QrCode, ShareNetwork, Ticket, Truck, Wallet, WarningCircle, PixLogo, Money, CreditCard, Storefront, Moped, Motorcycle, Car, ChatCircleText } from "@phosphor-icons/react"
+import { Check, Crown, PencilSimple, Plus, Trash, QrCode, ShareNetwork, Ticket, Truck, Wallet, WarningCircle, PixLogo, Money, CreditCard, Storefront, Moped, Motorcycle, Car, ChatCircleText } from "@phosphor-icons/react"
 import type { Icon } from "@phosphor-icons/react"
 import ListaChaves from "@/components/loja/ListaChaves"
 import { normalizarChave, problemaNaChave, tipoDaChave, type TipoChave } from '@/lib/pix'
@@ -21,6 +21,7 @@ import { marcarPagamentoConferido } from "@/lib/primeirosPassos"
 import { useNavigate, useLocation } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
+import { LIMITE_CUPONS_ATIVOS_GRATIS } from '@/lib/limitesPlano'
 
 const PAGAMENTOS = [
   { key: 'pix',                label: 'Pix', sub: 'Na hora, sem taxa' },
@@ -62,6 +63,9 @@ const pixParaSalvar = (x: PixTela) => ({
 /** (19/10) parte: "entrega" (Dados da loja, sem cupons) ou "cupons" (Marketing › Cupons, só os cupons) */
 /** (22/10) celular, Dados da loja: o que está na tela, pra lista mostrar o resumo de cada parte */
 export type EstadoEntregaPagamento = { formasPagamento: string[]; formasEntrega: string[]; taxa: number; porBairro: number; pixOnline: boolean; pixPronto: boolean; pixTipo: string; pixModo: string; pixPct: string }
+/** (27/10) Gravação da tela de Entrega e pagamento em andamento (Pagamento, Pix e Entrega abrem a mesma tela) */
+let gravacaoEmAndamento: Promise<unknown> | null = null
+
 export default function CheckoutConfigPage({ embutido = false, parte = "tudo", so, onEstado }: { embutido?: boolean; parte?: "tudo" | "entrega" | "cupons"; so?: "pag" | "pix" | "ent"; onEstado?: (e: EstadoEntregaPagamento) => void } = {}) {
   const verEntrega = parte !== "cupons", verCupons = parte !== "entrega"
   const navigate = useNavigate()
@@ -96,6 +100,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const [pixCidade, setPixCidade] = useState('')
   const [pixModo, setPixModo] = useState<'escolha' | 'sinal' | 'total'>('escolha')
   const [pixPct, setPixPct] = useState('50')
+  // (27/10) "Outro" fica aberto mesmo digitando 30 ou 50 (antes o campo sumia no meio da digitação)
+  const [pctOutro, setPctOutro] = useState(false)
 
   // (10/10) Se a leitura do perfil ou dos cupons falhar, a tela NÃO abre: antes abria com os valores padrão e o
   // salvamento automático gravava isso por cima (formas de entrega, taxas por bairro e todos os cupons sumiam).
@@ -104,6 +110,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   useEffect(() => {
     const load = async () => {
       setErroCarga(false); setLoading(true)
+      if (gravacaoEmAndamento) await gravacaoEmAndamento // a tela de antes ainda estava salvando
       const { data: { session } } = await supabase.auth.getSession()
       const user = session?.user
       if (!user) { setErroCarga(true); return }
@@ -148,6 +155,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         setPixCidade(d.pix_cidade || d.endereco?.cidade || '')
         setPixModo(d.pix_modo === 'sinal' || d.pix_modo === 'total' ? d.pix_modo : 'escolha')
         setPixPct(String(d.pix_sinal_pct || 50))
+        setPctOutro(![30, 50].includes(Number(d.pix_sinal_pct || 50)))
       }
       setLoading(false)
     }
@@ -168,7 +176,13 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
    * Os usos de cada cupom vêm do banco na hora de gravar: a tela pode estar com a contagem antiga
    * (um pedido com cupom chegou com a tela aberta) e não pode regravar o número velho por cima.
    */
-  const salvarTudo = async (opcoes: { aviso?: string; limparCuponsDoPerfil?: boolean } = {}): Promise<boolean> => {
+  const salvarTudo = (opcoes: { aviso?: string; limparCuponsDoPerfil?: boolean } = {}): Promise<boolean> => {
+    // (27/10) a próxima tela que abrir espera esta gravação terminar antes de ler (senão lia o antigo e gravava por cima)
+    const p = salvarTudoAgora(opcoes)
+    gravacaoEmAndamento = p.catch(() => false)
+    return p
+  }
+  const salvarTudoAgora = async (opcoes: { aviso?: string; limparCuponsDoPerfil?: boolean } = {}): Promise<boolean> => {
     const t = telaRef.current
     if (!t.userId) return false
     pendenteRef.current = false
@@ -177,7 +191,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         formas_pagamento: t.formasPagamento,
         formas_entrega: t.formasEntrega,
         valor_entrega_propria: t.valorEntregaPropria ? numBR(t.valorEntregaPropria) : 0,
-        entrega_por_bairro: t.entregaPorBairro.filter(b => b.bairro.trim()).map(b => ({ bairro: b.bairro, valor: numBR(b.valor) })),
+        entrega_por_bairro: t.entregaPorBairro.map(b => ({ bairro: b.bairro.trim(), valor: Math.max(0, numBR(b.valor) || 0) }))
+          .filter((b, i, l) => b.bairro && l.findIndex(x => x.bairro.toLowerCase() === b.bairro.toLowerCase()) === i),
         exibir_campo_troco: t.exibirCampoTroco,
         // (20/10) Pix pelo cardápio: só fica ligado com a chave, o nome e a cidade certos (senão o cardápio paga como antes)
         ...pixParaSalvar(t.pix),
@@ -265,6 +280,20 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const togglePagamento = (key: string) => {
     setFormasPagamento(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])
   }
+  // (27/10) taxa por bairro: antes o cardápio usava a lista, mas não tinha onde editar
+  const [porBairro, setPorBairro] = useState(false)
+  useEffect(() => { if (!loading) setPorBairro(entregaPorBairro.length > 0) }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
+  const mudarBairro = (i: number, campo: 'bairro' | 'valor', v: string) => setEntregaPorBairro(prev => prev.map((b, k) => k === i ? { ...b, [campo]: campo === 'valor' ? v.replace(/[^0-9.,]/g, '') : v } : b))
+  const usarTaxaUnica = async () => {
+    if (entregaPorBairro.some(b => b.bairro.trim())) {
+      const ok = await confirmar({ titulo: 'Usar uma taxa só?', texto: 'A lista de bairros é apagada e vale a taxa única para todos.', rotulo: 'Usar taxa única', rotuloVoltar: 'Voltar' })
+      if (!ok) return
+    }
+    setEntregaPorBairro([]); setPorBairro(false)
+  }
+  const nomesBairro = entregaPorBairro.map(b => b.bairro.trim().toLowerCase()).filter(Boolean)
+  const bairroRepetido = nomesBairro.find((n, i) => nomesBairro.indexOf(n) !== i)
+
   const toggleEntrega = (key: string) => {
     setFormasEntrega(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])
   }
@@ -298,9 +327,16 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     if (cupomForm.data_inicio && cupomForm.data_fim && cupomForm.data_fim < cupomForm.data_inicio) {
       return avisar('A data do fim tem que ser depois da do começo', { tipo: 'erro' })
     }
-    // (20/10) até 3 cupons ativos por vez (o cliente usa 1 por pedido)
-    const outrosAtivos = cupons.filter((c, idx) => c.ativo && idx !== editandoIndex).length
-    if (cupomForm.ativo && outrosAtivos >= MAX_CUPONS_ATIVOS) return avisar(`Você já tem ${MAX_CUPONS_ATIVOS} cupons ativos. Pause um deles ou salve este pausado.`, { tipo: 'erro' })
+    // (27/10) código repetido misturava a contagem de usos dos dois cupons
+    const codigoNovo = cupomForm.codigo.trim().toUpperCase()
+    if (cupons.some((c, idx) => idx !== editandoIndex && String(c.codigo || '').trim().toUpperCase() === codigoNovo)) return avisar('Já existe um cupom com esse código', { tipo: 'erro' })
+    // (27/10) cupom que já nasce sem valer
+    if (cupomForm.limite_uso !== '' && cupomForm.limite_uso != null && Number(cupomForm.limite_uso) <= 0) return avisar('O limite de usos tem que ser 1 ou mais', { tipo: 'erro' })
+    if (cupomForm.ativo && cupomForm.data_fim && cupomForm.data_fim < hojeIso) return avisar('A data do fim já passou', { tipo: 'erro' })
+    // (20/10) cupons ativos por vez (o cliente usa 1 por pedido) · (27/10) grátis: 1; vencido ou esgotado não conta
+    const maxAtivos = isPro ? MAX_CUPONS_ATIVOS : LIMITE_CUPONS_ATIVOS_GRATIS
+    const outrosAtivos = cupons.filter((c, idx) => idx !== editandoIndex && situacaoCupom(c) === 'Ativo').length
+    if (cupomForm.ativo && outrosAtivos >= maxAtivos) return avisar(maxAtivos === 1 ? 'No grátis, 1 cupom ativo por vez. Pause o outro ou salve este pausado.' : `Você já tem ${maxAtivos} cupons ativos. Pause um deles ou salve este pausado.`, { tipo: 'erro' })
     setCupons(prev => {
       if (editandoIndex === -1) return [...prev, { ...cupomForm, usos: 0 }]
       return prev.map((c, idx) => idx === editandoIndex ? { ...cupomForm, usos: c.usos || 0 } : c)
@@ -462,13 +498,14 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                 <div className="ui-campo">
                   <span className="ui-campo-r" id="ep-pix-pct"><span>Valor do sinal</span></span>
                   <div className="ep-seg" role="radiogroup" aria-labelledby="ep-pix-pct">
-                    {['30', '50'].map(v => <button key={v} type="button" role="radio" aria-checked={pixPct === v} onClick={() => setPixPct(v)}>{v}%</button>)}
-                    <button type="button" role="radio" aria-checked={pixPct !== '30' && pixPct !== '50'} onClick={() => { if (pixPct === '30' || pixPct === '50') setPixPct('40') }}>Outro</button>
+                    {['30', '50'].map(v => <button key={v} type="button" role="radio" aria-checked={!pctOutro && pixPct === v} onClick={() => { setPctOutro(false); setPixPct(v) }}>{v}%</button>)}
+                    <button type="button" role="radio" aria-checked={pctOutro} onClick={() => { if (!pctOutro) { setPctOutro(true); if (pixPct === '30' || pixPct === '50') setPixPct('40') } }}>Outro</button>
                   </div>
-                  {pixPct !== '30' && pixPct !== '50' && (
+                  {pctOutro && (
                     <div className="ep-pix-pct">
                       <Campo rotulo="Porcentagem do sinal" depois={<span className="ui-campo-pre" aria-hidden="true">%</span>} inputMode="numeric" value={pixPct} maxLength={2} dica="De 10% a 90% do total"
-                        onChange={e => setPixPct(e.target.value.replace(/\D/g, '').slice(0, 2))} />
+                        onChange={e => setPixPct(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                        onBlur={() => setPixPct(String(pctDoSinal(pixPct)))} />
                     </div>
                   )}
                 </div>
@@ -488,16 +525,35 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
             <div className="ep-res">
               {ENTREGAS.filter(e => formasEntrega.includes(e.key)).map(e => (
                 <span key={e.key} className="ep-res-li"><Check size={16} weight="bold" aria-hidden="true" />{e.label}
-                  {e.key === 'entrega_propria' && <em>{numBR(valorEntregaPropria) > 0 ? `R$ ${dinheiroBR(valorEntregaPropria)}` : 'Grátis'}</em>}</span>
+                  {e.key === 'entrega_propria' && <em>{entregaPorBairro.some(b => b.bairro.trim()) ? `Por bairro (${entregaPorBairro.filter(b => b.bairro.trim()).length})` : numBR(valorEntregaPropria) > 0 ? `R$ ${dinheiroBR(valorEntregaPropria)}` : 'Grátis'}</em>}</span>
               ))}
             </div>
           ) : (<>
           <ListaChaves itens={ENTREGAS.map(e => ({ chave: e.key, Ic: ICONE_ENT[e.key] || Truck, rotulo: e.label, sub: e.sub, on: formasEntrega.includes(e.key), aoTocar: () => toggleEntrega(e.key) }))} />
           {formasEntrega.includes('entrega_propria') && (
             <div className="ep-taxa">
-              <Campo rotulo="Taxa da entrega própria" prefixo="R$" inputMode="decimal" placeholder="0,00" value={valorEntregaPropria}
-                dica="Cobrada em todo pedido com entrega própria"
-                onChange={e => setValorEntregaPropria(e.target.value.replace(/[^0-9.,]/g, ''))} />
+              <div className="ep-seg" role="radiogroup" aria-label="Como cobrar a entrega">
+                <button type="button" role="radio" aria-checked={!porBairro} onClick={() => { if (porBairro) void usarTaxaUnica() }}>Taxa única</button>
+                <button type="button" role="radio" aria-checked={porBairro} onClick={() => { if (!porBairro) { setPorBairro(true); if (!entregaPorBairro.length) setEntregaPorBairro([{ bairro: '', valor: '' }]) } }}>Por bairro</button>
+              </div>
+              {!porBairro ? (
+                <Campo rotulo="Taxa da entrega própria" prefixo="R$" inputMode="decimal" placeholder="0,00" value={valorEntregaPropria}
+                  dica="Cobrada em todo pedido com entrega própria"
+                  onChange={e => setValorEntregaPropria(e.target.value.replace(/[^0-9.,]/g, ''))} />
+              ) : (
+                <div className="ep-bairros">
+                  {entregaPorBairro.map((b, i) => (
+                    <div key={i} className="ep-bairro">
+                      <Campo rotulo="" aria-label="Bairro" placeholder="Bairro" value={b.bairro} onChange={e => mudarBairro(i, 'bairro', e.target.value)} />
+                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="decimal" placeholder="0,00" value={b.valor} onChange={e => mudarBairro(i, 'valor', e.target.value)} />
+                      <button type="button" className="ep-bairro-x" aria-label={`Tirar ${b.bairro || 'este bairro'}`} onClick={() => setEntregaPorBairro(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
+                    </div>
+                  ))}
+                  {bairroRepetido && <p className="ep-bairro-erro" role="alert">Bairro repetido. Deixe só um.</p>}
+                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setEntregaPorBairro(prev => [...prev, { bairro: '', valor: '' }])}>Adicionar bairro</Botao>
+                  <p className="ep-bairro-dica">O cliente escolhe o bairro e paga a taxa dele. Taxa 0 é entrega grátis.</p>
+                </div>
+              )}
             </div>
           )}
           </>)}
@@ -507,7 +563,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
 
         {/* Cupons */}
         {verCupons && <section className="ep-card ep-largo">
-          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio={`Até ${MAX_CUPONS_ATIVOS} ativos por vez. Os ativos aparecem no topo do cardápio, e o cliente usa 1 por pedido.`}
+          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio={`${isPro ? `Até ${MAX_CUPONS_ATIVOS} ativos` : '1 ativo'} por vez. Os ativos aparecem no topo do cardápio, e o cliente usa 1 por pedido.`}
  />
           {!cupomDisponivel(isPro) ? (
             <div className="ep-pro">

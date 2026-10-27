@@ -6,16 +6,17 @@ import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { ArrowCounterClockwise, ArrowsClockwise, CalendarBlank, Camera, Check, Eye, Info, Crown, Image as ImageIcon, Images, Layout, Lock, MapPin, Palette, Plus, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ArrowsClockwise, CalendarBlank, Camera, Check, Eye, Info, Crown, Image as ImageIcon, Images, Layout, LinkSimple, Lock, MapPin, Palette, Plus, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_APARENCIA, TOUR_APARENCIA } from "@/lib/comoTelas";
-import { Botao, BotaoIcone, Janela, Titulo, avisar } from "@/components/base";
+import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, CATEGORIA_CAPA_NATAL, type BannerPronto } from "@/lib/bannersProntos";
 import { COR_BOTOES, PADRAO, PRONTAS, corDoItem, topoEscurecido, type CampoCor } from "@/lib/coresCardapio";
 import { AVISO_NATAL_PADRAO, CAPA_NATAL_PADRAO, NATAL, type Tema } from "@/lib/temaCardapio";
 import { LacoNatal } from "@/components/tema/Natal";
+import NomeNoLink from "@/components/loja/NomeNoLink";
 import "./aparencia.css";
 
 /**
@@ -30,6 +31,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
   const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
   const [loading, setLoading] = useState(true);
+  const [erroCarga, setErroCarga] = useState(false); // (27/10) leitura falhou: não abre com o padrão (gravaria por cima do que ela tinha)
+  const [tentativaCarga, setTentativaCarga] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   // Marca o passo "Escolher design" do passo a passo (ignora erro se a coluna ainda não existir)
   const marcarDesignEscolhido = (uid: string | null | undefined) => {
@@ -124,10 +127,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
   useEffect(() => {
     const load = async () => {
+      setErroCarga(false); setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) { setErroCarga(true); setLoading(false); return; }
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, tema_capa_url, tema_laco, tema_destaque, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
+      const { data, error: erroPerfil } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, tema_capa_url, tema_laco, tema_destaque, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
+      if (erroPerfil || !data) { setErroCarga(true); setLoading(false); return; }
       if (data) {
         setLogoUrl(data.logo_url || ""); setFotoPerfil((data as any).foto_url || "");
         setHideStars(!!(data as any).hide_stars);
@@ -160,7 +165,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       setLoading(false);
     };
     load();
-  }, []);
+  }, [tentativaCarga]);
 
   const uploadImage = async (file: File, path: string) => {
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
@@ -417,6 +422,14 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     showSuccess();
   };
 
+  if (erroCarga) return (
+    <>
+      {!identityCard && <AppPageHeader title="Aparência" subtitle="Logo, banners e cores" onBack={() => navigate(voltarPara)} />}
+      <TelaVazia icone={<Info size={30} />} titulo="Não deu para abrir a Aparência" texto="Confira a internet e tente de novo."
+        acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativaCarga(t => t + 1)}>Tentar de novo</Botao>} />
+    </>
+  );
+
   if (loading) return (
     <>
       {!identityCard && <AppPageHeader title="Aparência" subtitle="Logo, banners e cores" onBack={() => navigate(voltarPara)} />}
@@ -530,7 +543,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               <i aria-hidden="true"><Camera size={12} weight="bold" /></i>
             </button>
             {tema === "natal" && temaLaco && <LacoNatal className="ap-topo-enfeite" />}
-            <b className="ap-topo-nome"><span style={{ color: tema === "natal" ? NATAL.nome : corAtual("cor_nome", corNome) }}>{nomeLoja || "Nome da sua loja"}</span><SeloVerificado tamanho={18} /></b>
+            <b className="ap-topo-nome"><span style={{ color: tema === "natal" ? NATAL.nome : corAtual("cor_nome", corNome) }}>{nomeLoja || "Nome da sua loja"}</span>{isPro && <SeloVerificado tamanho={18} />}</b>
             <span className="ap-topo-sl"><b style={{ color: COR_BOTOES }}>Sobre a loja</b><em aria-hidden="true">·</em><MapPin size={14} weight="bold" color={COR_BOTOES} aria-hidden="true" /><span>{cidade || "São Paulo"}</span></span>
             {tema === "natal" && temaAviso.trim() && <span className="ap-topo-aviso"><CalendarBlank size={14} weight="bold" aria-hidden="true" />{temaAviso.trim()}</span>}
           </div>
@@ -601,6 +614,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         </div>
       </section>
       )}
+
+      {/* (27/10) nome da loja no link (PRO) */}
+      <section className="ap-card ap-largo ap-sec-link">
+        <Cabeca Ic={LinkSimple} titulo="Link do cardápio" apoio="Com o nome da sua loja no fim" />
+        <NomeNoLink />
+      </section>
 
       {/* Cores (18/10): só as três do topo da loja. Grátis: cores prontas; PRO: qualquer cor */}
       <section className={`ap-card ap-largo ap-sec-cores${tema === "natal" ? " ap-cores-off" : ""}`}>

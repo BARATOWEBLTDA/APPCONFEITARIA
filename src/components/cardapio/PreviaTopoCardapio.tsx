@@ -3,6 +3,7 @@ import { Camera } from "@phosphor-icons/react";
 import { getStatusLoja } from "@/components/cardapio/CardapioModelo1";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { topoEscurecido } from "@/lib/coresCardapio";
+import { usePlano } from "@/hooks/usePlano";
 import "./cardapioModelo1.css";
 
 /**
@@ -23,6 +24,7 @@ const clara = (hex: string) => {
 };
 
 export default function PreviaTopoCardapio({ d, onLogo, enviando = false }: { d: DadosPrevia; onLogo?: () => void; enviando?: boolean }) {
+  const { isPro } = usePlano(); // (27/10) o selo de verificada é do PRO (a prévia mostrava para todos)
   // mesmas regras do CardapioModelo1
   const borda = d.cor_borda || "#E85A8C";
   const faixa = topoEscurecido(!ehBranco(d.cor_navbar) ? d.cor_navbar! : (!ehBranco(d.cor_borda) ? d.cor_borda! : "#BF6B84"));
@@ -44,7 +46,7 @@ export default function PreviaTopoCardapio({ d, onLogo, enviando = false }: { d:
         {onLogo
           ? <button type="button" className={`cm1-logo ptc-logo${img ? "" : " ptc-logo--vazia"}`} style={img ? { borderColor: borda } : undefined} onClick={onLogo} aria-label={img ? "Trocar a logo" : "Escolher a logo"}>{logo}</button>
           : <div className={`cm1-logo ptc-logo${img ? "" : " ptc-logo--vazia"}`} style={img ? { borderColor: borda } : undefined}>{logo}</div>}
-        <b className="cm1-nome ptc-nome" style={{ color: corNome }}><span>{nome}</span><SeloVerificado tamanho={16} /></b>
+        <b className="cm1-nome ptc-nome" style={{ color: corNome }}><span>{nome}</span>{isPro && <SeloVerificado tamanho={16} />}</b>
         <div className="cm1-sl ptc-sl">
           {status ? (
             <span className={`cm1-sl-st${status.aberto ? " aberto" : ""}`}>

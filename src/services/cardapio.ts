@@ -4,6 +4,7 @@ import { COR_BOTOES, corDoItem } from '@/lib/coresCardapio'
 import { supabase } from '@/lib/supabase'
 import { fotoDaLoja } from '@/hooks/useProfile'
 import { Produto, DesignSettings, Configuracoes } from '@/types/database'
+import { problemaNaChave, tipoDaChave } from '@/lib/pix'
 
 export interface CardapioData {
   design: DesignSettings | null
@@ -174,7 +175,9 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     cupons_vitrine: cupomDisponivel(isPro) && Array.isArray(rVitrine?.data) ? rVitrine.data : [],
     aceita_agendamento: profile.aceita_agendamento !== false,
     // (20/10) Pix pelo cardápio: só quando a loja ligou, aceita Pix e preencheu chave, nome e cidade
+    // (27/10) chave salva errada (ex.: celular na aba CPF) não liga o Pix: a cliente combina o pagamento no WhatsApp
     pix: profile.pix_online === true && (profile.formas_pagamento || ['pix']).includes('pix') && profile.pix_chave && profile.pix_nome && profile.pix_cidade
+      && !problemaNaChave(profile.pix_chave, tipoDaChave(profile.pix_chave))
       ? { chave: profile.pix_chave, nome: profile.pix_nome, cidade: profile.pix_cidade, modo: ['sinal', 'total'].includes(profile.pix_modo) ? profile.pix_modo : 'escolha', pct: Number(profile.pix_sinal_pct) || 50 }
       : null,
     prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,

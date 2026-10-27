@@ -83,7 +83,10 @@ export default function Indicar() {
     `70% de desconto no 1º mês do PRO\n\n` +
     link;
 
+  // (27/10) sem código de indicação, o link não leva o desconto: não deixa mandar o site puro achando que vale
+  const semCodigo = !loading && !codigo;
   const copiarLink = async () => {
+    if (semCodigo) { avisar("Seu link ainda não está pronto. Fale com o suporte.", { tipo: "erro" }); return; }
     try {
       await navigator.clipboard.writeText(link);
       setCopiado(true);
@@ -94,7 +97,7 @@ export default function Indicar() {
   };
 
   // (16/10) compartilhar nativo do celular (WhatsApp, Instagram...); no computador copia a mensagem
-  const compartilharNativo = () => { void compartilharTexto(mensagem, "Doonly"); };
+  const compartilharNativo = () => { if (semCodigo) { avisar("Seu link ainda não está pronto. Fale com o suporte.", { tipo: "erro" }); return; } void compartilharTexto(mensagem, "Doonly"); };
 
   // Próximo prêmio (o primeiro com meta > conversoes)
   const proximoIdx = PREMIOS.findIndex(p => p.meta > conversoes);

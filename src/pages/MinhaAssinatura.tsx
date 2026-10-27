@@ -1,6 +1,6 @@
 import { COMO_ASSINATURA, TOUR_ASSINATURA } from "@/lib/comoTelas";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
 import { CaretRight, Check, Crown, Receipt } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
@@ -24,7 +24,7 @@ const diaMes = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.
 
 export default function MinhaAssinatura() {
   const navigate = useNavigate();
-  const { isPro, proExpiraEm } = usePlano();
+  const { isPro, proExpiraEm, loading: carregandoPlano } = usePlano();
   const { profile } = useProfile();
   const [desde, setDesde] = useState<Date | null>(null);
   const [computador, setComputador] = useState(() => window.matchMedia("(min-width: 901px)").matches);
@@ -52,7 +52,8 @@ export default function MinhaAssinatura() {
     window.open(`https://wa.me/${WHATSAPP_EQUIPE}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
-  if (!isPro) return <div className="mas-root"><AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" /></div>;
+  // (27/10) conta grátis ou PRO vencido: vai para a página do PRO (antes a tela ficava em branco)
+  if (!isPro) return carregandoPlano ? <div className="mas-root"><AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" /></div> : <Navigate to="/assinar" replace />;
 
   return (
     <div className="mas-root">

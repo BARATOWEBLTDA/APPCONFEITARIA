@@ -25,7 +25,15 @@
 .ep-sw-l[aria-checked="true"] .ep-sw { background: var(--ui-rosa); }
 .ep-sw-l[aria-checked="true"] .ep-sw::before { transform: translateX(20px); }
 
-.ep-taxa { padding-top: 16px; border-top: 1px solid var(--ui-linha); max-width: 320px; }
+.ep-taxa { display: flex; flex-direction: column; gap: 12px; padding-top: 16px; border-top: 1px solid var(--ui-linha); max-width: 420px; }
+/* (27/10) taxa por bairro */
+.ep-bairros { display: flex; flex-direction: column; gap: 8px; }
+.ep-bairro { display: grid; grid-template-columns: minmax(0, 1fr) 112px 44px; gap: 8px; align-items: center; }
+.ep-bairro .ui-campo-r { display: none; }
+.ep-bairro-x { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; padding: 0; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); cursor: pointer; }
+.ep-bairro-erro { margin: 0; font-size: 13px; font-weight: 600; color: var(--ui-vermelho); }
+.ep-bairro-dica { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+.ep-bairros .ui-bt { align-self: flex-start; }
 
 /* cupons */
 .ep-pro { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; border-radius: var(--ui-raio); background: var(--ui-linha); }
@@ -64,7 +72,7 @@
 .ep-form { display: flex; flex-direction: column; gap: 16px; }
 .ep-codigo input { font-weight: 700; letter-spacing: .04em; }
 .ep-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--ui-raio-cartao); background: var(--ui-cinza); }
-.ep-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 4px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.ep-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
 .ep-seg button[aria-checked="true"] { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 700; box-shadow: var(--ui-sombra-cartao); }
 .ep-depois { flex: none; padding-right: 4px; font-size: 16px; font-weight: 700; color: var(--ui-texto-2); }
 .ep-sep { margin: 4px 0 -4px; padding-top: 16px; border-top: 1px solid var(--ui-linha); font-size: 15px; font-weight: 700; }
