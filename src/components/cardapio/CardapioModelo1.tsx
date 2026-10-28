@@ -67,10 +67,10 @@ export function faixaDaLoja(config: Configuracoes | null, produtos: any[] = []) 
   const propria = formas.includes('entrega_propria')
   const outra = formas.some(f => f === 'motoboy' || f === 'uber_flash')
   const retirada = formas.includes('retirada')
-  const itens: { Ic: typeof Truck; v: string; t: string; ok?: boolean; igual?: boolean }[] = []
+  const itens: { Ic: typeof Truck; v: string; t: string; ok?: boolean }[] = []
   // (20/10) entrega e retirada no mesmo card (sem valor nem "Grátis"); se a loja faz só uma, mostra só ela
   const entrega = propria || outra
-  if (entrega && retirada) itens.push({ Ic: Truck, v: 'Entrega', t: 'e retirada', igual: true }) // as 2 linhas na mesma fonte e cor
+  if (entrega && retirada) itens.push({ Ic: Truck, v: 'Entrega', t: 'e retirada' }) // (27/10) igual aos outros quadrinhos: o valor em negrito e o apoio pequeno (antes parecia uma frase quebrada)
   else if (entrega) itens.push({ Ic: Truck, v: 'Realiza', t: 'entregas' })
   else if (retirada) itens.push({ Ic: Storefront, v: 'Retirada', t: 'no local' })
   const prazos = produtos.map(p => String(p?.antecedencia || '')).filter(a => horasAntecedencia(a) > 0).sort((x, y) => horasAntecedencia(x) - horasAntecedencia(y))
@@ -146,10 +146,10 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
         {/* (20/10) com cupom ativo, os cupons (vouchers) ficam no lugar da faixa */}
         {(config?.cupons_vitrine?.length || 0) > 0 ? <Vouchers cupons={config!.cupons_vitrine!} cor={corIcone} /> : faixa.length > 0 && (
           <ul className="cm1-faixa" aria-label="Como a loja atende">
-            {faixa.map(({ Ic, v, t, ok, igual }) => (
+            {faixa.map(({ Ic, v, t, ok }) => (
               <li key={t}>
                 <b className={ok ? 'ok' : undefined}><Ic size={16} weight="bold" color={ok ? '#16803C' : corIcone} aria-hidden="true" />{v}</b>
-                <small className={igual ? 'igual' : undefined}>{t}</small>
+                <small>{t}</small>
               </li>
             ))}
           </ul>

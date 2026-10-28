@@ -16,6 +16,7 @@ const RESUMO_INICIO = "O resumo do seu dia: o que precisa da sua atenção, as p
 /** Início no celular: o (?) do "Olá" */
 export const COMO_INICIO_CEL: Como = {
   tela: { nome: "Início", Icone: House }, resumo: RESUMO_INICIO, checks: true,
+  artigo: "inicio",
   dicas: [
     [Bell, <><b>Avisos:</b> pedidos atrasados e pedidos para aceitar aparecem primeiro.</>],
     [MagnifyingGlass, <><b>Buscar:</b> encontre qualquer tela ou ação, como pix, cupom ou horário.</>],
@@ -28,6 +29,7 @@ export const COMO_INICIO_CEL: Como = {
 /** Início no computador: o (i) do topo */
 export const COMO_INICIO: Como = {
   tela: { nome: "Início", Icone: House }, resumo: RESUMO_INICIO, checks: true,
+  artigo: "inicio",
   dicas: [
     [ChartLineUp, <><b>Números do topo:</b> recebido no mês, pedidos dos últimos 7 dias, entregas de hoje e ticket médio.</>],
     [CalendarBlank, <><b>Próximas entregas:</b> pedidos dos próximos dias, com horário e valor.</>],
@@ -73,6 +75,7 @@ export const COMO_PEDIDOS: Como = {
 
 export const COMO_AGENDA: Como = {
   tela: { nome: "Agenda", Icone: CalendarBlank },
+  artigo: "agenda",
   resumo: "Seus pedidos organizados pela data de entrega, para planejar a produção.",
   tit: "Exemplo · sexta-feira",
   linhas: [["Bolo de aniversário · 14:00", "R$ 120,00"], ["Kit festa · 16:30", "R$ 650,00"]],
@@ -100,6 +103,7 @@ export const TOUR_AGENDA: PassoTour[] = [
 
 export const COMO_FINANCEIRO: Como = {
   tela: { nome: "Financeiro", Icone: CurrencyDollar },
+  artigo: "financeiro",
   resumo: "O dinheiro que entrou e saiu da loja, o saldo do caixa e o que ainda vai entrar e sair.",
   tit: "Exemplo · um dia de vendas",
   linhas: [["Entrou (pedidos pagos)", "R$ 300,00"], ["Saiu (contas e compras)", "R$ 80,00"]],
@@ -116,6 +120,7 @@ export const COMO_FINANCEIRO: Como = {
 /** (23/10) A receber: o (i) do topo e o tour */
 export const COMO_A_RECEBER: Como = {
   tela: { nome: "A receber", Icone: HandCoins },
+  artigo: "a-receber",
   resumo: "Pedidos com valor pendente: o total do pedido menos o que o cliente já pagou.",
   tit: "Exemplo · bolo de aniversário",
   linhas: [["Total do pedido", "R$ 200,00"], ["Sinal pago", "R$ 100,00"]],
@@ -140,6 +145,7 @@ export const TOUR_A_RECEBER: PassoTour[] = [
 
 export const COMO_CARDAPIO: Como = {
   tela: { nome: "Cardápio digital", Icone: ShoppingBag },
+  artigo: "minha-loja",
   resumo: "Sua loja online: o link para os clientes pedirem e o desempenho do cardápio.",
   tit: "Exemplo · últimos 7 dias",
   linhas: [["Visitas no cardápio", "200"], ["Pedidos pelo cardápio", "14"]],
@@ -156,6 +162,7 @@ export const COMO_CARDAPIO: Como = {
 /** (23/10) a mesma tela no celular, como "Minha loja": tudo da loja em um lugar só */
 export const COMO_MINHA_LOJA: Como = {
   tela: { nome: "Minha loja", Icone: Storefront },
+  artigo: "minha-loja",
   resumo: "Tudo da sua loja em uma tela: o link, o que o cliente vê, como você vende e o que você vende.",
   tit: "Exemplo · a linha mostra como está agora",
   linhas: [["Horário", "Seg a Sex · 8h às 18h"], ["Entrega", "Retirada e entrega R$ 8,00"]],
@@ -171,6 +178,7 @@ export const COMO_MINHA_LOJA: Como = {
 
 export const COMO_CLIENTES: Como = {
   tela: { nome: "Clientes", Icone: Users },
+  artigo: "clientes",
   resumo: "Quem compra de você, com contato, aniversário e histórico de pedidos.",
   tit: "Exemplo · uma cliente frequente",
   linhas: [["Pedidos feitos", "8"], ["Total gasto", "R$ 960,00"]],
@@ -200,6 +208,7 @@ export const TOUR_CLIENTES: PassoTour[] = [
 
 export const COMO_PRODUTOS: Como = {
   tela: { nome: "Produtos", Icone: Cake },
+  artigo: "produtos",
   resumo: "Tudo o que você vende, com foto, preço e opções. Os produtos ativos aparecem no seu cardápio digital.",
   tit: "Exemplo · bolo de chocolate",
   linhas: [["Preço de venda", "R$ 120,00"], ["Custo pela ficha técnica", "R$ 48,00"]],
@@ -228,6 +237,7 @@ export const TOUR_PRODUTOS: PassoTour[] = [
 
 export const COMO_FICHA: Como = {
   tela: { nome: "Ficha técnica", Icone: ListChecks },
+  artigo: "ficha-tecnica",
   resumo: "Quanto custa fazer cada produto e quanto sobra de lucro no preço que você cobra.",
   tit: "Exemplo · bolo de 1 kg",
   linhas: [["Preço de venda", "R$ 120,00"], ["Custo total", "R$ 50,00"]],
@@ -254,6 +264,7 @@ export const TOUR_FICHA: PassoTour[] = [
 
 export const COMO_LUCRATIVIDADE: Como = {
   tela: { nome: "Lucratividade", Icone: ChartLineUp },
+  artigo: "lucratividade",
   resumo: "Onde está o seu lucro de verdade: o que você vendeu menos todos os custos do período.",
   tit: "Exemplo · um mês",
   linhas: [["Vendido", "R$ 5.000,00"], ["Ingredientes, taxas e despesas", "R$ 3.200,00"]],
@@ -323,6 +334,7 @@ export const TOUR_CARDAPIO: PassoTour[] = [
 
 export const COMO_CADASTROS: Como = {
   tela: { nome: "Cadastros", Icone: SquaresFour },
+  artigo: "produtos",
   resumo: "Tudo o que forma a sua loja: produtos, ingredientes, clientes e os dados do cardápio.",
   fluxo: ["Ingredientes", "Produtos", "Cardápio"],
   dicas: [
@@ -341,6 +353,7 @@ export const TOUR_CADASTROS: PassoTour[] = [
 
 export const COMO_CATEGORIAS: Como = {
   tela: { nome: "Categorias", Icone: SquaresFour },
+  artigo: "categorias",
   resumo: "Grupos que organizam os produtos no cardápio, como Bolos, Doces e Salgados.",
   fluxo: ["Categoria", "Produtos", "Cardápio"],
   dicas: [
@@ -360,6 +373,7 @@ export const TOUR_CATEGORIAS: PassoTour[] = [
 
 export const COMO_COMPLEMENTOS: Como = {
   tela: { nome: "Complementos", Icone: PuzzlePiece },
+  artigo: "complementos",
   resumo: "Opções extras que o cliente escolhe ao pedir, como topo de bolo, escrita e papel de arroz.",
   tit: "Exemplo · bolo com extra",
   linhas: [["Bolo de chocolate", "R$ 120,00"], ["Topo de bolo", "+ R$ 15,00"]],
@@ -386,6 +400,7 @@ export const TOUR_COMPLEMENTOS: PassoTour[] = [
 
 export const COMO_INGREDIENTES: Como = {
   tela: { nome: "Ingredientes", Icone: Basket },
+  artigo: "ingredientes",
   resumo: "Tudo o que você compra para produzir, com o preço pago. A ficha técnica usa esses valores para calcular o custo.",
   tit: "Exemplo · leite condensado",
   linhas: [["Embalagem de 395 g", "R$ 7,90"], ["Custo por grama", "R$ 0,02"]],
@@ -409,6 +424,7 @@ export const TOUR_INGREDIENTES: PassoTour[] = [
 
 export const COMO_TRANSACOES: Como = {
   tela: { nome: "Transações", Icone: ArrowsDownUp },
+  artigo: "transacoes",
   resumo: "O extrato de todo o dinheiro que entrou e saiu, dia a dia.",
   tit: "Exemplo · uma semana",
   linhas: [["Entradas", "R$ 1.200,00"], ["Saídas", "R$ 450,00"]],
@@ -432,6 +448,7 @@ export const TOUR_TRANSACOES: PassoTour[] = [
 
 export const COMO_A_PAGAR: Como = {
   tela: { nome: "A pagar", Icone: CalendarCheck },
+  artigo: "a-pagar",
   resumo: "Contas que você ainda vai pagar, com o vencimento. Elas só saem do caixa quando você registra o pagamento.",
   tit: "Exemplo · contas do mês",
   linhas: [["Aluguel · vence dia 10", "R$ 1.200,00"], ["Fornecedor · vence dia 15", "R$ 350,00"]],
@@ -454,6 +471,7 @@ export const TOUR_A_PAGAR: PassoTour[] = [
 
 export const COMO_CUSTOS: Como = {
   tela: { nome: "Custos", Icone: Coins },
+  artigo: "custos",
   resumo: "Tudo o que a confeitaria gasta: custos fixos, variáveis, invisíveis e a sua mão de obra.",
   tit: "Exemplo · 8 h por dia, de segunda a sexta",
   linhas: [["Custos fixos do mês", "R$ 1.500,00"], ["Seu salário", "R$ 3.000,00"]],
@@ -476,6 +494,7 @@ export const TOUR_CUSTOS: PassoTour[] = [
 
 export const COMO_APARENCIA: Como = {
   tela: { nome: "Aparência", Icone: Palette },
+  artigo: "aparencia",
   resumo: "Deixe o cardápio com a cara da sua confeitaria: tema, topo, banners, modelo e cores.",
   fluxo: ["Personalizar", "Salvo na hora", "No cardápio"],
   dicas: [
@@ -495,6 +514,7 @@ export const TOUR_APARENCIA: PassoTour[] = [
 
 export const COMO_MARKETING: Como = {
   tela: { nome: "Marketing", Icone: Megaphone },
+  artigo: "cupons",
   resumo: "Ferramentas para divulgar a confeitaria e vender mais.",
   tit: "Exemplo · cupom de 10%",
   linhas: [["Pedido", "R$ 100,00"], ["Cupom BEMVINDO10", "- R$ 10,00"]],
@@ -511,7 +531,7 @@ export const TOUR_MARKETING: PassoTour[] = [
   { el: ".mk-abas", titulo: "Ferramentas", texto: "Alterne entre os cupons de desconto e o Pixel do Facebook." },
   { el: ".ep-cupons", titulo: "Seus cupons", texto: "Cada cupom mostra o código, o desconto e se está ativo. Selecione um cupom para editar.",
     vazio: { el: ".mk-cupons .ep-vazio, .mk-cupons .ep-pro", texto: "Ainda não há cupons para mostrar. Siga a orientação deste aviso para criar o primeiro." } },
-  { el: ".ep-cupons-pe", titulo: "Novo cupom", texto: "Crie um cupom e use Salvar cupons para aplicar as alterações." },
+  { el: ".ep-cupons-pe", titulo: "Novo cupom", texto: "Crie um cupom. Ele já vale no cardápio assim que você cria." },
   { el: ".mk-card", titulo: "Pixel do Facebook", texto: "Informe o código do Pixel para os anúncios do Facebook e do Instagram chegarem a quem visitou o cardápio." },
 ];
 
@@ -536,6 +556,7 @@ export const TOUR_NOVIDADES: PassoTour[] = [
 
 export const COMO_DADOS_LOJA: Como = {
   tela: { nome: "Dados da loja", Icone: Storefront },
+  artigo: "horario-entrega-pagamento",
   resumo: "As informações que o cliente vê no cardápio: loja, endereço, horário, pagamento e entrega. Tudo é salvo automaticamente.",
   fluxo: ["Preencher", "Salvo na hora", "No cardápio"],
   dicas: [
@@ -554,6 +575,7 @@ export const TOUR_DADOS_LOJA: PassoTour[] = [
 
 export const COMO_NOVA_VENDA: Como = {
   tela: { nome: "Nova venda", Icone: ClipboardText },
+  artigo: "nova-venda",
   resumo: "Registre uma venda ou encomenda feita pelo WhatsApp ou no balcão, em cinco etapas.",
   tit: "Exemplo · encomenda de aniversário",
   linhas: [["Bolo de chocolate 2 kg", "R$ 180,00"], ["Taxa de entrega", "R$ 15,00"]],
@@ -577,6 +599,7 @@ export const TOUR_NOVA_VENDA: PassoTour[] = [
 
 export const COMO_CONFIGURACOES: Como = {
   tela: { nome: "Configurações", Icone: Gear },
+  artigo: "conta",
   resumo: "Sua conta, o plano, os avisos do app e a ajuda.",
   dicas: [
     [MagnifyingGlass, <>Use a <b>busca</b> para encontrar um ajuste pelo nome, como senha, pix ou horário.</>],
@@ -593,6 +616,7 @@ export const TOUR_CONFIGURACOES: PassoTour[] = [
 
 export const COMO_MENSAGENS: Como = {
   tela: { nome: "Mensagens do WhatsApp", Icone: ChatCircleText },
+  artigo: "mensagens",
   resumo: "Os textos que o app escreve por você ao abrir o WhatsApp.",
   dicas: [
     [ChatCircleText, <>O app abre o WhatsApp com a <b>mensagem pronta</b>. Você só confere e envia.</>],
@@ -612,6 +636,7 @@ export const TOUR_MENSAGENS: PassoTour[] = [
 
 export const COMO_CLIENTE: Como = {
   tela: { nome: "Cliente", Icone: Users },
+  artigo: "clientes",
   resumo: "Tudo de um cliente em uma tela: contato, aniversário, quanto já comprou e os pedidos.",
   tit: "Exemplo · uma cliente frequente",
   linhas: [["Pedidos", "8"], ["Total gasto", "R$ 960,00"]],
@@ -633,6 +658,7 @@ export const TOUR_CLIENTE: PassoTour[] = [
 
 export const COMO_PEDIDO: Como = {
   tela: { nome: "Pedido", Icone: Receipt },
+  artigo: "pedido-aberto",
   resumo: "O pedido aberto: em que etapa está, o que foi pedido, a entrega e o pagamento.",
   tit: "Exemplo · bolo de aniversário",
   linhas: [["Total", "R$ 180,00"], ["Sinal pago", "R$ 90,00"]],
@@ -652,6 +678,7 @@ export const TOUR_PEDIDO: PassoTour[] = [
 
 export const COMO_NOTIFICACOES: Como = {
   tela: { nome: "Notificações e sons", Icone: Bell },
+  artigo: "notificacoes",
   resumo: "Os avisos e os sons deste aparelho. Cada celular ou computador tem a sua configuração.",
   dicas: [
     [Bell, <>Com as <b>notificações</b> ligadas, o celular avisa quando chega pedido, mesmo com o app fechado.</>],
@@ -666,6 +693,7 @@ export const TOUR_NOTIFICACOES: PassoTour[] = [
 
 export const COMO_ASSINATURA: Como = {
   tela: { nome: "Minha assinatura", Icone: Crown },
+  artigo: "assinatura",
   resumo: "O seu plano PRO: quanto custa, quando renova e o que está liberado.",
   dicas: [
     [CalendarBlank, <>A <b>próxima cobrança</b> mostra a data e quantos dias faltam.</>],
@@ -679,6 +707,7 @@ export const TOUR_ASSINATURA: PassoTour[] = [
 
 export const COMO_DOO: Como = {
   tela: { nome: "Doo IA", Icone: Sparkle },
+  artigo: "doo-ia",
   resumo: "A assistente do Doonly: calcula preços, cria receitas, registra pedidos e escreve por você.",
   fluxo: ["Pergunte", "A Doo responde", "Use no app"],
   dicas: [
@@ -695,6 +724,7 @@ export const TOUR_DOO: PassoTour[] = [
 /** (25/10) Orçamentos: a lista (pedidos que chegaram pelo link, enviados e respondidos) */
 export const COMO_ORCAMENTOS: Como = {
   tela: { nome: "Orçamentos", Icone: FileText },
+  artigo: "orcamentos",
   resumo: "A cliente pede pelo seu link, você monta a proposta e ela aprova pelo celular. Aprovou, vira pedido na Agenda.",
   fluxo: ["Ela pede", "Você monta", "Ela aprova", "Vira pedido"],
   dicas: [
@@ -715,6 +745,7 @@ export const TOUR_ORCAMENTOS: PassoTour[] = [
 /** (25/10) montar o orçamento (3 etapas) */
 export const COMO_ORCAMENTO: Como = {
   tela: { nome: "Montar orçamento", Icone: FileText },
+  artigo: "orcamentos",
   resumo: "Em 3 etapas: os itens e o valor, as condições e o envio do link para a cliente aprovar.",
   tit: "Exemplo · proposta",
   linhas: [["Bolo 2 andares", "R$ 380,00"], ["100 docinhos", "R$ 150,00"], ["Entrega", "R$ 20,00"]],

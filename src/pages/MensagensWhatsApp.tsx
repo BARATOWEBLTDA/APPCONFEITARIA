@@ -15,12 +15,12 @@ import "./mensagens.css";
  * Os textos ficam em profiles.mensagens_whatsapp; sem texto salvo, vale o padrão (lib/mensagens.ts).
  */
 
-/** Mostra *negrito* e _itálico_ como no WhatsApp */
+/** Mostra *negrito* e _itálico_ como no WhatsApp (27/10: chave com a linha, antes repetia entre linhas) */
 function textoZap(t: string): ReactNode[] {
   return t.split("\n").flatMap((linha, i, todas) => {
     const partes = linha.split(/(\*[^*\n]+\*|_[^_\n]+_)/g).filter(Boolean).map((p, j) =>
-      p.startsWith("*") && p.endsWith("*") ? <b key={j}>{p.slice(1, -1)}</b>
-        : p.startsWith("_") && p.endsWith("_") ? <i key={j}>{p.slice(1, -1)}</i> : <span key={j}>{p}</span>);
+      p.startsWith("*") && p.endsWith("*") ? <b key={`${i}-${j}`}>{p.slice(1, -1)}</b>
+        : p.startsWith("_") && p.endsWith("_") ? <i key={`${i}-${j}`}>{p.slice(1, -1)}</i> : <span key={`${i}-${j}`}>{p}</span>);
     return i < todas.length - 1 ? [...partes, <br key={`br${i}`} />] : partes;
   });
 }
