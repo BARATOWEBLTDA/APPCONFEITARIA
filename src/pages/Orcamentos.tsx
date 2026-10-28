@@ -16,6 +16,7 @@ import { linkWhatsApp } from '@/lib/telefone'
 import { compartilharTexto } from '@/lib/compartilharCardapio'
 import { brl, dataCurta, linkPedirOrcamento, semResposta, textoPedirOrcamento, totalOrcamento, type Orcamento } from '@/lib/orcamentos'
 import { COMO_ORCAMENTOS, TOUR_ORCAMENTOS } from '@/lib/comoTelas'
+import { chegouHa } from '@/components/pedidos/pedidoTexto'
 import './orcamentos.css'
 
 type Aba = 'novos' | 'enviados' | 'aprovados' | 'recusados'
@@ -76,6 +77,13 @@ export default function Orcamentos() {
       linha: [o.ocasiao || o.nome_evento, o.pessoas ? `${o.pessoas} pessoas` : ''].filter(Boolean).join(' · '),
       sit: (o.status === 'novo' ? ['Novo', 'n'] : o.status === 'rascunho' ? ['Rascunho', 'r'] : o.status === 'enviado' ? [atrasado ? 'Sem resposta' : 'Aguardando', 'e'] : o.status === 'aprovado' ? ['Aprovado', 'a'] : ['Recusado', 'x']) as [string, string],
     }
+  }
+  const hojeISO = new Date().toLocaleDateString('sv-SE')
+  // "Chegou há 2 h", "Enviado ontem às 18:40", "Aprovado em 24/10 às 09:10"
+  const quandoDo = (o: Orcamento) => {
+    if ((o.status === 'aprovado' || o.status === 'recusado') && o.respondido_em) return chegouHa(o.respondido_em).replace(/^Chegou/, o.status === 'aprovado' ? 'Aprovado' : 'Recusado')
+    if (o.status === 'enviado' && o.enviado_em) return chegouHa(o.enviado_em).replace(/^Chegou/, 'Enviado')
+    return o.origem === 'link' ? chegouHa(o.created_at) : chegouHa(o.created_at).replace(/^Chegou/, 'Criado')
   }
   const cobrar = (o: Orcamento) => o.cliente_telefone ? (
     <a className="orc-cobrar" href={linkWhatsApp(o.cliente_telefone, `Oi${o.cliente_nome ? `, ${o.cliente_nome.split(' ')[0]}` : ''}! Conseguiu ver o orçamento que te mandei?`)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
@@ -141,9 +149,15 @@ export default function Orcamentos() {
                       <article key={o.id} className={`orq-c${x.atrasado ? ' atr' : ''}`} tabIndex={0} onClick={() => navigate(`/orcamentos/${o.id}`)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/orcamentos/${o.id}`) } }}>
                         <p className="orq-nome"><b>{o.cliente_nome || 'Sem nome'}</b><span>#{o.numero}</span></p>
                         <p className="orq-s">{x.linha || (o.origem === 'link' ? 'Pediu pelo link' : 'Criado por você')}</p>
+                        {/* (28/10) o que ela pediu, a foto e quanto quer gastar: dá pra decidir sem abrir */}
+                        {o.descricao && <p className="orq-desc">“{o.descricao}”</p>}
+                        {(o.fotos || []).length > 0 && <div className="orq-fotos">{(o.fotos || []).slice(0, 4).map((f, n) => <img key={n} src={f} alt="" loading="lazy" />)}{(o.fotos || []).length > 4 && <span>+{(o.fotos || []).length - 4}</span>}</div>}
                         <div className="orq-ls">
-                          {o.data_evento && <p><span>Festa:</span> {dataCurta(o.data_evento)}</p>}
+                          {o.data_evento && (() => { const passou = o.data_evento < hojeISO && (o.status === 'novo' || o.status === 'rascunho' || o.status === 'enviado'); return <p className={passou ? 'orq-passou' : undefined}><span>Festa:</span> {dataCurta(o.data_evento)}{passou ? ' · a data já passou' : ''}</p> })()}
+                          {Number(o.orcamento_cliente) > 0 && (o.status === 'novo' || o.status === 'rascunho') && <p><span>Quer gastar:</span> até {brl(Number(o.orcamento_cliente))}</p>}
                           {x.total > 0 && <p><span>Valor:</span> {brl(x.total)}</p>}
+                          {o.status === 'recusado' && o.motivo_recusa && <p><span>Motivo:</span> {o.motivo_recusa}</p>}
+                          <p className="orq-quando">{quandoDo(o)}</p>
                           {(o.status === 'rascunho' || x.atrasado) && <p className={`orc-st orc-st--${x.sit[1]}`}>{x.sit[0]}</p>}
                         </div>
                         {o.status === 'novo' && <Botao tamanho="p" cheio onClick={e => { e.stopPropagation(); navigate(`/orcamentos/${o.id}`) }}>Responder</Botao>}
