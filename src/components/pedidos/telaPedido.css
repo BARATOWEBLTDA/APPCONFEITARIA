@@ -190,6 +190,15 @@
 @media (min-width: 901px) { .ep-wrap.ep2.tpd { padding: 24px 0 48px !important; } }
 /* (28/10) computador: o que fazer vem primeiro. Itens do pedido, depois o recado do pedido, depois o cliente (no celular, a ordem da aba continua) */
 @media (min-width: 901px) { .ep2.tpd .ep2-sec > .tpd-recado-ped { order: 1; } .ep2.tpd .ep2-sec > .tpd-cli-card { order: 2; } }
+/* (28/10) computador: os Itens mostram só o que fazer (o preço de cada item está nos Valores, ao lado) */
+@media (min-width: 901px) { .ep2.tpd .tpd-it-preco { display: none; } }
+/* (28/10) etapa "Recebido" acesa no pedido novo, em laranja, igual ao "Novo" do celular */
+.tpd-passos li.atual.novo { color: #B45309; }
+.tpd-passos li.atual.novo i { background: #EA8A1A; color: var(--ui-branco); box-shadow: 0 0 0 4px #FDECD3; }
+/* (28/10) cartões da tela do pedido mais suaves: borda mais clara e sombra quase sumindo */
+.ep2.tpd .ep2-card, .ep2.tpd .ep2-save-desk, .tpd-sit { border-color: #F2EBEE; box-shadow: 0 1px 3px rgba(44, 18, 25, .04); }
+.tpd-sit.atr { border-color: #F6CFCF; }
+.tpd-sit.aceitar { border: 1px solid #F1C48F; } /* (28/10) o laranja do pedido novo continua, mais fino e mais claro */
 @media (max-width: 767px) { .ep-wrap.ep2.tpd .ep2-sec:not(.ativa) { display: none !important; } }
 
 /* duas colunas quando o conteúdo tem largura pra isso */

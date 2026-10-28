@@ -1255,14 +1255,17 @@ export default function EditarPedido() {
   // Etapas dinâmicas (03/10): mudam com o tipo (entrega/retirada) e com o status
   // 10/10: o mesmo caminho da lista. Retirada: Em produção → Pronto pra retirar → Retirado.
   // Entrega: Em produção → Pronto → Saiu pra entrega → Entregue.
+  // (28/10) computador também começa no "Recebido": o pedido novo acende essa etapa e o Aceitar leva pro Agendado
+  // (o lançado pela confeiteira já nasce aceito, então o Recebido aparece feito)
   const ETAPAS_PC: string[] = tipoEntrega === 'retirada'
-    ? ['Agendado', 'Em produção', 'Pronto para retirar', 'Retirado']
-    : ['Agendado', 'Em produção', 'Pronto', 'Saiu para entrega', 'Entregue']
+    ? ['Recebido', 'Agendado', 'Em produção', 'Pronto para retirar', 'Retirado']
+    : ['Recebido', 'Agendado', 'Em produção', 'Pronto', 'Saiu para entrega', 'Entregue']
   const posEtapaPc = (() => {
     const g = grupoDoStatus(statusPedido)
-    if (g === 'em_producao') return 1
-    if (tipoEntrega === 'retirada') return ['finalizado', 'aguardando_retirada'].includes(g) ? 2 : g === 'entregue' ? 3 : 0
-    return g === 'finalizado' || g === 'aguardando_retirada' ? 2 : g === 'em_entrega' ? 3 : g === 'entregue' ? 4 : 0
+    if (['aguardando_aceite', 'aguardando_pagamento'].includes(g)) return 0
+    if (g === 'em_producao') return 2
+    if (tipoEntrega === 'retirada') return ['finalizado', 'aguardando_retirada'].includes(g) ? 3 : g === 'entregue' ? 4 : 1
+    return g === 'finalizado' || g === 'aguardando_retirada' ? 3 : g === 'em_entrega' ? 4 : g === 'entregue' ? 5 : 1
   })()
   // (22/10) celular: sempre 5 etapas de nome curto, começando no "Novo" (o pedido não aceito acende o Novo, em laranja).
   // Na entrega, a última etapa diz "A caminho" enquanto o pedido está saindo e "Entregue" depois.
@@ -1432,8 +1435,8 @@ export default function EditarPedido() {
           <ol className="tpd-passos" aria-label="Etapas do pedido">
             {ETAPAS.map((n, i) => {
               const feita = i < posEtapa || statusPedido === 'entregue'
-              const atual = !feita && i === posEtapa && (cel || !['aguardando_pagamento', 'aguardando_aceite'].includes(statusPedido))
-              const novo = cel && atual && i === 0
+              const atual = !feita && i === posEtapa
+              const novo = atual && i === 0
               return <li key={i} className={feita ? 'feita' : atual ? `atual${novo ? ' novo' : ''}` : ''} aria-current={atual ? 'step' : undefined}><i>{feita ? <Check size={14} weight="bold" /> : i + 1}</i><span>{n}</span></li>
             })}
           </ol>
@@ -1523,7 +1526,8 @@ export default function EditarPedido() {
                           <span className="tpd-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                           <div className="tpd-it-tx">
                             <b><NomeComQtd nome={nomeDeProduto(it.nome_produto)} qtd={q} forma={formaDoItem(it)} Destaque="em" /></b>
-                            <span>{formatMoney(valorDaLinha(it))}{q !== 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}` : ''}</span>
+                            {/* (28/10) no computador o preço sai daqui: ele já está nos Valores, ao lado (telaPedido.css) */}
+                            <span className="tpd-it-preco">{formatMoney(valorDaLinha(it))}{q !== 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}` : ''}</span>
                           </div>
                           <BotaoIcone rotulo={`Opções de ${it.nome_produto}`} variante="limpo" tamanho="p" onClick={() => setItemMenu(idx)}><DotsThree size={20} weight="bold" /></BotaoIcone>
                         </div>
