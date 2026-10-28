@@ -27,14 +27,14 @@
    Imagem quadrada à esquerda, título, texto e o tempo no canto. Não lida: branco. Lida: cinza claro e texto mais leve. */
 html:has(.layout-root[data-rota="/noticias"]) body,
 html body .layout-root[data-rota="/noticias"], html body .layout-root[data-rota="/noticias"] .layout-main { background: var(--ui-branco) !important; }
-.nl-lista { margin: 0 calc(50% - 50vw); padding: 0; list-style: none; }
+.nl-lista { margin: 0 -16px; padding: 0; list-style: none; } /* (28/10) antes calc(50% - 50vw): em alguns Android passava da tela e o texto vazava para a direita */
 .nl-it { display: flex; align-items: flex-start; gap: 14px; padding: 18px 16px; background: var(--ui-branco); color: var(--ui-texto); text-decoration: none; -webkit-tap-highlight-color: transparent; transition: background-color var(--dur-fast) linear; }
 .nl-it--lida { background: #F3F3F3; }
 .nl-lista > li + li .nl-it:not(.nl-it--lida) { box-shadow: inset 0 1px 0 #EFEFEF; }
 @media (hover: hover) { .nl-it:hover { background: #FAFAFA; } .nl-it--lida:hover { background: #EDEDED; } }
 .nl-it:active { background: #EDEDED; }
 .nl-it:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
-.nl-it-img { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; overflow: hidden; border-radius: 4px; background: #FDE7F0; color: var(--ui-rosa-escuro); }
+.nl-it-img { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 80px; height: 45px; overflow: hidden; border-radius: 6px; background: #FDE7F0; color: var(--ui-rosa-escuro); }
 .nl-it-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .nl-it-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .nl-it-t { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 15px; font-weight: 500; line-height: 1.3; color: #231E20; }
@@ -131,7 +131,7 @@ html body .layout-root[data-rota="/noticias"], html body .layout-root[data-rota=
 .nd-mais a:active { background: var(--ui-linha); }
 .nd-mais b { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nd-mais svg:last-child { flex: none; color: var(--ui-texto-3); }
-.nd-mais-img { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; overflow: hidden; border-radius: 6px; background: #FDE7F0; color: var(--ui-rosa-escuro); }
+.nd-mais-img { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 72px; height: 40px; overflow: hidden; border-radius: 6px; background: #FDE7F0; color: var(--ui-rosa-escuro); }
 .nd-mais-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 @media (min-width: 768px) {
@@ -148,3 +148,6 @@ html body .layout-root[data-rota="/noticias"], html body .layout-root[data-rota=
 .nl-sw-it { position: relative; z-index: 1; touch-action: pan-y; transition: transform .2s ease; }
 .nl-sw-x { position: absolute; z-index: 2; top: 50%; right: 12px; transform: translateY(-50%); display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 50%; background: #fff; color: var(--ui-texto-2); box-shadow: 0 1px 4px rgba(0,0,0,.15); cursor: pointer; }
 @media (hover: hover) and (pointer: fine) { .nl-sw:hover .nl-sw-x, .nl-sw-x:focus-visible { display: flex; } .nl-sw:hover time { visibility: hidden; } }
+
+/* (28/10) miniatura deitada (16:9), do jeito do banner: a quadrada cortava o meio da imagem */
+.nl-it { align-items: center; }

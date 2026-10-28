@@ -99,3 +99,18 @@ a.cc-lin-bt, button.cc-lin.cc-lin-bt { padding-right: 12px; }
 .cc-zap-fixo b { font-size: 16px; font-weight: 700; }
 .cc-zap-fixo small { font-size: 13px; color: var(--ui-texto-2); }
 .cc-lin-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* (28/10) pedidos recolhidos: só o mais recente fica aberto */
+.cc-linha { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin: 0 0 8px; padding: 10px 14px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.cc-linha-pt { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #16803C; }
+.cc-linha.off .cc-linha-pt { background: var(--ui-texto-3); }
+.cc-linha-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cc-linha-tx b { font-size: 15px; font-weight: 500; white-space: nowrap; }
+.cc-linha-tx b em { font-style: normal; font-weight: 400; color: var(--ui-texto-2); }
+.cc-linha-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-linha strong { flex: none; font-size: 14.5px; font-weight: 600; }
+.cc-linha.off strong { color: var(--ui-texto-3); text-decoration: line-through; }
+.cc-linha > svg { flex: none; color: var(--ui-texto-3); }
+.cc-aberto { margin-bottom: 12px; }
+.cc-fechar { display: flex; align-items: center; justify-content: flex-end; gap: 4px; width: 100%; min-height: 36px; margin: 0; padding: 0 4px; border: 0; background: none; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
+.cc-fechar svg { transform: rotate(180deg); }

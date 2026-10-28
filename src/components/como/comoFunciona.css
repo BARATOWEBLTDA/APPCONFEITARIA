@@ -76,3 +76,17 @@ html.tour-rola body::after { content: ""; display: block; height: 260px; }
 /* (25/10) link para o tutorial da Central de Ajuda */
 .cf-artigo { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; padding: 10px 2px; border-top: 1px solid var(--ui-linha); font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); text-decoration: none; }
 .cf-artigo svg:last-child { margin-left: auto; }
+
+/* (28/10) "Ver o tutorial completo" e "Fazer o tour" com cara de botão: um ao lado do outro, no pé do balão */
+.cf-artigo { justify-content: center; gap: 8px; margin: 4px 16px 0; padding: 0 14px; min-height: 46px; border: 1px solid var(--ui-borda); border-top: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-size: 14.5px; font-weight: 600; color: var(--ui-texto); }
+.cf-artigo svg { color: var(--ui-rosa-escuro); }
+.cf-artigo svg:last-child { display: none; }
+.cf-artigo:active { background: var(--ui-cinza); }
+.cf-tour { justify-content: center; gap: 10px; width: calc(100% - 32px); margin: 10px 16px 16px; padding: 0 16px; min-height: 48px; border: 0; border-radius: 12px; background: var(--ui-texto); color: #fff; }
+.cf-tour span { flex: none; }
+.cf-tour small { display: none; }
+.cf-tour b { font-size: 15px; font-weight: 600; }
+.cf-tour svg:last-child { display: none; }
+.cf-tour:hover { background: #3A2A30; }
+.cf-tour:active { background: #120C0E; }
+.cf-artigo + .cf-tour { margin-top: 8px; }

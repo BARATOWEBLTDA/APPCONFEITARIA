@@ -1,9 +1,9 @@
 /* Pedidos do cliente (08/10 · 3.31): em andamento com o passo a passo, depois os anteriores */
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import PeriodoFiltro, { iso, periodoInicial, rotuloPeriodo, type Periodo } from '@/components/financeiro/PeriodoFiltro'
-import { ArrowClockwise, Receipt } from '@phosphor-icons/react'
-import { AcompanharPedido } from './AcompanharPedido'
-import { CartaoPedido, JanelaEntrar, SemConta, lerCliente, pedidoAberto, usePedidosCliente, type Cliente } from './contaCliente'
+import { ArrowClockwise, CaretDown, Receipt } from '@phosphor-icons/react'
+import { AcompanharPedido, frase } from './AcompanharPedido'
+import { CartaoPedido, JanelaEntrar, SemConta, dinheiro, lerCliente, pedidoAberto, usePedidosCliente, type Cliente, type Pedido } from './contaCliente'
 
 export function PedidosTab({ accent, corTopo, confeteiraUserId, onVerCardapio }: {
   accent: string
@@ -23,6 +23,14 @@ export function PedidosTab({ accent, corTopo, confeteiraUserId, onVerCardapio }:
   const noPeriodo = pedidos.filter(p => { const d = p.created_at ? iso(new Date(p.created_at)) : ''; return !d || (d >= periodo.ini && d <= periodo.fim) })
   const andamento = noPeriodo.filter(pedidoAberto)
   const anteriores = noPeriodo.filter(p => !pedidoAberto(p))
+  // (28/10) só um pedido aberto por vez: o mais recente em andamento (ou o mais recente de todos); os outros ficam numa linha
+  const destaque = (andamento[0] || anteriores[0])?.id
+  const [abertos, setAbertos] = useState<Record<string, boolean>>({})
+  const estaAberto = (id: string) => abertos[id] ?? id === destaque
+  const alternar = (id: string) => setAbertos(a => ({ ...a, [id]: !estaAberto(id) }))
+  const item = (p: Pedido, conteudo: ReactNode) => estaAberto(p.id)
+    ? <div key={p.id} className="cc-aberto">{p.id !== destaque && <button type="button" className="cc-fechar" onClick={() => alternar(p.id)}>Recolher<CaretDown size={16} weight="bold" aria-hidden="true" /></button>}{conteudo}</div>
+    : <LinhaPedido key={p.id} p={p} cor={accent} aoAbrir={() => alternar(p.id)} />
 
   return (
     <div className="cc">
@@ -53,14 +61,29 @@ export function PedidosTab({ accent, corTopo, confeteiraUserId, onVerCardapio }:
             <div className="cc-periodo"><PeriodoFiltro valor={periodo} onChange={setPeriodo} /></div>
             {noPeriodo.length === 0 && <p className="cc-filtro-vazio">Nenhum pedido {rotuloPeriodo(periodo)}.</p>}
             {andamento.length > 0 && <h3 className="cc-sec">Em andamento</h3>}
-            {andamento.map(p => <AcompanharPedido key={p.id} p={p} cor={accent} corTopo={corTopo} aoAtualizar={buscar} />)}
+            {andamento.map(p => item(p, <AcompanharPedido p={p} cor={accent} corTopo={corTopo} aoAtualizar={buscar} />))}
             {anteriores.length > 0 && <h3 className="cc-sec">Anteriores</h3>}
-            {anteriores.map(p => <CartaoPedido key={p.id} p={p} cor={accent} />)}
+            {anteriores.map(p => item(p, <CartaoPedido p={p} cor={accent} />))}
           </>
         )}
       </div>
 
       <JanelaEntrar aberta={entrar} aoFechar={() => setEntrar(false)} loja={confeteiraUserId} cor={accent} aoEntrar={setCliente} />
     </div>
+  )
+}
+
+/** (28/10) pedido recolhido: número, a situação, o dia e o total; tocar abre */
+function LinhaPedido({ p, cor, aoAbrir }: { p: Pedido; cor: string; aoAbrir: () => void }) {
+  const feito = p.status === 'cancelado' ? 'Cancelado' : frase(p)
+  const ok = ['concluido', 'entregue'].includes(p.status)
+  const dia = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : ''
+  return (
+    <button type="button" className={`cc-linha${p.status === 'cancelado' ? ' off' : ''}`} onClick={aoAbrir} aria-expanded={false}>
+      <i className="cc-linha-pt" style={!ok && p.status !== 'cancelado' ? { background: cor } : undefined} aria-hidden="true" />
+      <span className="cc-linha-tx"><b>Pedido #{p.numero}{dia && <em> · {dia}</em>}</b><small>{feito}</small></span>
+      <strong>{dinheiro(p.valor_total)}</strong>
+      <CaretDown size={18} weight="bold" aria-hidden="true" />
+    </button>
   )
 }

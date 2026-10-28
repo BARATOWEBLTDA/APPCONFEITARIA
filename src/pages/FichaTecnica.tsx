@@ -7,6 +7,7 @@ import { calcularCustoLucro, custoDaHora, lerMaoObraConta, precoQueClientePaga, 
 import { taxaPctDaForma, fixoPorPedido } from "@/lib/painelFinanceiro";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { gravarInsumosDoProduto } from "@/lib/insumosDoo";
 import { useProfile } from "@/hooks/useProfile";
 import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
 import DooInfoModal from "@/components/DooInfoModal";
@@ -450,12 +451,6 @@ export default function FichaTecnica() {
     setSaving(true);
 
     // 1. Persiste vinculos produto_insumos (10/10: confere o erro antes de seguir)
-    const { error: errDel } = await supabase.from("produto_insumos").delete().eq("produto_id", selected.id);
-    if (errDel) {
-      setSaving(false);
-      avisar(explicarErro(errDel, "Não deu para salvar a ficha técnica. Tente de novo."), { tipo: "erro" });
-      return;
-    }
     const itens = ficha
       .filter(f => f.insumo_id && f.quantidade > 0)
       .map(f => ({
@@ -466,14 +461,13 @@ export default function FichaTecnica() {
         unidade_utilizada: f.unidade_utilizada,
         quantidade_base: toBase(f.quantidade, f.unidade_utilizada),
       }));
-    if (itens.length > 0) {
-      const { error: errIns } = await supabase.from("produto_insumos").insert(itens);
-      if (errIns) {
-        // Não deixa a ficha "sumir" calada: avisa e para (os ingredientes continuam na tela pra tentar de novo)
-        setSaving(false);
-        avisar(explicarErro(errIns, "Não deu para salvar os ingredientes. Tente de novo."), { tipo: "erro" });
-        return;
-      }
+    // (28/10) grava os novos antes de tirar os antigos: falhou no meio, a ficha antiga continua no banco
+    const { error: errIns } = await gravarInsumosDoProduto(selected.id, itens);
+    if (errIns) {
+      // Não deixa a ficha "sumir" calada: avisa e para (os ingredientes continuam na tela pra tentar de novo)
+      setSaving(false);
+      avisar(explicarErro(errIns, "Não deu para salvar os ingredientes. Tente de novo."), { tipo: "erro" });
+      return;
     }
 
     // 2. Persiste campos extras no produto (respeitando os toggles ativos)

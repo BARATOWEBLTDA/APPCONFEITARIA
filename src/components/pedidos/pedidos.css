@@ -197,3 +197,17 @@
 .pdk-dir { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .pdk-v { font-size: 14px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .ui-bt.pdk-bt { min-height: 34px; padding: 0 12px; font-size: 13px; }
+
+/* (28/10) celular: as 4 situações cabem na tela, sem cortar a última (número em cima, nome embaixo) */
+@media (max-width: 600px) {
+  .pdk-abas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; overflow: visible; }
+  .pdk-aba { flex-direction: column-reverse; justify-content: center; gap: 2px; height: 54px; padding: 0 4px; font-size: 12.5px; }
+  .pdk-aba-t { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pdk-aba i { min-width: 0; height: auto; padding: 0; background: none !important; font-size: 15px; font-weight: 600; line-height: 1.2; color: inherit; }
+  .pdk-aba.alerta i { color: #B45309; }
+  .pdk-aba[aria-selected="true"].alerta i { color: #FFD9A8; }
+}
+.pdk-aba-sem { visibility: hidden; }
+@media (min-width: 601px) { .pdk-aba-sem { display: none; } }
+.pdk-aba-c { display: none; }
+@media (max-width: 600px) { .pdk-aba-l { display: none; } .pdk-aba-c { display: inline; } }

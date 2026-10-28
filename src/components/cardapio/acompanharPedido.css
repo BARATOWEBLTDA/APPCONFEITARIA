@@ -47,3 +47,13 @@
 
 /* (27/10) Pix ainda não pago: abre o código de novo */
 .acp-pix { display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 24px); min-height: 52px; margin: 0 12px 12px; border: 0; border-radius: var(--ui-raio); color: var(--ui-branco); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+/* (28/10) linhas de entrega, acréscimo e cupom antes do total */
+.acp-itens .acp-sub { display: flex; align-items: center; gap: 8px; padding-top: 8px; border-top: 0; font-size: 14px; color: var(--ui-texto-2); }
+.acp-itens .acp-sub span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acp-itens .acp-sub em { flex: none; font-style: normal; white-space: nowrap; }
+.acp-itens .acp-sub--ok em { color: #16803C; }
+.acp-itens li.acp-sub + li.acp-sub { border-top: 0 !important; }
+.acp-itens li:not(.acp-sub) + li.acp-sub { padding-top: 10px; border-top: 1px solid #F3EEF0 !important; }
+.acp-itens li.acp-sub + li.acp-sub { padding-top: 0; }
+.acp-itens li.acp-sub em { font-size: 14px; font-weight: 500; color: inherit; }
+.acp-itens li.acp-sub--ok em { color: #16803C; }

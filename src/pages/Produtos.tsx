@@ -17,6 +17,7 @@ import { kitAtivo, precoMinKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
 import { precoCardapioComPromocao, precosDosSabores, ehCentoLivre } from "@/lib/precoCardapio";
 import { supabase } from "@/lib/supabase";
+import { gravarInsumosDoProduto } from "@/lib/insumosDoo";
 import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grupos";
 import {
   REGRA_CONFLITO_DEFAULT,
@@ -1545,12 +1546,9 @@ export default function Produtos() {
           if (error) erroFicha = error;
         }
       } else if (lida && lida.produtoId === produtoId && assinaturaFicha(fichaTecnica) !== lida.assinatura) {
-        const { error: errDel } = await supabase.from("produto_insumos").delete().eq("produto_id", produtoId);
-        if (errDel) erroFicha = errDel;
-        else if (itens.length > 0) {
-          const { error: errIns } = await supabase.from("produto_insumos").insert(itens);
-          if (errIns) erroFicha = errIns;
-        }
+        // (28/10) grava os novos antes de tirar os antigos (antes apagava tudo e, se o insert falhasse, a ficha sumia)
+        const { error: errIns } = await gravarInsumosDoProduto(produtoId, itens);
+        if (errIns) erroFicha = errIns;
         if (!erroFicha) fichaLida.current = { produtoId, assinatura: assinaturaFicha(fichaTecnica) };
       } else if (form.id && !lida && itens.length > 0) {
         // a ficha não foi lida (falha de rede) e ela montou ingredientes: avisa em vez de descartar em silêncio

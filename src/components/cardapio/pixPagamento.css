@@ -91,3 +91,5 @@
 .px-trocar { margin: 8px 0 0; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 700; color: var(--px-cor); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; cursor: pointer; }
 /* (27/10) Pix por cima do acompanhamento do pedido */
 .px-cobre { position: fixed; inset: 0; z-index: 1300; display: flex; flex-direction: column; background: #F7F4F5; }
+/* (28/10) Pagar agora × Na retirada */
+.sc-quando { margin: 0 16px 12px; }

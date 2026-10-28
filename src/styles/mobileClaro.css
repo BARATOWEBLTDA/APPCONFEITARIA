@@ -56,3 +56,11 @@
   html body .cad, html body .prod-root, html body .dl-lista, html body .ntf-root, html body .mk, html body .mas-wrap,
   html body .cl9, html body .ns-root { padding-left: 8px !important; padding-right: 8px !important; }
 }
+
+/* (28/10) Barras de botões presas em cima do menu de baixo: o + do meio sobe uns 22px acima do menu
+   e encostava nos botões (Rascunho / Continuar, Salvar ficha, Entrou / Saiu…). Os botões ficam acima dele. */
+@media (max-width: 900px) {
+  html body .orc-pe, html body .fd-fixo, html body .fdp-barra, html body .txp-barra, html body .ep-passos,
+  html body .ep2-foot, html body .ep-footer, html body .pro9-fixo, html body .dl-savebar { padding-bottom: 28px !important; }
+  html.teclado-aberto body .ep2-foot, html.teclado-aberto body .ep-footer { padding-bottom: 10px !important; }
+}

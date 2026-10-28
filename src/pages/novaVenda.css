@@ -37,7 +37,7 @@
 .nv3-it-tx small + span { margin-top: 2px; color: var(--ui-texto); font-weight: 600; }
 .nv3-it-ctl { display: flex; align-items: center; gap: 4px; margin: 8px 0 12px 60px; }
 .nv3-qtd { display: flex; align-items: center; gap: 4px; margin-right: auto; padding: 2px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
-.nv3-qtd b { min-width: 32px; font-size: 16px; font-weight: 700; text-align: center; }
+.nv3-qtd b { min-width: 32px; font-size: 16px; font-weight: 700; text-align: center; white-space: nowrap; }
 .nv3-qtd .ui-bti { background: var(--ui-branco); }
 .nv3-lixo { color: var(--ui-vermelho) !important; }
 .nv3-itens .ui-campo { margin-left: 60px; }

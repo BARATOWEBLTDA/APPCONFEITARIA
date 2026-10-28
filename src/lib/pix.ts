@@ -6,7 +6,7 @@
  */
 
 /** Pix da loja pro cardápio (só vem quando a loja ligou e preencheu tudo) */
-export type PixLoja = { chave: string; nome: string; cidade: string; modo: 'sinal' | 'total' | 'escolha'; pct: number }
+export type PixLoja = { chave: string; nome: string; cidade: string; modo: 'sinal' | 'total' | 'escolha'; pct: number; retirada?: boolean }
 
 export type TipoChave = 'cpf' | 'celular' | 'email' | 'aleatoria'
 

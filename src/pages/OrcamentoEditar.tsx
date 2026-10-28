@@ -19,7 +19,7 @@ import { precoCardapioComPromocao } from '@/lib/precoCardapio'
 import { calcularCustoLucro, lerMaoObraConta } from '@/lib/produto-precificacao'
 import { abrirJanela, card, esc, gerarDocumento, kv } from '@/lib/pdfDoonly'
 import {
-  FORMA_ORC, brl, textoEntrega, dataLonga, linkProposta, maisDias, somarItens, textoCondicoes, textoProposta, totalOrcamento, valorSinal,
+  FORMA_ORC, brl, hojeISO, textoEntrega, dataLonga, linkProposta, maisDias, somarItens, textoCondicoes, textoProposta, totalOrcamento, valorSinal,
   type ItemOrcamento, type Orcamento,
 } from '@/lib/orcamentos'
 import { COMO_ORCAMENTO, TOUR_ORCAMENTO } from '@/lib/comoTelas'
@@ -132,10 +132,10 @@ export default function OrcamentoEditar() {
     const semFicha = (o.itens || []).find(i => !i.produto_id || custos[i.produto_id] == null)
     if (semFicha) return { falta: semFicha.produto_id ? `${semFicha.nome} está sem ficha técnica` : 'itens personalizados não têm ficha técnica' }
     const custo = (o.itens || []).reduce((s, i) => s + (custos[i.produto_id!] || 0) * (Number(i.quantidade) || 0), 0)
-    const base = total - (o.tipo_entrega === 'entrega' ? Number(o.taxa_entrega) || 0 : 0)
+    const base = total - (ov?.tipo_entrega === 'entrega' ? Number(ov.taxa_entrega) || 0 : 0)
     const l = base - custo
     return { valor: l, pct: base > 0 ? (l / base) * 100 : 0 }
-  }, [o, custos, total])
+  }, [o, ov, custos, total])
 
   const salvar = async (extra: Partial<Orcamento> = {}): Promise<Orcamento | null> => {
     if (!o) return null
@@ -158,8 +158,16 @@ export default function OrcamentoEditar() {
         window.history.replaceState(window.history.state, '', `/orcamentos/${novo.id}`)
         return novo
       }
-      const { data, error } = await supabase.from('orcamentos').update(dados).eq('id', o.id).select().single()
+      // (28/10) só grava se a cliente ainda não respondeu (aprovar pelo link e salvar aqui ao mesmo tempo apagava o "aprovado")
+      const { data, error } = await supabase.from('orcamentos').update(dados).eq('id', o.id).in('status', ['novo', 'rascunho', 'enviado']).select().maybeSingle()
       if (error) throw error
+      if (!data) {
+        const { data: atual } = await supabase.from('orcamentos').select('*').eq('id', o.id).maybeSingle()
+        if (atual) setO({ ...(atual as Orcamento), itens: ((atual as any).itens || []).map((i: any) => ({ ...i, id: i.id || novoId() })) })
+        setMudou(false)
+        avisar('A cliente já respondeu este orçamento.', { tipo: 'erro' })
+        return null
+      }
       const novo = { ...(data as Orcamento), itens: (data as any).itens?.map((i: any) => ({ ...i, id: i.id || novoId() })) || [] }
       setO(novo); setMudou(false)
       return novo
@@ -177,9 +185,16 @@ export default function OrcamentoEditar() {
     setEtapa(e => (e < 3 ? ((e + 1) as 1 | 2 | 3) : e)); window.scrollTo({ top: 0 })
   }
 
+  // (28/10) a validade de 7/15/30 dias conta do dia do envio (antes contava do dia em que o rascunho foi criado)
+  const dadosEnvio = (): any | null => {
+    if (!o) return null
+    if (validadeTipo === 'data' && o.validade && o.validade < hojeISO()) { avisar('A validade já passou. Escolha outra data.', { tipo: 'erro' }); return null }
+    return { status: 'enviado', enviado_em: o.enviado_em || new Date().toISOString(), ...(validadeTipo !== 'data' ? { validade: maisDias(Number(validadeTipo)) } : {}) }
+  }
   const enviarWhats = async () => {
     if (!o) return
-    const salvo = await salvar({ status: 'enviado', enviado_em: o.enviado_em || new Date().toISOString() } as any)
+    const env = dadosEnvio(); if (!env) return
+    const salvo = await salvar(env)
     if (!salvo) return
     const link = linkProposta(salvo.token, window.location.origin)
     const tel = salvo.cliente_telefone || ''
@@ -188,7 +203,8 @@ export default function OrcamentoEditar() {
   }
   const copiarLink = async () => {
     if (!o) return
-    const salvo = await salvar({ status: 'enviado', enviado_em: o.enviado_em || new Date().toISOString() } as any)
+    const env = dadosEnvio(); if (!env) return
+    const salvo = await salvar(env)
     if (!salvo) return
     try { await navigator.clipboard.writeText(linkProposta(salvo.token, window.location.origin)); avisar('Link copiado. Ela já pode abrir e aprovar.', { tipo: 'ok' }) }
     catch { avisar('Não deu para copiar. Tente de novo.', { tipo: 'erro' }) }

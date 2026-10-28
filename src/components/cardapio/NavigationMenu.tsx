@@ -214,6 +214,9 @@ function CartContent({
   const [formaPagamento, setFormaPagamento] = useState('')
   // (21/10) Pix pelo cardápio: sinal ou tudo é escolhido aqui na Finalizar (a tela do Pix só mostra)
   const [pixEscolha, setPixEscolha] = useState<'sinal' | 'total'>('sinal')
+  // (28/10) a loja aceita pagar na retirada/entrega: a cliente escolhe "Pagar agora" (Pix pelo cardápio) ou "Na retirada"
+  const comPagarDepois = !!config.pix?.retirada
+  const [pagaDepois, setPagaDepois] = useState(false)
   const pixTipo: 'sinal' | 'total' = config.pix?.modo === 'total' ? 'total' : config.pix?.modo === 'sinal' ? 'sinal' : pixEscolha
   const [trocoParaStr, setTrocoParaStr] = useState('')
   const [cep, setCep] = useState('')
@@ -264,6 +267,7 @@ function CartContent({
     // Pronta entrega com a loja aberta: já vem marcado hoje, no próximo horário (ela pode trocar)
     if (!dataEntrega && regras.sugestao) { setDataEntrega(regras.sugestao.data); setHoraEntrega(regras.sugestao.hora) }
     if (!formaPagamento && metodosPag.length === 1) setFormaPagamento(metodosPag[0])
+    if (!formaPagamento && comPagarDepois && !pagaDepois) setFormaPagamento('pix')
   }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
   const irPara = (r: any) => setTimeout(() => r.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   // 10/10: trava também por ref (dois toques seguidos não mandam dois pedidos)
@@ -540,9 +544,9 @@ function CartContent({
       if (descontoMsg > 0) m += `${cupomAplicado ? `Cupom ${cupomAplicado.codigo}` : 'Desconto'}: − ${formatCurrency(descontoMsg)}\n`
       m += `*Total: ${formatCurrency(totalCriado)}*\n\n`
 
-      const pgtoLabel = config.pix && formaPagamento === 'pix'
-        ? `Pix pelo cardápio (${pixTipo === 'sinal' ? `sinal de ${formatCurrency(valorDoSinal(totalFinal, config.pix.pct))}` : 'tudo'})`
-        : (LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento)
+      const pgtoLabel = config.pix && pixOnline
+        ? `Pix pelo cardápio (${pixTipo === 'sinal' ? `sinal de ${formatCurrency(valorDoSinal(totalCriado, config.pix.pct))}` : 'tudo'})`
+        : `${LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento}${comPagarDepois ? ` (paga na ${formaEntrega === 'retirada' ? 'retirada' : 'entrega'})` : ''}`
       m += `*Pagamento:* ${pgtoLabel}`
       if (formaPagamento === 'dinheiro' && trocoParaStr) m += ` (troco para R$ ${trocoParaStr})`
       m += `\n\n`
@@ -627,7 +631,7 @@ function CartContent({
       // (4.22) O banco cria o pedido e os itens de uma vez (função cardapio_criar_pedido): confere a loja e os produtos,
       // refaz a soma, o cupom e o total, e não duplica numa nova tentativa. Sem a função no banco, grava como antes.
       const viaBanco = await supabase.rpc('cardapio_criar_pedido', {
-        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido, forma_entrega: formaEntrega, bairro_taxa: bairroSelecionado || null }, p_itens: itensDoPedido,
+        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido, forma_entrega: formaEntrega, bairro_taxa: bairroSelecionado || null, pagar_na_retirada: comPagarDepois && pagaDepois }, p_itens: itensDoPedido,
       })
       const semFuncao = !!viaBanco.error && (viaBanco.error.code === 'PGRST202' || viaBanco.error.code === '42883' || /could not find the function/i.test(String(viaBanco.error.message || '')))
       if (viaBanco.error && !semFuncao) return falhou(viaBanco.error)
@@ -716,14 +720,14 @@ function CartContent({
       return `${formaEntrega === 'retirada' ? 'Retirada' : 'Entrega'} ${dia}, ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}${horaEntrega ? ` às ${horaEntrega}` : ''}`
     })()
     setPixFeito(null)
-    setPixPara(config.pix && formaPagamento === 'pix' && pedidoIdCriado ? { pedidoId: pedidoIdCriado, total: totalCriado, retirada: formaEntrega === 'retirada', tipo: pixTipo } : null)
+    setPixPara(config.pix && pixOnline && pedidoIdCriado ? { pedidoId: pedidoIdCriado, total: totalCriado, retirada: formaEntrega === 'retirada', tipo: pixTipo } : null)
     setPedidoConfirmado({ numero: numeroPedido, itens: items, whatsapp: whatsappUrl, storeName, total: totalCriado, quando: quandoTxt, zap: whatsapp, mensagem })
   }
 
 
   const accent = corBotao || '#E85A8C'
   // (20/10) a loja recebe Pix pelo cardápio e o cliente escolheu Pix: o botão leva pro pagamento
-  const pixOnline = !!config.pix && formaPagamento === 'pix'
+  const pixOnline = !!config.pix && formaPagamento === 'pix' && !(comPagarDepois && pagaDepois)
   const pixSinal = config.pix ? valorDoSinal(totalFinal, config.pix.pct) : 0
   const pixResto = r2(totalFinal - pixSinal)
   const pagarAgora = pixOnline && pixTipo === 'sinal' ? pixSinal : totalFinal
@@ -1094,7 +1098,19 @@ function CartContent({
         {/* Pagamento */}
         <section ref={refPagamento}>
           <Cab t="Pagamento" sub={pixOnline ? 'Pix: você paga no próximo passo' : `Você paga na ${tipo}`} obr ok={!!formaPagamento} falta={feErro === 'pagamento' ? 'Escolha como vai pagar' : undefined} />
-          <div role="radiogroup" aria-label="Forma de pagamento">
+          {comPagarDepois && (
+            <div className="sc-pixq-ops sc-quando" role="radiogroup" aria-label="Quando você paga">
+              <button type="button" role="radio" aria-checked={!pagaDepois} style={!pagaDepois ? { borderColor: accent } : undefined}
+                onClick={() => { setPagaDepois(false); setFormaPagamento('pix'); setFeErro('') }}>
+                <small>Pix pelo cardápio</small><b>Pagar agora</b>
+              </button>
+              <button type="button" role="radio" aria-checked={pagaDepois} style={pagaDepois ? { borderColor: accent } : undefined}
+                onClick={() => { if (!pagaDepois) { setPagaDepois(true); setFormaPagamento(metodosPag.length === 1 ? metodosPag[0] : '') } }}>
+                <small>Paga pessoalmente</small><b>Na {tipo}</b>
+              </button>
+            </div>
+          )}
+          {(!comPagarDepois || pagaDepois) && <div role="radiogroup" aria-label="Forma de pagamento">
             {metodosPag.map((k: string) => {
               const on = formaPagamento === k
               const Ic = ICONE_PAGAMENTO[k] || Money
@@ -1105,7 +1121,7 @@ function CartContent({
                 </button>
               )
             })}
-          </div>
+          </div>}
           {pixOnline && config.pix && (
             <div className="sc-pixq">
               {config.pix.modo === 'escolha' ? (<>

@@ -228,3 +228,6 @@
 /* (25/10) "opcional" logo depois do nome (não colado no campo do lado) e sem o canto de esticar a caixa */
 .orp .ui-campo-r { justify-content: flex-start; gap: 6px; }
 .orp textarea { resize: none; }
+/* (28/10) o + do "Acréscimo" encolhia (palavra maior que as outras) */
+.orc-add button svg, .orc-ext button svg { flex: none; }
+.orc-ext button { gap: 4px; padding: 0 4px; }

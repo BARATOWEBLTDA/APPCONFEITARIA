@@ -28,6 +28,8 @@ export type Pedido = {
   pix_informado_em?: string | null
   status_tempos?: Record<string, string> | null
   pago_em?: string | null
+  /** (28/10) para a conta fechar com o total */
+  desconto?: number | null; cupom_codigo?: string | null; taxa_entrega?: number | null; acrescimo?: number | null
 }
 
 export const dinheiro = (v: number) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })

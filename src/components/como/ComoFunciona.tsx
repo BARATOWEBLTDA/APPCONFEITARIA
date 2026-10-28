@@ -59,7 +59,7 @@ export function ConteudoComo({ c, rotulo, className = "", tour }: { c: Como; rot
       {tour && (
         <button type="button" className="cf-tour" onClick={tour.fazer}>
           <PlayCircle size={22} aria-hidden="true" />
-          <span><small>Tour da tela · {tour.passos} {tour.passos === 1 ? "passo" : "passos"}</small><b>Fazer o tour</b></span>
+          <span><small>Tour da tela · {tour.passos} {tour.passos === 1 ? "passo" : "passos"}</small><b>Fazer o tour · {tour.passos} {tour.passos === 1 ? "passo" : "passos"}</b></span>
           <ArrowRight size={18} weight="bold" aria-hidden="true" />
         </button>
       )}

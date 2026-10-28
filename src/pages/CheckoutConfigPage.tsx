@@ -46,7 +46,7 @@ const ENTREGAS = [
 // (11/10) Usa o leitor do app: o daqui lia "1.000" como 1 (pedido mínimo de R$ 1.000 virava R$ 1).
 const numBR = parseNumBR
 
-type PixTela = { pixOnline: boolean; pixTipo: TipoChave; pixChave: string; pixNome: string; pixCidade: string; pixModo: string; pixPct: string }
+type PixTela = { pixOnline: boolean; pixTipo: TipoChave; pixChave: string; pixNome: string; pixCidade: string; pixModo: string; pixPct: string; pixRetirada: boolean }
 const pctDoSinal = (v: string) => Math.min(90, Math.max(10, Math.round(Number(String(v).replace(',', '.')) || 50)))
 /** O que falta pra ligar o Pix pelo cardápio ('' = está tudo certo) */
 const faltaNoPix = (x: PixTela) => problemaNaChave(x.pixChave, x.pixTipo) || (!x.pixNome.trim() ? 'Escreva o nome de quem recebe' : !x.pixCidade.trim() ? 'Escreva a cidade' : '')
@@ -57,6 +57,7 @@ const pixParaSalvar = (x: PixTela) => ({
   pix_cidade: x.pixCidade.trim() || null,
   pix_modo: x.pixModo === 'sinal' || x.pixModo === 'total' ? x.pixModo : 'escolha',
   pix_sinal_pct: pctDoSinal(x.pixPct),
+  pagar_na_retirada: x.pixRetirada,
 })
 
 /** (17/10) embutido: aparece dentro de Dados da loja (mesma tela), sem o cabeçalho próprio */
@@ -101,6 +102,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const [pixCidade, setPixCidade] = useState('')
   const [pixModo, setPixModo] = useState<'escolha' | 'sinal' | 'total'>('escolha')
   const [pixPct, setPixPct] = useState('50')
+  const [pixRetirada, setPixRetirada] = useState(false) // (28/10) aceita pagar tudo na retirada/entrega
   // (27/10) "Outro" fica aberto mesmo digitando 30 ou 50 (antes o campo sumia no meio da digitação)
   const [pctOutro, setPctOutro] = useState(false)
 
@@ -116,7 +118,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       const user = session?.user
       if (!user) { setErroCarga(true); return }
       setUserId(user.id)
-      const { data, error } = await supabase.from('profiles').select('formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, endereco_retirada, horario_retirada, exibir_campo_troco, cupons_desconto, aceita_agendamento, prazo_minimo_horas, pix_online, pix_chave, pix_nome, pix_cidade, pix_modo, pix_sinal_pct, nome_loja, endereco').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, endereco_retirada, horario_retirada, exibir_campo_troco, cupons_desconto, aceita_agendamento, prazo_minimo_horas, pix_online, pix_chave, pix_nome, pix_cidade, pix_modo, pix_sinal_pct, pagar_na_retirada, nome_loja, endereco').eq('id', user.id).single()
       if (error || !data) { setErroCarga(true); return }
       // (13/10) abriu e viu como o cliente vai pagar e receber: conta como o passo "Pagamento e entrega" (salva sozinho)
       marcarPagamentoConferido(user.id)
@@ -160,6 +162,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         setPixCidade(d.pix_cidade || cidadeLoja.slice(0, 15))
         setPixModo(d.pix_modo === 'sinal' || d.pix_modo === 'total' ? d.pix_modo : 'escolha')
         setPixPct(String(d.pix_sinal_pct || 50))
+        setPixRetirada(d.pagar_na_retirada === true)
         setPctOutro(![30, 50].includes(Number(d.pix_sinal_pct || 50)))
       }
       setLoading(false)
@@ -168,11 +171,11 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   }, [tentativa])
 
   // 09/10: não salva (nem mostra "Salvo") só por ter aberto a tela; salva depois que algo muda
-  const foto = JSON.stringify([formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct])
+  const foto = JSON.stringify([formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada])
   const salvoRef = useRef<string | null>(null)
   useEffect(() => { if (!loading) salvoRef.current = foto }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
   // 10/10: o que está na tela agora (o salvamento sempre grava o mais novo, inclusive ao sair da tela)
-  const pixTela = { pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct }
+  const pixTela = { pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada }
   const telaRef = useRef({ userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela })
   const pendenteRef = useRef(false)
 
@@ -258,7 +261,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     pendenteRef.current = true
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => { timerRef.current = null; salvarTudoRef.current() }, 2000)
-  }, [formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 10/10: saiu da tela antes dos 2 s → salva na hora (antes a mudança era descartada em silêncio)
   useEffect(() => () => {
@@ -516,6 +519,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                   )}
                 </div>
               )}
+              <Chave on={pixRetirada} rotulo="Aceitar pagar na retirada" apoio={pixRetirada ? 'O cliente escolhe: agora ou na hora' : 'Desligado: paga o Pix antes'} aoMudar={setPixRetirada} />
               {faltaNoPix(pixTela)
                 ? <p className="ep-pix-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />{faltaNoPix(pixTela)} para ligar.</p>
                 : <p className="ep-pix-ok"><Check size={18} weight="bold" aria-hidden="true" />Pronto: o cliente já vê o Pix.</p>}

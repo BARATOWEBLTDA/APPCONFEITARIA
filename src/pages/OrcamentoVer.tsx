@@ -8,7 +8,7 @@ import { Check, FilePdf, Storefront, X } from '@phosphor-icons/react'
 import { CampoArea, Janela, avisar } from '@/components/base'
 import { supabase } from '@/lib/supabase'
 import { explicarErro } from '@/lib/erros'
-import { brl, textoEntrega, dataLonga, textoCondicoes, totalOrcamento, valorSinal, type Orcamento } from '@/lib/orcamentos'
+import { brl, hojeISO, textoEntrega, dataLonga, textoCondicoes, totalOrcamento, valorSinal, type Orcamento } from '@/lib/orcamentos'
 import './orcamentos.css'
 
 type Ver = Orcamento & { loja: { nome: string; logo?: string | null; codigo?: string } | null; pedido_numero?: number | null }
@@ -44,7 +44,7 @@ export default function OrcamentoVer() {
   const total = totalOrcamento(o)
   const sinal = valorSinal(o, total)
   const nomeLoja = o.loja?.nome || 'Confeitaria'
-  const vencido = o.status === 'enviado' && !!o.validade && o.validade < new Date().toISOString().slice(0, 10)
+  const vencido = o.status === 'enviado' && !!o.validade && o.validade < hojeISO()
 
   return (
     <div className="orp orp--ver"><div className="orp-box">

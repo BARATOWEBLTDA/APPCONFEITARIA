@@ -55,6 +55,8 @@ function diaCombinado(p: Pedido, longo = true): string {
   const dia = (longo ? DIAS_LONGOS : DIAS)[d.getDay()]
   return `${dia}, ${dd(d.getDate())}/${dd(d.getMonth() + 1)}${p.horario_entrega ? `, às ${p.horario_entrega.slice(0, 5)}` : ''}`
 }
+/** (28/10) "Ter, 27/10 às 13:23 · a loja está conferindo" (pula as partes vazias) */
+const juntar = (...partes: string[]) => partes.filter(Boolean).join(' · ') || undefined
 /** primeira hora gravada entre as situações dadas */
 const tempo = (p: Pedido, ...chaves: string[]) => chaves.map(k => p.status_tempos?.[k]).find(Boolean) || null
 
@@ -74,27 +76,29 @@ function etapasDo(p: Pedido): Etapa[] {
   if (recebido > 0.009) {
     const pix = (p.forma_pagamento || '').toLowerCase().includes('pix')
     e.push(p.status_pagamento === 'pago' || falta < 0.01
-      ? { titulo: `Pago · ${dinheiro(total)}`, sub: pix ? 'Pix confirmado' : quandoFoi(p.pago_em), estado: 'feito' }
-      : { titulo: `Sinal pago · ${dinheiro(recebido)}`, sub: `Falta ${dinheiro(falta)} na ${lugar}`, estado: 'feito' })
+      ? { titulo: `Pago · ${dinheiro(total)}`, sub: juntar(pix ? 'Pix confirmado' : '', quandoFoi(p.pago_em)), estado: 'feito' }
+      : { titulo: `Sinal pago · ${dinheiro(recebido)}`, sub: juntar(quandoFoi(p.pago_em), `falta ${dinheiro(falta)} na ${lugar}`), estado: 'feito' })
   } else if (p.pix_online) {
     e.push(p.pix_informado_em && Number(p.pix_informado_valor) > 0
-      ? { titulo: `Pix enviado · ${dinheiro(Number(p.pix_informado_valor))}`, sub: 'A loja está conferindo', estado: 'feito' }
+      ? { titulo: `Pix enviado · ${dinheiro(Number(p.pix_informado_valor))}`, sub: juntar(quandoFoi(p.pix_informado_em), 'a loja está conferindo'), estado: 'feito' }
       : { titulo: 'Aguardando o Pix', sub: 'Pague para confirmar o pedido', estado: 'atencao' })
   }
 
   e.push({ titulo: o >= 1 ? 'Aceito pela loja' : 'Esperando a loja aceitar', sub: o >= 1 ? quandoFoi(tempo(p, 'agendado', 'confirmado')) : 'A loja confirma em breve', estado: st(0) === 'agora' ? 'agora' : 'feito' })
-  e.push({ titulo: 'Em produção', sub: o === 2 ? 'A loja avisa quando ficar pronto' : o > 2 ? quandoFoi(tempo(p, 'em_producao', 'em_preparo')) : undefined, estado: st(2) })
+  const tProd = quandoFoi(tempo(p, 'em_producao', 'em_preparo'))
+  e.push({ titulo: 'Em produção', sub: o === 2 ? (tProd ? `Desde ${tProd.toLowerCase()}` : 'A loja avisa quando ficar pronto') : o > 2 ? tProd : undefined, estado: st(2) })
+  const tFim = quandoFoi(tempo(p, 'concluido', 'entregue', 'retirado'))
   if (ret) {
     e.push({ titulo: 'Pronto para retirar', sub: o >= 3 ? (quandoFoi(tempo(p, 'aguardando_retirada', 'finalizado', 'pronto')) || 'Já pode buscar') : undefined, estado: o >= 3 ? (o >= 5 ? 'feito' : 'agora') : 'depois' })
-    e.push({ titulo: 'Retirado', sub: diaCombinado(p, false) ? `Combinado ${diaCombinado(p, false)}` : undefined, estado: o >= 5 ? 'feito' : 'depois' })
+    e.push({ titulo: 'Retirado', sub: o >= 5 && tFim ? tFim : diaCombinado(p, false) ? `Combinado ${diaCombinado(p, false)}` : undefined, estado: o >= 5 ? 'feito' : 'depois' })
   } else {
     e.push({ titulo: 'Saiu para entrega', sub: o === 3 ? 'Ficou pronto, sai em breve' : o === 4 ? (quandoFoi(tempo(p, 'em_entrega', 'a_caminho')) || 'A caminho') : undefined, estado: o >= 5 ? 'feito' : o >= 3 ? 'agora' : 'depois' })
-    e.push({ titulo: 'Entregue', sub: diaCombinado(p, false) ? `Previsto ${diaCombinado(p, false)}` : undefined, estado: o >= 5 ? 'feito' : 'depois' })
+    e.push({ titulo: 'Entregue', sub: o >= 5 && tFim ? tFim : diaCombinado(p, false) ? `Previsto ${diaCombinado(p, false)}` : undefined, estado: o >= 5 ? 'feito' : 'depois' })
   }
   return e
 }
 
-function frase(p: Pedido): string {
+export function frase(p: Pedido): string {
   const o = ordem(p.status)
   const ret = p.tipo_entrega === 'retirada'
   const pago = p.status_pagamento === 'pago' || Number(p.valor_recebido) > 0
@@ -178,6 +182,10 @@ export function AcompanharPedido({ p, cor, corTopo, aoAtualizar }: { p: Pedido; 
             </li>
           )
         })}
+        {/* (28/10) entrega, cupom e acréscimo: antes só aparecia o total e a soma dos itens não batia */}
+        {Number(p.taxa_entrega) > 0 && p.tipo_entrega === 'entrega' && <li className="acp-sub"><span>Entrega</span><em>{dinheiro(Number(p.taxa_entrega))}</em></li>}
+        {Number(p.acrescimo) > 0 && <li className="acp-sub"><span>Acréscimo</span><em>{dinheiro(Number(p.acrescimo))}</em></li>}
+        {Number(p.desconto) > 0 && <li className="acp-sub acp-sub--ok"><span>{p.cupom_codigo ? `Cupom ${p.cupom_codigo}` : 'Desconto'}</span><em>− {dinheiro(Number(p.desconto))}</em></li>}
         <li className="acp-total"><b>Total</b><em>{dinheiro(p.valor_total)}</em></li>
       </ul>
 

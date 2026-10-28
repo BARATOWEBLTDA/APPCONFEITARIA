@@ -51,3 +51,14 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+/* (28/10) Escala de peso (pedido do Bruno: "textos pesados, quero suave").
+   O nome de cada linha de lista fica Medium (500), como numa lista do iFood. Seminegrito (o 600/700) fica para
+   o título da tela, os títulos de seção, os botões e os valores. O texto de apoio continua Regular. */
+html body :is(
+  .mais-it-txt b, .cf9-tx b, .cad-tx b, .dl-li-tx b, .ca-art-tx b, .ca-tema b, .ct-row-tx b, .cl9-l-tx b, .ig-l-tx b,
+  .fl-tx b, .prod-card-nome, .pz-li-tx b, .mz-tx b, .orc-it-tx b, .pdk-nome b, .ag3-pc-quem b, .tpd-cli-tx b, .tpd-it-tx b,
+  .tx-it-t b, .far-it-h b, .fap-it-m b, .cu-it-t b, .pf-tx b, .pnt-tx b, .lpc-tx b, .sd-pi-l1 b, .av-item b, .nv3-tipo-tx b,
+  .mas-op-tx b, .mas-l b, .ns-name, .cc-linha-tx b, .ce-partes b, .ap-crot b, .ap-tema-pe b, .cp9-ped b, .ag3-at-tx b,
+  .orc-link-tx b, .lu-pc-tx b, .cf-dicas b, .nl-it-t, .acp-et b, .cad-n
+) { font-weight: 500; }

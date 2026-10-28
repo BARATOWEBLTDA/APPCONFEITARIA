@@ -40,8 +40,8 @@ import '@/components/pedidos/pedidos.css'
  */
 const MEDIDA_COMPUTADOR = '(min-width: 901px)'
 type Sit = 'aceitar' | 'agenda' | 'prontos' | 'concluidos'
-const SITS: { k: Sit; nome: string }[] = [
-  { k: 'aceitar', nome: 'Para aceitar' }, { k: 'agenda', nome: 'Agendados' }, { k: 'prontos', nome: 'Prontos' }, { k: 'concluidos', nome: 'Concluídos' },
+const SITS: { k: Sit; nome: string; curto?: string }[] = [
+  { k: 'aceitar', nome: 'Para aceitar', curto: 'Novos' }, { k: 'agenda', nome: 'Agendados' }, { k: 'prontos', nome: 'Prontos' }, { k: 'concluidos', nome: 'Concluídos' },
 ]
 /** Em que aba do celular o pedido fica: em produção e esperando pagamento ficam em Agendados */
 const sitDe = (p: Pedido): Sit => terminou(p) ? 'concluidos' : precisaAceitar(p) ? 'aceitar'
@@ -590,7 +590,7 @@ export default function Pedidos() {
               <div className="pdk-abas" role="tablist" aria-label="Situação dos pedidos">
                 {SITS.map(t => (
                   <button key={t.k} type="button" role="tab" aria-selected={sitAtual === t.k} className={`pdk-aba${t.k === 'aceitar' && nSit.aceitar > 0 ? ' alerta' : ''}`} onClick={() => { setSit(t.k); window.scrollTo(0, 0) }}>
-                    {t.nome}{t.k !== 'concluidos' && <i>{nSit[t.k]}</i>}
+                    <span className="pdk-aba-t">{t.curto ? <><span className="pdk-aba-l">{t.nome}</span><span className="pdk-aba-c">{t.curto}</span></> : t.nome}</span>{t.k !== 'concluidos' ? <i>{nSit[t.k]}</i> : <i className="pdk-aba-sem" aria-hidden="true">0</i>}
                   </button>
                 ))}
               </div>

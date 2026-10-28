@@ -154,7 +154,9 @@ export function pendenciasPedido(d: DadosPedido): string[] {
 export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok: true; pedido: any; aviso?: string; clienteId: string | null } | { ok: false; erro: string; clienteId: string | null }> {
   const total = totalDe(d);
   const subtotal = subtotalDe(d.itens);
-  const desconto = r2(d.desconto), acrescimo = r2(d.acrescimo);
+  const acrescimo = r2(d.acrescimo);
+  // (28/10) desconto maior que a venda não passa: o pedido gravava desconto de 200 num total que virava 0
+  const desconto = Math.min(Math.max(0, r2(d.desconto)), somarReais([subtotal, d.tipoEntrega === "entrega" ? r2(d.taxaEntrega) : 0, acrescimo]));
   let status: string = d.statusPedido || "agendado";
   let statusPag = "pago";
   let valorRecebido = total;
@@ -220,7 +222,10 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     if (jaGravado) {
       const { pedido_itens: itensGravados, ...pedidoGravado } = jaGravado as any;
       if (Array.isArray(itensGravados) && itensGravados.length > 0) return { ok: true, pedido: pedidoGravado, clienteId: clienteIdFinal };
-      novoPedido = pedidoGravado; error = null; // gravou sem os produtos: segue e grava os produtos agora
+      // gravou sem os produtos: atualiza com o que está na tela agora (ela pode ter mudado algo antes de tentar de novo) e grava os produtos
+      const { id: _id, user_id: _uid, ...atual } = linhaPedido;
+      const { data: atualizado } = await supabase.from("pedidos").update(atual).eq("id", d.idTentativa).select().maybeSingle();
+      novoPedido = atualizado || pedidoGravado; error = null;
     }
   }
   if (error || !novoPedido) return { ok: false, clienteId: clienteIdFinal, erro: explicarErro(error, "Não deu para registrar a venda. Tente de novo.") };

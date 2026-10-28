@@ -126,3 +126,21 @@ export async function salvarInsumoDoo(uid: string, r: RascunhoInsumo, soPrecoDe?
     .insert({ imagem_url: "", ...payload, user_id: uid, quantidade_estoque: 0, estoque_minimo: 0 }).select("id").single();
   return error || !data ? { ok: false, erro: explicarErro(error, "Não deu para cadastrar o ingrediente. Tente de novo.") } : { ok: true, id: (data as any).id };
 }
+
+/**
+ * (28/10) Grava os ingredientes da ficha de um produto sem deixar a ficha vazia no meio do caminho:
+ * primeiro grava os novos (upsert por produto + insumo) e só depois tira os que saíram.
+ * Antes apagava tudo e inseria de novo: se o insert falhasse, a ficha ficava vazia.
+ * Ingrediente repetido na lista entra uma vez só (o último vale), senão o upsert recusa tudo.
+ */
+export async function gravarInsumosDoProduto(produtoId: string, itens: { insumo_id: string; [k: string]: any }[]): Promise<{ error: any }> {
+  const unicos = [...new Map(itens.map(i => [i.insumo_id, i])).values()]
+  if (unicos.length) {
+    const { error } = await supabase.from('produto_insumos').upsert(unicos, { onConflict: 'produto_id,insumo_id' })
+    if (error) return { error }
+  }
+  let q = supabase.from('produto_insumos').delete().eq('produto_id', produtoId)
+  if (unicos.length) q = q.not('insumo_id', 'in', `(${unicos.map(i => i.insumo_id).join(',')})`)
+  const { error } = await q
+  return { error }
+}

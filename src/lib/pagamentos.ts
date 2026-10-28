@@ -132,7 +132,7 @@ export async function ajustarRecebido(opts: { pedidoId: string; alvo: number; fo
   for (const p of (ativos || []) as any[]) {
     if (soma <= alvo + 0.009) break;
     if (!dataSubstituida && p.recebido_em) dataSubstituida = String(p.recebido_em).slice(0, 10);
-    const { error: e2 } = await supabase.from("pagamentos").update({ estornado_em: new Date().toISOString() }).eq("id", p.id);
+    const { error: e2 } = await supabase.from("pagamentos").update({ estornado_em: new Date().toISOString() }).eq("id", p.id).is("estornado_em", null);
     if (e2) { console.error("[pagamentos] não consegui estornar:", e2); return { ok: false, legado: false }; }
     soma = r2(soma - (Number(p.valor) || 0));
   }

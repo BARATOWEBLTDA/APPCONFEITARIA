@@ -507,8 +507,11 @@ export default function NovaVenda() {
     novoItens.splice(idx + 1, 0, { ...item, observacoes: '' })
     setItens(novoItens)
   }
+  // (28/10) produto por kg sem tamanho anda de meio em meio quilo (antes só ia de 1 em 1 kg)
+  const passoDo = (it: { personalizacoes?: any; forma_venda?: string | null }) => pesoLivre(it) ? 0.5 : 1
   const atualizarQtd = (idx: number, qtd: number) => {
-    if (qtd < 1) return
+    qtd = Math.round(qtd * 2) / 2
+    if (qtd < passoDo(itens[idx] || {})) return
     setItens(itens.map((it, i) => i === idx ? { ...it, quantidade: qtd } : it))
   }
   const atualizarObs = (idx: number, obs: string) => {
@@ -853,14 +856,14 @@ export default function NovaVenda() {
                           {/* (24/10) nome em cima, cada escolha numa linha (igual à sacola do cliente) e o preço embaixo */}
                           <b>{nome}</b>
                           {linhasDoItem(it).map((l, k) => <small key={k}>{l}</small>)}
-                          <span>{rs(r2(it.valor_unitario * it.quantidade))}{it.quantidade > 1 ? ` (${rs(it.valor_unitario)} cada)` : ''}</span>
+                          <span>{rs(r2(it.valor_unitario * it.quantidade))}{pesoLivre(it) ? ` (${rs(it.valor_unitario)} o kg)` : it.quantidade > 1 ? ` (${rs(it.valor_unitario)} cada)` : ''}</span>
                         </div>
                       </div>
                       <div className="nv3-it-ctl">
                         <div className="nv3-qtd">
-                          <BotaoIcone rotulo={`Diminuir ${nome}`} tamanho="p" disabled={it.quantidade <= 1} onClick={() => atualizarQtd(idx, it.quantidade - 1)}><Minus size={20} weight="bold" /></BotaoIcone>
-                          <b aria-live="polite" aria-label={`Quantidade: ${it.quantidade}`}>{it.quantidade}</b>
-                          <BotaoIcone rotulo={`Aumentar ${nome}`} tamanho="p" onClick={() => atualizarQtd(idx, it.quantidade + 1)}><Plus size={20} weight="bold" /></BotaoIcone>
+                          <BotaoIcone rotulo={`Diminuir ${nome}`} tamanho="p" disabled={it.quantidade <= passoDo(it)} onClick={() => atualizarQtd(idx, it.quantidade - passoDo(it))}><Minus size={20} weight="bold" /></BotaoIcone>
+                          <b aria-live="polite" aria-label={`Quantidade: ${it.quantidade}`}>{pesoLivre(it) ? `${String(it.quantidade).replace('.', ',')} kg` : it.quantidade}</b>
+                          <BotaoIcone rotulo={`Aumentar ${nome}`} tamanho="p" onClick={() => atualizarQtd(idx, it.quantidade + passoDo(it))}><Plus size={20} weight="bold" /></BotaoIcone>
                         </div>
                         <BotaoIcone rotulo={`Duplicar ${nome}`} variante="limpo" tamanho="p" onClick={() => duplicarItem(idx)}><Copy size={20} weight="bold" /></BotaoIcone>
                         <BotaoIcone rotulo={`Remover ${nome}`} variante="limpo" tamanho="p" className="nv3-lixo" onClick={() => removerItem(idx)}><Trash size={20} weight="bold" /></BotaoIcone>

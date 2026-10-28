@@ -396,10 +396,10 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const bannerValues = [bannerUrl, banner1Url, banner2Url, banner3Url];
 
   // (18/10) só três cores, todas no topo da loja: faixa do topo, borda da logo e nome
-  const itensCor: { campo: CampoCor; n: number; rotulo: string; valor: string; set: React.Dispatch<React.SetStateAction<string>> }[] = [
-    { campo: "cor_navbar", n: 1, rotulo: "Faixa do topo", valor: corNavbar, set: setCorNavbar },
-    { campo: "cor_borda", n: 2, rotulo: "Borda da logo", valor: corBorda, set: setCorBorda },
-    { campo: "cor_nome", n: 3, rotulo: "Nome da loja", valor: corNome, set: setCorNome },
+  const itensCor: { campo: CampoCor; n: number; rotulo: string; apoio: string; valor: string; set: React.Dispatch<React.SetStateAction<string>> }[] = [
+    { campo: "cor_navbar", n: 1, rotulo: "Faixa do topo", apoio: "Aparece quando não tem foto no topo", valor: corNavbar, set: setCorNavbar },
+    { campo: "cor_borda", n: 2, rotulo: "Borda da logo", apoio: "O círculo em volta da logo", valor: corBorda, set: setCorBorda },
+    { campo: "cor_nome", n: 3, rotulo: "Nome da loja", apoio: "A cor do nome embaixo do topo", valor: corNome, set: setCorNome },
   ];
   const corAtual = (campo: CampoCor, valor: string) => corDoItem(campo, valor, isPro);
   const iniciais = (nomeLoja || "ML").trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase() || "ML";
@@ -467,15 +467,14 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       <section className="ap-card ap-largo ap-sec-tema">
         <Cabeca Ic={Sparkle} titulo="Tema do cardápio" apoio="Para as datas especiais" />
         <div className="ap-temas" role="radiogroup" aria-label="Tema do cardápio">
+          {/* (28/10) só os cartões com a bolinha de marcado (a mini prévia confundia) */}
           <button type="button" role="radio" aria-checked={tema === "normal"} className="ap-tema" onClick={() => escolherTema("normal")}>
-            <span className="ap-tema-th" style={{ background: topoEscurecido(corDoItem("cor_navbar", corNavbar, isPro)) }}><span className="ap-tema-lo" style={{ borderColor: corDoItem("cor_borda", corBorda, isPro) }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span></span>
+            <i className="ap-radio" aria-hidden="true" />
             <span className="ap-tema-pe"><b>Normal</b><small>Suas cores</small></span>
-            {tema === "normal" && <span className="ap-tema-ok" aria-hidden="true"><Check size={13} weight="bold" /></span>}
           </button>
           <button type="button" role="radio" aria-checked={tema === "natal"} className="ap-tema" onClick={() => escolherTema("natal")}>
-            <span className="ap-tema-th ap-tema-th--natal"><span className="ap-tema-lo" style={{ borderColor: NATAL.borda }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span>{temaLaco && <LacoNatal className="ap-tema-enfeite" />}</span>
-            <span className="ap-tema-pe"><b>Natal</b><small>Catálogo festivo</small></span>
-            {tema === "natal" && <span className="ap-tema-ok" aria-hidden="true"><Check size={13} weight="bold" /></span>}
+            <i className="ap-radio" aria-hidden="true" />
+            <span className="ap-tema-pe"><b>Natal</b><small>Festivo</small></span>
           </button>
         </div>
         {tema === "natal" && (
@@ -524,6 +523,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       {/* (18/10) Topo do cardápio: foto do topo e logo numa prévia só, do jeito que o cliente vê */}
       <section className="ap-card ap-largo ap-sec-topo">
         <Cabeca Ic={Storefront} titulo="Topo do cardápio" apoio="É assim que o cliente vê" />
+        <p className="ap-exp">A <b>foto do topo</b> fica atrás do nome da loja (deitada, 1200 × 400). A <b>logo</b> fica no círculo à direita.</p>
         <input ref={logoRef} type="file" accept="image/*" hidden onChange={handleLogoUpload} />
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
         <div className="ap-topo">
@@ -549,15 +549,15 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           </div>
         </div>
         <div className="ap-topo-bts">
-          <Botao variante="principal" tamanho="m" icone={<ImageIcon size={18} weight="bold" />} disabled={!!uploading} onClick={() => bannerTopoRef.current?.click()}>{bannerTopoUrl ? "Trocar foto" : "Pôr foto"}</Botao>
+          <Botao variante="secundario" tamanho="m" icone={<ImageIcon size={18} weight="bold" />} disabled={!!uploading} onClick={() => bannerTopoRef.current?.click()}>{bannerTopoUrl ? "Trocar foto" : "Pôr foto"}</Botao>
           <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => logoRef.current?.click()}>{logoUrl ? "Trocar logo" : "Enviar logo"}</Botao>
         </div>
       </section>
 
       {/* Banners de promoção */}
       <section className="ap-card ap-largo ap-sec-banners">
-        <Cabeca Ic={Images} titulo="Banners de promoção"
-          apoio={isPro ? "Em carrossel · deitado, 1200 × 675" : "Deitado, 1200 × 675"} />
+        <Cabeca Ic={Images} titulo="Banners de promoção" apoio={isPro ? "Até 4, passando sozinhos" : "1 banner no plano grátis"} />
+        <p className="ap-exp">Aparecem logo abaixo do topo do cardápio. Use para <b>promoções e datas especiais</b>. Imagem deitada, <b>1200 × 675</b>, com o texto no meio. <button type="button" className="ap-exp-lk" onClick={() => setVerExemplo(true)}>Ver um exemplo</button></p>
         <div className="ap-banners">
           {(isPro ? [0, 1, 2, 3] : [0]).map(i => (
             <div key={i} className="ap-banner">
@@ -572,7 +572,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
                 </div>
               ) : (
                 <button type="button" className="ap-enviar ap-slot" onClick={() => !uploading && bannerRefs[i].current?.click()} disabled={!!uploading}>
-                  {uploading === `banner${i}` ? <span className="ui-gira" aria-label="Enviando" /> : <><UploadSimple size={20} weight="bold" /><b>Adicionar</b></>}
+                  {uploading === `banner${i}` ? <span className="ui-gira" aria-label="Enviando" /> : <><Plus size={20} weight="bold" /><b>Adicionar</b><small>Do celular</small></>}
                 </button>
               )}
               <input ref={bannerRefs[i]} type="file" accept="image/*" hidden onChange={e => { bannerIdx.current = i; recorteBanner.escolher(e); }} />
@@ -580,7 +580,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           ))}
           {!isPro && <div className="ap-banner"><span className="ap-banner-r">Banners 2 a 4</span><ProSlot n={2} /></div>}
         </div>
-        <button type="button" className="ap-gal-link" onClick={abrirGaleria}><Sparkle size={18} weight="bold" aria-hidden="true" />Usar um banner pronto</button>
+        <Botao variante="secundario" cheio icone={<Sparkle size={18} weight="bold" />} onClick={abrirGaleria}>Usar um banner pronto</Botao>
       </section>
 
       {identityCard}
@@ -617,13 +617,14 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       {/* (27/10) nome da loja no link (PRO) */}
       <section className="ap-card ap-largo ap-sec-link">
-        <Cabeca Ic={LinkSimple} titulo="Link do cardápio" apoio="Com o nome da sua loja no fim" />
+        <Cabeca Ic={LinkSimple} titulo="Link do cardápio" apoio="O endereço da sua loja" />
+        <p className="ap-exp">É por esse link que a cliente abre o seu cardápio. Com o <b>nome da loja no fim</b>, ele fica mais fácil de lembrar e passa mais confiança no Instagram e no WhatsApp. Ao mudar, o link antigo continua funcionando.</p>
         <NomeNoLink />
       </section>
 
       {/* Cores (18/10): só as três do topo da loja. Grátis: cores prontas; PRO: qualquer cor */}
       <section className={`ap-card ap-largo ap-sec-cores${tema === "natal" ? " ap-cores-off" : ""}`}>
-        <Cabeca Ic={Palette} titulo="Cores do topo" apoio="Veja onde cada cor fica" />
+        <Cabeca Ic={Palette} titulo="Cores do topo" apoio="Os números mostram onde cada cor fica" />
         {tema === "natal" && <p className="ap-cores-tema"><Info size={16} weight="bold" aria-hidden="true" />O tema de Natal está usando as cores dele</p>}
         <div className="ap-mini" aria-hidden="true">
           <div className="ap-mini-topo" style={{ background: topoEscurecido(corAtual("cor_navbar", corNavbar)) }}><span className="ap-mini-n" style={{ left: 10, top: 10 }}>1</span></div>
@@ -640,7 +641,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           const pronta = PRONTAS[it.campo].some(p => p.cor === atual);
           return (
             <div key={it.campo} className="ap-cgrupo">
-              <div className="ap-crot"><span className="ap-crot-n">{it.n}</span><b>{it.rotulo}</b></div>
+              <div className="ap-crot"><span className="ap-crot-n">{it.n}</span><span className="ap-crot-tx"><b>{it.rotulo}</b><small>{it.apoio}</small></span><i className="ap-crot-cor" style={{ background: atual }} aria-hidden="true" /></div>
               <div className="ap-prontas" role="radiogroup" aria-label={it.rotulo}>
                 {PRONTAS[it.campo].map(p => {
                   const on = atual === p.cor;

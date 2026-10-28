@@ -178,7 +178,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     // (27/10) chave salva errada (ex.: celular na aba CPF) não liga o Pix: a cliente combina o pagamento no WhatsApp
     pix: profile.pix_online === true && (profile.formas_pagamento || ['pix']).includes('pix') && profile.pix_chave && profile.pix_nome && profile.pix_cidade
       && !problemaNaChave(profile.pix_chave, tipoDaChave(profile.pix_chave))
-      ? { chave: profile.pix_chave, nome: profile.pix_nome, cidade: profile.pix_cidade, modo: ['sinal', 'total'].includes(profile.pix_modo) ? profile.pix_modo : 'escolha', pct: Number(profile.pix_sinal_pct) || 50 }
+      ? { chave: profile.pix_chave, nome: profile.pix_nome, cidade: profile.pix_cidade, modo: ['sinal', 'total'].includes(profile.pix_modo) ? profile.pix_modo : 'escolha', pct: Number(profile.pix_sinal_pct) || 50, retirada: profile.pagar_na_retirada === true }
       : null,
     prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,
     msg_pedido: profile.mensagens_whatsapp?.pedido_cardapio || null,

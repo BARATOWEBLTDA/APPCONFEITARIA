@@ -140,7 +140,7 @@ export default function Custos() {
             ) : fixos.map(f => (
               <button type="button" key={f.id} className={`cu-it ${f.ativo ? "" : "off"}`} onClick={() => setEditFixo(f)}>
                 <div className="cu-it-t"><b>{f.nome}</b>
-                  <small>{!f.ativo ? "Pausado" : f.dia_vencimento ? <><Receipt size={12} weight="bold" /><em>Vence dia {f.dia_vencimento} · vira conta em A pagar</em></> : "Sem dia de vencimento"}</small></div>
+                  <small>{!f.ativo ? "Pausado" : f.dia_vencimento ? <><Receipt size={12} weight="bold" /><em>Vence dia {f.dia_vencimento} · vira conta</em></> : "Sem dia de vencimento"}</small></div>
                 <span className="cu-it-v">{brl(f.valor)}</span><CaretRight size={14} weight="bold" className="cu-it-ar" />
               </button>
             ))}

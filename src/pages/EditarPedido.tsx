@@ -1371,9 +1371,10 @@ export default function EditarPedido() {
     if (!semAlteracoesPendentes('estornar')) return
     const ok = await confirmarJanela({ titulo: `Estornar ${formatMoney(Number(g.valor) || 0)}?`, texto: 'Use quando o recebimento foi lançado errado. O valor sai do caixa e volta a faltar neste pedido. Ele continua no histórico, riscado.', icone: 'estorno', rotuloConfirmar: 'Estornar', perigo: true })
     if (!ok) return
-    const { error } = await supabase.from('pagamentos').update({ estornado_em: new Date().toISOString() }).eq('id', g.id)
+    // (28/10) só estorna se ainda não foi estornado (dois toques ou outra aba não trocam a data do primeiro estorno)
+    const { data: feito, error } = await supabase.from('pagamentos').update({ estornado_em: new Date().toISOString() }).eq('id', g.id).is('estornado_em', null).select('id')
     if (error) { avisarJanela('Não foi possível estornar', explicarErro(error, 'Tente de novo em instantes.'), 'erro'); return }
-    await recarregarDinheiro(); avisar('Recebimento estornado.')
+    await recarregarDinheiro(); avisar(feito?.length ? 'Recebimento estornado.' : 'Este recebimento já estava estornado.')
   }
   const NOME_FORMA: Record<string, string> = { pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Crédito', debito: 'Débito', boleto: 'Boleto' }
   const NOME_TIPO: Record<string, string> = { sinal: 'Sinal', parcial: 'Parcial', restante: 'Restante', total: 'Pagamento', pagamento: 'Pagamento', migracao: 'Pagamento' }
