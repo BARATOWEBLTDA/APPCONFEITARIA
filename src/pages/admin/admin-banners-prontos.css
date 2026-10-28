@@ -18,7 +18,7 @@
 .abp-pro { position: absolute; top: 8px; left: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--chocolate); color: var(--ui-branco); font-size: 12px; font-weight: 700; }
 .abp-cats { display: flex; flex-wrap: wrap; gap: 6px; }
 .abp-cats button { min-height: 36px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 8px; background: var(--ui-branco); color: var(--ui-texto-2); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
-.abp-cats button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.abp-cats button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
 .abp-opcoes { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; }
 .abp-opcoes label { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .abp-opcoes input { width: 20px; height: 20px; margin: 0; accent-color: var(--ui-rosa); }

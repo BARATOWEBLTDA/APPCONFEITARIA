@@ -12,7 +12,7 @@
 textarea.fo-txt { min-height: 88px; padding: 12px; resize: vertical; line-height: 1.45; }
 .fo-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .fo-chips button { min-height: 44px; margin: 0; padding: 0 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-texto); cursor: pointer; }
-.fo-chips button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.fo-chips button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
 .fo-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
 .fo-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: var(--ui-raio-p); background: none; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
 .fo-seg button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
@@ -46,7 +46,7 @@ textarea.fo-txt { min-height: 88px; padding: 12px; resize: vertical; line-height
 .fo-grade--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .fo-grade--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .fo-grade button { min-width: 0; min-height: 42px; margin: 0; padding: 0 6px; border: 1px solid var(--ui-borda-campo); border-radius: 10px; background: var(--ui-branco); font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fo-grade button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 600; }
+.fo-grade button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); font-weight: 600; }
 .fo-grade button.mais { border-style: dashed; color: var(--ui-texto-2); }
 .fo-nota--amarela { background: #FFFBEB; color: #92400E; }
 .ui-janela-pe:has(.fo-bt-curto) { grid-template-columns: 1fr 1fr; }

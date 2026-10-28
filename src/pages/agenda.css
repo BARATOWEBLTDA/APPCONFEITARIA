@@ -7,7 +7,7 @@
 .ag3-busca { flex: 1; min-width: 0; }
 .ag3-busca input[type="search"]::-webkit-search-decoration, .ag3-busca input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
 .ag3-filtro { width: 48px !important; height: 48px !important; background: var(--ui-branco) !important; border: 1px solid var(--ui-borda-campo) !important; color: var(--ui-cinza-texto) !important; }
-.ag3-filtro.on { border-color: var(--ui-rosa) !important; color: var(--ui-rosa-escuro) !important; background: var(--ui-rosa-claro) !important; }
+.ag3-filtro.on { border-color: var(--ui-escolha) !important; color: var(--ui-escolha) !important; background: var(--ui-escolha-fundo) !important; }
 .ag3-filtro-n { position: absolute; top: -6px; right: -6px; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: var(--ui-raio-p); background: var(--ui-rosa); color: var(--ui-branco); font-size: 12px; font-weight: 700; line-height: 1; box-shadow: 0 0 0 2px var(--ui-fundo, #fff); }
 
 .ag3-grade { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }

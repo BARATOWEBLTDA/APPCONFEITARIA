@@ -104,7 +104,7 @@
 .orc-add button, .orc-ext button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; margin: 0; padding: 0 8px; border: 1.5px dashed #E7C2D2; border-radius: 12px; background: #FFFAFC; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; white-space: nowrap; }
 .orc-ext { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px 0 12px; }
 .orc-ext button { min-height: 36px; border-style: solid; border-color: var(--ui-borda); background: var(--ui-branco); font-size: 13px; }
-.orc-ext button[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); }
+.orc-ext button[aria-pressed="true"] { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); }
 .orc-tot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-linha); font-size: 16px; font-weight: 700; }
 .orc-tot b { font-size: 20px; }
 .orc-lucro { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: #ECFDF3; color: #15803D; font-size: 13.5px; font-weight: 600; }
@@ -114,7 +114,7 @@
 /* condições */
 .orc-seg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .orc-seg button { min-height: 42px; margin: 0; padding: 0 4px; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto); cursor: pointer; white-space: nowrap; }
-.orc-seg button[aria-checked="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.orc-seg button[aria-checked="true"] { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
 .orc-mt { margin-top: 10px; }
 .orc-nota { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
 .orc-nota b { color: var(--ui-texto); }
@@ -181,7 +181,7 @@
 .orp-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
 @media (min-width: 600px) { .orp-chips { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .orp-chips button { min-height: 42px; margin: 0; padding: 0 4px; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto); cursor: pointer; white-space: nowrap; }
-.orp-chips button[aria-checked="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.orp-chips button[aria-checked="true"] { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
 .orp-campos { display: flex; flex-direction: column; gap: 14px; }
 .orp-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .orp-fotos { display: flex; gap: 8px; flex-wrap: wrap; }

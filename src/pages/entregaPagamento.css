@@ -122,19 +122,19 @@
 .ep-modo-t { margin: 4px 0 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); }
 .ep-modo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .ep-modo button { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; margin: 0; padding: 12px 34px 12px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
-.ep-modo button.on { border: 1.5px solid #3A3336; padding: 11.5px 33.5px 11.5px 11.5px; background: #F4F3F2; }
+.ep-modo button.on { border: 1.5px solid var(--ui-escolha); padding: 11.5px 33.5px 11.5px 11.5px; background: var(--ui-escolha-fundo); }
 .ep-modo button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 .ep-modo b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 500; }
 .ep-modo small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--ui-texto-2); }
 .ep-modo-bola { position: absolute; top: 12px; right: 12px; width: 18px; height: 18px; border: 1.5px solid #CDBFC5; border-radius: 50%; background: var(--ui-branco); box-sizing: border-box; }
-.ep-modo button.on .ep-modo-bola { border: 5px solid #3A3336; }
+.ep-modo button.on .ep-modo-bola { border: 5px solid var(--ui-escolha); }
 .ep-raio { display: flex; flex-direction: column; gap: 10px; }
 .ep-raio-aviso { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 .ep-raio-aviso svg { flex: none; margin-top: 1px; color: var(--ui-laranja); }
 .ep-faixa { display: grid; grid-template-columns: 24px auto 64px auto minmax(0, 1fr); gap: 8px; align-items: center; }
 /* (28/10) check da esquerda: liga/desliga a faixa ou a cidade (sem lixeira) */
 .ep-lin-check { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin: 0; padding: 0; border: 1.5px solid #CDBFC5; border-radius: 6px; background: var(--ui-branco); color: var(--ui-branco); cursor: pointer; }
-.ep-bairro--check .ep-lin-check[aria-checked="true"] { background: #3A3336; border-color: #3A3336; }
+.ep-bairro--check .ep-lin-check[aria-checked="true"] { background: var(--ui-escolha); border-color: var(--ui-escolha); }
 .ep-lin-check:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 .ep-faixa.off .ui-campo, .ep-faixa.off .ep-faixa-ate, .ep-bairro.off .ui-campo { opacity: .45; }
 .ep-bairro--check { grid-template-columns: 24px minmax(0, 1fr) 112px; }

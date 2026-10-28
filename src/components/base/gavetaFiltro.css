@@ -21,8 +21,8 @@
 .gf-ln em { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .gf-ln u { text-decoration: none; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); background: var(--ui-linha); border-radius: 6px; min-width: 24px; text-align: center; padding: 1px 6px; }
 .gf-rb { width: 22px; height: 22px; border-radius: 50%; border: 1.8px solid #D6CBD0; flex-shrink: 0; position: relative; }
-.gf-ln.rd.on .gf-rb { border-color: var(--ui-rosa); } .gf-ln.rd.on .gf-rb::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--ui-rosa); }
-.gf-ln.rd.on span { font-weight: 700; color: var(--ui-rosa-escuro); }
+.gf-ln.rd.on .gf-rb { border-color: var(--ui-escolha); } .gf-ln.rd.on .gf-rb::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--ui-escolha); }
+.gf-ln.rd.on span { font-weight: 700; color: var(--ui-escolha); }
 .gf-extra { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 10px 12px 12px; background: #FCF8F9; border-top: 1px solid var(--ui-linha); }
 .gf-extra small { display: block; font-size: 12px; font-weight: 500; color: #8A7E84; margin-bottom: 4px; }
 .gf-extra .cdata { padding: 0 10px; font-size: 14px; gap: 6px; }
@@ -33,6 +33,6 @@
 .gf-link { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 46px; margin-top: 16px; border: 1px solid #F0EBED; border-radius: 14px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-texto); cursor: pointer; }
 /* botão de filtro ao lado da busca */
 .gf-bt { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0; padding: 0; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-cinza-texto, var(--ui-texto-2)); cursor: pointer; }
-.gf-bt.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.gf-bt.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
 .gf-bt:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 .gf-bt-n { position: absolute; top: -6px; right: -6px; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--ui-rosa); color: #fff; font-size: 11.5px; font-weight: 700; box-shadow: 0 0 0 2px var(--ui-branco); }

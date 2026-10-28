@@ -788,7 +788,7 @@ const CSS = `
   .ppf-d-pe span { font-size: 12px; color: var(--ui-texto-3); padding-right: 4px; white-space: nowrap; }
   .ppf-d-opc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .ppf-d-opc button { height: 42px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
-  .ppf-d-opc button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 600; }
+  .ppf-d-opc button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); font-weight: 600; }
   .ppf-d-l { display: block; margin: 16px 2px 8px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
   .ppf-d-l + .ppf-d-campo { margin-top: 0; }
   .ppf-d-ajuda { margin-top: 14px; padding: 0 2px; }
@@ -810,9 +810,9 @@ const CSS = `
   .ppf-ia-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
   .ppf-ia-ops { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
   .ppf-ia-ops button { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 12px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 14px; line-height: 1.4; color: var(--ui-texto); text-align: left; cursor: pointer; }
-  .ppf-ia-ops button.on { border: 2px solid var(--ui-rosa); padding: 11px; }
+  .ppf-ia-ops button.on { border: 2px solid var(--ui-escolha); padding: 11px; }
   .ppf-ia-ops i { flex: none; width: 20px; height: 20px; margin-top: 1px; box-sizing: border-box; border: 2px solid #CFC6CA; border-radius: 50%; }
-  .ppf-ia-ops button.on i { border: 6px solid var(--ui-rosa); }
+  .ppf-ia-ops button.on i { border: 6px solid var(--ui-escolha); }
   .ppf-ia-outras { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); white-space: nowrap; cursor: pointer; }
   .ppf-ia-outras:disabled { opacity: .6; }
   .ppf-d-voltar { min-height: 40px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }

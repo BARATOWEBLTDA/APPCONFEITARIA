@@ -147,7 +147,7 @@ const CSS = `
   .cid-fg { display: flex; gap: 8px; }
   .cid-f { position: relative; width: 56px; height: 56px; border-radius: var(--ui-raio); border: 2px solid var(--ui-borda-campo); background: #FAF7F8; padding: 0; overflow: hidden; cursor: pointer; flex-shrink: 0; }
   .cid-f img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .cid-f.on { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232,90,140,.15); }
+  .cid-f.on { border-color: var(--ui-escolha); box-shadow: 0 0 0 3px rgba(58,51,54,.12); }
   .cid-f i { position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; }
   .cid-f--sem { font-family: inherit; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
   .cid-f--load { background: linear-gradient(90deg, var(--ui-linha), #FBF7F9, var(--ui-linha)); background-size: 200% 100%; animation: cidLoad 1.2s infinite; }

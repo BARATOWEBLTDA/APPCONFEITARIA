@@ -446,7 +446,7 @@ const CSS = `
   .fap-txt:focus { outline: none; border-color: var(--ui-rosa); }
   .fap-chips { display: flex; gap: 6px; flex-wrap: wrap; }
   .fap-chips button { border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: var(--ui-raio-p); padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-texto); cursor: pointer; }
-  .fap-chips button.on { border-color: var(--ui-rosa); background: #FFF1F6; color: var(--ui-rosa-escuro); }
+  .fap-chips button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
   .fap-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
   .fap-row > * { min-width: 0; } /* o campo de data vazava da janela (rolagem lateral) */
   .fap-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: var(--ui-branco); color: var(--ui-texto); height: 46px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 0 10px; font-family: inherit; font-size: 15px; box-sizing: border-box; }

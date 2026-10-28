@@ -64,7 +64,7 @@
 .ca-voto b { font-size: 15px; }
 .ca-voto div { display: flex; gap: 8px; }
 .ca-voto button { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 14.5px; font-weight: 600; color: var(--ui-texto); cursor: pointer; }
-.ca-voto button[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.ca-voto button[aria-pressed="true"] { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
 
 /* (26/10) tutorial visual: cena de exemplo, print com anéis numerados e a legenda de cada número */
 .ca-ex { margin: -2px 0 12px !important; padding: 10px 12px; border-radius: 12px; background: var(--ui-cinza); font-size: 14px !important; color: var(--ui-texto-2); }

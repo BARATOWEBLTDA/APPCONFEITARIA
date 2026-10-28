@@ -60,7 +60,7 @@
 .an-emoji-input input { text-align: center; font-size: 22px !important; }
 .an-emoji-chips { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
 .an-emoji-chip { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; padding: 0; border: 1.5px solid transparent; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 20px; cursor: pointer; }
-.an-emoji-chip[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); }
+.an-emoji-chip[aria-pressed="true"] { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); }
 
 .an-capa-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; aspect-ratio: 16/9; margin: 0; padding: 12px; border: 1.5px dashed var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-fundo); color: var(--ui-texto-2); font-family: inherit; cursor: pointer; }
 .an-capa-upload b, .an-icone-upload b { font-size: 14px; font-weight: 700; color: var(--ui-texto); }
@@ -91,7 +91,7 @@
 .an-notif-body { display: flex; flex-direction: column; gap: 16px; margin: 8px 0 0; }
 .an-notif-img-opts { display: flex; flex-wrap: wrap; gap: 8px; }
 .an-notif-img-opts button { min-height: 44px; margin: 0; padding: 0 14px; border: 1.5px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
-.an-notif-img-opts button[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.an-notif-img-opts button[aria-pressed="true"] { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
 .an-notif-prev { max-width: 360px; margin-top: 12px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
 .an-notif-prev-top { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
 .an-notif-prev-top img { width: 16px; height: 16px; border-radius: 4px; }

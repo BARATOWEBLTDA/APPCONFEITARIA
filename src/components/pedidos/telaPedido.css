@@ -117,11 +117,11 @@
 .tpd-tipo button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; margin: 0; padding: 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; transition: border-color var(--dur-fast) linear, background-color var(--dur-fast) linear; }
 @media (hover: hover) { .tpd-tipo button:not(.on):hover { border-color: #E4D6DC; } }
 .tpd-tipo button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
-.tpd-tipo button.on { border: 1.5px solid #3A3336; padding: 13.5px; background: #F4F3F2; } /* (28/10) escolhido: borda cinza escura e fundo cinza claro (sem rosinha) */
+.tpd-tipo button.on { border: 1.5px solid var(--ui-escolha); padding: 13.5px; background: var(--ui-escolha-fundo); } /* (28/10) escolhido: borda cinza escura e fundo cinza claro (sem rosinha) */
 .tpd-tipo-topo { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 8px; color: var(--ui-texto-2); }
-.tpd-tipo button.on .tpd-tipo-topo { color: #3A3336; } /* (28/10) escolha em cinza escuro, a pedido: o rosa fica pros botões de ação */
+.tpd-tipo button.on .tpd-tipo-topo { color: var(--ui-escolha); } /* (28/10) escolha em cinza escuro, a pedido: o rosa fica pros botões de ação */
 .tpd-tipo-bola { flex: none; width: 20px; height: 20px; border: 1.5px solid #CDBFC5; border-radius: 50%; background: var(--ui-branco); box-sizing: border-box; }
-.tpd-tipo button.on .tpd-tipo-bola { border: 6px solid #3A3336; }
+.tpd-tipo button.on .tpd-tipo-bola { border: 6px solid var(--ui-escolha); }
 .tpd-tipo b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 500; line-height: 1.3; }
 .tpd-tipo small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 400; line-height: 1.35; color: var(--ui-texto-2); }
 .tpd-seg { display: flex; gap: 4px; margin-bottom: 16px; padding: 4px; border-radius: var(--ui-raio-cartao); background: var(--ui-cinza); }
@@ -182,7 +182,7 @@
 .tpd-mi.perigo { color: var(--ui-vermelho); font-weight: 700; }
 .tpd-mi.perigo .tpd-mi-ic { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
 .tpd-mi.sep { margin-top: 4px; border-top: 1px solid var(--ui-linha); border-radius: 0; }
-.tpd-mi.sel { font-weight: 700; background: var(--ui-rosa-claro); }
+.tpd-mi.sel { font-weight: 700; background: var(--ui-escolha-fundo); }
 .tpd-mi em { margin-left: auto; font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--ui-rosa-escuro); }
 .tpd-pt { flex: none; width: 12px; height: 12px; margin: 0 10px; border-radius: 50%; background: var(--ui-texto-3); }
 .tpd-pt.t-azul { background: var(--ui-azul); } .tpd-pt.t-laranja { background: var(--ui-laranja); } .tpd-pt.t-verde { background: var(--ui-verde); } .tpd-pt.t-rosa { background: var(--ui-rosa); }

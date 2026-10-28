@@ -608,7 +608,11 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   --ui-branco:          #FFFFFF;
   --ui-fundo:           #F4EEF1;
   --ui-cinza:           #F3EEF1;
-  --ui-coluna:          #ECE5E9; /* (28/10) fundo das colunas do Quadro: um tom acima do fundo da tela, pra ver as raias */
+  --ui-coluna:          #ECE5E9;
+  /* (28/10) escolha marcada (cartões com bolinha, chips, opções): cinza escuro com fundo cinza claro, no lugar do rosa lavado.
+     O rosa fica pros botões de ação e pras chaves ligadas */
+  --ui-escolha:         #3A3336;
+  --ui-escolha-fundo:   #F4F3F2; /* (28/10) fundo das colunas do Quadro: um tom acima do fundo da tela, pra ver as raias */
   --ui-cinza-texto:     #4B3A42;
   --ui-borda:           #EADFE4;
   --ui-borda-campo:     #EDE6E9;

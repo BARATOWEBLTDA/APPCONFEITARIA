@@ -47,7 +47,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 /* modelo */
 .ap-modelos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .ap-modelo { position: relative; display: flex; flex-direction: column; margin: 0; padding: 0; border: 2px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); overflow: hidden; font-family: inherit; text-align: left; cursor: pointer; }
-.ap-modelo[aria-checked="true"] { border-color: var(--ui-rosa); }
+.ap-modelo[aria-checked="true"] { border-color: var(--ui-escolha); }
 .ap-modelo-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding: 0 12px; border-top: 1px solid var(--ui-linha); }
 .ap-modelo-pe b { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
 .ap-modelo-pe small { flex-shrink: 0; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
@@ -108,7 +108,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 /* (17/10) galeria de banners prontos */
 .ap-gal-slots { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; font-size: 14px; color: var(--ui-texto-2); }
 .ap-gal-slots button, .ap-gal-cats button { min-height: 36px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 8px; background: var(--ui-branco); color: var(--ui-texto-2); font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
-.ap-gal-slots button.on, .ap-gal-cats button[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.ap-gal-slots button.on, .ap-gal-cats button[aria-pressed="true"] { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
 .ap-gal-cats { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none; }
 .ap-gal-lista { display: flex; flex-direction: column; gap: 10px; }
 .ap-gal-it { position: relative; display: block; width: 100%; margin: 0; padding: 0; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-cinza); cursor: pointer; }

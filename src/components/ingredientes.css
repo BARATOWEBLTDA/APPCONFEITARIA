@@ -86,7 +86,7 @@
 .ig-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
 .ig-chips button { min-height: 40px; margin: 0; padding: 0 8px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: background .15s, border-color .15s, color .15s; }
 .ig-chips button:hover { border-color: var(--ui-texto-3); }
-.ig-chips button[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 600; }
+.ig-chips button[aria-pressed="true"] { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); font-weight: 600; }
 .ig-chips-cat { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); }
 
 .ig-compra { display: flex; flex-direction: column; gap: 16px; padding: 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: #FCFAFB; }
@@ -94,7 +94,7 @@
 .ig-compra-cab small { display: block; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); }
 .ig-compra .ig-seg { background: var(--ui-branco); border: 1px solid var(--ui-borda); }
 .ig-compra .ig-seg button { font-weight: 500; }
-.ig-compra .ig-seg button[aria-checked="true"] { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 600; box-shadow: none; }
+.ig-compra .ig-seg button[aria-checked="true"] { background: var(--ui-escolha-fundo); color: var(--ui-escolha); font-weight: 600; box-shadow: none; }
 .ig-compra .ig-dica { margin: 0; }
 @media (max-width: 420px) { .ig-compra { padding: 14px 12px; } }
 .ig-aviso-meio { position: fixed; z-index: 10100; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(300px, calc(100vw - 48px)); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 20px; border-radius: 18px; background: rgba(31, 7, 17, .92); color: #fff; text-align: center; box-shadow: 0 12px 40px rgba(31, 7, 17, .3); pointer-events: none; animation: ig-aviso 2.6s ease forwards; }

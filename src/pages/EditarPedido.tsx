@@ -3989,7 +3989,7 @@ const EP2_CSS = `
   .ep2-when button svg { color: var(--ui-rosa-escuro); flex-shrink: 0; width: 16px; height: 16px; } .ep2-when b { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ep2-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 9px; }
   .ep2-chips button { display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: 99px; padding: 7px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); cursor: pointer; }
-  .ep2-chips button.on { border-color: var(--ui-rosa); background: #FFF1F6; color: var(--ui-rosa-escuro); }
+  .ep2-chips button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
   .ep2-addr { display: flex; gap: 10px; align-items: flex-start; background: #FAF7F8; border-radius: var(--ui-raio); padding: 11px; }
   .ep2-addr > svg { color: var(--ui-rosa-escuro); flex-shrink: 0; margin-top: 1px; } .ep2-addr > div { flex: 1; min-width: 0; }
   .ep2-addr b { display: block; font-size: 15px; font-weight: 700; color: var(--ui-texto); } .ep2-addr small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; line-height: 1.35; }

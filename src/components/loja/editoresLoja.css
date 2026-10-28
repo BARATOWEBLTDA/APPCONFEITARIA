@@ -11,8 +11,8 @@
 .ppf-mos { display: flex; flex-direction: column; gap: 8px; }
 .ppf-mos button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 14px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
 .ppf-mos button i { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #CFC2C7; box-sizing: border-box; transition: border .15s; }
-.ppf-mos button.on { border-color: var(--ui-rosa); background: #FFF5F8; }
-.ppf-mos button.on i { border: 6px solid var(--ui-rosa); }
+.ppf-mos button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); }
+.ppf-mos button.on i { border: 6px solid var(--ui-escolha); }
 .ppf-mos span { flex: 1; min-width: 0; }
 .ppf-mos b { display: block; font-size: 15px; font-weight: 700; }
 .ppf-mos small { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -24,7 +24,7 @@
 /* (23/10) editor de horário no padrão da lista com chave */
 .edh-dias { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
 .edh-dias button { min-height: 34px; padding: 0; border: 1.5px solid var(--ui-borda); border-radius: 8px; background: var(--ui-branco); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-texto-3); cursor: pointer; }
-.edh-dias button.on { border-color: var(--ui-rosa); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.edh-dias button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
 .edh-hh { display: flex; gap: 8px; margin-top: 10px; }
 .edh-dias + .edh-hh { margin-top: 10px; }
 .lch-dep > .edh-hh:first-child { margin-top: 0; }

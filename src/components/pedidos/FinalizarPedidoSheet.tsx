@@ -229,7 +229,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
         .fps-in.sm input { font-size: 17px; }
         .fps-chips { display: flex; gap: 6px; flex-wrap: wrap; }
         .fps-chips button { border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: var(--ui-raio-p); padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-texto); cursor: pointer; }
-        .fps-chips button.on { border-color: var(--ui-rosa); background: #FFF1F6; color: var(--ui-rosa-escuro); }
+        .fps-chips button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
         .fps-motivo { margin-top: 8px; width: 100%; height: 42px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio-p); padding: 0 12px; font-family: inherit; font-size: 15px; box-sizing: border-box; }
         .fps-data { margin-top: 8px; width: 100%; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; background: var(--ui-branco); height: 46px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 0 12px; font-family: inherit; font-size: 16px; box-sizing: border-box; }
         .fps-prev { margin-top: 14px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--ui-raio); padding: 10px 12px; }

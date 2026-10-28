@@ -373,10 +373,10 @@ body .prod-modal--novo .prod-btn-avancar-novo { white-space: nowrap; overflow: h
   .prod-tipo button b { font-size: 16px; font-weight: 700; white-space: nowrap; }
   /* (24/10) botões maiores, com ícone (pronta entrega: raio; encomenda: calendário) */
   .prod-tipo-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin-bottom: 8px; border-radius: 12px; background: #F3EEF1; color: var(--ui-texto-3); }
-  .prod-tipo button.on .prod-tipo-ic { background: var(--ui-rosa); color: #fff; }
+  .prod-tipo button.on .prod-tipo-ic { background: var(--ui-escolha); color: #fff; }
   .prod-tipo button small { font-size: 12px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-  .prod-tipo button.on { border-color: var(--ui-rosa); background: #FFF5F9; box-shadow: 0 0 0 1px var(--ui-rosa) inset; }
-  .prod-tipo button.on b { color: var(--ui-rosa-escuro); }
+  .prod-tipo button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); box-shadow: 0 0 0 1px var(--ui-escolha) inset; }
+  .prod-tipo button.on b { color: var(--ui-escolha); }
   .prod-tipo button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 
   html body .prod-modal--novo .prod-modal-header-novo.pcab { background: var(--ui-branco); min-height: calc(60px + env(safe-area-inset-top, 0px)); padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: 14px; }
@@ -393,7 +393,7 @@ body .prod-modal--novo .prod-btn-avancar-novo { white-space: nowrap; overflow: h
 /* (24/10) prazo da encomenda: 24 horas · 2 dias · 3 dias · Personalizado */
 .prod-prazo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 4px; }
 .prod-prazo button { min-height: 46px; margin: 0; padding: 0 8px; border: 1.5px solid #E5D8DE; border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; white-space: nowrap; }
-.prod-prazo button.on { border-color: var(--ui-rosa); background: #FDF3F7; color: var(--ui-rosa-escuro); box-shadow: 0 0 0 1px var(--ui-rosa) inset; }
+.prod-prazo button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); box-shadow: 0 0 0 1px var(--ui-escolha) inset; }
 .prod-prazo button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 @media (min-width: 901px) { .prod-prazo { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .prod-prazo-n { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 10px; padding: 10px 8px; border-radius: 12px; background: #FBF6F8; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }

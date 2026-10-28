@@ -30,7 +30,7 @@
 .pz-prods-l { display: flex; flex-direction: column; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); overflow: hidden; }
 .pz-prod { display: flex; align-items: center; gap: 12px; min-height: 56px; margin: 0; padding: 6px 12px; border: 0; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
 .pz-prod + .pz-prod { border-top: 1px solid var(--ui-linha); }
-.pz-prod[aria-checked="true"] { background: var(--ui-rosa-claro); }
+.pz-prod[aria-checked="true"] { background: var(--ui-escolha-fundo); }
 .pz-chk { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda-campo); border-radius: 6px; background: var(--ui-branco); color: var(--ui-branco); }
 .pz-prod[aria-checked="true"] .pz-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 .pz-prod-f { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: var(--ui-raio-p); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
@@ -126,7 +126,7 @@
 .pz-onde-op + .pz-onde-op { border-top: 1px solid var(--ui-linha); }
 .pz-onde-b { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin: 0; padding: 8px 14px; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
 .pz-onde-b > i { flex: none; width: 22px; height: 22px; border: 2px solid var(--ui-borda-campo); border-radius: 50%; box-sizing: border-box; }
-.pz-onde-op.on .pz-onde-b > i { border: 7px solid var(--ui-rosa); }
+.pz-onde-op.on .pz-onde-b > i { border: 7px solid var(--ui-escolha); }
 .pz-onde-b > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .pz-onde-b b { font-size: 15px; font-weight: 600; }
 .pz-onde-b small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
