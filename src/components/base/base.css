@@ -170,6 +170,11 @@
   animation: uiSobe var(--dur-entrada) var(--ease-out) both;
 }
 .ui-janela--conteudo { max-width: 480px; }
+/* (28/10) escolher produto: no computador mais larga e com altura fixa (não encolhe quando a categoria tem poucos produtos) */
+@media (min-width: 768px) {
+  .ui-veu--centro .ui-janela.ui-janela--produtos { max-width: 640px; height: min(86dvh, 720px); }
+  .ui-janela--produtos .ui-janela-corpo { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-gutter: stable; }
+}
 .ui-veu--saindo .ui-janela { animation: uiDesce var(--dur-normal) var(--ease-in) both; }
 @keyframes uiSobe { from { transform: translateY(100%); } }
 @keyframes uiDesce { to { transform: translateY(100%); } }

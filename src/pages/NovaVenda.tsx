@@ -1291,7 +1291,7 @@ export default function NovaVenda() {
       const q = buscaProduto.trim().toLowerCase()
       const lista = produtos.filter(p => (p.nome || '').toLowerCase().includes(q) && (!filtroCategoria || (p.categoria || '').trim() === filtroCategoria))
       return (
-        <Janela aberta={modalProduto} aoFechar={() => setModalProduto(false)} tipo="conteudo" titulo="Adicionar produto">
+        <Janela aberta={modalProduto} aoFechar={() => setModalProduto(false)} tipo="conteudo" titulo="Adicionar produto" className="ui-janela--produtos">
           <div className="ui-campo-c tpj-busca">
             <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
             <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar produto" placeholder="Buscar produto" value={buscaProduto} onChange={e => setBuscaProduto(e.target.value)} />

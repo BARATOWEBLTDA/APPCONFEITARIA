@@ -37,9 +37,11 @@ type PropsJanela = {
   umaAcao?: boolean
   /** tocar fora não fecha (use quando fechar perde o que foi digitado) */
   travada?: boolean
+  /** (28/10) classe extra na caixa (ex.: ui-janela--produtos, maior e com altura fixa) */
+  className?: string
 }
 
-export function Janela({ aberta, aoFechar, titulo, tipo = 'aviso', texto, icone, tom = 'rosa', children, acoes, umaAcao = false, travada = false }: PropsJanela) {
+export function Janela({ aberta, aoFechar, titulo, tipo = 'aviso', texto, icone, tom = 'rosa', children, acoes, umaAcao = false, travada = false, className }: PropsJanela) {
   const caixa = useRef<HTMLDivElement>(null)
   const idTitulo = useId()
   const fase = useFase(aberta)
@@ -49,7 +51,7 @@ export function Janela({ aberta, aoFechar, titulo, tipo = 'aviso', texto, icone,
   return createPortal(
     <div className={`ui-veu ui-veu--centro${aberta ? '' : ' ui-veu--saindo'}`} onClick={travada ? undefined : aoFechar}>
       <div
-        ref={caixa} tabIndex={-1} className={`ui-janela ui-janela--${tipo}`}
+        ref={caixa} tabIndex={-1} className={`ui-janela ui-janela--${tipo}${className ? ` ${className}` : ''}`}
         role={aviso ? 'alertdialog' : 'dialog'} aria-modal="true" aria-labelledby={idTitulo}
         onClick={e => e.stopPropagation()}
       >

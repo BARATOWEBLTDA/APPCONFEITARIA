@@ -1954,7 +1954,7 @@ export default function EditarPedido() {
         const lista = produtos.filter(p => (p.nome || '').toLowerCase().includes(q) && (!filtroCategoria || (p.categoria || '').trim() === filtroCategoria))
         const fechar = () => { setModalProduto(false); setCatDropdownAberto(false) }
         return (
-          <Janela aberta={modalProduto} aoFechar={fechar} tipo="conteudo" titulo="Adicionar item">
+          <Janela aberta={modalProduto} aoFechar={fechar} tipo="conteudo" titulo="Adicionar item" className="ui-janela--produtos">
             <div className="ui-campo-c tpj-busca">
               <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
               <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar produto" placeholder="Buscar produto" value={buscaProduto} onChange={e => setBuscaProduto(e.target.value)} />
