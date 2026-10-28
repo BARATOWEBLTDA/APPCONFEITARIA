@@ -190,7 +190,7 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 .nv3-lado { display: none; }
 @media (min-width: 1100px) {
   .nv3 { max-width: 1120px; padding-bottom: 32px; }
-  .nv3-grade { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+  .nv3-grade { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 20px; align-items: start; } /* (28/10) resumo mais largo (antes 340px) */
   .nv3-col { min-width: 0; }
   .nv3-pe { display: none; }
   .nv3-res-card { display: none; }
