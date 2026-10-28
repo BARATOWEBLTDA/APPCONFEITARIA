@@ -1407,7 +1407,8 @@ export default function EditarPedido() {
     navigate('/pedidos')
   }
   const novoPedido = grupoAtual === 'aguardando_aceite'
-  const origemTexto = pedido.origem === 'cardapio' ? 'Pedido feito pelo cardápio digital' : 'Pedido lançado por você'
+  // (28/10) "Origem: Cardápio digital" (rótulo + valor, o padrão do app): "Pedido feito pelo cardápio digital" cortava com "…"
+  const origemTexto = pedido.origem === 'cardapio' ? 'Cardápio digital' : 'Lançado por você'
   // 10/10: o subtítulo traz só o cliente (a data já aparece logo abaixo, na linha de Entrega/Retirada)
   const subtituloTopo = clienteNome.trim() ? toTitleCase(clienteNome.trim()) : 'Venda avulsa'
 
@@ -1428,7 +1429,7 @@ export default function EditarPedido() {
             <span className="tpd-cli-tx">
               <b>{toTitleCase(clienteNome.trim())}</b>
               <span>{telDigitos ? formatTelefone(clienteTelefone) : 'Sem telefone'}</span>
-              <small>{origemTexto}</small>
+              <small>Origem: <em className="tpd-cli-orig">{origemTexto}</em></small>
             </span>
           </button>
           {telDigitos && (<>

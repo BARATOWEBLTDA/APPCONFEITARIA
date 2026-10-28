@@ -54,6 +54,7 @@
 .tpd-cli-tx span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .tpd-cli-tx small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .tpd-cli-seta { flex: none; color: var(--ui-texto-3); }
+.tpd-cli-orig { font-style: normal; color: var(--ui-texto); } /* (28/10) valor da Origem, como nas outras linhas "Rótulo: valor" */
 /* (28/10) cartão do cliente mais leve: botões quadrados ao lado do nome, números numa linha, link pro perfil */
 .tpd-cli-lin { display: flex; align-items: center; gap: 8px; }
 .tpd-cli-lin .tpd-cli { flex: 1; min-width: 0; }
