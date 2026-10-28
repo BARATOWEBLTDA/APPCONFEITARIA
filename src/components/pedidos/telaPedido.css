@@ -233,6 +233,27 @@
   .tpd-fim { padding: 12px 24px; }
 }
 
+/* (28/10) novo formato da tela do pedido (celular não muda):
+   topo só com as etapas e o botão · esquerda: Itens e "Quando e onde" · direita: Cliente, Valores e Pagamentos */
+.tpd-so-pc { display: none; }
+.tpd-cli-dir { display: none; }
+@container (min-width: 1000px) {
+  .tpd-so-pc { display: block; }
+  .tpd-cli-esq { display: none; }
+  .tpd-cli-dir { display: block; }
+  /* topo: etapas e botão numa faixa; os avisos (quando houver) descem pra uma linha embaixo */
+  .tpd-sit { grid-template-columns: minmax(0, 1fr) auto; }
+  .tpd-sit > .tpd-sit-l { grid-row: 2; grid-column: 1 / -1; }
+  .tpd-sit-base { display: none; }
+  .tpd-sit > .tpd-sit-l:not(:has(.tpd-aviso)):not(:has(.tpd-ret-bt)) { display: none; }
+  /* "Quando e onde": o endereço vira a parte de baixo do mesmo cartão */
+  .ep2.tpd .tpd-quando-card { border-bottom: 0; border-radius: var(--ui-raio-cartao) var(--ui-raio-cartao) 0 0; padding-bottom: 8px; box-shadow: none; }
+  .ep2.tpd .tpd-onde-card { margin-top: -12px; border-top: 1px solid #F3EDF0; border-radius: 0 0 var(--ui-raio-cartao) var(--ui-raio-cartao); }
+  .ep2.tpd .tpd-onde-card .ui-tit { font-size: 13.5px; }
+  /* com o Cliente em cima, a coluna da direita ficou mais alta que a tela: ela rola junto (fixa, o Pagamento sumia embaixo) */
+  .ep-wrap.ep2.tpd .ep2-col-dir { position: static; }
+}
+
 /* salvar: no computador fica na coluna da direita; até 900px, a faixa de baixo */
 @media (min-width: 901px) { .ep2-foot { display: none !important; } .ep2.tpd .ep2-save-desk { display: flex; flex-direction: column; gap: 8px; } }
 @media (max-width: 900px) { .ep2.tpd .ep2-save-desk { display: none; } }

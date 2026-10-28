@@ -1411,6 +1411,45 @@ export default function EditarPedido() {
   // 10/10: o subtítulo traz só o cliente (a data já aparece logo abaixo, na linha de Entrega/Retirada)
   const subtituloTopo = clienteNome.trim() ? toTitleCase(clienteNome.trim()) : 'Venda avulsa'
 
+  // (28/10) cartão do cliente: no celular fica na aba Itens; no computador sobe pro topo da coluna da direita
+  const cartaoCliente = (onde: string) => (
+    <section className={`ep2-card tpd-card tpd-cli-card ${onde}`}>
+      <Titulo acao={clienteNome.trim() ? <Botao variante="link" icone={<ArrowsLeftRight size={16} weight="bold" />} onClick={() => setModalCliente(true)}>Trocar</Botao> : undefined}>Cliente</Titulo>
+      {!clienteNome.trim() ? (
+        <div className="tpd-cli-vz">
+          <p>Este pedido ainda não tem cliente.</p>
+          <Botao variante="suave" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => setModalCliente(true)}>Escolher cliente</Botao>
+        </div>
+      ) : (<>
+        {/* (28/10) cartão mais leve: WhatsApp (ícone oficial) e Ligar pequenos ao lado do nome; os números numa linha; "Ver perfil do cliente" */}
+        <div className="tpd-cli-lin">
+          <button type="button" className="tpd-cli" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)} aria-label={clienteId ? 'Abrir o perfil do cliente' : 'Escolher o cliente'}>
+            {clienteInfo?.foto ? <img className="tpd-ini" src={clienteInfo.foto} alt="" /> : <span className="tpd-ini" aria-hidden="true">{initialsOf(toTitleCase(clienteNome.trim()))}</span>}
+            <span className="tpd-cli-tx">
+              <b>{toTitleCase(clienteNome.trim())}</b>
+              <span>{telDigitos ? formatTelefone(clienteTelefone) : 'Sem telefone'}</span>
+              <small>{origemTexto}</small>
+            </span>
+          </button>
+          {telDigitos && (<>
+            <a className="tpd-cli-ic tpd-cli-ic--zap" href={linkWhatsApp(clienteTelefone) || `https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer" aria-label="Chamar no WhatsApp" title="WhatsApp"><IconeWhatsApp size={20} className="tpd-zap" /></a>
+            <a className="tpd-cli-ic" href={`tel:+55${telDigitos}`} aria-label="Ligar" title="Ligar"><Phone size={20} weight="bold" /></a>
+          </>)}
+        </div>
+        {clienteId && clienteInfo && clienteInfo.pedidos > 0 && (
+          <p className="tpd-cli-res">{clienteInfo.pedidos + 1} pedidos · {formatMoney(r2(clienteInfo.gasto + recebidoAtual))} gastos{clienteInfo.ultimo ? ` · último em ${clienteInfo.ultimo.slice(8, 10)}/${clienteInfo.ultimo.slice(5, 7)}` : ''}</p>
+        )}
+        {aniversario && (
+          <p className="tpd-aniv"><Cake size={20} weight="bold" aria-hidden="true" /><span><b>Aniversário {aniversario.dias === 0 ? 'hoje' : `dia ${aniversario.data}`}</b>{aniversario.dias === 0 ? '!' : ` · daqui a ${aniversario.dias} ${aniversario.dias === 1 ? 'dia' : 'dias'}.`} Que tal um mimo no pedido?</span></p>
+        )}
+        {!telDigitos && (
+          <Botao className="tpd-mt" variante="suave" tamanho="m" cheio icone={<Plus size={20} weight="bold" />} onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)}>Adicionar telefone</Botao>
+        )}
+        {clienteId && <button type="button" className="tpd-cli-perfil" onClick={() => navigate(`/clientes/${clienteId}`)}>Ver perfil do cliente<CaretRight size={16} weight="bold" aria-hidden="true" /></button>}
+      </>)}
+    </section>
+  )
+
   return (
     <>
     <AppPageHeader title={`Pedido #${pedido.numero || '—'}`} titleExtra={clienteNome.trim() ? toTitleCase(clienteNome.trim()) : undefined} subtitle={subtituloTopo} onBack={voltarPraLista} infoComo={COMO_PEDIDO} infoTour={TOUR_PEDIDO} />
@@ -1419,8 +1458,11 @@ export default function EditarPedido() {
       <section className={`tpd-sit${novoPedido ? ' aceitar' : ''}${atrasadoHoje ? ' atr' : ''}`} aria-label="Situação do pedido">
         <div className="tpd-sit-l">
           <div className="tpd-sit-tx">
-            <Linha rotulo="Situação" tom={situacao.tom}>{situacao.nome}</Linha>
-            <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{cel ? dataCurta(dataEntrega, horarioEntrega) : dataLonga(dataEntrega, horarioEntrega)}</Linha>
+            {/* (28/10) no computador a situação e a data saem daqui: as etapas mostram a situação e a data fica em "Quando e onde" */}
+            <div className="tpd-sit-base">
+              <Linha rotulo="Situação" tom={situacao.tom}>{situacao.nome}</Linha>
+              <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{cel ? dataCurta(dataEntrega, horarioEntrega) : dataLonga(dataEntrega, horarioEntrega)}</Linha>
+            </div>
             {tipoEntrega === 'retirada' && statusPedido === 'entregue' && (
               <Linha rotulo="Retirado por">
                 {(pedido as any).retirado_por ? <>{(pedido as any).retirado_por}{' '}</> : null}
@@ -1461,42 +1503,7 @@ export default function EditarPedido() {
         <div className="ep2-col">
           {/* ── ITENS (com o cartão do cliente) ── */}
           <div className={`ep2-sec ${tab === 'itens' ? 'ativa' : ''}`}>
-            {/* ── Cartão da cliente (opção A + estados especiais) ── (28/10) no computador ele vem depois dos itens (telaPedido.css) */}
-            <section className="ep2-card tpd-card tpd-cli-card">
-              <Titulo acao={clienteNome.trim() ? <Botao variante="link" icone={<ArrowsLeftRight size={16} weight="bold" />} onClick={() => setModalCliente(true)}>Trocar</Botao> : undefined}>Cliente</Titulo>
-              {!clienteNome.trim() ? (
-                <div className="tpd-cli-vz">
-                  <p>Este pedido ainda não tem cliente.</p>
-                  <Botao variante="suave" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => setModalCliente(true)}>Escolher cliente</Botao>
-                </div>
-              ) : (<>
-                {/* (28/10) cartão mais leve: WhatsApp (ícone oficial) e Ligar pequenos ao lado do nome; os números numa linha; "Ver perfil do cliente" */}
-                <div className="tpd-cli-lin">
-                  <button type="button" className="tpd-cli" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)} aria-label={clienteId ? 'Abrir o perfil do cliente' : 'Escolher o cliente'}>
-                    {clienteInfo?.foto ? <img className="tpd-ini" src={clienteInfo.foto} alt="" /> : <span className="tpd-ini" aria-hidden="true">{initialsOf(toTitleCase(clienteNome.trim()))}</span>}
-                    <span className="tpd-cli-tx">
-                      <b>{toTitleCase(clienteNome.trim())}</b>
-                      <span>{telDigitos ? formatTelefone(clienteTelefone) : 'Sem telefone'}</span>
-                      <small>{origemTexto}</small>
-                    </span>
-                  </button>
-                  {telDigitos && (<>
-                    <a className="tpd-cli-ic tpd-cli-ic--zap" href={linkWhatsApp(clienteTelefone) || `https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer" aria-label="Chamar no WhatsApp" title="WhatsApp"><IconeWhatsApp size={20} className="tpd-zap" /></a>
-                    <a className="tpd-cli-ic" href={`tel:+55${telDigitos}`} aria-label="Ligar" title="Ligar"><Phone size={20} weight="bold" /></a>
-                  </>)}
-                </div>
-                {clienteId && clienteInfo && clienteInfo.pedidos > 0 && (
-                  <p className="tpd-cli-res">{clienteInfo.pedidos + 1} pedidos · {formatMoney(r2(clienteInfo.gasto + recebidoAtual))} gastos{clienteInfo.ultimo ? ` · último em ${clienteInfo.ultimo.slice(8, 10)}/${clienteInfo.ultimo.slice(5, 7)}` : ''}</p>
-                )}
-                {aniversario && (
-                  <p className="tpd-aniv"><Cake size={20} weight="bold" aria-hidden="true" /><span><b>Aniversário {aniversario.dias === 0 ? 'hoje' : `dia ${aniversario.data}`}</b>{aniversario.dias === 0 ? '!' : ` · daqui a ${aniversario.dias} ${aniversario.dias === 1 ? 'dia' : 'dias'}.`} Que tal um mimo no pedido?</span></p>
-                )}
-                {!telDigitos && (
-                  <Botao className="tpd-mt" variante="suave" tamanho="m" cheio icone={<Plus size={20} weight="bold" />} onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)}>Adicionar telefone</Botao>
-                )}
-                {clienteId && <button type="button" className="tpd-cli-perfil" onClick={() => navigate(`/clientes/${clienteId}`)}>Ver perfil do cliente<CaretRight size={16} weight="bold" aria-hidden="true" /></button>}
-              </>)}
-            </section>
+            {cartaoCliente('tpd-cli-esq')}
 
             {(pedido.observacoes || '').trim() && (
               <section className="ep2-card tpd-card tpd-recado-ped">
@@ -1562,7 +1569,8 @@ export default function EditarPedido() {
 
           {/* ── ENTREGA (03/10): como sai primeiro, data em português, endereço pronto pra ler ── */}
           <div className={`ep2-sec ${tab === 'entrega' ? 'ativa' : ''}`}>
-            <section className="ep2-card tpd-card">
+            <section className="ep2-card tpd-card tpd-quando-card">
+              <p className="ep2-ct tpd-so-pc">Quando e onde</p>
               {/* (28/10) Entrega ou Retirada em dois cartões maiores, com a bolinha de escolha dentro */}
               <div className="tpd-tipo" role="radiogroup" aria-label="Como o pedido sai">
                 {([['entrega', 'Entrega', 'Leva até a cliente', Truck], ['retirada', 'Retirada', 'Busca na loja', Storefront]] as const).map(([k, nome, sub, Ic]) => {
@@ -1589,7 +1597,7 @@ export default function EditarPedido() {
             </section>
 
             {tipoEntrega === 'entrega' ? (
-              <div className="ep2-card">
+              <div className="ep2-card tpd-onde-card">
                 <Titulo acao={!editandoEndereco && enderecoTemAlgo ? <Botao variante="link" icone={<PencilSimple size={16} weight="bold" />} onClick={abrirEdicaoEndereco}>Editar</Botao> : undefined}>Endereço de entrega</Titulo>
                 {!editandoEndereco && enderecoTemAlgo ? (<>
                   <div className="ep2-addr tpd-end">
@@ -1634,7 +1642,7 @@ export default function EditarPedido() {
                   <span className="ep2-mini"><em>R$</em><input inputMode="numeric" value={textoBRL(taxaEntrega) || ''} placeholder="0,00" onChange={e => setTaxaEntrega(lerBRL(mascaraBRL(e.target.value)))} aria-label="Taxa de entrega" /></span></div>
               </div>
             ) : (
-              <div className="ep2-card">
+              <div className="ep2-card tpd-onde-card">
                 <Titulo>Onde retirar</Titulo>
                 {lojaInfo?.endereco ? (<>
                   <div className="ep2-addr tpd-end"><div><b>{lojaInfo.nome || 'Sua loja'}</b><small>{lojaInfo.endereco.linha1}</small>{lojaInfo.endereco.linha2 && <small>{lojaInfo.endereco.linha2}</small>}</div></div>
@@ -1649,6 +1657,7 @@ export default function EditarPedido() {
 
         {/* ── PAGAMENTO (no computador: coluna fixa à direita) ── */}
         <div className={`ep2-col ep2-col-dir ep2-sec ${tab === 'pagamento' ? 'ativa' : ''}`}>
+          {cartaoCliente('tpd-cli-dir')}
           <div className="ep2-card">
             <Titulo>Valores</Titulo>
             {/* cada item com o seu valor e de onde ele vem (produto, adicionais, promoção) — a aba Itens não tem valores */}
