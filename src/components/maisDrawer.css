@@ -24,7 +24,7 @@
 /* (15/10) o mesmo rosa forte dos atalhos do Início, com o ícone branco */
 .mais-it-ic { flex: none; width: 40px; height: 40px; border-radius: var(--ui-raio); display: flex; align-items: center; justify-content: center; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .mais-it-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.mais-it-txt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 700; line-height: 1.3; }
+.mais-it-txt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 600; line-height: 1.3; }
 .mais-it-txt small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .mais-it-seta { flex: none; color: var(--ui-texto-3); }
 /* a tela em que a pessoa já está */
@@ -56,7 +56,7 @@
 
 /* (21/10) celular: atalhos no topo e as telas em grade de 3 colunas (ícone e nome; a explicação some) */
 .mais-at { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
-.mais-at button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 64px; margin: 0; padding: 10px 4px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.mais-at button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 64px; margin: 0; padding: 10px 4px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .mais-at button svg { color: var(--ui-rosa-escuro); }
 .mais-at i { position: absolute; top: 6px; right: calc(50% - 26px); min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
 .mais-corpo { gap: 16px; }

@@ -9,7 +9,7 @@
 .cad-it:focus-visible, .cad-at:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
 .cad-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--primary-light); color: var(--ui-rosa-escuro); } /* (27/10) rosa no fundo clarinho */
 .cad-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.cad-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 700; line-height: 1.3; }
+.cad-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 600; line-height: 1.3; }
 .cad-tx small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .cad-tx small.ok { color: var(--ui-verde); font-weight: 600; }
 .cad-tx small.lar { color: var(--ui-laranja); font-weight: 600; }
