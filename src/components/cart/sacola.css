@@ -198,7 +198,8 @@
 .sc-sug-ft img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .sc-sug-ft i { position: absolute; right: 6px; bottom: 6px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--ui-branco); box-shadow: 0 2px 6px rgba(0,0,0,.2); }
 .sc-sug-it b { margin-top: 4px; font-size: 13px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sc-sug-it small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.sc-sug-preco { display: flex; align-items: baseline; gap: 4px; min-width: 0; margin-top: 1px; white-space: nowrap; overflow: hidden; }
+.sc-sug-it small { font-size: 11.5px; color: var(--ui-texto-2); white-space: nowrap; }
 .sc-sug-it strong { font-size: 13.5px; font-weight: 700; white-space: nowrap; }
 .sc:has(.sc-topo--loja) .sc-linha { background: var(--ui-branco); }
 .sc:has(.sc-topo--loja) .sc-valores { margin: 12px; padding: 12px; border: 1px solid #EFE6EA; border-radius: 14px; background: var(--ui-branco); }

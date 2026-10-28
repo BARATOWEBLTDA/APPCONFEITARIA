@@ -175,9 +175,8 @@ function SugestaoSacola({ produto, cor }: { produto: Produto; cor: string }) {
       <button type="button" className="sc-sug-it" onClick={() => setAberto(true)} aria-label={`Ver ${produto.nome}`}>
         <span className="sc-sug-ft">{foto ? <img src={foto} alt="" loading="lazy" /> : null}<i style={{ background: cor }}><Plus size={14} weight="bold" /></i></span>
         <b>{produto.nome}</b>
-        {/* (20/10) "a partir de" numa linha própria, acima do preço (antes encostava no cartão do lado) */}
-        <small>{aPartir ? 'a partir de' : '\u00a0'}</small>
-        <strong>{formatCurrency(final)}</strong>
+        {/* (27/10) o preço logo embaixo do nome; o "a partir de" pequeno na mesma linha (antes ocupava uma linha e sobrava espaço vazio) */}
+        <span className="sc-sug-preco">{aPartir && <small>a partir de</small>}<strong>{formatCurrency(final)}</strong></span>
       </button>
       <ProductModal isOpen={aberto} onClose={() => setAberto(false)} product={produto} corBotao={cor} />
     </>

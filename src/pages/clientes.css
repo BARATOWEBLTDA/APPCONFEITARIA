@@ -202,12 +202,14 @@
 .cp9-ped small { font-size: 13px; color: var(--ui-texto-2); }
 .cp9-ped strong { grid-area: v; font-size: 15px; font-weight: 700; text-align: right; }
 .cp9-ped > svg { grid-area: c; justify-self: end; color: var(--ui-texto-3); }
-.cp9-st { grid-area: s; justify-self: start; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12px; font-style: normal; font-weight: 700; }
-.cp9-st--rosa { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-.cp9-st--verde { background: var(--ui-verde-fundo); color: var(--ui-verde); }
-.cp9-st--laranja { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
-.cp9-st--azul { background: #E6F0FA; color: var(--ui-azul); }
-.cp9-st--vermelho { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
+/* (27/10) "Situação: Entregue" em texto, sem etiqueta (padrão do app); a cor fica só na situação */
+.cp9-st { grid-area: s; justify-self: start; padding: 0; background: none; color: var(--ui-texto); font-size: 13px; font-style: normal; font-weight: 600; white-space: nowrap; }
+.cp9-st::before { content: "Situação: "; font-weight: 500; color: var(--ui-texto-2); }
+.cp9-st--rosa { color: var(--ui-rosa-escuro); }
+.cp9-st--verde { color: var(--ui-verde); }
+.cp9-st--laranja { color: var(--ui-laranja); }
+.cp9-st--azul { color: var(--ui-azul); }
+.cp9-st--vermelho { color: var(--ui-vermelho-escuro); }
 .cp9-riscado { color: var(--ui-texto-3) !important; text-decoration: line-through; }
 .cp9-nota { margin: 8px 0 0; font-size: 13px; color: var(--ui-texto-3); }
 .cp9-mais { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin: 8px 0 0; border: 0; border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-cinza-texto); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
