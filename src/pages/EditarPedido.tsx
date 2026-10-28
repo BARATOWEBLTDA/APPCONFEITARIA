@@ -1559,9 +1559,18 @@ export default function EditarPedido() {
           {/* ── ENTREGA (03/10): como sai primeiro, data em português, endereço pronto pra ler ── */}
           <div className={`ep2-sec ${tab === 'entrega' ? 'ativa' : ''}`}>
             <section className="ep2-card tpd-card">
-              <div className="tpd-seg" role="group" aria-label="Como o pedido sai">
-                <button type="button" aria-pressed={tipoEntrega === 'entrega'} onClick={() => setTipoEntrega('entrega')}><Truck size={20} weight={tipoEntrega === 'entrega' ? 'fill' : 'bold'} aria-hidden="true" />Entrega</button>
-                <button type="button" aria-pressed={tipoEntrega === 'retirada'} onClick={() => setTipoEntrega('retirada')}><Storefront size={20} weight={tipoEntrega === 'retirada' ? 'fill' : 'bold'} aria-hidden="true" />Retirada</button>
+              {/* (28/10) Entrega ou Retirada em dois cartões maiores, com a bolinha de escolha dentro */}
+              <div className="tpd-tipo" role="radiogroup" aria-label="Como o pedido sai">
+                {([['entrega', 'Entrega', 'Leva até a cliente', Truck], ['retirada', 'Retirada', 'Busca na loja', Storefront]] as const).map(([k, nome, sub, Ic]) => {
+                  const on = tipoEntrega === k
+                  return (
+                    <button key={k} type="button" role="radio" aria-checked={on} className={on ? 'on' : undefined} onClick={() => setTipoEntrega(k)}>
+                      <span className="tpd-tipo-topo"><Ic size={24} weight={on ? 'fill' : 'regular'} aria-hidden="true" /><i className="tpd-tipo-bola" aria-hidden="true" /></span>
+                      <b>{nome}</b>
+                      <small>{sub}</small>
+                    </button>
+                  )
+                })}
               </div>
               <div className="tpd-quando">
                 <div className="ui-campo">
