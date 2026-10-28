@@ -218,6 +218,14 @@
   .ep2.tpd .ep2-grid { grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); gap: 16px; align-items: start; }
   .ep2.tpd .ep2-col-dir { position: sticky; top: 112px; }
 }
+/* (28/10) três pontinhos: no celular junto do texto; no computador no canto, ao lado do botão da etapa */
+.tpd-sit-acao { display: contents; }
+.tpd-sit-acao .tpd-mais-pc { display: none; }
+@container (min-width: 1000px) {
+  .tpd-sit-acao { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  .tpd-sit-acao .tpd-mais-pc { display: inline-flex; }
+  .tpd-sit-l .tpd-mais { display: none; }
+}
 @container (min-width: 1000px) {
   .tpd-sit { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(0, 1.2fr) auto; align-items: center; gap: 16px 24px; }
   .tpd-passos { margin: 0; }

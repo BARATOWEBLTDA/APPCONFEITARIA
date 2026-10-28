@@ -1442,8 +1442,12 @@ export default function EditarPedido() {
             })}
           </ol>
         )}
-        {proximaEtapa ? <Botao className="tpd-acao" cheio carregando={mudandoEtapa} onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l}</Botao>
-          : statusPedido === 'entregue' ? <p className="tpd-fim"><Check size={16} weight="bold" /> {tipoEntrega === 'retirada' ? 'Pedido retirado' : 'Pedido entregue'}</p> : null}
+        {/* (28/10) no computador os três pontinhos ficam no canto, ao lado do botão da etapa (no celular continuam junto do texto) */}
+        <div className="tpd-sit-acao">
+          {proximaEtapa ? <Botao className="tpd-acao" cheio carregando={mudandoEtapa} onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l}</Botao>
+            : statusPedido === 'entregue' ? <p className="tpd-fim"><Check size={16} weight="bold" /> {tipoEntrega === 'retirada' ? 'Pedido retirado' : 'Pedido entregue'}</p> : null}
+          <BotaoIcone rotulo="Mais ações" variante="limpo" className="tpd-mais-pc" onClick={() => setMenuAberto(true)}><DotsThreeVertical size={24} weight="bold" /></BotaoIcone>
+        </div>
       </section>
 
       {/* abas: só no celular */}
