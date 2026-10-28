@@ -170,7 +170,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     // (28/10 · 4.49) raio e cidade. Nesses modos a lista de bairros não vale (o cardápio olha a lista pra pedir o bairro)
     entrega_modo: modoDaLoja(profile),
     entrega_por_raio: Array.isArray(profile.entrega_por_raio) ? profile.entrega_por_raio : [],
-    entrega_por_cidade: Array.isArray(profile.entrega_por_cidade) ? profile.entrega_por_cidade : [],
+    entrega_por_cidade: Array.isArray(profile.entrega_por_cidade) ? profile.entrega_por_cidade.filter((c: any) => c?.ativo !== false) : [],
     entrega_fora_valor: profile.entrega_fora_valor ?? null,
     endereco_retirada: profile.endereco_retirada || '',
     horario_retirada: profile.horario_retirada || '',

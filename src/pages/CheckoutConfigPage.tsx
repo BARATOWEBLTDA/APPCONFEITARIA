@@ -89,8 +89,9 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const [entregaPorBairro, setEntregaPorBairro] = useState<{ bairro: string; valor: string }[]>([])
   // (28/10 · 4.49) taxa por raio (km) e por cidade. novasColunas = o banco já tem os campos (SQL entrega_por_raio_cidade)
   const [modoEntrega, setModoEntrega] = useState<ModoEntrega>('fixa')
-  const [raios, setRaios] = useState<{ km: string; valor: string }[]>([])
-  const [cidades, setCidades] = useState<{ cidade: string; valor: string }[]>([])
+  // (28/10) o check da esquerda liga e desliga cada faixa/cidade (no lugar da lixeira, que ocupava muito espaço no celular)
+  const [raios, setRaios] = useState<{ km: string; valor: string; ativo: boolean }[]>([])
+  const [cidades, setCidades] = useState<{ cidade: string; valor: string; ativo: boolean }[]>([])
   const [foraEntrega, setForaEntrega] = useState(false)
   const [foraValor, setForaValor] = useState('')
   const [lojaPonto, setLojaPonto] = useState<Ponto | null>(null)
@@ -147,8 +148,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
           setNovasColunas(!erroEx)
           const m = x.entrega_modo
           setModoEntrega(m === 'fixa' || m === 'bairro' || m === 'raio' || m === 'cidade' ? m : temBairros ? 'bairro' : 'fixa')
-          setRaios((Array.isArray(x.entrega_por_raio) ? x.entrega_por_raio : []).map((f: any) => ({ km: String(f.km ?? '').replace('.', ','), valor: reaisParaCampo(f.valor) || '0,00' })))
-          setCidades((Array.isArray(x.entrega_por_cidade) ? x.entrega_por_cidade : []).map((c: any) => ({ cidade: c.cidade || '', valor: reaisParaCampo(c.valor) || '0,00' })))
+          setRaios((Array.isArray(x.entrega_por_raio) ? x.entrega_por_raio : []).map((f: any) => ({ km: String(f.km ?? '').replace('.', ','), valor: reaisParaCampo(f.valor) || '0,00', ativo: f.ativo !== false })))
+          setCidades((Array.isArray(x.entrega_por_cidade) ? x.entrega_por_cidade : []).map((c: any) => ({ cidade: c.cidade || '', valor: reaisParaCampo(c.valor) || '0,00', ativo: c.ativo !== false })))
           setForaEntrega(x.entrega_fora_valor != null)
           setForaValor(x.entrega_fora_valor != null ? reaisParaCampo(x.entrega_fora_valor) || '0,00' : '')
           setLojaPonto(x.loja_lat != null && x.loja_lng != null ? { lat: Number(x.loja_lat), lng: Number(x.loja_lng) } : null)
@@ -241,9 +242,10 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       if (a.novasColunas) {
         const { error: erroArea } = await supabase.from('profiles').update({
           entrega_modo: a.modoEntrega,
-          entrega_por_raio: faixasOrdenadas(a.raios.map(f => ({ km: f.km, valor: numBR(f.valor) || 0 })))
+          entrega_por_raio: a.raios.map(f => ({ km: Number(String(f.km).replace(',', '.')), valor: Math.max(0, numBR(f.valor) || 0), ativo: f.ativo }))
+            .filter(f => Number.isFinite(f.km) && f.km > 0).sort((x, y) => x.km - y.km)
             .filter((f, i, l) => l.findIndex(y => y.km === f.km) === i),
-          entrega_por_cidade: a.cidades.map(c => ({ cidade: c.cidade.trim(), valor: Math.max(0, numBR(c.valor) || 0) }))
+          entrega_por_cidade: a.cidades.map(c => ({ cidade: c.cidade.trim(), valor: Math.max(0, numBR(c.valor) || 0), ativo: c.ativo }))
             .filter((c, i, l) => c.cidade && l.findIndex(y => y.cidade.toLowerCase() === c.cidade.toLowerCase()) === i),
           entrega_fora_valor: a.foraEntrega ? Math.max(0, numBR(a.foraValor) || 0) : null,
           ...(a.lojaPonto ? { loja_lat: a.lojaPonto.lat, loja_lng: a.lojaPonto.lng } : {}),
@@ -351,8 +353,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       setEntregaPorBairro([])
     }
     if (m === 'bairro' && !entregaPorBairro.length) setEntregaPorBairro([{ bairro: '', valor: '' }])
-    if (m === 'raio' && !raios.length) setRaios([{ km: '3', valor: '' }, { km: '6', valor: '' }])
-    if (m === 'cidade' && !cidades.length) setCidades([{ cidade: String(enderecoLoja?.cidade || ''), valor: '' }])
+    if (m === 'raio' && !raios.length) setRaios([{ km: '3', valor: '', ativo: true }, { km: '6', valor: '', ativo: true }])
+    if (m === 'cidade' && !cidades.length) setCidades([{ cidade: String(enderecoLoja?.cidade || ''), valor: '', ativo: true }])
     setModoEntrega(m)
   }
   // ponto da loja no mapa (pelo endereço em Dados da loja): achado uma vez e gravado junto
@@ -369,7 +371,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       .then(pt => { if (vivo) { if (pt) setLojaPonto(pt); setBuscandoLoja(false) } })
     return () => { vivo = false }
   }, [loading, modoEntrega, chaveEndLoja]) // eslint-disable-line react-hooks/exhaustive-deps
-  const faixasMapa = faixasOrdenadas(raios.map(f => ({ km: f.km, valor: numBR(f.valor) || 0 })))
+  const faixasMapa = faixasOrdenadas(raios.filter(f => f.ativo).map(f => ({ km: f.km, valor: numBR(f.valor) || 0 })))
   const maiorKm = faixasMapa.length ? faixasMapa[faixasMapa.length - 1].km : 0
   const kmCurto = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
   const nomesCidade = cidades.map(c => c.cidade.trim().toLowerCase()).filter(Boolean)
@@ -609,7 +611,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
             <div className="ep-res">
               {ENTREGAS.filter(e => formasEntrega.includes(e.key)).map(e => (
                 <span key={e.key} className="ep-res-li"><Check size={16} weight="bold" aria-hidden="true" />{e.label}
-                  {e.key === 'entrega_propria' && <em>{modoEntrega === 'raio' ? `Por raio (${faixasMapa.length} ${faixasMapa.length === 1 ? 'faixa' : 'faixas'})` : modoEntrega === 'cidade' ? `Por cidade (${cidades.filter(c => c.cidade.trim()).length})` : entregaPorBairro.some(b => b.bairro.trim()) ? `Por bairro (${entregaPorBairro.filter(b => b.bairro.trim()).length})` : numBR(valorEntregaPropria) > 0 ? `R$ ${dinheiroBR(valorEntregaPropria)}` : 'Grátis'}</em>}</span>
+                  {e.key === 'entrega_propria' && <em>{modoEntrega === 'raio' ? `Por raio (${faixasMapa.length} ${faixasMapa.length === 1 ? 'faixa' : 'faixas'})` : modoEntrega === 'cidade' ? `Por cidade (${cidades.filter(c => c.ativo && c.cidade.trim()).length})` : entregaPorBairro.some(b => b.bairro.trim()) ? `Por bairro (${entregaPorBairro.filter(b => b.bairro.trim()).length})` : numBR(valorEntregaPropria) > 0 ? `R$ ${dinheiroBR(valorEntregaPropria)}` : 'Grátis'}</em>}</span>
               ))}
             </div>
           ) : (<>
@@ -638,35 +640,36 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                   {raios.map((f, i) => {
                     const ordem = faixasMapa.findIndex(x => x.km === Number(String(f.km).replace(',', '.')))
                     return (
-                      <div key={i} className="ep-faixa">
-                        <span className="ep-faixa-cor" style={{ background: CORES_RAIO[Math.max(0, Math.min(ordem, CORES_RAIO.length - 1))] }} aria-hidden="true" />
+                      <div key={i} className={`ep-faixa${f.ativo ? '' : ' off'}`}>
+                        <button type="button" role="checkbox" aria-checked={f.ativo} aria-label={`Faixa até ${f.km || '?'} km ${f.ativo ? 'ligada' : 'desligada'}`} className="ep-lin-check"
+                          style={f.ativo ? { background: CORES_RAIO[Math.max(0, Math.min(ordem, CORES_RAIO.length - 1))], borderColor: CORES_RAIO[Math.max(0, Math.min(ordem, CORES_RAIO.length - 1))] } : undefined}
+                          onClick={() => setRaios(prev => prev.map((x, k) => k === i ? { ...x, ativo: !x.ativo } : x))}>{f.ativo && <Check size={14} weight="bold" />}</button>
                         <span className="ep-faixa-ate">Até</span>
                         <Campo rotulo="" aria-label="Distância em km" inputMode="decimal" placeholder="3" value={f.km} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, km: e.target.value.replace(/[^0-9,]/g, '').slice(0, 5) } : x))} />
                         <span className="ep-faixa-ate">km</span>
                         <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={f.valor} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
-                        <button type="button" className="ep-bairro-x" aria-label="Tirar esta faixa" onClick={() => setRaios(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
                       </div>
                     )
                   })}
-                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setRaios(prev => [...prev, { km: maiorKm ? kmCurto(maiorKm + 3) : '3', valor: '' }])}>Adicionar faixa</Botao>
+                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setRaios(prev => [...prev, { km: maiorKm ? kmCurto(maiorKm + 3) : '3', valor: '', ativo: true }])}>Adicionar faixa</Botao>
                   <Chave on={foraEntrega} rotulo={maiorKm ? `Entregar mais longe que ${kmCurto(maiorKm)} km` : 'Entregar mais longe'} apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: o cliente vê que está fora da área'} aoMudar={setForaEntrega} />
                   {foraEntrega && <Campo rotulo="Taxa para mais longe" prefixo="R$" inputMode="numeric" placeholder="0,00" value={foraValor} onChange={e => setForaValor(mascaraReais(e.target.value))} />}
-                  <p className="ep-bairro-dica">A distância é em linha reta, a partir do endereço da loja. Taxa 0 é entrega grátis.</p>
+                  <p className="ep-bairro-dica">Desmarque a faixa para desligar. A distância é em linha reta, a partir do endereço da loja. Taxa 0 é entrega grátis.</p>
                 </div>
               ) : modoEntrega === 'cidade' ? (
                 <div className="ep-bairros">
                   {cidades.map((c, i) => (
-                    <div key={i} className="ep-bairro">
+                    <div key={i} className={`ep-bairro ep-bairro--check${c.ativo ? '' : ' off'}`}>
+                      <button type="button" role="checkbox" aria-checked={c.ativo} aria-label={`${c.cidade || 'Cidade'} ${c.ativo ? 'ligada' : 'desligada'}`} className="ep-lin-check" onClick={() => setCidades(prev => prev.map((x, k) => k === i ? { ...x, ativo: !x.ativo } : x))}>{c.ativo && <Check size={14} weight="bold" />}</button>
                       <Campo rotulo="" aria-label="Cidade" placeholder="Cidade" value={c.cidade} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, cidade: e.target.value } : x))} />
                       <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={c.valor} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
-                      <button type="button" className="ep-bairro-x" aria-label={`Tirar ${c.cidade || 'esta cidade'}`} onClick={() => setCidades(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
                     </div>
                   ))}
                   {cidadeRepetida && <p className="ep-bairro-erro" role="alert">Cidade repetida. Deixe só uma.</p>}
-                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setCidades(prev => [...prev, { cidade: '', valor: '' }])}>Adicionar cidade</Botao>
+                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setCidades(prev => [...prev, { cidade: '', valor: '', ativo: true }])}>Adicionar cidade</Botao>
                   <Chave on={foraEntrega} rotulo="Entregar em outras cidades" apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: só nas cidades da lista'} aoMudar={setForaEntrega} />
                   {foraEntrega && <Campo rotulo="Taxa para outras cidades" prefixo="R$" inputMode="numeric" placeholder="0,00" value={foraValor} onChange={e => setForaValor(mascaraReais(e.target.value))} />}
-                  <p className="ep-bairro-dica">O cliente escolhe a cidade e paga a taxa dela. Taxa 0 é entrega grátis.</p>
+                  <p className="ep-bairro-dica">Desmarque a cidade para desligar. O cliente escolhe a cidade e paga a taxa dela. Taxa 0 é entrega grátis.</p>
                 </div>
               ) : null}
               {modoEntrega === 'raio' || modoEntrega === 'cidade' ? null : !porBairro ? (

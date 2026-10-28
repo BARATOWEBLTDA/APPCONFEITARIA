@@ -131,7 +131,13 @@
 .ep-raio { display: flex; flex-direction: column; gap: 10px; }
 .ep-raio-aviso { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 .ep-raio-aviso svg { flex: none; margin-top: 1px; color: var(--ui-laranja); }
-.ep-faixa { display: grid; grid-template-columns: 10px auto 64px auto minmax(0, 1fr) 44px; gap: 8px; align-items: center; }
+.ep-faixa { display: grid; grid-template-columns: 24px auto 64px auto minmax(0, 1fr); gap: 8px; align-items: center; }
+/* (28/10) check da esquerda: liga/desliga a faixa ou a cidade (sem lixeira) */
+.ep-lin-check { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin: 0; padding: 0; border: 1.5px solid #CDBFC5; border-radius: 6px; background: var(--ui-branco); color: var(--ui-branco); cursor: pointer; }
+.ep-bairro--check .ep-lin-check[aria-checked="true"] { background: #3A3336; border-color: #3A3336; }
+.ep-lin-check:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+.ep-faixa.off .ui-campo, .ep-faixa.off .ep-faixa-ate, .ep-bairro.off .ui-campo { opacity: .45; }
+.ep-bairro--check { grid-template-columns: 24px minmax(0, 1fr) 112px; }
 .ep-faixa .ui-campo-r { display: none; }
 .ep-faixa-cor { width: 10px; height: 10px; border-radius: 50%; }
 .ep-faixa-ate { font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; }

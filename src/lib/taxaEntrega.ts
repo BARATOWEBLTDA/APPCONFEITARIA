@@ -25,8 +25,9 @@ export function distanciaKm(a: Ponto, b: Ponto): number {
 }
 
 /** Faixas válidas, da menor pra maior distância */
-export function faixasOrdenadas(lista: { km: number | string; valor: number | string }[]): FaixaRaio[] {
+export function faixasOrdenadas(lista: { km: number | string; valor: number | string; ativo?: boolean }[]): FaixaRaio[] {
   return (lista || [])
+    .filter(f => f.ativo !== false) // (28/10) faixa desmarcada não vale
     .map(f => ({ km: Number(String(f.km).replace(',', '.')), valor: Number(String(f.valor).replace(',', '.')) }))
     .filter(f => Number.isFinite(f.km) && f.km > 0 && Number.isFinite(f.valor) && f.valor >= 0)
     .sort((a, b) => a.km - b.km)
@@ -42,7 +43,7 @@ export function taxaPorRaio(faixas: FaixaRaio[], km: number, fora: number | null
 /** A taxa da cidade (sem acento e sem diferença de maiúscula); fora da lista, o valor de fora (ou não entrega) */
 export const semAcento = (s: string) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase()
 export function taxaPorCidade(lista: TaxaCidade[], cidade: string, fora: number | null): { ok: true; valor: number; cidade?: string } | { ok: false } {
-  const c = (lista || []).find(x => semAcento(x.cidade) === semAcento(cidade))
+  const c = (lista || []).find(x => (x as any).ativo !== false && semAcento(x.cidade) === semAcento(cidade))
   if (c) return { ok: true, valor: Math.max(0, Number(c.valor) || 0), cidade: c.cidade }
   return fora != null ? { ok: true, valor: Math.max(0, fora) } : { ok: false }
 }

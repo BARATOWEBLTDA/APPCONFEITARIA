@@ -35,7 +35,7 @@ begin
     v_dist := public.distancia_km(v_loja.loja_lat, v_loja.loja_lng, p_lat, p_lng);
     select (f->>'valor')::numeric into v_valor
       from jsonb_array_elements(coalesce(v_loja.entrega_por_raio, '[]'::jsonb)) f
-     where nullif(f->>'km', '')::numeric >= v_dist
+     where nullif(f->>'km', '')::numeric >= v_dist and coalesce((f->>'ativo')::boolean, true) -- (28/10) faixa desmarcada não vale
      order by nullif(f->>'km', '')::numeric limit 1;
     if v_valor is null then v_valor := v_loja.entrega_fora_valor; end if;
     if v_valor is null then return jsonb_build_object('ok', false, 'erro', 'fora_area', 'km', v_dist); end if;
@@ -43,7 +43,8 @@ begin
   elsif v_modo = 'cidade' then
     select (c->>'valor')::numeric into v_valor
       from jsonb_array_elements(coalesce(v_loja.entrega_por_cidade, '[]'::jsonb)) c
-     where translate(lower(trim(c->>'cidade')), 'áàâãäéèêëíìîïóòôõöúùûüç', 'aaaaaeeeeiiiiooooouuuuc')
+     where coalesce((c->>'ativo')::boolean, true)
+       and translate(lower(trim(c->>'cidade')), 'áàâãäéèêëíìîïóòôõöúùûüç', 'aaaaaeeeeiiiiooooouuuuc')
          = translate(lower(trim(coalesce(p_cidade, ''))), 'áàâãäéèêëíìîïóòôõöúùûüç', 'aaaaaeeeeiiiiooooouuuuc') limit 1;
     if v_valor is null then v_valor := v_loja.entrega_fora_valor; end if;
     if v_valor is null then return jsonb_build_object('ok', false, 'erro', 'fora_area'); end if;
