@@ -2,7 +2,7 @@
  * (24/10) Orçamentos (PRO): os pedidos de orçamento que chegaram pelo link, os enviados e os respondidos.
  * Em cima, o link fixo da loja para pedir orçamento (copiar e compartilhar) e o "Novo orçamento" (montar sem pedido).
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CaretRight, Check, Copy, Crown, FileText, Plus, ShareNetwork, WarningCircle } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
@@ -22,6 +22,14 @@ type Aba = 'novos' | 'enviados' | 'aprovados' | 'recusados'
 const ABAS: [Aba, string][] = [['novos', 'Novos'], ['enviados', 'Enviados'], ['aprovados', 'Aprovados'], ['recusados', 'Recusados']]
 const daAba = (o: Orcamento, a: Aba) =>
   a === 'novos' ? o.status === 'novo' || o.status === 'rascunho' : a === 'enviados' ? o.status === 'enviado' : a === 'aprovados' ? o.status === 'aprovado' : o.status === 'recusado'
+
+/** (28/10) computador: o funil em quadro, uma coluna por situação (como o Quadro de pedidos). Celular: as abas de antes. */
+function useComputador() {
+  const q = '(min-width: 901px)'
+  const [pc, setPc] = useState(() => typeof window !== 'undefined' && window.matchMedia(q).matches)
+  useEffect(() => { const m = window.matchMedia(q); const f = () => setPc(m.matches); m.addEventListener('change', f); return () => m.removeEventListener('change', f) }, [])
+  return pc
+}
 
 export default function Orcamentos() {
   const navigate = useNavigate()
@@ -51,6 +59,29 @@ export default function Orcamentos() {
   const nomeLoja = (profile as any)?.nome_loja || 'Minha confeitaria'
   const contagem = useMemo(() => Object.fromEntries(ABAS.map(([k]) => [k, lista.filter(o => daAba(o, k)).length])) as Record<Aba, number>, [lista])
   const visiveis = lista.filter(o => daAba(o, aba))
+  const pc = useComputador()
+  // o quadro vai até o fim da tela: mede onde ele começa e usa o resto da altura
+  const refQuadro = useRef<HTMLDivElement>(null)
+  const [alturaQuadro, setAlturaQuadro] = useState<number | null>(null)
+  useLayoutEffect(() => {
+    if (!pc) return
+    const medir = () => { const el = refQuadro.current; if (el) setAlturaQuadro(Math.max(320, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - 24))) }
+    medir(); window.addEventListener('resize', medir)
+    return () => window.removeEventListener('resize', medir)
+  }, [pc, carregando])
+  const infoDo = (o: Orcamento) => {
+    const atrasado = semResposta(o)
+    return {
+      total: totalOrcamento(o), atrasado,
+      linha: [o.ocasiao || o.nome_evento, o.pessoas ? `${o.pessoas} pessoas` : ''].filter(Boolean).join(' · '),
+      sit: (o.status === 'novo' ? ['Novo', 'n'] : o.status === 'rascunho' ? ['Rascunho', 'r'] : o.status === 'enviado' ? [atrasado ? 'Sem resposta' : 'Aguardando', 'e'] : o.status === 'aprovado' ? ['Aprovado', 'a'] : ['Recusado', 'x']) as [string, string],
+    }
+  }
+  const cobrar = (o: Orcamento) => o.cliente_telefone ? (
+    <a className="orc-cobrar" href={linkWhatsApp(o.cliente_telefone, `Oi${o.cliente_nome ? `, ${o.cliente_nome.split(' ')[0]}` : ''}! Conseguiu ver o orçamento que te mandei?`)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+      <IconeWhatsApp size={16} />Sem resposta há 3 dias. Pedir retorno
+    </a>
+  ) : null
 
   const copiar = async () => {
     try { await navigator.clipboard.writeText(link); avisar('Link copiado', { tipo: 'ok' }) }
@@ -96,6 +127,36 @@ export default function Orcamentos() {
         <Botao className="orc-novo" icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/orcamentos/novo')}>Novo orçamento</Botao>
       </div>
 
+      {pc && !carregando && !erro ? (
+        <div ref={refQuadro} className="orq" style={{ height: alturaQuadro ?? undefined }}>
+          {ABAS.map(([k, nome]) => {
+            const doCol = lista.filter(o => daAba(o, k))
+            return (
+              <section key={k} className={`orq-col orq-col--${k}`} aria-label={nome}>
+                <p className="orq-t">{nome}<i>{doCol.length}</i></p>
+                <div className="orq-lista">
+                  {doCol.length === 0 ? <p className="orq-vazio">{k === 'novos' ? 'Os pedidos do seu link chegam aqui' : 'Nenhum orçamento aqui'}</p> : doCol.map(o => {
+                    const x = infoDo(o)
+                    return (
+                      <article key={o.id} className={`orq-c${x.atrasado ? ' atr' : ''}`} tabIndex={0} onClick={() => navigate(`/orcamentos/${o.id}`)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/orcamentos/${o.id}`) } }}>
+                        <p className="orq-nome"><b>{o.cliente_nome || 'Sem nome'}</b><span>#{o.numero}</span></p>
+                        <p className="orq-s">{x.linha || (o.origem === 'link' ? 'Pediu pelo link' : 'Criado por você')}</p>
+                        <div className="orq-ls">
+                          {o.data_evento && <p><span>Festa:</span> {dataCurta(o.data_evento)}</p>}
+                          {x.total > 0 && <p><span>Valor:</span> {brl(x.total)}</p>}
+                          {(o.status === 'rascunho' || x.atrasado) && <p className={`orc-st orc-st--${x.sit[1]}`}>{x.sit[0]}</p>}
+                        </div>
+                        {o.status === 'novo' && <Botao tamanho="p" cheio onClick={e => { e.stopPropagation(); navigate(`/orcamentos/${o.id}`) }}>Responder</Botao>}
+                        {x.atrasado && cobrar(o)}
+                      </article>
+                    )
+                  })}
+                </div>
+              </section>
+            )
+          })}
+        </div>
+      ) : <>
       <div className="orc-abas" role="tablist" aria-label="Situação dos orçamentos">
         {ABAS.map(([k, t]) => (
           <button key={k} type="button" role="tab" aria-selected={aba === k} onClick={() => setAba(k)}>{t}{contagem[k] > 0 && <i>{contagem[k]}</i>}</button>
@@ -141,6 +202,7 @@ export default function Orcamentos() {
           })}
         </section>
       )}
+      </>}
     </div>
   </>)
 }

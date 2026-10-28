@@ -14,7 +14,7 @@
 
 /* topo: link + novo */
 .orc-topo { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-.orc-link { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: #FFF8FB; border: 1px solid #F7D9E5; border-radius: var(--ui-raio-cartao); }
+.orc-link { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); } /* (28/10) sem o rosa lavado */
 .orc-link-tx { display: flex; flex-direction: column; min-width: 0; }
 .orc-link-tx b { font-size: 15px; font-weight: 700; }
 .orc-link-tx small { font-size: 13px; color: var(--ui-rosa-escuro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -231,3 +231,26 @@
 /* (28/10) o + do "Acréscimo" encolhia (palavra maior que as outras) */
 .orc-add button svg, .orc-ext button svg { flex: none; }
 .orc-ext button { gap: 4px; padding: 0 4px; }
+
+/* (28/10) computador: quadro do funil (Novos → Enviados → Aprovados → Recusados), no padrão do Quadro de pedidos */
+.orq { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)) minmax(200px, .8fr); gap: 12px; align-items: stretch; min-height: 320px; padding-bottom: 16px; }
+.orq-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 10px; border-radius: var(--ui-raio-cartao); background: var(--ui-coluna); }
+.orq-t { display: flex; align-items: center; gap: 8px; margin: 2px 2px 12px; font-size: 15px; font-weight: 500; }
+.orq-t i { font-style: normal; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 7px; background: var(--ui-branco); font-size: 12px; line-height: 22px; text-align: center; color: var(--ui-texto-2); }
+.orq-lista { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin: 0 -4px; padding: 0 4px 4px; }
+.orq-vazio { display: flex; align-items: center; justify-content: center; min-height: 72px; margin: 0; padding: 12px; border: 1.5px dashed #D3C6CC; border-radius: var(--ui-raio); font-size: 13px; color: var(--ui-texto-3); text-align: center; }
+.orq-c { padding: 12px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); box-shadow: var(--ui-sombra-cartao); cursor: pointer; outline: 0; }
+.orq-c + .orq-c { margin-top: 10px; }
+@media (hover: hover) { .orq-c:hover { border-color: #E4D6DC; } }
+.orq-c:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+.orq-c.atr { border-color: #F6CFCF; }
+.orq-nome { display: flex; align-items: baseline; gap: 6px; margin: 0; min-width: 0; }
+.orq-nome b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14.5px; font-weight: 500; }
+.orq-nome span { flex: none; font-size: 12px; color: var(--ui-texto-3); }
+.orq-s { margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--ui-texto-2); }
+.orq-ls { margin-top: 8px; }
+.orq-ls p { margin: 0; font-size: 13px; line-height: 1.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.orq-ls p span { color: var(--ui-texto-2); }
+.orq-c .ui-bt { margin-top: 10px; }
+.orq-c .orc-cobrar { margin: 8px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.orq-col--recusados .orq-c { opacity: .7; }
