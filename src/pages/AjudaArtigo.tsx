@@ -4,12 +4,13 @@
  */
 import { Fragment, useEffect, useState, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowUpRight, CaretDown, CaretRight, Clock, Lifebuoy, Lightbulb, ListBullets, ThumbsDown, ThumbsUp } from '@phosphor-icons/react'
+import { ArrowUpRight, CaretDown, CaretRight, Check, Clock, Lifebuoy, Lightbulb, ListBullets, ThumbsDown, ThumbsUp } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, TelaVazia } from '@/components/base'
 import { supabase } from '@/lib/supabase'
 import { TEMAS, artigoPorSlug } from '@/lib/ajuda'
 import { CartaoSuporte } from './Ajuda'
+import AjudaEsquema from './AjudaEsquema'
 import './centralAjuda.css'
 
 /** **negrito** → <b> */
@@ -61,9 +62,51 @@ export default function AjudaArtigo() {
   }
   const Bloco = ({ children }: { children: ReactNode }) => <section className="ca-card">{children}</section>
 
+  // (27/10) formato novo: resumo, "Em resumo", esquema da tela, explicação em texto e dúvidas comuns
+  const novo = !!(a.esquema || a.intro)
+
   return (<>
     <AppPageHeader title={tema?.nome || 'Ajuda'} subtitle="Central de Ajuda" voltar={tema ? `/ajuda/tema/${tema.id}` : '/ajuda'} />
     <div className="ca ca--art">
+      {novo ? (<>
+        <Bloco>
+          <div className="ca-meta">{tema && <span className="ca-tag">{tema.nome}</span>}<span className="ca-min"><Clock size={16} aria-hidden="true" />{a.minutos} min de leitura</span></div>
+          <h1 className="ca-tit">{a.titulo}</h1>
+          {a.intro && <p className="ca-intro"><Rico t={a.intro} /></p>}
+          {a.abrir && <Botao cheio className="ca-abrir-topo" iconeDepois={<ArrowUpRight size={18} weight="bold" />} onClick={() => navigate(a.abrir!.rota)}>{a.abrir.rotulo}</Botao>}
+          {!!a.pontos?.length && (
+            <div className="ca-pontos">
+              <p className="ce-rot">Em resumo</p>
+              <ul>{a.pontos.map(t => <li key={t}><Check size={16} weight="bold" aria-hidden="true" /><span><Rico t={t} /></span></li>)}</ul>
+            </div>
+          )}
+        </Bloco>
+        {a.esquema && <AjudaEsquema e={a.esquema} />}
+        {!!a.textos?.length && (
+          <section className="ca-card ca-txt">
+            {a.textos.map(x => (
+              <div key={x.titulo} className="ca-txt-p">
+                <h2>{x.titulo}</h2>
+                {x.texto?.map((t, i) => <p key={i}><Rico t={t} /></p>)}
+                {x.lista && <ul className="ca-txt-lista">{x.lista.map((t, i) => <li key={i}><Rico t={t} /></li>)}</ul>}
+                {x.passos && <ol className="ca-passos">{x.passos.map((t, i) => <li key={i}><Rico t={t} /></li>)}</ol>}
+                {x.dica && <p className="ca-dica"><Lightbulb size={18} weight="bold" aria-hidden="true" /><span><Rico t={x.dica} /></span></p>}
+              </div>
+            ))}
+          </section>
+        )}
+        {!!a.duvidas?.length && (
+          <section className="ca-card ca-duv">
+            <h2>Dúvidas comuns</h2>
+            {a.duvidas.map(d => (
+              <details key={d.p}>
+                <summary><span>{d.p}</span><CaretDown size={18} weight="bold" aria-hidden="true" /></summary>
+                <p><Rico t={d.r} /></p>
+              </details>
+            ))}
+          </section>
+        )}
+      </>) : (<>
       <Bloco>
         <div className="ca-meta">{tema && <span className="ca-tag">{tema.nome}</span>}<span className="ca-min"><Clock size={16} aria-hidden="true" />{a.minutos} min de leitura</span></div>
         <h1 className="ca-tit">{a.titulo}</h1>
@@ -95,6 +138,7 @@ export default function AjudaArtigo() {
       ))}
 
       {a.abrir && <div className="ca-abrir"><Botao cheio iconeDepois={<ArrowUpRight size={18} weight="bold" />} onClick={() => navigate(a.abrir!.rota)}>{a.abrir.rotulo}</Botao></div>}
+      </>)}
 
       <section className="ca-card ca-voto-card">
         <div className="ca-voto">

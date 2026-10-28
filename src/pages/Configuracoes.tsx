@@ -30,7 +30,7 @@ function ItemConfig({ icone, tom, nome, apoio, onClick, destaque, children }: {
   icone: ReactNode; tom?: "pro" | "neutro" | "choco"; nome: string; apoio?: ReactNode; onClick: () => void; destaque?: boolean; children?: ReactNode;
 }) {
   return (
-    <button type="button" className="cf9-item" onClick={onClick}>
+    <button type="button" className="cf9-item" data-nome={nome} onClick={onClick}>
       <span className={`cf9-ic${tom ? ` cf9-ic--${tom}` : ""}`} aria-hidden="true">{icone}</span>
       <span className="cf9-tx"><b>{nome}</b>{apoio && <small className={destaque ? "on" : ""}>{apoio}</small>}</span>
       {children}

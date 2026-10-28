@@ -62,13 +62,15 @@ function resolver(passos: PassoTour[]): Resolvido[] {
 }
 export const contarPassos = (passos: PassoTour[]) => resolver(passos).length;
 
-export async function fazerTour(passos: PassoTour[]) {
+/** (27/10) sozinho: uma parte só (o "Mostrar na tela" da Central de Ajuda), sem "1 de 1" nem Voltar */
+export async function fazerTour(passos: PassoTour[], sozinho = false) {
   const ok = resolver(passos);
   if (!ok.length) return;
   // a biblioteca só é baixada quando alguém faz o tour
   const [{ driver }] = await Promise.all([import("driver.js"), import("driver.js/dist/driver.css")]);
   const d = driver({
-    showProgress: true,
+    showProgress: !sozinho,
+    ...(sozinho ? { showButtons: ["next", "close"] as ("next" | "close")[] } : {}),
     progressText: "{{current}} de {{total}}",
     nextBtnText: "Próximo",
     prevBtnText: "Voltar",

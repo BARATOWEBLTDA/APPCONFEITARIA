@@ -11,6 +11,7 @@ import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
 import BuscaRapida from "@/components/BuscaRapida";
 import PerguntaSons from "@/components/PerguntaSons";
+import AcenderDaAjuda from "@/components/como/AcenderDaAjuda";
 import { Suspense, useState, useEffect, useRef, type ReactNode } from "react";
 import "@/styles/mobileClaro.css";
 import "@/styles/desktopPadrao.css";
@@ -281,6 +282,7 @@ export default function Layout() {
         {/* (07/10 · 2.99) O sininho e a janelinha de avisos saíram: o botão ficava escondido em todos os tamanhos de tela.
             As notificações continuam na tela "Notificações", pelo menu da foto. */}
         <Suspense fallback={null}><Outlet /></Suspense>
+        <AcenderDaAjuda />
       </main>
 
       {/* ── Drawer "Mais" (Proposta D) ── */}

@@ -15,6 +15,28 @@ export type SecaoAjuda = {
   imagens?: ImagemAjuda[]
   dica?: string
 }
+/**
+ * (27/10) Formato novo (aprovado com Primeiros passos): no lugar do print, um esquema da tela desenhado
+ * (caixas cinza com o nome das partes e números discretos). Tocar num número explica a parte, e
+ * "Mostrar na tela" abre a tela de verdade com essa parte acesa.
+ */
+export type LinhaEsquema = {
+  t: string
+  /** campo: caixa de texto · linha: nome e um traço · check: com visto · botao / botao2: principal e secundário ·
+   *  barra: barra de progresso · dias: fileira de dias · grade: atalhos em 3 colunas · nota: texto pequeno ·
+   *  nav: o menu de baixo. Em dias, grade e nav, t traz os nomes separados por vírgula */
+  tipo?: 'campo' | 'linha' | 'check' | 'botao' | 'botao2' | 'barra' | 'dias' | 'grade' | 'nota' | 'nav'
+}
+export type BlocoEsquema = { n?: number; titulo?: string; linhas: LinhaEsquema[]; escuro?: boolean }
+export type ParteEsquema = {
+  titulo: string
+  texto: string
+  /** onde fica na tela de verdade (seletor do tour); sem ele, "Mostrar na tela" só abre a tela */
+  el?: string
+}
+export type EsquemaTela = { tela: string; rota: string; blocos: BlocoEsquema[]; partes: ParteEsquema[] }
+export type TextoAjuda = { titulo: string; texto?: string[]; lista?: string[]; passos?: string[]; dica?: string }
+
 export type ArtigoAjuda = {
   slug: string
   tema: TemaId
@@ -24,6 +46,12 @@ export type ArtigoAjuda = {
   abrir?: { rota: string; rotulo: string }
   secoes: SecaoAjuda[]
   relacionadas?: { rota: string; rotulo: string; apoio: string }[]
+  /** (27/10) formato novo: texto do topo, "Em resumo", esquema, explicação e dúvidas */
+  intro?: string
+  pontos?: string[]
+  esquema?: EsquemaTela
+  textos?: TextoAjuda[]
+  duvidas?: { p: string; r: string }[]
 }
 export type TemaId = 'primeiros' | 'vendas' | 'cardapio' | 'cadastros' | 'preco' | 'financeiro' | 'orcamentos' | 'conta'
 export const TEMAS: { id: TemaId; nome: string; apoio: string }[] = [
@@ -42,41 +70,63 @@ export const ARTIGOS: ArtigoAjuda[] = [
     slug: 'primeiros-passos',
     tema: 'primeiros',
     titulo: 'Deixar a loja pronta',
-    resumo: '7 passos para o cardápio ir ao ar.',
-    minutos: 2,
+    resumo: 'Os 7 passos para o cardápio abrir.',
+    minutos: 3,
     abrir: { rota: '/inicio', rotulo: 'Abrir o Início' },
-    secoes: [
+    intro: 'Antes de vender pelo cardápio, a loja precisa de 7 informações básicas: a logo, uma frase sobre você, o endereço, o horário, como a cliente paga, o saldo do caixa e o primeiro produto. O cartão dos passos fica no Início e mostra sempre o próximo que falta.',
+    pontos: [
+      'Cada passo é salvo na hora',
+      'Dá para pular e voltar depois',
+      'Pronto, o cartão sai do Início',
+    ],
+    esquema: {
+      tela: 'Início',
+      rota: '/inicio',
+      blocos: [
+        { n: 1, titulo: 'Seu cardápio quase no ar', linhas: [{ t: '4 de 7 prontos', tipo: 'nota' }, { t: '', tipo: 'barra' }] },
+        { n: 2, linhas: [{ t: 'Sobre a confeitaria', tipo: 'linha' }, { t: 'Fazer agora', tipo: 'botao' }] },
+        { n: 3, linhas: [{ t: 'Logo da loja', tipo: 'check' }, { t: 'Endereço', tipo: 'linha' }, { t: 'Horário', tipo: 'linha' }, { t: 'Ver todos os 7 passos', tipo: 'nota' }] },
+      ],
+      partes: [
+        { titulo: 'Quanto falta', texto: 'A barra mostra quantos dos 7 passos já estão prontos. Ela enche a cada passo salvo.', el: '.pp--banner .ppb-topo' },
+        { titulo: 'O próximo passo', texto: 'O app mostra sempre o passo que falta. Fazer agora abre uma janela só com ele, sem sair do Início.', el: '.ppb-at' },
+        { titulo: 'Todos os passos', texto: 'Mostra a lista completa. Os prontos ficam com visto verde. Toque num que falta para fazer na hora.', el: '.ppb-ver' },
+      ],
+    },
+    textos: [
       {
-        id: 'cartao',
-        titulo: 'O cartão dos passos',
-        exemplo: 'Fica no Início até a loja ficar pronta.',
-        imagens: [{ src: '/ajuda/passos-cartao.webp', alt: 'Cartão Seu cardápio quase no ar com 4 de 7 prontos', marcas: [
-          'Quantos passos **já fez**.',
-          'O próximo: **Fazer agora**.',
-          'Veja **todos os 7**.',
-        ] }],
-      },
-      {
-        id: 'lista',
         titulo: 'Os 7 passos',
-        imagens: [{ src: '/ajuda/passos-lista.webp', alt: 'Lista dos passos com logo, endereço, horário e outros', marcas: [
-          'O **visto verde** é passo pronto.',
-          'Toque para **fazer** o que falta.',
-        ] }],
-        dica: 'O último é o **primeiro produto**.',
+        lista: [
+          '**Logo da loja:** aparece no topo do cardápio.',
+          '**Sobre a confeitaria:** uma frase curta embaixo do nome. A Doo IA pode escrever para você.',
+          '**Endereço:** a cliente vê onde retirar, e o app usa para calcular a entrega.',
+          '**Horário:** fora dele, o cardápio aparece fechado.',
+          '**Pagamento e entrega:** Pix, dinheiro, cartão, retirada ou entrega.',
+          '**Saldo do caixa:** quanto dinheiro você tem hoje, para o Financeiro começar certo.',
+          '**Primeiro produto:** abre a tela Produtos para cadastrar.',
+        ],
       },
       {
-        id: 'fazer',
-        titulo: 'Fazer um passo',
-        imagens: [{ src: '/ajuda/passos-descricao.webp', alt: 'Passo 2 de 7 com a descrição da loja', marcas: [
-          'Em que **passo** você está.',
-          'Preencha.',
-          'Sem ideia? A **Doo IA** escreve.',
-          '**Salvar e continuar**.',
-        ] }],
-        dica: 'Sem tempo? **Agora não**.',
+        titulo: 'Salvar e continuar',
+        texto: [
+          'Cada janela tem o botão **Salvar e continuar**. Ao salvar, o passo ganha o visto verde e a janela do próximo já abre, na ordem.',
+          'Sem tempo agora? Toque em **Agora não**. O app pula para o próximo, e o que ficou para trás continua na lista.',
+        ],
+      },
+      {
+        titulo: 'Quando termina',
+        texto: [
+          'Com os 7 prontos, o cartão vira **Seu cardápio está no ar!**, com os botões para compartilhar o link e ver o cardápio. Depois, é só fechar no X.',
+          'Tudo o que você preencheu continua em **Minha loja**, para mudar quando quiser.',
+        ],
       },
     ],
+    duvidas: [
+      { p: 'Fechei a janela sem querer.', r: 'Nada se perde. Toque de novo em Fazer agora ou no passo, na lista.' },
+      { p: 'Posso mudar depois?', r: 'Pode. Logo, descrição, endereço, horário e pagamento ficam em Minha loja, no menu de baixo.' },
+      { p: 'O cartão sumiu do Início.', r: 'Ele sai quando os 7 passos ficam prontos. Para conferir a loja, abra Minha loja.' },
+    ],
+    secoes: [],
     relacionadas: [
       { rota: '/ajuda/produtos', rotulo: 'Cadastrar um produto', apoio: 'O primeiro produto do cardápio' },
       { rota: '/ajuda/minha-loja', rotulo: 'Minha loja', apoio: 'Divulgar o link' },
@@ -87,46 +137,63 @@ export const ARTIGOS: ArtigoAjuda[] = [
     tema: 'primeiros',
     titulo: 'A tela de Início',
     resumo: 'O seu dia em uma tela.',
-    minutos: 2,
+    minutos: 3,
     abrir: { rota: '/inicio', rotulo: 'Abrir o Início' },
-    secoes: [
+    intro: 'O Início é a primeira tela do app. Ele junta o que precisa da sua atenção hoje: pedidos para aceitar, as próximas entregas e o que falta resolver na loja. Daqui você chega em qualquer tela com um ou dois toques.',
+    pontos: [
+      'O urgente aparece primeiro',
+      'A busca leva direto à tela',
+      'O + registra uma venda',
+    ],
+    esquema: {
+      tela: 'Início',
+      rota: '/inicio',
+      blocos: [
+        { n: 1, titulo: 'Avisos', linhas: [{ t: '12 pedidos para aceitar', tipo: 'linha' }, { t: '2 pedidos atrasados', tipo: 'linha' }] },
+        { n: 2, linhas: [{ t: 'Buscar no app', tipo: 'campo' }] },
+        { n: 3, titulo: 'Acesso rápido', linhas: [{ t: 'Agenda,A receber,Clientes,Financeiro,Ficha técnica,Lucratividade', tipo: 'grade' }] },
+        { n: 4, titulo: 'Próximas entregas', linhas: [{ t: 'Hoje,Qua,Qui,Sex', tipo: 'dias' }, { t: 'Beatriz · 14:00', tipo: 'linha' }] },
+        { n: 5, titulo: 'Seus próximos passos', linhas: [{ t: 'Conta vencida', tipo: 'linha' }, { t: 'Avisos bloqueados', tipo: 'linha' }] },
+        { n: 6, escuro: true, linhas: [{ t: 'Início,Pedidos,+,Minha loja,Menu', tipo: 'nav' }] },
+      ],
+      partes: [
+        { titulo: 'Avisos', texto: 'Pedidos novos para aceitar e entregas que já passaram da hora. Ver abre a lista certa em Pedidos.', el: '.ini-section--novos' },
+        { titulo: 'Buscar', texto: 'Digite o que procura, como pix, cupom ou horário, e vá direto para a tela.', el: '.ini-busca' },
+        { titulo: 'Acesso rápido', texto: 'As 6 telas mais usadas no dia a dia. As outras ficam no Menu, no menu de baixo.', el: '.ini-section--nav' },
+        { titulo: 'Próximas entregas', texto: 'Os próximos dias e as entregas de cada um. Toque num dia para ver só os pedidos dele.', el: '.ini-section--dia' },
+        { titulo: 'Seus próximos passos', texto: 'Pendências da loja, como uma conta vencida, com o botão para resolver na hora.', el: '.ini-falta .pf' },
+        { titulo: 'Menu de baixo', texto: 'Aparece em todas as telas. O + do meio registra uma venda.', el: '.bottom-nav-pill' },
+      ],
+    },
+    textos: [
       {
-        id: 'avisos',
         titulo: 'Avisos do dia',
-        imagens: [{ src: '/ajuda/inicio-avisos.webp', alt: 'Avisos de pedidos para aceitar e o cartão do cardápio no ar', marcas: [
-          'Pedidos para **aceitar**.',
-          '**Compartilhar** o cardápio.',
-          '**Ver** como a cliente vê.',
-          '**Busque** qualquer tela.',
-        ] }],
+        texto: [
+          'Os avisos ficam no topo porque são o que não pode esperar. **Para aceitar** são pedidos do cardápio que você ainda não aceitou. **Atrasados** são pedidos com a data de entrega já passada.',
+          'Quando não há nada urgente, os avisos somem e o topo fica livre.',
+        ],
       },
       {
-        id: 'atalhos',
-        titulo: 'Atalhos e entregas',
-        imagens: [{ src: '/ajuda/inicio-atalhos.webp', alt: 'Acesso rápido e próximas entregas', marcas: [
-          'As telas **mais usadas**.',
-          'Toque no **dia**.',
-          'Abrir a **Agenda**.',
-        ] }],
-      },
-      {
-        id: 'passos',
         titulo: 'Seus próximos passos',
-        imagens: [{ src: '/ajuda/inicio-passos.webp', alt: 'Lista de próximos passos com conta vencida e avisos', marcas: [
-          'Resolva na hora.',
-          'Ou deixe para depois: **Agora não**.',
-          '**Ver mais**.',
-        ] }],
+        texto: [
+          'O app olha a sua loja e lista o que vale resolver: uma conta vencida, os avisos do celular bloqueados, uma queda nas vendas. Cada item tem o botão para resolver na hora.',
+          'Não quer resolver agora? Toque em **Agora não** e escolha: lembrar amanhã, em 7 dias ou não lembrar mais.',
+        ],
       },
       {
-        id: 'menu',
-        titulo: 'O menu de baixo',
-        imagens: [{ src: '/ajuda/inicio-nav.webp', alt: 'Menu de baixo com o botão mais e o Menu', marcas: [
-          '**+** registra uma venda.',
-          '**Menu** tem todas as telas.',
-        ] }],
+        titulo: 'Menu de baixo',
+        texto: [
+          'O **+** do meio abre a Nova venda, para registrar um pedido do WhatsApp ou do balcão. Ele aparece em todas as telas.',
+          'Em **Menu** ficam todas as outras telas: Financeiro, Produtos, Clientes, Configurações e o resto.',
+        ],
       },
     ],
+    duvidas: [
+      { p: 'O Início está quase vazio.', r: 'Sem pedidos e sem pendências, ele mostra só o essencial. Os avisos aparecem quando chega pedido.' },
+      { p: 'Onde fica o Financeiro?', r: 'No Acesso rápido do Início e no Menu, no menu de baixo.' },
+      { p: 'No computador é diferente?', r: 'É. No computador, o Início mostra os números do mês e o menu fica na lateral.' },
+    ],
+    secoes: [],
     relacionadas: [
       { rota: '/ajuda/primeiros-passos', rotulo: 'Deixar a loja pronta', apoio: 'Os 7 passos' },
       { rota: '/ajuda/pedidos', rotulo: 'Pedidos', apoio: 'Aceitar, produzir e entregar' },
@@ -135,42 +202,64 @@ export const ARTIGOS: ArtigoAjuda[] = [
   {
     slug: 'instalar-app',
     tema: 'primeiros',
-    titulo: 'Instalar o app no celular',
+    titulo: 'Instalar o app',
     resumo: 'Abra com um toque.',
-    minutos: 1,
+    minutos: 2,
     abrir: { rota: '/configuracoes', rotulo: 'Abrir Configurações' },
-    secoes: [
+    intro: 'Instalado, o Doonly abre com um toque direto da tela do celular, sem a barra do navegador, como um aplicativo. Não precisa da loja de aplicativos. No iPhone, instalar é o que faz o aviso de pedido novo chegar.',
+    pontos: [
+      'Sem loja de aplicativos',
+      'No iPhone, pelo Safari',
+      'Depois, ligue os avisos',
+    ],
+    esquema: {
+      tela: 'Configurações',
+      rota: '/configuracoes',
+      blocos: [
+        { titulo: 'Conta', linhas: [{ t: 'Minha conta', tipo: 'linha' }, { t: 'Minha assinatura', tipo: 'linha' }] },
+        { n: 1, titulo: 'App', linhas: [{ t: 'Instalar o app', tipo: 'linha' }] },
+        { n: 2, linhas: [{ t: 'Notificações e sons', tipo: 'linha' }] },
+      ],
+      partes: [
+        { titulo: 'Instalar o app', texto: 'Abre o passo a passo certo para o seu aparelho: iPhone, Android ou computador.', el: '.cf9-item[data-nome="Instalar o app"]' },
+        { titulo: 'Notificações e sons', texto: 'Depois de instalar, ligue aqui o aviso de pedido novo.', el: '.cf9-item[data-nome="Notificações e sons"]' },
+      ],
+    },
+    textos: [
       {
-        id: 'iphone',
         titulo: 'No iPhone',
-        texto: ['Abra o Doonly no **Safari**.'],
+        texto: ['Abra o Doonly no **Safari**. Aberto pelo Instagram ou pelo WhatsApp, a Apple não deixa instalar: copie o link e cole no Safari.'],
         passos: [
-          'Toque em **Compartilhar**.',
+          'Toque em **Compartilhar**, o quadrado com a seta para cima.',
           'Escolha **Adicionar à Tela de Início**.',
           'Toque em **Adicionar**.',
         ],
-        dica: 'Os **avisos** precisam disso.',
+        dica: 'Depois, ligue os **avisos**.',
       },
       {
-        id: 'android',
         titulo: 'No Android',
         passos: [
-          'Abra **Configurações**.',
+          'Em **Menu**, abra **Configurações**.',
           'Toque em **Instalar o app**.',
-          'Toque em **Instalar app**.',
+          'Toque em **Instalar app** e confirme.',
         ],
-        dica: 'Ou no menu **⋮** do Chrome.',
+        dica: 'Sem botão? Menu **⋮** do Chrome.',
       },
       {
-        id: 'pc',
         titulo: 'No computador',
         passos: [
-          'Abra no **Chrome** ou no **Edge**.',
-          'Clique no ícone de **instalar**.',
+          'Abra o Doonly no **Chrome** ou no **Edge**.',
+          'Clique no ícone de instalar, à direita na barra de endereço.',
           'Clique em **Instalar**.',
         ],
       },
     ],
+    duvidas: [
+      { p: 'Não acho Instalar o app.', r: 'Aberto pelo app já instalado, o item some das Configurações, porque não precisa mais.' },
+      { p: 'Ocupa espaço no celular?', r: 'Quase nada. É o mesmo Doonly do navegador, com o atalho na tela.' },
+      { p: 'Instalei e o aviso não toca.', r: 'Abra Configurações, Notificações e sons, e ligue os avisos neste aparelho.' },
+    ],
+    secoes: [],
     relacionadas: [
       { rota: '/ajuda/notificacoes', rotulo: 'Notificações', apoio: 'Ser avisada de pedido novo' },
     ],
