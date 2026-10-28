@@ -179,6 +179,8 @@
   .ep-wrap.ep2.tpd .ep2-sec { display: flex !important; }
 }
 @media (min-width: 901px) { .ep-wrap.ep2.tpd { padding: 24px 0 48px !important; } }
+/* (28/10) computador: o que fazer vem primeiro. Itens do pedido, depois o recado do pedido, depois o cliente (no celular, a ordem da aba continua) */
+@media (min-width: 901px) { .ep2.tpd .ep2-sec > .tpd-recado-ped { order: 1; } .ep2.tpd .ep2-sec > .tpd-cli-card { order: 2; } }
 @media (max-width: 767px) { .ep-wrap.ep2.tpd .ep2-sec:not(.ativa) { display: none !important; } }
 
 /* duas colunas quando o conteúdo tem largura pra isso */

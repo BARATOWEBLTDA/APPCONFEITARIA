@@ -1453,8 +1453,8 @@ export default function EditarPedido() {
         <div className="ep2-col">
           {/* ── ITENS (com o cartão do cliente) ── */}
           <div className={`ep2-sec ${tab === 'itens' ? 'ativa' : ''}`}>
-            {/* ── Cartão da cliente (opção A + estados especiais) ── */}
-            <section className="ep2-card tpd-card">
+            {/* ── Cartão da cliente (opção A + estados especiais) ── (28/10) no computador ele vem depois dos itens (telaPedido.css) */}
+            <section className="ep2-card tpd-card tpd-cli-card">
               <Titulo acao={clienteNome.trim() ? <Botao variante="link" icone={<ArrowsLeftRight size={16} weight="bold" />} onClick={() => setModalCliente(true)}>Trocar</Botao> : undefined}>Cliente</Titulo>
               {!clienteNome.trim() ? (
                 <div className="tpd-cli-vz">
