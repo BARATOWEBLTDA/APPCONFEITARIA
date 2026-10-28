@@ -57,7 +57,7 @@
 .pm-g.falta .pm-g-cab { background: var(--ui-vermelho-fundo); box-shadow: inset 4px 0 0 var(--ui-vermelho); }
 .pm-g.falta .pm-g-cab small { color: #B91C1C; font-weight: 700; }
 .pm-g.falta .pm-obr { background: var(--ui-vermelho); }
-.pm-obr--leve { background: none; border: 1px solid #E4DCDD; color: var(--ui-texto-2); font-weight: 600; }
+.pm-obr--leve { background: transparent !important; border: 1px solid #E4DCDD !important; color: #6B5D64 !important; font-weight: 600; box-shadow: none !important; } /* (28/10) igual no cardápio e na Nova venda: dentro do app, outro estilo pintava o fundo de branco */
 .pm-g.falta .pm-obr--leve { border-color: var(--ui-vermelho); color: var(--ui-branco); }
 .pm-op { display: flex; align-items: center; gap: 12px; width: calc(100% - 32px); min-height: 60px; margin: 0 16px; padding: 10px 0; border: 0; border-bottom: 1px solid #F3EEF0; background: none; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
 .pm-op:last-child { border-bottom: 0; }
