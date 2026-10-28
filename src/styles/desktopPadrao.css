@@ -8,6 +8,8 @@
      Só em tela muito larga (acima de ~1.900px de conteúdo) para de crescer, para as linhas não ficarem compridas demais. */
   html body .layout-main > :not(.cab):not(style) { max-width: 1680px !important; }
   html body .fd-hero-in { max-width: none !important; }
+  /* (28/10) tela do pedido: no monitor grande ficava esticada (botões e itens enormes). Para em 1.200px, centralizada */
+  html body .layout-main > .ep-wrap.ep2.tpd { max-width: 1200px !important; margin-left: auto !important; margin-right: auto !important; }
   html body .far-wrap, html body .fap-wrap, html body .mas-wrap, html body .cli-root > .cl9 { max-width: none !important; margin-left: 0 !important; margin-right: auto !important; }
   /* sem respiro lateral extra: tudo começa na linha do título */
   html body .layout-main > .cl9, html body .cli-root > .cl9, html body .layout-main > .ag3, html body .layout-main > .nv3,
