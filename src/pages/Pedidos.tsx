@@ -527,7 +527,9 @@ export default function Pedidos() {
   const sairDoFiltroRapido = () => { setFiltroAguardando(false); setFiltroAtrasados(false); navigate('/pedidos', { replace: true }) }
   const quadro = largo && modo === 'quadro'
 
-  const props = (p: Pedido) => ({ p, aoAbrir: abrirPedido, aoAvancar: avancar, aoMenu: setMenuDe, aoEndereco: verEndereco, mudando: mudando.has(p.id), aoConfirmarPix: confirmarPix })
+  const props = (p: Pedido) => ({ p, aoAbrir: abrirPedido, aoAvancar: avancar, aoMenu: setMenuDe, aoEndereco: verEndereco, mudando: mudando.has(p.id), aoConfirmarPix: confirmarPix,
+    // (28/10) Recusar o pedido novo: abre o pedido já na janela de cancelar (a mesma do Quadro), que cuida do sinal recebido
+    aoRecusar: (x: Pedido) => navigate(`/pedidos/${x.id}/editar`, { state: { abrirCancelar: true } }) })
 
   const conteudo = () => {
     if (estado === 'carregando') return demorou ? <p className="pd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null
@@ -639,7 +641,6 @@ export default function Pedidos() {
               )
             ) : (
               <div className="pd-grupos">
-                {computador && <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>}
                 {grupos.map(g => (
                   <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
                     <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? (g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite para entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite para entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>

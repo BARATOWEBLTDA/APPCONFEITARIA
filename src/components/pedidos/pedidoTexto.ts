@@ -187,6 +187,21 @@ export function dataCurta(data?: string | null, hora?: string | null): string {
 }
 export const horaCurta = (h?: string | null) => hora5(h)
 
+/** (28/10) há quanto tempo o pedido chegou, estilo gestor do iFood: "Chegou agora", "Chegou há 12 min", "Chegou há 3 h", "Chegou ontem às 18:40", "Chegou em 24/10 às 09:10" */
+export function chegouHa(iso?: string | null, agora: Date = new Date()): string {
+  if (!iso) return ''
+  const c = new Date(iso)
+  if (isNaN(c.getTime())) return ''
+  const min = Math.floor((agora.getTime() - c.getTime()) / 60000)
+  const hm = `${String(c.getHours()).padStart(2, '0')}:${String(c.getMinutes()).padStart(2, '0')}`
+  if (min < 1) return 'Chegou agora'
+  if (min < 60) return `Chegou há ${min} min`
+  if (dataISO(c) === dataISO(agora)) return `Chegou há ${Math.floor(min / 60)} h`
+  const ontem = new Date(agora); ontem.setDate(agora.getDate() - 1)
+  if (dataISO(c) === dataISO(ontem)) return `Chegou ontem às ${hm}`
+  return `Chegou em ${String(c.getDate()).padStart(2, '0')}/${String(c.getMonth() + 1).padStart(2, '0')} às ${hm}`
+}
+
 export function criadoEm(iso?: string): string {
   if (!iso) return ''
   const c = new Date(iso)

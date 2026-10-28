@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ArrowRight, Bag, CaretDown, DotsThreeVertical } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Linha } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { pixDoPedido, acaoDe, atrasado, precisaAceitar, criadoEm, dataCurta, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDoItem, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
+import { pixDoPedido, acaoDe, atrasado, precisaAceitar, chegouHa, criadoEm, dataCurta, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDoItem, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
 import { r2 } from '@/lib/moeda'
 
 /**
@@ -26,6 +26,19 @@ type Props = {
   extra?: ReactNode
   /** (20/10) "Confirmar Pix": o cliente disse que pagou pelo cardápio */
   aoConfirmarPix?: (p: Pedido) => void
+  /** (28/10) "Recusar" ao lado do "Aceitar" no pedido novo (abre a janela de cancelar do pedido) */
+  aoRecusar?: (p: Pedido) => void
+}
+
+/** (28/10) o "Chegou há X min" se atualiza sozinho a cada minuto, só nos pedidos que esperam o aceite */
+function useAgora(ligado: boolean) {
+  const [agora, setAgora] = useState(() => new Date())
+  useEffect(() => {
+    if (!ligado) return
+    const t = window.setInterval(() => setAgora(new Date()), 60000)
+    return () => window.clearInterval(t)
+  }, [ligado])
+  return agora
 }
 
 const parar = (fn: () => void) => (e: MouseEvent) => { e.stopPropagation(); fn() }
@@ -121,11 +134,12 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
   )
 }
 
-export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando, comDia }: Props & { comDia?: boolean }) {
+export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando, comDia, aoRecusar }: Props & { comDia?: boolean }) {
   const sit = situacaoDe(p)
   const acao = acaoDe(p)
   const atr = atrasado(p)
   const aceitar = precisaAceitar(p)
+  const agora = useAgora(aceitar)
   const falta = saldoPedido(p)
   const entrega = p.tipo_entrega === 'entrega'
   const cancelado = grupoDoStatus(p.status) === 'cancelado'
@@ -140,7 +154,7 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
           <p className="pdc-res">{resumoItens(p)}</p>
         </div>
       </div>
-      <p className={`pdl-cel${sit.tom ? ` t-${sit.tom}` : ''}`} role="cell"><b>{sit.nome}</b></p>
+      <p className={`pdl-cel${sit.tom ? ` t-${sit.tom}` : ''}`} role="cell"><b>{sit.nome}</b>{aceitar && p.created_at && <small>{chegouHa(p.created_at, agora)}</small>}</p>
       <p className={`pdl-cel ${cancelado ? '' : `t-${textoPagamento(p, falta).tom}`}`} role="cell">
         <b>{cancelado ? '—' : textoPagamento(p, falta).texto}</b>
         <small>de {rs(p.valor_total)}</small>
@@ -150,6 +164,7 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
         <small>{entrega ? 'Entrega' : 'Retirada'}{entrega && <> · <button type="button" className="pdl-end" onClick={parar(() => aoEndereco(p))}>ver endereço</button></>}</small>
       </p>
       <div className="pdl-acao" role="cell">
+        {aceitar && aoRecusar && <Botao className="pd-recusar" variante="secundario" tamanho="p" disabled={mudando} onClick={parar(() => aoRecusar(p))}>Recusar</Botao>}
         {acao && <Botao className={aceitar ? undefined : 'pd-passo'} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
       </div>
       <div role="cell">
@@ -167,6 +182,7 @@ export function LinhaCompacta({ p, aoAbrir, aoAvancar, mudando }: Props) {
   const acao = acaoDe(p)
   const atr = atrasado(p)
   const aceitar = precisaAceitar(p)
+  const agora = useAgora(aceitar)
   const cancelado = grupoDoStatus(p.status) === 'cancelado'
   const falta = saldoPedido(p)
   const pg = textoPagamento(p, falta)
@@ -181,6 +197,7 @@ export function LinhaCompacta({ p, aoAbrir, aoAvancar, mudando }: Props) {
         <p className="pdk-nome"><b>{nomeCliente(p)}</b><span>#{p.numero || '—'}</span></p>
         <p className="pdk-s">{resumoItens(p)}</p>
         <p className={`pdk-s pdk-q${atr ? ' t-vermelho' : ''}`}>{atr ? `Atrasado · era para ${dm}` : quando}</p>
+        {aceitar && p.created_at && <p className="pdk-s pdk-chegou">{chegouHa(p.created_at, agora)}</p>}
         {cancelado
           ? <p className="pdk-pg">Cancelado</p>
           : <p className={`pdk-pg t-${pg.tom}`}>{pg.texto}</p>}

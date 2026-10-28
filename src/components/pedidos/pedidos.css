@@ -144,7 +144,7 @@
   .pd-busca-l { flex: 1 1 0; min-width: 0; }
   .pd-busca { min-width: 160px; }
   /* (24/10) Situação mais estreita e Pagamento mais largo: "Sinal no Pix a conferir" cortava com espaço sobrando */
-  .pdl-cab, .pdl { display: grid; grid-template-columns: minmax(220px, 2.3fr) minmax(136px, .8fr) minmax(160px, 1.1fr) minmax(150px, 1.1fr) 152px 36px; align-items: center; gap: 16px; }
+  .pdl-cab, .pdl { display: grid; grid-template-columns: minmax(220px, 2.3fr) minmax(136px, .8fr) minmax(160px, 1.1fr) minmax(150px, 1.1fr) 216px 36px; align-items: center; gap: 16px; } /* (28/10) ação com 216px: cabem o Recusar e o Aceitar */
   .pdl-cab { margin-bottom: -12px; padding: 0 16px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
   .pdl-tabela { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
   .pdl { min-height: 72px; padding: 8px 16px; cursor: pointer; outline: 0; transition: background-color var(--dur-fast) linear; }
@@ -156,7 +156,10 @@
   .pdl-cel small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
   .pdl-cel.t-azul b { color: var(--ui-azul); } .pdl-cel.t-laranja b { color: var(--ui-laranja); } .pdl-cel.t-verde b { color: var(--ui-verde); } .pdl-cel.t-vermelho b { color: var(--ui-vermelho); } .pdl-cel.t-rosa b { color: var(--ui-rosa-escuro); }
   .pdl-end { margin: 0; padding: 0; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 12.5px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-  .pdl-acao { display: flex; justify-content: flex-end; }
+  .pdl-acao { display: flex; justify-content: flex-end; gap: 8px; }
+  /* (28/10) Recusar discreto ao lado do Aceitar: branco com borda cinza, não disputa com o rosa */
+  .pdl-acao .pd-recusar { background: var(--ui-branco); border: 1px solid var(--ui-borda); color: var(--ui-texto-2); box-shadow: none; }
+  @media (hover: hover) { .pdl-acao .pd-recusar:hover { background: var(--ui-linha); color: var(--ui-texto); } }
   .pdl.aceitar { background: var(--ui-laranja-fundo); }
   .pdl.aceitar .pdl-quem { position: relative; }
   .pdl.aceitar::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 4px; border-radius: 0 4px 4px 0; background: var(--ui-laranja); }
@@ -194,6 +197,7 @@
 .pdk-nome b { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 14.5px; font-weight: 700; color: var(--ui-texto); }
 .pdk-nome span { flex: none; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
 .pdk-s { font-size: 12.5px; font-weight: 500; line-height: 1.45; color: var(--ui-texto-2); }
+.pdk-chegou { color: var(--ui-laranja); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* (28/10) há quanto tempo o pedido novo chegou */
 .pdk-q.t-vermelho { color: var(--ui-vermelho); font-weight: 700; }
 .pdk-pg { font-size: 12.5px; font-weight: 700; line-height: 1.45; color: var(--ui-texto-2); }
 .pdk-pg.t-laranja { color: #B45309; }

@@ -480,7 +480,6 @@ function DemoPedidos() {
               <div className="bv-app-main">
                 <header className="bv-app-topo"><b>Meus pedidos</b><small>Acompanhe suas encomendas e produção</small></header>
                 <div className="bv-app-corpo">
-                  <div className="pdl-cab" aria-hidden="true"><span>Cliente e pedido</span><span>Situação</span><span>Pagamento</span><span>Entrega</span><span /><span /></div>
                   <p className="bv-app-grupo">Esta semana<i>{lista.length}</i></p>
                   <div className="pdl-tabela">
                     {lista.map(p => {
