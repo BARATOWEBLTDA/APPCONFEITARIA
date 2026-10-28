@@ -53,14 +53,16 @@
 .orc-ed { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
 @media (min-width: 1024px) { .orc-ed { grid-template-columns: minmax(0, 1fr) 360px; } .orc-so-cel { display: none; } }
 @media (max-width: 1023px) { .orc-ed-lado { display: none; } }
-.orc-etapas { display: flex; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
-.orc-etapas li { flex: 1; }
-.orc-etapas button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; margin: 0; padding: 0 6px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
+/* (28/10) etapas no padrão da Nova venda: uma barrinha por etapa e o nome embaixo */
+.orc-etapas { display: flex; gap: 4px; margin: 0 0 16px; padding: 0; list-style: none; }
+.orc-etapas li { flex: 1; min-width: 0; }
+.orc-etapas button { display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 100%; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); text-align: left; cursor: pointer; }
 .orc-etapas button:disabled { cursor: default; }
-.orc-etapas i { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--ui-borda-campo); font-style: normal; font-size: 12px; }
-.orc-etapas .on button { border-color: var(--ui-rosa); color: var(--ui-rosa-escuro); background: var(--ui-rosa-claro); }
-.orc-etapas .on i { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); }
-.orc-etapas .ok i { border-color: var(--ui-verde); background: var(--ui-verde); color: var(--ui-branco); }
+.orc-etapas i { display: block; height: 6px; border-radius: 3px; background: var(--ui-borda); }
+.orc-etapas span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.orc-etapas .on i, .orc-etapas .ok i { background: var(--ui-rosa); }
+.orc-etapas .on span { color: var(--ui-rosa-escuro); font-weight: 600; }
+.orc-etapas .ok span { color: var(--ui-texto); }
 .orc-card { margin: 0 0 12px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
 .orc-card h3 { margin: 0 0 12px; font-size: 16px; font-weight: 700; }
 .orc-card h3 small { margin-left: 4px; font-size: 12.5px; font-weight: 400; font-style: italic; color: var(--ui-texto-3); }
@@ -101,7 +103,7 @@
 .orc-valor input { flex: 1; min-width: 0; height: 38px; margin: 0; padding: 0; border: 0; outline: 0; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); background: none; }
 .orc-tira { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: 0; padding: 0; border: 0; border-radius: 10px; background: none; color: var(--ui-vermelho); cursor: pointer; }
 .orc-add { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
-.orc-add button, .orc-ext button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; margin: 0; padding: 0 8px; border: 1.5px dashed #E7C2D2; border-radius: 12px; background: #FFFAFC; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; white-space: nowrap; }
+.orc-ext button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; margin: 0; padding: 0 8px; border: 1.5px dashed #E7C2D2; border-radius: 12px; background: #FFFAFC; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; white-space: nowrap; }
 .orc-ext { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px 0 12px; }
 .orc-ext button { min-height: 36px; border-style: solid; border-color: var(--ui-borda); background: var(--ui-branco); font-size: 13px; }
 .orc-ext button[aria-pressed="true"] { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); }
@@ -254,3 +256,26 @@
 .orq-c .ui-bt { margin-top: 10px; }
 .orq-c .orc-cobrar { margin: 8px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .orq-col--recusados .orq-c { opacity: .7; }
+
+/* (28/10) botões de itens normais (sem tracejado rosa) e os ajustes como links discretos */
+.orc-add .ui-bt { width: 100%; }
+.orc-ext { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 10px 0 12px; }
+.orc-ext button, .orc-ext button[aria-pressed="true"] { min-height: 32px; padding: 0; border: 0; border-radius: 0; background: none; font-size: 13.5px; font-weight: 500; color: var(--ui-rosa-escuro); }
+.orc-ext button[aria-pressed="true"] { color: var(--ui-texto-2); }
+/* cliente em cartão compacto */
+.orc-h-acao { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.orc-h-acao .orc-link-bt { margin: 0; font-size: 13px; font-weight: 500; }
+.orc-cli { display: flex; align-items: center; gap: 10px; }
+.orc-cli-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.orc-cli-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 500; }
+.orc-cli-tx small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--ui-texto-2); }
+.orc-cli-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-cinza-texto); text-decoration: none; }
+/* menu dos três pontinhos */
+.orc-menu-it { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; margin: 0; padding: 0 4px; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 500; text-align: left; cursor: pointer; }
+.orc-menu-it--x { color: var(--ui-vermelho); }
+/* botões das etapas: no computador dentro do cartão da direita; no celular a faixa de baixo */
+.orc-lado-bts { display: none; }
+@media (min-width: 1024px) {
+  .orc-lado-bts { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; margin-top: 16px; }
+  .orc-pe { display: none; }
+}

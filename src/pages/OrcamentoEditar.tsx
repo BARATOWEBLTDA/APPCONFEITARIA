@@ -5,11 +5,11 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { CalendarBlank, Check, Copy, FilePdf, MagnifyingGlass, Minus, Package, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import { CalendarBlank, Check, Copy, DotsThreeVertical, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, Phone, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import CampoData from '@/components/CampoData'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from '@/components/base'
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from '@/components/base'
 import { supabase } from '@/lib/supabase'
 import { explicarErro } from '@/lib/erros'
 import { useProfile } from '@/hooks/useProfile'
@@ -46,6 +46,8 @@ export default function OrcamentoEditar() {
   const [erro, setErro] = useState('')
   const [etapa, setEtapa] = useState<1 | 2 | 3>(1)
   const [salvando, setSalvando] = useState(false)
+  const [editarCli, setEditarCli] = useState<boolean | null>(null) // (28/10) null = automático (cartão quando já tem nome e WhatsApp)
+  const [menuAberto, setMenuAberto] = useState(false)
   const [mudou, setMudou] = useState(false)
   const [produtos, setProdutos] = useState<Prod[]>([])
   const [escolher, setEscolher] = useState(false)
@@ -285,10 +287,21 @@ export default function OrcamentoEditar() {
     </>)
   }
 
+  // (28/10) cliente em cartão compacto quando já vem preenchido (pedido pelo link); "Editar" abre os campos
+  const cliPronto = !!(o.cliente_nome || '').trim() && (o.cliente_telefone || '').replace(/\D/g, '').length >= 10
+  const verCampos = editarCli ?? !cliPronto
+  const botoesEtapa = etapa < 3 ? (<>
+    {etapa === 1
+      ? <Botao variante="secundario" carregando={salvando && etapa === 1} onClick={async () => { const ok = await salvar(); if (ok) avisar('Rascunho salvo', { tipo: 'ok' }) }}>Rascunho</Botao>
+      : <Botao variante="secundario" onClick={() => setEtapa(e => (e > 1 ? ((e - 1) as 1 | 2 | 3) : e))}>Voltar</Botao>}
+    <Botao carregando={salvando} onClick={() => void continuar()}>Continuar</Botao>
+  </>) : null
+
   const prodsFiltrados = produtos.filter(p => !busca.trim() || p.nome.toLowerCase().includes(busca.trim().toLowerCase()))
 
   return (<>
-    <AppPageHeader title={titulo} subtitle={o.numero ? `Orçamento #${o.numero}` : 'Monte a proposta e envie o link'} voltar="/orcamentos" infoComo={COMO_ORCAMENTO} infoTour={TOUR_ORCAMENTO} />
+    <AppPageHeader title={titulo} subtitle={o.numero ? `Orçamento #${o.numero}` : 'Monte a proposta e envie o link'} voltar="/orcamentos" infoComo={COMO_ORCAMENTO} infoTour={TOUR_ORCAMENTO}
+      rightActions={<BotaoIcone rotulo="Mais ações" variante="limpo" onClick={() => setMenuAberto(true)}><DotsThreeVertical size={22} weight="bold" /></BotaoIcone>} />
     <div className="orc orc-ed">
       <div className="orc-ed-main">
         <ol className="orc-etapas" aria-label="Etapas">
@@ -297,7 +310,7 @@ export default function OrcamentoEditar() {
             return (
               <li key={t} className={etapa === n ? 'on' : etapa > n ? 'ok' : ''}>
                 <button type="button" disabled={n > etapa && !!faltaEtapa1} onClick={() => { if (n < etapa || !faltaEtapa1) setEtapa(n) }}>
-                  <i>{etapa > n ? <Check size={14} weight="bold" /> : n}</i>{t}
+                  <i aria-hidden="true" /><span>{t}</span>
                 </button>
               </li>
             )
@@ -307,11 +320,20 @@ export default function OrcamentoEditar() {
         {etapa === 1 && (<>
           <div className="orc-so-cel">{pediu}</div>
           <section className="orc-card">
-            <h3>Cliente</h3>
-            <div className="orc-2">
-              <Campo rotulo="Nome" value={o.cliente_nome || ''} placeholder="Nome da cliente" onChange={e => muda({ cliente_nome: e.target.value })} />
-              <Campo rotulo="WhatsApp" value={o.cliente_telefone || ''} inputMode="tel" placeholder="(41) 9 9999-0000" onChange={e => muda({ cliente_telefone: e.target.value })} />
-            </div>
+            <h3 className="orc-h-acao">Cliente{!verCampos && <button type="button" className="orc-link-bt" onClick={() => setEditarCli(true)}><PencilSimple size={14} weight="bold" />Editar</button>}</h3>
+            {verCampos ? (
+              <div className="orc-2">
+                <Campo rotulo="Nome" value={o.cliente_nome || ''} placeholder="Nome da cliente" onChange={e => muda({ cliente_nome: e.target.value })} />
+                <Campo rotulo="WhatsApp" value={o.cliente_telefone || ''} inputMode="tel" placeholder="(41) 9 9999-0000" onChange={e => muda({ cliente_telefone: e.target.value })} />
+              </div>
+            ) : (
+              <div className="orc-cli">
+                <span className="orc-av" aria-hidden="true">{(o.cliente_nome || '?').trim().charAt(0).toUpperCase()}</span>
+                <span className="orc-cli-tx"><b>{o.cliente_nome}</b><small>{o.cliente_telefone}{o.origem === 'link' ? ' · pediu pelo link' : ''}</small></span>
+                <a className="orc-cli-ic" href={linkWhatsApp(o.cliente_telefone || '') || '#'} target="_blank" rel="noreferrer" aria-label="Chamar no WhatsApp" title="WhatsApp"><IconeWhatsApp size={20} /></a>
+                <a className="orc-cli-ic" href={`tel:+55${(o.cliente_telefone || '').replace(/\D/g, '')}`} aria-label="Ligar" title="Ligar"><Phone size={20} weight="bold" /></a>
+              </div>
+            )}
           </section>
 
           <section className="orc-card">
@@ -353,8 +375,8 @@ export default function OrcamentoEditar() {
               </div>
             ))}
             <div className="orc-add">
-              <button type="button" onClick={() => { setBusca(''); setEscolher(true) }}><Plus size={16} weight="bold" />Do cardápio</button>
-              <button type="button" onClick={() => muda({ itens: [...(o.itens || []), { id: novoId(), nome: '', quantidade: 1, valor_unitario: 0 }] })}><Plus size={16} weight="bold" />Personalizado</button>
+              <Botao variante="secundario" tamanho="m" icone={<Plus size={18} weight="bold" />} onClick={() => { setBusca(''); setEscolher(true) }}>Do cardápio</Botao>
+              <Botao variante="secundario" tamanho="m" icone={<Plus size={18} weight="bold" />} onClick={() => muda({ itens: [...(o.itens || []), { id: novoId(), nome: '', quantidade: 1, valor_unitario: 0 }] })}>Personalizado</Botao>
             </div>
             <div className="orc-ext">
               {(['desconto', 'acrescimo', 'entrega'] as const).map(k => (
@@ -434,24 +456,21 @@ export default function OrcamentoEditar() {
           </div>
         </>)}
 
-        <button type="button" className="orc-excluir" onClick={() => void excluir()}><Trash size={16} weight="bold" />Excluir orçamento</button>
       </div>
 
       <aside className="orc-ed-lado">
         {pediu}
         {/* no computador, a prévia ao vivo fica do lado enquanto ela monta (na etapa Enviar ela já está no meio) */}
-        {etapa < 3 && <section className="orc-card"><h3>Assim ela vê</h3><Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as any)?.logo_url} /></section>}
+        {etapa < 3 && <section className="orc-card"><h3>Assim ela vê</h3><Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as any)?.logo_url} />
+          {/* (28/10) no computador os botões ficam aqui, embaixo do total (como o Resumo da Nova venda) */}
+          <div className="orc-lado-bts">{botoesEtapa}</div>
+        </section>}
       </aside>
     </div>
 
     {etapa < 3 && (
       <div className="orc-pe">
-        <div className="orc-pe-in">
-          {etapa === 1
-            ? <Botao variante="secundario" carregando={salvando && etapa === 1} onClick={async () => { const ok = await salvar(); if (ok) avisar('Rascunho salvo', { tipo: 'ok' }) }}>Rascunho</Botao>
-            : <Botao variante="secundario" onClick={() => setEtapa(e => (e > 1 ? ((e - 1) as 1 | 2 | 3) : e))}>Voltar</Botao>}
-          <Botao carregando={salvando} onClick={() => void continuar()}>Continuar</Botao>
-        </div>
+        <div className="orc-pe-in">{botoesEtapa}</div>
       </div>
     )}
 
@@ -475,6 +494,9 @@ export default function OrcamentoEditar() {
           {prodsFiltrados.length === 0 && <p className="orc-vz">Nenhum produto com esse nome.</p>}
         </div>
       </div>
+    </Janela>
+    <Janela aberta={menuAberto} aoFechar={() => setMenuAberto(false)} tipo="conteudo" titulo={`Orçamento${o.numero ? ` #${o.numero}` : ''}`}>
+      <button type="button" className="orc-menu-it orc-menu-it--x" onClick={() => { setMenuAberto(false); void excluir() }}><Trash size={20} weight="bold" />Excluir orçamento</button>
     </Janela>
     {foto && <Janela aberta aoFechar={() => setFoto('')} tipo="conteudo" titulo="Foto de referência"><img className="orc-foto-g" src={foto} alt="Foto de referência" /></Janela>}
   </>)
