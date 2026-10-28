@@ -142,7 +142,8 @@ export default function AjudaArtigo() {
 
       <section className="ca-card ca-voto-card">
         <div className="ca-voto">
-          <b>{voto === null ? 'Isto ajudou?' : voto ? 'Que bom! Obrigado.' : enviado ? 'Obrigado por contar.' : 'O que faltou?'}</b>
+          {/* (28/10) textos curtos: "Que bom! Obrigado." empurrava o Sim e o Não para fora da tela */}
+          <b>{voto === null ? 'Isto ajudou?' : voto ? 'Obrigado!' : enviado ? 'Obrigado!' : 'O que faltou?'}</b>
           <div>
             <button type="button" aria-pressed={voto === true} onClick={() => void votar(true)}><ThumbsUp size={20} weight={voto === true ? 'fill' : 'bold'} />Sim</button>
             <button type="button" aria-pressed={voto === false} onClick={() => void votar(false)}><ThumbsDown size={20} weight={voto === false ? 'fill' : 'bold'} />Não</button>
