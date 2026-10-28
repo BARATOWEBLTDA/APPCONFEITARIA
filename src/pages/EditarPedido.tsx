@@ -41,6 +41,7 @@ import ReqTag from "@/components/ReqTag";
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useState, useRef } from 'react'
+import MapaEndereco, { type BuscaMapa } from '@/components/MapaEndereco'
 import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
@@ -582,6 +583,19 @@ export default function EditarPedido() {
   const textoRetirada = `Oi${primeiroNome ? `, ${primeiroNome}` : ''}! Seu pedido #${pedido?.numero ?? ''} pode ser retirado ${quandoTexto.charAt(0).toLowerCase() + quandoTexto.slice(1)}, em: ${lojaInfo?.endereco?.completo || ''}`
   const copiarEndereco = async () => { try { await navigator.clipboard.writeText(enderecoCompleto); avisar('Endereço copiado.') } catch { avisar('Não foi possível copiar.') } }
   const abrirEdicaoEndereco = () => { enderecoAntes.current = { enderecoCep, enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade, enderecoComplemento }; setCepAchado(false); setEditandoEndereco(true) }
+  // (28/10) bug: com o endereço vazio, digitar o CEP preenchia a rua e a tela já mostrava o endereço como pronto (sem o número).
+  // Agora digitar em qualquer campo abre a edição: o endereço só fica pronto no "Usar este endereço".
+  const comecarEdicaoEndereco = () => {
+    if (editandoEndereco) return
+    enderecoAntes.current = { enderecoCep, enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade, enderecoComplemento }
+    setEditandoEndereco(true)
+  }
+  // (28/10) mapa do endereço de entrega: espera a pessoa parar de digitar pra buscar o ponto (OpenStreetMap)
+  const [buscaMapa, setBuscaMapa] = useState<BuscaMapa>(null)
+  useEffect(() => {
+    const t = window.setTimeout(() => setBuscaMapa(enderecoCidade.trim() ? { rua: enderecoRua.trim(), numero: enderecoNumero.trim(), cidade: enderecoCidade.trim() } : null), 700)
+    return () => window.clearTimeout(t)
+  }, [enderecoRua, enderecoNumero, enderecoCidade])
   const cancelarEdicaoEndereco = () => {
     const a = enderecoAntes.current
     if (a) { setEnderecoCep(a.enderecoCep); setEnderecoRua(a.enderecoRua); setEnderecoNumero(a.enderecoNumero); setEnderecoBairro(a.enderecoBairro); setEnderecoCidade(a.enderecoCidade); setEnderecoComplemento(a.enderecoComplemento) }
@@ -1602,11 +1616,18 @@ export default function EditarPedido() {
             {tipoEntrega === 'entrega' ? (
               <div className="ep2-card tpd-onde-card">
                 <Titulo acao={!editandoEndereco && enderecoTemAlgo ? <Botao variante="link" icone={<PencilSimple size={16} weight="bold" />} onClick={abrirEdicaoEndereco}>Editar</Botao> : undefined}>Endereço de entrega</Titulo>
+                {/* (28/10) mapa à esquerda e as informações em lista à direita (no celular, o mapa em cima) */}
+                <div className="tpd-end-grid">
+                <div className="tpd-end-mapa"><MapaEndereco busca={tipoEntrega === 'entrega' ? buscaMapa : null} soCidade={!buscaMapa?.rua} selo="" /></div>
+                <div className="tpd-end-info" onInput={comecarEdicaoEndereco}>
                 {!editandoEndereco && enderecoTemAlgo ? (<>
-                  <div className="ep2-addr tpd-end">
-                    <div><b>{[enderecoRua, enderecoNumero].filter(Boolean).join(', ') || 'Endereço sem rua'}</b>
-                      {enderecoComplemento && <small>{enderecoComplemento}</small>}
-                      <small>{[enderecoBairro, enderecoCidade].filter(Boolean).join(' · ')}{enderecoCep ? ` · CEP ${enderecoCep}` : ''}</small></div>
+                  <div className="tpd-end-lista">
+                    <Linha rotulo="Rua">{[enderecoRua, enderecoNumero].filter(Boolean).join(', ') || 'Sem rua'}</Linha>
+                    {enderecoComplemento && <Linha rotulo="Complemento">{enderecoComplemento}</Linha>}
+                    {enderecoBairro && <Linha rotulo="Bairro">{enderecoBairro}</Linha>}
+                    {enderecoCidade && <Linha rotulo="Cidade">{enderecoCidade}</Linha>}
+                    {enderecoCep && <Linha rotulo="CEP">{enderecoCep}</Linha>}
+                    {!enderecoNumero && <p className="tpd-end-falta">Falta o número da casa.</p>}
                   </div>
                   <div className="tpd-dois">
                     <a className="ui-bt ui-bt--secundario ui-bt--m" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><MapTrifold size={20} weight="bold" /></span><span className="ui-bt-t">Ver no mapa</span></a>
@@ -1641,6 +1662,8 @@ export default function EditarPedido() {
                     </div>
                   )}
                 </>)}
+                </div>
+                </div>
                 <div className="ep2-taxa"><span>Taxa de entrega</span>
                   <span className="ep2-mini"><em>R$</em><input inputMode="numeric" value={textoBRL(taxaEntrega) || ''} placeholder="0,00" onChange={e => setTaxaEntrega(lerBRL(mascaraBRL(e.target.value)))} aria-label="Taxa de entrega" /></span></div>
               </div>
