@@ -1541,10 +1541,12 @@ export default function EditarPedido() {
                             <b><NomeComQtd nome={nomeDeProduto(it.nome_produto)} qtd={q} forma={formaDoItem(it)} Destaque="em" /></b>
                             {/* (28/10) no computador o preço sai daqui: ele já está nos Valores, ao lado (telaPedido.css) */}
                             <span className="tpd-it-preco">{formatMoney(valorDaLinha(it))}{q !== 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}` : ''}</span>
+                            {/* (28/10) computador: as escolhas (sabores etc.) ficam logo embaixo do nome, no lugar do preço */}
+                            {campos.length > 0 && <div className="tpd-it-esc tpd-it-esc--pc">{campos.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>}
                           </div>
                           <BotaoIcone rotulo={`Opções de ${it.nome_produto}`} variante="limpo" tamanho="p" onClick={() => setItemMenu(idx)}><DotsThree size={20} weight="bold" /></BotaoIcone>
                         </div>
-                        {campos.length > 0 && <div className="tpd-it-esc">{campos.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>}
+                        {campos.length > 0 && <div className="tpd-it-esc tpd-it-esc--cel">{campos.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>}
                         {(fotoRef || obs) && (
                           <div className="tpd-recado">
                             {fotoRef && (
