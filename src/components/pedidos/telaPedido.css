@@ -258,6 +258,10 @@
   .ep-wrap.ep2.tpd .ep2-col-dir { position: static; }
 }
 
+/* (28/10) links da tela do pedido sem sublinhado, só em rosa (padrão dos apps grandes); o sublinhado volta ao passar o mouse */
+.ep2.tpd .ui-bt--link, .ep2.tpd .ep2-nota .ep2-lk, .ep2.tpd .ep2-vazio .ep2-lk { text-decoration: none; font-weight: 500; }
+@media (hover: hover) { .ep2.tpd .ui-bt--link:hover, .ep2.tpd .ep2-nota .ep2-lk:hover, .ep2.tpd .ep2-vazio .ep2-lk:hover { text-decoration: underline; text-underline-offset: 3px; } }
+
 /* salvar: no computador fica na coluna da direita; até 900px, a faixa de baixo */
 @media (min-width: 901px) { .ep2-foot { display: none !important; } .ep2.tpd .ep2-save-desk { display: flex; flex-direction: column; gap: 8px; } }
 @media (max-width: 900px) { .ep2.tpd .ep2-save-desk { display: none; } }
