@@ -608,6 +608,7 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   --ui-branco:          #FFFFFF;
   --ui-fundo:           #F4EEF1;
   --ui-cinza:           #F3EEF1;
+  --ui-coluna:          #ECE5E9; /* (28/10) fundo das colunas do Quadro: um tom acima do fundo da tela, pra ver as raias */
   --ui-cinza-texto:     #4B3A42;
   --ui-borda:           #EADFE4;
   --ui-borda-campo:     #EDE6E9;

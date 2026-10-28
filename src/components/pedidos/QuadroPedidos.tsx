@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { DragEvent } from 'react'
 import { Botao, Linha, Titulo } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
@@ -16,6 +16,14 @@ type Props = { pedidos: Pedido[]; aoAbrir: (p: Pedido) => void; aoAvancar: (p: P
 export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mudando }: Props) {
   const [arrastando, setArrastando] = useState<string | null>(null)
   const [sobre, setSobre] = useState<string | null>(null)
+  // (28/10) as colunas vão até o fim da tela: mede onde o quadro começa e usa o resto da altura
+  const ref = useRef<HTMLDivElement>(null)
+  const [altura, setAltura] = useState<number | null>(null)
+  useLayoutEffect(() => {
+    const medir = () => { const el = ref.current; if (el) setAltura(Math.max(320, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - 24))) }
+    medir(); window.addEventListener('resize', medir)
+    return () => window.removeEventListener('resize', medir)
+  }, [])
   const porColuna: Record<string, Pedido[]> = Object.fromEntries(SITUACOES.map(s => [s.chave, [] as Pedido[]]))
   pedidos.forEach(p => { porColuna[grupoDoStatus(p.status)]?.push(p) })
   Object.values(porColuna).forEach(l => l.sort((a, b) => String(a.data_entrega || '9').localeCompare(String(b.data_entrega || '9')) || String(a.horario_entrega || '').localeCompare(String(b.horario_entrega || ''))))
@@ -43,7 +51,7 @@ export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mu
   }
 
   return (
-    <div className="pdq" role="list" style={{ gridTemplateColumns: `repeat(${colunas.length}, minmax(208px, 1fr))` }}>
+    <div ref={ref} className="pdq" role="list" style={{ gridTemplateColumns: `repeat(${colunas.length}, minmax(208px, 1fr))`, height: altura ?? undefined }}>
       {colunas.map(col => {
         const lista = porColuna[col.chave] || []
         return (
@@ -55,7 +63,8 @@ export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mu
             onDrop={e => soltar(e, col.chave)}
           >
             <Titulo contagem={col.chave === 'entregue' ? lista.length + entreguesFora : lista.length}>{col.chave === 'finalizado' ? 'Pronto' : col.chave === 'aguardando_aceite' ? 'Novos' : col.nome}</Titulo>
-            {lista.length === 0 ? <p className="pdq-vazio">Nenhum pedido aqui.</p> : lista.map(p => {
+            <div className="pdq-lista">
+            {lista.length === 0 ? <p className="pdq-solta">Arraste um pedido para cá</p> : lista.map(p => {
               const acao = acaoDe(p); const atr = atrasado(p); const falta = saldoPedido(p)
               const cancelado = col.chave === 'cancelado'
               return (
@@ -75,6 +84,7 @@ export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mu
               )
             })}
             {col.chave === 'entregue' && entreguesFora > 0 && <p className="pdq-vazio">E mais {entreguesFora} {entreguesFora === 1 ? 'entregue' : 'entregues'}. Veja todos na Lista.</p>}
+            </div>
           </section>
         )
       })}

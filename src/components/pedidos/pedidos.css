@@ -105,8 +105,12 @@
 .pdm-it--excluir .pdm-ic { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
 
 /* quadro (tablet e computador) */
-.pdq { display: grid; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain; padding-bottom: 16px; align-items: start; }
-.pdq-col { min-width: 0; padding: 10px; border: 2px solid transparent; border-radius: var(--ui-raio-cartao); background: var(--ui-cinza); transition: border-color var(--dur-fast) linear; }
+/* (28/10) as colunas vão até o fim da tela (altura medida no componente) e cada uma rola sozinha */
+.pdq { display: grid; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain; padding-bottom: 16px; align-items: stretch; min-height: 320px; }
+.pdq-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 10px; border: 2px solid transparent; border-radius: var(--ui-raio-cartao); background: var(--ui-coluna); transition: border-color var(--dur-fast) linear; }
+.pdq-lista { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; margin: 0 -4px; padding: 0 4px 4px; }
+.pdq-solta { display: flex; align-items: center; justify-content: center; min-height: 72px; padding: 12px; border: 1.5px dashed #D3C6CC; border-radius: var(--ui-raio); font-size: 13px; color: var(--ui-texto-3); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pdq-col.sobre .pdq-solta { border-color: var(--ui-rosa); color: var(--ui-rosa); }
 .pdq-col.sobre { border-color: var(--ui-rosa); }
 .pdq-col > .ui-tit { margin-bottom: 12px; }
 .pdq-vazio { margin: 0; padding: 12px 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); }
