@@ -51,8 +51,8 @@
 .tpd-ini { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 15px; font-weight: 700; }
 .tpd-cli-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .tpd-cli-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 700; line-height: 1.3; }
-.tpd-cli-tx span { font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
-.tpd-cli-tx small { font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
+.tpd-cli-tx span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
+.tpd-cli-tx small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .tpd-cli-seta { flex: none; color: var(--ui-texto-3); }
 /* (28/10) cartão do cliente mais leve: botões quadrados ao lado do nome, números numa linha, link pro perfil */
 .tpd-cli-lin { display: flex; align-items: center; gap: 8px; }
@@ -201,7 +201,7 @@
 }
 @media (min-width: 901px) { .ep-wrap.ep2.tpd { padding: 24px 0 48px !important; } }
 /* (28/10) computador: o que fazer vem primeiro. Itens do pedido, depois o recado do pedido, depois o cliente (no celular, a ordem da aba continua) */
-@media (min-width: 901px) { .ep2.tpd .ep2-sec > .tpd-recado-ped { order: 1; } .ep2.tpd .ep2-sec > .tpd-cli-card { order: 2; } }
+@media (min-width: 901px) { .ep2.tpd .ep2-sec > .tpd-recado-ped { order: 1; } .ep2.tpd .ep2-sec > .tpd-cli-card.tpd-cli-esq { order: 2; } }
 /* (28/10) computador: os Itens mostram só o que fazer (o preço de cada item está nos Valores, ao lado) */
 @media (min-width: 901px) { .ep2.tpd .tpd-it-preco { display: none; } }
 /* (28/10) etapa "Recebido" acesa no pedido novo, em laranja, igual ao "Novo" do celular */
