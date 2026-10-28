@@ -53,6 +53,13 @@ export interface DesignSettings {
 }
 
 export interface Configuracoes {
+  /** (28/10 · 4.49) jeito de cobrar a entrega: única, por bairro, por raio (km) ou por cidade */
+  entrega_modo?: 'fixa' | 'bairro' | 'raio' | 'cidade'
+  entrega_por_raio?: { km: number; valor: number }[]
+  entrega_por_cidade?: { cidade: string; valor: number }[]
+  /** fora do último raio / outras cidades; null = não entrega */
+  entrega_fora_valor?: number | null
+
   msg_pedido?: string | null
   id?: string
   user_id?: string

@@ -232,3 +232,8 @@
 
 /* (27/10) cupom no Finalizar do computador */
 .sc-cupom-fin { padding: 4px 0; }
+
+/* (28/10 · 4.49) taxa por raio/cidade: o valor calculado (ou o aviso de fora da área) embaixo do endereço */
+.sc-area-aviso { margin: 4px 0 0; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+.sc-area-aviso b { font-weight: 600; color: var(--ui-texto); }
+.sc-area-aviso.err { background: var(--ui-vermelho-fundo, #FEF2F2); color: var(--ui-vermelho); }

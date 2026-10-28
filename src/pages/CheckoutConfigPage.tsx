@@ -21,6 +21,8 @@ import { marcarPagamentoConferido } from "@/lib/primeirosPassos"
 import { useNavigate, useLocation } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
+import MapaRaios, { CORES_RAIO } from "@/components/MapaRaios"
+import { faixasOrdenadas, pontoDoEndereco, type ModoEntrega, type Ponto } from "@/lib/taxaEntrega"
 import { LIMITE_CUPONS_ATIVOS_GRATIS } from '@/lib/limitesPlano'
 
 const PAGAMENTOS = [
@@ -85,6 +87,17 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const [formasEntrega, setFormasEntrega] = useState<string[]>(['retirada'])
   const [valorEntregaPropria, setValorEntregaPropria] = useState('')
   const [entregaPorBairro, setEntregaPorBairro] = useState<{ bairro: string; valor: string }[]>([])
+  // (28/10 · 4.49) taxa por raio (km) e por cidade. novasColunas = o banco já tem os campos (SQL entrega_por_raio_cidade)
+  const [modoEntrega, setModoEntrega] = useState<ModoEntrega>('fixa')
+  const [raios, setRaios] = useState<{ km: string; valor: string }[]>([])
+  const [cidades, setCidades] = useState<{ cidade: string; valor: string }[]>([])
+  const [foraEntrega, setForaEntrega] = useState(false)
+  const [foraValor, setForaValor] = useState('')
+  const [lojaPonto, setLojaPonto] = useState<Ponto | null>(null)
+  const [enderecoLoja, setEnderecoLoja] = useState<any>(null)
+  const [nomeLoja, setNomeLoja] = useState('')
+  const [novasColunas, setNovasColunas] = useState(false)
+  const [buscandoLoja, setBuscandoLoja] = useState(false)
   const [enderecoRetirada, setEnderecoRetirada] = useState('')
   const [horarioRetirada, setHorarioRetirada] = useState('')
   const [exibirCampoTroco, setExibirCampoTroco] = useState(true)
@@ -127,6 +140,23 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         setFormasEntrega(data.formas_entrega || ['retirada'])
         setValorEntregaPropria(reaisParaCampo(data.valor_entrega_propria))
         setEntregaPorBairro((data.entrega_por_bairro || []).map((b: any) => ({ bairro: b.bairro, valor: reaisParaCampo(b.valor) || '0,00' })))
+        {
+          const temBairros = Array.isArray(data.entrega_por_bairro) && data.entrega_por_bairro.length > 0
+          const { data: ex, error: erroEx } = await supabase.from('profiles').select('entrega_modo, entrega_por_raio, entrega_por_cidade, entrega_fora_valor, loja_lat, loja_lng, endereco, nome_loja').eq('id', user.id).maybeSingle()
+          const x: any = ex || {}
+          setNovasColunas(!erroEx)
+          const m = x.entrega_modo
+          setModoEntrega(m === 'fixa' || m === 'bairro' || m === 'raio' || m === 'cidade' ? m : temBairros ? 'bairro' : 'fixa')
+          setRaios((Array.isArray(x.entrega_por_raio) ? x.entrega_por_raio : []).map((f: any) => ({ km: String(f.km ?? '').replace('.', ','), valor: reaisParaCampo(f.valor) || '0,00' })))
+          setCidades((Array.isArray(x.entrega_por_cidade) ? x.entrega_por_cidade : []).map((c: any) => ({ cidade: c.cidade || '', valor: reaisParaCampo(c.valor) || '0,00' })))
+          setForaEntrega(x.entrega_fora_valor != null)
+          setForaValor(x.entrega_fora_valor != null ? reaisParaCampo(x.entrega_fora_valor) || '0,00' : '')
+          setLojaPonto(x.loja_lat != null && x.loja_lng != null ? { lat: Number(x.loja_lat), lng: Number(x.loja_lng) } : null)
+          let end: any = null
+          try { end = typeof x.endereco === 'string' ? JSON.parse(x.endereco) : x.endereco } catch { end = null }
+          setEnderecoLoja(end && typeof end === 'object' ? end : null)
+          setNomeLoja(x.nome_loja || '')
+        }
         setEnderecoRetirada(data.endereco_retirada || '')
         setHorarioRetirada(data.horario_retirada || '')
         setExibirCampoTroco(data.exibir_campo_troco !== false)
@@ -171,12 +201,12 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   }, [tentativa])
 
   // 09/10: não salva (nem mostra "Salvo") só por ter aberto a tela; salva depois que algo muda
-  const foto = JSON.stringify([formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada])
+  const foto = JSON.stringify([modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada])
   const salvoRef = useRef<string | null>(null)
   useEffect(() => { if (!loading) salvoRef.current = foto }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
   // 10/10: o que está na tela agora (o salvamento sempre grava o mais novo, inclusive ao sair da tela)
   const pixTela = { pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada }
-  const telaRef = useRef({ userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela })
+  const telaRef = useRef({ userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela, area: { modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, novasColunas } })
   const pendenteRef = useRef(false)
 
   /**
@@ -206,6 +236,22 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         ...pixParaSalvar(t.pix),
       }).eq('id', t.userId)
       if (erroPerfil) throw erroPerfil
+      // (28/10) raio e cidade: gravados à parte (se o banco ainda não tem os campos, o resto continua salvando)
+      const a = t.area
+      if (a.novasColunas) {
+        const { error: erroArea } = await supabase.from('profiles').update({
+          entrega_modo: a.modoEntrega,
+          entrega_por_raio: faixasOrdenadas(a.raios.map(f => ({ km: f.km, valor: numBR(f.valor) || 0 })))
+            .filter((f, i, l) => l.findIndex(y => y.km === f.km) === i),
+          entrega_por_cidade: a.cidades.map(c => ({ cidade: c.cidade.trim(), valor: Math.max(0, numBR(c.valor) || 0) }))
+            .filter((c, i, l) => c.cidade && l.findIndex(y => y.cidade.toLowerCase() === c.cidade.toLowerCase()) === i),
+          entrega_fora_valor: a.foraEntrega ? Math.max(0, numBR(a.foraValor) || 0) : null,
+          ...(a.lojaPonto ? { loja_lat: a.lojaPonto.lat, loja_lng: a.lojaPonto.lng } : {}),
+        }).eq('id', t.userId)
+        if (erroArea) throw erroArea
+      } else if (a.modoEntrega === 'raio' || a.modoEntrega === 'cidade') {
+        throw new Error('A taxa por raio e por cidade ainda não está ligada no banco. Rode o SQL entrega_por_raio_cidade no Supabase.')
+      }
       const usosNoBanco: Record<string, number> = {}
       const { data: atual } = await supabase.from('loja_cupons').select('cupons').eq('user_id', t.userId).maybeSingle()
       if (Array.isArray(atual?.cupons)) atual.cupons.forEach((c: any) => { if (c?.codigo) usosNoBanco[String(c.codigo).toUpperCase()] = Number(c.usos) || 0 })
@@ -244,7 +290,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   // Roda a cada mudança, antes dos efeitos de baixo: deixa nas refs o que está na tela agora
   const estadoRef = useRef('')
   useEffect(() => {
-    telaRef.current = { userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela }
+    telaRef.current = { userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela, area: { modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, novasColunas } }
     salvarTudoRef.current = salvarTudo
     if (onEstado && !loading) {
       const e: EstadoEntregaPagamento = { formasPagamento, formasEntrega, taxa: numBR(valorEntregaPropria), porBairro: entregaPorBairro.filter(b => b.bairro.trim()).length,
@@ -261,7 +307,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     pendenteRef.current = true
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => { timerRef.current = null; salvarTudoRef.current() }, 2000)
-  }, [formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 10/10: saiu da tela antes dos 2 s → salva na hora (antes a mudança era descartada em silêncio)
   useEffect(() => () => {
@@ -290,16 +336,44 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     setFormasPagamento(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])
   }
   // (27/10) taxa por bairro: antes o cardápio usava a lista, mas não tinha onde editar
-  const [porBairro, setPorBairro] = useState(false)
-  useEffect(() => { if (!loading) setPorBairro(entregaPorBairro.length > 0) }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
+  const porBairro = modoEntrega === 'bairro'
+
   const mudarBairro = (i: number, campo: 'bairro' | 'valor', v: string) => setEntregaPorBairro(prev => prev.map((b, k) => k === i ? { ...b, [campo]: campo === 'valor' ? v.replace(/[^0-9.,]/g, '') : v } : b))
-  const usarTaxaUnica = async () => {
-    if (entregaPorBairro.some(b => b.bairro.trim())) {
-      const ok = await confirmar({ titulo: 'Usar uma taxa só?', texto: 'A lista de bairros é apagada e vale a taxa única para todos.', rotulo: 'Usar taxa única', rotuloVoltar: 'Voltar' })
-      if (!ok) return
+  // (28/10) os quatro jeitos de cobrar. Sair do "Por bairro" apaga a lista (com confirmação), como antes.
+  const escolherModo = async (m: ModoEntrega) => {
+    if (m === modoEntrega) return
+    if ((m === 'raio' || m === 'cidade') && !novasColunas) {
+      avisar('Falta ligar a taxa por raio e por cidade no banco: rode o SQL entrega_por_raio_cidade no Supabase.', { tipo: 'erro' }); return
     }
-    setEntregaPorBairro([]); setPorBairro(false)
+    if (modoEntrega === 'bairro' && entregaPorBairro.some(b => b.bairro.trim())) {
+      const ok = await confirmar({ titulo: 'Trocar o jeito de cobrar?', texto: 'A lista de bairros é apagada.', rotulo: 'Trocar', rotuloVoltar: 'Voltar' })
+      if (!ok) return
+      setEntregaPorBairro([])
+    }
+    if (m === 'bairro' && !entregaPorBairro.length) setEntregaPorBairro([{ bairro: '', valor: '' }])
+    if (m === 'raio' && !raios.length) setRaios([{ km: '3', valor: '' }, { km: '6', valor: '' }])
+    if (m === 'cidade' && !cidades.length) setCidades([{ cidade: String(enderecoLoja?.cidade || ''), valor: '' }])
+    setModoEntrega(m)
   }
+  // ponto da loja no mapa (pelo endereço em Dados da loja): achado uma vez e gravado junto
+  const chaveEndLoja = enderecoLoja ? [enderecoLoja.rua, enderecoLoja.numero, enderecoLoja.cidade, enderecoLoja.cep].join('|') : ''
+  const chaveEndLojaRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (loading || modoEntrega !== 'raio' || !enderecoLoja) return
+    if (chaveEndLojaRef.current === null) { chaveEndLojaRef.current = chaveEndLoja; if (lojaPonto) return } // já tinha o ponto e o endereço não mudou
+    if (lojaPonto && chaveEndLojaRef.current === chaveEndLoja) return
+    chaveEndLojaRef.current = chaveEndLoja
+    let vivo = true
+    setBuscandoLoja(true)
+    pontoDoEndereco({ rua: enderecoLoja.rua, numero: enderecoLoja.numero, bairro: enderecoLoja.bairro, cidade: enderecoLoja.cidade, estado: enderecoLoja.estado || enderecoLoja.uf, cep: enderecoLoja.cep })
+      .then(pt => { if (vivo) { if (pt) setLojaPonto(pt); setBuscandoLoja(false) } })
+    return () => { vivo = false }
+  }, [loading, modoEntrega, chaveEndLoja]) // eslint-disable-line react-hooks/exhaustive-deps
+  const faixasMapa = faixasOrdenadas(raios.map(f => ({ km: f.km, valor: numBR(f.valor) || 0 })))
+  const maiorKm = faixasMapa.length ? faixasMapa[faixasMapa.length - 1].km : 0
+  const kmCurto = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
+  const nomesCidade = cidades.map(c => c.cidade.trim().toLowerCase()).filter(Boolean)
+  const cidadeRepetida = nomesCidade.find((n, i) => nomesCidade.indexOf(n) !== i)
   const nomesBairro = entregaPorBairro.map(b => b.bairro.trim().toLowerCase()).filter(Boolean)
   const bairroRepetido = nomesBairro.find((n, i) => nomesBairro.indexOf(n) !== i)
 
@@ -535,18 +609,67 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
             <div className="ep-res">
               {ENTREGAS.filter(e => formasEntrega.includes(e.key)).map(e => (
                 <span key={e.key} className="ep-res-li"><Check size={16} weight="bold" aria-hidden="true" />{e.label}
-                  {e.key === 'entrega_propria' && <em>{entregaPorBairro.some(b => b.bairro.trim()) ? `Por bairro (${entregaPorBairro.filter(b => b.bairro.trim()).length})` : numBR(valorEntregaPropria) > 0 ? `R$ ${dinheiroBR(valorEntregaPropria)}` : 'Grátis'}</em>}</span>
+                  {e.key === 'entrega_propria' && <em>{modoEntrega === 'raio' ? `Por raio (${faixasMapa.length} ${faixasMapa.length === 1 ? 'faixa' : 'faixas'})` : modoEntrega === 'cidade' ? `Por cidade (${cidades.filter(c => c.cidade.trim()).length})` : entregaPorBairro.some(b => b.bairro.trim()) ? `Por bairro (${entregaPorBairro.filter(b => b.bairro.trim()).length})` : numBR(valorEntregaPropria) > 0 ? `R$ ${dinheiroBR(valorEntregaPropria)}` : 'Grátis'}</em>}</span>
               ))}
             </div>
           ) : (<>
           <ListaChaves itens={ENTREGAS.map(e => ({ chave: e.key, Ic: ICONE_ENT[e.key] || Truck, rotulo: e.label, sub: e.sub, on: formasEntrega.includes(e.key), aoTocar: () => toggleEntrega(e.key) }))} />
           {formasEntrega.includes('entrega_propria') && (
             <div className="ep-taxa">
-              <div className="ep-seg" role="radiogroup" aria-label="Como cobrar a entrega">
-                <button type="button" role="radio" aria-checked={!porBairro} onClick={() => { if (porBairro) void usarTaxaUnica() }}>Taxa única</button>
-                <button type="button" role="radio" aria-checked={porBairro} onClick={() => { if (!porBairro) { setPorBairro(true); if (!entregaPorBairro.length) setEntregaPorBairro([{ bairro: '', valor: '' }]) } }}>Por bairro</button>
+              {/* (28/10 · 4.49) os quatro jeitos de cobrar, nos cartões com bolinha (igual ao Entrega/Retirada do pedido) */}
+              <p className="ep-modo-t">Como cobrar a entrega</p>
+              <div className="ep-modo" role="radiogroup" aria-label="Como cobrar a entrega">
+                {([['fixa', 'Taxa única', 'Mesmo valor pra todos'], ['bairro', 'Por bairro', 'Um valor por bairro'], ['raio', 'Por raio', 'Pela distância em km'], ['cidade', 'Por cidade', 'Um valor por cidade']] as [ModoEntrega, string, string][]).map(([k, n, sub]) => (
+                  <button key={k} type="button" role="radio" aria-checked={modoEntrega === k} className={modoEntrega === k ? 'on' : undefined} onClick={() => { void escolherModo(k) }}>
+                    <i className="ep-modo-bola" aria-hidden="true" /><b>{n}</b><small>{sub}</small>
+                  </button>
+                ))}
               </div>
-              {!porBairro ? (
+              {modoEntrega === 'raio' ? (
+                <div className="ep-raio">
+                  {!enderecoLoja?.rua || !enderecoLoja?.cidade ? (
+                    <p className="ep-raio-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />Para medir a distância, cadastre o endereço da loja (rua, número e cidade) aqui em Dados da loja.</p>
+                  ) : lojaPonto ? (
+                    <MapaRaios loja={lojaPonto} faixas={faixasMapa} nome={nomeLoja} />
+                  ) : (
+                    <p className="ep-raio-aviso">{buscandoLoja ? 'Achando a sua loja no mapa…' : <><WarningCircle size={18} weight="bold" aria-hidden="true" />Não achamos o endereço da loja no mapa. Confira a rua e o número em Dados da loja.</>}</p>
+                  )}
+                  <p className="ep-modo-t">Faixas de entrega</p>
+                  {raios.map((f, i) => {
+                    const ordem = faixasMapa.findIndex(x => x.km === Number(String(f.km).replace(',', '.')))
+                    return (
+                      <div key={i} className="ep-faixa">
+                        <span className="ep-faixa-cor" style={{ background: CORES_RAIO[Math.max(0, Math.min(ordem, CORES_RAIO.length - 1))] }} aria-hidden="true" />
+                        <span className="ep-faixa-ate">Até</span>
+                        <Campo rotulo="" aria-label="Distância em km" inputMode="decimal" placeholder="3" value={f.km} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, km: e.target.value.replace(/[^0-9,]/g, '').slice(0, 5) } : x))} />
+                        <span className="ep-faixa-ate">km</span>
+                        <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={f.valor} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
+                        <button type="button" className="ep-bairro-x" aria-label="Tirar esta faixa" onClick={() => setRaios(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
+                      </div>
+                    )
+                  })}
+                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setRaios(prev => [...prev, { km: maiorKm ? kmCurto(maiorKm + 3) : '3', valor: '' }])}>Adicionar faixa</Botao>
+                  <Chave on={foraEntrega} rotulo={maiorKm ? `Entregar mais longe que ${kmCurto(maiorKm)} km` : 'Entregar mais longe'} apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: o cliente vê que está fora da área'} aoMudar={setForaEntrega} />
+                  {foraEntrega && <Campo rotulo="Taxa para mais longe" prefixo="R$" inputMode="numeric" placeholder="0,00" value={foraValor} onChange={e => setForaValor(mascaraReais(e.target.value))} />}
+                  <p className="ep-bairro-dica">A distância é em linha reta, a partir do endereço da loja. Taxa 0 é entrega grátis.</p>
+                </div>
+              ) : modoEntrega === 'cidade' ? (
+                <div className="ep-bairros">
+                  {cidades.map((c, i) => (
+                    <div key={i} className="ep-bairro">
+                      <Campo rotulo="" aria-label="Cidade" placeholder="Cidade" value={c.cidade} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, cidade: e.target.value } : x))} />
+                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={c.valor} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
+                      <button type="button" className="ep-bairro-x" aria-label={`Tirar ${c.cidade || 'esta cidade'}`} onClick={() => setCidades(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
+                    </div>
+                  ))}
+                  {cidadeRepetida && <p className="ep-bairro-erro" role="alert">Cidade repetida. Deixe só uma.</p>}
+                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setCidades(prev => [...prev, { cidade: '', valor: '' }])}>Adicionar cidade</Botao>
+                  <Chave on={foraEntrega} rotulo="Entregar em outras cidades" apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: só nas cidades da lista'} aoMudar={setForaEntrega} />
+                  {foraEntrega && <Campo rotulo="Taxa para outras cidades" prefixo="R$" inputMode="numeric" placeholder="0,00" value={foraValor} onChange={e => setForaValor(mascaraReais(e.target.value))} />}
+                  <p className="ep-bairro-dica">O cliente escolhe a cidade e paga a taxa dela. Taxa 0 é entrega grátis.</p>
+                </div>
+              ) : null}
+              {modoEntrega === 'raio' || modoEntrega === 'cidade' ? null : !porBairro ? (
                 <Campo rotulo="Taxa da entrega própria" prefixo="R$" inputMode="numeric" placeholder="0,00" value={valorEntregaPropria}
                   dica="Cobrada em todo pedido com entrega própria"
                   onChange={e => setValorEntregaPropria(mascaraReais(e.target.value))} />

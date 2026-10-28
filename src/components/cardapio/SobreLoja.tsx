@@ -59,7 +59,8 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
   const retira = formas.includes('retirada')
   const entregaPropria = formas.includes('entrega_propria')
   const entregaOutra = formas.some(f => f === 'motoboy' || f === 'uber_flash' || f === 'combinar')
-  const taxa = (cfg.entrega_por_bairro || []).length > 0 ? 'Taxa conforme o bairro'
+  const taxa = cfg.entrega_modo === 'raio' ? 'Taxa conforme a distância' : cfg.entrega_modo === 'cidade' ? 'Taxa conforme a cidade'
+    : (cfg.entrega_por_bairro || []).length > 0 ? 'Taxa conforme o bairro'
     : Number(cfg.valor_entrega_propria) > 0 ? `Taxa de ${formatCurrency(Number(cfg.valor_entrega_propria))}` : 'Entrega grátis'
 
   const blocoSobre = (<>

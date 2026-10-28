@@ -42,6 +42,7 @@ import ReqTag from "@/components/ReqTag";
 
 import { useEffect, useState, useRef } from 'react'
 import MapaEndereco, { type BuscaMapa } from '@/components/MapaEndereco'
+import { distanciaKm, kmTexto, modoDaLoja, pontoDoEndereco, taxaPorCidade, taxaPorRaio, type Ponto } from '@/lib/taxaEntrega'
 import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
@@ -615,8 +616,44 @@ export default function EditarPedido() {
       let a: any = {}; try { a = (data as any)?.endereco ? (typeof (data as any).endereco === 'string' ? JSON.parse((data as any).endereco) : (data as any).endereco) : {} } catch { a = {} }
       const l1 = [a.rua, a.numero].filter(Boolean).join(', '), l2 = [a.bairro, a.cidade].filter(Boolean).join(' · ')
       setLojaInfo({ nome: (data as any)?.nome_loja || '', endereco: (l1 || l2) ? { linha1: l1 || l2, linha2: l1 ? l2 : '', completo: [l1, a.bairro, a.cidade].filter(Boolean).join(' - ') } : null })
+      // (28/10 · 4.49) a regra da taxa da loja, pra sugerir o valor neste pedido (sem as colunas novas, fica só fixa/bairro)
+      const { data: r1 } = await supabase.from('profiles').select('valor_entrega_propria, entrega_por_bairro').eq('id', user.id).maybeSingle()
+      const { data: r2, error: e2 } = await supabase.from('profiles').select('entrega_modo, entrega_por_raio, entrega_por_cidade, entrega_fora_valor, loja_lat, loja_lng').eq('id', user.id).maybeSingle()
+      const x: any = { ...(r1 || {}), ...(!e2 && r2 ? r2 : {}) }
+      setRegraTaxa({ modo: modoDaLoja(x), fixa: Number(x.valor_entrega_propria) || 0, bairros: Array.isArray(x.entrega_por_bairro) ? x.entrega_por_bairro : [],
+        raios: Array.isArray(x.entrega_por_raio) ? x.entrega_por_raio : [], cidades: Array.isArray(x.entrega_por_cidade) ? x.entrega_por_cidade : [],
+        fora: x.entrega_fora_valor ?? null, loja: x.loja_lat != null && x.loja_lng != null ? { lat: Number(x.loja_lat), lng: Number(x.loja_lng) } : null })
     })()
   }, [])
+  // (28/10 · 4.49) taxa sugerida pela regra da loja para o endereço deste pedido
+  const [regraTaxa, setRegraTaxa] = useState<{ modo: string; fixa: number; bairros: any[]; raios: any[]; cidades: any[]; fora: number | null; loja: Ponto | null } | null>(null)
+  const [taxaSugerida, setTaxaSugerida] = useState<{ valor: number; texto: string } | { valor: null; texto: string } | null>(null)
+  useEffect(() => {
+    const r = regraTaxa
+    if (!r || tipoEntrega !== 'entrega') { setTaxaSugerida(null); return }
+    if (r.modo === 'fixa') { setTaxaSugerida({ valor: r.fixa, texto: 'Taxa única da loja' }); return }
+    if (r.modo === 'bairro') {
+      const b = r.bairros.find((x: any) => String(x.bairro).trim().toLowerCase() === enderecoBairro.trim().toLowerCase())
+      setTaxaSugerida(b ? { valor: Number(b.valor) || 0, texto: `Taxa do bairro ${b.bairro}` } : enderecoBairro.trim() ? { valor: r.fixa, texto: 'Bairro fora da lista: taxa única' } : null); return
+    }
+    if (r.modo === 'cidade') {
+      if (!enderecoCidade.trim()) { setTaxaSugerida(null); return }
+      const c = taxaPorCidade(r.cidades, enderecoCidade, r.fora)
+      setTaxaSugerida(c.ok ? { valor: c.valor, texto: c.cidade ? `Taxa de ${c.cidade}` : 'Taxa para outras cidades' } : { valor: null, texto: 'Cidade fora da área de entrega' }); return
+    }
+    // raio
+    if (!r.loja || !enderecoRua.trim() || !enderecoCidade.trim()) { setTaxaSugerida(null); return }
+    let vivo = true
+    const tm = window.setTimeout(async () => {
+      const pt = await pontoDoEndereco({ rua: enderecoRua, numero: enderecoNumero, bairro: enderecoBairro, cidade: enderecoCidade, cep: enderecoCep })
+      if (!vivo) return
+      if (!pt) { setTaxaSugerida({ valor: null, texto: 'Endereço não achado no mapa' }); return }
+      const km = distanciaKm(r.loja!, pt)
+      const t = taxaPorRaio(r.raios, km, r.fora)
+      setTaxaSugerida(t.ok ? { valor: t.valor, texto: `Taxa pela distância (${kmTexto(km)})` } : { valor: null, texto: `Fora da área de entrega (${kmTexto(km)})` })
+    }, 900)
+    return () => { vivo = false; window.clearTimeout(tm) }
+  }, [regraTaxa, tipoEntrega, enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade, enderecoCep])
   useEffect(() => {
     if (!clienteId) { setEnderecoDaCliente(null); return }
     let vivo = true // (11/10) trocou de cliente de novo antes de chegar: a resposta antiga é ignorada
@@ -1666,6 +1703,13 @@ export default function EditarPedido() {
                 </div>
                 <div className="ep2-taxa"><span>Taxa de entrega</span>
                   <span className="ep2-mini"><em>R$</em><input inputMode="numeric" value={textoBRL(taxaEntrega) || ''} placeholder="0,00" onChange={e => setTaxaEntrega(lerBRL(mascaraBRL(e.target.value)))} aria-label="Taxa de entrega" /></span></div>
+                {/* (28/10 · 4.49) a taxa que a regra da loja dá pra este endereço, com um toque pra usar */}
+                {taxaSugerida && (
+                  <p className={`tpd-taxa-sug${taxaSugerida.valor == null ? ' fora' : ''}`}>
+                    <span>{taxaSugerida.texto}{taxaSugerida.valor != null ? `: ${formatMoney(taxaSugerida.valor)}` : ''}</span>
+                    {taxaSugerida.valor != null && Math.abs(taxaSugerida.valor - (Number(taxaEntrega) || 0)) > 0.009 && <button type="button" onClick={() => setTaxaEntrega(taxaSugerida.valor as number)}>Usar</button>}
+                  </p>
+                )}
               </div>
             ) : (
               <div className="ep2-card tpd-onde-card">

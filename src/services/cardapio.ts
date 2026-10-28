@@ -1,4 +1,5 @@
 import { temaAtivo, NATAL, AVISO_NATAL_PADRAO, CAPA_NATAL_PADRAO } from '@/lib/temaCardapio'
+import { modoDaLoja } from '@/lib/taxaEntrega'
 import { cupomDisponivel } from '@/lib/cupons'
 import { COR_BOTOES, corDoItem } from '@/lib/coresCardapio'
 import { supabase } from '@/lib/supabase'
@@ -165,7 +166,12 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     formas_pagamento: profile.formas_pagamento || ['pix'],
     formas_entrega: profile.formas_entrega || ['retirada'],
     valor_entrega_propria: profile.valor_entrega_propria || 0,
-    entrega_por_bairro: profile.entrega_por_bairro || [],
+    entrega_por_bairro: modoDaLoja(profile) === 'bairro' ? (profile.entrega_por_bairro || []) : [],
+    // (28/10 · 4.49) raio e cidade. Nesses modos a lista de bairros não vale (o cardápio olha a lista pra pedir o bairro)
+    entrega_modo: modoDaLoja(profile),
+    entrega_por_raio: Array.isArray(profile.entrega_por_raio) ? profile.entrega_por_raio : [],
+    entrega_por_cidade: Array.isArray(profile.entrega_por_cidade) ? profile.entrega_por_cidade : [],
+    entrega_fora_valor: profile.entrega_fora_valor ?? null,
     endereco_retirada: profile.endereco_retirada || '',
     horario_retirada: profile.horario_retirada || '',
     exibir_campo_troco: profile.exibir_campo_troco !== false,

@@ -117,3 +117,21 @@
 .ep-pix-aviso svg { flex: none; color: var(--ui-laranja, #C2620A); }
 .ep-pix-ok { background: var(--ui-verde-fundo, #EAF6EE); color: var(--ui-texto); }
 .ep-pix-ok svg { flex: none; color: var(--ui-verde); }
+
+/* (28/10 · 4.49) jeitos de cobrar a entrega: quatro cartões com bolinha (o escolhido em cinza escuro, como no pedido) */
+.ep-modo-t { margin: 4px 0 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); }
+.ep-modo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ep-modo button { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; margin: 0; padding: 12px 34px 12px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
+.ep-modo button.on { border: 1.5px solid #3A3336; padding: 11.5px 33.5px 11.5px 11.5px; background: #F4F3F2; }
+.ep-modo button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+.ep-modo b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 500; }
+.ep-modo small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--ui-texto-2); }
+.ep-modo-bola { position: absolute; top: 12px; right: 12px; width: 18px; height: 18px; border: 1.5px solid #CDBFC5; border-radius: 50%; background: var(--ui-branco); box-sizing: border-box; }
+.ep-modo button.on .ep-modo-bola { border: 5px solid #3A3336; }
+.ep-raio { display: flex; flex-direction: column; gap: 10px; }
+.ep-raio-aviso { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-cinza); font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+.ep-raio-aviso svg { flex: none; margin-top: 1px; color: var(--ui-laranja); }
+.ep-faixa { display: grid; grid-template-columns: 10px auto 64px auto minmax(0, 1fr) 44px; gap: 8px; align-items: center; }
+.ep-faixa .ui-campo-r { display: none; }
+.ep-faixa-cor { width: 10px; height: 10px; border-radius: 50%; }
+.ep-faixa-ate { font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; }

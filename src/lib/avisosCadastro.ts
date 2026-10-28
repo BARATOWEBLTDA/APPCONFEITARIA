@@ -56,7 +56,8 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
   const pf: any = !perfil.error ? perfil.data : null;
   if (pf) {
     const fe: string[] = Array.isArray(pf.formas_entrega) ? pf.formas_entrega : [];
-    const semTaxa = fe.includes("entrega_propria") && !(Number(pf.valor_entrega_propria) > 0) && !(Array.isArray(pf.entrega_por_bairro) && pf.entrega_por_bairro.length);
+    // (28/10) por raio ou por cidade já é uma taxa definida
+    const semTaxa = fe.includes("entrega_propria") && !["raio", "cidade"].includes(pf.entrega_modo) && !(Number(pf.valor_entrega_propria) > 0) && !(Array.isArray(pf.entrega_por_bairro) && pf.entrega_por_bairro.length);
     if (semTaxa) l.push({ chave: "falta_taxa_entrega", icone: "entrega", titulo: "Defina a taxa de entrega", texto: "Sem a taxa, o cardápio mostra entrega grátis e o frete sai do seu bolso.",
       link: "/checkout-config", nivel: "atencao", curto: { t: "Taxa de entrega", s: "Sem ela, a entrega sai grátis" } });
   }
