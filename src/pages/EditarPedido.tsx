@@ -1258,8 +1258,9 @@ export default function EditarPedido() {
   // (28/10) computador também começa no "Recebido": o pedido novo acende essa etapa e o Aceitar leva pro Agendado
   // (o lançado pela confeiteira já nasce aceito, então o Recebido aparece feito)
   const ETAPAS_PC: string[] = tipoEntrega === 'retirada'
-    ? ['Recebido', 'Agendado', 'Em produção', 'Pronto para retirar', 'Retirado']
-    : ['Recebido', 'Agendado', 'Em produção', 'Pronto', 'Saiu para entrega', 'Entregue']
+    // (28/10) nomes curtos numa linha só: "Pronto para retirar" quebrava em duas e desalinhava a fileira
+    ? ['Recebido', 'Agendado', 'Em produção', 'Pronto', 'Retirado']
+    : ['Recebido', 'Agendado', 'Em produção', 'Pronto', 'A caminho', 'Entregue']
   const posEtapaPc = (() => {
     const g = grupoDoStatus(statusPedido)
     if (['aguardando_aceite', 'aguardando_pagamento'].includes(g)) return 0
