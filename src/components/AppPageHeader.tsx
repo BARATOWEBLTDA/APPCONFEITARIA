@@ -32,6 +32,8 @@ import './appPageHeader.css'
 interface AppPageHeaderProps {
   title: string
   subtitle: string
+  /** (28/10) computador: complemento do título em cinza, sem negrito ("Pedido #65 · Bruno Eduardo Pacheco"). No celular não aparece (lá vai no subtítulo) */
+  titleExtra?: string
   /** título da janela do (i); sem ele, usa o nome da tela */
   infoTitle?: string
   /** as telas ainda mandam um emoji aqui; o cabeçalho troca pelo ícone desenhado equivalente */
@@ -56,7 +58,7 @@ const ICONE_DO_EMOJI: Record<string, Icon> = {
   '📑': ListDashes, '📦': Package, '📰': Newspaper, '🔔': Bell, '🛍️': ShoppingBag, '🛒': ShoppingCart, '🧮': Calculator, '🧾': Invoice, '📋': Receipt,
 }
 
-export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, infoContent, infoTip, infoComo, infoTour, rightActions, onBack, voltar, centro }: AppPageHeaderProps) {
+export default function AppPageHeader({ title, subtitle, titleExtra, infoTitle, infoIcon, infoContent, infoTip, infoComo, infoTour, rightActions, onBack, voltar, centro }: AppPageHeaderProps) {
   // (23/10) nome da aba do navegador: o título da tela ("Pedidos · Doonly"), no lugar de "Doonly - Confeitaria Inteligente" em todas
   useEffect(() => {
     const t = String(title || '').trim()
@@ -83,6 +85,7 @@ export default function AppPageHeader({ title, subtitle, infoTitle, infoIcon, in
         <div className="cab-txt">
           <div className="cab-linha">
             <h1 className="cab-t">{title}</h1>
+            {titleExtra && <span className="cab-t-x" title={titleExtra}><span aria-hidden="true">·</span> {titleExtra}</span>}
             {infoComo ? (
               <BotaoAjuda c={infoComo} rotulo={title} tour={infoTour} className="cab-ajuda" />
             ) : infoContent && (

@@ -101,6 +101,11 @@
 /* (17/10) teste: faixa mais baixa, só título e foto (sem o subtítulo) */
 .cab { min-height: calc(60px + env(safe-area-inset-top, 0px)); padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
 .cab-s { display: none; }
+/* (28/10) complemento do título no computador, em cinza e sem negrito; nome longo corta com "…" */
+.cab-t-x { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-base); font-size: 20px; font-weight: 400; line-height: 1.2; color: var(--ui-texto-2); }
+.cab-t-x > span { margin-right: 2px; color: var(--ui-texto-3); }
+.cab-linha:has(.cab-t-x) .cab-t { flex: none; }
+@media (max-width: 900px) { .cab-t-x { display: none; } }
 .cab-t { font-size: 20px; }
 .cab-foto { width: 40px; height: 40px; }
 

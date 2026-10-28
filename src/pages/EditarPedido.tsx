@@ -1409,7 +1409,7 @@ export default function EditarPedido() {
 
   return (
     <>
-    <AppPageHeader title={`Pedido #${pedido.numero || '—'}`} subtitle={subtituloTopo} onBack={voltarPraLista} infoComo={COMO_PEDIDO} infoTour={TOUR_PEDIDO} />
+    <AppPageHeader title={`Pedido #${pedido.numero || '—'}`} titleExtra={clienteNome.trim() ? toTitleCase(clienteNome.trim()) : undefined} subtitle={subtituloTopo} onBack={voltarPraLista} infoComo={COMO_PEDIDO} infoTour={TOUR_PEDIDO} />
     {/* (11/10) enquanto salva e recarrega, a tela não aceita toque nem digitação */}
     <div className="ep-wrap ep2 tpd" aria-busy={salvando || undefined} inert={salvando || undefined} style={salvando ? { pointerEvents: 'none' } : undefined}>
       <section className={`tpd-sit${novoPedido ? ' aceitar' : ''}${atrasadoHoje ? ' atr' : ''}`} aria-label="Situação do pedido">
@@ -1462,33 +1462,31 @@ export default function EditarPedido() {
                   <Botao variante="suave" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => setModalCliente(true)}>Escolher cliente</Botao>
                 </div>
               ) : (<>
-                <button type="button" className="tpd-cli" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)} aria-label={clienteId ? 'Abrir o perfil do cliente' : 'Escolher o cliente'}>
-                  {clienteInfo?.foto ? <img className="tpd-ini" src={clienteInfo.foto} alt="" /> : <span className="tpd-ini" aria-hidden="true">{initialsOf(toTitleCase(clienteNome.trim()))}</span>}
-                  <span className="tpd-cli-tx">
-                    <b>{toTitleCase(clienteNome.trim())}</b>
-                    <span>{telDigitos ? formatTelefone(clienteTelefone) : 'Sem telefone'}</span>
-                    <small>{origemTexto}</small>
-                  </span>
-                  {clienteId && <CaretRight size={20} weight="bold" className="tpd-cli-seta" aria-hidden="true" />}
-                </button>
+                {/* (28/10) cartão mais leve: WhatsApp (ícone oficial) e Ligar pequenos ao lado do nome; os números numa linha; "Ver perfil do cliente" */}
+                <div className="tpd-cli-lin">
+                  <button type="button" className="tpd-cli" onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)} aria-label={clienteId ? 'Abrir o perfil do cliente' : 'Escolher o cliente'}>
+                    {clienteInfo?.foto ? <img className="tpd-ini" src={clienteInfo.foto} alt="" /> : <span className="tpd-ini" aria-hidden="true">{initialsOf(toTitleCase(clienteNome.trim()))}</span>}
+                    <span className="tpd-cli-tx">
+                      <b>{toTitleCase(clienteNome.trim())}</b>
+                      <span>{telDigitos ? formatTelefone(clienteTelefone) : 'Sem telefone'}</span>
+                      <small>{origemTexto}</small>
+                    </span>
+                  </button>
+                  {telDigitos && (<>
+                    <a className="tpd-cli-ic tpd-cli-ic--zap" href={linkWhatsApp(clienteTelefone) || `https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer" aria-label="Chamar no WhatsApp" title="WhatsApp"><IconeWhatsApp size={20} className="tpd-zap" /></a>
+                    <a className="tpd-cli-ic" href={`tel:+55${telDigitos}`} aria-label="Ligar" title="Ligar"><Phone size={20} weight="bold" /></a>
+                  </>)}
+                </div>
                 {clienteId && clienteInfo && clienteInfo.pedidos > 0 && (
-                  <div className="tpd-cli-st">
-                    <span><b>{clienteInfo.pedidos + 1}</b><small>pedidos</small></span>
-                    <span><b>{formatMoney(r2(clienteInfo.gasto + recebidoAtual))}</b><small>já gastou</small></span>
-                    <span><b>{clienteInfo.ultimo ? clienteInfo.ultimo.slice(8, 10) + '/' + clienteInfo.ultimo.slice(5, 7) : '—'}</b><small>último pedido</small></span>
-                  </div>
+                  <p className="tpd-cli-res">{clienteInfo.pedidos + 1} pedidos · {formatMoney(r2(clienteInfo.gasto + recebidoAtual))} gastos{clienteInfo.ultimo ? ` · último em ${clienteInfo.ultimo.slice(8, 10)}/${clienteInfo.ultimo.slice(5, 7)}` : ''}</p>
                 )}
                 {aniversario && (
                   <p className="tpd-aniv"><Cake size={20} weight="bold" aria-hidden="true" /><span><b>Aniversário {aniversario.dias === 0 ? 'hoje' : `dia ${aniversario.data}`}</b>{aniversario.dias === 0 ? '!' : ` · daqui a ${aniversario.dias} ${aniversario.dias === 1 ? 'dia' : 'dias'}.`} Que tal um mimo no pedido?</span></p>
                 )}
-                {telDigitos ? (
-                  <div className="tpd-dois">
-                    <a className="ui-bt ui-bt--secundario ui-bt--m" href={linkWhatsApp(clienteTelefone) || `https://wa.me/55${telDigitos}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><IconeWhatsApp size={20} className="tpd-zap" /></span><span className="ui-bt-t">WhatsApp</span></a>
-                    <a className="ui-bt ui-bt--secundario ui-bt--m" href={`tel:+55${telDigitos}`}><span className="ui-bt-ic" aria-hidden="true"><Phone size={20} weight="bold" /></span><span className="ui-bt-t">Ligar</span></a>
-                  </div>
-                ) : (
+                {!telDigitos && (
                   <Botao className="tpd-mt" variante="suave" tamanho="m" cheio icone={<Plus size={20} weight="bold" />} onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)}>Adicionar telefone</Botao>
                 )}
+                {clienteId && <button type="button" className="tpd-cli-perfil" onClick={() => navigate(`/clientes/${clienteId}`)}>Ver perfil do cliente<CaretRight size={16} weight="bold" aria-hidden="true" /></button>}
               </>)}
             </section>
 
