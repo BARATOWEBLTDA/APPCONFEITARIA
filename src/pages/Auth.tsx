@@ -521,7 +521,7 @@ export default function Auth() {
 
         <div className="auth-text-hdr">
           <h2 className="auth-h2"><span className="so-cel">Seus pedidos te esperam</span><span className="so-pc">Entrar na conta</span></h2>
-          <p className="auth-p so-cel-bloco">Pedidos, agenda e financeiro em um só lugar.</p>
+          <p className="auth-p so-cel-bloco">Pedidos, agenda e financeiro juntos.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>

@@ -165,7 +165,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
                   href={`https://waze.com/ul?q=${encodeURIComponent(enderecoCompleto)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#33CCFF', color: 'white', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#fff', color: 'var(--ui-texto)', boxShadow: 'inset 0 0 0 1.5px #E5DDE1', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
                 >
                   <img src="/waze.png" alt="Waze" width="20" height="20" style={{objectFit:'contain'}} />
                   Waze
@@ -174,7 +174,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
                   href={`https://maps.google.com/?q=${encodeURIComponent(enderecoCompleto)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#ecf3ff', color: '#4285f4', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#fff', color: 'var(--ui-texto)', boxShadow: 'inset 0 0 0 1.5px #E5DDE1', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
                 >
                   <img src="/google-maps.png" alt="Google Maps" width="20" height="20" style={{objectFit:'contain'}} />
                   Google Maps

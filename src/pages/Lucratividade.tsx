@@ -43,7 +43,16 @@ async function fatorDaFicha(uid: string, ids: string[], mao: any): Promise<Recor
   return out;
 }
 
-/** (27/10) Lucratividade é do PRO: a conta grátis vê o que a tela mostra e o "Conhecer o PRO" */
+const CSS_AMOSTRA = `
+  .lu-amostra { filter: blur(6px); opacity: .7; pointer-events: none; user-select: none; max-height: calc(100dvh - 140px); overflow: hidden; }
+  .lu-gratis { position: relative; }
+  .lu-convite { position: absolute; left: 0; right: 0; top: 140px; z-index: 2; width: calc(100% - 40px); max-width: 380px; margin: 0 auto; padding: 26px 22px; box-sizing: border-box; border-radius: 20px; background: var(--ui-branco); box-shadow: 0 12px 40px rgba(45, 31, 38, .18); text-align: center; }
+  .lu-convite-ic { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 50%; background: var(--primary-light); color: var(--ui-rosa-escuro); }
+  .lu-convite b { display: block; font-size: 18px; font-weight: 700; color: var(--ui-texto); }
+  .lu-convite p { margin: 8px 0 16px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+`;
+
+/** (27/10) Lucratividade é do PRO: a conta grátis vê o convite em cima de um relatório de exemplo borrado */
 export default function Lucratividade() {
   const { isPro, loading } = usePlano();
   const navigate = useNavigate();
@@ -52,9 +61,31 @@ export default function Lucratividade() {
   return (
     <>
       <AppPageHeader title="Lucratividade" subtitle="Onde está o seu lucro de verdade" onBack={() => navigate("/financeiro")} />
-      <TelaVazia icone={<ChartLineUp size={30} weight="duotone" />} titulo="Lucratividade é do PRO"
-        texto="Veja quanto sobra de cada produto e do mês, já tirando ingredientes, taxas da maquininha e despesas."
-        acao={<Botao tamanho="m" onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>} />
+      <EstiloFinanceiro />
+      {/* (27/10) atrás do convite, um relatório de EXEMPLO borrado (números inventados, nada da conta dela): mostra o que o PRO entrega */}
+      <div className="lu-gratis">
+      <div className="lu lu-amostra" aria-hidden="true">
+        <div className="lu-conta">
+          {([["Vendido", "R$ 4.850,00", "n", "18 entregues"], ["Ingredientes", "R$ 1.620,00", "s", "pela ficha técnica"], ["Taxas", "R$ 96,00", "s", "cobradas por pedido"], ["Despesas", "R$ 980,00", "s", "sem os ingredientes"]] as const).map(([t, v, c, i]) => (
+            <div key={t} className="lu-k"><span className={`lu-ki ${c}`}>{c === "n" ? <ShoppingBagOpen size={15} weight="bold" /> : <Minus size={15} weight="bold" />}</span><small>{t}</small><b className={c === "s" ? "s" : ""}>{v}</b><i>{i}</i></div>
+          ))}
+          <div className="lu-k lu-k--lucro"><span className="lu-ki l"><Equals size={15} weight="bold" /></span><small>Lucro do mês</small><b>R$ 2.154,00</b>
+            <div className="lu-margem"><div className="lu-bar"><i style={{ width: "44%" }} /></div><span>margem de <b>44%</b></span></div></div>
+        </div>
+        <section className="lu-card"><p className="lu-ct">Lucro por produto <small>Pela ficha técnica, sem despesas</small></p>
+          <ul className="lu-pg">{[["Bolo de brigadeiro", "6 vendidos · R$ 720,00", "R$ 412,00", 57], ["Caixa de doces", "9 vendidos · R$ 405,00", "R$ 230,00", 57], ["Torta de morango", "3 vendidos · R$ 390,00", "R$ 168,00", 43]].map(([n, q, l, m]) => (
+            <li key={n as string} className="lu-pc"><span className="lu-pc-foto"><ShoppingBagOpen size={28} /></span><span className="lu-pc-tx"><b className="lu-pc-nm">{n}</b><small>{q}</small><span className="lu-pc-l">Lucro</span><strong>{l}</strong><span className="lu-pc-m"><span className="lu-p-bar"><i style={{ width: `${m}%` }} /></span>margem {m}%</span></span></li>
+          ))}</ul>
+        </section>
+      </div>
+      <div className="lu-convite" role="region" aria-label="Lucratividade é do PRO">
+        <span className="lu-convite-ic" aria-hidden="true"><ChartLineUp size={28} weight="duotone" /></span>
+        <b>Seu lucro de verdade está aqui</b>
+        <p>Quanto sobra de cada produto e do mês, já tirando ingredientes, taxas e despesas.</p>
+        <Botao tamanho="m" onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
+      </div>
+      </div>
+      <style>{CSS}{CSS_AMOSTRA}</style>
     </>
   );
 }
