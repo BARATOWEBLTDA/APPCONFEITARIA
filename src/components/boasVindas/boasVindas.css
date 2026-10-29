@@ -598,3 +598,9 @@
 }
 @media (prefers-reduced-motion: reduce) { .bv-doo-m, .bv-doo-topo, .bv-doo-pdf, .bv-ca-lista.ca-lista li, .bv-ca-lista .ca-v { animation: none; } }
 @media (max-width: 380px) { .bv-ca-lista.ca-lista { padding: 2px 12px; } .bv-ca-lista.ca-lista li { gap: 10px; font-size: 13.5px; } .bv-ca-lista .ca-ic { width: 32px; height: 32px; } }
+/* (29/10 · 4.75) cardápio e avisos no celular: o escuro de trás do título desce até o fim da tela, e o fundo do botão
+   some (antes aparecia uma faixa marrom mais escura embaixo do botão) */
+@media (max-width: 899px) and (min-height: 521px) {
+  .bv-tela-1 .bv-texto::after, .bv-tela-6 .bv-texto::after { content: ""; position: absolute; z-index: -1; left: -20px; right: -20px; top: 100%; height: 400px; background: var(--chocolate-escuro); }
+  .bv-tela-1 .bv-base, .bv-tela-6 .bv-base { background: none; }
+}
