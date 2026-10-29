@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
-import { ArrowLeft, ArrowSquareOut, CalendarBlank, CheckCircle, Check, CaretRight, Receipt, Wallet } from '@phosphor-icons/react'
+import { ArrowLeft, ArrowRight, ArrowSquareOut, CalendarBlank, CheckCircle, Check, CaretRight, DownloadSimple, ImageSquare, Receipt, Wallet } from '@phosphor-icons/react'
 import { Botao, BotaoIcone } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { LinhaCompacta } from '@/components/pedidos/CartaoPedido'
@@ -13,6 +13,8 @@ import { usePushSubscription } from '@/hooks/usePushSubscription'
 import { precisaInstalarNoIphone } from '@/lib/notifications'
 import '@/components/financeiro/folha.css'
 import { CSS_A_RECEBER } from '@/components/financeiro/aReceberCss'
+import { ListaRecursos } from '@/components/termos/ContaAtiva'
+import '@/components/termos/termos.css'
 import './boasVindas.css'
 
 /**
@@ -29,15 +31,16 @@ import './boasVindas.css'
 
 type Props = {
   isOpen: boolean
-  /** recebe o número da tela em que a pessoa estava (0 a 5) e se tocou em "Configurar minha confeitaria" */
+  /** recebe o número da tela em que a pessoa estava (0 a 7) e se tocou em "Configurar minha confeitaria" */
   onClose: (telaAlcancada: number, configurar: boolean) => void
   /** primeiro nome de quem acabou de criar a conta (opcional) */
   nome?: string
 }
 
-const TOTAL = 7
+const TOTAL = 8 // (29/10 · 4.74) entrou a tela da Doo IA (5); avisos virou a 6 e o fim a 7
 /** (23/10) a tela que pede pra ligar os avisos do celular (pedido novo e novidades chegam na hora) */
-const AVISOS = 5
+const DOO = 5
+const AVISOS = 6
 
 /**
  * Pra navegar logo depois que as boas-vindas fecham: elas acabaram de pedir um "voltar" pra tirar a entrada
@@ -217,9 +220,10 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
         <div className="bv-lado">
           <div className="bv-texto" key={`t${tela}`} aria-live="polite">
             {tela === 0 && (<>
-              {/* o nome e o título são uma frase só: "Juliana, que bom ter você aqui" */}
-              {nomeOk ? <><p className="bv-oi">{nomeOk},</p><h1 className="bv-h">que bom ter <em>você aqui</em></h1></> : <h1 className="bv-h">Que bom ter <em>você aqui</em></h1>}
-              <p className="bv-p">A partir de agora, seus pedidos, seu cardápio e seu dinheiro ficam em um lugar só. Vem ver como funciona, leva 1 minuto.</p>
+              {/* (29/10 · 4.74) a "Conta ativa" virou a 1ª tela (antes eram duas boas-vindas seguidas) */}
+              <h1 className="bv-h">{nomeOk ? <>Tudo pronto, <em>{nomeOk}!</em></> : <>Tudo <em>pronto!</em></>}</h1>
+              <p className="bv-p bv-p--ca">Isso tudo já é seu:</p>
+              <ListaRecursos className="bv-ca-lista" />
             </>)}
             {tela === 1 && (<>
               <p className="bv-sobre">Seus produtos em destaque</p>
@@ -241,6 +245,11 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
               <h1 className="bv-h">Descubra quanto custa <em>produzir</em></h1>
               <p className="bv-p">Monte a ficha técnica e veja quanto sobra em cada venda.</p>
             </>)}
+            {tela === DOO && (<>
+              <p className="bv-sobre">Sua assistente de confeitaria</p>
+              <h1 className="bv-h">A Doo IA cria até o <em>seu topo de bolo</em></h1>
+              <p className="bv-p">Peça do seu jeito: ela calcula preço, monta receita e faz o topo pronto pra imprimir.</p>
+            </>)}
             {tela === AVISOS && (<>
               <p className="bv-sobre">Não perca nenhum pedido</p>
               <h1 className="bv-h">Ative os <em>avisos</em> no seu celular</h1>
@@ -252,7 +261,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
                 : push.permission === 'denied' ? 'Os avisos estão bloqueados neste navegador. Você pode liberar depois, em Configurações.'
                 : 'Quando um cliente fizer um pedido pelo cardápio, o aviso chega na hora, mesmo com o app fechado. Novidades e dicas do Doonly também.'}</p>
             </>)}
-            {tela === 6 && (<>
+            {ultima && (<>
               <p className="bv-sobre">Agora é com você</p>
               {/* fecha com o nome, como abriu (sem nome válido, fica só "Sua confeitaria começa aqui") */}
               <h1 className="bv-h">{nomeOk ? <>{nomeOk}, sua confeitaria <em>começa aqui</em></> : <>Sua confeitaria <em>começa aqui</em></>}</h1>
@@ -266,13 +275,14 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
         </div>
 
         <div className="bv-demo" key={`d${tela}`}>
-          {tela === 0 && <DemoMarca comMarca={!nomeOk} />}
+          {tela === 0 && <DemoContaAtiva />}
           {tela === 1 && <DemoCardapio />}
           {tela === 2 && <DemoPedidos />}
           {tela === 3 && <DemoDinheiro />}
           {tela === 4 && <DemoLucro />}
+          {tela === DOO && <DemoDoo />}
           {tela === AVISOS && <DemoAviso />}
-          {tela === 6 && <DemoMarca pose="comemorando" />}
+          {ultima && <DemoMarca pose="comemorando" />}
         </div>
         <span className="bv-esp" aria-hidden="true" />
       </div>
@@ -283,11 +293,104 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
 /* ───────── 1 e 6 · o mascote (acenando na chegada, comemorando no fim) ───────── */
 /* Na primeira tela, o nome da pessoa abre a frase do título (09/10 · 3.77). Nome vazio, de teste, brincadeira ou
    ofensivo não aparece (lib/nomeApresentavel): aí a marca do Doonly volta embaixo do mascote. */
+/** (29/10 · 4.74) 1ª tela: o mascote acenando e o selo "Conta ativa" */
+function DemoContaAtiva() {
+  return (
+    <div className="bv-marca bv-ca">
+      <Mascote pose="acenando" className="bv-marca-masc" />
+      <span className="ca-tag bv-ca-tag"><i aria-hidden="true" />Conta ativa</span>
+    </div>
+  )
+}
+
 function DemoMarca({ comMarca = false, pose = 'acenando' }: { comMarca?: boolean; pose?: 'acenando' | 'comemorando' }) {
   return (
     <div className="bv-marca">
       <Mascote pose={pose} className="bv-marca-masc" />
       {comMarca && <NomeDoonly cor="branco" className="bv-marca-nome" />}
+    </div>
+  )
+}
+
+/* ───────── 5 · Doo IA (29/10 · 4.74): a conversa de verdade da Doo, numa caixa de tamanho fixo que encolhe inteira.
+   A confeiteira digita o pedido do topo, a Doo escreve, cria a imagem e responde com o topo e o PDF pra imprimir.
+   Roda uma vez e é só pra ver (nada é clicável). ───────── */
+const PEDIDO_DOO = 'Faz um topo de bolo de Natal com o nome Família Rocha'
+const TOPO_DOO = '/tutorial/boas-vindas/topo-natal.webp'
+const DOO_LARGURA = 400, DOO_ALTURA = 640
+function DemoDoo() {
+  const [digitado, setDigitado] = useState(0)
+  const [passo, setPasso] = useState<'digitando' | 'enviado' | 'escrevendo' | 'criando' | 'pronto'>('digitando')
+  const caixa = useRef<HTMLDivElement>(null)
+  const [escala, setEscala] = useState(1)
+  useLayoutEffect(() => {
+    const el = caixa.current
+    if (!el) return
+    const medir = () => { const w = el.clientWidth, h = el.clientHeight; if (w && h) setEscala(Math.min(1.15, w / DOO_LARGURA, h / DOO_ALTURA)) }
+    medir()
+    const obs = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(medir) : null
+    obs?.observe(el)
+    return () => obs?.disconnect()
+  }, [])
+  useEffect(() => {
+    const ts: number[] = []
+    const em = (ms: number, f: () => void) => ts.push(window.setTimeout(f, ms))
+    for (let k = 1; k <= PEDIDO_DOO.length; k++) em(600 + k * 38, () => setDigitado(k))
+    const fim = 600 + PEDIDO_DOO.length * 38
+    em(fim + 350, () => { setPasso('enviado'); tocarSom('click'); vibrarLeve() })
+    em(fim + 900, () => setPasso('escrevendo'))
+    em(fim + 1900, () => setPasso('criando'))
+    em(fim + 4200, () => { setPasso('pronto'); tocarSom('sucesso'); vibrarLeve() })
+    return () => ts.forEach(t => clearTimeout(t))
+  }, [])
+  const enviado = passo !== 'digitando'
+  return (
+    <div className="bv-doo bv-cai" ref={caixa} aria-hidden="true">
+      <div className="bv-doo-palco" style={{ width: DOO_LARGURA, height: DOO_ALTURA, transform: `translateX(-50%) scale(${escala})` }}>
+        <div className="bv-doo-hd">
+          <span className="bv-doo-av"><img src="/Sistema/doo.png" alt="" /><i /></span>
+          <div className="bv-doo-ht">
+            <b>Doo IA <em>PRO</em></b>
+            <small className={passo === 'escrevendo' || passo === 'criando' ? 'esc' : ''}><i />{passo === 'escrevendo' ? 'Escrevendo…' : passo === 'criando' ? 'Criando a imagem…' : 'Online · responde na hora'}</small>
+          </div>
+        </div>
+        <div className="bv-doo-body">
+          <p className="bv-doo-dia">Hoje</p>
+          {enviado && <div className="bv-doo-m eu"><div className="bv-doo-bd">{PEDIDO_DOO}</div></div>}
+          {(passo === 'escrevendo' || passo === 'criando') && (
+            <div className="bv-doo-m doo">
+              <img src="/Sistema/doo.png" alt="" className="bv-doo-mav" />
+              <div className="bv-doo-mc">
+                <div className="bv-doo-bd bv-doo-dig">{passo === 'criando' ? <><span className="bv-doo-spin" />Criando sua imagem…</> : <><i /><i /><i /></>}</div>
+                <p className="bv-doo-digt">{passo === 'criando' ? 'Leva uns segundinhos' : 'A Doo está escrevendo…'}</p>
+              </div>
+            </div>
+          )}
+          {passo === 'pronto' && (
+            <div className="bv-doo-m doo bv-doo-resp">
+              <img src="/Sistema/doo.png" alt="" className="bv-doo-mav" />
+              <div className="bv-doo-mc">
+                <div className="bv-doo-bd">
+                  <span>Prontinho! Seu topo de Natal com o nome <b>Família Rocha</b>:</span>
+                  <img src={TOPO_DOO} alt="" className="bv-doo-topo" />
+                  <span className="bv-doo-pdf">
+                    <span className="bv-doo-pdf-ic">PDF</span>
+                    <span className="bv-doo-pdf-tx"><b>topo-natal-familia-rocha.pdf</b><small>A4 · pronto pra imprimir</small></span>
+                    <DownloadSimple size={20} weight="bold" />
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="bv-doo-in">
+          <span className="bv-doo-inb">
+            <span className="bv-doo-ib"><ImageSquare size={20} weight="bold" /></span>
+            <span className={`bv-doo-txt${!enviado && digitado ? ' on' : ''}`}>{!enviado ? (digitado ? PEDIDO_DOO.slice(Math.max(0, digitado - 30), digitado) : 'Pergunte qualquer coisa…') : 'Pergunte qualquer coisa…'}{!enviado && digitado > 0 && <i className="bv-rec-cursor" />}</span>
+            <span className={`bv-doo-snd${!enviado && digitado ? ' on' : ''}${passo === 'enviado' ? ' toque' : ''}`}><ArrowRight size={20} weight="bold" /></span>
+          </span>
+        </div>
+      </div>
     </div>
   )
 }

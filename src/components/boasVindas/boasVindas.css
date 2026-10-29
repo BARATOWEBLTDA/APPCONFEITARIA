@@ -409,8 +409,8 @@
 @keyframes bvAvsDesce { from { transform: translateY(-28px); } }
 /* o celular cresce com a tela, como o do cardápio */
 @media (max-width: 1099px), (max-height: 599px) {
-  .bv-tela-5 .bv-cel { width: clamp(260px, calc((100dvh - 390px) * .56), 320px); max-width: 84vw; }
-  .bv-tela-5 .bv-cel-tela { height: clamp(220px, calc(100dvh - 390px), 600px); }
+  .bv-tela-6 .bv-cel { width: clamp(260px, calc((100dvh - 390px) * .56), 320px); max-width: 84vw; }
+  .bv-tela-6 .bv-cel-tela { height: clamp(220px, calc(100dvh - 390px), 600px); }
 }
 @media (prefers-reduced-motion: reduce) { .bv-lock .bv-notif-cartao { animation: none; } }
 
@@ -504,22 +504,97 @@
 /* (29/10 · 4.72) avisos no celular: o mesmo jeito do cardápio — celular grande em cima e só o título embaixo, sobre a
    parte de baixo desfocada e escura. O texto só aparece quando avisa algo (ativado, iPhone ou bloqueado). */
 @media (max-width: 899px) and (min-height: 521px) {
-  .bv-tela-5 .bv-corpo::before, .bv-tela-5 .bv-esp { flex: 0 0 0; }
-  .bv-tela-5 .bv-demo { order: 2; margin-top: 4px; }
-  .bv-tela-5 .bv-texto { order: 3; position: relative; z-index: 3; margin-top: -150px; padding: 94px 0 2px; }
-  .bv-tela-5 .bv-texto::before { content: ""; position: absolute; z-index: -1; inset: 0 -20px -24px; background: linear-gradient(to bottom, rgba(34, 19, 14, .15) 0%, rgba(34, 19, 14, .9) 32%, var(--chocolate-escuro) 52%); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 26%); mask-image: linear-gradient(to bottom, transparent 0%, #000 26%); }
-  .bv-tela-5 .bv-sobre, .bv-tela-5 .bv-p:not(.bv-p--aviso) { display: none; }
-  .bv-tela-5 .bv-p--aviso { margin-top: 6px; font-size: 13.5px; }
-  .bv-tela-5 .bv-cel { width: clamp(260px, calc((100dvh - 215px) * .48), 350px); max-width: 86vw; }
-  .bv-tela-5 .bv-cel-tela { height: clamp(300px, calc(100dvh - 215px), 740px); }
-  .bv-tela-5 .bv-lock { padding-top: 34px; }
-  .bv-tela-5 .bv-lock .bv-notif-hora b { font-size: 54px; }
+  .bv-tela-6 .bv-corpo::before, .bv-tela-6 .bv-esp { flex: 0 0 0; }
+  .bv-tela-6 .bv-demo { order: 2; margin-top: 4px; }
+  .bv-tela-6 .bv-texto { order: 3; position: relative; z-index: 3; margin-top: -150px; padding: 94px 0 2px; }
+  .bv-tela-6 .bv-texto::before { content: ""; position: absolute; z-index: -1; inset: 0 -20px -24px; background: linear-gradient(to bottom, rgba(34, 19, 14, .15) 0%, rgba(34, 19, 14, .9) 32%, var(--chocolate-escuro) 52%); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 26%); mask-image: linear-gradient(to bottom, transparent 0%, #000 26%); }
+  .bv-tela-6 .bv-sobre, .bv-tela-6 .bv-p:not(.bv-p--aviso) { display: none; }
+  .bv-tela-6 .bv-p--aviso { margin-top: 6px; font-size: 13.5px; }
+  .bv-tela-6 .bv-cel { width: clamp(260px, calc((100dvh - 215px) * .48), 350px); max-width: 86vw; }
+  .bv-tela-6 .bv-cel-tela { height: clamp(300px, calc(100dvh - 215px), 740px); }
+  .bv-tela-6 .bv-lock { padding-top: 34px; }
+  .bv-tela-6 .bv-lock .bv-notif-hora b { font-size: 54px; }
 }
 /* (29/10 · 4.73) resultado do "Ativar avisos" na própria tela */
 .bv-p.bv-p--ok { color: #86EFAC; font-weight: 600; }
 .bv-p.bv-p--erro { color: #FCD34D; }
 @media (max-width: 899px) and (min-height: 521px) {
   /* com a frase do resultado embaixo do título, o celular encolhe um pouco pra ela caber em cima do botão */
-  .bv-tela-5:has(.bv-p--aviso) .bv-cel { width: clamp(240px, calc((100dvh - 290px) * .48), 350px); }
-  .bv-tela-5:has(.bv-p--aviso) .bv-cel-tela { height: clamp(260px, calc(100dvh - 290px), 680px); }
+  .bv-tela-6:has(.bv-p--aviso) .bv-cel { width: clamp(240px, calc((100dvh - 290px) * .48), 350px); }
+  .bv-tela-6:has(.bv-p--aviso) .bv-cel-tela { height: clamp(260px, calc(100dvh - 290px), 680px); }
 }
+
+/* (29/10 · 4.74) 1ª tela = a "Conta ativa": mascote acenando, selo, "Tudo pronto" e a lista do que já é dela */
+.bv-ca { gap: 12px; }
+.bv-tela-0 .bv-marca-masc { width: 136px; }
+.bv-ca-tag { padding: 6px 12px; border-radius: 99px; background: rgba(255, 255, 255, .1); color: var(--ui-branco); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); }
+.bv-tela-0 .bv-corpo--marca .bv-texto { margin-top: 14px; }
+.bv-p--ca { margin-top: 4px; }
+.bv-ca-lista.ca-lista { margin: 14px 0 0; padding: 4px 16px; border-radius: var(--ui-raio-cartao); background: var(--ui-branco); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .3); }
+.bv-ca-lista.ca-lista li { min-height: 52px; font-size: 14.5px; animation: bvCaItem .4s ease both; animation-delay: calc(.35s + var(--i, 0) * .12s); }
+.bv-ca-lista .ca-v { animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1) both; animation-delay: calc(.6s + var(--i, 0) * .12s); }
+@keyframes bvCaItem { from { opacity: 0; transform: translateY(8px); } }
+@media (max-height: 720px) { .bv-tela-0 .bv-marca-masc { width: 104px; } .bv-ca-lista.ca-lista li { min-height: 46px; } }
+@media (min-width: 900px) and (min-height: 521px) {
+  .bv-tela-0 .bv-marca-masc { width: 230px; }
+  .bv-ca-lista.ca-lista { max-width: 420px; }
+}
+
+/* (29/10 · 4.74) 5 · Doo IA: a conversa do app (cabeçalho, balões e o campo) numa caixa de 400 × 640 que encolhe inteira */
+.bv-doo { position: relative; width: 100%; max-width: 420px; min-height: 280px; }
+.bv-doo-palco { position: absolute; left: 50%; top: 0; transform-origin: top center; display: flex; flex-direction: column; overflow: hidden; border-radius: 22px; background: #FAF7F8; color: var(--ui-texto); font-family: var(--font-base); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); pointer-events: none; }
+.bv-doo-hd { flex: none; display: flex; align-items: center; gap: 10px; padding: 14px; background: radial-gradient(130% 160% at 0 0, #5A3626, var(--ui-vinho-escuro) 70%); color: var(--ui-branco); }
+.bv-doo-av { position: relative; flex: none; width: 44px; height: 44px; border: 2px solid rgba(255, 255, 255, .35); border-radius: 14px; background: #FCE7F3; }
+.bv-doo-av img { display: block; width: 100%; height: 100%; border-radius: 12px; object-fit: cover; object-position: top center; }
+.bv-doo-av i { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border: 2.5px solid var(--ui-texto); border-radius: 50%; background: #22C55E; }
+.bv-doo-ht { flex: 1; min-width: 0; }
+.bv-doo-ht b { display: flex; align-items: center; gap: 7px; font-size: 17px; font-weight: 700; }
+.bv-doo-ht em { padding: 2px 7px; border-radius: 6px; background: linear-gradient(90deg, #F9A8D4, #C4B5FD); color: var(--ui-texto); font-style: normal; font-size: 12px; font-weight: 700; }
+.bv-doo-ht small { display: flex; align-items: center; gap: 6px; margin-top: 2px; font-size: 12.5px; color: #BBF7D0; }
+.bv-doo-ht small i { width: 7px; height: 7px; border-radius: 50%; background: #22C55E; box-shadow: 0 0 0 3px rgba(34, 197, 94, .25); }
+.bv-doo-ht small.esc { color: #FBCFE8; } .bv-doo-ht small.esc i { background: #F472B6; box-shadow: 0 0 0 3px rgba(244, 114, 182, .3); }
+/* as mensagens ficam presas embaixo, como num chat (a mais nova sempre à vista) */
+.bv-doo-body { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; padding: 14px 14px 8px; }
+.bv-doo-dia { align-self: center; margin: 0 0 auto; padding: 3px 10px; border-radius: 99px; background: #F0EBED; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
+.bv-doo-m { display: flex; align-items: flex-end; gap: 8px; animation: bvPdItem .35s ease both; }
+.bv-doo-m.eu { justify-content: flex-end; }
+.bv-doo-mav { flex: none; width: 28px; height: 28px; border-radius: 9px; object-fit: cover; object-position: top center; background: #FCE7F3; }
+.bv-doo-mc { min-width: 0; max-width: 84%; display: flex; flex-direction: column; }
+.bv-doo-bd { padding: 10px 13px; font-size: 14px; line-height: 1.5; }
+.bv-doo-m.eu .bv-doo-bd { max-width: 80%; border-radius: 18px 18px 4px 18px; background: var(--ui-vinho-escuro); color: var(--ui-branco); }
+.bv-doo-m.doo .bv-doo-bd { border: 1px solid #F0EBED; border-radius: 18px 18px 18px 4px; background: var(--ui-branco); box-shadow: 0 1px 3px rgba(0, 0, 0, .04); }
+.bv-doo-bd b { font-weight: 700; }
+.bv-doo-dig { display: flex; align-items: center; gap: 6px; padding: 14px 16px; font-size: 13px; color: var(--ui-texto-2); }
+.bv-doo-dig i { width: 7px; height: 7px; border-radius: 50%; background: #D9A5B9; animation: bvDooDig 1.2s ease-in-out infinite; }
+.bv-doo-dig i:nth-child(2) { animation-delay: .2s; } .bv-doo-dig i:nth-child(3) { animation-delay: .4s; }
+@keyframes bvDooDig { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+.bv-doo-spin { width: 16px; height: 16px; border: 2px solid #F3D2DE; border-top-color: var(--ui-rosa); border-radius: 50%; animation: bvDooGira .8s linear infinite; }
+@keyframes bvDooGira { to { transform: rotate(360deg); } }
+.bv-doo-digt { margin: 5px 0 0 2px; font-size: 12.5px; color: var(--ui-texto-3); }
+.bv-doo-resp .bv-doo-mc { max-width: 88%; }
+.bv-doo-topo { display: block; width: 168px; margin: 8px 0; border: 1px solid #F0EBED; border-radius: 10px; background: var(--ui-branco); animation: bvDooTopo .6s ease both .15s; }
+@keyframes bvDooTopo { from { opacity: 0; filter: blur(10px); transform: scale(.97); } }
+.bv-doo-pdf { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--ui-borda); border-radius: 12px; background: #FAF7F8; color: var(--ui-texto-2); animation: bvPdItem .35s ease both .5s; }
+.bv-doo-pdf-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 40px; border-radius: 6px; background: #E5484D; color: var(--ui-branco); font-size: 11px; font-weight: 700; letter-spacing: .02em; }
+.bv-doo-pdf-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.bv-doo-pdf-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 600; color: var(--ui-texto); }
+.bv-doo-pdf-tx small { font-size: 11.5px; color: var(--ui-texto-3); }
+.bv-doo-in { flex: none; padding: 8px 12px 12px; }
+.bv-doo-inb { display: flex; align-items: center; gap: 8px; padding: 4px; border: 1.5px solid var(--ui-borda-campo); border-radius: 999px; background: var(--ui-branco); box-shadow: 0 4px 14px rgba(44, 18, 25, .06); }
+.bv-doo-ib { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light, #FCE7F3); color: #993556; }
+.bv-doo-txt { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14.5px; color: #B5AAB0; }
+.bv-doo-txt.on { color: var(--ui-texto); text-overflow: clip; } /* enquanto digita, mostra só o fim do texto */
+.bv-doo-txt .bv-rec-cursor { height: 18px; vertical-align: -3px; }
+.bv-doo-snd { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: #F3D2DE; color: var(--ui-branco); transition: background-color .2s ease, transform .12s ease; }
+.bv-doo-snd.on { background: var(--ui-rosa); box-shadow: 0 4px 12px rgba(232, 90, 140, .35); }
+.bv-doo-snd.toque { transform: scale(.88); }
+@media (max-width: 899px) and (min-height: 521px) {
+  .bv-tela-5 .bv-corpo::before, .bv-tela-5 .bv-esp { flex: 0 0 0; }
+  .bv-tela-5 .bv-demo { flex: 1 1 auto; margin-top: 14px; }
+  .bv-tela-5 .bv-p { display: none; }
+}
+@media (min-width: 900px), (min-width: 640px) and (max-height: 520px) {
+  .bv-tela-5 .bv-doo { height: min(640px, calc(100dvh - 150px)); max-width: 440px; }
+}
+@media (prefers-reduced-motion: reduce) { .bv-doo-m, .bv-doo-topo, .bv-doo-pdf, .bv-ca-lista.ca-lista li, .bv-ca-lista .ca-v { animation: none; } }
+@media (max-width: 380px) { .bv-ca-lista.ca-lista { padding: 2px 12px; } .bv-ca-lista.ca-lista li { gap: 10px; font-size: 13.5px; } .bv-ca-lista .ca-ic { width: 32px; height: 32px; } }

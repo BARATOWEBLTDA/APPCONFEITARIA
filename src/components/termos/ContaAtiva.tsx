@@ -1,3 +1,4 @@
+import type React from 'react'
 import { useRef } from 'react'
 import { Bell, Calculator, CalendarDots, Check, ListBullets, Sparkle, Wallet } from '@phosphor-icons/react'
 import { Botao } from '@/components/base'
@@ -21,6 +22,18 @@ const RECURSOS = [
 ]
 // confete parado no cabeçalho: [left %, top px, cor, giro]
 const CONFETE: [number, number, string, number][] = [[44, 12, '#FCD34D', 25], [70, 20, '#FFFFFF', -30], [90, 9, '#86EFAC', 50], [94, 72, '#FCD34D', -15], [62, 98, '#93C5FD', 35]]
+
+/** (29/10 · 4.74) A lista do que já é dela (usada na 1ª tela do tutorial, que agora é a "Conta ativa") */
+export function ListaRecursos({ className = '' }: { className?: string }) {
+  return (
+    <ul className={`ca-lista${className ? ' ' + className : ''}`}>
+      {RECURSOS.map(({ Ic, t }, i) => (
+        <li key={t} style={{ '--i': i } as React.CSSProperties}><span className="ca-ic"><Ic size={20} aria-hidden="true" /></span>{t}<Check size={16} weight="bold" className="ca-v" aria-hidden="true" /></li>
+      ))}
+      <li className="ca-mais" style={{ '--i': RECURSOS.length } as React.CSSProperties}><span className="ca-ic"><Sparkle size={18} weight="fill" aria-hidden="true" /></span>+ 15 funcionalidades incríveis</li>
+    </ul>
+  )
+}
 
 export function ContaAtiva({ nome, aoContinuar }: { nome?: string; aoContinuar: () => void }) {
   const primeiro = nomeApresentavel(nome) // "bruno" vira "Bruno"; nome que não parece nome fica de fora

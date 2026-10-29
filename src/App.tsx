@@ -12,7 +12,6 @@ import { ArrowClockwise } from "@phosphor-icons/react";
 import { NotificationProvider } from "@/context/NotificationContext";
 import BoasVindas, { depoisDoVoltar } from "@/components/boasVindas/BoasVindas";
 import { AceiteTermos } from "@/components/termos/AceiteTermos";
-import { ContaAtiva } from "@/components/termos/ContaAtiva";
 import { TERMOS_VERSAO } from "@/lib/termos";
 import Auth from "@/pages/Auth";
 import Layout from "@/components/Layout";
@@ -256,8 +255,6 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   // (4.26) Aceite dos termos: "conferindo" até ler o banco; "pedir" mostra a tela; "ok" segue.
   // Sem a coluna no banco (SQL 4.26 não rodado) ou sem internet, não trava ninguém: segue como "ok".
   const [termos, setTermos] = useState<"conferindo" | "pedir" | "ok">("conferindo");
-  // (4.26) Conta ativa: a confirmação aparece só pra quem acabou de criar a conta (antes das boas-vindas)
-  const [contaAtivaPendente, setContaAtivaPendente] = useState<boolean>(() => showFirstTutorial);
 
   // Entrou pelo Google e ainda falta o nome da confeitaria ou o WhatsApp: tela "Complete seu cadastro" (02/10)
   const [completar, setCompletar] = useState<null | { nome: string; loja: string; telefone: string }>(null);
@@ -433,13 +430,11 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
           localStorage.removeItem("doonly_tutorial_auto_aberto");
           localStorage.removeItem("doonly_tour_inicio_visto");
         } catch { /* sem armazenamento: abre do mesmo jeito */ }
-        setContaAtivaPendente(false);
         setShowFirstTutorial(true);
       }
     }} />;
   }
 
-  const primeiroNome = String(session.user?.user_metadata?.nome || session.user?.user_metadata?.full_name || session.user?.user_metadata?.name || "").trim().split(/\s+/)[0];
 
   // (4.26) aceite dos termos: por cima do app (quem já usava) ou antes das boas-vindas (conta nova)
   if (termos === "pedir") {
@@ -449,9 +444,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   if (showFirstTutorial && termos === "conferindo") {
     return <div style={{ position: "fixed", inset: 0, background: "var(--chocolate-escuro, #22130E)" }} aria-busy="true" />;
   }
-  if (showFirstTutorial && contaAtivaPendente) {
-    return <>{children}<ContaAtiva nome={primeiroNome} aoContinuar={() => setContaAtivaPendente(false)} /></>;
-  }
+  // (29/10 · 4.74) a "Conta ativa" agora é a 1ª tela do tutorial (antes eram duas boas-vindas seguidas)
 
   if (showFirstTutorial) {
     return (
