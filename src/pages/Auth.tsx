@@ -515,7 +515,8 @@ export default function Auth() {
         <p className="auth-marca-frase">{showCadastro ? 'Vamos começar!' : 'Seus pedidos te esperam'}</p>
         <p className="auth-marca-sub">{showCadastro ? 'Leva menos de 1 minuto.' : 'Pedidos, agenda e financeiro.'}</p>
         </div>
-        {/* (29/10 · 4.78) vitrine: leva pra página de vendas (abre em outra aba, o login continua aqui) */}
+        {/* (29/10 · 4.78) vitrine: leva pra página de vendas (abre em outra aba, o login continua aqui). (4.81) Só no login: no cadastro ela já decidiu */}
+{!showCadastro && (
         <a className="auth-vit" href={SITE_VENDAS} target="_blank" rel="noopener noreferrer">
           <span className="auth-vit-fotos" aria-hidden="true">
             <img src="/login/cardapio.webp" alt="" /><img src="/login/pedidos.webp" alt="" /><img src="/login/receber.webp" alt="" />
@@ -523,6 +524,7 @@ export default function Auth() {
           <span className="auth-vit-tx"><b>Conheça tudo que o Doonly faz</b><small>Cardápio, pedidos e financeiro</small></span>
           <span className="auth-vit-seta" aria-hidden="true"><ArrowRight size={18} weight="bold" /></span>
         </a>
+        )}
         </div>
       </div>
 
@@ -864,6 +866,7 @@ export default function Auth() {
       )}
 
       {/* (29/10 · 4.79) celular e tablet em pé: o atalho pra página de vendas fica embaixo do cartão (no computador está no lado rosa) */}
+{!showCadastro && (
       <a className="auth-vit2" href={SITE_VENDAS} target="_blank" rel="noopener noreferrer">
         <span className="auth-vit-fotos" aria-hidden="true">
           <img src="/login/cardapio.webp" alt="" /><img src="/login/pedidos.webp" alt="" /><img src="/login/receber.webp" alt="" />
@@ -871,6 +874,7 @@ export default function Auth() {
         <span className="auth-vit-tx"><b>Conheça o Doonly</b><small>Cardápio, pedidos e financeiro</small></span>
         <span className="auth-vit-seta" aria-hidden="true"><ArrowRight size={16} weight="bold" /></span>
       </a>
+      )}
 
       </div>
 
@@ -1164,7 +1168,8 @@ export default function Auth() {
           /* o conteúdo fica no centro da parte VISÍVEL do painel (no cadastro o cartão é mais alto que a tela) */
           .auth-marca-in { position: sticky; top: 0; height: min(100%, calc(100vh - 48px)); height: min(100%, calc(100dvh - 48px)); display: flex; flex-direction: column; align-items: center; justify-content: center; }
           .auth-marca-masc { display: block; width: 170px; height: auto; filter: drop-shadow(0 12px 16px rgba(80,10,40,.3)); }
-          .auth-marca-cen { display: flex; flex-direction: column; align-items: center; margin-top: -70px; }
+          .auth-marca-cen { display: flex; flex-direction: column; align-items: center; }
+          .auth-marca-in:has(.auth-vit) .auth-marca-cen { margin-top: -70px; }
           /* (29/10 · 4.78) vitrine no pé do lado rosa: vidro, 3 telas do app em leque, texto e seta */
           .auth-vit { position: absolute; left: -12px; right: -12px; bottom: 28px; display: flex; align-items: center; gap: 12px; padding: 12px 14px 12px 10px;
             border-radius: 20px; background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.28), 0 10px 30px -12px rgba(80,10,40,.45);
