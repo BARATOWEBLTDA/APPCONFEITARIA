@@ -677,10 +677,25 @@ export default function Inicio() {
   const entregasDoSeuDia = [...entregasDeHoje, ...proximasEntregas.filter(e => e.data !== diaDaTela)];
 
 
+  // (29/10 · 4.92) computador: a saudação e o resumo do dia vão pro topo, no lugar de "Início"
+  const resumoTopo = (() => {
+    const hojeTxt = (() => { const t = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }).replace("-feira", ""); return t.charAt(0).toUpperCase() + t.slice(1); })();
+    const atr = counts.pedidosAtrasados > 0 ? `${counts.pedidosAtrasados} ${counts.pedidosAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}` : "";
+    const n = counts.entregasHoje, v = counts.valorEntregasHoje;
+    return (<>
+      <span className="cab-resumo-dia">{hojeTxt}</span>
+      <span aria-hidden="true">·</span>
+      {loading ? <span>Carregando…</span> : erroCarga ? <span>Não deu para carregar o seu dia. <button type="button" className="cab-resumo-lk" onClick={tentarDeNovo}>Tentar de novo</button></span>
+        : n > 0 ? <span><button type="button" className="cab-resumo-lk" onClick={() => navigate("/agenda")}>{n} {n === 1 ? "entrega hoje" : "entregas hoje"}</button>{v > 0 ? `, somando ${formatCurrency(v)}` : ""}</span>
+        : <span>Nenhuma entrega hoje{atr ? "" : " · aproveite para divulgar seu cardápio"}</span>}
+      {!loading && !erroCarga && atr && <button type="button" className="ini-dk-selo cab-resumo-selo" onClick={() => navigate("/pedidos?filtro=atrasados")}><i aria-hidden="true" />{atr} · <u>Ver</u></button>}
+    </>);
+  })();
+
   return (
     <>
     {/* (19/10) computador: a mesma barra de cima das outras telas (no celular fica o hero rosa) */}
-    <div className="ini-dk-cab"><AppPageHeader title="Início" subtitle="O resumo do seu dia" infoIcon="📈" infoComo={COMO_INICIO} infoTour={TOUR_INICIO_PC} infoContent={<>
+    <div className="ini-dk-cab"><AppPageHeader title={saudacao} resumo={resumoTopo} subtitle="O resumo do seu dia" infoIcon="📈" infoComo={COMO_INICIO} infoTour={TOUR_INICIO_PC} infoContent={<>
       <p><strong>Recebido no mês:</strong> o dinheiro que entrou de verdade neste mês (sinais e pagamentos).</p>
       <p><strong>Pedidos na semana</strong> e <strong>ticket médio:</strong> os pedidos dos últimos 7 dias e quanto cada um vale, em média.</p>
       <p><strong>Entregas hoje:</strong> quantos pedidos saem hoje. A lista completa fica em Próximas entregas e na Agenda.</p>
@@ -1975,7 +1990,7 @@ export default function Inicio() {
           .ini-dk-cab { display: contents; }
           /* rosa encostado no topo e nas laterais da área do app (sem mexer nos cartões) */
           /* (19/10) sem a faixa rosa: a saudação no fundo da página, como o título das outras telas */
-          .ini-dk-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 0 0 16px; }
+          .ini-dk-top { display: none; } /* (4.92) a saudação e o resumo foram pro topo */
           .ini-dk-txt { min-width: 0; }
           .ini-dk-txt h1 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 0; color: var(--ui-texto); white-space: nowrap; }
           .ini-dk-txt p { font-size: 14.5px; margin: 4px 0 0; color: var(--ui-texto-2); }

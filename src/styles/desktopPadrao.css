@@ -98,6 +98,14 @@
   /* ── 9. Topo branco (o menu da esquerda continua chocolate) ── */
   html body .cab { background: var(--ui-branco) !important; color: var(--ui-texto) !important; border-bottom: 1px solid var(--ui-borda); box-shadow: none !important; }
   html body .cab .cab-t { color: var(--ui-texto); }
+  /* (29/10 · 4.92) linha embaixo do título (Início: data e resumo do dia) */
+  html body .cab-resumo { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-family: var(--font-base); font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; }
+  html body .cab-resumo > span { overflow: hidden; text-overflow: ellipsis; }
+  html body .cab-resumo-dia { flex: none; color: var(--ui-texto-3); }
+  html body .cab-resumo-lk { position: relative; margin: 0; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+  html body .cab-resumo-lk:hover { text-decoration: underline; text-underline-offset: 3px; }
+  html body .cab-resumo-selo { padding: 2px 10px !important; font-size: 12.5px !important; }
+  html body .cab:has(.cab-resumo) .cab-t { font-weight: 600; }
   html body .cab .cab-i { color: var(--ui-texto-3); opacity: 1; }
   html body .cab .cab-voltar { background: #F2EFF0 !important; color: var(--ui-texto) !important; }
   html body .cab .cab-voltar:hover { background: #E8E3E5 !important; }

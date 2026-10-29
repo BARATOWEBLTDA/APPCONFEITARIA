@@ -1,3 +1,4 @@
+import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -34,6 +35,8 @@ interface AppPageHeaderProps {
   subtitle: string
   /** (28/10) computador: complemento do título em cinza, sem negrito ("Pedido #65 · Bruno Eduardo Pacheco"). No celular não aparece (lá vai no subtítulo) */
   titleExtra?: string
+  /** (29/10 · 4.92) uma linha embaixo do título, só no computador (o Início usa pro resumo do dia) */
+  resumo?: React.ReactNode
   /** título da janela do (i); sem ele, usa o nome da tela */
   infoTitle?: string
   /** as telas ainda mandam um emoji aqui; o cabeçalho troca pelo ícone desenhado equivalente */
@@ -58,7 +61,7 @@ const ICONE_DO_EMOJI: Record<string, Icon> = {
   '📑': ListDashes, '📦': Package, '📰': Newspaper, '🔔': Bell, '🛍️': ShoppingBag, '🛒': ShoppingCart, '🧮': Calculator, '🧾': Invoice, '📋': Receipt,
 }
 
-export default function AppPageHeader({ title, subtitle, titleExtra, infoTitle, infoIcon, infoContent, infoTip, infoComo, infoTour, rightActions, onBack, voltar, centro }: AppPageHeaderProps) {
+export default function AppPageHeader({ title, subtitle, titleExtra, resumo, infoTitle, infoIcon, infoContent, infoTip, infoComo, infoTour, rightActions, onBack, voltar, centro }: AppPageHeaderProps) {
   // (23/10) nome da aba do navegador: o título da tela ("Pedidos · Doonly"), no lugar de "Doonly - Confeitaria Inteligente" em todas
   useEffect(() => {
     const t = String(title || '').trim()
@@ -95,6 +98,7 @@ export default function AppPageHeader({ title, subtitle, titleExtra, infoTitle, 
             )}
           </div>
           <p className="cab-s">{subtitle}</p>
+          {resumo && <div className="cab-resumo">{resumo}</div>}
         </div>
         {rightActions && <div className="cab-acoes">{rightActions}</div>}
         <LogoDaLoja />

@@ -150,3 +150,4 @@
   .cab-txt { text-align: center; padding: 0 48px; }
   .cab .cab-linha { position: static; justify-content: center; }
 }
+.cab-resumo { display: none; } /* (4.92) só no computador (desktopPadrao.css) */
