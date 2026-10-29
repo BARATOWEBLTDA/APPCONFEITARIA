@@ -658,8 +658,8 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
 
       {(achou || manual) && (<>
         <OpcoesMostrar mostrar={mostrar} onMudar={setMostrar} tituloClasse="ppf-l ppf-e-tit" />
-        <MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo} altura={124} />
-        <p className="ppf-e-ajuda ppf-e-ajuda--p">{mostrar === "nada" ? "Bom para quem atende em casa." : "É assim que o cliente vê, em Sobre a loja."}</p>
+        {/* (29/10 · 4.76) sem rolar no celular: o mapa encolhe em tela baixa e a frase de baixo saiu (o selo do mapa já diz o que aparece) */}
+        <div className="ppf-e-mapa"><MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo} altura={124} /></div>
       </>)}
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
@@ -824,6 +824,16 @@ const CSS = `
   .ppf-cep.ok { display: inline-flex; align-items: center; gap: 4px; color: #16803C; font-weight: 600; }
   .ppf-e-ajuda { margin: 8px 2px 0; font-size: 13px; color: var(--ui-texto-2); }
   .ppf-e-ajuda--p { font-size: 12.5px; color: var(--ui-texto-3); }
+  .ppf-e-mapa .mpe { height: clamp(64px, calc(100dvh - 620px), 124px) !important; }
+  /* celular baixo: um pouco menos de espaço entre os blocos, pra caber sem rolar */
+  @media (max-height: 760px) {
+    .ppf-e-cep { margin-top: 10px; } .ppf-e-achado { margin-top: 8px; padding: 10px 12px; }
+    .ppf-e-tit { margin: 12px 2px 6px; } .ppf-e-mapa .mpe { margin-top: 8px !important; }
+  }
+  @media (max-height: 660px) { .ppf-e-mapa { display: none; } } /* celular bem baixo: sem o mapa, mas sem rolar */
+  /* (4.77) passo a passo: o "Agora não" do tamanho do texto, pra o "Salvar e continuar" caber inteiro no celular pequeno */
+  .ui-veu--foco .ui-janela-pe:not(.ui-janela-pe--um) { grid-template-columns: auto 1fr; }
+  .ui-veu--foco .ui-janela-pe > .ui-bt--secundario { padding-inline: 18px; }
   .ppf-e-tit { margin: 18px 2px 8px; }
   .ppf-p-taxa { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: text; }
   .ppf-p-taxa > span:first-child { min-width: 0; display: flex; flex-direction: column; }
