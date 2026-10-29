@@ -1032,7 +1032,9 @@ const CSS = `
   .ui-janela:has(.ppf-pe) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
   .ppf-pe .ep { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr) minmax(0, .95fr); gap: 14px; align-items: start; width: 100%; max-width: none; margin: 14px 0 0; padding: 0; }
   .ppf-pe .ep > * { min-width: 0; }
-  .ppf-pe .ep-card { padding: 16px; gap: 12px; box-shadow: none; }
+  /* (29/10 · 5.06) sem a moldura de cada cartão: ficava cartão + quadrado da lista + linhas (linhas demais) */
+  .ppf-pe .ep-card { padding: 0; gap: 12px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+  .ppf-pe .ep { column-gap: 28px; margin-top: 18px; }
   .ppf-pe .lch-l { min-height: 52px; padding-top: 5px; padding-bottom: 5px; }
   .ppf-pe .ep-modo { grid-template-columns: 1fr; }
   .ppf-d-dica1 { margin: 12px 2px 0; font-size: 13.5px; line-height: 1.5; color: var(--ui-texto-2); }
