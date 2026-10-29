@@ -609,7 +609,9 @@
   .bv-tela-1 .bv-nb-app { width: 100%; height: 100%; transform: none !important; } /* o print ocupa a tela inteira, sem a escala do app desenhado */
   .bv-tela-1 .bv-corpo { grid-template-columns: minmax(0, 450px) minmax(0, 720px); }
   .bv-tela-1 .bv-dup-wrap { max-width: 760px; }
-  .bv-pc-print { image-rendering: -webkit-optimize-contrast; backface-visibility: hidden; }
+  /* (4.86) nítido: o notebook do cardápio fica reto (o giro 3D deixava a imagem borrada no Chrome) e o celular continua inclinado por cima */
+  .bv-tela-1 .bv-dup { transform: none; }
+  .bv-tela-1 .bv-dup .bv-cel--mini { transform: rotate(3deg); }
 }
 
 /* (29/10 · 4.83) texto do cardápio no computador: duas frases, uma em cada bloco de linhas */
