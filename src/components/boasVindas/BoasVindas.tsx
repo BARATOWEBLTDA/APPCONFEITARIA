@@ -357,7 +357,6 @@ function PrintRolando({ src, alt = '', menu, velocidade = 38 }: { src: string; a
 function Celular({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div className={`bv-cel${className ? ' ' + className : ''}`}>
-      <div className="bv-cel-entalhe" />
       <div className="bv-cel-tela">{children}</div>
     </div>
   )
