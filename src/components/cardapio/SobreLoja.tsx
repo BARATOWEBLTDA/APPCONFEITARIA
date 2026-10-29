@@ -173,3 +173,31 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
     </Janela>
   )
 }
+
+/**
+ * (29/10 · 5.01) Prévia da aba Horário do "Sobre a loja", do jeito que a cliente vê no cardápio.
+ * Usada no passo "Horário" (computador): muda na hora em que a confeiteira mexe nos dias e horários.
+ */
+export function PreviaSobreHorario({ nome, horario, corTopo }: { nome: string; horario: any; corTopo?: string | null }) {
+  const cor = topoEscurecido(corTopo || '#BF6B84')
+  const status = situacaoDaLoja(horario)
+  const dias = horario ? semana(horario) : []
+  return (
+    <div className="sl-prev" aria-label="Prévia do Sobre a loja">
+      <div className="sl-prev-cab"><b>{nome}</b><span aria-hidden="true">×</span></div>
+      <div className="sl" style={{ ['--sl-cor' as any]: cor }}>
+        <div className="sl-abas" aria-hidden="true">
+          <button type="button" tabIndex={-1}>Sobre</button>
+          <button type="button" tabIndex={-1} aria-selected="true">Horário</button>
+          <button type="button" tabIndex={-1}>Pagamento</button>
+        </div>
+        <div className="sl-corpo">
+          {status && <p className={`sl-status${status.aberto ? ' aberto' : ''}`}><i aria-hidden="true" />{status.aberto ? 'Aberto agora' : 'Fechado agora'}</p>}
+          {dias.length > 0
+            ? <ul className="sl-dias">{dias.map(d => <li key={d.dia} className={d.hoje ? 'hoje' : ''}><span>{d.dia}{d.hoje && <small>hoje</small>}</span><span>{d.texto}</span></li>)}</ul>
+            : <p className="sl-vazio">Marque os dias que você atende.</p>}
+        </div>
+      </div>
+    </div>
+  )
+}

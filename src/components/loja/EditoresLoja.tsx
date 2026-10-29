@@ -47,7 +47,8 @@ export type Horario = {
  * Editor de horário: dias em lista (seg a sex, seg a sáb, todos os dias, escolher), os botões de cada dia só em
  * "Escolher os dias", um cartão de horário por grupo (abre a rodinha do app) e a etiqueta de como fica no cardápio.
  */
-export function EditorHorario({ h, onMudar }: { h: Horario; onMudar: (fn: (x: Horario) => Horario) => void; tituloClasse?: string }) {
+/** semCardapio: esconde a linha "No cardápio: …" (quando a tela já mostra a prévia do cardápio ao lado) */
+export function EditorHorario({ h, onMudar, semCardapio = false }: { h: Horario; onMudar: (fn: (x: Horario) => Horario) => void; tituloClasse?: string; semCardapio?: boolean }) {
   // (23/10) no padrão do passo "Pagamento e entrega": Segunda a sexta, Sábado e Domingo, cada um com a chave de aberto ou fechado.
   // Ligar o Sábado = "Segunda a sábado"; ligar os três = "Todos os dias"; desmarcar um dia de Seg a Sex = "Escolher os dias".
   const [campo, setCampo] = useState<null | { k: keyof Horario; titulo: string }>(null);
@@ -60,7 +61,8 @@ export function EditorHorario({ h, onMudar }: { h: Horario; onMudar: (fn: (x: Ho
   const sitTxt = !sit ? "Marque os dias que você atende" : sit.aberto ? `Aberto agora · fecha às ${horaTexto(sit.fecha)}`
     : !sit.abre ? "Fechado" : `Fechado · abre ${sit.abre.dias === 0 ? "hoje" : sit.abre.dias === 1 ? "amanhã" : DIAS_CURTO[sit.abre.diaSemana].toLowerCase()} às ${horaTexto(sit.abre.minutos)}`;
   const curto = (n: string) => DIAS.find(d => d.nome === n)!.curto;
-  const subSemana = !semana ? "Fechado" : h.dias.length === 5 ? "Seg, Ter, Qua, Qui, Sex" : UTEIS.filter(n => h.dias.includes(n)).map(curto).join(", ");
+  // (29/10 · 5.01) "Aberto" como no Sábado e no Domingo: os dias já aparecem nos botões logo embaixo
+  const subSemana = semana ? "Aberto" : "Fechado";
 
   // "Abre" e "Fecha": dois campos do mesmo tamanho, com o relógio (abrem o relógio do app)
   const horas = (titulo: string, a: keyof Horario, f: keyof Horario) => (
@@ -85,7 +87,7 @@ export function EditorHorario({ h, onMudar }: { h: Horario; onMudar: (fn: (x: Ho
         { chave: "sabado", Ic: CalendarBlank, rotulo: "Sábado", sub: h.abre_sabado ? "Aberto" : "Fechado", on: h.abre_sabado, aoTocar: () => onMudar(x => ({ ...x, abre_sabado: !x.abre_sabado })), depois: horas("Sábado", "sabado_abertura", "sabado_fechamento") },
         { chave: "domingo", Ic: CalendarBlank, rotulo: "Domingo", sub: h.abre_domingo ? "Aberto" : "Fechado", on: h.abre_domingo, aoTocar: () => onMudar(x => ({ ...x, abre_domingo: !x.abre_domingo })), depois: horas("Domingo", "domingo_abertura", "domingo_fechamento") },
       ]} />
-      <p className="edh-cv">No cardápio:<b className={!sit ? "vazio" : sit.aberto ? "" : "off"}>{sit && <i aria-hidden="true" />}{sitTxt}</b></p>
+      {!semCardapio && <p className="edh-cv">No cardápio:<b className={!sit ? "vazio" : sit.aberto ? "" : "off"}>{sit && <i aria-hidden="true" />}{sitTxt}</b></p>}
       {campo && (
         <HorarioSheet titulo={campo.titulo} value={h[campo.k] as string} onChange={(v) => onMudar(x => ({ ...x, [campo.k]: v }))} onClose={() => setCampo(null)} />
       )}

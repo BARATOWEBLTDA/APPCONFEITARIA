@@ -17,6 +17,7 @@ import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk
 import { Botao, avisar } from "@/components/base";
 import { LojaProntaCartao } from "@/components/loja/LojaPronta";
 import PreviaTopoCardapio, { type DadosPrevia } from "@/components/cardapio/PreviaTopoCardapio";
+import { PreviaSobreHorario } from "@/components/cardapio/SobreLoja";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { definirSaldoInicial } from "@/lib/caixa";
 import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
@@ -64,6 +65,19 @@ function useLargo() {
     mq.addEventListener("change", f); return () => mq.removeEventListener("change", f);
   }, []);
   return largo;
+}
+
+/** cores, foto do topo e horário da loja, para a prévia do cardápio ficar igual (só lê quando vai mostrar) */
+function useDesignPrevia(uid: string, ligado: boolean) {
+  const [design, setDesign] = useState<DadosPrevia>({});
+  useEffect(() => {
+    if (!ligado) return;
+    let vivo = true;
+    supabase.from("profiles").select("cor_navbar, cor_borda, cor_nome, banner_topo_url, horario, loja_pausada").eq("id", uid).maybeSingle()
+      .then(({ data }) => { if (vivo && data) setDesign(data as DadosPrevia); }, () => {});
+    return () => { vivo = false; };
+  }, [uid, ligado]);
+  return design;
 }
 
 const maskCep = (v: string) => { const d = v.replace(/\D/g, "").slice(0, 8); return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d; };
@@ -488,14 +502,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   const [escolhida, setEscolhida] = useState(0);
   // (29/10 · 5.00) computador: janela larga com a prévia do cardápio ao lado (a logo dela, se já tiver)
   const largo = useLargo();
-  const [design, setDesign] = useState<DadosPrevia>({});
-  useEffect(() => {
-    if (!largo) return;
-    let vivo = true;
-    supabase.from("profiles").select("cor_navbar, cor_borda, cor_nome, banner_topo_url, horario, loja_pausada").eq("id", uid).maybeSingle()
-      .then(({ data }) => { if (vivo && data) setDesign(data as DadosPrevia); }, () => {});
-    return () => { vivo = false; };
-  }, [uid, largo]);
+  const design = useDesignPrevia(uid, largo);
   const alternar = (lista: string[], set: (v: string[]) => void, v: string) => set(lista.includes(v) ? lista.filter(x => x !== v) : [...lista, v]);
   const gerar = async () => {
     setGerando(true); setErro("");
@@ -773,6 +780,10 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   const temDia = h.dias.length > 0 || h.abre_sabado || h.abre_domingo;
+  // (29/10 · 5.01) computador: janela larga com a prévia do cardápio ao lado (o "Aberto agora" muda na hora)
+  const largo = useLargo();
+  const design = useDesignPrevia(uid, largo);
+  const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
   const salvar = async () => {
     if (!temDia) return;
     setSalvando(true); setErro("");
@@ -784,10 +795,18 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   // (15/10) o editor é o mesmo da tela Dados da loja (components/loja/EditoresLoja)
   return (
     <Janelinha foco titulo="Horário de funcionamento" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
-      <PassoTopo k="horario" />
-      <EditorHorario h={h} onMudar={setH} />
-      {erro && <p className="ppf-erro">{erro}</p>}
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
+      <div className={largo ? "ppf-d ppf-d--2col ppf-d--hor" : undefined}>
+        {largo && (
+          <div className="ppf-d-prev">
+            <p>No cardápio, em Sobre a loja › Horário</p>
+            <PreviaSobreHorario nome={nomeLoja} horario={h} corTopo={design.cor_navbar || design.cor_borda} />
+          </div>
+        )}
+        <PassoTopo k="horario" />
+        <EditorHorario h={h} onMudar={setH} semCardapio={largo} />
+        {erro && <p className="ppf-erro">{erro}</p>}
+      </div>
     </Janelinha>
   );
 }
@@ -960,6 +979,7 @@ const CSS = `
   .ppf-d--2col > .ppf-d-prev { position: absolute; top: 0; right: 0; width: 340px; }
   .ppf-d-prev > p { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .ppf-d--2col .ppf-d-campo textarea { height: 190px; font-size: 15.5px; line-height: 1.55; }
+  .ppf-d--hor { min-height: 404px; }
   .ppf-d-dica1 { margin: 12px 2px 0; font-size: 13.5px; line-height: 1.5; color: var(--ui-texto-2); }
   .ppf-d-ajuda > p { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
   .ppf-d-ajuda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }

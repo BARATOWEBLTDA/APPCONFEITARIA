@@ -24,7 +24,9 @@
 /* (23/10) editor de horário no padrão da lista com chave */
 .edh-dias { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
 .edh-dias button { min-height: 34px; padding: 0; border: 1.5px solid var(--ui-borda); border-radius: 8px; background: var(--ui-branco); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-texto-3); cursor: pointer; }
-.edh-dias button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
+.edh-dias button { background: #F4F1F2; border-color: transparent; }
+/* (29/10 · 5.01) dia marcado: chocolate cheio e letra branca (antes só a borda escura, parecia desmarcado) */
+.edh-dias button.on { border-color: var(--ui-escolha); background: var(--ui-escolha); color: var(--ui-branco); }
 .edh-hh { display: flex; gap: 8px; margin-top: 10px; }
 .edh-dias + .edh-hh { margin-top: 10px; }
 .lch-dep > .edh-hh:first-child { margin-top: 0; }
