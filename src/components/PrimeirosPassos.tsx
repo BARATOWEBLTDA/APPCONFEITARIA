@@ -10,6 +10,7 @@ import { useProfile, refreshProfile } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import Janelinha from "@/components/financeiro/Folha";
 import Destaque from "@/components/Destaque";
+import { Mascote } from "@/components/marca/Mascote";
 import { marcarPagamentoConferido } from "@/lib/primeirosPassos";
 import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
@@ -260,7 +261,13 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         if (!colunas) return <>{cab}{passos.map(item)}</>;
         return (
           <div className="pp-cols">
-            <div className="pp-col-a">{cab}{atual >= 0 && item(passos[atual], atual)}</div>
+            <div className="pp-col-a">{cab}{atual >= 0 && item(passos[atual], atual)}
+              {/* (29/10 · 4.94) o mascote da prancheta preenche o espaço que sobrava embaixo do passo da vez */}
+              <div className="pp-masc">
+                <Mascote pose="prancheta" className="pp-masc-img" />
+                <p className="pp-masc-b"><b>Eu te ajudo nisso!</b>Em uns 5 minutos seu cardápio fica pronto para vender.</p>
+              </div>
+            </div>
             <div className="pp-col-b">{passos.map((p, i) => i === atual ? null : item(p, i))}</div>
           </div>
         );
@@ -773,6 +780,14 @@ const CSS = `
      direita: a lista dos passos. Cada coluna com a largura de um celular. */
   .pp-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
   .pp-col-a .pp-at { margin-top: 16px; }
+  /* (29/10 · 4.94) a coluna da esquerda estica até a altura da lista; o mascote fica no pé dela */
+  .pp-cols { align-items: stretch; }
+  .pp-col-a { display: flex; flex-direction: column; }
+  .pp-masc { margin-top: auto; display: flex; align-items: flex-end; gap: 14px; padding-top: 14px; }
+  .pp-masc-img { width: 92px; height: auto; flex: none; margin-bottom: -6px; }
+  .pp-masc-b { position: relative; margin: 0 0 18px; padding: 12px 14px; background: #FBF4F6; border: 1px solid #F1DDE4; border-radius: 14px; font-size: 13.5px; line-height: 1.45; font-weight: 400; color: var(--ui-texto-2, #5B4A50); }
+  .pp-masc-b b { display: block; margin-bottom: 2px; font-size: 14px; font-weight: 500; color: var(--ui-texto, #2E1F24); }
+  .pp-masc-b::before { content: ""; position: absolute; left: -7px; bottom: 16px; width: 12px; height: 12px; background: #FBF4F6; border-left: 1px solid #F1DDE4; border-bottom: 1px solid #F1DDE4; transform: rotate(45deg); }
   .pp-col-b > .pp-ps:first-child { border-top: none; }
   /* (19/10) Início: os passos no mesmo checklist do celular em qualquer tela (antes viravam etiquetas no computador) */
   .pp--inicio .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }

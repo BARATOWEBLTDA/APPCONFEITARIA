@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
  * Poses que já têm desenho: acenando · senha (em dúvida, com interrogações: telas de recuperar a senha).
  * (07/10) Versões leves em public/marca/leve: os originais têm quase 1 MB cada; as leves, menos de 50 KB.
  */
-export type PoseMascote = 'acenando' | 'senha' | 'comemorando' | 'chave' | 'preocupado' | 'lupa' | 'joinha'
+export type PoseMascote = 'acenando' | 'senha' | 'comemorando' | 'chave' | 'preocupado' | 'lupa' | 'joinha' | 'prancheta'
 
 const leve = (nome: string) => `/marca/leve/${nome}.webp`
 const original = (nome: string) => `/marca/${nome}.png`
