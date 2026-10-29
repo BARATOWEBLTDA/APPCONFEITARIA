@@ -481,7 +481,7 @@ function Celular({ children, className = '' }: { children: ReactNode; className?
 
 const PRINT_CEL = '/tutorial/cardapio-exemplo.jpg?v=3'
 const PRINT_CEL_MENU = '/tutorial/cardapio-exemplo-nav.jpg?v=3'
-const PRINT_PC = '/tutorial/cardapio-pc.webp?v=2' // (29/10 · 4.85) o cardápio da Doce Formiga desenhado pelo próprio app, em alta (sem recorte)
+const PRINT_PC = '/tutorial/cardapio-pc.webp?v=3' // (29/10 · 4.85) o cardápio da Doce Formiga desenhado pelo próprio app, em alta (sem recorte)
 
 function DemoCardapio() {
   return (
