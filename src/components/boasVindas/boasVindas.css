@@ -500,3 +500,18 @@
   .bv-tela-2 .bv-lado { position: static !important; min-height: 0 !important; }
 }
 @media (prefers-reduced-motion: reduce) { .bv-pd-mais { transition: none; } .bv-pd-aviso, .bv-pd-cartao.entra { animation: none; } }
+
+/* (29/10 · 4.72) avisos no celular: o mesmo jeito do cardápio — celular grande em cima e só o título embaixo, sobre a
+   parte de baixo desfocada e escura. O texto só aparece quando avisa algo (ativado, iPhone ou bloqueado). */
+@media (max-width: 899px) and (min-height: 521px) {
+  .bv-tela-5 .bv-corpo::before, .bv-tela-5 .bv-esp { flex: 0 0 0; }
+  .bv-tela-5 .bv-demo { order: 2; margin-top: 4px; }
+  .bv-tela-5 .bv-texto { order: 3; position: relative; z-index: 3; margin-top: -150px; padding: 94px 0 2px; }
+  .bv-tela-5 .bv-texto::before { content: ""; position: absolute; z-index: -1; inset: 0 -20px -24px; background: linear-gradient(to bottom, rgba(34, 19, 14, .15) 0%, rgba(34, 19, 14, .9) 32%, var(--chocolate-escuro) 52%); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 26%); mask-image: linear-gradient(to bottom, transparent 0%, #000 26%); }
+  .bv-tela-5 .bv-sobre, .bv-tela-5 .bv-p:not(.bv-p--aviso) { display: none; }
+  .bv-tela-5 .bv-p--aviso { margin-top: 6px; font-size: 13.5px; }
+  .bv-tela-5 .bv-cel { width: clamp(260px, calc((100dvh - 215px) * .48), 350px); max-width: 86vw; }
+  .bv-tela-5 .bv-cel-tela { height: clamp(300px, calc(100dvh - 215px), 740px); }
+  .bv-tela-5 .bv-lock { padding-top: 34px; }
+  .bv-tela-5 .bv-lock .bv-notif-hora b { font-size: 54px; }
+}

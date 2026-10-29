@@ -236,7 +236,8 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
             {tela === AVISOS && (<>
               <p className="bv-sobre">Não perca nenhum pedido</p>
               <h1 className="bv-h">Ative os <em>avisos</em> no seu celular</h1>
-              <p className="bv-p">{push.isSubscribed ? 'Pronto: os avisos estão ativados neste aparelho.'
+              {/* (29/10 · 4.72) no celular só o título aparece; o texto fica quando avisa algo (ativado, iPhone ou bloqueado) */}
+              <p className={`bv-p${push.isSubscribed || iphoneSemApp || push.permission === 'denied' ? ' bv-p--aviso' : ''}`}>{push.isSubscribed ? 'Pronto: os avisos estão ativados neste aparelho.'
                 : iphoneSemApp ? 'No iPhone, os avisos funcionam com o Doonly instalado na tela de início. No app, mostramos como fazer.'
                 : push.permission === 'denied' ? 'Os avisos estão bloqueados neste navegador. Você pode liberar depois, em Configurações.'
                 : 'Quando um cliente fizer um pedido pelo cardápio, o aviso chega na hora, mesmo com o app fechado. Novidades e dicas do Doonly também.'}</p>
