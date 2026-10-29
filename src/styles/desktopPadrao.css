@@ -31,7 +31,9 @@
     max-width: 900px !important; margin-left: max(0px, calc((100% - 1200px) / 2)) !important; margin-right: auto !important;
   }
   /* o topo segue a coluna: título, busca e "Ver cardápio" sempre no mesmo lugar */
-  html body .layout-root[data-rota] .cab { padding-left: var(--lado) !important; padding-right: var(--lado) !important; }
+  html body .layout-root[data-rota] .cab { padding-left: var(--lado) !important; padding-right: 28px !important; }
+  /* (29/10 · 4.90) o título fica na linha da coluna; a busca (mais larga), o "Seja PRO" e a foto vão pro canto da direita */
+  html body .layout-root[data-rota] .cab-busca { width: clamp(240px, 24vw, 420px); }
   /* fora da regra: quadros e Produtos continuam com a largura toda */
   html body .layout-root:is(:has(.pdq, .orq), [data-rota="/produtos"]) { --col: 1680px; --lado: 32px; }
   html body .layout-root[data-rota]:is(:has(.pdq, .orq), [data-rota="/produtos"]) .layout-main > :not(.cab):not(style) { margin-left: 0 !important; }
