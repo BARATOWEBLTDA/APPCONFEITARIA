@@ -341,3 +341,10 @@
 @keyframes bvNotif2 { from { opacity: 0; transform: translateY(-14px) scale(.96); } }
 @media (prefers-reduced-motion: reduce) { .bv-notif-cartao { animation: none; } }
 @media (min-width: 900px), (min-width: 640px) and (max-height: 520px) { .bv-base { align-items: flex-start; } .bv-agora-nao { padding-left: 4px; } }
+
+/* (29/10 · 4.64) tela do cardápio no celular: o celular cresce com a tela (antes parava em 470px de altura e sobrava
+   espaço em cima do texto em celular alto). Crescendo, o texto sobe sozinho. A largura acompanha a altura. */
+@media (max-width: 1099px), (max-height: 599px) {
+  .bv-tela-1 .bv-so-cel .bv-cel { width: clamp(275px, calc((100dvh - 350px) * .56), 330px); max-width: 84vw; }
+  .bv-tela-1 .bv-so-cel .bv-cel-tela { height: clamp(200px, calc(100dvh - 350px), 620px); }
+}
