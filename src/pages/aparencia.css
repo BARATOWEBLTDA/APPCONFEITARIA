@@ -266,3 +266,8 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
   .ap--2col .ap-col .ap-largo, .ap--2col .ap-ident { grid-column: auto; }
   .ap--2col .ap-col-esq .ap-banners { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+/* (28/10 · 4.62) banner inteiro no quadro, como aparece no cardápio (antes cortava as pontas).
+   O que sobra em volta é a própria imagem, borrada e clarinha */
+.ap-img--banner { isolation: isolate; background: #F4F3F2; }
+.ap-img--banner::before { content: ""; position: absolute; inset: -16px; z-index: -1; background: var(--ap-fundo) center / cover no-repeat; filter: blur(16px); opacity: .5; }
+.ap-img--banner img { object-fit: contain; }

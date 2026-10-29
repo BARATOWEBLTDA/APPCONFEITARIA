@@ -510,7 +510,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             <div key={i} className="ap-banner">
               <span className="ap-banner-r">Banner {i + 1}</span>
               {bannerValues[i] ? (
-                <div className="ap-img">
+                <div className="ap-img ap-img--banner" style={{ "--ap-fundo": `url("${bannerValues[i]}")` } as React.CSSProperties}>
                   <img src={bannerValues[i]} alt={`Banner ${i + 1}`} />
                   <div className="ap-img-acoes">
                     <button type="button" className="ap-chip" onClick={() => bannerRefs[i].current?.click()}><ArrowsClockwise size={16} weight="bold" />Trocar</button>
