@@ -863,6 +863,15 @@ export default function Auth() {
       </div>
       )}
 
+      {/* (29/10 · 4.79) celular e tablet em pé: o atalho pra página de vendas fica embaixo do cartão (no computador está no lado rosa) */}
+      <a className="auth-vit2" href={SITE_VENDAS} target="_blank" rel="noopener noreferrer">
+        <span className="auth-vit-fotos" aria-hidden="true">
+          <img src="/login/cardapio.webp" alt="" /><img src="/login/pedidos.webp" alt="" /><img src="/login/receber.webp" alt="" />
+        </span>
+        <span className="auth-vit-tx"><b>Conheça o Doonly</b><small>Cardápio, pedidos e financeiro</small></span>
+        <span className="auth-vit-seta" aria-hidden="true"><ArrowRight size={16} weight="bold" /></span>
+      </a>
+
       </div>
 
       {/* 13/10: o rodapé com Termos e Privacidade saiu (cadastro tem o "Li e concordo"; login pelo Google pede o aceite depois) */}
@@ -892,9 +901,9 @@ export default function Auth() {
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; will-change: transform; opacity: 0; transition: opacity .4s ease; }
         @media (hover: none), (prefers-reduced-motion: reduce) { .mouse-glow { display: none; } }
         .auth-card {
-          position: relative; z-index: 2; background: var(--bg-card); border-radius: 22px; padding: 56px 1.5rem 1.6rem;
+          position: relative; z-index: 2; background: var(--bg-card); border-radius: 22px; padding: 42px 1.5rem 1.6rem;
           width: 100%; max-width: 440px; box-shadow: 0 14px 40px -12px rgba(60,10,30,.45);
-          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 108px auto 0; /* espaço para o mascote saindo do cartão (ele sobe 96px) + folga */
+          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 72px auto 0; /* espaço para o mascote saindo do cartão (ele sobe 62px) + folga */
         }
         /* celular estreito (até 380px): um pouco menos de margem para o título de 22px caber inteiro */
         @media (max-width: 380px) {
@@ -902,8 +911,34 @@ export default function Auth() {
           .auth-card { padding-left: 18px !important; padding-right: 18px !important; }
         }
         @media (max-width: 340px) { .auth-root .auth-card .auth-h2 { font-size: 20px; } } /* exceção: celulares bem antigos (320px) */
-        .auth-masc { position: absolute; left: 50%; top: -96px; transform: translateX(-50%); width: 136px; height: auto; z-index: 3; filter: drop-shadow(0 0 12px rgba(255,157,196,.38)); /* (15/10) só o brilho rosa, mais fraco (saiu a sombra escura) */ pointer-events: none; }
-        .auth-nome { display: block; width: 128px; height: auto; margin: 0 auto 6px; }
+        .auth-masc { position: absolute; left: 50%; top: -62px; transform: translateX(-50%); width: 96px; /* (29/10 · 4.79) menor: antes 136px saindo 96px do cartão */ height: auto; z-index: 3; filter: drop-shadow(0 0 12px rgba(255,157,196,.38)); /* (15/10) só o brilho rosa, mais fraco (saiu a sombra escura) */ pointer-events: none; }
+        .auth-nome { display: block; width: 112px; height: auto; margin: 0 auto 6px; }
+        /* (29/10 · 4.79) atalho pra página de vendas embaixo do cartão: as 3 telas em leque, o texto e a seta */
+        .auth-vit2 { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; align-self: center; margin: 14px auto 0; padding: 8px 10px 8px 6px;
+          border-radius: 16px; color: var(--ui-branco); text-decoration: none; -webkit-tap-highlight-color: transparent; }
+        .auth-vit2 .auth-vit-fotos { position: relative; flex: none; width: 64px; height: 46px; }
+        .auth-vit2 .auth-vit-fotos img { position: absolute; top: 2px; left: 20px; width: 24px; height: 42px; border-radius: 5px; object-fit: cover; object-position: top;
+          border: 1.5px solid rgba(255,255,255,.9); box-shadow: 0 4px 10px rgba(0,0,0,.35); }
+        .auth-vit2 .auth-vit-fotos img:nth-child(1) { transform: translateX(-17px) rotate(-12deg); }
+        .auth-vit2 .auth-vit-fotos img:nth-child(2) { z-index: 2; }
+        .auth-vit2 .auth-vit-fotos img:nth-child(3) { transform: translateX(17px) rotate(12deg); }
+        .auth-vit2 .auth-vit-tx { display: flex; flex-direction: column; text-align: left; }
+        .auth-vit2 .auth-vit-tx b { font-size: 14.5px; font-weight: 600; }
+        .auth-vit2 .auth-vit-tx small { font-size: 12.5px; opacity: .78; white-space: nowrap; }
+        .auth-vit2 .auth-vit-seta { flex: none; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin-left: 4px; border-radius: 50%; background: rgba(255,255,255,.14); }
+        .auth-vit2:active { background: rgba(255,255,255,.08); }
+        /* tablet em pé: cartão maior e a vitrine inteira, em vidro, embaixo */
+        @media (min-width: 600px) and (max-width: 899px) and (min-height: 820px) {
+          .auth-layout { max-width: 480px; }
+          .auth-card { zoom: 1.1; }
+          .auth-vit2 { align-self: stretch; margin: 20px 0 0; padding: 12px 14px 12px 12px; gap: 12px; border-radius: 20px; background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+          .auth-vit2 .auth-vit-fotos { width: 88px; height: 64px; }
+          .auth-vit2 .auth-vit-fotos img { top: 4px; left: 27px; width: 34px; height: 58px; border-radius: 7px; border-width: 2px; }
+          .auth-vit2 .auth-vit-fotos img:nth-child(1) { transform: translateX(-24px) rotate(-12deg); }
+          .auth-vit2 .auth-vit-fotos img:nth-child(3) { transform: translateX(24px) rotate(12deg); }
+          .auth-vit2 .auth-vit-tx { flex: 1; } .auth-vit2 .auth-vit-tx b { font-size: 16px; } .auth-vit2 .auth-vit-tx small { font-size: 13.5px; }
+          .auth-vit2 .auth-vit-seta { width: 38px; height: 38px; background: var(--ui-branco); color: var(--ui-rosa-escuro); }
+        }
         .so-pc { display: none; }
         .auth-marca { display: none; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
@@ -1151,6 +1186,7 @@ export default function Auth() {
           .auth-marca-sub { font-size: 15px; opacity: .92; margin: 0; }
           .auth-card { margin: 0 !important; padding: 48px 44px !important; box-shadow: none !important; border-radius: 0 28px 28px 0 !important; display: flex; flex-direction: column; justify-content: center; animation: none; }
           .auth-masc, .auth-nome { display: none !important; }
+          .auth-vit2 { display: none !important; }
           .so-cel { display: none; } .so-pc { display: inline; }
           .so-cel-bloco { display: none !important; } /* computador: o cartão tem só o título */
           .auth-card .auth-text-hdr { margin-bottom: 1.25rem; } /* o cartão já tem "Já tem conta? Entrar" no fim */
