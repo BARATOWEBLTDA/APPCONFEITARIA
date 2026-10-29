@@ -151,3 +151,7 @@ html body .layout-root[data-rota="/noticias"], html body .layout-root[data-rota=
 
 /* (28/10) miniatura deitada (16:9), do jeito do banner: a quadrada cortava o meio da imagem */
 .nl-it { align-items: center; }
+/* (28/10 · 4.60) no computador, a lista vira um cartão (900px, na linha do título) */
+@media (min-width: 901px) {
+  .nl-lista { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); }
+}

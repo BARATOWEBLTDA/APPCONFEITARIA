@@ -101,3 +101,14 @@
 .cf9-ic--choco .cf9-ic-foto { border: 2px solid var(--chocolate, #3A2219); }
 
 /* (18/10) Conta: 3 quadradões lado a lado */
+
+/* (28/10 · 4.60) grupos: no celular continuam uma lista só; no computador, 3 cartões lado a lado */
+.cf9-grupo { display: contents; }
+.cf9-lista > .cf9-grupo:first-child > .cf9-sec:first-child { margin-top: 10px; }
+@media (min-width: 901px) {
+  .cf9-busca { max-width: 520px; }
+  .cf9-lista:has(> .cf9-grupo) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; padding: 0; border: 0; background: transparent; box-shadow: none; }
+  .cf9-grupo { display: block; padding: 4px 8px 8px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
+  .cf9-grupo > .cf9-sec:first-child { margin-top: 10px; }
+  .cf9 .ui-bt.cf9-sair { width: auto; margin: 4px auto 0; padding: 0 28px; background: transparent; box-shadow: none; }
+}

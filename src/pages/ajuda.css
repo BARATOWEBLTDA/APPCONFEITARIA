@@ -37,3 +37,5 @@
 .aj-h b { font-size: 15px; font-weight: 700; }
 .aj-h p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 .aj-h em { align-self: flex-start; font-style: normal; font-size: 13px; color: var(--ui-texto-2); }
+/* (28/10 · 4.60) Sugerir: no computador, as abas do tamanho do texto */
+@media (min-width: 901px) { .aj-seg { max-width: 420px; } }

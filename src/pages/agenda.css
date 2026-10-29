@@ -163,3 +163,5 @@ i.atr { background: var(--ui-vermelho); }
 .ag3-res-mais { display: block; width: 100%; min-height: 46px; margin: 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
 .ag3-res-nota { margin: 0; padding: 10px 14px; border-top: 1px solid var(--ui-linha); font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (min-width: 768px) { .ag3-res { right: 56px; } }
+/* (28/10 · 4.60) no computador, o calendário ganha mais espaço que a coluna do dia */
+@media (min-width: 901px) { .ag3-grade { grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr); } }

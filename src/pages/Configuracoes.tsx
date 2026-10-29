@@ -267,7 +267,9 @@ export default function Configuracoes() {
             );
           })() : (<>
           <section className="cf9-card cf9-lista" aria-label="Configurações">
-            {/* (19/10) Conta de volta em lista, todos os itens iguais (sem os quadradões nem o chocolate) */}
+            {/* (19/10) Conta de volta em lista, todos os itens iguais (sem os quadradões nem o chocolate)
+                (28/10 · 4.60) cada assunto num grupo: no celular continua uma lista só; no computador vira 3 cartões lado a lado */}
+            <div className="cf9-grupo">
             <h2 className="cf9-sec">Conta</h2>
             {/* (21/10) "Configurações da loja" saiu: dados da loja, mensagens e o cardápio digital ficam em Cadastros */}
             <ItemConfig icone={<User size={20} weight="bold" />} nome="Minha conta"
@@ -277,7 +279,10 @@ export default function Configuracoes() {
               apoio={pro ? "Plano PRO · ativo" : "Plano grátis · conheça o PRO"} destaque={!pro}
               onClick={() => navigate(pro ? "/minha-assinatura" : "/assinar")} />
 
+            </div>
+
             {/* (15/10) ordem pelo uso: o mais usado primeiro */}
+            <div className="cf9-grupo">
             <h2 className="cf9-sec">App</h2>
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
             {!isStandalone() && <ItemConfig icone={<DownloadSimple size={20} weight="bold" />} nome="Instalar o app" apoio="Abra direto, como um app" onClick={() => setInstalarOpen(true)} />}
@@ -287,16 +292,19 @@ export default function Configuracoes() {
             {/* (18/10) Minhas conquistas escondido por enquanto */}
             {INDICACAO_ATIVA && <ItemConfig icone={<Gift size={20} weight="bold" />} nome="Indique e ganhe" apoio="Ganhe prêmios indicando" onClick={() => navigate("/indicar")} />}
 
+            </div>
+
+            <div className="cf9-grupo">
             <h2 className="cf9-sec">Ajuda</h2>
             <ItemConfig icone={<Lifebuoy size={20} weight="bold" />} nome="Central de Ajuda" apoio="Tutoriais de cada tela" onClick={() => navigate("/ajuda")} />
             <ItemConfig icone={<IconeWhatsApp size={20} />} nome="Fale com o suporte" apoio="Pelo WhatsApp" onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
             <ItemConfig icone={<Bug size={20} weight="bold" />} nome="Relatar um problema" apoio="Algo não funcionou?" onClick={() => navigate("/relatar-problema")} />
             <ItemConfig icone={<Lightbulb size={20} weight="bold" />} nome="Sugerir uma melhoria" apoio="Conte o que falta no app" onClick={() => navigate("/solicitar-recurso")} />
             <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Termos de uso e privacidade" onClick={() => setTermosOpen(true)} />
-
+            </div>
           </section>
           </>)}
-          <Botao variante="secundario" cheio icone={<SignOut size={20} weight="bold" />} onClick={sair}>Sair da conta</Botao>
+          <Botao variante="secundario" cheio className="cf9-sair" icone={<SignOut size={20} weight="bold" />} onClick={sair}>Sair da conta</Botao>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
           {recorte.janela}
         </>)}

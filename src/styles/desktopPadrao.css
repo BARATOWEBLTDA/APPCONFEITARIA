@@ -15,6 +15,26 @@
   /* (28/10) montar orçamento: 1.200px centralizado */
   html body .layout-main > .orc.orc-ed { max-width: 1200px !important; margin-left: auto !important; margin-right: auto !important; }
   html body .far-wrap, html body .fap-wrap, html body .mas-wrap, html body .cli-root > .cl9 { max-width: none !important; margin-left: 0 !important; margin-right: auto !important; }
+
+  /* ── (28/10 · 4.60) Auditoria do computador: uma coluna só ──
+     Todas as telas param em 1.200px, no centro (antes iam de ponta a ponta: 1.620px num monitor comum).
+     Ficam de fora: os quadros (Pedidos e Orçamentos), que precisam da largura toda, e Produtos (pedido do Bruno).
+     A regra é mais forte que a de 1.680px de cima: por isso a Nova venda agora pega (antes a de 1.680px ganhava). */
+  html body .layout-root { --col: 1200px; --lado: max(32px, calc((100% - 1200px) / 2 + 32px)); }
+  html body .layout-root[data-rota] .layout-main > :not(.cab):not(style):not(:has(> .cab)),
+  html body .layout-root[data-rota] .layout-main > :has(> .cab) > :not(.cab):not(style) {
+    max-width: var(--col) !important; width: 100%; margin-left: auto !important; margin-right: auto !important; box-sizing: border-box;
+  }
+  html body .layout-root[data-rota] .layout-main > :has(> .cab) { max-width: none !important; margin-left: 0 !important; margin-right: 0 !important; }
+  /* formulário e leitura: 900px, começando na linha do título */
+  html body .layout-root[data-rota]:is([data-rota="/configuracoes/notificacoes"], [data-rota="/configuracoes/mensagens"], [data-rota="/noticias"], [data-rota="/relatar-problema"], [data-rota="/solicitar-recurso"]) .layout-main > :not(.cab):not(style) {
+    max-width: 900px !important; margin-left: max(0px, calc((100% - 1200px) / 2)) !important; margin-right: auto !important;
+  }
+  /* o topo segue a coluna: título, busca e "Ver cardápio" sempre no mesmo lugar */
+  html body .layout-root[data-rota] .cab { padding-left: var(--lado) !important; padding-right: var(--lado) !important; }
+  /* fora da regra: quadros e Produtos continuam com a largura toda */
+  html body .layout-root:is(:has(.pdq, .orq), [data-rota="/produtos"]) { --col: 1680px; --lado: 32px; }
+  html body .layout-root[data-rota]:is(:has(.pdq, .orq), [data-rota="/produtos"]) .layout-main > :not(.cab):not(style) { margin-left: 0 !important; }
   /* sem respiro lateral extra: tudo começa na linha do título */
   html body .layout-main > .cl9, html body .cli-root > .cl9, html body .layout-main > .ag3, html body .layout-main > .nv3,
   html body .layout-main > .ct, html body .layout-main > .mk, html body .layout-main > .cf9, html body .layout-main > .ap,
