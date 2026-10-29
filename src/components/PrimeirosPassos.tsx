@@ -262,10 +262,10 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
           {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
         </div>
         {verTodos && <div className="ppb-lista">{passos.map((q, i) => i === atual ? null : (
-          <button type="button" key={q.t} className={`pp-ps${q.feito ? " pp-ps--ok" : ""}`} onClick={q.feito ? undefined : q.abrir} disabled={q.feito}>
+          <button type="button" key={q.t} className={`pp-ps${q.feito ? " pp-ps--ok" : ""}`} onClick={q.abrir}>
             <span className={`pp-ic${q.feito ? " pp-ic--ok" : ""}`}>{q.feito ? I(Check) : <>{q.ic}<i className="pp-n">{i + 1}</i></>}</span>
-            <span className="pp-tx"><b>{q.t}</b><small>{q.feito ? "Feito" : q.s}</small></span>
-            {!q.feito && <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>}
+            <span className="pp-tx"><b>{q.t}</b><small>{q.feito ? "Feito · alterar" : q.s}</small></span>
+            <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>
           </button>
         ))}</div>}
         <button type="button" className="ppb-ver" aria-expanded={verTodos} onClick={() => setVerTodos(v => !v)}>{verTodos ? "Esconder os passos" : `Ver todos os ${passos.length} passos`}</button>
@@ -302,10 +302,10 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
             {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
           </div>
         ) : (
-          <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.feito ? undefined : p.abrir} disabled={p.feito}>
+          <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.abrir}>
             <span className={`pp-ic${p.feito ? " pp-ic--ok" : ""}`}>{p.feito ? I(Check) : <>{p.ic}<i className="pp-n">{i + 1}</i></>}</span>
-            <span className="pp-tx"><b>{p.t}</b><small>{p.feito ? "Feito" : p.s}</small></span>
-            {!p.feito && <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>}
+            <span className="pp-tx"><b>{p.t}</b><small>{p.feito ? "Feito · alterar" : p.s}</small></span>
+            <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>
           </button>
         );
         if (!colunas) return <>{cab}{passos.map(item)}</>;
@@ -348,10 +348,10 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
                 </div>
               )}
               <div className="pp-lista">{passos.map((q, k) => (
-                <button type="button" key={q.t} className={`pp-li${q.feito ? " pp-li--ok" : ""}${k === atual ? " pp-li--vez" : ""}`} onClick={q.feito ? undefined : q.abrir} disabled={q.feito}>
+                <button type="button" key={q.t} className={`pp-li${q.feito ? " pp-li--ok" : ""}${k === atual ? " pp-li--vez" : ""}`} onClick={q.abrir}>
                   <span className="pp-li-n">{q.feito ? <Check size={15} weight="bold" /> : k + 1}</span>
-                  <span className="pp-li-tx"><b>{q.t}</b><small>{q.feito ? "Feito" : q.s}</small></span>
-                  {!q.feito && <CaretRight size={16} weight="bold" className="pp-li-seta" />}
+                  <span className="pp-li-tx"><b>{q.t}</b><small>{q.feito ? "Feito · alterar" : q.s}</small></span>
+                  <CaretRight size={16} weight="bold" className="pp-li-seta" />
                 </button>
               ))}</div>
             </div>
@@ -980,6 +980,8 @@ const CSS = `
   .pp-li--ok .pp-li-n { background: var(--ui-verde); color: #fff; }
   .pp-li--ok .pp-li-tx b { color: var(--ui-texto-2); text-decoration: line-through; text-decoration-color: #C9B9BF; }
   .pp-li--ok .pp-li-tx small { color: var(--ui-verde); }
+  /* (29/10 · 5.07) passo feito também abre (pra alterar) */
+  .pp-li--ok:hover { background: #F7F9F7; }
   .pp-col-b > .pp-ps:first-child { border-top: none; }
   /* (19/10) Início: os passos no mesmo checklist do celular em qualquer tela (antes viravam etiquetas no computador) */
   .pp--inicio .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }
