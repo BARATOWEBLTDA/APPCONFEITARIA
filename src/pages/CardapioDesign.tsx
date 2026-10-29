@@ -461,64 +461,11 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         infoTip={<>As <strong>cores</strong> são do plano PRO.</>}
       />
     )}
-    <div className="ap">
+    {/* (28/10 · 4.61) no computador, duas colunas: à esquerda o que é visual (topo e banners),
+        à direita as escolhas pequenas (tema, link e cores). No celular, um embaixo do outro, na mesma ordem de antes. */}
+    <div className="ap ap--2col">
+      <div className="ap-col ap-col-esq">
 
-      {/* (18/10) Tema do cardápio: Normal ou Natal (outros temas depois) */}
-      <section className="ap-card ap-largo ap-sec-tema">
-        <Cabeca Ic={Sparkle} titulo="Tema do cardápio" apoio="Para as datas especiais" />
-        <div className="ap-temas" role="radiogroup" aria-label="Tema do cardápio">
-          {/* (28/10) só os cartões com a bolinha de marcado (a mini prévia confundia) */}
-          <button type="button" role="radio" aria-checked={tema === "normal"} className="ap-tema" onClick={() => escolherTema("normal")}>
-            <i className="ap-radio" aria-hidden="true" />
-            <span className="ap-tema-pe"><b>Normal</b><small>Suas cores</small></span>
-          </button>
-          <button type="button" role="radio" aria-checked={tema === "natal"} className="ap-tema" onClick={() => escolherTema("natal")}>
-            <i className="ap-radio" aria-hidden="true" />
-            <span className="ap-tema-pe"><b>Natal</b><small>Festivo</small></span>
-          </button>
-        </div>
-        {tema === "natal" && (
-          <div className="ap-tema-cfg">
-            <span className="ap-tema-lb">Imagem da capa</span>
-            <input ref={capaRef} type="file" accept="image/*" hidden onChange={recorteCapa.escolher} />
-            <div className="ap-capa">
-              <div className="ap-capa-img" style={{ backgroundImage: `url(${temaCapa || CAPA_NATAL_PADRAO})` }}>
-                {!temaCapa && <span>Imagem padrão do tema</span>}
-                {uploading === "capa" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
-                {temaCapa && <BotaoIcone rotulo="Voltar para a imagem padrão" variante="neutro" tamanho="p" className="ap-tirar ap-capa-x" onClick={() => salvarCapa("")}><X size={18} weight="bold" /></BotaoIcone>}
-              </div>
-              <div className="ap-capa-bts">
-                <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => capaRef.current?.click()}>Enviar a minha</Botao>
-                <Botao variante="secundario" tamanho="m" icone={<Images size={18} weight="bold" />} onClick={abrirCapaGal}>Biblioteca</Botao>
-              </div>
-            </div>
-            <div className="ap-tema-auto">
-              <span><b>Laço na logo</b><small>Laço de veludo do lado direito</small></span>
-              <button type="button" role="switch" aria-checked={temaLaco} aria-label="Laço na logo" className="ap-chave" onClick={() => mudarLaco(!temaLaco)}><span /></button>
-            </div>
-            <label className="ap-tema-lb" htmlFor="ap-destaque">Produto em destaque</label>
-            <div className="ui-campo-c"><select id="ap-destaque" value={temaDestaque} onChange={e => mudarDestaque(e.target.value)}>
-              <option value="">Automático (a primeira promoção)</option>
-              {meusProdutos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
-            </select></div>
-            <small className="ap-tema-dica">Aparece em destaque com a etiqueta "Mais pedido".</small>
-            <label className="ap-tema-lb" htmlFor="ap-aviso">Aviso no topo do cardápio</label>
-            <div className="ui-campo-c"><input id="ap-aviso" value={temaAviso} maxLength={40} placeholder={AVISO_NATAL_PADRAO} onChange={e => mudarAviso(e.target.value)} /></div>
-            <small className="ap-tema-dica">Fica embaixo do nome. Vazio, não aparece.</small>
-            <div className="ap-tema-auto">
-              <span><b>Ligar e desligar sozinho</b><small>Fora dessas datas volta para o Normal</small></span>
-              <button type="button" role="switch" aria-checked={temaAuto} aria-label="Ligar e desligar sozinho" className="ap-chave" onClick={() => mudarAuto(!temaAuto)}><span /></button>
-            </div>
-            {temaAuto && (
-              <div className="ap-tema-datas">
-                <label><small>De</small><input type="date" value={temaInicio} onChange={e => mudarData("tema_inicio", e.target.value)} /></label>
-                <label><small>Até</small><input type="date" value={temaFim} min={temaInicio || undefined} onChange={e => mudarData("tema_fim", e.target.value)} /></label>
-              </div>
-            )}
-            <Botao variante="secundario" cheio icone={<Eye size={18} weight="bold" />} onClick={() => navigate("/cardapio-preview")}>Ver no meu cardápio</Botao>
-          </div>
-        )}
-      </section>
 
       {/* (18/10) Topo do cardápio: foto do topo e logo numa prévia só, do jeito que o cliente vê */}
       <section className="ap-card ap-largo ap-sec-topo">
@@ -583,7 +530,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         <Botao variante="secundario" cheio icone={<Sparkle size={18} weight="bold" />} onClick={abrirGaleria}>Usar um banner pronto</Botao>
       </section>
 
-      {identityCard}
+      {identityCard && <div className="ap-ident">{identityCard}</div>}
 
       {/* (18/10) Modelo do cardápio oculto: só o Clássico por enquanto */}
       {false && (
@@ -614,6 +561,67 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         </div>
       </section>
       )}
+
+
+
+      </div>
+      <div className="ap-col ap-col-dir">
+      {/* (18/10) Tema do cardápio: Normal ou Natal (outros temas depois) */}
+      <section className="ap-card ap-largo ap-sec-tema">
+        <Cabeca Ic={Sparkle} titulo="Tema do cardápio" apoio="Para as datas especiais" />
+        <div className="ap-temas" role="radiogroup" aria-label="Tema do cardápio">
+          {/* (28/10) só os cartões com a bolinha de marcado (a mini prévia confundia) */}
+          <button type="button" role="radio" aria-checked={tema === "normal"} className="ap-tema" onClick={() => escolherTema("normal")}>
+            <i className="ap-radio" aria-hidden="true" />
+            <span className="ap-tema-pe"><b>Normal</b><small>Suas cores</small></span>
+          </button>
+          <button type="button" role="radio" aria-checked={tema === "natal"} className="ap-tema" onClick={() => escolherTema("natal")}>
+            <i className="ap-radio" aria-hidden="true" />
+            <span className="ap-tema-pe"><b>Natal</b><small>Festivo</small></span>
+          </button>
+        </div>
+        {tema === "natal" && (
+          <div className="ap-tema-cfg">
+            <span className="ap-tema-lb">Imagem da capa</span>
+            <input ref={capaRef} type="file" accept="image/*" hidden onChange={recorteCapa.escolher} />
+            <div className="ap-capa">
+              <div className="ap-capa-img" style={{ backgroundImage: `url(${temaCapa || CAPA_NATAL_PADRAO})` }}>
+                {!temaCapa && <span>Imagem padrão do tema</span>}
+                {uploading === "capa" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
+                {temaCapa && <BotaoIcone rotulo="Voltar para a imagem padrão" variante="neutro" tamanho="p" className="ap-tirar ap-capa-x" onClick={() => salvarCapa("")}><X size={18} weight="bold" /></BotaoIcone>}
+              </div>
+              <div className="ap-capa-bts">
+                <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => capaRef.current?.click()}>Enviar a minha</Botao>
+                <Botao variante="secundario" tamanho="m" icone={<Images size={18} weight="bold" />} onClick={abrirCapaGal}>Biblioteca</Botao>
+              </div>
+            </div>
+            <div className="ap-tema-auto">
+              <span><b>Laço na logo</b><small>Laço de veludo do lado direito</small></span>
+              <button type="button" role="switch" aria-checked={temaLaco} aria-label="Laço na logo" className="ap-chave" onClick={() => mudarLaco(!temaLaco)}><span /></button>
+            </div>
+            <label className="ap-tema-lb" htmlFor="ap-destaque">Produto em destaque</label>
+            <div className="ui-campo-c"><select id="ap-destaque" value={temaDestaque} onChange={e => mudarDestaque(e.target.value)}>
+              <option value="">Automático (a primeira promoção)</option>
+              {meusProdutos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+            </select></div>
+            <small className="ap-tema-dica">Aparece em destaque com a etiqueta "Mais pedido".</small>
+            <label className="ap-tema-lb" htmlFor="ap-aviso">Aviso no topo do cardápio</label>
+            <div className="ui-campo-c"><input id="ap-aviso" value={temaAviso} maxLength={40} placeholder={AVISO_NATAL_PADRAO} onChange={e => mudarAviso(e.target.value)} /></div>
+            <small className="ap-tema-dica">Fica embaixo do nome. Vazio, não aparece.</small>
+            <div className="ap-tema-auto">
+              <span><b>Ligar e desligar sozinho</b><small>Fora dessas datas volta para o Normal</small></span>
+              <button type="button" role="switch" aria-checked={temaAuto} aria-label="Ligar e desligar sozinho" className="ap-chave" onClick={() => mudarAuto(!temaAuto)}><span /></button>
+            </div>
+            {temaAuto && (
+              <div className="ap-tema-datas">
+                <label><small>De</small><input type="date" value={temaInicio} onChange={e => mudarData("tema_inicio", e.target.value)} /></label>
+                <label><small>Até</small><input type="date" value={temaFim} min={temaInicio || undefined} onChange={e => mudarData("tema_fim", e.target.value)} /></label>
+              </div>
+            )}
+            <Botao variante="secundario" cheio icone={<Eye size={18} weight="bold" />} onClick={() => navigate("/cardapio-preview")}>Ver no meu cardápio</Botao>
+          </div>
+        )}
+      </section>
 
       {/* (27/10) nome da loja no link (PRO) */}
       <section className="ap-card ap-largo ap-sec-link">
@@ -677,6 +685,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           );
         })}
       </section>
+      </div>
 
       {/* (17/10) galeria de banners prontos */}
       <Janela aberta={galeria.aberta} aoFechar={() => setGaleria(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Banners prontos"

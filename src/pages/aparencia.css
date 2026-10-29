@@ -254,3 +254,15 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-prontas button, .ap-prontas .ap-outra { width: 36px; height: 36px; }
 .ap-mini { max-width: 340px; }
 .ap-mini-topo { height: 72px; }
+
+/* (28/10 · 4.61) duas colunas no computador. Até 1179px (e no celular), um cartão embaixo do outro, na ordem de sempre */
+.ap--2col .ap-col { display: contents; }
+.ap--2col .ap-sec-tema { order: 1; } .ap--2col .ap-sec-topo { order: 2; } .ap--2col .ap-sec-banners { order: 3; }
+.ap--2col .ap-ident { order: 4; } .ap--2col .ap-sec-modelo { order: 5; } .ap--2col .ap-sec-link { order: 6; } .ap--2col .ap-sec-cores { order: 7; }
+@media (min-width: 900px) { .ap--2col .ap-ident { grid-column: 1 / -1; } }
+@media (min-width: 1180px) {
+  .ap.ap--2col { grid-template-columns: minmax(0, 1.5fr) minmax(360px, 1fr); }
+  .ap--2col .ap-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .ap--2col .ap-col .ap-largo, .ap--2col .ap-ident { grid-column: auto; }
+  .ap--2col .ap-col-esq .ap-banners { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
