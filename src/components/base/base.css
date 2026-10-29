@@ -268,3 +268,16 @@ html[data-ui-janela] .ui-aviso--saindo { animation-name: uiAvisoSomeCima; }
   .ui-bt:active, .ui-bti:active, .ui-cartao--toca:active { transform: none !important; }
   .ui-gira { animation-duration: 1.6s; }
 }
+
+/* (29/10 · 5.04) CaixasEscolha: opções em caixinhas, uma embaixo da outra (bolinha + nome + o que faz) */
+.ui-cx { display: flex; flex-direction: column; gap: 8px; }
+.ui-cx button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 9px 14px; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; color: inherit; cursor: pointer; transition: border-color .15s ease; -webkit-tap-highlight-color: transparent; }
+.ui-cx button:hover:not(:disabled) { border-color: #CFC3C8; }
+.ui-cx button.on, .ui-cx button.on:hover { border-color: var(--ui-escolha); }
+.ui-cx button:disabled { opacity: .5; cursor: default; }
+.ui-cx button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+.ui-cx i { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #CFC3C8; box-sizing: border-box; transition: border-width .15s ease, border-color .15s ease; }
+.ui-cx button.on i { border: 6px solid var(--ui-escolha); }
+.ui-cx span { min-width: 0; display: flex; flex-direction: column; }
+.ui-cx b { font-size: 14.5px; font-weight: 500; color: var(--ui-texto); line-height: 1.3; }
+.ui-cx small { margin-top: 1px; font-size: 12.5px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -1,4 +1,5 @@
 import { pluralSabor } from "@/lib/kitTexto";
+import { CaixasEscolha } from "@/components/base";
 import { useState } from "react";
 import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
 import { Cookie, ForkKnife, PencilSimple, X } from "@phosphor-icons/react";
@@ -140,12 +141,11 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
       </div>
 
       <p className="kq-lbl">Como o cliente compra</p>
-      <div className="kq-seg" role="radiogroup" aria-label="Como o cliente compra">
-        <button type="button" role="radio" aria-checked={k.modo === "fechado"} className={k.modo === "fechado" ? "on" : ""}
-          onClick={() => set({ modo: "fechado", kits: k.kits.length ? k.kits : [{ id: novoId(), qtd: 50, preco: 0 }, { id: novoId(), qtd: 100, preco: 0 }] })}>Pacotes prontos</button>
-        <button type="button" role="radio" aria-checked={k.modo === "livre"} className={k.modo === "livre" ? "on" : ""} onClick={() => set({ modo: "livre" })}>Ele escolhe</button>
-      </div>
-      <p className="kq-dica">{k.modo === "fechado" ? "Kit de 50, de 100… cada um com o seu preço." : "Ele escolhe quantos quer, entre um mínimo e um máximo."}</p>
+      {/* (29/10 · 5.04) caixinhas com o que cada uma faz (antes: seletor de 2 partes + uma dica embaixo) */}
+      <CaixasEscolha rotulo="Como o cliente compra" valor={k.modo === "livre" ? "livre" : "fechado"} opcoes={[
+        { v: "fechado", t: "Pacotes prontos", sub: "Kit de 50, de 100… cada um com o seu preço" },
+        { v: "livre", t: "Ele escolhe", sub: "Quantos quiser, entre um mínimo e um máximo" },
+      ]} onMudar={v => v === "livre" ? set({ modo: "livre" }) : set({ modo: "fechado", kits: k.kits.length ? k.kits : [{ id: novoId(), qtd: 50, preco: 0 }, { id: novoId(), qtd: 100, preco: 0 }] })} />
       {k.modo === "fechado" ? (
         <>
           <ul className="kq-lista">

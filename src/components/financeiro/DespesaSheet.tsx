@@ -2,7 +2,7 @@ import CampoData from '@/components/CampoData'
 import { useMemo, useRef, useState } from "react";
 import { mascaraBRL, lerBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
-import { Botao } from "@/components/base";
+import { Botao, CaixasEscolha } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { faltaNoBanco } from "@/lib/pagamentos";
 import { APORTE, RETIRADA, nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
@@ -125,10 +125,11 @@ export default function DespesaSheet({ onClose, onSalvo, onReceberPedido, tipo =
       <label className="fo-lb" htmlFor="dsp-v">{ehEntrada ? "Quanto entrou?" : "Quanto?"}</label>
       <div className="fo-in fo-in--grande"><span>R$</span><input id="dsp-v" ref={campoValor} inputMode="numeric" autoComplete="off" placeholder="0,00" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
       {!ehEntrada && (
-        <div className="fo-seg fo-seg--topo" role="radiogroup" aria-label="Já pagou?">
-          <button type="button" role="radio" aria-checked={pago} className={pago ? "on" : ""} onClick={() => { setPago(true); setErro(""); }}>Já paguei</button>
-          <button type="button" role="radio" aria-checked={!pago} className={!pago ? "on" : ""} onClick={() => { setPago(false); setErro(""); }}>Vou pagar</button>
-        </div>
+        /* (29/10 · 5.04) caixinhas com o que cada uma faz (antes: seletor de 2 partes) */
+        <CaixasEscolha className="fo-cx" rotulo="Já pagou?" valor={pago ? "pago" : "apagar"} opcoes={[
+          { v: "pago", t: "Já paguei", sub: "Sai do caixa na data em que você pagou" },
+          { v: "apagar", t: "Vou pagar", sub: "Vai para Contas a pagar, com a data de vencimento" },
+        ]} onMudar={v => { setPago(v === "pago"); setErro(""); }} />
       )}
       <p className="fo-lb">{ehEntrada ? "De onde veio?" : "Com o quê?"}</p>
       <div className={`fo-grade${ehEntrada ? " fo-grade--2" : ""}`}>

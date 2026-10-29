@@ -10,7 +10,7 @@ import { cupomDisponivel, MAX_CUPONS_ATIVOS, regraCupom, textoDesconto } from '@
 import type { DadosImagemCupom } from '@/lib/imagemCupom'
 import ImagemCupom from '@/components/marketing/ImagemCupom'
 import { fotoDaLoja, getCardapioUrl, useProfile } from '@/hooks/useProfile'
-import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
+import { Botao, CaixasEscolha, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
 import "@/components/loja/editoresLoja.css"
 import "./entregaPagamento.css"
 import { useState, useEffect, useRef } from "react"
@@ -764,11 +764,11 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
             {/* (20/10) para quem: todos ou só cliente novo (1º pedido, pelo WhatsApp) */}
             <div className="ui-campo">
               <span className="ui-campo-r" id="ep-publico"><span>Para quem</span></span>
-              <div className="ep-seg" role="radiogroup" aria-labelledby="ep-publico">
-                <button type="button" role="radio" aria-checked={cupomForm.publico !== 'primeiro_pedido'} onClick={() => setCupomForm({ ...cupomForm, publico: 'todos' })}>Todos os clientes</button>
-                <button type="button" role="radio" aria-checked={cupomForm.publico === 'primeiro_pedido'} onClick={() => setCupomForm({ ...cupomForm, publico: 'primeiro_pedido' })}>Cliente novo</button>
-              </div>
-              <small className="ep-dica">{cupomForm.publico === 'primeiro_pedido' ? 'Vale só no 1º pedido de cada WhatsApp na sua loja.' : 'Qualquer cliente pode usar.'}</small>
+              {/* (29/10 · 5.04) caixinhas com o que cada uma faz (antes: seletor de 2 partes + dica embaixo) */}
+              <CaixasEscolha rotuloId="ep-publico" valor={cupomForm.publico === 'primeiro_pedido' ? 'primeiro_pedido' : 'todos'} opcoes={[
+                { v: 'todos', t: 'Todos os clientes', sub: 'Qualquer cliente pode usar' },
+                { v: 'primeiro_pedido', t: 'Cliente novo', sub: 'Só no 1º pedido de cada WhatsApp na sua loja' },
+              ]} onMudar={v => setCupomForm({ ...cupomForm, publico: v })} />
             </div>
 
             <p className="ep-sep">Se quiser, limite o cupom</p>

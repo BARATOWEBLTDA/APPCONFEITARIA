@@ -52,3 +52,4 @@ textarea.fo-txt { min-height: 88px; padding: 12px; resize: vertical; line-height
 .ui-janela-pe:has(.fo-bt-curto) { grid-template-columns: 1fr 1fr; }
 .fo-bt-curto .ui-bt-t { white-space: nowrap; }
 @media (max-width: 360px) { .fo-grade button { font-size: 12.5px; } }
+.fo-cx { margin-top: 12px; } /* (29/10 · 5.04) Já paguei / Vou pagar em caixinhas */

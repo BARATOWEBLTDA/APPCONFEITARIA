@@ -9,7 +9,7 @@ import { CalendarBlank, Check, Copy, DotsThreeVertical, FilePdf, MagnifyingGlass
 import AppPageHeader from '@/components/AppPageHeader'
 import CampoData from '@/components/CampoData'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from '@/components/base'
+import { Botao, BotaoIcone, CaixasEscolha, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from '@/components/base'
 import { supabase } from '@/lib/supabase'
 import { explicarErro } from '@/lib/erros'
 import { useProfile } from '@/hooks/useProfile'
@@ -414,11 +414,13 @@ export default function OrcamentoEditar() {
 
           <section className="orc-card">
             <h3>Sinal para reservar a data</h3>
-            <div className="orc-seg" role="radiogroup" aria-label="Sinal">
-              {([['sem', 'Sem sinal'], ['50', '50%'], ['total', 'Total'], ['valor', 'Valor']] as const).map(([k, t]) => (
-                <button key={k} type="button" role="radio" aria-checked={o.sinal_tipo === k} onClick={() => muda({ sinal_tipo: k })}>{t}</button>
-              ))}
-            </div>
+            {/* (29/10 · 5.04) caixinhas com o que cada uma faz (antes: seletor de 4 partes) */}
+            <CaixasEscolha rotulo="Sinal para reservar a data" valor={(o.sinal_tipo || 'sem') as 'sem' | '50' | 'total' | 'valor'} opcoes={[
+              { v: 'sem', t: 'Sem sinal', sub: 'Ela aceita e paga tudo depois' },
+              { v: '50', t: 'Metade (50%)', sub: 'Metade para reservar, o resto na entrega' },
+              { v: 'total', t: 'Tudo antes', sub: 'Paga o valor inteiro para reservar a data' },
+              { v: 'valor', t: 'Outro valor', sub: 'Você escreve quanto é o sinal' },
+            ]} onMudar={k => muda({ sinal_tipo: k })} />
             {o.sinal_tipo === 'valor' && <div className="orc-mt"><Campo rotulo="Valor do sinal" prefixo="R$" inputMode="numeric" placeholder="0,00" value={mostrarReais(Number(o.sinal_valor) || 0)} onChange={e => muda({ sinal_valor: lerReais(e.target.value) })} /></div>}
             <p className="orc-nota">{o.sinal_tipo === 'sem' ? 'Sem sinal: ela aceita e paga tudo depois.' : o.sinal_tipo === 'total' ? `Ela paga tudo (${brl(total)}) para reservar a data.` : <>Sinal de <b>{brl(sinal)}</b> · o resto ({brl(Math.max(0, total - sinal))}) na entrega</>}</p>
           </section>

@@ -4,7 +4,7 @@ import { CaretDown, Check, GearSix, Info, Plus, Sparkle, X } from "@phosphor-ico
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
-import { Botao, Janela } from "@/components/base";
+import { Botao, CaixasEscolha, Janela } from "@/components/base";
 import { lerPredefs, gravarPredefs, chaveTam, type PredefRend } from "@/lib/predefRendimento";
 import { ProductModal } from "@/components/cart/ProductModal";
 import { CartProvider } from "@/context/CartContext";
@@ -472,23 +472,24 @@ function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"]
   return (
     <div className="esc-corpo">
       <p className="esc-lbl">Como é o preço</p>
-      <div className="esc-seg esc-seg--2" role="radiogroup" aria-label="Como é o preço dos tamanhos">
-        <button type="button" role="radio" aria-checked={!porPeso} className={!porPeso ? "on" : ""}
-          onClick={() => {
+      {/* (29/10 · 5.04) caixinhas com o que cada uma faz (antes: seletor de 2 partes) */}
+      <CaixasEscolha rotulo="Como é o preço dos tamanhos" valor={porPeso ? "peso" : "fixo"} opcoes={[
+        { v: "fixo", t: "Preço fixo", sub: "Cada tamanho com o seu preço (P, M, G…)" },
+        { v: "peso", t: "Por quilo", sub: "Um preço do kg, e o cliente escolhe o peso" },
+      ]} onMudar={v => {
+        if (v === "fixo") {
             // (13/10) os pesos (1 kg, 1,5 kg…) não servem de tamanho no preço fixo: a lista volta vazia e aparecem os modelos
             const soPesos = g.opcoes.length > 0 && g.opcoes.every(o => Number(o.peso_kg) > 0 && norm(o.nome) === norm(nomePeso(Number(o.peso_kg))));
             set({ modo_preco_tamanho: "preco_fixo", ...(soPesos || !g.opcoes.length ? { opcoes: opcoesDeNomes(PMG) } : {}) });
             setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda }));
-          }}>Preço fixo</button>
-        <button type="button" role="radio" aria-checked={porPeso} className={porPeso ? "on" : ""}
-          onClick={() => {
+                  } else {
             // (14/10) Pequeno/Médio/Grande não têm peso: no por quilo ficam só os que têm (ex.: "1,5 kg"); sem nenhum, vêm os pesos padrão
             const comPeso = g.opcoes.map(o => ({ ...o, peso_kg: Number(o.peso_kg) > 0 ? o.peso_kg : pesoDoNome(o.nome) })).filter(o => Number(o.peso_kg) > 0);
             // (14/10) vindo do preço fixo, o "preço" guardado era o do menor tamanho: não serve de preço do kg (a edição salvava R$ 40,00 o kg sem perguntar)
             const eraFixo = (g.modo_preco_tamanho || "preco_fixo") !== "por_peso";
             set({ modo_preco_tamanho: "por_peso", opcoes: comPeso.length ? comPeso : opcoesDePesos(PESOS_KG) }); setForm(f => ({ ...f, forma_venda: "kg", ...(eraFixo ? { preco_normal: 0, preco_promocional: 0 } : {}) }));
-          }}>Por quilo</button>
-      </div>
+                  }
+      }} />
 
       {porPeso && (<>
         <p className="esc-lbl">Quais pesos você vende?</p>

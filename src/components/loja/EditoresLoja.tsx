@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Clock, CalendarBlank } from "@phosphor-icons/react";
+import { CaixasEscolha } from "@/components/base";
 import ListaChaves from "@/components/loja/ListaChaves";
 import HorarioSheet from "@/components/HorarioSheet";
 import { situacaoDaLoja, horaTexto } from "@/lib/agendaCardapio";
@@ -36,13 +37,7 @@ export function OpcoesMostrar({ mostrar, onMudar, tituloClasse = "ppf-l", caixas
     <>
       <p className={tituloClasse} id="ed-mostrar">O que aparece no cardápio</p>
       {caixas ? (
-        <div className="edm-cx" role="radiogroup" aria-labelledby="ed-mostrar">
-          {OPCOES_MOSTRAR.map(([v, t, sub]) => (
-            <button type="button" role="radio" aria-checked={mostrar === v} key={v} className={mostrar === v ? "on" : ""} onClick={() => onMudar(v)}>
-              <i aria-hidden="true" /><span><b>{t}</b><small>{sub}</small></span>
-            </button>
-          ))}
-        </div>
+        <CaixasEscolha rotuloId="ed-mostrar" valor={mostrar} onMudar={onMudar} opcoes={OPCOES_MOSTRAR.map(([v, t, sub]) => ({ v, t, sub }))} />
       ) : (
         <div className="edm-seg" role="radiogroup" aria-labelledby="ed-mostrar">
           {([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Não mostrar"]] as const).map(([v, t]) => (
