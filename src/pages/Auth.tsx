@@ -926,7 +926,13 @@ export default function Auth() {
         .auth-vit2 .auth-vit-tx b { font-size: 14.5px; font-weight: 600; }
         .auth-vit2 .auth-vit-tx small { font-size: 12.5px; opacity: .78; white-space: nowrap; }
         .auth-vit2 .auth-vit-seta { flex: none; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin-left: 4px; border-radius: 50%; background: rgba(255,255,255,.14); }
-        .auth-vit2:active { background: rgba(255,255,255,.08); }
+        /* (29/10 · 4.80) celular: num cartão de chocolate translúcido, na largura do cartão de cima (antes ficava solto no fundo) */
+        .auth-vit2 { align-self: stretch; margin: 14px 0 0; padding: 10px 12px 10px 8px; border-radius: 18px;
+          background: rgba(58, 30, 20, .55); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 10px 24px -12px rgba(0,0,0,.5);
+          -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+        .auth-vit2 .auth-vit-tx { flex: 1; min-width: 0; }
+        .auth-vit2 .auth-vit-seta { background: var(--ui-branco); color: var(--ui-rosa-escuro); }
+        .auth-vit2:active { background: rgba(58, 30, 20, .7); }
         /* tablet em pé: cartão maior e a vitrine inteira, em vidro, embaixo */
         @media (min-width: 600px) and (max-width: 899px) and (min-height: 820px) {
           .auth-layout { max-width: 480px; }
