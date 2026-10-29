@@ -75,10 +75,17 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
   const podeAtivar = !iphoneSemApp && push.isSupported && !push.isSubscribed && push.permission !== 'denied'
   const podeAtivarRef = useRef(podeAtivar)
   podeAtivarRef.current = podeAtivar
+  // (29/10 · 4.73) o que aconteceu ao tocar em "Ativar avisos" (antes o tutorial passava direto e não dava pra saber se ativou)
+  const [resAviso, setResAviso] = useState<'' | 'ok' | 'naoPermitiu' | 'erro'>('')
   const ativarRef = useRef(async () => {})
   ativarRef.current = async () => {
     const ok = await push.subscribe()
-    if (!ok) return
+    if (!ok) {
+      setResAviso(typeof Notification !== 'undefined' && Notification.permission === 'default' ? 'naoPermitiu' : Notification?.permission === 'denied' ? '' : 'erro')
+      return
+    }
+    setResAviso('ok')
+    vibrarLeve()
     tocarSom('sucesso')
     // (29/10 · 4.67) prova na hora: um aviso de verdade chega neste aparelho, do jeito que o pedido novo vai chegar
     try {
@@ -123,8 +130,9 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
 
   const avancar = useCallback(() => {
     if (telaRef.current === AVISOS && podeAtivarRef.current) {
-      // o toque no botão pede a permissão do aparelho (precisa sair direto do toque); ativando ou não, segue
-      void ativarRef.current().finally(() => setTela(t => Math.min(TOTAL - 1, t + 1)))
+      // o toque no botão pede a permissão do aparelho (precisa sair direto do toque).
+      // (4.73) Fica nesta tela e mostra o resultado: ativou (o botão vira "Próximo"), não permitiu ou deu erro
+      void ativarRef.current()
       return
     }
     if (telaRef.current < TOTAL - 1) {
@@ -237,7 +245,9 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
               <p className="bv-sobre">Não perca nenhum pedido</p>
               <h1 className="bv-h">Ative os <em>avisos</em> no seu celular</h1>
               {/* (29/10 · 4.72) no celular só o título aparece; o texto fica quando avisa algo (ativado, iPhone ou bloqueado) */}
-              <p className={`bv-p${push.isSubscribed || iphoneSemApp || push.permission === 'denied' ? ' bv-p--aviso' : ''}`}>{push.isSubscribed ? 'Pronto: os avisos estão ativados neste aparelho.'
+              <p className={`bv-p${push.isSubscribed || iphoneSemApp || push.permission === 'denied' || resAviso ? ' bv-p--aviso' : ''}${push.isSubscribed ? ' bv-p--ok' : resAviso ? ' bv-p--erro' : ''}`}>{push.isSubscribed ? (resAviso === 'ok' ? 'Pronto! Os avisos estão ativados neste aparelho. Mandamos um aviso de teste.' : 'Pronto: os avisos estão ativados neste aparelho.')
+                : resAviso === 'naoPermitiu' ? 'Os avisos não foram permitidos. Toque em Ativar avisos e escolha Permitir.'
+                : resAviso === 'erro' ? 'Não deu para ativar agora. Você pode ativar depois em Configurações, Notificações e sons.'
                 : iphoneSemApp ? 'No iPhone, os avisos funcionam com o Doonly instalado na tela de início. No app, mostramos como fazer.'
                 : push.permission === 'denied' ? 'Os avisos estão bloqueados neste navegador. Você pode liberar depois, em Configurações.'
                 : 'Quando um cliente fizer um pedido pelo cardápio, o aviso chega na hora, mesmo com o app fechado. Novidades e dicas do Doonly também.'}</p>

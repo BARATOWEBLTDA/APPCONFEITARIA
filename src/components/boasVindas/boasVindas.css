@@ -515,3 +515,11 @@
   .bv-tela-5 .bv-lock { padding-top: 34px; }
   .bv-tela-5 .bv-lock .bv-notif-hora b { font-size: 54px; }
 }
+/* (29/10 · 4.73) resultado do "Ativar avisos" na própria tela */
+.bv-p.bv-p--ok { color: #86EFAC; font-weight: 600; }
+.bv-p.bv-p--erro { color: #FCD34D; }
+@media (max-width: 899px) and (min-height: 521px) {
+  /* com a frase do resultado embaixo do título, o celular encolhe um pouco pra ela caber em cima do botão */
+  .bv-tela-5:has(.bv-p--aviso) .bv-cel { width: clamp(240px, calc((100dvh - 290px) * .48), 350px); }
+  .bv-tela-5:has(.bv-p--aviso) .bv-cel-tela { height: clamp(260px, calc(100dvh - 290px), 680px); }
+}
