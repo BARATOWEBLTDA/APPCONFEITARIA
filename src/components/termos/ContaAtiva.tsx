@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { CalendarDots, CurrencyDollar, Check, ListBullets, Sparkle, Users } from '@phosphor-icons/react'
+import { CalendarDots, CurrencyDollar, Check, ListBullets, Sparkle, Wallet } from '@phosphor-icons/react'
 import { Botao } from '@/components/base'
 import { Mascote } from '@/components/marca/Mascote'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
@@ -13,7 +13,7 @@ import './termos.css'
 const RECURSOS = [
   { Ic: ListBullets, t: 'Cardápio digital vendendo 24h' },
   { Ic: CalendarDots, t: 'Agenda que lembra cada entrega' },
-  { Ic: Users, t: 'Seus clientes em um lugar só' },
+  { Ic: Wallet, t: 'Quem pagou e quem falta pagar' }, // (28/10 · 4.63) no lugar de "Seus clientes em um lugar só"
   { Ic: CurrencyDollar, t: 'Preço sem erro e lucro na mão' },
 ]
 // confete parado no cabeçalho: [left %, top px, cor, giro]
@@ -41,7 +41,7 @@ export function ContaAtiva({ nome, aoContinuar }: { nome?: string; aoContinuar: 
           ))}
           <li className="ca-mais"><span className="ca-ic"><Sparkle size={18} weight="fill" aria-hidden="true" /></span>+ 15 funcionalidades incríveis</li>
         </ul>
-        <div className="ca-pe"><Botao cheio onClick={aoContinuar}>Ver como funciona</Botao></div>
+        <div className="ca-pe"><Botao cheio onClick={aoContinuar}>Continuar</Botao>{/* (28/10 · 4.63) "Ver como funciona" é o botão da 1ª tela do tutorial */}</div>
       </div>
     </div>
   )
