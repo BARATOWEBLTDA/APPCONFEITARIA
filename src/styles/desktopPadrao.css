@@ -2,7 +2,11 @@
 @media (min-width: 901px) {
 
   /* ── 1. Fundo cinza (igual ao celular) e o conteúdo começando na mesma linha do título ── */
-  html body, html body .layout-root, html body .layout-main { background-color: #F1F2F2 !important; }
+  /* (29/10 · 4.91) cores da marca no computador: página num cinza quente (antes #F1F2F2, frio) e o menu da esquerda em chocolate escuro (antes grafite) */
+  html body, html body .layout-root, html body .layout-main { background-color: #F5F3F2 !important; }
+  html body .layout-root { --sidebar-bg: #24150F; }
+  html body .sidebar .nav-item.active { background: rgba(255, 157, 196, .14); }
+  html body .sidebar .nav-item:hover:not(.active), html body .sidebar .nav-item--group:hover { background: rgba(255, 255, 255, .07); }
   html body .layout-main > :not(.cab):not(style) { margin-left: 0 !important; margin-right: auto !important; }
   /* (23/10) o conteúdo ocupa a largura toda da tela (antes parava em 1.140px ou 760px e sobrava um espaço enorme à direita).
      Só em tela muito larga (acima de ~1.900px de conteúdo) para de crescer, para as linhas não ficarem compridas demais. */
@@ -104,7 +108,7 @@
   html body .cab-ver-cardapio:hover, html body .cab-seja-pro:hover { background: #F6F3F4 !important; }
   html body .cab-aba { color: var(--ui-texto-2); }
   html body .cab-aba:hover { background: #F6F3F4; color: var(--ui-texto); }
-  html body .cab-aba.on { background: #F1F2F2; color: var(--ui-rosa-escuro); }
+  html body .cab-aba.on { background: #F5F3F2; color: var(--ui-rosa-escuro); }
   html body .cab-aba-sep { background: var(--ui-borda); }
   html body .cab-aba-ver { background: #F6F3F4; color: var(--ui-texto); }
   /* botões do topo de Financeiro e Transações: Saída em vermelho claro (dinheiro saindo); os brancos ganham borda */
