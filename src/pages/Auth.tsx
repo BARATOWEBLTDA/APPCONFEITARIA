@@ -8,7 +8,10 @@ import { supabase } from "@/lib/supabase";
 import { definirSessaoTemporaria } from "@/lib/sessaoTemporaria";
 import { mascaraTelefone } from "@/lib/telefone";
 import { explicarErro, erroDeConexao } from "@/lib/erros";
-import { Eye, EyeSlash, Check } from "@phosphor-icons/react";
+import { Eye, EyeSlash, Check, ArrowRight } from "@phosphor-icons/react";
+
+/** (29/10 · 4.78) a página de vendas (o login no computador leva pra lá, pra quem quer conhecer ou comprar o Doonly) */
+const SITE_VENDAS = "https://vendas.doonly.com.br";
 import { destinoDepoisDoLogin } from "@/lib/destinoLogin";
 
 // ───────────────────────────────────────────────────────────────
@@ -504,12 +507,22 @@ export default function Auth() {
       <div className="auth-layout">
 
       {/* Lado da marca: só no computador e no tablet deitado (03/10) */}
-      <div className="auth-marca" aria-hidden="true">
+      <div className="auth-marca">
         <div className="auth-marca-in">
+        <div className="auth-marca-cen" aria-hidden="true">
         <Mascote pose={showCadastro ? 'comemorando' : 'acenando'} className="auth-marca-masc" />
         <NomeDoonly cor="branco" className="auth-marca-nome" />
         <p className="auth-marca-frase">{showCadastro ? 'Vamos começar!' : 'Seus pedidos te esperam'}</p>
         <p className="auth-marca-sub">{showCadastro ? 'Leva menos de 1 minuto.' : 'Pedidos, agenda e financeiro.'}</p>
+        </div>
+        {/* (29/10 · 4.78) vitrine: leva pra página de vendas (abre em outra aba, o login continua aqui) */}
+        <a className="auth-vit" href={SITE_VENDAS} target="_blank" rel="noopener noreferrer">
+          <span className="auth-vit-fotos" aria-hidden="true">
+            <img src="/login/cardapio.webp" alt="" /><img src="/login/pedidos.webp" alt="" /><img src="/login/receber.webp" alt="" />
+          </span>
+          <span className="auth-vit-tx"><b>Conheça tudo que o Doonly faz</b><small>Cardápio, pedidos e financeiro</small></span>
+          <span className="auth-vit-seta" aria-hidden="true"><ArrowRight size={18} weight="bold" /></span>
+        </a>
         </div>
       </div>
 
@@ -1110,6 +1123,29 @@ export default function Auth() {
           /* o conteúdo fica no centro da parte VISÍVEL do painel (no cadastro o cartão é mais alto que a tela) */
           .auth-marca-in { position: sticky; top: 0; height: min(100%, calc(100vh - 48px)); height: min(100%, calc(100dvh - 48px)); display: flex; flex-direction: column; align-items: center; justify-content: center; }
           .auth-marca-masc { display: block; width: 170px; height: auto; filter: drop-shadow(0 12px 16px rgba(80,10,40,.3)); }
+          .auth-marca-cen { display: flex; flex-direction: column; align-items: center; margin-top: -70px; }
+          /* (29/10 · 4.78) vitrine no pé do lado rosa: vidro, 3 telas do app em leque, texto e seta */
+          .auth-vit { position: absolute; left: -12px; right: -12px; bottom: 28px; display: flex; align-items: center; gap: 12px; padding: 12px 14px 12px 10px;
+            border-radius: 20px; background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.28), 0 10px 30px -12px rgba(80,10,40,.45);
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--ui-branco); text-align: left; text-decoration: none;
+            transition: transform .25s ease, background-color .25s ease; }
+          .auth-vit:hover { transform: translateY(-3px); background: rgba(255,255,255,.22); }
+          .auth-vit:focus-visible { outline: 3px solid rgba(255,255,255,.8); outline-offset: 3px; }
+          .auth-vit-fotos { position: relative; flex: none; width: 88px; height: 64px; }
+          .auth-vit-fotos img { position: absolute; top: 4px; left: 27px; width: 34px; height: 58px; border-radius: 7px; object-fit: cover; object-position: top;
+            border: 2px solid rgba(255,255,255,.9); box-shadow: 0 6px 14px rgba(80,10,40,.35); transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+          .auth-vit-fotos img:nth-child(1) { transform: translateX(-24px) rotate(-12deg); }
+          .auth-vit-fotos img:nth-child(2) { z-index: 2; transform: translateY(-2px); }
+          .auth-vit-fotos img:nth-child(3) { transform: translateX(24px) rotate(12deg); }
+          .auth-vit:hover .auth-vit-fotos img:nth-child(1) { transform: translateX(-30px) rotate(-18deg); }
+          .auth-vit:hover .auth-vit-fotos img:nth-child(2) { transform: translateY(-6px) scale(1.06); }
+          .auth-vit:hover .auth-vit-fotos img:nth-child(3) { transform: translateX(30px) rotate(18deg); }
+          .auth-vit-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+          .auth-vit-tx b { font-size: 14.5px; font-weight: 600; line-height: 1.25; white-space: nowrap; }
+          .auth-vit-tx small { font-size: 12.5px; opacity: .88; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .auth-vit-seta { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%;
+            background: var(--ui-branco); color: var(--ui-rosa-escuro); transition: transform .25s ease; }
+          .auth-vit:hover .auth-vit-seta { transform: translateX(3px); }
           .auth-marca-nome { display: block; width: 210px; max-width: 100%; height: auto; margin-top: 14px; }
           .auth-marca-frase { font-size: 24px; font-weight: 700; margin: 22px 0 6px; letter-spacing: -0.01em; } /* guia: 24px, o maior da escala */
           .auth-marca-sub { font-size: 15px; opacity: .92; margin: 0; }
