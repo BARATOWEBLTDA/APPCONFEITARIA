@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+// (29/10 · 5.05) no computador, o passo "Pagamento e entrega" usa o editor completo (4 jeitos de cobrar a entrega)
+const EntregaPagamento = lazy(() => import("@/pages/CheckoutConfigPage"));
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar, type Horario } from "@/components/loja/EditoresLoja";
 import { useNavigate } from "react-router-dom";
@@ -386,6 +388,10 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const [carregou, setCarregou] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+  // (29/10 · 5.05) computador: o editor completo de Entrega e pagamento (o mesmo de Minha loja), em duas colunas.
+  // Ele salva sozinho; o "Salvar" só confere que tem pagamento e entrega marcados e fecha.
+  const largo = useLargo();
+  const [ep, setEp] = useState<{ formasPagamento: string[]; formasEntrega: string[] } | null>(null);
   useEffect(() => {
     let vivo = true;
     supabase.from("profiles").select("formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro").eq("id", uid).maybeSingle().then(({ data }) => {
@@ -421,6 +427,21 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     marcarPagamentoConferido(uid);
     onSalvo();
   };
+  if (largo) {
+    const okPc = !!ep && ep.formasPagamento.length > 0 && ep.formasEntrega.length > 0;
+    return (
+      <Janelinha foco titulo="Pagamento e entrega" onClose={onClose}
+        acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!okPc} onClick={() => { marcarPagamentoConferido(uid); onSalvo(); }}>Salvar</Botao></>}>
+        <div className="ppf-pe">
+          <PassoTopo k="pagamento" />
+          <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
+            <EntregaPagamento embutido parte="entrega" so="pagEnt" onEstado={setEp} />
+          </Suspense>
+          {ep && !okPc && <p className="ppf-p-dica">Marque pelo menos uma forma de pagamento e uma de entrega.</p>}
+        </div>
+      </Janelinha>
+    );
+  }
   const ICONE_PAGA: Record<string, typeof PixLogo> = { pix: PixLogo, dinheiro: Money, credito: CreditCard, debito: CreditCard };
   const SUB_PAGA: Record<string, string> = { pix: "Na hora, sem taxa", dinheiro: "Na entrega ou na retirada", credito: "Na maquininha", debito: "Na maquininha" };
   const campoTaxa = porBairro
@@ -1004,6 +1025,16 @@ const CSS = `
   .ppf-d--end { min-height: 560px; } /* (29/10 · 5.02) já no tamanho do endereço escrito à mão (o maior): não cresce ao achar o CEP */
   .ppf-d--end .ppf-d-prev .mpe { margin-top: 0 !important; }
   .ppf-d--hor { min-height: 490px; } /* (29/10 · 5.02) já na altura de Sábado e Domingo ligados: não cresce ao ligar */
+  /* (29/10 · 5.05) Pagamento e entrega no computador: o editor completo em 3 colunas
+     (pagamento · formas de entrega · como cobrar a entrega), sem rolar na taxa única */
+  .ui-janela:has(.ppf-pe) { width: min(1080px, calc(100vw - 48px)); max-width: none; max-height: min(94dvh, 820px); }
+  .ui-janela:has(.ppf-pe) .ui-janela-pe { display: flex; justify-content: flex-end; }
+  .ui-janela:has(.ppf-pe) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
+  .ppf-pe .ep { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr) minmax(0, .95fr); gap: 14px; align-items: start; width: 100%; max-width: none; margin: 14px 0 0; padding: 0; }
+  .ppf-pe .ep > * { min-width: 0; }
+  .ppf-pe .ep-card { padding: 16px; gap: 12px; box-shadow: none; }
+  .ppf-pe .lch-l { min-height: 52px; padding-top: 5px; padding-bottom: 5px; }
+  .ppf-pe .ep-modo { grid-template-columns: 1fr; }
   .ppf-d-dica1 { margin: 12px 2px 0; font-size: 13.5px; line-height: 1.5; color: var(--ui-texto-2); }
   .ppf-d-ajuda > p { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
   .ppf-d-ajuda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }

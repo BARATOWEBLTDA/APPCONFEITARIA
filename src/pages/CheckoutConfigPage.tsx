@@ -69,7 +69,7 @@ export type EstadoEntregaPagamento = { formasPagamento: string[]; formasEntrega:
 /** (27/10) Gravação da tela de Entrega e pagamento em andamento (Pagamento, Pix e Entrega abrem a mesma tela) */
 let gravacaoEmAndamento: Promise<unknown> | null = null
 
-export default function CheckoutConfigPage({ embutido = false, parte = "tudo", so, onEstado }: { embutido?: boolean; parte?: "tudo" | "entrega" | "cupons"; so?: "pag" | "pix" | "ent"; onEstado?: (e: EstadoEntregaPagamento) => void } = {}) {
+export default function CheckoutConfigPage({ embutido = false, parte = "tudo", so, onEstado }: { embutido?: boolean; parte?: "tudo" | "entrega" | "cupons"; so?: "pag" | "pix" | "ent" | "pagEnt"; onEstado?: (e: EstadoEntregaPagamento) => void } = {}) {
   const verEntrega = parte !== "cupons", verCupons = parte !== "entrega"
   const navigate = useNavigate()
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
@@ -516,6 +516,83 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     </>
   )
 
+  // (29/10 · 5.05) "Como cobrar a entrega" (4 jeitos): fica dentro do cartão da entrega, ou num cartão à parte no passo do computador
+  const blocoTaxa = (
+            <div className="ep-taxa">
+              {/* (28/10 · 4.49) os quatro jeitos de cobrar, nos cartões com bolinha (igual ao Entrega/Retirada do pedido) */}
+              <p className="ep-modo-t">Como cobrar a entrega</p>
+              <div className="ep-modo" role="radiogroup" aria-label="Como cobrar a entrega">
+                {([['fixa', 'Taxa única', 'Mesmo valor pra todos'], ['bairro', 'Por bairro', 'Um valor por bairro'], ['raio', 'Por raio', 'Pela distância em km'], ['cidade', 'Por cidade', 'Um valor por cidade']] as [ModoEntrega, string, string][]).map(([k, n, sub]) => (
+                  <button key={k} type="button" role="radio" aria-checked={modoEntrega === k} className={modoEntrega === k ? 'on' : undefined} onClick={() => { void escolherModo(k) }}>
+                    <i className="ep-modo-bola" aria-hidden="true" /><b>{n}</b><small>{sub}</small>
+                  </button>
+                ))}
+              </div>
+              {modoEntrega === 'raio' ? (
+                <div className="ep-raio">
+                  {!enderecoLoja?.rua || !enderecoLoja?.cidade ? (
+                    <p className="ep-raio-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />Para medir a distância, cadastre o endereço da loja (rua, número e cidade) aqui em Dados da loja.</p>
+                  ) : lojaPonto ? (
+                    <MapaRaios loja={lojaPonto} faixas={faixasMapa} nome={nomeLoja} />
+                  ) : (
+                    <p className="ep-raio-aviso">{buscandoLoja ? 'Achando a sua loja no mapa…' : <><WarningCircle size={18} weight="bold" aria-hidden="true" />Não achamos o endereço da loja no mapa. Confira a rua e o número em Dados da loja.</>}</p>
+                  )}
+                  <p className="ep-modo-t">Faixas de entrega</p>
+                  {raios.map((f, i) => {
+                    const ordem = faixasMapa.findIndex(x => x.km === Number(String(f.km).replace(',', '.')))
+                    return (
+                      <div key={i} className={`ep-faixa${f.ativo ? '' : ' off'}`}>
+                        <button type="button" role="checkbox" aria-checked={f.ativo} aria-label={`Faixa até ${f.km || '?'} km ${f.ativo ? 'ligada' : 'desligada'}`} className="ep-lin-check"
+                          style={f.ativo ? { background: CORES_RAIO[Math.max(0, Math.min(ordem, CORES_RAIO.length - 1))], borderColor: CORES_RAIO[Math.max(0, Math.min(ordem, CORES_RAIO.length - 1))] } : undefined}
+                          onClick={() => setRaios(prev => prev.map((x, k) => k === i ? { ...x, ativo: !x.ativo } : x))}>{f.ativo && <Check size={14} weight="bold" />}</button>
+                        <span className="ep-faixa-ate">Até</span>
+                        <Campo rotulo="" aria-label="Distância em km" inputMode="decimal" placeholder="3" value={f.km} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, km: e.target.value.replace(/[^0-9,]/g, '').slice(0, 5) } : x))} />
+                        <span className="ep-faixa-ate">km</span>
+                        <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={f.valor} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
+                      </div>
+                    )
+                  })}
+                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setRaios(prev => [...prev, { km: maiorKm ? kmCurto(maiorKm + 3) : '3', valor: '', ativo: true }])}>Adicionar faixa</Botao>
+                  <Chave on={foraEntrega} rotulo={maiorKm ? `Entregar mais longe que ${kmCurto(maiorKm)} km` : 'Entregar mais longe'} apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: o cliente vê que está fora da área'} aoMudar={setForaEntrega} />
+                  {foraEntrega && <Campo rotulo="Taxa para mais longe" prefixo="R$" inputMode="numeric" placeholder="0,00" value={foraValor} onChange={e => setForaValor(mascaraReais(e.target.value))} />}
+                  <p className="ep-bairro-dica">Desmarque a faixa para desligar. A distância é em linha reta, a partir do endereço da loja. Taxa 0 é entrega grátis.</p>
+                </div>
+              ) : modoEntrega === 'cidade' ? (
+                <div className="ep-bairros">
+                  {cidades.map((c, i) => (
+                    <div key={i} className={`ep-bairro ep-bairro--check${c.ativo ? '' : ' off'}`}>
+                      <button type="button" role="checkbox" aria-checked={c.ativo} aria-label={`${c.cidade || 'Cidade'} ${c.ativo ? 'ligada' : 'desligada'}`} className="ep-lin-check" onClick={() => setCidades(prev => prev.map((x, k) => k === i ? { ...x, ativo: !x.ativo } : x))}>{c.ativo && <Check size={14} weight="bold" />}</button>
+                      <Campo rotulo="" aria-label="Cidade" placeholder="Cidade" value={c.cidade} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, cidade: e.target.value } : x))} />
+                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={c.valor} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
+                    </div>
+                  ))}
+                  {cidadeRepetida && <p className="ep-bairro-erro" role="alert">Cidade repetida. Deixe só uma.</p>}
+                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setCidades(prev => [...prev, { cidade: '', valor: '', ativo: true }])}>Adicionar cidade</Botao>
+                  <Chave on={foraEntrega} rotulo="Entregar em outras cidades" apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: só nas cidades da lista'} aoMudar={setForaEntrega} />
+                  {foraEntrega && <Campo rotulo="Taxa para outras cidades" prefixo="R$" inputMode="numeric" placeholder="0,00" value={foraValor} onChange={e => setForaValor(mascaraReais(e.target.value))} />}
+                  <p className="ep-bairro-dica">Desmarque a cidade para desligar. O cliente escolhe a cidade e paga a taxa dela. Taxa 0 é entrega grátis.</p>
+                </div>
+              ) : null}
+              {modoEntrega === 'raio' || modoEntrega === 'cidade' ? null : !porBairro ? (
+                <Campo rotulo="Valor da taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={valorEntregaPropria}
+                  dica="Cobrada em todo pedido com entrega própria"
+                  onChange={e => setValorEntregaPropria(mascaraReais(e.target.value))} />
+              ) : (
+                <div className="ep-bairros">
+                  {entregaPorBairro.map((b, i) => (
+                    <div key={i} className="ep-bairro">
+                      <Campo rotulo="" aria-label="Bairro" placeholder="Bairro" value={b.bairro} onChange={e => mudarBairro(i, 'bairro', e.target.value)} />
+                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={b.valor} onChange={e => mudarBairro(i, 'valor', mascaraReais(e.target.value))} />
+                      <button type="button" className="ep-bairro-x" aria-label={`Tirar ${b.bairro || 'este bairro'}`} onClick={() => setEntregaPorBairro(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
+                    </div>
+                  ))}
+                  {bairroRepetido && <p className="ep-bairro-erro" role="alert">Bairro repetido. Deixe só um.</p>}
+                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setEntregaPorBairro(prev => [...prev, { bairro: '', valor: '' }])}>Adicionar bairro</Botao>
+                  <p className="ep-bairro-dica">O cliente escolhe o bairro e paga a taxa dele. Taxa 0 é entrega grátis.</p>
+                </div>
+              )}
+            </div>
+  )
   const formAberto = editandoIndex !== null
 
   return (
@@ -527,7 +604,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
 
         {verEntrega && <>
         {/* Pagamento */}
-        {(!so || so === 'pag') && <section className="ep-card">
+        {(!so || so === 'pag' || so === 'pagEnt') && <section className="ep-card">
           <Cabeca Ic={Wallet} titulo={resumido?.pag ? "Pagamento" : "Formas de pagamento"} apoio={resumido?.pag ? undefined : "Marque só as que você aceita"} acao={botaoEditar('pag')} />
           {resumido?.pag ? (
             <div className="ep-res">
@@ -605,7 +682,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         )}
 
         {/* Entrega */}
-        {(!so || so === 'ent') && <section className="ep-card">
+        {(!so || so === 'ent' || so === 'pagEnt') && <section className="ep-card">
           <Cabeca Ic={Truck} titulo={resumido?.ent ? "Entrega" : "Formas de entrega"} apoio={resumido?.ent ? undefined : "Marque as que o cliente pode escolher"} acao={botaoEditar('ent')} />
           {resumido?.ent ? (
             <div className="ep-res">
@@ -616,83 +693,12 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
             </div>
           ) : (<>
           <ListaChaves itens={ENTREGAS.map(e => ({ chave: e.key, Ic: ICONE_ENT[e.key] || Truck, rotulo: e.label, sub: e.sub, on: formasEntrega.includes(e.key), aoTocar: () => toggleEntrega(e.key) }))} />
-          {formasEntrega.includes('entrega_propria') && (
-            <div className="ep-taxa">
-              {/* (28/10 · 4.49) os quatro jeitos de cobrar, nos cartões com bolinha (igual ao Entrega/Retirada do pedido) */}
-              <p className="ep-modo-t">Como cobrar a entrega</p>
-              <div className="ep-modo" role="radiogroup" aria-label="Como cobrar a entrega">
-                {([['fixa', 'Taxa única', 'Mesmo valor pra todos'], ['bairro', 'Por bairro', 'Um valor por bairro'], ['raio', 'Por raio', 'Pela distância em km'], ['cidade', 'Por cidade', 'Um valor por cidade']] as [ModoEntrega, string, string][]).map(([k, n, sub]) => (
-                  <button key={k} type="button" role="radio" aria-checked={modoEntrega === k} className={modoEntrega === k ? 'on' : undefined} onClick={() => { void escolherModo(k) }}>
-                    <i className="ep-modo-bola" aria-hidden="true" /><b>{n}</b><small>{sub}</small>
-                  </button>
-                ))}
-              </div>
-              {modoEntrega === 'raio' ? (
-                <div className="ep-raio">
-                  {!enderecoLoja?.rua || !enderecoLoja?.cidade ? (
-                    <p className="ep-raio-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />Para medir a distância, cadastre o endereço da loja (rua, número e cidade) aqui em Dados da loja.</p>
-                  ) : lojaPonto ? (
-                    <MapaRaios loja={lojaPonto} faixas={faixasMapa} nome={nomeLoja} />
-                  ) : (
-                    <p className="ep-raio-aviso">{buscandoLoja ? 'Achando a sua loja no mapa…' : <><WarningCircle size={18} weight="bold" aria-hidden="true" />Não achamos o endereço da loja no mapa. Confira a rua e o número em Dados da loja.</>}</p>
-                  )}
-                  <p className="ep-modo-t">Faixas de entrega</p>
-                  {raios.map((f, i) => {
-                    const ordem = faixasMapa.findIndex(x => x.km === Number(String(f.km).replace(',', '.')))
-                    return (
-                      <div key={i} className={`ep-faixa${f.ativo ? '' : ' off'}`}>
-                        <button type="button" role="checkbox" aria-checked={f.ativo} aria-label={`Faixa até ${f.km || '?'} km ${f.ativo ? 'ligada' : 'desligada'}`} className="ep-lin-check"
-                          style={f.ativo ? { background: CORES_RAIO[Math.max(0, Math.min(ordem, CORES_RAIO.length - 1))], borderColor: CORES_RAIO[Math.max(0, Math.min(ordem, CORES_RAIO.length - 1))] } : undefined}
-                          onClick={() => setRaios(prev => prev.map((x, k) => k === i ? { ...x, ativo: !x.ativo } : x))}>{f.ativo && <Check size={14} weight="bold" />}</button>
-                        <span className="ep-faixa-ate">Até</span>
-                        <Campo rotulo="" aria-label="Distância em km" inputMode="decimal" placeholder="3" value={f.km} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, km: e.target.value.replace(/[^0-9,]/g, '').slice(0, 5) } : x))} />
-                        <span className="ep-faixa-ate">km</span>
-                        <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={f.valor} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
-                      </div>
-                    )
-                  })}
-                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setRaios(prev => [...prev, { km: maiorKm ? kmCurto(maiorKm + 3) : '3', valor: '', ativo: true }])}>Adicionar faixa</Botao>
-                  <Chave on={foraEntrega} rotulo={maiorKm ? `Entregar mais longe que ${kmCurto(maiorKm)} km` : 'Entregar mais longe'} apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: o cliente vê que está fora da área'} aoMudar={setForaEntrega} />
-                  {foraEntrega && <Campo rotulo="Taxa para mais longe" prefixo="R$" inputMode="numeric" placeholder="0,00" value={foraValor} onChange={e => setForaValor(mascaraReais(e.target.value))} />}
-                  <p className="ep-bairro-dica">Desmarque a faixa para desligar. A distância é em linha reta, a partir do endereço da loja. Taxa 0 é entrega grátis.</p>
-                </div>
-              ) : modoEntrega === 'cidade' ? (
-                <div className="ep-bairros">
-                  {cidades.map((c, i) => (
-                    <div key={i} className={`ep-bairro ep-bairro--check${c.ativo ? '' : ' off'}`}>
-                      <button type="button" role="checkbox" aria-checked={c.ativo} aria-label={`${c.cidade || 'Cidade'} ${c.ativo ? 'ligada' : 'desligada'}`} className="ep-lin-check" onClick={() => setCidades(prev => prev.map((x, k) => k === i ? { ...x, ativo: !x.ativo } : x))}>{c.ativo && <Check size={14} weight="bold" />}</button>
-                      <Campo rotulo="" aria-label="Cidade" placeholder="Cidade" value={c.cidade} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, cidade: e.target.value } : x))} />
-                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={c.valor} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
-                    </div>
-                  ))}
-                  {cidadeRepetida && <p className="ep-bairro-erro" role="alert">Cidade repetida. Deixe só uma.</p>}
-                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setCidades(prev => [...prev, { cidade: '', valor: '', ativo: true }])}>Adicionar cidade</Botao>
-                  <Chave on={foraEntrega} rotulo="Entregar em outras cidades" apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: só nas cidades da lista'} aoMudar={setForaEntrega} />
-                  {foraEntrega && <Campo rotulo="Taxa para outras cidades" prefixo="R$" inputMode="numeric" placeholder="0,00" value={foraValor} onChange={e => setForaValor(mascaraReais(e.target.value))} />}
-                  <p className="ep-bairro-dica">Desmarque a cidade para desligar. O cliente escolhe a cidade e paga a taxa dela. Taxa 0 é entrega grátis.</p>
-                </div>
-              ) : null}
-              {modoEntrega === 'raio' || modoEntrega === 'cidade' ? null : !porBairro ? (
-                <Campo rotulo="Taxa da entrega própria" prefixo="R$" inputMode="numeric" placeholder="0,00" value={valorEntregaPropria}
-                  dica="Cobrada em todo pedido com entrega própria"
-                  onChange={e => setValorEntregaPropria(mascaraReais(e.target.value))} />
-              ) : (
-                <div className="ep-bairros">
-                  {entregaPorBairro.map((b, i) => (
-                    <div key={i} className="ep-bairro">
-                      <Campo rotulo="" aria-label="Bairro" placeholder="Bairro" value={b.bairro} onChange={e => mudarBairro(i, 'bairro', e.target.value)} />
-                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={b.valor} onChange={e => mudarBairro(i, 'valor', mascaraReais(e.target.value))} />
-                      <button type="button" className="ep-bairro-x" aria-label={`Tirar ${b.bairro || 'este bairro'}`} onClick={() => setEntregaPorBairro(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
-                    </div>
-                  ))}
-                  {bairroRepetido && <p className="ep-bairro-erro" role="alert">Bairro repetido. Deixe só um.</p>}
-                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setEntregaPorBairro(prev => [...prev, { bairro: '', valor: '' }])}>Adicionar bairro</Botao>
-                  <p className="ep-bairro-dica">O cliente escolhe o bairro e paga a taxa dele. Taxa 0 é entrega grátis.</p>
-                </div>
-              )}
-            </div>
-          )}
+          {so !== 'pagEnt' && formasEntrega.includes('entrega_propria') && blocoTaxa}
           </>)}
+        </section>}
+        {/* (29/10 · 5.05) passo "Pagamento e entrega" no computador: "Como cobrar a entrega" num cartão à direita */}
+        {so === 'pagEnt' && <section className="ep-card ep-card--taxa">
+          {formasEntrega.includes('entrega_propria') ? blocoTaxa : <p className="ep-taxa-off">Ligue a <b>Entrega própria</b> para escolher como cobrar a entrega: taxa única, por bairro, por raio ou por cidade.</p>}
         </section>}
 
         </>}

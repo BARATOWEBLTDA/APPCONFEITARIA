@@ -141,3 +141,8 @@
 .ep-faixa .ui-campo-r { display: none; }
 .ep-faixa-cor { width: 10px; height: 10px; border-radius: 50%; }
 .ep-faixa-ate { font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; }
+
+/* (29/10 · 5.05) passo "Pagamento e entrega" no computador: "Como cobrar a entrega" num cartão à parte */
+.ep-card--taxa .ep-taxa { padding-top: 0; border-top: 0; max-width: none; }
+.ep-taxa-off { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+.ep-taxa-off b { font-weight: 600; color: var(--ui-texto); }
