@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import type React from "react";
 import { createPortal } from "react-dom";
 import { X } from "@phosphor-icons/react";
 import { BotaoIcone, Titulo, confirmar } from "@/components/base";
@@ -35,8 +36,18 @@ export default function Folha({ titulo, sub, onClose, children, acoes, umaAcao =
     onClose();
   };
   useSobreposicao(true, fecharComCuidado, caixa);
+  // (29/10 · 4.76) tocar fora só fecha se o toque começou E terminou fora da janela. No celular, ao tocar num campo o
+  // teclado sobe e a janela se mexe: o toque "caía" no fundo e o passo a passo fechava (o do CEP, por exemplo).
+  // No passo a passo (foco), tocar fora não fecha: só o X, o "Agora não" ou o voltar.
+  const toqueFora = useRef(false);
+  const aoTocarFundo = (e: React.PointerEvent) => { toqueFora.current = e.target === e.currentTarget; };
+  const aoClicarFundo = (e: React.MouseEvent) => {
+    const fora = toqueFora.current && e.target === e.currentTarget;
+    toqueFora.current = false;
+    if (fora && !foco) void fecharComCuidado();
+  };
   return createPortal(
-    <div className={`ui-veu ui-veu--centro${foco ? " ui-veu--foco" : ""}`} onClick={fecharComCuidado}>
+    <div className={`ui-veu ui-veu--centro${foco ? " ui-veu--foco" : ""}`} onPointerDown={aoTocarFundo} onClick={aoClicarFundo}>
       <div ref={caixa} tabIndex={-1} className="ui-janela ui-janela--conteudo fo" role="dialog" aria-modal="true" aria-labelledby={id} onClick={e => e.stopPropagation()}
         onInput={() => { mexeu.current = true; }} onChange={() => { mexeu.current = true; }}>
         <span className="ui-janela-alca" aria-hidden="true" />

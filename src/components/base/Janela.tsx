@@ -46,10 +46,14 @@ export function Janela({ aberta, aoFechar, titulo, tipo = 'aviso', texto, icone,
   const idTitulo = useId()
   const fase = useFase(aberta)
   useSobreposicao(aberta, aoFechar, caixa)
+  // (29/10 · 4.76) tocar fora só fecha se o toque começou E terminou no fundo (no celular o teclado mexe a janela e o toque caía fora)
+  const toqueFora = useRef(false)
   if (!aberta && fase === 'fechada') return null
   const aviso = tipo === 'aviso'
   return createPortal(
-    <div className={`ui-veu ui-veu--centro${aberta ? '' : ' ui-veu--saindo'}`} onClick={travada ? undefined : aoFechar}>
+    <div className={`ui-veu ui-veu--centro${aberta ? '' : ' ui-veu--saindo'}`}
+      onPointerDown={e => { toqueFora.current = e.target === e.currentTarget }}
+      onClick={travada ? undefined : e => { const fora = toqueFora.current && e.target === e.currentTarget; toqueFora.current = false; if (fora) aoFechar() }}>
       <div
         ref={caixa} tabIndex={-1} className={`ui-janela ui-janela--${tipo}${className ? ` ${className}` : ''}`}
         role={aviso ? 'alertdialog' : 'dialog'} aria-modal="true" aria-labelledby={idTitulo}
