@@ -177,15 +177,16 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   }
 
   const I = (C: any) => <C size={20} weight="regular" />;
-  const passos: { feito: boolean; ic: ReactNode; t: string; s: string; abrir: () => void }[] = [
+  const passos: { feito: boolean; ic: ReactNode; t: string; s: string; pq: string; abrir: () => void }[] = [
+    // (29/10 · 4.95) pq: por que o passo importa (aparece no bloco do passo da vez, no computador)
     // (23/10) "Criar sua conta" saiu (já está feito e não é configurar o cardápio); nomes curtos que cabem inteiros no celular
-    { feito: estado.logo, ic: I(ImageSquare), t: "Logo da loja", s: "No topo do cardápio", abrir: () => setFolha("logo") },
-    { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Sobre a confeitaria", s: "Uma frase sobre você", abrir: () => setFolha("descricao") },
-    { feito: estado.endereco, ic: I(MapPin), t: "Endereço", s: "Para calcular a entrega", abrir: () => setFolha("endereco") },
-    { feito: estado.horario, ic: I(Clock), t: "Horário", s: "Aberto agora no cardápio", abrir: () => setFolha("horario") },
-    { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga", abrir: () => abrirPasso("pagamento") },
-    { feito: estado.caixa, ic: I(Coins), t: "Saldo do caixa", s: "Quanto tem em caixa hoje", abrir: () => setFolha("caixa") },
-    { feito: estado.produto, ic: I(Basket), t: "Primeiro produto", s: "", abrir: () => navigate("/produtos") },
+    { feito: estado.logo, ic: I(ImageSquare), t: "Logo da loja", s: "No topo do cardápio", pq: "Deixa sua loja com cara profissional e ajuda a cliente a te reconhecer.", abrir: () => setFolha("logo") },
+    { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Sobre a confeitaria", s: "Uma frase sobre você", pq: "Conta em poucas palavras quem você é e o que faz de especial.", abrir: () => setFolha("descricao") },
+    { feito: estado.endereco, ic: I(MapPin), t: "Endereço", s: "Para calcular a entrega", pq: "Com ele, o app calcula a taxa de entrega de cada cliente sozinho.", abrir: () => setFolha("endereco") },
+    { feito: estado.horario, ic: I(Clock), t: "Horário", s: "Aberto agora no cardápio", pq: "A cliente vê se você está aberta e para quando pode encomendar.", abrir: () => setFolha("horario") },
+    { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga", pq: "Diga se aceita Pix, cartão ou dinheiro, e se entrega ou só retirada.", abrir: () => abrirPasso("pagamento") },
+    { feito: estado.caixa, ic: I(Coins), t: "Saldo do caixa", s: "Quanto tem em caixa hoje", pq: "Assim o app mostra quanto dinheiro você tem de verdade, todo dia.", abrir: () => setFolha("caixa") },
+    { feito: estado.produto, ic: I(Basket), t: "Primeiro produto", s: "", pq: "Com o primeiro doce cadastrado, o cardápio já pode receber pedidos.", abrir: () => navigate("/produtos") },
   ];
   const ultimoQueFalta = passos.filter(p => !p.feito).length === 1;
   passos[passos.length - 1].s = ultimoQueFalta ? "Falta só isso" : "Seu primeiro doce";
@@ -259,16 +260,33 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
           </button>
         );
         if (!colunas) return <>{cab}{passos.map(item)}</>;
+        // (29/10 · 4.95) computador: à esquerda o passo da vez num bloco com o porquê e o mascote;
+        // à direita a lista com os 7 passos (o da vez marcado só pelo número rosa, sem fundo)
+        const p = atual >= 0 ? passos[atual] : null;
         return (
           <div className="pp-cols">
-            <div className="pp-col-a">{cab}{atual >= 0 && item(passos[atual], atual)}
-              {/* (29/10 · 4.94) o mascote da prancheta preenche o espaço que sobrava embaixo do passo da vez */}
-              <div className="pp-masc">
-                <Mascote pose="prancheta" className="pp-masc-img" />
-                <p className="pp-masc-b"><b>Eu te ajudo nisso!</b>Em uns 5 minutos seu cardápio fica pronto para vender.</p>
-              </div>
+            <div className="pp-col-a">
+              {cab}
+              {p && (
+                <div className="pp-hero" ref={atRef}>
+                  <div className="pp-hero-tx">
+                    <small className="pp-hero-n">Passo {atual + 1} de {passos.length}</small>
+                    <b className="pp-hero-t">{p.t}</b>
+                    <p className="pp-hero-p">{p.pq}</p>
+                    <button type="button" className="pp-hero-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}<CaretRight size={16} weight="bold" aria-hidden="true" /></button>
+                  </div>
+                  <Mascote pose="prancheta" className="pp-hero-masc" />
+                  {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
+                </div>
+              )}
             </div>
-            <div className="pp-col-b">{passos.map((p, i) => i === atual ? null : item(p, i))}</div>
+            <div className="pp-col-b">{passos.map((q, k) => (
+              <button type="button" key={q.t} className={`pp-ps${q.feito ? " pp-ps--ok" : ""}${k === atual ? " pp-ps--vez" : ""}`} onClick={q.feito ? undefined : q.abrir} disabled={q.feito}>
+                <span className={`pp-ic${q.feito ? " pp-ic--ok" : k === atual ? " pp-ic--at" : ""}`}>{q.feito ? I(Check) : <>{q.ic}<i className="pp-n">{k + 1}</i></>}</span>
+                <span className="pp-tx"><b>{q.t}</b><small>{q.feito ? "Feito" : q.s}</small></span>
+                {!q.feito && <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>}
+              </button>
+            ))}</div>
           </div>
         );
       })()}
@@ -780,14 +798,19 @@ const CSS = `
      direita: a lista dos passos. Cada coluna com a largura de um celular. */
   .pp-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
   .pp-col-a .pp-at { margin-top: 16px; }
-  /* (29/10 · 4.94) a coluna da esquerda estica até a altura da lista; o mascote fica no pé dela */
+  /* (29/10 · 4.95) o passo da vez num bloco: texto e botão à esquerda, mascote à direita (sem fundo rosa) */
   .pp-cols { align-items: stretch; }
   .pp-col-a { display: flex; flex-direction: column; }
-  .pp-masc { margin-top: auto; display: flex; align-items: flex-end; gap: 14px; padding-top: 14px; }
-  .pp-masc-img { width: 92px; height: auto; flex: none; margin-bottom: -6px; }
-  .pp-masc-b { position: relative; margin: 0 0 18px; padding: 12px 14px; background: #FBF4F6; border: 1px solid #F1DDE4; border-radius: 14px; font-size: 13.5px; line-height: 1.45; font-weight: 400; color: var(--ui-texto-2, #5B4A50); }
-  .pp-masc-b b { display: block; margin-bottom: 2px; font-size: 14px; font-weight: 500; color: var(--ui-texto, #2E1F24); }
-  .pp-masc-b::before { content: ""; position: absolute; left: -7px; bottom: 16px; width: 12px; height: 12px; background: #FBF4F6; border-left: 1px solid #F1DDE4; border-bottom: 1px solid #F1DDE4; transform: rotate(45deg); }
+  .pp-col-a .pp-segs { margin-bottom: 0; }
+  .pp-hero { flex: 1; display: flex; align-items: center; gap: 16px; margin-top: 18px; padding: 22px 8px 22px 24px; border: 1px solid var(--ui-linha); border-radius: 16px; background: #FCFAF9; }
+  .pp-hero-tx { flex: 1; min-width: 0; }
+  .pp-hero-n { display: block; font-size: 12.5px; font-weight: 500; color: var(--ui-rosa-escuro, #B83A66); }
+  .pp-hero-t { display: block; margin-top: 4px; font-size: 19px; font-weight: 600; letter-spacing: -.01em; color: #2C2C2A; }
+  .pp-hero-p { margin: 6px 0 0; max-width: 340px; font-size: 14px; line-height: 1.5; font-weight: 400; color: var(--ui-texto-2); }
+  .pp-hero-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 16px; padding: 0 20px; border: 0; border-radius: var(--ui-raio-botao); font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-branco); background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; white-space: nowrap; }
+  .pp-hero-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ui-rosa-escuro); }
+  .pp-hero-masc { flex: none; width: 128px; height: auto; align-self: flex-end; margin-bottom: -10px; }
+  .pp-col-b .pp-ps--vez .pp-tx b { color: var(--ui-rosa-escuro, #B83A66); }
   .pp-col-b > .pp-ps:first-child { border-top: none; }
   /* (19/10) Início: os passos no mesmo checklist do celular em qualquer tela (antes viravam etiquetas no computador) */
   .pp--inicio .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }
