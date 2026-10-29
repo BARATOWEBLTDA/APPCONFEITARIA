@@ -480,7 +480,7 @@ function Celular({ children, className = '' }: { children: ReactNode; className?
 
 const PRINT_CEL = '/tutorial/cardapio-exemplo.jpg?v=3'
 const PRINT_CEL_MENU = '/tutorial/cardapio-exemplo-nav.jpg?v=3'
-const PRINT_PC = '/tutorial/cardapio-exemplo-pc.jpg?v=3'
+const PRINT_PC = '/tutorial/cardapio-pc.webp?v=1' // (29/10 · 4.82) print do cardápio de verdade da Doce Formiga, em alta
 
 function DemoCardapio() {
   return (
