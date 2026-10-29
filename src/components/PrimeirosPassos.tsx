@@ -730,13 +730,22 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
   }, [end.rua, end.numero, end.cidade, end.estado, achou, manual]);
   const ruaNum = [end.rua.trim(), end.numero.trim()].filter(Boolean).join(", ");
   const selo = !busca ? "" : mostrar === "nada" ? "O endereço não aparece no cardápio" : mostrar === "completo" ? ([ruaNum, end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf) : cidadeUf;
+  // (29/10 · 5.02) computador: janela larga já no tamanho maior, com o mapa sempre à direita
+  const largo = useLargo();
   const campo = (k: keyof typeof end, rotulo: string, ph = "", extra: any = {}) => (
     <div className="ppf-f"><label className="ppf-l" htmlFor={`pp-${k}`}>{rotulo}</label>
       <input id={`pp-${k}`} className="ppf-in" autoComplete="off" value={end[k]} placeholder={ph} onChange={e => setEnd(x => ({ ...x, [k]: e.target.value }))} {...extra} /></div>
   );
   return (
     <Janelinha foco titulo="Endereço da loja" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
+      <div className={largo ? "ppf-d ppf-d--2col ppf-d--end" : undefined}>
+      {largo && (
+        <div className="ppf-d-prev">
+          <p>No cardápio, em Sobre a loja</p>
+          <MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo || "Digite o CEP para ver no mapa"} altura={500} />
+        </div>
+      )}
       <PassoTopo k="endereco" />
       {/* (23/10) o CEP vem primeiro; o mapa só aparece depois que acha o endereço, embaixo, mostrando o que o cliente vê */}
       {!manual && (<>
@@ -768,9 +777,10 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
       {(achou || manual) && (<>
         <OpcoesMostrar mostrar={mostrar} onMudar={setMostrar} tituloClasse="ppf-l ppf-e-tit" />
         {/* (29/10 · 4.76) sem rolar no celular: o mapa encolhe em tela baixa e a frase de baixo saiu (o selo do mapa já diz o que aparece) */}
-        <div className="ppf-e-mapa"><MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo} altura={124} /></div>
+        {!largo && <div className="ppf-e-mapa"><MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo} altura={124} /></div>}
       </>)}
       {erro && <p className="ppf-erro">{erro}</p>}
+      </div>
     </Janelinha>
   );
 }
@@ -979,7 +989,9 @@ const CSS = `
   .ppf-d--2col > .ppf-d-prev { position: absolute; top: 0; right: 0; width: 340px; }
   .ppf-d-prev > p { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .ppf-d--2col .ppf-d-campo textarea { height: 190px; font-size: 15.5px; line-height: 1.55; }
-  .ppf-d--hor { min-height: 404px; }
+  .ppf-d--end { min-height: 560px; } /* (29/10 · 5.02) já no tamanho do endereço escrito à mão (o maior): não cresce ao achar o CEP */
+  .ppf-d--end .ppf-d-prev .mpe { margin-top: 0 !important; }
+  .ppf-d--hor { min-height: 490px; } /* (29/10 · 5.02) já na altura de Sábado e Domingo ligados: não cresce ao ligar */
   .ppf-d-dica1 { margin: 12px 2px 0; font-size: 13.5px; line-height: 1.5; color: var(--ui-texto-2); }
   .ppf-d-ajuda > p { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
   .ppf-d-ajuda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
