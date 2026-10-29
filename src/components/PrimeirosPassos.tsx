@@ -161,10 +161,14 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     const agora = folha as Passo | null;
     if (pular && agora) pulados.current.add(agora);
     setFolha(null); if (!pular) avisarPassos();
+    // (29/10 · 4.99) no computador não abre o próximo sozinho: o cartão marca o passo e a pessoa escolhe o próximo
+    if (largo) { if (!pular && agora) avisar(passosFaltando(agora) ? "Salvo!" : "Tudo configurado!", { tipo: "ok" }); return; }
     const prox = agora ? proximoPasso(estado, agora, pulados.current) : null;
     if (prox) window.setTimeout(() => abrirPasso(prox), 250);
     else if (agora) avisar(pulados.current.size ? "Pronto por agora!" : "Tudo configurado!", { tipo: "ok" });
   };
+  // quantos passos ainda faltam além deste que acabou de ser feito
+  const passosFaltando = (feito: Passo) => ORDEM.some(k => k !== feito && !estado[k]);
   const salvo = (patch?: Record<string, any>) => seguir(false, patch);
   // logo pelo atalho do computador: mesmo caminho do "salvar e continuar" (abre o próximo passo que falta)
   const escolheuLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,9 +181,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     const logoUrl = await subirLogo(uid, blob);
     if (!logoUrl) return;
     setPerfilNovo(p => ({ ...p, logo_url: logoUrl })); avisarPassos();
-    const prox = proximoPasso(estado, "logo", pulados.current);
-    if (prox) window.setTimeout(() => abrirPasso(prox), 250);
-    else avisar("Tudo configurado!", { tipo: "ok" });
+    avisar(passosFaltando("logo") ? "Logo salva!" : "Tudo configurado!", { tipo: "ok" });
   };
   // conta do Google com foto: continua a janela, pra escolher entre usar a foto ou trocar
   const logoDireto = largo && !(estado.perfil?.foto_url && !estado.perfil?.logo_url);
