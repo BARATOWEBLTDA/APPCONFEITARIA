@@ -434,7 +434,7 @@
 .bv-pd { position: relative; width: 100%; max-width: 420px; min-height: 260px; }
 .bv-pd-palco { position: absolute; left: 50%; top: 0; transform-origin: top center; box-sizing: border-box; overflow: hidden; padding: 0 12px 14px; border-radius: 22px; background: #F1F2F2; color: var(--ui-texto); font-family: var(--font-base); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); pointer-events: none; }
 .bv-pd-tit { margin: 0 -12px; padding: 14px 0; background: var(--ui-branco); border-bottom: 1px solid var(--ui-borda); text-align: center; font-size: 16px; font-weight: 600; }
-.bv-pd-vazio { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 110px 30px 0; text-align: center; }
+.bv-pd-vazio { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 70px 30px 0; text-align: center; }
 .bv-pd-vazio span { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; margin-bottom: 8px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .bv-pd-vazio b { font-size: 16px; font-weight: 600; }
 .bv-pd-vazio small { max-width: 220px; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
@@ -615,3 +615,11 @@
 
 /* (29/10 · 4.83) texto do cardápio no computador: duas frases, uma em cada bloco de linhas */
 @media (min-width: 900px) { .bv-p.bv-p--card { max-width: 440px; font-size: 16px; text-wrap: wrap; } .bv-p--card span { display: block; margin-top: 4px; text-wrap: balance; } }
+
+/* (29/10 · 4.84) pedido aberto mais limpo: foto da cliente e as escolhas do bolo em três colunas (sem repetir foto e nome) */
+.bv-pd-av { position: relative; overflow: hidden; }
+.bv-pd-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.bv-pd-it { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 12px; border-top: 1px solid var(--ui-linha); }
+.bv-pd-it > div { min-width: 0; padding: 8px 10px; border-radius: 10px; background: #F7F4F5; }
+.bv-pd-it dt { font-size: 11.5px; color: var(--ui-texto-3); }
+.bv-pd-it dd { margin: 2px 0 0; font-size: 13px; font-weight: 500; line-height: 1.3; color: var(--ui-texto); }

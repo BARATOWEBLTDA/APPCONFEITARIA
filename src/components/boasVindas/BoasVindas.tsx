@@ -511,9 +511,11 @@ const nada = () => {}
    2. o aviso de pedido novo desce do topo, com o som de pedido e vibração;
    3. o pedido da Camila entra em Novos e o dedo toca em Aceitar;
    4. o pedido vai pra Agendados e se abre embaixo com tudo: etapas, cliente e o bolo. Para aí. ───────── */
+// (29/10 · 4.84) a foto de verdade do Floresta Negra da Doce Formiga
+const FOTO_FLORESTA = '/tutorial/boas-vindas/produtos/floresta-negra.webp'
 const ITEM_DEMO = {
-  nome_produto: 'Bolo Morango e Nata', quantidade: 1, valor_unitario: 150, imagem_url: PRODUTO.bolo,
-  personalizacoes: { tamanho: { nome: '2 kg', peso_kg: 2 }, massa: { nome: 'Massa branca' }, sabor: { nome: 'Nata com morango' }, cobertura: { nome: 'Chantilly' } },
+  nome_produto: 'Bolo Floresta Negra', quantidade: 1, valor_unitario: 150, imagem_url: FOTO_FLORESTA,
+  personalizacoes: { tamanho: { nome: '2 kg', peso_kg: 2 }, massa: { nome: 'Chocolate' }, sabor: { nome: 'Cereja com chantilly' } },
 }
 const DIAS_ENTREGA = 3
 const pedidoDemo = (status: string): Pedido => ({
@@ -567,27 +569,28 @@ function DemoPedidos() {
   const aberto = passo === 'aberto'
   const temPedido = passo !== 'vazio' && passo !== 'aviso'
   const p = pedidoDemo(aberto ? 'agendado' : 'aguardando_aceite')
-  const nSit = { aceitar: aberto ? 0 : 1, agenda: aberto ? 1 : 0, prontos: 0 }
-  const abas: [string, string, number | null, boolean][] = [['aceitar', 'Novos', nSit.aceitar, !aberto], ['agenda', 'Agendados', nSit.agenda, aberto], ['prontos', 'Prontos', 0, false], ['concluidos', 'Concluídos', null, false]]
-  const dia = (() => { const d = new Date(); d.setDate(d.getDate() + DIAS_ENTREGA); const sem = d.toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/-feira/, ''); return `${sem.charAt(0).toUpperCase() + sem.slice(1)}, ${d.getDate()}/${d.getMonth() + 1}` })()
+  // (4.84) uma confeitaria com movimento: outros pedidos já agendados, prontos e concluídos (a Camila soma 1 em Novos e depois em Agendados)
+  const nSit = { aceitar: temPedido && !aberto ? 1 : 0, agenda: aberto ? 9 : 8, prontos: 3, concluidos: 27 }
+  const abas: [string, string, number, boolean][] = [['aceitar', 'Novos', nSit.aceitar, !aberto], ['agenda', 'Agendados', nSit.agenda, aberto], ['prontos', 'Prontos', nSit.prontos, false], ['concluidos', 'Concluídos', nSit.concluidos, false]]
+  const dia = (() => { const d = new Date(); d.setDate(d.getDate() + DIAS_ENTREGA); const sem = d.toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/-feira/, ''); return `${sem.charAt(0).toUpperCase() + sem.slice(1)}, ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}` })()
   return (
     <div className="bv-pd bv-cai" ref={caixa} aria-hidden="true">
       <div className="bv-pd-palco" ref={palco} style={{ width: PED_LARGURA, height: PED_ALTURA, transform: `translateX(-50%) scale(${escala})` }}>
         <p className="bv-pd-tit">Meus pedidos</p>
+        <div className="pdk-abas">
+          {abas.map(([k, nome, n, on]) => (
+            <span key={k} className={`pdk-aba${k === 'aceitar' && n ? ' alerta' : ''}`} aria-selected={on}>
+              <span className="pdk-aba-t">{nome}</span><i key={`${k}${n}`} className="bv-pd-n">{n}</i>
+            </span>
+          ))}
+        </div>
         {!temPedido ? (
           <div className="bv-pd-vazio">
             <span><Receipt size={30} /></span>
-            <b>Nenhum pedido ainda</b>
-            <small>Quando chegar uma encomenda, ela aparece aqui.</small>
+            <b>Nenhum pedido para aceitar</b>
+            <small>Os pedidos do cardápio aparecem aqui para você aceitar.</small>
           </div>
         ) : (<>
-          <div className="pdk-abas">
-            {abas.map(([k, nome, n, on]) => (
-              <span key={k} className={`pdk-aba${k === 'aceitar' && n ? ' alerta' : ''}`} aria-selected={on}>
-                <span className="pdk-aba-t">{nome}</span>{n === null ? <i className="pdk-aba-sem">0</i> : <i key={`${k}${n}`} className="bv-pd-n">{n}</i>}
-              </span>
-            ))}
-          </div>
           {aberto ? <p className="pdk-t">{dia}<i>1</i></p> : <div className="pdk-topo"><span>Chegou pelo cardápio</span></div>}
           <div className={`bv-pd-cartao${aberto ? ' aberto' : ''}${passo === 'novo' || passo === 'toca' ? ' entra' : ''}${passo === 'toca' ? ' toque' : ''}`}>
             <LinhaCompacta p={p} aoAbrir={nada} aoAvancar={nada} aoMenu={nada} aoEndereco={nada} />
@@ -597,20 +600,16 @@ function DemoPedidos() {
                   {ETAPAS_DEMO.map((n, i) => <li key={n} className={i === 0 ? 'feita' : i === 1 ? 'atual' : ''}><i>{i === 0 ? <Check size={13} weight="bold" /> : i + 1}</i><span>{n}</span></li>)}
                 </ol>
                 <div className="bv-pd-cli">
-                  <span className="bv-pd-av">CR</span>
+                  <span className="bv-pd-av">CR<img src="/tutorial/boas-vindas/clientes/camila.webp" alt="" onError={e => { e.currentTarget.style.display = 'none' }} /></span>
                   <div><b>Camila Rocha</b><small>(11) 97841-4991</small><small>Origem: <b>Cardápio digital</b></small></div>
                   <span className="bv-pd-zap"><IconeWhatsApp size={20} /></span>
                 </div>
-                <div className="bv-pd-it">
-                  <img src={PRODUTO.bolo} alt="" />
-                  <div>
-                    <b>1x Bolo Morango e Nata</b>
-                    <p><span>Tamanho:</span> 2 kg</p>
-                    <p><span>Massa:</span> Massa branca</p>
-                    <p><span>Sabor:</span> Nata com morango</p>
-                    <p><span>Cobertura:</span> Chantilly</p>
-                  </div>
-                </div>
+                {/* (4.84) o bolo já está na linha de cima: aqui só o que ela escolheu, sem repetir a foto e o nome */}
+                <dl className="bv-pd-it">
+                  <div><dt>Tamanho</dt><dd>2 kg</dd></div>
+                  <div><dt>Massa</dt><dd>Chocolate</dd></div>
+                  <div><dt>Recheio</dt><dd>Cereja com chantilly</dd></div>
+                </dl>
                 <p className="bv-pd-pg"><span>Sinal de R$ 75,00 pago no Pix</span><b>falta R$ 75,00</b></p>
               </div>
             </div>
@@ -619,7 +618,7 @@ function DemoPedidos() {
         {(passo === 'aviso' || (passo !== 'vazio' && !avisoSaiu)) && (
           <div className={`bv-notif-cartao bv-pd-aviso${avisoSaiu ? ' sai' : ''}`}>
             <div className="bv-notif-cab"><img src="/Sistema/icon-192.png" alt="" /><span>Doonly</span><em>agora</em></div>
-            <div className="bv-notif-corpo"><div><b>Novo pedido</b><p>Camila Rocha fez um pedido de R$ 150,00. Toque para ver.</p></div><img src={PRODUTO.bolo} alt="" /></div>
+            <div className="bv-notif-corpo"><div><b>Novo pedido</b><p>Camila Rocha fez um pedido de R$ 150,00. Toque para ver.</p></div><img src={FOTO_FLORESTA} alt="" /></div>
           </div>
         )}
         {dedo && <span className={`bv-rec-dedo${passo === 'toca' ? ' aperta' : ''}`} style={{ left: dedo.x, top: dedo.y }} />}

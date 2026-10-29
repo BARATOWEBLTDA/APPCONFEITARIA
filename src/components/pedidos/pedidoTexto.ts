@@ -183,7 +183,7 @@ export function dataCurta(data?: string | null, hora?: string | null): string {
   if (dias === 0) return `Hoje${h}`
   if (dias === 1) return `Amanhã${h}`
   const sem = SEMANA[d.getDay()].slice(0, 3)
-  return `${sem.charAt(0).toUpperCase()}${sem.slice(1)}, ${d.getDate()}/${d.getMonth() + 1}${h}`
+  return `${sem.charAt(0).toUpperCase()}${sem.slice(1)}, ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}${h}` // (29/10 · 4.84) 01/11, como no resto do app
 }
 export const horaCurta = (h?: string | null) => hora5(h)
 
