@@ -55,6 +55,17 @@ function PassoTopo({ k }: { k: Passo }) {
   );
 }
 
+/** (29/10) computador (901px ou mais): as janelas dos passos ganham duas colunas */
+function useLargo() {
+  const [largo, setLargo] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 901px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 901px)");
+    const f = () => setLargo(mq.matches);
+    mq.addEventListener("change", f); return () => mq.removeEventListener("change", f);
+  }, []);
+  return largo;
+}
+
 const maskCep = (v: string) => { const d = v.replace(/\D/g, "").slice(0, 8); return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d; };
 
 export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?: Local; onEstado?: (completo: boolean) => void }) {
@@ -475,6 +486,16 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   const [diferencial, setDiferencial] = useState("");
   const [opcoes, setOpcoes] = useState<string[] | null>(null);
   const [escolhida, setEscolhida] = useState(0);
+  // (29/10 · 5.00) computador: janela larga com a prévia do cardápio ao lado (a logo dela, se já tiver)
+  const largo = useLargo();
+  const [design, setDesign] = useState<DadosPrevia>({});
+  useEffect(() => {
+    if (!largo) return;
+    let vivo = true;
+    supabase.from("profiles").select("cor_navbar, cor_borda, cor_nome, banner_topo_url, horario, loja_pausada").eq("id", uid).maybeSingle()
+      .then(({ data }) => { if (vivo && data) setDesign(data as DadosPrevia); }, () => {});
+    return () => { vivo = false; };
+  }, [uid, largo]);
   const alternar = (lista: string[], set: (v: string[]) => void, v: string) => set(lista.includes(v) ? lista.filter(x => x !== v) : [...lista, v]);
   const gerar = async () => {
     setGerando(true); setErro("");
@@ -509,8 +530,14 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   };
   return (
     <Janelinha foco titulo="Sobre a sua confeitaria" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim()} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
-      <div className="ppf-d">
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim()} carregando={salvando} onClick={salvar}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
+      <div className={`ppf-d${largo ? " ppf-d--2col" : ""}`}>
+        {largo && (
+          <div className="ppf-d-prev">
+            <p>Prévia no seu cardápio</p>
+            <PreviaTopoCardapio d={{ ...design, ...perfil, nome_loja: nomeLoja, descricao_loja: txt }} semDescricao="Sua descrição aparece aqui enquanto você escreve." />
+          </div>
+        )}
         <PassoTopo k="descricao" />
 
         {perguntando ? (
@@ -565,7 +592,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
               </div>
             </div>
             {/* (23/10) a ajuda vem embaixo do campo (antes era uma caixa rosa em cima) */}
-            <div className="ppf-d-ajuda">
+            {largo ? <p className="ppf-d-dica1">Conte o que você faz, para quais ocasiões e o que tem de especial.</p> : <div className="ppf-d-ajuda">
               <p>O que escrever</p>
               <ul>
                 <li><Check size={14} weight="bold" aria-hidden="true" /><b>O que você faz:</b> bolos, doces, salgados</li>
@@ -573,7 +600,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
                 <li><Check size={14} weight="bold" aria-hidden="true" /><b>Seu diferencial:</b> receita da família</li>
               </ul>
               <small>Aparece embaixo do nome, no topo do cardápio.</small>
-            </div>
+            </div>}
           </>
         )}
         {erro && <p className="ppf-erro">{erro}</p>}
@@ -925,6 +952,15 @@ const CSS = `
   .ppf-d-l { display: block; margin: 16px 2px 8px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
   .ppf-d-l + .ppf-d-campo { margin-top: 0; }
   .ppf-d-ajuda { margin-top: 14px; padding: 0 2px; }
+  /* (29/10 · 5.00) computador: janela larga, campo à esquerda e a prévia do cardápio à direita; botões no canto */
+  .ui-janela:has(.ppf-d--2col) { width: min(880px, calc(100vw - 48px)); max-width: none; }
+  .ui-janela:has(.ppf-d--2col) .ui-janela-pe { display: flex; justify-content: flex-end; }
+  .ui-janela:has(.ppf-d--2col) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
+  .ppf-d--2col { position: relative; min-height: 340px; padding-right: 368px; }
+  .ppf-d--2col > .ppf-d-prev { position: absolute; top: 0; right: 0; width: 340px; }
+  .ppf-d-prev > p { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+  .ppf-d--2col .ppf-d-campo textarea { height: 190px; font-size: 15.5px; line-height: 1.55; }
+  .ppf-d-dica1 { margin: 12px 2px 0; font-size: 13.5px; line-height: 1.5; color: var(--ui-texto-2); }
   .ppf-d-ajuda > p { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
   .ppf-d-ajuda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
   .ppf-d-ajuda li { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

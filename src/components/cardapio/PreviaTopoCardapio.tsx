@@ -14,6 +14,7 @@ import "./cardapioModelo1.css";
 export type DadosPrevia = {
   nome_loja?: string | null; logo_url?: string | null; foto_url?: string | null; horario?: any; loja_pausada?: boolean | null;
   cor_navbar?: string | null; cor_borda?: string | null; cor_nome?: string | null; banner_topo_url?: string | null;
+  descricao_loja?: string | null;
 };
 
 const ehBranco = (c?: string | null) => !c || ["#fff", "#ffffff", "#fefefe", "white", "transparent"].includes(c.trim().toLowerCase());
@@ -23,7 +24,8 @@ const clara = (hex: string) => {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
 };
 
-export default function PreviaTopoCardapio({ d, onLogo, enviando = false }: { d: DadosPrevia; onLogo?: () => void; enviando?: boolean }) {
+/** semDescricao: texto cinza no lugar da descrição enquanto ela não escreveu (só na tela da descrição) */
+export default function PreviaTopoCardapio({ d, onLogo, enviando = false, semDescricao }: { d: DadosPrevia; onLogo?: () => void; enviando?: boolean; semDescricao?: string }) {
   const { isPro } = usePlano(); // (27/10) o selo de verificada é do PRO (a prévia mostrava para todos)
   // mesmas regras do CardapioModelo1
   const borda = d.cor_borda || "#E85A8C";
@@ -56,6 +58,10 @@ export default function PreviaTopoCardapio({ d, onLogo, enviando = false }: { d:
           ) : <span />}
           <span className="ptc-sobre">Sobre a loja ›</span>
         </div>
+        {/* (29/10 · 5.00) a descrição, no mesmo lugar do cardápio (embaixo do nome e da situação) */}
+        {String(d.descricao_loja || "").trim()
+          ? <p className="cm1-descricao ptc-desc">{String(d.descricao_loja).trim()}</p>
+          : semDescricao ? <p className="cm1-descricao ptc-desc ptc-desc--vazia">{semDescricao}</p> : null}
         <div className="ptc-busca">Buscar no cardápio</div>
         <div className="ptc-cats"><b>Bolos</b><span>Doces</span><span>Salgados</span></div>
       </div>
@@ -77,6 +83,8 @@ const CSS = `
   .ptc .ptc-nome > span { overflow: hidden; text-overflow: ellipsis; }
   .ptc .ptc-sl { margin-top: 2px; font-size: 13px; }
   .ptc .ptc-sobre { flex: none; font-weight: 700; color: #EC4899; }
+  .ptc .ptc-desc { margin-top: 8px; font-size: 13.5px; line-height: 1.45; overflow-wrap: anywhere; }
+  .ptc .ptc-desc--vazia { color: var(--ui-texto-3); font-style: italic; }
   .ptc .ptc-busca { display: flex; align-items: center; height: 38px; margin-top: 12px; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 20px; font-size: 13px; color: var(--ui-texto-3); }
   .ptc .ptc-cats { display: flex; gap: 14px; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--ui-texto-3); white-space: nowrap; }
   .ptc .ptc-cats b { padding-bottom: 4px; border-bottom: 2px solid var(--ui-texto); color: var(--ui-texto); font-weight: 600; }
