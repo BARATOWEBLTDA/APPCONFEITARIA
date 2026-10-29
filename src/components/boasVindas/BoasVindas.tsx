@@ -228,7 +228,8 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
             {tela === 1 && (<>
               <p className="bv-sobre">Seus produtos em destaque</p>
               <h1 className="bv-h">Um cardápio lindo que <em>já vende sozinho</em></h1>
-              <p className="bv-p">Monte com sabores e adicionais e mande o link no WhatsApp.</p>
+              {/* (29/10 · 4.83) só aparece no computador (no celular fica só o título) */}
+              <p className="bv-p bv-p--card">Seus bolos, doces e salgados com foto e preço. <span>A cliente escolhe, paga no Pix e o pedido chega no app.</span></p>
             </>)}
             {tela === 2 && (<>
               <p className="bv-sobre">Chega de informação espalhada</p>

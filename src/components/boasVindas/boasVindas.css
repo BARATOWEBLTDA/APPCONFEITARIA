@@ -612,3 +612,6 @@
   .bv-tela-1 .bv-dup-wrap { max-width: 760px; }
   .bv-pc-print { image-rendering: -webkit-optimize-contrast; backface-visibility: hidden; }
 }
+
+/* (29/10 · 4.83) texto do cardápio no computador: duas frases, uma em cada bloco de linhas */
+@media (min-width: 900px) { .bv-p.bv-p--card { max-width: 440px; font-size: 16px; text-wrap: wrap; } .bv-p--card span { display: block; margin-top: 4px; text-wrap: balance; } }
