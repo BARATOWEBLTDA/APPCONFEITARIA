@@ -79,6 +79,9 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const pulados = useRef<Set<Passo>>(new Set());
   // o que acabou de ser salvo (logo novo), até a releitura dos passos chegar
   const [perfilNovo, setPerfilNovo] = useState<Record<string, any>>({});
+  // (29/10 · 4.97) computador: clicar em "Logo da loja" abre direto o seletor de arquivos (sem a janela da prévia)
+  const logoInput = useRef<HTMLInputElement>(null);
+  const [logoCrop, setLogoCrop] = useState<string | null>(null);
   const abrirPasso = useCallback((k: Passo) => {
     // (13/10) pagamento e entrega virou um card como os outros (antes abria a tela inteira de Entrega e pagamento)
     // (15/10) abre a tela de produtos com a apresentação "Cadastre seu primeiro produto" (antes ia direto pro cadastro)
@@ -163,6 +166,23 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     else if (agora) avisar(pulados.current.size ? "Pronto por agora!" : "Tudo configurado!", { tipo: "ok" });
   };
   const salvo = (patch?: Record<string, any>) => seguir(false, patch);
+  // logo pelo atalho do computador: mesmo caminho do "salvar e continuar" (abre o próximo passo que falta)
+  const escolheuLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = ""; if (!f) return;
+    const rd = new FileReader(); rd.onload = () => setLogoCrop(rd.result as string); rd.readAsDataURL(f);
+  };
+  const enviarLogoDireto = async (blob: Blob) => {
+    setLogoCrop(null);
+    avisar("Enviando a logo…");
+    const logoUrl = await subirLogo(uid, blob);
+    if (!logoUrl) return;
+    setPerfilNovo(p => ({ ...p, logo_url: logoUrl })); avisarPassos();
+    const prox = proximoPasso(estado, "logo", pulados.current);
+    if (prox) window.setTimeout(() => abrirPasso(prox), 250);
+    else avisar("Tudo configurado!", { tipo: "ok" });
+  };
+  // conta do Google com foto: continua a janela, pra escolher entre usar a foto ou trocar
+  const logoDireto = largo && !(estado.perfil?.foto_url && !estado.perfil?.logo_url);
   const depois = () => seguir(true);
 
 
@@ -180,7 +200,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const passos: { feito: boolean; ic: ReactNode; t: string; s: string; pq: string; abrir: () => void }[] = [
     // (29/10 · 4.95) pq: por que o passo importa (aparece no bloco do passo da vez, no computador)
     // (23/10) "Criar sua conta" saiu (já está feito e não é configurar o cardápio); nomes curtos que cabem inteiros no celular
-    { feito: estado.logo, ic: I(ImageSquare), t: "Logo da loja", s: "No topo do cardápio", pq: "Deixa sua loja com cara profissional e ajuda a cliente a te reconhecer.", abrir: () => setFolha("logo") },
+    { feito: estado.logo, ic: I(ImageSquare), t: "Logo da loja", s: "No topo do cardápio", pq: "Deixa sua loja com cara profissional e ajuda a cliente a te reconhecer.", abrir: () => { if (logoDireto) logoInput.current?.click(); else setFolha("logo"); } },
     { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Sobre a confeitaria", s: "Uma frase sobre você", pq: "Conta em poucas palavras quem você é e o que faz de especial.", abrir: () => setFolha("descricao") },
     { feito: estado.endereco, ic: I(MapPin), t: "Endereço", s: "Para calcular a entrega", pq: "Com ele, o app calcula a taxa de entrega de cada cliente sozinho.", abrir: () => setFolha("endereco") },
     { feito: estado.horario, ic: I(Clock), t: "Horário", s: "Aberto agora no cardápio", pq: "A cliente vê se você está aberta e para quando pode encomendar.", abrir: () => setFolha("horario") },
@@ -316,6 +336,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       {folha === "pagamento" && <FolhaPagamento uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "caixa" && <FolhaCaixa uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "horario" && <FolhaHorario uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+      <input ref={logoInput} type="file" accept="image/*" hidden onChange={escolheuLogo} />
+      {logoCrop && <ImageCropper imageSrc={logoCrop} cropShape="round" aspect={1} onCancel={() => setLogoCrop(null)} onCropDone={enviarLogoDireto} />}
       <style>{CSS}</style>
     </div>
   );
@@ -558,6 +580,20 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   );
 }
 
+/** Envia a logo recortada e grava no perfil. Devolve o endereço da imagem, ou null se deu erro (já avisa). */
+async function subirLogo(uid: string, blob: Blob): Promise<string | null> {
+  const path = `logos/${uid}-${Date.now()}.jpg`;
+  const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+  if (error) { avisar("Não foi possível enviar a imagem. Tente de novo.", { tipo: "erro" }); return null; }
+  const { data } = supabase.storage.from("products").getPublicUrl(path);
+  marcarLogoOk(uid);
+  const logoUrl = `${data.publicUrl}?t=${Date.now()}`;
+  const e = await atualizarPerfil(uid, { logo_url: logoUrl, design_escolhido: true, logo_confirmado: true }, ["design_escolhido", "logo_confirmado"]);
+  if (e) { avisar("Não foi possível salvar agora. Confira a internet e tente de novo.", { tipo: "erro" }); return null; }
+  refreshProfile(); // o círculo da conta (menu) já mostra a logo
+  return logoUrl;
+}
+
 function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   const ref = useRef<HTMLInputElement>(null);
   const [crop, setCrop] = useState<string | null>(null);
@@ -569,19 +605,9 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   };
   const enviar = async (blob: Blob) => {
     setCrop(null); setEnviando(true);
-    const path = `logos/${uid}-${Date.now()}.jpg`;
-    const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
-    if (!error) {
-      const { data } = supabase.storage.from("products").getPublicUrl(path);
-      marcarLogoOk(uid);
-      const logoUrl = `${data.publicUrl}?t=${Date.now()}`;
-      const e = await atualizarPerfil(uid, { logo_url: logoUrl, design_escolhido: true, logo_confirmado: true }, ["design_escolhido", "logo_confirmado"]);
-      setEnviando(false);
-      if (e) { avisar("Não foi possível salvar agora. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
-      refreshProfile(); // o círculo da conta (menu) já mostra a logo
-      onSalvo({ logo_url: logoUrl }); return;
-    }
-    setEnviando(false); avisar("Não foi possível enviar a imagem. Tente de novo.", { tipo: "erro" });
+    const logoUrl = await subirLogo(uid, blob);
+    setEnviando(false);
+    if (logoUrl) onSalvo({ logo_url: logoUrl });
   };
   const usarFoto = async () => {
     if (enviando) return;
