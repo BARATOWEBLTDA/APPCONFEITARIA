@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar, type Horario } from "@/components/loja/EditoresLoja";
 import { useNavigate } from "react-router-dom";
-import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, Camera, PixLogo, Money, CreditCard, Storefront, Moped } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, RocketLaunch, Lightbulb, ArrowRight, Camera, PixLogo, Money, CreditCard, Storefront, Moped } from "@phosphor-icons/react";
 import ListaChaves from "@/components/loja/ListaChaves";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
@@ -263,30 +263,49 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         // (29/10 · 4.95) computador: à esquerda o passo da vez num bloco com o porquê e o mascote;
         // à direita a lista com os 7 passos (o da vez marcado só pelo número rosa, sem fundo)
         const p = atual >= 0 ? passos[atual] : null;
+        const animo = feitos === 0 ? "Vamos começar!" : passos.length - feitos <= 2 ? "Falta pouco!" : "Você está indo bem!";
         return (
-          <div className="pp-cols">
-            <div className="pp-col-a">
-              {cab}
+          <div className="pp-dk">
+            <div className="pp-dk-cab">
+              <span className="pp-dk-ic" aria-hidden="true"><RocketLaunch size={32} weight="bold" /></span>
+              <div className="pp-dk-tit">
+                <b className="pp-t">Primeiros passos</b>
+                <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 passo para abrir o cardápio." : `Faltam ${passos.length - feitos} passos para abrir o cardápio.`}</p>
+              </div>
+              <div className="pp-dk-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}>
+                <span><i style={{ width: `${Math.max(feitos, 0.5) / passos.length * 100}%` }} /></span><small>{feitos} de {passos.length}</small>
+              </div>
+            </div>
+            <div className="pp-cols">
               {p && (
                 <div className="pp-hero" ref={atRef}>
-                  <div className="pp-hero-tx">
-                    <small className="pp-hero-n">Passo {atual + 1} de {passos.length}</small>
-                    <b className="pp-hero-t">{p.t}</b>
-                    <p className="pp-hero-p">{p.pq}</p>
-                    <button type="button" className="pp-hero-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}<CaretRight size={16} weight="bold" aria-hidden="true" /></button>
+                  <div className="pp-hero-topo">
+                    <div className="pp-hero-tx">
+                      <span className="pp-hero-n" aria-hidden="true">{atual + 1}</span>
+                      <div>
+                        <b className="pp-hero-t">{p.t}</b>
+                        <small className="pp-hero-s">{p.s}</small>
+                        <p className="pp-hero-p">{p.pq}</p>
+                        <button type="button" className="pp-hero-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}<ArrowRight size={18} weight="bold" aria-hidden="true" /></button>
+                      </div>
+                    </div>
+                    <div className="pp-hero-masc"><i aria-hidden="true" /><Mascote pose="prancheta" /></div>
                   </div>
-                  <Mascote pose="prancheta" className="pp-hero-masc" />
+                  <div className="pp-hero-dica">
+                    <span aria-hidden="true"><Lightbulb size={22} weight="bold" /></span>
+                    <p><b>{animo}</b>Em poucos minutos seu cardápio já fica pronto para vender.</p>
+                  </div>
                   {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
                 </div>
               )}
+              <div className="pp-lista">{passos.map((q, k) => (
+                <button type="button" key={q.t} className={`pp-li${q.feito ? " pp-li--ok" : ""}${k === atual ? " pp-li--vez" : ""}`} onClick={q.feito ? undefined : q.abrir} disabled={q.feito}>
+                  <span className="pp-li-n">{q.feito ? <Check size={15} weight="bold" /> : k + 1}</span>
+                  <span className="pp-li-tx"><b>{q.t}</b><small>{q.feito ? "Feito" : q.s}</small></span>
+                  {!q.feito && <CaretRight size={16} weight="bold" className="pp-li-seta" />}
+                </button>
+              ))}</div>
             </div>
-            <div className="pp-col-b">{passos.map((q, k) => (
-              <button type="button" key={q.t} className={`pp-ps${q.feito ? " pp-ps--ok" : ""}${k === atual ? " pp-ps--vez" : ""}`} onClick={q.feito ? undefined : q.abrir} disabled={q.feito}>
-                <span className={`pp-ic${q.feito ? " pp-ic--ok" : k === atual ? " pp-ic--at" : ""}`}>{q.feito ? I(Check) : <>{q.ic}<i className="pp-n">{k + 1}</i></>}</span>
-                <span className="pp-tx"><b>{q.t}</b><small>{q.feito ? "Feito" : q.s}</small></span>
-                {!q.feito && <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>}
-              </button>
-            ))}</div>
           </div>
         );
       })()}
@@ -798,19 +817,54 @@ const CSS = `
      direita: a lista dos passos. Cada coluna com a largura de um celular. */
   .pp-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
   .pp-col-a .pp-at { margin-top: 16px; }
-  /* (29/10 · 4.95) o passo da vez num bloco: texto e botão à esquerda, mascote à direita (sem fundo rosa) */
-  .pp-cols { align-items: stretch; }
-  .pp-col-a { display: flex; flex-direction: column; }
-  .pp-col-a .pp-segs { margin-bottom: 0; }
-  .pp-hero { flex: 1; display: flex; align-items: center; gap: 16px; margin-top: 18px; padding: 22px 8px 22px 24px; border: 1px solid var(--ui-linha); border-radius: 16px; background: #FCFAF9; }
-  .pp-hero-tx { flex: 1; min-width: 0; }
-  .pp-hero-n { display: block; font-size: 12.5px; font-weight: 500; color: var(--ui-rosa-escuro, #B83A66); }
-  .pp-hero-t { display: block; margin-top: 4px; font-size: 19px; font-weight: 600; letter-spacing: -.01em; color: #2C2C2A; }
-  .pp-hero-p { margin: 6px 0 0; max-width: 340px; font-size: 14px; line-height: 1.5; font-weight: 400; color: var(--ui-texto-2); }
-  .pp-hero-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 16px; padding: 0 20px; border: 0; border-radius: var(--ui-raio-botao); font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-branco); background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; white-space: nowrap; }
-  .pp-hero-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ui-rosa-escuro); }
-  .pp-hero-masc { flex: none; width: 128px; height: auto; align-self: flex-end; margin-bottom: -10px; }
-  .pp-col-b .pp-ps--vez .pp-tx b { color: var(--ui-rosa-escuro, #B83A66); }
+  /* (29/10 · 4.96) computador, no modelo que o Bruno trouxe: cabeçalho com foguete e barra; à esquerda o passo da vez
+     (número grande, porquê, botão, mascote e a dica); à direita a lista com os 7 passos */
+  .pp-dk-cab { display: flex; align-items: center; gap: 18px; }
+  .pp-dk-ic { width: 64px; height: 64px; flex: none; border-radius: 16px; background: #FDEBF1; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
+  .pp-dk-tit { flex: 1; min-width: 0; }
+  .pp-dk .pp-t { font-size: 26px; font-weight: 600; letter-spacing: -.015em; color: #241A1E; }
+  .pp-dk .pp-sub { font-size: 16px; margin-top: 2px; }
+  .pp-dk-bar { flex: none; width: 36%; display: flex; align-items: center; gap: 14px; align-self: flex-start; margin-top: 10px; }
+  .pp-dk-bar span { flex: 1; height: 8px; border-radius: 4px; background: #EFEAEC; overflow: hidden; }
+  .pp-dk-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .4s ease; }
+  .pp-dk-bar small { font-size: 15px; color: var(--ui-texto-2); white-space: nowrap; }
+  .pp-dk .pp-cols { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); gap: 32px; align-items: stretch; margin-top: 26px; }
+  .pp-hero { display: flex; flex-direction: column; gap: 18px; padding: 26px 26px 24px; border: 1px solid #F6DCE6; border-radius: 18px; background: linear-gradient(180deg, #FFF6F9, #FDF0F5); }
+  .pp-hero-topo { flex: 1; display: flex; align-items: center; gap: 16px; }
+  .pp-hero-tx { flex: 1; min-width: 0; display: flex; gap: 22px; align-items: flex-start; }
+  .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(214, 69, 122, .25); }
+  .pp-hero-t { display: block; margin-top: 4px; font-size: 26px; font-weight: 600; letter-spacing: -.015em; color: #241A1E; line-height: 1.2; }
+  .pp-hero-s { display: block; margin-top: 4px; font-size: 18px; color: var(--ui-texto-2); }
+  .pp-hero-p { margin: 18px 0 0; max-width: 380px; font-size: 16px; line-height: 1.6; color: #6B5C62; }
+  .pp-hero-btn { display: inline-flex; align-items: center; gap: 12px; min-height: 54px; margin-top: 26px; padding: 0 30px; border: 0; border-radius: 12px; font-family: inherit; font-size: 17px; font-weight: 600; color: #fff; background: var(--ui-rosa); box-shadow: 0 6px 16px rgba(214, 69, 122, .28); cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease; }
+  .pp-hero-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(214, 69, 122, .34); }
+  .pp-hero-masc { position: relative; flex: none; width: clamp(140px, 12vw, 190px); display: flex; justify-content: center; }
+  .pp-hero-masc::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -4px; height: 18px; border-radius: 50%; background: rgba(214, 69, 122, .14); }
+  .pp-hero-masc img { position: relative; z-index: 1; width: 90%; height: auto; }
+  .pp-hero-masc > i { position: absolute; left: 6px; top: 22px; width: 18px; height: 16px; background:
+      linear-gradient(var(--ui-rosa), var(--ui-rosa)) 0 0 / 4px 12px no-repeat,
+      linear-gradient(var(--ui-rosa), var(--ui-rosa)) 8px 2px / 4px 10px no-repeat; transform: rotate(-35deg); border-radius: 2px; opacity: .85; }
+  .pp-hero-dica { display: flex; align-items: center; gap: 16px; padding: 16px 20px; border: 1px solid #F6DCE6; border-radius: 14px; background: rgba(255, 255, 255, .6); }
+  .pp-hero-dica > span { width: 44px; height: 44px; flex: none; border-radius: 50%; background: #FDEBF1; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
+  .pp-hero-dica p { margin: 0; font-size: 14.5px; color: #6B5C62; line-height: 1.45; }
+  .pp-hero-dica b { display: block; font-size: 17px; font-weight: 600; color: var(--ui-rosa); margin-bottom: 2px; }
+  .pp-lista { display: flex; flex-direction: column; padding: 10px; border: 1px solid var(--ui-linha); border-radius: 16px; }
+  .pp-li { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 64px; padding: 8px 14px; border: 0; border-bottom: 1px solid var(--ui-linha); border-radius: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+  .pp-li:last-child { border-bottom: 0; }
+  .pp-li:disabled { cursor: default; }
+  .pp-li:not(:disabled):hover { background: #FCF7F9; }
+  .pp-li-n { width: 36px; height: 36px; flex: none; border-radius: 50%; background: #F1EEEF; color: #5E5357; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; }
+  .pp-li-tx { flex: 1; min-width: 0; }
+  .pp-li-tx b { display: block; font-size: 16px; font-weight: 500; color: #241A1E; line-height: 1.25; }
+  .pp-li-tx small { display: block; margin-top: 2px; font-size: 14px; color: var(--ui-texto-2); }
+  .pp-li-seta { flex: none; color: #B4AAAE; }
+  .pp-li--vez { background: #FDEBF1; border-radius: 12px; border-bottom-color: transparent; }
+  .pp-li--vez:not(:disabled):hover { background: #FBE2EB; }
+  .pp-li--vez .pp-li-n { background: var(--ui-rosa); color: #fff; }
+  .pp-li--vez .pp-li-seta { color: var(--ui-rosa); }
+  .pp-li--ok .pp-li-n { background: var(--ui-verde); color: #fff; }
+  .pp-li--ok .pp-li-tx b { color: var(--ui-texto-2); text-decoration: line-through; text-decoration-color: #C9B9BF; }
+  .pp-li--ok .pp-li-tx small { color: var(--ui-verde); }
   .pp-col-b > .pp-ps:first-child { border-top: none; }
   /* (19/10) Início: os passos no mesmo checklist do celular em qualquer tela (antes viravam etiquetas no computador) */
   .pp--inicio .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }
