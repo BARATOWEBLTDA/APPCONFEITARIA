@@ -63,9 +63,10 @@ language plpgsql security definer set search_path = public as $$
 begin
   if new.plano = 'pro' and coalesce(old.plano, '') <> 'pro' then
     insert into public.notificacoes (user_id, tipo, titulo, mensagem, link, chave)
-    values (new.id, 'pro', 'Bem-vinda ao PRO! 👑',
-            'Seu assistente virtual, as fotos extras e todos os recursos PRO já estão liberados.',
-            '/assistente-virtual', 'pro-ativado-' || to_char(now(), 'YYYYMMDD'))
+    -- (29/10) no banco já está a versão de email_pro_ativado.sql ("Seu PRO está ativo"); aqui ficou igual pra não voltar o "Bem-vinda"
+    values (new.id, 'pro', 'Seu PRO está ativo',
+            'Tudo do Doonly PRO já está liberado: produtos sem limite, lucratividade, Doo IA com imagens e o cardápio do seu jeito.',
+            '/inicio', 'pro-ativado-' || to_char(now(), 'YYYYMMDD'))
     on conflict do nothing;
   end if;
   return new;

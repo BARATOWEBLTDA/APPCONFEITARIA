@@ -392,3 +392,23 @@
 @media (prefers-reduced-motion: reduce) {
   .bv-rec-sh, .bv-rec-veu, .bv-rec-dedo, .bv-rec .far-it, .bv-rec .far-bar i { transition: none; }
 }
+
+/* (29/10 · 4.67) avisos: a tela de bloqueio dentro do celular, com os avisos chegando de cima */
+.bv-avs { width: 100%; }
+.bv-lock { height: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 18px 10px 0; overflow: hidden; background: radial-gradient(120% 70% at 50% 0%, #8E3A5C 0%, #4A1C2E 45%, #22110F 100%); }
+.bv-lock .bv-notif-hora { margin: 0; }
+.bv-lock .bv-notif-hora span::first-letter { text-transform: uppercase; }
+.bv-lock .bv-notif { max-width: none; gap: 8px; }
+.bv-lock .bv-notif-cartao { padding: 9px 11px 10px; border-radius: 16px; animation: bvAvsChega .55s cubic-bezier(.2, .9, .3, 1.15) both; }
+.bv-lock .bv-notif-cartao:not(.bv-notif-novo) { opacity: .86; animation: bvAvsDesce .45s ease both; }
+.bv-lock .bv-notif-corpo b { font-size: 13.5px; }
+.bv-lock .bv-notif-corpo p { font-size: 12.5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.bv-lock .bv-notif-corpo > img { width: 42px; height: 42px; }
+@keyframes bvAvsChega { from { opacity: 0; transform: translateY(-46px) scale(.96); } }
+@keyframes bvAvsDesce { from { transform: translateY(-28px); } }
+/* o celular cresce com a tela, como o do cardápio */
+@media (max-width: 1099px), (max-height: 599px) {
+  .bv-tela-5 .bv-cel { width: clamp(260px, calc((100dvh - 390px) * .56), 320px); max-width: 84vw; }
+  .bv-tela-5 .bv-cel-tela { height: clamp(220px, calc(100dvh - 390px), 600px); }
+}
+@media (prefers-reduced-motion: reduce) { .bv-lock .bv-notif-cartao { animation: none; } }

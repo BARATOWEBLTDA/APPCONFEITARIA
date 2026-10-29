@@ -75,7 +75,19 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
   const podeAtivarRef = useRef(podeAtivar)
   podeAtivarRef.current = podeAtivar
   const ativarRef = useRef(async () => {})
-  ativarRef.current = async () => { const ok = await push.subscribe(); if (ok) tocarSom('sucesso') }
+  ativarRef.current = async () => {
+    const ok = await push.subscribe()
+    if (!ok) return
+    tocarSom('sucesso')
+    // (29/10 · 4.67) prova na hora: um aviso de verdade chega neste aparelho, do jeito que o pedido novo vai chegar
+    try {
+      const reg = await navigator.serviceWorker?.ready
+      await reg?.showNotification('Pronto! É assim que um pedido novo vai chegar', {
+        body: 'Quando uma cliente pedir pelo cardápio, o aviso aparece aqui, mesmo com o app fechado.',
+        icon: '/Sistema/icon-192.png', badge: '/Sistema/badge.png', tag: 'doonly-teste', data: { url: '/inicio' },
+      })
+    } catch { /* sem o aviso de teste: os avisos continuam ativados */ }
+  }
   const nomeOk = nomeApresentavel(nome)
   const [saindo, setSaindo] = useState(false)
   const telaRef = useRef(0)
@@ -268,22 +280,42 @@ function DemoMarca({ comMarca = false, pose = 'acenando' }: { comMarca?: boolean
   )
 }
 
-/* ───────── 6 · avisos: o aviso de pedido novo chegando na tela do celular ───────── */
+/* ───────── 6 · avisos (29/10 · 4.67): a tela de bloqueio de um celular, com a hora e a data de agora, e os avisos
+   chegando um por um de cima, com o som de pedido do app e vibração. Os textos são os mesmos que o app manda
+   (funções notif_novo_pedido e cardapio_pix_informado do banco). ───────── */
+const AVISOS_DEMO: { em: number; titulo: string; texto: string; foto?: string }[] = [
+  { em: 1200, titulo: 'Novo pedido', texto: 'Camila Rocha fez um pedido de R$ 150,00. Toque para ver.', foto: PRODUTO.bolo },
+  { em: 4200, titulo: 'Pix para conferir', texto: 'Camila Rocha disse que pagou R$ 75,00 de sinal no Pix do pedido #1049. Confira no banco.' },
+  { em: 7200, titulo: 'Novo pedido', texto: 'Juliana Souza fez um pedido de R$ 90,00. Toque para ver.', foto: PRODUTO.salgados },
+]
 function DemoAviso() {
+  const [chegaram, setChegaram] = useState(0)
+  const [agora] = useState(() => new Date())
+  useEffect(() => {
+    const ts = AVISOS_DEMO.map((a, i) => window.setTimeout(() => { tocarSom('pedido'); vibrarLeve(); setChegaram(i + 1) }, a.em))
+    return () => ts.forEach(t => clearTimeout(t))
+  }, [])
+  const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  const data = agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+  const lista = AVISOS_DEMO.slice(0, chegaram).map((a, i) => ({ ...a, i })).reverse() // o mais novo em cima
   return (
-    <div className="bv-notif" aria-hidden="true">
-      <div className="bv-notif-hora"><b>09:41</b><span>sexta-feira, 24 de outubro</span></div>
-      <div className="bv-notif-cartao">
-        <div className="bv-notif-cab"><img src="/Sistema/icon-192.png" alt="" /><span>Doonly</span><em>agora</em></div>
-        <div className="bv-notif-corpo">
-          <div><b>Novo pedido</b><p>Juliana fez um pedido de R$ 120,00. Toque para ver.</p></div>
-          <img src={PRODUTO.bolo} alt="" />
+    <div className="bv-incl bv-avs" aria-hidden="true">
+      <Celular>
+        <div className="bv-lock">
+          <div className="bv-notif-hora"><b>{hora}</b><span>{data}</span></div>
+          <div className="bv-notif">
+            {lista.map((a, k) => (
+              <div key={a.i} className={`bv-notif-cartao${k === 0 ? ' bv-notif-novo' : ''}`}>
+                <div className="bv-notif-cab"><img src="/Sistema/icon-192.png" alt="" /><span>Doonly</span><em>{k === 0 ? 'agora' : `${k * 3} min`}</em></div>
+                <div className="bv-notif-corpo">
+                  <div><b>{a.titulo}</b><p>{a.texto}</p></div>
+                  {a.foto && <img src={a.foto} alt="" />}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="bv-notif-cartao bv-notif-cartao--2">
-        <div className="bv-notif-cab"><img src="/Sistema/icon-192.png" alt="" /><span>Doonly</span><em>1 h</em></div>
-        <div className="bv-notif-corpo"><div><b>Pix recebido</b><p>Sinal de R$ 60,00 do pedido #128.</p></div></div>
-      </div>
+      </Celular>
     </div>
   )
 }
