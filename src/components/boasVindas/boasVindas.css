@@ -330,7 +330,7 @@
 }
 
 
-/* (29/10 · 4.65) 4 · dinheiro: a tela "A receber" do app numa caixa de tamanho fixo (384 × 580), que encolhe inteira
+/* (29/10 · 4.65) 4 · dinheiro: a tela "A receber" do app numa caixa de tamanho fixo (400 × 610), que encolhe inteira
    pra caber. No celular, o texto fica em cima e a caixa ocupa o espaço que sobra até o botão. */
 .bv-rec { position: relative; width: 100%; max-width: 420px; min-height: 260px; }
 .bv-rec-palco { position: absolute; left: 50%; top: 0; transform-origin: top center; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; padding: 14px 12px; overflow: hidden; border-radius: 22px; background: #F1F2F2; color: var(--ui-texto); font-family: var(--font-base); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); }
@@ -366,8 +366,19 @@
 .bv-rec-dedo { position: absolute; z-index: 5; width: 34px; height: 34px; margin: -17px 0 0 -17px; border: 2px solid rgba(44, 18, 25, .5); border-radius: 50%; background: rgba(255, 255, 255, .6); box-shadow: 0 4px 12px rgba(0, 0, 0, .25); pointer-events: none; transition: left .55s ease, top .55s ease, transform .15s ease, background-color .15s ease; animation: bvDedo .3s ease-out both; }
 .bv-rec-dedo.aperta { transform: scale(.78); background: rgba(232, 90, 140, .5); }
 @keyframes bvDedo { from { opacity: 0; transform: scale(1.4); } to { opacity: 1; transform: none; } }
-.bv-rec-aviso { position: absolute; left: 50%; bottom: 16px; z-index: 4; display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-radius: 12px; background: #3A1A25; color: var(--ui-branco); font-size: 13.5px; font-weight: 600; white-space: nowrap; transform: translateX(-50%); animation: bvRecAviso 2.9s ease both; }
+.bv-rec-aviso { position: absolute; left: 50%; bottom: 16px; z-index: 4; display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-radius: 12px; background: #3A1A25; color: var(--ui-branco); font-size: 13.5px; font-weight: 600; white-space: nowrap; transform: translateX(-50%); animation: bvRecAviso 2.6s ease both; }
 .bv-rec-aviso svg { color: #4ADE80; }
+/* (4.66) Carla: o valor sendo digitado; a faixa amarela "Ainda vai faltar"; o "falta" novo entra de leve */
+.bv-rec-sh .fo-in.bv-rec-foco { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232, 90, 140, .12); }
+.bv-rec-cursor { display: inline-block; width: 2px; height: 24px; margin-left: 2px; background: var(--ui-texto); animation: bvRecCursor .8s steps(1) infinite; }
+@keyframes bvRecCursor { 50% { opacity: 0; } }
+.bv-rec-prev, .bv-rec-sh .far-prev--ok { animation: bvValor .35s ease both; }
+.bv-rec .far-it-v b.bv-rec-muda { animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
+/* (4.66) Fernanda devedora: o cartão e o quadrinho Atrasados piscam em vermelho e aparece o balão */
+.bv-rec .far-it { position: relative; }
+.bv-rec .far-it.bv-rec-dev, .bv-rec .far-k.bv-rec-dev { border-color: #FCA5A5 !important; background: #FFF5F5; animation: bvRecDev .9s ease-in-out 3; }
+@keyframes bvRecDev { 50% { box-shadow: 0 0 0 5px rgba(239, 68, 68, .22), 0 8px 22px -6px rgba(239, 68, 68, .3); } }
+.bv-rec-balao { position: absolute; right: 10px; top: -16px; z-index: 2; padding: 6px 10px; border-radius: 10px; background: var(--ui-vermelho, #DC2626); color: var(--ui-branco); font-size: 12.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 6px 16px rgba(220, 38, 38, .35); animation: bvValor .4s cubic-bezier(.34, 1.56, .64, 1) both; }
 @keyframes bvRecAviso { 0% { opacity: 0; transform: translate(-50%, 10px); } 10%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 0); } }
 /* celular: o texto sobe pro topo e a caixa ocupa o resto (antes o conteúdo ficava no meio, com espaço vazio em cima) */
 @media (max-width: 899px) and (min-height: 521px) {
