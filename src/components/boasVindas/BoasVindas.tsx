@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
-import { ArrowLeft, ArrowSquareOut, Bell, CalendarBlank, CheckCircle, ClipboardText, CalendarDots, Check, CaretRight, CurrencyDollar, Gear, House, Package, Plus, Receipt, ShoppingBag, Sparkle, Users, Wallet } from '@phosphor-icons/react'
+import { ArrowLeft, ArrowSquareOut, CalendarBlank, CheckCircle, Check, CaretRight, Receipt, Wallet } from '@phosphor-icons/react'
 import { Botao, BotaoIcone } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
-import { CartaoPedido, LinhaPedido } from '@/components/pedidos/CartaoPedido'
-import { acaoDe, type Pedido } from '@/components/pedidos/pedidoTexto'
+import { LinhaCompacta } from '@/components/pedidos/CartaoPedido'
+import type { Pedido } from '@/components/pedidos/pedidoTexto'
+import IconeWhatsApp from '@/components/IconeWhatsApp'
 import '@/components/pedidos/pedidos.css'
 import { tocarSom } from '@/hooks/useSom'
 import { nomeApresentavel } from '@/lib/nomeApresentavel'
@@ -362,25 +363,6 @@ function Celular({ children, className = '' }: { children: ReactNode; className?
   )
 }
 
-/** Desenha o conteúdo numa largura fixa e encolhe pra caber (a tela do celular pequeno do computador) */
-function Encolhe({ largura, children }: { largura: number; children: ReactNode }) {
-  const caixa = useRef<HTMLDivElement>(null)
-  const [escala, setEscala] = useState(.4)
-  useEffect(() => {
-    const el = caixa.current
-    if (!el) return
-    const medir = () => { if (el.clientWidth) setEscala(el.clientWidth / largura) }
-    medir()
-    const obs = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(medir) : null
-    obs?.observe(el)
-    return () => obs?.disconnect()
-  }, [largura])
-  return (
-    <div className="bv-encolhe" ref={caixa}>
-      <div style={{ width: largura, height: `${100 / escala}%`, transform: `scale(${escala})`, transformOrigin: '0 0' }}>{children}</div>
-    </div>
-  )
-}
 
 const PRINT_CEL = '/tutorial/cardapio-exemplo.jpg?v=3'
 const PRINT_CEL_MENU = '/tutorial/cardapio-exemplo-nav.jpg?v=3'
@@ -406,139 +388,130 @@ function DemoCardapio() {
 /* As demonstrações 3, 4 e 5 copiam as telas reais (09/10 · 3.68): o cartão de Pedidos, o "A receber" do
    Financeiro e o resumo da Ficha técnica. Quem abre o app depois reconhece o que viu aqui. */
 const isoDia = (soma: number) => { const d = new Date(); d.setDate(d.getDate() + soma); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
-const item = (nome: string, img: string, qtd = 1, valor = 0) => ({ nome_produto: nome, quantidade: qtd, valor_unitario: valor, imagem_url: img })
-const pedidoExemplo = (x: Partial<Pedido> & { pedido_itens: any[] }): Pedido => ({
-  id: String(x.numero), numero: 0, cliente_nome: '', cliente_telefone: '', status: 'agendado', status_pagamento: 'pendente', prioridade: '',
-  data_entrega: isoDia(0), horario_entrega: '', valor_total: 0, valor_recebido: 0, tipo_entrega: 'retirada', forma_pagamento: 'pix',
-  etiquetas: [], origem: 'manual', created_at: new Date().toISOString(), ...x,
-} as Pedido)
 const nada = () => {}
 
-/* ───────── 3 · pedidos ───────── */
-/* (13/10) A lista já começa com a semana andando (pedidos em produção, pronto, entregue) e só chegam 2 pedidos novos
-   pelo cardápio, um de cada vez (o som toca 2 vezes, não a cada segundo). No computador: notebook e celular juntos,
-   e o aviso "Novo pedido" num balão do lado de fora. Os cartões só aparecem, não se abrem; o botão de cada um
-   segue o fluxo do app. As datas andam com o dia de hoje. */
-const TEL_SUPORTE = '11978414991'
-const JA_TINHA: Pedido[] = [
-  pedidoExemplo({ numero: 1048, cliente_nome: 'Fernanda Lima', cliente_telefone: TEL_SUPORTE, status: 'em_producao', status_pagamento: 'parcial', forma_pagamento: 'pix', data_entrega: isoDia(1), horario_entrega: '10:00', valor_total: 260, valor_recebido: 130,
-    pedido_itens: [item('Bolo de aniversário 3 kg', PRODUTO.bolo, 1, 260)] }),
-  pedidoExemplo({ numero: 1047, cliente_nome: 'Paula Ribeiro', cliente_telefone: TEL_SUPORTE, status: 'aguardando_retirada', status_pagamento: 'pago', forma_pagamento: 'pix', data_entrega: isoDia(0), horario_entrega: '17:00', valor_total: 95, valor_recebido: 95,
-    pedido_itens: [item('Meio cento de salgados', PRODUTO.salgados, 1, 95)] }),
-  pedidoExemplo({ numero: 1046, cliente_nome: 'Marina Silva', cliente_telefone: TEL_SUPORTE, status: 'agendado', status_pagamento: 'pago', forma_pagamento: 'cartao', origem: 'cardapio', data_entrega: isoDia(5), horario_entrega: '16:30', valor_total: 650, valor_recebido: 650,
-    pedido_itens: [item('Kit festa 30 pessoas', PRODUTO.kit, 1, 650)] }),
-  pedidoExemplo({ numero: 1045, cliente_nome: 'Carla Menezes', cliente_telefone: TEL_SUPORTE, status: 'entregue', status_pagamento: 'pago', forma_pagamento: 'dinheiro', data_entrega: isoDia(-1), horario_entrega: '15:00', valor_total: 180.5, valor_recebido: 180.5,
-    pedido_itens: [item('Bolo de aniversário 2 kg', PRODUTO.bolo, 1, 180.5)] }),
-]
-// os que chegam pelo cardápio, na ordem (o mais novo entra em cima)
-const CHEGADAS: { p: Pedido; em: number }[] = [
-  { em: 1400, p: pedidoExemplo({ numero: 1049, cliente_nome: 'Camila Rocha', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(3), horario_entrega: '14:00', valor_total: 150, valor_recebido: 150,
-      pedido_itens: [item('Bolo de aniversário 2 kg', PRODUTO.bolo, 1, 150)] }) },
-  { em: 7400, p: pedidoExemplo({ numero: 1050, cliente_nome: 'Juliana Souza', cliente_telefone: TEL_SUPORTE, status: 'aguardando_aceite', status_pagamento: 'pago', forma_pagamento: 'pix', origem: 'cardapio', data_entrega: isoDia(4), horario_entrega: '09:00', valor_total: 90, valor_recebido: 90,
-      pedido_itens: [item('1 cento de salgados mistos', PRODUTO.salgados, 1, 90)] }) },
-]
-const NO_CELULAR = 3 // quantos cartões cabem na tela do celular
+/* ───────── 3 · pedidos (29/10 · 4.71): um pedido só, contando a história do começo ao fim, com a tela de Pedidos
+   do app (as abas e a linha do pedido são as mesmas do celular). Roda uma vez e é só pra ver (nada é clicável):
+   1. a tela vazia ("Nenhum pedido ainda");
+   2. o aviso de pedido novo desce do topo, com o som de pedido e vibração;
+   3. o pedido da Camila entra em Novos e o dedo toca em Aceitar;
+   4. o pedido vai pra Agendados e se abre embaixo com tudo: etapas, cliente e o bolo. Para aí. ───────── */
+const ITEM_DEMO = {
+  nome_produto: 'Bolo Morango e Nata', quantidade: 1, valor_unitario: 150, imagem_url: PRODUTO.bolo,
+  personalizacoes: { tamanho: { nome: '2 kg', peso_kg: 2 }, massa: { nome: 'Massa branca' }, sabor: { nome: 'Nata com morango' }, cobertura: { nome: 'Chantilly' } },
+}
+const DIAS_ENTREGA = 3
+const pedidoDemo = (status: string): Pedido => ({
+  id: 'demo-1049', numero: 1049, cliente_nome: 'Camila Rocha', cliente_telefone: '11978414991', status, status_pagamento: 'parcial', prioridade: '',
+  data_entrega: isoDia(DIAS_ENTREGA), horario_entrega: '14:00', valor_total: 150, valor_recebido: 75, tipo_entrega: 'retirada', forma_pagamento: 'pix',
+  etiquetas: [], origem: 'cardapio', created_at: new Date(Date.now() - 60000).toISOString(), pedido_itens: [ITEM_DEMO],
+} as unknown as Pedido)
+const ETAPAS_DEMO = ['Novo', 'Agendado', 'Produção', 'Pronto', 'Retirado']
+const PED_LARGURA = 400, PED_ALTURA = 600
 
 function DemoPedidos() {
-  const [chegaram, setChegaram] = useState(0)
-  const [status, setStatus] = useState<Record<string, string>>({})
-  useEffect(() => {
-    const ts = CHEGADAS.map((c, i) => window.setTimeout(() => { tocarSom('pedido'); vibrarLeve(); setChegaram(i + 1) }, c.em))
-    return () => ts.forEach(t => clearTimeout(t))
-  }, [])
-  const comStatus = (p: Pedido) => ({ ...p, status: status[p.id] || p.status })
-  // o botão do cartão faz o mesmo que no app: Aceitar → Produzir → Pronto → Pronto pra retirar → Entregue
-  const avancar = (p: Pedido) => {
-    const prox = acaoDe(p)?.proximo
-    if (!prox) return
-    tocarSom(prox === 'entregue' ? 'sucesso' : 'click'); vibrarLeve()
-    setStatus(s => ({ ...s, [p.id]: prox }))
-  }
-  const novos = CHEGADAS.slice(0, chegaram).map(c => c.p).reverse() // o mais novo em cima
-  const lista = [...novos, ...JA_TINHA]
-  const ehNovo = (p: Pedido) => novos.some(n => n.id === p.id)
-
-  // Celular: os cartões precisam caber inteiros entre o título e o botão. Mede o primeiro cartão,
-  // calcula a altura dos que cabem e encolhe a lista (só o necessário) pra caber na tela de qualquer aparelho.
+  const [passo, setPasso] = useState<'vazio' | 'aviso' | 'novo' | 'toca' | 'aberto'>('vazio')
+  const [avisoSaiu, setAvisoSaiu] = useState(false)
   const caixa = useRef<HTMLDivElement>(null)
-  const [encaixe, setEncaixe] = useState<{ escala: number; altura: number } | null>(null)
+  const palco = useRef<HTMLDivElement>(null)
+  const [escala, setEscala] = useState(1)
+  const escalaRef = useRef(1)
+  const [dedo, setDedo] = useState<{ x: number; y: number } | null>(null)
+
+  // encolhe a caixa inteira pra caber no espaço que sobrou (nunca passa de 1,15x)
   useLayoutEffect(() => {
+    const el = caixa.current
+    if (!el) return
     const medir = () => {
-      const el = caixa.current
-      const cartao = el?.querySelector('.pdc') as HTMLElement | null
-      if (!el || !cartao || !el.offsetParent) return // no computador a lista do celular fica escondida
-      const alturaFinal = (cartao.offsetHeight + 10) * NO_CELULAR
-      const base = (document.querySelector('.bv-base') as HTMLElement | null)?.offsetHeight || 96
-      const sobra = window.innerHeight - el.getBoundingClientRect().top - base + 6
-      const escala = Math.max(.6, Math.min(1, sobra / alturaFinal))
-      setEncaixe({ escala, altura: alturaFinal * escala })
+      const w = el.clientWidth, h = el.clientHeight
+      if (w && h) { const k = Math.min(1.15, w / PED_LARGURA, h / PED_ALTURA); escalaRef.current = k; setEscala(k) }
     }
     medir()
-    window.addEventListener('resize', medir)
-    return () => window.removeEventListener('resize', medir)
+    const obs = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(medir) : null
+    obs?.observe(el)
+    return () => obs?.disconnect()
   }, [])
-  const cartoes = (qtd: number, comSombra = true) => lista.slice(0, qtd).map(p => {
-    const atual = comStatus(p)
-    const novo = ehNovo(p)
-    return (
-      <div key={p.id} className={`bv-ped-entra${novo ? '' : ' bv-ped-fixo'}${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}${comSombra ? '' : ' bv-ped-liso'}`}>
-        <div><CartaoPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} /></div>
-      </div>
-    )
-  })
-  const aviso = (cls: string) => chegaram > 0 && <div className={cls} key={`a${chegaram}`}><Bell size={14} weight="fill" aria-hidden="true" /><span><b>Novo pedido</b> pelo cardápio</span></div>
-  return (
-    <>
-      {/* celular e tablet: os cartões da lista de Pedidos */}
-      <div className="bv-ped">
-        {aviso('bv-aviso')}
-        <div className="bv-ped-lista" ref={caixa} style={encaixe ? { height: encaixe.altura } : undefined}>
-          <div className="bv-ped-escala" style={encaixe && encaixe.escala < 1 ? { transform: `scale(${encaixe.escala})` } : undefined}>
-            {cartoes(NO_CELULAR)}
-          </div>
-        </div>
-      </div>
 
-      {/* computador: a tela de Pedidos do computador no notebook e a do celular na frente */}
-      <div className="bv-dup-wrap">
-        {aviso('bv-balao')}
-        <div className="bv-dup">
-          <Notebook>
-            <div className="bv-app">
-              <aside className="bv-app-menu" aria-hidden="true">
-                <div className="bv-app-perfil"><span><img src="/tutorial/boas-vindas/doce-formiga.webp" alt="" /></span><b>Olá, Doce Formiga</b></div>
-                {MENU_PC.map(([Icone, nome]) => <p key={nome} className={nome === 'Pedidos' ? 'on' : ''}><Icone size={18} />{nome}</p>)}
-              </aside>
-              <div className="bv-app-main">
-                <header className="bv-app-topo"><b>Meus pedidos</b><small>Acompanhe suas encomendas e produção</small></header>
-                <div className="bv-app-corpo">
-                  <p className="bv-app-grupo">Esta semana<i>{lista.length}</i></p>
-                  <div className="pdl-tabela">
-                    {lista.map(p => {
-                      const atual = comStatus(p)
-                      return <div key={p.id} className={`bv-ped-entra${ehNovo(p) ? '' : ' bv-ped-fixo'}${atual.status === 'aguardando_aceite' ? ' bv-ped--novo' : ''}`}><div><LinhaPedido p={atual} aoAbrir={nada} aoAvancar={avancar} aoMenu={nada} aoEndereco={nada} comDia /></div></div>
-                    })}
+  useEffect(() => {
+    const ts: number[] = []
+    const em = (ms: number, f: () => void) => ts.push(window.setTimeout(f, ms))
+    em(1200, () => { setPasso('aviso'); tocarSom('pedido'); vibrarLeve() })
+    em(2700, () => setPasso('novo'))
+    em(3500, () => setAvisoSaiu(true))
+    em(3900, () => {
+      const pc = palco.current, alvo = pc?.querySelector('.pdk-bt') as HTMLElement | null
+      if (!pc || !alvo) return
+      const a = alvo.getBoundingClientRect(), b = pc.getBoundingClientRect(), k = escalaRef.current || 1
+      setDedo({ x: (a.left - b.left + a.width / 2) / k, y: (a.top - b.top + a.height / 2) / k })
+    })
+    em(4500, () => { setPasso('toca'); tocarSom('click'); vibrarLeve() })
+    em(4800, () => { setDedo(null); setPasso('aberto'); tocarSom('sucesso') })
+    return () => ts.forEach(t => clearTimeout(t))
+  }, [])
+
+  const aberto = passo === 'aberto'
+  const temPedido = passo !== 'vazio' && passo !== 'aviso'
+  const p = pedidoDemo(aberto ? 'agendado' : 'aguardando_aceite')
+  const nSit = { aceitar: aberto ? 0 : 1, agenda: aberto ? 1 : 0, prontos: 0 }
+  const abas: [string, string, number | null, boolean][] = [['aceitar', 'Novos', nSit.aceitar, !aberto], ['agenda', 'Agendados', nSit.agenda, aberto], ['prontos', 'Prontos', 0, false], ['concluidos', 'Concluídos', null, false]]
+  const dia = (() => { const d = new Date(); d.setDate(d.getDate() + DIAS_ENTREGA); const sem = d.toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/-feira/, ''); return `${sem.charAt(0).toUpperCase() + sem.slice(1)}, ${d.getDate()}/${d.getMonth() + 1}` })()
+  return (
+    <div className="bv-pd bv-cai" ref={caixa} aria-hidden="true">
+      <div className="bv-pd-palco" ref={palco} style={{ width: PED_LARGURA, height: PED_ALTURA, transform: `translateX(-50%) scale(${escala})` }}>
+        <p className="bv-pd-tit">Meus pedidos</p>
+        {!temPedido ? (
+          <div className="bv-pd-vazio">
+            <span><Receipt size={30} /></span>
+            <b>Nenhum pedido ainda</b>
+            <small>Quando chegar uma encomenda, ela aparece aqui.</small>
+          </div>
+        ) : (<>
+          <div className="pdk-abas">
+            {abas.map(([k, nome, n, on]) => (
+              <span key={k} className={`pdk-aba${k === 'aceitar' && n ? ' alerta' : ''}`} aria-selected={on}>
+                <span className="pdk-aba-t">{nome}</span>{n === null ? <i className="pdk-aba-sem">0</i> : <i key={`${k}${n}`} className="bv-pd-n">{n}</i>}
+              </span>
+            ))}
+          </div>
+          {aberto ? <p className="pdk-t">{dia}<i>1</i></p> : <div className="pdk-topo"><span>Chegou pelo cardápio</span></div>}
+          <div className={`bv-pd-cartao${aberto ? ' aberto' : ''}${passo === 'novo' || passo === 'toca' ? ' entra' : ''}${passo === 'toca' ? ' toque' : ''}`}>
+            <LinhaCompacta p={p} aoAbrir={nada} aoAvancar={nada} aoMenu={nada} aoEndereco={nada} />
+            <div className="bv-pd-mais">
+              <div className="bv-pd-mais-in">
+                <ol className="bv-pd-passos">
+                  {ETAPAS_DEMO.map((n, i) => <li key={n} className={i === 0 ? 'feita' : i === 1 ? 'atual' : ''}><i>{i === 0 ? <Check size={13} weight="bold" /> : i + 1}</i><span>{n}</span></li>)}
+                </ol>
+                <div className="bv-pd-cli">
+                  <span className="bv-pd-av">CR</span>
+                  <div><b>Camila Rocha</b><small>(11) 97841-4991</small><small>Origem: <b>Cardápio digital</b></small></div>
+                  <span className="bv-pd-zap"><IconeWhatsApp size={20} /></span>
+                </div>
+                <div className="bv-pd-it">
+                  <img src={PRODUTO.bolo} alt="" />
+                  <div>
+                    <b>1x Bolo Morango e Nata</b>
+                    <p><span>Tamanho:</span> 2 kg</p>
+                    <p><span>Massa:</span> Massa branca</p>
+                    <p><span>Sabor:</span> Nata com morango</p>
+                    <p><span>Cobertura:</span> Chantilly</p>
                   </div>
                 </div>
+                <p className="bv-pd-pg"><span>Sinal de R$ 75,00 pago no Pix</span><b>falta R$ 75,00</b></p>
               </div>
             </div>
-          </Notebook>
-          <Celular className="bv-cel--mini">
-            <Encolhe largura={360}>
-              <div className="bv-cel-app">
-                <header><b>Pedidos</b></header>
-                <div className="bv-cel-app-lista">{cartoes(4, false)}</div>
-              </div>
-            </Encolhe>
-          </Celular>
-        </div>
+          </div>
+        </>)}
+        {(passo === 'aviso' || (passo !== 'vazio' && !avisoSaiu)) && (
+          <div className={`bv-notif-cartao bv-pd-aviso${avisoSaiu ? ' sai' : ''}`}>
+            <div className="bv-notif-cab"><img src="/Sistema/icon-192.png" alt="" /><span>Doonly</span><em>agora</em></div>
+            <div className="bv-notif-corpo"><div><b>Novo pedido</b><p>Camila Rocha fez um pedido de R$ 150,00. Toque para ver.</p></div><img src={PRODUTO.bolo} alt="" /></div>
+          </div>
+        )}
+        {dedo && <span className={`bv-rec-dedo${passo === 'toca' ? ' aperta' : ''}`} style={{ left: dedo.x, top: dedo.y }} />}
       </div>
-    </>
+    </div>
   )
 }
-
-// 13/10: o mesmo menu do app de hoje (antes tinha "Cadastros", que saiu)
-const MENU_PC: [typeof House, string][] = [[House, 'Início'], [Plus, 'Nova venda'], [ShoppingBag, 'Cardápio digital'], [Receipt, 'Pedidos'], [CalendarDots, 'Agenda'], [Users, 'Clientes'], [Package, 'Ingredientes'], [ClipboardText, 'Ficha técnica'], [CurrencyDollar, 'Financeiro'], [Sparkle, 'Doo IA'], [Gear, 'Configurações']]
 
 /** Moldura de notebook: a tela do app é desenhada em 1040 x 650 e encolhe pra caber */
 function Notebook({ children }: { children: ReactNode }) {
@@ -660,7 +633,6 @@ function DemoDinheiro() {
     em(14600, () => setDedo(null))
     em(16800, () => muda({ balao: false }))
     return () => ts.forEach(t => clearTimeout(t))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const cartao = (it: ItemDemo) => {

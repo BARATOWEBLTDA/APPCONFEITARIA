@@ -428,3 +428,75 @@
 
 /* (29/10 · 4.70) sem a ilha da câmera em cima da tela (pedido do Bruno): a tela fica limpa */
 .bv-cel-entalhe { display: none; }
+
+/* (29/10 · 4.71) 3 · pedidos: a tela de Pedidos do celular numa caixa de tamanho fixo (400 × 600), que encolhe inteira.
+   Um pedido só: chega o aviso, o pedido aparece, o dedo aceita e ele se abre com tudo. Nada é clicável. */
+.bv-pd { position: relative; width: 100%; max-width: 420px; min-height: 260px; }
+.bv-pd-palco { position: absolute; left: 50%; top: 0; transform-origin: top center; box-sizing: border-box; overflow: hidden; padding: 0 12px 14px; border-radius: 22px; background: #F1F2F2; color: var(--ui-texto); font-family: var(--font-base); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); pointer-events: none; }
+.bv-pd-tit { margin: 0 -12px; padding: 14px 0; background: var(--ui-branco); border-bottom: 1px solid var(--ui-borda); text-align: center; font-size: 16px; font-weight: 600; }
+.bv-pd-vazio { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 110px 30px 0; text-align: center; }
+.bv-pd-vazio span { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; margin-bottom: 8px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.bv-pd-vazio b { font-size: 16px; font-weight: 600; }
+.bv-pd-vazio small { max-width: 220px; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
+/* as abas do celular (número em cima, nome embaixo), em qualquer tamanho de tela */
+.bv-pd .pdk-abas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 14px 0 14px; overflow: visible; }
+.bv-pd .pdk-aba { flex-direction: column-reverse; justify-content: center; gap: 2px; height: 54px; padding: 0 4px; font-size: 12.5px; transition: background-color .3s ease, color .3s ease, border-color .3s ease; }
+.bv-pd .pdk-aba i { min-width: 0; height: auto; padding: 0; background: none !important; font-size: 15px; font-weight: 600; line-height: 1.2; color: inherit; }
+.bv-pd .pdk-aba.alerta i { color: #B45309; }
+.bv-pd .pdk-aba[aria-selected="true"].alerta i { color: #FFD9A8; }
+.bv-pd .pdk-aba-sem { visibility: hidden; display: block; }
+.bv-pd-n { animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
+/* o pedido: a linha do app e, quando aceito, tudo embaixo */
+.bv-pd-cartao { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.bv-pd-cartao.entra { animation: bvPdEntra .5s cubic-bezier(.2, .9, .3, 1.1) both; }
+@keyframes bvPdEntra { from { opacity: 0; transform: translateY(-14px) scale(.98); } }
+.bv-pd-cartao .pdk { cursor: default; }
+.bv-pd-cartao .ui-bt { transition: transform .12s ease, filter .12s ease; }
+.bv-pd-cartao.toque .ui-bt { transform: scale(.92); filter: brightness(.88); }
+.bv-pd-mais { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .55s cubic-bezier(.2, .8, .2, 1); }
+.bv-pd-cartao.aberto .bv-pd-mais { grid-template-rows: 1fr; }
+.bv-pd-mais-in { min-height: 0; overflow: hidden; }
+.bv-pd-cartao.aberto .bv-pd-mais-in > * { animation: bvPdItem .4s ease both; }
+.bv-pd-cartao.aberto .bv-pd-mais-in > :nth-child(2) { animation-delay: .1s; }
+.bv-pd-cartao.aberto .bv-pd-mais-in > :nth-child(3) { animation-delay: .2s; }
+.bv-pd-cartao.aberto .bv-pd-mais-in > :nth-child(4) { animation-delay: .3s; }
+@keyframes bvPdItem { from { opacity: 0; transform: translateY(6px); } }
+.bv-pd-passos { display: flex; margin: 0; padding: 14px 12px 12px; border-top: 1px solid var(--ui-linha); list-style: none; }
+.bv-pd-passos li { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11.5px; color: var(--ui-texto-3); }
+.bv-pd-passos li + li::before { content: ""; position: absolute; top: 12px; right: calc(50% + 15px); left: calc(-50% + 15px); height: 2px; border-radius: 2px; background: var(--ui-linha); }
+.bv-pd-passos li.atual::before, .bv-pd-passos li.feita + li::before { background: var(--ui-verde); }
+.bv-pd-passos i { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1.5px solid var(--ui-borda); border-radius: 50%; background: var(--ui-branco); font-style: normal; font-size: 12px; font-weight: 600; color: var(--ui-texto-3); }
+.bv-pd-passos li.feita { color: var(--ui-texto-2); }
+.bv-pd-passos li.feita i { border-color: var(--ui-verde); background: var(--ui-verde); color: var(--ui-branco); }
+.bv-pd-passos li.atual { color: var(--ui-rosa-escuro); font-weight: 600; }
+.bv-pd-passos li.atual i { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 0 0 4px rgba(var(--ui-rosa-rgb), .18); }
+.bv-pd-cli { display: flex; align-items: center; gap: 10px; padding: 12px; border-top: 1px solid var(--ui-linha); }
+.bv-pd-av { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 700; }
+.bv-pd-cli > div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.bv-pd-cli > div > b { font-size: 14px; font-weight: 600; }
+.bv-pd-cli small { font-size: 12.5px; line-height: 1.4; color: var(--ui-texto-2); }
+.bv-pd-cli small b { font-weight: 600; color: var(--ui-texto); }
+.bv-pd-zap { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--ui-borda); border-radius: 12px; color: #25D366; }
+.bv-pd-it { display: flex; gap: 10px; padding: 12px; border-top: 1px solid var(--ui-linha); }
+.bv-pd-it img { flex: none; width: 48px; height: 48px; border-radius: 10px; object-fit: cover; }
+.bv-pd-it b { display: block; margin-bottom: 4px; font-size: 14px; font-weight: 600; }
+.bv-pd-it p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--ui-texto); }
+.bv-pd-it p span { color: var(--ui-texto-2); }
+.bv-pd-pg { display: flex; justify-content: space-between; gap: 8px; margin: 0; padding: 11px 12px 13px; border-top: 1px solid var(--ui-linha); font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.bv-pd-pg b { font-weight: 700; color: #B45309; }
+/* o aviso de pedido novo descendo do topo */
+.bv-pd-aviso { position: absolute; left: 10px; right: 10px; top: 8px; z-index: 4; animation: bvPdAviso .55s cubic-bezier(.2, .9, .3, 1.15) both; }
+.bv-pd-aviso.sai { animation: bvPdAvisoSai .4s ease-in both; }
+@keyframes bvPdAviso { from { opacity: 0; transform: translateY(-110%); } }
+@keyframes bvPdAvisoSai { to { opacity: 0; transform: translateY(-110%); } }
+/* celular: o texto fica no topo e a caixa ocupa o resto */
+@media (max-width: 899px) and (min-height: 521px) {
+  .bv-tela-2 .bv-corpo::before, .bv-tela-2 .bv-esp { flex: 0 0 0; }
+  .bv-tela-2 .bv-demo { flex: 1 1 auto; margin-top: 14px; }
+}
+@media (min-width: 900px), (min-width: 640px) and (max-height: 520px) {
+  .bv-tela-2 .bv-pd { height: min(620px, calc(100dvh - 150px)); max-width: 440px; }
+  .bv-tela-2 .bv-corpo { align-items: center !important; }
+  .bv-tela-2 .bv-lado { position: static !important; min-height: 0 !important; }
+}
+@media (prefers-reduced-motion: reduce) { .bv-pd-mais { transition: none; } .bv-pd-aviso, .bv-pd-cartao.entra { animation: none; } }
