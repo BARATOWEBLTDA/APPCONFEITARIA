@@ -23,16 +23,33 @@ export const EXEMPLO_DESCRICAO = "Ex.: Bolos e doces feitos em casa, com receita
 type End = { rua: string; numero: string; bairro: string; cidade: string; estado: string };
 export type Mostrar = "completo" | "cidade" | "nada";
 
-/** "O que aparece no cardápio": cada opção mostra o texto que a cliente vê */
-export function OpcoesMostrar({ mostrar, onMudar, tituloClasse = "ppf-l" }: { mostrar: Mostrar; onMudar: (v: Mostrar) => void; end?: End; tituloClasse?: string }) {
+/** "O que aparece no cardápio": cada opção mostra o texto que a cliente vê
+ *  caixas: (29/10 · 5.03) as 3 opções em caixinhas, uma embaixo da outra, com o que cada uma faz
+ *  (deixa claro o caso de quem só faz entrega). Sem caixas: o seletor de 3 partes (celular, sem rolar). */
+const OPCOES_MOSTRAR: [Mostrar, string, string][] = [
+  ["completo", "Endereço completo", "Rua, número e bairro, com o mapa"],
+  ["cidade", "Só a cidade", "Para quem atende em casa e não quer mostrar a rua"],
+  ["nada", "Não mostrar", "Só faz entrega: o endereço serve para calcular a taxa"],
+];
+export function OpcoesMostrar({ mostrar, onMudar, tituloClasse = "ppf-l", caixas = false }: { mostrar: Mostrar; onMudar: (v: Mostrar) => void; end?: End; tituloClasse?: string; caixas?: boolean }) {
   return (
     <>
       <p className={tituloClasse} id="ed-mostrar">O que aparece no cardápio</p>
-      <div className="edm-seg" role="radiogroup" aria-labelledby="ed-mostrar">
-        {([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Não mostrar"]] as const).map(([v, t]) => (
-          <button type="button" role="radio" aria-checked={mostrar === v} key={v} className={mostrar === v ? "on" : ""} onClick={() => onMudar(v)}>{t}</button>
-        ))}
-      </div>
+      {caixas ? (
+        <div className="edm-cx" role="radiogroup" aria-labelledby="ed-mostrar">
+          {OPCOES_MOSTRAR.map(([v, t, sub]) => (
+            <button type="button" role="radio" aria-checked={mostrar === v} key={v} className={mostrar === v ? "on" : ""} onClick={() => onMudar(v)}>
+              <i aria-hidden="true" /><span><b>{t}</b><small>{sub}</small></span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="edm-seg" role="radiogroup" aria-labelledby="ed-mostrar">
+          {([["completo", "Completo"], ["cidade", "Só a cidade"], ["nada", "Não mostrar"]] as const).map(([v, t]) => (
+            <button type="button" role="radio" aria-checked={mostrar === v} key={v} className={mostrar === v ? "on" : ""} onClick={() => onMudar(v)}>{t}</button>
+          ))}
+        </div>
+      )}
     </>
   );
 }

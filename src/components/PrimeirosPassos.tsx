@@ -766,16 +766,26 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
       {manual && (<>
         {naoAchou && <p className="ppf-e-aviso">{naoAchou === "rede" ? "Não deu para buscar o CEP agora. Escreva o endereço." : "Não achamos esse CEP. Confira o número ou escreva o endereço."}</p>}
         {/* (27/10) o CEP continua aqui: antes sumia e não dava para corrigir um número errado */}
-        <div className="ppf-f"><label className="ppf-l" htmlFor="pp-cep">CEP</label>
-          <input id="pp-cep" className="ppf-in" inputMode="numeric" autoComplete="off" value={end.cep} placeholder="00000-000" onChange={e => mudarCep(e.target.value)} /></div>
-        {campo("rua", "Rua", "Nome da rua")}
-        <div className="ppf-row">{campo("numero", "Número", "Ex.: 500", { inputMode: "numeric" })}{campo("bairro", "Bairro")}</div>
-        <div className="ppf-row ppf-row--uf">{campo("cidade", "Cidade")}{campo("estado", "UF", "SP", { maxLength: 2 })}</div>
-        {campo("complemento", "Complemento", "Opcional")}
+        {(() => {
+          const cepCampo = <div className="ppf-f"><label className="ppf-l" htmlFor="pp-cep">CEP</label>
+            <input id="pp-cep" className="ppf-in" inputMode="numeric" autoComplete="off" value={end.cep} placeholder="00000-000" onChange={e => mudarCep(e.target.value)} /></div>;
+          // (29/10 · 5.03) computador: campos lado a lado, pra caber sem rolar com as 3 caixinhas embaixo
+          return largo ? (<>
+            <div className="ppf-row">{cepCampo}{campo("numero", "Número", "Ex.: 500", { inputMode: "numeric" })}{campo("complemento", "Complemento", "Opcional")}</div>
+            {campo("rua", "Rua", "Nome da rua")}
+            <div className="ppf-row ppf-row--uf">{campo("bairro", "Bairro")}{campo("cidade", "Cidade")}{campo("estado", "UF", "SP", { maxLength: 2 })}</div>
+          </>) : (<>
+            {cepCampo}
+            {campo("rua", "Rua", "Nome da rua")}
+            <div className="ppf-row">{campo("numero", "Número", "Ex.: 500", { inputMode: "numeric" })}{campo("bairro", "Bairro")}</div>
+            <div className="ppf-row ppf-row--uf">{campo("cidade", "Cidade")}{campo("estado", "UF", "SP", { maxLength: 2 })}</div>
+            {campo("complemento", "Complemento", "Opcional")}
+          </>);
+        })()}
       </>)}
 
       {(achou || manual) && (<>
-        <OpcoesMostrar mostrar={mostrar} onMudar={setMostrar} tituloClasse="ppf-l ppf-e-tit" />
+        <OpcoesMostrar mostrar={mostrar} onMudar={setMostrar} tituloClasse="ppf-l ppf-e-tit" caixas={largo} />
         {/* (29/10 · 4.76) sem rolar no celular: o mapa encolhe em tela baixa e a frase de baixo saiu (o selo do mapa já diz o que aparece) */}
         {!largo && <div className="ppf-e-mapa"><MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo} altura={124} /></div>}
       </>)}
@@ -989,6 +999,8 @@ const CSS = `
   .ppf-d--2col > .ppf-d-prev { position: absolute; top: 0; right: 0; width: 340px; }
   .ppf-d-prev > p { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .ppf-d--2col .ppf-d-campo textarea { height: 190px; font-size: 15.5px; line-height: 1.55; }
+  .ui-janela:has(.ppf-d--end) { max-height: min(94dvh, 800px); }
+  .ppf-d--end .ppf-row > .ppf-f { min-width: 0; flex: 1; }
   .ppf-d--end { min-height: 560px; } /* (29/10 · 5.02) já no tamanho do endereço escrito à mão (o maior): não cresce ao achar o CEP */
   .ppf-d--end .ppf-d-prev .mpe { margin-top: 0 !important; }
   .ppf-d--hor { min-height: 490px; } /* (29/10 · 5.02) já na altura de Sábado e Domingo ligados: não cresce ao ligar */

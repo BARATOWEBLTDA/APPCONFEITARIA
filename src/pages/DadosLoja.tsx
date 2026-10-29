@@ -526,7 +526,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
             <Campo id="dl-in-cidade" rotulo="Cidade" value={end.cidade} onChange={(e) => setEnd((x) => ({ ...x, cidade: e.target.value }))} />
           </div>
           <div className="dl-bloco">
-            <OpcoesMostrar mostrar={mostrarLocal} onMudar={setMostrarLocal} end={end} tituloClasse="dl-tit" />
+            <OpcoesMostrar mostrar={mostrarLocal} onMudar={setMostrarLocal} end={end} tituloClasse="dl-tit" caixas />
             <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo={mostrarLocal === "nada" ? "O endereço não aparece no cardápio" : mostrarLocal === "completo" ? ([[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf) : cidadeUf} altura={124} />
             <p className="dl-mapa-nota">{mostrarLocal === "nada" ? "Bom para quem atende em casa." : "É assim que o cliente vê, em Sobre a loja."}</p>
           </div>
