@@ -236,7 +236,10 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         const cab = <>
           <b className="pp-t">Primeiros passos</b>
           <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 passo para abrir o cardápio." : `Faltam ${passos.length - feitos} passos para abrir o cardápio.`}</p>
-          <div className="pp-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
+          {/* (29/10 · 4.93) 7 tracinhos, como no tutorial (a barra vazia parecia uma linha solta) */}
+          <div className="pp-segs" aria-label={`${feitos} de ${passos.length} passos feitos`}>
+            <span>{passos.map((q, k) => <i key={k} className={q.feito ? "on" : ""} />)}</span><small>{feitos} de {passos.length}</small>
+          </div>
         </>;
         const item = (p: typeof passos[number], i: number) => i === atual ? (
           <div key={p.t} className="pp-at" ref={atRef}>
@@ -717,6 +720,16 @@ const CSS = `
   .pp-sub { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 4px 0 0; }
   .pp-bar { height: 8px; border-radius: 4px; background: var(--ui-linha); margin: 12px 0 8px; overflow: hidden; }
   .pp-bar i { display: block; height: 100%; border-radius: 99px; background: var(--ui-rosa); transition: width .5s ease; }
+  .pp-segs { display: flex; align-items: center; gap: 10px; margin: 12px 0 8px; }
+  .pp-segs span { flex: 1; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 5px; }
+  .pp-segs i { height: 5px; border-radius: 3px; background: #ECE7E9; transition: background-color .3s ease; }
+  .pp-segs i.on { background: var(--ui-rosa); }
+  .pp-segs small { flex: none; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
+  /* (4.93) computador: o passo da vez numa linha limpa (sem o fundo rosa claro) e o "Começar" rosa, do tamanho do texto */
+  .pp-cols .pp-at { display: flex; align-items: center; gap: 14px; padding: 14px 0 0; background: none; border-top: 1px solid var(--ui-linha); border-radius: 0; }
+  .pp-cols .pp-at .pp-ps { flex: 1; min-width: 0; padding: 0; }
+  .pp-cols .pp-at .pp-btn { flex: none; width: auto; min-height: 44px; margin: 0; padding: 0 22px; background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+  .pp-cols .pp-at .pp-btn:active { box-shadow: 0 1px 0 var(--ui-rosa-escuro); }
   .pp-ps { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 2px; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
   .pp-ps:disabled { cursor: default; }
   .pp-ps--sem { border-top: none; padding: 0; cursor: default; }

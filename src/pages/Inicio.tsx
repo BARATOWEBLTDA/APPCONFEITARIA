@@ -858,6 +858,8 @@ export default function Inicio() {
         <MenuConta aberto={menuOpen} aoFechar={() => setMenuOpen(false)} ancora={fotoRef} />
       </div>
 
+      {/* (29/10 · 4.93) computador: os Primeiros passos vêm antes dos números (pra loja nova os números estão zerados) */}
+      {computador && <section className="ini-section ini-pp ini-pp--topo"><PrimeirosPassos /></section>}
       {/* ══ Computador (≥1100px): topo rosa com o resumo do dia + números (30/09) ══ */}
       {(() => {
         const aReceberHoje = counts.valorEntregasHoje; // todas as entregas de hoje (não só as 5 da lista)
@@ -1052,9 +1054,6 @@ export default function Inicio() {
              fixos do lado; próximas entregas com o Pra fazer do lado; notícias numa linha na largura toda. ══ */}
       {computador && (
         <div className="ini-dkg">
-          <section className="ini-section ini-pp dkg-cheio">
-            <PrimeirosPassos />
-          </section>
           <div className="dkg-cheio dkg-link"><LinkDeVendas /></div>
           {/* Recebido nos últimos 30 dias (o que entrou no caixa, igual ao Financeiro) */}
           <section className="ini-section ini-section--chart dkg-graf">
@@ -2067,6 +2066,8 @@ export default function Inicio() {
           .ini-content { grid-template-columns: minmax(0, 1fr) !important; grid-template-areas: "main" "aside" !important; }
         }
         /* (21/10) grade do Início no computador */
+        .ini-pp--topo { margin: 0 0 18px; }
+        .ini-pp--topo:empty { display: none; }
         .ini-dkg { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; margin-top: 18px; align-items: stretch; }
         .ini-dkg > * { min-width: 0; margin: 0 !important; }
         .ini-dkg > .dkg-cheio { grid-column: 1 / -1; }
