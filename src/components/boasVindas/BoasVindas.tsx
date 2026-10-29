@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
-import { ArrowLeft, Bell, ClipboardText, CalendarDots, Check, CaretRight, CurrencyDollar, Gear, House, Package, Plus, Receipt, ShoppingBag, Sparkle, Users } from '@phosphor-icons/react'
+import { ArrowLeft, ArrowSquareOut, Bell, CalendarBlank, CheckCircle, ClipboardText, CalendarDots, Check, CaretRight, CurrencyDollar, Gear, House, Package, Plus, Receipt, ShoppingBag, Sparkle, Users, Wallet } from '@phosphor-icons/react'
 import { Botao, BotaoIcone } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import { CartaoPedido, LinhaPedido } from '@/components/pedidos/CartaoPedido'
@@ -10,6 +10,8 @@ import { tocarSom } from '@/hooks/useSom'
 import { nomeApresentavel } from '@/lib/nomeApresentavel'
 import { usePushSubscription } from '@/hooks/usePushSubscription'
 import { precisaInstalarNoIphone } from '@/lib/notifications'
+import '@/components/financeiro/folha.css'
+import { CSS_A_RECEBER } from '@/components/financeiro/aReceberCss'
 import './boasVindas.css'
 
 /**
@@ -60,7 +62,6 @@ const PRODUTO = {
   kit: '/tutorial/boas-vindas/produtos/kit-festa.webp',
   salgados: '/tutorial/boas-vindas/produtos/salgados-mistos.webp',
 }
-const fotoCliente = (id: string) => `/tutorial/boas-vindas/clientes/${id}.webp`
 
 // Só as imagens que as telas usam
 const IMAGENS = ['/tutorial/cardapio-exemplo.jpg?v=3', '/tutorial/cardapio-exemplo-nav.jpg?v=3', ...Object.values(PRODUTO)]
@@ -534,44 +535,138 @@ function Notebook({ children }: { children: ReactNode }) {
   )
 }
 
-/* ───────── 4 · dinheiro (09/10 · 3.85): quem pagou e quem falta pagar, num cartão só e sem conta pra fazer.
-   Em cima, quanto falta receber na semana; embaixo, cada cliente com o que já pagou e o que falta. Só pra ver (sem toque). ───────── */
-const RECEBER: { id: string; cliente: string; total: number; recebido: number; conta: string; alerta?: boolean }[] = [
-  { id: 'camila', cliente: 'Camila Rocha', total: 150, recebido: 150, conta: 'Pagou tudo no Pix' },
-  { id: 'carla', cliente: 'Carla Menezes', total: 180.5, recebido: 90, conta: 'Pagou o sinal' },
-  { id: 'fernanda', cliente: 'Fernanda Lima', total: 260, recebido: 130, conta: 'Pagou metade' },
-  { id: 'paula', cliente: 'Paula Ribeiro', total: 95, recebido: 0, conta: 'Não pagou · entrega amanhã', alerta: true },
+/* ───────── 4 · dinheiro (29/10 · 4.65): a tela "A receber" de verdade (os 3 quadrinhos e os cartões, com o visual
+   do app) e uma animação que roda uma vez: o dedo toca em Receber no pedido da Paula, sobe a janela do app já com
+   o valor e o Pix, o dedo confirma, o cartão fica verde com "Quitado", sai da lista e o "Em 7 dias" desce.
+   É só pra ver (sem toque). A caixa tem tamanho fixo e encolhe inteira pra caber em qualquer tela. ───────── */
+type ItemDemo = { id: string; numero: number; cliente: string; total: number; recebido: number; dias: number }
+const RECEBER: ItemDemo[] = [
+  { id: 'paula', numero: 1047, cliente: 'Paula Ribeiro', total: 95, recebido: 0, dias: 1 },
+  { id: 'carla', numero: 1045, cliente: 'Carla Menezes', total: 180.5, recebido: 90, dias: 2 },
+  { id: 'fernanda', numero: 1048, cliente: 'Fernanda Lima', total: 260, recebido: 130, dias: 4 },
 ]
 const reais = (n: number) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const iniciais = (nome: string) => nome.split(' ').map(p => p[0]).slice(0, 2).join('')
+const brlDemo = (n: number) => `R$ ${reais(n)}`
+const quandoDemo = (d: number) => d === 0 ? 'hoje' : d === 1 ? 'amanhã' : `em ${d} dias`
+const entregaDemo = (d: number) => { const x = new Date(); x.setDate(x.getDate() + d); return x.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace('.', '') }
+const REC_LARGURA = 384, REC_ALTURA = 580
+// os passos da animação (em milissegundos desde que a tela abriu)
+const REC_TEMPOS = { dedo: 1500, toca: 2100, janela: 2350, dedo2: 3700, confirma: 4250, quitado: 4500, sai: 6000, fim: 7400 }
 
 function DemoDinheiro() {
-  const falta = RECEBER.reduce((s, r) => s + r.total - r.recebido, 0)
-  const faltam = RECEBER.filter(r => r.recebido < r.total).length
+  const [passo, setPasso] = useState<keyof typeof REC_TEMPOS | 'inicio'>('inicio')
+  const [semana, setSemana] = useState(RECEBER.reduce((s, r) => s + r.total - r.recebido, 0))
+  const caixa = useRef<HTMLDivElement>(null)
+  const palco = useRef<HTMLDivElement>(null)
+  const [escala, setEscala] = useState(1)
+  const escalaRef = useRef(1)
+  const [dedo, setDedo] = useState<{ x: number; y: number } | null>(null)
+
+  // encolhe a caixa inteira pra caber no espaço que sobrou (nunca passa de 1,15x)
+  useLayoutEffect(() => {
+    const el = caixa.current
+    if (!el) return
+    const medir = () => {
+      const w = el.clientWidth, h = el.clientHeight
+      if (w && h) { const e = Math.min(1.15, w / REC_LARGURA, h / REC_ALTURA); escalaRef.current = e; setEscala(e) }
+    }
+    medir()
+    const obs = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(medir) : null
+    obs?.observe(el)
+    return () => obs?.disconnect()
+  }, [])
+
+  // o dedo vai até um botão (a posição é medida dentro da caixa, sem a escala)
+  const apontar = (seletor: string) => {
+    const p = palco.current, alvo = p?.querySelector(seletor) as HTMLElement | null
+    if (!p || !alvo) return
+    const a = alvo.getBoundingClientRect(), b = p.getBoundingClientRect()
+    const e = escalaRef.current || 1
+    setDedo({ x: (a.left - b.left + a.width / 2) / e, y: (a.top - b.top + a.height / 2) / e })
+  }
+
+  useEffect(() => {
+    const ts: number[] = []
+    const em = (ms: number, f: () => void) => ts.push(window.setTimeout(f, ms))
+    em(REC_TEMPOS.dedo, () => { setPasso('dedo'); apontar('.bv-rec-alvo') })
+    em(REC_TEMPOS.toca, () => { setPasso('toca'); tocarSom('click'); vibrarLeve() })
+    em(REC_TEMPOS.janela, () => { setPasso('janela'); setDedo(null) }) // o dedo some enquanto a janela sobe e volta em cima do Confirmar
+    em(REC_TEMPOS.dedo2, () => { setPasso('dedo2'); apontar('.bv-rec-sh .ui-bt') })
+    em(REC_TEMPOS.confirma, () => { setPasso('confirma'); tocarSom('click'); vibrarLeve() })
+    em(REC_TEMPOS.quitado, () => { setPasso('quitado'); setDedo(null); tocarSom('sucesso'); vibrarLeve() })
+    em(REC_TEMPOS.sai, () => setPasso('sai'))
+    // o "Em 7 dias" desce contando, como quem faz a conta
+    const de = RECEBER.reduce((s, r) => s + r.total - r.recebido, 0), ate = de - 95
+    for (let k = 1; k <= 16; k++) em(REC_TEMPOS.sai + k * 35, () => setSemana(de - (de - ate) * k / 16))
+    em(REC_TEMPOS.fim, () => setPasso('fim'))
+    return () => ts.forEach(t => clearTimeout(t))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const ordem = ['inicio', 'dedo', 'toca', 'janela', 'dedo2', 'confirma', 'quitado', 'sai', 'fim']
+  const ja = (p: string) => ordem.indexOf(passo) >= ordem.indexOf(p)
+  const janelaAberta = ja('janela') && !ja('quitado')
+  const quitado = ja('quitado'), saiu = ja('sai')
+  const qtdSemana = saiu ? 2 : 3
   return (
-    <div className="bv-din bv-cai" aria-hidden="true">
-      <div className="bv-din-topo">
-        <small>Falta receber esta semana</small>
-        <b>R$ {reais(falta)}</b>
-        <span>{faltam} clientes</span>
-      </div>
-      <ul className="bv-din-lista">
-        {RECEBER.map(r => {
-          const ok = r.recebido >= r.total
-          return (
-            <li key={r.id} className={ok ? 'ok' : r.alerta ? 'alerta' : ''}>
-              <span className="bv-din-av">{iniciais(r.cliente)}<img src={fotoCliente(r.id)} alt="" onError={e => { e.currentTarget.style.display = 'none' }} /></span>
-              <div className="bv-din-tx">
-                <b>{r.cliente}</b>
-                <small>{r.conta}</small>
+    <div className="bv-rec bv-cai" ref={caixa} aria-hidden="true">
+      <style>{CSS_A_RECEBER}</style>
+      <div className="bv-rec-palco" ref={palco} style={{ width: REC_LARGURA, height: REC_ALTURA, transform: `translateX(-50%) scale(${escala})` }}>
+        <div className="far-resumo" style={{ '--far-n': 9 } as CSSProperties}>
+          <div className="far-k far-k--zero"><small>Atrasados</small><b>R$ 0,00</b><i>0 pedidos</i></div>
+          <div className="far-k"><small>Em 7 dias</small><b>{brlDemo(semana)}</b><i>{qtdSemana} pedidos</i></div>
+          <div className="far-k far-k--zero"><small>Depois</small><b>R$ 0,00</b><i>0 pedidos</i></div>
+        </div>
+        <p className="far-gt">Próximos 7 dias</p>
+        <div className="far-lista">
+          {RECEBER.map((it, i) => {
+            const paula = i === 0
+            const recebido = paula && quitado ? it.total : it.recebido
+            const falta = it.total - recebido
+            return (
+              <div key={it.id} className={`far-it${paula && quitado ? ' bv-rec-ok' : ''}${paula && saiu ? ' bv-rec-sai' : ''}`}>
+                <div className="far-it-h">
+                  <b>Pedido #{it.numero} · {it.cliente}</b>
+                  {paula && quitado ? <span className="far-tg bv-rec-tg"><Check size={12} weight="bold" />Quitado</span> : <span className="far-tg">{quandoDemo(it.dias)}</span>}
+                </div>
+                <div className="far-it-v">
+                  <small>{recebido > 0 ? `Pago ${brlDemo(recebido)}` : `Total ${brlDemo(it.total)}`}</small>
+                  {falta > 0 ? <b>falta {brlDemo(falta)}</b> : <b className="bv-rec-pago">tudo pago</b>}
+                </div>
+                <div className="far-bar"><i style={{ width: `${Math.min(100, (recebido / it.total) * 100)}%` }} /></div>
+                <div className="far-it-a">
+                  <span><CalendarBlank size={15} />entrega {entregaDemo(it.dias)}</span>
+                  <div className="far-bts">
+                    <span className="far-ver"><ArrowSquareOut size={16} /><span>Abrir</span></span>
+                    <span className={`far-rec${paula ? ' bv-rec-alvo' : ''}${paula && passo === 'toca' ? ' bv-rec-toque' : ''}`}>Receber</span>
+                  </div>
+                </div>
               </div>
-              {ok
-                ? <span className="bv-din-ok"><Check size={14} weight="bold" />Pago</span>
-                : <span className="bv-din-falta">falta<b>R$ {reais(r.total - r.recebido)}</b></span>}
-            </li>
-          )
-        })}
-      </ul>
+            )
+          })}
+        </div>
+
+        {/* a janela "Receber" do app, por cima da lista */}
+        <div className={`bv-rec-veu${janelaAberta ? ' on' : ''}`} />
+        <div className={`bv-rec-sh${janelaAberta ? ' on' : ''}`}>
+          <span className="ui-janela-alca" />
+          <p className="ui-janela-t">Receber · Pedido #1047</p>
+          <p className="fo-s">Paula Ribeiro</p>
+          <div className="far-res">
+            <div><span>Total do pedido</span><b>R$ 95,00</b></div>
+            <div className="tt"><span>Falta receber</span><b>R$ 95,00</b></div>
+          </div>
+          <p className="fo-lb">Quanto você recebeu agora?</p>
+          <div className="fo-in fo-in--grande"><span>R$</span><b>95,00</b></div>
+          <p className="fo-lb">Forma de pagamento</p>
+          <div className="fo-chips"><button type="button" tabIndex={-1} className="on">Pix</button><button type="button" tabIndex={-1}>Dinheiro</button><button type="button" tabIndex={-1}>Crédito</button></div>
+          <div className="far-prev far-prev--ok"><b>O pedido fica quitado</b><small>R$ 95,00 entram no financeiro.</small></div>
+          <span className={`ui-bt ui-bt--principal ui-bt--cheio${passo === 'confirma' ? ' bv-rec-toque' : ''}`}><span className="ui-bt-ic"><Wallet size={20} weight="bold" /></span><span className="ui-bt-t">Confirmar recebimento</span></span>
+        </div>
+
+        {dedo && <span className={`bv-rec-dedo${passo === 'toca' || passo === 'confirma' ? ' aperta' : ''}`} style={{ left: dedo.x, top: dedo.y }} />}
+        {ja('quitado') && !ja('fim') && <span className="bv-rec-aviso"><CheckCircle size={18} weight="fill" />Pedido #1047 quitado.</span>}
+      </div>
     </div>
   )
 }

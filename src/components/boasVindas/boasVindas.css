@@ -181,28 +181,8 @@
 .bv-app .pdl-tabela > .bv-ped--novo:first-child .pdl.aceitar .ui-bt { animation: bvChama 1.1s ease-in-out .9s infinite; }
 
 /* 4 · dinheiro (09/10 · 3.83): um cartão só, com o total que falta e cada cliente */
-.bv-din { width: 100%; max-width: 380px; padding: 16px; border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); }
-.bv-din-topo { padding-bottom: 12px; border-bottom: 1px solid var(--ui-linha); }
-.bv-din-topo small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-.bv-din-topo b { display: block; font-size: 30px; font-weight: 700; line-height: 1.2; color: var(--ui-laranja); font-variant-numeric: tabular-nums; animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
 @keyframes bvValor { from { transform: scale(.92); opacity: .4; } to { transform: none; opacity: 1; } }
-.bv-din-topo span { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-.bv-din-lista { margin: 0; padding: 0; list-style: none; }
-.bv-din-lista li { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 0; transition: background-color .3s; }
-.bv-din-lista li + li { border-top: 1px solid var(--ui-linha); }
-.bv-din-av { position: relative; overflow: hidden; flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 700; }
-.bv-din-lista li.ok .bv-din-av { background: var(--ui-verde-fundo); color: var(--ui-verde); }
-.bv-din-tx { flex: 1; min-width: 0; }
-.bv-din-tx > b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14.5px; font-weight: 700; }
 /* quem não pagou nada e entrega amanhã: tudo em vermelho */
-.bv-din-lista li.alerta .bv-din-av { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
-.bv-din-tx small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
-.bv-din-lista li.alerta .bv-din-tx small { font-weight: 700; color: var(--ui-vermelho); }
-.bv-din-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.bv-din-falta { flex: none; display: flex; flex-direction: column; align-items: flex-end; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
-.bv-din-falta b { font-size: 15px; font-weight: 700; color: var(--ui-laranja); font-variant-numeric: tabular-nums; }
-.bv-din-lista li.alerta .bv-din-falta, .bv-din-lista li.alerta .bv-din-falta b { color: var(--ui-vermelho); }
-.bv-din-ok { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 99px; background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 13px; font-weight: 700; animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
 
 /* 5 · resumo da Ficha técnica (as mesmas medidas do fichaDetalhe.css) */
 .bv-luc { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); }
@@ -347,4 +327,57 @@
 @media (max-width: 1099px), (max-height: 599px) {
   .bv-tela-1 .bv-so-cel .bv-cel { width: clamp(275px, calc((100dvh - 350px) * .56), 330px); max-width: 84vw; }
   .bv-tela-1 .bv-so-cel .bv-cel-tela { height: clamp(200px, calc(100dvh - 350px), 620px); }
+}
+
+
+/* (29/10 · 4.65) 4 · dinheiro: a tela "A receber" do app numa caixa de tamanho fixo (384 × 580), que encolhe inteira
+   pra caber. No celular, o texto fica em cima e a caixa ocupa o espaço que sobra até o botão. */
+.bv-rec { position: relative; width: 100%; max-width: 420px; min-height: 260px; }
+.bv-rec-palco { position: absolute; left: 50%; top: 0; transform-origin: top center; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; padding: 14px 12px; overflow: hidden; border-radius: 22px; background: #F1F2F2; color: var(--ui-texto); font-family: var(--font-base); text-align: left; box-shadow: 0 12px 30px rgba(0, 0, 0, .35); }
+.bv-rec-palco::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; height: 44px; background: linear-gradient(rgba(241, 242, 242, 0), #F1F2F2); pointer-events: none; }
+.bv-rec .far-gt { margin: 0 0 -6px; }
+.bv-rec .far-lista { grid-template-columns: minmax(0, 1fr) !important; }
+.bv-rec .far-k, .bv-rec .far-it { box-shadow: 0 1px 2px rgba(44, 18, 25, .05), 0 8px 22px -6px rgba(44, 18, 25, .10); }
+.bv-rec .far-it { max-height: 220px; transition: background-color .35s ease, border-color .35s ease; }
+.bv-rec .far-rec, .bv-rec .far-ver { display: inline-flex; align-items: center; justify-content: center; transition: transform .12s ease, filter .12s ease; }
+.bv-rec .far-rec { box-shadow: 0 6px 14px -6px rgba(44, 18, 25, .45); }
+.bv-rec .far-k b { font-variant-numeric: tabular-nums; }
+.bv-rec-toque { transform: scale(.94); filter: brightness(.86); }
+/* o cartão quitado: verde, "Quitado" no lugar da data e a barrinha cheia; depois sai da lista */
+.bv-rec .bv-rec-ok { border-color: #86EFAC; background: #F0FDF4; }
+.bv-rec-tg { display: inline-flex; align-items: center; gap: 4px; color: #166534; background: #DCFCE7; animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
+.bv-rec .far-it-v b.bv-rec-pago { color: #16A34A; }
+.bv-rec .far-bar i { transition: width .6s ease; }
+.bv-rec .bv-rec-sai { animation: bvRecSai .55s ease-in forwards; }
+@keyframes bvRecSai { 40% { opacity: 0; transform: translateX(36px); } 100% { opacity: 0; transform: translateX(36px); max-height: 0; margin-bottom: -10px; padding-top: 0; padding-bottom: 0; border-width: 0; } }
+/* a janela "Receber" do app */
+.bv-rec-veu { position: absolute; inset: 0; z-index: 2; background: rgba(45, 31, 38, .45); opacity: 0; transition: opacity .25s ease; pointer-events: none; }
+.bv-rec-veu.on { opacity: 1; }
+.bv-rec-sh { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 0 16px 16px; border-radius: 22px 22px 0 0; background: var(--ui-branco); transform: translateY(105%); transition: transform .34s cubic-bezier(.2, .8, .2, 1); }
+.bv-rec-sh.on { transform: none; }
+.bv-rec-sh .ui-janela-t { margin: 8px 0 2px; }
+.bv-rec-sh .fo-s { margin: 0 0 10px; }
+.bv-rec-sh .fo-lb { margin: 12px 0 6px; }
+.bv-rec-sh .fo-in b { font-size: 22px; font-weight: 600; color: var(--ui-texto); }
+.bv-rec-sh .fo-chips button { min-height: 40px; }
+.bv-rec-sh .far-prev { margin-top: 12px; }
+.bv-rec-sh .ui-bt { margin-top: 14px; transition: transform .12s ease, filter .12s ease; }
+/* o dedo: aparece em cima do Receber e aperta; some enquanto a janela sobe e volta em cima do Confirmar */
+.bv-rec-dedo { position: absolute; z-index: 5; width: 34px; height: 34px; margin: -17px 0 0 -17px; border: 2px solid rgba(44, 18, 25, .5); border-radius: 50%; background: rgba(255, 255, 255, .6); box-shadow: 0 4px 12px rgba(0, 0, 0, .25); pointer-events: none; transition: left .55s ease, top .55s ease, transform .15s ease, background-color .15s ease; animation: bvDedo .3s ease-out both; }
+.bv-rec-dedo.aperta { transform: scale(.78); background: rgba(232, 90, 140, .5); }
+@keyframes bvDedo { from { opacity: 0; transform: scale(1.4); } to { opacity: 1; transform: none; } }
+.bv-rec-aviso { position: absolute; left: 50%; bottom: 16px; z-index: 4; display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-radius: 12px; background: #3A1A25; color: var(--ui-branco); font-size: 13.5px; font-weight: 600; white-space: nowrap; transform: translateX(-50%); animation: bvRecAviso 2.9s ease both; }
+.bv-rec-aviso svg { color: #4ADE80; }
+@keyframes bvRecAviso { 0% { opacity: 0; transform: translate(-50%, 10px); } 10%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 0); } }
+/* celular: o texto sobe pro topo e a caixa ocupa o resto (antes o conteúdo ficava no meio, com espaço vazio em cima) */
+@media (max-width: 899px) and (min-height: 521px) {
+  .bv-tela-3 .bv-corpo::before, .bv-tela-3 .bv-esp { flex: 0 0 0; }
+  .bv-tela-3 .bv-demo { flex: 1 1 auto; margin-top: 14px; }
+}
+/* tela larga: a caixa tem altura própria */
+@media (min-width: 900px), (min-width: 640px) and (max-height: 520px) {
+  .bv-tela-3 .bv-rec { height: min(600px, calc(100dvh - 150px)); max-width: 440px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bv-rec-sh, .bv-rec-veu, .bv-rec-dedo, .bv-rec .far-it, .bv-rec .far-bar i { transition: none; }
 }
