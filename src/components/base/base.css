@@ -301,3 +301,21 @@ html[data-ui-janela] .ui-aviso--saindo { animation-name: uiAvisoSomeCima; }
 @media (min-width: 768px) { .ui-aviso { max-width: 520px; } }
 .ui-aviso-t { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .ui-aviso { font-weight: 500; }
+
+/* (30/10 · 5.43) menu dos três pontinhos: o mesmo em todo o app (visual do "Mais" do produto) */
+.ui-mais-bt { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin: 0; padding: 0; border: 0; border-radius: var(--ui-raio-p); background: var(--ui-branco); color: var(--ui-texto-2); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+@media (hover: hover) { .ui-mais-bt:hover { background: #F3EEF0; color: var(--ui-texto); } }
+.ui-mais-bt[aria-expanded="true"] { background: #F3EEF0; color: var(--ui-texto); }
+.ui-mais-bt:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+.ui-mais { position: fixed; z-index: 10095; min-width: 260px; max-width: calc(100vw - 16px); padding: 6px; border: 1px solid #F0EBED; border-radius: 14px; background: var(--ui-branco); box-shadow: 0 16px 40px rgba(0, 0, 0, .16); font-family: var(--font-base); animation: uiMaisEntra .14s ease both; }
+@keyframes uiMaisEntra { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.ui-mais-it { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 10px 12px; border: 0; border-radius: var(--ui-raio-p); background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+@media (hover: hover) { .ui-mais-it:hover { background: #FAF8F5; } }
+.ui-mais-it:focus-visible { outline: 2px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -2px; }
+.ui-mais-ic { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--ui-raio-p); background: #FAF8F5; color: var(--ui-texto-2); }
+.ui-mais-tx { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ui-mais-tx b { font-size: 14px; font-weight: 600; line-height: 1.25; white-space: nowrap; }
+.ui-mais-tx small { font-size: 12.5px; color: var(--ui-texto-2); line-height: 1.3; white-space: nowrap; }
+.ui-mais-it--perigo b, .ui-mais-it--perigo .ui-mais-ic { color: var(--ui-vermelho); }
+@media (hover: hover) { .ui-mais-it--perigo:hover { background: var(--ui-vermelho-fundo); } }
+@media (prefers-reduced-motion: reduce) { .ui-mais { animation: none; } }

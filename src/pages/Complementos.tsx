@@ -8,7 +8,7 @@ import { precoCardapioComPromocao } from "@/lib/precoCardapio";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
-import { Botao, BotaoIA, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIA, BotaoIcone, Campo, MenuMais, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import { usePlano } from "@/hooks/usePlano";
 import { LIMITE_COMPLEMENTOS_GRATIS } from "@/lib/limitesPlano";
 import RecursoPro from "@/components/billing/RecursoPro";
@@ -67,7 +67,6 @@ export default function Complementos() {
   const [subindoCapa, setSubindoCapa] = useState(false);
   const [busca, setBusca] = useState("");
   const [buscaProd, setBuscaProd] = useState("");
-  const [menuDe, setMenuDe] = useState<Complemento | null>(null);
   const [aberta, setAberta] = useState(false);
   const [editando, setEditando] = useState<Complemento | null>(null);
   const [form, setForm] = useState<Form>(FORM_VAZIO);
@@ -327,7 +326,11 @@ export default function Complementos() {
                             <span className="pz-cc-l"><small>O cliente manda</small><em className={pede ? "r" : "n"}>{pede || "Nada"}</em></span>
                           </span>
                         </button>
-                        <BotaoIcone className="pz-cc-menu" rotulo={`Opções de ${c.nome}`} variante="limpo" onClick={() => setMenuDe(c)}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
+                        <MenuMais className="pz-cc-menu" rotulo={`Opções de ${c.nome}`} itens={[
+                          { Ic: PencilSimple, t: "Editar", sub: "Nome, preço e o que o cliente manda", aoTocar: () => abrir(c) },
+                          { Ic: Package, t: "Onde aparece", sub: "Em quais produtos ou categorias", aoTocar: () => abrir(c, true) },
+                          { Ic: Trash, t: "Excluir", sub: "Some de todos os produtos", perigo: true, aoTocar: () => excluir(c) },
+                        ]} />
                       </div>
                     );
                   })}
@@ -343,7 +346,11 @@ export default function Complementos() {
                           <span className="pz-li-tx"><b>{c.nome}</b><small>{ondeAparece(c)}</small>{pede && <small className="pz-li-pede">{pede}</small>}</span>
                           <span className={`pz-preco${gratis ? " g" : ""}`}>{gratis ? "Grátis" : `+ R$ ${brl(Number(c.valor))}`}</span>
                         </button>
-                        <BotaoIcone rotulo={`Opções de ${c.nome}`} variante="limpo" onClick={() => setMenuDe(c)}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
+                        <MenuMais rotulo={`Opções de ${c.nome}`} itens={[
+                          { Ic: PencilSimple, t: "Editar", sub: "Nome, preço e o que o cliente manda", aoTocar: () => abrir(c) },
+                          { Ic: Package, t: "Onde aparece", sub: "Em quais produtos ou categorias", aoTocar: () => abrir(c, true) },
+                          { Ic: Trash, t: "Excluir", sub: "Some de todos os produtos", perigo: true, aoTocar: () => excluir(c) },
+                        ]} />
                       </div>
                     );
                   })}
@@ -357,15 +364,6 @@ export default function Complementos() {
       </div>
 
       {/* menu */}
-      <Janela aberta={!!menuDe} aoFechar={() => setMenuDe(null)} tipo="conteudo" titulo={menuDe?.nome || ""}>
-        {menuDe && (
-          <div className="ct-menu">
-            <button type="button" onClick={() => { const c = menuDe; setMenuDe(null); abrir(c); }}><PencilSimple size={20} weight="bold" />Editar</button>
-            <button type="button" onClick={() => { const c = menuDe; setMenuDe(null); abrir(c, true); }}><Package size={20} weight="bold" />Escolher os produtos</button>
-            <button type="button" className="perigo" onClick={() => { const c = menuDe; setMenuDe(null); excluir(c); }}><Trash size={20} weight="bold" />Excluir</button>
-          </div>
-        )}
-      </Janela>
 
       {/* nova / editar */}
       {limiteAberto && <RecursoPro titulo={`${LIMITE_COMPLEMENTOS_GRATIS} complementos no plano grátis`} texto={`No plano grátis, a loja tem até ${LIMITE_COMPLEMENTOS_GRATIS} complementos. Apague um para criar outro, ou assine o PRO para ter quantos quiser.`} onClose={() => setLimiteAberto(false)} />}

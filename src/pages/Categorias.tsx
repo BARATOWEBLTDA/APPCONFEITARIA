@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_CATEGORIAS, TOUR_CATEGORIAS } from "@/lib/comoTelas";
-import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar, informar } from "@/components/base";
+import { Botao, BotaoIcone, Campo, MenuMais, Janela, TelaVazia, Titulo, avisar, confirmar, informar } from "@/components/base";
 import "./categorias.css";
 
 /**
@@ -50,7 +50,6 @@ export default function Categorias() {
   const [form, setForm] = useState<Categoria>({ nome: "", imagem_url: "", ordem: 0 });
   const [saving, setSaving] = useState(false);
   const [modoFoto, setModoFoto] = useState<ModoFoto>("auto");
-  const [menuDe, setMenuDe] = useState<Categoria | null>(null);
   const imgRef = useRef<HTMLInputElement>(null);
 
   // (11/10) a lista não carregou: mostra o erro com "Tentar de novo" em vez de "Nenhuma categoria ainda"
@@ -224,7 +223,6 @@ export default function Categorias() {
   };
 
   const qtdTexto = (q: number) => q === 0 ? "Nenhum produto" : `${q} ${q === 1 ? "produto" : "produtos"}`;
-  const idxMenu = menuDe ? categorias.findIndex(c => c.id === menuDe.id) : -1;
   const nomeOriginal = form.id ? categorias.find(c => c.id === form.id)?.nome : undefined;
   const qtdOriginal = nomeOriginal ? contarProdutos(nomeOriginal) : 0;
   const mudouNome = !!nomeOriginal && form.nome.trim() !== "" && form.nome.trim() !== nomeOriginal;
@@ -258,13 +256,19 @@ export default function Categorias() {
           <Titulo contagem={categorias.length} apoio="Nesta ordem no cardápio."
             acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={openNova}><span className="ct-g">Nova categoria</span><span className="ct-c">Nova</span></Botao>}>Suas categorias</Titulo>
           <section className="ct-card">
-            {categorias.map(cat => (
+            {categorias.map((cat, i) => (
               <div key={cat.id} className="ct-row">
                 <button type="button" className="ct-row-b" onClick={() => openEditar(cat)}>
                   <Icone src={fotoDaCategoria(cat)} />
                   <span className="ct-row-tx"><b>{cat.nome}</b><small>{qtdTexto(contarProdutos(cat.nome))}</small></span>
                 </button>
-                <BotaoIcone rotulo={`Opções de ${cat.nome}`} variante="limpo" onClick={() => setMenuDe(cat)}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
+                {/* (30/10 · 5.43) o menu do ⋮ abre colado no botão, igual em todo o app */}
+                <MenuMais rotulo={`Opções de ${cat.nome}`} itens={[
+                  { Ic: PencilSimple, t: "Editar", sub: "Nome e foto", aoTocar: () => openEditar(cat) },
+                  ...(i > 0 ? [{ Ic: ArrowUp, t: "Subir na ordem", sub: "Aparece antes no cardápio", aoTocar: () => moverOrdem(cat.id!, -1) }] : []),
+                  ...(i < categorias.length - 1 ? [{ Ic: ArrowDown, t: "Descer na ordem", sub: "Aparece depois no cardápio", aoTocar: () => moverOrdem(cat.id!, 1) }] : []),
+                  { Ic: Trash, t: "Excluir", sub: "Só sem produtos dentro", perigo: true, aoTocar: () => handleDelete(cat) },
+                ]} />
               </div>
             ))}
           </section>
@@ -273,16 +277,6 @@ export default function Categorias() {
       </div>
 
       {/* menu da categoria */}
-      <Janela aberta={!!menuDe} aoFechar={() => setMenuDe(null)} tipo="conteudo" titulo={menuDe?.nome || ""}>
-        {menuDe && (
-          <div className="ct-menu">
-            <button type="button" onClick={() => { const c = menuDe; setMenuDe(null); openEditar(c); }}><PencilSimple size={20} weight="bold" />Editar</button>
-            <button type="button" disabled={idxMenu <= 0} onClick={() => { moverOrdem(menuDe.id!, -1); setMenuDe(null); }}><ArrowUp size={20} weight="bold" />Subir na ordem</button>
-            <button type="button" disabled={idxMenu < 0 || idxMenu >= categorias.length - 1} onClick={() => { moverOrdem(menuDe.id!, 1); setMenuDe(null); }}><ArrowDown size={20} weight="bold" />Descer na ordem</button>
-            <button type="button" className="perigo" onClick={() => { const c = menuDe; setMenuDe(null); handleDelete(c); }}><Trash size={20} weight="bold" />Excluir</button>
-          </div>
-        )}
-      </Janela>
 
       {/* nova / editar */}
       <Janela aberta={modal} aoFechar={fecharModal} tipo="conteudo" travada titulo={form.id ? "Editar categoria" : "Nova categoria"}
