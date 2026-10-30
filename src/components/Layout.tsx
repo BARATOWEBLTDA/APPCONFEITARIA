@@ -23,6 +23,7 @@ import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquare
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile, avatarDaConta, getCardapioUrl } from "@/hooks/useProfile";
+import AlertaPedidoNovo from "@/components/AlertaPedidoNovo";
 import { reativarPushSeSaiu } from "@/hooks/usePushSubscription";
 import { usePlano } from "@/hooks/usePlano";
 import { usePedidosParaAceitar } from "@/hooks/usePedidosParaAceitar";
@@ -279,6 +280,7 @@ export default function Layout() {
       </aside>
 
       <main className="layout-main">
+        <AlertaPedidoNovo uid={profile?.id} />
         {/* (07/10 · 2.99) O sininho e a janelinha de avisos saíram: o botão ficava escondido em todos os tamanhos de tela.
             As notificações continuam na tela "Notificações", pelo menu da foto. */}
         <Suspense fallback={null}><Outlet /></Suspense>

@@ -1,7 +1,7 @@
 import { COMO_NOTIFICACOES, TOUR_NOTIFICACOES } from "@/lib/comoTelas";
 import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { DeviceMobile, SpeakerHigh, CashRegister, PaperPlaneTilt } from "@phosphor-icons/react";
+import { DeviceMobile, SpeakerHigh, CashRegister, PaperPlaneTilt, BellRinging, Check, Play } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { Botao, avisar } from "@/components/base";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -11,6 +11,7 @@ import {
   sonsHabilitados, setSonsHabilitados,
   somPedidoHabilitado, setSomPedidoHabilitado,
   tocarSom,
+  TOQUES, type ToqueId, alertaPedidoHabilitado, setAlertaPedidoHabilitado, toqueEscolhido, setToqueEscolhido, tocarToque, volumeApp, setVolumeApp,
 } from "@/hooks/useSom";
 
 /**
@@ -36,6 +37,14 @@ export default function NotificacoesSons() {
       avisar("Não deu para enviar o aviso de teste. Confira a internet e tente de novo.", { tipo: "erro" });
     } finally { setTestando(false); }
   };
+
+  // (30/10 · 5.45) som de pedido novo: 4 toques, volume e testar (como no Dora)
+  const [alerta, setAlerta] = useState(alertaPedidoHabilitado());
+  const [toque, setToque] = useState<ToqueId>(toqueEscolhido());
+  const [volume, setVolume] = useState(volumeApp());
+  const escolherToque = (id: ToqueId) => { setToque(id); setToqueEscolhido(id); tocarToque(id); };
+  const mudarVolume = (v: number) => { setVolume(v); setVolumeApp(v); };
+  const trocarAlerta = () => { const novo = !alerta; setAlerta(novo); setAlertaPedidoHabilitado(novo); if (novo) tocarToque(toque); };
 
   const [somGeral, setSomGeral] = useState(sonsHabilitados());
   const [somVenda, setSomVenda] = useState(somPedidoHabilitado());
@@ -128,12 +137,44 @@ export default function NotificacoesSons() {
       />
 
       <div className="ns-root">
-        <p className="ns-sec">Notificações</p>
+        <p className="ns-sec">Com o app aberto</p>
+        <div className="ns-card">
+          <div className="ns-row">
+            <span className="ns-ico"><BellRinging size={20} /></span>
+            <div className="ns-txt">
+              <div className="ns-name">Som de pedido novo</div>
+              <div className="ns-desc">Toca até aceitar ou recusar</div>
+            </div>
+            <label className="ns-toggle">
+              <input type="checkbox" checked={alerta} onChange={trocarAlerta} aria-label="Som de pedido novo" />
+              <span className="ns-toggle-s" />
+            </label>
+          </div>
+          <div className={`ns-toques-w${alerta ? "" : " ns-off"}`}>
+            <p className="ns-toques-t">Escolha o toque</p>
+            <div className="ns-toques" role="radiogroup" aria-label="Toque de pedido novo">
+              {TOQUES.map(t => (
+                <button key={t.id} type="button" role="radio" aria-checked={toque === t.id} className={`ns-toque${toque === t.id ? " on" : ""}`} disabled={!alerta} onClick={() => escolherToque(t.id)}>
+                  <i className="ns-chk" aria-hidden="true">{toque === t.id && <Check size={14} weight="bold" />}</i>
+                  <span><b>{t.nome}</b><small>Repete a cada {t.cada}s</small></span>
+                </button>
+              ))}
+            </div>
+            <div className="ns-vol">
+              <div className="ns-vol-l"><span>Volume</span><b>{volume}%</b></div>
+              <input type="range" min={0} max={100} step={5} value={volume} disabled={!alerta} aria-label="Volume dos sons"
+                onChange={e => mudarVolume(Number(e.target.value))} style={{ ["--v" as any]: `${volume}%` }} />
+              <div className="ns-vol-p"><small>Sem som</small><Botao variante="secundario" tamanho="m" icone={<Play size={16} weight="fill" />} disabled={!alerta || volume === 0} onClick={() => tocarToque(toque)}>Testar som</Botao></div>
+            </div>
+          </div>
+        </div>
+
+        <p className="ns-sec">Com o app fechado</p>
         <div className="ns-card">
           <div className="ns-row">
             <span className="ns-ico"><DeviceMobile size={20} /></span>
             <div className="ns-txt">
-              <div className="ns-name">Notificações</div>
+              <div className="ns-name">Notificações no celular</div>
               <div className={pushDescClass}>{pushDesc}</div>
               {error && <div className="ns-desc ns-desc--warn">{error}</div>}
             </div>
@@ -220,6 +261,30 @@ export default function NotificacoesSons() {
         .ns-row:has(.ns-passos) { align-items: flex-start; }
         @media (max-width: 340px) { .ns-passos li { white-space: normal; } }
         .ns-row--off .ns-name, .ns-row--off .ns-ico { opacity: 0.45; }
+        /* (30/10 · 5.45) toques de pedido novo */
+        .ns-toques-w { padding: 0 16px 16px; border-top: 1px solid var(--ui-linha); }
+        .ns-off { opacity: .5; }
+        .ns-toques-t { margin: 14px 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+        .ns-toques { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        @media (min-width: 560px) { .ns-toques { grid-template-columns: 1fr 1fr; } }
+        .ns-toque { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 56px; margin: 0; padding: 8px 14px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+        .ns-toque:disabled { cursor: default; }
+        .ns-toque.on { border-color: var(--ui-escolha); }
+        .ns-toque > span { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+        .ns-toque b { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ns-toque small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+        .ns-chk { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; box-sizing: border-box; border: 2px solid #D6CBD0; border-radius: 6px; background: var(--ui-branco); color: #fff; }
+        .ns-toque.on .ns-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+        .ns-vol { margin-top: 12px; padding: 12px 14px; border-radius: var(--ui-raio); background: #F7F4F5; }
+        .ns-vol-l { display: flex; align-items: baseline; justify-content: space-between; font-size: 13.5px; color: var(--ui-texto); }
+        .ns-vol-l b { font-size: 16px; font-weight: 600; }
+        .ns-vol input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; margin: 12px 0 6px; border-radius: 99px; background: linear-gradient(to right, var(--ui-rosa) var(--v), #E5DDE0 var(--v)); outline: none; cursor: pointer; }
+        .ns-vol input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid var(--ui-rosa); box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+        .ns-vol input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 2px solid var(--ui-rosa); }
+        .ns-vol input[type=range]:disabled { cursor: default; }
+        .ns-vol-p { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .ns-vol-p small { font-size: 12px; color: var(--ui-texto-3); }
+        .ns-vol-p .ui-bt { width: auto; }
         .ns-note {
           margin: 0 16px 14px; padding: 10px 12px; border-radius: var(--ui-raio-p);
           background: #FAF7F8; font-size: 13px; color: #6E5A66; line-height: 1.45;
