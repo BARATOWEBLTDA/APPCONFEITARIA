@@ -3426,7 +3426,7 @@ export default function Produtos() {
         /* ═══ Desktop: split 1fr / 1.2fr — vídeo vai para direita ═══ */
         @media (min-width: 900px) {
           .prod-hero-split {
-            min-height: calc(100vh - 5rem);
+            min-height: calc(100dvh - 2rem - 61px);
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -4555,6 +4555,8 @@ export default function Produtos() {
           .prod-root:has(> .prod-hero-split) {
             padding: 0;
             gap: 0;
+            /* (30/10 · 5.26) a conta não tirava o cabeçalho (61px): sobrava uma barra de rolagem de 13px */
+            min-height: calc(100dvh - 2rem - 61px);
           }
         }
 
