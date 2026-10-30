@@ -209,3 +209,6 @@
   .ep-faixas .ep-faixa .ui-campo { width: 52px; }
   .ep-faixas .ep-faixa-rs { width: auto; flex: 1; max-width: 176px; margin-left: 0; }
 }
+/* (29/10 · 5.15) "Grátis" encostado na borda do campo: ocupa a ponta direita inteira, sem espaço */
+.ep-tx { padding-right: 0; overflow: hidden; }
+.ep-tx button { align-self: stretch; height: auto; margin: 0; padding: 0 12px 0 10px; border-radius: 0; }
