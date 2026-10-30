@@ -12,6 +12,7 @@ import { Botao, BotaoIA, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo
 import { usePlano } from "@/hooks/usePlano";
 import { LIMITE_COMPLEMENTOS_GRATIS } from "@/lib/limitesPlano";
 import RecursoPro from "@/components/billing/RecursoPro";
+import { useRecorte } from "@/components/ui/useRecorte";
 import "./categorias.css";
 import "./complementos.css";
 
@@ -20,12 +21,12 @@ import "./complementos.css";
  * Extras que o cliente escolhe ao pedir (topo de bolo, escrita, papel de arroz). Cadastra uma vez e escolhe em quais produtos aparece.
  * Na tabela biblioteca_extras, "categorias" guarda os IDs dos produtos (vazio = aparece em todos).
  */
-type Complemento = { id: string; nome: string; descricao?: string; valor: number; categorias: string[]; pede_referencia?: boolean; pede_frase?: boolean; categorias_cardapio?: string[] | null };
+type Complemento = { id: string; nome: string; descricao?: string; imagem_url?: string | null; valor: number; categorias: string[]; pede_referencia?: boolean; pede_frase?: boolean; categorias_cardapio?: string[] | null };
 /** (24/10) onde aparece: em todos, nas categorias marcadas (pelo nome, como os produtos guardam) ou nos produtos marcados */
 type Onde = "todos" | "categorias" | "produtos";
 type ProdutoLite = { id: string; nome: string; categoria?: string; imagem_url?: string | null };
-type Form = { nome: string; descricao: string; valor: number; gratis: boolean; onde: Onde | ""; /* (30/10 · 5.38) "" = ainda não escolheu (antes vinha "Em todos" marcado) */ cats: string[]; produtos: string[]; pedeRef: boolean; pedeFrase: boolean };
-const FORM_VAZIO: Form = { nome: "", descricao: "", valor: 0, gratis: false, onde: "", cats: [], produtos: [], pedeRef: false, pedeFrase: false };
+type Form = { nome: string; descricao: string; valor: number; gratis: boolean; onde: Onde | ""; /* (30/10 · 5.38) "" = ainda não escolheu (antes vinha "Em todos" marcado) */ cats: string[]; produtos: string[]; pedeRef: boolean; pedeFrase: boolean; capa: string };
+const FORM_VAZIO: Form = { nome: "", descricao: "", valor: 0, gratis: false, onde: "", cats: [], produtos: [], pedeRef: false, pedeFrase: false, capa: "" };
 const ondeDe = (c: Complemento): Onde => ((c.categorias_cardapio || []).length ? "categorias" : (c.categorias || []).length ? "produtos" : "todos");
 
 /** "BOLO DE PAÇOCA" → "Bolo de Paçoca" */
@@ -38,6 +39,19 @@ const brl = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2,
 const lerPreco = (s: string) => { const d = s.replace(/\D/g, ""); return d ? parseInt(d, 10) / 100 : 0; };
 /** (30/10 · 5.31) explicação do complemento: no máximo 2 linhas no cardápio do celular */
 const MAX_EXPLICACAO = 60;
+/** (30/10 · 5.42) capa do complemento: a foto que a confeiteira pôs ou, sem foto, um desenho pelo nome */
+function capaDesenho(nome: string): string {
+  const n = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const tem = (...p: string[]) => p.some(x => n.includes(x));
+  const pasta = "/categoriaicones/categorias/";
+  if (tem("vela")) return pasta + "velas.png";
+  if (tem("topo", "papel", "arroz", "tema", "escrita", "frase", "nome", "plaquinha", "placa")) return pasta + "toposdebolo.png";
+  if (tem("brigadeiro", "docinho", "doce", "bombom", "trufa")) return pasta + "doces.png";
+  if (tem("morango", "fruta", "recheio", "cobertura", "chantilly", "ganache", "calda")) return pasta + "fatias.png";
+  if (tem("cupcake")) return pasta + "cupcakes.png";
+  if (tem("embalagem", "caixa", "presente", "laco", "cartao", "bilhete", "balao", "baloes")) return pasta + "todos.png";
+  return pasta + "bolos.png";
+}
 /** (24/10) a primeira foto do produto (o campo guarda várias separadas por vírgula; antes a lista inteira ia no src e a foto quebrava) */
 const primeiraFoto = (f?: string | null) => (f ? String(f).split(/,(?=\s*(?:https?:|\/))/)[0].trim() : "");
 
@@ -49,6 +63,8 @@ export default function Complementos() {
   const [produtos, setProdutos] = useState<ProdutoLite[]>([]);
   const [categorias, setCategorias] = useState<{ nome: string }[]>([]);
   const [temFrase, setTemFrase] = useState(false);
+  const [temCapa, setTemCapa] = useState(false); // (30/10 · 5.42) liga sozinho quando o banco tiver a coluna imagem_url
+  const [subindoCapa, setSubindoCapa] = useState(false);
   const [busca, setBusca] = useState("");
   const [buscaProd, setBuscaProd] = useState("");
   const [menuDe, setMenuDe] = useState<Complemento | null>(null);
@@ -88,6 +104,8 @@ export default function Complementos() {
       // (24/10) a opção "Uma frase" só aparece quando o banco já tem a coluna pede_frase (liga sozinha depois do SQL)
       const { error: semFrase } = await supabase.from("biblioteca_extras").select("pede_frase").limit(1);
       setTemFrase(!semFrase);
+      const { error: semCapa } = await supabase.from("biblioteca_extras").select("imagem_url").limit(1);
+      setTemCapa(!semCapa);
       if (error || erroProds || !data || !prods) setErroCarga(explicarErro(error || erroProds, "Tente de novo em instantes."));
       else { setItems(data as Complemento[]); setProdutos(prods as ProdutoLite[]); }
     } catch (e) {
@@ -108,7 +126,7 @@ export default function Complementos() {
       nome: c.nome, descricao: c.descricao || "", valor: Number(c.valor) || 0, gratis: !(Number(c.valor) > 0),
       onde: escolherProdutos && ondeDe(c) === "todos" ? "categorias" : ondeDe(c),
       // (27/10) categoria ou produto que foi apagado sai daqui (antes ficava escondido e o complemento não aparecia em lugar nenhum)
-      cats: (c.categorias_cardapio || []).filter(n => categorias.some(k => k.nome === n)), produtos: (c.categorias || []).filter(id => produtos.some(p => p.id === id)), pedeRef: c.pede_referencia === true, pedeFrase: c.pede_frase === true,
+      cats: (c.categorias_cardapio || []).filter(n => categorias.some(k => k.nome === n)), produtos: (c.categorias || []).filter(id => produtos.some(p => p.id === id)), pedeRef: c.pede_referencia === true, pedeFrase: c.pede_frase === true, capa: c.imagem_url || "",
     } : FORM_VAZIO);
     setAberta(true);
   };
@@ -118,6 +136,16 @@ export default function Complementos() {
     if (!form.nome.trim() || !form.onde || (!form.gratis && form.valor <= 0)) return;
     setTentou(false); setEtapa(2);
   };
+  const recorteCapa = useRecorte(async (foto) => {
+    if (!userId) return;
+    setSubindoCapa(true);
+    const caminho = `complementos/${userId}-${Date.now()}.jpg`;
+    const { error } = await supabase.storage.from("products").upload(caminho, foto, { upsert: true, contentType: "image/jpeg" });
+    setSubindoCapa(false);
+    if (error) { avisar("Não deu para enviar a foto. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+    const url = supabase.storage.from("products").getPublicUrl(caminho).data.publicUrl;
+    setForm(f => ({ ...f, capa: url }));
+  }, { aspect: 4 / 3, forma: "rect", titulo: "Capa do complemento" });
   const fechar = () => { setAberta(false); setOpcoesIa([]); setSugNome(null); setIaAviso(""); };
   // (30/10 · 5.35) ao sair do nome: arruma maiúsculas e espaços na hora; se parecer frase ou tiver erro, a IA sugere o nome certo
   const arrumarNome = async () => {
@@ -170,7 +198,7 @@ export default function Complementos() {
     setTentou(true);
     const nome = form.nome.trim();
     if (!nome || !form.onde || (!form.gratis && form.valor <= 0) || (form.onde === "produtos" && form.produtos.length === 0) || (form.onde === "categorias" && form.cats.length === 0)) return;
-    const dados = { nome, descricao: form.descricao.trim() || null, valor: form.gratis ? 0 : form.valor, pede_referencia: form.pedeRef, ...(temFrase ? { pede_frase: form.pedeFrase } : {}),
+    const dados = { nome, descricao: form.descricao.trim() || null, valor: form.gratis ? 0 : form.valor, pede_referencia: form.pedeRef, ...(temFrase ? { pede_frase: form.pedeFrase } : {}), ...(temCapa ? { imagem_url: form.capa || null } : {}),
       categorias: form.onde === "produtos" ? form.produtos : [], categorias_cardapio: form.onde === "categorias" ? form.cats : [] };
     setSaving(true);
     try {
@@ -291,7 +319,7 @@ export default function Complementos() {
                     return (
                       <div key={c.id} className="pz-cc">
                         <button type="button" className="pz-cc-b" onClick={() => abrir(c)} aria-label={`Editar ${c.nome}`}>
-                          <span className="pz-cc-top" aria-hidden="true">{c.pede_referencia ? <Camera size={34} weight="duotone" /> : c.pede_frase ? <TextT size={34} weight="duotone" /> : <PuzzlePiece size={34} weight="duotone" />}</span>
+                          <span className={`pz-cc-top${c.imagem_url ? " pz-cc-top--foto" : ""}`} aria-hidden="true"><img src={c.imagem_url || capaDesenho(c.nome)} alt="" loading="lazy" /></span>
                           <span className="pz-cc-in">
                             <b className="pz-cc-nome" title={c.nome}>{c.nome}</b>
                             <span className="pz-cc-l"><small>Preço</small><em className={gratis ? "g" : ""}>{gratis ? "Grátis" : `+ R$ ${brl(Number(c.valor))}`}</em></span>
@@ -311,7 +339,7 @@ export default function Complementos() {
                     return (
                       <div key={c.id} className="pz-li">
                         <button type="button" className="pz-li-b" onClick={() => abrir(c)}>
-                          <span className="pz-li-ic" aria-hidden="true">{c.pede_referencia ? <Camera size={22} weight="duotone" /> : c.pede_frase ? <TextT size={22} weight="duotone" /> : <PuzzlePiece size={22} weight="duotone" />}</span>
+                          <span className={`pz-li-ic${c.imagem_url ? " pz-li-ic--foto" : ""}`} aria-hidden="true"><img src={c.imagem_url || capaDesenho(c.nome)} alt="" loading="lazy" /></span>
                           <span className="pz-li-tx"><b>{c.nome}</b><small>{ondeAparece(c)}</small>{pede && <small className="pz-li-pede">{pede}</small>}</span>
                           <span className={`pz-preco${gratis ? " g" : ""}`}>{gratis ? "Grátis" : `+ R$ ${brl(Number(c.valor))}`}</span>
                         </button>
@@ -351,6 +379,18 @@ export default function Complementos() {
           {/* (30/10 · 5.32) PC: janela larga em duas colunas, sem rolar: o complemento à esquerda e onde aparece (a lista de produtos) à direita */}
           <div className="pz-c1">
           <div className="pz-sec">
+          {/* (30/10 · 5.42) capa: foto opcional; sem foto, o card usa um desenho pelo nome */}
+          {temCapa && (
+            <div className="pz-capa">
+              <span className={`pz-capa-img${form.capa ? " pz-capa-img--foto" : ""}`}><img src={form.capa || capaDesenho(form.nome)} alt="" /></span>
+              <span className="pz-capa-tx"><b>Capa</b><small>{form.capa ? "Foto sua" : "Sem foto, usamos um desenho"}</small></span>
+              <label className="pz-capa-bt">
+                <input type="file" accept="image/*" onChange={recorteCapa.escolher} hidden />
+                {subindoCapa ? "Enviando…" : form.capa ? "Trocar" : "Adicionar foto"}
+              </label>
+              {form.capa && <button type="button" className="pz-capa-x" onClick={() => setForm(f => ({ ...f, capa: "" }))} aria-label="Tirar a foto"><X size={14} weight="bold" /></button>}
+            </div>
+          )}
           <div className="pz-nome">
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: topo de bolo, escrita, papel de arroz" value={form.nome} maxLength={50} erro={erroNome}
             onChange={e => { const v = e.target.value; setForm(f => ({ ...f, nome: v })); setSugNome(null); }} onBlur={() => void arrumarNome()} />
@@ -469,6 +509,7 @@ export default function Complementos() {
           </div>
         )}
       </Janela>
+      {recorteCapa.janela}
     </>
   );
 }

@@ -309,7 +309,7 @@
   .pz-lista2 > .pz-it:nth-child(1), .pz-lista2 > .pz-busca + .pz-it { border-top: 0; }
 }
 @media (min-width: 1024px) {
-  .ui-janela:has(.pz-form), .ui-janela:has(.pz-etapa2) { height: min(90dvh, 720px); min-height: 0; }
+  .ui-janela:has(.pz-form), .ui-janela:has(.pz-etapa2) { height: min(90dvh, 780px); min-height: 0; }
   .pz-etapa2 { height: 100%; }
   .pz-lista2 { flex: 1 1 auto; min-height: 0; max-height: none; }
 }
@@ -339,3 +339,19 @@
 }
 .pz-e2-grade { grid-auto-rows: max-content; }
 @media (min-width: 640px) { .pz-e2-grade { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
+/* (30/10 · 5.42) capa do complemento: foto da confeiteira ou um desenho pelo nome (fundo cinza, sem rosa-lavado) */
+.pz-cc-top { background: #F3EEF0; overflow: hidden; }
+.pz-cc-top img { width: 76px; height: 76px; object-fit: contain; }
+.pz-cc-top--foto img { width: 100%; height: 100%; object-fit: cover; }
+.pz-li-ic { overflow: hidden; background: #F3EEF0; }
+.pz-li-ic img { width: 70%; height: 70%; object-fit: contain; }
+.pz-li-ic--foto img { width: 100%; height: 100%; object-fit: cover; }
+.pz-capa { display: flex; align-items: center; gap: var(--gap-stack); }
+.pz-capa-img { flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 48px; overflow: hidden; border-radius: var(--ui-raio-p); background: #F3EEF0; }
+.pz-capa-img img { width: 36px; height: 36px; object-fit: contain; }
+.pz-capa-img--foto img { width: 100%; height: 100%; object-fit: cover; }
+.pz-capa-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pz-capa-tx b { font-size: 13px; font-weight: 600; color: var(--ui-texto); }
+.pz-capa-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pz-capa-bt { flex: none; display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 999px; background: #F3EEF0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
+.pz-capa-x { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ui-texto-3); cursor: pointer; }
