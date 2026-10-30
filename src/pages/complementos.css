@@ -230,7 +230,7 @@
   .ui-janela:has(.pz-form) .ui-janela-pe .ui-bt { flex: none; width: auto; padding-left: 28px; padding-right: 28px; }
   .pz-c2 { align-self: stretch; padding-left: 32px; margin-left: -1px; border-left: 1px solid var(--ui-linha, #F1E7EB); }
   /* a lista de categorias ou produtos rola por dentro, a janela não */
-  .pz-c2 .pz-onde-l { max-height: clamp(160px, calc(100dvh - 590px), 420px); overflow-y: auto; overscroll-behavior: contain; }
+  .pz-c2 .pz-onde-l { max-height: clamp(160px, calc(100dvh - 480px), 480px); overflow-y: auto; overscroll-behavior: contain; }
 }
 
 /* (30/10 · 5.34) espaçamento pelos tokens do themes: campos da mesma parte 12px (--gap-stack), entre partes 24px (--gap-section),
@@ -280,3 +280,6 @@
 .pz-chk { width: 22px; height: 22px; border-width: 2px; border-color: #D6CBD0; border-radius: 6px; box-sizing: border-box; }
 .pz-onde-b > i { width: 20px; height: 20px; border: 2px solid #CFC3C8; }
 .pz-onde-op.on .pz-onde-b > i { border: 6px solid var(--ui-escolha); }
+/* (30/10 · 5.37) "Onde aparece" com o quadradinho do app (o mesmo do themes e do "O cliente precisa mandar"), não bolinha */
+.pz-onde-b > .pz-chk, .pz-onde-op.on .pz-onde-b > .pz-chk { width: 22px; height: 22px; border: 2px solid #D6CBD0; border-radius: 6px; }
+.pz-onde-op.on .pz-onde-b > .pz-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }

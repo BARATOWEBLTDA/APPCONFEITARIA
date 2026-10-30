@@ -382,15 +382,7 @@ export default function Complementos() {
 
           </div>
           <div className="pz-c2">
-          {/* (19/10) prévia ao vivo: como o cliente vê no cardápio · (30/10) no PC fica no topo da coluna da direita */}
-          <div className="pz-prev" aria-hidden="true">
-            <div className="pz-ex-l on"><i><Check size={14} weight="bold" /></i>
-              <span className="pz-prev-tx"><span>{form.nome.trim() || "Nome do complemento"}</span>{form.descricao.trim() && <em>{form.descricao.trim()}</em>}</span>
-              <b className={form.gratis ? "g" : ""}>{form.gratis ? "Grátis" : `+ R$ ${brl(form.valor || 0)}`}</b></div>
-            {form.pedeRef && <div className="pz-prev-ref"><Camera size={16} weight="bold" aria-hidden="true" />Enviar foto de referência</div>}
-            {form.pedeFrase && <div className="pz-prev-ref pz-prev-frase"><TextT size={16} weight="bold" aria-hidden="true" />Qual frase vai no bolo?</div>}
-          </div>
-
+          {/* (30/10 · 5.37) a prévia saiu (o Bruno pediu): a coluna da direita é só "Onde aparece" */}
           {/* (24/10) onde aparece: 3 opções em lista (antes "Em todos / Escolher" e uma lista solta de produtos) */}
           <div className="ui-campo">
             <span className="ui-campo-r"><span>Onde aparece no cardápio</span></span>
@@ -402,7 +394,7 @@ export default function Complementos() {
               ] as [Onde, string, string][]).map(([k, t, d]) => (
                 <div key={k} className={`pz-onde-op${form.onde === k ? " on" : ""}`}>
                   <button type="button" role="radio" aria-checked={form.onde === k} className="pz-onde-b" onClick={() => setForm(f => ({ ...f, onde: k }))}>
-                    <i aria-hidden="true" /><span><b>{t}</b><small>{d}</small></span>
+                    <i className="pz-chk" aria-hidden="true">{form.onde === k && <Check size={14} weight="bold" />}</i><span><b>{t}</b><small>{d}</small></span>
                     {k === "produtos" && <em className="prod-selo-rec pz-selo">Recomendado</em>}
                   </button>
                   {form.onde === k && k === "categorias" && (
