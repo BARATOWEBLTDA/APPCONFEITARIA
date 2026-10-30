@@ -348,20 +348,18 @@ export default function Complementos() {
           </div>
           {/* (30/10 · 5.31) caixa maior, até 60 letras (2 linhas no cardápio) e "Gerar com IA" com 3 opções; as sugestões fixas saíram */}
           <div className="pz-exp">
-            <CampoArea rotulo="Explicação para o cliente" opcional rows={2} placeholder="Ex.: escolha o tema e o nome que vai no topo" value={form.descricao} maxLength={MAX_EXPLICACAO}
-              dica={`Aparece embaixo do nome, no cardápio · ${form.descricao.length}/${MAX_EXPLICACAO}`} onChange={e => setForm(f => ({ ...f, descricao: e.target.value.replace(/\n/g, " ") }))} />
+            <CampoArea rotulo="Explicação para o cliente" opcional rows={2} placeholder="Ex.: escolha o tema e o nome que vai no topo" value={form.descricao} maxLength={MAX_EXPLICACAO} onChange={e => setForm(f => ({ ...f, descricao: e.target.value.replace(/\n/g, " ") }))} />
             {/* (30/10 · 5.35) a IA escreve direto na caixa (dá para alterar); "Gerar outra" troca por outra opção */}
             <BotaoIA className="pz-ia" carregando={gerandoIa} onClick={gerarExplicacoes}>{form.descricao.trim() && opcoesIa.length ? "Gerar outra" : "Gerar com IA"}</BotaoIA>
           </div>
 
           {/* (24/10) o preço num campo só, com a caixinha "Grátis" ao lado (antes "Cobrar ou Grátis" e depois o valor) */}
-          <div className="pz-preco-l">
-            <Campo rotulo="Quanto soma no pedido" prefixo="R$" inputMode="numeric" placeholder={form.gratis ? "Grátis" : "0,00"} erro={erroValor} disabled={form.gratis}
-              value={!form.gratis && form.valor > 0 ? brl(form.valor) : ""} onChange={e => setForm(f => ({ ...f, valor: lerPreco(e.target.value) }))} />
-            <button type="button" role="checkbox" aria-checked={form.gratis} className="pz-gratis" onClick={() => setForm(f => ({ ...f, gratis: !f.gratis }))}>
-              <i className="pz-chk" aria-hidden="true">{form.gratis && <Check size={14} weight="bold" />}</i>Grátis
-            </button>
-          </div>
+          {/* (30/10 · 5.39) "Grátis" dentro do campo: caixinha cinza sem borda, encostada na borda (o mesmo da taxa de entrega) */}
+          <Campo className={`pz-preco${form.gratis ? " pz-preco--gratis" : ""}`} rotulo="Quanto soma no pedido" prefixo="R$" inputMode="numeric" placeholder={form.gratis ? "Grátis" : "0,00"} erro={erroValor} readOnly={form.gratis}
+            value={!form.gratis && form.valor > 0 ? brl(form.valor) : ""} onChange={e => setForm(f => ({ ...f, valor: lerPreco(e.target.value) }))}
+            depois={<button type="button" role="checkbox" aria-checked={form.gratis} className="pz-tx-gr" onClick={() => setForm(f => ({ ...f, gratis: !f.gratis }))}>
+              <i aria-hidden="true">{form.gratis && <Check size={11} weight="bold" />}</i>Grátis
+            </button>} />
 
           </div>
           {/* (19/10) complemento que pede foto (ex.: Topo de bolo): no cardápio, ao marcar, o cliente anexa a referência */}
@@ -448,7 +446,7 @@ export default function Complementos() {
                 </div>
               ))}
             </div>
-            {erroProdutos && <p className="ui-campo-msg pz-erro" role="alert">{erroProdutos}</p>}
+            {erroProdutos && <p className="ui-campo-msg pz-erro" role="alert"><WarningCircle size={14} weight="bold" aria-hidden="true" /><span>{erroProdutos}</span></p>}
           </div>
           </div>
         </div>
