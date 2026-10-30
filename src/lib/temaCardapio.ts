@@ -13,15 +13,7 @@ export const CAPA_NATAL_PADRAO = "/banners/galeria/capa-natal-panetone-gotas-2.w
 /** Cores do Natal (bordô, dourado e creme; vermelho fechado, que não cansa a vista). */
 export const NATAL = { topo: "#6E1F27", borda: "#C9A227", nome: "#8B2332", aviso: "#7A5A06", avisoFundo: "#FBF3DB" };
 
-const hojeISO = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-
-/** O tema que vale hoje pra este perfil. */
-export function temaAtivo(p: { tema_cardapio?: string | null; tema_auto?: boolean | null; tema_inicio?: string | null; tema_fim?: string | null } | null | undefined, hoje = new Date()): Tema {
-  if (!p || p.tema_cardapio !== "natal") return "normal";
-  if (!p.tema_auto) return "natal";
-  const h = hojeISO(hoje);
-  const ini = (p.tema_inicio || "").slice(0, 10), fim = (p.tema_fim || "").slice(0, 10);
-  if (ini && h < ini) return "normal";
-  if (fim && h > fim) return "normal";
-  return "natal";
+/** O tema que vale hoje. (30/10 · 5.46) o tema de Natal saiu do app: o cardápio fica sempre nas cores da loja (mesmo quem tinha escolhido o Natal) */
+export function temaAtivo(_p?: { tema_cardapio?: string | null } | null, _hoje?: Date): Tema {
+  return "normal";
 }

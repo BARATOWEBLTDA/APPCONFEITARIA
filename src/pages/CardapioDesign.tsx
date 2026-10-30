@@ -14,8 +14,6 @@ import { COMO_APARENCIA, TOUR_APARENCIA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, CATEGORIA_CAPA_NATAL, type BannerPronto } from "@/lib/bannersProntos";
 import { COR_BOTOES, PADRAO, PRONTAS, PRONTAS_PRO, corDoItem, topoEscurecido, type CampoCor } from "@/lib/coresCardapio";
-import { AVISO_NATAL_PADRAO, CAPA_NATAL_PADRAO, NATAL, type Tema } from "@/lib/temaCardapio";
-import { LacoNatal } from "@/components/tema/Natal";
 import NomeNoLink from "@/components/loja/NomeNoLink";
 import "./aparencia.css";
 
@@ -79,19 +77,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const [nomeLoja, setNomeLoja] = useState("");
   // (18/10) prévia do topo: cidade da loja (sem endereço, uma capital de exemplo) e o aberto/fechado
   const [cidade, setCidade] = useState("");
-  // (18/10) tema do cardápio (Normal ou Natal), aviso de temporada e período automático
-  const [tema, setTema] = useState<Tema>("normal");
-  const [temaAviso, setTemaAviso] = useState(AVISO_NATAL_PADRAO);
-  const [temaAuto, setTemaAuto] = useState(false);
-  const [temaInicio, setTemaInicio] = useState("");
-  const [temaFim, setTemaFim] = useState("");
-  const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [temaCapa, setTemaCapa] = useState("");
-  const [temaLaco, setTemaLaco] = useState(true);
-  const [temaDestaque, setTemaDestaque] = useState("");
-  const [meusProdutos, setMeusProdutos] = useState<{ id: string; nome: string }[]>([]);
-  const capaRef = useRef<HTMLInputElement>(null);
-  const [capaGal, setCapaGal] = useState<{ aberta: boolean; lista: BannerPronto[] | null; erro: boolean }>({ aberta: false, lista: null, erro: false });
+  // (30/10 · 5.46) o tema de Natal saiu do app (o cardápio fica sempre nas cores da loja)
+  const [verTopo, setVerTopo] = useState(false);
   const [horario, setHorario] = useState<unknown>(null);
   const [bannerUrl, setBannerUrl] = useState("");
   const [banner1Url, setBanner1Url] = useState("");
@@ -140,7 +127,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         setNomeLoja(data.nome_loja || "");
         try { const e: any = typeof (data as any).endereco === "string" ? JSON.parse((data as any).endereco) : (data as any).endereco; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
         setHorario((data as any).horario ?? null);
-        { const d: any = data; setTema(d.tema_cardapio === "natal" ? "natal" : "normal"); setTemaAviso(d.tema_aviso ?? AVISO_NATAL_PADRAO); setTemaAuto(!!d.tema_auto); setTemaInicio(d.tema_inicio || ""); setTemaFim(d.tema_fim || ""); setTemaCapa(d.tema_capa_url || ""); setTemaLaco(d.tema_laco !== false); setTemaDestaque(d.tema_destaque || ""); }
         setBannerUrl(data.banner_url || "");
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
@@ -176,67 +162,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     return `${data.publicUrl}?t=${Date.now()}`;
   };
 
-  const anoTema = () => { const d = new Date(); return d.getMonth() === 11 && d.getDate() > 26 ? d.getFullYear() + 1 : d.getFullYear(); };
-  const escolherTema = async (t: Tema) => {
-    if (t === tema || travas.current.has("tema")) return;
-    travas.current.add("tema");
-    const antes = tema; setTema(t);
-    const ok = await gravar({ tema_cardapio: t, ...(t === "natal" ? { tema_aviso: temaAviso } : {}) });
-    travas.current.delete("tema");
-    if (!ok) { setTema(antes); return; }
-    showSuccess();
-  };
-  const mudarAviso = (v: string) => {
-    const txt = v.slice(0, 40); setTemaAviso(txt);
-    if (avisoTimer.current) clearTimeout(avisoTimer.current);
-    avisoTimer.current = setTimeout(async () => { if (await gravar({ tema_aviso: txt.trim() || null })) showSuccess(); }, 700);
-  };
-  const mudarAuto = async (on: boolean) => {
-    const ano = anoTema();
-    const ini = temaInicio || `${ano}-12-01`, fim = temaFim || `${ano}-12-26`;
-    setTemaAuto(on); setTemaInicio(ini); setTemaFim(fim);
-    if (!(await gravar({ tema_auto: on, tema_inicio: ini, tema_fim: fim }))) { setTemaAuto(!on); return; }
-    showSuccess();
-  };
-  const mudarData = async (campo: "tema_inicio" | "tema_fim", v: string) => {
-    if (!v) return;
-    (campo === "tema_inicio" ? setTemaInicio : setTemaFim)(v);
-    if (await gravar({ [campo]: v })) showSuccess();
-  };
-  // (19/10) lista dos produtos pra escolher o destaque do catálogo de Natal (só quando o Natal está escolhido)
-  useEffect(() => {
-    if (tema !== "natal" || !userId || meusProdutos.length) return;
-    supabase.from("produtos").select("id, nome").eq("user_id", userId).eq("disponivel", true).order("nome").then(({ data }) => setMeusProdutos((data as any[]) || []), () => {});
-  }, [tema, userId]); // eslint-disable-line react-hooks/exhaustive-deps
-  const mudarDestaque = async (id: string) => {
-    const antes = temaDestaque; setTemaDestaque(id);
-    if (!(await gravar({ tema_destaque: id || null }))) { setTemaDestaque(antes); return; }
-    showSuccess();
-  };
-  const mudarLaco = async (on: boolean) => {
-    setTemaLaco(on);
-    if (!(await gravar({ tema_laco: on }))) { setTemaLaco(!on); return; }
-    showSuccess();
-  };
-  const salvarCapa = async (url: string) => {
-    const antes = temaCapa; setTemaCapa(url);
-    if (!(await gravar({ tema_capa_url: url || null }))) { setTemaCapa(antes); return false; }
-    showSuccess(); return true;
-  };
-  const enviarCapa = async (file: File) => {
-    if (!userId) return;
-    setUploading("capa");
-    const url = await uploadImage(file, `banners/${userId}-capa-natal`);
-    if (!url) avisar("Não deu para enviar a imagem. Confira a internet e tente de novo.", { tipo: "erro" });
-    else await salvarCapa(url);
-    setUploading(null);
-  };
-  const abrirCapaGal = async () => {
-    setCapaGal(g => ({ ...g, aberta: true }));
-    if (capaGal.lista) return;
-    const r = await lerBannersProntos();
-    setCapaGal(g => ({ ...g, lista: r.ok ? r.lista.filter(b => b.categoria === CATEGORIA_CAPA_NATAL) : [], erro: !r.ok }));
-  };
   const showSuccess = () => {
     // Notifica outros componentes (ex: preview do cardápio no CardapioConfigPage)
     // pra recarregar após save do Design
@@ -348,7 +273,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const recorteTopo = useRecorte(f => { void handleBannerTopoUpload(f); }, { aspect: 3, forma: "rect", titulo: "Ajustar a foto do topo", encaixar: true });
   const bannerIdx = useRef(0);
   const recorteBanner = useRecorte(f => { void handleBannerUpload(f, bannerIdx.current); }, { aspect: 16 / 9, forma: "rect", titulo: "Ajustar o banner", encaixar: true });
-  const recorteCapa = useRecorte(f => { void enviarCapa(f); }, { aspect: 4 / 5, forma: "rect", titulo: "Ajustar a capa" });
   const handleRemoveBannerTopo = async () => {
     if (!userId || travas.current.has("tirar-topo")) return;
     travas.current.add("tirar-topo");
@@ -450,7 +374,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       <ImageCropper imageSrc={cropSrc} cropShape="round" aspect={1} onCancel={() => setCropSrc(null)} onCropDone={handleLogoCropDone} />
     )}
     {/* (11/10) fora da seção "Foto do topo": no modelo Premium ela não existe e o recorte do banner não abria */}
-    {recorteTopo.janela}{recorteBanner.janela}{recorteCapa.janela}
+    {recorteTopo.janela}{recorteBanner.janela}
     {!identityCard && (
       <AppPageHeader title="Aparência" subtitle="Logo, banners e cores" onBack={() => navigate(voltarPara)}
         infoIcon="🎨" infoComo={COMO_APARENCIA} infoTour={TOUR_APARENCIA}
@@ -469,36 +393,29 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       {/* (18/10) Topo do cardápio: foto do topo e logo numa prévia só, do jeito que o cliente vê */}
       <section className="ap-card ap-largo ap-sec-topo">
-        <Cabeca Ic={Storefront} titulo="Topo do cardápio" apoio="É assim que o cliente vê" />
-        <p className="ap-exp">A <b>foto do topo</b> fica atrás do nome da loja (deitada, 1200 × 400). A <b>logo</b> fica no círculo à direita.</p>
+        <Cabeca Ic={Storefront} titulo="Topo do cardápio" apoio="Foto do topo e logo" />
         <input ref={logoRef} type="file" accept="image/*" hidden onChange={handleLogoUpload} />
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
-        <div className="ap-topo">
-          {/* (18/10) a faixa não é clicável: quem troca a foto é o botão de baixo */}
-          <div className={`ap-topo-capa${bannerTopoUrl ? " ap-topo-capa--foto" : " ap-topo-capa--vazia"}${tema === "natal" ? " ap-topo-capa--natal" : ""}`} style={bannerTopoUrl ? undefined : { backgroundColor: tema === "natal" ? NATAL.topo : topoEscurecido(corAtual("cor_navbar", corNavbar)) }}>
-            {bannerTopoUrl ? <img className="ap-topo-capa-img" src={bannerTopoUrl} alt="" /> : <span className="ap-topo-pill"><ImageIcon size={16} weight="bold" aria-hidden="true" />Foto do topo · 1200 × 400</span>}
-            {bannerTopoUrl && <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar ap-topo-x" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>}
-            {(() => { const sit = situacaoLoja(horario as any); const aberto = !sit || sit.aberto; return (
-              <span className={`ap-topo-st${aberto ? " aberto" : ""}`}><i aria-hidden="true" />{aberto ? "Aberto agora" : "Fechado"}</span>
-            ); })()}
-            {uploading === "banner-topo" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
+        {/* (30/10 · 5.46) a prévia virou o botão "Ver como fica"; aqui ficam só a foto e a logo, uma por linha */}
+        <div className="ap-itens">
+          <div className="ap-item">
+            <span className={`ap-item-img ap-item-img--topo${bannerTopoUrl ? "" : " vazia"}`} style={bannerTopoUrl ? undefined : { backgroundColor: topoEscurecido(corAtual("cor_navbar", corNavbar)) }}>
+              {bannerTopoUrl ? <img src={bannerTopoUrl} alt="" /> : null}
+              {uploading === "banner-topo" && <span className="ui-gira" aria-label="Enviando" />}
+            </span>
+            <span className="ap-item-tx"><b>Foto do topo</b><small>{bannerTopoUrl ? "1200 × 400" : "Sem foto, fica a cor"}</small></span>
+            {bannerTopoUrl && <BotaoIcone rotulo="Tirar a foto do topo" variante="limpo" tamanho="p" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>}
+            <Botao variante="secundario" tamanho="m" disabled={!!uploading} onClick={() => bannerTopoRef.current?.click()}>{bannerTopoUrl ? "Trocar" : "Pôr foto"}</Botao>
           </div>
-          <div className="ap-topo-corpo">
-            <button type="button" className="ap-topo-logo" style={{ borderColor: tema === "natal" ? NATAL.borda : corAtual("cor_borda", corBorda) }} onClick={() => !uploading && logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
-              {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" />
-                : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
-              <i aria-hidden="true"><Camera size={12} weight="bold" /></i>
-            </button>
-            {tema === "natal" && temaLaco && <LacoNatal className="ap-topo-enfeite" />}
-            <b className="ap-topo-nome"><span style={{ color: tema === "natal" ? NATAL.nome : corAtual("cor_nome", corNome) }}>{nomeLoja || "Nome da sua loja"}</span>{isPro && <SeloVerificado tamanho={18} />}</b>
-            <span className="ap-topo-sl"><b style={{ color: COR_BOTOES }}>Sobre a loja</b><em aria-hidden="true">·</em><MapPin size={14} weight="bold" color={COR_BOTOES} aria-hidden="true" /><span>{cidade || "São Paulo"}</span></span>
-            {tema === "natal" && temaAviso.trim() && <span className="ap-topo-aviso"><CalendarBlank size={14} weight="bold" aria-hidden="true" />{temaAviso.trim()}</span>}
+          <div className="ap-item">
+            <span className="ap-item-img ap-item-img--logo" style={{ borderColor: corAtual("cor_borda", corBorda) }}>
+              {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" /> : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
+            </span>
+            <span className="ap-item-tx"><b>Logo</b><small>No círculo do topo</small></span>
+            <Botao variante="secundario" tamanho="m" disabled={!!uploading} onClick={() => logoRef.current?.click()}>{logoUrl ? "Trocar" : "Enviar"}</Botao>
           </div>
         </div>
-        <div className="ap-topo-bts">
-          <Botao variante="secundario" tamanho="m" icone={<ImageIcon size={18} weight="bold" />} disabled={!!uploading} onClick={() => bannerTopoRef.current?.click()}>{bannerTopoUrl ? "Trocar foto" : "Pôr foto"}</Botao>
-          <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => logoRef.current?.click()}>{logoUrl ? "Trocar logo" : "Enviar logo"}</Botao>
-        </div>
+        <div className="ap-ver"><Botao variante="secundario" tamanho="m" icone={<Eye size={18} weight="bold" />} onClick={() => setVerTopo(true)}>Ver como fica</Botao></div>
       </section>
 
       {/* Banners de promoção */}
@@ -566,63 +483,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       </div>
       <div className="ap-col ap-col-dir">
-      {/* (18/10) Tema do cardápio: Normal ou Natal (outros temas depois) */}
-      <section className="ap-card ap-largo ap-sec-tema">
-        <Cabeca Ic={Sparkle} titulo="Tema do cardápio" apoio="Para as datas especiais" />
-        <div className="ap-temas" role="radiogroup" aria-label="Tema do cardápio">
-          {/* (28/10) só os cartões com a bolinha de marcado (a mini prévia confundia) */}
-          <button type="button" role="radio" aria-checked={tema === "normal"} className="ap-tema" onClick={() => escolherTema("normal")}>
-            <i className="ap-radio" aria-hidden="true" />
-            <span className="ap-tema-pe"><b>Normal</b><small>Suas cores</small></span>
-          </button>
-          <button type="button" role="radio" aria-checked={tema === "natal"} className="ap-tema" onClick={() => escolherTema("natal")}>
-            <i className="ap-radio" aria-hidden="true" />
-            <span className="ap-tema-pe"><b>Natal</b><small>Festivo</small></span>
-          </button>
-        </div>
-        {tema === "natal" && (
-          <div className="ap-tema-cfg">
-            <span className="ap-tema-lb">Imagem da capa</span>
-            <input ref={capaRef} type="file" accept="image/*" hidden onChange={recorteCapa.escolher} />
-            <div className="ap-capa">
-              <div className="ap-capa-img" style={{ backgroundImage: `url(${temaCapa || CAPA_NATAL_PADRAO})` }}>
-                {!temaCapa && <span>Imagem padrão do tema</span>}
-                {uploading === "capa" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
-                {temaCapa && <BotaoIcone rotulo="Voltar para a imagem padrão" variante="neutro" tamanho="p" className="ap-tirar ap-capa-x" onClick={() => salvarCapa("")}><X size={18} weight="bold" /></BotaoIcone>}
-              </div>
-              <div className="ap-capa-bts">
-                <Botao variante="secundario" tamanho="m" icone={<UploadSimple size={18} weight="bold" />} disabled={!!uploading} onClick={() => capaRef.current?.click()}>Enviar a minha</Botao>
-                <Botao variante="secundario" tamanho="m" icone={<Images size={18} weight="bold" />} onClick={abrirCapaGal}>Biblioteca</Botao>
-              </div>
-            </div>
-            <div className="ap-tema-auto">
-              <span><b>Laço na logo</b><small>Laço de veludo do lado direito</small></span>
-              <button type="button" role="switch" aria-checked={temaLaco} aria-label="Laço na logo" className="ap-chave" onClick={() => mudarLaco(!temaLaco)}><span /></button>
-            </div>
-            <label className="ap-tema-lb" htmlFor="ap-destaque">Produto em destaque</label>
-            <div className="ui-campo-c"><select id="ap-destaque" value={temaDestaque} onChange={e => mudarDestaque(e.target.value)}>
-              <option value="">Automático (a primeira promoção)</option>
-              {meusProdutos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
-            </select></div>
-            <small className="ap-tema-dica">Aparece em destaque com a etiqueta "Mais pedido".</small>
-            <label className="ap-tema-lb" htmlFor="ap-aviso">Aviso no topo do cardápio</label>
-            <div className="ui-campo-c"><input id="ap-aviso" value={temaAviso} maxLength={40} placeholder={AVISO_NATAL_PADRAO} onChange={e => mudarAviso(e.target.value)} /></div>
-            <small className="ap-tema-dica">Fica embaixo do nome. Vazio, não aparece.</small>
-            <div className="ap-tema-auto">
-              <span><b>Ligar e desligar sozinho</b><small>Fora dessas datas volta para o Normal</small></span>
-              <button type="button" role="switch" aria-checked={temaAuto} aria-label="Ligar e desligar sozinho" className="ap-chave" onClick={() => mudarAuto(!temaAuto)}><span /></button>
-            </div>
-            {temaAuto && (
-              <div className="ap-tema-datas">
-                <label><small>De</small><input type="date" value={temaInicio} onChange={e => mudarData("tema_inicio", e.target.value)} /></label>
-                <label><small>Até</small><input type="date" value={temaFim} min={temaInicio || undefined} onChange={e => mudarData("tema_fim", e.target.value)} /></label>
-              </div>
-            )}
-            <Botao variante="secundario" cheio icone={<Eye size={18} weight="bold" />} onClick={() => navigate("/cardapio-preview")}>Ver no meu cardápio</Botao>
-          </div>
-        )}
-      </section>
-
       {/* (27/10) nome da loja no link (PRO) */}
       <section className="ap-card ap-largo ap-sec-link">
         <Cabeca Ic={LinkSimple} titulo="Link do cardápio" apoio="O endereço da sua loja" />
@@ -631,25 +491,15 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       </section>
 
       {/* Cores (18/10): só as três do topo da loja. Grátis: cores prontas; PRO: qualquer cor */}
-      <section className={`ap-card ap-largo ap-sec-cores${tema === "natal" ? " ap-cores-off" : ""}`}>
-        <Cabeca Ic={Palette} titulo="Cores do topo" apoio="Os números mostram onde cada cor fica" />
-        {tema === "natal" && <p className="ap-cores-tema"><Info size={16} weight="bold" aria-hidden="true" />O tema de Natal está usando as cores dele</p>}
-        <div className="ap-mini" aria-hidden="true">
-          <div className="ap-mini-topo" style={{ background: topoEscurecido(corAtual("cor_navbar", corNavbar)) }}><span className="ap-mini-n" style={{ left: 10, top: 10 }}>1</span></div>
-          <div className="ap-mini-corpo">
-            <span className="ap-mini-logo" style={{ borderColor: corAtual("cor_borda", corBorda) }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : null}</span>
-            <span className="ap-mini-n" style={{ right: 4, top: -34 }}>2</span>
-            <b className="ap-mini-nome" style={{ color: corAtual("cor_nome", corNome) }}>{nomeLoja || "Sua loja"}<span className="ap-mini-n ap-mini-n--in">3</span></b>
-            <span className="ap-mini-fixo">Sobre a loja · botões: rosa do Doonly</span>
-          </div>
-        </div>
+      <section className={`ap-card ap-largo ap-sec-cores`}>
+        <Cabeca Ic={Palette} titulo="Cores do topo" apoio="Faixa, borda da logo e nome da loja" />
         {itensCor.map(it => {
           const atual = corAtual(it.campo, it.valor);
           const aberta = activePicker === it.campo;
           const pronta = [...PRONTAS[it.campo], ...PRONTAS_PRO[it.campo]].some(p => p.cor === atual);
           return (
             <div key={it.campo} className="ap-cgrupo">
-              <div className="ap-crot"><span className="ap-crot-n">{it.n}</span><span className="ap-crot-tx"><b>{it.rotulo}</b><small>{it.apoio}</small></span><i className="ap-crot-cor" style={{ background: atual }} aria-hidden="true" /></div>
+              <div className="ap-crot"><span className="ap-crot-tx"><b>{it.rotulo}</b><small>{it.apoio}</small></span><i className="ap-crot-cor" style={{ background: atual }} aria-hidden="true" /></div>
               <div className="ap-prontas" role="radiogroup" aria-label={it.rotulo}>
                 {/* (30/10 · 5.24) 4 cores de graça numa linha; na de baixo, as 4 do PRO (no grátis com cadeado) e o "+" */}
                 {(isPro ? (["gratis", "pro"] as const) : (["gratis"] as const)).map(grupo => (
@@ -701,6 +551,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             <Crown size={16} weight="fill" aria-hidden="true" />Desbloquear mais cores<span>PRO</span>
           </button>
         )}
+        <div className="ap-ver"><Botao variante="secundario" tamanho="m" icone={<Eye size={18} weight="bold" />} onClick={() => setVerTopo(true)}>Ver como fica</Botao></div>
       </section>
       </div>
 
@@ -747,15 +598,32 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         })()}
       </Janela>
 
-      <Janela aberta={capaGal.aberta} aoFechar={() => setCapaGal(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Imagens de Natal"
-        acoes={<Botao variante="secundario" cheio onClick={() => setCapaGal(g => ({ ...g, aberta: false }))}>Fechar</Botao>} umaAcao>
-        {capaGal.lista === null ? <div className="ap-gal-vazio"><span className="ui-gira" aria-label="Carregando" /></div>
-          : capaGal.erro || capaGal.lista.length === 0 ? <p className="ap-gal-vazio">{capaGal.erro ? "Não deu para abrir agora. Tente de novo." : "Em breve teremos imagens de Natal aqui."}</p>
-          : <div className="ap-capa-lista">{capaGal.lista.map(b => (
-              <button key={b.id} type="button" className="ap-gal-it" onClick={async () => { if (b.so_pro && !isPro) { avisar("Essa imagem é do plano PRO.", { tipo: "info" }); return; } if (await salvarCapa(b.imagem_url)) setCapaGal(g => ({ ...g, aberta: false })); }}>
-                <img src={b.imagem_url} alt={b.titulo} loading="lazy" />
-                {b.so_pro && !isPro && <span className="ap-gal-pro"><Crown size={13} weight="fill" aria-hidden="true" />PRO</span>}
-              </button>))}</div>}
+
+      {/* (30/10 · 5.46) "Ver como fica": o topo do cardápio do jeito que o cliente vê (foto, logo e as cores escolhidas) */}
+      <Janela aberta={verTopo} aoFechar={() => setVerTopo(false)} tipo="conteudo" titulo="Assim fica o topo do cardápio"
+        acoes={<Botao variante="secundario" onClick={() => setVerTopo(false)}>Fechar</Botao>} umaAcao>
+        <div className="ap-ver-previa">
+        <div className="ap-topo">
+          {/* (18/10) a faixa não é clicável: quem troca a foto é o botão de baixo */}
+          <div className={`ap-topo-capa${bannerTopoUrl ? " ap-topo-capa--foto" : " ap-topo-capa--vazia"}`} style={bannerTopoUrl ? undefined : { backgroundColor: topoEscurecido(corAtual("cor_navbar", corNavbar)) }}>
+            {bannerTopoUrl ? <img className="ap-topo-capa-img" src={bannerTopoUrl} alt="" /> : <span className="ap-topo-pill"><ImageIcon size={16} weight="bold" aria-hidden="true" />Foto do topo · 1200 × 400</span>}
+            {bannerTopoUrl && <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar ap-topo-x" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>}
+            {(() => { const sit = situacaoLoja(horario as any); const aberto = !sit || sit.aberto; return (
+              <span className={`ap-topo-st${aberto ? " aberto" : ""}`}><i aria-hidden="true" />{aberto ? "Aberto agora" : "Fechado"}</span>
+            ); })()}
+            {uploading === "banner-topo" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
+          </div>
+          <div className="ap-topo-corpo">
+            <button type="button" className="ap-topo-logo" style={{ borderColor: corAtual("cor_borda", corBorda) }} onClick={() => !uploading && logoRef.current?.click()} aria-label={logoUrl ? "Trocar a logo" : "Enviar a logo"}>
+              {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" />
+                : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
+              <i aria-hidden="true"><Camera size={12} weight="bold" /></i>
+            </button>
+            <b className="ap-topo-nome"><span style={{ color: corAtual("cor_nome", corNome) }}>{nomeLoja || "Nome da sua loja"}</span>{isPro && <SeloVerificado tamanho={18} />}</b>
+            <span className="ap-topo-sl"><b style={{ color: COR_BOTOES }}>Sobre a loja</b><em aria-hidden="true">·</em><MapPin size={14} weight="bold" color={COR_BOTOES} aria-hidden="true" /><span>{cidade || "São Paulo"}</span></span>
+          </div>
+        </div>
+        </div>
       </Janela>
 
       <Janela aberta={verExemplo} aoFechar={() => setVerExemplo(false)} tipo="conteudo" titulo="Exemplo de banner"

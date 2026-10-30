@@ -495,21 +495,20 @@ export const TOUR_CUSTOS: PassoTour[] = [
 export const COMO_APARENCIA: Como = {
   tela: { nome: "Aparência", Icone: Palette },
   artigo: "aparencia",
-  resumo: "Deixe o cardápio com a cara da sua confeitaria: tema, topo, banners, modelo e cores.",
+  resumo: "Deixe o cardápio com a cara da sua confeitaria: topo, banners, link e cores.",
   fluxo: ["Personalizar", "Salvo na hora", "No cardápio"],
   dicas: [
-    [Sparkle, <><b>Tema:</b> enfeita o cardápio em datas especiais, como o Natal.</>],
+    [Eye, <>Toque em <b>Ver como fica</b> para ver o topo do cardápio do jeito que o cliente vê.</>],
     [Images, <><b>Banners</b> divulgam promoções no cardápio. Use imagens deitadas, de 1200 × 675.</>],
     [Palette, <><b>Modelo e cores</b> definem como o cliente vê a sua loja. Alguns recursos são do plano PRO.</>],
     [Eye, <>Tudo é salvo na hora. Use <b>Ver meu cardápio</b> para conferir como ficou.</>],
   ],
 };
 export const TOUR_APARENCIA: PassoTour[] = [
-  { el: ".ap-sec-tema", titulo: "Tema do cardápio", texto: "Escolha o visual do cardápio. O tema de Natal enfeita a loja na época das festas." },
-  { el: ".ap-sec-topo", titulo: "Topo do cardápio", texto: "A foto do topo e a logo, do jeito que o cliente vê." },
+  { el: ".ap-sec-topo", titulo: "Topo do cardápio", texto: "A foto do topo e a logo. Toque em Ver como fica para ver do jeito que o cliente vê." },
   { el: ".ap-sec-banners", titulo: "Banners de promoção", texto: "Imagens que divulgam promoções no cardápio. No plano PRO, até quatro banners em carrossel." },
   { el: ".ap-sec-modelo", titulo: "Modelo do cardápio", texto: "Escolha entre o modelo Clássico, gratuito, e o Premium, do plano PRO." },
-  { el: ".ap-sec-cores", titulo: "Cores do topo", texto: "Defina as cores do topo do cardápio. Os números mostram onde cada cor é aplicada." },
+  { el: ".ap-sec-cores", titulo: "Cores do topo", texto: "Defina as cores do topo do cardápio: a faixa, a borda da logo e o nome da loja." },
 ];
 
 export const COMO_MARKETING: Como = {

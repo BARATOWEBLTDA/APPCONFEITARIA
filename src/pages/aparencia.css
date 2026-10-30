@@ -284,3 +284,27 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-mais-cores svg { color: #C99A2E; }
 .ap-mais-cores span { padding: 2px 7px; border-radius: 6px; background: #FBF1DC; font-size: 11.5px; font-weight: 600; color: #9A6B12; }
 @media (hover: hover) { .ap-mais-cores:hover { background: #F1ECEE; } }
+
+/* (30/10 · 5.46) Topo do cardápio: a foto e a logo em linhas (a prévia grande virou o botão "Ver como fica") */
+.ap-itens { display: flex; flex-direction: column; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); }
+.ap-item { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 12px; }
+.ap-item + .ap-item { border-top: 1px solid var(--ui-linha); }
+.ap-item-img { flex: none; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #F3EEF0; color: var(--ui-texto-2); }
+.ap-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.ap-item-img--topo { width: 96px; height: 32px; border-radius: 8px; }
+.ap-item-img--logo { width: 44px; height: 44px; border-radius: 50%; border: 2px solid; box-sizing: border-box; }
+.ap-item-img--logo b { font-size: 18px; font-weight: 600; }
+.ap-item-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ap-item-tx b { font-size: 14.5px; font-weight: 500; color: var(--ui-texto); }
+.ap-item-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap-item .ui-bt { flex: none; width: auto; }
+.ap-ver { display: flex; justify-content: flex-end; margin-top: 12px; }
+.ap-ver .ui-bt { width: auto; }
+.ap-ver-previa .ap-topo { margin: 0; pointer-events: none; }
+.ap-ver-previa .ap-topo-x, .ap-ver-previa .ap-topo-logo i { display: none !important; }
+.ap-item-tx b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 600px) {
+  .ap-item { gap: 10px; padding: 10px; }
+  .ap-item-img--topo { width: 60px; height: 24px; border-radius: 6px; }
+  .ap-item .ui-bt { padding-left: 14px; padding-right: 14px; }
+}

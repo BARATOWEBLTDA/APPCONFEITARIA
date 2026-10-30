@@ -83,7 +83,7 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
   const linhaAparencia = (
     <button type="button" className="dl-li" onClick={() => navigate("/cardapio-design")}>
       <span className="dl-li-ic" aria-hidden="true"><PaintBrush size={20} weight="bold" /></span>
-      <span className="dl-li-tx"><b>Aparência</b><small>{!vis ? "…" : `Tema ${vis.tema} · ${vis.banners ? plural(vis.banners, "banner", "banners") : "sem banners"}`}</small></span>
+      <span className="dl-li-tx"><b>Aparência</b><small>{!vis ? "…" : `Topo, cores e ${vis.banners ? plural(vis.banners, "banner", "banners") : "banners"}`}</small></span>
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
   );
