@@ -24,6 +24,8 @@ export default function MapaRaios({ loja, faixas, nome }: { loja: Ponto; faixas:
       L.current = Lf;
       const m = Lf.map(caixa.current, { center: [loja.lat, loja.lng], zoom: 12, zoomControl: true, scrollWheelZoom: false, attributionControl: true });
       m.attributionControl.setPrefix(false);
+      // (29/10 · 5.11) régua de km no canto, pra ela ter noção do tamanho
+      Lf.control.scale({ metric: true, imperial: false, position: "bottomright", maxWidth: 90 }).addTo(m);
       Lf.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(m);
       camada.current = Lf.layerGroup().addTo(m);
       mapa.current = m;
@@ -40,12 +42,14 @@ export default function MapaRaios({ loja, faixas, nome }: { loja: Ponto; faixas:
     const ordem = [...faixas].sort((a, b) => b.km - a.km); // o maior primeiro, pra os menores ficarem por cima
     ordem.forEach(f => {
       const i = faixas.indexOf(f);
-      Lf.circle([loja.lat, loja.lng], { radius: f.km * 1000, color: CORES[Math.min(i, CORES.length - 1)], weight: 1.5, opacity: 0.8, fillOpacity: 0.1, dashArray: i === 0 ? undefined : "5 4", interactive: false }).addTo(g);
+      // (29/10 · 5.11) a taxa vai pelo caminho de carro (uns 30% maior que a reta): o círculo mostra até onde
+      // chegam esses km pelas ruas, mais ou menos (antes era a reta, e a área parecia maior do que a cobrada)
+      Lf.circle([loja.lat, loja.lng], { radius: (f.km * 1000) / 1.3, color: CORES[Math.min(i, CORES.length - 1)], weight: 1.5, opacity: 0.8, fillOpacity: 0.1, dashArray: i === 0 ? undefined : "5 4", interactive: false }).addTo(g);
     });
     const icone = Lf.divIcon({ className: "mpr-pino", html: "<i></i>", iconSize: [28, 36], iconAnchor: [14, 34] });
     Lf.marker([loja.lat, loja.lng], { icon: icone, interactive: false }).addTo(g);
     const maior = Math.max(1, ...faixas.map(f => f.km));
-    const b = Lf.latLng(loja.lat, loja.lng).toBounds(maior * 2000 * 1.08);
+    const b = Lf.latLng(loja.lat, loja.lng).toBounds((maior * 2000 * 1.08) / 1.3);
     m.fitBounds(b, { animate: false });
   }, [pronto, chave]); // eslint-disable-line react-hooks/exhaustive-deps
 

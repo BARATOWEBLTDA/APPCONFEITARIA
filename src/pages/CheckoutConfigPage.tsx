@@ -533,7 +533,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                   {!enderecoLoja?.rua || !enderecoLoja?.cidade ? (
                     <p className="ep-raio-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />Para medir a distância, cadastre o endereço da loja (rua, número e cidade) aqui em Dados da loja.</p>
                   ) : lojaPonto ? (
-                    <MapaRaios loja={lojaPonto} faixas={faixasMapa} nome={nomeLoja} />
+                    <><MapaRaios loja={lojaPonto} faixas={faixasMapa} nome={nomeLoja} /><p className="ep-mapa-leg">Área aproximada pelo caminho de carro (a taxa usa a distância pelas ruas).</p></>
                   ) : (
                     <p className="ep-raio-aviso">{buscandoLoja ? 'Achando a sua loja no mapa…' : <><WarningCircle size={18} weight="bold" aria-hidden="true" />Não achamos o endereço da loja no mapa. Confira a rua e o número em Dados da loja.</>}</p>
                   )}
