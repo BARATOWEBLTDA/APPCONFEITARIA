@@ -453,7 +453,6 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
 /* ── (29/10 · 5.08) Passo "Entrega": como a cliente recebe e quanto custa a entrega ── */
 function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const [entrega, setEntrega] = useState<string[]>(["retirada", "entrega_propria"]);
-  const [taxa, setTaxa] = useState("");
   // (29/10 · 5.20) o jeito de cobrar da loja: por bairro, raio ou cidade a taxa fica em Minha loja (antes só via o bairro)
   const [modoArea, setModoArea] = useState<"" | "bairro" | "raio" | "cidade">("");
   const porBairro = !!modoArea;
@@ -462,7 +461,7 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const [erro, setErro] = useState("");
   // computador: o editor completo de Minha loja em duas colunas (formas · como cobrar, com o mapa); salva sozinho
   const largo = useLargo();
-  // (30/10 · 5.21) celular: "Cobrar por bairro, km ou cidade" abre o editor completo (o mesmo do computador), numa coluna
+  // (30/10 · 5.22) celular: sem o campo da taxa (fica no editor completo); "Definir a taxa de entrega" abre o editor completo (o mesmo do computador), numa coluna
   const [completo, setCompleto] = useState(false);
   const [ep, setEp] = useState<{ formasEntrega: string[] } | null>(null);
   useEffect(() => {
@@ -474,7 +473,6 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
       // o padrão do banco (só retirada) conta como "não escolheu ainda": retirada e entrega ligadas
       const fe: string[] = Array.isArray(d.formas_entrega) ? d.formas_entrega : [];
       if (fe.length && !(fe.length === 1 && fe[0] === "retirada")) setEntrega(fe);
-      setTaxa(Number(d.valor_entrega_propria) > 0 ? textoBRL(Number(d.valor_entrega_propria)) : "0,00");
       const m = String(d.entrega_modo || "");
       setModoArea(m === "raio" || m === "cidade" || m === "bairro" ? m : (Array.isArray(d.entrega_por_bairro) && d.entrega_por_bairro.length > 0 ? "bairro" : ""));
       setCarregou(true);
@@ -491,7 +489,6 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     if (!entrega.length) return;
     setSalvando(true); setErro("");
     const campos: Record<string, unknown> = { formas_entrega: entrega };
-    if (entrega.includes("entrega_propria") && !porBairro) campos.valor_entrega_propria = lerBRL(taxa || "0");
     const { error } = await supabase.from("profiles").update(campos).eq("id", uid);
     setSalvando(false);
     if (error) { setErro(erroDeConexao(error) ? SEM_INTERNET : "Não foi possível salvar agora. Tente de novo."); return; }
@@ -513,31 +510,21 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
       </Janelinha>
     );
   }
-  // (29/10 · 5.20) "Grátis" dentro do campo, igual ao computador e a Minha loja
-  const gratis = taxa === "0,00";
-  const campoTaxa = porBairro
-    ? <p className="ppf-p-taxa-b">{modoArea === "raio" ? "Taxa pela distância" : modoArea === "cidade" ? "Taxa por cidade" : "Taxa por bairro"}: em Minha loja</p>
-    : <div className="ppf-p-taxa"><span><b>Taxa</b><small>Por entrega</small></span>
-        <span className={`ppf-p-tx${gratis ? " ppf-p-tx--gratis" : ""}`}><em>R$</em>
-          <input inputMode="numeric" autoComplete="off" placeholder="0,00" value={taxa} disabled={gratis} aria-label="Taxa de entrega em reais" onChange={e => setTaxa(mascaraBRL(e.target.value))} />
-          <button type="button" role="checkbox" aria-checked={gratis} onClick={() => setTaxa(gratis ? "" : "0,00")}><i aria-hidden="true">{gratis && <Check size={11} weight="bold" />}</i>Grátis</button>
-        </span></div>;
   return (
     <Janelinha foco titulo="Entrega" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!entrega.length || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="entrega" />
       <ListaChaves titulo="Como o cliente recebe" id="pp-recebe" itens={[
         { chave: "retirada", Ic: Storefront, rotulo: "Retirada no local", sub: "Busca no seu endereço", on: entrega.includes("retirada"), aoTocar: () => trocarEntrega("retirada") },
-        { chave: "entrega", Ic: Moped, rotulo: "Entrega própria", sub: "Você leva até o cliente", on: temEntrega, aoTocar: () => trocarEntrega("entrega"), depois: campoTaxa },
+        { chave: "entrega", Ic: Moped, rotulo: "Entrega própria", sub: "Você leva até o cliente", on: temEntrega, aoTocar: () => trocarEntrega("entrega") },
       ]} />
       <button type="button" className="ppf-p-mais" disabled={salvando} onClick={async () => {
         // guarda o que ela já marcou aqui antes de abrir o editor completo (ele lê da conta)
         setSalvando(true);
         const campos: Record<string, unknown> = { formas_entrega: entrega };
-        if (entrega.includes("entrega_propria") && !porBairro) campos.valor_entrega_propria = lerBRL(taxa || "0");
         await supabase.from("profiles").update(campos).eq("id", uid);
         setSalvando(false); setCompleto(true);
-      }}>Cobrar por bairro, km ou cidade<CaretRight size={14} weight="bold" aria-hidden="true" /></button>
+      }}>Definir a taxa de entrega<CaretRight size={14} weight="bold" aria-hidden="true" /></button>
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
   );
