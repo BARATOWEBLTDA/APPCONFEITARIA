@@ -138,4 +138,7 @@
 @media (min-width: 901px) {
   html body { --ui-sombra-cartao: none; }
   html body .ini-dk-kpi { box-shadow: none !important; }
+  /* (30/10 · 5.47) outras telas: editar pedido, cartão do WhatsApp nos dados da loja, botões de tipo da nova venda */
+  html body .ep2-card, html body .ep2-cli, html body .ep2-save-desk, html body .ep2-ca, html body .ep2-cv, html body .ep3,
+  html body .dl-zapc, html body .nv3-tipos button { box-shadow: none !important; }
 }
