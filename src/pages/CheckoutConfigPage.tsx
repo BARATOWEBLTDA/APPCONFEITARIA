@@ -10,7 +10,7 @@ import { cupomDisponivel, MAX_CUPONS_ATIVOS, regraCupom, textoDesconto } from '@
 import type { DadosImagemCupom } from '@/lib/imagemCupom'
 import ImagemCupom from '@/components/marketing/ImagemCupom'
 import { fotoDaLoja, getCardapioUrl, useProfile } from '@/hooks/useProfile'
-import { Botao, CaixasEscolha, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
+import { Botao, CaixasEscolha, Campo, CampoSugestao, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base"
 import "@/components/loja/editoresLoja.css"
 import "./entregaPagamento.css"
 import { useState, useEffect, useRef } from "react"
@@ -395,6 +395,25 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   }, [loading, modoEntrega, chaveEndLoja]) // eslint-disable-line react-hooks/exhaustive-deps
   // (29/10 · 5.13) "Por cidade": sugere as cidades do estado da loja (lista oficial e grátis do IBGE), pra não errar o nome
   const [cidadesUf, setCidadesUf] = useState<string[]>([])
+  // (29/10 · 5.14) "Por bairro": sugere os bairros das suas clientes na cidade da loja (não existe lista oficial e grátis de bairros)
+  const [bairrosSug, setBairrosSug] = useState<string[]>([])
+  const cidadeLoja = String(enderecoLoja?.cidade || '').trim()
+  useEffect(() => {
+    if (modoEntrega !== 'bairro' || !userId) return
+    let vivo = true
+    supabase.from('clientes').select('bairro, cidade').eq('user_id', userId).not('bairro', 'is', null).limit(2000).then(({ data }) => {
+      if (!vivo || !Array.isArray(data)) return
+      const sem = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
+      const mapa = new Map<string, string>()
+      data.forEach((c: any) => {
+        const b = String(c.bairro || '').trim()
+        if (!b || (cidadeLoja && c.cidade && sem(String(c.cidade)) !== sem(cidadeLoja))) return
+        if (!mapa.has(sem(b))) mapa.set(sem(b), b)
+      })
+      setBairrosSug([...mapa.values()].sort((a, b) => a.localeCompare(b, 'pt-BR')))
+    }, () => {})
+    return () => { vivo = false }
+  }, [modoEntrega, userId, cidadeLoja])
   const ufLoja = String(enderecoLoja?.estado || enderecoLoja?.uf || '').trim().toUpperCase()
   useEffect(() => {
     if (modoEntrega !== 'cidade' || !/^[A-Z]{2}$/.test(ufLoja)) return
@@ -597,11 +616,10 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                 </div>
               ) : modoEntrega === 'cidade' ? (
                 <div className="ep-bairros">
-                  <datalist id="ep-cidades-lista">{cidadesUf.map(c => <option key={c} value={c} />)}</datalist>
                   {cidades.map((c, i) => (
                     <div key={i} className={`ep-bairro ep-bairro--check${c.ativo ? '' : ' off'}`}>
                       <button type="button" role="checkbox" aria-checked={c.ativo} aria-label={`${c.cidade || 'Cidade'} ${c.ativo ? 'ligada' : 'desligada'}`} className="ep-lin-check" onClick={() => setCidades(prev => prev.map((x, k) => k === i ? { ...x, ativo: !x.ativo } : x))}>{c.ativo && <Check size={14} weight="bold" />}</button>
-                      <Campo rotulo="" aria-label="Cidade" placeholder="Cidade" list="ep-cidades-lista" autoComplete="off" value={c.cidade} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, cidade: e.target.value } : x))} />
+                      <CampoSugestao ariaLabel="Cidade" placeholder="Cidade" valor={c.cidade} opcoes={cidadesUf} aoMudar={v => setCidades(prev => prev.map((x, k) => k === i ? { ...x, cidade: v } : x))} />
                       <CampoTaxa rotulo={`Taxa de ${c.cidade || "esta cidade"}`} valor={c.valor} aoMudar={v => setCidades(prev => prev.map((x, k) => k === i ? { ...x, valor: v } : x))} />
                     </div>
                   ))}
@@ -625,7 +643,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                 <div className="ep-bairros">
                   {entregaPorBairro.map((b, i) => (
                     <div key={i} className="ep-bairro">
-                      <Campo rotulo="" aria-label="Bairro" placeholder="Bairro" value={b.bairro} onChange={e => mudarBairro(i, 'bairro', e.target.value)} />
+                      <CampoSugestao ariaLabel="Bairro" placeholder={cidadeLoja ? `Bairro de ${cidadeLoja}` : 'Bairro'} valor={b.bairro} opcoes={bairrosSug} aoMudar={v => mudarBairro(i, 'bairro', v)} />
                       <CampoTaxa rotulo={`Taxa de ${b.bairro || "este bairro"}`} valor={b.valor} aoMudar={v => mudarBairro(i, 'valor', v)} />
                       <button type="button" className="ep-bairro-x" aria-label={`Tirar ${b.bairro || 'este bairro'}`} onClick={() => setEntregaPorBairro(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
                     </div>

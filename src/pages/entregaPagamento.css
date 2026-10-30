@@ -190,3 +190,22 @@
   .ep-bairro { grid-template-columns: minmax(0, 1fr) 160px 40px; }
   .ep-bairro--check { grid-template-columns: 24px minmax(0, 1fr) 160px; }
 }
+
+/* (29/10 · 5.14) faixas mais enxutas: km e valor baixos e menos redondos, o valor logo depois do "km", lixeira no fim */
+.ep-faixas .ep-faixa { display: flex; align-items: center; gap: 8px; }
+.ep-faixas .ep-faixa .ui-campo { flex: none; width: 60px; }
+.ep-faixas .ep-faixa .ui-campo-c, .ep-faixas .ep-faixa .ui-campo input { min-height: 40px; height: 40px; }
+.ep-faixas .ep-faixa .ui-campo-c { border-radius: 8px; }
+.ep-faixas .ep-faixa .ui-campo input { padding-left: 10px; padding-right: 6px; text-align: center; }
+.ep-faixas .ep-faixa-rs { flex: none; width: 186px; margin-left: 6px; }
+.ep-faixas .ep-faixa-x { margin-left: auto; }
+.ep-faixas .ep-tx { height: 40px; border-radius: 8px; }
+/* "Grátis": caixinha cinza preenchida dentro do campo, sem borda; marcada fica verde */
+.ep-tx button { height: 28px; border: 0; border-radius: 7px; background: #F1EDEF; }
+.ep-tx button i { border-color: #C9BCC2; background: var(--ui-branco); }
+.ep-tx--gratis button { border: 0; background: #DCF3E4; color: #15803D; }
+.ep-tx--gratis button i { border-color: #16A34A; background: #16A34A; }
+@media (max-width: 600px) {
+  .ep-faixas .ep-faixa .ui-campo { width: 52px; }
+  .ep-faixas .ep-faixa-rs { width: auto; flex: 1; max-width: 176px; margin-left: 0; }
+}

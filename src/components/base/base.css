@@ -281,3 +281,9 @@ html[data-ui-janela] .ui-aviso--saindo { animation-name: uiAvisoSomeCima; }
 .ui-cx span { min-width: 0; display: flex; flex-direction: column; }
 .ui-cx b { font-size: 14.5px; font-weight: 500; color: var(--ui-texto); line-height: 1.3; }
 .ui-cx small { margin-top: 1px; font-size: 12.5px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* (29/10 · 5.14) CampoSugestao: sugestões embaixo do campo enquanto digita */
+.ui-sug { position: relative; min-width: 0; }
+.ui-sug-l { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 30; margin: 0; padding: 4px; list-style: none; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 12px; box-shadow: 0 8px 24px rgba(44, 18, 25, .12); }
+.ui-sug-l li { padding: 9px 10px; border-radius: 8px; font-size: 14px; color: var(--ui-texto); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ui-sug-l li.on { background: #F7F1F3; }
