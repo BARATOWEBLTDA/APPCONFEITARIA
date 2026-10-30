@@ -1094,7 +1094,8 @@ const CSS = `
   .ppf-pe--ent .ep > * { min-width: 0; }
   /* (29/10 · 5.09) "Como cobrar a entrega" à esquerda, embaixo das formas; à direita, no topo, o mapa / a taxa / as listas */
   .ppf-pe--ent .ep { row-gap: 10px; }
-  .ppf-pe--ent .mpr { height: 210px; }
+  .ppf-pe--ent .mpr { height: 190px; }
+  .ppf-pe--ent { min-height: 680px; } /* (29/10 · 5.18) já no tamanho de 5 faixas: não cresce ao montar */
   .ppf-pe--ent .ep-card--taxa, .ppf-pe--ent .ep-card--taxa .ep-taxa { display: contents; }
   .ppf-pe--ent .ep > .ep-card:first-child { grid-column: 1; grid-row: 1; }
   .ppf-pe--ent .ep-taxa > .ep-modo-t { grid-column: 1; grid-row: 2; margin: 10px 0 0; }

@@ -212,3 +212,21 @@
 /* (29/10 · 5.15) "Grátis" encostado na borda do campo: ocupa a ponta direita inteira, sem espaço */
 .ep-tx { padding-right: 0; overflow: hidden; }
 .ep-tx button { align-self: stretch; height: auto; margin: 0; padding: 0 12px 0 10px; border-radius: 0; }
+
+/* (29/10 · 5.18) "Montar as faixas para mim": caixa cinza com valor do km, até onde e taxa mínima */
+.ep-montar { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px 14px; border-radius: 14px; background: #F7F4F5; }
+.ep-montar-t { margin: 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); }
+.ep-montar-l { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: 8px; align-items: end; }
+.ep-montar-l label { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: 12px; color: var(--ui-texto-2); }
+.ep-montar-c { display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 10px; border: 1.5px solid var(--ui-borda-campo, #E6DADF); border-radius: 8px; background: var(--ui-branco); }
+.ep-montar-c:focus-within { border-color: var(--ui-rosa); }
+.ep-montar-c em { flex: none; font-style: normal; font-size: 13px; font-weight: 600; color: var(--ui-texto-3); }
+.ep-montar-c input { flex: 1; min-width: 0; width: 100%; height: 100%; border: 0; outline: 0; background: none; font-family: inherit; font-size: 14.5px; color: var(--ui-texto); }
+.ep-montar-l .ui-bt { min-height: 40px; height: 40px; padding: 0 14px; font-size: 14px; }
+@media (max-width: 600px) {
+  .ep-montar-l { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ep-montar-l .ui-bt { grid-column: 1 / -1; }
+}
+.ep-faixas-t { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ep-faixas-t button { padding: 0; border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; white-space: nowrap; }
+.ep-faixas .ep-faixa { padding-top: 6px; padding-bottom: 6px; }

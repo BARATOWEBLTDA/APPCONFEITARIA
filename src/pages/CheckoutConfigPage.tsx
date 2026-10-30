@@ -432,6 +432,27 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       .catch(() => {})
     return () => { vivo = false }
   }, [modoEntrega, ufLoja])
+  // (29/10 · 5.18) "Montar as faixas para mim": ela diz o preço do km e até onde entrega, o app cria as faixas
+  const [montarKm, setMontarKm] = useState('1,50')
+  const [montarAte, setMontarAte] = useState('10')
+  const [montarMin, setMontarMin] = useState('5,00')
+  const [montarAberto, setMontarAberto] = useState<boolean | null>(null) // null: aberto se ainda não tem faixa com valor
+  const montarFaixas = async () => {
+    const preco = numBR(montarKm) || 0, ate = Math.min(100, Number(String(montarAte).replace(',', '.')) || 0), minimo = numBR(montarMin) || 0
+    if (preco <= 0 || ate <= 0) return avisar('Escreva o valor do km e até onde você entrega', { tipo: 'erro' })
+    const temValores = raios.some(f => f.valor && f.valor !== '0,00' && (numBR(f.valor) || 0) > 0)
+    if (temValores) {
+      const ok = await confirmar({ titulo: 'Trocar as faixas?', texto: 'As faixas de agora são trocadas pelas novas.', rotulo: 'Trocar', rotuloVoltar: 'Voltar' })
+      if (!ok) return
+    }
+    const passo = ate > 20 ? 5 : 2
+    const kms: number[] = []
+    for (let k = passo; k < ate; k += passo) kms.push(k)
+    kms.push(ate)
+    const meio = (v: number) => Math.ceil(v * 2 - 1e-9) / 2 // pra cima, de 50 em 50 centavos
+    setRaios(kms.map(k => ({ km: kmCurto(k), valor: Math.max(minimo, meio(k * preco)).toFixed(2).replace('.', ','), ativo: true })))
+    setMontarAberto(false)
+  }
   const faixasMapa = faixasOrdenadas(raios.filter(f => f.ativo).map(f => ({ km: f.km, valor: numBR(f.valor) || 0 })))
   const maiorKm = faixasMapa.length ? faixasMapa[faixasMapa.length - 1].km : 0
   const kmCurto = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
@@ -598,7 +619,17 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                   ) : (
                     <p className="ep-raio-aviso">{buscandoLoja ? 'Achando a sua loja no mapa…' : <><WarningCircle size={18} weight="bold" aria-hidden="true" />Não achamos o endereço da loja no mapa. Confira a rua e o número em Dados da loja.</>}</p>
                   )}
-                  <p className="ep-modo-t">Faixas de entrega</p>
+                  {(montarAberto ?? !raios.some(f => (numBR(f.valor) || 0) > 0)) && <div className="ep-montar">
+                    <p className="ep-montar-t">Montar as faixas para mim</p>
+                    <div className="ep-montar-l">
+                      <label><span>Valor do km</span><span className="ep-montar-c"><em>R$</em><input inputMode="numeric" autoComplete="off" value={montarKm} onChange={e => setMontarKm(mascaraReais(e.target.value))} aria-label="Valor do km" /></span></label>
+                      <label><span>Entrega até</span><span className="ep-montar-c"><input inputMode="decimal" autoComplete="off" value={montarAte} onChange={e => setMontarAte(e.target.value.replace(/[^0-9,]/g, '').slice(0, 4))} aria-label="Entrega até quantos km" /><em>km</em></span></label>
+                      <label><span>Taxa mínima</span><span className="ep-montar-c"><em>R$</em><input inputMode="numeric" autoComplete="off" value={montarMin} onChange={e => setMontarMin(mascaraReais(e.target.value))} aria-label="Taxa mínima" /></span></label>
+                      <Botao tamanho="m" onClick={() => { void montarFaixas() }}>Montar faixas</Botao>
+                    </div>
+                  </div>}
+                  <p className="ep-modo-t ep-faixas-t">Faixas de entrega
+                    {!(montarAberto ?? !raios.some(f => (numBR(f.valor) || 0) > 0)) && <button type="button" onClick={() => setMontarAberto(true)}>Montar pelo valor do km</button>}</p>
                   {/* (29/10 · 5.13) lista com moldura e linhas, em ordem de distância (antes as linhas ficavam soltas) */}
                   <div className="ep-faixas">
                   {raios.map((f, i) => {
