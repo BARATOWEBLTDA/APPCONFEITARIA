@@ -279,3 +279,8 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-prontas-l button.on { box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 5px var(--ui-texto); }
 .ap-prontas-l button.ap-cor-pro { color: rgba(255, 255, 255, .95); opacity: .8; }
 .ap-pro-tag { order: 99; display: inline-flex; align-items: center; gap: 3px; flex: none; margin-left: 2px; font-size: 11.5px; font-weight: 600; color: #B7791F; }
+/* (30/10 · 5.25) grátis: um botão só no fim, pra ver as outras cores no PRO */
+.ap-mais-cores { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 46px; margin-top: 4px; padding: 0 14px; border: 0; border-radius: 12px; background: #F7F4F5; font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); cursor: pointer; }
+.ap-mais-cores svg { color: #C99A2E; }
+.ap-mais-cores span { padding: 2px 7px; border-radius: 6px; background: #FBF1DC; font-size: 11.5px; font-weight: 600; color: #9A6B12; }
+@media (hover: hover) { .ap-mais-cores:hover { background: #F1ECEE; } }

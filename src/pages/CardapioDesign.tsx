@@ -652,9 +652,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               <div className="ap-crot"><span className="ap-crot-n">{it.n}</span><span className="ap-crot-tx"><b>{it.rotulo}</b><small>{it.apoio}</small></span><i className="ap-crot-cor" style={{ background: atual }} aria-hidden="true" /></div>
               <div className="ap-prontas" role="radiogroup" aria-label={it.rotulo}>
                 {/* (30/10 · 5.24) 4 cores de graça numa linha; na de baixo, as 4 do PRO (no grátis com cadeado) e o "+" */}
-                {(["gratis", "pro"] as const).map(grupo => (
+                {(isPro ? (["gratis", "pro"] as const) : (["gratis"] as const)).map(grupo => (
                   <div key={grupo} className={`ap-prontas-l${grupo === "pro" ? " ap-prontas-l--pro" : ""}`}>
-                    {grupo === "pro" && <span className="ap-pro-tag"><Crown size={12} weight="fill" aria-hidden="true" />PRO</span>}
+
                     {(grupo === "gratis" ? PRONTAS : PRONTAS_PRO)[it.campo].map(p => {
                       const on = atual === p.cor;
                       const travada = grupo === "pro" && !isPro;
@@ -695,6 +695,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             </div>
           );
         })}
+        {/* (30/10 · 5.25) no grátis: só as 4 cores de cada lugar e um botão só no fim (antes as do PRO apareciam com cadeado) */}
+        {!isPro && (
+          <button type="button" className="ap-mais-cores" onClick={() => navigate("/assinar")}>
+            <Crown size={16} weight="fill" aria-hidden="true" />Desbloquear mais cores<span>PRO</span>
+          </button>
+        )}
       </section>
       </div>
 
