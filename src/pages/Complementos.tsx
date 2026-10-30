@@ -56,6 +56,8 @@ export default function Complementos() {
   const [editando, setEditando] = useState<Complemento | null>(null);
   const [form, setForm] = useState<Form>(FORM_VAZIO);
   const [tentou, setTentou] = useState(false);
+  // (30/10 · 5.40) "Em produtos escolhidos" e "Em categorias": a escolha dos itens fica numa segunda tela ("Próximo")
+  const [etapa, setEtapa] = useState<1 | 2>(1);
   const [saving, setSaving] = useState(false);
   // (30/10 · 5.31) "Gerar com IA": 3 opções de explicação a partir do nome
   const [gerandoIa, setGerandoIa] = useState(false);
@@ -100,6 +102,7 @@ export default function Complementos() {
     setEditando(c);
     setTentou(false);
     setBuscaProd("");
+    setEtapa(escolherProdutos && c && ondeDe(c) !== "todos" ? 2 : 1);
     setForm(c ? {
       nome: c.nome, descricao: c.descricao || "", valor: Number(c.valor) || 0, gratis: !(Number(c.valor) > 0),
       onde: escolherProdutos && ondeDe(c) === "todos" ? "categorias" : ondeDe(c),
@@ -107,6 +110,12 @@ export default function Complementos() {
       cats: (c.categorias_cardapio || []).filter(n => categorias.some(k => k.nome === n)), produtos: (c.categorias || []).filter(id => produtos.some(p => p.id === id)), pedeRef: c.pede_referencia === true, pedeFrase: c.pede_frase === true,
     } : FORM_VAZIO);
     setAberta(true);
+  };
+  const temEtapa2 = form.onde === "produtos" || form.onde === "categorias";
+  const proximo = () => {
+    setTentou(true);
+    if (!form.nome.trim() || !form.onde || (!form.gratis && form.valor <= 0)) return;
+    setTentou(false); setEtapa(2);
   };
   const fechar = () => { setAberta(false); setOpcoesIa([]); setSugNome(null); };
   // (30/10 · 5.35) ao sair do nome: arruma maiúsculas e espaços na hora; se parecer frase ou tiver erro, a IA sugere o nome certo
@@ -150,8 +159,8 @@ export default function Complementos() {
 
   const erroNome = tentou && !form.nome.trim() ? "Escreva o nome" : undefined;
   const erroValor = tentou && !form.gratis && form.valor <= 0 ? 'Escreva o valor ou marque Grátis' : undefined;
-  const erroProdutos = tentou && !form.onde ? "Escolha onde o complemento aparece"
-    : tentou && form.onde === "produtos" && form.produtos.length === 0 ? "Marque pelo menos um produto"
+  const erroOnde = tentou && !form.onde ? "Escolha onde o complemento aparece" : undefined;
+  const erroProdutos = tentou && form.onde === "produtos" && form.produtos.length === 0 ? "Marque pelo menos um produto"
     : tentou && form.onde === "categorias" && form.cats.length === 0 ? "Marque pelo menos uma categoria" : undefined;
 
   const salvar = async () => {
@@ -329,8 +338,12 @@ export default function Complementos() {
 
       {/* nova / editar */}
       {limiteAberto && <RecursoPro titulo={`${LIMITE_COMPLEMENTOS_GRATIS} complementos no plano grátis`} texto={`No plano grátis, a loja tem até ${LIMITE_COMPLEMENTOS_GRATIS} complementos. Apague um para criar outro, ou assine o PRO para ter quantos quiser.`} onClose={() => setLimiteAberto(false)} />}
-      <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada titulo={editando ? "Editar complemento" : "Novo complemento"}
-        acoes={<><Botao variante="secundario" onClick={fechar}>Cancelar</Botao><Botao onClick={salvar} carregando={saving}>{editando ? "Salvar" : "Criar"}</Botao></>}>
+      <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada
+        titulo={etapa === 2 ? (form.onde === "produtos" ? "Em quais produtos?" : "Em quais categorias?") : editando ? "Editar complemento" : "Novo complemento"}
+        acoes={etapa === 2
+          ? <><Botao variante="secundario" onClick={() => { setTentou(false); setEtapa(1); }}>Voltar</Botao><Botao onClick={salvar} carregando={saving}>{editando ? "Salvar" : "Criar"}</Botao></>
+          : <><Botao variante="secundario" onClick={fechar}>Cancelar</Botao>{temEtapa2 ? <Botao onClick={proximo}>Próximo</Botao> : <Botao onClick={salvar} carregando={saving}>{editando ? "Salvar" : "Criar"}</Botao>}</>}>
+        {etapa === 1 ? (
         <div className="pz-form">
           {/* (30/10 · 5.32) PC: janela larga em duas colunas, sem rolar: o complemento à esquerda e onde aparece (a lista de produtos) à direita */}
           <div className="pz-c1">
@@ -397,22 +410,19 @@ export default function Complementos() {
                     <i className="pz-chk" aria-hidden="true">{form.onde === k && <Check size={14} weight="bold" />}</i><span><b>{t}</b><small>{d}</small></span>
                     {k === "produtos" && <em className="prod-selo-rec pz-selo">Recomendado</em>}
                   </button>
-                  {form.onde === k && k === "categorias" && (
-                    <div className="pz-onde-l">
-                      {catsComProdutos.map(c => {
-                        const on = form.cats.includes(c.nome);
-                        return (
-                          <button key={c.nome} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarCat(c.nome)}>
-                            <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
-                            <span className="pz-it-f">{c.foto ? <img src={c.foto} alt="" /> : <Camera size={18} weight="bold" aria-label="Sem foto" />}</span>
-                            <span className="pz-it-n"><b>{c.nome}</b><small>{c.n} {c.n === 1 ? "produto" : "produtos"}</small></span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {form.onde === k && k === "produtos" && (
-                    <div className="pz-onde-l">
+                </div>
+              ))}
+            </div>
+            {erroOnde && <p className="ui-campo-msg pz-erro" role="alert"><WarningCircle size={14} weight="bold" aria-hidden="true" /><span>{erroOnde}</span></p>}
+          </div>
+          </div>
+        </div>
+        ) : (
+          /* (30/10 · 5.40) segunda tela: em quais produtos (ou categorias) o complemento aparece */
+          <div className="pz-etapa2">
+            <p className="pz-etapa2-t">{form.onde === "produtos" ? <>Marque os produtos que oferecem <b>{form.nome.trim() || "este complemento"}</b>.</> : <>Marque as categorias que oferecem <b>{form.nome.trim() || "este complemento"}</b>. Produto novo dessas categorias já recebe.</>}</p>
+            {form.onde === "produtos" ? (
+                    <div className="pz-onde-l pz-lista2">
                       {produtos.length > 8 && (
                         <label className="pz-busca pz-busca--p">
                           <MagnifyingGlass size={18} weight="bold" />
@@ -442,14 +452,23 @@ export default function Complementos() {
                       })}
                       {produtosFiltrados.length === 0 && <p className="pz-semres">Nenhum produto com esse nome.</p>}
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            ) : (
+                    <div className="pz-onde-l pz-lista2">
+                      {catsComProdutos.map(c => {
+                        const on = form.cats.includes(c.nome);
+                        return (
+                          <button key={c.nome} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarCat(c.nome)}>
+                            <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
+                            <span className="pz-it-f">{c.foto ? <img src={c.foto} alt="" /> : <Camera size={18} weight="bold" aria-label="Sem foto" />}</span>
+                            <span className="pz-it-n"><b>{c.nome}</b><small>{c.n} {c.n === 1 ? "produto" : "produtos"}</small></span>
+                          </button>
+                        );
+                      })}
+                    </div>
+            )}
             {erroProdutos && <p className="ui-campo-msg pz-erro" role="alert"><WarningCircle size={14} weight="bold" aria-hidden="true" /><span>{erroProdutos}</span></p>}
           </div>
-          </div>
-        </div>
+        )}
       </Janela>
     </>
   );

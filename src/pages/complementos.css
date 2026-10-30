@@ -291,3 +291,25 @@
 .pz-preco--gratis input { color: #B5AAAE; }
 .pz-preco--gratis .pz-tx-gr { background: #DCF3E4; color: #15803D; }
 .pz-preco--gratis .pz-tx-gr i { border-color: #16A34A; background: #16A34A; }
+/* (30/10 · 5.40) segunda tela: em quais produtos / categorias */
+.pz-etapa2 { display: flex; flex-direction: column; gap: var(--gap-stack); }
+.pz-etapa2-t { margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--ui-texto-2); }
+.pz-etapa2-t b { font-weight: 600; color: var(--ui-texto); }
+.pz-lista2 { margin: 0; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); }
+@media (min-width: 1024px) {
+  /* a janela fica do mesmo tamanho nas duas telas */
+  .ui-janela:has(.pz-etapa2) { width: min(960px, calc(100vw - 48px)); max-width: none; max-height: min(94dvh, 900px); }
+  .ui-janela:has(.pz-form), .ui-janela:has(.pz-etapa2) { min-height: min(90dvh, 660px); }
+  .ui-janela:has(.pz-etapa2) .ui-janela-pe { display: flex; justify-content: flex-end; }
+  .ui-janela:has(.pz-etapa2) .ui-janela-pe .ui-bt { flex: none; width: auto; padding-left: 28px; padding-right: 28px; }
+  /* lista em duas colunas, rola por dentro */
+  .pz-lista2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; max-height: calc(min(90dvh, 900px) - 250px); overflow-y: auto; }
+  .pz-lista2 > .pz-busca, .pz-lista2 > .pz-it--todos, .pz-lista2 > .pz-semres { grid-column: 1 / -1; }
+  .pz-lista2 > .pz-it { border-top: 1px solid var(--ui-linha); }
+  .pz-lista2 > .pz-it:nth-child(1), .pz-lista2 > .pz-busca + .pz-it { border-top: 0; }
+}
+@media (min-width: 1024px) {
+  .ui-janela:has(.pz-form), .ui-janela:has(.pz-etapa2) { height: min(90dvh, 720px); min-height: 0; }
+  .pz-etapa2 { height: 100%; }
+  .pz-lista2 { flex: 1 1 auto; min-height: 0; max-height: none; }
+}
