@@ -4,7 +4,7 @@ const EntregaPagamento = lazy(() => import("@/pages/CheckoutConfigPage"));
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar, type Horario } from "@/components/loja/EditoresLoja";
 import { useNavigate } from "react-router-dom";
-import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, RocketLaunch, Lightbulb, ArrowRight, Camera, PixLogo, Money, CreditCard, Storefront, Moped } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, RocketLaunch, Lightbulb, ArrowRight, Info, Camera, PixLogo, Money, CreditCard, Storefront, Moped } from "@phosphor-icons/react";
 import ListaChaves from "@/components/loja/ListaChaves";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
@@ -522,9 +522,13 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
 /* ── (13/10) Passo 6: quanto ela tem em caixa hoje. Daqui pra frente o Financeiro soma o que entra e tira o que sai. ── */
 function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const [txt, setTxt] = useState("");
+  // (29/10 · 5.19) "Começo do zero" virou a caixinha cinza dentro do campo (igual ao "Grátis" da entrega): marca e salva
+  const [zero, setZero] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  const salvar = async (zero = false) => {
+  const largo = useLargo();
+  const campo = useRef<HTMLInputElement>(null);
+  const salvar = async () => {
     if (salvando) return;
     setSalvando(true); setErro("");
     const r = await definirSaldoInicial(uid, zero ? 0 : lerBRL(txt || "0"));
@@ -533,25 +537,51 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     supabase.auth.updateUser({ data: { pp_caixa: true } }).then(() => {}, () => {});
     onSalvo();
   };
+  const valor = zero ? 0 : lerBRL(txt || "0");
+  const porque = ["O app soma o que entra e tira o que sai", "Você sabe quanto tem, todo dia", "Dá para mudar depois no Financeiro"];
+  const campoCaixa = (
+    <div className={`ppf-cx${zero ? " ppf-cx--zero" : ""}`}><span>R$</span>
+      <input ref={campo} inputMode="numeric" autoComplete="off" placeholder="0,00" value={zero ? "0,00" : txt} disabled={zero} aria-label="Saldo do caixa hoje"
+        onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} onKeyDown={e => { if (e.key === "Enter") salvar(); }} />
+      <button type="button" role="checkbox" aria-checked={zero} onClick={() => { setZero(z => !z); setErro(""); if (zero) window.setTimeout(() => campo.current?.focus(), 0); }}>
+        <i aria-hidden="true">{zero && <Check size={11} weight="bold" />}</i>Começo do zero
+      </button>
+    </div>
+  );
+  const dicaSinal = <p className="ppf-cx-av2"><Info size={16} weight="bold" aria-hidden="true" /><span><b>Já recebeu sinal de alguma encomenda?</b> Ao cadastrar o pedido, coloque a data em que recebeu. Assim o app não conta duas vezes.</span></p>;
   return (
     <Janelinha foco titulo="Saldo do caixa" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio carregando={salvando} onClick={() => salvar()}>Salvar e continuar</Botao></>}>
-      <PassoTopo k="caixa" />
-      {/* (15/10) pergunta curta, "Começo do zero", o porquê numa caixinha e o aviso do sinal já recebido */}
-      <p className="ppf-l ppf-h-tit">Quanto tem hoje no caixa?</p>
-      <div className="ppf-cx"><span>R$</span><input inputMode="numeric" autoComplete="off" placeholder="0,00" value={txt} aria-label="Saldo do caixa hoje"
-        onChange={e => { setTxt(mascaraBRL(e.target.value)); setErro(""); }} onKeyDown={e => { if (e.key === "Enter") salvar(); }} /></div>
-      <button type="button" className="ppf-cx-zero" disabled={salvando} onClick={() => salvar(true)}>Começo do zero</button>
-      <div className="ppf-d-dica ppf-cx-dica">
-        <p>Por que isso?</p>
-        <ul>
-          <li>O app soma o que entra e tira o que sai</li>
-          <li>Você sabe quanto tem, todo dia</li>
-          <li>Dá para mudar depois no Financeiro</li>
-        </ul>
-      </div>
-      <div className="ppf-cx-av"><b>Já recebeu sinal de alguma encomenda?</b>Ao cadastrar o pedido, coloque a data em que recebeu. Assim o app não conta duas vezes.</div>
-      {erro && <p className="ppf-erro">{erro}</p>}
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio carregando={salvando} onClick={() => salvar()}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
+      {largo ? (
+        <div className="ppf-d ppf-d--2col ppf-d--cx">
+          {/* (29/10 · 5.19) à direita, o que ela vai ver no Financeiro (muda enquanto digita) e o porquê */}
+          <div className="ppf-d-prev">
+            <p>No Financeiro</p>
+            <div className="ppf-cx-prev">
+              <span className="ppf-cx-prev-ic" aria-hidden="true"><Coins size={20} weight="bold" /></span>
+              <small>Saldo em caixa hoje</small>
+              <b>{valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</b>
+              <em>Daqui pra frente, soma o que entra e tira o que sai</em>
+            </div>
+            <ul className="ppf-cx-pq">{porque.map(t => <li key={t}><Check size={14} weight="bold" aria-hidden="true" />{t}</li>)}</ul>
+          </div>
+          <PassoTopo k="caixa" />
+          <p className="ppf-l ppf-h-tit">Quanto tem hoje no caixa?</p>
+          {campoCaixa}
+          {dicaSinal}
+          {erro && <p className="ppf-erro">{erro}</p>}
+        </div>
+      ) : (<>
+        <PassoTopo k="caixa" />
+        <p className="ppf-l ppf-h-tit">Quanto tem hoje no caixa?</p>
+        {campoCaixa}
+        <div className="ppf-d-dica ppf-cx-dica">
+          <p>Por que isso?</p>
+          <ul>{porque.map(t => <li key={t}>{t}</li>)}</ul>
+        </div>
+        <div className="ppf-cx-av"><b>Já recebeu sinal de alguma encomenda?</b>Ao cadastrar o pedido, coloque a data em que recebeu. Assim o app não conta duas vezes.</div>
+        {erro && <p className="ppf-erro">{erro}</p>}
+      </>)}
     </Janelinha>
   );
 }
@@ -1168,6 +1198,27 @@ const CSS = `
   .ppf-cx:focus-within { border-color: var(--ui-rosa); }
   .ppf-cx span { font-size: 18px; font-weight: 600; color: var(--ui-texto-2); }
   .ppf-cx input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font-family: inherit; font-size: 24px; font-weight: 600; color: var(--ui-texto); font-variant-numeric: tabular-nums; }
+  /* (29/10 · 5.19) "Começo do zero" dentro do campo, encostado na borda (cinza; marcado fica verde e o campo cinza) */
+  .ppf-cx { padding-right: 0; overflow: hidden; }
+  .ppf-cx button { align-self: stretch; display: inline-flex; align-items: center; gap: 6px; flex: none; margin: 0; padding: 0 16px 0 12px; border: 0; background: #F1EDEF; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; white-space: nowrap; }
+  .ppf-cx button i { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border: 1.5px solid #C9BCC2; border-radius: 4px; background: var(--ui-branco); color: #fff; box-sizing: border-box; }
+  .ppf-cx--zero { background: #F3F1F2; border-color: #E8E3E5; }
+  .ppf-cx--zero span, .ppf-cx--zero input { color: #B5AAAE; }
+  .ppf-cx--zero button { background: #DCF3E4; color: #15803D; }
+  .ppf-cx--zero button i { border-color: #16A34A; background: #16A34A; }
+  /* computador: prévia do Financeiro ao lado */
+  .ppf-d--cx { min-height: 300px; }
+  .ppf-cx-prev { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; row-gap: 2px; align-items: center; padding: 16px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); }
+  .ppf-cx-prev-ic { grid-row: 1 / 3; width: 40px; height: 40px; border-radius: 12px; background: #FDEBF1; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
+  .ppf-cx-prev small { font-size: 13px; color: var(--ui-texto-2); }
+  .ppf-cx-prev b { font-size: 22px; font-weight: 600; color: var(--ui-texto); font-variant-numeric: tabular-nums; }
+  .ppf-cx-prev em { grid-column: 1 / -1; margin-top: 8px; font-style: normal; font-size: 12.5px; color: var(--ui-texto-3); }
+  .ppf-cx-pq { margin: 14px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .ppf-cx-pq li { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ui-texto-2); }
+  .ppf-cx-pq svg { flex: none; color: #16A34A; }
+  .ppf-cx-av2 { display: flex; gap: 8px; margin: 14px 2px 0; font-size: 13px; line-height: 1.5; color: var(--ui-texto-2); }
+  .ppf-cx-av2 svg { flex: none; margin-top: 2px; color: var(--ui-texto-3); }
+  .ppf-cx-av2 b { font-weight: 500; color: var(--ui-texto); }
   .ppf-cx-zero { display: inline-flex; align-items: center; min-height: 40px; margin-top: 10px; padding: 0 14px; border: 1.5px solid var(--ui-borda); border-radius: 8px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
   .ppf-cx-zero:disabled { opacity: .5; }
   .ppf-cx-dica { margin-top: 24px; }
