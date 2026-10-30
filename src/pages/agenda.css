@@ -165,3 +165,8 @@ i.atr { background: var(--ui-vermelho); }
 @media (min-width: 768px) { .ag3-res { right: 56px; } }
 /* (28/10 · 4.60) no computador, o calendário ganha mais espaço que a coluna do dia */
 @media (min-width: 901px) { .ag3-grade { grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr); } }
+/* (30/10 · 5.49) PC: calendário menor e a coluna do dia (os pedidos) maior */
+@media (min-width: 901px) {
+  .ag3-grade { grid-template-columns: minmax(380px, 520px) minmax(0, 1fr); }
+  .ag3-d { min-height: 52px; }
+}
