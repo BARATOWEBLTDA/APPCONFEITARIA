@@ -1090,6 +1090,14 @@ const CSS = `
   .ppf-pe--pag .ep { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
   .ppf-pe--ent .ep { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); column-gap: 32px; align-items: start; }
   .ppf-pe--ent .ep > * { min-width: 0; }
+  /* (29/10 · 5.09) "Como cobrar a entrega" à esquerda, embaixo das formas; à direita, no topo, o mapa / a taxa / as listas */
+  .ppf-pe--ent .ep { row-gap: 10px; }
+  .ppf-pe--ent .mpr { height: 210px; }
+  .ppf-pe--ent .ep-card--taxa, .ppf-pe--ent .ep-card--taxa .ep-taxa { display: contents; }
+  .ppf-pe--ent .ep > .ep-card:first-child { grid-column: 1; grid-row: 1; }
+  .ppf-pe--ent .ep-taxa > .ep-modo-t { grid-column: 1; grid-row: 2; margin: 10px 0 0; }
+  .ppf-pe--ent .ep-taxa > .ep-modo { grid-column: 1; grid-row: 3; }
+  .ppf-pe--ent .ep-taxa > :not(.ep-modo-t):not(.ep-modo), .ppf-pe--ent .ep-card--taxa > .ep-taxa-off { grid-column: 2; grid-row: 1 / span 4; min-width: 0; }
   .ppf-d-dica1 { margin: 12px 2px 0; font-size: 13.5px; line-height: 1.5; color: var(--ui-texto-2); }
   .ppf-d-ajuda > p { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
   .ppf-d-ajuda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
