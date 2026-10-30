@@ -29,8 +29,8 @@ export type Mostrar = "completo" | "cidade" | "nada";
  *  (deixa claro o caso de quem só faz entrega). Sem caixas: o seletor de 3 partes (celular, sem rolar). */
 const OPCOES_MOSTRAR: [Mostrar, string, string][] = [
   ["completo", "Endereço completo", "Rua, número e bairro, com o mapa"],
-  ["cidade", "Só a cidade", "Para quem atende em casa e não quer mostrar a rua"],
-  ["nada", "Não mostrar", "Só faz entrega: o endereço serve para calcular a taxa"],
+  ["cidade", "Só a cidade", "Bom para quem atende em casa"],
+  ["nada", "Não mostrar", "Só faz entrega: serve para a taxa"],
 ];
 export function OpcoesMostrar({ mostrar, onMudar, tituloClasse = "ppf-l", caixas = false }: { mostrar: Mostrar; onMudar: (v: Mostrar) => void; end?: End; tituloClasse?: string; caixas?: boolean }) {
   return (

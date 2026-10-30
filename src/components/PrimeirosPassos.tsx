@@ -419,13 +419,21 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     const okPc = !!ep && ep.formasPagamento.length > 0;
     return (
       <Janelinha foco titulo="Pagamento" onClose={onClose}
-        acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!okPc} onClick={() => { marcarPagamentoConferido(uid); onSalvo(); }}>Salvar</Botao></>}>
+        acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!okPc} carregando={salvando} onClick={async () => {
+          // (30/10 · 5.21) grava as formas escolhidas (as que vêm marcadas na primeira vez não são salvas sozinhas)
+          setSalvando(true);
+          const { error } = await supabase.from("profiles").update({ formas_pagamento: ep!.formasPagamento }).eq("id", uid);
+          setSalvando(false);
+          if (error) { setErro(erroDeConexao(error) ? SEM_INTERNET : "Não foi possível salvar agora. Tente de novo."); return; }
+          marcarPagamentoConferido(uid); onSalvo();
+        }}>Salvar</Botao></>}>
         <div className="ppf-pe ppf-pe--pag">
           <PassoTopo k="pagamento" />
           <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
             <EntregaPagamento embutido parte="entrega" so="pag" onEstado={setEp} />
           </Suspense>
           {ep && !okPc && <p className="ppf-p-dica">Marque pelo menos uma forma de pagamento.</p>}
+          {erro && <p className="ppf-erro">{erro}</p>}
         </div>
       </Janelinha>
     );
@@ -454,6 +462,8 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const [erro, setErro] = useState("");
   // computador: o editor completo de Minha loja em duas colunas (formas · como cobrar, com o mapa); salva sozinho
   const largo = useLargo();
+  // (30/10 · 5.21) celular: "Cobrar por bairro, km ou cidade" abre o editor completo (o mesmo do computador), numa coluna
+  const [completo, setCompleto] = useState(false);
   const [ep, setEp] = useState<{ formasEntrega: string[] } | null>(null);
   useEffect(() => {
     if (largo) return;
@@ -488,11 +498,11 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     marcarEntregaConferida(uid);
     onSalvo();
   };
-  if (largo) {
+  if (largo || completo || porBairro) {
     const okPc = !!ep && ep.formasEntrega.length > 0;
     return (
       <Janelinha foco titulo="Entrega" onClose={onClose}
-        acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!okPc} onClick={() => { marcarEntregaConferida(uid); onSalvo(); }}>Salvar</Botao></>}>
+        acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!okPc} onClick={() => { marcarEntregaConferida(uid); onSalvo(); }}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
         <div className="ppf-pe ppf-pe--ent">
           <PassoTopo k="entrega" />
           <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
@@ -520,7 +530,14 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
         { chave: "retirada", Ic: Storefront, rotulo: "Retirada no local", sub: "Busca no seu endereço", on: entrega.includes("retirada"), aoTocar: () => trocarEntrega("retirada") },
         { chave: "entrega", Ic: Moped, rotulo: "Entrega própria", sub: "Você leva até o cliente", on: temEntrega, aoTocar: () => trocarEntrega("entrega"), depois: campoTaxa },
       ]} />
-      <p className="ppf-p-dica">Motoboy, Uber e outras taxas: em Minha loja.</p>
+      <button type="button" className="ppf-p-mais" disabled={salvando} onClick={async () => {
+        // guarda o que ela já marcou aqui antes de abrir o editor completo (ele lê da conta)
+        setSalvando(true);
+        const campos: Record<string, unknown> = { formas_entrega: entrega };
+        if (entrega.includes("entrega_propria") && !porBairro) campos.valor_entrega_propria = lerBRL(taxa || "0");
+        await supabase.from("profiles").update(campos).eq("id", uid);
+        setSalvando(false); setCompleto(true);
+      }}>Cobrar por bairro, km ou cidade<CaretRight size={14} weight="bold" aria-hidden="true" /></button>
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
   );
@@ -582,11 +599,9 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
         <PassoTopo k="caixa" />
         <p className="ppf-l ppf-h-tit">Quanto tem hoje no caixa?</p>
         {campoCaixa}
-        <div className="ppf-d-dica ppf-cx-dica">
-          <p>Por que isso?</p>
-          <ul>{porque.map(t => <li key={t}>{t}</li>)}</ul>
-        </div>
-        <div className="ppf-cx-av"><b>Já recebeu sinal de alguma encomenda?</b>Ao cadastrar o pedido, coloque a data em que recebeu. Assim o app não conta duas vezes.</div>
+        {/* (30/10 · 5.21) igual ao computador: o porquê sem fundo rosa e o aviso do sinal sem moldura */}
+        <ul className="ppf-cx-pq ppf-cx-pq--cel">{porque.map(t => <li key={t}><Check size={14} weight="bold" aria-hidden="true" />{t}</li>)}</ul>
+        {dicaSinal}
         {erro && <p className="ppf-erro">{erro}</p>}
       </>)}
     </Janelinha>
@@ -711,15 +726,8 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
               </div>
             </div>
             {/* (23/10) a ajuda vem embaixo do campo (antes era uma caixa rosa em cima) */}
-            {largo ? <p className="ppf-d-dica1">Conte o que você faz, para quais ocasiões e o que tem de especial.</p> : <div className="ppf-d-ajuda">
-              <p>O que escrever</p>
-              <ul>
-                <li><Check size={14} weight="bold" aria-hidden="true" /><b>O que você faz:</b> bolos, doces, salgados</li>
-                <li><Check size={14} weight="bold" aria-hidden="true" /><b>Para quando:</b> festas, dia a dia</li>
-                <li><Check size={14} weight="bold" aria-hidden="true" /><b>Seu diferencial:</b> receita da família</li>
-              </ul>
-              <small>Aparece embaixo do nome, no topo do cardápio.</small>
-            </div>}
+            {/* (30/10 · 5.21) uma frase só, também no celular (as 3 linhas com check pareciam tarefas feitas) */}
+            <p className="ppf-d-dica1">Conte o que você faz, para quais ocasiões e o que tem de especial.{!largo && " Aparece embaixo do nome, no topo do cardápio."}</p>
           </>
         )}
         {erro && <p className="ppf-erro">{erro}</p>}
@@ -898,7 +906,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
       </>)}
 
       {(achou || manual) && (<>
-        <OpcoesMostrar mostrar={mostrar} onMudar={setMostrar} tituloClasse="ppf-l ppf-e-tit" caixas={largo} />
+        <OpcoesMostrar mostrar={mostrar} onMudar={setMostrar} tituloClasse="ppf-l ppf-e-tit" caixas />
         {/* (29/10 · 4.76) sem rolar no celular: o mapa encolhe em tela baixa e a frase de baixo saiu (o selo do mapa já diz o que aparece) */}
         {!largo && <div className="ppf-e-mapa"><MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo} altura={124} /></div>}
       </>)}
@@ -1123,24 +1131,28 @@ const CSS = `
   .ppf-d--end .ppf-d-prev .mpe { flex: 1; height: auto !important; min-height: 220px; }
   .ppf-d--hor { min-height: min(490px, calc(94dvh - 196px)); } /* (29/10 · 5.02) já na altura de Sábado e Domingo ligados: não cresce ao ligar */
   /* (29/10 · 5.08) Pagamento e Entrega no computador: o editor de Minha loja dentro da janela, sem a moldura dos cartões */
-  .ui-janela:has(.ppf-pe) .ui-janela-pe { display: flex; justify-content: flex-end; }
-  .ui-janela:has(.ppf-pe) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
-  .ui-janela:has(.ppf-pe--pag) { width: min(520px, calc(100vw - 48px)); max-width: none; }
-  .ui-janela:has(.ppf-pe--ent) { width: min(1000px, calc(100vw - 48px)); max-width: none; max-height: min(94dvh, 860px); }
-  .ppf-pe .ep { width: 100%; max-width: none; margin: 18px 0 0; padding: 0; }
-  .ppf-pe .ep-card { padding: 0; gap: 12px; border: 0; border-radius: 0; background: none; box-shadow: none; }
-  .ppf-pe--pag .ep { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
-  .ppf-pe--ent .ep { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); column-gap: 32px; align-items: start; }
-  .ppf-pe--ent .ep > * { min-width: 0; }
-  /* (29/10 · 5.09) "Como cobrar a entrega" à esquerda, embaixo das formas; à direita, no topo, o mapa / a taxa / as listas */
-  .ppf-pe--ent .ep { row-gap: 10px; }
-  .ppf-pe--ent .mpr { height: 190px; }
-  .ppf-pe--ent { min-height: min(680px, calc(94dvh - 196px)); } /* (29/10 · 5.18) já no tamanho de 5 faixas: não cresce ao montar */
-  .ppf-pe--ent .ep-card--taxa, .ppf-pe--ent .ep-card--taxa .ep-taxa { display: contents; }
-  .ppf-pe--ent .ep > .ep-card:first-child { grid-column: 1; grid-row: 1; }
-  .ppf-pe--ent .ep-taxa > .ep-modo-t { grid-column: 1; grid-row: 2; margin: 10px 0 0; }
-  .ppf-pe--ent .ep-taxa > .ep-modo { grid-column: 1; grid-row: 3; }
-  .ppf-pe--ent .ep-taxa > :not(.ep-modo-t):not(.ep-modo), .ppf-pe--ent .ep-card--taxa > .ep-taxa-off { grid-column: 2; grid-row: 1 / span 4; min-width: 0; }
+  @media (min-width: 901px) {
+    .ui-janela:has(.ppf-pe) .ui-janela-pe { display: flex; justify-content: flex-end; }
+    .ui-janela:has(.ppf-pe) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
+    .ui-janela:has(.ppf-pe--pag) { width: min(520px, calc(100vw - 48px)); max-width: none; }
+    .ui-janela:has(.ppf-pe--ent) { width: min(1000px, calc(100vw - 48px)); max-width: none; max-height: min(94dvh, 860px); }
+    .ppf-pe .ep { width: 100%; max-width: none; margin: 18px 0 0; padding: 0; }
+    .ppf-pe .ep-card { padding: 0; gap: 12px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+    .ppf-pe--pag .ep { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
+    .ppf-pe--ent .ep { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); column-gap: 32px; align-items: start; }
+    .ppf-pe--ent .ep > * { min-width: 0; }
+    /* (29/10 · 5.09) "Como cobrar a entrega" à esquerda, embaixo das formas; à direita, no topo, o mapa / a taxa / as listas */
+    .ppf-pe--ent .ep { row-gap: 10px; }
+    .ppf-pe--ent .mpr { height: 190px; }
+    .ppf-pe--ent { min-height: min(680px, calc(94dvh - 196px)); } /* (29/10 · 5.18) já no tamanho de 5 faixas: não cresce ao montar */
+    .ppf-pe--ent .ep-card--taxa, .ppf-pe--ent .ep-card--taxa .ep-taxa { display: contents; }
+    .ppf-pe--ent .ep > .ep-card:first-child { grid-column: 1; grid-row: 1; }
+    .ppf-pe--ent .ep-taxa > .ep-modo-t { grid-column: 1; grid-row: 2; margin: 10px 0 0; }
+    .ppf-pe--ent .ep-taxa > .ep-modo { grid-column: 1; grid-row: 3; }
+    .ppf-pe--ent .ep-taxa > :not(.ep-modo-t):not(.ep-modo), .ppf-pe--ent .ep-card--taxa > .ep-taxa-off { grid-column: 2; grid-row: 1 / span 4; min-width: 0; }
+  }
+  /* (30/10 · 5.21) celular: o editor completo da entrega numa coluna só */
+  @media (max-width: 900px) { .ppf-pe .ep { display: flex; flex-direction: column; align-items: stretch; gap: 16px; max-width: none; margin: 12px 0 0; padding: 0; } .ppf-pe .ep-card { padding: 0; border: 0; background: none; box-shadow: none; } .ppf-pe .ep-card--taxa .ep-taxa { padding-top: 0; border-top: 0; } }
   /* (29/10 · 5.20) notebook de tela baixa (1366×768, 1280×720): tudo um pouco mais compacto pra não rolar */
   @media (max-height: 820px) {
     .ppf-pe--ent .mpr { height: 140px; }
@@ -1219,6 +1231,8 @@ const CSS = `
   .ppf-p-tx--gratis em, .ppf-p-tx--gratis input { color: #B5AAAE; }
   .ppf-p-tx--gratis button { background: #DCF3E4; color: #15803D; }
   .ppf-p-tx--gratis button i { border-color: #16A34A; background: #16A34A; }
+  .ppf-p-mais { display: inline-flex; align-items: center; gap: 4px; margin: 12px 2px 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; }
+  .ppf-cx-pq--cel { margin-top: 18px; }
   .ppf-p-taxa-b { margin: 0; font-size: 13px; color: var(--ui-texto-2); }
   .ppf-in--g { min-height: 52px; font-size: 17px; }
   .ppf-e-lnk { min-height: 44px; margin-top: 4px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }

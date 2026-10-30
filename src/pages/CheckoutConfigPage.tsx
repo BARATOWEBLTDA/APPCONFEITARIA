@@ -17,7 +17,7 @@ import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { explicarErro } from "@/lib/erros"
 import { parseNumBR, mascaraReais, reaisParaCampo } from "@/lib/numeroBR"
-import { marcarPagamentoConferido } from "@/lib/primeirosPassos"
+import { marcarPagamentoConferido, pagamentoConferido } from "@/lib/primeirosPassos"
 import { useNavigate, useLocation } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
@@ -156,9 +156,14 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       const { data, error } = await supabase.from('profiles').select('formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, endereco_retirada, horario_retirada, exibir_campo_troco, cupons_desconto, aceita_agendamento, prazo_minimo_horas, pix_online, pix_chave, pix_nome, pix_cidade, pix_modo, pix_sinal_pct, pagar_na_retirada, nome_loja, endereco').eq('id', user.id).single()
       if (error || !data) { setErroCarga(true); return }
       // (13/10) abriu e viu como o cliente vai pagar e receber: conta como o passo "Pagamento e entrega" (salva sozinho)
-      marcarPagamentoConferido(user.id)
+      // (30/10 · 5.21) dentro do passo a passo não marca sozinho: lá o passo só conta ao tocar em "Salvar"
+      // (antes abrir a Entrega, ou abrir o Pagamento e tocar em "Agora não", já marcava o Pagamento como feito)
+      const primeiraVez = so === 'pag' && !pagamentoConferido(user.id)
+      if (so !== 'pag' && so !== 'entCol') marcarPagamentoConferido(user.id)
       if (data) {
-        setFormasPagamento(data.formas_pagamento || ['pix'])
+        // no passo Pagamento, a primeira vez abre com tudo ligado (o padrão do banco é só Pix), igual ao celular
+        const fp: string[] = Array.isArray(data.formas_pagamento) ? data.formas_pagamento : ['pix']
+        setFormasPagamento(primeiraVez && (!fp.length || (fp.length === 1 && fp[0] === 'pix')) ? PAGAMENTOS.map(p => p.key) : fp)
         setFormasEntrega(data.formas_entrega || ['retirada'])
         setValorEntregaPropria(reaisParaCampo(data.valor_entrega_propria) || (data.valor_entrega_propria != null ? '0,00' : ''))
         setEntregaPorBairro((data.entrega_por_bairro || []).map((b: any) => ({ bairro: b.bairro, valor: reaisParaCampo(b.valor) || '0,00' })))
