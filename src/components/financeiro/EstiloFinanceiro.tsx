@@ -23,8 +23,8 @@ export default function EstiloFinanceiro() {
       .far-k--atr, .fap-k--atr { border-color: #FECACA !important; }
       .cxc, .cu-k.destaque { box-shadow: 0 10px 26px -8px rgba(107, 35, 64, .55) !important; }
       .fd-bt, .tx-bt.e, .tx-bt.s, .far-rec, .fap-pag { box-shadow: 0 6px 14px -6px rgba(44, 18, 25, .45); }
-      /* (30/10 · 5.47) PC: sem sombra nos cartões em cima do fundo cinza (escurecia); fica a borda */
-      @media (min-width: 901px) { ${CARTOES}, .cxc, .cu-k.destaque { box-shadow: none !important; } }
+      /* (30/10 · 5.47) sem sombra nos cartões em cima do fundo cinza (escurecia); fica a borda */
+      ${CARTOES}, .cxc, .cu-k.destaque { box-shadow: none !important; } /* (30/10 · 5.48) celular também */
       /* valores no Bold (700): o Black (800/900) ficou pesado. Só o saldo do caixa e o custo da hora continuam no Black */
       .fd-k b, .fd-k2 b, .pvc-g b, .far-k b, .far-it-v b, .fap-k b, .fap-it-v b, .fap-pg b, .tx-k b, .tx-it-v,
       .cu-k:not(.destaque) b, .cu-it-v, .cu-mo-l b, .lu-l b, .lu-eq-v, .lu-p-h span, .cxc-mv-v, .fd-fl-res b, .tx-dl b {

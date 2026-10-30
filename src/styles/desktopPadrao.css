@@ -142,3 +142,7 @@
   html body .ep2-card, html body .ep2-cli, html body .ep2-save-desk, html body .ep2-ca, html body .ep2-cv, html body .ep3,
   html body .dl-zapc, html body .nv3-tipos button { box-shadow: none !important; }
 }
+
+/* (30/10 · 5.48) celular também: cartões sem sombra (só a borda fininha), igual ao PC */
+html body { --ui-sombra-cartao: none; }
+html body .clc, html body .ep2-card, html body .ep2-cli, html body .ep2-ca, html body .ep2-cv, html body .ep3, html body .dl-zapc { box-shadow: none !important; }

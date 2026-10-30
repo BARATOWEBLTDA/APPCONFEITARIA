@@ -105,7 +105,9 @@ export default function Orcamentos() {
     return (<>
       {cab}
       <div className="orc">
+        {/* (30/10 · 5.48) no padrão das telas vazias do PC (igual a Complementos): no meio da tela, o texto e, ao lado, como a cliente vê */}
         <section className="orc-pro">
+          <div className="orc-pro-tx">
           <span className="orc-pro-ic" aria-hidden="true"><FileText size={30} weight="duotone" /></span>
           <h2>Orçamentos é um recurso do PRO</h2>
           <p>A cliente conta a ideia pelo seu link, você monta a proposta em minutos e ela aprova pelo celular. Aprovou, vira pedido na Agenda.</p>
@@ -116,6 +118,19 @@ export default function Orcamentos() {
             ))}
           </ul>
           <Botao icone={<Crown size={20} weight="fill" />} onClick={() => navigate('/assinar')}>Conhecer o PRO</Botao>
+          </div>
+          <figure className="orc-pro-ex" aria-hidden="true">
+            <figcaption>Assim a cliente vê a proposta</figcaption>
+            <div className="orc-pro-cel">
+              <div className="orc-pro-cab"><small>Orçamento nº 12</small><b>Bolo da Ana · 5 anos</b><span>Entrega sábado, 8 de novembro</span></div>
+              <div className="orc-pro-it"><span><b>Bolo 2 andares</b><small>Tema jardim, 30 fatias</small></span><em>R$ 380,00</em></div>
+              <div className="orc-pro-it"><span><b>Topo de bolo</b><small>Com o nome e a idade</small></span><em>R$ 25,00</em></div>
+              <div className="orc-pro-it"><span><b>Docinhos</b><small>50 unidades</small></span><em>R$ 75,00</em></div>
+              <div className="orc-pro-tot"><span>Total</span><b>R$ 480,00</b></div>
+              <div className="orc-pro-bt">Aprovar orçamento</div>
+              <div className="orc-pro-bt2">Baixar em PDF</div>
+            </div>
+          </figure>
         </section>
       </div>
     </>)
