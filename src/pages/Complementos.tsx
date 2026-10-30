@@ -1,12 +1,13 @@
 import { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, Check, DotsThreeVertical, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Camera, Check, Sparkle, DotsThreeVertical, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/apiFetch";
 import { precoCardapioComPromocao } from "@/lib/precoCardapio";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
-import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import { usePlano } from "@/hooks/usePlano";
 import { LIMITE_COMPLEMENTOS_GRATIS } from "@/lib/limitesPlano";
 import RecursoPro from "@/components/billing/RecursoPro";
@@ -34,19 +35,8 @@ function nomeBonito(nome: string): string {
 }
 const brl = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const lerPreco = (s: string) => { const d = s.replace(/\D/g, ""); return d ? parseInt(d, 10) / 100 : 0; };
-/** (24/10) sugestões de explicação: pelas palavras do nome; sem nome conhecido, as mais usadas */
-function sugestoesDeExplicacao(nome: string): string[] {
-  const n = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const tem = (...p: string[]) => p.some(x => n.includes(x));
-  if (tem("topo", "papel", "arroz", "tema")) return ["Escolha um tema ou envie sua imagem", "Com o tema e o nome que você quiser"];
-  if (tem("escrita", "frase", "nome", "mensagem")) return ["Escreva a frase que vai no bolo", "Até 20 letras, no recado do pedido"];
-  if (tem("vela")) return ["Diga a idade no recado do pedido", "Vela de número ou de faísca"];
-  if (tem("balao", "baloes")) return ["Nas cores da festa", "Com o nome do aniversariante"];
-  if (tem("decoracao", "decorado")) return ["Base clássica da confeitaria", "Do jeito que sai na foto"];
-  if (tem("embalagem", "caixa", "presente", "laco")) return ["Pronto para presentear", "Caixa com laço de fita"];
-  if (tem("cartao", "bilhete")) return ["Escreva a mensagem no recado do pedido"];
-  return ["Escolha um tema ou envie sua imagem", "Base clássica da confeitaria", "Escreva a frase que vai no bolo"];
-}
+/** (30/10 · 5.31) explicação do complemento: no máximo 2 linhas no cardápio do celular */
+const MAX_EXPLICACAO = 60;
 /** (24/10) a primeira foto do produto (o campo guarda várias separadas por vírgula; antes a lista inteira ia no src e a foto quebrava) */
 const primeiraFoto = (f?: string | null) => (f ? String(f).split(/,(?=\s*(?:https?:|\/))/)[0].trim() : "");
 
@@ -66,6 +56,9 @@ export default function Complementos() {
   const [form, setForm] = useState<Form>(FORM_VAZIO);
   const [tentou, setTentou] = useState(false);
   const [saving, setSaving] = useState(false);
+  // (30/10 · 5.31) "Gerar com IA": 3 opções de explicação a partir do nome
+  const [gerandoIa, setGerandoIa] = useState(false);
+  const [opcoesIa, setOpcoesIa] = useState<string[]>([]);
   // (27/10) plano grátis: até 3 complementos (decisão de 25/10)
   const { isPro } = usePlano();
   const [limiteAberto, setLimiteAberto] = useState(false);
@@ -99,6 +92,7 @@ export default function Complementos() {
   useEffect(() => { void carregar(); }, []);
 
   const abrir = (c: Complemento | null, escolherProdutos = false) => {
+    setOpcoesIa([]);
     if (!c && passouDoLimite()) { setLimiteAberto(true); return; }
     setEditando(c);
     setTentou(false);
@@ -111,7 +105,25 @@ export default function Complementos() {
     } : FORM_VAZIO);
     setAberta(true);
   };
-  const fechar = () => setAberta(false);
+  const fechar = () => { setAberta(false); setOpcoesIa([]); };
+  const gerarExplicacoes = async () => {
+    const nome = form.nome.trim();
+    if (!nome) { avisar("Escreva o nome do complemento primeiro.", { tipo: "erro" }); return; }
+    setGerandoIa(true); setOpcoesIa([]);
+    try {
+      const res = await apiFetch("/api/gerar-descricao", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: `Uma confeitaria vende o adicional "${nome}" no cardápio digital (o cliente marca junto com o bolo ou doce). Escreva 3 opções diferentes de explicação curta que aparece embaixo do nome, dizendo o que vem ou o que o cliente escolhe. Cada uma com no máximo 50 caracteres, português do Brasil, frase simples, sem aspas, sem emoji, sem ponto final. Responda só as 3 opções, uma por linha, sem números.` }),
+      });
+      const data = await res.json();
+      if (data?.error === "limite_diario") { avisar(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo.", { tipo: "erro" }); return; }
+      const texto: string = data?.content?.[0]?.text || "";
+      const ops = texto.split("\n").map(l => l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").replace(/^["“]|["”]$/g, "").replace(/\.$/, "").trim())
+        .filter(l => l.length > 2 && l.length <= MAX_EXPLICACAO).slice(0, 3);
+      if (ops.length) setOpcoesIa(ops); else avisar("A IA não respondeu. Tente de novo.", { tipo: "erro" });
+    } catch { avisar("A IA não respondeu. Tente de novo.", { tipo: "erro" }); }
+    finally { setGerandoIa(false); }
+  };
 
   const erroNome = tentou && !form.nome.trim() ? "Escreva o nome" : undefined;
   const erroValor = tentou && !form.gratis && form.valor <= 0 ? 'Escreva o valor ou marque Grátis' : undefined;
@@ -298,16 +310,17 @@ export default function Complementos() {
         <div className="pz-form">
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: topo de bolo, escrita, papel de arroz" value={form.nome} maxLength={50} erro={erroNome}
             onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
-          {/* (24/10) uma linha só (antes uma caixa de 3 linhas) */}
-          <div>
-            <Campo rotulo="Explicação para o cliente" opcional placeholder="Ex.: escolha o tema" value={form.descricao} maxLength={80}
-              dica={form.descricao.trim() ? "Aparece embaixo do nome, no cardápio." : undefined} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
-            {/* (24/10) sugestões prontas pelo nome do complemento: um toque preenche */}
-            {!form.descricao.trim() && (
-              <div className="pz-sug">
-                <small>Sugestões</small>
-                {sugestoesDeExplicacao(form.nome).map(t => (
-                  <button key={t} type="button" onClick={() => setForm(f => ({ ...f, descricao: t }))}><Plus size={14} weight="bold" aria-hidden="true" />{t}</button>
+          {/* (30/10 · 5.31) caixa maior, até 60 letras (2 linhas no cardápio) e "Gerar com IA" com 3 opções; as sugestões fixas saíram */}
+          <div className="pz-exp">
+            <CampoArea rotulo="Explicação para o cliente" opcional rows={2} placeholder="Ex.: escolha o tema e o nome que vai no topo" value={form.descricao} maxLength={MAX_EXPLICACAO}
+              dica={`Aparece embaixo do nome, no cardápio · ${form.descricao.length}/${MAX_EXPLICACAO}`} onChange={e => setForm(f => ({ ...f, descricao: e.target.value.replace(/\n/g, " ") }))} />
+            <button type="button" className="pz-ia" onClick={gerarExplicacoes} disabled={gerandoIa}>
+              <Sparkle size={15} weight="fill" aria-hidden="true" />{gerandoIa ? "Escrevendo…" : opcoesIa.length ? "Gerar outras" : "Gerar com IA"}
+            </button>
+            {opcoesIa.length > 0 && (
+              <div className="pz-ia-ops" role="group" aria-label="Opções da IA">
+                {opcoesIa.map(t => (
+                  <button key={t} type="button" className={form.descricao === t ? "on" : ""} onClick={() => setForm(f => ({ ...f, descricao: t }))}>{t}</button>
                 ))}
               </div>
             )}

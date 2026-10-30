@@ -147,10 +147,16 @@
 .pz-busca--p input { height: 40px; font-size: 15px; }
 
 /* (24/10) sugestões da explicação: cada uma numa linha, um toque preenche */
-.pz-sug { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-top: 8px; }
-.pz-sug small { font-size: 12px; font-weight: 600; color: var(--ui-texto-3); }
-.pz-sug button { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 32px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-.pz-sug button svg { flex: none; }
+/* (30/10 · 5.31) explicação: caixa de 2 linhas, "Gerar com IA" e as 3 opções da IA (um toque escolhe) */
+.pz-exp { display: flex; flex-direction: column; align-items: flex-start; }
+.pz-exp > :first-child { width: 100%; }
+.pz-exp textarea { min-height: 64px; resize: none; line-height: 1.45; }
+.pz-ia { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; margin-top: 8px; padding: 0 12px; border: 0; border-radius: 999px; background: #F7F4F5; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.pz-ia:disabled { opacity: .65; cursor: default; }
+.pz-ia-ops { display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 8px; }
+.pz-ia-ops button { width: 100%; min-height: 40px; margin: 0; padding: 8px 12px; border: 1.5px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); text-align: left; line-height: 1.35; cursor: pointer; }
+.pz-ia-ops button:hover { border-color: #CFC3C8; }
+.pz-ia-ops button.on { border-color: var(--ui-escolha); }
 /* (24/10) "O cliente precisa mandar": foto e frase num quadro só */
 .pz-pede { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); }
 .pz-pede-t { padding: 10px 12px 2px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }

@@ -69,7 +69,7 @@
 .pm-op[aria-checked="true"] { width: 100%; margin: 0; padding: 10px 16px; border-bottom-color: transparent; background: #FFF4F8; background: color-mix(in srgb, var(--pm-cor, #EC4899) 7%, #fff); box-shadow: inset 3px 0 0 var(--pm-cor, #EC4899); }
 .pm-g-cab small.pm-g-resumo { color: var(--ui-texto); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pm-g-cab > span:first-child { min-width: 0; }
-.pm-op-tx small { font-size: 13px; color: var(--ui-texto-2); }
+.pm-op-tx small { font-size: 13px; color: var(--ui-texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } /* (30/10) no máximo 2 linhas */
 .pm-op-p { flex: none; font-size: 14px; font-weight: 700; }
 .pm-op-p.gratis { color: var(--ui-verde); }
 .pm-ctl { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #CFC3C9; border-radius: 50%; background: var(--ui-branco); transition: border-color .15s, background-color .15s; }
