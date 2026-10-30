@@ -2445,7 +2445,7 @@ export default function Produtos() {
                     <button type="button" className={`prod-opc${on ? " on" : ""}`} role="checkbox" aria-checked={on}
                       onClick={() => setForm(f => ({ ...f, promocao: !on, tipo_promocao: "percentual", desconto_percentual: !on ? (Number(f.desconto_percentual) || 10) : 0, preco_promocional: 0 }))}>
                       <i aria-hidden="true">{on && <CheckIc size={14} weight="bold" />}</i>
-                      <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                      <span><b>Colocar em promoção</b><small>O preço antigo aparece riscado</small></span><em className="prod-selo-rec">Recomendado</em>
                     </button>
                     {on && (<>
                       <div className="kitp-pct">
@@ -2511,7 +2511,7 @@ export default function Produtos() {
                       <button type="button" className={`prod-opc${on ? " on" : ""}`} role="checkbox" aria-checked={on}
                         onClick={() => setForm(f => ({ ...f, promocao: !on, tipo_promocao: "percentual", desconto_percentual: !on ? (Number(f.desconto_percentual) || 10) : 0, preco_promocional: 0 }))}>
                         <i aria-hidden="true">{on && <CheckIc size={14} weight="bold" />}</i>
-                        <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                        <span><b>Colocar em promoção</b><small>O preço antigo aparece riscado</small></span><em className="prod-selo-rec">Recomendado</em>
                       </button>
                       {on && (
                         <div className="kitp-pct">
@@ -2567,7 +2567,7 @@ export default function Produtos() {
                       <button type="button" className={`prod-opc${promoOn ? " on" : ""}`} role="checkbox" aria-checked={promoOn}
                         onClick={() => setForm(f => ({ ...f, promocao: !promoOn, tipo_promocao: "percentual", desconto_percentual: !promoOn ? (f.desconto_percentual || 10) : 0, preco_promocional: 0 }))}>
                         <i aria-hidden="true">{promoOn && <CheckIc size={14} weight="bold" />}</i>
-                        <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                        <span><b>Colocar em promoção</b><small>O preço antigo aparece riscado</small></span><em className="prod-selo-rec">Recomendado</em>
                       </button>
                       </div>
                       {promoOn && (
@@ -2625,7 +2625,7 @@ export default function Produtos() {
                       <button type="button" className={`prod-opc${promoOnKg ? " on" : ""}`} role="checkbox" aria-checked={promoOnKg}
                         onClick={() => { setKgPromo(!promoOnKg); if (promoOnKg) setForm(f => ({ ...f, preco_promocional: 0, promocao: false })); }}>
                         <i aria-hidden="true">{promoOnKg && <CheckIc size={14} weight="bold" />}</i>
-                        <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                        <span><b>Colocar em promoção</b><small>O preço antigo aparece riscado</small></span><em className="prod-selo-rec">Recomendado</em>
                       </button>
                     </>);
                   })()}
@@ -2693,7 +2693,7 @@ export default function Produtos() {
                       <button type="button" className={`prod-opc${ligada ? " on" : ""}`} role="checkbox" aria-checked={ligada}
                         onClick={() => { setKgPromo(!ligada); if (ligada) setForm(f => ({ ...f, preco_promocional: 0, promocao: false })); }}>
                         <i aria-hidden="true">{ligada && <CheckIc size={14} weight="bold" />}</i>
-                        <span><b>Colocar em promoção</b><small>O cardápio mostra o preço antigo riscado</small></span>
+                        <span><b>Colocar em promoção</b><small>O preço antigo aparece riscado</small></span><em className="prod-selo-rec">Recomendado</em>
                       </button>
                       {ligada && (
                         <div className="prod-field" style={{ marginTop: 12 }}>
