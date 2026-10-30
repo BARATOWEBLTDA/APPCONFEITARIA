@@ -219,3 +219,17 @@
 @media (min-width: 900px) {
   .ct:has(> .pz-vazio) { display: flex; flex-direction: column; justify-content: center; min-height: calc(100dvh - 61px - 2rem); padding-top: 16px; padding-bottom: 16px; box-sizing: border-box; }
 }
+
+/* (30/10 · 5.32) janela do complemento: no celular uma coluna só (como antes); no PC larga, em duas colunas e sem rolar */
+.pz-c1, .pz-c2 { display: contents; }
+@media (min-width: 1024px) {
+  .ui-janela:has(.pz-form) { width: min(960px, calc(100vw - 48px)); max-width: none; max-height: min(94dvh, 900px); }
+  .pz-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 32px; align-items: start; }
+  .pz-c1, .pz-c2 { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  /* botões no canto, do tamanho do texto */
+  .ui-janela:has(.pz-form) .ui-janela-pe { display: flex; justify-content: flex-end; }
+  .ui-janela:has(.pz-form) .ui-janela-pe .ui-bt { flex: none; width: auto; padding-left: 28px; padding-right: 28px; }
+  .pz-c2 { align-self: stretch; padding-left: 32px; margin-left: -1px; border-left: 1px solid var(--ui-linha, #F1E7EB); }
+  /* a lista de categorias ou produtos rola por dentro, a janela não */
+  .pz-c2 .pz-onde-l { max-height: min(46dvh, 420px); overflow-y: auto; overscroll-behavior: contain; }
+}

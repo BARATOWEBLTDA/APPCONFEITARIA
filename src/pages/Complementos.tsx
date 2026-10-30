@@ -308,6 +308,8 @@ export default function Complementos() {
       <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada titulo={editando ? "Editar complemento" : "Novo complemento"}
         acoes={<><Botao variante="secundario" onClick={fechar}>Cancelar</Botao><Botao onClick={salvar} carregando={saving}>{editando ? "Salvar" : "Criar"}</Botao></>}>
         <div className="pz-form">
+          {/* (30/10 · 5.32) PC: janela larga em duas colunas, sem rolar: o complemento à esquerda e onde aparece (a lista de produtos) à direita */}
+          <div className="pz-c1">
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: topo de bolo, escrita, papel de arroz" value={form.nome} maxLength={50} erro={erroNome}
             onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
           {/* (30/10 · 5.31) caixa maior, até 60 letras (2 linhas no cardápio) e "Gerar com IA" com 3 opções; as sugestões fixas saíram */}
@@ -359,6 +361,8 @@ export default function Complementos() {
             </button>}
           </div>
 
+          </div>
+          <div className="pz-c2">
           {/* (24/10) onde aparece: 3 opções em lista (antes "Em todos / Escolher" e uma lista solta de produtos) */}
           <div className="ui-campo">
             <span className="ui-campo-r"><span>Onde aparece no cardápio</span></span>
@@ -433,6 +437,7 @@ export default function Complementos() {
               ))}
             </div>
             {erroProdutos && <p className="ui-campo-msg pz-erro" role="alert">{erroProdutos}</p>}
+          </div>
           </div>
         </div>
       </Janela>
