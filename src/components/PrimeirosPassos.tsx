@@ -446,7 +446,9 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
 function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const [entrega, setEntrega] = useState<string[]>(["retirada", "entrega_propria"]);
   const [taxa, setTaxa] = useState("");
-  const [porBairro, setPorBairro] = useState(false);
+  // (29/10 · 5.20) o jeito de cobrar da loja: por bairro, raio ou cidade a taxa fica em Minha loja (antes só via o bairro)
+  const [modoArea, setModoArea] = useState<"" | "bairro" | "raio" | "cidade">("");
+  const porBairro = !!modoArea;
   const [carregou, setCarregou] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -456,14 +458,15 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   useEffect(() => {
     if (largo) return;
     let vivo = true;
-    supabase.from("profiles").select("formas_entrega, valor_entrega_propria, entrega_por_bairro").eq("id", uid).maybeSingle().then(({ data }) => {
+    supabase.from("profiles").select("*").eq("id", uid).maybeSingle().then(({ data }) => {
       if (!vivo) return;
       const d: any = data || {};
       // o padrão do banco (só retirada) conta como "não escolheu ainda": retirada e entrega ligadas
       const fe: string[] = Array.isArray(d.formas_entrega) ? d.formas_entrega : [];
       if (fe.length && !(fe.length === 1 && fe[0] === "retirada")) setEntrega(fe);
-      setTaxa(textoBRL(Number(d.valor_entrega_propria) || 0));
-      setPorBairro(Array.isArray(d.entrega_por_bairro) && d.entrega_por_bairro.length > 0);
+      setTaxa(Number(d.valor_entrega_propria) > 0 ? textoBRL(Number(d.valor_entrega_propria)) : "0,00");
+      const m = String(d.entrega_modo || "");
+      setModoArea(m === "raio" || m === "cidade" || m === "bairro" ? m : (Array.isArray(d.entrega_por_bairro) && d.entrega_por_bairro.length > 0 ? "bairro" : ""));
       setCarregou(true);
     }, () => { if (vivo) setCarregou(true); });
     return () => { vivo = false; };
@@ -500,11 +503,15 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
       </Janelinha>
     );
   }
+  // (29/10 · 5.20) "Grátis" dentro do campo, igual ao computador e a Minha loja
+  const gratis = taxa === "0,00";
   const campoTaxa = porBairro
-    ? <p className="ppf-p-taxa-b">Taxa por bairro, em Minha loja</p>
-    : <label className="ppf-p-taxa"><span><b>Taxa de entrega</b><small>Zero para grátis</small></span>
-        <span className="ppf-p-taxa-in"><em>R$</em><input inputMode="numeric" autoComplete="off" placeholder="0,00" value={taxa} aria-label="Taxa de entrega em reais"
-          onChange={e => setTaxa(mascaraBRL(e.target.value))} /></span></label>;
+    ? <p className="ppf-p-taxa-b">{modoArea === "raio" ? "Taxa pela distância" : modoArea === "cidade" ? "Taxa por cidade" : "Taxa por bairro"}: em Minha loja</p>
+    : <div className="ppf-p-taxa"><span><b>Taxa</b><small>Por entrega</small></span>
+        <span className={`ppf-p-tx${gratis ? " ppf-p-tx--gratis" : ""}`}><em>R$</em>
+          <input inputMode="numeric" autoComplete="off" placeholder="0,00" value={taxa} disabled={gratis} aria-label="Taxa de entrega em reais" onChange={e => setTaxa(mascaraBRL(e.target.value))} />
+          <button type="button" role="checkbox" aria-checked={gratis} onClick={() => setTaxa(gratis ? "" : "0,00")}><i aria-hidden="true">{gratis && <Check size={11} weight="bold" />}</i>Grátis</button>
+        </span></div>;
   return (
     <Janelinha foco titulo="Entrega" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!entrega.length || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
@@ -1109,9 +1116,12 @@ const CSS = `
   .ppf-d--2col .ppf-d-campo textarea { height: 190px; font-size: 15.5px; line-height: 1.55; }
   .ui-janela:has(.ppf-d--end) { max-height: min(94dvh, 800px); }
   .ppf-d--end .ppf-row > .ppf-f { min-width: 0; flex: 1; }
-  .ppf-d--end { min-height: 560px; } /* (29/10 · 5.02) já no tamanho do endereço escrito à mão (o maior): não cresce ao achar o CEP */
+  .ppf-d--end { min-height: min(560px, calc(94dvh - 196px)); } /* (29/10 · 5.02) já no tamanho do endereço escrito à mão (o maior): não cresce ao achar o CEP */
   .ppf-d--end .ppf-d-prev .mpe { margin-top: 0 !important; }
-  .ppf-d--hor { min-height: 490px; } /* (29/10 · 5.02) já na altura de Sábado e Domingo ligados: não cresce ao ligar */
+  /* (29/10 · 5.20) o mapa ocupa a altura da coluna (antes tinha 500 px fixos e passava da janela em tela baixa) */
+  .ppf-d--end .ppf-d-prev { bottom: 0; display: flex; flex-direction: column; }
+  .ppf-d--end .ppf-d-prev .mpe { flex: 1; height: auto !important; min-height: 220px; }
+  .ppf-d--hor { min-height: min(490px, calc(94dvh - 196px)); } /* (29/10 · 5.02) já na altura de Sábado e Domingo ligados: não cresce ao ligar */
   /* (29/10 · 5.08) Pagamento e Entrega no computador: o editor de Minha loja dentro da janela, sem a moldura dos cartões */
   .ui-janela:has(.ppf-pe) .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ui-janela:has(.ppf-pe) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
@@ -1125,12 +1135,28 @@ const CSS = `
   /* (29/10 · 5.09) "Como cobrar a entrega" à esquerda, embaixo das formas; à direita, no topo, o mapa / a taxa / as listas */
   .ppf-pe--ent .ep { row-gap: 10px; }
   .ppf-pe--ent .mpr { height: 190px; }
-  .ppf-pe--ent { min-height: 680px; } /* (29/10 · 5.18) já no tamanho de 5 faixas: não cresce ao montar */
+  .ppf-pe--ent { min-height: min(680px, calc(94dvh - 196px)); } /* (29/10 · 5.18) já no tamanho de 5 faixas: não cresce ao montar */
   .ppf-pe--ent .ep-card--taxa, .ppf-pe--ent .ep-card--taxa .ep-taxa { display: contents; }
   .ppf-pe--ent .ep > .ep-card:first-child { grid-column: 1; grid-row: 1; }
   .ppf-pe--ent .ep-taxa > .ep-modo-t { grid-column: 1; grid-row: 2; margin: 10px 0 0; }
   .ppf-pe--ent .ep-taxa > .ep-modo { grid-column: 1; grid-row: 3; }
   .ppf-pe--ent .ep-taxa > :not(.ep-modo-t):not(.ep-modo), .ppf-pe--ent .ep-card--taxa > .ep-taxa-off { grid-column: 2; grid-row: 1 / span 4; min-width: 0; }
+  /* (29/10 · 5.20) notebook de tela baixa (1366×768, 1280×720): tudo um pouco mais compacto pra não rolar */
+  @media (max-height: 820px) {
+    .ppf-pe--ent .mpr { height: 140px; }
+    .ppf-pe .lch-l { min-height: 46px; padding-top: 3px; padding-bottom: 3px; }
+    .ppf-pe .ep-faixas .ep-faixa { padding-top: 4px; padding-bottom: 4px; }
+    .ppf-pe .ep-mapa-leg { display: none; }
+    .ppf-pe--ent .ep { row-gap: 6px; }
+    .ppf-d--end .ppf-f { margin-top: 8px; }
+  }
+  @media (max-height: 760px) {
+    .ppf-d--end .ui-cx { gap: 6px; }
+    .ppf-d--end .ui-cx button { min-height: 48px; padding-top: 6px; padding-bottom: 6px; }
+    .ppf-d--hor .lch-l { min-height: 50px; padding-top: 4px; padding-bottom: 4px; }
+    .ppf-d--hor .edh-hh button { min-height: 44px; height: 44px; }
+    .ppf-d--hor .sl-prev .sl-dias li { padding-top: 3px; padding-bottom: 3px; }
+  }
   .ppf-d-dica1 { margin: 12px 2px 0; font-size: 13.5px; line-height: 1.5; color: var(--ui-texto-2); }
   .ppf-d-ajuda > p { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
   .ppf-d-ajuda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
@@ -1183,6 +1209,16 @@ const CSS = `
   .ppf-p-taxa-in:focus-within { border-color: var(--ui-rosa); }
   .ppf-p-taxa-in em { font-style: normal; font-size: 14px; color: var(--ui-texto-3); }
   .ppf-p-taxa-in input { width: 100%; min-width: 0; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); }
+  .ppf-p-tx { flex: none; display: flex; align-items: center; gap: 4px; width: 164px; height: 44px; padding: 0 0 0 10px; box-sizing: border-box; border: 1.5px solid var(--ui-borda-campo); border-radius: 10px; background: var(--ui-branco); overflow: hidden; }
+  .ppf-p-tx:focus-within { border-color: var(--ui-rosa); }
+  .ppf-p-tx em { font-style: normal; font-size: 13px; color: var(--ui-texto-3); }
+  .ppf-p-tx input { width: 100%; min-width: 0; border: 0; outline: none; background: none; font-family: inherit; font-size: 15.5px; color: var(--ui-texto); }
+  .ppf-p-tx button { align-self: stretch; flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 0 10px 0 8px; border: 0; background: #F1EDEF; font-family: inherit; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; }
+  .ppf-p-tx button i { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border: 1.5px solid #C9BCC2; border-radius: 4px; background: var(--ui-branco); color: #fff; box-sizing: border-box; }
+  .ppf-p-tx--gratis { background: #F3F1F2; border-color: #E8E3E5; }
+  .ppf-p-tx--gratis em, .ppf-p-tx--gratis input { color: #B5AAAE; }
+  .ppf-p-tx--gratis button { background: #DCF3E4; color: #15803D; }
+  .ppf-p-tx--gratis button i { border-color: #16A34A; background: #16A34A; }
   .ppf-p-taxa-b { margin: 0; font-size: 13px; color: var(--ui-texto-2); }
   .ppf-in--g { min-height: 52px; font-size: 17px; }
   .ppf-e-lnk { min-height: 44px; margin-top: 4px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
