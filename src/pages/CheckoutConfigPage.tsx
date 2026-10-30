@@ -300,7 +300,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         if (erroLimpar) console.error('[Doonly] cupons antigos do perfil:', erroLimpar)
         else cuponsAntigosNoPerfil.current = false
       }
-      avisar(opcoes.aviso || 'Salvo', { tipo: 'ok' })
+      // (29/10 · 5.17) o salvar sozinho é silencioso (o "Salvo" no topo a cada mudança incomodava); só avisa o que foi pedido (ex.: cupons)
+      if (opcoes.aviso) avisar(opcoes.aviso, { tipo: 'ok' })
       return true
     } catch (err) {
       // Não gravou: continua pendente (tenta de novo na próxima mudança ou ao sair da tela)
