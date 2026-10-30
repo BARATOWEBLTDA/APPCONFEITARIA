@@ -4,7 +4,7 @@
   /* ── 1. Fundo cinza (igual ao celular) e o conteúdo começando na mesma linha do título ── */
   /* (29/10 · 4.91) cores da marca no computador: página num cinza quente (antes #F1F2F2, frio) e o menu da esquerda em chocolate escuro (antes grafite) */
   html body, html body .layout-root, html body .layout-main { background-color: #F5F3F2 !important; }
-  html body .layout-root { --sidebar-bg: #24150F; }
+  html body .layout-root { --sidebar-bg: #1C1719; } /* (30/10 · 5.44) escuro neutro (antes marrom chocolate #24150F, deixava o texto bege) */
   html body .sidebar .nav-item.active { background: rgba(255, 157, 196, .14); }
   html body .sidebar .nav-item:hover:not(.active), html body .sidebar .nav-item--group:hover { background: rgba(255, 255, 255, .07); }
   html body .layout-main > :not(.cab):not(style) { margin-left: 0 !important; margin-right: auto !important; }
@@ -123,4 +123,13 @@
   html body .fd-hd-bt.s, html body .tx-hd-bt.s { background: #FEF2F2 !important; color: var(--ui-vermelho) !important; }
   html body .fd-hd-bt.s *, html body .tx-hd-bt.s * { color: inherit !important; }
   html body .cab button[class*="hd-bt"]:not(.e):not(.s) { box-shadow: inset 0 0 0 1px var(--ui-borda) !important; }
+}
+
+/* (30/10 · 5.44) menu lateral do PC: texto mais branco (antes 78–82% e parecia apagado) e um respiro entre a logo e o primeiro item */
+@media (min-width: 901px) {
+  html body .sidebar .nav-item, html body .sidebar .nav-item--group { color: rgba(255, 255, 255, .94); }
+  html body .sidebar .nav-subitem { color: rgba(255, 255, 255, .86); }
+  html body .sidebar .nav-subitem.active, html body .sidebar .nav-item.active { color: #fff; background: rgba(255, 255, 255, .10); }
+  html body .sidebar .nav-group-body { border-left-color: rgba(255, 255, 255, .16); }
+  html body .sidebar .sidebar-nav { padding-top: 14px; }
 }
