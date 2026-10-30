@@ -13,19 +13,35 @@ export const COR_BOTOES = "#EC4899";
 
 export const PADRAO: Record<CampoCor, string> = { cor_borda: "#EC4899", cor_nome: "#2C1219", cor_navbar: "#BF6B84" };
 
+/* (30/10 · 5.24) cores de confeitaria (pesquisa de mercado: rosa, lilás, chocolate, caramelo, menta, azul bebê, vinho).
+ * 4 de graça em cada lugar; as outras 4 são do PRO (e no PRO, qualquer cor pelo "+"). Saíram azul, roxo, verde e laranja fortes. */
 export const PRONTAS: Record<CampoCor, { nome: string; cor: string }[]> = {
+  cor_navbar: [
+    { nome: "Rosa antigo", cor: "#BF6B84" }, { nome: "Rosa", cor: "#E8789E" }, { nome: "Chocolate", cor: "#7B4A36" }, { nome: "Lilás", cor: "#A58BD6" },
+  ],
   cor_borda: [
-    { nome: "Rosa", cor: "#EC4899" }, { nome: "Roxo", cor: "#7C3AED" }, { nome: "Azul", cor: "#2563EB" },
-    { nome: "Verde", cor: "#16A34A" }, { nome: "Laranja", cor: "#EA580C" }, { nome: "Chocolate", cor: "#7B4A36" },
+    { nome: "Rosa", cor: "#EC4899" }, { nome: "Rosa claro", cor: "#F4A7C0" }, { nome: "Chocolate", cor: "#7B4A36" }, { nome: "Lilás", cor: "#B79CE6" },
   ],
   cor_nome: [
-    { nome: "Chocolate", cor: "#2C1219" }, { nome: "Preto", cor: "#111111" }, { nome: "Rosa", cor: "#BE185D" },
-    { nome: "Roxo", cor: "#6D28D9" }, { nome: "Azul", cor: "#1D4ED8" }, { nome: "Verde", cor: "#15803D" },
+    { nome: "Chocolate", cor: "#2C1219" }, { nome: "Preto fosco", cor: "#1F1F1F" }, { nome: "Rosa escuro", cor: "#BE185D" }, { nome: "Café", cor: "#5A3A2A" },
   ],
+};
+export const PRONTAS_PRO: Record<CampoCor, { nome: string; cor: string }[]> = {
   cor_navbar: [
-    { nome: "Rosa antigo", cor: "#BF6B84" }, { nome: "Rosa", cor: "#EC4899" }, { nome: "Roxo", cor: "#7C3AED" },
-    { nome: "Azul", cor: "#2563EB" }, { nome: "Verde", cor: "#16A34A" }, { nome: "Chocolate", cor: "#7B4A36" },
+    { nome: "Caramelo", cor: "#C8894D" }, { nome: "Menta", cor: "#6FB8A0" }, { nome: "Azul bebê", cor: "#7FA8CF" }, { nome: "Vinho", cor: "#8E2C48" },
   ],
+  cor_borda: [
+    { nome: "Dourado", cor: "#C9A15B" }, { nome: "Menta", cor: "#8FD3BF" }, { nome: "Azul bebê", cor: "#9CC5E8" }, { nome: "Vinho", cor: "#8E2C48" },
+  ],
+  cor_nome: [
+    { nome: "Vinho", cor: "#7A1F3D" }, { nome: "Lilás escuro", cor: "#5B3F8C" }, { nome: "Sálvia", cor: "#3F6B57" }, { nome: "Marinho", cor: "#1E3A5F" },
+  ],
+};
+/* as prontas de antes (até 29/10): quem já escolheu uma delas no grátis continua com ela */
+const ANTIGAS: Record<CampoCor, string[]> = {
+  cor_borda: ["#EC4899", "#7C3AED", "#2563EB", "#16A34A", "#EA580C", "#7B4A36"],
+  cor_nome: ["#2C1219", "#111111", "#BE185D", "#6D28D9", "#1D4ED8", "#15803D"],
+  cor_navbar: ["#BF6B84", "#EC4899", "#7C3AED", "#2563EB", "#16A34A", "#7B4A36"],
 };
 
 const hex6 = (c?: string | null) => (c && /^#[0-9a-fA-F]{6}$/.test(c.trim()) ? c.trim().toUpperCase() : null);
@@ -38,7 +54,7 @@ const DO_BANCO: Record<CampoCor, string[]> = { cor_navbar: ["#FFFFFF", "#FEFEFE"
 export function corDoItem(campo: CampoCor, salva: string | null | undefined, isPro: boolean): string {
   const h = hex6(salva);
   if (h && DO_BANCO[campo].includes(h)) return PADRAO[campo];
-  if (h && (isPro || PRONTAS[campo].some(p => p.cor === h))) return h;
+  if (h && (isPro || PRONTAS[campo].some(p => p.cor === h) || ANTIGAS[campo].includes(h))) return h;
   return PADRAO[campo];
 }
 

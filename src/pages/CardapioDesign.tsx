@@ -13,7 +13,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_APARENCIA, TOUR_APARENCIA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, CATEGORIA_CAPA_NATAL, type BannerPronto } from "@/lib/bannersProntos";
-import { COR_BOTOES, PADRAO, PRONTAS, corDoItem, topoEscurecido, type CampoCor } from "@/lib/coresCardapio";
+import { COR_BOTOES, PADRAO, PRONTAS, PRONTAS_PRO, corDoItem, topoEscurecido, type CampoCor } from "@/lib/coresCardapio";
 import { AVISO_NATAL_PADRAO, CAPA_NATAL_PADRAO, NATAL, type Tema } from "@/lib/temaCardapio";
 import { LacoNatal } from "@/components/tema/Natal";
 import NomeNoLink from "@/components/loja/NomeNoLink";
@@ -646,27 +646,38 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         {itensCor.map(it => {
           const atual = corAtual(it.campo, it.valor);
           const aberta = activePicker === it.campo;
-          const pronta = PRONTAS[it.campo].some(p => p.cor === atual);
+          const pronta = [...PRONTAS[it.campo], ...PRONTAS_PRO[it.campo]].some(p => p.cor === atual);
           return (
             <div key={it.campo} className="ap-cgrupo">
               <div className="ap-crot"><span className="ap-crot-n">{it.n}</span><span className="ap-crot-tx"><b>{it.rotulo}</b><small>{it.apoio}</small></span><i className="ap-crot-cor" style={{ background: atual }} aria-hidden="true" /></div>
               <div className="ap-prontas" role="radiogroup" aria-label={it.rotulo}>
-                {PRONTAS[it.campo].map(p => {
-                  const on = atual === p.cor;
-                  return (
-                    <button key={p.cor} type="button" role="radio" aria-checked={on} aria-label={p.nome} className={on ? "on" : ""} style={{ background: p.cor }}
-                      onClick={() => { setActivePicker(null); handleColorChange(it.campo, p.cor, it.set); }}>
-                      {on && <Check size={16} weight="bold" aria-hidden="true" />}
-                    </button>
-                  );
-                })}
-                {isPro ? (
+                {/* (30/10 · 5.24) 4 cores de graça numa linha; na de baixo, as 4 do PRO (no grátis com cadeado) e o "+" */}
+                {(["gratis", "pro"] as const).map(grupo => (
+                  <div key={grupo} className={`ap-prontas-l${grupo === "pro" ? " ap-prontas-l--pro" : ""}`}>
+                    {grupo === "pro" && <span className="ap-pro-tag"><Crown size={12} weight="fill" aria-hidden="true" />PRO</span>}
+                    {(grupo === "gratis" ? PRONTAS : PRONTAS_PRO)[it.campo].map(p => {
+                      const on = atual === p.cor;
+                      const travada = grupo === "pro" && !isPro;
+                      return (
+                        <button key={p.cor} type="button" role="radio" aria-checked={on} aria-label={travada ? `${p.nome}, no plano PRO` : p.nome} title={p.nome}
+                          className={`${on ? "on" : ""}${travada ? " ap-cor-pro" : ""}`} style={{ background: p.cor }}
+                          onClick={() => {
+                            if (travada) { avisar(`A cor ${p.nome.toLowerCase()} é do plano PRO.`, { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
+                            setActivePicker(null); handleColorChange(it.campo, p.cor, it.set);
+                          }}>
+                          {on ? <Check size={16} weight="bold" aria-hidden="true" /> : travada ? <Lock size={12} weight="bold" aria-hidden="true" /> : null}
+                        </button>
+                      );
+                    })}
+                    {grupo === "pro" && (isPro ? (
                   <button type="button" className={`ap-outra${!pronta ? " on" : ""}`} aria-label="Outra cor" aria-expanded={aberta} style={!pronta ? { background: atual } : undefined}
                     onClick={() => setActivePicker(aberta ? null : it.campo)}><Plus size={16} weight="bold" aria-hidden="true" /></button>
                 ) : (
                   <button type="button" className="ap-outra ap-outra--pro" aria-label="Outra cor, no plano PRO"
                     onClick={() => avisar("Qualquer outra cor é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })}><Lock size={14} weight="bold" aria-hidden="true" /></button>
-                )}
+                    ))}
+                  </div>
+                ))}
               </div>
               {isPro && aberta && (
                 <div className="ap-picker">
