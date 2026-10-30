@@ -14,6 +14,7 @@ import Janelinha from "@/components/financeiro/Folha";
 import Destaque from "@/components/Destaque";
 import { Mascote } from "@/components/marca/Mascote";
 import { marcarPagamentoConferido, marcarEntregaConferida } from "@/lib/primeirosPassos";
+import { atualizarPontoDaLoja } from "@/lib/taxaEntrega";
 import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 import { Botao, avisar } from "@/components/base";
@@ -793,6 +794,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
     const e = await atualizarPerfil(uid, { endereco: JSON.stringify(end), mostrar_localizacao: mostrar === "completo", mostrar_apenas_cidade: mostrar === "cidade" });
     setSalvando(false);
     if (e) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
+    void atualizarPontoDaLoja(uid, end); // (29/10 · 5.12) o ponto da taxa por raio acompanha o endereço novo
     onSalvo();
   };
   // (15/10) minimapa gratuito: começa no Brasil e voa até a rua. Espera ela parar de digitar pra não ficar buscando a cada letra.

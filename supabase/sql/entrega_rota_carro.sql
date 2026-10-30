@@ -80,3 +80,15 @@ revoke execute on function public.minha_taxa_entrega(float8, float8, text) from 
 grant execute on function public.minha_taxa_entrega(float8, float8, text) to authenticated;
 
 notify pgrst, 'reload schema';
+
+-- (29/10 · 5.12) a loja mudou de lugar: as distâncias guardadas não valem mais
+create or replace function public.limpar_rota_cache() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.loja_lat is distinct from old.loja_lat or new.loja_lng is distinct from old.loja_lng then
+    delete from rota_cache where loja_id = new.id;
+  end if;
+  return new;
+end $$;
+drop trigger if exists trg_limpar_rota_cache on public.profiles;
+create trigger trg_limpar_rota_cache after update of loja_lat, loja_lng on public.profiles
+  for each row execute function public.limpar_rota_cache();

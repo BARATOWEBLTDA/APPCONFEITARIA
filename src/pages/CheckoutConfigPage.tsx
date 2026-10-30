@@ -22,7 +22,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
 import MapaRaios, { CORES_RAIO } from "@/components/MapaRaios"
-import { faixasOrdenadas, pontoDoEndereco, type ModoEntrega, type Ponto } from "@/lib/taxaEntrega"
+import { distanciaKm, faixasOrdenadas, pontoDoEndereco, type ModoEntrega, type Ponto } from "@/lib/taxaEntrega"
 import { LIMITE_CUPONS_ATIVOS_GRATIS } from '@/lib/limitesPlano'
 
 const PAGAMENTOS = [
@@ -362,13 +362,15 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const chaveEndLojaRef = useRef<string | null>(null)
   useEffect(() => {
     if (loading || modoEntrega !== 'raio' || !enderecoLoja) return
-    if (chaveEndLojaRef.current === null) { chaveEndLojaRef.current = chaveEndLoja; if (lojaPonto) return } // já tinha o ponto e o endereço não mudou
-    if (lojaPonto && chaveEndLojaRef.current === chaveEndLoja) return
+    // (29/10 · 5.12) ao abrir, confere o ponto gravado com o endereço atual: o endereço pode ter mudado em outra tela
+    // (antes o mapa ficava no endereço antigo). Só troca se mudou mais de 80 m.
+    const primeira = chaveEndLojaRef.current === null
+    if (!primeira && lojaPonto && chaveEndLojaRef.current === chaveEndLoja) return
     chaveEndLojaRef.current = chaveEndLoja
     let vivo = true
-    setBuscandoLoja(true)
+    if (!lojaPonto) setBuscandoLoja(true)
     pontoDoEndereco({ rua: enderecoLoja.rua, numero: enderecoLoja.numero, bairro: enderecoLoja.bairro, cidade: enderecoLoja.cidade, estado: enderecoLoja.estado || enderecoLoja.uf, cep: enderecoLoja.cep })
-      .then(pt => { if (vivo) { if (pt) setLojaPonto(pt); setBuscandoLoja(false) } })
+      .then(pt => { if (vivo) { if (pt && (!lojaPonto || distanciaKm(lojaPonto, pt) > 0.08)) setLojaPonto(pt); setBuscandoLoja(false) } })
     return () => { vivo = false }
   }, [loading, modoEntrega, chaveEndLoja]) // eslint-disable-line react-hooks/exhaustive-deps
   const faixasMapa = faixasOrdenadas(raios.filter(f => f.ativo).map(f => ({ km: f.km, valor: numBR(f.valor) || 0 })))

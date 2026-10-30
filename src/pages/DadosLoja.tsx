@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { atualizarPontoDaLoja } from "@/lib/taxaEntrega";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
@@ -303,6 +304,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
         : "",
       horario: JSON.stringify(horario),
     }).eq("id", userId);
+    if (!error) void atualizarPontoDaLoja(userId, end); // (29/10 · 5.12) o ponto da taxa por raio acompanha o endereço
     let erroRedes = false;
     if (!error && redesNoBanco) {
       const r = await supabase.from("profiles").update({ instagram: insta || null, facebook: face || null }).eq("id", userId);

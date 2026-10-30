@@ -89,3 +89,20 @@ export async function pontoDoEndereco(e: { rua?: string; numero?: string; bairro
   if (cep.length === 8) { const p3 = await buscar({ postalcode: `${cep.slice(0, 5)}-${cep.slice(5)}` }); if (p3) return p3 }
   return null
 }
+
+/**
+ * (29/10 · 5.12) Mudou o endereço da loja: acha o ponto novo e grava (a taxa por raio sai dele).
+ * Antes o ponto só era refeito ao abrir a tela da Entrega, e o mapa e a taxa ficavam no endereço antigo.
+ * Roda depois de salvar, sem travar a tela; se não achar o endereço no mapa, deixa o ponto como estava.
+ */
+export async function atualizarPontoDaLoja(uid: string, e: { rua?: string; numero?: string; bairro?: string; cidade?: string; estado?: string; cep?: string }) {
+  try {
+    const { supabase } = await import('@/lib/supabase')
+    const pt = await pontoDoEndereco(e)
+    if (!pt) return
+    const { data } = await supabase.from('profiles').select('loja_lat, loja_lng').eq('id', uid).maybeSingle()
+    const d: any = data
+    if (d && d.loja_lat != null && d.loja_lng != null && distanciaKm({ lat: Number(d.loja_lat), lng: Number(d.loja_lng) }, pt) <= 0.08) return
+    await supabase.from('profiles').update({ loja_lat: pt.lat, loja_lng: pt.lng }).eq('id', uid)
+  } catch { /* sem internet ou campo ainda não existe: segue */ }
+}
