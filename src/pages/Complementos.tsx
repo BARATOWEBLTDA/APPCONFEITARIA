@@ -208,7 +208,7 @@ export default function Complementos() {
           <section className="pz-vazio">
             <div className="pz-vazio-tx">
               <h2>Venda mais em cada pedido</h2>
-              <p>Topo de bolo, velas e balões que o cliente escolhe na hora de pedir.</p>
+              <p>Topo de bolo, velas, papel de arroz e balões que o cliente escolhe na hora de pedir.</p>
               <ul className="pz-vazio-lista">
                 <li><Check size={16} weight="bold" aria-hidden="true" />O valor soma sozinho no total</li>
                 <li><Check size={16} weight="bold" aria-hidden="true" />Você escolhe onde ele aparece</li>

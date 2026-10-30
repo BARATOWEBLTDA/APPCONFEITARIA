@@ -208,3 +208,8 @@
 .pz-cc-l em.r { color: var(--ui-rosa-escuro); }
 .pz-cc-l em.n { font-weight: 500; color: var(--ui-texto-3); }
 .pz-cc-menu { position: absolute; top: 6px; right: 6px; background: rgba(255,255,255,.85) !important; border-radius: 10px; }
+
+/* (30/10 · 5.29) PC: o cartão "Venda mais em cada pedido" no meio da tela (antes colado no topo, com a metade de baixo vazia) */
+@media (min-width: 900px) {
+  .ct:has(> .pz-vazio) { display: flex; flex-direction: column; justify-content: center; min-height: calc(100dvh - 61px - 2rem); padding-top: 16px; padding-bottom: 16px; box-sizing: border-box; }
+}
