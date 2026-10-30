@@ -22,6 +22,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
 import MapaRaios, { CORES_RAIO } from "@/components/MapaRaios"
+import { bairrosDaCidade } from "@/lib/bairros"
 import { distanciaKm, faixasOrdenadas, pontoDoEndereco, type ModoEntrega, type Ponto } from "@/lib/taxaEntrega"
 import { LIMITE_CUPONS_ATIVOS_GRATIS } from '@/lib/limitesPlano'
 
@@ -396,7 +397,13 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   // (29/10 · 5.13) "Por cidade": sugere as cidades do estado da loja (lista oficial e grátis do IBGE), pra não errar o nome
   const [cidadesUf, setCidadesUf] = useState<string[]>([])
   // (29/10 · 5.14) "Por bairro": sugere os bairros das suas clientes na cidade da loja (não existe lista oficial e grátis de bairros)
+  const ufLoja = String(enderecoLoja?.estado || enderecoLoja?.uf || '').trim().toUpperCase()
   const [bairrosSug, setBairrosSug] = useState<string[]>([])
+  const juntar = (a: string[], b: string[]) => {
+    const m = new Map<string, string>()
+    ;[...a, ...b].forEach(x => { const k = x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase(); if (k && !m.has(k)) m.set(k, x) })
+    return [...m.values()].sort((x, y) => x.localeCompare(y, 'pt-BR'))
+  }
   const cidadeLoja = String(enderecoLoja?.cidade || '').trim()
   useEffect(() => {
     if (modoEntrega !== 'bairro' || !userId) return
@@ -410,11 +417,12 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         if (!b || (cidadeLoja && c.cidade && sem(String(c.cidade)) !== sem(cidadeLoja))) return
         if (!mapa.has(sem(b))) mapa.set(sem(b), b)
       })
-      setBairrosSug([...mapa.values()].sort((a, b) => a.localeCompare(b, 'pt-BR')))
+      setBairrosSug(l => juntar(l, [...mapa.values()]))
     }, () => {})
+    // + os bairros da cidade no mapa aberto (OpenStreetMap)
+    if (cidadeLoja) bairrosDaCidade(cidadeLoja, ufLoja).then(l => { if (vivo) setBairrosSug(x => juntar(x, l)) })
     return () => { vivo = false }
-  }, [modoEntrega, userId, cidadeLoja])
-  const ufLoja = String(enderecoLoja?.estado || enderecoLoja?.uf || '').trim().toUpperCase()
+  }, [modoEntrega, userId, cidadeLoja]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (modoEntrega !== 'cidade' || !/^[A-Z]{2}$/.test(ufLoja)) return
     let vivo = true
