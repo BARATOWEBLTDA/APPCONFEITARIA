@@ -1,8 +1,9 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Check, DotsThreeVertical, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
+import { formatarNomeItem, parecefrase } from "@/lib/nomeItem";
 import { precoCardapioComPromocao } from "@/lib/precoCardapio";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -58,7 +59,9 @@ export default function Complementos() {
   const [saving, setSaving] = useState(false);
   // (30/10 · 5.31) "Gerar com IA": 3 opções de explicação a partir do nome
   const [gerandoIa, setGerandoIa] = useState(false);
-  const [opcoesIa, setOpcoesIa] = useState<string[]>([]);
+  const [opcoesIa, setOpcoesIa] = useState<string[]>([]); // (30/10 · 5.35) a IA escreve 3 de uma vez; vai 1 por vez para a caixa ("Gerar outra" pega a próxima)
+  const [sugNome, setSugNome] = useState<string | null>(null); // (30/10 · 5.35) "Quis dizer: Topo de Bolo?"
+  const nomeConferido = useRef("");
   // (27/10) plano grátis: até 3 complementos (decisão de 25/10)
   const { isPro } = usePlano();
   const [limiteAberto, setLimiteAberto] = useState(false);
@@ -92,7 +95,7 @@ export default function Complementos() {
   useEffect(() => { void carregar(); }, []);
 
   const abrir = (c: Complemento | null, escolherProdutos = false) => {
-    setOpcoesIa([]);
+    setOpcoesIa([]); setSugNome(null); nomeConferido.current = c ? formatarNomeItem(c.nome) : "";
     if (!c && passouDoLimite()) { setLimiteAberto(true); return; }
     setEditando(c);
     setTentou(false);
@@ -105,10 +108,30 @@ export default function Complementos() {
     } : FORM_VAZIO);
     setAberta(true);
   };
-  const fechar = () => { setAberta(false); setOpcoesIa([]); };
+  const fechar = () => { setAberta(false); setOpcoesIa([]); setSugNome(null); };
+  // (30/10 · 5.35) ao sair do nome: arruma maiúsculas e espaços na hora; se parecer frase ou tiver erro, a IA sugere o nome certo
+  const arrumarNome = async () => {
+    const formatado = formatarNomeItem(form.nome);
+    if (formatado !== form.nome) setForm(f => ({ ...f, nome: formatado }));
+    if (formatado.length < 3 || nomeConferido.current === formatado) return;
+    nomeConferido.current = formatado;
+    setSugNome(null);
+    try {
+      const res = await apiFetch("/api/gerar-descricao", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: `Uma confeitaria cadastrou um adicional (o cliente marca junto com o bolo ou doce) com o nome: "${formatado}". Devolva o nome curto como deve aparecer no cardápio: só o nome do item (sem verbo, sem frase, sem "escolha", "quer", "adicione"), de 1 a 4 palavras, com a ortografia correta em português do Brasil, primeira letra de cada palavra maiúscula e "de", "da", "do", "com", "e" minúsculos. Se o nome já estiver certo, devolva igual. Responda só o nome, sem aspas e sem ponto.` }),
+      });
+      const data = await res.json();
+      const t = formatarNomeItem(String(data?.content?.[0]?.text || "").split("\n")[0].replace(/^["“]|["”.]$/g, ""));
+      if (t && t.length <= 50 && t.toLocaleLowerCase("pt-BR") !== formatado.toLocaleLowerCase("pt-BR")) setSugNome(t);
+    } catch { if (parecefrase(formatado)) setSugNome(null); }
+  };
   const gerarExplicacoes = async () => {
     const nome = form.nome.trim();
     if (!nome) { avisar("Escreva o nome do complemento primeiro.", { tipo: "erro" }); return; }
+    // ainda tem opção guardada da última vez: só troca a da caixa
+    const resto = opcoesIa.filter(t => t !== form.descricao);
+    if (resto.length) { setForm(f => ({ ...f, descricao: resto[0] })); setOpcoesIa(resto); return; }
     setGerandoIa(true); setOpcoesIa([]);
     try {
       const res = await apiFetch("/api/gerar-descricao", {
@@ -120,7 +143,7 @@ export default function Complementos() {
       const texto: string = data?.content?.[0]?.text || "";
       const ops = texto.split("\n").map(l => l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").replace(/^["“]|["”]$/g, "").replace(/\.$/, "").trim())
         .filter(l => l.length > 2 && l.length <= MAX_EXPLICACAO).slice(0, 3);
-      if (ops.length) setOpcoesIa(ops); else avisar("A IA não respondeu. Tente de novo.", { tipo: "erro" });
+      if (ops.length) { setOpcoesIa(ops); setForm(f => ({ ...f, descricao: ops[0] })); } else avisar("A IA não respondeu. Tente de novo.", { tipo: "erro" });
     } catch { avisar("A IA não respondeu. Tente de novo.", { tipo: "erro" }); }
     finally { setGerandoIa(false); }
   };
@@ -311,20 +334,23 @@ export default function Complementos() {
           {/* (30/10 · 5.32) PC: janela larga em duas colunas, sem rolar: o complemento à esquerda e onde aparece (a lista de produtos) à direita */}
           <div className="pz-c1">
           <div className="pz-sec">
+          <div className="pz-nome">
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: topo de bolo, escrita, papel de arroz" value={form.nome} maxLength={50} erro={erroNome}
-            onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
+            onChange={e => { const v = e.target.value; setForm(f => ({ ...f, nome: v })); setSugNome(null); }} onBlur={() => void arrumarNome()} />
+          {sugNome && (
+            <div className="pz-sugnome" role="status">
+              <span>Fica melhor no cardápio: <b>{sugNome}</b></span>
+              <button type="button" onClick={() => { setForm(f => ({ ...f, nome: sugNome })); nomeConferido.current = sugNome; setSugNome(null); }}>Usar</button>
+              <button type="button" className="pz-sugnome-x" onClick={() => setSugNome(null)} aria-label="Deixar como está"><X size={14} weight="bold" /></button>
+            </div>
+          )}
+          </div>
           {/* (30/10 · 5.31) caixa maior, até 60 letras (2 linhas no cardápio) e "Gerar com IA" com 3 opções; as sugestões fixas saíram */}
           <div className="pz-exp">
             <CampoArea rotulo="Explicação para o cliente" opcional rows={2} placeholder="Ex.: escolha o tema e o nome que vai no topo" value={form.descricao} maxLength={MAX_EXPLICACAO}
               dica={`Aparece embaixo do nome, no cardápio · ${form.descricao.length}/${MAX_EXPLICACAO}`} onChange={e => setForm(f => ({ ...f, descricao: e.target.value.replace(/\n/g, " ") }))} />
-            <BotaoIA className="pz-ia" carregando={gerandoIa} onClick={gerarExplicacoes}>{opcoesIa.length ? "Gerar outras" : "Gerar com IA"}</BotaoIA>
-            {opcoesIa.length > 0 && (
-              <div className="pz-ia-ops" role="group" aria-label="Opções da IA">
-                {opcoesIa.map(t => (
-                  <button key={t} type="button" className={form.descricao === t ? "on" : ""} onClick={() => setForm(f => ({ ...f, descricao: t }))}>{t}</button>
-                ))}
-              </div>
-            )}
+            {/* (30/10 · 5.35) a IA escreve direto na caixa (dá para alterar); "Gerar outra" troca por outra opção */}
+            <BotaoIA className="pz-ia" carregando={gerandoIa} onClick={gerarExplicacoes}>{form.descricao.trim() && opcoesIa.length ? "Gerar outra" : "Gerar com IA"}</BotaoIA>
           </div>
 
           {/* (24/10) o preço num campo só, com a caixinha "Grátis" ao lado (antes "Cobrar ou Grátis" e depois o valor) */}
@@ -358,7 +384,6 @@ export default function Complementos() {
           <div className="pz-c2">
           {/* (19/10) prévia ao vivo: como o cliente vê no cardápio · (30/10) no PC fica no topo da coluna da direita */}
           <div className="pz-prev" aria-hidden="true">
-            <small>Assim aparece para o cliente</small>
             <div className="pz-ex-l on"><i><Check size={14} weight="bold" /></i>
               <span className="pz-prev-tx"><span>{form.nome.trim() || "Nome do complemento"}</span>{form.descricao.trim() && <em>{form.descricao.trim()}</em>}</span>
               <b className={form.gratis ? "g" : ""}>{form.gratis ? "Grátis" : `+ R$ ${brl(form.valor || 0)}`}</b></div>
@@ -378,6 +403,7 @@ export default function Complementos() {
                 <div key={k} className={`pz-onde-op${form.onde === k ? " on" : ""}`}>
                   <button type="button" role="radio" aria-checked={form.onde === k} className="pz-onde-b" onClick={() => setForm(f => ({ ...f, onde: k }))}>
                     <i aria-hidden="true" /><span><b>{t}</b><small>{d}</small></span>
+                    {k === "produtos" && <em className="prod-selo-rec pz-selo">Recomendado</em>}
                   </button>
                   {form.onde === k && k === "categorias" && (
                     <div className="pz-onde-l">
@@ -385,9 +411,9 @@ export default function Complementos() {
                         const on = form.cats.includes(c.nome);
                         return (
                           <button key={c.nome} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarCat(c.nome)}>
+                            <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
                             <span className="pz-it-f">{c.foto ? <img src={c.foto} alt="" /> : <Camera size={18} weight="bold" aria-label="Sem foto" />}</span>
                             <span className="pz-it-n"><b>{c.nome}</b><small>{c.n} {c.n === 1 ? "produto" : "produtos"}</small></span>
-                            <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
                           </button>
                         );
                       })}
@@ -401,35 +427,24 @@ export default function Complementos() {
                           <input type="search" placeholder="Buscar produto" value={buscaProd} onChange={e => setBuscaProd(e.target.value)} aria-label="Buscar produto" autoComplete="off" />
                         </label>
                       )}
-                      {catsComProdutos.map(c => {
-                        const dela = produtosFiltrados.filter(p => (p.categoria || "") === c.nome);
-                        if (!dela.length) return null;
-                        const todosOn = dela.every(p => form.produtos.includes(p.id));
+                      {/* (30/10 · 5.35) uma lista só, em ordem de nome (antes separada por categoria); o check fica à esquerda */}
+                      {produtosFiltrados.length > 1 && (() => {
+                        const todosOn = produtosFiltrados.every(p => form.produtos.includes(p.id));
                         return (
-                          <div key={c.nome} className="pz-grupo">
-                            <div className="pz-grupo-cab"><span>{c.nome}</span>
-                              <button type="button" onClick={() => setForm(f => ({ ...f, produtos: todosOn ? f.produtos.filter(id => !dela.some(p => p.id === id)) : [...new Set([...f.produtos, ...dela.map(p => p.id)])] }))}>{todosOn ? "Desmarcar" : "Marcar todos"}</button>
-                            </div>
-                            {dela.map(p => {
-                              const on = form.produtos.includes(p.id);
-                              return (
-                                <button key={p.id} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarProduto(p.id)}>
-                                  <span className="pz-it-f">{primeiraFoto(p.imagem_url) ? <img src={primeiraFoto(p.imagem_url)} alt="" /> : <Camera size={18} weight="bold" aria-label="Sem foto" />}</span>
-                                  <span className="pz-it-n"><b>{nomeBonito(p.nome)}</b></span>
-                                  <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
-                                </button>
-                              );
-                            })}
-                          </div>
+                          <button type="button" role="checkbox" aria-checked={todosOn} className="pz-it pz-it--todos"
+                            onClick={() => setForm(f => ({ ...f, produtos: todosOn ? f.produtos.filter(id => !produtosFiltrados.some(p => p.id === id)) : [...new Set([...f.produtos, ...produtosFiltrados.map(p => p.id)])] }))}>
+                            <i className="pz-chk" aria-hidden="true">{todosOn && <Check size={14} weight="bold" />}</i>
+                            <span className="pz-it-n"><b>Marcar todos</b></span>
+                          </button>
                         );
-                      })}
-                      {produtosFiltrados.filter(p => !catsComProdutos.some(c => c.nome === (p.categoria || ""))).map(p => {
+                      })()}
+                      {[...produtosFiltrados].sort((x, y) => nomeBonito(x.nome).localeCompare(nomeBonito(y.nome), "pt-BR")).map(p => {
                         const on = form.produtos.includes(p.id);
                         return (
-                          <button key={p.id} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarProduto(p.id)}>
+                          <button key={p.id} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarProduto(p.id)} title={nomeBonito(p.nome)}>
+                            <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
                             <span className="pz-it-f">{primeiraFoto(p.imagem_url) ? <img src={primeiraFoto(p.imagem_url)} alt="" /> : <Camera size={18} weight="bold" aria-label="Sem foto" />}</span>
                             <span className="pz-it-n"><b>{nomeBonito(p.nome)}</b></span>
-                            <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
                           </button>
                         );
                       })}

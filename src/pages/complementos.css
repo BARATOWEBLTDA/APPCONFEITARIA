@@ -258,3 +258,21 @@
 }
 .pz-ref.pz-ref--l[aria-checked="true"] { background: none; }
 .pz-ref b { font-weight: 500; }
+
+/* (30/10 · 5.35) nome: sugestão de como fica melhor no cardápio (frase ou erro de digitação) */
+.pz-nome { display: flex; flex-direction: column; }
+.pz-sugnome { display: flex; align-items: center; gap: var(--gap-tight); margin-top: var(--gap-tight); padding: 6px 6px 6px 12px; border-radius: var(--ui-raio-p); background: #F7F4F5; font-size: 13.5px; color: var(--ui-texto-2); }
+.pz-sugnome > span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pz-sugnome b { font-weight: 600; color: var(--ui-texto); }
+.pz-sugnome button { flex: none; min-height: 32px; margin: 0; padding: 0 12px; border: 0; border-radius: 999px; background: var(--ui-branco); font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+.pz-sugnome .pz-sugnome-x { display: inline-flex; align-items: center; justify-content: center; width: 32px; padding: 0; background: none; color: var(--ui-texto-3); }
+/* a prévia mostra a explicação em até 2 linhas, igual ao cardápio */
+.pz-prev-tx em { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+/* lista de produtos: uma só, check à esquerda, nome numa linha com "…" */
+.pz-it .pz-chk { order: -1; }
+.pz-it--todos { min-height: 44px; }
+.pz-it--todos .pz-it-n b { font-weight: 500; color: var(--ui-rosa-escuro); }
+.pz-it + .pz-it { border-top: 1px solid var(--ui-linha); }
+/* "Em produtos escolhidos": selo Recomendado na diagonal (o mesmo da promoção) */
+.pz-onde-b { position: relative; overflow: hidden; min-height: 72px; padding-right: 44px; }
+.pz-selo { position: absolute; top: 21px; right: -32px; width: 124px; padding: 3px 0; transform: rotate(45deg); background: var(--ui-rosa); color: #fff; font-style: normal; font-size: 9.5px; font-weight: 600; text-align: center; line-height: 1.3; pointer-events: none; box-shadow: 0 2px 6px rgba(190, 24, 93, .25); }
