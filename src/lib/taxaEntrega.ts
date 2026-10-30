@@ -1,7 +1,8 @@
 /**
  * (28/10 · 4.49) Taxa de entrega: única, por bairro, por raio (km) ou por cidade.
  * O ponto no mapa vem do Nominatim (busca de endereço gratuita do OpenStreetMap), o mesmo do minimapa da loja.
- * A distância é em linha reta. No cardápio, quem decide a taxa é o banco (função cardapio_taxa_entrega),
+ * (29/10 · 5.10) A distância é a do caminho de carro (OpenRouteService, calculada no banco: rota_km), com a reta + 30%
+ * quando a rota não vem. No cardápio, quem decide a taxa é o banco (função cardapio_taxa_entrega),
  * que não mostra o ponto da loja pra ninguém.
  */
 export type ModoEntrega = 'fixa' | 'bairro' | 'raio' | 'cidade'

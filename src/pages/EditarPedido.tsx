@@ -648,9 +648,18 @@ export default function EditarPedido() {
       const pt = await pontoDoEndereco({ rua: enderecoRua, numero: enderecoNumero, bairro: enderecoBairro, cidade: enderecoCidade, cep: enderecoCep })
       if (!vivo) return
       if (!pt) { setTaxaSugerida({ valor: null, texto: 'Endereço não achado no mapa' }); return }
-      const km = distanciaKm(r.loja!, pt)
+      // (29/10 · 5.10) a mesma conta do cardápio: caminho de carro, pelo banco. Sem a função nova no banco: reta + 30%
+      const { data: rr, error: er } = await supabase.rpc('minha_taxa_entrega', { p_lat: pt.lat, p_lng: pt.lng, p_cidade: enderecoCidade || null })
+      if (!vivo) return
+      const res: any = rr
+      if (!er && res && res.km != null) {
+        const kmR = Number(res.km)
+        setTaxaSugerida(res.ok ? { valor: Number(res.valor) || 0, texto: `Taxa pela distância (${kmTexto(kmR)} de carro)` } : { valor: null, texto: `Fora da área de entrega (${kmTexto(kmR)} de carro)` })
+        return
+      }
+      const km = Math.round(distanciaKm(r.loja!, pt) * 1.3 * 100) / 100
       const t = taxaPorRaio(r.raios, km, r.fora)
-      setTaxaSugerida(t.ok ? { valor: t.valor, texto: `Taxa pela distância (${kmTexto(km)})` } : { valor: null, texto: `Fora da área de entrega (${kmTexto(km)})` })
+      setTaxaSugerida(t.ok ? { valor: t.valor, texto: `Taxa pela distância (cerca de ${kmTexto(km)})` } : { valor: null, texto: `Fora da área de entrega (cerca de ${kmTexto(km)})` })
     }, 900)
     return () => { vivo = false; window.clearTimeout(tm) }
   }, [regraTaxa, tipoEntrega, enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade, enderecoCep])

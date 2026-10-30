@@ -542,20 +542,19 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                     const ordem = faixasMapa.findIndex(x => x.km === Number(String(f.km).replace(',', '.')))
                     return (
                       <div key={i} className={`ep-faixa${f.ativo ? '' : ' off'}`}>
-                        <button type="button" role="checkbox" aria-checked={f.ativo} aria-label={`Faixa até ${f.km || '?'} km ${f.ativo ? 'ligada' : 'desligada'}`} className="ep-lin-check"
+                        <button type="button" role="checkbox" aria-checked={f.ativo} aria-label={`Faixa até ${f.km || '?'} km ${f.ativo ? 'ligada' : 'desligada'}`} title={f.ativo ? 'Desligar esta faixa' : 'Ligar esta faixa'} className="ep-lin-check"
                           style={f.ativo ? { background: CORES_RAIO[Math.max(0, Math.min(ordem, CORES_RAIO.length - 1))], borderColor: CORES_RAIO[Math.max(0, Math.min(ordem, CORES_RAIO.length - 1))] } : undefined}
                           onClick={() => setRaios(prev => prev.map((x, k) => k === i ? { ...x, ativo: !x.ativo } : x))}>{f.ativo && <Check size={14} weight="bold" />}</button>
                         <span className="ep-faixa-ate">Até</span>
                         <Campo rotulo="" aria-label="Distância em km" inputMode="decimal" placeholder="3" value={f.km} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, km: e.target.value.replace(/[^0-9,]/g, '').slice(0, 5) } : x))} />
                         <span className="ep-faixa-ate">km</span>
-                        <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={f.valor} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
+                        <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={f.valor} depois={(numBR(f.valor) || 0) === 0 ? <span className="ep-gratis">grátis</span> : undefined} onChange={e => setRaios(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
                       </div>
                     )
                   })}
-                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setRaios(prev => [...prev, { km: maiorKm ? kmCurto(maiorKm + 3) : '3', valor: '', ativo: true }])}>Adicionar faixa</Botao>
+                  <Botao variante="link" className="ep-add" icone={<Plus size={16} weight="bold" />} onClick={() => setRaios(prev => [...prev, { km: maiorKm ? kmCurto(maiorKm + 3) : '3', valor: '', ativo: true }])}>Adicionar faixa</Botao>
                   <Chave on={foraEntrega} rotulo={maiorKm ? `Entregar mais longe que ${kmCurto(maiorKm)} km` : 'Entregar mais longe'} apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: o cliente vê que está fora da área'} aoMudar={setForaEntrega} />
                   {foraEntrega && <Campo rotulo="Taxa para mais longe" prefixo="R$" inputMode="numeric" placeholder="0,00" value={foraValor} onChange={e => setForaValor(mascaraReais(e.target.value))} />}
-                  <p className="ep-bairro-dica">Desmarque a faixa para desligar. A distância é em linha reta, a partir do endereço da loja. Taxa 0 é entrega grátis.</p>
                 </div>
               ) : modoEntrega === 'cidade' ? (
                 <div className="ep-bairros">
@@ -563,32 +562,34 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                     <div key={i} className={`ep-bairro ep-bairro--check${c.ativo ? '' : ' off'}`}>
                       <button type="button" role="checkbox" aria-checked={c.ativo} aria-label={`${c.cidade || 'Cidade'} ${c.ativo ? 'ligada' : 'desligada'}`} className="ep-lin-check" onClick={() => setCidades(prev => prev.map((x, k) => k === i ? { ...x, ativo: !x.ativo } : x))}>{c.ativo && <Check size={14} weight="bold" />}</button>
                       <Campo rotulo="" aria-label="Cidade" placeholder="Cidade" value={c.cidade} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, cidade: e.target.value } : x))} />
-                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={c.valor} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
+                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={c.valor} depois={(numBR(c.valor) || 0) === 0 ? <span className="ep-gratis">grátis</span> : undefined} onChange={e => setCidades(prev => prev.map((x, k) => k === i ? { ...x, valor: mascaraReais(e.target.value) } : x))} />
                     </div>
                   ))}
                   {cidadeRepetida && <p className="ep-bairro-erro" role="alert">Cidade repetida. Deixe só uma.</p>}
-                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setCidades(prev => [...prev, { cidade: '', valor: '', ativo: true }])}>Adicionar cidade</Botao>
+                  <Botao variante="link" className="ep-add" icone={<Plus size={16} weight="bold" />} onClick={() => setCidades(prev => [...prev, { cidade: '', valor: '', ativo: true }])}>Adicionar cidade</Botao>
                   <Chave on={foraEntrega} rotulo="Entregar em outras cidades" apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: só nas cidades da lista'} aoMudar={setForaEntrega} />
                   {foraEntrega && <Campo rotulo="Taxa para outras cidades" prefixo="R$" inputMode="numeric" placeholder="0,00" value={foraValor} onChange={e => setForaValor(mascaraReais(e.target.value))} />}
-                  <p className="ep-bairro-dica">Desmarque a cidade para desligar. O cliente escolhe a cidade e paga a taxa dela. Taxa 0 é entrega grátis.</p>
                 </div>
               ) : null}
               {modoEntrega === 'raio' || modoEntrega === 'cidade' ? null : !porBairro ? (
-                <Campo rotulo="Valor da taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={valorEntregaPropria}
-                  dica="Cobrada em todo pedido com entrega própria"
-                  onChange={e => setValorEntregaPropria(mascaraReais(e.target.value))} />
+                <div className="ep-fixa">
+                  <Campo rotulo="Valor da taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={valorEntregaPropria}
+                    dica="Cobrada em todo pedido com entrega própria" depois={(numBR(valorEntregaPropria) || 0) === 0 ? <span className="ep-gratis">grátis</span> : undefined}
+                    onChange={e => setValorEntregaPropria(mascaraReais(e.target.value))} />
+                  {/* (29/10 · 5.10) o que a cliente vê ao escolher entrega no cardápio */}
+                  <p className="ep-fixa-prev"><span>No cardápio, para a cliente</span><b>Entrega: {(numBR(valorEntregaPropria) || 0) > 0 ? `R$ ${valorEntregaPropria}` : 'Grátis'}</b></p>
+                </div>
               ) : (
                 <div className="ep-bairros">
                   {entregaPorBairro.map((b, i) => (
                     <div key={i} className="ep-bairro">
                       <Campo rotulo="" aria-label="Bairro" placeholder="Bairro" value={b.bairro} onChange={e => mudarBairro(i, 'bairro', e.target.value)} />
-                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={b.valor} onChange={e => mudarBairro(i, 'valor', mascaraReais(e.target.value))} />
+                      <Campo rotulo="" aria-label="Taxa" prefixo="R$" inputMode="numeric" placeholder="0,00" value={b.valor} depois={(numBR(b.valor) || 0) === 0 ? <span className="ep-gratis">grátis</span> : undefined} onChange={e => mudarBairro(i, 'valor', mascaraReais(e.target.value))} />
                       <button type="button" className="ep-bairro-x" aria-label={`Tirar ${b.bairro || 'este bairro'}`} onClick={() => setEntregaPorBairro(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
                     </div>
                   ))}
                   {bairroRepetido && <p className="ep-bairro-erro" role="alert">Bairro repetido. Deixe só um.</p>}
-                  <Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setEntregaPorBairro(prev => [...prev, { bairro: '', valor: '' }])}>Adicionar bairro</Botao>
-                  <p className="ep-bairro-dica">O cliente escolhe o bairro e paga a taxa dele. Taxa 0 é entrega grátis.</p>
+                  <Botao variante="link" className="ep-add" icone={<Plus size={16} weight="bold" />} onClick={() => setEntregaPorBairro(prev => [...prev, { bairro: '', valor: '' }])}>Adicionar bairro</Botao>
                 </div>
               )}
             </div>
