@@ -13,7 +13,7 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import Janelinha from "@/components/financeiro/Folha";
 import Destaque from "@/components/Destaque";
 import { Mascote } from "@/components/marca/Mascote";
-import { marcarPagamentoConferido } from "@/lib/primeirosPassos";
+import { marcarPagamentoConferido, marcarEntregaConferida } from "@/lib/primeirosPassos";
 import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 import { Botao, avisar } from "@/components/base";
@@ -30,7 +30,7 @@ import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
  * Salva exatamente como os Dados da loja (endereço e horário em JSON no profiles).
  */
 type Local = "inicio" | "cardapio";
-type Folha = null | "descricao" | "logo" | "endereco" | "horario" | "pagamento" | "caixa";
+type Folha = null | "descricao" | "logo" | "endereco" | "horario" | "pagamento" | "entrega" | "caixa";
 
 const HORARIO_PADRAO = {
   dias: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"], abertura: "08:00", fechamento: "18:00",
@@ -39,7 +39,8 @@ const HORARIO_PADRAO = {
 };
 // (13/10) ordem dos passos: "Salvar e continuar" abre o próximo que falta, e o "Configurar minha confeitaria" abre o primeiro
 // 13/10: o logo vem antes da descrição, assim a prévia da descrição já mostra o logo dela ao lado do nome
-const ORDEM = ["logo", "descricao", "endereco", "horario", "pagamento", "caixa", "produto"] as const;
+// (29/10 · 5.08) "Pagamento e entrega" virou dois passos: Pagamento e Entrega (a entrega precisa de espaço)
+const ORDEM = ["logo", "descricao", "endereco", "horario", "pagamento", "entrega", "caixa", "produto"] as const;
 type Passo = typeof ORDEM[number];
 // (13/10) a sequência guiada vai até o pagamento: o produto fica livre (ela cadastra quando quiser, navegando pelo app)
 const SEQ: Passo[] = ORDEM.filter(k => k !== "produto");
@@ -233,7 +234,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Sobre a confeitaria", s: "Uma frase sobre você", pq: "Conta em poucas palavras quem você é e o que faz de especial.", abrir: () => setFolha("descricao") },
     { feito: estado.endereco, ic: I(MapPin), t: "Endereço", s: "Para calcular a entrega", pq: "Com ele, o app calcula a taxa de entrega de cada cliente sozinho.", abrir: () => setFolha("endereco") },
     { feito: estado.horario, ic: I(Clock), t: "Horário", s: "Aberto agora no cardápio", pq: "A cliente vê se você está aberta e para quando pode encomendar.", abrir: () => setFolha("horario") },
-    { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento e entrega", s: "Como o cliente paga", pq: "Diga se aceita Pix, cartão ou dinheiro, e se entrega ou só retirada.", abrir: () => abrirPasso("pagamento") },
+    { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento", s: "Como o cliente paga", pq: "Diga se aceita Pix, cartão ou dinheiro.", abrir: () => abrirPasso("pagamento") },
+    { feito: estado.entrega, ic: I(Moped), t: "Entrega", s: "Retirada e taxa de entrega", pq: "Diga se a cliente busca, se você entrega e quanto cobra pela entrega.", abrir: () => abrirPasso("entrega") },
     { feito: estado.caixa, ic: I(Coins), t: "Saldo do caixa", s: "Quanto tem em caixa hoje", pq: "Assim o app mostra quanto dinheiro você tem de verdade, todo dia.", abrir: () => setFolha("caixa") },
     { feito: estado.produto, ic: I(Basket), t: "Primeiro produto", s: "", pq: "Com o primeiro doce cadastrado, o cardápio já pode receber pedidos.", abrir: () => navigate("/produtos") },
   ];
@@ -273,6 +275,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         {folha === "descricao" && <FolhaDescricao uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
         {folha === "logo" && <FolhaLogo uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
         {folha === "endereco" && <FolhaEndereco uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+        {folha === "entrega" && <FolhaEntrega uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
         {folha === "pagamento" && <FolhaPagamento uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
         {folha === "caixa" && <FolhaCaixa uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
         {folha === "horario" && <FolhaHorario uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
@@ -362,6 +365,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       {folha === "descricao" && <FolhaDescricao uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "logo" && <FolhaLogo uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "endereco" && <FolhaEndereco uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+      {folha === "entrega" && <FolhaEntrega uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "pagamento" && <FolhaPagamento uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "caixa" && <FolhaCaixa uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
       {folha === "horario" && <FolhaHorario uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
@@ -380,86 +384,135 @@ const PAGA: [string, string][] = [["pix", "Pix"], ["dinheiro", "Dinheiro"], ["cr
  * A taxa de entrega saiu daqui: com Entrega marcada e sem taxa, fica um aviso (notificação e "Pra vender mais") pra ela definir depois.
  */
 function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
+  // (29/10 · 5.08) só o pagamento (a entrega virou um passo à parte)
   const [paga, setPaga] = useState<string[]>(PAGA.map(([k]) => k));
-  const [entrega, setEntrega] = useState<string[]>(["retirada", "entrega_propria"]);
-  // (23/10) a taxa da entrega própria já fica aqui (antes ela só descobria depois, por um aviso)
-  const [taxa, setTaxa] = useState("");
-  const [porBairro, setPorBairro] = useState(false);
   const [carregou, setCarregou] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  // (29/10 · 5.05) computador: o editor completo de Entrega e pagamento (o mesmo de Minha loja), em duas colunas.
-  // Ele salva sozinho; o "Salvar" só confere que tem pagamento e entrega marcados e fecha.
+  // computador: o editor de Minha loja (salva sozinho); o "Salvar" só confere e fecha
   const largo = useLargo();
-  const [ep, setEp] = useState<{ formasPagamento: string[]; formasEntrega: string[] } | null>(null);
+  const [ep, setEp] = useState<{ formasPagamento: string[] } | null>(null);
   useEffect(() => {
+    if (largo) return;
     let vivo = true;
-    supabase.from("profiles").select("formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro").eq("id", uid).maybeSingle().then(({ data }) => {
+    supabase.from("profiles").select("formas_pagamento").eq("id", uid).maybeSingle().then(({ data }) => {
       if (!vivo) return;
-      const d: any = data || {};
-      // o padrão do banco (só Pix / só retirada) conta como "não escolheu ainda": fica tudo marcado
-      const fp: string[] = Array.isArray(d.formas_pagamento) ? d.formas_pagamento : [];
-      const fe: string[] = Array.isArray(d.formas_entrega) ? d.formas_entrega : [];
+      // o padrão do banco (só Pix) conta como "não escolheu ainda": fica tudo marcado
+      const fp: string[] = Array.isArray((data as any)?.formas_pagamento) ? (data as any).formas_pagamento : [];
       if (fp.length && !(fp.length === 1 && fp[0] === "pix")) setPaga(fp);
-      if (fe.length && !(fe.length === 1 && fe[0] === "retirada")) setEntrega(fe);
-      setTaxa(textoBRL(Number(d.valor_entrega_propria) || 0));
-      setPorBairro(Array.isArray(d.entrega_por_bairro) && d.entrega_por_bairro.length > 0);
       setCarregou(true);
     }, () => { if (vivo) setCarregou(true); });
     return () => { vivo = false; };
-  }, [uid]);
-  const temEntrega = entrega.some(e => e !== "retirada");
+  }, [uid, largo]);
   const trocarPaga = (k: string) => setPaga(l => l.includes(k) ? l.filter(x => x !== k) : [...l, k]);
-  const trocarEntrega = (k: "retirada" | "entrega") => setEntrega(l => {
-    if (k === "retirada") return l.includes("retirada") ? l.filter(x => x !== "retirada") : ["retirada", ...l];
-    // "Entrega" aqui é a entrega própria; motoboy e Uber Flash (marcados na outra tela) continuam como estão
-    return temEntrega ? l.filter(x => x === "retirada") : [...l, "entrega_propria"];
-  });
-  const pronto = paga.length > 0 && entrega.length > 0;
   const salvar = async () => {
-    if (!pronto) return;
+    if (!paga.length) return;
     setSalvando(true); setErro("");
-    const campos: Record<string, unknown> = { formas_pagamento: paga, formas_entrega: entrega };
-    if (entrega.includes("entrega_propria") && !porBairro) campos.valor_entrega_propria = lerBRL(taxa || "0");
-    const { error } = await supabase.from("profiles").update(campos).eq("id", uid);
+    const { error } = await supabase.from("profiles").update({ formas_pagamento: paga }).eq("id", uid);
     setSalvando(false);
     if (error) { setErro(erroDeConexao(error) ? SEM_INTERNET : "Não foi possível salvar agora. Tente de novo."); return; }
     marcarPagamentoConferido(uid);
     onSalvo();
   };
   if (largo) {
-    const okPc = !!ep && ep.formasPagamento.length > 0 && ep.formasEntrega.length > 0;
+    const okPc = !!ep && ep.formasPagamento.length > 0;
     return (
-      <Janelinha foco titulo="Pagamento e entrega" onClose={onClose}
+      <Janelinha foco titulo="Pagamento" onClose={onClose}
         acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!okPc} onClick={() => { marcarPagamentoConferido(uid); onSalvo(); }}>Salvar</Botao></>}>
-        <div className="ppf-pe">
+        <div className="ppf-pe ppf-pe--pag">
           <PassoTopo k="pagamento" />
           <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
-            <EntregaPagamento embutido parte="entrega" so="pagEnt" onEstado={setEp} />
+            <EntregaPagamento embutido parte="entrega" so="pag" onEstado={setEp} />
           </Suspense>
-          {ep && !okPc && <p className="ppf-p-dica">Marque pelo menos uma forma de pagamento e uma de entrega.</p>}
+          {ep && !okPc && <p className="ppf-p-dica">Marque pelo menos uma forma de pagamento.</p>}
         </div>
       </Janelinha>
     );
   }
   const ICONE_PAGA: Record<string, typeof PixLogo> = { pix: PixLogo, dinheiro: Money, credito: CreditCard, debito: CreditCard };
   const SUB_PAGA: Record<string, string> = { pix: "Na hora, sem taxa", dinheiro: "Na entrega ou na retirada", credito: "Na maquininha", debito: "Na maquininha" };
+  return (
+    <Janelinha foco titulo="Pagamento" onClose={onClose}
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!paga.length || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
+      <PassoTopo k="pagamento" />
+      <ListaChaves titulo="Como o cliente paga" id="pp-paga" itens={PAGA.map(([k, n]) => ({ chave: k, Ic: ICONE_PAGA[k], rotulo: n, sub: SUB_PAGA[k], on: paga.includes(k), aoTocar: () => trocarPaga(k) }))} />
+      {erro && <p className="ppf-erro">{erro}</p>}
+    </Janelinha>
+  );
+}
+
+/* ── (29/10 · 5.08) Passo "Entrega": como a cliente recebe e quanto custa a entrega ── */
+function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
+  const [entrega, setEntrega] = useState<string[]>(["retirada", "entrega_propria"]);
+  const [taxa, setTaxa] = useState("");
+  const [porBairro, setPorBairro] = useState(false);
+  const [carregou, setCarregou] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
+  // computador: o editor completo de Minha loja em duas colunas (formas · como cobrar, com o mapa); salva sozinho
+  const largo = useLargo();
+  const [ep, setEp] = useState<{ formasEntrega: string[] } | null>(null);
+  useEffect(() => {
+    if (largo) return;
+    let vivo = true;
+    supabase.from("profiles").select("formas_entrega, valor_entrega_propria, entrega_por_bairro").eq("id", uid).maybeSingle().then(({ data }) => {
+      if (!vivo) return;
+      const d: any = data || {};
+      // o padrão do banco (só retirada) conta como "não escolheu ainda": retirada e entrega ligadas
+      const fe: string[] = Array.isArray(d.formas_entrega) ? d.formas_entrega : [];
+      if (fe.length && !(fe.length === 1 && fe[0] === "retirada")) setEntrega(fe);
+      setTaxa(textoBRL(Number(d.valor_entrega_propria) || 0));
+      setPorBairro(Array.isArray(d.entrega_por_bairro) && d.entrega_por_bairro.length > 0);
+      setCarregou(true);
+    }, () => { if (vivo) setCarregou(true); });
+    return () => { vivo = false; };
+  }, [uid, largo]);
+  const temEntrega = entrega.some(e => e !== "retirada");
+  const trocarEntrega = (k: "retirada" | "entrega") => setEntrega(l => {
+    if (k === "retirada") return l.includes("retirada") ? l.filter(x => x !== "retirada") : ["retirada", ...l];
+    // "Entrega" aqui é a entrega própria; motoboy e Uber Flash (marcados em Minha loja) continuam como estão
+    return temEntrega ? l.filter(x => x === "retirada") : [...l, "entrega_propria"];
+  });
+  const salvar = async () => {
+    if (!entrega.length) return;
+    setSalvando(true); setErro("");
+    const campos: Record<string, unknown> = { formas_entrega: entrega };
+    if (entrega.includes("entrega_propria") && !porBairro) campos.valor_entrega_propria = lerBRL(taxa || "0");
+    const { error } = await supabase.from("profiles").update(campos).eq("id", uid);
+    setSalvando(false);
+    if (error) { setErro(erroDeConexao(error) ? SEM_INTERNET : "Não foi possível salvar agora. Tente de novo."); return; }
+    marcarEntregaConferida(uid);
+    onSalvo();
+  };
+  if (largo) {
+    const okPc = !!ep && ep.formasEntrega.length > 0;
+    return (
+      <Janelinha foco titulo="Entrega" onClose={onClose}
+        acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!okPc} onClick={() => { marcarEntregaConferida(uid); onSalvo(); }}>Salvar</Botao></>}>
+        <div className="ppf-pe ppf-pe--ent">
+          <PassoTopo k="entrega" />
+          <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
+            <EntregaPagamento embutido parte="entrega" so="entCol" onEstado={setEp} />
+          </Suspense>
+          {ep && !okPc && <p className="ppf-p-dica">Marque pelo menos uma forma de entrega.</p>}
+        </div>
+      </Janelinha>
+    );
+  }
   const campoTaxa = porBairro
     ? <p className="ppf-p-taxa-b">Taxa por bairro, em Minha loja</p>
     : <label className="ppf-p-taxa"><span><b>Taxa de entrega</b><small>Zero para grátis</small></span>
         <span className="ppf-p-taxa-in"><em>R$</em><input inputMode="numeric" autoComplete="off" placeholder="0,00" value={taxa} aria-label="Taxa de entrega em reais"
           onChange={e => setTaxa(mascaraBRL(e.target.value))} /></span></label>;
   return (
-    <Janelinha foco titulo="Pagamento e entrega" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
-      <PassoTopo k="pagamento" />
-      {/* (23/10) lista com chave, igual aos apps de delivery (antes: caixinhas rosa) */}
-      <ListaChaves titulo="Como o cliente paga" id="pp-paga" itens={PAGA.map(([k, n]) => ({ chave: k, Ic: ICONE_PAGA[k], rotulo: n, sub: SUB_PAGA[k], on: paga.includes(k), aoTocar: () => trocarPaga(k) }))} />
+    <Janelinha foco titulo="Entrega" onClose={onClose}
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!entrega.length || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
+      <PassoTopo k="entrega" />
       <ListaChaves titulo="Como o cliente recebe" id="pp-recebe" itens={[
         { chave: "retirada", Ic: Storefront, rotulo: "Retirada no local", sub: "Busca no seu endereço", on: entrega.includes("retirada"), aoTocar: () => trocarEntrega("retirada") },
         { chave: "entrega", Ic: Moped, rotulo: "Entrega própria", sub: "Você leva até o cliente", on: temEntrega, aoTocar: () => trocarEntrega("entrega"), depois: campoTaxa },
       ]} />
-      <p className="ppf-p-dica">Motoboy e Uber Flash ficam em Minha loja.</p>
+      <p className="ppf-p-dica">Motoboy, Uber e outras taxas: em Minha loja.</p>
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
   );
@@ -1027,18 +1080,16 @@ const CSS = `
   .ppf-d--end { min-height: 560px; } /* (29/10 · 5.02) já no tamanho do endereço escrito à mão (o maior): não cresce ao achar o CEP */
   .ppf-d--end .ppf-d-prev .mpe { margin-top: 0 !important; }
   .ppf-d--hor { min-height: 490px; } /* (29/10 · 5.02) já na altura de Sábado e Domingo ligados: não cresce ao ligar */
-  /* (29/10 · 5.05) Pagamento e entrega no computador: o editor completo em 3 colunas
-     (pagamento · formas de entrega · como cobrar a entrega), sem rolar na taxa única */
-  .ui-janela:has(.ppf-pe) { width: min(1080px, calc(100vw - 48px)); max-width: none; max-height: min(94dvh, 820px); }
+  /* (29/10 · 5.08) Pagamento e Entrega no computador: o editor de Minha loja dentro da janela, sem a moldura dos cartões */
   .ui-janela:has(.ppf-pe) .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ui-janela:has(.ppf-pe) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
-  .ppf-pe .ep { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr) minmax(0, .95fr); gap: 14px; align-items: start; width: 100%; max-width: none; margin: 14px 0 0; padding: 0; }
-  .ppf-pe .ep > * { min-width: 0; }
-  /* (29/10 · 5.06) sem a moldura de cada cartão: ficava cartão + quadrado da lista + linhas (linhas demais) */
+  .ui-janela:has(.ppf-pe--pag) { width: min(520px, calc(100vw - 48px)); max-width: none; }
+  .ui-janela:has(.ppf-pe--ent) { width: min(1000px, calc(100vw - 48px)); max-width: none; max-height: min(94dvh, 860px); }
+  .ppf-pe .ep { width: 100%; max-width: none; margin: 18px 0 0; padding: 0; }
   .ppf-pe .ep-card { padding: 0; gap: 12px; border: 0; border-radius: 0; background: none; box-shadow: none; }
-  .ppf-pe .ep { column-gap: 28px; margin-top: 18px; }
-  .ppf-pe .lch-l { min-height: 52px; padding-top: 5px; padding-bottom: 5px; }
-  .ppf-pe .ep-modo { grid-template-columns: 1fr; }
+  .ppf-pe--pag .ep { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
+  .ppf-pe--ent .ep { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); column-gap: 32px; align-items: start; }
+  .ppf-pe--ent .ep > * { min-width: 0; }
   .ppf-d-dica1 { margin: 12px 2px 0; font-size: 13.5px; line-height: 1.5; color: var(--ui-texto-2); }
   .ppf-d-ajuda > p { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
   .ppf-d-ajuda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }

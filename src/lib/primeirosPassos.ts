@@ -22,6 +22,8 @@ export type EstadoPassos = {
   descricao: boolean; logo: boolean; endereco: boolean; horario: boolean; produto: boolean; compartilhou: boolean;
   /** (13/10) conferiu as formas de pagamento e entrega (ou já tem produto: conta antiga não volta a ver os passos) */
   pagamento: boolean;
+  /** (29/10 · 5.08) conferiu a entrega (passo separado do pagamento; antes era "Pagamento e entrega") */
+  entrega: boolean;
   /** (13/10) informou o saldo do caixa (ou já tem produto: conta antiga não volta a ver os passos) */
   caixa: boolean;
   /** dados atuais, pra abrir as janelinhas já preenchidas */
@@ -55,7 +57,7 @@ export function lerPassos(uid: string): Promise<EstadoPassos> {
   return p;
 }
 
-const CAMPOS_BASE = "nome_loja, descricao_loja, logo_url, foto_url, endereco, mostrar_localizacao, mostrar_apenas_cidade, horario";
+const CAMPOS_BASE = "nome_loja, descricao_loja, logo_url, foto_url, endereco, mostrar_localizacao, mostrar_apenas_cidade, horario, formas_entrega";
 
 async function lerPassosDoBanco(uid: string): Promise<EstadoPassos> {
   // (15/10) a sessão vem do aparelho (getUser ia ao servidor toda vez); o perfil vem numa busca só,
@@ -100,6 +102,10 @@ async function lerPassosDoBanco(uid: string): Promise<EstadoPassos> {
     compartilhou: !!p.cardapio_compartilhado || local,
     // (13/10) salvo também na conta (user_metadata), não só no aparelho
     pagamento: pagamentoConferido(uid) || !!(conta as any)?.data?.user?.user_metadata?.pp_pagamento || produtos.total > 0,
+    // (29/10 · 5.08) entrega: salvou o passo, ou já mudou as formas de entrega (o padrão do banco é só retirada:
+    // quem fez o antigo "Pagamento e entrega" já tinha ligado a entrega e não precisa fazer de novo)
+    entrega: entregaConferida(uid) || !!(conta as any)?.data?.user?.user_metadata?.pp_entrega || produtos.total > 0
+      || (Array.isArray(p.formas_entrega) && p.formas_entrega.some((f: string) => f !== "retirada")),
     caixa: p.caixa_inicio_em != null || !!(conta as any)?.data?.user?.user_metadata?.pp_caixa || produtos.total > 0,
     perfil: { ...p, endereco: end, horario: hor },
     falhou,
@@ -108,7 +114,7 @@ async function lerPassosDoBanco(uid: string): Promise<EstadoPassos> {
 
 // 02/10: o "compartilhar o link" saiu dos passos — com o cardápio pronto, vai direto pra comemoração
 export const passosCompletos = (e: EstadoPassos | null) =>
-  !!e && e.descricao && e.logo && e.endereco && e.horario && e.pagamento && e.caixa && e.produto;
+  !!e && e.descricao && e.logo && e.endereco && e.horario && e.pagamento && e.entrega && e.caixa && e.produto;
 
 /** (13/10) Passo "Pagamento e entrega": marca quando ela salva a tela Entrega e pagamento (neste aparelho). */
 const chavePagamento = (uid: string) => `doonly_pp_pagamento_${uid}`;
@@ -117,6 +123,16 @@ export function marcarPagamentoConferido(uid: string | null | undefined) {
   if (!uid) return;
   try { localStorage.setItem(chavePagamento(uid), "1"); } catch {}
   supabase.auth.updateUser({ data: { pp_pagamento: true } }).then(() => {}, () => {});
+  window.dispatchEvent(new Event("doonly:passos"));
+}
+
+/** (29/10 · 5.08) Passo "Entrega": marca quando ela salva a entrega (no aparelho e na conta). */
+const chaveEntrega = (uid: string) => `doonly_pp_entrega_${uid}`;
+export function entregaConferida(uid: string) { try { return localStorage.getItem(chaveEntrega(uid)) === "1"; } catch { return false; } }
+export function marcarEntregaConferida(uid: string | null | undefined) {
+  if (!uid) return;
+  try { localStorage.setItem(chaveEntrega(uid), "1"); } catch {}
+  supabase.auth.updateUser({ data: { pp_entrega: true } }).then(() => {}, () => {});
   window.dispatchEvent(new Event("doonly:passos"));
 }
 

@@ -70,10 +70,10 @@ export const ARTIGOS: ArtigoAjuda[] = [
     slug: 'primeiros-passos',
     tema: 'primeiros',
     titulo: 'Deixar a loja pronta',
-    resumo: 'Os 7 passos para o cardápio abrir.',
+    resumo: 'Os 8 passos para o cardápio abrir.',
     minutos: 3,
     abrir: { rota: '/inicio', rotulo: 'Abrir o Início' },
-    intro: 'Antes de vender pelo cardápio, a loja precisa de 7 informações básicas: a logo, uma frase sobre você, o endereço, o horário, como a cliente paga, o saldo do caixa e o primeiro produto. O cartão dos passos fica no Início e mostra sempre o próximo que falta.',
+    intro: 'Antes de vender pelo cardápio, a loja precisa de 8 informações básicas: a logo, uma frase sobre você, o endereço, o horário, como a cliente paga, como ela recebe (retirada ou entrega), o saldo do caixa e o primeiro produto. O cartão dos passos fica no Início e mostra sempre o próximo que falta.',
     pontos: [
       'Cada passo é salvo na hora',
       'Dá para pular e voltar depois',
@@ -83,25 +83,26 @@ export const ARTIGOS: ArtigoAjuda[] = [
       tela: 'Início',
       rota: '/inicio',
       blocos: [
-        { n: 1, titulo: 'Seu cardápio quase no ar', linhas: [{ t: '4 de 7 prontos', tipo: 'nota' }, { t: '', tipo: 'barra' }] },
+        { n: 1, titulo: 'Seu cardápio quase no ar', linhas: [{ t: '4 de 8 prontos', tipo: 'nota' }, { t: '', tipo: 'barra' }] },
         { n: 2, linhas: [{ t: 'Sobre a confeitaria', tipo: 'linha' }, { t: 'Fazer agora', tipo: 'botao' }] },
-        { n: 3, linhas: [{ t: 'Logo da loja', tipo: 'check' }, { t: 'Endereço', tipo: 'linha' }, { t: 'Horário', tipo: 'linha' }, { t: 'Ver todos os 7 passos', tipo: 'nota' }] },
+        { n: 3, linhas: [{ t: 'Logo da loja', tipo: 'check' }, { t: 'Endereço', tipo: 'linha' }, { t: 'Horário', tipo: 'linha' }, { t: 'Ver todos os 8 passos', tipo: 'nota' }] },
       ],
       partes: [
-        { titulo: 'Quanto falta', texto: 'A barra mostra quantos dos 7 passos já estão prontos. Ela enche a cada passo salvo.', el: '.pp--banner .ppb-topo' },
+        { titulo: 'Quanto falta', texto: 'A barra mostra quantos dos 8 passos já estão prontos. Ela enche a cada passo salvo.', el: '.pp--banner .ppb-topo' },
         { titulo: 'O próximo passo', texto: 'O app mostra sempre o passo que falta. Fazer agora abre uma janela só com ele, sem sair do Início.', el: '.ppb-at' },
         { titulo: 'Todos os passos', texto: 'Mostra a lista completa. Os prontos ficam com visto verde. Toque num que falta para fazer na hora.', el: '.ppb-ver' },
       ],
     },
     textos: [
       {
-        titulo: 'Os 7 passos',
+        titulo: 'Os 8 passos',
         lista: [
           '**Logo da loja:** aparece no topo do cardápio.',
           '**Sobre a confeitaria:** uma frase curta embaixo do nome. A Doo IA pode escrever para você.',
           '**Endereço:** a cliente vê onde retirar, e o app usa para calcular a entrega.',
           '**Horário:** fora dele, o cardápio aparece fechado.',
-          '**Pagamento e entrega:** Pix, dinheiro, cartão, retirada ou entrega.',
+          '**Pagamento:** Pix, dinheiro ou cartão.',
+          '**Entrega:** retirada, entrega própria e quanto custa a entrega.',
           '**Saldo do caixa:** quanto dinheiro você tem hoje, para o Financeiro começar certo.',
           '**Primeiro produto:** abre a tela Produtos para cadastrar.',
         ],
@@ -109,7 +110,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         titulo: 'Salvar e continuar',
         texto: [
-          'Cada janela tem o botão **Salvar e continuar**. Ao salvar, o passo ganha o visto verde e a janela do próximo já abre, na ordem.',
+          'No celular, cada janela tem o botão **Salvar e continuar**: o passo ganha o visto verde e a janela do próximo já abre, na ordem. No computador, o botão é **Salvar**, e você escolhe o próximo no cartão.',
           'Sem tempo agora? Toque em **Agora não**. O app pula para o próximo, e o que ficou para trás continua na lista.',
         ],
       },
@@ -124,7 +125,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
     duvidas: [
       { p: 'Fechei a janela sem querer.', r: 'Nada se perde. Toque de novo em Fazer agora ou no passo, na lista.' },
       { p: 'Posso mudar depois?', r: 'Pode. Logo, descrição, endereço, horário e pagamento ficam em Minha loja, no menu de baixo.' },
-      { p: 'O cartão sumiu do Início.', r: 'Ele sai quando os 7 passos ficam prontos. Para conferir a loja, abra Minha loja.' },
+      { p: 'O cartão sumiu do Início.', r: 'Ele sai quando os 8 passos ficam prontos. Para conferir a loja, abra Minha loja.' },
     ],
     secoes: [],
     relacionadas: [
@@ -195,7 +196,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
     ],
     secoes: [],
     relacionadas: [
-      { rota: '/ajuda/primeiros-passos', rotulo: 'Deixar a loja pronta', apoio: 'Os 7 passos' },
+      { rota: '/ajuda/primeiros-passos', rotulo: 'Deixar a loja pronta', apoio: 'Os 8 passos' },
       { rota: '/ajuda/pedidos', rotulo: 'Pedidos', apoio: 'Aceitar, produzir e entregar' },
     ],
   },

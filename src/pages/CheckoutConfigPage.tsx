@@ -69,7 +69,7 @@ export type EstadoEntregaPagamento = { formasPagamento: string[]; formasEntrega:
 /** (27/10) Gravação da tela de Entrega e pagamento em andamento (Pagamento, Pix e Entrega abrem a mesma tela) */
 let gravacaoEmAndamento: Promise<unknown> | null = null
 
-export default function CheckoutConfigPage({ embutido = false, parte = "tudo", so, onEstado }: { embutido?: boolean; parte?: "tudo" | "entrega" | "cupons"; so?: "pag" | "pix" | "ent" | "pagEnt"; onEstado?: (e: EstadoEntregaPagamento) => void } = {}) {
+export default function CheckoutConfigPage({ embutido = false, parte = "tudo", so, onEstado }: { embutido?: boolean; parte?: "tudo" | "entrega" | "cupons"; so?: "pag" | "pix" | "ent" | "entCol"; onEstado?: (e: EstadoEntregaPagamento) => void } = {}) {
   const verEntrega = parte !== "cupons", verCupons = parte !== "entrega"
   const navigate = useNavigate()
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
@@ -604,7 +604,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
 
         {verEntrega && <>
         {/* Pagamento */}
-        {(!so || so === 'pag' || so === 'pagEnt') && <section className="ep-card">
+        {(!so || so === 'pag') && <section className="ep-card">
           <Cabeca Ic={Wallet} titulo={resumido?.pag ? "Pagamento" : "Formas de pagamento"} apoio={resumido?.pag ? undefined : "Marque só as que você aceita"} acao={botaoEditar('pag')} />
           {resumido?.pag ? (
             <div className="ep-res">
@@ -682,7 +682,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         )}
 
         {/* Entrega */}
-        {(!so || so === 'ent' || so === 'pagEnt') && <section className="ep-card">
+        {(!so || so === 'ent' || so === 'entCol') && <section className="ep-card">
           <Cabeca Ic={Truck} titulo={resumido?.ent ? "Entrega" : "Formas de entrega"} apoio={resumido?.ent ? undefined : "Marque as que o cliente pode escolher"} acao={botaoEditar('ent')} />
           {resumido?.ent ? (
             <div className="ep-res">
@@ -693,11 +693,11 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
             </div>
           ) : (<>
           <ListaChaves itens={ENTREGAS.map(e => ({ chave: e.key, Ic: ICONE_ENT[e.key] || Truck, rotulo: e.label, sub: e.sub, on: formasEntrega.includes(e.key), aoTocar: () => toggleEntrega(e.key) }))} />
-          {so !== 'pagEnt' && formasEntrega.includes('entrega_propria') && blocoTaxa}
+          {so !== 'entCol' && formasEntrega.includes('entrega_propria') && blocoTaxa}
           </>)}
         </section>}
-        {/* (29/10 · 5.05) passo "Pagamento e entrega" no computador: "Como cobrar a entrega" num cartão à direita */}
-        {so === 'pagEnt' && <section className="ep-card ep-card--taxa">
+        {/* (29/10 · 5.05) passo "Entrega" no computador: "Como cobrar a entrega" num cartão à direita */}
+        {so === 'entCol' && <section className="ep-card ep-card--taxa">
           {formasEntrega.includes('entrega_propria') ? blocoTaxa : <p className="ep-taxa-off">Ligue a <b>Entrega própria</b> para escolher como cobrar a entrega: taxa única, por bairro, por raio ou por cidade.</p>}
         </section>}
 
