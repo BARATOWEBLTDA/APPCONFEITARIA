@@ -450,82 +450,22 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   );
 }
 
-/* ── (29/10 · 5.08) Passo "Entrega": como a cliente recebe e quanto custa a entrega ── */
+/* ── (29/10 · 5.08) Passo "Entrega": como a cliente recebe e quanto custa a entrega ──
+   (30/10 · 5.23) no celular e no computador é o mesmo editor de Minha loja (salva sozinho); o "Salvar" confere e fecha */
 function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
-  const [entrega, setEntrega] = useState<string[]>(["retirada", "entrega_propria"]);
-  // (29/10 · 5.20) o jeito de cobrar da loja: por bairro, raio ou cidade a taxa fica em Minha loja (antes só via o bairro)
-  const [modoArea, setModoArea] = useState<"" | "bairro" | "raio" | "cidade">("");
-  const porBairro = !!modoArea;
-  const [carregou, setCarregou] = useState(false);
-  const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState("");
-  // computador: o editor completo de Minha loja em duas colunas (formas · como cobrar, com o mapa); salva sozinho
   const largo = useLargo();
-  // (30/10 · 5.22) celular: sem o campo da taxa (fica no editor completo); "Definir a taxa de entrega" abre o editor completo (o mesmo do computador), numa coluna
-  const [completo, setCompleto] = useState(false);
   const [ep, setEp] = useState<{ formasEntrega: string[] } | null>(null);
-  useEffect(() => {
-    if (largo) return;
-    let vivo = true;
-    supabase.from("profiles").select("*").eq("id", uid).maybeSingle().then(({ data }) => {
-      if (!vivo) return;
-      const d: any = data || {};
-      // o padrão do banco (só retirada) conta como "não escolheu ainda": retirada e entrega ligadas
-      const fe: string[] = Array.isArray(d.formas_entrega) ? d.formas_entrega : [];
-      if (fe.length && !(fe.length === 1 && fe[0] === "retirada")) setEntrega(fe);
-      const m = String(d.entrega_modo || "");
-      setModoArea(m === "raio" || m === "cidade" || m === "bairro" ? m : (Array.isArray(d.entrega_por_bairro) && d.entrega_por_bairro.length > 0 ? "bairro" : ""));
-      setCarregou(true);
-    }, () => { if (vivo) setCarregou(true); });
-    return () => { vivo = false; };
-  }, [uid, largo]);
-  const temEntrega = entrega.some(e => e !== "retirada");
-  const trocarEntrega = (k: "retirada" | "entrega") => setEntrega(l => {
-    if (k === "retirada") return l.includes("retirada") ? l.filter(x => x !== "retirada") : ["retirada", ...l];
-    // "Entrega" aqui é a entrega própria; motoboy e Uber Flash (marcados em Minha loja) continuam como estão
-    return temEntrega ? l.filter(x => x === "retirada") : [...l, "entrega_propria"];
-  });
-  const salvar = async () => {
-    if (!entrega.length) return;
-    setSalvando(true); setErro("");
-    const campos: Record<string, unknown> = { formas_entrega: entrega };
-    const { error } = await supabase.from("profiles").update(campos).eq("id", uid);
-    setSalvando(false);
-    if (error) { setErro(erroDeConexao(error) ? SEM_INTERNET : "Não foi possível salvar agora. Tente de novo."); return; }
-    marcarEntregaConferida(uid);
-    onSalvo();
-  };
-  if (largo || completo || porBairro) {
-    const okPc = !!ep && ep.formasEntrega.length > 0;
-    return (
-      <Janelinha foco titulo="Entrega" onClose={onClose}
-        acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!okPc} onClick={() => { marcarEntregaConferida(uid); onSalvo(); }}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
-        <div className="ppf-pe ppf-pe--ent">
-          <PassoTopo k="entrega" />
-          <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
-            <EntregaPagamento embutido parte="entrega" so="entCol" onEstado={setEp} />
-          </Suspense>
-          {ep && !okPc && <p className="ppf-p-dica">Marque pelo menos uma forma de entrega.</p>}
-        </div>
-      </Janelinha>
-    );
-  }
+  const ok = !!ep && ep.formasEntrega.length > 0;
   return (
     <Janelinha foco titulo="Entrega" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!entrega.length || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
-      <PassoTopo k="entrega" />
-      <ListaChaves titulo="Como o cliente recebe" id="pp-recebe" itens={[
-        { chave: "retirada", Ic: Storefront, rotulo: "Retirada no local", sub: "Busca no seu endereço", on: entrega.includes("retirada"), aoTocar: () => trocarEntrega("retirada") },
-        { chave: "entrega", Ic: Moped, rotulo: "Entrega própria", sub: "Você leva até o cliente", on: temEntrega, aoTocar: () => trocarEntrega("entrega") },
-      ]} />
-      <button type="button" className="ppf-p-mais" disabled={salvando} onClick={async () => {
-        // guarda o que ela já marcou aqui antes de abrir o editor completo (ele lê da conta)
-        setSalvando(true);
-        const campos: Record<string, unknown> = { formas_entrega: entrega };
-        await supabase.from("profiles").update(campos).eq("id", uid);
-        setSalvando(false); setCompleto(true);
-      }}>Definir a taxa de entrega<CaretRight size={14} weight="bold" aria-hidden="true" /></button>
-      {erro && <p className="ppf-erro">{erro}</p>}
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!ok} onClick={() => { marcarEntregaConferida(uid); onSalvo(); }}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
+      <div className="ppf-pe ppf-pe--ent">
+        <PassoTopo k="entrega" />
+        <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
+          <EntregaPagamento embutido parte="entrega" so="entCol" onEstado={setEp} />
+        </Suspense>
+        {ep && !ok && <p className="ppf-p-dica">Marque pelo menos uma forma de entrega.</p>}
+      </div>
     </Janelinha>
   );
 }

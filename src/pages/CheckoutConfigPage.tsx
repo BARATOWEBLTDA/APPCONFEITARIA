@@ -609,7 +609,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
               {/* (28/10 · 4.49) os quatro jeitos de cobrar, nos cartões com bolinha (igual ao Entrega/Retirada do pedido) */}
               <p className="ep-modo-t">Como cobrar a entrega</p>
               <div className="ep-modo" role="radiogroup" aria-label="Como cobrar a entrega">
-                {([['fixa', 'Taxa única', 'Mesmo valor pra todos'], ['bairro', 'Por bairro', 'Um valor por bairro'], ['raio', 'Por raio', 'Pela distância em km'], ['cidade', 'Por cidade', 'Um valor por cidade']] as [ModoEntrega, string, string][]).map(([k, n, sub]) => (
+                {([['fixa', 'Taxa única', 'Mesmo valor'], ['bairro', 'Por bairro', 'Um por bairro'], ['raio', 'Por raio', 'Pela distância'], ['cidade', 'Por cidade', 'Um por cidade']] as [ModoEntrega, string, string][]).map(([k, n, sub]) => (
                   <button key={k} type="button" role="radio" aria-checked={modoEntrega === k} className={modoEntrega === k ? 'on' : undefined} onClick={() => { void escolherModo(k) }}>
                     <i className="ep-modo-bola" aria-hidden="true" /><b>{n}</b><small>{sub}</small>
                   </button>
@@ -804,7 +804,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         </section>}
         {/* (29/10 · 5.05) passo "Entrega" no computador: "Como cobrar a entrega" num cartão à direita */}
         {so === 'entCol' && <section className="ep-card ep-card--taxa">
-          {formasEntrega.includes('entrega_propria') ? blocoTaxa : <p className="ep-taxa-off">Ligue a <b>Entrega própria</b> para escolher como cobrar a entrega: taxa única, por bairro, por raio ou por cidade.</p>}
+          {formasEntrega.includes('entrega_propria') ? blocoTaxa : <p className="ep-taxa-off">Ligue a <b>Entrega própria</b> para definir a taxa.</p>}
         </section>}
 
         </>}
