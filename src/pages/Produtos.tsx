@@ -3900,7 +3900,7 @@ export default function Produtos() {
           content: none;
         }
         @media (min-width: 720px) {
-          .prod-modal-overlay { justify-content: center; align-items: center; padding: 24px; }
+          .prod-modal-overlay { justify-content: center; align-items: center; padding: 24px; background: rgba(24, 8, 14, .62); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); } /* (30/10) igual às outras janelas no PC */
           .prod-modal {
             max-width: 640px;
             height: 88vh;
