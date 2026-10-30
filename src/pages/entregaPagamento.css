@@ -156,3 +156,37 @@
 .ep-fixa-prev { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0; padding: 12px 14px; border-radius: 12px; background: #F7F4F5; font-size: 13.5px; color: var(--ui-texto-2); }
 .ep-fixa-prev b { font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
 .ep-mapa-leg { margin: -4px 2px 0; font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* (29/10 · 5.13) faixas em lista: moldura, linhas entre elas, valor estreito e lixeira; "grátis perto da loja" à parte */
+.ep-faixas { display: flex; flex-direction: column; border: 1px solid var(--ui-borda); border-radius: 14px; overflow: hidden; background: var(--ui-branco); }
+.ep-faixas .ep-faixa { grid-template-columns: 24px auto 64px auto minmax(0, 1fr) 34px; padding: 8px 10px 8px 14px; border-bottom: 1px solid var(--ui-linha); }
+.ep-faixas .ep-faixa-rs { justify-self: end; width: 132px; }
+.ep-faixa-x { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; margin: 0; padding: 0; border: 0; border-radius: 8px; background: none; color: #A8989E; cursor: pointer; }
+@media (hover: hover) { .ep-faixa-x:hover { background: #FBEFF3; color: var(--ui-rosa-escuro); } }
+.ui-bt.ep-add.ep-add--lista { border: 0; border-radius: 0; min-height: 48px; }
+
+/* (29/10 · 5.13) valor da taxa com a caixinha "Grátis" dentro (marcada: campo cinza, caixinha verde) */
+.ep-tx { display: flex; align-items: center; gap: 6px; min-width: 0; height: 48px; padding: 0 6px 0 12px; border: 1.5px solid var(--ui-borda-campo, #E6DADF); border-radius: var(--ui-raio-campo, 12px); background: var(--ui-branco); box-sizing: border-box; transition: background-color .15s ease, border-color .15s ease; }
+.ep-tx:focus-within { border-color: var(--ui-rosa); }
+.ep-tx em { flex: none; font-style: normal; font-size: 14px; font-weight: 600; color: var(--ui-texto-3); }
+.ep-tx input { flex: 1; min-width: 0; width: 100%; height: 100%; border: 0; outline: 0; background: none; font-family: inherit; font-size: 15.5px; color: var(--ui-texto); }
+.ep-tx input::placeholder { color: var(--ui-texto-3); }
+.ep-tx button { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 10px 0 7px; border: 1.5px solid #E2D7DB; border-radius: 9px; background: var(--ui-branco); font-family: inherit; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; }
+.ep-tx button i { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border: 1.5px solid #CDBFC5; border-radius: 4px; color: #fff; box-sizing: border-box; }
+.ep-tx--gratis { background: #F3F1F2; border-color: #E8E3E5; }
+.ep-tx--gratis em, .ep-tx--gratis input { color: #B5AAAE; }
+.ep-tx--gratis button { border-color: #16A34A; background: #EAF7EF; color: #15803D; }
+.ep-tx--gratis button i { border-color: #16A34A; background: #16A34A; }
+.ep-faixas .ep-faixa-rs { width: 176px; }
+.ep-bairro { grid-template-columns: minmax(0, 1fr) 176px 44px; }
+.ep-bairro--check { grid-template-columns: 24px minmax(0, 1fr) 176px; }
+.ep-gratis { display: none; }
+@media (max-width: 600px) {
+  .ep-faixas .ep-faixa { grid-template-columns: 24px 52px auto minmax(0, 1fr) 30px; gap: 6px; padding-left: 10px; padding-right: 6px; }
+  .ep-faixas .ep-faixa > .ep-faixa-ate:first-of-type { display: none; }
+  .ep-faixas .ep-faixa-rs { width: 100%; max-width: 168px; }
+  .ep-tx { padding-left: 10px; }
+  .ep-tx button { padding: 0 8px 0 6px; }
+  .ep-bairro { grid-template-columns: minmax(0, 1fr) 160px 40px; }
+  .ep-bairro--check { grid-template-columns: 24px minmax(0, 1fr) 160px; }
+}
