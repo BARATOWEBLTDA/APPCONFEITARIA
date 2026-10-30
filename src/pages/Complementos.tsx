@@ -1,13 +1,13 @@
 import { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, Check, Sparkle, DotsThreeVertical, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Camera, Check, DotsThreeVertical, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { precoCardapioComPromocao } from "@/lib/precoCardapio";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
-import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIA, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import { usePlano } from "@/hooks/usePlano";
 import { LIMITE_COMPLEMENTOS_GRATIS } from "@/lib/limitesPlano";
 import RecursoPro from "@/components/billing/RecursoPro";
@@ -316,9 +316,7 @@ export default function Complementos() {
           <div className="pz-exp">
             <CampoArea rotulo="Explicação para o cliente" opcional rows={2} placeholder="Ex.: escolha o tema e o nome que vai no topo" value={form.descricao} maxLength={MAX_EXPLICACAO}
               dica={`Aparece embaixo do nome, no cardápio · ${form.descricao.length}/${MAX_EXPLICACAO}`} onChange={e => setForm(f => ({ ...f, descricao: e.target.value.replace(/\n/g, " ") }))} />
-            <button type="button" className="pz-ia" onClick={gerarExplicacoes} disabled={gerandoIa}>
-              <Sparkle size={15} weight="fill" aria-hidden="true" />{gerandoIa ? "Escrevendo…" : opcoesIa.length ? "Gerar outras" : "Gerar com IA"}
-            </button>
+            <BotaoIA className="pz-ia" carregando={gerandoIa} onClick={gerarExplicacoes}>{opcoesIa.length ? "Gerar outras" : "Gerar com IA"}</BotaoIA>
             {opcoesIa.length > 0 && (
               <div className="pz-ia-ops" role="group" aria-label="Opções da IA">
                 {opcoesIa.map(t => (

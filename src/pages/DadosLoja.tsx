@@ -3,14 +3,14 @@ import { atualizarPontoDaLoja } from "@/lib/taxaEntrega";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { CaretRight, Check, Clock, PencilSimple, MapPin, QrCode, ShareNetwork, Sparkle, Storefront, Truck, Wallet, WarningCircle } from "@phosphor-icons/react";
+import { CaretRight, Check, Clock, PencilSimple, MapPin, QrCode, ShareNetwork, Storefront, Truck, Wallet, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { LogoFacebook, LogoInstagram } from "@/components/LogosRedes";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_DADOS_LOJA, TOUR_DADOS_LOJA } from "@/lib/comoTelas";
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar } from "@/components/loja/EditoresLoja";
-import { Botao, Campo, CampoArea, Gaveta, TelaVazia, Titulo, avisar } from "@/components/base";
+import { Botao, BotaoIA, Campo, CampoArea, Gaveta, TelaVazia, Titulo, avisar } from "@/components/base";
 import { digitosTelefone, digitosAoDigitar } from "@/lib/telefone";
 import { limparFacebook, limparInstagram } from "@/lib/redesSociais";
 import ListaChaves from "@/components/loja/ListaChaves";
@@ -464,7 +464,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
               placeholder={EXEMPLO_DESCRICAO} onChange={(e) => setDescricao(e.target.value)} />
             <div className="dl-desc-pe">
               <small>{descricao.length} de 200 caracteres</small>
-              <button type="button" className="dl-ia" onClick={gerarDescricao} disabled={gerando}><Sparkle size={15} weight="fill" aria-hidden="true" />{gerando ? "Escrevendo…" : "Escrever com IA"}</button>
+              <BotaoIA carregando={gerando} onClick={gerarDescricao} />
             </div>
           </div>
           </>)}

@@ -17,7 +17,7 @@ import { marcarPagamentoConferido, marcarEntregaConferida } from "@/lib/primeiro
 import { atualizarPontoDaLoja } from "@/lib/taxaEntrega";
 import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
-import { Botao, avisar } from "@/components/base";
+import { Botao, BotaoIA, avisar } from "@/components/base";
 import { LojaProntaCartao } from "@/components/loja/LojaPronta";
 import PreviaTopoCardapio, { type DadosPrevia } from "@/components/cardapio/PreviaTopoCardapio";
 import { PreviaSobreHorario } from "@/components/cardapio/SobreLoja";
@@ -614,7 +614,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
                   ))}
                 </div>
                 <div className="ppf-ia-pe">
-                  <button type="button" className="ppf-ia-outras" disabled={gerando} onClick={gerar}><Sparkle size={15} weight="fill" aria-hidden="true" />{gerando ? "Escrevendo…" : "Escrever outras"}</button>
+                  <BotaoIA carregando={gerando} onClick={gerar}>Gerar outras</BotaoIA>
                   <Botao tamanho="m" onClick={usarOpcao}>Usar esta</Botao>
                 </div>
               </>
@@ -633,7 +633,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
                 <input id="pp-dif" className="ppf-ia-in" autoComplete="off" maxLength={80} value={diferencial} placeholder="Ex.: receita da família" onChange={e => setDiferencial(e.target.value)} />
                 <div className="ppf-ia-pe">
                   <button type="button" className="ppf-d-voltar" onClick={() => setPerguntando(false)}>Voltar</button>
-                  <Botao tamanho="m" carregando={gerando} icone={<Sparkle size={16} weight="fill" />} onClick={gerar}>Escrever 3 opções</Botao>
+                  <Botao tamanho="m" carregando={gerando} icone={<Sparkle size={16} weight="fill" />} onClick={gerar}>Gerar 3 opções</Botao>
                 </div>
               </>
             )}
@@ -646,9 +646,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
                 placeholder={EXEMPLO_DESCRICAO}
                 onChange={e => setTxt(e.target.value)} />
               <div className="ppf-d-pe">
-                <button type="button" className="ppf-doo" onMouseDown={e => e.preventDefault()} onClick={() => { setOpcoes(null); setPerguntando(true); }}>
-                  <Sparkle size={16} weight="fill" aria-hidden="true" />{txt.trim() ? "Escrever de novo com a Doo IA" : "Escrever com a Doo IA"}
-                </button>
+                <BotaoIA onMouseDown={e => e.preventDefault()} onClick={() => { setOpcoes(null); setPerguntando(true); }}>{txt.trim() ? "Gerar de novo com IA" : "Gerar com IA"}</BotaoIA>
                 <span>{txt.length}/200</span>
               </div>
             </div>

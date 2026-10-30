@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Eye, Check, Copy, Storefront, PencilLine, ShoppingBag, Palette, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
+import { BotaoIA } from "@/components/base";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Step {
@@ -541,9 +542,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
                   <span className="pap-ta-count">{descDraft.length}/200</span>
                 </div>
                 <div className="pap-row">
-                  <button className="pap-btn-ia" onClick={gerarDescricao} disabled={gerando || salvando || !nomeLoja.trim()}>
-                    {gerando ? "Gerando..." : "Gerar com IA"}
-                  </button>
+                  <BotaoIA carregando={gerando} onClick={gerarDescricao} disabled={salvando || !nomeLoja.trim()} />
                   <button className="pap-btn-save" onClick={salvarDescricao} disabled={salvando || gerando || !descDraft.trim()}>
                     {salvando ? "Salvando..." : "Salvar"}
                   </button>

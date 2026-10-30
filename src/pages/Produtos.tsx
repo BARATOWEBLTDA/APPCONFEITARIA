@@ -2108,7 +2108,7 @@ export default function Produtos() {
                     />
                       <button
                         type="button"
-                        className="prod-btn-ia-novo prod-btn-ia-dentro"
+                        className="ui-ia prod-btn-ia-dentro"
                         disabled={!!gerandoDesc}
                         onClick={async () => {
                           if (gerandoDesc) return;
@@ -2145,7 +2145,7 @@ export default function Produtos() {
                         }}
                         title={!form.nome.trim() ? "Preencha o nome primeiro" : (form.descricao?.trim() ? "Melhorar descrição atual" : "Gerar descrição automaticamente")}
                       >
-                        <SparkleIA size={16} weight="fill" className="prod-btn-ia-novo-crown" aria-hidden="true" />
+                        <SparkleIA size={15} weight="fill" aria-hidden="true" />
                         {gerandoDesc === "gerar"
                           ? "Gerando…"
                           : gerandoDesc === "melhorar"

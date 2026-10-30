@@ -289,3 +289,11 @@ html[data-ui-janela] .ui-aviso--saindo { animation-name: uiAvisoSomeCima; }
 .ui-sug-l { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 30; margin: 0; padding: 4px; list-style: none; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 12px; box-shadow: 0 8px 24px rgba(44, 18, 25, .12); }
 .ui-sug-l li { padding: 9px 10px; border-radius: 8px; font-size: 14px; color: var(--ui-texto); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ui-sug-l li.on { background: #F7F1F3; }
+
+/* (30/10 · 5.33) botão de IA: o mesmo em todo o app */
+.ui-ia { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; margin: 0; padding: 0 14px; border: 0; border-radius: 999px; background: #F3EEF0; color: var(--ui-rosa-escuro); font-family: var(--font-base); font-size: 13.5px; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; box-shadow: none; transition: background-color .15s ease; -webkit-tap-highlight-color: transparent; }
+.ui-ia svg { flex: none; color: var(--ui-rosa); }
+@media (hover: hover) { .ui-ia:hover:not(:disabled) { background: #EBE3E7; } }
+.ui-ia:disabled { opacity: .6; cursor: default; }
+.ui-ia[aria-busy="true"] { opacity: .75; cursor: progress; }
+.ui-ia:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }

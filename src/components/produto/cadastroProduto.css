@@ -147,7 +147,7 @@ body .prod-modal--novo .prod-como-vende-dica { margin: 6px 0 0; font-size: 12.5p
 /* (13/10) descrição: botão "Gerar com IA" dentro da caixa, no canto de baixo à direita */
 body .prod-modal--novo .prod-desc-caixa { position: relative; margin-top: 8px; }
 body .prod-modal--novo .prod-desc-caixa textarea { display: block; width: 100%; min-height: 132px; padding-bottom: 56px !important; box-sizing: border-box; }
-body .prod-modal--novo .prod-btn-ia-dentro { position: absolute; right: 10px; bottom: 10px; min-height: 36px; padding: 0 12px; border-radius: 8px; font-size: 13px; }
+body .prod-modal--novo .prod-btn-ia-dentro { position: absolute; right: 10px; bottom: 10px; } /* (30/10 · 5.33) o visual é o do botão de IA padrão (.ui-ia) */
 
 /* (13/10) preço com a unidade junto: [R$ 80,00] por [quilo ▾] */
 body .prod-modal--novo .prod-preco-por { display: flex; align-items: center; gap: 8px; }
