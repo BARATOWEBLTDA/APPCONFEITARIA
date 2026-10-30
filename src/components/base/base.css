@@ -297,3 +297,7 @@ html[data-ui-janela] .ui-aviso--saindo { animation-name: uiAvisoSomeCima; }
 .ui-ia:disabled { opacity: .6; cursor: default; }
 .ui-ia[aria-busy="true"] { opacity: .75; cursor: progress; }
 .ui-ia:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+/* (30/10 · 5.41) aviso com texto longo: no PC a caixa é mais larga e o texto pode ir até 2 linhas (antes cortava com "…") */
+@media (min-width: 768px) { .ui-aviso { max-width: 520px; } }
+.ui-aviso-t { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.ui-aviso { font-weight: 500; }

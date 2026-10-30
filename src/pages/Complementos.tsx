@@ -62,7 +62,8 @@ export default function Complementos() {
   // (30/10 · 5.31) "Gerar com IA": 3 opções de explicação a partir do nome
   const [gerandoIa, setGerandoIa] = useState(false);
   const [opcoesIa, setOpcoesIa] = useState<string[]>([]); // (30/10 · 5.35) a IA escreve 3 de uma vez; vai 1 por vez para a caixa ("Gerar outra" pega a próxima)
-  const [sugNome, setSugNome] = useState<string | null>(null); // (30/10 · 5.35) "Quis dizer: Topo de Bolo?"
+  const [sugNome, setSugNome] = useState<string | null>(null);
+  const [iaAviso, setIaAviso] = useState(""); // (30/10 · 5.41) limite da IA ou erro: aparece embaixo do botão, não no aviso do topo // (30/10 · 5.35) "Quis dizer: Topo de Bolo?"
   const nomeConferido = useRef("");
   // (27/10) plano grátis: até 3 complementos (decisão de 25/10)
   const { isPro } = usePlano();
@@ -117,12 +118,13 @@ export default function Complementos() {
     if (!form.nome.trim() || !form.onde || (!form.gratis && form.valor <= 0)) return;
     setTentou(false); setEtapa(2);
   };
-  const fechar = () => { setAberta(false); setOpcoesIa([]); setSugNome(null); };
+  const fechar = () => { setAberta(false); setOpcoesIa([]); setSugNome(null); setIaAviso(""); };
   // (30/10 · 5.35) ao sair do nome: arruma maiúsculas e espaços na hora; se parecer frase ou tiver erro, a IA sugere o nome certo
   const arrumarNome = async () => {
     const formatado = formatarNomeItem(form.nome);
     if (formatado !== form.nome) setForm(f => ({ ...f, nome: formatado }));
-    if (formatado.length < 3 || nomeConferido.current === formatado) return;
+    // (30/10 · 5.41) a IA só confere quando o nome parece frase ("Escolha um topo de bolo"): cada conferida gastava um uso do limite do dia
+    if (formatado.length < 3 || nomeConferido.current === formatado || !parecefrase(formatado)) return;
     nomeConferido.current = formatado;
     setSugNome(null);
     try {
@@ -133,11 +135,12 @@ export default function Complementos() {
       const data = await res.json();
       const t = formatarNomeItem(String(data?.content?.[0]?.text || "").split("\n")[0].replace(/^["“]|["”.]$/g, ""));
       if (t && t.length <= 50 && t.toLocaleLowerCase("pt-BR") !== formatado.toLocaleLowerCase("pt-BR")) setSugNome(t);
-    } catch { if (parecefrase(formatado)) setSugNome(null); }
+    } catch { /* sem a IA: fica o nome arrumado */ }
   };
   const gerarExplicacoes = async () => {
     const nome = form.nome.trim();
-    if (!nome) { avisar("Escreva o nome do complemento primeiro.", { tipo: "erro" }); return; }
+    setIaAviso("");
+    if (!nome) { setIaAviso("Escreva o nome do complemento primeiro."); return; }
     // ainda tem opção guardada da última vez: só troca a da caixa
     const resto = opcoesIa.filter(t => t !== form.descricao);
     if (resto.length) { setForm(f => ({ ...f, descricao: resto[0] })); setOpcoesIa(resto); return; }
@@ -148,12 +151,12 @@ export default function Complementos() {
         body: JSON.stringify({ prompt: `Uma confeitaria vende o adicional "${nome}" no cardápio digital (o cliente marca junto com o bolo ou doce). Escreva 3 opções diferentes de explicação curta que aparece embaixo do nome, dizendo o que vem ou o que o cliente escolhe. Cada uma com no máximo 50 caracteres, português do Brasil, frase simples, sem aspas, sem emoji, sem ponto final. Responda só as 3 opções, uma por linha, sem números.` }),
       });
       const data = await res.json();
-      if (data?.error === "limite_diario") { avisar(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo.", { tipo: "erro" }); return; }
+      if (data?.error === "limite_diario") { setIaAviso("Você usou a IA o máximo de vezes de hoje. Amanhã libera de novo."); return; }
       const texto: string = data?.content?.[0]?.text || "";
       const ops = texto.split("\n").map(l => l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").replace(/^["“]|["”]$/g, "").replace(/\.$/, "").trim())
         .filter(l => l.length > 2 && l.length <= MAX_EXPLICACAO).slice(0, 3);
-      if (ops.length) { setOpcoesIa(ops); setForm(f => ({ ...f, descricao: ops[0] })); } else avisar("A IA não respondeu. Tente de novo.", { tipo: "erro" });
-    } catch { avisar("A IA não respondeu. Tente de novo.", { tipo: "erro" }); }
+      if (ops.length) { setOpcoesIa(ops); setForm(f => ({ ...f, descricao: ops[0] })); } else setIaAviso("A IA não respondeu. Tente de novo.");
+    } catch { setIaAviso("A IA não respondeu. Tente de novo."); }
     finally { setGerandoIa(false); }
   };
 
@@ -364,6 +367,7 @@ export default function Complementos() {
             <CampoArea rotulo="Explicação para o cliente" opcional rows={2} placeholder="Ex.: escolha o tema e o nome que vai no topo" value={form.descricao} maxLength={MAX_EXPLICACAO} onChange={e => setForm(f => ({ ...f, descricao: e.target.value.replace(/\n/g, " ") }))} />
             {/* (30/10 · 5.35) a IA escreve direto na caixa (dá para alterar); "Gerar outra" troca por outra opção */}
             <BotaoIA className="pz-ia" carregando={gerandoIa} onClick={gerarExplicacoes}>{form.descricao.trim() && opcoesIa.length ? "Gerar outra" : "Gerar com IA"}</BotaoIA>
+            {iaAviso && <p className="ui-campo-msg pz-ia-aviso" role="status"><Info size={14} weight="bold" aria-hidden="true" /><span>{iaAviso}</span></p>}
           </div>
 
           {/* (24/10) o preço num campo só, com a caixinha "Grátis" ao lado (antes "Cobrar ou Grátis" e depois o valor) */}
@@ -420,52 +424,47 @@ export default function Complementos() {
         ) : (
           /* (30/10 · 5.40) segunda tela: em quais produtos (ou categorias) o complemento aparece */
           <div className="pz-etapa2">
-            <p className="pz-etapa2-t">{form.onde === "produtos" ? <>Marque os produtos que oferecem <b>{form.nome.trim() || "este complemento"}</b>.</> : <>Marque as categorias que oferecem <b>{form.nome.trim() || "este complemento"}</b>. Produto novo dessas categorias já recebe.</>}</p>
-            {form.onde === "produtos" ? (
-                    <div className="pz-onde-l pz-lista2">
-                      {produtos.length > 8 && (
-                        <label className="pz-busca pz-busca--p">
-                          <MagnifyingGlass size={18} weight="bold" />
-                          <input type="search" placeholder="Buscar produto" value={buscaProd} onChange={e => setBuscaProd(e.target.value)} aria-label="Buscar produto" autoComplete="off" />
-                        </label>
-                      )}
-                      {/* (30/10 · 5.35) uma lista só, em ordem de nome (antes separada por categoria); o check fica à esquerda */}
-                      {produtosFiltrados.length > 1 && (() => {
-                        const todosOn = produtosFiltrados.every(p => form.produtos.includes(p.id));
-                        return (
-                          <button type="button" role="checkbox" aria-checked={todosOn} className="pz-it pz-it--todos"
-                            onClick={() => setForm(f => ({ ...f, produtos: todosOn ? f.produtos.filter(id => !produtosFiltrados.some(p => p.id === id)) : [...new Set([...f.produtos, ...produtosFiltrados.map(p => p.id)])] }))}>
-                            <i className="pz-chk" aria-hidden="true">{todosOn && <Check size={14} weight="bold" />}</i>
-                            <span className="pz-it-n"><b>Marcar todos</b></span>
-                          </button>
-                        );
-                      })()}
-                      {[...produtosFiltrados].sort((x, y) => nomeBonito(x.nome).localeCompare(nomeBonito(y.nome), "pt-BR")).map(p => {
-                        const on = form.produtos.includes(p.id);
-                        return (
-                          <button key={p.id} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarProduto(p.id)} title={nomeBonito(p.nome)}>
-                            <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
-                            <span className="pz-it-f">{primeiraFoto(p.imagem_url) ? <img src={primeiraFoto(p.imagem_url)} alt="" /> : <Camera size={18} weight="bold" aria-label="Sem foto" />}</span>
-                            <span className="pz-it-n"><b>{nomeBonito(p.nome)}</b></span>
-                          </button>
-                        );
-                      })}
-                      {produtosFiltrados.length === 0 && <p className="pz-semres">Nenhum produto com esse nome.</p>}
-                    </div>
-            ) : (
-                    <div className="pz-onde-l pz-lista2">
-                      {catsComProdutos.map(c => {
-                        const on = form.cats.includes(c.nome);
-                        return (
-                          <button key={c.nome} type="button" role="checkbox" aria-checked={on} className="pz-it" onClick={() => alternarCat(c.nome)}>
-                            <i className="pz-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
-                            <span className="pz-it-f">{c.foto ? <img src={c.foto} alt="" /> : <Camera size={18} weight="bold" aria-label="Sem foto" />}</span>
-                            <span className="pz-it-n"><b>{c.nome}</b><small>{c.n} {c.n === 1 ? "produto" : "produtos"}</small></span>
-                          </button>
-                        );
-                      })}
-                    </div>
-            )}
+            {/* (30/10 · 5.41) cartões com foto, como numa loja: o check no canto da foto e a borda marcam o escolhido */}
+            {(() => {
+              const ehProd = form.onde === "produtos";
+              const itens = ehProd
+                ? [...produtosFiltrados].sort((x, y) => nomeBonito(x.nome).localeCompare(nomeBonito(y.nome), "pt-BR")).map(p => ({ k: p.id, nome: nomeBonito(p.nome), sub: p.categoria || "", foto: primeiraFoto(p.imagem_url), on: form.produtos.includes(p.id), tocar: () => alternarProduto(p.id) }))
+                : catsComProdutos.map(c => ({ k: c.nome, nome: c.nome, sub: `${c.n} ${c.n === 1 ? "produto" : "produtos"}`, foto: c.foto || "", on: form.cats.includes(c.nome), tocar: () => alternarCat(c.nome) }));
+              const nOn = ehProd ? form.produtos.length : form.cats.length;
+              const todosOn = itens.length > 0 && itens.every(i => i.on);
+              const marcarTodos = () => ehProd
+                ? setForm(f => ({ ...f, produtos: todosOn ? f.produtos.filter(id => !produtosFiltrados.some(p => p.id === id)) : [...new Set([...f.produtos, ...produtosFiltrados.map(p => p.id)])] }))
+                : setForm(f => ({ ...f, cats: todosOn ? [] : catsComProdutos.map(c => c.nome) }));
+              return (<>
+                <div className="pz-e2-cab">
+                  <p className="pz-etapa2-t">{ehProd ? <>Marque os produtos que oferecem <b>{form.nome.trim() || "este complemento"}</b>.</> : <>Marque as categorias que oferecem <b>{form.nome.trim() || "este complemento"}</b>. Produto novo delas já recebe.</>}</p>
+                  <span className="pz-e2-n">{nOn} de {ehProd ? produtos.length : catsComProdutos.length}</span>
+                  {itens.length > 1 && (
+                    <button type="button" role="checkbox" aria-checked={todosOn} className="pz-e2-todos" onClick={marcarTodos}>
+                      <i className="pz-chk" aria-hidden="true">{todosOn && <Check size={14} weight="bold" />}</i>Marcar todos
+                    </button>
+                  )}
+                </div>
+                {ehProd && produtos.length > 8 && (
+                  <label className="pz-busca pz-busca--p pz-e2-busca">
+                    <MagnifyingGlass size={18} weight="bold" />
+                    <input type="search" placeholder="Buscar produto" value={buscaProd} onChange={e => setBuscaProd(e.target.value)} aria-label="Buscar produto" autoComplete="off" />
+                  </label>
+                )}
+                <div className="pz-e2-grade">
+                  {itens.map(i => (
+                    <button key={i.k} type="button" role="checkbox" aria-checked={i.on} className={`pz-e2-card${i.on ? " on" : ""}`} onClick={i.tocar} title={i.nome}>
+                      <span className="pz-e2-foto">
+                        {i.foto ? <img src={i.foto} alt="" /> : <Camera size={26} weight="duotone" aria-label="Sem foto" />}
+                        <i className="pz-chk" aria-hidden="true">{i.on && <Check size={14} weight="bold" />}</i>
+                      </span>
+                      <span className="pz-e2-tx"><b>{i.nome}</b>{i.sub && <small>{i.sub}</small>}</span>
+                    </button>
+                  ))}
+                  {ehProd && produtosFiltrados.length === 0 && <p className="pz-semres">Nenhum produto com esse nome.</p>}
+                </div>
+              </>);
+            })()}
             {erroProdutos && <p className="ui-campo-msg pz-erro" role="alert"><WarningCircle size={14} weight="bold" aria-hidden="true" /><span>{erroProdutos}</span></p>}
           </div>
         )}

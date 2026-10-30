@@ -313,3 +313,29 @@
   .pz-etapa2 { height: 100%; }
   .pz-lista2 { flex: 1 1 auto; min-height: 0; max-height: none; }
 }
+.pz-ia-aviso { margin-top: var(--gap-tight); }
+/* (30/10 · 5.41) segunda tela em cartões com foto (padrão de loja) */
+.pz-e2-cab { display: flex; align-items: center; gap: var(--gap-stack); }
+.pz-e2-cab .pz-etapa2-t { flex: 1; min-width: 0; }
+.pz-e2-n { flex: none; font-size: 13px; color: var(--ui-texto-3); white-space: nowrap; }
+.pz-e2-todos { flex: none; display: inline-flex; align-items: center; gap: var(--gap-tight); height: 36px; margin: 0; padding: 0 14px 0 10px; border: 0; border-radius: 999px; background: #F3EEF0; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
+.pz-e2-todos .pz-chk { width: 18px; height: 18px; border-radius: 5px; }
+.pz-e2-todos[aria-checked="true"] .pz-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.pz-e2-busca { margin: 0; }
+.pz-e2-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-stack); align-content: start; }
+@media (min-width: 640px) { .pz-e2-grade { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
+.pz-e2-card { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; overflow: hidden; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease; }
+@media (hover: hover) { .pz-e2-card:hover { border-color: #CFC3C8; } }
+.pz-e2-card.on { border-color: var(--ui-rosa); box-shadow: 0 0 0 1px var(--ui-rosa); }
+.pz-e2-foto { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 3; background: #F3EEF0; color: #C9BCC2; }
+.pz-e2-foto img { width: 100%; height: 100%; object-fit: cover; }
+.pz-e2-foto .pz-chk { position: absolute; top: 8px; left: 8px; box-shadow: 0 1px 4px rgba(0, 0, 0, .15); }
+.pz-e2-card.on .pz-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.pz-e2-tx { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 10px 12px 12px; }
+.pz-e2-tx b { font-size: 14px; font-weight: 500; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pz-e2-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 1024px) {
+  .pz-e2-grade { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 2px; margin: -2px; }
+}
+.pz-e2-grade { grid-auto-rows: max-content; }
+@media (min-width: 640px) { .pz-e2-grade { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
