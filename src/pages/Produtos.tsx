@@ -36,7 +36,7 @@ import Categorias from "@/pages/Categorias";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_PRODUTOS, TOUR_PRODUTOS } from "@/lib/comoTelas";
 import { ArrowLeft as ArrowLeftIc, Camera, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Lightning, CalendarBlank, Star } from "@phosphor-icons/react";
-import { Botao, BotaoIcone, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIcone, CaixasEscolha, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
 import "./produtosLista.css";
@@ -765,6 +765,9 @@ export default function Produtos() {
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   // (14/10) Escolhas em checklist: 0 = a lista; 1..n = a tela de cada escolha marcada
   const [escTela, setEscTela] = useState(0);
+  // (30/10 · 5.27) o passo Preço tem duas telas: o preço e depois "Cardápio e entrega" (antes tudo junto e a janela rolava o dobro)
+  const [entTela, setEntTela] = useState(false);
+  useEffect(() => { if (wizardStep < 5) setEntTela(false); }, [wizardStep]);
   const [infoPasso, setInfoPasso] = useState(false);
   const lojaPronta = useLojaPronta(userId); // (14/10) "Ver no cardápio" na tela de sucesso só com a loja configurada // (14/10) (i) do header do cadastro
   const [kgPromo, setKgPromo] = useState(false); // (14/10) "Colocar em promoção" no preço por kg
@@ -1685,6 +1688,7 @@ export default function Produtos() {
                   // (14/10) dentro das escolhas: volta uma tela; do passo 4 volta pra última escolha marcada
                   if (wizardStep === 3 && escTela > 0) { setEscTela(t => t - 1); return; }
                   if (wizardStep === 4) { setEscTela(escolhasAtivas(form).length); setWizardStep(3); return; }
+                  if (wizardStep === 5 && entTela) { setEntTela(false); return; }
                   setWizardStep(s => Math.max(2, s - 1) as 1 | 2 | 3 | 4 | 5 | 6);
                 };
 
@@ -2018,11 +2022,11 @@ export default function Produtos() {
               // (14/10) header rosa no padrão das telas: foto (ou ícone), título, (i) e o passo; barra fina embaixo
               const ativasH = escolhasAtivas(form);
               const nEsc = ativasH.length;
-              const total = 5 + nEsc; // (14/10) + a Revisão no fim
-              const atual = wizardStep <= 2 ? 1 : wizardStep === 3 ? 2 + escTela : wizardStep - 1 + nEsc;
+              const total = 6 + nEsc; // (14/10) + a Revisão no fim · (30/10) + Cardápio e entrega
+              const atual = wizardStep <= 2 ? 1 : wizardStep === 3 ? 2 + escTela : wizardStep === 4 ? 3 + nEsc : wizardStep === 5 ? 4 + nEsc + (entTela ? 1 : 0) : 6 + nEsc;
               const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", quantidade: "Quantidade" };
               const escAtual = wizardStep === 3 && escTela > 0 ? ativasH[escTela - 1] : null;
-              const nomePasso = wizardStep <= 2 ? "Sobre o produto" : wizardStep === 3 ? (escAtual ? ROT[escAtual] : "Escolhas") : wizardStep === 4 ? "Fotos" : wizardStep === 5 ? "Preço" : "Revisão";
+              const nomePasso = wizardStep <= 2 ? "Sobre o produto" : wizardStep === 3 ? (escAtual ? ROT[escAtual] : "Escolhas") : wizardStep === 4 ? "Fotos" : wizardStep === 5 ? (entTela ? "Cardápio e entrega" : "Preço") : "Revisão";
               const foto = (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0];
               return (
               <div className="prod-modal-header-novo pcab">
@@ -2047,7 +2051,8 @@ export default function Produtos() {
                     : escAtual ? `Cadastre as opções de ${ROT[escAtual].toLowerCase()}. No cardápio, o cliente escolhe entre elas ao fazer o pedido.`
                     : wizardStep === 3 ? "Marque o que o cliente escolhe ao pedir, como tamanho ou sabor. Cada escolha marcada vira uma tela para você cadastrar as opções."
                     : wizardStep === 4 ? "A foto principal é a que aparece no cardápio. Produto com foto vende mais."
-                    : wizardStep === 5 ? "Coloque o preço, uma promoção se quiser, e diga se o produto é pronta entrega ou encomenda."
+                    : wizardStep === 5 && entTela ? "Diga se o produto é pronta entrega ou sob encomenda e como ele aparece no cardápio."
+                    : wizardStep === 5 ? "Coloque o preço e, se quiser, uma promoção."
                     : "Veja como o produto aparece no cardápio e confira tudo antes de publicar."}</p>
                 </Janela>
               </div>
@@ -2376,7 +2381,7 @@ export default function Produtos() {
               {/* Título e subtítulo (mesmo estilo do step 3) */}
 
               {/* (14/10) de onde vem o preço quando tem Tamanho e cada sabor tem o seu preço (antes: caixa amarela de "conflito" depois das tabelas) */}
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && comboTamSabor(form) && (() => {
+              {((wizardStep === 5 && !entTela && !form.id) || (form.id && editTab === "preco")) && comboTamSabor(form) && (() => {
                 const atual = regraCombo(form);
                 const OPC: [RegraConflitoTamanho, string, string][] = [
                   ["preco_sabor", "Só o sabor", "O tamanho não muda o preço"],
@@ -2400,7 +2405,7 @@ export default function Produtos() {
               })()}
 
               {/* Preços por Tamanho — só se tem tamanhos ativos */}
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && !(comboTamSabor(form) && regraCombo(form) !== "preco_tamanho" && regraCombo(form) !== "tamanho_base_sabor_adicional") && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
+              {((wizardStep === 5 && !entTela && !form.id) || (form.id && editTab === "preco")) && !(comboTamSabor(form) && regraCombo(form) !== "preco_tamanho" && regraCombo(form) !== "tamanho_base_sabor_adicional") && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     {/* 10/10: antes cortava a última letra do nome do grupo ("tamanhos e peso", "tamanhos do comb") */}
@@ -2469,7 +2474,7 @@ export default function Produtos() {
               )}
 
               {/* Preços por Sabor — só se tem sabores ativos E sabor_tem_preco_proprio */}
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && !(comboTamSabor(form) && regraCombo(form) !== "preco_sabor" && regraCombo(form) !== "tamanho_base_sabor_adicional") && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
+              {((wizardStep === 5 && !entTela && !form.id) || (form.id && editTab === "preco")) && !(comboTamSabor(form) && regraCombo(form) !== "preco_sabor" && regraCombo(form) !== "tamanho_base_sabor_adicional") && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">Preço por sabor</p>
                   {precosDosSabores(form) && (
@@ -2524,7 +2529,7 @@ export default function Produtos() {
               {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
               {/* Aparece quando: (a) não tem tamanho, OU (b) modo é por_peso (precisa do R$/kg) */}
               {/* Kit (02/10): sem "preço base" — o preço vem dos kits montados. Fica só a promoção. */}
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && kitAtivo((form as any).kit_qtd) && (() => {
+              {((wizardStep === 5 && !entTela && !form.id) || (form.id && editTab === "preco")) && kitAtivo((form as any).kit_qtd) && (() => {
                 const kq: any = (form as any).kit_qtd;
                 const pct = Number(form.desconto_percentual) || 0;
                 const promoOn = !!form.promocao && form.tipo_promocao === "percentual";
@@ -2578,7 +2583,7 @@ export default function Produtos() {
                 );
               })()}
 
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "preco")) && !kitAtivo((form as any).kit_qtd) && (
+              {((wizardStep === 5 && !entTela && !form.id) || (form.id && editTab === "preco")) && !kitAtivo((form as any).kit_qtd) && (
                 !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) ||
                 form.grupo_tamanhos?.modo_preco_tamanho === "por_peso"
               ) && (
@@ -2776,7 +2781,7 @@ export default function Produtos() {
                   virão na Fase 2 futura como chips. */}
 
               {/* (14/10) cadastro novo: uma seção só com as opções, cada uma com caixinha e explicação */}
-              {((wizardStep === 5 && !form.id) || (form.id && editTab === "entrega")) && (() => {
+              {((wizardStep === 5 && entTela && !form.id) || (form.id && editTab === "entrega")) && (() => {
                 const enc = !!(form as any).antecedencia;
                 const op = (on: boolean, t: string, sub: string, fn: () => void) => (
                   <button type="button" className={`prod-opc${on ? " on" : ""}`} role="checkbox" aria-checked={on} onClick={fn}>
@@ -2785,8 +2790,9 @@ export default function Produtos() {
                   </button>
                 );
                 return (
-                  <div className="prod-section">
-                    {!form.id ? <p className="prod-section-label prod-section-label--novo">Cardápio e entrega</p> : null}
+                  <div className="prod-section prod-sec-ent">
+                    {/* (30/10 · 5.27) tela própria: como vende (escolha única, igual ao celular) e, embaixo, o que aparece no cardápio */}
+                    <p className="prod-section-label prod-section-label--novo">Como você vende</p>
                     {/* (22/10) celular: escolha única Pronta entrega | Sob encomenda (antes eram duas caixinhas e dava pra desmarcar as duas, B6) */}
                     <div className="prod-so-cel">
                       <div className="prod-tipo" role="radiogroup" aria-label="Como você vende este produto">
@@ -2797,21 +2803,24 @@ export default function Produtos() {
                       </div>
                       {form.pronta_entrega !== true && <PrazoEncomenda valor={(form as any).antecedencia ?? null} aoMudar={v => setForm(f => ({ ...(f as any), antecedencia: v }))} />}
                     </div>
+                    <div className="prod-so-pc">
+                      <CaixasEscolha rotulo="Como você vende este produto" valor={(form.pronta_entrega === true ? "pronta" : enc ? "encomenda" : "") as "pronta" | "encomenda"}
+                        opcoes={[{ v: "pronta", t: "Pronta entrega", sub: "Tem feito, sai na hora" }, { v: "encomenda", t: "Sob encomenda", sub: "O cliente pede com antecedência" }]}
+                        onMudar={v => setForm(f => ({ ...(f as any), pronta_entrega: v === "pronta", antecedencia: v === "pronta" ? null : (f as any).antecedencia || "48h" }))} />
+                      {enc && form.pronta_entrega !== true && <PrazoEncomenda valor={(form as any).antecedencia ?? null} aoMudar={v => setForm(f => ({ ...(f as any), antecedencia: v }))} />}
+                    </div>
+                    <p className="prod-section-label prod-section-label--novo prod-lbl-sep">No cardápio</p>
                     <div className="prod-opcs">
                       {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só para você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false, ...(f.disponivel !== false ? { destaque: false } : {}) } as any)))}
                       {/* (27/10) Destaques: até 6, no topo do cardápio em cartão grande */}
-                      {op((form as any).destaque === true, "Destacar no cardápio", `${qtdDestaques(form.id) + ((form as any).destaque === true ? 1 : 0)} de ${MAX_DESTAQUES} destaques · no topo, em cartão grande`, () => {
+                      {op((form as any).destaque === true, "Destacar no cardápio", `${qtdDestaques(form.id) + ((form as any).destaque === true ? 1 : 0)} de ${MAX_DESTAQUES} · no topo, em cartão grande`, () => {
                         const ligar = (form as any).destaque !== true;
                         if (ligar && form.disponivel === false) { avisar("Mostre o produto no cardápio para poder destacar.", { tipo: "erro" }); return; }
                         if (ligar && qtdDestaques(form.id) >= MAX_DESTAQUES) { avisarLimiteDestaques(false); return; }
                         setForm(f => ({ ...(f as any), destaque: ligar }));
                       })}
-                      <div className="prod-so-pc">
-                      {op(form.pronta_entrega === true, "Pronta entrega", "Tem feito, sai na hora", () => setForm(f => ({ ...(f as any), pronta_entrega: !(f as any).pronta_entrega, antecedencia: !(f as any).pronta_entrega ? null : (f as any).antecedencia ?? null })))}
-                      {op(enc, "Precisa encomendar antes", enc ? "O cardápio mostra \"Pedir antes\"" : "O cliente pede com antecedência", () => setForm(f => ({ ...(f as any), antecedencia: (f as any).antecedencia ? null : "48h", pronta_entrega: (f as any).antecedencia ? (f as any).pronta_entrega : false })))}
-                      </div>
                       {/* (19/10) foto de referência só nos produtos que pedem (personalizados, topos de bolo) */}
-                      {op((form as any).aceita_referencia === true, "Aceita foto de referência", "O cliente manda uma foto de como quer", () => setForm(f => ({ ...(f as any), aceita_referencia: !(f as any).aceita_referencia })))}
+                      {op((form as any).aceita_referencia === true, "Aceita foto de referência", "O cliente manda a foto do modelo", () => setForm(f => ({ ...(f as any), aceita_referencia: !(f as any).aceita_referencia })))}
                     </div>
                     {/* (24/10) quando usar a foto de referência */}
                     <p className="prod-ref-dica">
@@ -2819,7 +2828,6 @@ export default function Produtos() {
                         ? <>No pedido aparece um campo para o cliente <b>anexar uma foto de referência</b>. Ela chega junto com o pedido para você ver.</>
                         : <>Ligue em produtos <b>personalizados</b>, como bolos decorados, topos de bolo e kits temáticos. Em produtos de linha, deixe desligado.</>}
                     </p>
-                    {enc && <div className="prod-so-pc"><PrazoEncomenda valor={(form as any).antecedencia ?? null} aoMudar={v => setForm(f => ({ ...(f as any), antecedencia: v }))} /></div>}
                   </div>
                 );
               })()}
@@ -2901,7 +2909,7 @@ export default function Produtos() {
                     return (form.preco_normal || 0) > 0 ? promoMaior : { msg: "Coloque o preço do produto", alvo: 'input[aria-label="Preço cheio"]' };
                     })();
                     if (fPreco) return fPreco;
-                    if (!((form as any).pronta_entrega === true || (form as any).antecedencia)) return { msg: "Marque pronta entrega ou encomenda", alvo: ".prod-opcs" };
+                    if ((wizardStep === 6 || entTela) && !((form as any).pronta_entrega === true || (form as any).antecedencia)) return { msg: "Marque pronta entrega ou sob encomenda", alvo: ".prod-sec-ent" };
                     return null;
                   }
                   // Passo 4: Fotos — sempre pode avançar (fotos opcionais)
@@ -2961,6 +2969,7 @@ export default function Produtos() {
                       // (14/10) escolhas: lista → cada escolha marcada → passo 4
                       if (wizardStep === 3 && escTela < escolhasAtivas(form).length) { setEscTela(t => t + 1); return; }
                       if (wizardStep === 2) aoSairDoSobre();
+                      if (wizardStep === 5 && !entTela) { setEntTela(true); return; }
                       setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5 | 6);
                     }}
                   >
@@ -3853,6 +3862,7 @@ export default function Produtos() {
         /* (15/10) sucesso = aviso rosa no meio da tela (a caixa do cadastro some, fica só o aviso) */
         body .prod-modal-overlay.prod-modal-overlay--sucesso { justify-content: center !important; align-items: center !important; padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)) !important; overflow-y: auto; }
         body .prod-modal-overlay--sucesso .prod-modal.prod-modal--aviso { width: 100% !important; max-width: 400px !important; height: auto !important; max-height: none !important; margin: auto !important; padding: 0 !important; border: 0 !important; border-radius: 20px !important; background: transparent !important; box-shadow: none !important; overflow: visible !important; animation: none !important; }
+        @media (min-width: 640px) { body .prod-modal-overlay--sucesso .prod-modal.prod-modal--aviso { max-width: 580px !important; } } /* (30/10 · 5.27) aviso mais largo e baixo no PC */
         .prod-modal-overlay {
           position: fixed; inset: 0; z-index: 500;
           background: rgba(45, 31, 38, 0.55);
