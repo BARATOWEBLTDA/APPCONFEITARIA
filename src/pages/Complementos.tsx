@@ -310,6 +310,7 @@ export default function Complementos() {
         <div className="pz-form">
           {/* (30/10 · 5.32) PC: janela larga em duas colunas, sem rolar: o complemento à esquerda e onde aparece (a lista de produtos) à direita */}
           <div className="pz-c1">
+          <div className="pz-sec">
           <Campo rotulo="Nome" obrigatorio placeholder="Ex.: topo de bolo, escrita, papel de arroz" value={form.nome} maxLength={50} erro={erroNome}
             onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
           {/* (30/10 · 5.31) caixa maior, até 60 letras (2 linhas no cardápio) e "Gerar com IA" com 3 opções; as sugestões fixas saíram */}
@@ -335,20 +336,13 @@ export default function Complementos() {
             </button>
           </div>
 
-          {/* (19/10) prévia ao vivo: como o cliente vê no cardápio */}
-          <div className="pz-prev" aria-hidden="true">
-            <small>Assim aparece para o cliente</small>
-            <div className="pz-ex-l on"><i><Check size={14} weight="bold" /></i>
-              <span className="pz-prev-tx"><span>{form.nome.trim() || "Nome do complemento"}</span>{form.descricao.trim() && <em>{form.descricao.trim()}</em>}</span>
-              <b className={form.gratis ? "g" : ""}>{form.gratis ? "Grátis" : `+ R$ ${brl(form.valor || 0)}`}</b></div>
-            {form.pedeRef && <div className="pz-prev-ref"><Camera size={16} weight="bold" aria-hidden="true" />Enviar foto de referência</div>}
-            {form.pedeFrase && <div className="pz-prev-ref pz-prev-frase"><TextT size={16} weight="bold" aria-hidden="true" />Qual frase vai no bolo?</div>}
           </div>
-
           {/* (19/10) complemento que pede foto (ex.: Topo de bolo): no cardápio, ao marcar, o cliente anexa a referência */}
           {/* (24/10) o que o complemento pede ao cliente: foto e/ou frase, num quadro só */}
+          {/* (30/10 · 5.34) o título fora do quadro, igual aos outros campos */}
+          <div className="ui-campo">
+          <span className="ui-campo-r"><span>O cliente precisa mandar</span></span>
           <div className="pz-pede">
-            <span className="pz-pede-t">O cliente precisa mandar</span>
           <button type="button" role="checkbox" aria-checked={form.pedeRef} className="pz-ref pz-ref--l" onClick={() => setForm(f => ({ ...f, pedeRef: !f.pedeRef }))}>
             <i className="pz-chk" aria-hidden="true">{form.pedeRef && <Check size={14} weight="bold" />}</i>
             <span><b>Uma foto de referência</b><small>Ex.: topo de bolo, papel de arroz</small></span>
@@ -358,9 +352,20 @@ export default function Complementos() {
               <span><b>Uma frase</b><small>Ex.: escrita no bolo, cartão</small></span>
             </button>}
           </div>
+          </div>
 
           </div>
           <div className="pz-c2">
+          {/* (19/10) prévia ao vivo: como o cliente vê no cardápio · (30/10) no PC fica no topo da coluna da direita */}
+          <div className="pz-prev" aria-hidden="true">
+            <small>Assim aparece para o cliente</small>
+            <div className="pz-ex-l on"><i><Check size={14} weight="bold" /></i>
+              <span className="pz-prev-tx"><span>{form.nome.trim() || "Nome do complemento"}</span>{form.descricao.trim() && <em>{form.descricao.trim()}</em>}</span>
+              <b className={form.gratis ? "g" : ""}>{form.gratis ? "Grátis" : `+ R$ ${brl(form.valor || 0)}`}</b></div>
+            {form.pedeRef && <div className="pz-prev-ref"><Camera size={16} weight="bold" aria-hidden="true" />Enviar foto de referência</div>}
+            {form.pedeFrase && <div className="pz-prev-ref pz-prev-frase"><TextT size={16} weight="bold" aria-hidden="true" />Qual frase vai no bolo?</div>}
+          </div>
+
           {/* (24/10) onde aparece: 3 opções em lista (antes "Em todos / Escolher" e uma lista solta de produtos) */}
           <div className="ui-campo">
             <span className="ui-campo-r"><span>Onde aparece no cardápio</span></span>
