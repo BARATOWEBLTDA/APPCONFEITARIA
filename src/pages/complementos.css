@@ -276,3 +276,7 @@
 /* "Em produtos escolhidos": selo Recomendado na diagonal (o mesmo da promoção) */
 .pz-onde-b { position: relative; overflow: hidden; min-height: 72px; padding-right: 44px; }
 .pz-selo { position: absolute; top: 21px; right: -32px; width: 124px; padding: 3px 0; transform: rotate(45deg); background: var(--ui-rosa); color: #fff; font-style: normal; font-size: 9.5px; font-weight: 600; text-align: center; line-height: 1.3; pointer-events: none; box-shadow: 0 2px 6px rgba(190, 24, 93, .25); }
+/* (30/10 · 5.36) padrão do app: marcar várias = quadradinho (22px, borda 2px, canto 6px); escolher uma só = bolinha (20px, igual às caixinhas) */
+.pz-chk { width: 22px; height: 22px; border-width: 2px; border-color: #D6CBD0; border-radius: 6px; box-sizing: border-box; }
+.pz-onde-b > i { width: 20px; height: 20px; border: 2px solid #CFC3C8; }
+.pz-onde-op.on .pz-onde-b > i { border: 6px solid var(--ui-escolha); }

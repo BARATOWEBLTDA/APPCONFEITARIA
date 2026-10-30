@@ -182,7 +182,7 @@ body .prod-modal--novo .esc-rec { margin-left: 6px; padding: 0; border-radius: 0
 body .prod-modal--novo .prod-opcs { border: 1px solid var(--ui-borda); border-radius: 12px; overflow: hidden; background: var(--ui-branco); }
 body .prod-modal--novo .prod-opc { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 62px; margin: 0; padding: 10px 14px; border: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 body .prod-modal--novo .prod-opcs .prod-opc + .prod-opc { border-top: 1px solid var(--ui-linha); }
-body .prod-modal--novo .prod-opc > i { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #D6CBD0; border-radius: 6px; color: var(--ui-branco); }
+body .prod-modal--novo .prod-opc > i { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; box-sizing: border-box; border: 2px solid #D6CBD0; border-radius: 6px; color: var(--ui-branco); }
 body .prod-modal--novo .prod-opc.on > i { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 body .prod-modal--novo .prod-opc > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 body .prod-modal--novo .prod-opc b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
