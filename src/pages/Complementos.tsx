@@ -24,8 +24,8 @@ type Complemento = { id: string; nome: string; descricao?: string; valor: number
 /** (24/10) onde aparece: em todos, nas categorias marcadas (pelo nome, como os produtos guardam) ou nos produtos marcados */
 type Onde = "todos" | "categorias" | "produtos";
 type ProdutoLite = { id: string; nome: string; categoria?: string; imagem_url?: string | null };
-type Form = { nome: string; descricao: string; valor: number; gratis: boolean; onde: Onde; cats: string[]; produtos: string[]; pedeRef: boolean; pedeFrase: boolean };
-const FORM_VAZIO: Form = { nome: "", descricao: "", valor: 0, gratis: false, onde: "todos", cats: [], produtos: [], pedeRef: false, pedeFrase: false };
+type Form = { nome: string; descricao: string; valor: number; gratis: boolean; onde: Onde | ""; /* (30/10 · 5.38) "" = ainda não escolheu (antes vinha "Em todos" marcado) */ cats: string[]; produtos: string[]; pedeRef: boolean; pedeFrase: boolean };
+const FORM_VAZIO: Form = { nome: "", descricao: "", valor: 0, gratis: false, onde: "", cats: [], produtos: [], pedeRef: false, pedeFrase: false };
 const ondeDe = (c: Complemento): Onde => ((c.categorias_cardapio || []).length ? "categorias" : (c.categorias || []).length ? "produtos" : "todos");
 
 /** "BOLO DE PAÇOCA" → "Bolo de Paçoca" */
@@ -150,13 +150,14 @@ export default function Complementos() {
 
   const erroNome = tentou && !form.nome.trim() ? "Escreva o nome" : undefined;
   const erroValor = tentou && !form.gratis && form.valor <= 0 ? 'Escreva o valor ou marque Grátis' : undefined;
-  const erroProdutos = tentou && form.onde === "produtos" && form.produtos.length === 0 ? "Marque pelo menos um produto"
+  const erroProdutos = tentou && !form.onde ? "Escolha onde o complemento aparece"
+    : tentou && form.onde === "produtos" && form.produtos.length === 0 ? "Marque pelo menos um produto"
     : tentou && form.onde === "categorias" && form.cats.length === 0 ? "Marque pelo menos uma categoria" : undefined;
 
   const salvar = async () => {
     setTentou(true);
     const nome = form.nome.trim();
-    if (!nome || (!form.gratis && form.valor <= 0) || (form.onde === "produtos" && form.produtos.length === 0) || (form.onde === "categorias" && form.cats.length === 0)) return;
+    if (!nome || !form.onde || (!form.gratis && form.valor <= 0) || (form.onde === "produtos" && form.produtos.length === 0) || (form.onde === "categorias" && form.cats.length === 0)) return;
     const dados = { nome, descricao: form.descricao.trim() || null, valor: form.gratis ? 0 : form.valor, pede_referencia: form.pedeRef, ...(temFrase ? { pede_frase: form.pedeFrase } : {}),
       categorias: form.onde === "produtos" ? form.produtos : [], categorias_cardapio: form.onde === "categorias" ? form.cats : [] };
     setSaving(true);
@@ -388,9 +389,10 @@ export default function Complementos() {
             <span className="ui-campo-r"><span>Onde aparece no cardápio</span></span>
             <div className="pz-onde" role="radiogroup" aria-label="Onde aparece no cardápio">
               {([
-                ["todos", "Em todos os produtos", `${produtos.length} ${produtos.length === 1 ? "produto" : "produtos"}`],
-                ["categorias", "Em categorias", form.cats.length ? listaDeNomes(form.cats) : "Produto novo da categoria já recebe"],
+                /* (30/10 · 5.38) o recomendado vem primeiro */
                 ["produtos", "Em produtos escolhidos", form.produtos.length ? `${form.produtos.length} ${form.produtos.length === 1 ? "marcado" : "marcados"}` : "Marque um por um"],
+                ["categorias", "Em categorias", form.cats.length ? listaDeNomes(form.cats) : "Produto novo da categoria já recebe"],
+                ["todos", "Em todos os produtos", `${produtos.length} ${produtos.length === 1 ? "produto" : "produtos"}`],
               ] as [Onde, string, string][]).map(([k, t, d]) => (
                 <div key={k} className={`pz-onde-op${form.onde === k ? " on" : ""}`}>
                   <button type="button" role="radio" aria-checked={form.onde === k} className="pz-onde-b" onClick={() => setForm(f => ({ ...f, onde: k }))}>
