@@ -220,8 +220,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   if (completo) {
     return (
       <>
-        {/* (16/10) cartão pequeno: antes ocupava quase a tela toda */}
-        <LojaProntaCartao profile={profile} onFechar={fechar} />
+        {/* (16/10) cartão pequeno: antes ocupava quase a tela toda · (30/10 · 5.46) no computador não aparece: o "Seu link de vendas" fica no topo do Início (antes os dois apareciam) */}
+        {largo ? null : <LojaProntaCartao profile={profile} onFechar={fechar} />}
         <style>{CSS}</style>
       </>
     );

@@ -133,3 +133,9 @@
   html body .sidebar .nav-group-body { border-left-color: rgba(255, 255, 255, .16); }
   html body .sidebar .sidebar-nav { padding-top: 14px; }
 }
+
+/* (30/10 · 5.46) PC: cartões sem sombra em cima do fundo cinza (escurecia demais); fica só a borda fininha */
+@media (min-width: 901px) {
+  html body { --ui-sombra-cartao: none; }
+  html body .ini-dk-kpi { box-shadow: none !important; }
+}

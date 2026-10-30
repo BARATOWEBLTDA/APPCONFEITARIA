@@ -2,13 +2,13 @@
 import { resumoItens } from "@/components/pedidos/pedidoTexto";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
+import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
 import PraFazer from "@/components/PraFazer";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_INICIO, COMO_INICIO_CEL, TOUR_INICIO_CEL, TOUR_INICIO_PC } from "@/lib/comoTelas";
 import { BotaoAjuda } from "@/components/como/ComoFunciona";
 import { fazerTour, contarPassos } from "@/components/como/tour";
 import { abrirBuscaRapida } from "@/components/BuscaRapida";
-import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
 import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
@@ -860,6 +860,8 @@ export default function Inicio() {
 
       {/* (29/10 · 4.93) computador: os Primeiros passos vêm antes dos números (pra loja nova os números estão zerados) */}
       {computador && <section className="ini-section ini-pp ini-pp--topo"><PrimeirosPassos /></section>}
+      {/* (30/10 · 5.46) o link de vendas sobe para o topo (some sozinho enquanto a loja não está pronta) */}
+      {computador && <div className="ini-link-topo"><LinkDeVendas /></div>}
       {/* ══ Computador (≥1100px): topo rosa com o resumo do dia + números (30/09) ══ */}
       {(() => {
         const aReceberHoje = counts.valorEntregasHoje; // todas as entregas de hoje (não só as 5 da lista)
@@ -1054,7 +1056,6 @@ export default function Inicio() {
              fixos do lado; próximas entregas com o Pra fazer do lado; notícias numa linha na largura toda. ══ */}
       {computador && (
         <div className="ini-dkg">
-          <div className="dkg-cheio dkg-link"><LinkDeVendas /></div>
           {/* Recebido nos últimos 30 dias (o que entrou no caixa, igual ao Financeiro) */}
           <section className="ini-section ini-section--chart dkg-graf">
             {/* (23/10) com recebimentos, o próprio gráfico mostra o título, o total e a comparação */}
@@ -2068,6 +2069,8 @@ export default function Inicio() {
         /* (21/10) grade do Início no computador */
         .ini-pp--topo { margin: 0 0 18px; }
         .ini-pp--topo:empty { display: none; }
+        .ini-link-topo { margin: 0 0 18px; }
+        .ini-link-topo:empty { display: none; }
         .ini-dkg { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; margin-top: 18px; align-items: stretch; }
         .ini-dkg > * { min-width: 0; margin: 0 !important; }
         .ini-dkg > .dkg-cheio { grid-column: 1 / -1; }

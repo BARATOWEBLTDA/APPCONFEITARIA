@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Copy, Check, Storefront } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { useProfile, getCardapioUrl } from '@/hooks/useProfile'
+import { useProfile, getCardapioUrl, fotoDaLoja } from '@/hooks/useProfile'
 import { avisar } from '@/components/base'
 import { useLojaPronta } from '@/lib/primeirosPassos'
 import './loja.css'
@@ -24,11 +24,12 @@ export function LinkDeVendas() {
   const zap = `https://wa.me/?text=${encodeURIComponent(`Faça seu pedido pelo nosso cardápio: ${link}`)}`
   return (
     <section className="lj-link" aria-label="Seu link de vendas">
-      <span className="lj-link-ic"><Storefront size={26} aria-hidden="true" /></span>
+      {/* (30/10 · 5.46) a logo da loja, "no ar" e o link; Copiar e WhatsApp no canto (o Ver cardápio já fica no topo da tela) (o cartão "Seu cardápio está no ar" de cima saiu) */}
+      <span className="lj-link-ic">{fotoDaLoja(profile) ? <img src={fotoDaLoja(profile)} alt="" /> : <Storefront size={24} aria-hidden="true" />}</span>
       <span className="lj-link-tx">
-        <small>Seu link de vendas</small>
+        <small><i className="lj-link-ar" aria-hidden="true" />Seu cardápio está no ar</small>
         <b title={link}>{link.replace(/^https?:\/\//, '')}</b>
-        <em>Mande para os clientes pedirem pelo cardápio</em>
+        <em>Mande o link para os clientes pedirem</em>
       </span>
       <span className="lj-link-bts">
         <button type="button" className="lj-bt" onClick={copiar}>{copiado ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}{copiado ? 'Copiado' : 'Copiar link'}</button>

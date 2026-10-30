@@ -103,3 +103,13 @@
 .lj-bt--pri { background: var(--ui-rosa); color: #fff; }
 .lj-bt--pri:hover { background: var(--ui-rosa-escuro); }
 .lj-bt:focus-visible { outline-color: rgba(var(--ui-rosa-rgb), .45); }
+
+/* (30/10 · 5.46) link de vendas no topo do Início (PC): logo da loja, bolinha verde "no ar", sem sombra, letras mais leves */
+.lj-link { box-shadow: none; padding: 16px 20px; border-radius: var(--ui-raio-cartao); }
+.lj-link-ic { width: 52px; height: 52px; overflow: hidden; border-radius: 50%; background: #F3EEF0; color: var(--ui-texto-2); }
+.lj-link-ic img { width: 100%; height: 100%; object-fit: cover; }
+.lj-link-tx small { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; color: #15803D; }
+.lj-link-ar { width: 8px; height: 8px; border-radius: 50%; background: #22C55E; box-shadow: 0 0 0 3px rgba(34, 197, 94, .18); }
+.lj-link-tx b { font-size: 17px; font-weight: 600; color: var(--ui-texto); }
+.lj-link-tx em { font-size: 13px; }
+.lj-bt { font-weight: 500; }
