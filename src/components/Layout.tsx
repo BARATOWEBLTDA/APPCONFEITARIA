@@ -324,14 +324,15 @@ export default function Layout() {
                 navigate(item.to, { replace: !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela });
                 setMaisOpen(false);
               };
-              if (item.mais) return (
+              // (30/10 · 5.63) dentro da Nova venda o + desce e fica igual aos outros (aceso): dá respiro para o Cancelar e o Continuar
+              if (item.mais && !location.pathname.startsWith("/vendas/novo")) return (
                 <NavLink key={item.to} to={item.to} className="bn-item bn-novo" aria-label="Nova venda" title="Nova venda" onClick={irPara}>
                   <span className="bn-novo-c"><Plus size={26} weight="bold" /></span>
                 </NavLink>
               );
               // com o Mais aberto, só ele fica aceso
               const isActive = !maisOpen && (
-                location.pathname === item.to ||
+                location.pathname === item.to || (!!item.mais && location.pathname.startsWith("/vendas/novo")) ||
                 location.pathname.startsWith(item.to + "/") ||
                 (item.to === "/cardapio" && ["/cardapio-", "/produtos", "/categorias", "/complementos"].some(r => location.pathname.startsWith(r))));
               return (
