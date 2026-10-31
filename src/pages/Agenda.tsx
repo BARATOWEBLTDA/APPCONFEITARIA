@@ -678,8 +678,6 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
           const hoje = c.iso === hojeISO;
           const qtd = st?.total || 0;
           const partes = st ? ORDEM_SIT.filter(k => st[k] > 0).map(k => `${st[k]} ${NOME_SIT[k]}`) : [];
-          const etq: { sit: Sit; t: string }[] = st?.etq || [];
-          const cabem = etq.length > 3 ? 2 : 3;
           return (
             <button
               key={c.iso + (c.outroMes ? "-o" : "")}
@@ -691,17 +689,10 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
               onClick={() => setDiaSel(c.iso)}
             >
               <span className="ag3-d-n">{c.date.getDate()}</span>
-              {/* celular: bolinhas (uma por situação) */}
+              {/* bolinhas (uma por situação) · (31/10 · 5.86) no computador também, sem os nomes */}
               <span className="ag3-d-b" aria-hidden="true">
                 {ORDEM_SIT.map(k => st?.[k] > 0 ? <i key={k} className={k} /> : null)}
               </span>
-              {/* computador: uma etiqueta por pedido, na cor da situação */}
-              {etq.length > 0 && (
-                <span className="ag3-d-e" aria-hidden="true">
-                  {etq.slice(0, cabem).map((e, i) => <em key={i} className={e.sit}>{e.t}</em>)}
-                  {etq.length > cabem && <em className="mais">+{etq.length - cabem} mais</em>}
-                </span>
-              )}
             </button>
           );
         })}

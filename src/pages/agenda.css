@@ -46,7 +46,6 @@ i.ace { background: #EA8A1A; }
 i.ok { background: var(--ui-verde); }
 i.atr { background: var(--ui-vermelho); }
 /* (21/10) etiquetas por pedido: só no computador (no celular ficam as bolinhas) */
-.ag3-d-e { display: none; }
 .ag3-leg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-linha); }
 .ag3-leg span { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .ag3-leg i { width: 8px; height: 8px; }
@@ -111,19 +110,6 @@ i.atr { background: var(--ui-vermelho); }
 @media (max-width: 380px) { .ag3-leg { gap: 9px; } .ag3-leg span { font-size: 12px; gap: 4px; } .ag3-leg i { width: 7px; height: 7px; } }
 @media (min-width: 560px) { .ag3-leg { gap: 20px; } .ag3-leg span { font-size: 13px; } }
 
-/* (21/10) computador: etiquetas no lugar das bolinhas */
-@media (min-width: 1024px) {
-  .ag3-d { justify-content: flex-start; min-height: 80px; padding: 6px 3px; }
-  .ag3-d-b { display: none; }
-  .ag3-d-e { display: flex; flex-direction: column; gap: 2px; width: 100%; min-width: 0; }
-  .ag3-d-e em { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 4px; border-radius: 4px; font-size: 11px; font-style: normal; font-weight: 600; line-height: 15px; text-align: left; }
-  .ag3-d-e em.atr { background: #FDE2E2; color: #B42318; }
-  .ag3-d-e em.ace { background: #FDECD3; color: #9A4A06; }
-  .ag3-d-e em.age { background: #E0EBFC; color: #1D4ED8; }
-  .ag3-d-e em.ok { background: #DDF3E4; color: #157A3C; }
-  .ag3-d-e em.mais { padding: 0 4px; background: none; color: var(--ui-texto-2); font-weight: 500; }
-  .ag3-d.sel .ag3-d-e em.mais { color: var(--ui-branco); }
-}
 
 /* (21/10) dia vazio: "Precisa de atenção" e "Próximos dias" */
 .ag3-at { display: flex; flex-direction: column; gap: 8px; }
