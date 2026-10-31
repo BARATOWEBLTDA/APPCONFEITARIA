@@ -116,9 +116,9 @@ export default function Orcamentos() {
           <p>A cliente conta a ideia pelo seu link, você monta a proposta em minutos e ela aprova pelo celular. Aprovou, vira pedido na Agenda.</p>
           <ul>
             {([
-              [LinkSimple, 'Link fixo para pedir orçamento', 'Compartilhe e receba os pedidos organizados'],
-              [Package, 'Proposta com seus produtos', 'Ou itens personalizados, com fotos e valores'],
-              [FileText, 'A cliente aprova pelo link', 'E pode baixar a proposta em PDF'],
+              [LinkSimple, 'Link para pedir orçamento', 'Os pedidos chegam organizados'],
+              [Package, 'Proposta com seus produtos', 'Ou itens com foto e valor'],
+              [FileText, 'A cliente aprova pelo link', 'E baixa a proposta em PDF'],
             ] as const).map(([Ic, t, sub]) => (
               <li key={t}><span className="orc-pro-li-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><span className="orc-pro-li-tx"><b>{t}</b><small>{sub}</small></span></li>
             ))}
