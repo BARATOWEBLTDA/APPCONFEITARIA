@@ -130,7 +130,7 @@
   html body .sidebar .nav-item, html body .sidebar .nav-item--group { color: rgba(255, 255, 255, .94); }
   html body .sidebar .nav-subitem { color: rgba(255, 255, 255, .86); }
   html body .sidebar .nav-subitem.active, html body .sidebar .nav-item.active { color: #fff; background: rgba(255, 255, 255, .10); }
-  html body .sidebar .nav-group-body { border-left-color: rgba(255, 255, 255, .16); }
+  html body .sidebar .nav-group-body { border-left: 0; }
   html body .sidebar .sidebar-nav { padding-top: 14px; }
 }
 

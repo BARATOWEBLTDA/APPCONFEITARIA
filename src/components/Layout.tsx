@@ -269,13 +269,13 @@ export default function Layout() {
         )}
         {/* (22/10) o cartão da loja fica fixo embaixo, fora do menu que rola: no notebook (1366 × 768) ele ficava cortado */}
         <div className="sb-pe">
-          {!recolhido && <div className="sb-pausar"><PausarPedidos escuro /></div>}
+          {/* (30/10 · 5.61) sem a versão; a seta de recolher em cima e o status da loja por último */}
           <div className="sb-pe-l">
-            {!recolhido && <span className="sb-versao">v{VERSAO_APP}</span>}
             <button type="button" className="sb-recolher" onClick={alternarRecolhido} aria-label={recolhido ? "Abrir o menu" : "Recolher o menu"} title={recolhido ? "Abrir o menu" : "Recolher o menu"}>
               {recolhido ? <CaretDoubleRight size={16} weight="bold" /> : <CaretDoubleLeft size={16} weight="bold" />}
             </button>
           </div>
+          {!recolhido && <div className="sb-pausar"><PausarPedidos escuro /></div>}
         </div>
       </aside>
 
@@ -379,7 +379,7 @@ export default function Layout() {
         .sidebar {
           width: var(--sidebar-w, 220px); min-height: 100vh;
           background: var(--sidebar-bg);
-          border-right: 1px solid var(--sidebar-border);
+          border-right: 0; /* (5.61) sem linhas no menu */
           display: flex; flex-direction: column;
           padding: 1rem 1rem 1.25rem;
           position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
@@ -543,7 +543,7 @@ export default function Layout() {
         .nav-item--group.active-parent { color: var(--ui-branco); font-weight: var(--fw-bold); }
 
         /* (13/10) topo em uma linha: logo, saudação + plano, sino */
-        .sb-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 2px 0 12px 4px; margin: 0 0 8px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .sb-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 2px 0 12px 4px; margin: 0 0 8px; }
         .sb-marca { display: flex; align-items: center; padding: 0; border: 0; background: none; cursor: pointer; }
         .sb-marca:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: 3px; border-radius: 6px; }
         .sb-marca-nome { display: block; height: 34px; width: auto; }
@@ -576,8 +576,8 @@ export default function Layout() {
         .sb-mais { all: unset; box-sizing: border-box; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 6px; height: 30px; margin-top: 2px; border-radius: 8px; font-family: var(--font-base); font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.06); cursor: pointer; }
         .sb-mais:hover { background: rgba(255,255,255,0.12); color: var(--ui-branco); }
         .sb-mais:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: -3px; }
-        .sb-pe { flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); }
-        .sb-pe-l { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .sb-pe { flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-top: 10px; }
+        .sb-pe-l { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
         .sb-versao { padding-left: 6px; font-size: 11.5px; color: rgba(255,255,255,0.45); }
         .sb-recolher { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); cursor: pointer; }
         .sb-recolher:hover { background: rgba(255,255,255,0.12); color: var(--ui-branco); }
@@ -589,7 +589,7 @@ export default function Layout() {
         .menu-recolhido .sb-pe-l { justify-content: center; }
         .menu-recolhido .sidebar-nav { margin-right: 0; padding-right: 0; }
         .nav-group-body--fin .nav-subitem { min-height: 34px; font-size: 13px; }
-        .nav-group-body { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 6px 21px; padding-left: 9px; border-left: 1px solid rgba(255,255,255,0.14); }
+        .nav-group-body { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 6px 21px; padding-left: 9px; }
         .nav-subitem { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: var(--ui-raio-p); font-size: 13.5px; font-weight: var(--fw-medium); color: rgba(255,255,255,0.78); text-decoration: none; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
         .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .nav-subitem:hover { color: var(--ui-branco); background: rgba(255,255,255,0.07); }
