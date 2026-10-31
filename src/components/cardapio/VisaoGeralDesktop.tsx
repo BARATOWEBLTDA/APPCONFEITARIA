@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { ArrowSquareOut, CaretRight, ChartLineUp, Check, Copy, CurrencyCircleDollar, DownloadSimple, Eye, LinkSimple, Receipt } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
+const GraficoVisitas = lazy(() => import("@/components/cardapio/GraficoVisitas"));
 import { Botao } from "@/components/base";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 
@@ -97,7 +98,10 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
         const rot = nDias === 7 ? (k === nDias - 1 ? "hoje" : i.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")) : (k === nDias - 1 ? "hoje" : k % 5 === 0 ? String(i.getDate()) : "");
         return { ini: i, fim: f, rot, dica: i.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" }) }; });
     }
-    const serie = barras.map(b => ({ ...b, n: dados.visitas.filter(x => dentro(x, b.ini, b.fim)).length }));
+    // período anterior: a mesma janela, deslocada para trás (no "tudo" não há com o que comparar)
+    const passo = periodo === "hoje" ? 86400000 : periodo === "7d" ? 7 * 86400000 : 30 * 86400000;
+    const serie = barras.map(b => ({ ...b, futuro: b.ini.getTime() > Date.now(), n: dados.visitas.filter(x => dentro(x, b.ini, b.fim)).length,
+      nAntes: periodo === "tudo" ? null : dados.visitas.filter(x => dentro(x, new Date(b.ini.getTime() - passo), new Date(b.fim.getTime() - passo))).length }));
     // mais pedidos pelo cardápio no período (pela quantidade)
     const conta = new Map<string, number>();
     for (const p of ped) for (const it of p.pedido_itens || []) { const nm = String(it.nome_produto || "Produto"); conta.set(nm, (conta.get(nm) || 0) + (Number(it.quantidade) || 1)); }
@@ -122,8 +126,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
     if (!qr) return;
     const a = document.createElement("a"); a.href = qr; a.download = `qrcode-cardapio-${profile?.codigo_publico || "doonly"}.png`; a.click();
   };
-  const maxBarra = Math.max(1, ...(metr?.serie || []).map(d => d.n));
-  const tituloGrafico = periodo === "hoje" ? "Visitas por hora, hoje" : periodo === "tudo" ? "Visitas por semana" : `Visitas por dia, últimos ${periodo === "7d" ? 7 : 30} dias`;
+  const tituloGrafico = periodo === "hoje" ? "Visitas ao longo de hoje" : periodo === "tudo" ? "Visitas nas últimas 8 semanas" : `Visitas nos últimos ${periodo === "7d" ? 7 : 30} dias`;
   const quandoTxt = periodo === "hoje" ? "hoje" : periodo === "7d" ? "nos últimos 7 dias" : periodo === "30d" ? "nos últimos 30 dias" : "nas últimas 8 semanas";
   const ultimos = (dados?.pedidos || []).slice(0, 5);
 
@@ -184,22 +187,18 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
               ))}
             </div>
             <div className="vgd-gr">
-              <div className="vgd-gr-h"><p className="vgd-gt">{tituloGrafico}</p>{metr.vis > 0 && <span className="vgd-gr-max">maior: {maxBarra} {maxBarra === 1 ? "visita" : "visitas"}</span>}</div>
+              <div className="vgd-gr-h"><p className="vgd-gt">{tituloGrafico}</p></div>
               {metr.serie.every(x => x.n === 0) ? (
                 <div className="vgd-gv">
                   <span>Ninguém abriu o cardápio {quandoTxt}. Mande o link para os seus clientes.</span>
                   <button type="button" className="vgd-b vgd-bw" onClick={onShare}><IconeWhatsApp size={18} />Enviar no WhatsApp</button>
                 </div>
               ) : (
-                <div className={`vgd-bars${metr.serie.length > 8 ? " vgd-bars--fino" : ""}`}>
-                  {metr.serie.map((b, i) => (
-                    <div className={`vgd-bar${b.n === 0 ? " zero" : ""}`} key={i} title={`${b.dica}: ${b.n} visita${b.n !== 1 ? "s" : ""}`}>
-                      {metr.serie.length <= 8 && <em>{b.n > 0 ? b.n : ""}</em>}
-                      <i style={{ height: b.n > 0 ? `${Math.max(6, Math.round((b.n / maxBarra) * 100))}%` : undefined }} />
-                      <span>{b.rot}</span>
-                    </div>
-                  ))}
-                </div>
+                <Suspense fallback={<div style={{ height: 262 }} />}>
+                  <GraficoVisitas serie={metr.serie} unidade={periodo === "hoje" ? "horário" : periodo === "tudo" ? "semana" : "dia"}
+                    legA={periodo === "hoje" ? "Hoje" : periodo === "tudo" ? "Últimas 8 semanas" : `Últimos ${periodo === "7d" ? 7 : 30} dias`}
+                    legB={periodo === "hoje" ? "Ontem" : periodo === "tudo" ? null : `${periodo === "7d" ? 7 : 30} dias anteriores`} />
+                </Suspense>
               )}
             </div>
           </>
@@ -293,15 +292,6 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
         .vgd-gt { margin: 0; font-size: 14px; font-weight: 600; color: var(--ui-texto); } .vgd-gr-max { font-size: 12.5px; color: var(--ui-texto-3); }
         .vgd-gv { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 12px; padding: 14px 16px; border-radius: var(--ui-raio); background: #FBF9FA; font-size: 14px; color: var(--ui-texto-2); }
         .vgd-gv span { min-width: 0; }
-        .vgd-bars { display: flex; align-items: flex-end; gap: 12px; height: 160px; margin-top: 12px; padding-top: 4px;
-          background: repeating-linear-gradient(to top, transparent 0, transparent calc(25% - 1px), var(--ui-linha) calc(25% - 1px), var(--ui-linha) 25%); background-size: 100% calc(100% - 19px); background-repeat: no-repeat; }
-        .vgd-bars--fino { gap: 4px; }
-        .vgd-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; height: 100%; min-width: 0; }
-        .vgd-bar i { width: 100%; max-width: 44px; border-radius: 6px 6px 2px 2px; background: linear-gradient(180deg, #F472B6, var(--ui-rosa-escuro)); transition: filter .15s; }
-        .vgd-bar:hover i { filter: brightness(1.08); }
-        .vgd-bar.zero i { height: 3px; border-radius: 2px; background: var(--ui-linha); }
-        .vgd-bars--fino .vgd-bar i { border-radius: 3px 3px 1px 1px; }
-        .vgd-bar span { height: 14px; font-size: 12px; color: var(--ui-texto-3); white-space: nowrap; } .vgd-bar em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
 
         .vgd-g2 { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
         @media (max-width: 1180px) { .vgd-g2 { grid-template-columns: 1fr; } .vgd-hero { grid-template-columns: 1fr; } .vgd-qr { flex-direction: row; width: auto; gap: 12px; text-align: left; } .vgd-kp { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
