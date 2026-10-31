@@ -151,3 +151,19 @@
   .cab .cab-linha { position: static; justify-content: center; }
 }
 .cab-resumo { display: none; } /* (4.92) só no computador (desktopPadrao.css) */
+
+/* (30/10 · 5.54) topo "herói" no computador (Aparência): ícone rosa, título grande, subtítulo e arcos rosa em degradê no fundo */
+.cab-heroi-ic { display: none; }
+@media (min-width: 901px) {
+  html body .cab.cab--heroi {
+    min-height: 112px; padding-top: 22px; padding-bottom: 22px; overflow: hidden; border-bottom-color: #F6E3EB !important;
+    background:
+      radial-gradient(120% 220% at 62% -120%, transparent 58%, rgba(236, 72, 153, .12) 58.2%, transparent 60.5%),
+      radial-gradient(120% 220% at 70% -110%, transparent 62%, rgba(236, 72, 153, .10) 62.2%, transparent 65%),
+      radial-gradient(90% 180% at 100% 0%, rgba(253, 214, 232, .75), rgba(253, 214, 232, 0) 60%),
+      linear-gradient(90deg, #FFFFFF 0%, #FFF8FB 55%, #FDEDF4 100%) !important;
+  }
+  .cab--heroi .cab-heroi-ic { display: flex; flex: none; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, #F472B6, #EC4899); color: #fff; box-shadow: 0 8px 20px -8px rgba(236, 72, 153, .6); }
+  .cab--heroi .cab-t { font-size: 28px; font-weight: 600; letter-spacing: -.02em; }
+  html body .cab--heroi .cab-s { display: block; margin-top: 4px; font-size: 14.5px; font-weight: 400; color: var(--ui-texto-2) !important; }
+}

@@ -6,7 +6,7 @@ import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { ArrowCounterClockwise, ArrowsClockwise, CalendarBlank, Camera, Check, Eye, Info, Crown, Image as ImageIcon, Images, Layout, LinkSimple, Lock, MapPin, Palette, Plus, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
+import { House, Receipt, WhatsappLogo, ArrowCounterClockwise, ArrowsClockwise, CalendarBlank, Camera, Check, Eye, Info, Crown, Image as ImageIcon, Images, Layout, LinkSimple, Lock, MapPin, Palette, Plus, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -75,6 +75,14 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (ok) showSuccess();
   };
   const [nomeLoja, setNomeLoja] = useState("");
+  // (30/10 · 5.54) pré-visualização ao lado (PC largo): descrição e as 3 primeiras categorias com foto
+  const [descricaoLoja, setDescricaoLoja] = useState("");
+  const [catsPrevia, setCatsPrevia] = useState<{ nome: string; imagem_url?: string | null }[]>([]);
+  useEffect(() => {
+    if (!userId) return;
+    supabase.from("categorias").select("nome, imagem_url, ordem").eq("user_id", userId).order("ordem").limit(3)
+      .then(({ data }) => setCatsPrevia((data as any[]) || []), () => {});
+  }, [userId]);
   // (18/10) prévia do topo: cidade da loja (sem endereço, uma capital de exemplo) e o aberto/fechado
   const [cidade, setCidade] = useState("");
   // (30/10 · 5.46) o tema de Natal saiu do app (o cardápio fica sempre nas cores da loja)
@@ -118,13 +126,14 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setErroCarga(true); setLoading(false); return; }
       setUserId(user.id);
-      const { data, error: erroPerfil } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, tema_capa_url, tema_laco, tema_destaque, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
+      const { data, error: erroPerfil } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, descricao_loja, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, tema_capa_url, tema_laco, tema_destaque, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
       if (erroPerfil || !data) { setErroCarga(true); setLoading(false); return; }
       if (data) {
         setLogoUrl(data.logo_url || ""); setFotoPerfil((data as any).foto_url || "");
         setHideStars(!!(data as any).hide_stars);
         setAvaliacaoMedia(Number((data as any).avaliacao_media) || 5.0);
         setNomeLoja(data.nome_loja || "");
+        setDescricaoLoja(String((data as any).descricao_loja || "").trim());
         try { const e: any = typeof (data as any).endereco === "string" ? JSON.parse((data as any).endereco) : (data as any).endereco; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
         setHorario((data as any).horario ?? null);
         setBannerUrl(data.banner_url || "");
@@ -376,7 +385,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     {/* (11/10) fora da seção "Foto do topo": no modelo Premium ela não existe e o recorte do banner não abria */}
     {recorteTopo.janela}{recorteBanner.janela}
     {!identityCard && (
-      <AppPageHeader title="Aparência" subtitle="Logo, banners e cores" onBack={() => navigate(voltarPara)}
+      <AppPageHeader title="Aparência" subtitle="Personalize a aparência do seu cardápio digital" onBack={() => navigate(voltarPara)}
+        heroi={<Palette size={30} weight="fill" />}
         infoIcon="🎨" infoComo={COMO_APARENCIA} infoTour={TOUR_APARENCIA}
         infoContent={<>
           <p>Aqui você deixa o <strong>cardápio com a cara da sua confeitaria</strong>: a logo, os banners de promoção e as cores.</p>
@@ -396,7 +406,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
       <div className="ap-par">
       <section className="ap-card ap-sec-logo">
-        <Cabeca Ic={Storefront} titulo="Logo" apoio="No círculo do topo" />
+        <Cabeca Ic={Storefront} titulo="Logo" apoio="No topo" />
         {(logoUrl || fotoPerfil) ? (
           <div className="ap-img ap-img--logo">
             <span className="ap-logo-circ" style={{ borderColor: corAtual("cor_borda", corBorda) }}>{uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" /> : <img src={logoUrl || fotoPerfil} alt="Logo da loja" />}</span>
@@ -567,6 +577,26 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       </section>
 
       </div>
+
+      {/* (30/10 · 5.54) Pré-visualização: o cardápio no celular, do lado (só no PC largo; nos outros, o "Ver como fica") */}
+      <aside className="ap-prev" aria-label="Pré-visualização do cardápio">
+        <b className="ap-prev-t">Pré-visualização</b>
+        <div className="ap-prev-cel">
+          <div className="ap-prev-topo" style={bannerTopoUrl ? { backgroundImage: `url("${bannerTopoUrl}")` } : { background: `linear-gradient(180deg, ${topoEscurecido(corAtual("cor_navbar", corNavbar))}, ${corAtual("cor_navbar", corNavbar)})` }} />
+          <span className="ap-prev-logo" style={{ borderColor: corAtual("cor_borda", corBorda) }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}</span>
+          <b className="ap-prev-nome" style={{ color: corAtual("cor_nome", corNome) }}>{nomeLoja || "Nome da sua loja"}</b>
+          {descricaoLoja && <small className="ap-prev-desc">{descricaoLoja}</small>}
+          {catsPrevia.length > 0 && (
+            <div className="ap-prev-cats">
+              {catsPrevia.map(c => (
+                <span key={c.nome}><i>{c.imagem_url ? <img src={c.imagem_url} alt="" /> : <Storefront size={18} />}</i><small>{c.nome}</small></span>
+              ))}
+            </div>
+          )}
+          {bannerValues.find(Boolean) && <img className="ap-prev-banner" src={bannerValues.find(Boolean)} alt="" />}
+          <div className="ap-prev-nav"><span className="on"><House size={18} weight="fill" />Início</span><span><Receipt size={18} />Pedidos</span><span><WhatsappLogo size={18} />Contato</span></div>
+        </div>
+      </aside>
 
       {/* (17/10) galeria de banners prontos */}
       <Janela aberta={galeria.aberta} aoFechar={() => setGaleria(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Banners prontos"

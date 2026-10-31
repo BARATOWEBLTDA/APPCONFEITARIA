@@ -31,6 +31,8 @@ import './appPageHeader.css'
  *   · a foto sempre abre esse menu; a câmera (quando não tem foto) abre a escolha da foto
  */
 interface AppPageHeaderProps {
+  /** (30/10 · 5.54) computador: topo grande com ícone, subtítulo e arcos rosa no fundo (Aparência) */
+  heroi?: ReactNode
   title: string
   subtitle: string
   /** (28/10) computador: complemento do título em cinza, sem negrito ("Pedido #65 · Bruno Eduardo Pacheco"). No celular não aparece (lá vai no subtítulo) */
@@ -61,7 +63,7 @@ const ICONE_DO_EMOJI: Record<string, Icon> = {
   '📑': ListDashes, '📦': Package, '📰': Newspaper, '🔔': Bell, '🛍️': ShoppingBag, '🛒': ShoppingCart, '🧮': Calculator, '🧾': Invoice, '📋': Receipt,
 }
 
-export default function AppPageHeader({ title, subtitle, titleExtra, resumo, infoTitle, infoIcon, infoContent, infoTip, infoComo, infoTour, rightActions, onBack, voltar, centro }: AppPageHeaderProps) {
+export default function AppPageHeader({ heroi, title, subtitle, titleExtra, resumo, infoTitle, infoIcon, infoContent, infoTip, infoComo, infoTour, rightActions, onBack, voltar, centro }: AppPageHeaderProps) {
   // (23/10) nome da aba do navegador: o título da tela ("Pedidos · Doonly"), no lugar de "Doonly - Confeitaria Inteligente" em todas
   useEffect(() => {
     const t = String(title || '').trim()
@@ -78,13 +80,14 @@ export default function AppPageHeader({ title, subtitle, titleExtra, resumo, inf
   return (
     <>
       {/* (13/10) as abas do Cardápio digital saíram da faixa: viraram um grupo no menu da esquerda */}
-      <header className={`cab${centro ? " cab--centro" : ""}`}>
+      <header className={`cab${centro ? " cab--centro" : ""}${heroi ? " cab--heroi" : ""}`}>
         {onBack && (
           <BotaoIcone rotulo="Voltar" variante="claro" className="cab-voltar" onClick={onBack}><CaretLeft size={24} weight="bold" /></BotaoIcone>
         )}
         {!onBack && voltar && (
           <BotaoIcone rotulo="Voltar" variante="claro" className="cab-voltar cab-voltar--cel" onClick={voltarCel}><CaretLeft size={24} weight="bold" /></BotaoIcone>
         )}
+        {heroi && <span className="cab-heroi-ic" aria-hidden="true">{heroi}</span>}
         <div className="cab-txt">
           <div className="cab-linha">
             <h1 className="cab-t">{title}</h1>

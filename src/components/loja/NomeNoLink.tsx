@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Crown } from "@phosphor-icons/react";
+import { Copy, Crown, LinkSimple } from "@phosphor-icons/react";
+import { getCardapioUrl } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import { Botao, Campo, avisar } from "@/components/base";
@@ -49,19 +50,32 @@ export default function NomeNoLink() {
     setSalvando(false);
   };
 
+  // (30/10 · 5.54) o link numa pílula branca com "Copiar", em destaque
+  const copiar = async () => {
+    try { await navigator.clipboard.writeText(getCardapioUrl(profile)); avisar("Link copiado", { tipo: "ok" }); }
+    catch { avisar("Não deu para copiar. Tente de novo.", { tipo: "erro" }); }
+  };
+  const pilula = (fim: string) => (
+    <div className="nnl-pill">
+      <LinkSimple size={18} aria-hidden="true" />
+      <span>doonly.com.br/c/{codigo}/<b>{fim}</b></span>
+      <button type="button" onClick={copiar}><Copy size={15} weight="bold" aria-hidden="true" />Copiar</button>
+    </div>
+  );
+
   if (!isPro) return (
-    <div className="nl">
-      <p className="nl-link">doonly.com.br/c/{codigo}/<b>cardapio</b></p>
+    <div className="nnl">
+      {pilula("cardapio")}
       <Botao variante="suave" tamanho="m" icone={<Crown size={18} weight="fill" />} onClick={() => setProAberto(true)}>Usar o nome da loja</Botao>
       {proAberto && <RecursoPro titulo="Nome da loja no link" texto={`No PRO o seu link fica doonly.com.br/c/${codigo}/${sugestao || "nome-da-loja"}, mais fácil de lembrar e de divulgar.`} onClose={() => setProAberto(false)} />}
     </div>
   );
 
   return (
-    <div className="nl">
+    <div className="nnl">
       <Campo rotulo="Nome no link" placeholder={sugestao || "nome-da-loja"} value={nome} erro={erro}
         onChange={e => setNome(e.target.value.toLowerCase())} autoCapitalize="none" autoCorrect="off" spellCheck={false} />
-      <p className="nl-link">doonly.com.br/c/{codigo}/<b>{limpo || "cardapio"}</b></p>
+      {pilula(limpo || "cardapio")}
       {mudou && <Botao tamanho="m" carregando={salvando} onClick={salvar}>Salvar link</Botao>}
     </div>
   );
