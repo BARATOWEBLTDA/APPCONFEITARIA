@@ -400,10 +400,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     <div className="ap ap--2col">
       {/* (30/10 · 5.56) banner de abertura da tela, no topo, antes de tudo */}
       {!identityCard && <div className="ap-banner-topo"><img src={bannerAparencia} alt="Personalize sua loja e encante seus clientes! Uma loja com a sua cara vende mais." width={2172} height={724} /></div>}
-      <div className="ap-col ap-col-esq">
-
-
-      {/* (30/10 · 5.52) a logo e a foto do topo em cartões separados, com campos grandes de escolher a imagem (igual aos banners) */}
+      {/* (30/10 · 5.57) logo e foto do topo numa faixa da largura do banner, metade cada. (5.52) a logo e a foto do topo em cartões separados, com campos grandes de escolher a imagem (igual aos banners) */}
         <input ref={logoRef} type="file" accept="image/*" hidden onChange={handleLogoUpload} />
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
       <div className="ap-par">
@@ -442,6 +439,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         )}
       </section>
       </div>
+
+      <div className="ap-col ap-col-esq">
+
 
       {/* Banners de promoção */}
       <section className="ap-card ap-largo ap-sec-banners">
