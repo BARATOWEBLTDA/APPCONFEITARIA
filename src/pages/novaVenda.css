@@ -241,3 +241,7 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 .nv3-formas .nv3-tipo-r { top: 8px; right: 8px; width: 18px; height: 18px; }
 .nv3-formas button[aria-pressed="true"] .nv3-tipo-r { border-width: 6px; }
 @media (max-width: 389px) { .nv3-formas .nv3-tipo-r { top: 50%; margin-top: -9px; } }
+
+/* (30/10 · 5.62) PC: aviso embaixo do Continuar apagadinho, enquanto não tem produto */
+.nv3-lado-ajuda { display: flex; align-items: flex-start; gap: 10px; margin: 12px 0 0; padding: 12px 14px; border-radius: var(--ui-raio); background: #F6F3F4; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
+.nv3-lado-ajuda svg { flex: none; margin-top: 1px; color: var(--ui-texto-3); }

@@ -15,7 +15,7 @@ import AppPageHeader from '@/components/AppPageHeader'
 import { COMO_NOVA_VENDA, TOUR_NOVA_VENDA } from "@/lib/comoTelas";
 import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
-import { Bank, CalendarBlank, CalendarDots, Check, Clock, Copy, CreditCard, Lightning, MagnifyingGlass, Minus, Money, Package, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
+import { Bank, CalendarBlank, CalendarDots, Check, Clock, Copy, CreditCard, Info, Lightning, MagnifyingGlass, Minus, Money, Package, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
 import { historicoAssentado } from '@/components/base/useSobreposicao'
 import { dataLonga, itemComQtd, nomeDeProduto, recebidoPedido, rs, saldoPedido, telefoneBonito } from '@/components/pedidos/pedidoTexto'
@@ -467,16 +467,9 @@ export default function NovaVenda() {
   // (24/10) produto com massa, recheio, cobertura, sabor ou kit: abre a mesma janela de escolhas do cardápio
   // (igual ao "Adicionar item" do pedido). Só tamanho continua na tabela de tamanhos (com o "Outro tamanho").
   const [produtoOpcoes, setProdutoOpcoes] = useState<any | null>(null)
-  const abrirProduto = async (p: Produto) => {
-    const { data } = await supabase.from('produtos').select('*').eq('id', p.id).maybeSingle()
-    const completo: any = data || p
-    const grupos = carregarGruposDoBanco(completo).filter(g => g.ativo && g.opcoes.length > 0)
-    const soTamanho = grupos.length > 0 && grupos.every(g => g.tipo === 'tamanho')
-    if ((grupos.length > 0 && !soTamanho) || (completo.kit_qtd?.ativo)) {
-      setModalProduto(false); setBuscaProduto(''); setFiltroCategoria(null); setProdutoOpcoes(completo); return
-    }
-    addProduto(p)
-  }
+  // (30/10 · 5.62) sabores, recheios e o "monte o seu kit" não abrem mais a janela de escolhas: na venda de balcão
+  // ela só marca o produto. Tamanho ou kit com preço diferente ainda pergunta qual (muda o valor)
+  const abrirProduto = (p: Produto) => addProduto(p)
   const addProduto = (p: Produto, escolha?: { label: string; valor: number; pers: any }) => {
     if (!escolha) {
       const ops = opcoesDoProduto(p)
@@ -805,13 +798,7 @@ export default function NovaVenda() {
     {cabecalho}
 
     <div className="nv3">
-      {/* Passos: "Passo 2 de 5 · Cliente" no celular; o nome de todos a partir do tablet */}
-      <div className="nv3-passos">
-        <p><b>Passo {etapa} de {totalEtapas}</b> · {nomePasso(etapaLabelAtual)}</p>
-        <ol aria-label={`Passo ${etapa} de ${totalEtapas}: ${nomePasso(etapaLabelAtual)}`}>
-          {etapas.map((n, i) => <li key={n} className={i + 1 < etapa ? 'feito' : i + 1 === etapa ? 'atual' : ''} aria-current={i + 1 === etapa ? 'step' : undefined}><i /><span>{nomePasso(n)}</span></li>)}
-        </ol>
-      </div>
+      {/* (30/10 · 5.62) a barra de passos saiu (pedido do Bruno): o resumo e os botões já guiam */}
 
       {/* (21/10) no computador: os passos à esquerda e o resumo da venda fixo à direita */}
       <div className="nv3-grade">
@@ -874,9 +861,9 @@ export default function NovaVenda() {
                 })}
               </ul>
             )}
-            {/* (14/10) adicionar outro produto: embaixo dos produtos já escolhidos */}
-            {itens.length > 0 && <Botao variante="secundario" cheio className="nv3-add" icone={<Plus size={20} weight="bold" />} onClick={() => setModalProduto(true)}>Adicionar novo produto</Botao>}
           </section>
+          {/* (14/10) adicionar outro produto: embaixo dos produtos já escolhidos. (5.62) fora do cartão */}
+          {itens.length > 0 && <Botao variante="secundario" cheio className="nv3-add" icone={<Plus size={20} weight="bold" />} onClick={() => setModalProduto(true)}>Adicionar novo produto</Botao>}
         </>
       )}
 
@@ -1167,9 +1154,12 @@ export default function NovaVenda() {
         <div className="nv3-lado-bts">
           {isUltima
             ? <Botao cheio onClick={finalizarVenda} carregando={salvando}>Registrar venda</Botao>
-            : <Botao cheio onClick={proximaEtapa}>Continuar</Botao>}
+            : <Botao cheio onClick={proximaEtapa} disabled={etapa === 1 && itens.length === 0}>Continuar</Botao>}
           <Botao cheio variante="secundario" onClick={voltarEtapa} disabled={salvando}>{etapa === 1 ? 'Cancelar' : 'Voltar'}</Botao>
         </div>
+        {etapa === 1 && itens.length === 0 && (
+          <p className="nv3-lado-ajuda"><Info size={18} weight="bold" aria-hidden="true" />O botão Continuar fica disponível quando você adicionar pelo menos um produto.</p>
+        )}
       </aside>
       </div>
     </div>
