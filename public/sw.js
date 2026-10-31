@@ -55,7 +55,7 @@ self.addEventListener("push", (event) => {
   const options = {
     body: data.body,
     icon: data.icon || "/Sistema/icon-192.png",
-    badge: data.badge || "/Sistema/badge.png",
+    badge: data.badge || "/Sistema/badge.png?v=2",
     image: data.image,
     data: { url: data.url || "/" },
     vibrate: [120, 60, 120],

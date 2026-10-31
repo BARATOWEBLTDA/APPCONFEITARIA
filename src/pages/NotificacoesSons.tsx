@@ -31,7 +31,8 @@ export default function NotificacoesSons() {
     try {
       const { data, error } = await supabase.functions.invoke("push-pessoal", { body: { teste: true } });
       if (error) throw error;
-      if (data?.sent > 0) avisar(`Aviso de teste enviado para ${data.sent} ${data.sent === 1 ? "aparelho" : "aparelhos"}. Ele chega em alguns segundos.`, { tipo: "ok", duracao: 6000 });
+      // (31/10 · 5.82) sem a contagem: aparelho antigo (outro navegador, app reinstalado) também entrava na conta
+      if (data?.sent > 0) avisar("Aviso de teste enviado. Ele chega em alguns segundos.", { tipo: "ok", duracao: 6000 });
       else avisar(data?.motivo || "Nenhum aparelho recebeu o aviso. Ative as notificações neste aparelho e tente de novo.", { tipo: "info", duracao: 7000 });
     } catch {
       avisar("Não deu para enviar o aviso de teste. Confira a internet e tente de novo.", { tipo: "erro" });
@@ -185,7 +186,7 @@ export default function NotificacoesSons() {
               <span className="ns-ico"><PaperPlaneTilt size={20} /></span>
               <div className="ns-txt">
                 <div className="ns-name">Testar os avisos</div>
-                <div className="ns-desc">Manda um aviso para os seus aparelhos</div>
+                <div className="ns-desc">Manda um aviso de teste agora</div>
               </div>
               <Botao variante="secundario" tamanho="m" carregando={testando} onClick={testar}>Testar</Botao>
             </div>

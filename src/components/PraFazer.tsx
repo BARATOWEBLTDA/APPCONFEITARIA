@@ -8,6 +8,7 @@ import { useAoVoltar } from "@/hooks/useAoVoltar";
 import { precisaInstalarNoIphone } from "@/lib/notifications";
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
 import { avisoDoPro } from "@/lib/notificacoesUsuario";
+import { supabase } from "@/lib/supabase";
 import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { Botao, Janela, avisar } from "@/components/base";
@@ -150,7 +151,13 @@ export default function PraFazer() {
   const ativarNotif = async () => {
     if (push.permission === "denied") { navigate("/configuracoes/notificacoes"); return; }
     const ok = await push.subscribe();
-    if (ok) { avisar("Notificações ligadas. Você vai saber na hora quando chegar pedido.", { tipo: "ok" }); setMexeu(n => n + 1); }
+    // (31/10 · 5.82) ligou: já manda um aviso de teste de verdade (antes só prometia) e abre Notificações e sons
+    if (ok) {
+      setMexeu(n => n + 1);
+      void supabase.functions.invoke("push-pessoal", { body: { teste: true } }).catch(() => {});
+      avisar("Notificações ligadas. Um aviso de teste chega em alguns segundos.", { tipo: "ok", duracao: 6000 });
+      navigate("/configuracoes/notificacoes");
+    }
     else if (Notification.permission === "denied") navigate("/configuracoes/notificacoes");
   };
   // (23/10) sem "Agora não": enquanto os avisos não estiverem ligados, o pedido continua aqui (é o que garante que a novidade chega)
