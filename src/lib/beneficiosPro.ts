@@ -1,5 +1,5 @@
 import {
-  AddressBook, ChartLineUp, ChatCircleText, Crown, Eye, FilePdf, FileText, ImageSquare, Infinity as Infinito, Palette,
+  AddressBook, ChartLineUp, ChatCircleText, Crown, FilePdf, FileText, ImageSquare, Infinity as Infinito, Palette,
   Robot, SealCheck, Stack, Tag, type Icon,
 } from "@phosphor-icons/react";
 
@@ -11,7 +11,6 @@ export type Beneficio = [Icon, string, string, string, string, string | null];
 export const BENEFICIOS: Beneficio[] = [
   [ChartLineUp, "Saiba quanto você lucra de verdade", "Relatórios de lucratividade por produto e por mês, para decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
   [Robot, "A Doo IA sem aperto", "No PRO a Doo IA responde até 150 mensagens por dia e cria imagens. No grátis são 10 mensagens por mês.", "Doo IA 150 por dia", "E cria imagens", "doo"],
-  [Eye, "Veja quem visita e quem compra", "Visitas, pedidos pelo cardápio e conversão, de hoje e do mês.", "Quem visita e compra", "Visitas e pedidos do cardápio", "/cardapio"],
   [FileText, "Orçamentos que o cliente aprova", "Monte a proposta, mande o link e o cliente aprova pelo celular. Aprovou, vira pedido.", "Orçamentos", "Proposta com link para aprovar", "/orcamentos"],
   [Stack, "Complementos no cardápio", "Topo de bolo, velas e outros extras que o cliente marca no produto, com foto ou frase.", "Complementos", "Extras que o cliente marca", "/complementos"],
   [Tag, "Cupons sem limite", "No grátis, 1 cupom ativo. No PRO, quantos quiser, e os 2 mais novos aparecem no topo do cardápio.", "Cupons sem limite", "E os 2 mais novos no topo", "/marketing"],

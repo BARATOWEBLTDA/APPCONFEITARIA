@@ -2,12 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
-import { isPro as ehPro } from "@/hooks/useProfile";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
-import { ArrowSquareOut, CaretRight, Crown, LinkSimple, Lock } from "@phosphor-icons/react";
-
-/** visitas de exemplo (em %) para o painel desfocado do grátis */
-const EXEMPLO_DIAS = [22, 35, 28, 46, 40, 58, 33, 30, 52, 61, 44, 38, 70, 56, 48, 64, 82, 59, 45, 66, 73, 50, 41, 68, 88, 62, 57, 76, 92, 71];
+import { ArrowSquareOut, CaretRight, LinkSimple } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 
@@ -40,7 +36,6 @@ const STATUS: Record<string, [string, string]> = {
 
 export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _publicado, onShare }: { profile: any; linkCardapio: string; publicado: boolean; onShare: () => void }) {
   const navigate = useNavigate();
-  const pro = ehPro(profile);
   const [completo, setCompleto] = useState<boolean | null>(null);
   const [periodo, setPeriodo] = useState<Periodo>("7d");
   const [dados, setDados] = useState<{ visitas: string[]; pedidos: any[]; produtos: any[]; temCupom: boolean } | null>(null);
@@ -141,7 +136,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
       <div className="vgd-card">
         <div className="vgd-rowh">
           <div><p className="vgd-ct">Desempenho do cardápio</p><p className="vgd-cs">Quem visitou e quem comprou</p></div>
-          {pro && (
+          {(
             <div className="vgd-tabs" role="tablist">
               {([["hoje", "Hoje"], ["7d", "7 dias"], ["30d", "30 dias"], ["tudo", "Tudo"]] as [Periodo, string][]).map(([v, l]) => (
                 <button key={v} type="button" role="tab" aria-selected={periodo === v} className={periodo === v ? "on" : ""} onClick={() => setPeriodo(v)}>{l}</button>
@@ -149,30 +144,8 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
             </div>
           )}
         </div>
-        {!pro ? (
-          /* (31/10 · 5.87) grátis: o painel do PRO de exemplo, desfocado, com o cadeado no meio */
-          <div className="vgd-pv">
-            <div className="vgd-pv-fundo" aria-hidden="true">
-              <div className="vgd-kp">
-                {[["Visitas", "248", "+18% que antes"], ["Pedidos online", "31", "+6 que antes"], ["Faturamento online", "R$ 2.940,00", "+22% que antes"], ["Conversão", "12,5%", "de cada 100 visitas, 12 compram"]].map(([l, v, d]) => (
-                  <div className="vgd-k" key={l}><small>{l}</small><b>{v}</b><em className="n">{d}</em></div>
-                ))}
-              </div>
-              <div className="vgd-gr">
-                <p className="vgd-gt">Visitas por dia</p>
-                <div className="vgd-bars vgd-bars--30">
-                  {EXEMPLO_DIAS.map((n, i) => <div className="vgd-bar" key={i}><i style={{ height: `${n}%` }} /><span>{i % 5 === 0 ? i + 1 : ""}</span></div>)}
-                </div>
-              </div>
-            </div>
-            <div className="vgd-pv-veu">
-              <span className="vgd-pv-cad" aria-hidden="true"><Lock size={26} weight="bold" /></span>
-              <b>Veja quem visita e quem compra</b>
-              <small>Visitas, pedidos pelo link, faturamento e conversão, dia a dia. Recurso do plano PRO.</small>
-              <Botao icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
-            </div>
-          </div>
-        ) : metr && (
+        {/* (31/10 · 5.88) liberado no grátis: sem os números, a Visão geral não tinha serventia */}
+        {metr && (
           <>
             <div className="vgd-kp">
               {[["Visitas", String(metr.vis), variacao(metr.vis, metr.ant?.vis)],
@@ -278,16 +251,6 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
         .vgd-bar.zero i { height: 3px; border-radius: 2px; background: var(--ui-linha); }
         .vgd-bars--30 .vgd-bar i { border-radius: 3px 3px 1px 1px; }
         .vgd-bar span { font-size: 12px; color: var(--ui-texto-3); height: 14px; } .vgd-bar em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
-        .vgd-pv { position: relative; margin-top: 14px; border-radius: 14px; overflow: hidden; }
-        .vgd-pv-fundo { filter: blur(5px); opacity: .55; pointer-events: none; user-select: none; padding: 2px 4px 8px; }
-        .vgd-pv-fundo .vgd-kp { margin-top: 0; }
-        .vgd-pv-veu { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 20px; text-align: center; background: rgba(255,255,255,.45); }
-        .vgd-pv-cad { display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; margin-bottom: 6px; border-radius: 50%; background: var(--ui-vinho-escuro, #2A1520); color: #FCD34D; box-shadow: 0 8px 24px rgba(42,21,32,.25); }
-        .vgd-pv-veu b { font-size: 18px; font-weight: 600; color: var(--ui-texto); }
-        .vgd-pv-veu small { max-width: 440px; margin-bottom: 10px; font-size: 14px; color: var(--ui-texto-2); }
-        .vgd-lock { display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 16px; border-radius: 14px; background: #FFF6F9; border: 1px dashed #F3C9DA; }
-        .vgd-lock img { width: 34px; height: 34px; object-fit: contain; }
-        .vgd-lock div { flex: 1; } .vgd-lock b { display: block; font-size: 14.5px; } .vgd-lock small { font-size: 12.5px; color: var(--ui-texto-2); }
         .vgd-g2 { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
         .vgd-pe, .vgd-di { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 0; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; color: inherit; }
         .vgd-card > .vgd-pe:first-of-type, .vgd-card > .vgd-di:first-of-type { margin-top: 8px; }
@@ -299,7 +262,6 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
         .vgd-di { flex-wrap: wrap; row-gap: 4px; }
         .vgd-dt { flex: 1 1 170px; }
         .vgd-db { margin-left: auto; }
-        .vgd-pv { text-align: right; flex-shrink: 0; } .vgd-pv b { display: block; font-size: 13.5px; } .vgd-pv small { font-size: 13px; color: var(--ui-texto-3); }
         .vgd-pill { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
         .vgd-pill.ok { background: var(--ui-verde-fundo); color: var(--ui-verde); } .vgd-pill.rd { background: var(--ui-vermelho-fundo); color: #B91C1C; } .vgd-pill.bl { background: #DBEAFE; color: #1D4ED8; }
         .vgd-pill.am { background: var(--ui-laranja-fundo); color: var(--ui-laranja); } .vgd-pill.cz { background: #F3F4F6; color: #6B7280; }
@@ -319,14 +281,10 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
         .vgd-k em { display: block; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .vgd-k { background: #FBF9FA; border-color: transparent; }
         .vgd-bar span, .vgd-bar em { font-size: 12px; }
-        .vgd-lock { border: 0; background: linear-gradient(150deg, #22130E, #5A3626); color: var(--ui-branco); }
-        .vgd-lock-ic { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: none; border-radius: var(--ui-raio); background: rgba(255,255,255,.14); }
-        .vgd-lock b { color: var(--ui-branco); font-size: 16px; } .vgd-lock small { display: block; margin-top: 2px; font-size: 13.5px; color: rgba(255,255,255,.82); }
         .vgd-pe, .vgd-di { min-height: 56px; padding: 8px 0; }
         .vgd-pa { width: 40px; height: 40px; }
         .vgd-pt b, .vgd-dt b { font-size: 15px; }
         .vgd-pt small, .vgd-dt small { font-size: 13px; color: var(--ui-texto-2); }
-        .vgd-pv b { font-size: 15px; } .vgd-pv small { font-size: 13px; font-weight: 600; }
         .vgd-sit.ok { color: var(--ui-verde); } .vgd-sit.am { color: var(--ui-laranja); } .vgd-sit.bl { color: var(--ui-azul); } .vgd-sit.rs { color: var(--ui-rosa-escuro); } .vgd-sit.cz { color: var(--ui-texto-3); } .vgd-sit.rd { color: var(--ui-vermelho); }
         .vgd-de { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
         .vgd-db { display: inline-flex; align-items: center; gap: 2px; font-size: 13.5px; color: var(--ui-rosa-escuro); }
