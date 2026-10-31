@@ -133,3 +133,6 @@ body .prod-preview-menu-sub { font-size: 12.5px; }
   .pl-ficha > .pl-ficha-vaga { display: block !important; height: 29px; padding: 0; border-top: 0; }
   .pl-ficha > .pl-ficha-vaga + div { border-top: 1px solid var(--ui-borda); }
 }
+
+/* (31/10 · 5.79) celular: a chave de mostrar no cardápio um pouco mais para baixo (estava colada no nome) */
+@media (max-width: 900px) { .pl-lin-chave { margin-top: 10px; align-self: flex-start; } }

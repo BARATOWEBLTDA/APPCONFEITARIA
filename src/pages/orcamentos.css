@@ -376,3 +376,5 @@
 }
 @media (max-width: 900px) { .orc-pro-tx { align-self: stretch; } }
 @media (max-width: 900px) { .orc-pro-li-tx b, .orc-pro-li-tx small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+/* (31/10 · 5.79) celular: o "Conhecer o PRO" no meio */
+@media (max-width: 900px) { .orc-pro-tx > .ui-bt { align-self: center; } }

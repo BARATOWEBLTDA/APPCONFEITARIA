@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, Check, DotsThreeVertical, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Calculator, Camera, Check, DotsThreeVertical, Eye, Storefront, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { formatarNomeItem, parecefrase } from "@/lib/nomeItem";
@@ -8,6 +8,7 @@ import { precoCardapioComPromocao } from "@/lib/precoCardapio";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
+import mascoteCoroa from "@/assets/mascote-coroa.webp";
 import { Botao, BotaoIA, BotaoIcone, Campo, MenuMais, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import { usePlano } from "@/hooks/usePlano";
 import { LIMITE_COMPLEMENTOS_GRATIS } from "@/lib/limitesPlano";
@@ -66,6 +67,7 @@ export default function Complementos() {
   const [temCapa, setTemCapa] = useState(false); // (30/10 · 5.42) liga sozinho quando o banco tiver a coluna imagem_url
   const [subindoCapa, setSubindoCapa] = useState(false);
   const [busca, setBusca] = useState("");
+  const [verExemplo, setVerExemplo] = useState(false); // (5.79) celular: o exemplo do cardápio abre no "Ver como fica"
   const [buscaProd, setBuscaProd] = useState("");
   const [aberta, setAberta] = useState(false);
   const [editando, setEditando] = useState<Complemento | null>(null);
@@ -281,15 +283,32 @@ export default function Complementos() {
         ) : items.length === 0 ? (
           /* (24/10) tela vazia com o exemplo de como fica no cardápio do celular, ao lado (as sugestões "Comece por uma destas" saíram) */
           <section className="pz-vazio">
+            {/* (31/10 · 5.79) celular: a arte no estilo do Orçamentos (mascote de coroa, frase à mão e ondas) em cima do texto */}
+            <figure className="pz-vazio-arte" aria-hidden="true">
+              <svg className="pz-onda" viewBox="0 0 600 260" preserveAspectRatio="none">
+                <path d="M0 70 C 140 10, 260 120, 400 70 S 560 20, 600 40 L600 260 L0 260 Z" fill="#F3A3C6" opacity=".55" />
+                <path d="M0 120 C 120 70, 240 150, 380 120 S 540 80, 600 100 L600 260 L0 260 Z" fill="#EF8FB9" opacity=".35" />
+                <path d="M0 175 C 90 140, 220 150, 330 190 S 520 250, 600 230 L600 260 L0 260 Z" fill="#FFF5F9" />
+              </svg>
+              <img className="pz-masc" src={mascoteCoroa} alt="" />
+              <span className="pz-frase">Cada pedido<br />vale mais!</span>
+            </figure>
             <div className="pz-vazio-tx">
               <h2>Venda mais em cada pedido</h2>
               <p>Topo de bolo, velas, papel de arroz e balões que o cliente escolhe na hora de pedir.</p>
               <ul className="pz-vazio-lista">
-                <li><Check size={16} weight="bold" aria-hidden="true" />O valor soma sozinho no total</li>
-                <li><Check size={16} weight="bold" aria-hidden="true" />Você escolhe onde ele aparece</li>
-                <li><Check size={16} weight="bold" aria-hidden="true" />O cliente manda a foto da ideia junto</li>
+                {([
+                  [Calculator, "O valor soma sozinho", "No total do pedido"],
+                  [Storefront, "Você escolhe onde aparece", "Em todos ou só em alguns produtos"],
+                  [Camera, "O cliente manda a foto", "Da ideia, junto com o pedido"],
+                ] as const).map(([Ic, t, sub]) => (
+                  <li key={t}><span className="pz-vl-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><span className="pz-vl-tx"><b>{t}</b><small>{sub}</small></span></li>
+                ))}
               </ul>
-              <Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>
+              <div className="pz-vazio-bts">
+                <Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>
+                <Botao variante="secundario" className="pz-vazio-ver" icone={<Eye size={20} weight="bold" />} onClick={() => setVerExemplo(true)}>Ver como fica</Botao>
+              </div>
             </div>
             <ExemploCardapio />
           </section>
@@ -508,6 +527,9 @@ export default function Complementos() {
         )}
       </Janela>
       {recorteCapa.janela}
+      <Janela aberta={verExemplo} aoFechar={() => setVerExemplo(false)} tipo="conteudo" titulo="Assim o cliente vê">
+        <div className="pz-ver-ex"><ExemploCardapio /></div>
+      </Janela>
     </>
   );
 }
