@@ -155,3 +155,8 @@ html body .layout-root[data-rota="/noticias"], html body .layout-root[data-rota=
 @media (min-width: 901px) {
   .nl-lista { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); }
 }
+
+/* (30/10 · 5.66) celular: título e texto cabem inteiros (até 2 linhas cada), sem sumir da tela */
+.nl-lista > li { list-style: none; }
+.nl-it-t, .nl-it-d { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+.nl-it { box-sizing: border-box; }

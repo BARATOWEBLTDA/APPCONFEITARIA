@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { PointerEvent as PE, ReactNode } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Lightbulb, Newspaper, PlayCircle, Sparkle, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Lightbulb, Newspaper, PlayCircle, Sparkle, WarningCircle } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_NOVIDADES, TOUR_NOVIDADES } from "@/lib/comoTelas";
-import { Botao, TelaVazia, avisar } from "@/components/base";
+import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { semAcento } from "@/lib/noticias";
 import "./noticias.css";
@@ -72,47 +71,7 @@ function Convite({ titulo, texto, botao, para, destaque }: { titulo: string; tex
   );
 }
 
-/**
- * (24/10) Item da lista que sai arrastando para o lado (como apagar uma notificação no celular).
- * Arrastou mais de um terço: some e chama aoExcluir (o aviso tem "Desfazer"). No computador, um X aparece ao passar o mouse.
- */
-function ItemArrastavel({ children, aoExcluir, rotulo }: { children: ReactNode; aoExcluir: () => void; rotulo: string }) {
-  const [dx, setDx] = useState(0);
-  const [saindo, setSaindo] = useState(false);
-  const ini = useRef<{ x: number; y: number; w: number; horizontal: boolean | null } | null>(null);
-  const arrastou = useRef(false);
-  const onPointerDown = (e: PE) => {
-    if (e.pointerType === "mouse") return;
-    ini.current = { x: e.clientX, y: e.clientY, w: (e.currentTarget as HTMLElement).offsetWidth, horizontal: null };
-    arrastou.current = false;
-  };
-  const onPointerMove = (e: PE) => {
-    const i = ini.current; if (!i) return;
-    const mx = e.clientX - i.x, my = e.clientY - i.y;
-    if (i.horizontal === null) { if (Math.abs(mx) < 8 && Math.abs(my) < 8) return; i.horizontal = Math.abs(mx) > Math.abs(my); }
-    if (!i.horizontal) return;
-    arrastou.current = true;
-    setDx(Math.min(0, mx));
-  };
-  const soltar = () => {
-    const i = ini.current; ini.current = null;
-    if (!i || !i.horizontal) { setDx(0); return; }
-    if (-dx > i.w / 3) { setSaindo(true); setDx(-i.w); window.setTimeout(aoExcluir, 180); }
-    else setDx(0);
-  };
-  return (
-    <li className={`nl-sw${saindo ? " nl-sw--sai" : ""}`}>
-      <span className="nl-sw-fundo" aria-hidden="true"><Trash size={20} weight="bold" />Excluir</span>
-      <div className="nl-sw-it" style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: ini.current ? "none" : undefined }}
-        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={soltar} onPointerCancel={soltar}
-        onClickCapture={e => { if (arrastou.current) { e.preventDefault(); e.stopPropagation(); arrastou.current = false; } }}>
-        {children}
-      </div>
-      <button type="button" className="nl-sw-x" onClick={aoExcluir} aria-label={`Excluir a novidade ${rotulo}`}><X size={16} weight="bold" /></button>
-    </li>
-  );
-}
-
+// (30/10 · 5.66) o arrastar para excluir saiu: causava a rolagem para o lado e cortava o texto
 export default function Noticias() {
   const navigate = useNavigate();
   const [noticias, setNoticias] = useState<Noticia[]>([]);
@@ -121,7 +80,7 @@ export default function Noticias() {
   // (23/10) o que foi publicado antes de a conta existir já aparece como lido (conta nova não "herda" pendências)
   const [criadaEm, setCriadaEm] = useState("");
   useEffect(() => { void supabase.auth.getSession().then(({ data }) => setCriadaEm(data.session?.user?.created_at || "")); }, []);
-  // (24/10) as que ela tirou da lista (arrastando para o lado)
+  // (24/10) as que ela tirou da lista antes (o excluir saiu na 5.66; as já excluídas continuam fora)
   const [ocultas, setOcultas] = useState<Set<string>>(new Set());
   useEffect(() => {
     (async () => {
@@ -132,23 +91,6 @@ export default function Noticias() {
       setOcultas(new Set(r.data.filter((x: any) => x.excluida_em).map((x: any) => x.noticia_id)));
     })();
   }, []);
-  const marcarOculta = async (id: string, ocultar: boolean) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const uid = session?.user?.id;
-    if (!uid) return false;
-    const { error } = await supabase.from("noticias_lidas").upsert({ user_id: uid, noticia_id: id, excluida_em: ocultar ? new Date().toISOString() : null }, { onConflict: "user_id,noticia_id" });
-    if (!error) window.dispatchEvent(new CustomEvent("doonly:notif-mudou"));
-    return !error;
-  };
-  const excluir = async (id: string) => {
-    setOcultas(o => new Set(o).add(id)); setLidas(l => new Set(l).add(id));
-    const ok = await marcarOculta(id, true);
-    if (!ok) { setOcultas(o => { const n = new Set(o); n.delete(id); return n; }); avisar("Não deu para excluir a novidade. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
-    avisar("Novidade excluída", { acao: { rotulo: "Desfazer", aoTocar: async () => {
-      setOcultas(o => { const n = new Set(o); n.delete(id); return n; });
-      if (!(await marcarOculta(id, false))) avisar("Não deu para desfazer. Tente de novo.", { tipo: "erro" });
-    } } });
-  };
   const [estado, setEstado] = useState<"carregando" | "erro" | "pronto">("carregando");
   const [demorou, setDemorou] = useState(false);
 
@@ -230,7 +172,7 @@ export default function Noticias() {
                   const lida = lidas.has(n.id) || (!!criadaEm && !!n.publicado_em && Date.parse(n.publicado_em) < Date.parse(criadaEm));
                   const Ic = iconeDaCategoria(n.categoria);
                   return (
-                    <ItemArrastavel key={n.id} aoExcluir={() => excluir(n.id)} rotulo={tituloSemCategoria(n.titulo, n.categoria)}>
+                    <li key={n.id}>
                       <Link to={`/noticias/${n.slug}`} className={`nl-it${lida ? " nl-it--lida" : ""}`} aria-label={`${lida ? "" : "Não lida: "}${tituloSemCategoria(n.titulo, n.categoria)}`}>
                         <span className="nl-it-img" aria-hidden="true">
                           <Ic size={24} weight="duotone" />
@@ -242,7 +184,7 @@ export default function Noticias() {
                         </span>
                         <time dateTime={n.publicado_em}>{tempoCurto(n.publicado_em)}</time>
                       </Link>
-                    </ItemArrastavel>
+                    </li>
                   );
                 })}
               </ul>
