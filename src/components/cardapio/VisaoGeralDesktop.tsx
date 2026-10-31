@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
-import { ArrowSquareOut, CaretRight, LinkSimple } from "@phosphor-icons/react";
+import { ArrowSquareOut, CaretRight, ChartLineUp, Check, Copy, CurrencyCircleDollar, DownloadSimple, Eye, LinkSimple, Receipt } from "@phosphor-icons/react";
+import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { Botao } from "@/components/base";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 
@@ -80,11 +81,28 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
       const pa = ativos.filter(p => dentro(p.created_at, a0, ini));
       ant = { vis: dados.visitas.filter(x => dentro(x, a0, ini)).length, ped: pa.length, rec: pa.reduce((s, p) => s + (Number(p.valor_total) || 0), 0) };
     }
-    // Visitas por dia (últimos 7 dias, ou 30)
-    const nDias = periodo === "30d" ? 30 : 7;
-    const dias = Array.from({ length: nDias }, (_, i) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (nDias - 1 - i)); return d; });
-    const porDia = dias.map(d => { const f = new Date(d); f.setDate(f.getDate() + 1); return { d, n: dados.visitas.filter(x => dentro(x, d, f)).length }; });
-    return { vis, ped: ped.length, rec, conv: vis > 0 ? (ped.length / vis) * 100 : 0, ant, porDia };
+    // (31/10 · 5.89) o gráfico em todos os períodos: hoje por hora, 7 e 30 dias por dia, "tudo" por semana (8 semanas)
+    type Barra = { ini: Date; fim: Date; rot: string; dica: string };
+    let barras: Barra[] = [];
+    if (periodo === "hoje") {
+      const h0 = new Date(); h0.setHours(0, 0, 0, 0);
+      barras = Array.from({ length: 24 }, (_, h) => { const i = new Date(h0); i.setHours(h); const f = new Date(i); f.setHours(h + 1); return { ini: i, fim: f, rot: h % 3 === 0 ? `${h}h` : "", dica: `${h}h às ${h + 1}h` }; });
+    } else if (periodo === "tudo") {
+      const fimSem = new Date(); fimSem.setHours(24, 0, 0, 0);
+      barras = Array.from({ length: 8 }, (_, k) => { const f = new Date(fimSem); f.setDate(f.getDate() - 7 * (7 - k)); const i = new Date(f); i.setDate(i.getDate() - 7); const ult = new Date(f); ult.setDate(ult.getDate() - 1);
+        return { ini: i, fim: f, rot: k === 7 ? "esta" : i.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), dica: `${i.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} a ${ult.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}` }; });
+    } else {
+      const nDias = periodo === "30d" ? 30 : 7;
+      barras = Array.from({ length: nDias }, (_, k) => { const i = new Date(); i.setHours(0, 0, 0, 0); i.setDate(i.getDate() - (nDias - 1 - k)); const f = new Date(i); f.setDate(f.getDate() + 1);
+        const rot = nDias === 7 ? (k === nDias - 1 ? "hoje" : i.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")) : (k === nDias - 1 ? "hoje" : k % 5 === 0 ? String(i.getDate()) : "");
+        return { ini: i, fim: f, rot, dica: i.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" }) }; });
+    }
+    const serie = barras.map(b => ({ ...b, n: dados.visitas.filter(x => dentro(x, b.ini, b.fim)).length }));
+    // mais pedidos pelo cardápio no período (pela quantidade)
+    const conta = new Map<string, number>();
+    for (const p of ped) for (const it of p.pedido_itens || []) { const nm = String(it.nome_produto || "Produto"); conta.set(nm, (conta.get(nm) || 0) + (Number(it.quantidade) || 1)); }
+    const top = [...conta].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    return { vis, ped: ped.length, rec, conv: vis > 0 ? (ped.length / vis) * 100 : 0, ant, serie, top };
   }, [dados, periodo]);
 
   const variacao = (atual: number, antes?: number) => {
@@ -104,7 +122,9 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
     if (!qr) return;
     const a = document.createElement("a"); a.href = qr; a.download = `qrcode-cardapio-${profile?.codigo_publico || "doonly"}.png`; a.click();
   };
-  const maxDia = Math.max(1, ...(metr?.porDia || []).map(d => d.n));
+  const maxBarra = Math.max(1, ...(metr?.serie || []).map(d => d.n));
+  const tituloGrafico = periodo === "hoje" ? "Visitas por hora, hoje" : periodo === "tudo" ? "Visitas por semana" : `Visitas por dia, últimos ${periodo === "7d" ? 7 : 30} dias`;
+  const quandoTxt = periodo === "hoje" ? "hoje" : periodo === "7d" ? "nos últimos 7 dias" : periodo === "30d" ? "nos últimos 30 dias" : "nas últimas 8 semanas";
   const ultimos = (dados?.pedidos || []).slice(0, 5);
 
   return (
@@ -113,74 +133,78 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
       <PrimeirosPassos local="cardapio" onEstado={setCompleto} />
 
       {completo && (
-        <div className="vgd-hero">
-          <div>
+        <section className="vgd-hero" aria-label="Seu link">
+          <div className="vgd-hero-tx">
             {situacao && <span className={`vgd-st${situacao.aberto ? "" : " off"}`}><i />{situacao.txt}</span>}
             <h2>Seu cardápio está no ar</h2>
-            <div className="vgd-lk"><LinkSimple size={20} weight="bold" aria-hidden="true" /><span>{linkCardapio.replace(/^https?:\/\//, "")}</span></div>
+            <p>Mande o link para os seus clientes. Eles escolhem, pagam e o pedido chega aqui.</p>
+            <div className="vgd-lk">
+              <LinkSimple size={18} weight="bold" aria-hidden="true" />
+              <span>{linkCardapio.replace(/^https?:\/\//, "")}</span>
+              <button type="button" onClick={copiar}>{copiado ? <><Check size={16} weight="bold" aria-hidden="true" />Copiado</> : <><Copy size={16} weight="bold" aria-hidden="true" />Copiar</>}</button>
+            </div>
             <div className="vgd-btns">
-              <button type="button" className="vgd-b vgd-bw" onClick={onShare}>Enviar no WhatsApp</button>
-              <button type="button" className="vgd-b vgd-bl" onClick={copiar}>{copiado ? "Link copiado" : "Copiar link"}</button>
-              <a className="vgd-b vgd-bg" href={linkCardapio} target="_blank" rel="noopener noreferrer">Ver como cliente<ArrowSquareOut size={16} weight="bold" aria-hidden="true" /></a>
+              <button type="button" className="vgd-b vgd-bw" onClick={onShare}><IconeWhatsApp size={18} />Enviar no WhatsApp</button>
+              <a className="vgd-b vgd-bs" href={linkCardapio} target="_blank" rel="noopener noreferrer"><ArrowSquareOut size={16} weight="bold" aria-hidden="true" />Ver como cliente</a>
             </div>
           </div>
           {qr && (
             <div className="vgd-qr">
               <img src={qr} alt="QR Code do cardápio" />
-              <button type="button" onClick={baixarQr}>QR Code para imprimir · <u>Baixar</u></button>
+              <b>QR Code</b>
+              <small>Para imprimir</small>
+              <button type="button" onClick={baixarQr}><DownloadSimple size={16} weight="bold" aria-hidden="true" />Baixar</button>
             </div>
           )}
-        </div>
+        </section>
       )}
 
-      <div className="vgd-card">
+      <section className="vgd-card" aria-label="Desempenho do cardápio">
         <div className="vgd-rowh">
-          <div><p className="vgd-ct">Desempenho do cardápio</p><p className="vgd-cs">Quem visitou e quem comprou</p></div>
-          {(
-            <div className="vgd-tabs" role="tablist">
-              {([["hoje", "Hoje"], ["7d", "7 dias"], ["30d", "30 dias"], ["tudo", "Tudo"]] as [Periodo, string][]).map(([v, l]) => (
-                <button key={v} type="button" role="tab" aria-selected={periodo === v} className={periodo === v ? "on" : ""} onClick={() => setPeriodo(v)}>{l}</button>
-              ))}
-            </div>
-          )}
+          <div><p className="vgd-ct">Desempenho do cardápio</p><p className="vgd-cs">Quem visitou e quem comprou {quandoTxt}</p></div>
+          <div className="vgd-tabs" role="tablist">
+            {([["hoje", "Hoje"], ["7d", "7 dias"], ["30d", "30 dias"], ["tudo", "Tudo"]] as [Periodo, string][]).map(([v, l]) => (
+              <button key={v} type="button" role="tab" aria-selected={periodo === v} className={periodo === v ? "on" : ""} onClick={() => setPeriodo(v)}>{l}</button>
+            ))}
+          </div>
         </div>
-        {/* (31/10 · 5.88) liberado no grátis: sem os números, a Visão geral não tinha serventia */}
-        {metr && (
+        {!metr ? <p className="vgd-vazio">Carregando…</p> : (
           <>
             <div className="vgd-kp">
-              {[["Visitas", String(metr.vis), variacao(metr.vis, metr.ant?.vis)],
-                ["Pedidos online", String(metr.ped), variacao(metr.ped, metr.ant?.ped)],
-                ["Faturamento online", brl(metr.rec), variacao(metr.rec, metr.ant?.rec)],
-                ["Conversão", `${metr.conv.toFixed(1).replace(".", ",")}%`, metr.vis ? { txt: `de cada 100 visitas, ${Math.round(metr.conv)} compram`, up: true, neutro: true } : null],
-              ].map(([l, v, d]: any) => (
-                <div className="vgd-k" key={l}><small>{l}</small><b>{v}</b>{d && <em className={d.neutro ? "n" : d.up ? "" : "down"}>{d.txt}</em>}</div>
+              {([[Eye, "Visitas", String(metr.vis), variacao(metr.vis, metr.ant?.vis)],
+                [Receipt, "Pedidos pelo cardápio", String(metr.ped), variacao(metr.ped, metr.ant?.ped)],
+                [CurrencyCircleDollar, "Vendido pelo cardápio", brl(metr.rec), variacao(metr.rec, metr.ant?.rec)],
+                [ChartLineUp, "Conversão", `${metr.conv.toFixed(1).replace(".", ",")}%`, metr.vis ? { txt: `${Math.round(metr.conv)} de cada 100 visitas compram`, up: true, neutro: true } : { txt: "sem visitas ainda", up: true, neutro: true }],
+              ] as [typeof Eye, string, string, any][]).map(([Ic, l, v, d]) => (
+                <div className="vgd-k" key={l}>
+                  <span className="vgd-k-ic" aria-hidden="true"><Ic size={18} weight="bold" /></span>
+                  <small>{l}</small><b>{v}</b>
+                  <em className={!d ? "n" : d.neutro ? "n" : d.up ? "" : "down"}>{d ? d.txt : "—"}</em>
+                </div>
               ))}
             </div>
-            {/* 13/10: gráfico com título, barras finas, dia sem visita como traço cinza e aviso quando não teve nenhuma */}
-            {periodo !== "hoje" && periodo !== "tudo" && (
-              <div className="vgd-gr">
-                <p className="vgd-gt">Visitas por dia</p>
-                {metr.porDia.every(x => x.n === 0) ? (
-                  <div className="vgd-gv">
-                    <span>Ninguém abriu o cardápio {periodo === "7d" ? "nos últimos 7 dias" : "nos últimos 30 dias"}. Mande o link para os seus clientes.</span>
-                    <button type="button" className="vgd-b vgd-bw" onClick={onShare}>Enviar no WhatsApp</button>
-                  </div>
-                ) : (
-                  <div className={`vgd-bars${metr.porDia.length > 7 ? " vgd-bars--30" : ""}`}>
-                    {metr.porDia.map(({ d, n }, i) => (
-                      <div className={`vgd-bar${n === 0 ? " zero" : ""}`} key={i} title={`${d.toLocaleDateString("pt-BR")}: ${n} visita${n !== 1 ? "s" : ""}`}>
-                        {metr.porDia.length <= 7 && <em>{n > 0 ? n : ""}</em>}
-                        <i style={{ height: n > 0 ? `${Math.max(6, Math.round((n / maxDia) * 100))}%` : undefined }} />
-                        <span>{metr.porDia.length <= 7 ? (i === metr.porDia.length - 1 ? "hoje" : d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")) : (i % 5 === 0 ? d.getDate() : "")}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="vgd-gr">
+              <div className="vgd-gr-h"><p className="vgd-gt">{tituloGrafico}</p>{metr.vis > 0 && <span className="vgd-gr-max">maior: {maxBarra} {maxBarra === 1 ? "visita" : "visitas"}</span>}</div>
+              {metr.serie.every(x => x.n === 0) ? (
+                <div className="vgd-gv">
+                  <span>Ninguém abriu o cardápio {quandoTxt}. Mande o link para os seus clientes.</span>
+                  <button type="button" className="vgd-b vgd-bw" onClick={onShare}><IconeWhatsApp size={18} />Enviar no WhatsApp</button>
+                </div>
+              ) : (
+                <div className={`vgd-bars${metr.serie.length > 8 ? " vgd-bars--fino" : ""}`}>
+                  {metr.serie.map((b, i) => (
+                    <div className={`vgd-bar${b.n === 0 ? " zero" : ""}`} key={i} title={`${b.dica}: ${b.n} visita${b.n !== 1 ? "s" : ""}`}>
+                      {metr.serie.length <= 8 && <em>{b.n > 0 ? b.n : ""}</em>}
+                      <i style={{ height: b.n > 0 ? `${Math.max(6, Math.round((b.n / maxBarra) * 100))}%` : undefined }} />
+                      <span>{b.rot}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </>
         )}
-      </div>
+      </section>
 
       <div className="vgd-g2">
         <div className="vgd-card">
@@ -210,85 +234,92 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
           })}
         </div>
 
-        {/* (16/10) o "Pra vender mais" foi pro "Seus próximos passos" do Início (as mesmas dicas, num lugar só) */}
+        <div className="vgd-card">
+          <div className="vgd-rowh"><div><p className="vgd-ct">Mais pedidos pelo cardápio</p><p className="vgd-cs">{quandoTxt.charAt(0).toUpperCase() + quandoTxt.slice(1)}</p></div></div>
+          {!metr ? <p className="vgd-vazio">Carregando…</p> : metr.top.length === 0 ? (
+            <p className="vgd-vazio">Os produtos aparecem aqui quando chegarem pedidos {quandoTxt}.</p>
+          ) : (
+            <ol className="vgd-top">
+              {metr.top.map(([nm, qt], i) => (
+                <li key={nm}><span className="vgd-top-n">{i + 1}</span><span className="vgd-top-t">{nm}</span><b>{qt.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</b>
+                  <i style={{ width: `${Math.round((qt / metr.top[0][1]) * 100)}%` }} aria-hidden="true" /></li>
+              ))}
+            </ol>
+          )}
+        </div>
       </div>
 
       <style>{`
-        .vgd { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-base); color: var(--ui-texto); margin-top: 20px; }
-        .vgd-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 18px 20px; }
-        .vgd-ct { margin: 0; font-size: 15.5px; font-weight: 600; } .vgd-cs { margin: 2px 0 0; font-size: 12.5px; color: var(--ui-texto-3); }
+        /* (31/10 · 5.89) Visão geral refeita: cartão do link claro (sem o marrom), números com ícone,
+           gráfico em todos os períodos e "Mais pedidos" ao lado dos últimos pedidos */
+        .vgd { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; font-family: var(--font-base); color: var(--ui-texto); }
+        .vgd-card { background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); padding: 20px 22px; }
+        .vgd-ct { margin: 0; font-size: 16px; font-weight: 600; } .vgd-cs { margin: 2px 0 0; font-size: 13px; color: var(--ui-texto-2); }
         .vgd-rowh { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-        .vgd-hero { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; border-radius: var(--ui-raio-cartao); padding: 20px 22px; color: var(--ui-branco); background: linear-gradient(135deg, var(--ui-vinho-escuro), #5A3626); }
-        .vgd-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #86EFAC; background: rgba(134,239,172,.12); padding: 4px 10px; border-radius: 999px; }
-        .vgd-st i { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; }
-        .vgd-st.off { color: #FCD34D; background: rgba(252,211,77,.12); } .vgd-st.off i { background: #FBBF24; }
-        .vgd-hero h2 { margin: 8px 0 0; font-size: 20px; font-weight: 600; color: var(--ui-branco); }
-        .vgd-lk { display: flex; align-items: center; gap: 8px; margin-top: 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: var(--ui-raio); padding: 10px 12px; font-size: 13.5px; }
-        .vgd-lk span { flex: 1; opacity: .9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .vgd-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: center; padding: 22px 24px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); position: relative; overflow: hidden; }
+        .vgd-hero::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, var(--ui-rosa), #F9A8C9); }
+        .vgd-st { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: #157A3C; background: #E7F6EC; }
+        .vgd-st i { width: 7px; height: 7px; border-radius: 50%; background: #22A559; }
+        .vgd-st.off { color: #9A4A06; background: #FDF1E1; } .vgd-st.off i { background: #F59E0B; }
+        .vgd-hero h2 { margin: 10px 0 0; font-size: 21px; font-weight: 600; color: var(--ui-texto); }
+        .vgd-hero-tx > p { margin: 4px 0 0; font-size: 14px; color: var(--ui-texto-2); }
+        .vgd-lk { display: flex; align-items: center; gap: 10px; max-width: 620px; margin-top: 16px; padding: 4px 4px 4px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: #FBF9FA; font-size: 14px; color: var(--ui-texto-2); }
+        .vgd-lk svg { flex: none; color: var(--ui-rosa-escuro); }
+        .vgd-lk span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ui-texto); }
+        .vgd-lk button { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: 9px; background: var(--ui-branco); box-shadow: 0 1px 3px rgba(42,21,32,.10); font: 600 13.5px var(--font-base); color: var(--ui-texto); cursor: pointer; }
+        .vgd-lk button:hover { color: var(--ui-rosa-escuro); }
         .vgd-btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-        .vgd-b { border: none; border-radius: var(--ui-raio-botao); gap: 6px; min-height: 44px; padding: 0 16px; font: 700 14px var(--font-base); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
-        .vgd-bw { background: #25D366; color: var(--ui-branco); } .vgd-bl { background: var(--ui-branco); color: var(--ui-texto); } .vgd-bg { background: rgba(255,255,255,.12); color: var(--ui-branco); }
-        .vgd-qr { text-align: center; }
-        .vgd-qr img { width: 124px; height: 124px; border-radius: 14px; background: var(--ui-branco); padding: 8px; display: block; margin: 0 auto; }
-        .vgd-qr button { margin-top: 8px; border: none; background: none; color: rgba(255,255,255,.85); font: 600 11.5px var(--font-base); cursor: pointer; }
-        .vgd-tabs { display: flex; gap: 4px; background: var(--ui-linha); border-radius: var(--ui-raio-p); padding: 3px; }
-        .vgd-tabs button { border: none; background: none; padding: 6px 12px; border-radius: 8px; font: 700 12.5px var(--font-base); color: var(--ui-texto-2); cursor: pointer; }
-        .vgd-tabs button.on { background: var(--ui-branco); color: var(--ui-texto); box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-        .vgd-kp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
-        .vgd-k { border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 14px; }
-        .vgd-k small { display: block; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
-        .vgd-k b { display: block; font-size: 22px; font-weight: 600; margin-top: 2px; white-space: nowrap; }
-        .vgd-k em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--ui-verde); } .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: var(--ui-texto-3); font-weight: 500; }
-        .vgd-gr { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--ui-linha); }
-        .vgd-gt { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--ui-texto-2); }
-        .vgd-gv { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 10px; padding: 14px 16px; border-radius: var(--ui-raio); background: var(--ui-cinza, #F6F3F4); font-size: 14px; color: var(--ui-texto-2); }
+        .vgd-b { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: none; border-radius: var(--ui-raio-botao); font: 600 14px var(--font-base); text-decoration: none; cursor: pointer; white-space: nowrap; }
+        .vgd-bw { background: #25D366; color: var(--ui-branco); } .vgd-bw:hover { background: #1FBE5B; }
+        .vgd-bs { background: #F1ECEE; color: var(--ui-texto); } .vgd-bs:hover { background: #E9E1E5; }
+        .vgd-qr { display: flex; flex-direction: column; align-items: center; width: 168px; padding: 14px 12px 10px; border: 1px solid var(--ui-borda); border-radius: 16px; background: #FBF9FA; text-align: center; }
+        .vgd-qr img { width: 112px; height: 112px; padding: 6px; border-radius: 10px; background: var(--ui-branco); }
+        .vgd-qr b { margin-top: 8px; font-size: 13.5px; font-weight: 600; } .vgd-qr small { font-size: 12px; line-height: 1.35; color: var(--ui-texto-2); }
+        .vgd-qr button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; margin-top: 4px; padding: 0 10px; border: 0; background: none; font: 600 13px var(--font-base); color: var(--ui-rosa-escuro); cursor: pointer; }
+
+        .vgd-tabs { display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(42,21,32,.06); }
+        .vgd-tabs button { min-height: 38px; padding: 0 14px; border: none; border-radius: 9px; background: none; font: 500 13.5px var(--font-base); color: var(--ui-texto-2); cursor: pointer; }
+        .vgd-tabs button.on { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: 0 1px 3px rgba(42,21,32,.10); }
+        .vgd-kp { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+        .vgd-k { position: relative; padding: 14px 16px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); }
+        .vgd-k-ic { position: absolute; top: 12px; right: 12px; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 10px; background: var(--ui-rosa-claro, #FCE7F1); color: var(--ui-rosa-escuro); }
+        .vgd-k small { display: block; padding-right: 36px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .vgd-k b { display: block; margin-top: 6px; font-size: 24px; font-weight: 600; white-space: nowrap; }
+        .vgd-k em { display: block; margin-top: 2px; font-style: normal; font-size: 12.5px; font-weight: 500; color: var(--ui-verde); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: var(--ui-texto-3); }
+        .vgd-gr { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--ui-linha); }
+        .vgd-gr-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+        .vgd-gt { margin: 0; font-size: 14px; font-weight: 600; color: var(--ui-texto); } .vgd-gr-max { font-size: 12.5px; color: var(--ui-texto-3); }
+        .vgd-gv { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 12px; padding: 14px 16px; border-radius: var(--ui-raio); background: #FBF9FA; font-size: 14px; color: var(--ui-texto-2); }
         .vgd-gv span { min-width: 0; }
-        .vgd-gv .vgd-b { flex: none; white-space: nowrap; }
-        .vgd-bars { display: flex; align-items: flex-end; gap: 12px; height: 128px; margin-top: 10px; }
-        .vgd-bars--30 { gap: 3px; }
-        .vgd-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 5px; min-width: 0; }
-        .vgd-bar i { width: 100%; max-width: 40px; border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, #F472B6, var(--ui-rosa-escuro)); }
+        .vgd-bars { display: flex; align-items: flex-end; gap: 12px; height: 160px; margin-top: 12px; padding-top: 4px;
+          background: repeating-linear-gradient(to top, transparent 0, transparent calc(25% - 1px), var(--ui-linha) calc(25% - 1px), var(--ui-linha) 25%); background-size: 100% calc(100% - 19px); background-repeat: no-repeat; }
+        .vgd-bars--fino { gap: 4px; }
+        .vgd-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; height: 100%; min-width: 0; }
+        .vgd-bar i { width: 100%; max-width: 44px; border-radius: 6px 6px 2px 2px; background: linear-gradient(180deg, #F472B6, var(--ui-rosa-escuro)); transition: filter .15s; }
+        .vgd-bar:hover i { filter: brightness(1.08); }
         .vgd-bar.zero i { height: 3px; border-radius: 2px; background: var(--ui-linha); }
-        .vgd-bars--30 .vgd-bar i { border-radius: 3px 3px 1px 1px; }
-        .vgd-bar span { font-size: 12px; color: var(--ui-texto-3); height: 14px; } .vgd-bar em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
-        .vgd-g2 { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
-        .vgd-pe, .vgd-di { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 0; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; color: inherit; }
-        .vgd-card > .vgd-pe:first-of-type, .vgd-card > .vgd-di:first-of-type { margin-top: 8px; }
-        .vgd-pa { width: 36px; height: 36px; border-radius: 50%; background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; }
-        .vgd-pt, .vgd-dt { flex: 1; min-width: 0; }
-        .vgd-pt b, .vgd-dt b { display: block; font-size: 13.5px; }
-        .vgd-pt small, .vgd-dt small { display: block; font-size: 12px; color: var(--ui-texto-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .vgd-dt small { white-space: normal; }
-        .vgd-di { flex-wrap: wrap; row-gap: 4px; }
-        .vgd-dt { flex: 1 1 170px; }
-        .vgd-db { margin-left: auto; }
-        .vgd-pill { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
-        .vgd-pill.ok { background: var(--ui-verde-fundo); color: var(--ui-verde); } .vgd-pill.rd { background: var(--ui-vermelho-fundo); color: #B91C1C; } .vgd-pill.bl { background: #DBEAFE; color: #1D4ED8; }
-        .vgd-pill.am { background: var(--ui-laranja-fundo); color: var(--ui-laranja); } .vgd-pill.cz { background: #F3F4F6; color: #6B7280; }
-        .vgd-vt { border: none; background: none; font: 700 14px var(--font-base); min-height: 44px; color: var(--ui-rosa-escuro); cursor: pointer; }
-        .vgd-de { width: 36px; height: 36px; border-radius: var(--ui-raio-p); background: #FFF6F9; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-        .vgd-db { font-size: 12.5px; font-weight: 600; color: var(--ui-rosa-escuro); white-space: nowrap; }
-        .vgd-vazio { margin: 14px 0 4px; font-size: 13px; color: var(--ui-texto-3); }
-        .vgd-pe:hover b, .vgd-di:hover .vgd-db { color: var(--ui-rosa-escuro); }
-        /* 08/10 · 3.21: no padrão do guia */
-        .vgd-card { border-color: var(--ui-borda); box-shadow: var(--ui-sombra-cartao); padding: 16px 20px; }
-        .vgd-ct { font-size: 16px; } .vgd-cs { font-size: 13px; color: var(--ui-texto-2); }
-        .vgd-lk svg { flex: none; }
-        .vgd-b { min-height: 44px; gap: 6px; font-size: 13.5px; }
-        .vgd-qr button { min-height: 36px; font-size: 13px; }
-        .vgd-tabs button { min-height: 40px; font-size: 13.5px; }
-        .vgd-k small { font-size: 12.5px; letter-spacing: 0; text-transform: none; color: var(--ui-texto-2); }
-        .vgd-k em { display: block; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .vgd-k { background: #FBF9FA; border-color: transparent; }
-        .vgd-bar span, .vgd-bar em { font-size: 12px; }
-        .vgd-pe, .vgd-di { min-height: 56px; padding: 8px 0; }
-        .vgd-pa { width: 40px; height: 40px; }
-        .vgd-pt b, .vgd-dt b { font-size: 15px; }
-        .vgd-pt small, .vgd-dt small { font-size: 13px; color: var(--ui-texto-2); }
+        .vgd-bars--fino .vgd-bar i { border-radius: 3px 3px 1px 1px; }
+        .vgd-bar span { height: 14px; font-size: 12px; color: var(--ui-texto-3); white-space: nowrap; } .vgd-bar em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
+
+        .vgd-g2 { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+        @media (max-width: 1180px) { .vgd-g2 { grid-template-columns: 1fr; } .vgd-hero { grid-template-columns: 1fr; } .vgd-qr { flex-direction: row; width: auto; gap: 12px; text-align: left; } .vgd-kp { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .vgd-pe { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 8px 0; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; color: inherit; }
+        .vgd-card > .vgd-pe:first-of-type { margin-top: 10px; }
+        .vgd-pa { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: #FCE7F3; color: var(--ui-rosa-escuro); font-weight: 600; }
+        .vgd-pt { flex: 1; min-width: 0; } .vgd-pt b { display: block; font-size: 15px; font-weight: 500; }
+        .vgd-pt small { display: block; font-size: 13px; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .vgd-pe .vgd-pv { display: flex; flex-direction: column; align-items: flex-end; flex: none; } .vgd-pe .vgd-pv b { font-size: 14.5px; font-weight: 600; } .vgd-pe .vgd-pv small { font-size: 12.5px; }
+        .vgd-pe:hover .vgd-pt b { color: var(--ui-rosa-escuro); }
         .vgd-sit.ok { color: var(--ui-verde); } .vgd-sit.am { color: var(--ui-laranja); } .vgd-sit.bl { color: var(--ui-azul); } .vgd-sit.rs { color: var(--ui-rosa-escuro); } .vgd-sit.cz { color: var(--ui-texto-3); } .vgd-sit.rd { color: var(--ui-vermelho); }
-        .vgd-de { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-        .vgd-db { display: inline-flex; align-items: center; gap: 2px; font-size: 13.5px; color: var(--ui-rosa-escuro); }
-        .vgd-vazio { font-size: 13.5px; color: var(--ui-texto-2); }
+        .vgd-vazio { margin: 14px 0 4px; font-size: 13.5px; color: var(--ui-texto-2); }
+        .vgd-top { margin: 10px 0 0; padding: 0; list-style: none; }
+        .vgd-top li { position: relative; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 0 10px; border-top: 1px solid var(--ui-linha); font-size: 14px; }
+        .vgd-top-n { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex: none; border-radius: 50%; background: #F1ECEE; font-size: 12px; font-weight: 600; color: var(--ui-texto-2); }
+        .vgd-top-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .vgd-top li b { flex: none; font-weight: 600; }
+        .vgd-top li i { position: absolute; left: 34px; bottom: 4px; height: 3px; max-width: calc(100% - 34px); border-radius: 2px; background: #F9A8C9; }
       `}</style>
     </div>
   );
