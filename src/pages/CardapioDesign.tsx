@@ -10,6 +10,7 @@ import { House, Receipt, WhatsappLogo, ArrowCounterClockwise, ArrowsClockwise, C
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
+import bannerAparencia from "@/assets/banner-aparencia.webp";
 import { COMO_APARENCIA, TOUR_APARENCIA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar } from "@/components/base";
 import { lerBannersProntos, CATEGORIAS_BANNER, CATEGORIA_CAPA_NATAL, type BannerPronto } from "@/lib/bannersProntos";
@@ -398,6 +399,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     {/* (28/10 · 4.61) no computador, duas colunas: à esquerda o que é visual (topo e banners),
         à direita as escolhas pequenas (tema, link e cores). No celular, um embaixo do outro, na mesma ordem de antes. */}
     <div className="ap ap--2col">
+      {/* (30/10 · 5.56) banner de abertura da tela, no topo, antes de tudo */}
+      {!identityCard && <img className="ap-banner-topo" src={bannerAparencia} alt="Personalize sua loja e encante seus clientes! Uma loja com a sua cara vende mais." width={2172} height={724} />}
       <div className="ap-col ap-col-esq">
 
 
