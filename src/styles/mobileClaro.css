@@ -64,3 +64,16 @@
   html body .ep2-foot, html body .ep-footer, html body .pro9-fixo, html body .dl-savebar { padding-bottom: 28px !important; }
   html.teclado-aberto body .ep2-foot, html.teclado-aberto body .ep-footer { padding-bottom: 10px !important; }
 }
+
+/* (31/10 · 5.73) Telas com botões presos em cima do menu de baixo (Financeiro, Transações, fichas, orçamento…):
+   o + não pula (igual à Nova venda), vira um quadradinho rosa na própria barra. A barra de botões ganha fundo
+   branco, como um rodapé de verdade, e não precisa mais do espaço extra que desviava do + */
+@media (max-width: 900px) {
+  html body:has(.fdp-barra, .txp-barra, .orc-pe, .fd-fixo, .ep-passos, .ep2-foot, .ep-footer, .pro9-fixo) .bottom-nav--claro .bn-novo-c {
+    width: 44px; height: 36px; margin-top: 0; border-radius: 12px; box-shadow: none;
+  }
+  html body .fdp-barra, html body .txp-barra { padding: 10px 12px 10px !important; background: var(--ui-branco) !important; box-shadow: 0 -6px 16px rgba(44, 18, 25, .08); }
+  html body .orc-pe, html body .fd-fixo, html body .ep-passos, html body .ep2-foot, html body .ep-footer, html body .pro9-fixo { padding-bottom: 10px !important; }
+  html body .fdp-barra button, html body .txp-barra button { box-shadow: none; }
+  html body .fdp-barra .r { background: #FFF4E5; }
+}
