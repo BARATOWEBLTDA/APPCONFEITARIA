@@ -6,7 +6,7 @@ import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { House, Receipt, WhatsappLogo, ArrowCounterClockwise, ArrowsClockwise, CalendarBlank, Camera, Check, Eye, Info, Crown, Image as ImageIcon, Images, Layout, LinkSimple, Lock, MapPin, Palette, Plus, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ArrowsClockwise, CalendarBlank, Camera, Check, Eye, Info, Crown, Image as ImageIcon, Images, Layout, LinkSimple, Lock, MapPin, Palette, Plus, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -76,14 +76,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     if (ok) showSuccess();
   };
   const [nomeLoja, setNomeLoja] = useState("");
-  // (30/10 · 5.54) pré-visualização ao lado (PC largo): descrição e as 3 primeiras categorias com foto
-  const [descricaoLoja, setDescricaoLoja] = useState("");
-  const [catsPrevia, setCatsPrevia] = useState<{ nome: string; imagem_url?: string | null }[]>([]);
-  useEffect(() => {
-    if (!userId) return;
-    supabase.from("categorias").select("nome, imagem_url, ordem").eq("user_id", userId).order("ordem").limit(3)
-      .then(({ data }) => setCatsPrevia((data as any[]) || []), () => {});
-  }, [userId]);
   // (18/10) prévia do topo: cidade da loja (sem endereço, uma capital de exemplo) e o aberto/fechado
   const [cidade, setCidade] = useState("");
   // (30/10 · 5.46) o tema de Natal saiu do app (o cardápio fica sempre nas cores da loja)
@@ -134,7 +126,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         setHideStars(!!(data as any).hide_stars);
         setAvaliacaoMedia(Number((data as any).avaliacao_media) || 5.0);
         setNomeLoja(data.nome_loja || "");
-        setDescricaoLoja(String((data as any).descricao_loja || "").trim());
         try { const e: any = typeof (data as any).endereco === "string" ? JSON.parse((data as any).endereco) : (data as any).endereco; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
         setHorario((data as any).horario ?? null);
         setBannerUrl(data.banner_url || "");
@@ -577,28 +568,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       </section>
 
       {/* (27/10) nome da loja no link (PRO) · (30/10 · 5.53) embaixo das cores */}
-      <aside className="ap-prev" aria-label="Pré-visualização do cardápio">
-        <b className="ap-prev-t">Pré-visualização</b>
-        <div className="ap-prev-cel">
-          <div className="ap-prev-topo" style={bannerTopoUrl ? { backgroundImage: `url("${bannerTopoUrl}")` } : { background: `linear-gradient(180deg, ${topoEscurecido(corAtual("cor_navbar", corNavbar))}, ${corAtual("cor_navbar", corNavbar)})` }} />
-          <span className="ap-prev-logo" style={{ borderColor: corAtual("cor_borda", corBorda) }}>{(logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}</span>
-          <b className="ap-prev-nome" style={{ color: corAtual("cor_nome", corNome) }}>{nomeLoja || "Nome da sua loja"}</b>
-          {descricaoLoja && <small className="ap-prev-desc">{descricaoLoja}</small>}
-          {catsPrevia.length > 0 && (
-            <div className="ap-prev-cats">
-              {catsPrevia.map(c => (
-                <span key={c.nome}><i>{c.imagem_url ? <img src={c.imagem_url} alt="" /> : <Storefront size={18} />}</i><small>{c.nome}</small></span>
-              ))}
-            </div>
-          )}
-          {bannerValues.find(Boolean) && <img className="ap-prev-banner" src={bannerValues.find(Boolean)} alt="" />}
-          <div className="ap-prev-nav"><span className="on"><House size={18} weight="fill" />Início</span><span><Receipt size={18} />Pedidos</span><span><WhatsappLogo size={18} />Contato</span></div>
-        </div>
-      </aside>
 
       </div>
 
-      {/* (30/10 · 5.54) Pré-visualização: o cardápio no celular, do lado (só no PC largo; nos outros, o "Ver como fica") */}
 
       {/* (17/10) galeria de banners prontos */}
       <Janela aberta={galeria.aberta} aoFechar={() => setGaleria(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Banners prontos"
