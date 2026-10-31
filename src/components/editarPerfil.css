@@ -10,7 +10,7 @@
 .ep9-erro, .ep9-ok { margin: 0; padding: 10px 12px; border-radius: var(--ui-raio); font-size: 14px; line-height: 1.4; }
 .ep9-erro { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
 .ep9-ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
-.ep9-senha { border-top: 1px solid var(--ui-linha); padding-top: 4px; }
+.ep9-senha { padding-top: 4px; }
 .ep9-senha-bt { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; margin: 0; padding: 0; border: 0; background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer; }
 .ep9-senha-bt > svg:first-child { color: var(--ui-texto-2); }
 .ep9-senha-bt span { flex: 1; }

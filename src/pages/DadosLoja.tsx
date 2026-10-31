@@ -10,7 +10,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_DADOS_LOJA, TOUR_DADOS_LOJA } from "@/lib/comoTelas";
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar } from "@/components/loja/EditoresLoja";
-import { Botao, BotaoIA, Campo, CampoArea, Gaveta, TelaVazia, Titulo, avisar } from "@/components/base";
+import { Botao, BotaoIA, Campo, CampoArea, Gaveta, Janela, TelaVazia, Titulo, avisar } from "@/components/base";
 import { digitosTelefone, digitosAoDigitar } from "@/lib/telefone";
 import { limparFacebook, limparInstagram } from "@/lib/redesSociais";
 import ListaChaves from "@/components/loja/ListaChaves";
@@ -88,6 +88,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   const [mostrarLocal, setMostrarLocal] = useState<"completo" | "cidade" | "nada">("completo");
   // 02/10: "Recebo pedidos nesse endereço" — vira o endereço de retirada da Finalizar encomenda
   const [recebeAqui, setRecebeAqui] = useState(true);
+  const [endModal, setEndModal] = useState(false);
   const [horario, setHorario] = useState<Horario>(HORARIO_PADRAO);
   // (4.25) Instagram e Facebook: vazios = não aparecem no cardápio. Sem as colunas no banco (SQL 4.25), o bloco avisa.
   const [instagram, setInstagram] = useState("");
@@ -482,14 +483,14 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
             <>
               <div className={`dl-rede${instaOn ? " on" : ""}`}>
                 <button type="button" role="switch" aria-checked={instaOn} className="dl-rede-l" onClick={() => setInstaOn((v) => !v)}>
-                  <LogoInstagram tamanho={26} /><span className="dl-rede-n"><b>Instagram</b><small>{instaOn ? "Aparece no cardápio" : "Não aparece no cardápio"}</small></span><span className="dl-rede-sw" aria-hidden="true" />
+                  <LogoInstagram tamanho={26} /><span className="dl-rede-n"><b>Instagram</b><small>{instaOn ? "Aparece em Sobre a loja" : "Desligado"}</small></span><span className="dl-rede-sw" aria-hidden="true" />
                 </button>
                 {instaOn && <Campo id="dl-in-insta" rotulo="@ do Instagram" value={instagram} maxLength={80} placeholder="@suaconfeitaria" autoCapitalize="none" autoCorrect="off"
                   onChange={(e) => setInstagram(e.target.value)} />}
               </div>
               <div className={`dl-rede${faceOn ? " on" : ""}`}>
                 <button type="button" role="switch" aria-checked={faceOn} className="dl-rede-l" onClick={() => setFaceOn((v) => !v)}>
-                  <LogoFacebook tamanho={26} /><span className="dl-rede-n"><b>Facebook</b><small>{faceOn ? "Aparece no cardápio" : "Não aparece no cardápio"}</small></span><span className="dl-rede-sw" aria-hidden="true" />
+                  <LogoFacebook tamanho={26} /><span className="dl-rede-n"><b>Facebook</b><small>{faceOn ? "Aparece em Sobre a loja" : "Desligado"}</small></span><span className="dl-rede-sw" aria-hidden="true" />
                 </button>
                 {faceOn && <Campo id="dl-in-face" rotulo="Link da página" value={facebook} maxLength={120} placeholder="facebook.com/suaconfeitaria" autoCapitalize="none" autoCorrect="off"
                   onChange={(e) => setFacebook(e.target.value)} />}
@@ -500,17 +501,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
           )}
         </section>
   );
-  const secEndereco = (
-    <section className="dl-card" id="dl-endereco">
-          <Cabeca Ic={MapPin} titulo="Endereço" apoio="Para calcular a entrega e mostrar no mapa" bloco="endereco" />
-          {!estaAberto("endereco") && <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo="" />}
-          {!estaAberto("endereco") ? (
-            <div className="dl-res">
-              <b className="dl-res-t">{[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", ") || cidadeUf}</b>
-              <span className="dl-res-sub">{[end.complemento.trim(), end.bairro.trim(), cidadeUf, end.cep.trim()].filter(Boolean).join(" · ")}</span>
-              <span className="dl-res-tag">{mostrarLocal === "completo" ? "No cardápio: endereço completo" : mostrarLocal === "cidade" ? "No cardápio: só a cidade" : "Escondido no cardápio"}</span>
-            </div>
-          ) : (<>
+  const formEndereco = (comMapa = true) => (<>
           <Campo id="dl-in-cep" rotulo="CEP" inputMode="numeric" value={end.cep} placeholder="00000-000" depois={statusCep}
             onChange={(e) => {
               const d = e.target.value.replace(/\D/g, "").slice(0, 8);
@@ -529,10 +520,32 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
           </div>
           <div className="dl-bloco">
             <OpcoesMostrar mostrar={mostrarLocal} onMudar={setMostrarLocal} end={end} tituloClasse="dl-tit" caixas />
-            <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo={mostrarLocal === "nada" ? "O endereço não aparece no cardápio" : mostrarLocal === "completo" ? ([[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf) : cidadeUf} altura={124} />
-            <p className="dl-mapa-nota">{mostrarLocal === "nada" ? "Bom para quem atende em casa." : "É assim que o cliente vê, em Sobre a loja."}</p>
+            {comMapa && <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo={mostrarLocal === "nada" ? "O endereço não aparece no cardápio" : mostrarLocal === "completo" ? ([[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf) : cidadeUf} altura={124} />}
+            {comMapa && <p className="dl-mapa-nota">{mostrarLocal === "nada" ? "Bom para quem atende em casa." : "É assim que o cliente vê, em Sobre a loja."}</p>}
           </div>
           <ListaChaves itens={[{ chave: "recebe", Ic: Storefront, rotulo: "Recebo pedidos aqui", sub: "Endereço para quem vai retirar", on: recebeAqui, aoTocar: () => setRecebeAqui(v => !v) }]} />
+  </>);
+  const secEndereco = (
+    <section className="dl-card" id="dl-endereco">
+          <Cabeca Ic={MapPin} titulo="Endereço" apoio="Para calcular a entrega e mostrar no mapa" bloco="endereco" />
+          {!estaAberto("endereco") && <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo="" />}
+          {!estaAberto("endereco") ? (
+            <div className="dl-res">
+              <b className="dl-res-t">{[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", ") || cidadeUf}</b>
+              <span className="dl-res-sub">{[end.complemento.trim(), end.bairro.trim(), cidadeUf, end.cep.trim()].filter(Boolean).join(" · ")}</span>
+              <span className="dl-res-tag">{mostrarLocal === "completo" ? "No cardápio: endereço completo" : mostrarLocal === "cidade" ? "No cardápio: só a cidade" : "Escondido no cardápio"}</span>
+            </div>
+          ) : !cel ? (
+            /* (30/10 · 5.55) PC: o mapa primeiro, o endereço numa linha e "Editar" (abre a janela no meio da tela) */
+            <div className="dl-end-pc">
+              <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo="" altura={280} />
+              <div className="dl-end-l">
+                <span className="dl-end-tx"><b>{[[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim(), cidadeUf].filter(Boolean).join(" · ") || "Sem endereço ainda"}</b><small>{mostrarLocal === "completo" ? "No cardápio: endereço completo" : mostrarLocal === "cidade" ? "No cardápio: só a cidade" : "Escondido no cardápio"}{recebeAqui ? " · recebe pedidos aqui" : ""}</small></span>
+                <Botao variante="secundario" tamanho="m" icone={<PencilSimple size={18} weight="bold" />} onClick={() => setEndModal(true)}>Editar</Botao>
+              </div>
+            </div>
+          ) : (<>
+          {formEndereco()}
           </>)}
         </section>
   );
@@ -561,7 +574,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   type Linha = { k: Parte; Ic: typeof Storefront; t: string; sub: string; st: "ok" | "falta" | "op" };
   const linhas: Linha[] = [
     { k: "loja", Ic: Storefront, t: "Sua loja", sub: okDe("loja") ? [nome.trim(), telefone].filter(Boolean).join(" · ") : `Falta ${listaBR(itens.slice(0, 3).filter(i => !i.ok).map(i => i.nome === "WhatsApp" ? "o WhatsApp" : i.nome === "Nome" ? "o nome" : "a descrição"))}`, st: okDe("loja") ? "ok" : "falta" },
-    { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? `${listaBR(redesTxt)} no cardápio` : "Nenhuma aparece no cardápio", st: redesTxt.length ? "ok" : "op" },
+    { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? `${listaBR(redesTxt)} · em Sobre a loja` : "Nenhuma ainda", st: redesTxt.length ? "ok" : "op" },
     { k: "endereco", Ic: MapPin, t: "Endereço", sub: itens[3].ok ? [[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf : "Falta o endereço da loja", st: itens[3].ok ? "ok" : "falta" },
     { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorario().join(" · ") : "Falta o horário de funcionamento", st: itens[4].ok ? "ok" : "falta" },
     { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : pagTxt ? pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1) : "Falta escolher como o cliente paga", st: !ep || pagTxt ? "ok" : "falta" },
@@ -667,6 +680,11 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
           </div>
         </section>
       </div>
+      {/* (30/10 · 5.55) editar o endereço numa janela; salva sozinho como o resto (o "Salvar" confere e fecha) */}
+      <Janela aberta={endModal} aoFechar={() => setEndModal(false)} tipo="conteudo" titulo="Endereço da loja"
+        acoes={<><Botao variante="secundario" onClick={() => setEndModal(false)}>Cancelar</Botao><Botao carregando={salvando} onClick={async () => { if (await salvar({ silencioso: true })) { salvoPc.current = fotoDados(); setEndModal(false); } }}>Salvar</Botao></>}>
+        <div className="dl-end-form">{formEndereco(false)}</div>
+      </Janela>
     </>
   );
 }

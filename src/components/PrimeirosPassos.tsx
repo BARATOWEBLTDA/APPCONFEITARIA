@@ -761,7 +761,9 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
   const salvar = async () => {
     if (!pronto) return;
     setSalvando(true); setErro("");
-    const e = await atualizarPerfil(uid, { endereco: JSON.stringify(end), mostrar_localizacao: mostrar === "completo", mostrar_apenas_cidade: mostrar === "cidade" });
+    // (30/10 · 5.55) já vem marcado "Recebo pedidos aqui" (endereço para retirada), menos quando ela esconde o endereço
+    const retirada = mostrar === "nada" ? "" : [[end.rua, end.numero, end.complemento].filter(Boolean).join(", "), end.bairro, [end.cidade, end.estado].filter(Boolean).join("/")].filter(Boolean).join(" · ");
+    const e = await atualizarPerfil(uid, { endereco: JSON.stringify(end), mostrar_localizacao: mostrar === "completo", mostrar_apenas_cidade: mostrar === "cidade", ...(retirada ? { endereco_retirada: retirada } : {}) });
     setSalvando(false);
     if (e) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
     void atualizarPontoDaLoja(uid, end); // (29/10 · 5.12) o ponto da taxa por raio acompanha o endereço novo

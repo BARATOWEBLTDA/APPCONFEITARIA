@@ -47,3 +47,6 @@
 .dl-in:focus, .chk-input:focus, .dl-in-ic:focus-within {
   outline: none !important; border-color: var(--ui-rosa) !important; box-shadow: 0 0 0 3px rgba(232, 90, 140, .12) !important;
 }
+
+/* (30/10 · 5.55) menos linhas: o topo do cartão não leva risco embaixo */
+.cfg-hd, .chk-section-header, .cd-section-header { padding-bottom: 4px !important; border-bottom: 0 !important; }

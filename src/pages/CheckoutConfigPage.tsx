@@ -22,6 +22,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
 import MapaRaios, { CORES_RAIO } from "@/components/MapaRaios"
+import MapaEndereco from "@/components/MapaEndereco"
 import { bairrosDaCidade } from "@/lib/bairros"
 import { distanciaKm, faixasOrdenadas, pontoDoEndereco, type ModoEntrega, type Ponto } from "@/lib/taxaEntrega"
 import { LIMITE_CUPONS_ATIVOS_GRATIS } from '@/lib/limitesPlano'
@@ -620,7 +621,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                   {!enderecoLoja?.rua || !enderecoLoja?.cidade ? (
                     <p className="ep-raio-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />Para medir a distância, cadastre o endereço da loja (rua, número e cidade) aqui em Dados da loja.</p>
                   ) : lojaPonto ? (
-                    <><MapaRaios loja={lojaPonto} faixas={faixasMapa} nome={nomeLoja} /><p className="ep-mapa-leg">Área aproximada pelo caminho de carro.</p></>
+                    so === 'ent' ? null : <><MapaRaios loja={lojaPonto} faixas={faixasMapa} nome={nomeLoja} /><p className="ep-mapa-leg">Área aproximada pelo caminho de carro.</p></>
                   ) : (
                     <p className="ep-raio-aviso">{buscandoLoja ? 'Achando a sua loja no mapa…' : <><WarningCircle size={18} weight="bold" aria-hidden="true" />Não achamos o endereço da loja no mapa. Confira a rua e o número em Dados da loja.</>}</p>
                   )}
@@ -797,7 +798,15 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                   {e.key === 'entrega_propria' && <em>{modoEntrega === 'raio' ? `Por raio (${faixasMapa.length} ${faixasMapa.length === 1 ? 'faixa' : 'faixas'})` : modoEntrega === 'cidade' ? `Por cidade (${cidades.filter(c => c.ativo && c.cidade.trim()).length})` : entregaPorBairro.some(b => b.bairro.trim()) ? `Por bairro (${entregaPorBairro.filter(b => b.bairro.trim()).length})` : numBR(valorEntregaPropria) > 0 ? `R$ ${dinheiroBR(valorEntregaPropria)}` : 'Grátis'}</em>}</span>
               ))}
             </div>
-          ) : (<>
+          ) : so === 'ent' ? (<>
+          {/* (30/10 · 5.55) computador: o mapa primeiro (maior), depois como cobrar e, por último, as formas de entrega */}
+          {modoEntrega === 'raio' && lojaPonto && formasEntrega.includes('entrega_propria')
+            ? <div className="ep-mapa-topo"><MapaRaios loja={lojaPonto} faixas={faixasMapa} nome={nomeLoja} /><p className="ep-mapa-leg">Área aproximada pelo caminho de carro.</p></div>
+            : enderecoLoja?.cidade ? <div className="ep-mapa-topo"><MapaEndereco busca={{ rua: enderecoLoja.rua, numero: enderecoLoja.numero, cidade: enderecoLoja.cidade, estado: enderecoLoja.estado || enderecoLoja.uf }} soCidade={false} selo="" altura={320} /></div> : null}
+          {formasEntrega.includes('entrega_propria') && blocoTaxa}
+          <p className="ep-modo-t">Formas de entrega</p>
+          <ListaChaves itens={ENTREGAS.map(e => ({ chave: e.key, Ic: ICONE_ENT[e.key] || Truck, rotulo: e.label, sub: e.sub, on: formasEntrega.includes(e.key), aoTocar: () => toggleEntrega(e.key) }))} />
+          </>) : (<>
           <ListaChaves itens={ENTREGAS.map(e => ({ chave: e.key, Ic: ICONE_ENT[e.key] || Truck, rotulo: e.label, sub: e.sub, on: formasEntrega.includes(e.key), aoTocar: () => toggleEntrega(e.key) }))} />
           {so !== 'entCol' && formasEntrega.includes('entrega_propria') && blocoTaxa}
           </>)}

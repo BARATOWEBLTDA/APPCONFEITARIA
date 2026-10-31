@@ -27,7 +27,7 @@
 }
 .dh-horas button:hover:not(.sel) { border-color: var(--ui-rosa); }
 .dh-horas button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); font-weight: 700; }
-.dh-outro { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--ui-linha); }
+.dh-outro { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px; margin-top: 16px; }
 .dh-outro > .ui-bt { margin-top: 23px; }
 
 /* ── Campo de data (o que abre o calendário) ── */

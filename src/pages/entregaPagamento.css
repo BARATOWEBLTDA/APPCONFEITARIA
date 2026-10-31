@@ -230,3 +230,16 @@
 .ep-faixas-t { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ep-faixas-t button { padding: 0; border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; white-space: nowrap; }
 .ep-faixas .ep-faixa { padding-top: 6px; padding-bottom: 6px; }
+
+/* (30/10 · 5.55) painel da Entrega no computador: o mapa no topo, mais alto */
+.ep-mapa-topo { display: flex; flex-direction: column; gap: 6px; }
+.ep-mapa-topo .mpr { height: 320px; }
+.ep-mapa-topo .ep-mapa-leg { margin: 0 2px; }
+
+/* (30/10 · 5.55) menos linhas: chaves, Pix e taxa separados por espaço, não por risco */
+.ep-sw-l { border-top: 0; padding: 4px 0; }
+.ep-pix { padding-top: 4px; border-top: 0; }
+.ep-taxa { padding-top: 8px; border-top: 0; }
+.ep-sep { padding-top: 8px; border-top: 0; }
+.ep-mapa-topo ~ .ep-taxa, .dl-painel .ep-card:has(.ep-mapa-topo) .ep-taxa { max-width: none; }
+.dl-painel .ep-card:has(.ep-mapa-topo) .ep-modo { grid-template-columns: repeat(4, minmax(0, 1fr)); }
