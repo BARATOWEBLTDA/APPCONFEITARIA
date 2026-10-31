@@ -11,9 +11,7 @@ import {
 import type { Icon } from "@phosphor-icons/react";
 import { BotaoIcone } from "@/components/base";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
-import { useProfile, avatarDaConta } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
-import { useNotifications } from "@/context/NotificationContext";
 import "./maisDrawer.css";
 
 /**
@@ -53,25 +51,20 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Marketing", desc: "Divulgue e venda mais", path: "/marketing", Icone: Megaphone },
       ...(INDICACAO_ATIVA ? [{ label: "Indicar amigo", desc: "Ganhe indicando", path: "/indicar", Icone: UserPlus }] : []),
+      // (30/10 · 5.67) Novidades e Assinatura saíram do destaque do topo e entraram na lista, como as outras
+      { label: "Novidades", desc: "O que mudou no app", path: "/noticias", Icone: Newspaper },
+      { label: "Assinatura", desc: "Seu plano", path: "/assinar", Icone: Crown },
       { label: "Configurações", desc: "Conta, loja e app", path: "/configuracoes", Icone: Gear },
     ],
   },
 ];
 
-function saudacao(): string {
-  const h = new Date().getHours();
-  if (h >= 5 && h < 12) return "Bom dia";
-  if (h >= 12 && h < 18) return "Boa tarde";
-  return "Boa noite";
-}
 
 export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
   const navigate = useNavigate();
-  const { profile } = useProfile();
   const { isPro } = usePlano();
   const [pergunta, setPergunta] = useState("");
   const perguntarDoo = (texto: string) => { const t = texto.trim(); if (!t) return; setPergunta(""); onClose(); abrirDooIA(t); };
-  const { notifCount } = useNotifications();
   const caixa = useRef<HTMLDivElement>(null);
   const idTitulo = useId();
   const fase = useFase(open);
@@ -79,8 +72,6 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
 
   if (!open && fase === "fechada") return null;
 
-  const primeiroNome = profile?.nome ? profile.nome.trim().split(/\s+/)[0] : "";
-  const inicial = (profile?.nome || "?").trim().charAt(0).toUpperCase();
 
   const ir = (path: string) => {
     // A gaveta guarda uma entrada no histórico pro "voltar" do Android. Ao escolher um item, a tela nova
@@ -99,29 +90,13 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
       >
         <span className="ui-janela-alca" aria-hidden="true" />
 
+        {/* (30/10 · 5.67) no padrão das outras janelas: só o título e o fechar (saíram a foto, a saudação e a tag PRO) */}
         <div className="mais-cab">
-          <span className={`mais-foto${avatarDaConta(profile) ? "" : " mais-foto--letra"}`} aria-hidden="true">
-            {avatarDaConta(profile) ? <img src={avatarDaConta(profile)} alt="" /> : inicial}
-          </span>
-          <div className="mais-ola">
-            <h2 className="mais-ola-t" id={idTitulo}>
-              <span>{saudacao()}{primeiroNome ? `, ${primeiroNome}` : ""}</span>
-              {isPro && <span className="mais-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</span>}
-            </h2>
-            {(profile as any)?.nome_loja && <p className="mais-ola-s">{(profile as any).nome_loja}</p>}
-          </div>
+          <h2 className="mais-ola-t" id={idTitulo}>Menu</h2>
           <BotaoIcone rotulo="Fechar" variante="limpo" onClick={onClose}><X size={20} weight="bold" /></BotaoIcone>
         </div>
 
         <div className="mais-corpo">
-          {/* (21/10) atalhos: avisos (com os não lidos), novidades e assinatura */}
-          <div className="mais-at">
-            {/* (23/10) a tela Notificações saiu: as novidades (com as não lidas) ficam no lugar dela */}
-            <button type="button" onClick={() => ir("/noticias")} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lidas` : "Novidades"}>
-              <Newspaper size={20} weight="fill" aria-hidden="true" />Novidades{notifCount > 0 && <i>{notifCount > 9 ? "9+" : notifCount}</i>}
-            </button>
-            <button type="button" onClick={() => ir(isPro ? "/minha-assinatura" : "/assinar")}><Crown size={20} weight="fill" aria-hidden="true" />Assinatura</button>
-          </div>
           {/* (16/10) o Doo IA saiu do menu de baixo (lá entrou o "+ Nova venda"): fica no topo do Mais */}
           {/* (21/10) a Doo já vem como campo de pergunta (jeito busca do Google) · (27/10) para todos os planos */}
             <div className="mais-doo-bx">

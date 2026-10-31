@@ -82,3 +82,6 @@
 @media (max-width: 900px) {
   html:has(.mais-veu) .bottom-nav { z-index: 10085 !important; }
 }
+/* (30/10 · 5.67) topo no padrão das janelas: só "Menu" e o fechar, sem risco embaixo */
+.mais-cab { border-bottom: 0; padding-left: 20px; }
+.mais-cab .mais-ola-t { flex: 1; }

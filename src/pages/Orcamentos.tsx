@@ -4,7 +4,8 @@
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CaretRight, Check, Copy, Crown, FileText, Plus, ShareNetwork, WarningCircle } from '@phosphor-icons/react'
+import { ArrowRight, CaretRight, Check, Copy, Crown, FileText, LinkSimple, Package, Plus, ShareNetwork, WarningCircle } from '@phosphor-icons/react'
+import mascoteCoroa from '@/assets/mascote-coroa.webp'
 import AppPageHeader from '@/components/AppPageHeader'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { Botao, TelaVazia, avisar } from '@/components/base'
@@ -106,23 +107,29 @@ export default function Orcamentos() {
       {cab}
       <div className="orc">
         {/* (30/10 · 5.48) no padrão das telas vazias do PC (igual a Complementos): no meio da tela, o texto e, ao lado, como a cliente vê */}
+        {/* (30/10 · 5.67) no estilo da arte do Bruno: à esquerda o texto com os 3 recursos em ícones; à direita o fundo rosa
+            com o mascote de coroa, a frase escrita à mão e o celular com a proposta. O tamanho do cartão é o mesmo */}
         <section className="orc-pro">
           <div className="orc-pro-tx">
           <span className="orc-pro-ic" aria-hidden="true"><FileText size={30} weight="duotone" /></span>
-          <h2>Orçamentos é um recurso do PRO</h2>
+          <h2>Orçamentos é um recurso do <em>PRO</em></h2>
           <p>A cliente conta a ideia pelo seu link, você monta a proposta em minutos e ela aprova pelo celular. Aprovou, vira pedido na Agenda.</p>
-          {/* (27/10) com o ícone de certo (a lista aparecia sem marcador) */}
           <ul>
-            {['Link fixo para pedir orçamento', 'Proposta com os seus produtos ou itens personalizados', 'A cliente aprova pelo link e pode baixar em PDF'].map(t => (
-              <li key={t}><Check size={16} weight="bold" aria-hidden="true" />{t}</li>
+            {([
+              [LinkSimple, 'Link fixo para pedir orçamento', 'Compartilhe e receba os pedidos organizados'],
+              [Package, 'Proposta com seus produtos', 'Ou itens personalizados, com fotos e valores'],
+              [FileText, 'A cliente aprova pelo link', 'E pode baixar a proposta em PDF'],
+            ] as const).map(([Ic, t, sub]) => (
+              <li key={t}><span className="orc-pro-li-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><span className="orc-pro-li-tx"><b>{t}</b><small>{sub}</small></span></li>
             ))}
           </ul>
-          <Botao icone={<Crown size={20} weight="fill" />} onClick={() => navigate('/assinar')}>Conhecer o PRO</Botao>
+          <Botao icone={<Crown size={20} weight="fill" />} iconeDepois={<ArrowRight size={18} weight="bold" />} onClick={() => navigate('/assinar')}>Conhecer o PRO</Botao>
           </div>
           <figure className="orc-pro-ex" aria-hidden="true">
-            <figcaption>Assim a cliente vê a proposta</figcaption>
+            <span className="orc-pro-frase">Mais propostas,<br />mais vendas!</span>
+            <img className="orc-pro-masc" src={mascoteCoroa} alt="" />
             <div className="orc-pro-cel">
-              <div className="orc-pro-cab"><small>Orçamento nº 12</small><b>Bolo da Ana · 5 anos</b><span>Entrega sábado, 8 de novembro</span></div>
+              <div className="orc-pro-cab"><small>Orçamento nº 12</small><i>Pendente</i><b>Bolo da Ana · 5 anos</b><span>Entrega sábado, 8 de novembro</span></div>
               <div className="orc-pro-it"><span><b>Bolo 2 andares</b><small>Tema jardim, 30 fatias</small></span><em>R$ 380,00</em></div>
               <div className="orc-pro-it"><span><b>Topo de bolo</b><small>Com o nome e a idade</small></span><em>R$ 25,00</em></div>
               <div className="orc-pro-it"><span><b>Docinhos</b><small>50 unidades</small></span><em>R$ 75,00</em></div>
