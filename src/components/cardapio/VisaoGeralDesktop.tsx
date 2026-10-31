@@ -4,7 +4,10 @@ import QRCode from "qrcode";
 import { supabase } from "@/lib/supabase";
 import { isPro as ehPro } from "@/hooks/useProfile";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
-import { ArrowSquareOut, CaretRight, ChartBar, Crown, LinkSimple } from "@phosphor-icons/react";
+import { ArrowSquareOut, CaretRight, Crown, LinkSimple, Lock } from "@phosphor-icons/react";
+
+/** visitas de exemplo (em %) para o painel desfocado do grátis */
+const EXEMPLO_DIAS = [22, 35, 28, 46, 40, 58, 33, 30, 52, 61, 44, 38, 70, 56, 48, 64, 82, 59, 45, 66, 73, 50, 41, 68, 88, 62, 57, 76, 92, 71];
 import { Botao } from "@/components/base";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 
@@ -147,10 +150,27 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
           )}
         </div>
         {!pro ? (
-          <div className="vgd-lock">
-            <span className="vgd-lock-ic" aria-hidden="true"><ChartBar size={24} weight="bold" /></span>
-            <div><b>Veja quem visita e quem compra</b><small>Visitas, pedidos pelo link, faturamento e conversão ficam liberados no PRO.</small></div>
-            <Botao icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
+          /* (31/10 · 5.87) grátis: o painel do PRO de exemplo, desfocado, com o cadeado no meio */
+          <div className="vgd-pv">
+            <div className="vgd-pv-fundo" aria-hidden="true">
+              <div className="vgd-kp">
+                {[["Visitas", "248", "+18% que antes"], ["Pedidos online", "31", "+6 que antes"], ["Faturamento online", "R$ 2.940,00", "+22% que antes"], ["Conversão", "12,5%", "de cada 100 visitas, 12 compram"]].map(([l, v, d]) => (
+                  <div className="vgd-k" key={l}><small>{l}</small><b>{v}</b><em className="n">{d}</em></div>
+                ))}
+              </div>
+              <div className="vgd-gr">
+                <p className="vgd-gt">Visitas por dia</p>
+                <div className="vgd-bars vgd-bars--30">
+                  {EXEMPLO_DIAS.map((n, i) => <div className="vgd-bar" key={i}><i style={{ height: `${n}%` }} /><span>{i % 5 === 0 ? i + 1 : ""}</span></div>)}
+                </div>
+              </div>
+            </div>
+            <div className="vgd-pv-veu">
+              <span className="vgd-pv-cad" aria-hidden="true"><Lock size={26} weight="bold" /></span>
+              <b>Veja quem visita e quem compra</b>
+              <small>Visitas, pedidos pelo link, faturamento e conversão, dia a dia. Recurso do plano PRO.</small>
+              <Botao icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
+            </div>
           </div>
         ) : metr && (
           <>
@@ -258,6 +278,13 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
         .vgd-bar.zero i { height: 3px; border-radius: 2px; background: var(--ui-linha); }
         .vgd-bars--30 .vgd-bar i { border-radius: 3px 3px 1px 1px; }
         .vgd-bar span { font-size: 12px; color: var(--ui-texto-3); height: 14px; } .vgd-bar em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
+        .vgd-pv { position: relative; margin-top: 14px; border-radius: 14px; overflow: hidden; }
+        .vgd-pv-fundo { filter: blur(5px); opacity: .55; pointer-events: none; user-select: none; padding: 2px 4px 8px; }
+        .vgd-pv-fundo .vgd-kp { margin-top: 0; }
+        .vgd-pv-veu { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 20px; text-align: center; background: rgba(255,255,255,.45); }
+        .vgd-pv-cad { display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; margin-bottom: 6px; border-radius: 50%; background: var(--ui-vinho-escuro, #2A1520); color: #FCD34D; box-shadow: 0 8px 24px rgba(42,21,32,.25); }
+        .vgd-pv-veu b { font-size: 18px; font-weight: 600; color: var(--ui-texto); }
+        .vgd-pv-veu small { max-width: 440px; margin-bottom: 10px; font-size: 14px; color: var(--ui-texto-2); }
         .vgd-lock { display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 16px; border-radius: 14px; background: #FFF6F9; border: 1px dashed #F3C9DA; }
         .vgd-lock img { width: 34px; height: 34px; object-fit: contain; }
         .vgd-lock div { flex: 1; } .vgd-lock b { display: block; font-size: 14.5px; } .vgd-lock small { font-size: 12.5px; color: var(--ui-texto-2); }
