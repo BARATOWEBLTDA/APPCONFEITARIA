@@ -77,3 +77,14 @@
   html body .fdp-barra button, html body .txp-barra button { box-shadow: none; }
   html body .fdp-barra .r { background: #FFF4E5; }
 }
+
+/* (31/10 · 5.74) Financeiro no celular: Em caixa largo em cima, A receber e A pagar meio a meio embaixo
+   (três numa linha cortava valor grande, tipo R$ 12.345,00) */
+@media (max-width: 600px) {
+  html body .fd-tres { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html body .fd-tres .fd-t.esc { grid-column: 1 / -1; }
+}
+/* sem a barra (tudo zerado): o respiro entre o texto e Entrou/Saiu */
+html body .fd-res .fd-var + .fd-leg { margin-top: 12px; }
+/* "Escolher" é mais comprido que "Outro": cabe nos celulares de 360 px */
+@media (max-width: 400px) { html body .fd-per-chips button { padding: 0 4px !important; font-size: 14px !important; } }

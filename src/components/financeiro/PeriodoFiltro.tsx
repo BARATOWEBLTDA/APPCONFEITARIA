@@ -42,7 +42,7 @@ export function rotuloPeriodo(p: Periodo): string {
   return `de ${f(p.ini)} a ${f(p.fim)}`;
 }
 
-const BOTOES: [TipoPeriodo, string][] = [["hoje", "Hoje"], ["7dias", "7 dias"], ["30dias", "30 dias"], ["mes", "Mês"], ["personalizado", "Outro"]];
+const BOTOES: [TipoPeriodo, string][] = [["hoje", "Hoje"], ["7dias", "7 dias"], ["30dias", "30 dias"], ["mes", "Mês"], ["personalizado", "Escolher"]];
 
 export default function PeriodoFiltro({ valor, onChange }: { valor: Periodo; onChange: (p: Periodo) => void }) {
   const h = new Date();

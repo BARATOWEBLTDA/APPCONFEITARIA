@@ -70,7 +70,7 @@ function Variacao({ atual, anterior, rotulo, bomSubir = true }: { atual: number;
   const dois = (pc: string, cel: string) => <><span className="fd-so-pc">{pc}</span><span className="fd-so-cel">{cel}</span></>;
   const antes = rotulo.replace(/^que /, "");
   if (anterior == null) return <span className="fd-var neu">&nbsp;</span>;
-  if (!anterior && !atual) return <span className="fd-var neu">{dois(`Sem movimento ${antes}`, "Sem movimento")}</span>;
+  if (!anterior && !atual) return <span className="fd-var neu">{dois("Sem movimento ainda", "Sem movimento ainda")}</span>; // (5.74) antes "Sem movimento ontem" confundia
   if (!anterior) return <span className="fd-var neu">{dois(`${antes.charAt(0).toUpperCase()}${antes.slice(1)}: R$ 0,00`, "Antes: R$ 0,00")}</span>;
   // (27/10) período ainda sem movimento: mostra o valor de antes, em vez de "-100% que ontem" logo cedo
   if (!atual) { const v = anterior.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); return <span className="fd-var neu">{dois(`${antes.charAt(0).toUpperCase()}${antes.slice(1)}: ${v}`, `Antes: ${v}`)}</span>; }
@@ -209,11 +209,11 @@ export default function Financeiro() {
           <small className="fd-res-rot">{ok && ok.resultado < 0 ? "Saiu mais do que entrou" : "Sobrou"} {quandoPer}</small>
           <b className={`fd-res-v${ok && ok.resultado < 0 ? " s" : ""}`}>{ok ? brl(Math.abs(ok.resultado)) : esp}</b>
           {ok ? <Variacao atual={ok.resultado} anterior={ant ? r2(ant.recebido - ant.despesas) : null} rotulo={per.rotuloAnt} /> : <span className="fd-var neu">&nbsp;</span>}
+          {/* (31/10 · 5.74) tudo zerado: a barra some (antes ficava uma faixa cinza vazia) */}
+          {ok && ok.recebido + ok.despesas > 0 && (
           <div className="fd-pilha" aria-hidden="true">
-            {ok && ok.recebido + ok.despesas > 0
-              ? <>{ok.recebido > 0 && <i className="e" style={{ flexGrow: ok.recebido }} />}{ok.despesas > 0 && <i className="s" style={{ flexGrow: ok.despesas }} />}</> /* (24/10) sem a parte de quem é zero (sobrava um pedacinho vermelho com Saiu R$ 0,00) */
-              : <i className="z" />}
-          </div>
+            {ok.recebido > 0 && <i className="e" style={{ flexGrow: ok.recebido }} />}{ok.despesas > 0 && <i className="s" style={{ flexGrow: ok.despesas }} />}
+          </div>)}
           <div className="fd-leg">
             <div><small><i className="e" />Entrou</small><b className="e">{ok ? brl(ok.recebido) : esp}</b><em>{ok ? `${ok.qtdRecebimentos} ${ok.qtdRecebimentos === 1 ? "recebimento" : "recebimentos"}` : "\u00a0"}</em></div>
             <div><small><i className="s" />Saiu</small><b className="s">{ok ? brl(ok.despesas) : esp}</b><em>{ok ? (ok.recebido > 0 ? `${Math.round((ok.despesas / ok.recebido) * 100)}% do que entrou` : `${ok.qtdDespesas} ${ok.qtdDespesas === 1 ? "saída" : "saídas"}`) : "\u00a0"}</em></div>
@@ -225,7 +225,7 @@ export default function Financeiro() {
           <button type="button" className={`fd-t esc${caixaNeg ? " neg" : ""}`} onClick={() => setDefinir(true)}>
             <span><small><span className="fd-so-pc">Saldo em caixa</span><span className="fd-so-cel">Em caixa</span></small>
               <b>{!cx ? "…" : cx.erro ? "—" : cx.precisaSql ? "—" : cx.configurado ? brlCartao(cx.saldo) : "Informar"}</b></span>
-            <em>{caixaNeg ? "confira" : cx && cx.configurado && !cx.erro ? "agora" : ""}</em>
+            <em>{caixaNeg ? "confira" : cx && cx.configurado && !cx.erro ? "dinheiro e banco" : ""}</em>
           </button>
           <button type="button" className="fd-t" onClick={() => navigate("/financeiro/a-receber")}>
             <span><small>A receber</small><b>{!rec ? "…" : rec.erro ? "—" : brlCartao(rec.total)}</b></span>
@@ -284,10 +284,8 @@ export default function Financeiro() {
         </div>
 
         {semMov ? (
-          <div className="fd-a-movs fd-card fd-nada" role="status">
-            <b>{tipo === "hoje" ? "Nada entrou nem saiu hoje" : `Sem movimento ${quandoPer}`}</b>
-            <small>O resumo aparece quando tiver movimento.</small>
-          </div>
+          /* (31/10 · 5.74) o cartão "Nada entrou nem saiu" saiu: repetia o R$ 0,00 do topo */
+          null
         ) : <>
         {/* últimas movimentações, do jeito de um extrato */}
         <div className="fd-a-movs fd-card">
