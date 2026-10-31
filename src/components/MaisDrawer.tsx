@@ -1,15 +1,13 @@
-import { useId, useRef, useState } from "react";
-import { abrirDooIA } from "@/components/MenuContaItens";
+import { useId, useRef } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, X, CaretRight,
+  ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, CaretRight,
   Megaphone, CalendarDots, Users, Stack, Truck, Basket, ArrowsDownUp, CurrencyDollar,
-  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Sparkle, Bell, ChartPieSlice, Shapes, Notebook, PaperPlaneRight, FileText,
+  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Bell, ChartPieSlice, Shapes, Notebook, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { BotaoIcone } from "@/components/base";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { usePlano } from "@/hooks/usePlano";
 import "./maisDrawer.css";
@@ -63,8 +61,6 @@ const GRUPOS: Grupo[] = [
 export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
   const navigate = useNavigate();
   const { isPro } = usePlano();
-  const [pergunta, setPergunta] = useState("");
-  const perguntarDoo = (texto: string) => { const t = texto.trim(); if (!t) return; setPergunta(""); onClose(); abrirDooIA(t); };
   const caixa = useRef<HTMLDivElement>(null);
   const idTitulo = useId();
   const fase = useFase(open);
@@ -90,25 +86,13 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
       >
         <span className="ui-janela-alca" aria-hidden="true" />
 
-        {/* (30/10 · 5.67) no padrão das outras janelas: só o título e o fechar (saíram a foto, a saudação e a tag PRO) */}
+        {/* (30/10 · 5.67) só o título (saíram a foto, a saudação e a tag PRO). (5.70) sem o X: fecha pela aba Menu, outra aba ou o voltar */}
         <div className="mais-cab">
           <h2 className="mais-ola-t" id={idTitulo}>Menu</h2>
-          <BotaoIcone rotulo="Fechar" variante="limpo" onClick={onClose}><X size={20} weight="bold" /></BotaoIcone>
         </div>
 
         <div className="mais-corpo">
-          {/* (16/10) o Doo IA saiu do menu de baixo (lá entrou o "+ Nova venda"): fica no topo do Mais */}
-          {/* (21/10) a Doo já vem como campo de pergunta (jeito busca do Google) · (27/10) para todos os planos */}
-            <div className="mais-doo-bx">
-              <form className="mais-doo-q" role="search" onSubmit={e => { e.preventDefault(); perguntarDoo(pergunta); }}>
-                <Sparkle size={20} weight="fill" className="mais-doo-q-ic" aria-hidden="true" />
-                <input type="text" enterKeyHint="send" autoComplete="off" aria-label="Pergunte ou peça algo à Doo IA" placeholder="Pergunte à Doo IA…" value={pergunta} onChange={e => setPergunta(e.target.value)} />
-                <button type="submit" className="mais-doo-q-env" aria-label="Enviar para a Doo IA" disabled={!pergunta.trim()}><PaperPlaneRight size={18} weight="fill" /></button>
-              </form>
-              <div className="mais-doo-ch">
-                {["Registrar pedido", "Quanto vendi hoje?"].map(t => <button key={t} type="button" onClick={() => perguntarDoo(t)}>{t}</button>)}
-              </div>
-            </div>
+          {/* (30/10 · 5.70) o atalho da Doo IA saiu do Menu */}
           {/* (21/10) uma lista só, sem título de grupo (sobraram poucos itens) */}
           {[{ label: "Telas", items: GRUPOS.flatMap(g => g.items) }].map(grupo => (
             <section key={grupo.label} className="mais-grupo" aria-label="Telas do app">
