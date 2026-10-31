@@ -127,6 +127,7 @@ export default function Orcamentos() {
           </div>
           <figure className="orc-pro-ex" aria-hidden="true">
             <span className="orc-pro-frase">Mais propostas,<br />mais vendas!</span>
+            <span className="orc-pro-chao" />
             <img className="orc-pro-masc" src={mascoteCoroa} alt="" />
             <div className="orc-pro-cel">
               <div className="orc-pro-cab"><small>Orçamento nº 12</small><i>Pendente</i><b>Bolo da Ana · 5 anos</b><span>Entrega sábado, 8 de novembro</span></div>

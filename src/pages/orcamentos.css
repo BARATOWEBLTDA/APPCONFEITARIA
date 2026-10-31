@@ -342,3 +342,17 @@
 }
 .orc-pro li .orc-pro-li-ic svg { margin: 0; color: inherit; }
 @media (min-width: 901px) { .orc-pro { align-items: stretch; } .orc-pro-cel { max-height: 80%; } }
+/* (5.68) o "chão" claro embaixo dos pés do mascote, como na arte */
+@media (min-width: 901px) {
+  .orc-pro-chao { position: absolute; left: -8%; bottom: -60px; z-index: 1; width: 70%; height: 170px; border-radius: 50%; background: #FFF4F8; box-shadow: 0 0 40px 20px rgba(255,244,248,.8); }
+  .orc-pro-ex::after { content: ""; position: absolute; right: -14%; bottom: -120px; z-index: 0; width: 70%; height: 260px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.55), rgba(255,255,255,0)); }
+  .orc-pro-cel { z-index: 1; }
+}
+@media (min-width: 901px) {
+  .orc-pro-ex { background: linear-gradient(135deg, #FCE3EE 0%, #F7C6DC 100%); }
+  .orc-pro-chao { background: #FFF7FA; box-shadow: 0 0 46px 26px rgba(255,247,250,.85); }
+}
+@media (min-width: 901px) {
+  .orc-pro-masc { bottom: 34px; }
+  .orc-pro-chao { bottom: -40px; height: 130px; left: -6%; width: 64%; }
+}
