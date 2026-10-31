@@ -262,3 +262,6 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 .nv3-it .nv3-it-tx b, .nv3-it .nv3-it-tx > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nv3-it .nv3-it-tx > span em { font-style: normal; font-weight: 500; font-size: 12.5px; color: var(--ui-texto-3); }
 @media (max-width: 600px) { .nv3-it .nv3-it-tx > span em { display: none; } }
+/* (5.65) ao rolar até o "Adicionar novo produto", ele para acima do rodapé fixo (total + botões + barra de baixo) */
+.nv3-add { scroll-margin-bottom: 24px; }
+@media (max-width: 900px) { .nv3-add { scroll-margin-bottom: 184px; } }

@@ -492,6 +492,14 @@ export default function NovaVenda() {
     setFiltroCategoria(null)
   }
   const removerItem = (idx: number) => { setItens(itens.filter((_, i) => i !== idx)); setRecadoAberto([]) }
+  // (30/10 · 5.65) a cada produto novo, a tela anda até o "Adicionar novo produto": ele fica sempre à vista
+  const qtdItensAntes = useRef(itens.length)
+  useEffect(() => {
+    const cresceu = itens.length > qtdItensAntes.current
+    qtdItensAntes.current = itens.length
+    if (!cresceu) return
+    requestAnimationFrame(() => document.querySelector('.nv3-add')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }))
+  }, [itens.length])
   // (5.64) recados abertos (o campo só aparece quando ela toca em "+ Recado")
   const [recadoAberto, setRecadoAberto] = useState<number[]>([])
   // (28/10) produto por kg sem tamanho anda de meio em meio quilo (antes só ia de 1 em 1 kg)
