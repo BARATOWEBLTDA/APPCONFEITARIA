@@ -103,3 +103,6 @@ html.tour-rola body::after { content: ""; display: block; height: 260px; }
   .cf-pass em { flex: 1; padding: 4px 1px; font-size: 11px; text-align: center; }
   .cf-pass em.on { font-weight: 500; }
 }
+/* (31/10 · 5.78) sem o "Fazer o tour" (ex.: Orçamentos no plano grátis), o "Ver o tutorial" era o último e encostava
+   na borda de baixo do balão, parecendo cortado */
+.cf-artigo:last-child { margin-bottom: 16px; }
