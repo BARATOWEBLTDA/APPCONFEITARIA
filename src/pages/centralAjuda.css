@@ -1,6 +1,6 @@
 /* (25/10) Central de Ajuda */
 .ca { max-width: 760px; margin: 0 auto; padding: 16px 12px 110px; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
-.ca-h2 { margin: 18px 4px 10px; font-size: 17px; font-weight: 700; }
+.ca-h2 { margin: 18px 4px 10px; font-size: 17px; font-weight: 600; }
 .ca-vazio { margin: 12px 4px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 
 .ca-busca { display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); color: var(--ui-rosa); }
@@ -31,14 +31,14 @@
 .ca-sup { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
 .ca-sup-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: #E9F9EF; }
 .ca-sup-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; } .ca-sup-tx b { font-size: 14.5px; } .ca-sup-tx small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; color: var(--ui-texto-2); }
-.ca-sup-bt { flex: none; display: flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 12px; background: var(--ui-cinza); font-size: 14px; font-weight: 700; color: var(--ui-texto); text-decoration: none; }
+.ca-sup-bt { flex: none; display: flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 12px; background: var(--ui-cinza); font-size: 14px; font-weight: 600; color: var(--ui-texto); text-decoration: none; }
 
 /* artigo */
 .ca-card { margin: 0 0 12px; padding: 18px 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); scroll-margin-top: 76px; }
 .ca-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.ca-tag { padding: 4px 10px; border-radius: 8px; background: var(--ui-texto); color: #fff; font-size: 12.5px; font-weight: 700; }
+.ca-tag { padding: 4px 10px; border-radius: 8px; background: var(--ui-texto); color: #fff; font-size: 12.5px; font-weight: 600; }
 .ca-min { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--ui-texto-2); }
-.ca-tit { margin: 0 0 8px; font-size: 21px; font-weight: 700; line-height: 1.25; }
+.ca-tit { margin: 0 0 8px; font-size: 21px; font-weight: 600; line-height: 1.25; }
 .ca-resumo { margin: 0 0 14px; font-size: 15px; line-height: 1.55; color: var(--ui-texto-2); }
 .ca-ind { margin-top: 12px; border: 1px solid var(--ui-borda); border-radius: 12px; }
 .ca-ind-bt { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; margin: 0; padding: 0 14px; border: 0; background: none; font-family: inherit; color: var(--ui-texto); cursor: pointer; text-align: left; }
@@ -48,12 +48,12 @@
 .ca-ind ol { list-style: decimal; margin: 0; padding: 0 14px 10px 36px; }
 .ca-ind li button { padding: 7px 0; border: 0; background: none; font-family: inherit; font-size: 14.5px; color: var(--ui-rosa-escuro); text-align: left; cursor: pointer; }
 
-.ca-sec h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 18px; font-weight: 700; }
+.ca-sec h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 18px; font-weight: 600; }
 .ca-sec h2 i { flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-style: normal; font-size: 14px; }
 .ca-sec p { margin: 0 0 10px; font-size: 15px; line-height: 1.6; }
 .ca-passos { list-style: decimal; margin: 0 0 10px; padding-left: 22px; font-size: 15px; line-height: 1.6; }
 .ca-passos li { margin-bottom: 8px; padding-left: 4px; }
-.ca-passos li::marker { font-weight: 700; color: var(--ui-rosa-escuro); }
+.ca-passos li::marker { font-weight: 600; color: var(--ui-rosa-escuro); }
 .ca-fig { margin: 14px auto 6px; max-width: 280px; text-align: center; }
 .ca-fig img { display: block; width: 100%; border: 6px solid #2B1A15; border-radius: 26px; box-shadow: 0 10px 28px rgba(44, 18, 25, .18); background: #fff; }
 .ca-fig figcaption { margin-top: 8px; font-size: 12.5px; line-height: 1.4; color: var(--ui-texto-2); }
@@ -73,7 +73,7 @@
 .ca-tela .ca-fig { margin: 0 auto; max-width: 250px; }
 .ca-marcas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .ca-marcas li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.45; }
-.ca-marcas i { flex: none; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: #E85A8C; color: #fff; font-style: normal; font-size: 14px; font-weight: 700; }
+.ca-marcas i { flex: none; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: #E85A8C; color: #fff; font-style: normal; font-size: 14px; font-weight: 600; }
 @media (min-width: 700px) { .ca-tela { flex-direction: row; align-items: center; gap: 24px; } .ca-tela .ca-fig { margin: 0; flex: none; width: 240px; } .ca-marcas { flex: 1; } }
 /* (26/10) os prints são recortes da parte da tela onde se toca: sem moldura de celular, maiores */
 .ca-tela .ca-fig { max-width: 360px; width: 100%; }
@@ -81,8 +81,10 @@
 .ca-tela .ca-fig--alta { max-width: 260px; }
 @media (min-width: 700px) { .ca-tela .ca-fig { width: 320px; } .ca-tela .ca-fig--alta { width: 240px; } }
 
-/* (26/10) nada quebra em duas linhas: títulos, cenas, passos e dicas numa linha só */
-.ca-sec h2, .ca-ex, .ca-marcas li span, .ca-dica span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* (26/10) títulos numa linha só · (31/10 · 5.83) cenas, marcas e dicas podem ir para a 2ª linha: cortadas com "…" perdiam
+   justamente o fim da frase ("No computador: Receber pedid…") */
+.ca-sec h2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ca-ex, .ca-marcas li span, .ca-dica span { min-width: 0; }
 .ca-marcas li { align-items: center; }
 /* (26/10) botão de abrir a tela no fim do artigo; "Não" abre o campo do motivo */
 .ca-abrir { margin: 4px 0 16px; }
@@ -98,7 +100,7 @@
 .ca-intro { margin: 0 0 14px; font-size: 16px; line-height: 1.6; color: var(--ui-texto); }
 .ca-abrir-topo { width: 100%; }
 .ca-pontos { margin-top: 14px; padding: 14px 16px; border: 1px solid var(--ui-borda); border-radius: 14px; }
-.ce-rot { margin: 0 0 8px; font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ui-texto-2); }
+.ce-rot { margin: 0 0 8px; font-size: 12.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ui-texto-2); }
 .ca-pontos ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .ca-pontos li { display: flex; gap: 10px; font-size: 15px; line-height: 1.45; }
 .ca-pontos li svg { flex: none; margin-top: 3px; color: var(--ui-texto); }
@@ -112,7 +114,7 @@
 .ce-bloco--neutro { cursor: default; opacity: .7; }
 .ce-bloco.on { border-color: var(--ui-texto); box-shadow: 0 0 0 1px var(--ui-texto); }
 .ce-bloco-t { font-size: 13.5px; font-weight: 600; }
-.ce-n { position: absolute; top: -9px; right: -9px; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #8E8388; color: #fff; font-style: normal; font-size: 12px; font-weight: 700; border: 2px solid #FBF9FA; }
+.ce-n { position: absolute; top: -9px; right: -9px; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #8E8388; color: #fff; font-style: normal; font-size: 12px; font-weight: 600; border: 2px solid #FBF9FA; }
 .ce-bloco.on .ce-n { background: var(--ui-texto); }
 .ce-linha { display: flex; align-items: center; gap: 8px; min-height: 30px; padding: 0 10px; border-radius: 8px; background: var(--ui-cinza); font-size: 13px; color: var(--ui-texto-2); }
 .ce-linha span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -121,7 +123,7 @@
 .ce-campo { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 10px; border: 1px solid var(--ui-borda); border-radius: 8px; font-size: 13px; color: var(--ui-texto-3); }
 .ce-bt { display: flex; align-items: center; justify-content: center; min-height: 30px; border-radius: 8px; background: #E6DDE1; font-size: 13px; font-weight: 600; color: var(--ui-texto); }
 .ce-bt--2 { background: none; border: 1px solid var(--ui-borda); }
-.ce-barra { height: 6px; border-radius: 3px; background: var(--ui-cinza); overflow: hidden; } .ce-barra i { display: block; width: 57%; height: 100%; background: #C9BCC2; }
+.ce-barra { height: 6px; border-radius: 3px; background: var(--ui-cinza); overflow: hidden; } .ce-barra i { display: block; width: 50%; height: 100%; background: #C9BCC2; }
 .ce-nota { font-size: 12.5px; color: var(--ui-texto-3); }
 .ce-dias { display: flex; gap: 6px; } .ce-dias span { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; border: 1px solid var(--ui-borda); border-radius: 8px; font-size: 11.5px; color: var(--ui-texto-2); }
 .ce-dias i, .ce-grade i, .ce-nav i { display: block; width: 16px; height: 16px; border-radius: 5px; background: #E6DDE1; }
@@ -134,12 +136,12 @@
 .ce-partes { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .ce-partes button { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin: 0; padding: 10px 10px; border: 0; border-radius: 12px; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
 .ce-partes button.on { background: var(--ui-cinza); }
-.ce-partes i { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%; background: #8E8388; color: #fff; font-style: normal; font-size: 12.5px; font-weight: 700; }
+.ce-partes i { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%; background: #8E8388; color: #fff; font-style: normal; font-size: 12.5px; font-weight: 600; }
 .ce-partes button.on i { background: var(--ui-texto); }
 .ce-partes span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .ce-partes b { font-size: 15.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ce-partes small { font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
-.ce-mostrar { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; margin-top: 12px; border: 0; border-radius: 14px; background: var(--ui-texto); color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; }
+.ce-mostrar { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; margin-top: 12px; border: 0; border-radius: 14px; background: var(--ui-texto); color: #fff; font-family: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; }
 @media (min-width: 700px) {
   .ce { display: grid; grid-template-columns: 300px 1fr; grid-template-rows: auto auto auto 1fr; column-gap: 24px; }
   .ce-rot, .ce-sub { grid-column: 1 / -1; }
@@ -150,13 +152,13 @@
 
 /* explicação em texto: título com linha embaixo, parágrafos e listas */
 .ca-txt-p + .ca-txt-p { margin-top: 22px; }
-.ca-txt h2 { margin: 0 0 10px; padding-bottom: 10px; border-bottom: 1px solid var(--ui-linha); font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ca-txt h2 { margin: 0 0 10px; padding-bottom: 10px; border-bottom: 1px solid var(--ui-linha); font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ca-txt p { margin: 0 0 10px; font-size: 15.5px; line-height: 1.65; }
 .ca-txt-lista { margin: 0 0 10px; padding-left: 20px; font-size: 15.5px; line-height: 1.6; }
 .ca-txt-lista li { margin-bottom: 8px; } .ca-txt-lista li::marker { color: var(--ui-texto-3); }
 
 /* dúvidas comuns: abre e fecha */
-.ca-duv h2 { margin: 0 0 4px; font-size: 18px; font-weight: 700; }
+.ca-duv h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
 .ca-duv details { border-top: 1px solid var(--ui-linha); } .ca-duv details:first-of-type { border-top: 0; }
 .ca-duv summary { display: flex; align-items: center; gap: 10px; min-height: 52px; list-style: none; font-size: 15.5px; font-weight: 600; cursor: pointer; }
 .ca-duv summary::-webkit-details-marker { display: none; }
@@ -164,3 +166,18 @@
 .ca-duv summary svg { flex: none; color: var(--ui-texto-3); transition: transform .2s; }
 .ca-duv details[open] summary svg { transform: rotate(180deg); }
 .ca-duv details p { margin: 0 0 14px; font-size: 15px; line-height: 1.6; color: var(--ui-texto-2); }
+
+/* (31/10 · 5.83) Central refeita: o print vem limpo e as marcas são desenhadas por cima, sempre do mesmo tamanho */
+.ca-sec h2 { font-size: 17px; font-weight: 600; }
+.ca-tela .ca-fig, .ca-tela .ca-fig--alta { width: 100%; max-width: 300px; margin: 4px auto 0; }
+.ca-fig-in { position: relative; display: block; }
+.ca-tela .ca-fig img, .ca-fig img { width: 100%; height: auto; border: 1px solid var(--ui-borda); border-radius: 14px; box-shadow: 0 6px 18px rgba(44, 18, 25, .08); background: #fff; }
+.ca-pt { position: absolute; box-sizing: border-box; border: 2px solid #E85A8C; border-radius: 10px; pointer-events: none; }
+.ca-pt i { position: absolute; top: -10px; right: -10px; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #E85A8C; color: #fff; box-shadow: 0 0 0 2px #fff; font-style: normal; font-size: 11.5px; font-weight: 600; line-height: 1; }
+.ca-marcas i { width: 22px; height: 22px; font-size: 12px; font-weight: 600; }
+.ca-marcas li span { white-space: normal; overflow: visible; }
+.ca-sec h2 { white-space: normal; }
+@media (min-width: 700px) { .ca-tela .ca-fig, .ca-tela .ca-fig--alta { width: 300px; margin: 0; } }
+/* "Isto ajudou?" inteiro no celular */
+.ca-voto button { padding: 0 12px; }
+.ca-voto div { gap: 6px; }

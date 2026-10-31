@@ -4,7 +4,7 @@ import {
   Users, UserPlus, Cake, ClockCounterClockwise, Camera, ToggleRight, Tag, Basket, TrendDown, ArrowsClockwise, CreditCard, Scales, ShoppingBagOpen,
   SquaresFour, ArrowsDownUp, Info, PuzzlePiece, ArrowCounterClockwise, DownloadSimple, CalendarCheck, Buildings, X, Clock, Flame, Sparkle, Images,
   Eye, Ticket, FacebookLogo, Megaphone, Checks, SpeakerHigh, PushPin, Lightbulb, QrCode, Truck, CalendarDots, PencilSimple, ChatCircleText, Hash, Gear, Newspaper,
-  Receipt, Crown, DeviceMobile, Heart, HandSwipeLeft, FileText, LinkSimple, Plus,
+  Receipt, Crown, DeviceMobile, Heart, FileText, LinkSimple, Plus,
 } from "@phosphor-icons/react";
 import type { Como } from "@/components/como/ComoFunciona";
 import type { PassoTour } from "@/components/como/tour";
@@ -82,7 +82,7 @@ export const COMO_AGENDA: Como = {
   total: ["Total do dia", "R$ 770,00"],
   fluxo: ["Pedido aceito", "Na agenda", "Entrega"],
   dicas: [
-    [CalendarBlank, <>Cada dia mostra os pedidos com entrega marcada. Selecione um dia para ver a lista.</>],
+    [CalendarBlank, <>Cada dia mostra os pedidos com entrega marcada. Toque em um dia para ver a lista.</>],
     [Circle, <><b>Cores:</b> vermelho para atrasado, laranja para aceitar, azul na agenda e verde para concluído.</>],
     [WarningCircle, <><b>Precisa de atenção</b> reúne os pedidos atrasados e os que aguardam aceite.</>],
     [MagnifyingGlass, <>Busque pelo <b>nome do cliente</b> ou pelo número do pedido.</>],
@@ -93,12 +93,12 @@ export const COMO_AGENDA: Como = {
 export const TOUR_AGENDA: PassoTour[] = [
   { el: ".ag3-busca", titulo: "Buscar", texto: "Encontre um pedido pelo nome do cliente ou pelo número." },
   { el: ".ag3-filtro", titulo: "Filtro", texto: "Escolha quais situações aparecem na agenda. Por exemplo, oculte os pedidos concluídos." },
-  { el: ".ag3-cal", titulo: "Calendário", texto: "Cada pedido aparece no dia da entrega, na cor da sua situação. Vermelho indica atraso. Selecione um dia para ver os pedidos dele." },
+  { el: ".ag3-cal", titulo: "Calendário", texto: "Cada pedido aparece no dia da entrega, na cor da sua situação. Vermelho indica atraso. Toque em um dia para ver os pedidos dele." },
   { el: ".ag3-dia", titulo: "Dia escolhido", texto: "Mostra o dia selecionado e quanto ainda falta receber dos pedidos desse dia." },
   { el: ".ag3-at--atr", titulo: "Precisa de atenção", texto: "Pedidos com entrega atrasada. Use o botão ao lado para avançar cada um para a próxima etapa." },
   { el: ".ag3-at--prox", titulo: "Próximos dias", texto: "Quando o dia selecionado não tem pedidos, aqui aparecem as próximas entregas." },
-  { el: ".ag3-pc || .ag3-lista", titulo: "Pedidos do dia", texto: "Selecione um pedido para ver os detalhes. Marcar como pronto e chamar o cliente no WhatsApp ficam no próprio cartão.",
-    vazio: { el: ".ag3-lado > .ui-vazia", texto: "Não há pedidos para mostrar neste dia. Selecione outro dia no calendário para ver os pedidos dele." } },
+  { el: ".ag3-pc || .ag3-lista", titulo: "Pedidos do dia", texto: "Toque em um pedido para ver os detalhes. Marcar como pronto e chamar o cliente no WhatsApp ficam no próprio cartão.",
+    vazio: { el: ".ag3-lado > .ui-vazia", texto: "Não há pedidos para mostrar neste dia. Toque em outro dia no calendário para ver os pedidos dele." } },
 ];
 
 export const COMO_FINANCEIRO: Como = {
@@ -170,7 +170,7 @@ export const COMO_MINHA_LOJA: Como = {
   dicas: [
     [ShareNetwork, <>Envie o <b>link</b> pelo WhatsApp e pelo Instagram. O <b>QR Code</b> é para imprimir.</>],
     [PauseCircle, <><b>Pausar pedidos</b> fecha o cardápio na hora, sem alterar o horário.</>],
-    [Palette, <>O que ainda falta configurar aparece marcado como <b>Falta</b>.</>],
+    [CheckCircle, <>O que ainda falta configurar aparece marcado como <b>Falta</b>.</>],
   ],
 };
 
@@ -180,7 +180,7 @@ export const COMO_CLIENTES: Como = {
   tela: { nome: "Clientes", Icone: Users },
   artigo: "clientes",
   resumo: "Quem compra de você, com contato, aniversário e histórico de pedidos.",
-  tit: "Exemplo · uma cliente frequente",
+  tit: "Exemplo · um cliente frequente",
   linhas: [["Pedidos feitos", "8"], ["Total gasto", "R$ 960,00"]],
   total: ["Ticket médio", "R$ 120,00"],
   fluxo: ["Pedido", "Cadastro", "Histórico"],
@@ -199,7 +199,7 @@ export const TOUR_CLIENTES: PassoTour[] = [
   { el: ".cl9-busca", titulo: "Buscar", texto: "Encontre um cliente pelo nome, telefone ou e-mail." },
   { el: ".cl9-acoes", titulo: "Novo cliente", texto: "Cadastre quem compra pelo WhatsApp ou no balcão. Quem pede pelo cardápio é cadastrado automaticamente." },
   { el: ".cl9-filtro", titulo: "Filtro", texto: "Abre na lateral: mostre só quem faz aniversário, os novos cadastros ou quem está sem comprar há 60 dias." },
-  { el: ".cl9-l || .cl9-tab-l || .cl9-tab", titulo: "Lista de clientes", texto: "Selecione um cliente para ver o histórico de pedidos e o total gasto. O ícone do WhatsApp abre a conversa.",
+  { el: ".cl9-l || .cl9-tab-l || .cl9-tab", titulo: "Lista de clientes", texto: "Toque em um cliente para ver o histórico de pedidos e o total gasto. O ícone do WhatsApp abre a conversa.",
     vazio: [
       { el: ".cl9-semres", texto: "Nenhum cliente com esta busca ou filtro. Confira o que foi digitado ou volte para Todos." },
       { el: ".cli-root .ui-vazia", texto: "Ainda não há clientes. Quem pede pelo cardápio é cadastrado automaticamente, e os demais você cadastra manualmente." },
@@ -226,7 +226,7 @@ export const TOUR_PRODUTOS: PassoTour[] = [
   { el: ".pl-busca", titulo: "Buscar", texto: "Encontre um produto pelo nome." },
   { el: ".pl-novo", titulo: "Novo produto", texto: "Cadastre um produto com foto, preço, descrição e opções, como sabores e tamanhos." },
   { el: ".pl-filtro", titulo: "Filtro", texto: "Abre na lateral: ordene a lista (mais recentes, nome, categoria ou preço) e mostre só as categorias que quiser." },
-  { el: ".prod-card", titulo: "Produto", texto: "Selecione um produto para editar as informações, as fotos e as opções.",
+  { el: ".prod-card", titulo: "Produto", texto: "Toque em um produto para editar as informações, as fotos e as opções.",
     vazio: [
       { el: ".prod-root .ui-vazia", texto: "Nenhum produto com esta busca. Confira o nome digitado." },
       { el: ".prod-hero-btn-primary", texto: "Ainda não há produtos. Use Cadastrar produto para criar o primeiro: ele aparece aqui na lista e no seu cardápio." },
@@ -252,10 +252,10 @@ export const COMO_FICHA: Como = {
 };
 
 export const TOUR_FICHA: PassoTour[] = [
-  { el: ".fl-alerta", titulo: "Prejuízo", texto: "Produtos com preço de venda abaixo do custo. Selecione para ver quais são e ajustar o preço." },
+  { el: ".fl-alerta", titulo: "Prejuízo", texto: "Produtos com preço de venda abaixo do custo. Toque para ver quais são e ajustar o preço." },
   { el: ".cl9-busca", titulo: "Buscar", texto: "Encontre um produto pelo nome." },
   { el: ".fl-filtro", titulo: "Filtro", texto: "Abre na lateral: separe os produtos com ficha, sem ficha e os que estão dando prejuízo." },
-  { el: ".fl-l", titulo: "Produto", texto: "Mostra o custo, o lucro e a margem de cada produto. Selecione para montar ou ajustar a ficha técnica.",
+  { el: ".fl-l", titulo: "Produto", texto: "Mostra o custo, o lucro e a margem de cada produto. Toque para montar ou ajustar a ficha técnica.",
     vazio: [
       { el: ".cl9.fl .cl9-semres", texto: "Nenhum produto com esta busca ou filtro. Confira o nome digitado ou volte para Todos." },
       { el: ".cl9.fl .ui-vazia", texto: "Ainda não há produtos. Os produtos cadastrados aparecem nesta lista para você montar a ficha técnica." },
@@ -309,8 +309,8 @@ export const TOUR_FINANCEIRO: PassoTour[] = [
   { el: ".fd-hero .pf", titulo: "Período", texto: "Escolha o período: hoje, últimos 7 ou 30 dias, um mês ou outro intervalo." },
   { el: ".fd-res", titulo: "Sobrou", texto: "O que entrou menos o que saiu no período. Aportes e retiradas ficam de fora, porque são dinheiro seu, não do negócio." },
   { el: ".fd-tres > .fd-t.esc", titulo: "Saldo em caixa", texto: "Informe uma vez quanto há no caixa. Depois, o saldo é atualizado a cada entrada e saída." },
-  { el: ".fd-tres > .fd-t:nth-child(2)", titulo: "A receber", texto: "Total pendente dos pedidos. Selecione para ver a lista e registrar os pagamentos." },
-  { el: ".fd-tres > .fd-t:nth-child(3)", titulo: "A pagar", texto: "Contas a pagar, com as vencidas em destaque. Selecione para ver a lista." },
+  { el: ".fd-tres > .fd-t:nth-child(2)", titulo: "A receber", texto: "Total pendente dos pedidos. Toque para ver a lista e registrar os pagamentos." },
+  { el: ".fd-tres > .fd-t:nth-child(3)", titulo: "A pagar", texto: "Contas a pagar, com as vencidas em destaque. Toque para ver a lista." },
   { el: ".fd-listas", titulo: "Próximos valores", texto: "Os próximos valores a receber e a pagar, com o botão para resolver na hora." },
   { el: ".fd-mais", titulo: "Mais", texto: "Atalhos para Transações, Custos e Lucratividade." },
 ];
@@ -323,7 +323,7 @@ export const TOUR_CARDAPIO: PassoTour[] = [
   { el: ".ml-cliente", titulo: "A loja para o cliente", texto: "Logo, sobre a loja (nome, WhatsApp e descrição), aparência e redes sociais: o que o cliente vê no cardápio. Cada linha mostra como está agora." },
   { el: ".ml-vende", titulo: "Como você vende", texto: "Horário, entrega, pagamento, Pix e endereço. O que ainda falta configurar aparece marcado como Falta." },
   { el: ".ml-produtos", titulo: "O que você vende", texto: "Produtos, categorias e complementos que aparecem no cardápio." },
-  { el: ".ch-metricas-grid, .vgd-kp", titulo: "Desempenho", texto: "Visitas, pedidos, valor vendido e conversão do cardápio no período escolhido." },
+  { el: ".vgd-kp", titulo: "Desempenho", texto: "Visitas, pedidos, valor vendido e conversão do cardápio no período escolhido." },
   { el: ".vgd-gr", titulo: "Visitas por dia", texto: "Quantas pessoas abriram o cardápio em cada dia do período." },
   { el: ".ch-block--vendidos", titulo: "Mais vendidos", texto: "Os produtos mais pedidos pelo cardápio nos últimos 30 dias." },
   { el: ".vgd-g2", titulo: "Últimos pedidos", texto: "Os pedidos mais recentes que chegaram pelo link do cardápio." },
@@ -345,7 +345,7 @@ export const COMO_CADASTROS: Como = {
   ],
 };
 export const TOUR_CADASTROS: PassoTour[] = [
-  { el: ".cad-at", titulo: "Precisa de atenção", texto: "Pendências dos cadastros, como produtos sem ficha técnica. Selecione para resolver." },
+  { el: ".cad-at", titulo: "Precisa de atenção", texto: "Pendências dos cadastros, como produtos sem ficha técnica. Toque para resolver." },
   { el: ".cad-c--vende", titulo: "O que você vende", texto: "Produtos, categorias, complementos e a sua loja (o cardápio digital)." },
   { el: ".cad-c--feito", titulo: "Do que é feito", texto: "Ingredientes e fichas técnicas, que calculam o custo e o lucro de cada produto." },
   { el: ".cad-c--compra", titulo: "Quem compra", texto: "Seus clientes e as mensagens prontas do WhatsApp." },
@@ -366,7 +366,7 @@ export const COMO_CATEGORIAS: Como = {
 export const TOUR_CATEGORIAS: PassoTour[] = [
   { el: ".ct .ui-tit-acao", titulo: "Nova categoria", texto: "Crie categorias como Bolos, Doces e Salgados para organizar o cardápio.",
     vazio: { el: ".ct .ui-vazia", titulo: "Categorias", texto: "Ainda não há categorias. Use Criar categoria para cadastrar a primeira." } },
-  { el: ".ct-row-b", titulo: "Categoria", texto: "Mostra quantos produtos a categoria tem. Selecione para editar o nome e a foto." },
+  { el: ".ct-row-b", titulo: "Categoria", texto: "Mostra quantos produtos a categoria tem. Toque para editar o nome e a foto." },
   { el: ".ct-row .ui-bti", titulo: "Opções", texto: "Suba ou desça a categoria na ordem do cardápio, edite ou exclua." },
   { el: ".ct-dica", titulo: "Produtos sem categoria", texto: "Eles aparecem apenas em Todos, no cardápio. Escolha uma categoria no cadastro do produto." },
 ];
@@ -382,7 +382,7 @@ export const COMO_COMPLEMENTOS: Como = {
   dicas: [
     [PuzzlePiece, <>Cadastre uma vez e escolha em <b>quais produtos</b> o complemento aparece.</>],
     [Coins, <>Pode ser <b>cobrado</b> ou <b>grátis</b>. O valor é somado ao total do pedido.</>],
-    [Camera, <>Marque <b>Pedir foto de referência</b> para o cliente anexar uma imagem, como no topo de bolo.</>],
+    [Camera, <>Marque <b>Uma foto de referência</b> para o cliente anexar uma imagem, como no topo de bolo.</>],
     [ArrowsClockwise, <>Ao alterar o preço aqui, ele muda em <b>todos os produtos</b>.</>],
   ],
 };
@@ -393,7 +393,7 @@ export const TOUR_COMPLEMENTOS: PassoTour[] = [
       { el: ".ct .ui-vazia", titulo: "Primeiro, um produto", texto: "Os complementos aparecem junto dos produtos no cardápio. Cadastre um produto e volte aqui." },
     ] },
   { el: ".pz-busca", titulo: "Buscar", texto: "Encontre um complemento pelo nome." },
-  { el: ".pz-li-b || .pz-cc-b", titulo: "Complemento", texto: "Mostra em que parte do cardápio aparece e se o cliente precisa mandar foto ou frase. Selecione para editar." },
+  { el: ".pz-li-b || .pz-cc-b", titulo: "Complemento", texto: "Mostra em que parte do cardápio aparece e se o cliente precisa mandar foto ou frase. Toque para editar." },
   { el: ".pz-li .ui-bti || .pz-cc-menu", titulo: "Opções", texto: "Edite, escolha onde aparece no cardápio ou exclua." },
   { el: ".pz-cheio .pz-cel || .pz-cheio", titulo: "Assim o cliente vê", texto: "A prévia de como os complementos aparecem para o cliente na hora de escolher o produto." },
 ];
@@ -418,7 +418,7 @@ export const TOUR_INGREDIENTES: PassoTour[] = [
     vazio: { el: ".cl9 > .ui-vazia", titulo: "Ingredientes", texto: "Ainda não há ingredientes. Use Cadastrar ingrediente para adicionar o primeiro." } },
   { el: ".cl9-acoes", titulo: "Novo ingrediente", texto: "Cadastre um item com a quantidade da embalagem e o preço pago." },
   { el: ".ig-filtro", titulo: "Filtro", texto: "Abre na lateral: mostre só uma categoria, como ingredientes, embalagens ou decorações." },
-  { el: ".ig-l", titulo: "Ingrediente", texto: "Mostra o preço da compra e o custo na receita. Selecione para editar ou atualizar o preço.",
+  { el: ".ig-l", titulo: "Ingrediente", texto: "Mostra o preço da compra e o custo na receita. Toque para editar ou atualizar o preço.",
     vazio: { el: ".cl9-card .cl9-semres", texto: "Nenhum ingrediente com este filtro. Confira a busca ou escolha outra categoria." } },
 ];
 
@@ -441,7 +441,7 @@ export const TOUR_TRANSACOES: PassoTour[] = [
   { el: ".tx-saldo", titulo: "Saldo", texto: "O que entrou menos o que saiu no período, com as entradas e as saídas embaixo. As setas trocam o mês." },
   { el: ".tx-busca", titulo: "Buscar", texto: "Encontre um lançamento pelo cliente, pelo pedido ou pela despesa." },
   { el: ".tx-bb .gf-bt", titulo: "Filtro", texto: "Abre na lateral: período, só entradas ou só saídas, forma de pagamento e a planilha para baixar." },
-  { el: ".tx-it || .tx-dia", titulo: "Extrato", texto: "Os lançamentos ficam por dia, com o saldo de cada dia. Selecione um para ver os detalhes ou estornar.",
+  { el: ".tx-it || .tx-dia", titulo: "Extrato", texto: "Os lançamentos ficam por dia, com o saldo de cada dia. Toque em um para ver os detalhes ou estornar.",
     vazio: { el: ".tx-vazio", texto: "Não há lançamentos neste período. Recebimentos, entradas e saídas aparecem aqui." } },
   { el: ".txp-barra, .tx-hd", titulo: "Lançamentos", texto: "Registre uma entrada ou uma saída de dinheiro." },
 ];
@@ -500,14 +500,15 @@ export const COMO_APARENCIA: Como = {
   dicas: [
     [Eye, <>Toque em <b>Ver como fica</b> para ver o topo do cardápio do jeito que o cliente vê.</>],
     [Images, <><b>Banners</b> divulgam promoções no cardápio. Use imagens deitadas, de 1200 × 675.</>],
-    [Palette, <><b>Modelo e cores</b> definem como o cliente vê a sua loja. Alguns recursos são do plano PRO.</>],
-    [Eye, <>Tudo é salvo na hora. Use <b>Ver meu cardápio</b> para conferir como ficou.</>],
+    [Palette, <>A primeira fileira de <b>cores</b> é grátis. As outras, o + e os banners 2 a 4 são do plano PRO.</>],
+    [Eye, <>Tudo é salvo na hora e já aparece no cardápio.</>],
   ],
 };
 export const TOUR_APARENCIA: PassoTour[] = [
-  { el: ".ap-sec-topo", titulo: "Topo do cardápio", texto: "A foto do topo e a logo. Toque em Ver como fica para ver do jeito que o cliente vê." },
-  { el: ".ap-sec-banners", titulo: "Banners de promoção", texto: "Imagens que divulgam promoções no cardápio. No plano PRO, até quatro banners em carrossel." },
-  { el: ".ap-sec-modelo", titulo: "Modelo do cardápio", texto: "Escolha entre o modelo Clássico, gratuito, e o Premium, do plano PRO." },
+  { el: ".ap-sec-logo", titulo: "Logo", texto: "A logo aparece no topo do cardápio. Toque em Trocar para mudar." },
+  { el: ".ap-sec-topo", titulo: "Foto do topo", texto: "A foto atrás do nome da loja. Toque em Ver como fica para ver do jeito que o cliente vê." },
+  { el: ".ap-sec-banners", titulo: "Banners de promoção", texto: "Imagens que divulgam promoções no cardápio. No plano PRO, até quatro banners passando sozinhos." },
+  { el: ".ap-sec-link", titulo: "Link do cardápio", texto: "O nome da loja no fim do link (plano PRO). Ao mudar, o link antigo continua funcionando." },
   { el: ".ap-sec-cores", titulo: "Cores do topo", texto: "Defina as cores do topo do cardápio: a faixa, a borda da logo e o nome da loja." },
 ];
 
@@ -528,7 +529,7 @@ export const COMO_MARKETING: Como = {
 };
 export const TOUR_MARKETING: PassoTour[] = [
   { el: ".mk-abas", titulo: "Ferramentas", texto: "Alterne entre os cupons de desconto e o Pixel do Facebook." },
-  { el: ".ep-cupons", titulo: "Seus cupons", texto: "Cada cupom mostra o código, o desconto e se está ativo. Selecione um cupom para editar.",
+  { el: ".ep-cupons", titulo: "Seus cupons", texto: "Cada cupom mostra o código, o desconto e se está ativo. Toque em um cupom para editar.",
     vazio: { el: ".mk-cupons .ep-vazio, .mk-cupons .ep-pro", texto: "Ainda não há cupons para mostrar. Siga a orientação deste aviso para criar o primeiro." } },
   { el: ".ep-cupons-pe", titulo: "Novo cupom", texto: "Crie um cupom. Ele já vale no cardápio assim que você cria." },
   { el: ".mk-card", titulo: "Pixel do Facebook", texto: "Informe o código do Pixel para os anúncios do Facebook e do Instagram chegarem a quem visitou o cardápio." },
@@ -541,14 +542,12 @@ export const COMO_NOVIDADES: Como = {
   dicas: [
     [Bell, <>Cada novidade nova chega como <b>aviso no celular</b>. Ao abrir, aparece o texto completo.</>],
     [Circle, <>As <b>não lidas</b> ficam em branco. Depois de abertas, ficam em cinza.</>],
-    [HandSwipeLeft, <><b>Arraste para o lado</b> para tirar uma novidade da lista. Dá para desfazer no aviso que aparece.</>],
     [Heart, <>Gostou de uma dica? Use o <b>Gostei</b> dentro da novidade.</>],
     [PushPin, <>A novidade <b>fixada</b> fica sempre no topo.</>],
   ],
 };
 export const TOUR_NOVIDADES: PassoTour[] = [
   { el: ".nl-lista > li:first-child", titulo: "Novidade", texto: "Imagem, título, resumo e quando foi publicada. Abra para ler o texto completo." },
-  { el: ".nl-lista > li:first-child", titulo: "Arraste para excluir", texto: "Arraste a novidade para o lado para tirar da lista. No computador, use o X que aparece ao passar o mouse. Dá para desfazer no aviso." },
   { el: ".nl-it--lida", titulo: "Já lida", texto: "Depois de aberta, a novidade fica em cinza. As não lidas ficam em branco." },
   { el: ".cab-cel-ac:not(.cab-cel-ac--pro), .sidebar-sino", titulo: "Sino", texto: "O número no sino mostra quantas novidades você ainda não leu." },
 ];
@@ -556,26 +555,26 @@ export const TOUR_NOVIDADES: PassoTour[] = [
 export const COMO_DADOS_LOJA: Como = {
   tela: { nome: "Dados da loja", Icone: Storefront },
   artigo: "horario-entrega-pagamento",
-  resumo: "As informações que o cliente vê no cardápio: loja, endereço, horário, pagamento e entrega. Tudo é salvo automaticamente.",
+  resumo: "As informações que o cliente vê no cardápio: loja, endereço, horário, pagamento e entrega. Tudo é salvo sozinho ao fechar cada parte.",
   fluxo: ["Preencher", "Salvo na hora", "No cardápio"],
   dicas: [
     [CheckCircle, <>O <b>visto verde</b> indica a parte pronta. <b>Falta</b> mostra o que ainda precisa ser preenchido.</>],
     [Clock, <>O <b>horário</b> define quando o cardápio aceita pedidos.</>],
     [QrCode, <>Com o <b>Pix pelo cardápio</b>, o cliente paga o sinal ou o total ao fazer o pedido.</>],
-    [Truck, <>Em <b>Entrega</b>, escolha retirada, entrega própria e a taxa.</>],
+    [Truck, <>Em <b>Entrega</b>, escolha retirada, entrega e como cobrar a taxa: única, por bairro, por raio ou por cidade.</>],
   ],
 };
 export const TOUR_DADOS_LOJA: PassoTour[] = [
   { el: ".dl-lista-c", titulo: "Partes", texto: "Cada parte mostra o que já foi preenchido. O visto verde indica a parte pronta." },
   { el: ".dl-li-st.falta", titulo: "O que falta", texto: "Complete esta parte para o cardápio funcionar por completo." },
-  { el: ".dl-painel", titulo: "Edição", texto: "A parte selecionada abre aqui. As alterações são salvas automaticamente." },
-  { el: ".dl-lista-salva", titulo: "Salvamento automático", texto: "Tudo é salvo sozinho, sem precisar de um botão de salvar." },
+  { el: ".dl-painel", titulo: "Edição", texto: "A parte escolhida abre aqui. As alterações são salvas sozinhas." },
+  { el: ".dl-lista-salva", titulo: "Salvamento automático", texto: "Tudo é salvo sozinho ao fechar a parte, sem botão de salvar." },
 ];
 
 export const COMO_NOVA_VENDA: Como = {
   tela: { nome: "Nova venda", Icone: ClipboardText },
   artigo: "nova-venda",
-  resumo: "Registre uma venda ou encomenda feita pelo WhatsApp ou no balcão, em cinco etapas.",
+  resumo: "Registre uma venda ou encomenda feita pelo WhatsApp ou no balcão: produtos, cliente, entrega e pagamento.",
   tit: "Exemplo · encomenda de aniversário",
   linhas: [["Bolo de chocolate 2 kg", "R$ 180,00"], ["Taxa de entrega", "R$ 15,00"]],
   total: ["Total da venda", "R$ 195,00"],
@@ -588,10 +587,9 @@ export const COMO_NOVA_VENDA: Como = {
   ],
 };
 export const TOUR_NOVA_VENDA: PassoTour[] = [
-  { el: ".nv3-passos", titulo: "Etapas", texto: "A venda é registrada em cinco etapas: venda, cliente, entrega, pagamento e revisão.",
+  { el: ".nv3-tipos", titulo: "Tipo de venda", texto: "Encomenda é para entregar ou retirar em outro dia. Pronta entrega é para o que já está pronto.",
     vazio: { el: ".nv3 .ui-vazia", titulo: "Primeiro, um produto", texto: "Para registrar uma venda, cadastre pelo menos um produto. Depois é só voltar aqui." } },
-  { el: ".nv3-tipos", titulo: "Tipo de venda", texto: "Encomenda é para entregar ou retirar em outro dia. Pronta entrega é para o que já está pronto." },
-  { el: ".nv3-card--produtos", titulo: "Produtos", texto: "Adicione os produtos que o cliente pediu, com quantidade e opções." },
+  { el: ".nv3-card--produtos", titulo: "Produtos", texto: "Adicione os produtos que o cliente pediu, com a quantidade e um recado, se precisar." },
   { el: ".nv3-lado", titulo: "Resumo da venda", texto: "Os itens, o total e o que ainda falta preencher, sempre à vista." },
   { el: ".nv3-pe", titulo: "Total e avanço", texto: "O total fica sempre à vista. Use Continuar para seguir para a próxima etapa." },
 ];
@@ -609,7 +607,7 @@ export const COMO_CONFIGURACOES: Como = {
 };
 export const TOUR_CONFIGURACOES: PassoTour[] = [
   { el: ".cf9-busca", titulo: "Buscar", texto: "Encontre um ajuste pelo nome, como senha, pix, horário ou custos." },
-  { el: ".cf9-item", titulo: "Ajustes", texto: "Os ajustes ficam organizados em Conta, App e Ajuda. Selecione um item para abrir." },
+  { el: ".cf9-item", titulo: "Ajustes", texto: "Os ajustes ficam organizados em Conta, App e Ajuda. Toque em um item para abrir." },
   { el: ".cf9 > .ui-bt--secundario", titulo: "Sair da conta", texto: "Encerra a sessão neste aparelho." },
 ];
 
@@ -626,7 +624,7 @@ export const COMO_MENSAGENS: Como = {
 };
 export const TOUR_MENSAGENS: PassoTour[] = [
   { el: ".mz-intro", titulo: "Como funciona", texto: "O app abre o WhatsApp com a mensagem pronta. Aqui você personaliza cada texto." },
-  { el: ".mz-item", titulo: "Mensagem", texto: "Mostra quando o texto é usado e se está no padrão ou personalizado. Selecione para editar." },
+  { el: ".mz-item", titulo: "Mensagem", texto: "Mostra quando o texto é usado e se está no padrão ou personalizado. Toque para editar." },
 ];
 
 
@@ -637,7 +635,7 @@ export const COMO_CLIENTE: Como = {
   tela: { nome: "Cliente", Icone: Users },
   artigo: "clientes",
   resumo: "Tudo de um cliente em uma tela: contato, aniversário, quanto já comprou e os pedidos.",
-  tit: "Exemplo · uma cliente frequente",
+  tit: "Exemplo · um cliente frequente",
   linhas: [["Pedidos", "8"], ["Total gasto", "R$ 960,00"]],
   total: ["Ticket médio", "R$ 120,00"],
   fluxo: ["Cliente", "Nova venda", "Pedido"],
@@ -710,21 +708,21 @@ export const COMO_DOO: Como = {
   resumo: "A assistente do Doonly: calcula preços, cria receitas, registra pedidos e escreve por você.",
   fluxo: ["Pergunte", "A Doo responde", "Use no app"],
   dicas: [
-    [Receipt, <>Mande o <b>print de uma conversa</b> e a Doo registra o pedido.</>],
+    [Receipt, <>Em <b>Novo pedido</b>, cole a conversa e a Doo registra o pedido.</>],
     [Coins, <>Peça o <b>preço</b> de um bolo ou doce: ela usa os seus ingredientes.</>],
     [ChatCircleText, <>Ela também escreve <b>legendas</b> e <b>respostas</b> para os seus clientes.</>],
   ],
 };
 export const TOUR_DOO: PassoTour[] = [
   { el: ".av-hero", titulo: "Doo IA", texto: "A sua assistente. Escolha uma das opções abaixo ou abra a conversa e pergunte o que quiser." },
-  { el: ".av-grid", titulo: "O que pedir", texto: "Atalhos para o que a Doo faz melhor: preço, pedido, receita, ingrediente e mensagens." },
+  { el: ".av-grid", titulo: "O que pedir", texto: "8 atalhos: preço, pedido, receita, ingrediente, legenda, resposta, topo de bolo e a sua semana. No grátis, são 10 mensagens por mês." },
 ];
 
 /** (25/10) Orçamentos: a lista (pedidos que chegaram pelo link, enviados e respondidos) */
 export const COMO_ORCAMENTOS: Como = {
   tela: { nome: "Orçamentos", Icone: FileText },
   artigo: "orcamentos",
-  resumo: "A cliente pede pelo seu link, você monta a proposta e ela aprova pelo celular. Aprovou, vira pedido na Agenda.",
+  resumo: "O cliente pede pelo seu link, você monta a proposta e ele aprova pelo celular. Aprovou, vira pedido na Agenda.",
   fluxo: ["Ela pede", "Você monta", "Ela aprova", "Vira pedido"],
   dicas: [
     [LinkSimple, <>Compartilhe o <b>link de orçamento</b> no Instagram e no WhatsApp. O cardápio também tem o botão <b>Quer algo diferente?</b></>],
@@ -736,8 +734,8 @@ export const COMO_ORCAMENTOS: Como = {
 export const TOUR_ORCAMENTOS: PassoTour[] = [
   { el: ".orc-link", titulo: "Seu link de orçamento", texto: "Copie ou compartilhe. Quem abre conta a ideia e o pedido chega aqui." },
   { el: ".orc-novo", titulo: "Novo orçamento", texto: "Monte uma proposta para quem pediu pelo WhatsApp ou no balcão." },
-  { el: ".orc-abas", titulo: "Situações", texto: "Novos são os que chegaram pelo link. Enviados esperam a resposta da cliente. Aprovados já viraram pedido." },
-  { el: ".orc-it", titulo: "Orçamento", texto: "Mostra a cliente, a ocasião, a data e o valor. Selecione para abrir.",
+  { el: ".orc-abas", titulo: "Situações", texto: "Novos são os que chegaram pelo link. Enviados esperam a resposta do cliente. Aprovados já viraram pedido." },
+  { el: ".orc-it", titulo: "Orçamento", texto: "Mostra o cliente, a ocasião, a data e o valor. Toque para abrir.",
     vazio: { el: ".orc .ui-vazia", titulo: "Lista", texto: "Ainda não há orçamentos nesta aba. Quando houver, eles aparecem aqui." } },
 ];
 
@@ -745,7 +743,7 @@ export const TOUR_ORCAMENTOS: PassoTour[] = [
 export const COMO_ORCAMENTO: Como = {
   tela: { nome: "Montar orçamento", Icone: FileText },
   artigo: "orcamentos",
-  resumo: "Em 3 etapas: os itens e o valor, as condições e o envio do link para a cliente aprovar.",
+  resumo: "Em 3 etapas: os itens e o valor, as condições e o envio do link para o cliente aprovar.",
   tit: "Exemplo · proposta",
   linhas: [["Bolo 2 andares", "R$ 380,00"], ["100 docinhos", "R$ 150,00"], ["Entrega", "R$ 20,00"]],
   total: ["Total", "R$ 550,00"],
@@ -761,6 +759,6 @@ export const TOUR_ORCAMENTO: PassoTour[] = [
   { el: ".orc-so-cel .orc-pediu || .orc-ed-lado .orc-pediu", titulo: "O que ela pediu", texto: "A ideia, a data, quanto quer gastar e as fotos que ela mandou pelo link." },
   { el: ".orc-item || .orc-add", titulo: "Itens", texto: "Ajuste a quantidade, o valor e escreva um detalhe, como sabor ou tema." },
   { el: ".orc-ext", titulo: "Desconto, acréscimo e entrega", texto: "Ligue o que precisar e coloque o valor. O total muda na hora." },
-  { el: ".orc-tot", titulo: "Total", texto: "O valor que a cliente vai ver na proposta." },
+  { el: ".orc-tot", titulo: "Total", texto: "O valor que o cliente vai ver na proposta." },
   { el: ".orc-pe-in", titulo: "Continuar", texto: "Salva e vai para a próxima etapa. Rascunho guarda para terminar depois." },
 ];

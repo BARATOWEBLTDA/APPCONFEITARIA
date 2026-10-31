@@ -8,7 +8,8 @@ import { ArrowUpRight, CaretDown, CaretRight, Check, Clock, Lifebuoy, Lightbulb,
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, TelaVazia } from '@/components/base'
 import { supabase } from '@/lib/supabase'
-import { TEMAS, artigoPorSlug } from '@/lib/ajuda'
+import { TEMAS, artigoPorSlug, type ImagemAjuda } from '@/lib/ajuda'
+import { PONTOS_AJUDA } from '@/lib/ajudaPontos'
 import { CartaoSuporte } from './Ajuda'
 import AjudaEsquema from './AjudaEsquema'
 import './centralAjuda.css'
@@ -17,6 +18,24 @@ import './centralAjuda.css'
 function Rico({ t }: { t: string }) {
   const partes = t.split(/\*\*(.+?)\*\*/g)
   return <>{partes.map((p, i) => (i % 2 ? <b key={i}>{p}</b> : <Fragment key={i}>{p}</Fragment>))}</>
+}
+
+function Bloco({ children }: { children: ReactNode }) { return <section className="ca-card">{children}</section> }
+
+/** (31/10 · 5.83) print limpo da tela e, por cima, as marcas desenhadas pelo app: anel fino e número sempre do mesmo
+ *  tamanho, no canto da parte (antes vinham pintados dentro da foto e cada um saía de um tamanho) */
+function Print({ im }: { im: ImagemAjuda }) {
+  const p = PONTOS_AJUDA[im.src]
+  return (
+    <figure className="ca-fig">
+      <div className="ca-fig-in">
+        <img src={im.src} alt={im.alt} loading="lazy" width={p?.w} height={p?.h} />
+        {p?.marcas.map(([x, y, w, h], i) => (
+          <span key={i} className="ca-pt" style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }} aria-hidden="true"><i>{i + 1}</i></span>
+        ))}
+      </div>
+    </figure>
+  )
 }
 
 export default function AjudaArtigo() {
@@ -30,8 +49,13 @@ export default function AjudaArtigo() {
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
+    setVoto(null); setMotivo(''); setEnviado(false)
     if (!a) return
-    supabase.from('ajuda_votos').select('util').eq('artigo', a.slug).maybeSingle().then(({ data }) => { if (data) setVoto((data as any).util) })
+    // (31/10 · 5.83) quem já votou "Não" antes não vê o "O que faltou?" de novo toda vez que abre o artigo
+    supabase.from('ajuda_votos').select('util').eq('artigo', a.slug).limit(1).then(({ data }) => {
+      const v = (data as { util: boolean }[] | null)?.[0]
+      if (v) { setVoto(v.util); setEnviado(true) }
+    })
   }, [a?.slug]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!a) return (<>
@@ -60,7 +84,6 @@ export default function AjudaArtigo() {
     setIndice(false)
     document.getElementById(`ca-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
-  const Bloco = ({ children }: { children: ReactNode }) => <section className="ca-card">{children}</section>
 
   // (27/10) formato novo: resumo, "Em resumo", esquema da tela, explicação em texto e dúvidas comuns
   const novo = !!(a.esquema || a.intro)
@@ -81,7 +104,7 @@ export default function AjudaArtigo() {
             </div>
           )}
         </Bloco>
-        {a.esquema && <AjudaEsquema e={a.esquema} />}
+        {a.esquema && <AjudaEsquema key={a.slug} e={a.esquema} />}
         {!!a.textos?.length && (
           <section className="ca-card ca-txt">
             {a.textos.map(x => (
@@ -119,15 +142,15 @@ export default function AjudaArtigo() {
         </div>
       </Bloco>
 
-      {a.secoes.map((s, k) => (
+      {a.secoes.map(s => (
         <section key={s.id} id={`ca-${s.id}`} className="ca-card ca-sec">
-          <h2><i>{k + 1}</i>{s.titulo}</h2>
+          <h2>{s.titulo}</h2>
           {s.exemplo && <p className="ca-ex">{s.exemplo}</p>}
           {s.texto?.map((t, i) => <p key={i}><Rico t={t} /></p>)}
           {s.passos && <ol className="ca-passos">{s.passos.map((p, i) => <li key={i}><Rico t={p} /></li>)}</ol>}
           {s.imagens?.map(im => (
             <div key={im.src} className="ca-tela">
-              <figure className={`ca-fig${im.alta ? ' ca-fig--alta' : ''}`}><img src={im.src} alt={im.alt} loading="lazy" /></figure>
+              <Print im={im} />
               {!!im.marcas?.length && (
                 <ol className="ca-marcas">{im.marcas.map((m, i) => <li key={i}><i aria-hidden="true">{i + 1}</i><span><Rico t={m} /></span></li>)}</ol>
               )}
@@ -151,14 +174,14 @@ export default function AjudaArtigo() {
         </div>
         {voto === false && !enviado && (
           <div className="ca-motivo">
-            <textarea value={motivo} onChange={e => setMotivo(e.target.value)} maxLength={500} rows={3} placeholder="Conte o que não ficou claro" aria-label="O que faltou neste artigo" autoFocus />
+            <textarea value={motivo} onChange={e => setMotivo(e.target.value)} maxLength={500} rows={3} placeholder="Conte o que não ficou claro" aria-label="O que faltou neste artigo" />
             <Botao cheio disabled={!motivo.trim()} onClick={() => void enviarMotivo()}>Enviar</Botao>
           </div>
         )}
       </section>
 
       {!!a.relacionadas?.length && (<>
-        <h2 className="ca-h2">Telas relacionadas</h2>
+        <h2 className="ca-h2">Veja também</h2>
         <section className="ca-lista">
           {a.relacionadas.map(r => (
             <button key={r.rota} type="button" className="ca-art" onClick={() => navigate(r.rota)}>

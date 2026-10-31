@@ -9,7 +9,8 @@ import {
 import type { Icon } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { ARTIGOS, TEMAS, artigosDoTema, semAcentoAjuda, type TemaId } from '@/lib/ajuda'
+import { ARTIGOS, TEMAS, artigosDoTema, semAcentoAjuda, textoDoArtigo, type TemaId } from '@/lib/ajuda'
+import { voltarOuIr } from '@/lib/voltar'
 import './centralAjuda.css'
 
 export const ICONE_TEMA: Record<TemaId, Icon> = {
@@ -18,6 +19,16 @@ export const ICONE_TEMA: Record<TemaId, Icon> = {
 }
 const WHATS = `https://wa.me/5511978414991?text=${encodeURIComponent('Olá! Preciso de ajuda com o Doonly.')}`
 const qtd = (n: number) => (n ? `${n} ${n === 1 ? 'artigo' : 'artigos'}` : 'Em breve')
+
+function Linha({ slug, titulo, resumo }: { slug: string; titulo: string; resumo: string }) {
+  const navigate = useNavigate()
+  return (
+    <button type="button" className="ca-art" onClick={() => navigate(`/ajuda/${slug}`)}>
+      <span className="ca-art-tx"><b>{titulo}</b><small>{resumo}</small></span>
+      <CaretRight size={18} weight="bold" aria-hidden="true" />
+    </button>
+  )
+}
 
 export function CartaoSuporte() {
   return (
@@ -38,15 +49,10 @@ export default function Ajuda() {
   const achados = useMemo(() => {
     const q = semAcentoAjuda(busca.trim())
     if (!q) return []
-    return ARTIGOS.filter(a => semAcentoAjuda([a.titulo, a.resumo, ...a.secoes.map(s => [s.titulo, s.exemplo || '', ...(s.texto || []), ...(s.passos || []), ...(s.imagens || []).flatMap(im => im.marcas || [])].join(' '))].join(' ')).includes(q))
+    // (31/10 · 5.83) procura no artigo inteiro (antes não achava os artigos sem "seções", como Primeiros passos)
+    return ARTIGOS.filter(a => semAcentoAjuda(textoDoArtigo(a)).includes(q))
   }, [busca])
 
-  const Linha = ({ slug, titulo, resumo }: { slug: string; titulo: string; resumo: string }) => (
-    <button type="button" className="ca-art" onClick={() => navigate(`/ajuda/${slug}`)}>
-      <span className="ca-art-tx"><b>{titulo}</b><small>{resumo}</small></span>
-      <CaretRight size={18} weight="bold" aria-hidden="true" />
-    </button>
-  )
 
   // ── um assunto ──
   if (temaAtual) {
@@ -65,7 +71,7 @@ export default function Ajuda() {
 
   // ── início ──
   return (<>
-    <AppPageHeader title="Central de Ajuda" subtitle="Artigos que explicam cada tela" voltar="/configuracoes" />
+    <AppPageHeader title="Central de Ajuda" subtitle="Artigos que explicam cada tela" onBack={() => voltarOuIr(navigate, "/configuracoes")} />
     <div className="ca">
       <label className="ca-busca">
         <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />

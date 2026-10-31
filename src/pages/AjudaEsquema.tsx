@@ -34,16 +34,18 @@ export default function AjudaEsquema({ e }: { e: EsquemaTela }) {
     <section className="ca-card ce">
       <p className="ce-rot">Como é a tela</p>
       <p className="ce-sub">Toque num número para ver o que cada parte faz.</p>
-      <div className="ce-tela" aria-label={`Esquema da tela ${e.tela}`}>
+      <div className="ce-tela" role="group" aria-label={`Esquema da tela ${e.tela}`}>
         <div className="ce-cab"><b>{e.tela}</b><small>Esquema da tela</small></div>
         {e.blocos.map((b, i) => (
           <Fragment key={i}>
             {b.n ? (
-              <button type="button" className={`ce-bloco${b.escuro ? ' ce-bloco--escuro' : ''}${sel === b.n ? ' on' : ''}`} onClick={() => setSel(b.n!)} aria-pressed={sel === b.n} aria-label={`Parte ${b.n}: ${e.partes[b.n - 1]?.titulo || ''}`}>
+              <div role="button" tabIndex={0} className={`ce-bloco${b.escuro ? ' ce-bloco--escuro' : ''}${sel === b.n ? ' on' : ''}`} onClick={() => setSel(b.n!)}
+                onKeyDown={ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); setSel(b.n!) } }}
+                aria-pressed={sel === b.n} aria-label={`Parte ${b.n}: ${e.partes[b.n - 1]?.titulo || ''}`}>
                 <i className="ce-n" aria-hidden="true">{b.n}</i>
                 {b.titulo && <b className="ce-bloco-t">{b.titulo}</b>}
                 {b.linhas.map((l, k) => <Linha key={k} l={l} />)}
-              </button>
+              </div>
             ) : (
               <div className={`ce-bloco ce-bloco--neutro${b.escuro ? ' ce-bloco--escuro' : ''}`}>
                 {b.titulo && <b className="ce-bloco-t">{b.titulo}</b>}

@@ -2,6 +2,8 @@
  * (25/10) Central de Ajuda: os assuntos e os artigos (um tutorial por tela, no formato do "Como funciona").
  * Texto com **negrito** entre dois asteriscos. (27/10) Todas as telas, no formato do piloto de Pedidos:
  * prints em public/ajuda (1170 px, anéis rosa numerados na ordem das "marcas").
+ * (31/10 · 5.83) Refeita: prints limpos de 360 px (dados de exemplo da Doce Formiga), as marcas desenhadas pelo app
+ * (src/lib/ajudaPontos.ts), "o cliente" em tudo, PRO sinalizado e linhas para o computador.
  */
 /** print da tela com anéis numerados; "marcas" explica cada número, na mesma ordem */
 export type ImagemAjuda = { src: string; alt: string; marcas?: string[]; /** print da tela inteira (mais estreito) */ alta?: boolean }
@@ -61,7 +63,7 @@ export const TEMAS: { id: TemaId; nome: string; apoio: string }[] = [
   { id: 'cadastros', nome: 'Cadastros', apoio: 'Produtos, clientes e ingredientes' },
   { id: 'preco', nome: 'Preço e custos', apoio: 'Ficha técnica e lucro' },
   { id: 'financeiro', nome: 'Financeiro', apoio: 'Entradas, saídas e contas' },
-  { id: 'orcamentos', nome: 'Orçamentos', apoio: 'Propostas que a cliente aprova' },
+  { id: 'orcamentos', nome: 'Orçamentos', apoio: 'Propostas que o cliente aprova' },
   { id: 'conta', nome: 'Conta e PRO', apoio: 'Plano, avisos e suporte' },
 ]
 
@@ -73,11 +75,11 @@ export const ARTIGOS: ArtigoAjuda[] = [
     resumo: 'Os 8 passos para o cardápio abrir.',
     minutos: 3,
     abrir: { rota: '/inicio', rotulo: 'Abrir o Início' },
-    intro: 'Antes de vender pelo cardápio, a loja precisa de 8 informações básicas: a logo, uma frase sobre você, o endereço, o horário, como a cliente paga, como ela recebe (retirada ou entrega), o saldo do caixa e o primeiro produto. O cartão dos passos fica no Início e mostra sempre o próximo que falta.',
+    intro: 'Antes de vender pelo cardápio, a loja precisa de 8 informações básicas. O cartão dos passos fica no Início e mostra sempre o próximo que falta. No computador, ele fica no topo do Início.',
     pontos: [
-      'Cada passo é salvo na hora',
+      'Cada passo é salvo ao tocar em Salvar',
       'Dá para pular e voltar depois',
-      'Pronto, o cartão sai do Início',
+      'Com os 8 prontos, o cardápio está no ar',
     ],
     esquema: {
       tela: 'Início',
@@ -98,11 +100,11 @@ export const ARTIGOS: ArtigoAjuda[] = [
         titulo: 'Os 8 passos',
         lista: [
           '**Logo da loja:** aparece no topo do cardápio.',
-          '**Sobre a confeitaria:** uma frase curta embaixo do nome. A Doo IA pode escrever para você.',
-          '**Endereço:** a cliente vê onde retirar, e o app usa para calcular a entrega.',
+          '**Sobre a confeitaria:** uma frase curta embaixo do nome. O botão **Gerar com IA** escreve para você.',
+          '**Endereço:** o cliente vê onde retirar, e o app usa para calcular a entrega.',
           '**Horário:** fora dele, o cardápio aparece fechado.',
-          '**Pagamento:** Pix, dinheiro ou cartão.',
-          '**Entrega:** retirada, entrega própria e quanto custa a entrega.',
+          '**Pagamento:** as formas que você aceita: Pix, dinheiro ou cartão.',
+          '**Entrega:** se o cliente busca, se você leva e a taxa.',
           '**Saldo do caixa:** quanto dinheiro você tem hoje, para o Financeiro começar certo.',
           '**Primeiro produto:** abre a tela Produtos para cadastrar.',
         ],
@@ -111,21 +113,21 @@ export const ARTIGOS: ArtigoAjuda[] = [
         titulo: 'Salvar e continuar',
         texto: [
           'No celular, cada janela tem o botão **Salvar e continuar**: o passo ganha o visto verde e a janela do próximo já abre, na ordem. No computador, o botão é **Salvar**, e você escolhe o próximo no cartão.',
-          'Sem tempo agora? Toque em **Agora não**. O app pula para o próximo, e o que ficou para trás continua na lista.',
+          'Sem tempo agora? Toque em **Agora não**. No celular, o app pula para o próximo; no computador, a janela fecha. O que ficou para trás continua na lista.',
         ],
       },
       {
         titulo: 'Quando termina',
         texto: [
-          'Com os 7 prontos, o cartão vira **Seu cardápio está no ar!**, com os botões para compartilhar o link e ver o cardápio. Depois, é só fechar no X.',
-          'Tudo o que você preencheu continua em **Minha loja**, para mudar quando quiser.',
+          'Com os 8 prontos, no celular o cartão vira **Seu cardápio está no ar!**, com os botões para compartilhar o link e ver o cardápio. Depois, é só fechar no X. No computador, o cartão sai do Início.',
+          'Para mudar depois: os dados da loja ficam em **Minha loja**, o saldo do caixa no **Financeiro** e os produtos em **Produtos**.',
         ],
       },
     ],
     duvidas: [
-      { p: 'Fechei a janela sem querer.', r: 'Nada se perde. Toque de novo em Fazer agora ou no passo, na lista.' },
-      { p: 'Posso mudar depois?', r: 'Pode. Logo, descrição, endereço, horário e pagamento ficam em Minha loja, no menu de baixo.' },
-      { p: 'O cartão sumiu do Início.', r: 'Ele sai quando os 8 passos ficam prontos. Para conferir a loja, abra Minha loja.' },
+      { p: 'Fechei a janela sem querer.', r: 'Os passos já salvos continuam prontos. O que foi digitado e não salvo se perde: toque de novo em Fazer agora.' },
+      { p: 'Posso mudar depois?', r: 'Pode. Logo, descrição, endereço, horário e pagamento ficam em Minha loja, no menu de baixo. No computador, em Cardápio digital › Dados da loja.' },
+      { p: 'O cartão sumiu do Início.', r: 'Ele sai quando os 8 passos ficam prontos e você fecha o aviso. Para conferir a loja, abra Minha loja.' },
     ],
     secoes: [],
     relacionadas: [
@@ -158,9 +160,9 @@ export const ARTIGOS: ArtigoAjuda[] = [
         { n: 6, escuro: true, linhas: [{ t: 'Início,Pedidos,+,Minha loja,Menu', tipo: 'nav' }] },
       ],
       partes: [
-        { titulo: 'Avisos', texto: 'Pedidos novos para aceitar e entregas que já passaram da hora. Ver abre a lista certa em Pedidos.', el: '.ini-section--novos' },
+        { titulo: 'Avisos', texto: 'Pedidos novos para aceitar e entregas que já passaram da hora. Com um pedido só, dá para aceitar ali mesmo; com vários, Ver abre a lista em Pedidos.', el: '.ini-section--novos' },
         { titulo: 'Buscar', texto: 'Digite o que procura, como pix, cupom ou horário, e vá direto para a tela.', el: '.ini-busca' },
-        { titulo: 'Acesso rápido', texto: 'As 6 telas mais usadas no dia a dia. As outras ficam no Menu, no menu de baixo.', el: '.ini-section--nav' },
+        { titulo: 'Acesso rápido', texto: 'As 6 telas mais usadas no dia a dia. As outras ficam em Menu, no menu de baixo.', el: '.ini-section--nav' },
         { titulo: 'Próximas entregas', texto: 'Os próximos dias e as entregas de cada um. Toque num dia para ver só os pedidos dele.', el: '.ini-section--dia' },
         { titulo: 'Seus próximos passos', texto: 'Pendências da loja, como uma conta vencida, com o botão para resolver na hora.', el: '.ini-falta .pf' },
         { titulo: 'Menu de baixo', texto: 'Aparece em todas as telas. O + do meio registra uma venda.', el: '.bottom-nav-pill' },
@@ -185,13 +187,13 @@ export const ARTIGOS: ArtigoAjuda[] = [
         titulo: 'Menu de baixo',
         texto: [
           'O **+** do meio abre a Nova venda, para registrar um pedido do WhatsApp ou do balcão. Ele aparece em todas as telas.',
-          'Em **Menu** ficam todas as outras telas: Financeiro, Produtos, Clientes, Configurações e o resto.',
+          'Em **Menu** ficam as outras telas: Financeiro, Agenda, Orçamentos, Cadastros, Marketing, Novidades, Configurações e Assinatura.',
         ],
       },
     ],
     duvidas: [
       { p: 'O Início está quase vazio.', r: 'Sem pedidos e sem pendências, ele mostra só o essencial. Os avisos aparecem quando chega pedido.' },
-      { p: 'Onde fica o Financeiro?', r: 'No Acesso rápido do Início e no Menu, no menu de baixo.' },
+      { p: 'Onde fica o Financeiro?', r: 'No Acesso rápido do Início e em Menu, no menu de baixo.' },
       { p: 'No computador é diferente?', r: 'É. No computador, o Início mostra os números do mês e o menu fica na lateral.' },
     ],
     secoes: [],
@@ -218,18 +220,18 @@ export const ARTIGOS: ArtigoAjuda[] = [
       rota: '/configuracoes',
       blocos: [
         { titulo: 'Conta', linhas: [{ t: 'Minha conta', tipo: 'linha' }, { t: 'Minha assinatura', tipo: 'linha' }] },
-        { n: 1, titulo: 'App', linhas: [{ t: 'Instalar o app', tipo: 'linha' }] },
-        { n: 2, linhas: [{ t: 'Notificações e sons', tipo: 'linha' }] },
+        { n: 1, titulo: 'App', linhas: [{ t: 'Notificações e sons', tipo: 'linha' }] },
+        { n: 2, linhas: [{ t: 'Instalar o app', tipo: 'linha' }] },
       ],
       partes: [
-        { titulo: 'Instalar o app', texto: 'Abre o passo a passo certo para o seu aparelho: iPhone, Android ou computador.', el: '.cf9-item[data-nome="Instalar o app"]' },
         { titulo: 'Notificações e sons', texto: 'Depois de instalar, ligue aqui o aviso de pedido novo.', el: '.cf9-item[data-nome="Notificações e sons"]' },
+        { titulo: 'Instalar o app', texto: 'Abre o passo a passo certo para o seu aparelho: iPhone, Android ou computador.', el: '.cf9-item[data-nome="Instalar o app"]' },
       ],
     },
     textos: [
       {
         titulo: 'No iPhone',
-        texto: ['Abra o Doonly no **Safari**. Aberto pelo Instagram ou pelo WhatsApp, a Apple não deixa instalar: copie o link e cole no Safari.'],
+        texto: ['Abra o Doonly no **Safari**. Aberto pelo Instagram ou pelo WhatsApp, a Apple não deixa instalar: toque em **Copiar link para colar no Safari** e cole no Safari.'],
         passos: [
           'Toque em **Compartilhar**, o quadrado com a seta para cima.',
           'Escolha **Adicionar à Tela de Início**.',
@@ -244,7 +246,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
           'Toque em **Instalar o app**.',
           'Toque em **Instalar app** e confirme.',
         ],
-        dica: 'Sem botão? Menu **⋮** do Chrome.',
+        dica: 'Sem o botão? No Chrome, toque nos **3 pontinhos ⋮** e em **Instalar app**.',
       },
       {
         titulo: 'No computador',
@@ -276,9 +278,9 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'aceitar',
         titulo: 'Aceitar o pedido',
-        exemplo: 'A Daniela pediu salgados.',
-        imagens: [{ src: '/ajuda/pedidos-aceitar.webp', alt: 'Aba Para aceitar com o pedido da Daniela', marcas: [
-          'Abra **Para aceitar**.',
+        exemplo: 'O Rafael pediu um bolo.',
+        imagens: [{ src: '/ajuda/pedidos-aceitar.webp', alt: 'Aba Novos com o pedido do Rafael', marcas: [
+          'Abra a aba **Novos**.',
           'Toque em **Aceitar**.',
           'Ou aceite **todos** de uma vez.',
         ] }],
@@ -287,26 +289,26 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'produzir',
         titulo: 'Começar a fazer',
-        imagens: [{ src: '/ajuda/pedidos-produzir.webp', alt: 'Pedido da Daniela em Agendados com o botão Produzir', marcas: [
+        imagens: [{ src: '/ajuda/pedidos-produzir.webp', alt: 'Pedido da Beatriz em Agendados com o botão Produzir', marcas: [
           'Começou? Toque em **Produzir**.',
+          'Em laranja: o que **falta receber**.',
         ] }],
-        dica: 'Em laranja: o que **falta receber**.',
       },
       {
         id: 'pronto',
         titulo: 'Marcar como pronto',
-        imagens: [{ src: '/ajuda/pedidos-pronto.webp', alt: 'Pedido da Daniela com o botão Pronto', marcas: [
+        imagens: [{ src: '/ajuda/pedidos-pronto.webp', alt: 'Pedido da Ana Paula em produção com o botão Pronto', marcas: [
           'Terminou? Toque em **Pronto**.',
         ] }],
       },
       {
         id: 'entregar',
         titulo: 'Entregar',
-        imagens: [{ src: '/ajuda/pedidos-entregar.webp', alt: 'Aba Prontos com o botão Retirado', marcas: [
-          'Ele vai para a aba **Prontos**.',
-          'Buscou? Toque em **Retirado**.',
+        imagens: [{ src: '/ajuda/pedidos-entregar.webp', alt: 'Aba Prontos com os botões Retirado e Saiu para entrega', marcas: [
+          'Os pedidos ficam em **Prontos**.',
+          'O cliente buscou? **Retirado**.',
+          'Vai levar? **Saiu para entrega**.',
         ] }],
-        dica: 'Na entrega: **Saiu para entrega**.',
       },
       {
         id: 'achar',
@@ -316,7 +318,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
             'Busque por **nome** ou **número**.',
             'Abra o **filtro**.',
           ] },
-          { src: '/ajuda/pedidos-filtro.webp', alt: 'Filtro aberto na lateral', alta: true, marcas: [
+          { src: '/ajuda/pedidos-filtro.webp', alt: 'Filtro aberto com as situações e as datas', marcas: [
             'Escolha as **situações**.',
             'Escolha a **data**.',
             'Toque em **Ver pedidos**.',
@@ -326,25 +328,22 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'dentro',
         titulo: 'Dentro do pedido',
-        exemplo: 'Toque no pedido para abrir.',
-        imagens: [{ src: '/ajuda/pedidos-dentro.webp', alt: 'Pedido aberto', marcas: [
-          'Leva para a **próxima etapa**.',
-          '**Mais ações**: PDF, cancelar…',
-        ] }],
+        texto: ['Toque no pedido para abrir. Lá você muda os itens, a data, o pagamento e a etapa.'],
+        dica: 'Veja o artigo **Dentro do pedido**.',
       },
       {
         id: 'nova',
-        titulo: 'Pedido do balcão',
-        exemplo: 'Veio pelo WhatsApp?',
-        imagens: [{ src: '/ajuda/pedidos-nova-venda.webp', alt: 'Botão mais no menu de baixo', marcas: [
-          'Toque no **+**: **Nova venda**.',
+        titulo: 'Pedido do WhatsApp ou do balcão',
+        imagens: [{ src: '/ajuda/pedidos-nova-venda.webp', alt: 'Botão + no menu de baixo', marcas: [
+          'Toque no **+** para registrar a venda.',
         ] }],
+        dica: 'No computador: **Nova venda**, na lateral.',
       },
     ],
     relacionadas: [
-      { rota: '/agenda', rotulo: 'Agenda', apoio: 'Os pedidos no calendário' },
-      { rota: '/vendas/novo', rotulo: 'Nova venda', apoio: 'Registrar um pedido à mão' },
-      { rota: '/financeiro/a-receber', rotulo: 'A receber', apoio: 'O que falta a cliente pagar' },
+      { rota: '/ajuda/pedido-aberto', rotulo: 'Dentro do pedido', apoio: 'Etapas, itens e pagamento' },
+      { rota: '/ajuda/nova-venda', rotulo: 'Registrar uma venda', apoio: 'Pedido do WhatsApp ou do balcão' },
+      { rota: '/ajuda/agenda', rotulo: 'Agenda', apoio: 'Os pedidos no calendário' },
     ],
   },
   {
@@ -358,130 +357,133 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'etapas',
         titulo: 'Em que etapa está',
-        exemplo: 'O bolo da Beatriz já está agendado.',
-        imagens: [{ src: '/ajuda/pedido-etapas.webp', alt: 'Situação do pedido com as 5 etapas e o botão Produzir', marcas: [
+        exemplo: 'O bolo da Natália já está agendado.',
+        imagens: [{ src: '/ajuda/pedido-etapas.webp', alt: 'As 5 etapas do pedido e o botão Produzir', marcas: [
           'As **5 etapas** do pedido.',
           'Leva para a **próxima etapa**.',
-          '**Mais ações**: PDF, cancelar…',
+          '**Mais ações** do pedido.',
         ] }],
       },
       {
         id: 'itens',
         titulo: 'Cliente e itens',
-        imagens: [{ src: '/ajuda/pedido-itens.webp', alt: 'Cartão da cliente e itens do pedido', marcas: [
-          '**Trocar** a cliente.',
+        imagens: [{ src: '/ajuda/pedido-itens.webp', alt: 'Cartão do cliente e itens do pedido', marcas: [
+          '**Trocar** o cliente.',
           'Chame no **WhatsApp** ou ligue.',
-          '**Adicionar item** ao pedido.',
-          'Altere ou remova o **item**.',
+          '**Adicionar** outro item.',
+          'Mude ou tire o **item**.',
         ] }],
       },
       {
         id: 'entrega',
-        titulo: 'Entrega',
-        texto: ['Toque na aba **Entrega**.'],
-        imagens: [{ src: '/ajuda/pedido-entrega.webp', alt: 'Aba Entrega com data, horário e endereço', marcas: [
-          '**Entrega** ou **Retirada**.',
-          'Mude a **data** e o **horário**.',
-          'Abra o endereço no **mapa**.',
-          'Mande para o **entregador**.',
+        titulo: 'Retirada ou entrega',
+        texto: ['Toque na aba **Retirada** (ou **Entrega**).'],
+        imagens: [{ src: '/ajuda/pedido-entrega.webp', alt: 'Aba Retirada com as opções, a data e o horário', marcas: [
+          'O cliente **busca** ou você **leva**.',
+          'A **data**.',
+          'O **horário**.',
         ] }],
+        dica: 'Na entrega, aparece o **endereço** com o mapa.',
       },
       {
         id: 'pagamento',
         titulo: 'Receber o pagamento',
-        exemplo: 'A Beatriz pagou o resto.',
+        exemplo: 'A Carla ainda não pagou nada.',
         texto: ['Toque na aba **Pagamento**.'],
-        imagens: [{ src: '/ajuda/pedido-pagamento.webp', alt: 'Aba Pagamento com o valor recebido e o que falta', marcas: [
+        imagens: [{ src: '/ajuda/pedido-pagamento.webp', alt: 'Aba Pagamento com o total e o botão Registrar recebimento', marcas: [
           '**Desconto** ou valor a mais.',
-          'Quanto **entrou** e quanto **falta**.',
+          'O **total** do pedido.',
           '**Registrar recebimento**.',
-          'Data **combinada** para o resto.',
         ] }],
         dica: 'Entra no **Financeiro** na hora.',
       },
       {
         id: 'mais',
         titulo: 'Mais ações',
-        texto: ['Toque nos **três pontinhos** do topo.'],
-        imagens: [{ src: '/ajuda/pedido-mais.webp', alt: 'Menu de mais ações do pedido', marcas: [
+        texto: ['Toque nos **3 pontinhos** do topo.'],
+        imagens: [{ src: '/ajuda/pedido-mais.webp', alt: 'Menu com Acompanhar, PDF, Mudar a etapa, Cancelar e Excluir', marcas: [
+          '**Acompanhar**: o histórico do pedido.',
           '**Imprimir** ou baixar o **PDF**.',
-          'Voltar ou pular uma **etapa**.',
-          '**Cancelar** o pedido.',
+          '**Mudar a etapa**: voltar ou pular.',
+          '**Cancelar** ou **excluir**.',
         ] }],
-        dica: '**Acompanhar**: o que a cliente vê.',
+        dica: 'Cancelado, ele fica guardado. **Excluir** apaga de vez.',
       },
     ],
     relacionadas: [
-      { rota: '/pedidos', rotulo: 'Pedidos', apoio: 'Aceitar, produzir e entregar' },
-      { rota: '/financeiro/a-receber', rotulo: 'A receber', apoio: 'O que falta a cliente pagar' },
-      { rota: '/configuracoes/mensagens', rotulo: 'Mensagens do WhatsApp', apoio: 'Textos prontos para a cliente' },
+      { rota: '/ajuda/pedidos', rotulo: 'Como usar os Pedidos', apoio: 'Aceitar, produzir e entregar' },
+      { rota: '/ajuda/a-receber', rotulo: 'A receber', apoio: 'O que falta o cliente pagar' },
+      { rota: '/ajuda/mensagens', rotulo: 'Mensagens do WhatsApp', apoio: 'Textos prontos para o cliente' },
     ],
   },
   {
     slug: 'nova-venda',
     tema: 'vendas',
     titulo: 'Registrar uma venda',
-    resumo: 'Pedido do WhatsApp ou balcão.',
+    resumo: 'Pedido do WhatsApp ou do balcão.',
     minutos: 2,
     abrir: { rota: '/vendas/novo', rotulo: 'Abrir Nova venda' },
     secoes: [
       {
         id: 'produtos',
-        titulo: 'O que ela pediu',
-        exemplo: 'A Natália pediu no WhatsApp.',
-        texto: ['Toque no **+** do menu de baixo.'],
-        imagens: [{ src: '/ajuda/nova-venda-produtos.webp', alt: 'Passo 1 com o tipo de venda e o Bolo Brigadeiro adicionado', marcas: [
+        titulo: 'O que ele pediu',
+        exemplo: 'A Natália pediu um pudim no WhatsApp.',
+        texto: ['Toque no **+** do menu de baixo. No computador: **Nova venda**, no menu da lateral.'],
+        imagens: [{ src: '/ajuda/nova-venda-produtos.webp', alt: 'Tipo de venda e o Pudim de leite adicionado', marcas: [
           '**Encomenda** ou **Pronta entrega**.',
-          'Mude a **quantidade**.',
-          'Adicione **outro produto**.',
+          'A **quantidade**. Com 1, a lixeira tira o item.',
+          '**+ Recado**: um pedido especial do item.',
+          '**Adicionar produto**.',
         ] }],
         dica: 'Depois, toque em **Continuar**.',
       },
       {
         id: 'cliente',
         titulo: 'Para quem é',
-        imagens: [{ src: '/ajuda/nova-venda-cliente.webp', alt: 'Passo 2 com a busca e a lista de clientes', marcas: [
+        imagens: [{ src: '/ajuda/nova-venda-cliente.webp', alt: 'Busca de clientes e a lista dos últimos', marcas: [
           'Busque pelo **nome** ou **telefone**.',
-          'Cliente nova? **Cadastre** aqui.',
+          'Cliente novo? **Cadastrar novo cliente**.',
           '**Sem cliente**: venda avulsa.',
-          'Ou toque em uma **cliente**.',
+          'Ou toque em um **cliente**.',
         ] }],
       },
       {
         id: 'entrega',
         titulo: 'Retirada ou entrega',
-        imagens: [{ src: '/ajuda/nova-venda-entrega.webp', alt: 'Passo 3 com retirada, data e horário', marcas: [
-          'Ela vem **buscar**.',
+        imagens: [{ src: '/ajuda/nova-venda-entrega.webp', alt: 'Retirada ou entrega, com a data e o horário', marcas: [
+          'Ele vem **buscar**.',
           'Ou você **entrega**.',
           'Escolha a **data**.',
           'E o **horário**, se quiser.',
         ] }],
+        dica: 'Na **Pronta entrega**: Já levou ou Vem buscar.',
       },
       {
         id: 'pagamento',
         titulo: 'Quanto já entrou',
-        exemplo: 'Ela mandou R$ 50,00 de sinal no Pix.',
-        imagens: [{ src: '/ajuda/nova-venda-pagamento.webp', alt: 'Passo 4 com o sinal de 50 reais no Pix', marcas: [
-          'Escolha **Só uma parte (sinal)**.',
-          'Escreva **quanto ela pagou**.',
-          'Escolha **como ela pagou**.',
+        exemplo: 'Ela mandou R$ 20,00 de sinal no Pix.',
+        imagens: [{ src: '/ajuda/nova-venda-pagamento.webp', alt: 'Sinal de 20 reais no Pix', marcas: [
+          'Toque em **Só uma parte (sinal)**.',
+          'Quanto ele **já pagou**.',
+          '**Como** ele pagou.',
+          '**Vai pagar depois**: você escolhe a data.',
         ] }],
         dica: 'O que falta vai para **A receber**.',
       },
       {
         id: 'revisar',
         titulo: 'Conferir e registrar',
-        imagens: [{ src: '/ajuda/nova-venda-revisar.webp', alt: 'Passo 5 com a situação do pedido e o resumo', marcas: [
+        imagens: [{ src: '/ajuda/nova-venda-revisar.webp', alt: 'Situação do pedido e o resumo da venda', marcas: [
           'Em que **situação** o pedido entra.',
           'Algo errado? **Editar**.',
         ] }],
-        dica: 'Tudo certo? **Registrar venda**.',
+        dica: 'Tudo certo? Toque em **Registrar venda**.',
       },
     ],
     relacionadas: [
-      { rota: '/pedidos', rotulo: 'Pedidos', apoio: 'Aceitar, produzir e entregar' },
-      { rota: '/agenda', rotulo: 'Agenda', apoio: 'Os pedidos no calendário' },
-      { rota: '/clientes', rotulo: 'Clientes', apoio: 'Quem compra de você' },
+      { rota: '/ajuda/pedidos', rotulo: 'Como usar os Pedidos', apoio: 'Aceitar, produzir e entregar' },
+      { rota: '/ajuda/clientes', rotulo: 'Clientes', apoio: 'Quem compra de você' },
+      { rota: '/ajuda/a-receber', rotulo: 'A receber', apoio: 'O que falta o cliente pagar' },
     ],
   },
   {
@@ -495,10 +497,11 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'mes',
         titulo: 'Ver o mês',
-        exemplo: 'Cada bolinha é um pedido.',
-        imagens: [{ src: '/ajuda/agenda-mes.webp', alt: 'Calendário do mês com bolinhas coloridas nos dias', marcas: [
+        texto: ['Em **Menu**, toque em **Agenda**. Ela também fica no Acesso rápido do Início.'],
+        imagens: [{ src: '/ajuda/agenda-mes.webp', alt: 'Calendário do mês com bolinhas nos dias com pedido', marcas: [
           'Troque o **mês**.',
-          'Toque no **dia**.',
+          'A bolinha: dia com **pedido**.',
+          'O dia **escolhido**.',
           'Cada **cor** é uma situação.',
         ] }],
         dica: '**Vermelho** é pedido atrasado.',
@@ -506,36 +509,26 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'dia',
         titulo: 'Os pedidos do dia',
-        exemplo: 'Toque no dia 28.',
-        imagens: [{ src: '/ajuda/agenda-dia.webp', alt: 'Dia 28 escolhido com o primeiro pedido do dia', marcas: [
+        exemplo: 'Toque no dia 31.',
+        imagens: [{ src: '/ajuda/agenda-dia.webp', alt: 'Dia 31 com o total a receber e o primeiro pedido', marcas: [
           'O dia e quanto **falta receber**.',
-          '**Imprimir o dia** para a produção.',
+          '**Imprimir o dia** para a produção (PRO).',
           'Toque no nome para **abrir**.',
-          'Chame a cliente no **WhatsApp**.',
+          'Chame o cliente no **WhatsApp**.',
         ] }],
-      },
-      {
-        id: 'atencao',
-        titulo: 'Precisa de atenção',
-        imagens: [{ src: '/ajuda/agenda-atencao.webp', alt: 'Pedidos atrasados no topo da Agenda', marcas: [
-          'Os **atrasados** ficam no topo.',
-          'Leva para a **próxima etapa**.',
-        ] }],
-        dica: 'Dia vazio? Veja os **próximos**.',
       },
       {
         id: 'buscar',
         titulo: 'Achar um pedido',
-        imagens: [{ src: '/ajuda/agenda-buscar.webp', alt: 'Busca e botão de filtro da Agenda', marcas: [
+        imagens: [{ src: '/ajuda/agenda-buscar.webp', alt: 'Busca e filtro da Agenda', marcas: [
           'Busque por **nome** ou **número**.',
           'O **filtro** escolhe as situações.',
         ] }],
       },
     ],
     relacionadas: [
-      { rota: '/pedidos', rotulo: 'Pedidos', apoio: 'Aceitar, produzir e entregar' },
-      { rota: '/vendas/novo', rotulo: 'Nova venda', apoio: 'Registrar um pedido à mão' },
-      { rota: '/financeiro/a-receber', rotulo: 'A receber', apoio: 'O que falta a cliente pagar' },
+      { rota: '/ajuda/pedidos', rotulo: 'Como usar os Pedidos', apoio: 'Aceitar, produzir e entregar' },
+      { rota: '/ajuda/nova-venda', rotulo: 'Registrar uma venda', apoio: 'Pedido do WhatsApp ou do balcão' },
     ],
   },
   {
@@ -549,78 +542,106 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'link',
         titulo: 'Divulgar o link',
-        exemplo: 'Mande o cardápio no status.',
-        texto: ['Toque em **Minha loja**, embaixo.'],
+        exemplo: 'Mande o cardápio no status do WhatsApp.',
+        texto: ['Toque em **Minha loja**, no menu de baixo. No computador: **Cardápio digital**, no menu da lateral.'],
         imagens: [{ src: '/ajuda/loja-link.webp', alt: 'Cartão da loja com a chave e os botões do link', marcas: [
           '**Pausar** os pedidos na hora.',
-          '**Enviar** pelo WhatsApp.',
+          '**Enviar**: abre o compartilhar do celular.',
           '**Copiar** o link.',
-          '**Ver** como a cliente vê.',
+          '**Ver** como o cliente vê.',
           '**QR Code** para imprimir.',
         ] }],
         dica: 'Pausar não muda o seu **horário**.',
       },
       {
         id: 'cliente',
-        titulo: 'O que a cliente vê',
+        titulo: 'O que o cliente vê',
         imagens: [{ src: '/ajuda/loja-cliente.webp', alt: 'Lista A loja para o cliente', marcas: [
           'Toque para trocar a **logo**.',
           'Nome, WhatsApp e **descrição**.',
           'Cores, foto do topo e **banners**.',
           '**Instagram** e **Facebook**.',
         ] }],
-        dica: 'A linha mostra **como está**.',
+        dica: 'Cada linha mostra **como está** agora.',
       },
       {
         id: 'sobre',
         titulo: 'Nome e descrição',
-        texto: ['Toque em **Sobre a loja**.'],
-        imagens: [{ src: '/ajuda/loja-sobre.webp', alt: 'Janela Sobre a loja com nome, WhatsApp e descrição', marcas: [
+        texto: ['Toque em **Sobre a loja**. No computador: **Dados da loja › Sua loja**.'],
+        imagens: [{ src: '/ajuda/loja-sobre.webp', alt: 'Janela Sua loja com nome, WhatsApp e descrição', marcas: [
           'O **nome** da loja.',
           'O **WhatsApp** dos pedidos.',
           'Uma **descrição** curta.',
-          'Sem ideia? **Escrever com IA**.',
+          'Sem ideia? **Gerar com IA**.',
         ] }],
-        dica: 'Tudo é **salvo na hora**.',
+        dica: 'Salva **sozinho** ao fechar a janela.',
+      },
+      {
+        id: 'redes',
+        titulo: 'Redes sociais',
+        texto: ['Toque em **Redes sociais**.'],
+        imagens: [{ src: '/ajuda/loja-redes.webp', alt: 'Janela Redes sociais com Instagram e Facebook', marcas: [
+          'Ligue o **Instagram**.',
+          'Escreva o **@** da loja.',
+          'Ligue o **Facebook**, se tiver.',
+        ] }],
+        dica: 'Elas aparecem em **Sobre a loja**, no cardápio.',
+      },
+      {
+        id: 'computador',
+        titulo: 'No computador',
+        texto: ['Em **Cardápio digital**, no menu da lateral: **Visão geral** tem o link e o resumo do cardápio. **Dados da loja** e **Aparência** têm o mesmo que você vê aqui.'],
       },
     ],
     relacionadas: [
-      { rota: '/cardapio-design', rotulo: 'Aparência', apoio: 'Cores, topo e banners' },
-      { rota: '/ajuda/horario-entrega-pagamento', rotulo: 'Horário e entrega', apoio: 'Como você vende' },
-      { rota: '/produtos', rotulo: 'Produtos', apoio: 'O que aparece no cardápio' },
+      { rota: '/ajuda/horario-entrega-pagamento', rotulo: 'Horário, entrega e pagamento', apoio: 'Como você vende' },
+      { rota: '/ajuda/aparencia', rotulo: 'Aparência do cardápio', apoio: 'Logo, banners e cores' },
+      { rota: '/ajuda/produtos', rotulo: 'Cadastrar um produto', apoio: 'O que aparece no cardápio' },
     ],
   },
   {
     slug: 'horario-entrega-pagamento',
     tema: 'cardapio',
-    titulo: 'Horário e entrega',
-    resumo: 'Quando atende e como recebe.',
+    titulo: 'Horário, entrega e pagamento',
+    resumo: 'Onde, quando e como você vende.',
     minutos: 3,
     abrir: { rota: '/cardapio', rotulo: 'Abrir Minha loja' },
     secoes: [
       {
+        id: 'endereco',
+        titulo: 'Endereço',
+        texto: ['Em **Minha loja**, toque em **Endereço**. No computador: **Cardápio digital › Dados da loja**.'],
+        imagens: [{ src: '/ajuda/loja-endereco.webp', alt: 'Janela Endereço com o CEP, a rua e o que aparece no cardápio', marcas: [
+          'O **CEP** acha a rua sozinho.',
+          'O **número**.',
+          'O que o **cliente vê**: tudo, só a cidade ou nada.',
+        ] }],
+        dica: 'Atende em casa? Mostre **só a cidade**.',
+      },
+      {
         id: 'horario',
         titulo: 'Horário',
-        texto: ['Em **Minha loja**, toque em **Horário**.'],
+        texto: ['Toque em **Horário**.'],
         imagens: [{ src: '/ajuda/loja-horario.webp', alt: 'Janela Horário com os dias e as horas', marcas: [
           'Ligue os **dias** que você atende.',
           'Toque no dia para tirar ou pôr.',
-          'Mude a hora que **abre** e **fecha**.',
+          'Que horas **abre** e **fecha**.',
+          'Como está **agora** no cardápio.',
         ] }],
-        dica: 'Fora dele, o cardápio **fecha**.',
+        dica: 'Fora do horário, o cardápio **fecha**.',
       },
       {
         id: 'entrega',
         titulo: 'Entrega',
         exemplo: 'Você entrega no Centro por R$ 8,00.',
-        texto: ['Toque em **Entrega**.'],
-        imagens: [{ src: '/ajuda/loja-entrega.webp', alt: 'Janela Entrega com retirada, entrega própria e taxa por bairro', marcas: [
-          'A cliente **busca** com você.',
-          'Você **leva** até ela.',
-          'Taxa **única** ou **por bairro**.',
-          '**Adicionar bairro** e a taxa.',
+        texto: ['Toque em **Entrega**. Escolha como cobrar:'],
+        imagens: [{ src: '/ajuda/loja-entrega.webp', alt: 'Os 4 jeitos de cobrar a entrega', marcas: [
+          '**Taxa única**: o mesmo valor.',
+          '**Por bairro**: um valor por bairro.',
+          '**Por raio**: pela distância.',
+          '**Por cidade**: um valor por cidade.',
         ] }],
-        dica: 'Taxa **0** é entrega grátis.',
+        dica: 'Entrega sem custo? Marque **Grátis** no valor.',
       },
       {
         id: 'pagamento',
@@ -634,81 +655,75 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'pix',
         titulo: 'Pix pelo cardápio',
-        exemplo: 'A cliente paga o sinal no Pix ao pedir.',
+        exemplo: 'O cliente paga o sinal no Pix ao pedir.',
         texto: ['Toque em **Pix pelo cardápio**.'],
-        imagens: [{ src: '/ajuda/loja-pix.webp', alt: 'Janela Pix pelo cardápio ligada com a chave e o sinal', marcas: [
+        imagens: [{ src: '/ajuda/loja-pix.webp', alt: 'Janela Pix pelo cardápio com a chave e o sinal', marcas: [
           'Ligue o **Pix pelo cardápio**.',
-          'O **tipo da chave** e a chave.',
-          'Sinal, total ou **ela escolhe**.',
-          'Quanto é o **sinal**.',
+          'O **tipo da chave**.',
+          'A **chave Pix**.',
+          'Sinal, total ou **o cliente escolhe**.',
         ] }],
         dica: 'Você confere o Pix em **Pedidos**.',
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/minha-loja', rotulo: 'Minha loja', apoio: 'O link e o que a cliente vê' },
-      { rota: '/pedidos', rotulo: 'Pedidos', apoio: 'Aceitar e conferir o Pix' },
+      { rota: '/ajuda/minha-loja', rotulo: 'Minha loja e o link', apoio: 'O link e o que o cliente vê' },
+      { rota: '/ajuda/pedidos', rotulo: 'Como usar os Pedidos', apoio: 'Aceitar e conferir o Pix' },
     ],
   },
   {
     slug: 'aparencia',
     tema: 'cardapio',
     titulo: 'Aparência do cardápio',
-    resumo: 'Foto, banners e cores.',
+    resumo: 'Logo, foto, banners e cores.',
     minutos: 2,
     abrir: { rota: '/cardapio-design', rotulo: 'Abrir Aparência' },
     secoes: [
       {
-        id: 'tema',
-        titulo: 'Tema',
-        texto: ['Em **Minha loja**, toque em **Aparência**.'],
-        imagens: [{ src: '/ajuda/aparencia-tema.webp', alt: 'Tema do cardápio Normal e Natal', marcas: [
-          '**Natal** enfeita o cardápio.',
-        ] }],
-        dica: 'Tudo é **salvo na hora**.',
-      },
-      {
         id: 'topo',
-        titulo: 'Foto do topo e logo',
-        imagens: [{ src: '/ajuda/aparencia-topo.webp', alt: 'Prévia do topo do cardápio com os botões de trocar', marcas: [
-          '**Trocar foto** do topo.',
-          '**Trocar logo**.',
+        titulo: 'Logo e foto do topo',
+        texto: ['Em **Minha loja**, toque em **Aparência**. No computador: **Cardápio digital › Aparência**.'],
+        imagens: [{ src: '/ajuda/aparencia-topo.webp', alt: 'Cartões Logo e Foto do topo', marcas: [
+          '**Trocar** a logo.',
+          '**Ver como fica** no cardápio.',
+          '**Trocar** a foto do topo.',
         ] }],
-        dica: 'Use uma foto **clara** dos doces.',
+        dica: 'Sem foto, o topo usa a **cor da faixa**.',
       },
       {
         id: 'banners',
         titulo: 'Banners de promoção',
         exemplo: 'Frete grátis nesta semana.',
-        imagens: [{ src: '/ajuda/aparencia-banners.webp', alt: 'Quatro espaços de banner, um preenchido', marcas: [
+        imagens: [{ src: '/ajuda/aparencia-banners.webp', alt: 'Banner 1 preenchido e o espaço do banner 2', marcas: [
           'O banner que está no **cardápio**.',
-          '**Adicionar** a sua imagem.',
+          '**Adicionar** outro (banners 2 a 4: PRO).',
           'Ou **use um banner pronto**.',
         ] }],
         dica: 'Imagem **deitada**: 1200 × 675.',
       },
       {
-        id: 'link',
-        titulo: 'Nome no link',
-        imagens: [{ src: '/ajuda/aparencia-link.webp', alt: 'Nome da loja no link do cardápio', marcas: [
-          'Escreva o **nome** da loja.',
-          'Assim fica o **link**.',
-        ] }],
-        dica: 'Recurso do plano **PRO**.',
-      },
-      {
         id: 'cores',
         titulo: 'Cores',
-        texto: ['A prévia mostra **onde fica**.'],
-        imagens: [{ src: '/ajuda/aparencia-cores.webp', alt: 'Cores do topo com a prévia numerada', marcas: [
-          'Toque em uma **cor**.',
-          '**+** escolhe qualquer cor.',
+        imagens: [{ src: '/ajuda/aparencia-cores.webp', alt: 'Cores da faixa do topo, da borda da logo e do nome', marcas: [
+          'A **faixa do topo**.',
+          'A **borda** da logo.',
+          'O **nome** da loja.',
         ] }],
+        dica: 'A 1ª fileira é grátis. As outras e o **+** são do PRO.',
+      },
+      {
+        id: 'link',
+        titulo: 'Nome no link (PRO)',
+        imagens: [{ src: '/ajuda/aparencia-link.webp', alt: 'Nome da loja no link do cardápio', marcas: [
+          'Escreva o **nome** da loja.',
+          '**Copiar** o link.',
+        ] }],
+        dica: 'Mudou? O link antigo **continua** funcionando.',
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/minha-loja', rotulo: 'Minha loja', apoio: 'O link e o que a cliente vê' },
-      { rota: '/ajuda/destaques', rotulo: 'Destaques', apoio: 'Os produtos no topo do cardápio' },
+      { rota: '/ajuda/minha-loja', rotulo: 'Minha loja e o link', apoio: 'O link e o que o cliente vê' },
+      { rota: '/ajuda/destaques', rotulo: 'Produtos em destaque', apoio: 'Os primeiros do cardápio' },
     ],
   },
   {
@@ -722,26 +737,27 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'lista',
         titulo: 'Seus cupons',
-        texto: ['No **Menu**, toque em **Marketing**.'],
+        texto: ['Em **Menu**, toque em **Marketing**.'],
         imagens: [{ src: '/ajuda/cupons-lista.webp', alt: 'Lista de cupons com a situação e o botão Compartilhar', marcas: [
-          '**Ativo** ou **Pausado**.',
+          '**Ativo**: vale no cardápio.',
           '**Compartilhar** o cupom.',
+          '**Pausado**: guardado, sem valer.',
           'Criar um **Novo cupom**.',
         ] }],
-        dica: 'Os **2 mais novos** ficam no topo.',
+        dica: 'Os **2 mais novos** aparecem no topo do cardápio (PRO).',
       },
       {
         id: 'novo',
         titulo: 'Criar um cupom',
         exemplo: '10% no primeiro pedido.',
-        imagens: [{ src: '/ajuda/cupons-novo.webp', alt: 'Janela Novo cupom preenchida com BEMVINDO10', marcas: [
-          'O **código** que a cliente digita.',
-          'Quanto de **desconto**.',
-          'Para **todas** ou só **cliente nova**.',
+        imagens: [{ src: '/ajuda/cupons-novo.webp', alt: 'Janela Novo cupom com o código BEMVINDO10', marcas: [
+          'O **código** que o cliente digita.',
+          'Desconto em **%** ou em **R$**.',
+          'Para **todos** ou só **cliente novo**.',
           'Se quiser, **datas**, limite e mínimo.',
           'Toque em **Criar cupom**.',
         ] }],
-        dica: '**1 cupom** por pedido.',
+        dica: '**1 cupom** por pedido. Passou da data? Fica **Vencido**.',
       },
       {
         id: 'pixel',
@@ -756,8 +772,8 @@ export const ARTIGOS: ArtigoAjuda[] = [
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/destaques', rotulo: 'Destaques', apoio: 'Os produtos no topo do cardápio' },
-      { rota: '/cardapio', rotulo: 'Minha loja', apoio: 'Divulgar o link' },
+      { rota: '/ajuda/destaques', rotulo: 'Produtos em destaque', apoio: 'Os primeiros do cardápio' },
+      { rota: '/ajuda/minha-loja', rotulo: 'Minha loja e o link', apoio: 'Divulgar o link' },
     ],
   },
   {
@@ -772,188 +788,211 @@ export const ARTIGOS: ArtigoAjuda[] = [
         id: 'destacar',
         titulo: 'Destacar um produto',
         exemplo: 'O bolo mais vendido da semana.',
-        texto: ['Em **Produtos**, toque no produto.'],
-        imagens: [{ src: '/ajuda/destaques-mais.webp', alt: 'Menu Mais do produto com Destacar no cardápio', marcas: [
-          'Toque em **Mais**.',
-          'Toque em **Destacar no cardápio**.',
+        texto: ['Em **Produtos**, toque no produto e em **Mais**.'],
+        imagens: [{ src: '/ajuda/destaques-mais.webp', alt: 'Menu Mais do produto com Tirar do destaque', marcas: [
+          '**Destacar** ou **tirar do destaque**.',
+          '**Tirar do cardápio**, sem apagar.',
         ] }],
-        dica: 'Até **6** produtos em destaque.',
       },
       {
         id: 'lista',
         titulo: 'Na sua lista',
-        imagens: [{ src: '/ajuda/destaques-lista.webp', alt: 'Lista de produtos com estrela nos destacados', marcas: [
+        imagens: [{ src: '/ajuda/destaques-lista.webp', alt: 'Lista de produtos com a estrela nos destacados', marcas: [
           'A **estrela** mostra o destaque.',
+          'A chave mostra ou tira do **cardápio**.',
         ] }],
-        dica: 'Ou em **Editar produto**.',
+        dica: 'Produto fora do cardápio **sai dos destaques**.',
       },
       {
         id: 'cardapio',
         titulo: 'No cardápio',
-        imagens: [{ src: '/ajuda/destaques-cardapio.webp', alt: 'Seção Destaques no topo do cardápio', marcas: [
-          '**Destaques** é a primeira parte.',
-          'Com fotos **grandes**.',
-        ] }],
-        dica: 'Saiu do cardápio? Sai daqui.',
+        texto: ['Os destaques são a **primeira parte** do cardápio, com fotos grandes. Toque em **Ver**, em Minha loja, para conferir.'],
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/produtos', rotulo: 'Produtos', apoio: 'Cadastrar e editar' },
-      { rota: '/ajuda/cupons', rotulo: 'Cupons', apoio: 'Desconto para vender mais' },
+      { rota: '/ajuda/produtos', rotulo: 'Cadastrar um produto', apoio: 'Nome, fotos e preço' },
+      { rota: '/ajuda/cupons', rotulo: 'Cupons de desconto', apoio: 'Desconto para vender mais' },
+    ],
+  },
+  {
+    slug: 'cadastros',
+    tema: 'cadastros',
+    titulo: 'A tela Cadastros',
+    resumo: 'Produtos, ingredientes e clientes num lugar só.',
+    minutos: 1,
+    abrir: { rota: '/cadastros', rotulo: 'Abrir Cadastros' },
+    secoes: [
+      {
+        id: 'tela',
+        titulo: 'Tudo o que você cadastra',
+        texto: ['Em **Menu**, toque em **Cadastros**.'],
+        imagens: [{ src: '/ajuda/cadastros.webp', alt: 'Cadastros com o aviso e as listas', marcas: [
+          '**Precisa de atenção**: o que falta arrumar.',
+          'O que você **vende**: produtos, categorias, complementos.',
+          'Do que é **feito**: ingredientes e ficha técnica.',
+          'Quem **compra**: clientes e mensagens.',
+        ] }],
+        dica: 'O número à direita é **quantos** você tem.',
+      },
+    ],
+    relacionadas: [
+      { rota: '/ajuda/produtos', rotulo: 'Cadastrar um produto', apoio: 'Nome, fotos e preço' },
+      { rota: '/ajuda/ingredientes', rotulo: 'Ingredientes', apoio: 'O que você compra' },
+      { rota: '/ajuda/clientes', rotulo: 'Clientes', apoio: 'Quem compra de você' },
     ],
   },
   {
     slug: 'produtos',
     tema: 'cadastros',
     titulo: 'Cadastrar um produto',
-    resumo: 'Nome, fotos e preço.',
+    resumo: 'Nome, escolhas, fotos e preço.',
     minutos: 3,
     abrir: { rota: '/produtos', rotulo: 'Abrir Produtos' },
     secoes: [
       {
         id: 'lista',
         titulo: 'Seus produtos',
-        imagens: [{ src: '/ajuda/produto-lista.webp', alt: 'Lista de produtos com a chave e o lucro estimado', marcas: [
-          'Toque em **Novo**.',
-          'A **chave** tira do cardápio.',
-          'O **lucro** de cada venda.',
+        texto: ['Em **Menu**, abra **Cadastros** e toque em **Produtos**.'],
+        imagens: [{ src: '/ajuda/produto-lista.webp', alt: 'Lista de produtos com a chave do cardápio', marcas: [
+          'Cadastrar um **Novo** produto.',
+          'A chave mostra ou tira do **cardápio**.',
+          '**Criar ficha técnica** para ver o lucro.',
         ] }],
-        dica: 'Sem ficha? **Criar ficha técnica**.',
       },
       {
         id: 'sobre',
         titulo: 'Sobre o produto',
-        exemplo: 'Um bolo de paçoca.',
-        imagens: [{ src: '/ajuda/produto-sobre.webp', alt: 'Passo 1 com nome, descrição e categoria', marcas: [
+        exemplo: 'Um Bolo de Ninho com Morango.',
+        imagens: [{ src: '/ajuda/produto-sobre.webp', alt: 'Nome, descrição e categoria do produto', marcas: [
           'O **nome** do produto.',
-          'A descrição. A IA **melhora** o texto.',
-          'A **categoria**, como Bolos.',
+          'Uma **descrição** curta.',
+          'Sem ideia? **Gerar com IA**.',
+          'A **categoria** do cardápio.',
         ] }],
+        dica: 'Depois, toque em **Continuar**.',
       },
       {
         id: 'escolhas',
-        titulo: 'O que a cliente escolhe',
-        imagens: [{ src: '/ajuda/produto-escolhas.webp', alt: 'Passo 2 com tamanho, massa e recheio', marcas: [
-          'Marque **Tamanho** se tiver.',
-          'E **Recheio**, Sabor…',
+        titulo: 'O que o cliente escolhe',
+        imagens: [{ src: '/ajuda/produto-escolhas.webp', alt: 'Lista de escolhas com Tamanho e Sabor marcados', marcas: [
+          '**Tamanho**: cada um com o seu preço.',
+          '**Sabor**, massa, recheio ou cobertura.',
         ] }],
-        dica: 'Sem opções? Só **continue**.',
+        dica: 'Sem marcar, o cliente só diz **quantos quer**.',
       },
       {
         id: 'fotos',
         titulo: 'Fotos',
-        imagens: [{ src: '/ajuda/produto-fotos.webp', alt: 'Passo 3 com a foto principal e espaço para mais 3', marcas: [
-          'A foto do **cardápio**.',
-          'Até **3 fotos** a mais.',
-          '**Dicas** para a foto vender.',
+        imagens: [{ src: '/ajuda/produto-fotos.webp', alt: 'Foto principal e as fotos 2 a 4', marcas: [
+          'A **foto principal**: tire ou escolha da galeria.',
+          'Fotos **2 a 4** do mesmo produto (PRO).',
         ] }],
+        dica: 'Logo abaixo, **dicas** para a foto que vende.',
       },
       {
         id: 'preco',
         titulo: 'Preço',
-        imagens: [{ src: '/ajuda/produto-preco.webp', alt: 'Passo 4 com preço, unidade, promoção e tipo de entrega', marcas: [
-          'O **preço**.',
-          'Por **quilo**, unidade ou cento.',
-          'Se quiser, uma **promoção**.',
-          'Pronta ou **sob encomenda**.',
+        imagens: [{ src: '/ajuda/produto-preco.webp', alt: 'Preço cheio, vendido por e promoção', marcas: [
+          'O **preço cheio**.',
+          '**Vendido por**: unidade, quilo…',
+          '**Promoção**: o preço antigo aparece riscado.',
         ] }],
-        dica: 'Aqui também tem o **Destacar**.',
       },
       {
-        id: 'publicar',
+        id: 'revisar',
         titulo: 'Conferir e publicar',
-        imagens: [{ src: '/ajuda/produto-revisar.webp', alt: 'Passo 5 com a prévia e o botão Publicar produto', marcas: [
-          'Assim fica no **cardápio**.',
-          'Toque em **Publicar produto**.',
+        imagens: [{ src: '/ajuda/produto-revisar.webp', alt: 'Revisão do produto antes de publicar', marcas: [
+          'Assim ele aparece no **cardápio**.',
+          'Confira as **informações**.',
+          '**Antes de publicar**: o que ainda vale ajustar.',
         ] }],
-        dica: 'Depois, monte a **ficha técnica**.',
+        dica: 'Tudo certo? Toque em **Publicar produto**.',
       },
     ],
     relacionadas: [
+      { rota: '/ajuda/categorias', rotulo: 'Categorias do cardápio', apoio: 'A ordem do cardápio' },
       { rota: '/ajuda/ficha-tecnica', rotulo: 'Ficha técnica', apoio: 'Custo e lucro do produto' },
-      { rota: '/ajuda/categorias', rotulo: 'Categorias', apoio: 'Organizar o cardápio' },
-      { rota: '/ajuda/destaques', rotulo: 'Destaques', apoio: 'Os produtos no topo do cardápio' },
+      { rota: '/ajuda/destaques', rotulo: 'Produtos em destaque', apoio: 'Os primeiros do cardápio' },
     ],
   },
   {
     slug: 'categorias',
     tema: 'cadastros',
     titulo: 'Categorias do cardápio',
-    resumo: 'Organize o cardápio.',
+    resumo: 'Bolos, doces, salgados.',
     minutos: 1,
     abrir: { rota: '/categorias', rotulo: 'Abrir Categorias' },
     secoes: [
       {
         id: 'lista',
         titulo: 'Suas categorias',
-        imagens: [{ src: '/ajuda/categorias-lista.webp', alt: 'Lista de categorias com Bolos, Doces e Especiais', marcas: [
-          'Criar uma **Nova**.',
-          'Toque para **editar**.',
-          'Mais **opções**.',
+        texto: ['Em **Cadastros**, toque em **Categorias**.'],
+        imagens: [{ src: '/ajuda/categorias-lista.webp', alt: 'Lista de categorias na ordem do cardápio', marcas: [
+          'Criar uma **Nova** categoria.',
+          'A categoria e **quantos produtos** tem.',
+          'Os **3 pontinhos**: editar, mudar a ordem, excluir.',
         ] }],
-        dica: 'O cardápio segue **esta ordem**.',
+        dica: 'A ordem daqui é a **ordem do cardápio**.',
       },
       {
         id: 'nova',
         titulo: 'Criar uma categoria',
-        exemplo: 'Uma categoria para os salgados.',
-        imagens: [{ src: '/ajuda/categorias-nova.webp', alt: 'Janela Nova categoria com o nome Salgados', marcas: [
-          'Escreva o **nome**.',
-          'A **foto** pode ser automática.',
+        exemplo: 'Kits de festa.',
+        imagens: [{ src: '/ajuda/categorias-nova.webp', alt: 'Janela Nova categoria com o nome e a foto', marcas: [
+          'O **nome** da categoria.',
+          '**Automática**: usa a foto do primeiro produto.',
+          'Ou **envie uma foto**.',
           'Toque em **Criar categoria**.',
         ] }],
-        dica: 'O produto escolhe no **cadastro**.',
       },
       {
         id: 'ordem',
         titulo: 'Mudar a ordem',
-        texto: ['Toque nos **três pontinhos**.'],
-        imagens: [{ src: '/ajuda/categorias-opcoes.webp', alt: 'Opções da categoria Doces', marcas: [
+        imagens: [{ src: '/ajuda/categorias-opcoes.webp', alt: 'Menu da categoria com Editar, Subir, Descer e Excluir', marcas: [
           '**Editar** o nome e a foto.',
-          '**Subir** ou descer na ordem.',
-          '**Excluir** a categoria.',
+          '**Subir** ou **descer** no cardápio.',
+          '**Excluir**: só sem produtos dentro.',
         ] }],
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/produtos', rotulo: 'Produtos', apoio: 'Cadastrar e editar' },
-      { rota: '/ajuda/complementos', rotulo: 'Complementos', apoio: 'Extras que a cliente escolhe' },
+      { rota: '/ajuda/produtos', rotulo: 'Cadastrar um produto', apoio: 'Nome, fotos e preço' },
     ],
   },
   {
     slug: 'complementos',
     tema: 'cadastros',
-    titulo: 'Complementos',
-    resumo: 'Topo de bolo, vela, escrita.',
+    titulo: 'Complementos (PRO)',
+    resumo: 'Topo, velas e outros extras.',
     minutos: 2,
     abrir: { rota: '/complementos', rotulo: 'Abrir Complementos' },
     secoes: [
       {
         id: 'lista',
         titulo: 'Seus complementos',
-        imagens: [{ src: '/ajuda/complementos-lista.webp', alt: 'Lista de complementos e a prévia do cardápio', marcas: [
-          'Criar um **Novo**.',
+        exemplo: 'Topo de bolo por R$ 15,00.',
+        texto: ['Em **Cadastros**, toque em **Complementos**. É um recurso do plano **PRO**.'],
+        imagens: [{ src: '/ajuda/complementos-lista.webp', alt: 'Lista de complementos com o valor', marcas: [
+          'Criar um **Novo** complemento.',
           'Toque para **editar**.',
-          'Assim a **cliente vê**.',
+          '**Pede foto**: o cliente manda uma referência.',
         ] }],
+        dica: 'No cardápio, aparecem **no produto**, para marcar.',
       },
       {
         id: 'novo',
         titulo: 'Criar um complemento',
-        exemplo: 'Topo de bolo por R$ 15,00.',
-        imagens: [{ src: '/ajuda/complementos-novo.webp', alt: 'Janela Novo complemento preenchida com Topo de bolo', marcas: [
-          'O **nome** do extra.',
-          'Quanto **soma** no pedido.',
-          'Peça uma **foto** de referência.',
-          'Em quais **produtos** aparece.',
-          'Toque em **Criar**.',
+        imagens: [{ src: '/ajuda/complementos-novo.webp', alt: 'Janela Novo complemento', marcas: [
+          'O **nome**, como Topo de bolo.',
+          '**Quanto soma** no pedido, ou Grátis.',
+          'O cliente manda **uma foto de referência** ou **uma frase**?',
         ] }],
-        dica: 'O preço muda em **todos**.',
+        dica: 'Toque em **Criar**.',
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/produtos', rotulo: 'Produtos', apoio: 'Cadastrar e editar' },
-      { rota: '/ajuda/categorias', rotulo: 'Categorias', apoio: 'Organizar o cardápio' },
+      { rota: '/ajuda/produtos', rotulo: 'Cadastrar um produto', apoio: 'Nome, fotos e preço' },
+      { rota: '/ajuda/assinatura', rotulo: 'Plano PRO', apoio: 'O que o PRO libera' },
     ],
   },
   {
@@ -967,156 +1006,156 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'lista',
         titulo: 'Sua lista',
-        imagens: [{ src: '/ajuda/clientes-lista.webp', alt: 'Números dos clientes e a lista com o botão do WhatsApp', marcas: [
-          'Seus **números**.',
-          'Cadastrar um **Novo**.',
-          'Toque para ver a **cliente**.',
-          'Abre o **WhatsApp** dela.',
+        texto: ['Em **Cadastros**, toque em **Clientes**. Também fica no Acesso rápido do Início.'],
+        imagens: [{ src: '/ajuda/clientes-lista.webp', alt: 'Aniversários do mês e a lista de clientes', marcas: [
+          '**Aniversários** dos próximos 30 dias.',
+          'Cadastrar um **Novo** cliente.',
+          'Chamar no **WhatsApp**.',
         ] }],
-        dica: 'Pelo cardápio, entra **sozinha**.',
+        dica: 'Quem pede pelo cardápio entra **sozinho**.',
       },
       {
         id: 'novo',
-        titulo: 'Cadastrar uma cliente',
-        exemplo: 'A Ana Beatriz pediu pelo WhatsApp.',
-        imagens: [{ src: '/ajuda/clientes-novo.webp', alt: 'Janela Novo cliente com nome e WhatsApp', marcas: [
+        titulo: 'Cadastrar um cliente',
+        imagens: [{ src: '/ajuda/clientes-novo.webp', alt: 'Janela Novo cliente', marcas: [
+          'Uma **foto**, se quiser.',
           'O **nome**.',
           'O **WhatsApp**.',
-          'O **aniversário**, se souber.',
-          'Toque em **Cadastrar cliente**.',
+          'O **aniversário**: o app avisa antes.',
+          '**Mais detalhes**: endereço, e-mail, CPF.',
         ] }],
-        dica: 'O app **lembra** os parabéns.',
       },
       {
         id: 'perfil',
-        titulo: 'Tudo da cliente',
-        imagens: [{ src: '/ajuda/clientes-perfil.webp', alt: 'Perfil da Daniela com os números e os pedidos', marcas: [
-          'Fale no **WhatsApp**.',
-          '**Nova venda** já com ela.',
-          'Quanto ela **já comprou**.',
-          'Os **pedidos** dela.',
+        titulo: 'Tudo sobre o cliente',
+        exemplo: 'A Daniela faz aniversário em 3 dias.',
+        imagens: [{ src: '/ajuda/clientes-perfil.webp', alt: 'Perfil da Daniela com os números das compras', marcas: [
+          'O **aniversário** chegando.',
+          'Chamar no **WhatsApp**.',
+          'Uma **Nova venda** para ele.',
+          'Quanto ele **compra** com você.',
         ] }],
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/nova-venda', rotulo: 'Nova venda', apoio: 'Registrar um pedido à mão' },
-      { rota: '/configuracoes/mensagens', rotulo: 'Mensagens do WhatsApp', apoio: 'Textos prontos para a cliente' },
+      { rota: '/ajuda/mensagens', rotulo: 'Mensagens do WhatsApp', apoio: 'Parabéns e avisos prontos' },
+      { rota: '/ajuda/nova-venda', rotulo: 'Registrar uma venda', apoio: 'Pedido do WhatsApp ou do balcão' },
     ],
   },
   {
     slug: 'ingredientes',
     tema: 'cadastros',
     titulo: 'Ingredientes',
-    resumo: 'O que você compra.',
+    resumo: 'O que você compra e quanto custa.',
     minutos: 2,
     abrir: { rota: '/insumos', rotulo: 'Abrir Ingredientes' },
     secoes: [
       {
         id: 'lista',
         titulo: 'Sua lista',
-        imagens: [{ src: '/ajuda/ingredientes-lista.webp', alt: 'Lista de ingredientes com o custo de cada um', marcas: [
-          'Cadastrar um **Novo**.',
-          '**Filtro**: ingredientes, embalagens…',
-          'Toque para **editar**.',
-          'Quanto custa **na receita**.',
+        texto: ['Em **Cadastros**, toque em **Ingredientes**.'],
+        imagens: [{ src: '/ajuda/ingredientes-lista.webp', alt: 'Lista de ingredientes com o custo de cada 100 g', marcas: [
+          'Cadastrar um **Novo** ingrediente.',
+          'Quanto custa **cada 100 g** (ou unidade).',
         ] }],
       },
       {
-        id: 'preco',
+        id: 'editar',
         titulo: 'Quanto você pagou',
-        exemplo: 'Leite condensado: 395 g por R$ 7,49.',
-        imagens: [{ src: '/ajuda/ingredientes-editar.webp', alt: 'Janela do leite condensado com medida, quantidade e preço', marcas: [
-          'A **medida**: g, kg, ml…',
-          '**Quanto vem** na embalagem.',
-          '**Quanto pagou**.',
+        exemplo: 'A lata de leite condensado custou R$ 7,49.',
+        imagens: [{ src: '/ajuda/ingredientes-editar.webp', alt: 'Janela Editar ingrediente com o custo na receita', marcas: [
+          '**Achar foto com IA**.',
+          'A **medida**: g, kg, ml, L ou unidade.',
+          'Quanto **vem** e quanto você **pagou**.',
           'O app calcula o **custo na receita**.',
-          'Toque em **Salvar**.',
         ] }],
-        dica: 'As **fichas** se atualizam sozinhas.',
+        dica: 'O preço mudou? Troque aqui: as **fichas** se atualizam.',
       },
     ],
     relacionadas: [
       { rota: '/ajuda/ficha-tecnica', rotulo: 'Ficha técnica', apoio: 'Custo e lucro do produto' },
-      { rota: '/ajuda/custos', rotulo: 'Custos', apoio: 'Fixos, mão de obra e invisíveis' },
     ],
   },
   {
     slug: 'ficha-tecnica',
     tema: 'preco',
     titulo: 'Ficha técnica',
-    resumo: 'Custo e lucro de cada produto.',
-    minutos: 2,
+    resumo: 'Quanto custa e quanto sobra.',
+    minutos: 3,
     abrir: { rota: '/ficha-tecnica', rotulo: 'Abrir Ficha técnica' },
     secoes: [
       {
         id: 'lista',
         titulo: 'Seus produtos',
-        imagens: [{ src: '/ajuda/ficha-lista.webp', alt: 'Quantos produtos têm ficha e a lista com o lucro', marcas: [
-          'Quantos já têm **ficha**.',
-          '**Montar a próxima** que falta.',
-          'Toque para ver a **ficha**.',
+        texto: ['Em **Cadastros**, toque em **Ficha técnica**.'],
+        imagens: [{ src: '/ajuda/ficha-lista.webp', alt: 'Produtos com e sem ficha técnica', marcas: [
+          '**Montar a próxima** ficha que falta.',
+          'Com ficha: o **lucro** de cada um.',
+          'Sem ficha: **Montar ficha**.',
         ] }],
-        dica: '**Vermelho** é prejuízo.',
+        dica: 'Sem ficha, o lucro aparece **maior** do que é.',
       },
       {
         id: 'resumo',
         titulo: 'Lucro e custo',
-        exemplo: 'Bolo Brigadeiro de 2 kg.',
-        imagens: [{ src: '/ajuda/ficha-resumo.webp', alt: 'Resumo da ficha com lucro, custos e preço de venda', marcas: [
-          'O **lucro** de cada venda.',
-          'Tudo o que **custa** para fazer.',
-          'O **preço** que você cobra.',
+        exemplo: 'O Bolo Brigadeiro custa R$ 25,49 e vende por R$ 47,61.',
+        imagens: [{ src: '/ajuda/ficha-resumo.webp', alt: 'Lucro, barra de cores e custo total do Bolo Brigadeiro', marcas: [
+          '**Seu lucro** e a margem.',
+          'Para onde vai o **preço**.',
+          'O **custo total** do produto.',
         ] }],
       },
       {
         id: 'ingredientes',
         titulo: 'Os ingredientes',
-        imagens: [{ src: '/ajuda/ficha-ingredientes.webp', alt: 'Ingredientes da ficha com a quantidade', marcas: [
-          '**Quanto vai** na receita.',
-          'Tirar da ficha.',
+        imagens: [{ src: '/ajuda/ficha-ingredientes.webp', alt: 'Ingredientes da receita com a quantidade', marcas: [
+          'Quanto vai na **receita**.',
+          'A **medida**.',
+          '**Tirar** o ingrediente.',
         ] }],
       },
       {
         id: 'mais',
         titulo: 'Completar a ficha',
-        imagens: [{ src: '/ajuda/ficha-mais.webp', alt: 'Adicionar ingrediente, custos invisíveis e mão de obra', marcas: [
+        imagens: [{ src: '/ajuda/ficha-mais.webp', alt: 'Adicionar ingrediente, custos invisíveis, mão de obra e informações', marcas: [
           '**Adicionar ingrediente**.',
-          'Não tem? **Cadastrar novo**.',
-          'Mude os **custos invisíveis**.',
-          'Ligue a **mão de obra**.',
+          '**Custos invisíveis**: gás, perdas e descartáveis.',
+          '**Mão de obra**: ligue para somar o seu tempo.',
+          '**Informações**: rendimento, validade…',
         ] }],
-        dica: 'No fim, toque em **Salvar ficha**.',
+        dica: 'Toque em **Salvar ficha**.',
       },
     ],
     relacionadas: [
       { rota: '/ajuda/ingredientes', rotulo: 'Ingredientes', apoio: 'O que você compra' },
-      { rota: '/ajuda/custos', rotulo: 'Custos', apoio: 'Fixos, mão de obra e invisíveis' },
-      { rota: '/ajuda/lucratividade', rotulo: 'Lucratividade', apoio: 'O lucro de verdade do mês' },
+      { rota: '/ajuda/custos', rotulo: 'Custos da confeitaria', apoio: 'Fixos, mão de obra e taxas' },
+      { rota: '/ajuda/lucratividade', rotulo: 'Lucratividade', apoio: 'O lucro do mês' },
     ],
   },
   {
     slug: 'custos',
     tema: 'preco',
     titulo: 'Custos da confeitaria',
-    resumo: 'Tudo o que a loja gasta.',
-    minutos: 2,
+    resumo: 'Fixos, mão de obra e taxas.',
+    minutos: 3,
     abrir: { rota: '/custos', rotulo: 'Abrir Custos' },
     secoes: [
       {
         id: 'resumo',
         titulo: 'O resumo',
-        imagens: [{ src: '/ajuda/custos-resumo.webp', alt: 'Resumo com custos fixos, salário, custo da hora e por pedido', marcas: [
-          'Os **fixos** do mês.',
-          'O seu **salário**.',
-          'Quanto vale a **sua hora**.',
-          'O que sai **por pedido**.',
+        texto: ['Em **Menu**, abra **Financeiro** e toque em **Custos**.'],
+        imagens: [{ src: '/ajuda/custos-resumo.webp', alt: 'Os 4 números do topo de Custos', marcas: [
+          'Os **custos fixos** do mês.',
+          'O **salário** que você quer tirar.',
+          'Quanto custa **a sua hora**.',
+          'Quanto vai em cada **pedido**.',
         ] }],
       },
       {
         id: 'fixos',
         titulo: 'Custos fixos',
-        exemplo: 'Aluguel de R$ 1.200,00, todo dia 5.',
-        imagens: [{ src: '/ajuda/custos-fixos.webp', alt: 'Lista de custos fixos com o aluguel', marcas: [
+        exemplo: 'Aluguel, gás e internet.',
+        imagens: [{ src: '/ajuda/custos-fixos.webp', alt: 'Lista de custos fixos', marcas: [
           '**Adicionar** um custo.',
           'Toque para **editar**.',
         ] }],
@@ -1124,143 +1163,143 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'editar',
         titulo: 'Valor e vencimento',
-        imagens: [{ src: '/ajuda/custos-fixo-editar.webp', alt: 'Janela do aluguel com valor, vencimento e chave Ativo', marcas: [
+        imagens: [{ src: '/ajuda/custos-fixo-editar.webp', alt: 'Janela Editar custo fixo', marcas: [
           'O **valor** por mês.',
           'O **dia** que vence.',
-          'Desligue se **parou** de pagar.',
-          'Toque em **Salvar**.',
+          '**Ativo**: entra no custo da hora.',
         ] }],
-        dica: 'Vira conta em **A pagar**.',
+        dica: 'Com vencimento, vira conta em **A pagar** todo mês.',
       },
       {
         id: 'mao',
         titulo: 'Sua mão de obra',
-        imagens: [{ src: '/ajuda/custos-mao-obra.webp', alt: 'Mão de obra com salário e jornada', marcas: [
-          'Coloque o **salário** e a **jornada**.',
+        imagens: [{ src: '/ajuda/custos-mao-obra.webp', alt: 'Janela Mão de obra', marcas: [
+          'O **salário** que você quer.',
+          'Quantas **horas** por dia.',
+          'Os **dias** em que você produz.',
           'O app calcula a **sua hora**.',
         ] }],
       },
       {
         id: 'variaveis',
         titulo: 'Variáveis e invisíveis',
-        imagens: [{ src: '/ajuda/custos-variaveis.webp', alt: 'Custos variáveis e custos invisíveis', marcas: [
-          '**Adicionar** um custo por venda.',
-          'Ex.: a taxa da **maquininha**.',
-          'Gás, perdas e descartáveis: **%**.',
+        imagens: [{ src: '/ajuda/custos-variaveis.webp', alt: 'Taxas da maquininha e custos invisíveis', marcas: [
+          '**Variáveis**: a taxa da maquininha, em %.',
+          '**Invisíveis**: gás, perdas e descartáveis, em %.',
+          '**Editar** a porcentagem.',
         ] }],
-        dica: 'Entram em **todas as fichas**.',
+        dica: 'A maioria usa entre **20% e 30%** de invisíveis.',
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/ficha-tecnica', rotulo: 'Ficha técnica', apoio: 'Custo e lucro do produto' },
-      { rota: '/ajuda/a-pagar', rotulo: 'A pagar', apoio: 'As contas do mês' },
+      { rota: '/ajuda/ficha-tecnica', rotulo: 'Ficha técnica', apoio: 'Custo de cada produto' },
+      { rota: '/ajuda/lucratividade', rotulo: 'Lucratividade', apoio: 'O lucro do mês' },
     ],
   },
   {
     slug: 'lucratividade',
     tema: 'preco',
     titulo: 'Lucratividade',
-    resumo: 'O seu lucro de verdade.',
+    resumo: 'Quanto sobrou de verdade.',
     minutos: 2,
     abrir: { rota: '/lucratividade', rotulo: 'Abrir Lucratividade' },
     secoes: [
       {
         id: 'periodo',
         titulo: 'Escolha o período',
-        imagens: [{ src: '/ajuda/lucro-periodo.webp', alt: 'Botões de período e o mês escolhido', marcas: [
-          'Hoje, 7 dias, 30 dias ou **mês**.',
+        texto: ['Em **Menu**, abra **Financeiro** e toque em **Lucratividade**.'],
+        imagens: [{ src: '/ajuda/lucro-periodo.webp', alt: 'Período e o mês escolhido', marcas: [
+          'Hoje, 7 dias, 30 dias, mês ou **Escolher**.',
           'Troque o **mês**.',
         ] }],
-        dica: 'Recurso do plano **PRO**.',
       },
       {
         id: 'conta',
         titulo: 'A conta',
-        exemplo: 'Outubro: vendeu R$ 2.464,33.',
-        imagens: [{ src: '/ajuda/lucro-conta.webp', alt: 'Vendido, ingredientes, taxas, despesas e lucro do mês', marcas: [
-          'O que você **vendeu**.',
-          'O custo dos **ingredientes**.',
-          'As **despesas** pagas.',
-          'O que **sobrou** de verdade.',
+        imagens: [{ src: '/ajuda/lucro-conta.webp', alt: 'Vendido, ingredientes, taxas, despesas e lucro', marcas: [
+          'Quanto você **vendeu**.',
+          'O custo dos **ingredientes**, pela ficha.',
+          '**Taxas**: maquininha e Pix pelo cardápio.',
+          '**Despesas** lançadas no Financeiro.',
+          'O **lucro** e a margem.',
         ] }],
-        dica: 'Conta só os pedidos **entregues**.',
+        dica: 'Sem ficha técnica, o ingrediente **não entra** na conta.',
       },
       {
         id: 'produtos',
         titulo: 'Lucro por produto',
-        imagens: [{ src: '/ajuda/lucro-produtos.webp', alt: 'Lista de lucro por produto', marcas: [
-          'Quanto **cada produto** deu.',
+        imagens: [{ src: '/ajuda/lucro-produtos.webp', alt: 'Lucro por produto', marcas: [
+          'Quanto cada produto **deu de lucro**.',
         ] }],
-        dica: 'Sem **ficha**, o lucro engana.',
       },
       {
         id: 'equilibrio',
         titulo: 'Ponto de equilíbrio',
-        imagens: [{ src: '/ajuda/lucro-equilibrio.webp', alt: 'Ponto de equilíbrio do mês', marcas: [
-          'Quanto vender para **pagar tudo**.',
-          'Quanto **falta** neste mês.',
+        imagens: [{ src: '/ajuda/lucro-equilibrio.webp', alt: 'Quanto vender no mês para pagar tudo', marcas: [
+          'Quanto **vender no mês** para pagar tudo.',
+          'Quanto **falta**.',
         ] }],
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/ficha-tecnica', rotulo: 'Ficha técnica', apoio: 'Custo e lucro do produto' },
-      { rota: '/ajuda/financeiro', rotulo: 'Financeiro', apoio: 'O que entrou e saiu' },
+      { rota: '/ajuda/ficha-tecnica', rotulo: 'Ficha técnica', apoio: 'Custo de cada produto' },
+      { rota: '/ajuda/custos', rotulo: 'Custos da confeitaria', apoio: 'Fixos, mão de obra e taxas' },
     ],
   },
   {
     slug: 'financeiro',
     tema: 'financeiro',
     titulo: 'Como usar o Financeiro',
-    resumo: 'Entrou, saiu e sobrou.',
+    resumo: 'O que entrou, saiu e sobrou.',
     minutos: 2,
     abrir: { rota: '/financeiro', rotulo: 'Abrir o Financeiro' },
     secoes: [
       {
         id: 'sobrou',
         titulo: 'Quanto sobrou',
-        exemplo: 'Como foi outubro?',
-        imagens: [{ src: '/ajuda/fin-sobrou.webp', alt: 'Período Mês e o valor que sobrou em outubro', marcas: [
+        texto: ['Em **Menu**, toque em **Financeiro**. Também fica no Acesso rápido do Início.'],
+        imagens: [{ src: '/ajuda/fin-sobrou.webp', alt: 'Período, quanto sobrou e o que entrou e saiu', marcas: [
           'Escolha o **período**.',
-          'O que **sobrou** no período.',
-          'O que **entrou**.',
-          'O que **saiu**.',
+          'Quanto **sobrou** no período.',
+          'O que **entrou** e o que **saiu**.',
         ] }],
       },
       {
         id: 'caixa',
         titulo: 'Caixa, a receber e a pagar',
         imagens: [{ src: '/ajuda/fin-caixa.webp', alt: 'Em caixa, A receber e A pagar', marcas: [
-          'Informe o **caixa** uma vez.',
-          'O que ainda **vai entrar**.',
-          'As **contas** a pagar.',
+          '**Em caixa**: dinheiro e banco hoje.',
+          '**A receber**: o que os clientes devem.',
+          '**A pagar**: as contas que vão vencer.',
         ] }],
-        dica: 'Depois, ele se atualiza **sozinho**.',
+        dica: 'Toque em cada um para **ver a lista**.',
       },
       {
         id: 'lancar',
         titulo: 'Lançar entrada ou saída',
         imagens: [{ src: '/ajuda/fin-botoes.webp', alt: 'Botões Entrou, Saiu e Receber', marcas: [
-          'Entrou dinheiro.',
-          'Saiu dinheiro.',
-          '**Receber** de um pedido.',
+          '**Entrou**: um dinheiro que chegou.',
+          '**Saiu**: uma compra ou despesa.',
+          '**Receber**: o pagamento de um pedido.',
         ] }],
+        dica: 'No computador: **Receber pedido**, **Entrada** e **Saída**, no topo.',
       },
       {
         id: 'saida',
         titulo: 'Uma compra',
-        exemplo: 'R$ 85,00 de embalagens.',
-        imagens: [{ src: '/ajuda/fin-saida.webp', alt: 'Janela Nova saída preenchida com embalagens', marcas: [
+        exemplo: 'Você comprou R$ 186,40 de ingredientes.',
+        imagens: [{ src: '/ajuda/fin-saida.webp', alt: 'Janela Nova saída', marcas: [
           '**Quanto** foi.',
-          '**Já paguei** ou **Vou pagar**.',
-          '**Com o quê**.',
+          '**Já paguei** ou **Vou pagar** depois.',
+          'Com o **quê**.',
           'Toque em **Lançar saída**.',
         ] }],
-        dica: '**Vou pagar** vai para **A pagar**.',
+        dica: '**Vou pagar** vira conta em **A pagar**.',
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/a-receber', rotulo: 'A receber', apoio: 'O que falta a cliente pagar' },
-      { rota: '/ajuda/a-pagar', rotulo: 'A pagar', apoio: 'As contas do mês' },
+      { rota: '/ajuda/a-receber', rotulo: 'A receber', apoio: 'O que falta o cliente pagar' },
+      { rota: '/ajuda/a-pagar', rotulo: 'A pagar', apoio: 'As contas que vão vencer' },
       { rota: '/ajuda/transacoes', rotulo: 'Transações', apoio: 'O extrato dia a dia' },
     ],
   },
@@ -1268,38 +1307,36 @@ export const ARTIGOS: ArtigoAjuda[] = [
     slug: 'a-receber',
     tema: 'financeiro',
     titulo: 'A receber',
-    resumo: 'O que falta a cliente pagar.',
-    minutos: 2,
+    resumo: 'O que falta o cliente pagar.',
+    minutos: 1,
     abrir: { rota: '/financeiro/a-receber', rotulo: 'Abrir A receber' },
     secoes: [
       {
         id: 'lista',
         titulo: 'Quem falta pagar',
-        imagens: [{ src: '/ajuda/receber-lista.webp', alt: 'Resumo dos valores a receber e um pedido atrasado', marcas: [
+        texto: ['No **Financeiro**, toque em **A receber**.'],
+        imagens: [{ src: '/ajuda/receber-lista.webp', alt: 'Atrasados e o pedido da Beatriz com o botão Receber', marcas: [
           '**Atrasados**, em 7 dias e depois.',
-          'Busque e **filtre**.',
-          'Quanto **falta** neste pedido.',
-          '**Abrir** o pedido.',
-          'Toque em **Receber**.',
+          'Quanto **falta** em cada pedido.',
+          'Pagou? Toque em **Receber**.',
         ] }],
-        dica: 'Os **atrasados** ficam no topo.',
       },
       {
         id: 'receber',
         titulo: 'Registrar o pagamento',
-        exemplo: 'O Rafael pagou tudo no Pix hoje.',
-        imagens: [{ src: '/ajuda/receber-janela.webp', alt: 'Janela Receber com valor, forma e data', marcas: [
-          '**Quanto** ela pagou agora.',
-          '**Como** pagou.',
-          '**Quando** pagou.',
-          '**Confirmar recebimento**.',
+        exemplo: 'A Beatriz pagou o resto no Pix.',
+        imagens: [{ src: '/ajuda/receber-janela.webp', alt: 'Janela Receber com o valor e a forma de pagamento', marcas: [
+          'Quanto **entrou agora**.',
+          '**Como** ele pagou.',
+          '**Quando** recebeu.',
+          'Toque em **Confirmar recebimento**.',
         ] }],
-        dica: 'Pagou parte? O resto **fica aqui**.',
+        dica: 'Pagou tudo? O pedido fica **quitado**.',
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/pedido-aberto', rotulo: 'Dentro do pedido', apoio: 'Itens, entrega e pagamento' },
-      { rota: '/ajuda/financeiro', rotulo: 'Financeiro', apoio: 'O que entrou e saiu' },
+      { rota: '/ajuda/financeiro', rotulo: 'Como usar o Financeiro', apoio: 'O que entrou e saiu' },
+      { rota: '/ajuda/pedido-aberto', rotulo: 'Dentro do pedido', apoio: 'Receber pela aba Pagamento' },
     ],
   },
   {
@@ -1314,18 +1351,18 @@ export const ARTIGOS: ArtigoAjuda[] = [
         id: 'contas',
         titulo: 'Suas contas',
         exemplo: 'A internet venceu ontem.',
-        imagens: [{ src: '/ajuda/pagar-lista.webp', alt: 'Botão Nova conta e a conta de internet atrasada', marcas: [
+        texto: ['No **Financeiro**, toque em **A pagar**.'],
+        imagens: [{ src: '/ajuda/pagar-lista.webp', alt: 'Botão Nova conta e a conta de internet vencida', marcas: [
           'Lançar uma **Nova conta**.',
-          'Vencimento, nome e **valor**.',
+          'Mostra até o fim do mês. **Ver todas**.',
           'Pagou? Toque em **Pagar**.',
-          'Lançou errado? O **X** cancela.',
         ] }],
-        dica: 'Só sai do caixa no **Pagar**.',
+        dica: 'Só sai do caixa quando você toca em **Pagar**.',
       },
     ],
     relacionadas: [
       { rota: '/ajuda/custos', rotulo: 'Custos fixos', apoio: 'Viram conta todo mês' },
-      { rota: '/ajuda/financeiro', rotulo: 'Financeiro', apoio: 'O que entrou e saiu' },
+      { rota: '/ajuda/financeiro', rotulo: 'Como usar o Financeiro', apoio: 'O que entrou e saiu' },
     ],
   },
   {
@@ -1339,41 +1376,33 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'extrato',
         titulo: 'O extrato',
-        imagens: [{ src: '/ajuda/transacoes-extrato.webp', alt: 'Saldo do mês, busca e lançamentos do dia', marcas: [
-          'O **saldo** do mês.',
+        texto: ['No **Financeiro**, toque em **Ver tudo**, em Últimas movimentações.'],
+        imagens: [{ src: '/ajuda/transacoes-extrato.webp', alt: 'Mês, busca e os lançamentos do dia', marcas: [
           'Troque o **mês**.',
           'Busque um **lançamento**.',
-          'Cada **dia**, com o saldo dele.',
+          'Toque para ver ou **estornar**.',
         ] }],
-        dica: 'O **filtro** baixa a planilha.',
-      },
-      {
-        id: 'estornar',
-        titulo: 'Lançou errado?',
-        passos: [
-          'Toque no **lançamento**.',
-          'Toque em **Estornar**.',
-        ],
-        dica: 'Ele **fica no histórico**.',
+        dica: 'Estornado, ele fica **riscado** no extrato.',
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/financeiro', rotulo: 'Financeiro', apoio: 'O que entrou e saiu' },
+      { rota: '/ajuda/financeiro', rotulo: 'Como usar o Financeiro', apoio: 'O que entrou e saiu' },
     ],
   },
   {
     slug: 'orcamentos',
     tema: 'orcamentos',
-    titulo: 'Orçamentos',
-    resumo: 'Propostas que a cliente aprova.',
+    titulo: 'Orçamentos (PRO)',
+    resumo: 'Propostas que o cliente aprova.',
     minutos: 3,
     abrir: { rota: '/orcamentos', rotulo: 'Abrir Orçamentos' },
     secoes: [
       {
         id: 'lista',
         titulo: 'Seus orçamentos',
+        texto: ['Em **Menu**, toque em **Orçamentos**. É um recurso do plano **PRO**.'],
         imagens: [{ src: '/ajuda/orc-lista.webp', alt: 'Link de orçamento, botão Novo orçamento e a lista', marcas: [
-          'Mande o **seu link** de orçamento.',
+          '**Copie** ou **compartilhe** o seu link.',
           'Ou monte um **Novo orçamento**.',
           '**Novos**, enviados, aprovados…',
           'Toque para **abrir**.',
@@ -1382,40 +1411,39 @@ export const ARTIGOS: ArtigoAjuda[] = [
       },
       {
         id: 'proposta',
-        titulo: '1. A proposta',
-        exemplo: 'A Carla quer um Bolo Floresta Negra.',
-        imagens: [{ src: '/ajuda/orc-proposta.webp', alt: 'Itens do orçamento com o total e o lucro estimado', marcas: [
-          'O **item**, a quantidade e o valor.',
-          'Do **cardápio** ou **personalizado**.',
-          '**Desconto**, acréscimo ou **entrega**.',
-          'O **total** e o lucro estimado.',
+        titulo: 'A proposta',
+        exemplo: 'A Beatriz quer bolo e salgados para 100 pessoas.',
+        imagens: [{ src: '/ajuda/orc-proposta.webp', alt: 'Cliente, evento e itens do orçamento', marcas: [
+          'A etapa **Proposta**.',
+          'A **data**, o nome e o local do evento.',
+          'Item **do cardápio**.',
+          'Ou **personalizado**.',
         ] }],
+        dica: 'Depois, toque em **Continuar**.',
       },
       {
         id: 'condicoes',
-        titulo: '2. As condições',
-        imagens: [{ src: '/ajuda/orc-condicoes.webp', alt: 'Validade, sinal e forma de pagamento do orçamento', marcas: [
+        titulo: 'As condições',
+        imagens: [{ src: '/ajuda/orc-condicoes.webp', alt: 'Validade, sinal e forma de pagamento', marcas: [
           'Até quando **vale**.',
-          'Quanto de **sinal**.',
-          'Como ela **paga**.',
-          'Um **recado** pronto, se quiser.',
+          'Quanto de **sinal** para reservar a data.',
+          'Como ele **paga**.',
         ] }],
       },
       {
         id: 'enviar',
-        titulo: '3. Enviar',
+        titulo: 'Enviar',
         imagens: [{ src: '/ajuda/orc-enviar.webp', alt: 'Prévia do orçamento e os botões de envio', marcas: [
-          'Assim **ela vê**.',
+          'Assim **o cliente vê**.',
           '**Enviar no WhatsApp**.',
-          'Ou **copiar o link**.',
-          'Ou **baixar o PDF**.',
+          '**Copiar link** ou **Baixar PDF**.',
         ] }],
         dica: 'Aprovou? Vira **pedido**.',
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/agenda', rotulo: 'Agenda', apoio: 'Os pedidos no calendário' },
       { rota: '/ajuda/ficha-tecnica', rotulo: 'Ficha técnica', apoio: 'Para ver o lucro do orçamento' },
+      { rota: '/ajuda/assinatura', rotulo: 'Plano PRO', apoio: 'O que o PRO libera' },
     ],
   },
   {
@@ -1429,12 +1457,14 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'ligar',
         titulo: 'Ligar os avisos',
-        texto: ['Abra **Notificações e sons**.'],
-        imagens: [{ src: '/ajuda/notificacoes.webp', alt: 'Notificações bloqueadas com o passo a passo e a chave de sons', marcas: [
-          'Siga o **passo a passo**.',
-          'Liga os **sons** do app.',
+        texto: ['Em **Menu**, abra **Configurações** e toque em **Notificações e sons**.'],
+        imagens: [{ src: '/ajuda/notificacoes.webp', alt: 'Som de pedido novo, toques e notificações no celular', marcas: [
+          'Ligue o **som** de pedido novo.',
+          'Escolha o **toque**.',
+          '**Testar som**.',
+          'Ligue as **notificações** no celular.',
         ] }],
-        dica: 'Vale **só neste aparelho**.',
+        dica: 'Vale **só neste aparelho**. No iPhone, instale o app antes.',
       },
     ],
     relacionadas: [
@@ -1452,22 +1482,23 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'lista',
         titulo: 'As mensagens',
+        texto: ['Em **Cadastros**, toque em **Mensagens do WhatsApp**.'],
         imagens: [{ src: '/ajuda/mensagens-lista.webp', alt: 'Lista das mensagens prontas', marcas: [
-          'Toque para **trocar** o texto.',
-          '**Padrão** ou do seu jeito.',
+          '**Pedido pelo cardápio**: o cliente manda.',
+          '**Sobre o pedido**: você manda.',
+          '**Parabéns** de aniversário.',
         ] }],
       },
       {
         id: 'editar',
         titulo: 'Trocar o texto',
-        exemplo: 'Quer chamar a cliente pelo nome?',
+        exemplo: 'Quer chamar o cliente pelo nome?',
         imagens: [{ src: '/ajuda/mensagens-editar.webp', alt: 'Janela da mensagem com o texto e a prévia', marcas: [
           'Escreva do **seu jeito**.',
-          'Põe o **nome da cliente**.',
+          '**Colocar informação**: nome, número, data…',
           'Assim fica **no WhatsApp**.',
-          'Toque em **Salvar**.',
         ] }],
-        dica: 'Entre asteriscos: **negrito**.',
+        dica: 'Entre asteriscos, o texto fica em **negrito** no WhatsApp.',
       },
     ],
     relacionadas: [
@@ -1486,12 +1517,13 @@ export const ARTIGOS: ArtigoAjuda[] = [
         id: 'pedir',
         titulo: 'O que pedir',
         exemplo: 'Quanto cobrar num bolo de 2 kg?',
+        texto: ['No celular, a Doo fica no **topo do Início**. No computador, no **menu da lateral**.'],
         imagens: [{ src: '/ajuda/doo-inicio.webp', alt: 'Tela da Doo IA com os atalhos', marcas: [
-          'A **Doo**, sua assistente.',
-          'Calcula o **preço**.',
-          'Monta o **pedido** pelo print.',
+          '**Calcular preço** de um bolo ou doce.',
+          '**Novo pedido** pela conversa.',
+          '**Criar receita** com as quantidades.',
         ] }],
-        dica: 'Confira os **valores**.',
+        dica: 'No grátis: **10 mensagens por mês**. No PRO: 150 por dia.',
       },
     ],
     relacionadas: [
@@ -1508,17 +1540,18 @@ export const ARTIGOS: ArtigoAjuda[] = [
     secoes: [
       {
         id: 'plano',
-        titulo: 'Seu plano',
-        imagens: [{ src: '/ajuda/assinatura.webp', alt: 'Minha assinatura com o valor e o que está liberado', marcas: [
-          'Valor e **próxima cobrança**.',
-          'Tudo o que o **PRO libera**.',
-          'Dúvida ou **cancelamento**.',
+        titulo: 'Minha assinatura',
+        texto: ['Em **Menu**, toque em **Assinatura**. No plano grátis, ela mostra o que o PRO libera e o botão para assinar.'],
+        imagens: [{ src: '/ajuda/assinatura.webp', alt: 'Plano PRO ativo com a próxima cobrança', marcas: [
+          'A **próxima cobrança**.',
+          'O que está **liberado**.',
+          'Ver **todos os recursos**.',
         ] }],
-        dica: 'Mensal e **sem fidelidade**.',
+        dica: 'Cancelar ou trocar o cartão: **Precisa de algo?**, logo abaixo.',
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/conta', rotulo: 'Minha conta', apoio: 'Nome, logo e senha' },
+      { rota: '/ajuda/conta', rotulo: 'Configurações e conta', apoio: 'Nome, logo e senha' },
     ],
   },
   {
@@ -1532,12 +1565,12 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'ajustes',
         titulo: 'Os ajustes',
-        texto: ['Em **Menu**, abra **Configurações**.'],
-        imagens: [{ src: '/ajuda/configuracoes.webp', alt: 'Configurações com a busca e os itens da conta', marcas: [
+        texto: ['Em **Menu**, toque em **Configurações**.'],
+        imagens: [{ src: '/ajuda/configuracoes.webp', alt: 'Configurações com a busca e os itens', marcas: [
           '**Busque** pelo nome: pix, senha…',
-          '**Minha conta**.',
-          '**Notificações** e sons.',
-          '**Instalar** o app.',
+          '**Minha conta**: nome, logo e senha.',
+          '**Atualizar app**: puxa a versão nova.',
+          '**Avançado**: excluir a conta.',
         ] }],
       },
       {
@@ -1546,10 +1579,9 @@ export const ARTIGOS: ArtigoAjuda[] = [
         imagens: [{ src: '/ajuda/minha-conta.webp', alt: 'Janela Editar perfil', marcas: [
           'Trocar a **logo**.',
           'O seu **nome**.',
-          'O seu **WhatsApp**.',
           'Trocar a **senha**.',
         ] }],
-        dica: 'E-mail: fale com o **suporte**.',
+        dica: 'Para trocar o **e-mail**, fale com o suporte.',
       },
       {
         id: 'ajuda',
@@ -1557,13 +1589,81 @@ export const ARTIGOS: ArtigoAjuda[] = [
         imagens: [{ src: '/ajuda/configuracoes-ajuda.webp', alt: 'Itens de ajuda nas configurações', marcas: [
           'Os **tutoriais** de cada tela.',
           'Fale com a gente no **WhatsApp**.',
-          'Algo não funcionou? **Conte**.',
+          '**Relatar** um problema ou **sugerir** uma melhoria.',
         ] }],
+        dica: 'Embaixo ficam os **Termos** e o **Sair da conta**.',
       },
     ],
     relacionadas: [
-      { rota: '/ajuda/assinatura', rotulo: 'Plano PRO', apoio: 'O que libera' },
-      { rota: '/ajuda/notificacoes', rotulo: 'Notificações', apoio: 'Ser avisada de pedido novo' },
+      { rota: '/ajuda/assinatura', rotulo: 'Plano PRO', apoio: 'O que o PRO libera' },
+      { rota: '/ajuda/relatar-sugerir', rotulo: 'Relatar ou sugerir', apoio: 'Fale com a equipe' },
+    ],
+  },
+  {
+    slug: 'busca-rapida',
+    tema: 'primeiros',
+    titulo: 'Busca rápida',
+    resumo: 'Ache qualquer tela digitando.',
+    minutos: 1,
+    abrir: { rota: '/inicio', rotulo: 'Abrir o Início' },
+    secoes: [
+      {
+        id: 'buscar',
+        titulo: 'Achar uma tela',
+        exemplo: 'Onde troco a chave Pix?',
+        texto: [
+          'No celular, use o campo **Buscar** do Início. No computador, o campo do topo ou as teclas **Ctrl + K** (no Mac, **⌘ + K**).',
+          'Digite o que quer fazer, como **pix**, **cupom** ou **horário**, e toque no resultado para ir direto.',
+        ],
+        dica: 'Em **Configurações**, a busca do topo acha os ajustes.',
+      },
+    ],
+    relacionadas: [
+      { rota: '/ajuda/inicio', rotulo: 'A tela de Início', apoio: 'O seu dia em uma tela' },
+    ],
+  },
+  {
+    slug: 'novidades',
+    tema: 'conta',
+    titulo: 'Novidades',
+    resumo: 'O que mudou no app.',
+    minutos: 1,
+    abrir: { rota: '/noticias', rotulo: 'Abrir Novidades' },
+    secoes: [
+      {
+        id: 'lista',
+        titulo: 'As novidades',
+        texto: ['Em **Menu**, toque em **Novidades**. No computador, no **sino** do topo do menu.'],
+        imagens: [{ src: '/ajuda/novidades.webp', alt: 'Lista de novidades do Doonly', marcas: [
+          'Toque para **ler** a novidade.',
+        ] }],
+        dica: 'Tem novidade? O **sino** fica marcado.',
+      },
+    ],
+    relacionadas: [
+      { rota: '/ajuda/conta', rotulo: 'Configurações e conta', apoio: 'Seus dados e suporte' },
+    ],
+  },
+  {
+    slug: 'relatar-sugerir',
+    tema: 'conta',
+    titulo: 'Relatar ou sugerir',
+    resumo: 'Fale com a equipe do Doonly.',
+    minutos: 1,
+    abrir: { rota: '/configuracoes', rotulo: 'Abrir Configurações' },
+    secoes: [
+      {
+        id: 'relatar',
+        titulo: 'Algo não funcionou',
+        texto: [
+          'Em **Configurações**, toque em **Relatar um problema**. Conte o que fez e o que aconteceu. Um print ajuda muito.',
+          'Quer algo novo no app? Toque em **Sugerir uma melhoria** e conte o que falta.',
+        ],
+        dica: 'Com pressa? **Fale com o suporte** no WhatsApp.',
+      },
+    ],
+    relacionadas: [
+      { rota: '/ajuda/conta', rotulo: 'Configurações e conta', apoio: 'Seus dados e suporte' },
     ],
   },
 ]
@@ -1571,3 +1671,11 @@ export const ARTIGOS: ArtigoAjuda[] = [
 export const artigoPorSlug = (slug?: string) => ARTIGOS.find(a => a.slug === slug)
 export const artigosDoTema = (tema: TemaId) => ARTIGOS.filter(a => a.tema === tema)
 export const semAcentoAjuda = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+/** (31/10 · 5.83) todo o texto do artigo, para a busca da Central */
+export const textoDoArtigo = (a: ArtigoAjuda) => [
+  a.titulo, a.resumo, a.intro || '', ...(a.pontos || []),
+  ...(a.textos || []).flatMap(x => [x.titulo, ...(x.texto || []), ...(x.lista || []), ...(x.passos || []), x.dica || '']),
+  ...(a.duvidas || []).flatMap(d => [d.p, d.r]),
+  ...(a.esquema?.partes || []).flatMap(p => [p.titulo, p.texto]),
+  ...a.secoes.flatMap(s => [s.titulo, s.exemplo || '', s.dica || '', ...(s.texto || []), ...(s.passos || []), ...(s.imagens || []).flatMap(im => [im.alt, ...(im.marcas || [])])]),
+].join(' ').replace(/\*\*/g, '')

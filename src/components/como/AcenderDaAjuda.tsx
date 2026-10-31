@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { fazerTour } from "./tour";
+import { informar } from "@/components/base";
 
 /**
  * (27/10) "Mostrar na tela" da Central de Ajuda: a tela abre com a parte explicada acesa (o mesmo balão do tour).
@@ -25,7 +26,11 @@ export default function AcenderDaAjuda() {
         navigate(location.pathname + location.search, { replace: true, state: null });
         window.setTimeout(() => { void fazerTour([{ el: acender.el, titulo: acender.titulo, texto: acender.texto }], true); }, 350);
       } else if (Date.now() - inicio < 5000) window.setTimeout(tentar, 250);
-      else navigate(location.pathname + location.search, { replace: true, state: null });
+      else {
+        navigate(location.pathname + location.search, { replace: true, state: null });
+        // (31/10 · 5.83) antes desistia calado: a parte pode aparecer só no celular ou só com pedido
+        void informar({ titulo: "Essa parte não aparece agora", texto: "Ela aparece só no celular, ou quando houver algo para mostrar (como um pedido novo).", rotulo: "Entendi" });
+      }
     };
     const t = window.setTimeout(tentar, 600);
     return () => { vivo = false; window.clearTimeout(t); };

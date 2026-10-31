@@ -40,7 +40,7 @@ const GRUPOS: Grupo[] = [
       // (23/10) a Minha loja foi para o menu de baixo e o Financeiro veio para cá, em primeiro
       { label: "Financeiro",   desc: "Entradas, saídas e lucro",          path: "/financeiro", Icone: CurrencyDollar },
       { label: "Agenda",       desc: "Entregas por dia",                  path: "/agenda",    Icone: CalendarDots },
-      { label: "Orçamentos",   desc: "Propostas que a cliente aprova",    path: "/orcamentos", Icone: FileText },
+      { label: "Orçamentos",   desc: "Propostas que o cliente aprova",    path: "/orcamentos", Icone: FileText },
       { label: "Cadastros",    desc: "Clientes, ingredientes e produtos", path: "/cadastros", Icone: Notebook },
     ],
   },

@@ -381,9 +381,9 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         infoIcon="🎨" infoComo={COMO_APARENCIA} infoTour={TOUR_APARENCIA}
         infoContent={<>
           <p>Aqui você deixa o <strong>cardápio com a cara da sua confeitaria</strong>: a logo, os banners de promoção e as cores.</p>
-          <p>Tudo é salvo na hora e já aparece para os seus clientes. Use o <strong>"Ver meu cardápio"</strong> para conferir como ficou.</p>
+          <p>Tudo é salvo na hora e já aparece para os seus clientes. Toque em <strong>Ver como fica</strong> para conferir.</p>
         </>}
-        infoTip={<>As <strong>cores</strong> são do plano PRO.</>}
+        infoTip={<>A primeira fileira de <strong>cores</strong> é grátis. As outras e o + são do plano PRO.</>}
       />
     )}
     {/* (28/10 · 4.61) no computador, duas colunas: à esquerda o que é visual (topo e banners),
