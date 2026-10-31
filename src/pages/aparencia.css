@@ -308,3 +308,17 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
   .ap-item-img--topo { width: 60px; height: 24px; border-radius: 6px; }
   .ap-item .ui-bt { padding-left: 14px; padding-right: 14px; }
 }
+
+/* (30/10 · 5.52) Logo e Foto do topo em cartões separados, lado a lado no PC, com campo grande de escolher (igual aos banners) */
+.ap-par { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 900px) { .ap-par { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); } }
+.ap-par .ap-card { margin: 0; }
+.ap-par .ap-img, .ap-par .ap-slot { aspect-ratio: auto; height: 150px; min-height: 0; max-height: none; }
+.ap-img--logo { display: flex; align-items: center; justify-content: center; background: #F3EEF0; }
+.ap-logo-circ { display: flex; align-items: center; justify-content: center; width: 96px; height: 96px; margin-bottom: 34px; overflow: hidden; border: 3px solid; border-radius: 50%; background: #fff; box-sizing: border-box; }
+.ap-logo-circ img { width: 100%; height: 100%; object-fit: cover; }
+.ap-img--logo .ap-img-acoes { justify-content: center; }
+.ap-enviar b { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
+.ap-enviar small { font-size: 12.5px; color: var(--ui-texto-2); text-align: center; padding: 0 12px; }
+.ap-chip { font-weight: 500; }
+.ap-sec-topo .ui-tit-acao .ui-bt { width: auto; }

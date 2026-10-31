@@ -391,32 +391,45 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       <div className="ap-col ap-col-esq">
 
 
-      {/* (18/10) Topo do cardápio: foto do topo e logo numa prévia só, do jeito que o cliente vê */}
-      <section className="ap-card ap-largo ap-sec-topo">
-        <Cabeca Ic={Storefront} titulo="Topo do cardápio" apoio="Foto do topo e logo" />
+      {/* (30/10 · 5.52) a logo e a foto do topo em cartões separados, com campos grandes de escolher a imagem (igual aos banners) */}
         <input ref={logoRef} type="file" accept="image/*" hidden onChange={handleLogoUpload} />
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
-        {/* (30/10 · 5.46) a prévia virou o botão "Ver como fica"; aqui ficam só a foto e a logo, uma por linha */}
-        <div className="ap-itens">
-          <div className="ap-item">
-            <span className={`ap-item-img ap-item-img--topo${bannerTopoUrl ? "" : " vazia"}`} style={bannerTopoUrl ? undefined : { backgroundColor: topoEscurecido(corAtual("cor_navbar", corNavbar)) }}>
-              {bannerTopoUrl ? <img src={bannerTopoUrl} alt="" /> : null}
-              {uploading === "banner-topo" && <span className="ui-gira" aria-label="Enviando" />}
-            </span>
-            <span className="ap-item-tx"><b>Foto do topo</b><small>{bannerTopoUrl ? "1200 × 400" : "Sem foto, fica a cor"}</small></span>
-            {bannerTopoUrl && <BotaoIcone rotulo="Tirar a foto do topo" variante="limpo" tamanho="p" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>}
-            <Botao variante="secundario" tamanho="m" disabled={!!uploading} onClick={() => bannerTopoRef.current?.click()}>{bannerTopoUrl ? "Trocar" : "Pôr foto"}</Botao>
+      <div className="ap-par">
+      <section className="ap-card ap-sec-logo">
+        <Cabeca Ic={Storefront} titulo="Logo" apoio="No círculo do topo" />
+        {(logoUrl || fotoPerfil) ? (
+          <div className="ap-img ap-img--logo">
+            <span className="ap-logo-circ" style={{ borderColor: corAtual("cor_borda", corBorda) }}>{uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" /> : <img src={logoUrl || fotoPerfil} alt="Logo da loja" />}</span>
+            <div className="ap-img-acoes">
+              <button type="button" className="ap-chip" disabled={!!uploading} onClick={() => logoRef.current?.click()}><ArrowsClockwise size={16} weight="bold" />Trocar</button>
+            </div>
           </div>
-          <div className="ap-item">
-            <span className="ap-item-img ap-item-img--logo" style={{ borderColor: corAtual("cor_borda", corBorda) }}>
-              {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" /> : (logoUrl || fotoPerfil) ? <img src={logoUrl || fotoPerfil} alt="" /> : <b>{(nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
-            </span>
-            <span className="ap-item-tx"><b>Logo</b><small>No círculo do topo</small></span>
-            <Botao variante="secundario" tamanho="m" disabled={!!uploading} onClick={() => logoRef.current?.click()}>{logoUrl ? "Trocar" : "Enviar"}</Botao>
-          </div>
-        </div>
-        <div className="ap-ver"><Botao variante="secundario" tamanho="m" icone={<Eye size={18} weight="bold" />} onClick={() => setVerTopo(true)}>Ver como fica</Botao></div>
+        ) : (
+          <button type="button" className="ap-enviar ap-slot ap-slot--logo" onClick={() => !uploading && logoRef.current?.click()} disabled={!!uploading}>
+            {uploading === "logo" ? <span className="ui-gira" aria-label="Enviando" /> : <><Plus size={20} weight="bold" /><b>Adicionar logo</b><small>Quadrada</small></>}
+          </button>
+        )}
       </section>
+
+      <section className="ap-card ap-sec-topo">
+        <Cabeca Ic={ImageIcon} titulo="Foto do topo" apoio="Atrás do nome"
+          acao={<Botao variante="secundario" tamanho="p" icone={<Eye size={16} weight="bold" />} onClick={() => setVerTopo(true)}>Ver como fica</Botao>} />
+        {bannerTopoUrl ? (
+          <div className="ap-img ap-img--topo" style={{ "--ap-fundo": `url("${bannerTopoUrl}")` } as React.CSSProperties}>
+            <img src={bannerTopoUrl} alt="Foto do topo" />
+            {uploading === "banner-topo" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
+            <div className="ap-img-acoes">
+              <button type="button" className="ap-chip" disabled={!!uploading} onClick={() => bannerTopoRef.current?.click()}><ArrowsClockwise size={16} weight="bold" />Trocar</button>
+              <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>
+            </div>
+          </div>
+        ) : (
+          <button type="button" className="ap-enviar ap-slot ap-slot--topo" onClick={() => !uploading && bannerTopoRef.current?.click()} disabled={!!uploading}>
+            {uploading === "banner-topo" ? <span className="ui-gira" aria-label="Enviando" /> : <><Plus size={20} weight="bold" /><b>Adicionar foto do topo</b><small>Deitada, 1200 × 400 · sem foto, fica a cor da faixa</small></>}
+          </button>
+        )}
+      </section>
+      </div>
 
       {/* Banners de promoção */}
       <section className="ap-card ap-largo ap-sec-banners">
@@ -551,7 +564,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
             <Crown size={16} weight="fill" aria-hidden="true" />Desbloquear mais cores<span>PRO</span>
           </button>
         )}
-        <div className="ap-ver"><Botao variante="secundario" tamanho="m" icone={<Eye size={18} weight="bold" />} onClick={() => setVerTopo(true)}>Ver como fica</Botao></div>
       </section>
       </div>
 
