@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calculator, Camera, Check, DotsThreeVertical, Eye, Storefront, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Calculator, Camera, Check, Crown, DotsThreeVertical, Eye, Storefront, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { formatarNomeItem, parecefrase } from "@/lib/nomeItem";
@@ -9,6 +9,7 @@ import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
 import mascoteCoroa from "@/assets/mascote-coroa.webp";
+import { createPortal } from "react-dom";
 import { Botao, BotaoIA, BotaoIcone, Campo, MenuMais, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import { usePlano } from "@/hooks/usePlano";
 import { LIMITE_COMPLEMENTOS_GRATIS } from "@/lib/limitesPlano";
@@ -68,6 +69,12 @@ export default function Complementos() {
   const [subindoCapa, setSubindoCapa] = useState(false);
   const [busca, setBusca] = useState("");
   const [verExemplo, setVerExemplo] = useState(false); // (5.79) celular: o exemplo do cardápio abre no "Ver como fica"
+  useEffect(() => {
+    if (!verExemplo) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setVerExemplo(false); };
+    document.addEventListener("keydown", esc);
+    return () => document.removeEventListener("keydown", esc);
+  }, [verExemplo]);
   const [buscaProd, setBuscaProd] = useState("");
   const [aberta, setAberta] = useState(false);
   const [editando, setEditando] = useState<Complemento | null>(null);
@@ -83,7 +90,7 @@ export default function Complementos() {
   const [iaAviso, setIaAviso] = useState(""); // (30/10 · 5.41) limite da IA ou erro: aparece embaixo do botão, não no aviso do topo // (30/10 · 5.35) "Quis dizer: Topo de Bolo?"
   const nomeConferido = useRef("");
   // (27/10) plano grátis: até 3 complementos (decisão de 25/10)
-  const { isPro } = usePlano();
+  const { isPro, loading: carregandoPlano } = usePlano();
   const [limiteAberto, setLimiteAberto] = useState(false);
   const passouDoLimite = () => !isPro && items.length >= LIMITE_COMPLEMENTOS_GRATIS;
 
@@ -267,21 +274,8 @@ export default function Complementos() {
     />
   );
 
-  return (
-    <>
-      {cabecalho}
-      <div className="ct">
-        {loading ? (
-          <div className="ct-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
-        ) : erroCarga ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os complementos" texto={erroCarga}
-            acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
-        ) : produtos.length === 0 ? (
-          <TelaVazia caixa icone={<Package size={30} />} titulo="Cadastre um produto primeiro"
-            texto="O complemento aparece dentro dos produtos do cardápio. Cadastre pelo menos um produto antes."
-            acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/produtos")}>Cadastrar produto</Botao>} />
-        ) : items.length === 0 ? (
-          /* (24/10) tela vazia com o exemplo de como fica no cardápio do celular, ao lado (as sugestões "Comece por uma destas" saíram) */
+  // (31/10 · 5.80) tela de apresentação: vazia (criar o primeiro) ou, no plano grátis, o convite do PRO (complemento virou PRO)
+  const vazio = (pro: boolean) => (
           <section className="pz-vazio">
             {/* (31/10 · 5.79) celular: a arte no estilo do Orçamentos (mascote de coroa, frase à mão e ondas) em cima do texto */}
             <figure className="pz-vazio-arte" aria-hidden="true">
@@ -294,7 +288,7 @@ export default function Complementos() {
               <span className="pz-frase">Cada pedido<br />vale mais!</span>
             </figure>
             <div className="pz-vazio-tx">
-              <h2>Venda mais em cada pedido</h2>
+              {pro ? <h2>Complementos é um recurso do <em>PRO</em></h2> : <h2>Venda mais em cada pedido</h2>}
               <p>Topo de bolo, velas, papel de arroz e balões que o cliente escolhe na hora de pedir.</p>
               <ul className="pz-vazio-lista">
                 {([
@@ -306,12 +300,34 @@ export default function Complementos() {
                 ))}
               </ul>
               <div className="pz-vazio-bts">
-                <Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>
-                <Botao variante="secundario" className="pz-vazio-ver" icone={<Eye size={20} weight="bold" />} onClick={() => setVerExemplo(true)}>Ver como fica</Botao>
+                {pro
+                  ? <Botao className="pz-vazio-cta" icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
+                  : <Botao className="pz-vazio-cta" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>}
+                <Botao variante="secundario" className="pz-vazio-ver" icone={<Eye size={20} weight="bold" />} aria-label="Ver como fica" onClick={() => setVerExemplo(true)}>Ver</Botao>
               </div>
             </div>
             <ExemploCardapio />
           </section>
+  );
+
+  return (
+    <>
+      {cabecalho}
+      <div className="ct">
+        {loading ? (
+          <div className="ct-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
+        ) : !carregandoPlano && !isPro ? (
+          vazio(true)
+        ) : erroCarga ? (
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os complementos" texto={erroCarga}
+            acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
+        ) : produtos.length === 0 ? (
+          <TelaVazia caixa icone={<Package size={30} />} titulo="Cadastre um produto primeiro"
+            texto="O complemento aparece dentro dos produtos do cardápio. Cadastre pelo menos um produto antes."
+            acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/produtos")}>Cadastrar produto</Botao>} />
+        ) : items.length === 0 ? (
+          /* (24/10) tela vazia com o exemplo de como fica no cardápio do celular, ao lado (as sugestões "Comece por uma destas" saíram) */
+          vazio(false)
         ) : (
           /* (24/10) com complementos: a lista à esquerda e, ao lado, o celular com os complementos dela num produto de verdade */
           <div className="pz-cheio">
@@ -527,9 +543,11 @@ export default function Complementos() {
         )}
       </Janela>
       {recorteCapa.janela}
-      <Janela aberta={verExemplo} aoFechar={() => setVerExemplo(false)} tipo="conteudo" titulo="Assim o cliente vê">
-        <div className="pz-ver-ex"><ExemploCardapio /></div>
-      </Janela>
+      {verExemplo && createPortal(
+        <div className="pz-ver-veu" role="dialog" aria-modal="true" aria-label="Assim o cliente vê no cardápio" onClick={() => setVerExemplo(false)}>
+          <div className="pz-ver-ex"><ExemploCardapio /></div>
+          <span className="pz-ver-fechar">Toque fora para fechar</span>
+        </div>, document.body)}
     </>
   );
 }
