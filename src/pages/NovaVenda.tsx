@@ -15,7 +15,7 @@ import AppPageHeader from '@/components/AppPageHeader'
 import { COMO_NOVA_VENDA, TOUR_NOVA_VENDA } from "@/lib/comoTelas";
 import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
-import { Bank, CalendarBlank, CalendarDots, Check, Clock, Copy, CreditCard, Info, Lightning, MagnifyingGlass, Minus, Money, Package, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
+import { Bank, CalendarBlank, CalendarDots, Check, Clock, CreditCard, Info, Lightning, MagnifyingGlass, Minus, Money, Package, PencilSimple, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
 import { historicoAssentado } from '@/components/base/useSobreposicao'
 import { dataLonga, itemComQtd, nomeDeProduto, recebidoPedido, rs, saldoPedido, telefoneBonito } from '@/components/pedidos/pedidoTexto'
@@ -491,15 +491,9 @@ export default function NovaVenda() {
     setBuscaProduto('')
     setFiltroCategoria(null)
   }
-  const removerItem = (idx: number) => setItens(itens.filter((_, i) => i !== idx))
-  const duplicarItem = (idx: number) => {
-    const item = itens[idx]
-    if (!item) return
-    // Insere duplicado logo abaixo do original
-    const novoItens = [...itens]
-    novoItens.splice(idx + 1, 0, { ...item, observacoes: '' })
-    setItens(novoItens)
-  }
+  const removerItem = (idx: number) => { setItens(itens.filter((_, i) => i !== idx)); setRecadoAberto([]) }
+  // (5.64) recados abertos (o campo só aparece quando ela toca em "+ Recado")
+  const [recadoAberto, setRecadoAberto] = useState<number[]>([])
   // (28/10) produto por kg sem tamanho anda de meio em meio quilo (antes só ia de 1 em 1 kg)
   const passoDo = (it: { personalizacoes?: any; forma_venda?: string | null }) => pesoLivre(it) ? 0.5 : 1
   const atualizarQtd = (idx: number, qtd: number) => {
@@ -837,25 +831,29 @@ export default function NovaVenda() {
                   const nome = nomeDeProduto(it.nome_produto)
                   return (
                     <li key={idx}>
+                      {/* (30/10 · 5.64) uma linha por produto (jeito de marketplace): foto, nome e preço, e a quantidade na direita.
+                          Com 1, o "–" vira lixeira. O recado abre só quando precisa. O duplicar saiu */}
                       <div className="nv3-it">
                         <span className="nv3-ft" aria-hidden="true"><Package size={20} weight="bold" />{foto && <img src={foto} alt="" onError={e => { e.currentTarget.style.display = 'none' }} />}</span>
                         <div className="nv3-it-tx">
-                          {/* (24/10) nome em cima, cada escolha numa linha (igual à sacola do cliente) e o preço embaixo */}
                           <b>{nome}</b>
                           {linhasDoItem(it).map((l, k) => <small key={k}>{l}</small>)}
-                          <span>{rs(r2(it.valor_unitario * it.quantidade))}{pesoLivre(it) ? ` (${rs(it.valor_unitario)} o kg)` : it.quantidade > 1 ? ` (${rs(it.valor_unitario)} cada)` : ''}</span>
+                          <span>{rs(r2(it.valor_unitario * it.quantidade))}{pesoLivre(it) ? <em> · {rs(it.valor_unitario)} o kg</em> : it.quantidade > 1 ? <em> · {rs(it.valor_unitario)} cada</em> : null}</span>
                         </div>
-                      </div>
-                      <div className="nv3-it-ctl">
                         <div className="nv3-qtd">
-                          <BotaoIcone rotulo={`Diminuir ${nome}`} tamanho="p" disabled={it.quantidade <= passoDo(it)} onClick={() => atualizarQtd(idx, it.quantidade - passoDo(it))}><Minus size={20} weight="bold" /></BotaoIcone>
+                          {it.quantidade <= passoDo(it)
+                            ? <BotaoIcone rotulo={`Tirar ${nome}`} tamanho="p" className="nv3-lixo" onClick={() => removerItem(idx)}><Trash size={18} weight="bold" /></BotaoIcone>
+                            : <BotaoIcone rotulo={`Diminuir ${nome}`} tamanho="p" onClick={() => atualizarQtd(idx, it.quantidade - passoDo(it))}><Minus size={18} weight="bold" /></BotaoIcone>}
                           <b aria-live="polite" aria-label={`Quantidade: ${it.quantidade}`}>{pesoLivre(it) ? `${String(it.quantidade).replace('.', ',')} kg` : it.quantidade}</b>
-                          <BotaoIcone rotulo={`Aumentar ${nome}`} tamanho="p" onClick={() => atualizarQtd(idx, it.quantidade + passoDo(it))}><Plus size={20} weight="bold" /></BotaoIcone>
+                          <BotaoIcone rotulo={`Aumentar ${nome}`} tamanho="p" onClick={() => atualizarQtd(idx, it.quantidade + passoDo(it))}><Plus size={18} weight="bold" /></BotaoIcone>
                         </div>
-                        <BotaoIcone rotulo={`Duplicar ${nome}`} variante="limpo" tamanho="p" onClick={() => duplicarItem(idx)}><Copy size={20} weight="bold" /></BotaoIcone>
-                        <BotaoIcone rotulo={`Remover ${nome}`} variante="limpo" tamanho="p" className="nv3-lixo" onClick={() => removerItem(idx)}><Trash size={20} weight="bold" /></BotaoIcone>
                       </div>
-                      <Campo rotulo="Recado do item" opcional placeholder="Ex.: escrever Parabéns, Lia! em rosa" value={it.observacoes} onChange={e => atualizarObs(idx, e.target.value)} />
+                      {recadoAberto.includes(idx)
+                        ? <Campo rotulo="Recado do item" autoFocus placeholder="Ex.: Parabéns, Lia!" value={it.observacoes} onChange={e => atualizarObs(idx, e.target.value)}
+                            onBlur={() => setRecadoAberto(l => l.filter(i => i !== idx))} />
+                        : <button type="button" className={`nv3-recado${it.observacoes.trim() ? ' tem' : ''}`} onClick={() => setRecadoAberto(l => [...l, idx])}>
+                            {it.observacoes.trim() ? <><PencilSimple size={14} weight="bold" aria-hidden="true" /><span>{it.observacoes.trim()}</span></> : <><Plus size={14} weight="bold" aria-hidden="true" />Recado</>}
+                          </button>}
                     </li>
                   )
                 })}

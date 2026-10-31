@@ -349,7 +349,7 @@ export default function Layout() {
                     {/* (21/10) bolinha com os pedidos esperando aceite */}
                     {item.to === "/pedidos" && paraAceitar > 0 && <span className="bn-bolinha">{paraAceitar > 9 ? "9+" : paraAceitar}</span>}
                   </span>
-                  <span className="bn-label">{item.label}</span>
+                  {!item.mais && <span className="bn-label">{item.label}</span>}
                 </NavLink>
               );
             })}
