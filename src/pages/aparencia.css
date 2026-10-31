@@ -378,3 +378,25 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
   .ap--2col > .ap-par { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .ap--2col > .ap-par .ap-img, .ap--2col > .ap-par .ap-slot { height: 180px; }
 }
+
+/* (30/10 · 5.58) PC: tudo em duas metades iguais, na largura do banner.
+   Esquerda: banners de promoção (e o modelo). Direita: cores, link e a pré-visualização embaixo */
+@media (min-width: 1180px) {
+  .ap.ap--2col, .ap.ap--2col:has(.ap-prev) { max-width: 1520px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .ap-col-dir .ap-prev { display: flex; position: static; align-items: center; }
+  .ap-col-dir .ap-prev-t { align-self: flex-start; }
+  .ap-col-dir .ap-prev-cel { width: 100%; max-width: 300px; }
+}
+
+/* (30/10 · 5.58) PC: tudo em duas metades iguais, na largura do banner.
+   Esquerda: banners de promoção (e o modelo). Direita: cores, link e a pré-visualização embaixo */
+@media (min-width: 1180px) {
+  .ap.ap--2col, .ap.ap--2col:has(.ap-prev) { max-width: 1520px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .ap-col-dir .ap-prev { display: flex; position: static; align-items: center; }
+  .ap-col-dir .ap-prev-t { align-self: flex-start; }
+  .ap-col-dir .ap-prev-cel { width: 100%; max-width: 300px; }
+}
+@media (min-width: 1180px) {
+  .ap-col-esq .ap-sec-banners { order: 1; } .ap-col-esq .ap-sec-modelo { order: 2; } .ap-col-esq .ap-sec-link { order: 3; }
+  .ap-col-dir .ap-sec-cores { order: 1; } .ap-col-dir .ap-prev { order: 2; align-self: stretch; }
+}

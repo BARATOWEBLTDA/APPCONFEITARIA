@@ -506,6 +506,11 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
 
 
+      <section className="ap-card ap-largo ap-sec-link">
+        <Cabeca Ic={LinkSimple} titulo="Link do cardápio" apoio="O endereço da sua loja" />
+        <p className="ap-exp">É por esse link que a cliente abre o seu cardápio. Com o <b>nome da loja no fim</b>, ele fica mais fácil de lembrar e passa mais confiança no Instagram e no WhatsApp. Ao mudar, o link antigo continua funcionando.</p>
+        <NomeNoLink />
+      </section>
       </div>
       <div className="ap-col ap-col-dir">
       {/* Cores (18/10): só as três do topo da loja. Grátis: cores prontas; PRO: qualquer cor */}
@@ -572,15 +577,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       </section>
 
       {/* (27/10) nome da loja no link (PRO) · (30/10 · 5.53) embaixo das cores */}
-      <section className="ap-card ap-largo ap-sec-link">
-        <Cabeca Ic={LinkSimple} titulo="Link do cardápio" apoio="O endereço da sua loja" />
-        <p className="ap-exp">É por esse link que a cliente abre o seu cardápio. Com o <b>nome da loja no fim</b>, ele fica mais fácil de lembrar e passa mais confiança no Instagram e no WhatsApp. Ao mudar, o link antigo continua funcionando.</p>
-        <NomeNoLink />
-      </section>
-
-      </div>
-
-      {/* (30/10 · 5.54) Pré-visualização: o cardápio no celular, do lado (só no PC largo; nos outros, o "Ver como fica") */}
       <aside className="ap-prev" aria-label="Pré-visualização do cardápio">
         <b className="ap-prev-t">Pré-visualização</b>
         <div className="ap-prev-cel">
@@ -599,6 +595,10 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           <div className="ap-prev-nav"><span className="on"><House size={18} weight="fill" />Início</span><span><Receipt size={18} />Pedidos</span><span><WhatsappLogo size={18} />Contato</span></div>
         </div>
       </aside>
+
+      </div>
+
+      {/* (30/10 · 5.54) Pré-visualização: o cardápio no celular, do lado (só no PC largo; nos outros, o "Ver como fica") */}
 
       {/* (17/10) galeria de banners prontos */}
       <Janela aberta={galeria.aberta} aoFechar={() => setGaleria(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Banners prontos"
