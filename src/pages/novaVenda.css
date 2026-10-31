@@ -265,3 +265,17 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 /* (5.65) ao rolar até o "Adicionar novo produto", ele para acima do rodapé fixo (total + botões + barra de baixo) */
 .nv3-add { scroll-margin-bottom: 24px; }
 @media (max-width: 900px) { .nv3-add { scroll-margin-bottom: 184px; } }
+/* (31/10 · 5.85) pedido registrado: comprovante estreito no centro */
+.nv3-ok { max-width: 480px; margin: 0 auto; padding: 28px 20px 20px; }
+.nv3-ok-res { align-self: stretch; margin: 4px 0 18px; padding: 14px 16px; border-radius: var(--ui-raio); background: var(--ui-cinza); text-align: left; }
+.nv3-ok-res p { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0; padding: 5px 0; font-size: 14.5px; }
+.nv3-ok-res p > span { flex: none; color: var(--ui-texto-2); }
+.nv3-ok-res p > b { min-width: 0; font-weight: 500; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nv3-ok-res b.ok { color: var(--ui-verde); } .nv3-ok-res b.falta { color: #B45309; }
+.nv3-ok-its { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--ui-linha); }
+.nv3-ok-its p > span { flex: 1; min-width: 0; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nv3-ok-its p > b { flex: none; }
+.nv3-ok-res .nv3-ok-tot { margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--ui-linha); font-size: 16px; }
+.nv3-ok-res .nv3-ok-tot > span { color: var(--ui-texto); font-weight: 600; } .nv3-ok-res .nv3-ok-tot > b { font-weight: 600; }
+.nv3-ok-bts { display: flex; flex-direction: column; gap: 8px; align-self: stretch; }
+.nv3-ok-bts .ui-bt--link { align-self: center; margin-top: 2px; }

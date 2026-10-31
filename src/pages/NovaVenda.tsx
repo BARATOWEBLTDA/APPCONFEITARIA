@@ -9,7 +9,9 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { erroDeConexao, explicarErro } from '@/lib/erros'
 import { r2 } from '@/lib/moeda'
-import { digitosTelefone } from '@/lib/telefone'
+import { digitosTelefone, linkWhatsApp } from '@/lib/telefone'
+import { montarMensagem, dadosDoPedido } from '@/lib/mensagens'
+import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { voltarOuIr } from '@/lib/voltar'
 import AppPageHeader from '@/components/AppPageHeader'
 import { COMO_NOVA_VENDA, TOUR_NOVA_VENDA } from "@/lib/comoTelas";
@@ -596,6 +598,7 @@ export default function NovaVenda() {
         tipo,
         dataEntrega,
         horarioEntrega,
+        bruto: novoPedido, // (31/10 · 5.85) para o "Enviar no WhatsApp" montar a mensagem do pedido
       })
       setSucessoAberto(true)
       // os passos desta venda saem do histórico: o voltar não reabre uma venda já registrada.
@@ -709,23 +712,33 @@ export default function NovaVenda() {
       <>
         {cabecalho}
         <div className="nv3">
+          {/* (31/10 · 5.85) comprovante estreito no centro: os itens vendidos, os dados em linhas (nome à esquerda, valor à direita)
+              e menos botões (Abrir · WhatsApp · Nova venda; o PDF virou link) */}
           <section className="nv3-card nv3-ok" aria-live="polite">
-            <span className="nv3-ok-ic" aria-hidden="true"><Check size={32} weight="bold" /></span>
+            <span className="nv3-ok-ic" aria-hidden="true"><Check size={30} weight="bold" /></span>
             <h2>{pc.numero ? `Pedido #${pc.numero} registrado` : 'Pedido registrado'}</h2>
-            <p>{naAgenda ? 'Já está na sua lista de pedidos e na agenda.' : 'Já está na sua lista de pedidos.'}</p>
-            <div className="nv3-res">
-              <Linha rotulo="Cliente">{pc.clienteNome ? toTitleCase(pc.clienteNome) : 'Venda avulsa'}</Linha>
-              {(pc.tipo === 'encomenda' || buscaDepois) && pc.dataEntrega && <Linha rotulo={ehEntrega ? 'Entrega' : 'Retirada'}>{dataLonga(pc.dataEntrega, pc.horarioEntrega)}</Linha>}
-              <Linha rotulo="Total">{rs(pc.total)}</Linha>
-              <Linha rotulo="Pagamento" tom={pagoGravado ? 'verde' : 'laranja'}>{pagamentoGravado}</Linha>
-              {!pagoGravado && pc.falta > 0.009 && <Linha rotulo="Falta receber" tom="laranja">{rs(pc.falta)}</Linha>}
+            <p>{naAgenda ? 'Já está em Pedidos e na Agenda.' : 'Já está em Pedidos.'}</p>
+            <div className="nv3-ok-res">
+              <div className="nv3-ok-its">
+                {(pc.itens || []).map((it: any, idx: number) => (
+                  <p key={idx}><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${linhasDoItem(it)[0] ? ` · ${linhasDoItem(it)[0]}` : ''}`, it.quantidade, it.forma_venda === 'kg' && !pesoLivre(it, 'kg') ? null : it.forma_venda)}</span><b>{rs(r2(it.valor_unitario * it.quantidade))}</b></p>
+                ))}
+              </div>
+              <p><span>Cliente</span><b>{pc.clienteNome ? toTitleCase(pc.clienteNome) : 'Venda avulsa'}</b></p>
+              {(pc.tipo === 'encomenda' || buscaDepois) && pc.dataEntrega && <p><span>{ehEntrega ? 'Entrega' : 'Retirada'}</span><b>{dataLonga(pc.dataEntrega, pc.horarioEntrega)}</b></p>}
+              <p><span>Pagamento</span><b className={pagoGravado ? 'ok' : 'falta'}>{pagamentoGravado}</b></p>
+              {!pagoGravado && pc.falta > 0.009 && <p><span>Falta receber</span><b className="falta">{rs(pc.falta)}</b></p>}
+              <p className="nv3-ok-tot"><span>Total</span><b>{rs(pc.total)}</b></p>
             </div>
-            <Botao cheio onClick={() => navigate(`/pedidos/${pc.id}/editar`)}>Abrir o pedido</Botao>
-            <div className="nv3-2">
-              <Botao variante="secundario" icone={<Plus size={20} weight="bold" />} onClick={resetVenda}>Nova venda</Botao>
-              <Botao variante="secundario" onClick={exportarPdf}>Baixar PDF</Botao>
+            <div className="nv3-ok-bts">
+              <Botao cheio onClick={() => navigate(`/pedidos/${pc.id}/editar`)}>Abrir o pedido</Botao>
+              {digitosTelefone(pc.clienteTelefone || '').length >= 10 && (
+                <Botao cheio variante="secundario" icone={<IconeWhatsApp size={20} />}
+                  onClick={() => { const l = linkWhatsApp(pc.clienteTelefone, montarMensagem('sobre_pedido', dadosDoPedido(pc.bruto || {}, toTitleCase(pc.clienteNome || '').split(' ')[0]))); if (l) window.open(l, '_blank', 'noopener') }}>Enviar no WhatsApp</Botao>
+              )}
+              <Botao cheio variante="secundario" icone={<Plus size={20} weight="bold" />} onClick={resetVenda}>Nova venda</Botao>
+              <Botao variante="link" onClick={exportarPdf}>Baixar PDF</Botao>
             </div>
-            <Botao variante="link" onClick={() => navigate('/pedidos')}>Ver todos os pedidos</Botao>
           </section>
         </div>
       </>
