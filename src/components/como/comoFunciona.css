@@ -90,3 +90,16 @@ html.tour-rola body::after { content: ""; display: block; height: 260px; }
 .cf-tour:hover { background: #3A2A30; }
 .cf-tour:active { background: #120C0E; }
 .cf-artigo + .cf-tour { margin-top: 8px; }
+
+/* (31/10 · 5.77) o fluxo ("Ela pede → Você monta → …") passava da janela no celular e cortava o último passo:
+   agora os passos dividem a largura e cabem numa linha */
+.cf-fluxo { min-width: 0; }
+.cf-pass { flex: 1 1 auto; min-width: 0; }
+.cf-pass em { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 420px) {
+  /* sem as setinhas (a ordem já diz o caminho): os passos em colunas iguais, inteiros */
+  .cf-fluxo { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; }
+  .cf-pass svg { display: none; }
+  .cf-pass em { flex: 1; padding: 4px 1px; font-size: 11px; text-align: center; }
+  .cf-pass em.on { font-weight: 500; }
+}
