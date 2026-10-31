@@ -552,20 +552,39 @@ export default function Complementos() {
   );
 }
 
-/** (24/10) Exemplo, num celular, de como os complementos aparecem para o cliente no produto do cardápio */
+/** (24/10) Exemplo, num celular, de como os complementos aparecem para o cliente no produto do cardápio.
+ *  (31/10 · 5.81) Dá para tocar nas opções: marca, soma no total e o "Enviar foto de referência" só aparece no topo marcado */
+const OPS_EXEMPLO = [
+  { k: "velas", nome: "Velas decorativas", valor: 5 },
+  { k: "decor", nome: "Decoração simples", valor: 0 },
+  { k: "topo", nome: "Topo de bolo", sub: "Com o tema e o nome", valor: 15, foto: true },
+];
 function ExemploCardapio() {
+  const [marcadas, setMarcadas] = useState<string[]>(["topo"]);
+  const total = 120 + OPS_EXEMPLO.filter(o => marcadas.includes(o.k)).reduce((t, o) => t + o.valor, 0);
+  const rs = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
   return (
-    <figure className="pz-cel-wrap" aria-label="Exemplo de como o cliente vê os complementos no cardápio">
-      <div className="pz-cel" aria-hidden="true">
+    <figure className="pz-cel-wrap" aria-label="Exemplo de como o cliente vê os complementos no cardápio" onClick={e => e.stopPropagation()}>
+      <div className="pz-cel">
         <div className="pz-cel-tela">
           <img className="pz-cel-foto" src="/tutorial/complementos-bolo.webp" alt="" />
-          <div className="pz-cel-prod"><b>Bolo Floresta Negra</b><span>R$ 120,00</span></div>
-          <div className="pz-cel-cab"><b>Adicionais</b><small>Escolha quantos quiser</small></div>
-          <div className="pz-cel-op on"><span><b>Topo de bolo</b><small>Com o tema e o nome</small></span><em>+ R$ 15,00</em><i><Check size={11} weight="bold" /></i></div>
-          <div className="pz-cel-ref"><Camera size={13} weight="bold" />Enviar foto de referência</div>
-          <div className="pz-cel-op"><span><b>Velas decorativas</b></span><em>+ R$ 5,00</em><i /></div>
-          <div className="pz-cel-op"><span><b>Decoração simples</b></span><em className="g">Grátis</em><i /></div>
-          <div className="pz-cel-bt">Adicionar · R$ 135,00</div>
+          <div className="pz-cel-prod"><b>Bolo Floresta Negra · 2 kg</b><span>R$ 120,00</span></div>
+          <div className="pz-cel-cab"><b>Adicionais</b><small>Deixe a festa ainda mais especial</small></div>
+          {OPS_EXEMPLO.map(o => {
+            const on = marcadas.includes(o.k);
+            return (
+              <Fragment key={o.k}>
+                <div className={`pz-cel-op${on ? " on" : ""}`} role="checkbox" aria-checked={on} tabIndex={-1}
+                  onClick={() => setMarcadas(m => on ? m.filter(x => x !== o.k) : [...m, o.k])}>
+                  <span><b>{o.nome}</b>{o.sub && <small>{o.sub}</small>}</span>
+                  {o.valor ? <em>+ {rs(o.valor)}</em> : <em className="g">Grátis</em>}
+                  <i>{on && <Check size={11} weight="bold" />}</i>
+                </div>
+                {o.foto && on && <div className="pz-cel-ref"><Camera size={13} weight="bold" />Enviar foto de referência</div>}
+              </Fragment>
+            );
+          })}
+          <div className="pz-cel-bt">Adicionar · {rs(total)}</div>
         </div>
       </div>
       {/* (24/10) balão do diferencial: o cliente manda a foto da ideia (só no computador) */}
