@@ -127,7 +127,12 @@ export default function Orcamentos() {
           </div>
           <figure className="orc-pro-ex" aria-hidden="true">
             <span className="orc-pro-frase">Mais propostas,<br />mais vendas!</span>
-            <span className="orc-pro-chao" />
+            {/* (5.69) as ondas rosa do fundo, como na arte: uma mais forte atrás e a clara por cima, onde o mascote pisa */}
+            <svg className="orc-pro-onda" viewBox="0 0 600 260" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M0 70 C 140 10, 260 120, 400 70 S 560 20, 600 40 L600 260 L0 260 Z" fill="#F3A3C6" opacity=".55" />
+              <path d="M0 120 C 120 70, 240 150, 380 120 S 540 80, 600 100 L600 260 L0 260 Z" fill="#EF8FB9" opacity=".35" />
+              <path d="M0 175 C 90 140, 220 150, 330 190 S 520 250, 600 230 L600 260 L0 260 Z" fill="#FFF5F9" />
+            </svg>
             <img className="orc-pro-masc" src={mascoteCoroa} alt="" />
             <div className="orc-pro-cel">
               <div className="orc-pro-cab"><small>Orçamento nº 12</small><i>Pendente</i><b>Bolo da Ana · 5 anos</b><span>Entrega sábado, 8 de novembro</span></div>
