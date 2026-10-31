@@ -88,3 +88,5 @@
 /* (5.70) sem o X: o título no meio, igual ao topo das outras telas do celular */
 .mais-cab { justify-content: center; min-height: 56px; padding: 8px 16px; }
 .mais-cab .mais-ola-t { flex: none; text-align: center; }
+/* (31/10 · 5.72) Assinatura em destaque: a coroa dourada no fundo amarelinho (as outras seguem no rosa) */
+.mais-it--pro .mais-it-ic { background: #FFF3D1; color: #C98A00; }

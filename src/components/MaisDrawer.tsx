@@ -51,8 +51,9 @@ const GRUPOS: Grupo[] = [
       ...(INDICACAO_ATIVA ? [{ label: "Indicar amigo", desc: "Ganhe indicando", path: "/indicar", Icone: UserPlus }] : []),
       // (30/10 · 5.67) Novidades e Assinatura saíram do destaque do topo e entraram na lista, como as outras
       { label: "Novidades", desc: "O que mudou no app", path: "/noticias", Icone: Newspaper },
-      { label: "Assinatura", desc: "Seu plano", path: "/assinar", Icone: Crown },
       { label: "Configurações", desc: "Conta, loja e app", path: "/configuracoes", Icone: Gear },
+      // (31/10 · 5.72) por último e em destaque: a coroa dourada, igual à do PRO
+      { label: "Assinatura", desc: "Seu plano", path: "/assinar", Icone: Crown },
     ],
   },
 ];
@@ -102,11 +103,11 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
                   return (
                     <NavLink
                       key={item.path} to={destino} end
-                      className={({ isActive }) => `mais-it${isActive ? " mais-it--atual" : ""}`}
+                      className={({ isActive }) => `mais-it${isActive ? " mais-it--atual" : ""}${item.path === "/assinar" ? " mais-it--pro" : ""}`}
                       onClick={e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; e.preventDefault(); ir(destino); }}
                     >
                       {({ isActive }) => (<>
-                        <span className="mais-it-ic" aria-hidden="true"><item.Icone size={20} weight={isActive ? "fill" : "bold"} /></span>
+                        <span className="mais-it-ic" aria-hidden="true"><item.Icone size={20} weight={isActive || item.path === "/assinar" ? "fill" : "bold"} /></span>
                         <span className="mais-it-txt"><b>{item.label}</b><small>{item.desc}</small></span>
                         <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
                       </>)}
