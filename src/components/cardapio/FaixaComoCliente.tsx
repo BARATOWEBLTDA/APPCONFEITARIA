@@ -38,7 +38,7 @@ export default function FaixaComoCliente() {
       <style>{`
         .cp-cc { position: fixed; top: 0; left: 0; right: 0; z-index: 10050; display: flex; align-items: center; gap: 10px; height: calc(48px + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) 8px 0 14px; box-sizing: border-box; background: #2A1520; color: #fff; font-family: var(--font-base, system-ui); font-size: 13.5px; font-weight: 500; }
         .cp-cc span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cp-cc button { flex: none; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: #fff; color: #2A1520; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+        .cp-cc button { flex: none; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: #fff; color: #2A1520; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
         html.cp-como-cliente body { padding-top: calc(48px + env(safe-area-inset-top, 0px)); }
         html.cp-como-cliente .cp-topo, html.cp-como-cliente .ic-presa { top: calc(48px + env(safe-area-inset-top, 0px)); }
       `}</style>

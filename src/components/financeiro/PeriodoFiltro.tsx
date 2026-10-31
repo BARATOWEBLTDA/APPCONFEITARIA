@@ -77,6 +77,8 @@ export default function PeriodoFiltro({ valor, onChange }: { valor: Periodo; onC
         .pf { display: flex; flex-direction: column; gap: 8px; font-family: var(--font-base); }
         .pf-seg { display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(42,21,32,.06); }
         .pf-seg button { flex: 1; min-width: 0; min-height: 40px; padding: 0 6px; border: 0; border-radius: 9px; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; cursor: pointer; }
+        /* (31/10 · 5.84) os 5 períodos com a mesma largura e o "Escolher" inteiro no celular de 360 px */
+        @media (max-width: 400px) { .pf-seg button { flex: 1 1 0; padding: 0 2px; font-size: 12.5px; letter-spacing: -.1px; } }
         .pf-seg button.on { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: 0 1px 3px rgba(42,21,32,.10); }
         .pf-seg button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
         .pf-mes { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 46px; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 12px; padding: 3px; box-sizing: border-box; }

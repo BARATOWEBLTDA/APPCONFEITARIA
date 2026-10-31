@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowSquareOut, ChartBar, Package, Palette, SquaresFour, Stack, Storefront, Truck } from "@phosphor-icons/react";
+import { ArrowSquareOut, ChartBar, Package, Palette, SquaresFour, Stack, Storefront } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 
@@ -101,10 +101,10 @@ export default function CardapioSubnav() {
         .cdnav-i svg { flex: none; color: var(--ui-texto-2); }
         .cdnav-i:hover { background: #EFE9EC; }
         .cdnav-i:focus-visible, .cdnav-ver:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
-        .cdnav-i.on { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 700; box-shadow: var(--ui-sombra-cartao); }
+        .cdnav-i.on { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 600; box-shadow: var(--ui-sombra-cartao); }
         .cdnav-i.on svg { color: var(--ui-rosa-escuro); }
         .cdnav-ver { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; margin-top: 16px; border-radius: var(--ui-raio);
-          background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 15px; font-weight: 700; text-decoration: none; }
+          background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 15px; font-weight: 600; text-decoration: none; }
         .cdnav-ver:hover { filter: brightness(.97); }
       `}</style>
     </aside>

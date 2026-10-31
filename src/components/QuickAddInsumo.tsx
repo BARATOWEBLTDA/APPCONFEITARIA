@@ -406,7 +406,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const custo = valorNum > 0 && qtdNum > 0 ? custoNaReceita(valorNum / qtdNum, form.unidade, qtdNum) : null;
   const medidaTxt = form.unidade === "un" ? "un" : form.unidade;
   const emb = form.embalagem_tipo;
-  const rotuloQtd = emb === "Avulso" ? "Quanto vem" : `Quanto vem ${EMB_FEMININAS.includes(emb) ? "na" : "no"} ${emb.toLowerCase()}`;
+  const rotuloQtd = emb === "Avulso" ? "Quanto vem" : `Quanto vem ${EMB_FEMININAS.some(f => f.toLowerCase() === String(emb || "").toLowerCase()) ? "na" : "no"} ${String(emb || "").toLowerCase()}`;
   const mostraAlerta = alertaIncoerencia && alertaDispensado !== alertaIncoerencia;
   const sugerida = !unidadeTocadaManualmente && form.nome.trim().length >= 3;
 

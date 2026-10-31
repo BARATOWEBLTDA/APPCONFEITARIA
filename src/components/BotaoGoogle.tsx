@@ -111,7 +111,7 @@ export default function BotaoGoogle({ modo = "continue_with", textoReserva, dest
   return (
     <div style={{ position: "relative", minHeight: 44, display: "flex", justifyContent: "center" }} aria-disabled={desativado || undefined}>
       <div ref={caixa} style={{ width: "100%", display: "flex", justifyContent: "center", opacity: entrando || desativado ? 0.5 : 1, pointerEvents: desativado ? "none" : undefined }} />
-      {entrando && <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#6B5D64" }}>Entrando…</span>}
+      {entrando && <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, color: "#6B5D64" }}>Entrando…</span>}
     </div>
   );
 }

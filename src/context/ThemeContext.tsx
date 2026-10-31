@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("theme", "light");
   }, []);
 
-  const applyTheme = (t: Theme) => {
+  const applyTheme = (_t: Theme) => {
     // Força sempre light, ignora tentativa de dark
     setThemeState("light");
     document.documentElement.classList.remove("dark");

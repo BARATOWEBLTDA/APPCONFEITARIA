@@ -6,7 +6,7 @@ import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { ArrowCounterClockwise, ArrowsClockwise, CalendarBlank, Camera, Check, Eye, Info, Crown, Image as ImageIcon, Images, Layout, LinkSimple, Lock, MapPin, Palette, Plus, Sparkle, Storefront, UploadSimple, X } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ArrowsClockwise, Camera, Check, Eye, Info, Crown, Image as ImageIcon, Images, LinkSimple, Lock, MapPin, Palette, Plus, Sparkle, Storefront, X } from "@phosphor-icons/react";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -25,7 +25,20 @@ import "./aparencia.css";
  * num cinza calmo com "No PRO" (sem brilho piscando).
  */
 
-export default function CardapioDesign({ identityCard, avaliacoesCard }: { identityCard?: React.ReactNode; avaliacoesCard?: React.ReactNode } = {}) {
+// (31/10 · 5.84) fora do componente: criados dentro dele, eram refeitos a cada desenho da tela
+function Cabeca({ Ic, titulo, apoio, acao }: { Ic: typeof Palette; titulo: string; apoio?: React.ReactNode; acao?: React.ReactNode }) {
+  return <div className="ap-cab"><span className="ap-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio} acao={acao}>{titulo}</Titulo></div>;
+}
+function ProSlot({ n }: { n: number }) {
+  const navigate = useNavigate();
+  return (
+    <button type="button" className="ap-slot ap-slot--pro" onClick={() => avisar("Os banners 2 a 4 são do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })} aria-label={`Banners ${n} a 4, no plano PRO`}>
+      <Lock size={20} weight="bold" aria-hidden="true" /><b>No PRO</b>
+    </button>
+  );
+}
+
+export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliacoesCard }: { identityCard?: React.ReactNode; avaliacoesCard?: React.ReactNode } = {}) {
   const navigate = useNavigate();
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
   const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
@@ -42,7 +55,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   // modelo padrão e não mexeu em nada também conclui o passo.
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => { if (user) marcarDesignEscolhido(user.id); });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [fotoPerfil, setFotoPerfil] = useState(""); // sem logo, o cardápio usa a foto de perfil
@@ -52,8 +64,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const [usandoGaleria, setUsandoGaleria] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState("");
   // Avaliação (veio de Dados da loja em 29/09)
-  const [hideStars, setHideStars] = useState(false);
-  const [avaliacaoMedia, setAvaliacaoMedia] = useState(5.0);
+  const [, setHideStars] = useState(false);
+  const [, setAvaliacaoMedia] = useState(5.0);
   // (11/10) Grava no perfil conferindo o erro. Devolve true se gravou; se falhar, avisa e quem chamou desfaz a mudança da tela.
   const gravar = async (campos: Record<string, unknown>): Promise<boolean> => {
     if (!userId) return false;
@@ -68,13 +80,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   };
   // (11/10) trava contra toque duplo: enquanto uma gravação está indo, o mesmo botão não dispara outra
   const travas = useRef(new Set<string>());
-  const salvarAvaliacao = async (campos: { hide_stars?: boolean; avaliacao_media?: number }) => {
-    if (!userId || travas.current.has("avaliacao")) return;
-    travas.current.add("avaliacao");
-    const ok = await gravar(campos);
-    travas.current.delete("avaliacao");
-    if (ok) showSuccess();
-  };
   const [nomeLoja, setNomeLoja] = useState("");
   // (18/10) prévia do topo: cidade da loja (sem endereço, uma capital de exemplo) e o aberto/fechado
   const [cidade, setCidade] = useState("");
@@ -90,18 +95,15 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const { isPro } = usePlano();
   // (18/10) Por enquanto só existe o Clássico (logo no canto direito). Novos modelos vêm depois.
-  const modeloAtivoCalc = (_m: string) => "modelo1" as "modelo1" | "padrao";
-  const [cardapioModelo, setCardapioModelo] = useState("modelo1");
-  // "Padrão" é exclusivo PRO: quem não é PRO usa o Modelo 1 (inclusive contas antigas que estavam no "Padrão")
-  const [salvandoModelo, setSalvandoModelo] = useState(false);
+  const [, setCardapioModelo] = useState("modelo1");
 
   const [corBorda, setCorBorda] = useState("#FF6FA9");
-  const [corBackground, setCorBackground] = useState("#FFF1F7");
+  const [, setCorBackground] = useState("#FFF1F7");
   const [corNome, setCorNome] = useState("#1f2937");
-  const [corBotao, setCorBotao] = useState("#FF6FA9");
+  const [, setCorBotao] = useState("#FF6FA9");
   const [corNavbar, setCorNavbar] = useState("#FF6FA9");
-  const [corSacola, setCorSacola] = useState("#FF6FA9");
-  const [corRodape, setCorRodape] = useState("#FF6FA9");
+  const [, setCorSacola] = useState("#FF6FA9");
+  const [, setCorRodape] = useState("#FF6FA9");
   const [activePicker, setActivePicker] = useState<string | null>(null);
 
   const logoRef = useRef<HTMLInputElement>(null);
@@ -327,25 +329,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     { campo: "cor_nome", n: 3, rotulo: "Nome da loja", apoio: "A cor do nome embaixo do topo", valor: corNome, set: setCorNome },
   ];
   const corAtual = (campo: CampoCor, valor: string) => corDoItem(campo, valor, isPro);
-  const iniciais = (nomeLoja || "ML").trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase() || "ML";
-
-  const Cabeca = ({ Ic, titulo, apoio, acao }: { Ic: typeof Palette; titulo: string; apoio?: React.ReactNode; acao?: React.ReactNode }) => (
-    <div className="ap-cab"><span className="ap-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio} acao={acao}>{titulo}</Titulo></div>
-  );
-
-  const escolherModelo = async (m: "modelo1" | "padrao") => {
-    if (m === "padrao" && !isPro) { avisar("O modelo Premium é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
-    if (!userId || salvandoModelo) return;
-    setSalvandoModelo(true);
-    const anterior = cardapioModelo;
-    setCardapioModelo(m);
-    const ok = await gravar({ cardapio_modelo: m });
-    setSalvandoModelo(false);
-    // (11/10) não gravou: volta pro modelo que estava
-    if (!ok) { setCardapioModelo(anterior); return; }
-    marcarDesignEscolhido(userId);
-    showSuccess();
-  };
 
   if (erroCarga) return (
     <>
@@ -360,13 +343,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       {!identityCard && <AppPageHeader title="Aparência" subtitle="Logo, banners e cores" onBack={() => navigate(voltarPara)} />}
       <div className="ap-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
     </>
-  );
-
-  const modeloAtivo = modeloAtivoCalc(cardapioModelo);
-  const ProSlot = ({ n }: { n: number }) => (
-    <button type="button" className="ap-slot ap-slot--pro" onClick={() => avisar("Os banners 2 a 4 são do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })} aria-label={`Banners ${n} a 4, no plano PRO`}>
-      <Lock size={20} weight="bold" aria-hidden="true" /><b>No PRO</b>
-    </button>
   );
 
   return (
@@ -413,7 +389,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       <section className="ap-card ap-sec-topo">
         <Cabeca Ic={ImageIcon} titulo="Foto do topo" apoio="Atrás do nome"
-          acao={<Botao variante="secundario" tamanho="p" icone={<Eye size={16} weight="bold" />} onClick={() => setVerTopo(true)}>Ver como fica</Botao>} />
+          acao={<Botao variante="secundario" tamanho="p" className="ap-vcf" icone={<Eye size={16} weight="bold" />} aria-label="Ver como fica" onClick={() => setVerTopo(true)}><span className="ap-vcf-t">Ver como fica</span></Botao>} />
         {bannerTopoUrl ? (
           <div className="ap-img ap-img--topo" style={{ "--ap-fundo": `url("${bannerTopoUrl}")` } as React.CSSProperties}>
             <img src={bannerTopoUrl} alt="Foto do topo" />
@@ -465,41 +441,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       {identityCard && <div className="ap-ident">{identityCard}</div>}
 
-      {/* (18/10) Modelo do cardápio oculto: só o Clássico por enquanto */}
-      {false && (
-      <section className="ap-card ap-largo ap-sec-modelo">
-        <Cabeca Ic={Layout} titulo="Modelo do cardápio" apoio="Como o cliente vê a sua loja" />
-        <div className="ap-modelos" role="radiogroup" aria-label="Modelo do cardápio">
-          <button type="button" role="radio" aria-checked={modeloAtivo === "modelo1"} className="ap-modelo" onClick={() => escolherModelo("modelo1")} disabled={salvandoModelo}>
-            <div className="cd-layout-preview cd-layout-preview-modelo1" aria-hidden="true">
-              <div className="cd-lp-hero"><div className="cd-lp-hero-overlay" /></div>
-              <div className="cd-lp-m1-logo" />
-              <div className="cd-lp-m1-badge" />
-              <div className="cd-lp-lines" style={{ marginTop: 18 }}><i style={{ width: "55%" }} /><i style={{ width: "80%" }} /></div>
-              <div className="cd-lp-products"><div className="cd-lp-product" /><div className="cd-lp-product" /><div className="cd-lp-product" /></div>
-            </div>
-            <span className="ap-modelo-pe"><b>Clássico</b><small>Grátis</small></span>
-            {modeloAtivo === "modelo1" && <span className="ap-modelo-ok" aria-hidden="true"><Check size={14} weight="bold" /></span>}
-          </button>
-          <button type="button" role="radio" aria-checked={modeloAtivo === "padrao"} className="ap-modelo" onClick={() => escolherModelo("padrao")} disabled={salvandoModelo}>
-            <div className="cd-layout-preview cd-layout-preview-padrao" aria-hidden="true">
-              <div className="cd-lp-header" />
-              <div className="cd-lp-logo-circle" />
-              <div className="cd-lp-lines"><i style={{ width: "60%" }} /><i style={{ width: "40%" }} /></div>
-              <div className="cd-lp-products"><div className="cd-lp-product" /><div className="cd-lp-product" /><div className="cd-lp-product" /></div>
-            </div>
-            <span className="ap-modelo-pe"><b>Premium</b>{isPro ? <small>PRO</small> : <small className="pro"><Crown size={14} weight="fill" />No PRO</small>}</span>
-            {modeloAtivo === "padrao" && <span className="ap-modelo-ok" aria-hidden="true"><Check size={14} weight="bold" /></span>}
-          </button>
-        </div>
-      </section>
-      )}
 
 
 
       <section className="ap-card ap-largo ap-sec-link">
         <Cabeca Ic={LinkSimple} titulo="Link do cardápio" apoio="O endereço da sua loja" />
-        <p className="ap-exp">É por esse link que a cliente abre o seu cardápio. Com o <b>nome da loja no fim</b>, ele fica mais fácil de lembrar e passa mais confiança no Instagram e no WhatsApp. Ao mudar, o link antigo continua funcionando.</p>
+        <p className="ap-exp">É por esse link que o cliente abre o seu cardápio. Com o <b>nome da loja no fim</b>, ele fica mais fácil de lembrar e passa mais confiança no Instagram e no WhatsApp. Ao mudar, o link antigo continua funcionando.</p>
         <NomeNoLink />
       </section>
       </div>

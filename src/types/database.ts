@@ -43,12 +43,6 @@ export interface DesignSettings {
   texto_rodape?: string
   hide_stars?: boolean
   category_icons?: { [key: string]: string }
-  /** (18/10) tema que vale hoje e o aviso de temporada */
-  tema?: 'normal' | 'natal'
-  tema_aviso?: string
-  tema_capa_url?: string
-  tema_laco?: boolean
-  tema_destaque?: string
   facebook_pixel_id?: string
 }
 

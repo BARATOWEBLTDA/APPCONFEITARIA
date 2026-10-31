@@ -94,7 +94,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
     try {
       const reg = await navigator.serviceWorker?.ready
       await reg?.showNotification('Pronto! É assim que um pedido novo vai chegar', {
-        body: 'Quando uma cliente pedir pelo cardápio, o aviso aparece aqui, mesmo com o app fechado.',
+        body: 'Quando um cliente pedir pelo cardápio, o aviso aparece aqui, mesmo com o app fechado.',
         icon: '/Sistema/icon-192.png', badge: '/Sistema/badge.png', tag: 'doonly-teste', data: { url: '/inicio' },
       })
     } catch { /* sem o aviso de teste: os avisos continuam ativados */ }
@@ -229,7 +229,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
               <p className="bv-sobre">Seus produtos em destaque</p>
               <h1 className="bv-h">Um cardápio lindo que <em>já vende sozinho</em></h1>
               {/* (29/10 · 4.83) só aparece no computador (no celular fica só o título) */}
-              <p className="bv-p bv-p--card">Seus bolos, doces e salgados com foto e preço. <span>A cliente escolhe, paga no Pix e o pedido chega no app.</span></p>
+              <p className="bv-p bv-p--card">Seus bolos, doces e salgados com foto e preço. <span>O cliente escolhe, paga no Pix e o pedido chega no app.</span></p>
             </>)}
             {tela === 2 && (<>
               <p className="bv-sobre">Chega de informação espalhada</p>

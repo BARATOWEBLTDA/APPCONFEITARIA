@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cake, CaretRight } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { registrarEtapa } from "@/lib/historicoPedido";
@@ -107,9 +106,9 @@ const CSS = `
   .pnt-dot--atr { background: var(--ui-vermelho); }
   .pnt-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .pnt-abre { margin: 0; padding: 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
-  .pnt-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pnt-tx b { font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pnt-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pnt-bt, .pnt-bt2 { flex: none; min-height: 40px; padding: 0 16px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  .pnt-bt, .pnt-bt2 { flex: none; min-height: 40px; padding: 0 16px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   .pnt-bt { border: 0; background: var(--ui-rosa); color: var(--ui-branco); }
   .pnt-bt:disabled { opacity: .7; }
   .pnt-bt2 { border: 1px solid var(--ui-borda); background: var(--ui-branco); color: var(--ui-texto); }

@@ -1,7 +1,7 @@
 /* (15/10) Peças de formulário da loja usadas nos Primeiros passos e em Dados da loja / Entrega e pagamento:
    lista de opções (ppf-mos), caixinha de dica (ppf-d-dica) e o editor de horário (ppf-h-*). */
 .ppf-d-dica { margin-top: 20px; padding: 16px 16px 14px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); }
-.ppf-d-dica p { margin: 0 0 10px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+.ppf-d-dica p { margin: 0 0 10px; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
 .ppf-d-dica ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
 .ppf-d-dica li { position: relative; padding-left: 14px; font-size: 14px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ppf-d-dica li::before { content: ""; position: absolute; left: 0; top: .5em; width: 6px; height: 6px; border-radius: 2px; background: var(--ui-rosa); }
@@ -14,7 +14,7 @@
 .ppf-mos button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); }
 .ppf-mos button.on i { border: 6px solid var(--ui-escolha); }
 .ppf-mos span { flex: 1; min-width: 0; }
-.ppf-mos b { display: block; font-size: 15px; font-weight: 700; }
+.ppf-mos b { display: block; font-size: 15px; font-weight: 600; }
 .ppf-mos small { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ppf-mos small svg { flex: none; color: var(--ui-rosa); }
 .ppf-mos--chk button i { display: flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--ui-branco); }

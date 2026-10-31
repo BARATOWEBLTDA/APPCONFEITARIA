@@ -2,19 +2,19 @@
 .acp { margin-bottom: 12px; border-radius: var(--ui-raio-cartao); background: #F7F4F5; overflow: hidden; }
 .acp-topo { padding: 16px 16px 18px; color: var(--ui-branco); }
 .acp-topo small { display: block; font-size: 13px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.acp-topo h3 { margin: 4px 0 2px; font-size: 19px; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acp-topo h3 { margin: 4px 0 2px; font-size: 19px; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .acp-topo span { display: block; font-size: 14px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .acp-linha { position: relative; display: flex; flex-direction: column; gap: 14px; margin: 12px 12px 0; padding: 16px; list-style: none; border: 1px solid #EFE6EA; border-radius: 14px; background: var(--ui-branco); }
 .acp-et { position: relative; display: flex; align-items: flex-start; gap: 12px; }
 .acp-et:not(:last-child)::after { content: ""; position: absolute; left: 13px; top: 28px; bottom: -14px; width: 2px; background: #EFE6EA; }
 .acp-et--feito:not(:last-child)::after { background: #A7D8B8; }
-.acp-et i { position: relative; z-index: 1; flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #F1ECEE; color: #B8A9AE; font-style: normal; font-size: 13px; font-weight: 800; }
+.acp-et i { position: relative; z-index: 1; flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #F1ECEE; color: #B8A9AE; font-style: normal; font-size: 13px; font-weight: 600; }
 .acp-et--feito i { background: #16a34a; color: var(--ui-branco); }
 .acp-et--agora i { background: var(--acp-cor); color: var(--ui-branco); box-shadow: 0 0 0 4px color-mix(in srgb, var(--acp-cor) 18%, transparent); }
 .acp-et--atencao i { background: #F59E0B; color: var(--ui-branco); box-shadow: 0 0 0 4px #FDECC8; }
 .acp-et span { min-width: 0; display: flex; flex-direction: column; gap: 1px; padding-top: 3px; }
-.acp-et b { font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acp-et b { font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .acp-et small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .acp-et--depois b { color: #A8999E; }
 .acp-et--depois small { color: #B8A9AE; }
@@ -25,28 +25,28 @@
 .acp-foto { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 10px; background: #F1ECEE; color: #B8A9AE; overflow: hidden; }
 .acp-foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .acp-it-nome { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.acp-it-nome b { font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acp-it-nome b { font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .acp-it-nome small { font-size: 13px; color: var(--ui-texto-2); }
-.acp-itens .acp-total b { flex: 1; font-weight: 700; }
-.acp-itens li em { flex: none; font-style: normal; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+.acp-itens .acp-total b { flex: 1; font-weight: 600; }
+.acp-itens li em { flex: none; font-style: normal; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
 .acp-itens .acp-total { padding-top: 10px; border-top: 1px solid #F3EEF0; }
 .acp-itens .acp-total b, .acp-itens .acp-total em { font-size: 16px; }
 
-.acp-zap { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; margin: 12px; border-radius: var(--ui-raio); background: #16a34a; color: var(--ui-branco); font-size: 16px; font-weight: 700; text-decoration: none; }
+.acp-zap { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; margin: 12px; border-radius: var(--ui-raio); background: #16a34a; color: var(--ui-branco); font-size: 16px; font-weight: 600; text-decoration: none; }
 
 .acp-it-l1 { display: flex; align-items: baseline; gap: 8px; }
 .acp-it-l1 b { flex: 1; }
-.acp-it-l1 em { flex: none; font-style: normal; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+.acp-it-l1 em { flex: none; font-style: normal; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
 .acp-it-nome small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .acp-extra { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--ui-texto); }
 .acp-extra > span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .acp-itens .acp-extra em { flex: none; font-size: 13px; font-weight: 400; font-style: normal; color: var(--ui-texto-2); }
-.acp-it-nome .acp-ref { display: flex; align-items: center; gap: 4px; color: var(--acp-cor); font-weight: 700; }
+.acp-it-nome .acp-ref { display: flex; align-items: center; gap: 4px; color: var(--acp-cor); font-weight: 600; }
 .acp-it-nome .acp-obs { font-style: italic; }
 .acp-itens .acp-total { align-items: center; }
 
 /* (27/10) Pix ainda não pago: abre o código de novo */
-.acp-pix { display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 24px); min-height: 52px; margin: 0 12px 12px; border: 0; border-radius: var(--ui-raio); color: var(--ui-branco); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+.acp-pix { display: flex; align-items: center; justify-content: center; gap: 8px; width: calc(100% - 24px); min-height: 52px; margin: 0 12px 12px; border: 0; border-radius: var(--ui-raio); color: var(--ui-branco); font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
 /* (28/10) linhas de entrega, acréscimo e cupom antes do total */
 .acp-itens .acp-sub { display: flex; align-items: center; gap: 8px; padding-top: 8px; border-top: 0; font-size: 14px; color: var(--ui-texto-2); }
 .acp-itens .acp-sub span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

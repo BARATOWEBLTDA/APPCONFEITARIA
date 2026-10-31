@@ -386,7 +386,8 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   const cidadeUf = [end.cidade.trim(), end.estado.trim()].filter(Boolean).join(", ");
 
   // (17/10) resumido: sem o texto de apoio e com "Editar" ao lado do título (o botão nunca fica por cima de nada)
-  const Cabeca = ({ Ic, titulo, apoio, bloco }: { Ic: typeof Storefront; titulo: string; apoio: string; bloco?: Bloco }) => {
+  // (31/10 · 5.84) função que desenha (não componente): criado aqui dentro, era refeito a cada desenho
+  const cabeca = ({ Ic, titulo, apoio, bloco }: { Ic: typeof Storefront; titulo: string; apoio: string; bloco?: Bloco }) => {
     const resumido = !!bloco && !estaAberto(bloco);
     return (
       <div className="dl-cab"><span className="dl-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
@@ -411,6 +412,20 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     return linhas;
   };
 
+  // (31/10 · 5.84) a linha da lista numa linha só no celular (antes "Seg a Sex · 8h às 18h · Sáb · …")
+  const resumoHorarioCurto = (): string => {
+    const linhas = resumoHorario();
+    if (!linhas.length) return "";
+    const curta = (l: string) => l.replace(" · ", " ").replace(" às ", "–");
+    if (linhas.length === 1) return curta(linhas[0]);
+    // com fim de semana, só os dias (cada dia tem o seu horário dentro da parte): cabe numa linha no celular
+    const uteis = DIAS_UTEIS.filter((d) => horario.dias.includes(d.nome)).length;
+    const sab = !!horario.abre_sabado, dom = !!horario.abre_domingo;
+    if (uteis === 5 && sab && dom) return "Todos os dias";
+    if (uteis === 5 && sab) return "Seg a Sáb";
+    if (uteis === 5 && dom) return "Seg a Sex e Dom";
+    return `${curta(linhas[0])} + ${[sab ? "Sáb" : "", dom ? "Dom" : ""].filter(Boolean).join(" e ")}`;
+  };
   if (embutido && (loading || erroCarga)) {
     return loading ? <div className="dl-emb-carregando"><span className="ui-gira" aria-label="Carregando" /></div>
       : <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar os dados da loja" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</Botao>} />;
@@ -437,7 +452,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   // (22/10) as 4 partes viram constantes: no computador ficam na página; no celular cada uma abre numa gaveta
   const secLoja = (
     <section className="dl-card dl-loja">
-          <Cabeca Ic={Storefront} titulo="Sua loja" apoio="Nome, WhatsApp e descrição" bloco="loja" />
+          {cabeca({ Ic: Storefront, titulo: "Sua loja", apoio: "Nome, WhatsApp e descrição", bloco: "loja" })}
           {!estaAberto("loja") ? (
             <div className="dl-res">
               <b className="dl-res-t">{nome}</b>
@@ -473,7 +488,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   );
   const secRedes = (
     <section className="dl-card" id="dl-redes">
-          <Cabeca Ic={ShareNetwork} titulo="Redes sociais" apoio="Aparecem em Sobre a loja, no cardápio" bloco="redes" />
+          {cabeca({ Ic: ShareNetwork, titulo: "Redes sociais", apoio: "Aparecem em Sobre a loja, no cardápio", bloco: "redes" })}
           {redesNoBanco && !estaAberto("redes") ? (
             <div className="dl-res">
               {instaOn && instagram.trim() && <span className="dl-res-li"><LogoInstagram tamanho={20} />{instagram.trim()}</span>}
@@ -527,7 +542,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   </>);
   const secEndereco = (
     <section className="dl-card" id="dl-endereco">
-          <Cabeca Ic={MapPin} titulo="Endereço" apoio="Para calcular a entrega e mostrar no mapa" bloco="endereco" />
+          {cabeca({ Ic: MapPin, titulo: "Endereço", apoio: "Para calcular a entrega e mostrar no mapa", bloco: "endereco" })}
           {!estaAberto("endereco") && <MapaEndereco busca={busca} soCidade={mostrarLocal !== "completo"} selo="" />}
           {!estaAberto("endereco") ? (
             <div className="dl-res">
@@ -551,7 +566,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   );
   const secHorario = (
     <section className="dl-card" id="dl-horario">
-          <Cabeca Ic={Clock} titulo="Horário" apoio="Aparece como “Aberto agora” no cardápio" bloco="horario" />
+          {cabeca({ Ic: Clock, titulo: "Horário", apoio: "Aparece como “Aberto agora” no cardápio", bloco: "horario" })}
           {!estaAberto("horario") ? (
             <div className="dl-res">
               {resumoHorario().map((l) => <span key={l} className="dl-res-li">{l}</span>)}
@@ -573,12 +588,12 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   const redesTxt = [instaOn && instagram.trim() ? "Instagram" : "", faceOn && facebook.trim() ? "Facebook" : ""].filter(Boolean);
   type Linha = { k: Parte; Ic: typeof Storefront; t: string; sub: string; st: "ok" | "falta" | "op" };
   const linhas: Linha[] = [
-    { k: "loja", Ic: Storefront, t: "Sua loja", sub: okDe("loja") ? [nome.trim(), telefone].filter(Boolean).join(" · ") : `Falta ${listaBR(itens.slice(0, 3).filter(i => !i.ok).map(i => i.nome === "WhatsApp" ? "o WhatsApp" : i.nome === "Nome" ? "o nome" : "a descrição"))}`, st: okDe("loja") ? "ok" : "falta" },
-    { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? `${listaBR(redesTxt)} · em Sobre a loja` : "Nenhuma ainda", st: redesTxt.length ? "ok" : "op" },
-    { k: "endereco", Ic: MapPin, t: "Endereço", sub: itens[3].ok ? [[end.rua.trim(), end.numero.trim()].filter(Boolean).join(", "), end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf : "Falta o endereço da loja", st: itens[3].ok ? "ok" : "falta" },
-    { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorario().join(" · ") : "Falta o horário de funcionamento", st: itens[4].ok ? "ok" : "falta" },
+    { k: "loja", Ic: Storefront, t: "Sua loja", sub: okDe("loja") ? (nome.trim() || telefone) : `Falta ${listaBR(itens.slice(0, 3).filter(i => !i.ok).map(i => i.nome === "WhatsApp" ? "o WhatsApp" : i.nome === "Nome" ? "o nome" : "a descrição"))}`, st: okDe("loja") ? "ok" : "falta" },
+    { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? listaBR(redesTxt) : "Nenhuma ainda", st: redesTxt.length ? "ok" : "op" },
+    { k: "endereco", Ic: MapPin, t: "Endereço", sub: itens[3].ok ? [end.rua.trim(), end.numero.trim()].filter(Boolean).join(", ") || cidadeUf : "Falta o endereço da loja", st: itens[3].ok ? "ok" : "falta" },
+    { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorarioCurto() : "Falta o horário de funcionamento", st: itens[4].ok ? "ok" : "falta" },
     { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : pagTxt ? pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1) : "Falta escolher como o cliente paga", st: !ep || pagTxt ? "ok" : "falta" },
-    ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · cliente paga o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : `Ligado · sinal de ${ep!.pixPct}% ou o total`) : "Desligado · paga pelo WhatsApp", st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
+    ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : "Ligado · sinal ou total") : "Desligado · paga pelo WhatsApp", st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
     { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta a taxa de entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.porBairro ? "entrega por bairro" : `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa ? "falta" : "ok" },
   ];
   const TITULO: Record<Parte, string> = { loja: embutido ? "Sobre a loja" : "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };

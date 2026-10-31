@@ -11,7 +11,7 @@ import { BannerAd } from '@/components/cardapio/BannerAd'
 import { Logo } from '@/components/cardapio/Logo'
 import { ProductList } from '@/components/cardapio/ProductList'
 import { montarSecoes, SecaoCardapio, LinhaProduto } from '@/components/cardapio/ItensCardapio'
-import { contarItens, qtdItem, valorLinha, detalhesItem, kgLivre } from '@/lib/itemSacola'
+import { contarItens, valorLinha, detalhesItem, kgLivre } from '@/lib/itemSacola'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
 import { definirLojaAtual, definirProdutosDaLoja } from '@/components/cardapio/lojaAtual'
 import { EmptyState } from '@/components/cardapio/EmptyState'
@@ -30,8 +30,6 @@ import { SobreLoja } from '@/components/cardapio/SobreLoja'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
 import { corClara, nomeSobreTopo, topoEscurecido } from '@/lib/coresCardapio'
-import { LacoNatal, useClasseTema } from '@/components/tema/Natal'
-import CatalogoNatal from '@/components/tema/CatalogoNatal'
 import './cardapioPublico.css'
 
 /* ══════════════════════════════════════════════ */
@@ -62,10 +60,9 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
   const [contaAba, setContaAba] = useState<'pedidos' | 'perfil'>('pedidos')
   // 10/10: a loja desta página (antes vinha do localStorage, que é do navegador inteiro)
   const confeteiraUserId = design.user_id || ''
-  const accent = design.cor_botao || design.cor_borda || '#E85A8C'
   const status = (config as any)?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja((config as any)?.horario || null)
   let cidade = ''
-  try { const e = config?.endereco ? (typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco) : null; if (e?.cidade && ((config as any)?.mostrar_localizacao || (config as any)?.mostrar_apenas_cidade)) cidade = [e.cidade, e.estado].filter(Boolean).join(' - ') } catch {}
+  try { const e = config?.endereco ? (typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco) : null; if (e?.cidade && ((config as any)?.mostrar_localizacao || (config as any)?.mostrar_apenas_cidade)) cidade = [e.cidade, e.estado].filter(Boolean).join(' - ') } catch { /* endereço inválido: sai sem a cidade */ }
   const sub = status?.msg || '' // (14/10) a cidade vai numa linha só dela
   // (20/10) com a cliente conectada, o topo mostra o nome dela; sem conta, continua "Minha conta"
   const [nomeCliente, setNomeCliente] = useState(() => (lerCliente(confeteiraUserId)?.nome || '').trim().split(/\s+/)[0] || '')
@@ -94,13 +91,11 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
               <span className="cp-topo-logo" style={{ borderColor: corBorda }}>
                 {design.logo_url ? <img src={design.logo_url} alt="" /> : <b style={{ background: corBorda }}>{design.nome_loja?.charAt(0)}</b>}
               </span>
-              {design.tema === 'natal' && design.tema_laco !== false && <LacoNatal />}
             </span>
             <div>
               <p className="cp-topo-nome" style={{ color: nomeSobreTopo(design.cor_nome, navBg) }}>{design.nome_loja}{isPro && <SeloVerificado tamanho={20} />}</p>
               {sub && <p className="cp-topo-sub">{status && <i className={status.aberto ? 'aberto' : ''} aria-hidden="true" />}{sub}</p>}
               {cidade && <p className="cp-topo-cid"><MapPin size={15} weight="bold" aria-hidden="true" />{cidade}</p>}
-              {design.tema === 'natal' && design.tema_aviso && <p className="cp-topo-aviso">{design.tema_aviso}</p>}
             </div>
           </div>
           <nav className="cp-topo-nav" aria-label="Menu da loja">
@@ -232,7 +227,7 @@ function DeskFooterBar({ design, config, isPro }: any) {
   const nome = design?.nome_loja || 'Confeitaria'
   const ano = new Date().getFullYear()
   let cnpj = ''
-  try { const end = config?.endereco ? JSON.parse(config.endereco) : null; if (end?.cnpj) cnpj = end.cnpj } catch {}
+  try { const end = config?.endereco ? JSON.parse(config.endereco) : null; if (end?.cnpj) cnpj = end.cnpj } catch { /* endereço inválido: sai sem o CNPJ */ }
   const extras: string[] = []
   if (cnpj) extras.push(`CNPJ: ${cnpj}`)
   if (isPro && config?.telefone) extras.push(config.telefone)
@@ -260,14 +255,13 @@ function CardapioContent() {
   const slugAtual = params.slug || ''
 
   const [design, setDesign] = useState<DesignSettings | null>(null)
-  useClasseTema(design?.tema) // (18/10) liga os enfeites do tema (Natal) na página
   // (23/10) ao sair do cardápio, a aba volta a ter o ícone e o nome do app
   useEffect(() => { const t = document.title; return () => { voltarFaviconDoApp(); document.title = t } }, [])
   const [config, setConfig] = useState<Configuracoes | null>(null)
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [isPro, setIsPro] = useState(false)
   const [cardapioModelo, setCardapioModelo] = useState('modelo1')
-  const [categoryImages, setCategoryImages] = useState<{[key:string]:string}>({})
+  const [, setCategoryImages] = useState<{[key:string]:string}>({})
   const [categoriasList, setCategoriasList] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -429,11 +423,17 @@ function CardapioContent() {
   if (error || !design) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-body)' }}>
       <div style={{ textAlign:'center' }}>
-        <h1 style={{ fontSize:'24px', fontWeight:700, color:'var(--text-title)' }}>{falhaCarga ? 'Não deu para abrir o cardápio' : 'Cardápio não encontrado'}</h1>
-        <p style={{ color:'var(--text-secondary)' }}>{error || 'Verifique o link e tente novamente.'}</p>
+        {/* (31/10 · 5.84) dentro da prévia (a dona vendo o próprio cardápio) o texto é para ela, não para o cliente */}
+        {!falhaCarga && (new URLSearchParams(window.location.search).has('previa') || window.self !== window.top) ? (<>
+          <h1 style={{ fontSize:'22px', fontWeight:600, color:'var(--text-title)' }}>Seu cardápio aparece aqui</h1>
+          <p style={{ color:'var(--text-secondary)' }}>Ele aparece quando tiver produto no cardápio.</p>
+        </>) : (<>
+          <h1 style={{ fontSize:'24px', fontWeight:600, color:'var(--text-title)' }}>{falhaCarga ? 'Não deu para abrir o cardápio' : 'Cardápio não encontrado'}</h1>
+          <p style={{ color:'var(--text-secondary)' }}>{error || 'Verifique o link e tente novamente.'}</p>
+        </>)}
         {falhaCarga && (
           <button type="button" onClick={() => window.location.reload()}
-            style={{ marginTop: 16, height: 48, padding: '0 28px', border: 'none', borderRadius: 12, background: '#E85A8C', color: '#fff', fontFamily: 'inherit', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+            style={{ marginTop: 16, height: 48, padding: '0 28px', border: 'none', borderRadius: 12, background: '#E85A8C', color: '#fff', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
             Tentar de novo
           </button>
         )}
@@ -447,16 +447,6 @@ function CardapioContent() {
 
   /* ═══ CELULAR ═══ */
   if (!isDesktop) {
-    // (18/10) Natal: o cardápio vira um catálogo (capa grande + páginas que viram como folha)
-    if (design.tema === 'natal' && produtos.length > 0) return (
-      <div className="min-h-screen relative" style={{ backgroundColor: '#FFF8EE' }}>
-        <NavigationMenu celular corBotao="#8B2332" corTopo="#6E1F27" logoUrl={design.logo_url} sugestoes={produtos} verificada={isPro} />
-        <SobreLoja aberta={sobreAberta} fechar={() => { setSobreAberta(false); setSobreAba('sobre') }} design={design} config={config} abaInicial={sobreAba} />
-        <CatalogoNatal design={design} config={config} isPro={isPro} produtos={produtos}
-          categorias={!design.ocultar_categorias ? categorias.map((c: any) => c.name) : []} agrupar={!design.ocultar_categorias}
-          aoAbrirSobre={() => setSobreAberta(true)} espacoBaixo={cartCount > 0 ? 148 : 84} />
-      </div>
-    )
     return (
       <div className="min-h-screen relative" style={{ backgroundColor: '#F7F4F5' }}>
         {/* Caixa dos banners: some quando a loja não tem banner */}

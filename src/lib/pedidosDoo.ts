@@ -176,7 +176,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     else {
       // (11/10) antes só ia pro console: o pedido saía sem cliente ligada e ninguém ficava sabendo
       console.error("[Doonly] não deu para cadastrar o cliente novo:", errCli);
-      avisos.push("Pedido salvo, mas a cliente não foi cadastrada.");
+      avisos.push("Pedido salvo, mas o cliente não foi cadastrado.");
     }
   }
 
@@ -440,7 +440,7 @@ export function montarPedido(r: RascunhoPedido, cat: { produtos: ProdutoCat[]; c
   if (!existente && nomeDito) {
     const iguais = cat.clientes.filter(x => nomeLimpo(x.nome) === nomeDito);
     if (iguais.length === 1) existente = iguais[0];
-    else if (iguais.length > 1) ambigua = true, problemas.push(`Você tem mais de uma cliente chamada ${String(c?.nome).trim()}. Use Editar e escolha qual é`);
+    else if (iguais.length > 1) ambigua = true, problemas.push(`Você tem mais de um cliente chamado ${String(c?.nome).trim()}. Use Editar e escolha qual é`);
   }
   const nome = existente?.nome || String(c?.nome || "").trim();
   const e = r.endereco || {};
@@ -481,6 +481,6 @@ export function catalogoParaDoo(cat: { produtos: ProdutoCat[]; clientes: Cliente
     const ops = opcoesDoProduto(p);
     return `- ${p.id} · ${p.nome}${p.categoria ? ` (${p.categoria})` : ""} · ${ops.length ? "opções: " + ops.map(o => `${o.label} ${brl(o.valor)}`).join(" | ") : `${brl(precoDeVenda(p))}${p.forma_venda === "kg" ? " o kg (quantidade em kg, pode ser 1.5)" : ""}`}`;
   }).join("\n") || "- (nenhum produto cadastrado)";
-  const clis = cat.clientes.slice(0, TETO_CLIENTES_DOO).map(c => `- ${c.id} · ${c.nome}`).join("\n") || "- (nenhuma cliente cadastrada)";
+  const clis = cat.clientes.slice(0, TETO_CLIENTES_DOO).map(c => `- ${c.id} · ${c.nome}`).join("\n") || "- (nenhum cliente cadastrado)";
   return `Produtos do cardápio (id · nome · preço ou opções):\n${prods}\n\nClientes cadastradas (id · nome):\n${clis}`;
 }

@@ -9,7 +9,6 @@ import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar, confirmar } from 
 import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
 import FiltroLateral, { STATUS_PADRAO, bateData } from '@/components/pedidos/FiltroPedidos'
 import { LinhaCompacta, LinhaPedido } from '@/components/pedidos/CartaoPedido'
-import MenuPedido from '@/components/pedidos/MenuPedido'
 import type { AcaoMenu } from '@/components/pedidos/MenuPedido'
 import QuadroPedidos from '@/components/pedidos/QuadroPedidos'
 import type { Pedido } from '@/components/pedidos/pedidoTexto'
@@ -98,7 +97,6 @@ export default function Pedidos() {
   const [periodoFiltro, setPeriodoFiltro] = useState('todos')
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
-  const [menuDe, setMenuDe] = useState<Pedido | null>(null)
   const [semProdutos, setSemProdutos] = useState(false)
   // (11/10) Trava POR PEDIDO: antes era uma só pra lista inteira, e tocar "Aceitar" em três pedidos seguidos
   // só mudava o primeiro, sem aviso. Agora cada pedido tem a sua (e o "carregando" aparece no botão de cada um).
@@ -380,7 +378,7 @@ export default function Pedidos() {
   // ── "Mais ações" do pedido: faz a ação e depois fecha a janela ──
   const duplicando = useRef(false) // (10/10) trava: dois toques seguidos criavam duas cópias
   const handleMenuAcao = async (p: Pedido, acao: AcaoMenu) => {
-    const fechar = () => setMenuDe(null)
+    const fechar = () => {}
     if (acao === 'confirmar_pix') { fechar(); await confirmarPix(p); return }
     if (acao === 'editar') { irDaJanela(`/pedidos/${p.id}/editar`); fechar(); return }
     if (acao === 'duplicar') {
@@ -527,7 +525,7 @@ export default function Pedidos() {
   const sairDoFiltroRapido = () => { setFiltroAguardando(false); setFiltroAtrasados(false); navigate('/pedidos', { replace: true }) }
   const quadro = largo && modo === 'quadro'
 
-  const props = (p: Pedido) => ({ p, aoAbrir: abrirPedido, aoAvancar: avancar, aoMenu: setMenuDe, aoEndereco: verEndereco, mudando: mudando.has(p.id), aoConfirmarPix: confirmarPix,
+  const props = (p: Pedido) => ({ p, aoAbrir: abrirPedido, aoAvancar: avancar, aoMenu: handleMenuAcao, aoEndereco: verEndereco, mudando: mudando.has(p.id), aoConfirmarPix: confirmarPix,
     // (28/10) Recusar o pedido novo: abre o pedido já na janela de cancelar (a mesma do Quadro), que cuida do sinal recebido
     aoRecusar: (x: Pedido) => navigate(`/pedidos/${x.id}/editar`, { state: { abrirCancelar: true } }) })
 
@@ -664,7 +662,6 @@ export default function Pedidos() {
         />
       )}
 
-      <MenuPedido p={menuDe} aoFechar={() => setMenuDe(null)} aoEscolher={handleMenuAcao} />
 
       <Janela
         aberta={semProdutos} aoFechar={() => setSemProdutos(false)}

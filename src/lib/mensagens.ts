@@ -31,7 +31,7 @@ export const MODELOS: Modelo[] = [
     chave: "pedido_cardapio",
     titulo: "Pedido feito pelo cardápio",
     curto: "Pedido pelo cardápio",
-    resumo: "O cliente manda ao fazer o pedido",
+    resumo: "Quando o cliente pede",
     quando: "O cliente manda para o seu WhatsApp quando termina o pedido no cardápio",
     padrao: "Oi, *{loja}*! Acabei de fazer um pedido pelo cardápio.\n\n{pedido}",
     etiquetas: [
@@ -141,7 +141,10 @@ export function preencher(texto: string, dados: Record<string, string | number |
  */
 export function montarMensagem(chave: ChaveMensagem, dados: Record<string, string | number | null | undefined>, textoSalvo?: string | null): string {
   const m = modeloPorChave(chave);
-  const salvo = textoSalvo !== undefined ? textoSalvo : perfilAtual()?.mensagens_whatsapp?.[chave];
+  // (31/10 · 5.84) texto personalizado só no PRO (no grátis, o padrão do app)
+  const perfil: any = perfilAtual();
+  const pro = perfil?.plano === "pro" && (!perfil?.pro_expira_em || new Date(perfil.pro_expira_em) > new Date());
+  const salvo = textoSalvo !== undefined ? textoSalvo : pro ? perfil?.mensagens_whatsapp?.[chave] : null;
   let texto = (salvo && salvo.trim()) ? salvo : m.padrao;
   // (11/10) {Pedido} com maiúscula também vale: antes o app achava que faltava e colocava os itens duas vezes
   if (m.obrigatoria && !texto.toLowerCase().includes(`{${m.obrigatoria}}`)) texto = `${texto.trim()}\n\n{${m.obrigatoria}}`;

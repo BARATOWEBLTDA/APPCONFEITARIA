@@ -9,7 +9,6 @@ import { COMO_INICIO, COMO_INICIO_CEL, TOUR_INICIO_CEL, TOUR_INICIO_PC } from "@
 import { BotaoAjuda } from "@/components/como/ComoFunciona";
 import { fazerTour, contarPassos } from "@/components/como/tour";
 import { abrirBuscaRapida } from "@/components/BuscaRapida";
-import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { STATUS_AINDA_NAO_PRONTO, dataISO } from "@/lib/pedidoStatus";
 import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
 import { verificarAvisosPro } from "@/lib/notificacoesUsuario";
@@ -140,7 +139,7 @@ export default function Inicio() {
   const [chartData, setChartData] = useState<ChartPoint[]>(c0?.dados.chartData ?? []);
   const [proximasEntregas, setProximasEntregas] = useState<Array<{ id: string; cliente: string; data: string; valor: number; hora?: string | null; produto?: string | null; tipo?: string | null }>>(c0?.dados.proximasEntregas ?? []);
   // Onboarding: se cliente novo, o card destaque muda pra empty state contextual
-  const [onboarding, setOnboarding] = useState({
+  const [, setOnboarding] = useState({
     produtosCount: 0,
     clientesCount: 0,
     cardapioPublicado: false,
@@ -1256,11 +1255,11 @@ export default function Inicio() {
         }
         .ini-hero-msg-icon { display: inline-flex; flex: none; }
         .ini-hero-msg-hl {
-          font-weight: 700;
+          font-weight: 600;
           color: var(--ui-branco);
         }
         /* sobre o rosa, só o branco dá leitura (o rosa claro, o verde e o amarelo sumiam): o destaque vem do peso da letra */
-        .ini-hero-msg .ini-hero-msg-hl { color: var(--ui-branco); font-weight: 700; }
+        .ini-hero-msg .ini-hero-msg-hl { color: var(--ui-branco); font-weight: 600; }
         .ini-hero-msg--neutral { color: rgba(255, 255, 255, 0.92); }
 
         /* Skeleton do nome enquanto carrega — evita flash de "bem-vinda" grande */
@@ -1293,7 +1292,7 @@ export default function Inicio() {
           .ini-root .ini-hero-acoes { position: relative; z-index: 2; display: flex; gap: 6px; flex: none; }
           .ini-root .ini-hero-ac { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .12); color: var(--ui-branco); cursor: pointer; -webkit-tap-highlight-color: transparent; }
           .ini-root .ini-hero-ac:active { background: rgba(255, 255, 255, .22); }
-          .ini-root .ini-hero-bolinha { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--ui-rosa); border: 2px solid var(--vinho-escuro); font-style: normal; font-size: 10.5px; font-weight: 700; line-height: 14px; text-align: center; color: var(--ui-branco); }
+          .ini-root .ini-hero-bolinha { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--ui-rosa); border: 2px solid var(--vinho-escuro); font-style: normal; font-size: 10.5px; font-weight: 600; line-height: 14px; text-align: center; color: var(--ui-branco); }
           @media (min-width: 901px) { .ini-root .ini-hero-acoes { display: none; } }
 
         .ini-profile-btn {
@@ -1315,7 +1314,7 @@ export default function Inicio() {
         .ini-profile-inicial {
           font-family: var(--font-base);
           font-size: 26px;
-          font-weight: 700;
+          font-weight: 600;
           color: var(--primary-light);
           letter-spacing: -0.02em;
           line-height: 1;
@@ -1359,7 +1358,7 @@ export default function Inicio() {
           border-radius: 6px;
           font-family: var(--font-base);
           font-size: 12.5px;
-          font-weight: 700;
+          font-weight: 600;
           margin-left: 4px;
           vertical-align: middle;
           white-space: nowrap;
@@ -1446,7 +1445,7 @@ export default function Inicio() {
         /* ── Engajamento (mobile, rodapé) ── */
 
         .ini-section-title {
-          font-size: 16px; font-weight: 700;
+          font-size: 16px; font-weight: 600;
           color: var(--text-title);
           margin: 0;
         }
@@ -1503,7 +1502,7 @@ export default function Inicio() {
         .ini-nav-label {
           display: block;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           color: var(--ui-texto);
           line-height: 1.2;
           margin-top: 20px;
@@ -1523,7 +1522,7 @@ export default function Inicio() {
           top: 8px;
           right: 10px;
           color: #C0B3B8;
-          font-weight: 700;
+          font-weight: 600;
           font-size: 12px;
           margin: 0;
         }
@@ -1619,7 +1618,7 @@ export default function Inicio() {
           color: var(--ui-branco);
         }
         .ini-hero-cta-txt { flex: 1; z-index: 1; }
-        .ini-hero-cta-t { font-size: 16px; font-weight: 700; line-height: 1.15; }
+        .ini-hero-cta-t { font-size: 16px; font-weight: 600; line-height: 1.15; }
         .ini-hero-cta-d { font-size: 12.5px; opacity: 0.9; margin-top: 2px; }
         .ini-hero-cta-arr { color: var(--ui-branco); opacity: 0.9; z-index: 1; flex-shrink: 0; }
 
@@ -1856,7 +1855,7 @@ export default function Inicio() {
           .ini-root .ini-hero-greeting h1 {
             flex-wrap: nowrap; /* 4.01: nome e etiqueta sempre na mesma linha; nome muito longo ganha reticências */
             gap: 4px 8px;
-            font-size: 22px; font-weight: 700;
+            font-size: 22px; font-weight: 600;
             letter-spacing: -.02em; line-height: 1.2;
             min-height: 26px;
           }
@@ -1887,7 +1886,7 @@ export default function Inicio() {
             margin-left: 0;
             border-radius: var(--ui-raio);
             box-shadow: none;
-            font-size: 12.5px; font-weight: 700;
+            font-size: 12.5px; font-weight: 600;
             letter-spacing: 0;
             gap: 4px;
             color: var(--ui-branco);
@@ -1922,7 +1921,7 @@ export default function Inicio() {
           .ini-root .ini-content { gap: 10px; }
           .ini-root .ini-main > .ini-section--nav { margin-top: 6px; gap: 0; }
           .ini-root .ini-section--nav .ini-section-title {
-            font-size: 16px; font-weight: 700;
+            font-size: 16px; font-weight: 600;
             letter-spacing: -0.2px;
             color: var(--ui-texto);
             margin: 0 5px 10px;
@@ -1954,7 +1953,7 @@ export default function Inicio() {
             color: var(--ui-rosa);
           }
           .ini-root .ini-hero-cta-txt { position: relative; z-index: 2; }
-          .ini-root .ini-hero-cta-t { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; line-height: 1.2; }
+          .ini-root .ini-hero-cta-t { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; line-height: 1.2; }
           .ini-root .ini-hero-cta-d { font-size: 12.5px; opacity: 0.95; margin-top: 2px; }
           .ini-root .ini-hero-cta-bag {
             display: block;
@@ -1995,7 +1994,7 @@ export default function Inicio() {
           .ini-root .ini-nav-meta { margin-left: 10px; gap: 0; }
           .ini-root .ini-nav-card .ini-nav-label {
             margin-top: 0;
-            font-size: 13.5px; font-weight: 700;
+            font-size: 13.5px; font-weight: 600;
             letter-spacing: -0.25px;
             color: var(--ui-texto);
           }
@@ -2021,21 +2020,21 @@ export default function Inicio() {
           /* (19/10) sem a faixa rosa: a saudação no fundo da página, como o título das outras telas */
           .ini-dk-top { display: none; } /* (4.92) a saudação e o resumo foram pro topo */
           .ini-dk-txt { min-width: 0; }
-          .ini-dk-txt h1 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 0; color: var(--ui-texto); white-space: nowrap; }
+          .ini-dk-txt h1 { font-size: 22px; font-weight: 600; letter-spacing: -.02em; margin: 0; color: var(--ui-texto); white-space: nowrap; }
           .ini-dk-txt p { font-size: 14.5px; margin: 4px 0 0; color: var(--ui-texto-2); }
           .ini-dk-ola { display: flex; align-items: center; gap: 12px; min-width: 0; }
-          .ini-dk-selo { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 5px 12px; border-radius: 999px; border: 1px solid #F6C4C0; background: #FDE8E7; color: #B42318; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+          .ini-dk-selo { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 5px 12px; border-radius: 999px; border: 1px solid #F6C4C0; background: #FDE8E7; color: #B42318; font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
           .ini-dk-selo i { width: 8px; height: 8px; border-radius: 50%; background: #D92D20; }
           .ini-dk-selo u { text-underline-offset: 3px; }
           .ini-dk-selo:hover { background: #FBD5D2; }
           .ini-dk-selo:focus-visible { outline: 3px solid rgba(217, 45, 32, .35); outline-offset: 2px; }
-          .ini-dk-atr { position: relative; z-index: 1; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+          .ini-dk-atr { position: relative; z-index: 1; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
           .ini-dk-atr::after { content: ""; position: absolute; inset: -12px -4px; } /* área de toque de 44px */
           .ini-dk-atr { color: var(--ui-rosa-escuro); }
           .ini-dk-atr:focus-visible { outline: 3px solid rgba(236, 72, 153, .4); outline-offset: 2px; border-radius: 4px; }
           .ini-dk-bts { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
           .ini-dk-sep { width: 1px; height: 28px; margin: 0 6px; background: rgba(255,255,255,.35); }
-          .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--ui-raio); font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+          .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--ui-raio); font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
           .ini-dk-bt--1 { border: none; background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
           .ini-dk-bt--2 { border: 1.5px solid rgba(255,255,255,.7); background: transparent; color: var(--ui-branco); }
           .ini-dk-bt:hover { transform: translateY(-1px); }
@@ -2045,7 +2044,7 @@ export default function Inicio() {
           .ini-dk-kh { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
           .ini-dk-kh span { width: 30px; height: 30px; border-radius: 9px; background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
           .ini-dk-kpi--dest .ini-dk-kh { color: rgba(255,255,255,.8); } .ini-dk-kpi--dest .ini-dk-kh span { background: rgba(255,255,255,.15); color: var(--ui-branco); }
-          .ini-dk-kpi b { display: block; font-size: 26px; font-weight: 700; margin-top: 10px; color: var(--ui-texto); }
+          .ini-dk-kpi b { display: block; font-size: 26px; font-weight: 600; margin-top: 10px; color: var(--ui-texto); }
           .ini-dk-kpi--dest b { color: var(--ui-branco); }
           .ini-dk-kpi small { font-size: 12.5px; color: var(--ui-texto-3); } .ini-dk-kpi--dest small { color: rgba(255,255,255,.7); }
           /* (30/10 · 5.60) indicador de variação embaixo do valor */
@@ -2064,17 +2063,17 @@ export default function Inicio() {
           .ini-dk-side { display: flex; flex-direction: column; gap: 16px; }
           .ini-dk-side .cqc { margin-top: 0; }
           .ini-dk-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 16px; }
-          .ini-dk-ct { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; color: var(--ui-texto); margin-bottom: 10px; }
-          .ini-dk-ct button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border: none; border-radius: var(--ui-raio); background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+          .ini-dk-ct { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600; color: var(--ui-texto); margin-bottom: 10px; }
+          .ini-dk-ct button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border: none; border-radius: var(--ui-raio); background: none; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
           .ini-dk-vazio { font-size: 13.5px; color: var(--ui-texto-3); margin: 0; line-height: 1.45; }
           .ini-dk-tentar { margin: 0 0 0 4px; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--ui-rosa-escuro); text-decoration: underline; cursor: pointer; }
           .ini-dk-en { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 0; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; }
           .ini-dk-ct + .ini-dk-en { border-top: none; padding-top: 0; }
           .ini-dk-dt { width: 48px; height: 48px; border-radius: var(--ui-raio-p); background: #FAF7F8; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
-          .ini-dk-dt b { font-size: 16px; line-height: 1; color: var(--ui-texto); } .ini-dk-dt small { font-size: 12.5px; font-weight: 700; color: var(--ui-rosa-escuro); }
+          .ini-dk-dt b { font-size: 16px; line-height: 1; color: var(--ui-texto); } .ini-dk-dt small { font-size: 12.5px; font-weight: 600; color: var(--ui-rosa-escuro); }
           .ini-dk-ei { flex: 1; min-width: 0; display: flex; flex-direction: column; }
           .ini-dk-ei b { font-size: 15px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ini-dk-ei small { font-size: 12.5px; color: var(--ui-texto-3); }
-          .ini-dk-ev { font-weight: 700; font-size: 13.5px; color: var(--ui-texto); white-space: nowrap; } /* (22/10) sem verde: é dinheiro que ainda não entrou */
+          .ini-dk-ev { font-weight: 600; font-size: 13.5px; color: var(--ui-texto); white-space: nowrap; } /* (22/10) sem verde: é dinheiro que ainda não entrou */
           .ini-dk-side .mu-root { margin: 0; }
           /* acesso rápido no estilo do celular: cartão branco, ícone rosa, nome + descrição, 4 por linha */
           .ini-section--nav { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 18px; }
@@ -2083,7 +2082,7 @@ export default function Inicio() {
           .ini-root .ini-section--nav .ini-nav-card:hover { border-color: #F3D6E2 !important; background: #FFFAFC !important; }
           .ini-root .ini-section--nav .ini-nav-icon { width: 38px !important; position: static !important; height: 38px !important; border-radius: var(--ui-raio-p) !important; background: #FCE7F3 !important; color: var(--ui-rosa-escuro) !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; margin: 0 !important; }
           .ini-root .ini-section--nav .ini-nav-meta { display: flex !important; padding: 0 !important; margin: 0 !important; justify-content: center !important; align-self: center !important; gap: 1px; flex-direction: column !important; min-width: 0; flex: 1; }
-          .ini-root .ini-section--nav .ini-nav-label { font-size: 13.5px !important; margin: 0 !important; padding: 0 !important; font-weight: 700 !important; color: var(--ui-texto) !important; }
+          .ini-root .ini-section--nav .ini-nav-label { font-size: 13.5px !important; margin: 0 !important; padding: 0 !important; font-weight: 600 !important; color: var(--ui-texto) !important; }
           .ini-root .ini-section--nav .ini-nav-sub { display: block !important; font-size: 12.5px !important; color: var(--ui-texto-3) !important; line-height: 1.3 !important; }
           .ini-root .ini-section--nav .ini-nav-arrow { display: block !important; position: static !important; color: #C4B8BE !important; margin-left: auto; flex-shrink: 0; }
 

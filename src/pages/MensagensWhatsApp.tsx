@@ -8,6 +8,8 @@ import { COMO_MENSAGENS, TOUR_MENSAGENS } from "@/lib/comoTelas";
 import { Botao, CampoArea, Janela, avisar } from "@/components/base";
 import { refreshProfile, useProfile } from "@/hooks/useProfile";
 import { MODELOS, exemplo, montarMensagem, type Modelo } from "@/lib/mensagens";
+import { usePlano } from "@/hooks/usePlano";
+import RecursoPro from "@/components/billing/RecursoPro";
 import "./mensagens.css";
 
 /**
@@ -37,7 +39,10 @@ export default function MensagensWhatsApp() {
   const campo = useRef<HTMLTextAreaElement>(null);
   const posicao = useRef<{ ini: number; fim: number } | null>(null); // onde estava o cursor (sem tocar no campo, vai pro fim)
 
-  const abrir = (m: Modelo) => { posicao.current = null; setEditando(m); setTexto(salvas[m.chave]?.trim() ? salvas[m.chave] : m.padrao); };
+  // (31/10 · 5.84) mensagens do seu jeito é recurso PRO: no grátis vale o texto padrão do app
+  const { isPro, loading: carregandoPlano } = usePlano();
+  const [proAberto, setProAberto] = useState(false);
+  const abrir = (m: Modelo) => { if (!carregandoPlano && !isPro) { setProAberto(true); return; } posicao.current = null; setEditando(m); setTexto(salvas[m.chave]?.trim() ? salvas[m.chave] : m.padrao); };
   const fechar = () => setEditando(null);
 
   const colocar = (k: string) => {
@@ -94,10 +99,11 @@ export default function MensagensWhatsApp() {
     <>
       <AppPageHeader title="Mensagens" subtitle="Os textos do WhatsApp que o app escreve por você" infoComo={COMO_MENSAGENS} infoTour={TOUR_MENSAGENS} onBack={() => navigate(voltarPara)} />
       <div className="mz">
-        <p className="mz-intro"><Info size={20} weight="bold" aria-hidden="true" />O app abre o WhatsApp com a mensagem pronta. Aqui você troca o texto do seu jeito.</p>
+        <p className="mz-intro"><Info size={20} weight="bold" aria-hidden="true" />O app abre o WhatsApp com a mensagem pronta.{isPro ? " Aqui você troca o texto do seu jeito." : " No PRO, você troca o texto do seu jeito."}</p>
+        {proAberto && <RecursoPro titulo="Mensagens do seu jeito" texto="No plano PRO, você troca os textos prontos do WhatsApp. No grátis, vale o texto padrão do app." onClose={() => setProAberto(false)} />}
         <section className="mz-lista">
           {MODELOS.map(m => {
-            const personalizada = !!salvas[m.chave]?.trim();
+            const personalizada = isPro && !!salvas[m.chave]?.trim();
             return (
               <button key={m.chave} type="button" className="mz-item" onClick={() => abrir(m)}>
                 <span className="mz-ic" aria-hidden="true"><ChatCircleText size={22} weight="bold" /></span>

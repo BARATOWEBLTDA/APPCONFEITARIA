@@ -4,7 +4,7 @@
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CaretRight, Check, Copy, Crown, FileText, LinkSimple, Package, Plus, ShareNetwork, WarningCircle } from '@phosphor-icons/react'
+import { ArrowRight, CaretRight, Copy, Crown, FileText, LinkSimple, Package, Plus, ShareNetwork, WarningCircle } from '@phosphor-icons/react'
 import mascoteCoroa from '@/assets/mascote-coroa.webp'
 import AppPageHeader from '@/components/AppPageHeader'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
@@ -113,12 +113,12 @@ export default function Orcamentos() {
           <div className="orc-pro-tx">
           <span className="orc-pro-ic" aria-hidden="true"><FileText size={30} weight="duotone" /></span>
           <h2>Orçamentos é um recurso do <em>PRO</em></h2>
-          <p>A cliente conta a ideia pelo seu link, você monta a proposta em minutos e ela aprova pelo celular. Aprovou, vira pedido na Agenda.</p>
+          <p>O cliente conta a ideia pelo seu link, você monta a proposta em minutos e ele aprova pelo celular. Aprovou, vira pedido na Agenda.</p>
           <ul>
             {([
               [LinkSimple, 'Link para pedir orçamento', 'Os pedidos chegam organizados'],
               [Package, 'Proposta com seus produtos', 'Ou itens com foto e valor'],
-              [FileText, 'A cliente aprova pelo link', 'E baixa a proposta em PDF'],
+              [FileText, 'O cliente aprova pelo link', 'E baixa a proposta em PDF'],
             ] as const).map(([Ic, t, sub]) => (
               <li key={t}><span className="orc-pro-li-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><span className="orc-pro-li-tx"><b>{t}</b><small>{sub}</small></span></li>
             ))}
@@ -225,7 +225,7 @@ export default function Orcamentos() {
                 <button type="button" className="orc-it-b" onClick={() => navigate(`/orcamentos/${o.id}`)}>
                   <span className="orc-av" aria-hidden="true">{(o.cliente_nome || '?').trim().charAt(0).toUpperCase()}</span>
                   <span className="orc-it-tx">
-                    <b>{o.cliente_nome || 'Sem nome'} <small>#{o.numero}</small></b>
+                    <b className="nm-num"><span>{o.cliente_nome || 'Sem nome'}</span><small>#{o.numero}</small></b>
                     <small>{linha || (o.origem === 'link' ? 'Pediu pelo link' : 'Criado por você')}</small>
                   </span>
                   <span className="orc-it-dir">

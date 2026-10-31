@@ -14,6 +14,10 @@ import { TelaConta } from "@/components/conta/TelaConta";
  */
 type Status = "processing" | "ready" | "invalid" | "expired";
 
+function Req({ ok, children }: { ok: boolean; children: string }) {
+  return <li className={ok ? "ok" : ""}>{ok ? <Check size={14} weight="bold" aria-hidden="true" /> : <Circle size={14} weight="bold" aria-hidden="true" />}<span>{children}</span></li>;
+}
+
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -89,7 +93,7 @@ export default function ResetPassword() {
         timeoutId = setTimeout(() => {
           if (mounted) setStatus(prev => prev === "processing" ? "invalid" : prev);
         }, 8000);
-      } catch (err) {
+      } catch {
         if (mounted) setStatus("invalid");
       }
     };
@@ -148,9 +152,6 @@ export default function ResetPassword() {
   const handlePedirNovoLink = () => navigate("/esqueci-senha");
   const handleVoltarLogin = () => navigate("/login");
 
-  const Req = ({ ok, children }: { ok: boolean; children: string }) => (
-    <li className={ok ? "ok" : ""}>{ok ? <Check size={14} weight="bold" aria-hidden="true" /> : <Circle size={14} weight="bold" aria-hidden="true" />}<span>{children}</span></li>
-  );
   const voltar = <Botao variante="link" icone={<ArrowLeft size={16} weight="bold" />} onClick={handleVoltarLogin}>Voltar para o login</Botao>;
 
   return (

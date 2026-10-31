@@ -1,4 +1,3 @@
-import { LacoNatal } from '@/components/tema/Natal'
 import { SeloVerificado } from './SeloVerificado'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -115,7 +114,6 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
             ? <img src={design.logo_url} alt={design.nome_loja || ''} />
             : <span style={{ background: design.cor_background || '#FCE0E9', color: accent }}>{(design.nome_loja || 'D').charAt(0).toUpperCase()}</span>}
         </div>
-        {design.tema === 'natal' && design.tema_laco !== false && <LacoNatal className="cm1-enfeite" />}
 
         <h1 className="cm1-nome" style={{ color: corNome }}>
           {design.nome_loja || 'Minha Confeitaria'}{verificada && <SeloVerificado tamanho={22} />}
@@ -139,7 +137,6 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
             {aoAbrirSobre && <button type="button" className="cm1-sl-sobre" onClick={aoAbrirSobre} style={{ color: corIcone }}>Sobre a loja<CaretRight size={14} weight="bold" aria-hidden="true" /></button>}
           </div>
         )}
-        {design.tema === 'natal' && design.tema_aviso && <p className="cm1-aviso-tema"><CalendarBlank size={16} weight="bold" aria-hidden="true" />{design.tema_aviso}</p>}
         {design.descricao_loja && <p className="cm1-descricao">{design.descricao_loja}</p>}
 
         {/* (20/10) faixa com entrega, prazo das encomendas e pronta entrega (antes: quadradinhos só com o nome) */}

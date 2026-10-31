@@ -49,7 +49,7 @@ export default function DooInfoModal({ open, onClose, image, imageAlt = "", titl
         .dim .dim-x { position: absolute; top: 10px; right: 10px; z-index: 1; }
         .dim-img { display: block; width: 96px; height: 96px; margin: 0 auto 12px; object-fit: contain; }
         .dim-tx { margin-top: 10px; font-size: 14px; line-height: 1.55; color: var(--ui-texto-2); text-align: left; }
-        .dim-tx strong, .dim-tx b { color: var(--ui-texto); font-weight: 700; }
+        .dim-tx strong, .dim-tx b { color: var(--ui-texto); font-weight: 600; }
         .dim-tx p { margin: 0 0 10px; }
       `}</style>
     </div>,

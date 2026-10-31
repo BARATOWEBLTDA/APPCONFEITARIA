@@ -21,7 +21,6 @@ import { supabase } from "@/lib/supabase";
  * ═══════════════════════════════════════════════════════════════════
  */
 
-import { parseNumBR } from "@/lib/numeroBR";
 import { pesoDoNome } from "@/lib/itemSacola";
 
 // ─── Tipos ──────────────────────────────────────────────────────────

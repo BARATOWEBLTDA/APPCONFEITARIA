@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Basket, Bell, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
@@ -274,15 +274,15 @@ const CSS = `
   /* (22/10) como as Pendências da Dora: cada item explica o porquê e tem "Agora não" (ou "Revisar", na conta) + a ação */
   .pf { padding: 16px 16px 4px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); text-align: left; }
   .pf-cab { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-  .pf-t { font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); }
-  .pf-n { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 12px; font-weight: 700; }
+  .pf-t { font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); }
+  .pf-n { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 12px; font-weight: 600; }
   .pf-lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
   .pf-it { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; border-top: 1px solid var(--ui-linha, #F3ECEF); }
   .pf-it:first-child { border-top: 0; }
   .pf-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #F0EEEF; color: #8F8589; }
   .pf-it--urgente .pf-ic { background: #FEF2F2; color: #B42318; }
   .pf-tx { flex: 1; min-width: 0; }
-  .pf-tx > b { display: block; font-size: 14.5px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pf-tx > b { display: block; font-size: 14.5px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pf-alerta { display: block; margin-top: 1px; font-size: 13px; font-weight: 600; color: #B42318; }
   .pf-it--atencao .pf-alerta { color: #B45309; }
   .pf-tx > p { margin: 2px 0 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
@@ -304,7 +304,7 @@ const CSS = `
   .pf-menu svg { flex: none; margin-top: 1px; color: var(--ui-texto-2); }
   .pf-menu b { display: block; font-size: 14px; font-weight: 600; }
   .pf-menu small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--ui-texto-2); }
-  .pf-bt { flex: none; min-height: 40px; margin: 0; padding: 0 16px; border-radius: 10px; background: var(--ui-branco); border: 1.5px solid var(--ui-rosa); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  .pf-bt { flex: none; min-height: 40px; margin: 0; padding: 0 16px; border-radius: 10px; background: var(--ui-branco); border: 1.5px solid var(--ui-rosa); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   .pf-bt--pagar { border-color: transparent; background: #FEF2F2; color: #B42318; }
-  .pf-ver { display: block; width: 100%; min-height: 44px; margin: 0; border: 0; border-top: 1px solid var(--ui-linha, #F3ECEF); background: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+  .pf-ver { display: block; width: 100%; min-height: 44px; margin: 0; border: 0; border-top: 1px solid var(--ui-linha, #F3ECEF); background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
 `;

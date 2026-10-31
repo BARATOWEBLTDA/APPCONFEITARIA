@@ -35,7 +35,7 @@ export default function ListaChaves({ titulo, itens, id }: { titulo?: string; it
 
 const CSS = `
   .lch { font-family: var(--font-base); }
-  .lch-t { margin: 18px 2px 8px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+  .lch-t { margin: 18px 2px 8px; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
   .lch-c { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); }
   .lch-it + .lch-it { border-top: 1px solid var(--ui-linha); }
   .lch-l { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 62px; margin: 0; padding: 8px 12px; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }

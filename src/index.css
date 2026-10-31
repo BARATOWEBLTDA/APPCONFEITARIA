@@ -10,8 +10,8 @@
 @font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-500.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-600.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
 /* negrito um degrau mais leve, como no Dora: o 700 (b, strong, títulos) usa o arquivo SemiBold e o 800/900 usa o Bold */
-@font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-600.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
-@font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-700.woff2') format('woff2'); font-weight: 800 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-600.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Poppins'; src: url('/fonts/Poppins-700.woff2') format('woff2'); font-weight: 600 900; font-style: normal; font-display: swap; }
 html.app-conf { --text-title: #231A1D; --ui-texto: #231A1D; --ui-texto-2: #5A4E53; }
 
 * {

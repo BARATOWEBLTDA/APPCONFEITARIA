@@ -446,25 +446,25 @@ const CSS = `
   .cu-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px; }
   .cu-ct { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .cu-ct > div { flex: 1; min-width: 0; }
-  .cu-ct b { display: block; font-size: 15.5px; font-weight: 700; } .cu-ct small { font-size: 12.5px; color: #888780; }
+  .cu-ct b { display: block; font-size: 15.5px; font-weight: 600; } .cu-ct small { font-size: 12.5px; color: #888780; }
   .cu-ic { width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .cu-ph { height: 90px; background: #FAF7F8; border-radius: var(--ui-raio-p); }
   .cu-vazio { margin: 6px 0 4px; font-size: 13px; color: #888780; line-height: 1.45; }
   .cu-it { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid var(--ui-linha); padding: 11px 2px; font-family: inherit; color: var(--ui-texto); cursor: pointer; }
   .cu-it:first-of-type { border-top: none; }
-  .cu-it-t { flex: 1; min-width: 0; } .cu-it-t b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cu-it-t { flex: 1; min-width: 0; } .cu-it-t b { display: block; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-it-t small { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #888780; margin-top: 2px; }
   .cu-it-t small em { min-width: 0; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cu-it-v { font-size: 14px; font-weight: 700; white-space: nowrap; } .cu-it-ar { color: #C9BEC3; flex-shrink: 0; }
+  .cu-it-v { font-size: 14px; font-weight: 600; white-space: nowrap; } .cu-it-ar { color: #C9BEC3; flex-shrink: 0; }
   .cu-it.off { opacity: .55; }
   /* (16/10) "+ Adicionar" discreto no título do bloco (antes um botão tracejado embaixo) */
-  .cu-add { flex: none; display: flex; align-items: center; gap: 4px; min-height: 36px; margin: 0 -6px 0 0; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  .cu-add { flex: none; display: flex; align-items: center; gap: 4px; min-height: 36px; margin: 0 -6px 0 0; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   @media (hover: hover) { .cu-add:hover { background: #FFF1F6; } }
   .cu-it-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: #FFF1F6; color: var(--ui-rosa-escuro); }
   .cu-it--falta .cu-it-t small { color: var(--ui-rosa-escuro); }
-  .cu-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 44px; margin-top: 10px; border: 1.5px solid #F3C9DA; border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  .cu-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 44px; margin-top: 10px; border: 1.5px solid #F3C9DA; border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   .cu-mo { display: block; width: 100%; text-align: left; background: #FAF7F8; border: none; border-radius: var(--ui-raio); padding: 4px 12px 4px; font-family: inherit; color: var(--ui-texto); }
   .cu-mo-l { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F0EBED; font-size: 13.5px; }
-  .cu-mo-l span { color: var(--ui-texto-2); } .cu-mo-l b { font-weight: 700; text-align: right; } .cu-mo-l b.rosa { color: var(--ui-rosa-escuro); }
+  .cu-mo-l span { color: var(--ui-texto-2); } .cu-mo-l b { font-weight: 600; text-align: right; } .cu-mo-l b.rosa { color: var(--ui-rosa-escuro); }
   .cu-mo-l:last-child { border-bottom: 0; }
 `;

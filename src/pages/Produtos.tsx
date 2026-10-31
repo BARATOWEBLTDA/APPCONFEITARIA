@@ -426,7 +426,7 @@ function SelectDoonly({
           border: 1.5px solid #E5D8DE;
           border-radius: var(--ui-raio-p);
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2D1F26;
           cursor: pointer;
           transition: all 0.15s;
@@ -490,7 +490,7 @@ function SelectDoonly({
         }
         .sd-sheet-title {
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2D1F26;
           text-align: center;
           margin-bottom: 12px;
@@ -518,7 +518,7 @@ function SelectDoonly({
           background: #FDF3F7;
           color: #831843;
         }
-        .sd-sheet-item--ativo .sd-item-label { font-weight: 700; }
+        .sd-sheet-item--ativo .sd-item-label { font-weight: 600; }
         .sd-sheet-item--ativo svg { color: var(--ui-rosa); }
         .sd-sheet-item--extra {
           border-top: 1px solid #F0EBED;
@@ -526,7 +526,7 @@ function SelectDoonly({
           padding-top: 14px;
           color: var(--ui-rosa);
         }
-        .sd-sheet-item--extra .sd-item-label { font-weight: 700; }
+        .sd-sheet-item--extra .sd-item-label { font-weight: 600; }
         .sd-sheet-item--extra .sd-item-icon {
           background: var(--primary-light);
           color: var(--ui-rosa);
@@ -569,7 +569,7 @@ function SelectDoonly({
           background: #FDF3F7;
           color: #831843;
         }
-        .sd-pop-item--ativo .sd-item-label { font-weight: 700; }
+        .sd-pop-item--ativo .sd-item-label { font-weight: 600; }
         .sd-pop-item--ativo svg { color: var(--ui-rosa); }
         .sd-pop-item--extra {
           border-top: 1px solid #F0EBED;
@@ -577,7 +577,7 @@ function SelectDoonly({
           padding-top: 10px;
           color: var(--ui-rosa);
         }
-        .sd-pop-item--extra .sd-item-label { font-weight: 700; }
+        .sd-pop-item--extra .sd-item-label { font-weight: 600; }
         .sd-pop-item--extra .sd-item-icon {
           background: var(--primary-light);
           color: var(--ui-rosa);
@@ -972,7 +972,7 @@ export default function Produtos() {
   };
 
   // Rascunho automático DESLIGADO (causava bug: pulava a tela de tipos). Limpa o que ficou salvo.
-  useEffect(() => { try { localStorage.removeItem(DRAFT_KEY); } catch {} }, []);
+  useEffect(() => { try { localStorage.removeItem(DRAFT_KEY); } catch { /* sem localStorage: nada a limpar */ } }, []);
 
   // (27/10) Grátis: até 10 produtos NO CARDÁPIO ao mesmo tempo (os guardados fora do cardápio não contam)
   const ativosNoCardapio = produtos.filter(p => p.disponivel !== false).length;
@@ -1577,7 +1577,7 @@ export default function Produtos() {
       return;
     }
     // Cadastro novo: tela de sucesso com os próximos passos
-    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    try { localStorage.removeItem(DRAFT_KEY); } catch { /* sem localStorage: nada a limpar */ }
     // (16/10) confere de novo DEPOIS de salvar: se o produto era o último passo, o cardápio já abriu (antes usava o que
     // sabia antes de salvar e mostrava "Terminar de abrir o cardápio" com a loja já pronta). E vê se ela já vende extras.
     avisarPassos();
@@ -1612,10 +1612,9 @@ export default function Produtos() {
     setProdutos(p => p.filter(x => x.id !== id));
   };
 
-  const handleAdicionarCategoria = async (iconeOverride?: string) => {
+  const handleAdicionarCategoria = async (_iconeOverride?: string) => {
     const nome = novaCategoria.trim();
     if (!nome || !userId) return;
-    const icone = iconeOverride || novaCategoriaIcone || SYSTEM_ICONS[0];
     // Proteção: não deixa salvar nomes suspeitos (usuário deve ter colado o alerta)
     const nomeLower = nome.toLowerCase();
     if (nomeLower.includes("selecione") || nomeLower.includes("ícone") || nomeLower.includes("icone")) {
@@ -2342,7 +2341,7 @@ export default function Produtos() {
                       <div className="prod-var-fotos-lock">
                         <img src="/log.png" alt="Doonly" className="prod-var-fotos-lock-logo" />
                         <div>
-                          <div style={{fontSize: 13, fontWeight: 700, color: "#2D1F26", display: "inline-flex", alignItems: "center", gap: 6}}>
+                          <div style={{fontSize: 13, fontWeight: 600, color: "#2D1F26", display: "inline-flex", alignItems: "center", gap: 6}}>
                             Recurso PRO
                             <img src="/coroa.png" alt="" style={{width: 14, height: 14, objectFit: "contain"}} />
                           </div>
@@ -2741,7 +2740,7 @@ export default function Produtos() {
                   {(form.kit_itens || []).map((item, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--primary-light)", borderRadius: "10px", marginBottom: "6px", border: "1px solid var(--primary-light)" }}>
                       <div>
-                        <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{item.nome}</span>
+                        <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary)" }}>{item.nome}</span>
                         <span style={{ fontSize: "0.8rem", color: "var(--primary)", marginLeft: "8px", fontWeight: 500 }}>× {item.quantidade}</span>
                       </div>
                       <button onClick={() => setForm(f => ({ ...f, kit_itens: (f.kit_itens || []).filter((_, idx) => idx !== i) }))} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--error)", fontSize: "1.1rem", padding: 0 }}>×</button>
@@ -2761,7 +2760,7 @@ export default function Produtos() {
                       if (!novoKitItem.nome.trim()) return;
                       setForm(f => ({ ...f, kit_itens: [...(f.kit_itens || []), { nome: novoKitItem.nome.trim(), quantidade: novoKitItem.quantidade || "1" }] }));
                       setNovoKitItem({ nome: "", quantidade: "" });
-                    }} style={{ padding: "0.65rem 1rem", background: "var(--primary)", color: "var(--text-inverse)", border: "none", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", marginBottom: "1px" }}>+ Adicionar</button>
+                    }} style={{ padding: "0.65rem 1rem", background: "var(--primary)", color: "var(--text-inverse)", border: "none", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", marginBottom: "1px" }}>+ Adicionar</button>
                   </div>
 
                   <div className="prod-field">
@@ -3384,7 +3383,7 @@ export default function Produtos() {
           padding: var(--space-4) var(--space-6);
           border-radius: var(--radius-md);
           font-size: var(--text-md);
-          font-weight: 700;
+          font-weight: 600;
           cursor: pointer;
           font-family: var(--font-base) !important;
           letter-spacing: 0;
@@ -3430,7 +3429,7 @@ export default function Produtos() {
         .prod-hero-video-play { width: 44px; height: 44px; }
         .prod-hero-video-footer { gap: 6px; padding: 8px 4px 2px; }
         .prod-hero-video-t { font-size: 12.5px; white-space: nowrap; }
-        .prod-hero-video-badge { padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .prod-hero-video-badge { padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 
         /* ═══ Desktop: split 1fr / 1.2fr — vídeo vai para direita ═══ */
         @media (min-width: 900px) {
@@ -3580,13 +3579,13 @@ export default function Produtos() {
         .prod-card-tags--dir { right: 8px; align-items: flex-end; }
         .prod-card-tags--esq { left: 8px; align-items: flex-start; }
         .prod-card-tags > * { position: static !important; top: auto !important; left: auto !important; right: auto !important; }
-        .prod-card-semcat { background: var(--warning); color: var(--text-inverse); font-size: 0.75rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; }
+        .prod-card-semcat { background: var(--warning); color: var(--text-inverse); font-size: 0.75rem; font-weight: 600; padding: 2px 6px; border-radius: 6px; }
         .prod-card-encomenda { position:absolute; top:0.4rem; right:0.4rem; background:var(--warning); color:var(--text-inverse); font-size: var(--font-caption); font-weight: var(--fw-bold); padding:0.15rem 0.45rem; border-radius: var(--radius-xl); }
         .prod-card-info { padding:0.65rem 0.75rem; flex:1; display:flex; flex-direction:column; }
         .prod-card-bottom { margin-top:auto; }
         .prod-card-cat { font-size: 0.75rem; color:var(--text-muted); font-weight: var(--fw-medium); margin:0 0 0.15rem; }
         .prod-card-nome { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.25rem; line-height:1.3; }
-        .prod-card-preco { font-size: var(--font-button); font-weight: 700; color:var(--success); margin:0; }
+        .prod-card-preco { font-size: var(--font-button); font-weight: 600; color:var(--success); margin:0; }
         /* 09/10: preço "de/por" não quebra mais no meio ("R$" em uma linha e o valor na outra) */
         .prod-card-preco { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 0; }
         .prod-card-por { white-space: nowrap; }
@@ -3675,7 +3674,7 @@ export default function Produtos() {
           border: 1px solid var(--border);
           color: var(--text-secondary);
           font-family: inherit;
-          font-size: 16px; font-weight: 700;
+          font-size: 16px; font-weight: 600;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
           transition: background var(--dur-fast), color var(--dur-fast);
@@ -3728,7 +3727,7 @@ export default function Produtos() {
         .prod-preview-nome {
           margin: 0 0 6px;
           font-size: 22px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2D1F26;
           font-family: inherit;
           line-height: 1.15;
@@ -3760,7 +3759,7 @@ export default function Produtos() {
           border-radius: var(--ui-raio-p);
           font-family: inherit;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           cursor: pointer;
           box-shadow: 0 3px 0 var(--ui-rosa-escuro);
           transition: transform 0.08s, filter 0.08s, box-shadow 0.08s;
@@ -3836,7 +3835,7 @@ export default function Produtos() {
         }
         .prod-preview-menu-title {
           font-size: 13.5px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2D1F26;
           font-family: inherit;
           line-height: 1.2;
@@ -3958,7 +3957,7 @@ export default function Produtos() {
         /* Label de seção com barrinha rosa lateral */
         .prod-section-label {
           font-size: 13px !important;
-          font-weight: 700 !important; !important;
+          font-weight: 600 !important; !important;
           display: flex !important;
           align-items: center;
           gap: 8px;
@@ -3975,7 +3974,7 @@ export default function Produtos() {
         /* Inputs maiores e mais respiráveis */
         .prod-field label {
           font-size: 14px !important;
-          font-weight: 700 !important;
+          font-weight: 600 !important;
           color: var(--text-title);
           margin-bottom: 4px;
           display: flex;
@@ -4111,7 +4110,7 @@ export default function Produtos() {
           color: var(--ui-texto-2);
           font-family: var(--font-base) !important;
           font-size: 13.5px;
-          font-weight: 700;
+          font-weight: 600;
           border-radius: var(--ui-raio-p);
           cursor: pointer;
           transition: background 0.12s;
@@ -4129,7 +4128,7 @@ export default function Produtos() {
           border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           letter-spacing: 0.01em;
           text-align: center;
           box-shadow: 0 3px 0 var(--ui-rosa-escuro);
@@ -4177,7 +4176,7 @@ export default function Produtos() {
           .prod-modal--novo .prod-btn-cancelar-novo:hover,
           .prod-modal--novo .prod-btn-cancelar-novo:active { background: rgba(255,255,255,0.08); }
           .prod-modal--novo .prod-btn-avancar-novo {
-            background: var(--ui-branco); color: var(--ui-texto); box-shadow: none; font-weight: 700;
+            background: var(--ui-branco); color: var(--ui-texto); box-shadow: none; font-weight: 600;
           }
           .prod-modal--novo .prod-btn-avancar-novo:active:not(:disabled) { transform: scale(0.98); box-shadow: none; }
           .prod-modal--novo .prod-btn-avancar-novo:disabled {
@@ -4202,7 +4201,7 @@ export default function Produtos() {
           align-items: center;
           gap: 4px !important;
           font-size: 12px !important;
-          font-weight: 700 !important;
+          font-weight: 600 !important;
           color: #2D1F26 !important;
           margin-bottom: 6px !important;
           font-family: var(--font-base) !important;
@@ -4229,7 +4228,7 @@ export default function Produtos() {
           color: var(--ui-branco);
           font-family: var(--font-base) !important;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           border-radius: var(--ui-raio-p);
           cursor: pointer;
           box-shadow: 0 2px 6px rgba(0,0,0,0.2);
@@ -4305,18 +4304,18 @@ export default function Produtos() {
           border-radius: 50%;
           cursor: pointer;
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 600;
           display: flex; align-items: center; justify-content: center;
         }
         .prod-opcao-foto-linha-nome {
           flex: 1;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2D1F26;
         }
         .prod-opcao-foto-linha-cta {
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 600;
           color: var(--ui-rosa);
           background: #FDF3F7;
           padding: 6px 10px;
@@ -4359,13 +4358,13 @@ export default function Produtos() {
           border-radius: 50%;
           cursor: pointer;
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 600;
           display: flex; align-items: center; justify-content: center;
         }
         .prod-opcao-foto-remove:hover { background: var(--ui-vermelho); }
         .prod-opcao-foto-nome {
           font-size: 12.5px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2D1F26;
           margin-top: 6px;
           text-align: center;
@@ -4441,7 +4440,7 @@ export default function Produtos() {
         .prod-var-foto-label {
           flex: 1;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2D1F26;
           min-width: 0;
           overflow: hidden;
@@ -4454,7 +4453,7 @@ export default function Produtos() {
           color: var(--ui-branco);
           font-family: var(--font-base);
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           border-radius: 6px;
           cursor: pointer;
           transition: filter 0.12s;
@@ -4471,7 +4470,7 @@ export default function Produtos() {
         }
         .prod-cat-nova-hint {
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 600;
           color: var(--ui-rosa);
           margin: 0 0 8px;
         }
@@ -4496,7 +4495,7 @@ export default function Produtos() {
           border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 600;
           cursor: pointer;
         }
         .prod-cat-criar-btn {
@@ -4508,7 +4507,7 @@ export default function Produtos() {
           border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 600;
           cursor: pointer;
         }
         .prod-cat-criar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -4706,7 +4705,7 @@ export default function Produtos() {
         }
         .bulk-bar-count {
           font-size: 13.5px;
-          font-weight: 700;
+          font-weight: 600;
           padding-right: 12px;
           border-right: 1px solid rgba(255,255,255,0.15);
           white-space: nowrap;
@@ -4721,7 +4720,7 @@ export default function Produtos() {
           color: var(--ui-branco);
           font-family: inherit;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           padding: 8px 14px;
           border-radius: 8px;
           cursor: pointer;
@@ -4779,7 +4778,7 @@ export default function Produtos() {
         }
         .bulk-confirm-titulo {
           font-size: 18px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2D1F26;
           margin: 0 0 8px;
         }
@@ -4800,7 +4799,7 @@ export default function Produtos() {
           border-radius: var(--ui-raio-p);
           font-family: inherit;
           font-size: 13.5px;
-          font-weight: 700;
+          font-weight: 600;
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
         }
@@ -4823,7 +4822,7 @@ export default function Produtos() {
         /* Preço do kit (02/10) */
         .kitp-dica { font-size: 12px; color: var(--ui-texto-3); margin: 8px 0 0; }
         .kitp-pct { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; color: var(--ui-cinza-texto); }
-        .kitp-pct input { width: 64px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio-p); padding: 8px; font-family: inherit; font-size: 16px; font-weight: 700; text-align: center; color: var(--ui-texto); }
+        .kitp-pct input { width: 64px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio-p); padding: 8px; font-family: inherit; font-size: 16px; font-weight: 600; text-align: center; color: var(--ui-texto); }
 `}</style>
 
       {/* ═══ Barra flutuante de ações em massa (Desktop) ═══ */}

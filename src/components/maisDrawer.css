@@ -5,12 +5,12 @@
 .mais-cab { display: flex; align-items: center; gap: 12px; flex: none; padding: 8px 10px 12px 16px; border-bottom: 1px solid var(--ui-borda); }
 .mais-foto { flex: none; width: 44px; height: 44px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--ui-rosa-claro); }
 .mais-foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.mais-foto--letra { background: var(--ui-vinho); color: var(--ui-branco); font-size: 18px; font-weight: 700; }
+.mais-foto--letra { background: var(--ui-vinho); color: var(--ui-branco); font-size: 18px; font-weight: 600; }
 .mais-ola { flex: 1; min-width: 0; }
-.mais-ola-t { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--font-base); font-size: 18px; font-weight: 700; line-height: 1.25; color: var(--ui-texto); }
+.mais-ola-t { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--font-base); font-size: 18px; font-weight: 600; line-height: 1.25; color: var(--ui-texto); }
 .mais-ola-t > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mais-ola-s { margin: 2px 0 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
-.mais-pro { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 8px; background: var(--ui-vinho); color: var(--ui-branco); font-size: 12.5px; font-weight: 700; line-height: 1; }
+.mais-pro { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 8px; background: var(--ui-vinho); color: var(--ui-branco); font-size: 12.5px; font-weight: 600; line-height: 1; }
 .mais-pro svg { display: block; flex: none; color: #FF9DC4; }
 
 .mais-corpo { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 24px; background: var(--ui-fundo); }
@@ -58,7 +58,7 @@
 .mais-at { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
 .mais-at button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 64px; margin: 0; padding: 10px 4px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .mais-at button svg { color: var(--ui-rosa-escuro); }
-.mais-at i { position: absolute; top: 6px; right: calc(50% - 26px); min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.mais-at i { position: absolute; top: 6px; right: calc(50% - 26px); min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; }
 .mais-corpo { gap: 16px; }
 .mais-at + .mais-doo { margin-bottom: 0; }
 /* (21/10) as telas voltaram a ser uma lista única (ícone rosa, nome e explicação), igual à tela de Cadastros */

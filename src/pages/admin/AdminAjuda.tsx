@@ -57,21 +57,21 @@ export default function AdminAjuda() {
       ))}
       <style>{`
         .aa-root { font-family: var(--font-base); color: var(--ui-texto); max-width: 760px; }
-        .aa-h1 { font-size: 22px; font-weight: 700; margin: 0; }
+        .aa-h1 { font-size: 22px; font-weight: 600; margin: 0; }
         .aa-sub { font-size: 15px; font-weight: 500; color: var(--ui-texto-2); margin: 4px 0 20px; }
-        .aa-erro { margin: 0 0 12px; font-size: 14px; font-weight: 700; color: var(--ui-vermelho-escuro); }
+        .aa-erro { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--ui-vermelho-escuro); }
         .aa-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; margin-bottom: 12px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
         .aa-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .aa-tit { display: flex; flex-direction: column; min-width: 0; }
         .aa-tit b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .aa-tit small { font-size: 13px; color: var(--ui-texto-3); }
-        .aa-pct { flex: none; font-size: 22px; font-weight: 700; color: var(--ui-verde); }
+        .aa-pct { flex: none; font-size: 22px; font-weight: 600; color: var(--ui-verde); }
         .aa-pct--baixo { color: var(--ui-vermelho-escuro); }
         .aa-nums { display: flex; gap: 18px; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); }
         .aa-nums span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
         .aa-barra { height: 8px; border-radius: 99px; background: var(--ui-vermelho-fundo, #FBE4E4); overflow: hidden; }
         .aa-barra i { display: block; height: 100%; background: var(--ui-verde); border-radius: 99px; }
-        .aa-h2 { margin: 4px 0 0; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); }
+        .aa-h2 { margin: 4px 0 0; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); }
         .aa-mot { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
         .aa-mot li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--ui-linha, var(--ui-borda)); }
         .aa-mot p { margin: 0; font-size: 14.5px; line-height: 1.45; }

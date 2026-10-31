@@ -18,7 +18,7 @@
 /* chave liga/desliga */
 .ep-sw-l { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; margin: 0; padding: 8px 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
 .ep-sw-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.ep-sw-tx b { font-size: 15px; font-weight: 700; }
+.ep-sw-tx b { font-size: 15px; font-weight: 600; }
 .ep-sw-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 .ep-sw { position: relative; flex: none; width: 52px; height: 32px; border-radius: var(--ui-raio-cartao); background: var(--ui-borda-campo); transition: background-color .2s; }
 .ep-sw::before { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: var(--ui-branco); box-shadow: 0 1px 3px rgba(0,0,0,.18); transition: transform .2s; }
@@ -50,15 +50,15 @@
 .epv-t { display: flex; align-items: flex-start; gap: 8px; width: 100%; height: 62px; margin: 0; padding: 11px 14px 0; border: 0; border-radius: 14px 14px 0 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .epv-t:focus-visible, .epv-sh:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
 .epv-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.epv-tx b { font-size: 20px; font-weight: 800; line-height: 1.15; color: var(--ui-rosa); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.epv-tx b { font-size: 20px; font-weight: 600; line-height: 1.15; color: var(--ui-rosa); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .epv-tx small { margin-top: 2px; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.epv-sit { flex: none; display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); }
+.epv-sit { flex: none; display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--ui-texto-3); }
 .epv-sit i { width: 8px; height: 8px; border-radius: 50%; background: #B9AFB3; }
 .epv-sit.on { color: var(--ui-verde); }
 .epv-sit.on i { background: var(--ui-verde); }
 .epv-c { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 12px; padding: 6px 0 7px 2px; border-top: 1px dashed #EDB3C8; }
-.epv-c > b { min-width: 0; font-size: 14px; font-weight: 700; letter-spacing: .5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.epv-sh { flex: none; display: inline-flex; align-items: center; gap: 5px; min-height: 36px; margin: 0 -4px 0 0; padding: 0 4px; border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.epv-c > b { min-width: 0; font-size: 14px; font-weight: 600; letter-spacing: .5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.epv-sh { flex: none; display: inline-flex; align-items: center; gap: 5px; min-height: 36px; margin: 0 -4px 0 0; padding: 0 4px; border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; -webkit-tap-highlight-color: transparent; }
 @media (hover: hover) { .epv-t:hover .epv-tx b { text-decoration: underline; text-underline-offset: 3px; } .epv-sh:hover { text-decoration: underline; } }
 .epv.off { background: #F7F5F6; border-color: #D8D0D3; }
 .epv.off::before, .epv.off::after { border-color: #D8D0D3; }
@@ -70,12 +70,12 @@
 
 /* janela do cupom */
 .ep-form { display: flex; flex-direction: column; gap: 16px; }
-.ep-codigo input { font-weight: 700; letter-spacing: .04em; }
+.ep-codigo input { font-weight: 600; letter-spacing: .04em; }
 .ep-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--ui-raio-cartao); background: var(--ui-cinza); }
-.ep-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-.ep-seg button[aria-checked="true"] { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 700; box-shadow: var(--ui-sombra-cartao); }
-.ep-depois { flex: none; padding-right: 4px; font-size: 16px; font-weight: 700; color: var(--ui-texto-2); }
-.ep-sep { margin: 4px 0 -4px; padding-top: 16px; border-top: 1px solid var(--ui-linha); font-size: 15px; font-weight: 700; }
+.ep-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.ep-seg button[aria-checked="true"] { background: var(--ui-branco); color: var(--ui-rosa-escuro); font-weight: 600; box-shadow: var(--ui-sombra-cartao); }
+.ep-depois { flex: none; padding-right: 4px; font-size: 16px; font-weight: 600; color: var(--ui-texto-2); }
+.ep-sep { margin: 4px 0 -4px; padding-top: 16px; border-top: 1px solid var(--ui-linha); font-size: 15px; font-weight: 600; }
 .ep-g2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: end; }
 .ep-form .ep-sw-l { border-top: 0; padding: 0; }
 .ep-excluir { align-self: flex-start; padding: 0; color: var(--ui-vermelho); }
@@ -100,7 +100,7 @@
 .ep-res-obs { font-size: 12.5px; color: var(--ui-texto-2); }
 .ep-res-li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; color: var(--ui-texto); white-space: nowrap; }
 .ep-res-li svg { flex: none; color: var(--ui-verde, #16A34A); }
-.ep-res-li em { margin-left: auto; font-style: normal; font-weight: 700; color: var(--ui-texto); }
+.ep-res-li em { margin-left: auto; font-style: normal; font-weight: 600; color: var(--ui-texto); }
 
 /* (17/10) ícones dos cards em rosa com desenho branco, igual à lista da aba Cardápio */
 .ep-cab-ic { background: var(--ui-rosa); color: var(--ui-branco); }

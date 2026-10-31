@@ -6,7 +6,7 @@ import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { ArrowUp, ArrowDown, CaretRight, ArrowsLeftRight, Calculator, CalendarBlank, ChartPieSlice, CurrencyCircleDollar, Plus } from "@phosphor-icons/react";
+import { ArrowUp, ArrowDown, CaretRight, ArrowsLeftRight, Calculator, ChartPieSlice, CurrencyCircleDollar, Plus } from "@phosphor-icons/react";
 import PeriodoFiltro, { periodoHoje, periodoDoDia, type Periodo } from "@/components/financeiro/PeriodoFiltro";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, avisar } from "@/components/base";
@@ -155,10 +155,6 @@ export default function Financeiro() {
   const abrirReceber = (item: ItemReceber | null = null) => setReceber({ item });
 
   const mesAtual = periodo.ano === new Date().getFullYear() && periodo.mes === new Date().getMonth();
-  const tituloPer = tipo === "hoje" ? "Hoje" : tipo === "7dias" ? "Últimos 7 dias" : tipo === "30dias" ? "Últimos 30 dias"
-    : tipo === "mes" ? (mesAtual ? `${MESES[periodo.mes]} até hoje` : `${MESES[periodo.mes]} de ${periodo.ano}`) : extenso(per.ini, per.ate);
-  const maxRes = ok ? Math.max(ok.recebido, ok.despesas, 0.01) : 1;
-  const pct = (v: number) => `${Math.max(v > 0 ? 3 : 0, Math.round((v / maxRes) * 100))}%`;
   const caixaOk = !!cx && !cx.erro && !cx.precisaSql && cx.configurado;
   const caixaNeg = caixaOk && !!cx && cx.saldo < -0.004;
   const mesNome = MESES[periodo.mes].toLowerCase();
@@ -175,9 +171,9 @@ export default function Financeiro() {
         infoIcon="💰" infoComo={COMO_FINANCEIRO} infoTour={TOUR_FINANCEIRO}
         rightActions={
           <div className="fd-hd">
-            <button type="button" className="fd-hd-bt r" onClick={() => abrirReceber()}><CurrencyCircleDollar size={17} weight="bold" />Receber pedido{qtdReceber > 0 && <em>{qtdReceber}</em>}</button>
-            <button type="button" className="fd-hd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Entrada</button>
-            <button type="button" className="fd-hd-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Saída</button>
+            <button type="button" className="fd-hd-bt r" onClick={() => abrirReceber()}><CurrencyCircleDollar size={17} weight="bold" />Receber{qtdReceber > 0 && <em>{qtdReceber}</em>}</button>
+            <button type="button" className="fd-hd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Entrou</button>
+            <button type="button" className="fd-hd-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Saiu</button>
           </div>
         }
         infoContent={<>
@@ -533,11 +529,11 @@ const CSS = `
   .fd-ph--p { height: 120px; }
   .fd-hd { display: flex; align-items: center; gap: 8px; }
   .fd-hd-mes { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,.18); border-radius: var(--ui-raio-p); padding: 4px; }
-  .fd-hd-mes b { font-size: 14px; font-weight: 700; color: var(--ui-branco); padding: 0 6px; white-space: nowrap; }
+  .fd-hd-mes b { font-size: 14px; font-weight: 600; color: var(--ui-branco); padding: 0 6px; white-space: nowrap; }
   .fd-hd-mes button { position: relative; width: 36px; height: 36px; border: none; border-radius: 8px; background: rgba(255,255,255,.18); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .fd-hd-mes button::after { content: ""; position: absolute; inset: -4px; }
   .fd-hd-mes button:disabled { opacity: .35; cursor: default; }
-  .fd-hd-bt { display: flex; align-items: center; gap: 6px; min-height: 44px; border: none; border-radius: var(--ui-raio-botao); padding: 0 14px; font-family: var(--font-base); font-size: 14px; font-weight: 700; color: var(--ui-branco); cursor: pointer; white-space: nowrap; }
+  .fd-hd-bt { display: flex; align-items: center; gap: 6px; min-height: 44px; border: none; border-radius: var(--ui-raio-botao); padding: 0 14px; font-family: var(--font-base); font-size: 14px; font-weight: 600; color: var(--ui-branco); cursor: pointer; white-space: nowrap; }
   .fd-hd-bt { font-weight: 600; }
   .fd-hd-bt.e { background: #16A34A; } .fd-hd-bt.s { background: var(--ui-vinho-escuro); }
   .fd-hd-bt.r { background: var(--ui-branco); color: #B45309; }
@@ -580,7 +576,7 @@ const CSS = `
   .fd-lst-nova { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; min-height: 40px; margin-top: 4px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; }
   @media (max-width: 1023px) { .fd-listas { grid-template-columns: minmax(0, 1fr); } }
   .fd-mes { display: flex; justify-content: space-between; align-items: center; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio); padding: 6px; }
-  .fd-mes b { font-size: 14.5px; font-weight: 700; color: var(--ui-texto); }
+  .fd-mes b { font-size: 14.5px; font-weight: 600; color: var(--ui-texto); }
   .fd-mes button { width: 44px; height: 44px; border-radius: var(--ui-raio-p); border: none; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .fd-mes button:disabled { opacity: .35; cursor: default; }
   .fd-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -594,7 +590,7 @@ const CSS = `
   .fd-k b, .fd-k2 b { display: block; font-size: clamp(16px, 4.6vw, 24px); font-weight: 600; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ui-texto); }
   .fd-k i, .fd-k2 i { display: flex; align-items: center; gap: 3px; font-style: normal; font-size: 13px; color: #888780; line-height: 1.35; }
   .fd-k b.e { color: var(--ui-verde); } .fd-k b.s { color: var(--ui-vermelho); } .fd-k b.l { color: var(--ui-rosa-escuro); }
-  .fd-venc { font-style: normal; font-weight: 700; color: var(--ui-vermelho); } /* 11/10: conta já vencida */
+  .fd-venc { font-style: normal; font-weight: 600; color: var(--ui-vermelho); } /* 11/10: conta já vencida */
   .fd-contas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .fd-k2 { cursor: pointer; } .fd-k2.rec { border-left: 4px solid #F59E0B; } .fd-k2.pag { border-left: 4px solid #EF4444; }
   .fd-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px; }
@@ -618,14 +614,14 @@ const CSS = `
   .fd-lg i { display: inline-block; width: 8px; height: 8px; border-radius: 3px; } .fd-lg i.e { background: #22C55E; } .fd-lg i.s { background: #F87171; } .fd-lg i.l { background: var(--ui-vinho-escuro); border-radius: 50%; }
   .fd-ph { height: 150px; background: #FAF7F8; border-radius: var(--ui-raio-p); }
   .fd-fl-res { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 4px; font-size: 12.5px; color: var(--ui-texto-2); }
-  .fd-fl-res b { font-weight: 700; color: var(--ui-texto); } .fd-fl-res b.e { color: var(--ui-verde); } .fd-fl-res b.s { color: var(--ui-vermelho); }
+  .fd-fl-res b { font-weight: 600; color: var(--ui-texto); } .fd-fl-res b.e { color: var(--ui-verde); } .fd-fl-res b.s { color: var(--ui-vermelho); }
   .fd-nota { margin: 8px 0 0; font-size: 12px; color: var(--ui-texto-3); line-height: 1.4; }
   .fd-mais-t { margin: 4px 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
   .fd-mais-g { display: grid; grid-template-columns: 1fr; gap: 8px; }
   @media (min-width: 640px) { .fd-mais-g { grid-template-columns: repeat(3, 1fr); } }
   .fd-mais-g button { display: grid; grid-template-columns: 38px 1fr; column-gap: 10px; align-items: center; text-align: left; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-botao); padding: 12px; font-family: inherit; color: var(--ui-texto); cursor: pointer; }
   .fd-mais-g span { grid-row: span 2; width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
-  .fd-mais-g b { font-size: 14px; font-weight: 700; } .fd-mais-g small { font-size: 13px; color: var(--ui-texto-2); }
+  .fd-mais-g b { font-size: 14px; font-weight: 600; } .fd-mais-g small { font-size: 13px; color: var(--ui-texto-2); }
 
   /* ═══ (4.29 · resultado em destaque) ═══ */
   .fd { margin-top: 0; padding-top: 14px; padding-bottom: 150px; grid-template-areas: "res" "tres" "movs" "fluxo" "formas" "vend" "mais"; }

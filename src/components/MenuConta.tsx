@@ -2,12 +2,11 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { Bell, Gear, Lightbulb, Newspaper, SignOut, Sparkle, WarningCircle } from "@phosphor-icons/react";
+import { Gear, Lightbulb, Newspaper, SignOut, Sparkle, WarningCircle } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { Botao, Janela, avisar } from "@/components/base";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { abrirDooIA } from "@/components/MenuContaItens";
-import { usePlano } from "@/hooks/usePlano";
 import { sairDaConta } from "@/hooks/useProfile";
 import { VERSAO_APP } from "@/lib/versao";
 import "./menuConta.css";
@@ -27,7 +26,6 @@ interface Props {
 
 export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
   const navigate = useNavigate();
-  const { isPro } = usePlano();
   const caixa = useRef<HTMLDivElement>(null);
   const fase = useFase(aberto);
   const [lugar, setLugar] = useState({ topo: 88, direita: 12 });

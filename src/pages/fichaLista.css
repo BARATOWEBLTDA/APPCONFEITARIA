@@ -1,7 +1,7 @@
 /* Ficha técnica · lista (10.2). Base em clientes.css (cl9-*). */
 .fl-alerta { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; margin: 0 0 12px; padding: 12px 14px; border: 0; border-radius: var(--ui-raio-cartao); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); text-align: left; }
 .fl-alerta > span:nth-child(2) { flex: 1; min-width: 0; }
-.fl-alerta b { display: block; font-size: 15px; font-weight: 700; }
+.fl-alerta b { display: block; font-size: 15px; font-weight: 600; }
 .fl-alerta small { display: block; font-size: 13px; color: var(--ui-vermelho-escuro); opacity: .85; }
 .fl-alerta-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-branco); }
 .fl-cab { display: none; }
@@ -10,18 +10,18 @@
 .fl-th { grid-area: t; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .fl-th img { width: 100%; height: 100%; object-fit: cover; }
 .fl-tx { grid-area: n; min-width: 0; }
-.fl-tx b, .fl-lucro b { display: block; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fl-tx b, .fl-lucro b { display: block; font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fl-tx small, .fl-lucro small, .fl-col small { display: block; font-size: 13px; font-weight: 400; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fl-lucro { grid-area: l; text-align: right; }
 .fl-lucro--ok b { color: var(--ui-verde); }
 .fl-lucro--atencao b { color: var(--ui-laranja); }
 .fl-lucro--neg b { color: var(--ui-vermelho-escuro); }
-.fl-montar { grid-area: l; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); }
+.fl-montar { grid-area: l; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); }
 .fl-l > svg { grid-area: s; color: var(--ui-texto-3); }
 /* (27/10) celular: mais espaço para o nome do produto (antes "Bolo Morango e N…") */
 @media (max-width: 900px) { .fl-l { gap: 2px 10px; } .fl-th { width: 44px; height: 44px; } .fl-lucro b { font-size: 14.5px; } .fl-l > svg { width: 16px; } }
 .fl-pc, .fl-pci { display: none; }
-.fl-pill { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-style: normal; font-weight: 700; }
+.fl-pill { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-style: normal; font-weight: 600; }
 .fl-pill--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
 .fl-pill--atencao { background: var(--ui-laranja-fundo); color: #92400E; }
 .fl-pill--neg { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
@@ -31,7 +31,7 @@
   .fl-l { grid-template-columns: 48px minmax(0, 2fr) repeat(2, minmax(0, 1fr)) 90px 24px; grid-template-areas: none; padding: 10px 12px; }
   .fl-l > * { grid-area: auto !important; }
   .fl-l:hover { background: #FCFAFB; }
-  .fl-pc { display: block; font-size: 15px; font-weight: 700; }
+  .fl-pc { display: block; font-size: 15px; font-weight: 600; }
   .fl-pci { display: inline; }
   .fl-cel { display: none !important; }
   .fl-lucro { text-align: left; }
@@ -46,7 +46,7 @@
 /* (24/10) progresso das fichas + "Montar a próxima" */
 .fl-prog { display: flex; flex-direction: column; gap: 12px; margin: 0 0 12px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
 .fl-prog-tx { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.fl-prog-tx b { font-size: 16px; font-weight: 700; color: var(--ui-texto); }
+.fl-prog-tx b { font-size: 16px; font-weight: 600; color: var(--ui-texto); }
 .fl-prog-bar { display: block; height: 8px; overflow: hidden; border-radius: 999px; background: var(--ui-cinza); }
 .fl-prog-bar i { display: block; height: 100%; border-radius: 999px; background: var(--ui-rosa); }
 .fl-prog-tx small { font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }

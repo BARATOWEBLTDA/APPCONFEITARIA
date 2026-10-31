@@ -184,8 +184,8 @@
   --fw-regular:  400;
   --fw-medium:   500;
   --fw-semibold: 600;
-  --fw-bold:     700;
-  --fw-black:    700;
+  --fw-bold:     600; /* (31/10 · 5.84) tipografia suave: nada passa de 600 */
+  --fw-black:    600;
   /* Pesos por papel (09/10): título 800 · valor e nome em lista 700 · rótulo e apoio 500 */
   --ui-peso-titulo: 800;
   --ui-peso-valor:  700;

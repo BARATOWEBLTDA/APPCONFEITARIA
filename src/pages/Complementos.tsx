@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calculator, Camera, Check, Crown, DotsThreeVertical, Eye, Storefront, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, PuzzlePiece, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Calculator, Camera, Check, Crown, Eye, Storefront, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { formatarNomeItem, parecefrase } from "@/lib/nomeItem";
@@ -10,7 +10,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
 import mascoteCoroa from "@/assets/mascote-coroa.webp";
 import { createPortal } from "react-dom";
-import { Botao, BotaoIA, BotaoIcone, Campo, MenuMais, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIA, Campo, MenuMais, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import { usePlano } from "@/hooks/usePlano";
 import { LIMITE_COMPLEMENTOS_GRATIS } from "@/lib/limitesPlano";
 import RecursoPro from "@/components/billing/RecursoPro";
@@ -303,7 +303,7 @@ export default function Complementos() {
                 {pro
                   ? <Botao className="pz-vazio-cta" icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
                   : <Botao className="pz-vazio-cta" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>}
-                <Botao variante="secundario" className="pz-vazio-ver" icone={<Eye size={20} weight="bold" />} aria-label="Ver como fica" onClick={() => setVerExemplo(true)}>Ver</Botao>
+                <Botao variante="secundario" className="pz-vazio-ver" icone={<Eye size={20} weight="bold" />} aria-label="Ver como fica" onClick={() => setVerExemplo(true)}><span className="pz-ver-t">Ver</span></Botao>
               </div>
             </div>
             <ExemploCardapio />

@@ -117,7 +117,7 @@ export default function FinanceiroTransacoes() {
     const q = busca.trim().toLowerCase();
     return itens.filter(i => (verEstornados || !i.estornado) && passa(i, tipo, formas)
       && (!q || `${i.titulo} ${i.subtipo} ${i.detalhe}`.toLowerCase().includes(q)));
-  }, [itens, tipo, formas, busca, verEstornados]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [itens, tipo, formas, busca, verEstornados]);
   const porDia = useMemo(() => {
     const g: { dia: string; itens: MovExtrato[] }[] = [];
     for (const i of lista) { const u = g[g.length - 1]; if (u && u.dia === i.data) u.itens.push(i); else g.push({ dia: i.data, itens: [i] }); }
@@ -317,7 +317,7 @@ const CSS = `
   .tx-mes button { width: 36px; height: 36px; border: none; border-radius: 10px; background: #F6F1F3; color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .tx-mes button:disabled { opacity: .35; cursor: default; }
   .tx-saldo > small { display: block; font-size: 13px; color: var(--ui-texto-2); }
-  .tx-saldo > strong { display: block; margin-top: 2px; font-size: clamp(26px, 8vw, 32px); font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx-saldo > strong { display: block; margin-top: 2px; font-size: clamp(26px, 8vw, 32px); font-weight: 600; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tx-saldo > strong.neg { color: var(--ui-vermelho); }
   .tx-es { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 8px; }
   .tx-es span { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; white-space: nowrap; }
@@ -329,7 +329,7 @@ const CSS = `
   .tx-busca input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: none; }
   .tx-ph { height: 220px; background: #FAF7F8; border-radius: var(--ui-raio-cartao); }
   .tx-vazio { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 26px 18px; text-align: center; }
-  .tx-vazio b { display: block; font-size: 15.5px; font-weight: 700; } .tx-vazio p { margin: 6px auto 0; font-size: 13.5px; color: var(--ui-texto-2); max-width: 360px; line-height: 1.45; }
+  .tx-vazio b { display: block; font-size: 15.5px; font-weight: 600; } .tx-vazio p { margin: 6px auto 0; font-size: 13.5px; color: var(--ui-texto-2); max-width: 360px; line-height: 1.45; }
   .tx-dia-t { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0 2px 6px; }
   .tx-dia-t b { font-size: 14px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .tx-dia-t span { flex: none; font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; } .tx-dia-t em { font-style: normal; font-weight: 600; color: var(--ui-texto); }
@@ -340,9 +340,9 @@ const CSS = `
   .tx-ic.e { background: var(--ui-verde-fundo); color: var(--ui-verde); } .tx-ic.s { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
   .tx-it-t { min-width: 0; } .tx-it-t b { display: block; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tx-it-t small { display: block; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-  .tx-it-v { font-size: 14.5px; font-weight: 700; white-space: nowrap; text-align: right; } .tx-it-v.e { color: var(--ui-verde); } .tx-it-v.s { color: var(--ui-texto); }
+  .tx-it-v { font-size: 14.5px; font-weight: 600; white-space: nowrap; text-align: right; } .tx-it-v.e { color: var(--ui-verde); } .tx-it-v.s { color: var(--ui-texto); }
   .tx-it.est { opacity: .5; } .tx-it.est .tx-it-v, .tx-it.est .tx-it-t b { text-decoration: line-through; }
-  .tx-ver-est { align-self: center; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); cursor: pointer; padding: 8px;  min-height: 44px; }
+  .tx-ver-est { align-self: center; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-texto-3); cursor: pointer; padding: 8px;  min-height: 44px; }
   .tx-dl { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; font-size: 13.5px; } .tx-dl span { color: var(--ui-texto-2); } .tx-dl b { text-align: right; }
   .tx-dl b.e { color: var(--ui-verde); } .tx-dl b.s { color: var(--ui-vermelho); }
   /* Entrou e Saiu presos no rodapé (celular), iguais aos do Financeiro */

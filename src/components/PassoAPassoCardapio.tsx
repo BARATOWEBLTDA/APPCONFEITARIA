@@ -324,7 +324,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
             flex-shrink: 0;
           }
           .pap-done-info { flex: 1; }
-          .pap-done-t { font-size: 13.5px; font-weight: 700; margin: 0; }
+          .pap-done-t { font-size: 13.5px; font-weight: 600; margin: 0; }
           .pap-done-s { font-size: 12px; opacity: 0.9; margin: 1px 0 0; }
           .pap-share-btn, .pap-done-btn { white-space: nowrap; }
           @media (max-width: 400px) { .pap-share-actions, .pap-done-actions { gap: 6px !important; } .pap-share-btn, .pap-done-btn { font-size: 12px !important; padding-left: 8px !important; padding-right: 8px !important; } }
@@ -339,7 +339,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           .pap-done-btn {
             padding: 10px;
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 600;
             border-radius: 4px;
             border: none;
             cursor: pointer;
@@ -429,12 +429,12 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           }
           .pap-share-tag {
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 600;
             color: #86EFAC;
           }
           .pap-share-t {
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 600;
             margin: 0 0 4px;
             position: relative;
           }
@@ -453,7 +453,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           .pap-share-btn {
             padding: 10px;
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 600;
             border-radius: 4px;
             border: none;
             cursor: pointer;
@@ -590,7 +590,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-title {
           font-size: 20px;
-          font-weight: 700;
+          font-weight: 600;
           color: var(--ui-texto);
           margin: 0 0 4px;
           letter-spacing: -0.01em;
@@ -609,7 +609,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           border-radius: var(--ui-raio-p);
           margin-bottom: 14px;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           color: #16a34a;
         }
         .pap-progress-bar {
@@ -655,13 +655,13 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-hero-eyebrow {
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 600;
           color: #F9A8C9;
           margin: 0 0 6px;
         }
         .pap-hero-title {
           font-size: 17px;
-          font-weight: 700;
+          font-weight: 600;
           color: var(--ui-branco);
           margin: 0 0 6px;
           letter-spacing: -0.01em;
@@ -683,7 +683,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           border-radius: var(--ui-raio-p);
           font-family: inherit;
           font-size: 13.5px;
-          font-weight: 700;
+          font-weight: 600;
           cursor: pointer;
         }
         .pap-hero-cta:active { transform: scale(0.98); }
@@ -700,12 +700,12 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         .pap-row { display: flex; gap: 8px; margin-top: 10px; }
         .pap-btn-ia, .pap-btn-save {
           flex: 1; height: 42px; border-radius: var(--ui-raio-p); cursor: pointer;
-          font-family: inherit; font-size: 13.5px; font-weight: 700;
+          font-family: inherit; font-size: 13.5px; font-weight: 600;
         }
         .pap-btn-ia { background: rgba(255,255,255,0.12); color: var(--ui-branco); border: 1px solid rgba(255,255,255,0.2); }
         .pap-btn-save { background: var(--ui-branco); color: var(--ui-texto); border: none; }
         .pap-btn-ia:disabled, .pap-btn-save:disabled { opacity: 0.5; cursor: default; }
-        .pap-aviso { margin: 0 0 10px; padding: 9px 12px; border-radius: var(--ui-raio-p); font-size: 12.5px; font-weight: 700; }
+        .pap-aviso { margin: 0 0 10px; padding: 9px 12px; border-radius: var(--ui-raio-p); font-size: 12.5px; font-weight: 600; }
         .pap-aviso--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
         .pap-aviso--err { background: var(--ui-vermelho-fundo); color: #B91C1C; }
 
@@ -746,7 +746,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           background: var(--ui-branco);
         }
         .pap-item.next .pap-item-t {
-          font-weight: 700;
+          font-weight: 600;
         }
         .pap-item:disabled { cursor: default; }
         .pap-item.todo:active { transform: scale(0.98); }
@@ -755,7 +755,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           width: 22px; height: 22px;
           border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
-          font-size: 12px; font-weight: 700;
+          font-size: 12px; font-weight: 600;
           flex-shrink: 0;
           background: var(--ui-linha);
           color: #6B7280;
@@ -776,7 +776,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-item-tag {
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 600;
           color: var(--ui-texto);
           flex-shrink: 0;
         }

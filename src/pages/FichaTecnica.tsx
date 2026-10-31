@@ -138,11 +138,6 @@ type FichaItem = {
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (v: number) => v.toFixed(1).replace(".", ",");
 
-const fmtCusto = (v: number) => {
-  const n = Number(v) || 0;
-  return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-};
-
 /** Formata quantidade sem casas decimais desnecessárias.
  *  Ex: 1 → "1"; 1.5 → "1,5"; 0.25 → "0,25"; 395 → "395". */
 const fmtQty = (v: number): string => {
@@ -168,19 +163,19 @@ const fmtUnidade = (unidade: string, qtd: number): string => {
  *  Mantidas curtas para combinar bem com `text-wrap: balance`. */
 const MODAL_TITLE_VARIANTS: ((nome: string) => ReactNode)[] = [
   // Formais
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, veja como calculamos este custo.</>,
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, confira como chegamos a este valor.</>,
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, entenda como este custo foi calculado.</>,
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, vamos mostrar como esse valor foi obtido.</>,
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, veja o passo a passo deste cálculo.</>,
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, descubra como calculamos este ingrediente.</>,
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, este é o cálculo por trás deste custo.</>,
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, entenda de onde vem este valor.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, veja como calculamos este custo.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, confira como chegamos a este valor.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, entenda como este custo foi calculado.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, vamos mostrar como esse valor foi obtido.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, veja o passo a passo deste cálculo.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, descubra como calculamos este ingrediente.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, este é o cálculo por trás deste custo.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, entenda de onde vem este valor.</>,
   // Descontraídas
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, sem mistério! Veja como fizemos esse cálculo.</>,
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, vamos abrir a calculadora e mostrar tudo.</>,
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, aqui está a conta por trás deste custo.</>,
-  (n) => <><strong style={{ fontWeight: 700 }}>{n}</strong>, veja cada etapa do cálculo.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, sem mistério! Veja como fizemos esse cálculo.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, vamos abrir a calculadora e mostrar tudo.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, aqui está a conta por trás deste custo.</>,
+  (n) => <><strong style={{ fontWeight: 600 }}>{n}</strong>, veja cada etapa do cálculo.</>,
 ];
 
 /**
@@ -196,6 +191,11 @@ type MaoConta = MaoObraConta;
 let VENDA: CustoDaVenda | null = null;
 function calcular(p: Produto, conta: MaoConta = null, cvConta: number | null = null) {
   return calcularCustoLucro(p, conta, cvConta, VENDA);
+}
+
+// (31/10 · 5.84) fora do componente da tela
+function Chave({ ligado, aoMudar, rotulo }: { ligado: boolean; aoMudar: (v: boolean) => void; rotulo: string }) {
+  return <button type="button" role="switch" aria-checked={ligado} aria-label={rotulo} className="fd-chave" onClick={() => aoMudar(!ligado)}><span /></button>;
 }
 
 export default function FichaTecnica() {
@@ -214,7 +214,7 @@ export default function FichaTecnica() {
   // Edicao da ficha
   const [insumosCadastrados, setInsumosCadastrados] = useState<Insumo[]>([]);
   const [ficha, setFicha] = useState<FichaItem[]>([]);
-  const [buscaInsumo, setBuscaInsumo] = useState("");
+  const [, setBuscaInsumo] = useState("");
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState("");
   const [moAtivo, setMoAtivo] = useState(false);
@@ -545,7 +545,6 @@ export default function FichaTecnica() {
     const custoTotalLive = cmvLive + cvLive + moLive + taxaLive + fixoLive;
     const lucroLive = precoLive - custoTotalLive;
     const margemLucroLive = precoLive > 0 ? (lucroLive / precoLive) * 100 : 0;
-    const temFicha = ficha.length > 0;
 
     const foto = (selected.imagem_url || "").split(",")[0];
         const tom = margemLucroLive >= 30 ? "ok" : margemLucroLive >= 0 ? "atencao" : "neg";
@@ -555,7 +554,8 @@ export default function FichaTecnica() {
     const abrirCadastro = () => { setQuickAddName(""); setShowQuickAdd(true); };
 
     // Conta do lucro (a mesma no resumo do celular e na coluna do computador)
-    const Conta = () => (
+    // (31/10 · 5.84) pedaços prontos (não componentes criados a cada desenho)
+    const conta = (
       <div className="fd-conta">
         <div><span>Ingredientes</span><span>R$ {fmt(cmvLive)}</span></div>
         <div><span>Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
@@ -568,7 +568,7 @@ export default function FichaTecnica() {
         {infoAtivo && rendeUn > 0 && <div><span>Custo de cada unidade (rende {extras.rendimento_qtd})</span><span>R$ {fmt(custoTotalLive / rendeUn)}</span></div>}
       </div>
     );
-    const Barra = () => precoLive > 0 ? (() => {
+    const barra = precoLive > 0 ? (() => {
       const pc = (v: number) => `${Math.max(0, Math.min(100, (v / precoLive) * 100))}%`;
       return (
         <>
@@ -589,9 +589,6 @@ export default function FichaTecnica() {
         </>
       );
     })() : null;
-    const Chave = ({ ligado, aoMudar, rotulo }: { ligado: boolean; aoMudar: (v: boolean) => void; rotulo: string }) => (
-      <button type="button" role="switch" aria-checked={ligado} aria-label={rotulo} className="fd-chave" onClick={() => aoMudar(!ligado)}><span /></button>
-    );
 
     return (
       <>
@@ -610,8 +607,8 @@ export default function FichaTecnica() {
                 <span>{fmtPct(margemLucroLive)}% de margem</span>
               </div>
             </div>
-            <Barra />
-            <Conta />
+            {barra}
+            {conta}
           </section>
 
           {/* Ingredientes */}
@@ -731,8 +728,8 @@ export default function FichaTecnica() {
                 <span>{fmtPct(margemLucroLive)}% de margem</span>
               </div>
             </div>
-            <Barra />
-            <Conta />
+            {barra}
+            {conta}
             <Botao cheio carregando={saving} onClick={salvarFicha}>Salvar ficha</Botao>
           </section>
         </aside>
@@ -804,7 +801,6 @@ export default function FichaTecnica() {
           const FEMININOS = new Set(["lata", "caixa", "bandeja", "garrafa", "bisnaga", "embalagem"]);
           const ehFem = FEMININOS.has(tipoEmbBaixo);
           const naNo = ehFem ? "na" : "no";
-          const daDo = ehFem ? "da" : "do";
           const umaUm = ehFem ? "uma" : "um";
 
           // Custo por unidade derivado (pra item contável em embalagem)

@@ -69,7 +69,7 @@ export function SeloEntregaFoto({ produto }: { produto: any }) {
         display: "inline-flex", alignItems: "center", gap: 4,
         padding: "3px 8px", borderRadius: 6, // (14/10) etiqueta retangular, padrão do app
         background: "rgba(255,255,255,0.96)", boxShadow: "0 2px 6px rgba(0,0,0,0.14)",
-        fontSize: 12, fontWeight: 700, lineHeight: 1.2, whiteSpace: "nowrap",
+        fontSize: 12, fontWeight: 600, lineHeight: 1.2, whiteSpace: "nowrap",
         color: pronta ? "#15803D" : "#2C1219",
         maxWidth: "calc(100% - 12px)", overflow: "hidden", textOverflow: "ellipsis",
       }}
@@ -91,7 +91,7 @@ export function AvisoAntecedencia({ produto }: { produto: any }) {
     }}>
       <span style={{ marginTop: 1 }}><IconeCalendario size={16} /></span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <strong style={{ display: "block", fontSize: 13.5, fontWeight: 700, lineHeight: 1.3, textWrap: "balance" } as any}>Encomende com {s.prazo} de antecedência</strong>
+        <strong style={{ display: "block", fontSize: 13.5, fontWeight: 600, lineHeight: 1.3, textWrap: "balance" } as any}>Encomende com {s.prazo} de antecedência</strong>
         {/* 02/10: bloco (antes ficava solto na linha e ignorava a altura de linha) e um texto que ajuda */}
         <span style={{ display: "block", marginTop: 3, fontSize: 12.5, color: "#6B5D64", lineHeight: 1.4, textWrap: "balance" } as any}>Você escolhe o dia ao finalizar o pedido.</span>
       </div>

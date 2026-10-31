@@ -4,7 +4,7 @@
   background: var(--vinho-fundo); background-color: var(--chocolate-escuro);
   color: var(--ui-branco); font-family: var(--font-base); }
 .tm-corpo, .tm-base { width: 100%; max-width: 460px; margin: 0 auto; }
-.tm-root h1 { margin: 0 0 10px; font-size: 30px; line-height: 1.12; font-weight: 700; letter-spacing: -.02em; }
+.tm-root h1 { margin: 0 0 10px; font-size: 30px; line-height: 1.12; font-weight: 600; letter-spacing: -.02em; }
 .tm-sub { margin: 0; font-size: 15px; line-height: 1.5; color: rgba(255, 255, 255, .78); }
 .tm-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
 .tm-card { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 14px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .12); }
@@ -33,9 +33,9 @@
 @media (min-width: 600px) { .ca-veu { align-items: center; padding: 20px; } .ca-jan { max-width: 440px; border-radius: 24px; } }
 .ca-hd { position: relative; overflow: hidden; min-height: 128px; padding: 24px 16px 20px 124px; background: linear-gradient(135deg, var(--ui-rosa) 0%, var(--ui-rosa-escuro) 100%); color: #fff; }
 .ca-masc { position: absolute; left: 12px; bottom: -6px; z-index: 2; width: 110px; height: auto; }
-.ca-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.ca-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
 .ca-tag i { width: 8px; height: 8px; border-radius: 50%; background: #86EFAC; }
-.ca-jan h2 { margin: 6px 0 4px; font-size: 19px; line-height: 1.15; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+.ca-jan h2 { margin: 6px 0 4px; font-size: 19px; line-height: 1.15; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
 .ca-sub { margin: 0; font-size: 13.5px; color: rgba(255, 255, 255, .92); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ca-cf { position: absolute; width: 6px; height: 10px; border-radius: 2px; }
 .ca-lista { list-style: none; margin: 0; padding: 10px 20px 0; }
@@ -43,6 +43,6 @@
 .ca-lista li + li { border-top: 1px solid var(--ui-linha, #F3EEF0); }
 .ca-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
 .ca-v { margin-left: auto; flex: none; color: var(--ui-verde); }
-.ca-lista li.ca-mais { min-height: 48px; font-weight: 700; color: var(--ui-rosa-escuro); }
+.ca-lista li.ca-mais { min-height: 48px; font-weight: 600; color: var(--ui-rosa-escuro); }
 .ca-lista li.ca-mais .ca-ic { background: var(--ui-rosa); color: #fff; }
 .ca-pe { padding: 12px 20px calc(22px + env(safe-area-inset-bottom, 0px)); }

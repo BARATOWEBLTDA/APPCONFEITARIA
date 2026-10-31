@@ -1,3 +1,5 @@
+import { usePlano } from "@/hooks/usePlano";
+import RecursoPro from "@/components/billing/RecursoPro";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle, FacebookLogo, Lightbulb, Megaphone, Ticket } from "@phosphor-icons/react";
@@ -42,7 +44,10 @@ export default function Marketing() {
     await refreshProfile();
     avisar(valor ? "Pixel salvo. Ele já roda no seu cardápio." : "Pixel removido do cardápio", { tipo: "ok" });
   };
-  const salvar = () => { setTentou(true); if (!limpo) { void gravar(null); return; } if (pixelValido(limpo)) void gravar(limpo); };
+  // (31/10 · 5.84) Pixel do Facebook é recurso PRO
+  const { isPro, loading: carregandoPlano } = usePlano();
+  const [proAberto, setProAberto] = useState(false);
+  const salvar = () => { if (!carregandoPlano && !isPro && limpo) { setProAberto(true); return; } setTentou(true); if (!limpo) { void gravar(null); return; } if (pixelValido(limpo)) void gravar(limpo); };
 
   return (
     <>
@@ -56,6 +61,7 @@ export default function Marketing() {
         </div>
 
         {aba === "cupons" && <div className="mk-cupons"><CheckoutConfigPage embutido parte="cupons" /></div>}
+        {proAberto && <RecursoPro titulo="Pixel do Facebook" texto="No plano PRO, o pixel conta para o Facebook e o Instagram quem visitou e quem comprou, e seus anúncios ficam mais certeiros." onClose={() => setProAberto(false)} />}
 
         {aba === "pixel" && (
           <div className="mk-grid">

@@ -35,7 +35,7 @@ const STATUS: Record<string, [string, string]> = {
   aguardando_retirada: ["Pronto", "ok"], em_entrega: ["Saiu para entrega", "bl"], entregue: ["Entregue", "ok"], concluido: ["Entregue", "ok"], cancelado: ["Cancelado", "cz"],
 };
 
-export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, onShare }: { profile: any; linkCardapio: string; publicado: boolean; onShare: () => void }) {
+export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _publicado, onShare }: { profile: any; linkCardapio: string; publicado: boolean; onShare: () => void }) {
   const navigate = useNavigate();
   const pro = ehPro(profile);
   const [completo, setCompleto] = useState<boolean | null>(null);
@@ -100,7 +100,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
 
 
   const copiar = async () => {
-    try { await navigator.clipboard.writeText(linkCardapio); setCopiado(true); setTimeout(() => setCopiado(false), 1800); } catch {}
+    try { await navigator.clipboard.writeText(linkCardapio); setCopiado(true); setTimeout(() => setCopiado(false), 1800); } catch { /* navegador sem permissão de copiar: só não mostra "copiado" */ }
   };
   const baixarQr = () => {
     if (!qr) return;
@@ -223,13 +223,13 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
       <style>{`
         .vgd { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-base); color: var(--ui-texto); margin-top: 20px; }
         .vgd-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 18px 20px; }
-        .vgd-ct { margin: 0; font-size: 15.5px; font-weight: 700; } .vgd-cs { margin: 2px 0 0; font-size: 12.5px; color: var(--ui-texto-3); }
+        .vgd-ct { margin: 0; font-size: 15.5px; font-weight: 600; } .vgd-cs { margin: 2px 0 0; font-size: 12.5px; color: var(--ui-texto-3); }
         .vgd-rowh { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
         .vgd-hero { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; border-radius: var(--ui-raio-cartao); padding: 20px 22px; color: var(--ui-branco); background: linear-gradient(135deg, var(--ui-vinho-escuro), #5A3626); }
-        .vgd-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #86EFAC; background: rgba(134,239,172,.12); padding: 4px 10px; border-radius: 999px; }
+        .vgd-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #86EFAC; background: rgba(134,239,172,.12); padding: 4px 10px; border-radius: 999px; }
         .vgd-st i { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; }
         .vgd-st.off { color: #FCD34D; background: rgba(252,211,77,.12); } .vgd-st.off i { background: #FBBF24; }
-        .vgd-hero h2 { margin: 8px 0 0; font-size: 20px; font-weight: 700; color: var(--ui-branco); }
+        .vgd-hero h2 { margin: 8px 0 0; font-size: 20px; font-weight: 600; color: var(--ui-branco); }
         .vgd-lk { display: flex; align-items: center; gap: 8px; margin-top: 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: var(--ui-raio); padding: 10px 12px; font-size: 13.5px; }
         .vgd-lk span { flex: 1; opacity: .9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .vgd-btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
@@ -244,8 +244,8 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-kp { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
         .vgd-k { border: 1px solid #F0EBED; border-radius: 14px; padding: 12px 14px; }
         .vgd-k small { display: block; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
-        .vgd-k b { display: block; font-size: 22px; font-weight: 700; margin-top: 2px; white-space: nowrap; }
-        .vgd-k em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--ui-verde); } .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: var(--ui-texto-3); font-weight: 500; }
+        .vgd-k b { display: block; font-size: 22px; font-weight: 600; margin-top: 2px; white-space: nowrap; }
+        .vgd-k em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--ui-verde); } .vgd-k em.down { color: #B91C1C; } .vgd-k em.n { color: var(--ui-texto-3); font-weight: 500; }
         .vgd-gr { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--ui-linha); }
         .vgd-gt { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--ui-texto-2); }
         .vgd-gv { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 10px; padding: 14px 16px; border-radius: var(--ui-raio); background: var(--ui-cinza, #F6F3F4); font-size: 14px; color: var(--ui-texto-2); }
@@ -264,7 +264,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-g2 { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
         .vgd-pe, .vgd-di { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 0; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; cursor: pointer; color: inherit; }
         .vgd-card > .vgd-pe:first-of-type, .vgd-card > .vgd-di:first-of-type { margin-top: 8px; }
-        .vgd-pa { width: 36px; height: 36px; border-radius: 50%; background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+        .vgd-pa { width: 36px; height: 36px; border-radius: 50%; background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0; }
         .vgd-pt, .vgd-dt { flex: 1; min-width: 0; }
         .vgd-pt b, .vgd-dt b { display: block; font-size: 13.5px; }
         .vgd-pt small, .vgd-dt small { display: block; font-size: 12px; color: var(--ui-texto-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -273,12 +273,12 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-dt { flex: 1 1 170px; }
         .vgd-db { margin-left: auto; }
         .vgd-pv { text-align: right; flex-shrink: 0; } .vgd-pv b { display: block; font-size: 13.5px; } .vgd-pv small { font-size: 13px; color: var(--ui-texto-3); }
-        .vgd-pill { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+        .vgd-pill { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
         .vgd-pill.ok { background: var(--ui-verde-fundo); color: var(--ui-verde); } .vgd-pill.rd { background: var(--ui-vermelho-fundo); color: #B91C1C; } .vgd-pill.bl { background: #DBEAFE; color: #1D4ED8; }
         .vgd-pill.am { background: var(--ui-laranja-fundo); color: var(--ui-laranja); } .vgd-pill.cz { background: #F3F4F6; color: #6B7280; }
         .vgd-vt { border: none; background: none; font: 700 14px var(--font-base); min-height: 44px; color: var(--ui-rosa-escuro); cursor: pointer; }
         .vgd-de { width: 36px; height: 36px; border-radius: var(--ui-raio-p); background: #FFF6F9; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-        .vgd-db { font-size: 12.5px; font-weight: 700; color: var(--ui-rosa-escuro); white-space: nowrap; }
+        .vgd-db { font-size: 12.5px; font-weight: 600; color: var(--ui-rosa-escuro); white-space: nowrap; }
         .vgd-vazio { margin: 14px 0 4px; font-size: 13px; color: var(--ui-texto-3); }
         .vgd-pe:hover b, .vgd-di:hover .vgd-db { color: var(--ui-rosa-escuro); }
         /* 08/10 · 3.21: no padrão do guia */
@@ -299,7 +299,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado, on
         .vgd-pa { width: 40px; height: 40px; }
         .vgd-pt b, .vgd-dt b { font-size: 15px; }
         .vgd-pt small, .vgd-dt small { font-size: 13px; color: var(--ui-texto-2); }
-        .vgd-pv b { font-size: 15px; } .vgd-pv small { font-size: 13px; font-weight: 700; }
+        .vgd-pv b { font-size: 15px; } .vgd-pv small { font-size: 13px; font-weight: 600; }
         .vgd-sit.ok { color: var(--ui-verde); } .vgd-sit.am { color: var(--ui-laranja); } .vgd-sit.bl { color: var(--ui-azul); } .vgd-sit.rs { color: var(--ui-rosa-escuro); } .vgd-sit.cz { color: var(--ui-texto-3); } .vgd-sit.rd { color: var(--ui-vermelho); }
         .vgd-de { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
         .vgd-db { display: inline-flex; align-items: center; gap: 2px; font-size: 13.5px; color: var(--ui-rosa-escuro); }

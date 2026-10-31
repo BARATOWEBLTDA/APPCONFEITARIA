@@ -80,7 +80,7 @@
 .sd-sem::-webkit-scrollbar { display: none; }
 .sd-sd { flex: 1 0 64px; min-width: 64px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 0 7px; border: 1px solid var(--ui-borda, #F0E6EA); border-radius: 12px; background: var(--ui-branco); font-family: inherit; color: var(--ui-texto); cursor: pointer; }
 .sd-sd small { font-size: 12.5px; font-weight: 600; color: var(--ui-texto-3); text-transform: capitalize; white-space: nowrap; }
-.sd-sd b { font-size: 20px; font-weight: 700; line-height: 1.2; }
+.sd-sd b { font-size: 20px; font-weight: 600; line-height: 1.2; }
 /* (22/10) sem o número de pedidos embaixo do dia: todos os quadradinhos iguais (a lista embaixo mostra os pedidos do dia tocado) */
 .sd-pts { display: flex; justify-content: center; gap: 4px; height: 8px; margin-top: 3px; }
 .sd-pts i { width: 7px; height: 7px; border-radius: 50%; }
@@ -92,7 +92,7 @@
 .sd-sd.on small, .sd-sd.on b { color: var(--ui-branco); }
 .sd-dvazio { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 68px; margin: 6px 16px 10px; padding: 0 6px 0 14px; border-radius: 12px; background: #FAF7F8; }
 .sd-dvazio span { min-width: 0; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sd-dvazio button { flex: none; min-height: 40px; padding: 0 10px; border: 0; border-radius: 8px; background: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+.sd-dvazio button { flex: none; min-height: 40px; padding: 0 10px; border: 0; border-radius: 8px; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
 
 /* (22/10) número em cima, bolinhas e o dia da semana por extenso embaixo */
 .sd-sd small { text-transform: none; font-size: 12px; font-weight: 500; }
@@ -103,7 +103,7 @@
 .sd-sem { gap: 8px; padding: 2px 16px 4px; scroll-snap-type: none; }
 .sd-sd { flex: 0 0 70px; min-width: 70px; gap: 2px; padding: 10px 0 9px; border-radius: 14px; }
 .sd-sd .sd-sd-mes { font-size: 12px; font-weight: 500; line-height: 1.2; color: var(--ui-texto-3); }
-.sd-sd b { font-size: 24px; font-weight: 700; line-height: 1.15; }
+.sd-sd b { font-size: 24px; font-weight: 600; line-height: 1.15; }
 .sd-sd--passado { border-color: transparent; background: #F1F2F2; }
 .sd-sd--passado b, .sd-sd--passado small, .sd-sd--passado .sd-sd-mes { color: #A3A6A8; }
 .sd-sd.on .sd-sd-mes { color: var(--ui-branco); }

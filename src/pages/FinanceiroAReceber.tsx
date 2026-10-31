@@ -1,5 +1,4 @@
 import CampoData from '@/components/CampoData'
-import { useTravarRolagem } from "@/hooks/useTravarRolagem";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";

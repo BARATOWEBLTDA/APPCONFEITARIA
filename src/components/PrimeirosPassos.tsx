@@ -4,7 +4,7 @@ const EntregaPagamento = lazy(() => import("@/pages/CheckoutConfigPage"));
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar, type Horario } from "@/components/loja/EditoresLoja";
 import { useNavigate } from "react-router-dom";
-import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, RocketLaunch, Lightbulb, ArrowRight, Info, Camera, PixLogo, Money, CreditCard, Storefront, Moped } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, RocketLaunch, Lightbulb, ArrowRight, Info, PixLogo, Money, CreditCard, Moped } from "@phosphor-icons/react";
 import ListaChaves from "@/components/loja/ListaChaves";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
@@ -23,7 +23,7 @@ import PreviaTopoCardapio, { type DadosPrevia } from "@/components/cardapio/Prev
 import { PreviaSobreHorario } from "@/components/cardapio/SobreLoja";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { definirSaldoInicial } from "@/lib/caixa";
-import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
+import { mascaraBRL, lerBRL } from "@/lib/moeda";
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
  * 7 passos (13/10: + "Pagamento e entrega"); os que dá pra preencher abrem numa janelinha que sobe de baixo, sem sair da tela:
@@ -141,7 +141,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     window.scrollTo(0, 0);
     const kSpot = uid ? `doonly_pp_destaque_visto_${uid}` : "";
     let viu = true;
-    try { viu = !kSpot || localStorage.getItem(kSpot) === "1"; } catch {}
+    try { viu = !kSpot || localStorage.getItem(kSpot) === "1"; } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
     const celular = window.matchMedia("(max-width: 767px)").matches;
     // espera outra janela (boas-vindas, conta ativa) fechar antes de mostrar o destaque
     let tentativas = 0;
@@ -149,7 +149,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       if (!montado.current) return;
       if (document.querySelector('[role="dialog"][aria-modal="true"]') && tentativas++ < 40) { window.setTimeout(mostrar, 500); return; }
       window.scrollTo(0, 0);
-      if (celular && !viu) { try { localStorage.setItem(kSpot, "1"); } catch {} setSpot(true); return; }
+      if (celular && !viu) { try { localStorage.setItem(kSpot, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } setSpot(true); return; }
       setDestaque(true);
       window.setTimeout(() => { if (montado.current) setDestaque(false); }, 2300);
     };
@@ -161,7 +161,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
 
   useEffect(() => {
     if (!uid) return;
-    try { setFechado(localStorage.getItem(kFechado) === "1"); setJaViuIncompleto(localStorage.getItem(kIncompleto) === "1"); } catch {}
+    try { setFechado(localStorage.getItem(kFechado) === "1"); setJaViuIncompleto(localStorage.getItem(kIncompleto) === "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
     atualizar();
     const f = () => { if (document.visibilityState === "visible") atualizar(); };
     document.addEventListener("visibilitychange", f);
@@ -174,7 +174,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   // (15/10) saiu a janela "Sua loja está pronta!": abria junto com o cartão "Sua confeitaria está pronta pra vender!"
   useEffect(() => { if (estado) onEstado?.(completo); }, [estado, completo]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (uid && estado && !completo && !jaViuIncompleto) { try { localStorage.setItem(kIncompleto, "1"); } catch {} setJaViuIncompleto(true); }
+    if (uid && estado && !completo && !jaViuIncompleto) { try { localStorage.setItem(kIncompleto, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } setJaViuIncompleto(true); }
   }, [uid, estado, completo, jaViuIncompleto, kIncompleto]);
 
   if (!uid || !estado) return null;
@@ -182,7 +182,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   // No Cardápio digital o cartão some quando está tudo pronto (a tela mostra o cartão do link)
   if (completo && (local === "cardapio" || fechado || !jaViuIncompleto)) return null;
 
-  const fechar = () => { try { localStorage.setItem(kFechado, "1"); } catch {} setFechado(true); };
+  const fechar = () => { try { localStorage.setItem(kFechado, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } setFechado(true); };
   // "Salvar e continuar": fecha e abre o próximo passo que falta.
   // "Fazer depois": pula este (fica pendente) e segue pro próximo, sem voltar nele nesta sequência.
   const seguir = (pular: boolean, patch?: Record<string, any>) => {
@@ -231,12 +231,12 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const passos: { feito: boolean; ic: ReactNode; t: string; s: string; pq: string; abrir: () => void }[] = [
     // (29/10 · 4.95) pq: por que o passo importa (aparece no bloco do passo da vez, no computador)
     // (23/10) "Criar sua conta" saiu (já está feito e não é configurar o cardápio); nomes curtos que cabem inteiros no celular
-    { feito: estado.logo, ic: I(ImageSquare), t: "Logo da loja", s: "No topo do cardápio", pq: "Deixa sua loja com cara profissional e ajuda a cliente a te reconhecer.", abrir: () => { if (logoDireto) logoInput.current?.click(); else setFolha("logo"); } },
+    { feito: estado.logo, ic: I(ImageSquare), t: "Logo da loja", s: "No topo do cardápio", pq: "Deixa sua loja com cara profissional e ajuda o cliente a te reconhecer.", abrir: () => { if (logoDireto) logoInput.current?.click(); else setFolha("logo"); } },
     { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Sobre a confeitaria", s: "Uma frase sobre você", pq: "Conta em poucas palavras quem você é e o que faz de especial.", abrir: () => setFolha("descricao") },
     { feito: estado.endereco, ic: I(MapPin), t: "Endereço", s: "Para calcular a entrega", pq: "Com ele, o app calcula a taxa de entrega de cada cliente sozinho.", abrir: () => setFolha("endereco") },
-    { feito: estado.horario, ic: I(Clock), t: "Horário", s: "Aberto agora no cardápio", pq: "A cliente vê se você está aberta e para quando pode encomendar.", abrir: () => setFolha("horario") },
+    { feito: estado.horario, ic: I(Clock), t: "Horário", s: "Aberto agora no cardápio", pq: "O cliente vê se você está aberta e para quando pode encomendar.", abrir: () => setFolha("horario") },
     { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento", s: "Como o cliente paga", pq: "Diga se aceita Pix, cartão ou dinheiro.", abrir: () => abrirPasso("pagamento") },
-    { feito: estado.entrega, ic: I(Moped), t: "Entrega", s: "Retirada e taxa de entrega", pq: "Diga se a cliente busca, se você entrega e quanto cobra pela entrega.", abrir: () => abrirPasso("entrega") },
+    { feito: estado.entrega, ic: I(Moped), t: "Entrega", s: "Retirada e taxa de entrega", pq: "Diga se o cliente busca, se você entrega e quanto cobra pela entrega.", abrir: () => abrirPasso("entrega") },
     { feito: estado.caixa, ic: I(Coins), t: "Saldo do caixa", s: "Quanto tem em caixa hoje", pq: "Assim o app mostra quanto dinheiro você tem de verdade, todo dia.", abrir: () => setFolha("caixa") },
     { feito: estado.produto, ic: I(Basket), t: "Primeiro produto", s: "", pq: "Com o primeiro doce cadastrado, o cardápio já pode receber pedidos.", abrir: () => navigate("/produtos") },
   ];
@@ -679,7 +679,6 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   const ref = useRef<HTMLInputElement>(null);
   const [crop, setCrop] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
-  const atual = perfil?.logo_url || perfil?.foto_url || "";
   const escolher = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]; if (!f) return;
     const r = new FileReader(); r.onload = () => setCrop(r.result as string); r.readAsDataURL(f); e.target.value = "";
@@ -885,16 +884,16 @@ const CSS = `
   .ppb-topo { position: relative; aspect-ratio: 10 / 3; min-height: 96px; padding: 14px 16px 0; box-sizing: border-box; background: #FFE3EE; overflow: hidden; }
   .ppb-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: right center; pointer-events: none; }
   .ppb-t, .ppb-sub, .ppb-bar { position: relative; }
-  .ppb-t { display: block; max-width: 72%; font-size: 17px; font-weight: 700; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppb-t { display: block; max-width: 72%; font-size: 17px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppb-sub { display: block; max-width: 72%; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppb-bar { width: 58%; height: 8px; margin-top: 10px; border-radius: 4px; background: rgba(214, 63, 117, .15); overflow: hidden; }
   .ppb-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .4s ease; }
   .ppb-at { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 0; }
-  .ppb-n { flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); font-size: 14px; font-weight: 700; }
+  .ppb-n { flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); font-size: 14px; font-weight: 600; }
   .ppb-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .ppb-tx b { font-size: 15px; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppb-tx b { font-size: 15px; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppb-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppb-btn { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ppb-btn { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .ppb-btn:active { background: var(--ui-rosa-escuro); }
   .pp--destaque .ppb-at { animation: ppDestaque 1.1s ease-in-out 2; }
   .ppb-lista { padding: 0 14px; border-top: 1px solid var(--ui-linha); }
@@ -902,7 +901,7 @@ const CSS = `
   .ppb-btn:focus-visible, .ppb-ver:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
 
   .pp { background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 16px 16px 8px; box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); color: var(--ui-texto); }
-  .pp-t { display: block; font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .pp-t { display: block; font-size: 18px; font-weight: 600; line-height: 1.3; }
   .pp-sub { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 4px 0 0; }
   .pp-bar { height: 8px; border-radius: 4px; background: var(--ui-linha); margin: 12px 0 8px; overflow: hidden; }
   .pp-bar i { display: block; height: 100%; border-radius: 99px; background: var(--ui-rosa); transition: width .5s ease; }
@@ -923,15 +922,15 @@ const CSS = `
   .pp-ic--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
   .pp-ic--at { background: var(--ui-rosa); color: var(--ui-branco); }
   .pp-tx { flex: 1; min-width: 0; }
-  .pp-tx b { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; color: #2C2C2A; }
+  .pp-tx b { display: block; font-size: 15px; font-weight: 600; letter-spacing: -.01em; line-height: 1.2; color: #2C2C2A; }
   .pp-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; line-height: 1.4; }
   .pp-ps--ok .pp-tx b { color: var(--ui-texto-2); font-weight: 500; }
-  .pp-ps--ok .pp-tx small { color: var(--ui-verde); font-weight: 700; }
+  .pp-ps--ok .pp-tx small { color: var(--ui-verde); font-weight: 600; }
   .pp-n { display: none; font-style: normal; }
   /* (15/10) celular: os passos viram checklist numerado (bolinha com número; feito = check verde e riscado),
      para não parecer com os atalhos do Início, que têm o quadrado rosa */
   @media (max-width: 767px) {
-    .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }
+    .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 600; }
     .pp-ic:not(.pp-ic--ok) svg { display: none; }
     .pp-n { display: inline; }
     .pp-ic--at { background: var(--ui-rosa); border-color: var(--ui-rosa); color: var(--ui-branco); }
@@ -947,12 +946,12 @@ const CSS = `
   .pp--destaque .pp-at { animation: ppDestaque 1.1s ease-in-out 2; }
   @keyframes ppDestaque { 0%, 100% { box-shadow: 0 0 0 0 rgba(232, 90, 140, 0); } 50% { box-shadow: 0 0 0 4px rgba(232, 90, 140, .45); } }
   @media (prefers-reduced-motion: reduce) { .pp--destaque .pp-at { animation: none; box-shadow: 0 0 0 3px rgba(232, 90, 140, .45); } }
-  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-branco); background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; text-align: center; text-decoration: none; }
+  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-branco); background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; text-align: center; text-decoration: none; }
   .pp-btn:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   /* (15/10) "Fazer agora"/"Começar" no chocolate do onboarding: não compete com o rosa da Nova venda */
   .pp-at .pp-btn { background: var(--chocolate); box-shadow: 0 3px 0 var(--chocolate-escuro); }
   .pp-at .pp-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--chocolate-escuro); }
-  .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+  .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
   .pp-lnk--cinza { color: var(--ui-texto-3); font-weight: 500; }
 
   /* (19/10) computador: duas colunas para não esticar. Esquerda: título, barra e o passo da vez (igual ao celular);
@@ -1011,7 +1010,7 @@ const CSS = `
   .pp-li--ok:hover { background: #F7F9F7; }
   .pp-col-b > .pp-ps:first-child { border-top: none; }
   /* (19/10) Início: os passos no mesmo checklist do celular em qualquer tela (antes viravam etiquetas no computador) */
-  .pp--inicio .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 700; }
+  .pp--inicio .pp-ic { width: 28px; height: 28px; margin: 0 6px; border-radius: 50%; background: none; border: 2px solid #DCCBD1; color: #8F7C83; font-size: 13px; font-weight: 600; }
   .pp--inicio .pp-ic:not(.pp-ic--ok) svg { display: none; }
   .pp--inicio .pp-n { display: inline; }
   .pp--inicio .pp-ic--at { background: var(--ui-rosa); border-color: var(--ui-rosa); color: var(--ui-branco); }
@@ -1022,7 +1021,7 @@ const CSS = `
   .pp--inicio .pp-ps--ok .pp-tx small { display: none; }
 
   .ppf-d-logo { flex: none; width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--ui-branco); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro);
-    box-shadow: 0 4px 14px rgba(44, 18, 25, .12); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700; }
+    box-shadow: 0 4px 14px rgba(44, 18, 25, .12); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 600; }
   .ppf-d-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
   /* (15/10) dica do que escrever no lugar da prévia */
   .ppf-d-campo { margin-top: 18px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); overflow: hidden; background: var(--ui-branco); }
@@ -1038,7 +1037,7 @@ const CSS = `
   .ppf-d-opc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .ppf-d-opc button { height: 42px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
   .ppf-d-opc button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); font-weight: 600; }
-  .ppf-d-l { display: block; margin: 16px 2px 8px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+  .ppf-d-l { display: block; margin: 16px 2px 8px; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
   .ppf-d-l + .ppf-d-campo { margin-top: 0; }
   .ppf-d-ajuda { margin-top: 14px; padding: 0 2px; }
   /* (29/10 · 5.00) computador: janela larga, campo à esquerda e a prévia do cardápio à direita; botões no canto */
@@ -1106,7 +1105,7 @@ const CSS = `
   .ppf-ia { margin-top: 14px; border: 1.5px solid #F4C6D7; border-radius: 16px; background: #FFF8FB; padding: 14px; }
   .ppf-ia-cab { display: flex; align-items: center; gap: 10px; }
   .ppf-ia-cab img { flex: none; width: 34px; height: 34px; object-fit: contain; }
-  .ppf-ia-cab b { display: block; font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+  .ppf-ia-cab b { display: block; font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
   .ppf-ia-cab small { display: block; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
   .ppf-ia-l { display: block; margin: 14px 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto); }
   .ppf-ia-l span { font-weight: 400; color: var(--ui-texto-3); }
@@ -1211,7 +1210,7 @@ const CSS = `
   .ppf-prev-cap { height: 42px; background: linear-gradient(120deg, #F7B2CB, var(--ui-rosa)); }
   .ppf-prev-corpo { display: flex; gap: 10px; align-items: flex-start; padding: 0 12px 12px; margin-top: -18px; }
   .ppf-prev-logo { flex: none; width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--ui-branco); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro);
-    display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; overflow: hidden; }
+    display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; overflow: hidden; }
   .ppf-prev-logo img { width: 100%; height: 100%; object-fit: cover; }
   .ppf-prev-tx { min-width: 0; padding-top: 22px; }
   .ppf-prev-tx b { display: block; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1223,31 +1222,31 @@ const CSS = `
   .ppf-doo { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin-top: 10px; padding: 0 14px; border: 1px solid #F4C6D7; border-radius: var(--ui-raio);
     background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   .ppf-doo:disabled { opacity: .6; cursor: progress; }
-  .ppf-l { display: block; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); margin: 16px 0 6px; }
+  .ppf-l { display: block; font-size: 13px; font-weight: 600; color: var(--ui-cinza-texto); margin: 16px 0 6px; }
   .ppf-lrow { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 6px; }
   .ppf-lrow .ppf-l { margin: 0; }
   .ppf-in { width: 100%; box-sizing: border-box; min-height: 48px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 0 12px; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); background: var(--ui-branco); }
   .ppf-in:focus { outline: none; border-color: var(--ui-rosa); }
   .ppf-ta { min-height: 112px; padding: 12px; resize: none; line-height: 1.45; display: block; }
-  .ppf-erro { margin: 12px 0 0; font-size: 13px; font-weight: 700; color: #B91C1C; }
+  .ppf-erro { margin: 12px 0 0; font-size: 13px; font-weight: 600; color: #B91C1C; }
   .ppf-cnt { text-align: right; font-size: 12.5px; color: var(--ui-texto-3); margin: 4px 0 0; }
   .ppf-f { flex: 1; min-width: 0; }
   .ppf-row { display: flex; gap: 10px; }
   .ppf-wrap { position: relative; }
-  .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 700; color: var(--ui-verde); }
+  .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 600; color: var(--ui-verde); }
   .ppf-dias { display: flex; gap: 6px; }
-  .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 44px; max-width: 48px; border: none; border-radius: 50%; font-family: inherit; font-size: 15px; font-weight: 700; background: var(--ui-cinza); color: var(--ui-texto-2); cursor: pointer; }
+  .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 44px; max-width: 48px; border: none; border-radius: 50%; font-family: inherit; font-size: 15px; font-weight: 600; background: var(--ui-cinza); color: var(--ui-texto-2); cursor: pointer; }
   .ppf-dias button.on { background: var(--ui-rosa); color: var(--ui-branco); }
   .ppf-bl { background: var(--ui-cinza); border-radius: var(--ui-raio); padding: 12px; margin-top: 12px; }
   .ppf-bl b { display: block; font-size: 13.5px; margin-bottom: 8px; }
   .ppf-hr { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 52px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 6px 12px; background: var(--ui-branco); font-family: inherit; color: var(--ui-rosa-escuro); text-align: left; cursor: pointer; }
-  .ppf-hr span { display: flex; flex-direction: column; color: var(--ui-texto); font-size: 16px; font-weight: 700; line-height: 1.15; }
+  .ppf-hr span { display: flex; flex-direction: column; color: var(--ui-texto); font-size: 16px; font-weight: 600; line-height: 1.15; }
   .ppf-hr small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
   .ppf-lg { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
   .ppf-lgc { position: relative; width: 76px; height: 76px; border-radius: 50%; border: 0; background: var(--ui-rosa-claro); padding: 0; cursor: pointer; flex-shrink: 0; overflow: visible; }
   .ppf-lgc img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
-  .ppf-lgc span { color: var(--ui-rosa-escuro); font-weight: 700; font-size: 28px; }
+  .ppf-lgc span { color: var(--ui-rosa-escuro); font-weight: 600; font-size: 28px; }
   .ppf-lgc i { position: absolute; right: -4px; bottom: -4px; width: 28px; height: 28px; border: 2px solid var(--ui-branco); border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; }
-  .ppf-lg b { display: block; font-size: 14.5px; font-weight: 700; }
+  .ppf-lg b { display: block; font-size: 14.5px; font-weight: 600; }
   .ppf-lg small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 3px; line-height: 1.4; }
 `;

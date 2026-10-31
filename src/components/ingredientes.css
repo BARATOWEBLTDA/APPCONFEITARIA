@@ -8,7 +8,7 @@
 .cl9-chips + .ig-tab-cab + .ig-l { border-top: 0; }
 .ig-l > .ig-th { grid-area: t; }
 .ig-l-tx { grid-area: n; min-width: 0; }
-.ig-l-tx b, .ig-l-compra b, .ig-l-custo b { display: block; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ig-l-tx b, .ig-l-compra b, .ig-l-custo b { display: block; font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ig-l-tx small, .ig-l-compra small, .ig-l-custo small { display: block; font-size: 13px; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ig-l-compra { grid-area: p; min-width: 0; display: none; }
 .ig-l-custo { grid-area: c; text-align: right; }
@@ -20,7 +20,7 @@
 @media (max-width: 900px) { .ig-l { gap: 2px 10px; } }
 .ig-pc { display: none !important; }
 @media (min-width: 1000px) {
-  .ig-tab-cab { display: grid; grid-template-columns: 48px minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1fr) 24px; gap: 12px; margin-top: 8px; padding: 10px 12px; border-radius: var(--ui-raio-p); background: var(--ui-cinza); font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+  .ig-tab-cab { display: grid; grid-template-columns: 48px minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1fr) 24px; gap: 12px; margin-top: 8px; padding: 10px 12px; border-radius: var(--ui-raio-p); background: var(--ui-cinza); font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
   .ig-tab-cab span:first-child { grid-column: 1 / 3; }
   .ig-l { grid-template-columns: 48px minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1fr) 24px; grid-template-areas: "t n p c s"; padding: 10px 12px; }
   .ig-l:hover { background: #FCFAFB; }
@@ -35,20 +35,20 @@
 .ig-rot { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--ui-cinza-texto, var(--ui-texto-2)); }
 .ig-outras { margin-top: 8px; }
 .ig-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
-.ig-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 4px; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.ig-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 4px; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 .ig-seg button:disabled { opacity: .35; cursor: default; } /* (27/10) medida travada pela ficha técnica */
-.ig-seg button[aria-checked="true"] { background: var(--ui-branco); color: var(--ui-texto); font-weight: 700; box-shadow: var(--ui-sombra-cartao); }
+.ig-seg button[aria-checked="true"] { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: var(--ui-sombra-cartao); }
 .ig-sug { margin: 6px 0 0; font-size: 13px; color: var(--ui-texto-2); }
 .ig-custo { display: flex; flex-direction: column; gap: 2px; padding: 14px; border-radius: var(--ui-raio); background: var(--ui-verde-fundo); color: var(--ui-verde); }
-.ig-custo span { font-size: 13px; font-weight: 700; }
-.ig-custo b { font-size: 20px; font-weight: 700; }
+.ig-custo span { font-size: 13px; font-weight: 600; }
+.ig-custo b { font-size: 20px; font-weight: 600; }
 .ig-custo small { font-size: 13px; color: #166534; }
 .ig-dica { margin: -4px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 .ig-alerta { display: flex; gap: 10px; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
 .ig-alerta > svg { flex: none; margin-top: 1px; }
 .ig-alerta p { margin: 0 0 10px; font-size: 14px; line-height: 1.45; color: #92400E; }
 .ig-alerta-bts { display: flex; flex-wrap: wrap; gap: 8px; }
-.ig-alerta-bts button { min-height: 44px; margin: 0; padding: 0 14px; border: 0; border-radius: var(--ui-raio); background: var(--ui-branco); color: #92400E; font-size: 14px; font-weight: 700; }
+.ig-alerta-bts button { min-height: 44px; margin: 0; padding: 0 14px; border: 0; border-radius: var(--ui-raio); background: var(--ui-branco); color: #92400E; font-size: 14px; font-weight: 600; }
 .ig-alerta-bts button.on { background: #92400E; color: var(--ui-branco); }
 .ig-foto { display: flex; flex-direction: column; gap: 10px; margin-top: -6px; }
 .ig-foto-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -56,7 +56,7 @@
 .ig-foto-grade button { aspect-ratio: 1; margin: 0; padding: 0; overflow: hidden; border: 2px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); }
 .ig-foto-grade button[aria-pressed="true"] { border-color: var(--ui-rosa); }
 .ig-foto-grade img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.ig-foto-tirar { display: inline-flex; align-items: center; align-self: flex-start; gap: 6px; min-height: 44px; margin: 0; padding: 0 4px; border: 0; background: none; color: var(--ui-vermelho-escuro); font-size: 14px; font-weight: 700; }
+.ig-foto-tirar { display: inline-flex; align-items: center; align-self: flex-start; gap: 6px; min-height: 44px; margin: 0; padding: 0 4px; border: 0; background: none; color: var(--ui-vermelho-escuro); font-size: 14px; font-weight: 600; }
 
 /* Dentro da janela da ficha técnica / produto */
 .ig-emb { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-base); }

@@ -36,7 +36,7 @@ function recarregarSePuder() {
   // (11/10) só com uns segundos de calma: o "voltar" que uma janela de confirmar faz ao fechar chegava aqui
   // com o excluir ou o salvar ainda em andamento
   if (temVersaoNova && document.visibilityState === "visible" && Date.now() - ultimaAcao >= CALMA && momentoSeguro()) {
-    try { sessionStorage.setItem("doonly_splash_shown", "1"); } catch {}
+    try { sessionStorage.setItem("doonly_splash_shown", "1"); } catch { /* sem sessionStorage: só mostra a abertura de novo */ }
     window.location.reload();
   }
 }

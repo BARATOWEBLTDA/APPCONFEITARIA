@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   MagnifyingGlass, X, House, ClipboardText, Plus, CalendarBlank, Sparkle, SquaresFour, Cake, Tag, Stack, Basket, ListChecks, Users,
   ShoppingBag, Palette, Storefront, ArrowSquareOut, CurrencyDollar, ArrowsDownUp, HandCoins, CalendarCheck, Receipt, ChartLineUp,
-  Coins, CreditCard, Buildings, Megaphone, Newspaper, Bell, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb,
+  Coins, CreditCard, Buildings, Megaphone, Newspaper, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";

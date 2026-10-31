@@ -3,12 +3,12 @@
 .grf-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .grf-tot { display: flex; flex-direction: column; min-width: 0; }
 .grf-tot small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; }
-.grf-tot b { font-size: 28px; font-weight: 700; line-height: 1.2; color: var(--ui-texto); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.grf-tot span { min-height: 18px; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grf-tot b { font-size: 28px; font-weight: 600; line-height: 1.2; color: var(--ui-texto); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.grf-tot span { min-height: 18px; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .grf-tot span em { font-style: normal; font-weight: 500; color: var(--ui-texto-2); }
 .grf-tot .sobe { color: var(--ui-verde); }
 .grf-tot .desce { color: var(--ui-vermelho); }
-.grf-tot .grf-hoje { margin-top: 2px; font-weight: 700; color: var(--ui-texto); }
+.grf-tot .grf-hoje { margin-top: 2px; font-weight: 600; color: var(--ui-texto); }
 .grf-seg { flex: none; display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--ui-cinza); }
 .grf-seg button { height: 32px; margin: 0; padding: 0 12px; border: 0; border-radius: 8px; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
 .grf-seg button[aria-selected="true"] { background: var(--ui-branco); color: var(--ui-texto); box-shadow: 0 1px 3px rgba(34, 19, 14, .1); }
@@ -20,5 +20,5 @@
 .grf-g { height: 210px; margin-top: 10px; }
 .grf-dica { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); box-shadow: 0 6px 16px rgba(34, 19, 14, .12); font-family: var(--font-base); }
 .grf-dica small { font-size: 12px; color: var(--ui-texto-2); }
-.grf-dica b { font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+.grf-dica b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
 .grf-dica span { font-size: 12px; color: var(--ui-texto-3); }

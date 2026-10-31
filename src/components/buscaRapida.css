@@ -9,7 +9,7 @@
 .br-fechar { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 0; border-radius: 10px; background: none; color: var(--ui-texto-3); cursor: pointer; }
 .br-fechar:hover { background: #F6F3F4; color: var(--ui-texto); }
 .br-lista { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 6px 8px 8px; }
-.br-g { margin: 10px 10px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ui-texto-3); }
+.br-g { margin: 10px 10px 4px; font-size: 11.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ui-texto-3); }
 .br-it { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; margin: 0; padding: 0 12px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .br-it svg { flex: none; color: var(--ui-texto-2); }
 .br-it.on { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }

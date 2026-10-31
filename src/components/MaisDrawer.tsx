@@ -1,11 +1,10 @@
 import { useId, useRef } from "react";
-import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  ChartLineUp, ClipboardText, Gear, PaintBrush, Crown, SquaresFour, UserPlus, CaretRight,
-  Megaphone, CalendarDots, Users, Stack, Truck, Basket, ArrowsDownUp, CurrencyDollar,
-  HandCoins, CalendarCheck, Tag, Cake, ChatCircleText, Newspaper, Bell, ChartPieSlice, Shapes, Notebook, FileText,
+  Gear, Crown, CaretRight,
+  Megaphone, CalendarDots, CurrencyDollar,
+  Newspaper, Notebook, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
@@ -48,7 +47,6 @@ const GRUPOS: Grupo[] = [
     label: "Outros",
     items: [
       { label: "Marketing", desc: "Divulgue e venda mais", path: "/marketing", Icone: Megaphone },
-      ...(INDICACAO_ATIVA ? [{ label: "Indicar amigo", desc: "Ganhe indicando", path: "/indicar", Icone: UserPlus }] : []),
       // (30/10 · 5.67) Novidades e Assinatura saíram do destaque do topo e entraram na lista, como as outras
       { label: "Novidades", desc: "O que mudou no app", path: "/noticias", Icone: Newspaper },
       { label: "Configurações", desc: "Conta, loja e app", path: "/configuracoes", Icone: Gear },

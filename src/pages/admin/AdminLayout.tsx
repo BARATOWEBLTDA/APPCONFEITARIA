@@ -270,24 +270,24 @@ export default function AdminLayout() {
         .adm-logo-square--sm { width: 44px; height: 44px; }
         .adm-logo-square--sm img { width: 32px; height: 32px; }
         .adm-brand { display: flex; flex-direction: column; min-width: 0; }
-        .adm-brand-name { font-size: 16px; font-weight: 700; line-height: 1.15; color: var(--ui-branco); }
+        .adm-brand-name { font-size: 16px; font-weight: 600; line-height: 1.15; color: var(--ui-branco); }
         .adm-brand-role { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.6); }
         .adm-nav { flex: 1; padding: 8px 12px 20px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.15) transparent; }
         .adm-nav-section { margin-bottom: 4px; }
-        .adm-nav-sec-title { margin: 0; padding: 16px 12px 6px; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.5); }
+        .adm-nav-sec-title { margin: 0; padding: 16px 12px 6px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.5); }
         .adm-nav-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; margin-bottom: 2px; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: rgba(255,255,255,.75); font-family: inherit; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer; transition: background .15s, color .15s; }
         .adm-nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; }
         .adm-nav-icon svg { width: 20px; height: 20px; }
         .adm-nav-item:hover { background: rgba(255,255,255,.07); color: var(--ui-branco); }
-        .adm-nav-item.on { background: rgba(255,255,255,.12); color: var(--ui-branco); font-weight: 700; }
+        .adm-nav-item.on { background: rgba(255,255,255,.12); color: var(--ui-branco); font-weight: 600; }
         .adm-nav-item.on .adm-nav-icon { color: #F28AB0; }
         .adm-nav-label { flex: 1; }
-        .adm-nav-badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .adm-nav-badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
         .adm-sidebar-bottom { padding: 12px; border-top: 1px solid rgba(255,255,255,.08); }
         .adm-user { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; padding: 10px; border-radius: var(--ui-raio); background: rgba(255,255,255,.06); }
-        .adm-user-avt { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); font-size: 15px; font-weight: 700; }
+        .adm-user-avt { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); font-size: 15px; font-weight: 600; }
         .adm-user-info { min-width: 0; flex: 1; }
-        .adm-user-name { font-size: 14px; font-weight: 700; color: var(--ui-branco); text-transform: capitalize; }
+        .adm-user-name { font-size: 14px; font-weight: 600; color: var(--ui-branco); text-transform: capitalize; }
         .adm-user-mail { font-size: 12px; color: rgba(255,255,255,.6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .adm-side-btn { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: rgba(255,255,255,.75); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
         .adm-side-btn:hover { background: rgba(255,255,255,.07); color: var(--ui-branco); }
@@ -302,26 +302,26 @@ export default function AdminLayout() {
         .adm-mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 30; align-items: center; gap: 12px; padding: 12px 16px; background: var(--vinho-profundo); }
         .adm-bnav { display: none; }
         .adm-bnav-it { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; padding: 0; border: 0; background: none; color: rgba(255,255,255,.62); font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
-        .adm-bnav-it.on { color: var(--ui-branco); font-weight: 700; }
+        .adm-bnav-it.on { color: var(--ui-branco); font-weight: 600; }
         .adm-bnav-it.on .adm-bnav-ic { color: #F28AB0; }
         .adm-bnav-ic { position: relative; display: flex; }
-        .adm-bnav-badge { position: absolute; top: -6px; right: -12px; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid var(--vinho-profundo); border-radius: 99px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .adm-bnav-badge { position: absolute; top: -6px; right: -12px; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid var(--vinho-profundo); border-radius: 99px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
         .adm-sheet-ov { position: fixed; top: 0; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ui-veu); }
         .adm-sheet { position: fixed; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); max-height: 75vh; overflow-y: auto; padding: 10px 12px 12px; border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; background: var(--ui-branco); animation: admSheetIn .2s ease-out; }
         @keyframes admSheetIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
         .adm-sheet-grab { width: 40px; height: 4px; margin: 0 auto 10px; border-radius: 9px; background: #E5DDE1; }
         .adm-sheet-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 8px; }
-        .adm-sheet-hdr b { font-size: 18px; font-weight: 700; }
+        .adm-sheet-hdr b { font-size: 18px; font-weight: 600; }
         .adm-sheet-x { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); cursor: pointer; }
         .adm-sheet-x svg { width: 20px; height: 20px; }
         .adm-sheet-it { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-3); font-family: inherit; text-align: left; cursor: pointer; }
         .adm-sheet-it:active, .adm-sheet-it.on { background: var(--ui-linha); }
         .adm-sheet-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-texto-2); }
         .adm-sheet-it.on .adm-sheet-ic { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-        .adm-sheet-l { flex: 1; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+        .adm-sheet-l { flex: 1; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
         .adm-sheet-sep { height: 1px; margin: 8px 6px; background: var(--ui-linha); }
         .adm-sheet-foot { display: flex; gap: 8px; padding: 4px 6px 2px; }
-        .adm-sheet-foot button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+        .adm-sheet-foot button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
         .adm-sheet-foot button.danger { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
 
         @media (max-width: 768px) {

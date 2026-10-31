@@ -4,7 +4,6 @@ const ROTAS_CATALOGO = ["/produtos", "/produtos/categorias", "/categorias", "/co
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
 import { NavLink, Outlet, useNavigate, useLocation, useNavigationType } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
-import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 
 import ParabensPro from "@/components/pro/ParabensPro";
 import DooIA from "@/components/DooIA";
@@ -15,38 +14,21 @@ import AcenderDaAjuda from "@/components/como/AcenderDaAjuda";
 import { Suspense, useState, useEffect, useRef, type ReactNode } from "react";
 import "@/styles/mobileClaro.css";
 import "@/styles/desktopPadrao.css";
-import { ClipboardText, ChartBar, Stack, Palette, Truck, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, CaretDoubleLeft, CaretDoubleRight,
-  House, CalendarDots, ShoppingBag, Users, BookOpen,
+import { ClipboardText, ChartBar, Stack, Palette, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, CaretDoubleLeft, CaretDoubleRight,
+  House, CalendarDots, ShoppingBag, Users,
   Package, CurrencyDollar, Gear, CaretDown, Cake,
-  SquaresFour, Camera, Plus,
+  SquaresFour, Plus,
   Receipt, Sparkle, Crown, Bell, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { useProfile, avatarDaConta, getCardapioUrl } from "@/hooks/useProfile";
+import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import AlertaPedidoNovo from "@/components/AlertaPedidoNovo";
 import { reativarPushSeSaiu } from "@/hooks/usePushSubscription";
 import { usePlano } from "@/hooks/usePlano";
 import { usePedidosParaAceitar } from "@/hooks/usePedidosParaAceitar";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { ImageCropper } from "@/components/ui/ImageCropper";
-import { supabase } from "@/lib/supabase";
-import { VERSAO_APP } from "@/lib/versao";
 import { Mascote, NomeDoonly } from "@/components/marca/Mascote";
-
-function SidebarGroup({ label, icon, paths, location, children }: { label: string; icon?: ReactNode; paths: string[]; location: any; children: ReactNode }) {
-  const isAnyActive = paths.some(p => location.pathname.startsWith(p));
-  const [open, setOpen] = useState(isAnyActive);
-  return (
-    <div className="nav-group">
-      <button className={`nav-group-btn ${isAnyActive ? "active" : ""}`} onClick={() => setOpen(o => !o)}>
-        {icon && <span className="nav-icon">{icon}</span>}
-        <span style={{ flex: 1 }}>{label}</span>
-        <CaretDown size={13} style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.5 }} />
-      </button>
-      {open && <div className="nav-subitems">{children}</div>}
-    </div>
-  );
-}
 
 /**
  * Item do menu lateral (07/10 · 2.95, guia A14): ícone de 20px, em traço grosso;
@@ -113,7 +95,7 @@ function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children, tour 
   // Abrir e fechar vale enquanto usa, sem ficar lembrado (antes voltava aberto depois do F5).
   const [aberto, setAberto] = useState<boolean>(dentro);
   useEffect(() => { if (dentro) setAberto(true); }, [dentro]);
-  useEffect(() => { try { localStorage.removeItem(`doonly_menu_grupo_${id}`); } catch {} }, [id]);
+  useEffect(() => { try { localStorage.removeItem(`doonly_menu_grupo_${id}`); } catch { /* sem localStorage (aba anônima): nada a limpar */ } }, [id]);
   const alternar = () => setAberto(a => !a);
   if (recolhido) {
     return (
@@ -139,13 +121,12 @@ export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const paraAceitar = usePedidosParaAceitar(profile?.id);
-  const { isPro, loading: loadingPlano } = usePlano();
+  const { isPro } = usePlano();
   // (11/10) saiu e entrou de novo neste aparelho: os avisos de pedido voltam a ligar sozinhos
   useEffect(() => { void reativarPushSeSaiu(); }, []);
   const {
-    fileInputRef, uploading: uploadingFoto, cropSrc,
-    openPicker: abrirSeletorFoto,
-    handleFileSelected, handleCropDone, cancelCrop,
+    cropSrc,
+    handleCropDone, cancelCrop,
   } = useAvatarUpload();
   const [maisOpen, setMaisOpen] = useState(false);
   const [dooOpen, setDooOpen] = useState(false);
@@ -154,7 +135,7 @@ export default function Layout() {
   // (13/10) menu recolhido (só os ícones): fica lembrado neste aparelho. A largura vai na variável --sidebar-w,
   // que as barras fixas de baixo (Nova venda, Dados da loja, Editar pedido) também usam.
   const [recolhido, setRecolhido] = useState(() => { try { return localStorage.getItem("doonly_menu_recolhido") === "1"; } catch { return false; } });
-  const alternarRecolhido = () => setRecolhido(r => { const n = !r; try { localStorage.setItem("doonly_menu_recolhido", n ? "1" : "0"); } catch {} return n; });
+  const alternarRecolhido = () => setRecolhido(r => { const n = !r; try { localStorage.setItem("doonly_menu_recolhido", n ? "1" : "0"); } catch { /* sem localStorage: só não lembra */ } return n; });
   useEffect(() => {
     document.documentElement.style.setProperty("--sidebar-w", recolhido ? "72px" : "236px");
   }, [recolhido]);
@@ -196,6 +177,20 @@ export default function Layout() {
     const mo = new MutationObserver(medir); mo.observe(nav, { childList: true, subtree: true });
     return () => { nav.removeEventListener("scroll", medir); ro.disconnect(); mo.disconnect(); };
   }, [recolhido]);
+
+  // (31/10 · 5.84) notebook baixo: o item da tela aberta (ex.: Minha conta › Configurações) ficava escondido atrás do
+  // "Mais opções". Ao mudar de tela, o menu rola sozinho até ele.
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      const nav = navRef.current;
+      const it = nav?.querySelector<HTMLElement>(".nav-subitem.active") || nav?.querySelector<HTMLElement>(".nav-item.active");
+      if (!nav || !it) return;
+      const n = nav.getBoundingClientRect(), r = it.getBoundingClientRect();
+      if (r.top < n.top) nav.scrollBy({ top: r.top - n.top - 12, behavior: "smooth" });
+      else if (r.bottom > n.bottom - 36) nav.scrollBy({ top: r.bottom - n.bottom + 48, behavior: "smooth" });
+    }, 450);
+    return () => window.clearTimeout(t);
+  }, [location.pathname]);
 
   // Scroll pro topo ao mudar de rota (fix: antes ficava na posição anterior)
   // (11/10) menos ao VOLTAR ("POP"): a lista volta no ponto em que ela estava, em vez de pular pro topo
@@ -431,7 +426,7 @@ export default function Layout() {
         .sidebar-avatar:has(.sidebar-avatar-placeholder) { background: #993556; }
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 40px; font-weight: 700; color: var(--primary-light); letter-spacing: -0.02em; line-height: 1; }
+        .sidebar-avatar-inicial { font-family: var(--font-base); font-size: 40px; font-weight: 600; color: var(--primary-light); letter-spacing: -0.02em; line-height: 1; }
 
         .sidebar-avatar-container {
           position: relative;
@@ -497,7 +492,7 @@ export default function Layout() {
           flex-direction: column;
           justify-content: center;
         }
-        .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--sidebar-text); line-height: 1.3; min-height: 1.25rem; display: flex; align-items: center; justify-content: center; }
+        .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--sidebar-text); line-height: 1.3; min-height: 1.25rem; display: flex; align-items: center; justify-content: center; }
         .sidebar-greeting-skel {
           display: inline-block;
           width: 120px; height: 12px;
@@ -551,12 +546,12 @@ export default function Layout() {
         .sb-marca-masc { display: block; width: 40px; height: 40px; object-fit: contain; }
         .sb-logo { position: relative; flex: none; width: 42px; height: 42px; padding: 0; border: 2px solid var(--ui-branco); border-radius: 50%; background: #993556; overflow: visible; cursor: pointer; }
         .sb-logo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #F8F5F6; display: block; }
-        .sb-logo-letra { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 18px; font-weight: 700; color: var(--primary-light); }
+        .sb-logo-letra { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 18px; font-weight: 600; color: var(--primary-light); }
         .sb-logo-cam { position: absolute; right: -4px; bottom: -4px; display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 2px solid var(--sidebar-bg); border-radius: 50%; background: var(--primary); color: var(--ui-branco); }
         .sb-logo:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: 2px; }
         .sb-quem { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-        .sb-ola { display: block; max-width: 100%; font-size: 14px; font-weight: 700; color: var(--ui-branco); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sb-plano { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border: 0; border-radius: 6px; font-family: inherit; font-size: 11px; font-weight: 700; line-height: 1; white-space: nowrap; }
+        .sb-ola { display: block; max-width: 100%; font-size: 14px; font-weight: 600; color: var(--ui-branco); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sb-plano { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border: 0; border-radius: 6px; font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1; white-space: nowrap; }
         .sb-plano--pro { background: rgba(255,255,255,0.10); color: var(--ui-branco); } .sb-plano--pro svg { color: #FF9DC4; }
         .sb-plano--seja { background: var(--ui-branco); color: var(--primary); cursor: pointer; } .sb-plano--seja:hover { transform: translateY(-1px); }
         .sb-plano--skel { width: 56px; height: 17px; background: rgba(255,255,255,0.12); }
@@ -573,13 +568,12 @@ export default function Layout() {
         .nav-item--grupo .nav-seta.aberta { transform: rotate(180deg); }
         .nav-grupo .nav-group-body { margin-left: 12px; padding-left: 8px; }
         .nav-grupo .nav-group-body .nav-subitem { min-height: 36px; padding: 0 8px; gap: 7px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .nav-sec { margin: 8px 0 2px 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+        .nav-sec { margin: 8px 0 2px 10px; font-size: 10.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
         .sb-mais { all: unset; box-sizing: border-box; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 6px; height: 30px; margin-top: 2px; border-radius: 8px; font-family: var(--font-base); font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.06); cursor: pointer; }
         .sb-mais:hover { background: rgba(255,255,255,0.12); color: var(--ui-branco); }
         .sb-mais:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: -3px; }
         .sb-pe { flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-top: 10px; }
         .sb-pe-l { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-        .sb-versao { padding-left: 6px; font-size: 11.5px; color: rgba(255,255,255,0.45); }
         .sb-recolher { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); cursor: pointer; }
         .sb-recolher:hover { background: rgba(255,255,255,0.12); color: var(--ui-branco); }
         /* recolhido: só os ícones */
@@ -724,7 +718,7 @@ export default function Layout() {
           }
           .bn-item:active .bn-icon { transform: scale(0.9); }
           .bn-icon { position: relative; }
-          .bn-bolinha { position: absolute; top: -6px; left: 14px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--primary, #E8578E); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--vinho-profundo); }
+          .bn-bolinha { position: absolute; top: -6px; left: 14px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--primary, #E8578E); color: #fff; font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--vinho-profundo); }
           .bn-label {
             font-size: 12px;
             font-weight: 500; /* (09/10 · 3.97) era 600: o guia usa 500 no texto de apoio e 700 no que está marcado */
@@ -732,7 +726,7 @@ export default function Layout() {
             white-space: nowrap;
             line-height: 1;
           }
-          .bn-item--active .bn-label { font-weight: 700; }
+          .bn-item--active .bn-label { font-weight: 600; }
           /* (16/10) Nova venda no meio do menu: o círculo rosa sobe um pouco acima da barra */
           .bn-novo { overflow: visible; }
           .bn-novo-c { display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; margin-top: -18px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 6px 16px rgba(31, 7, 17, .45), 0 0 0 4px var(--vinho-profundo); transition: transform var(--dur-fast) var(--ease-out); }
@@ -753,7 +747,7 @@ export default function Layout() {
           .gestao-item.active { background: var(--primary); border-color: var(--primary); }
           .gestao-icon { color: var(--primary); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-md); background: rgba(152,98,116,0.12); }
           .gestao-item.active .gestao-icon { color: var(--ui-branco); background: rgba(255,255,255,0.2); }
-          .gestao-label { font-size: var(--font-caption); font-weight: 700; color: var(--text-title); text-align: center; font-family: var(--font-base); line-height: 1.25; white-space: normal; word-break: break-word; }
+          .gestao-label { font-size: var(--font-caption); font-weight: 600; color: var(--text-title); text-align: center; font-family: var(--font-base); line-height: 1.25; white-space: normal; word-break: break-word; }
           .gestao-item.active .gestao-label { color: var(--ui-branco); }
         }
       `}</style>

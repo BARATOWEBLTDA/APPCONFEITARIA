@@ -3,18 +3,18 @@ import { COMO_PEDIDO, TOUR_PEDIDO } from "@/lib/comoTelas";
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { explicarErro } from '@/lib/erros'
 import CampoData from '@/components/CampoData'
-import { DotsThree, Check, Heart, Plus, NotePencil, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, ArrowsDownUp, Cake } from '@phosphor-icons/react'
+import { DotsThree, Check, Plus, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
 import AppPageHeader from '@/components/AppPageHeader'
-import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, Titulo, avisar as avisarBase, confirmar, informar } from '@/components/base'
-import { ArrowsLeftRight, Clock, CreditCard, DotsThreeVertical, MagnifyingGlass, Package, Truck } from '@phosphor-icons/react'
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, MenuMais, Titulo, avisar as avisarBase, confirmar, informar, type ItemMenuMais } from '@/components/base'
+import { ArrowsLeftRight, Clock, CreditCard, MagnifyingGlass, Package, Printer, Prohibit, Truck } from '@phosphor-icons/react'
 import { pixDoPedido, SITUACOES, VERBOS, dataCurta, dataLonga, grupoDoStatus, nomeDaSituacao, nomeDeProduto, itemComQtd, proximoPasso, telefoneValido } from '@/components/pedidos/pedidoTexto'
 import { avisarDesfeito, avisarMudanca } from '@/lib/avisoPedido'
 import { NomeComQtd } from '@/components/pedidos/CartaoPedido'
 import { tocarSom } from '@/hooks/useSom'
 import '@/components/pedidos/telaPedido.css'
-import { Paperclip, MagnifyingGlassPlus, Quotes, MapPin, MapTrifold, Copy, Money, Storefront, Tag } from '@phosphor-icons/react'
+import { MapTrifold, Copy, Storefront, Tag } from '@phosphor-icons/react'
 import { CartProvider } from '@/context/CartContext'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
@@ -33,8 +33,6 @@ import { digitosTelefone, linkWhatsApp, mascaraTelefone } from '@/lib/telefone'
 import { pesoLivre } from '@/lib/itemPedido'
 import { pedidoAtrasado } from '@/lib/pedidoStatus'
 import { historicoAssentado } from '@/components/base/useSobreposicao'
-import CampoNumero from "@/components/ui/CampoNumero"
-import ReqTag from "@/components/ReqTag";
 // Tela de edição de pedido — design novo estilo Dora
 // FASE 1: casca (header + tabs + footer)
 // FASE 2: tab Cliente completa
@@ -43,7 +41,6 @@ import ReqTag from "@/components/ReqTag";
 import { useEffect, useState, useRef } from 'react'
 import MapaEndereco, { type BuscaMapa } from '@/components/MapaEndereco'
 import { distanciaKm, kmTexto, modoDaLoja, pontoDoEndereco, taxaPorCidade, taxaPorRaio, type Ponto } from '@/lib/taxaEntrega'
-import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
@@ -134,7 +131,6 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }
   entregue:             { label: 'Entregue',             bg: '#F1EFE8', color: '#5F5E5A' },
   cancelado:            { label: 'Cancelado',            bg: '#FCEBEB', color: '#791F1F' },
 }
-const STATUS_OPCOES = ['aguardando_pagamento','aguardando_aceite','agendado','em_producao','finalizado','aguardando_retirada','em_entrega','entregue']
 
 // ── Utils ─────────────────────────────────────────────────────────────────
 function formatMoney(v: number) {
@@ -148,83 +144,13 @@ function toTitleCase(s: string): string {
     return w.charAt(0).toUpperCase() + w.slice(1)
   }).join(' ')
 }
-function formatDataHora(dataStr?: string | null, horaStr?: string | null): string {
-  if (!dataStr) return '—'
-  const [y, m, d] = dataStr.split('-')
-  const hora = horaStr ? ` às ${horaStr.slice(0, 5)}` : ''
-  return `${d}/${m}${hora}`
-}
-/** "Sábado 10/10/26 às 14h" (minutos só quando tem: "às 14h30"). Sem data: "sem data". */
-function quandoCabecalho(dataStr?: string | null, horaStr?: string | null): string {
-  if (!dataStr) return 'sem data'
-  const [y, m, d] = dataStr.slice(0, 10).split('-').map(Number)
-  const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-  const dia = DIAS[new Date(y, m - 1, d).getDay()]
-  const data = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${String(y).slice(-2)}`
-  if (!horaStr) return `${dia} ${data}`
-  const [hh, mm] = horaStr.slice(0, 5).split(':')
-  return `${dia} ${data} às ${Number(hh)}h${mm && mm !== '00' ? mm : ''}`
-}
 function initialsOf(nome: string): string {
   if (!nome) return '?'
   const partes = nome.trim().split(/\s+/)
   return (partes[0][0] + (partes[1]?.[0] || '')).toUpperCase()
 }
-function formatCep(v: string): string {
-  const digits = v.replace(/\D/g, '').slice(0, 8)
-  if (digits.length > 5) return `${digits.slice(0, 5)}-${digits.slice(5)}`
-  return digits
-}
 // (11/10) telefone na tela: a máscara de lib/telefone (tira o +55; antes "+55 41 99999-8888" virava "(55) 41999-9988")
 const formatTelefone = (v: string): string => mascaraTelefone(v)
-
-// Máscara ao digitar: "150" → 1,50 / "1500" → 15,00
-const parseMaskMoney = (s: string): number => {
-  const digits = s.replace(/\D/g, '')
-  if (!digits) return 0
-  return parseInt(digits) / 100
-}
-const formatMaskMoney = (v: number): string => {
-  if (!v) return ''
-  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-// Data de HOJE em ISO (YYYY-MM-DD) no fuso local
-function hojeISO(): string {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const dia = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${dia}`
-}
-function amanhaISO(): string {
-  const d = new Date()
-  d.setDate(d.getDate() + 1)
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const dia = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${dia}`
-}
-
-// ── Ícones inline ─────────────────────────────────────────────────────────
-const I = {
-  cal:    () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-  clock:  () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-  print:  () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>,
-  home:   () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-  truck:  () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
-  hand:   () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 17V5a1.5 1.5 0 0 1 3 0v6"/><path d="M14 11a1.5 1.5 0 0 1 3 0v3"/><path d="M17 12a1.5 1.5 0 0 1 3 0v4a6 6 0 0 1-6 6h-2c-2 0-2.5-.4-4-2l-3.5-3.5C4 15.6 4.5 14 6 14h1"/><path d="M11 11V6a1.5 1.5 0 0 0-3 0v9"/></svg>,
-  menu:   () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
-  user:   () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  box:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>,
-  dollar: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
-  card:   () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
-  chevL:  () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
-  chevD:  () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
-  x:      () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-  ban:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>,
-  search: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-}
 
 // ═════════════════════════════════════════════════════════════════════════════
 // TIMELINE HELPERS (Fase 7)
@@ -248,18 +174,6 @@ const EVENTO_MAP: Record<string, string[]> = {
 const PASSOS_RETIRADA = ['criado', 'aguardando_aceite', 'agendado', 'em_producao', 'aguardando_retirada', 'entregue']
 const PASSOS_ENTREGA  = ['criado', 'aguardando_aceite', 'agendado', 'em_producao', 'finalizado', 'em_entrega', 'entregue']
 
-const LABEL_PASSO: Record<string, string> = {
-  criado: 'Pedido Criado',
-  aguardando_pagamento: 'Aguardando Pagamento',
-  aguardando_aceite: 'Aguardando Aceite',
-  agendado: 'Agendado',
-  em_producao: 'Em Produção',
-  finalizado: 'Finalizado',
-  aguardando_retirada: 'Pronto para Retirada',
-  em_entrega: 'Saiu para Entrega',
-  entregue: 'Entregue',
-}
-
 // Retorna a posição do status atual na sequência (pra saber o que já passou)
 function posicaoStatus(status: string, sequencia: string[]): number {
   const map: Record<string, string> = {
@@ -271,33 +185,6 @@ function posicaoStatus(status: string, sequencia: string[]): number {
   // pedido de retirada que ficou em "Pronto" (caminho antigo) conta como pronto pra retirar
   if ((chave === 'finalizado' || chave === 'pronto') && !sequencia.includes('finalizado')) return sequencia.indexOf('aguardando_retirada')
   return sequencia.indexOf(chave)
-}
-
-// Formata data completa dd/mm às HH:MM
-function formatDataCompleta(iso?: string): string {
-  if (!iso) return ''
-  const d = new Date(iso)
-  const dia = String(d.getDate()).padStart(2, '0')
-  const mes = String(d.getMonth() + 1).padStart(2, '0')
-  const h = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-  return `${dia}/${mes} às ${h}`
-}
-
-// "há 2 horas", "há 3 minutos", "há 5 dias"
-function tempoRelativo(iso?: string): string {
-  if (!iso) return ''
-  const agora = Date.now()
-  const t = new Date(iso).getTime()
-  const diff = agora - t
-  const min = Math.floor(diff / 60000)
-  if (min < 1) return 'agora mesmo'
-  if (min < 60) return `há ${min} ${min === 1 ? 'minuto' : 'minutos'}`
-  const h = Math.floor(min / 60)
-  if (h < 24) return `há cerca de ${h} ${h === 1 ? 'hora' : 'horas'}`
-  const d = Math.floor(h / 24)
-  if (d < 30) return `há ${d} ${d === 1 ? 'dia' : 'dias'}`
-  const m = Math.floor(d / 30)
-  return `há ${m} ${m === 1 ? 'mês' : 'meses'}`
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -358,7 +245,7 @@ export default function EditarPedido() {
   const [modalProduto, setModalProduto] = useState(false)
   const [buscaProduto, setBuscaProduto] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
-  const [catDropdownAberto, setCatDropdownAberto] = useState(false)
+  const [, setCatDropdownAberto] = useState(false)
 
   // ── Valores (Fase 4) ──────────────────────────────────────────────────
   const [desconto, setDesconto] = useState(0)
@@ -401,13 +288,11 @@ export default function EditarPedido() {
   const [pagamentosFalhou, setPagamentosFalhou] = useState(false) // (11/10) não deu pra LER os recebimentos (internet): não é o modo antigo
   const [ajustesHist, setAjustesHist] = useState<any[]>([])
   const [ajustesPendentes, setAjustesPendentes] = useState<{ tipo: 'desconto' | 'acrescimo'; valor: number; motivo: string }[]>([])
-  const [menuAberto, setMenuAberto] = useState(false)
   const [etapasAberto, setEtapasAberto] = useState(false)
   const [receberAberto, setReceberAberto] = useState(false)
   const [ajusteAberto, setAjusteAberto] = useState(false)
   const [finalizarAberto, setFinalizarAberto] = useState(false)
   const [devolverSinal, setDevolverSinal] = useState<boolean | null>(null)
-  const [recadoEditando, setRecadoEditando] = useState<number | null>(null)
   // janela do app (no lugar do alert/confirm do navegador)
   // janelas do app (08/10 · 3.15): a de aviso e a de confirmar são as peças padrão
   const avisarJanela = (titulo: string, texto?: string, icone: IconeDialogo = 'alerta') => { informar({ titulo, texto, icone }) }
@@ -480,7 +365,6 @@ export default function EditarPedido() {
 
   // ── Itens (03/10): fechados com resumo, abrem ao tocar; remover com "Desfazer"; adicionar com opções ──
   const [itemMenu, setItemMenu] = useState<number | null>(null) // ⋯ de um item
-  const num2 = (v: number) => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const [removido, setRemovido] = useState<{ item: any; idx: number } | null>(null)
   const removidoTimer = useRef<any>(null)
   const [produtoOpcoes, setProdutoOpcoes] = useState<any | null>(null)
@@ -557,11 +441,9 @@ export default function EditarPedido() {
     const dias = Math.round((prox.getTime() - hoje.getTime()) / 86400000)
     return dias <= 15 ? { dias, data: `${String(dd).padStart(2, '0')}/${String(mm).padStart(2, '0')}` } : null
   })()
-  const desdeTxt = clienteInfo?.desde ? new Date(clienteInfo.desde).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('. de ', '/').replace(' de ', '/').replace('.', '') : ''
   // só telefone de verdade mostra WhatsApp/Ligar (cliente de balcão sem telefone não ganha botão vazio)
   // (10/10) os dígitos e o link do WhatsApp saem de lib/telefone (trata o +55 e o DDD 55)
   const telDigitos = telefoneValido(clienteTelefone) ? digitosTelefone(clienteTelefone) : ''
-  const nomeCurto = (n: string) => { const p = toTitleCase(n.trim()).split(/\s+/).filter(Boolean); return p.length > 2 ? `${p[0]} ${p[p.length - 1]}` : p.join(' ') }
 
   // ── Aba Entrega (03/10) ──────────────────────────────────────────────
   const [editandoEndereco, setEditandoEndereco] = useState(false)
@@ -573,15 +455,12 @@ export default function EditarPedido() {
   useTravarRolagem(dataSheet)
   const enderecoTemAlgo = !!(enderecoRua || enderecoNumero || enderecoBairro) // só a cidade (sugerida pela loja) não conta como endereço
   const enderecoCompleto = [[enderecoRua, enderecoNumero].filter(Boolean).join(', '), enderecoComplemento, enderecoBairro, enderecoCidade, enderecoCep ? `CEP ${enderecoCep}` : ''].filter(Boolean).join(' - ')
-  const isoMaisDias = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
   const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
   const diaPorExtenso = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${DIAS_SEMANA[new Date(y, m - 1, d).getDay()]}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}` }
-  const diaCurto = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${DIAS_SEMANA[new Date(y, m - 1, d).getDay()].slice(0, 3)} ${d}` }
   const horaCurta = (h: string) => { const [hh, mm] = h.slice(0, 5).split(':'); return `${Number(hh)}h${mm && mm !== '00' ? mm : ''}` }
   const quandoTexto = `${dataEntrega ? diaPorExtenso(dataEntrega) : 'data a combinar'}${horarioEntrega ? ` às ${horaCurta(horarioEntrega)}` : ''}`
   const primeiroNome = clienteNome.trim() ? toTitleCase(clienteNome.trim().split(/\s+/)[0]) : ''
   const textoEntregador = `Entrega do pedido #${pedido?.numero ?? ''}${primeiroNome ? ` · ${toTitleCase(clienteNome.trim())}` : ''}\n${quandoTexto}\n${enderecoCompleto}${clienteTelefone ? `\nTelefone: ${clienteTelefone}` : ''}`
-  const textoRetirada = `Oi${primeiroNome ? `, ${primeiroNome}` : ''}! Seu pedido #${pedido?.numero ?? ''} pode ser retirado ${quandoTexto.charAt(0).toLowerCase() + quandoTexto.slice(1)}, em: ${lojaInfo?.endereco?.completo || ''}`
   const copiarEndereco = async () => { try { await navigator.clipboard.writeText(enderecoCompleto); avisar('Endereço copiado.') } catch { avisar('Não foi possível copiar.') } }
   const abrirEdicaoEndereco = () => { enderecoAntes.current = { enderecoCep, enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade, enderecoComplemento }; setCepAchado(false); setEditandoEndereco(true) }
   // (28/10) bug: com o endereço vazio, digitar o CEP preenchia a rua e a tela já mostrava o endereço como pronto (sem o número).
@@ -684,7 +563,7 @@ export default function EditarPedido() {
     taxaEntrega: tipoEntrega === 'entrega' ? taxaEntrega : 0, desconto, acrescimo, dataPrevistaPagamento: dataPrevistaPagamento || '',
     itens: itens.map(it => [it.produto_id || it.nome_produto, it.quantidade, it.valor_unitario, it.observacoes || '']),
   })
-  useEffect(() => { if (!carregando && pedido && snapshotRef.current === null) snapshotRef.current = JSON.stringify(estadoEditavel()) }) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!carregando && pedido && snapshotRef.current === null) snapshotRef.current = JSON.stringify(estadoEditavel()) })
   const alteracoes = (() => {
     if (!snapshotRef.current) return 0
     const antes = JSON.parse(snapshotRef.current), agora: any = estadoEditavel()
@@ -899,7 +778,7 @@ export default function EditarPedido() {
         if (data.bairro) setEnderecoBairro(data.bairro)
         if (data.localidade) setEnderecoCidade(data.localidade)
       }
-    } catch {}
+    } catch (e) { console.warn('[EditarPedido] busca do CEP', e) }
     setCepLoading(false)
   }
 
@@ -1205,10 +1084,6 @@ export default function EditarPedido() {
     setCatDropdownAberto(false)
   }
 
-  const removerItem = (idx: number) => {
-    setItens(prev => prev.filter((_, i) => i !== idx))
-  }
-
   // 4.03: item vendido por kg anda de 0,5 em 0,5 e aceita meio quilo (antes arredondava 1,5 kg pra 1)
   // (11/10) só o PESO LIVRE (lib/itemPedido). Bolo por kg com tamanho escolhido ("M · 2 kg") ou kit conta em unidades:
   // passo 1, mínimo 1. Antes aparecia como "1 kg" e o "+" somava meio quilo.
@@ -1247,7 +1122,6 @@ export default function EditarPedido() {
   })()
   const subtotalGravado = (pedido as any)?.valor_produtos != null ? r2((pedido as any).valor_produtos) : null
   const subtotalItens = itensIguaisAFoto && subtotalGravado != null ? subtotalGravado : somarReais(itens.map(valorDaLinha))
-  const totalItens = itens.length
   // (11/10) o cupom do cardápio fica guardado em reais: ao tirar itens, ele não pode passar do valor dos itens
   // (cupom de R$ 30 em R$ 24 de itens comia R$ 6 do frete). O desconto dado à parte continua inteiro.
   const cupomGravado = (pedido as any)?.cupom_codigo ? r2(Math.min(Number((pedido as any)?.cupom_desconto) || 0, desconto)) : 0
@@ -1256,8 +1130,6 @@ export default function EditarPedido() {
   const descontoEfetivo = r2(desconto - cupomGravado + Math.min(cupomGravado, tetoCupom))
   // Total calculado: subtotal + taxa (se entrega) − desconto + acréscimo
   const total = r2(Math.max(0, subtotalItens + (tipoEntrega === 'entrega' ? taxaEntrega : 0) - descontoEfetivo + acrescimo))
-  const origemLabel = pedido?.origem === 'cardapio' ? 'Cardápio' : 'Manual'
-  const tipoEntregaIcon = tipoEntrega === 'entrega' ? I.truck : I.home
 
   // Categorias derivadas dos produtos
   const categoriasComContagem: { nome: string; count: number }[] = (() => {
@@ -1290,18 +1162,10 @@ export default function EditarPedido() {
     const sub = base + adicionais
     return { detalhar: fecha && (adicionais > 0 || desconto > 0), base, adicionais, desconto, pct: fecha && desconto > 0 && sub > 0 ? Math.round((desconto / sub) * 100) : 0, fecha }
   }
-  const somaContas = itens.reduce((acc, it: any) => {
-    const c = contaDoItem(it), q = it.quantidade || 1
-    if (c.fecha) { acc.base += c.base * q; acc.adic += c.adicionais * q; acc.desc += c.desconto * q } else acc.base += (Number(it.valor_unitario) || 0) * q
-    return acc
-  }, { base: 0, adic: 0, desc: 0 })
-  const adicionaisTotal = r2(somaContas.adic)
-  const promocoesTotal = r2(somaContas.desc)
   // o desconto do pedido pode juntar o cupom (do cardápio) e um desconto dado à parte
   // (11/10) a parte do cupom não passa do valor dos itens (a mesma conta do total, acima)
   const descontoCupom = r2(Math.min(cupomGravado, tetoCupom))
   const descontoManual = r2(Math.max(0, desconto - cupomGravado))
-  const produtosTotal = r2(subtotalItens - adicionaisTotal + promocoesTotal)
 
   // forma de venda do item (kg, cento…) vem do produto cadastrado: "Bolo red velvet 1,5 kg" em vez de "1,5x"
   // (11/10) kg só no peso livre; com tamanho ou kit o item conta em unidades ("1x Bolo red velvet")
@@ -1511,6 +1375,15 @@ export default function EditarPedido() {
     </section>
   )
 
+  // (31/10 · 5.84) ⋮ do pedido no padrão MenuMais: abre colado no botão (antes abria uma janela)
+  const itensMenu: ItemMenuMais[] = [
+    { Ic: Clock, t: 'Acompanhar pedido', sub: 'O histórico do pedido', aoTocar: () => setTimelineAberto(true) },
+    { Ic: Printer, t: 'Imprimir ou baixar PDF', sub: 'Para a produção ou o cliente', aoTocar: () => handleExportarPDF() },
+    ...(statusPedido !== 'cancelado' ? [{ Ic: Package, t: 'Mudar a etapa', sub: 'Voltar ou pular uma etapa', aoTocar: () => setEtapasAberto(true) }] : []),
+    ...(statusPedido !== 'cancelado' ? [{ Ic: Prohibit, t: 'Cancelar pedido', sub: 'Fica guardado como cancelado', perigo: true, aoTocar: () => { setDevolverSinal(null); setCancelarAberto(true) } }] : []),
+    { Ic: Trash, t: 'Excluir pedido', sub: 'Apaga de vez', perigo: true, aoTocar: () => excluirPedido() },
+  ]
+
   return (
     <>
     <AppPageHeader title={`Pedido #${pedido.numero || '—'}`} titleExtra={clienteNome.trim() ? toTitleCase(clienteNome.trim()) : undefined} subtitle={subtituloTopo} onBack={voltarPraLista} infoComo={COMO_PEDIDO} infoTour={TOUR_PEDIDO} />
@@ -1533,7 +1406,7 @@ export default function EditarPedido() {
             {atrasadoHoje && <p className="tpd-aviso atr">A data de entrega já passou.</p>}
             {novoPedido && <p className="tpd-aviso">Aceite para entrar na sua agenda.</p>}
           </div>
-          <BotaoIcone rotulo="Mais ações" variante="limpo" className="tpd-mais" onClick={() => setMenuAberto(true)}><DotsThreeVertical size={24} weight="bold" /></BotaoIcone>
+          <MenuMais rotulo="Mais ações" className="tpd-mais" itens={itensMenu} />
         </div>
         {statusPedido !== 'cancelado' && (
           <ol className="tpd-passos" aria-label="Etapas do pedido">
@@ -1549,7 +1422,7 @@ export default function EditarPedido() {
         <div className="tpd-sit-acao">
           {proximaEtapa ? <Botao className="tpd-acao" cheio carregando={mudandoEtapa} onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l}</Botao>
             : statusPedido === 'entregue' ? <p className="tpd-fim"><Check size={16} weight="bold" /> {tipoEntrega === 'retirada' ? 'Pedido retirado' : 'Pedido entregue'}</p> : null}
-          <BotaoIcone rotulo="Mais ações" variante="limpo" className="tpd-mais-pc" onClick={() => setMenuAberto(true)}><DotsThreeVertical size={24} weight="bold" /></BotaoIcone>
+          <MenuMais rotulo="Mais ações" className="tpd-mais-pc" itens={itensMenu} />
         </div>
       </section>
 
@@ -1636,7 +1509,7 @@ export default function EditarPedido() {
               <p className="ep2-ct tpd-so-pc">Quando e onde</p>
               {/* (28/10) Entrega ou Retirada em dois cartões maiores, com a bolinha de escolha dentro */}
               <div className="tpd-tipo" role="radiogroup" aria-label="Como o pedido sai">
-                {([['entrega', 'Entrega', 'Leva até a cliente', Truck], ['retirada', 'Retirada', 'Busca na loja', Storefront]] as const).map(([k, nome, sub, Ic]) => {
+                {([['entrega', 'Entrega', 'Leva até o cliente', Truck], ['retirada', 'Retirada', 'Busca na loja', Storefront]] as const).map(([k, nome, sub, Ic]) => {
                   const on = tipoEntrega === k
                   return (
                     <button key={k} type="button" role="radio" aria-checked={on} className={on ? 'on' : undefined} onClick={() => setTipoEntrega(k)}>
@@ -1873,17 +1746,6 @@ export default function EditarPedido() {
               onChange={e => { const v = e.target.value; setItens(prev => prev.map((x, i) => i === itemMenu ? { ...x, observacoes: v } : x)) }} />
           </div>
         )}
-      </Janela>
-
-      {/* ── mais ações do pedido: a mesma janela da lista ── */}
-      <Janela aberta={menuAberto} aoFechar={() => setMenuAberto(false)} tipo="conteudo" titulo={`Pedido #${pedido.numero || ''}`}>
-        <div className="tpd-menu">
-          <button type="button" className="tpd-mi" onClick={() => { setMenuAberto(false); setTimelineAberto(true) }}><span className="tpd-mi-ic" aria-hidden="true"><Clock size={20} weight="bold" /></span>Acompanhar pedido</button>
-          <button type="button" className="tpd-mi" onClick={() => { setMenuAberto(false); handleExportarPDF() }}><span className="tpd-mi-ic" aria-hidden="true"><I.print /></span>Imprimir ou baixar PDF</button>
-          {statusPedido !== 'cancelado' && <button type="button" className="tpd-mi" onClick={() => { setMenuAberto(false); setEtapasAberto(true) }}><span className="tpd-mi-ic" aria-hidden="true"><Package size={20} weight="bold" /></span>Mudar a etapa</button>}
-          {statusPedido !== 'cancelado' && <button type="button" className="tpd-mi perigo sep" onClick={() => { setMenuAberto(false); setDevolverSinal(null); setCancelarAberto(true) }}><span className="tpd-mi-ic" aria-hidden="true"><I.ban /></span>Cancelar pedido</button>}
-          <button type="button" className={`tpd-mi perigo${statusPedido === 'cancelado' ? ' sep' : ''}`} onClick={() => { setMenuAberto(false); excluirPedido() }}><span className="tpd-mi-ic" aria-hidden="true"><Trash size={20} weight="bold" /></span>Excluir pedido</button>
-        </div>
       </Janela>
 
       {/* ── mudar a etapa (qualquer uma, inclusive voltar) ── */}
@@ -2128,7 +1990,7 @@ export default function EditarPedido() {
           align-items: center;
           gap: 8px;
           font-size: 16px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           font-family: var(--font-base) !important;
@@ -2214,9 +2076,9 @@ export default function EditarPedido() {
         .ep-tab--ativa {
           color: var(--ui-rosa);
           border-bottom-color: var(--ui-rosa);
-          font-weight: 700;
+          font-weight: 600;
         }
-        .ep-tab-badge { font-weight: 700; }
+        .ep-tab-badge { font-weight: 600; }
 
         /* ── BODY ──────────────────────────────────────────────────── */
         .ep-body { padding: 16px 12px; }
@@ -2233,7 +2095,7 @@ export default function EditarPedido() {
           align-items: center;
           gap: 8px;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           margin-bottom: 14px;
@@ -2248,7 +2110,7 @@ export default function EditarPedido() {
           letter-spacing: -0.005em;
         }
         .ep-label--mt { margin-top: 14px; }
-        .ep-label-req { color: var(--ui-rosa); font-weight: 700; }
+        .ep-label-req { color: var(--ui-rosa); font-weight: 600; }
         .ep-label-opt { color: #B4B2A9; font-weight: 500; }
 
         .ep-input {
@@ -2306,7 +2168,7 @@ export default function EditarPedido() {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 700;
+          font-weight: 600;
           font-size: 14px;
           letter-spacing: -0.01em;
           flex-shrink: 0;
@@ -2314,7 +2176,7 @@ export default function EditarPedido() {
         .ep-cliente-info { flex: 1; min-width: 0; }
         .ep-cliente-nome {
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           overflow: hidden;
@@ -2389,7 +2251,7 @@ export default function EditarPedido() {
         .ep-status-info { flex: 1; min-width: 0; }
         .ep-status-label {
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
@@ -2470,7 +2332,7 @@ export default function EditarPedido() {
         }
         .ep-cancelar-txt {
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #B91C1C;
           letter-spacing: -0.01em;
         }
@@ -2504,7 +2366,7 @@ export default function EditarPedido() {
           border-color: var(--ui-rosa);
           background: #FDF3F7;
           color: var(--ui-rosa);
-          font-weight: 700;
+          font-weight: 600;
         }
 
         /* Endereço */
@@ -2571,7 +2433,7 @@ export default function EditarPedido() {
         }
         .ep-footer-total-val {
           font-size: 18px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           font-variant-numeric: tabular-nums;
@@ -2588,7 +2450,7 @@ export default function EditarPedido() {
           padding: 12px;
           border-radius: var(--ui-raio-p);
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           letter-spacing: -0.01em;
           cursor: pointer;
           transition: background 0.15s, opacity 0.15s;
@@ -2645,7 +2507,7 @@ export default function EditarPedido() {
         }
         .ep-modal-title {
           font-size: 16px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           margin: 0;
           letter-spacing: -0.01em;
@@ -2712,14 +2574,14 @@ export default function EditarPedido() {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 700;
+          font-weight: 600;
           font-size: 13px;
           flex-shrink: 0;
         }
         .ep-modal-item-info { flex: 1; min-width: 0; }
         .ep-modal-item-nome {
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           overflow: hidden;
@@ -2749,7 +2611,7 @@ export default function EditarPedido() {
         }
         .ep-placeholder-t {
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           margin: 0 0 6px;
         }
@@ -2804,7 +2666,7 @@ export default function EditarPedido() {
         }
         .ep-cnc-title {
           font-size: 18px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           margin: 0;
           letter-spacing: -0.01em;
@@ -2838,7 +2700,7 @@ export default function EditarPedido() {
         }
         .ep-cnc-card-num {
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
@@ -2864,7 +2726,7 @@ export default function EditarPedido() {
         }
         .ep-cnc-section-title {
           font-size: 13.5px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
@@ -2929,7 +2791,7 @@ export default function EditarPedido() {
         .ep-cnc-toggle-info { flex: 1; min-width: 0; }
         .ep-cnc-toggle-t {
           font-size: 13.5px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
@@ -3022,7 +2884,7 @@ export default function EditarPedido() {
         }
         .ep-tl-title {
           font-size: 17px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           margin: 0;
           letter-spacing: -0.01em;
@@ -3064,7 +2926,7 @@ export default function EditarPedido() {
         }
         .ep-tl-card-num {
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
@@ -3095,7 +2957,7 @@ export default function EditarPedido() {
         }
         .ep-tl-info-val {
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           line-height: 1.25;
@@ -3112,7 +2974,7 @@ export default function EditarPedido() {
           gap: 3px;
           margin-top: 4px;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           color: #B91C1C;
         }
 
@@ -3150,7 +3012,7 @@ export default function EditarPedido() {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          font-weight: 700;
+          font-weight: 600;
           transition: all 0.2s;
         }
         .ep-tl-step-linha {
@@ -3193,7 +3055,7 @@ export default function EditarPedido() {
         }
         .ep-tl-step-label {
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
@@ -3211,7 +3073,7 @@ export default function EditarPedido() {
         .ep-tl-step-sub {
           font-size: 13px;
           color: var(--ui-rosa);
-          font-weight: 700;
+          font-weight: 600;
           margin-top: 2px;
         }
 
@@ -3229,7 +3091,7 @@ export default function EditarPedido() {
           border-radius: var(--ui-raio);
           text-align: center;
           font-size: 13.5px;
-          font-weight: 700;
+          font-weight: 600;
           color: #5F5E5A;
           cursor: pointer;
           background: var(--ui-branco);
@@ -3303,7 +3165,7 @@ export default function EditarPedido() {
         .ep-pag-sit-info { flex: 1; min-width: 0; }
         .ep-pag-sit-t {
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
@@ -3317,7 +3179,7 @@ export default function EditarPedido() {
           padding: 4px 10px;
           border-radius: 999px;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           letter-spacing: 0.02em;
           flex-shrink: 0;
         }
@@ -3344,7 +3206,7 @@ export default function EditarPedido() {
         }
         .ep-pag-sit-pendente {
           color: #B91C1C;
-          font-weight: 700;
+          font-weight: 600;
           font-variant-numeric: tabular-nums;
         }
 
@@ -3372,7 +3234,7 @@ export default function EditarPedido() {
         }
         .ep-pag-resumo-val {
           color: #2C2C2A;
-          font-weight: 700;
+          font-weight: 600;
           font-variant-numeric: tabular-nums;
           letter-spacing: -0.01em;
         }
@@ -3394,7 +3256,7 @@ export default function EditarPedido() {
         .ep-val-label-t {
           display: block;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
@@ -3407,7 +3269,7 @@ export default function EditarPedido() {
         }
         .ep-val-num {
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           font-variant-numeric: tabular-nums;
           letter-spacing: -0.01em;
@@ -3433,7 +3295,7 @@ export default function EditarPedido() {
         .ep-val-input-wrap--plus:focus-within { border-color: #378ADD; }
         .ep-val-input-prefix {
           font-size: 12.5px;
-          font-weight: 700;
+          font-weight: 600;
           color: #888780;
           flex-shrink: 0;
           letter-spacing: -0.01em;
@@ -3447,7 +3309,7 @@ export default function EditarPedido() {
           outline: none;
           text-align: right;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           background: transparent;
           font-variant-numeric: tabular-nums;
@@ -3476,7 +3338,7 @@ export default function EditarPedido() {
           display: flex;
           justify-content: space-between;
           font-size: 16px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           margin-top: 8px;
           padding-top: 10px;
@@ -3509,7 +3371,7 @@ export default function EditarPedido() {
         }
         .ep-itens-vazio-t {
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           margin: 0 0 4px;
         }
@@ -3552,7 +3414,7 @@ export default function EditarPedido() {
         .ep-item-info { min-width: 0; }
         .ep-item-nome {
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           line-height: 1.3;
@@ -3569,7 +3431,7 @@ export default function EditarPedido() {
         }
         .ep-item-subtotal {
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           margin-top: 4px;
           letter-spacing: -0.01em;
@@ -3599,7 +3461,7 @@ export default function EditarPedido() {
           align-items: center;
           justify-content: center;
           font-size: 18px;
-          font-weight: 700;
+          font-weight: 600;
           color: #5F5E5A;
           cursor: pointer;
           transition: background 0.12s, color 0.12s;
@@ -3612,7 +3474,7 @@ export default function EditarPedido() {
           outline: none;
           text-align: center;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           background: transparent;
           font-variant-numeric: tabular-nums;
@@ -3652,7 +3514,7 @@ export default function EditarPedido() {
           justify-content: center;
           gap: 8px;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           color: var(--ui-rosa);
           cursor: pointer;
           background: #FDF3F7;
@@ -3677,7 +3539,7 @@ export default function EditarPedido() {
         }
         .ep-subtotal-val {
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           font-variant-numeric: tabular-nums;
@@ -3743,7 +3605,7 @@ export default function EditarPedido() {
         .ep-cat-dropdown-item--sel { background: var(--primary-light); color: #993556; }
         .ep-cat-dropdown-count {
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           color: #888780;
           background: #F1EFE8;
           padding: 2px 8px;
@@ -3786,7 +3648,7 @@ export default function EditarPedido() {
         .ep-prod-item-info { flex: 1; min-width: 0; }
         .ep-prod-item-nome {
           font-size: 13.5px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           overflow: hidden;
@@ -3800,7 +3662,7 @@ export default function EditarPedido() {
         }
         .ep-prod-item-preco {
           font-size: 13.5px;
-          font-weight: 700;
+          font-weight: 600;
           color: #2C2C2A;
           font-variant-numeric: tabular-nums;
           letter-spacing: -0.01em;
@@ -3809,18 +3671,6 @@ export default function EditarPedido() {
       `}</style>
     </div>
     </>
-  )
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// PLACEHOLDER TEMPORÁRIO (fases 3-5)
-// ═════════════════════════════════════════════════════════════════════════════
-function TabPlaceholder({ titulo, descricao }: { titulo: string; descricao: string }) {
-  return (
-    <div className="ep-placeholder">
-      <p className="ep-placeholder-t">{titulo}</p>
-      <p className="ep-placeholder-d">{descricao}</p>
-    </div>
   )
 }
 
@@ -3863,37 +3713,37 @@ const EP2_CSS = `
     margin-top: calc(-1 * (var(--pad-page-top, 1.5rem) + env(safe-area-inset-top, 0px))); margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); }
   @media (min-width: 768px) { .ep2 { margin: -3rem -2rem 0; } }
   .ep2-qty { display: inline-flex; align-items: center; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio-p); background: var(--ui-branco); overflow: hidden; }
-  .ep2-qty button { width: 34px; height: 34px; border: none; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 18px; font-weight: 700; cursor: pointer; }
+  .ep2-qty button { width: 34px; height: 34px; border: none; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 18px; font-weight: 600; cursor: pointer; }
   .ep2-qty button:disabled { color: #D6CBD0; cursor: default; }
-  .ep2-qty input { width: 38px; height: 34px; border: none; outline: none; text-align: center; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ui-texto); background: none; -moz-appearance: textfield; }
+  .ep2-qty input { width: 38px; height: 34px; border: none; outline: none; text-align: center; font-family: inherit; font-size: 16px; font-weight: 600; color: var(--ui-texto); background: none; -moz-appearance: textfield; }
   .ep2-qty input::-webkit-outer-spin-button, .ep2-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .ep2-hd { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px; background: var(--ui-rosa); color: var(--ui-branco); padding: calc(12px + env(safe-area-inset-top, 0px)) 12px 12px; }
-  .ep2-hd-t { flex: 1; min-width: 0; } .ep2-hd-t b { display: block; font-size: 19px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15; } /* título mais perto da linha de baixo */
+  .ep2-hd-t { flex: 1; min-width: 0; } .ep2-hd-t b { display: block; font-size: 19px; font-weight: 600; letter-spacing: -.01em; line-height: 1.15; } /* título mais perto da linha de baixo */
   .ep2-hd-sub { display: flex; align-items: center; gap: 4px; font-size: 12.5px; line-height: 1.3; opacity: .95; white-space: nowrap; min-width: 0; margin-top: 2px; }
-  .ep2-hd-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; font-weight: 700; }
-  .ep2-hd-quando { flex-shrink: 0; } .ep2-hd-virg { flex-shrink: 0; margin-left: -4px; font-weight: 700; }
+  .ep2-hd-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; font-weight: 600; }
+  .ep2-hd-quando { flex-shrink: 0; } .ep2-hd-virg { flex-shrink: 0; margin-left: -4px; font-weight: 600; }
 
   .ep2-hd-bt { width: 36px; height: 36px; border-radius: 11px; border: none; background: rgba(255,255,255,.18); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
   .ep2-hd-bt svg { width: 18px; height: 18px; }
-  .ep2-hd-orig { font-size: 13px; font-weight: 700; background: rgba(255,255,255,.2); border-radius: 8px; padding: 5px 9px; flex-shrink: 0; }
+  .ep2-hd-orig { font-size: 13px; font-weight: 600; background: rgba(255,255,255,.2); border-radius: 8px; padding: 5px 9px; flex-shrink: 0; }
   @media (max-width: 767px) { .ep2-hd-orig, .ep2-so-desk { display: none !important; } }
   .ep2-st { background: var(--ui-branco); padding: 16px 14px 14px; display: flex; flex-direction: column; gap: 12px; } /* mais espaço até o cabeçalho rosa */
-  .ep2-st-chip { align-self: flex-start; font-size: 13px; font-weight: 700; color: #854F0B; background: #FEF0DF; border-radius: 7px; padding: 3px 9px; }
+  .ep2-st-chip { align-self: flex-start; font-size: 13px; font-weight: 600; color: #854F0B; background: #FEF0DF; border-radius: 7px; padding: 3px 9px; }
   /* etapas: número em vez de círculo vazio, e uma linha de progresso ligando as etapas */
   .ep2-st-l { display: flex; justify-content: space-between; gap: 4px; position: relative; }
   .ep2-st-l::before, .ep2-st-l::after { content: ""; position: absolute; top: 12px; left: 12.5%; height: 3px; border-radius: 3px; }
   .ep2-st-l::before { right: 12.5%; background: #EFE7EB; }
   .ep2-st-l::after { width: calc(75% * var(--prog, 0)); background: #16A34A; transition: width .3s ease; }
-  .ep2-st-p { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--ui-texto-3); text-align: center; line-height: 1.2; position: relative; z-index: 1; }
-  .ep2-st-p i { width: 26px; height: 26px; border-radius: 50%; background: #F1EAEE; color: #A99BA2; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 700; box-shadow: 0 0 0 3px var(--ui-branco); }
+  .ep2-st-p { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--ui-texto-3); text-align: center; line-height: 1.2; position: relative; z-index: 1; }
+  .ep2-st-p i { width: 26px; height: 26px; border-radius: 50%; background: #F1EAEE; color: #A99BA2; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 600; box-shadow: 0 0 0 3px var(--ui-branco); }
   .ep2-st-p.ok { color: var(--ui-texto); } .ep2-st-p.ok i { background: #16A34A; color: var(--ui-branco); }
   .ep2-st-p.atual { color: var(--ui-rosa-escuro); } .ep2-st-p.atual i { background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 0 0 3px var(--ui-branco), 0 0 0 6px rgba(232,90,140,.22); }
-  .ep2-st-bt { border: none; background: var(--ui-vinho-escuro); color: var(--ui-branco); border-radius: var(--ui-raio-botao); padding: 11px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
-  .ep2-st-fim, .ep2-quitado, .ep2-salvo { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ui-verde); background: #F0FDF4; border-radius: var(--ui-raio-p); padding: 9px; }
-  .ep2-st-cancel { text-align: center; font-size: 13.5px; font-weight: 700; color: var(--ui-vermelho-escuro); background: #FEF2F2; border-radius: var(--ui-raio-p); padding: 10px; }
+  .ep2-st-bt { border: none; background: var(--ui-vinho-escuro); color: var(--ui-branco); border-radius: var(--ui-raio-botao); padding: 11px; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .ep2-st-fim, .ep2-quitado, .ep2-salvo { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ui-verde); background: #F0FDF4; border-radius: var(--ui-raio-p); padding: 9px; }
+  .ep2-st-cancel { text-align: center; font-size: 13.5px; font-weight: 600; color: var(--ui-vermelho-escuro); background: #FEF2F2; border-radius: var(--ui-raio-p); padding: 10px; }
   .ep2-tabs { display: flex; background: var(--ui-branco); border-bottom: 1px solid #F0EBED; position: sticky; top: calc(60px + env(safe-area-inset-top, 0px)); z-index: 25; }
   .ep2-tabs { justify-content: center; gap: 2px; } /* abas juntas no centro */
-  .ep2-tabs button { flex: none; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; background: none; padding: 12px 12px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-texto-3); border-bottom: 2.5px solid transparent; cursor: pointer; position: relative; }
+  .ep2-tabs button { flex: none; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; background: none; padding: 12px 12px; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-texto-3); border-bottom: 2.5px solid transparent; cursor: pointer; position: relative; }
   .ep2-tabs button svg { width: 16px; height: 16px; } .ep2-tabs button.on { color: var(--ui-rosa-escuro); border-color: var(--ui-rosa); }
   .ep2-tab-dot { width: 7px; height: 7px; border-radius: 50%; background: #F59E0B; }
   .ep2-grid { padding: 12px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
@@ -3908,12 +3758,12 @@ const EP2_CSS = `
     .ep2-hd { padding: 16px 24px; } .ep2-foot { display: none !important; }
   }
   .ep2-card, .ep2-cli, .ep2-save-desk { background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 14px; box-shadow: 0 1px 2px rgba(44,18,25,.05), 0 8px 22px -6px rgba(44,18,25,.10); }
-  .ep2-ct { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--ui-texto); } .ep2-ct em { font-style: normal; color: var(--ui-texto-3); font-weight: 500; }
+  .ep2-ct { margin: 0 0 8px; font-size: 15px; font-weight: 600; color: var(--ui-texto); } .ep2-ct em { font-style: normal; color: var(--ui-texto-3); font-weight: 500; }
   .ep2-cli { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
-  .ep2-av { width: 40px; height: 40px; border-radius: 50%; background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+  .ep2-av { width: 40px; height: 40px; border-radius: 50%; background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; flex-shrink: 0; }
   .ep2-cli-t { flex: 1; min-width: 0; } .ep2-cli-t b { display: block; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep2-cli-t small { font-size: 12px; color: #888780; }
-  .ep2-lk { border: none; background: none; padding: 4px 6px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
-  .ep2-wa { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--ui-verde); background: var(--ui-verde-fundo); border-radius: 8px; padding: 6px 9px; text-decoration: none; flex-shrink: 0; }
+  .ep2-lk { border: none; background: none; padding: 4px 6px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+  .ep2-wa { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--ui-verde); background: var(--ui-verde-fundo); border-radius: 8px; padding: 6px 9px; text-decoration: none; flex-shrink: 0; }
   /* cartão da cliente (opção A) */
   .ep2-ca, .ep2-cv { background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 12px; box-shadow: 0 1px 2px rgba(44,18,25,.05), 0 8px 22px -6px rgba(44,18,25,.10); }
   .ep2-cv { display: flex; align-items: center; gap: 10px; border-style: dashed; border-color: #F3C9DA; box-shadow: none; background: #FFFAFC; }
@@ -3924,66 +3774,66 @@ const EP2_CSS = `
   .ep2-ca .ep2-cli-t small, .ep2-cv .ep2-cli-t small { display: block; line-height: 1.35; margin-top: 2px; }
   .ep2-ca .ep2-tag { display: table; }
   .ep2-ca-chev { color: #C9BEC3; flex-shrink: 0; }
-  .ep2-tag { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 700; border-radius: 6px; padding: 2px 8px; } .ep2-tag.nova { background: #E0F2FE; color: #075985; }
+  .ep2-tag { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 2px 8px; } .ep2-tag.nova { background: #E0F2FE; color: #075985; }
   .ep2-ca-st { display: none; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; background: #FAF7F8; border-radius: 11px; padding: 8px; }
   @media (min-width: 1024px) { .ep2-ca-st { display: grid; } }
-  .ep2-ca-st span { text-align: center; } .ep2-ca-st b { display: block; font-size: 14px; font-weight: 700; } .ep2-ca-st small { font-size: 12px; color: #888780; }
+  .ep2-ca-st span { text-align: center; } .ep2-ca-st b { display: block; font-size: 14px; font-weight: 600; } .ep2-ca-st small { font-size: 12px; color: #888780; }
   .ep2-aniv { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; background: #FFF1F6; border-radius: var(--ui-raio-p); padding: 9px 10px; font-size: 12.5px; color: #9D174D; line-height: 1.4; }
   .ep2-aniv svg { flex-shrink: 0; margin-top: 1px; }
   .ep2-ca-bts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
-  .ep2-cb { display: flex; align-items: center; justify-content: center; gap: 5px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: var(--ui-raio-botao); padding: 9px 4px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); text-decoration: none; cursor: pointer; }
+  .ep2-cb { display: flex; align-items: center; justify-content: center; gap: 5px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: var(--ui-raio-botao); padding: 9px 4px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-cinza-texto); text-decoration: none; cursor: pointer; }
   .ep2-cb.wa { background: #16A34A; border-color: #16A34A; color: var(--ui-branco); }
-  .ep2-cb.mute { grid-column: span 2; color: var(--ui-texto-3); font-weight: 500; border-style: dashed; } .ep2-cb.mute u { color: var(--ui-rosa-escuro); font-weight: 700; }
-  .ep2-add { display: inline-flex; align-items: center; gap: 4px; border: none; background: var(--ui-rosa); color: var(--ui-branco); border-radius: var(--ui-raio-p); padding: 9px 11px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+  .ep2-cb.mute { grid-column: span 2; color: var(--ui-texto-3); font-weight: 500; border-style: dashed; } .ep2-cb.mute u { color: var(--ui-rosa-escuro); font-weight: 600; }
+  .ep2-add { display: inline-flex; align-items: center; gap: 4px; border: none; background: var(--ui-rosa); color: var(--ui-branco); border-radius: var(--ui-raio-p); padding: 9px 11px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
   /* itens (03/10): fechados com resumo no celular, abrem ao tocar; no computador ficam abertos */
   .ep2-sec-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
-  .ep2-sec-h .ep2-ct { margin: 0; } .ep2-sec-h span { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; } .ep2-sec-h span b { color: var(--ui-texto); font-weight: 700; }
+  .ep2-sec-h .ep2-ct { margin: 0; } .ep2-sec-h span { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; } .ep2-sec-h span b { color: var(--ui-texto); font-weight: 600; }
   .ep2-it { padding: 0 !important; overflow: hidden; }
   .ep2-it-h { display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none; padding: 10px; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
   .ep2-it-h .ep2-it-n { flex: 1; min-width: 0; } .ep2-it-h .ep2-it-n b { font-size: 14.5px; }
   .ep2-it-res { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12px; color: #888780; line-height: 1.35; margin-top: 2px; }
-  .ep2-it-marcas { display: block; font-style: normal; font-size: 12px; font-weight: 700; color: #B08A9A; margin-top: 2px; }
-  .ep2-it-r { flex-shrink: 0; text-align: right; } .ep2-it-r b { display: block; font-size: 14.5px; font-weight: 700; } .ep2-it-r small { font-size: 13px; color: #888780; }
+  .ep2-it-marcas { display: block; font-style: normal; font-size: 12px; font-weight: 600; color: #B08A9A; margin-top: 2px; }
+  .ep2-it-r { flex-shrink: 0; text-align: right; } .ep2-it-r b { display: block; font-size: 14.5px; font-weight: 600; } .ep2-it-r small { font-size: 13px; color: #888780; }
   .ep2-it-chev { color: #C9BEC3; flex-shrink: 0; transition: transform .2s ease; } .ep2-it.aberto .ep2-it-chev { transform: rotate(180deg); }
   .ep2-it-det { display: none; border-top: 1px solid var(--ui-linha); padding: 4px 12px 12px; } .ep2-it.aberto .ep2-it-det { display: block; }
   .ep2-it-det > .ep2-chip { margin-top: 8px; }
   @media (min-width: 1024px) { .ep2-it-det { display: block; } .ep2-it-chev, .ep2-it-marcas { display: none; } .ep2-it-h { cursor: default; } .ep2-it-res { display: none; } }
   .ep2-toast--desfazer { display: flex; align-items: center; gap: 14px; justify-content: space-between; min-width: 260px; }
   .ep2-toast--desfazer::before { content: none; }
-  .ep2-toast--desfazer button { border: none; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 2px 4px; }
+  .ep2-toast--desfazer button { border: none; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; padding: 2px 4px; }
   /* ══ itens em estilo cupom (03/10): sempre abertos, valores em coluna, personalização como anexo grampeado ══ */
   .ep2-cupom { position: relative; background: #FFFDF8; border-radius: 10px 10px 0 0; padding: 14px 14px 16px; margin-bottom: 10px; box-shadow: 0 10px 24px -12px rgba(44,18,25,.28); font-variant-numeric: tabular-nums; }
   .ep2-cupom::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: radial-gradient(circle at 7px 0, #FFFDF8 6.5px, transparent 7px) 0 0 / 14px 8px repeat-x; } /* borda serrilhada */
   .ep2-cup-h { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 4px; } /* sem a linha tracejada embaixo do título */
-  .ep2-cup-h b { font-size: 12px; font-weight: 700; color: var(--ui-texto); } .ep2-cup-h span { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
+  .ep2-cup-h b { font-size: 12px; font-weight: 600; color: var(--ui-texto); } .ep2-cup-h span { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
   .ep2-cup-it { padding: 10px 0 11px; border-bottom: 1.5px dashed #E6DADF; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; align-items: start; }
   .ep2-cup-f { position: relative; width: 44px; height: 44px; border-radius: 11px; background: var(--ui-cinza); color: #B5A6AD; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-top: 1px; }
   .ep2-cup-f svg { width: 20px; height: 20px; } .ep2-cup-f img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .ep2-cup-c { min-width: 0; }
   .ep2-cup-ih { display: flex; align-items: baseline; gap: 6px; }
-  .ep2-cup-q { font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); min-width: 26px; flex-shrink: 0; }
-  .ep2-cup-n { font-size: 15px; font-weight: 700; color: var(--ui-texto); min-width: 0; }
+  .ep2-cup-q { font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); min-width: 26px; flex-shrink: 0; }
+  .ep2-cup-n { font-size: 15px; font-weight: 600; color: var(--ui-texto); min-width: 0; }
   .ep2-cup-ih i, .ep2-cup-l i { flex: 1; border-bottom: 1.5px dotted #D6C8CF; transform: translateY(-3px); min-width: 12px; }
-  .ep2-cup-v { font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+  .ep2-cup-v { font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
   .ep2-cup-mx { align-self: center; border: none; background: #F5EEF1; color: #8C7B84; width: 30px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 2px; }
   .ep2-cup-l { display: flex; align-items: baseline; gap: 6px; font-size: 13px; color: var(--ui-cinza-texto); padding: 3px 0 0 0; line-height: 1.35; }
-  .ep2-cup-l b { font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+  .ep2-cup-l b { font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
   .ep2-cup-un span { font-size: 12px; color: var(--ui-texto-3); }
   .ep2-anexo { position: relative; margin: 14px 4px 4px 0; background: var(--ui-branco); border: 1.5px dashed #F3A9C6; border-radius: var(--ui-raio); padding: 12px; transform: rotate(-.6deg); box-shadow: 0 6px 14px -8px rgba(195,58,110,.35); }
   .ep2-anexo-clip { position: absolute; top: -12px; left: 16px; width: 26px; height: 26px; border-radius: 50%; background: var(--ui-branco); color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
-  .ep2-anexo-t { margin: 2px 0 8px; font-size: 12px; font-weight: 700; color: var(--ui-rosa-escuro); }
+  .ep2-anexo-t { margin: 2px 0 8px; font-size: 12px; font-weight: 600; color: var(--ui-rosa-escuro); }
   .ep2-anexo-foto { position: relative; display: block; width: 100%; height: 150px; border-radius: var(--ui-raio-p); overflow: hidden; background: linear-gradient(135deg, #F7C6D9, #C9B4F5); }
   .ep2-anexo-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .ep2-anexo-ph { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--ui-branco); }
-  .ep2-anexo-zm { position: absolute; right: 8px; bottom: 8px; display: inline-flex; align-items: center; gap: 4px; background: rgba(44,18,25,.78); color: var(--ui-branco); font-size: 12px; font-weight: 700; border-radius: 8px; padding: 5px 9px; }
+  .ep2-anexo-zm { position: absolute; right: 8px; bottom: 8px; display: inline-flex; align-items: center; gap: 4px; background: rgba(44,18,25,.78); color: var(--ui-branco); font-size: 12px; font-weight: 600; border-radius: 8px; padding: 5px 9px; }
   .ep2-anexo-rec { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 14px; color: var(--ui-texto); line-height: 1.4; font-style: italic; }
   .ep2-anexo-rec svg { color: var(--ui-rosa); flex-shrink: 0; margin-top: 2px; }
   .ep2-anexo-foto + .ep2-anexo-rec { margin-top: 10px; } .ep2-anexo-t + .ep2-anexo-rec { margin-top: 0; }
   .ep2-cup-tot { padding-top: 10px; } .ep2-cup-tot > span { font-size: 12px; color: var(--ui-texto-3); }
   .ep2-cup-tot > div { display: flex; justify-content: space-between; align-items: baseline; border-top: 1.5px solid var(--ui-texto); margin-top: 7px; padding-top: 8px; }
-  .ep2-cup-tot > div b:first-child { font-size: 15px; font-weight: 700; } .ep2-cup-tot > div b:last-child { font-size: 17px; font-weight: 700; }
+  .ep2-cup-tot > div b:first-child { font-size: 15px; font-weight: 600; } .ep2-cup-tot > div b:last-child { font-size: 17px; font-weight: 600; }
   .ep2-cupom .ep2-addi { margin-top: 12px; }
-  .ep2-im-lb { font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); margin: 12px 4px 6px; } .ep2-im-lb em { font-style: normal; font-weight: 500; color: var(--ui-texto-3); }
+  .ep2-im-lb { font-size: 13px; font-weight: 600; color: var(--ui-cinza-texto); margin: 12px 4px 6px; } .ep2-im-lb em { font-style: normal; font-weight: 500; color: var(--ui-texto-3); }
   .ep2-sh .ep2-qty { align-self: flex-start; margin-left: 4px; }
   .ep2-im-rec { width: 100%; box-sizing: border-box; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 10px 12px; font-family: inherit; font-size: 15px; color: var(--ui-texto); resize: vertical; }
   .ep2-im-rec:focus { outline: none; border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
@@ -3991,24 +3841,24 @@ const EP2_CSS = `
   .ep2-im-bts .ep2-b1 { padding: 12px 26px; }
   /* ══ aba Entrega (03/10) ══ */
   .ep2-seg2 { display: flex; background: #E9DFE4; border-radius: var(--ui-raio-botao); padding: 3px; }
-  .ep2-seg2 button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; border: none; background: none; border-radius: 11px; padding: 11px; font-family: inherit; font-size: 14.5px; font-weight: 700; color: var(--ui-texto-2); cursor: pointer; }
+  .ep2-seg2 button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; border: none; background: none; border-radius: 11px; padding: 11px; font-family: inherit; font-size: 14.5px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
   .ep2-seg2 button svg { width: 17px; height: 17px; } .ep2-seg2 button.on { background: var(--ui-branco); color: var(--ui-rosa-escuro); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
   .ep2-when { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 8px; }
   .ep2-when button { display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: var(--ui-raio); padding: 11px 12px; font-family: inherit; font-size: 14.5px; color: var(--ui-texto); cursor: pointer; text-align: left; min-width: 0; }
-  .ep2-when button svg { color: var(--ui-rosa-escuro); flex-shrink: 0; width: 16px; height: 16px; } .ep2-when b { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ep2-when button svg { color: var(--ui-rosa-escuro); flex-shrink: 0; width: 16px; height: 16px; } .ep2-when b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ep2-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 9px; }
-  .ep2-chips button { display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: 99px; padding: 7px 12px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); cursor: pointer; }
+  .ep2-chips button { display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: 99px; padding: 7px 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-cinza-texto); cursor: pointer; }
   .ep2-chips button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); }
   .ep2-addr { display: flex; gap: 10px; align-items: flex-start; background: #FAF7F8; border-radius: var(--ui-raio); padding: 11px; }
   .ep2-addr > svg { color: var(--ui-rosa-escuro); flex-shrink: 0; margin-top: 1px; } .ep2-addr > div { flex: 1; min-width: 0; }
-  .ep2-addr b { display: block; font-size: 15px; font-weight: 700; color: var(--ui-texto); } .ep2-addr small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; line-height: 1.35; }
+  .ep2-addr b { display: block; font-size: 15px; font-weight: 600; color: var(--ui-texto); } .ep2-addr small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; line-height: 1.35; }
   .ep2-addr .ep2-lk { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
   .ep2-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 9px; } .ep2-acts.dois { grid-template-columns: 1fr 1.6fr; }
-  .ep2-acts > * { display: flex; align-items: center; justify-content: center; gap: 5px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: var(--ui-raio-botao); padding: 10px 4px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-cinza-texto); text-decoration: none; cursor: pointer; }
+  .ep2-acts > * { display: flex; align-items: center; justify-content: center; gap: 5px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: var(--ui-raio-botao); padding: 10px 4px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-cinza-texto); text-decoration: none; cursor: pointer; }
   .ep2-acts > .wa { background: #16A34A; border-color: #16A34A; color: var(--ui-branco); }
-  .ep2-usar { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; background: #FFF1F6; border: 1.5px dashed #F3A9C6; border-radius: var(--ui-raio); padding: 10px 12px; font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; margin-bottom: 4px; }
+  .ep2-usar { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; background: #FFF1F6; border: 1.5px dashed #F3A9C6; border-radius: var(--ui-raio); padding: 10px 12px; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; margin-bottom: 4px; }
   .ep2-usar span { font-weight: 500; color: var(--ui-texto-2); font-size: 12.5px; }
-  .ep2-lb { display: block; font-size: 12.5px; font-weight: 700; color: var(--ui-cinza-texto); margin: 10px 0 5px; }
+  .ep2-lb { display: block; font-size: 12.5px; font-weight: 600; color: var(--ui-cinza-texto); margin: 10px 0 5px; }
   .ep2-in { width: 100%; box-sizing: border-box; height: 46px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 0 12px; font-family: inherit; font-size: 15px; color: var(--ui-texto); background: var(--ui-branco); min-width: 0; }
   div.ep2-in { display: flex; align-items: center; gap: 8px; } div.ep2-in input { flex: 1; min-width: 0; border: none; outline: none; font: inherit; color: inherit; background: none; height: 100%; }
   div.ep2-in em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); white-space: nowrap; } div.ep2-in em.ok { color: var(--ui-verde); } div.ep2-in.ok { border-color: #86EFAC; }
@@ -4020,29 +3870,29 @@ const EP2_CSS = `
   .ep2-taxa > svg { color: var(--ui-texto-3); } .ep2-taxa .ep2-mini { margin-left: auto; }
   .ep2-nota { margin: 9px 0 0; font-size: 12px; color: var(--ui-texto-3); } .ep2-nota .ep2-lk, .ep2-vazio .ep2-lk { padding: 0; font-size: inherit; text-decoration: underline; }
   .ep2-cal-h { display: flex; justify-content: space-between; align-items: center; margin: 10px 4px 6px; } .ep2-cal-h b { font-size: 15px; }
-  .ep2-cal-h button { width: 32px; height: 32px; border-radius: 9px; border: none; background: #FFF1F6; color: var(--ui-rosa-escuro); font-size: 18px; font-weight: 700; cursor: pointer; }
+  .ep2-cal-h button { width: 32px; height: 32px; border-radius: 9px; border: none; background: #FFF1F6; color: var(--ui-rosa-escuro); font-size: 18px; font-weight: 600; cursor: pointer; }
   .ep2-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; padding: 0 2px; }
   .ep2-cal i { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); padding: 4px 0; }
   .ep2-cal button { border: none; background: none; border-radius: var(--ui-raio-p); padding: 8px 0; font-family: inherit; font-size: 14px; color: var(--ui-texto); cursor: pointer; }
-  .ep2-cal button.hj { box-shadow: inset 0 0 0 1.5px var(--ui-rosa); } .ep2-cal button.sel { background: var(--ui-rosa); color: var(--ui-branco); font-weight: 700; }
+  .ep2-cal button.hj { box-shadow: inset 0 0 0 1.5px var(--ui-rosa); } .ep2-cal button.sel { background: var(--ui-rosa); color: var(--ui-branco); font-weight: 600; }
   .ep2-cal-ok { width: 100%; margin-top: 14px; }
   /* ══ itens do pedido (03/10): modelo aprovado — nome em uma linha, campos com rótulo, adicionais em caixinhas
         (uma por linha), referência grande e centralizada, valor no fim. Nada quebra linha (só o recado). ══ */
   .ep3 { background: var(--ui-branco); border-radius: var(--ui-raio-cartao); padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(44,18,25,.05), 0 8px 22px -6px rgba(44,18,25,.10); border: 1px solid var(--ui-borda); font-variant-numeric: tabular-nums; }
-  .ep3-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; } .ep3-h b { font-size: 15.5px; font-weight: 700; color: var(--ui-texto); } .ep3-h span { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
+  .ep3-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; } .ep3-h b { font-size: 15.5px; font-weight: 600; color: var(--ui-texto); } .ep3-h span { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
   .ep3-it { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 13px 0; border-top: 1px solid #F2ECEF; }
   .ep3-h + .ep3-it { border-top: none; }
   .ep3-c { min-width: 0; }
   .ep3-nmw { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; } .ep3-nmw .ep3-nm { flex: 1; min-width: 0; margin: 0; }
-  .ep3-add-h { display: inline-flex; align-items: center; gap: 4px; border: none; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); border-radius: var(--ui-raio-p); padding: 7px 11px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+  .ep3-add-h { display: inline-flex; align-items: center; gap: 4px; border: none; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); border-radius: var(--ui-raio-p); padding: 7px 11px; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
   .ep3-cont { margin: 8px 0 0; padding-top: 10px; border-top: 1px solid #F2ECEF; font-size: 12.5px; color: var(--ui-texto-3); text-align: center; }
-  .ep3-nm { margin: 0 0 4px; font-size: 15.5px; font-weight: 700; color: var(--ui-texto); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ep3-nm em { font-style: normal; font-weight: 700; color: var(--ui-rosa-escuro); }
+  .ep3-nm { margin: 0 0 4px; font-size: 15.5px; font-weight: 600; color: var(--ui-texto); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ep3-nm em { font-style: normal; font-weight: 600; color: var(--ui-rosa-escuro); }
   .ep3-cp { margin: 0; font-size: 13.5px; color: var(--ui-texto); line-height: 1.55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep3-cp span { color: #8A7E84; }
   .ep3-ads { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 3px; min-width: 0; } .ep3-ads > span:first-child { font-size: 13.5px; color: #8A7E84; }
   .ep3-ad { display: inline-flex; gap: 5px; max-width: 100%; box-sizing: border-box; white-space: nowrap; font-size: 12.5px; font-weight: 500; color: var(--ui-texto); border: 1.5px solid #E8DDE2; border-radius: 8px; padding: 3px 9px; background: var(--ui-branco); }
   .ep3-ad > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; } /* só o nome encolhe */
-  .ep3-ad b { flex-shrink: 0; font-weight: 700; color: var(--ui-rosa-escuro); } /* o valor fica sempre visível */
+  .ep3-ad b { flex-shrink: 0; font-weight: 600; color: var(--ui-rosa-escuro); } /* o valor fica sempre visível */
   .ep3-obs { margin-top: 10px; } .ep3-obs small { display: block; font-size: 12px; font-weight: 500; color: #8A7E84; }
   .ep3-ref { display: flex; justify-content: center; margin: 7px 0 2px -54px; } /* centralizada no item inteiro */
   .ep3-ref a { position: relative; display: block; width: 100%; max-width: 260px; height: 180px; border-radius: var(--ui-raio); overflow: hidden; background: linear-gradient(135deg, #F7C6D9, #C9B4F5); box-shadow: 0 6px 16px -8px rgba(44,18,25,.35); }
@@ -4055,11 +3905,11 @@ const EP2_CSS = `
   .ep3-conta p.promo span, .ep3-conta p.promo b { color: var(--ui-verde); }
   .ep3-conta + .ep3-vl { margin-top: 4px; }
   .ep3-vl { display: flex; align-items: center; gap: 6px; margin-top: 9px; } .ep3-vl > span { font-size: 13.5px; color: #8A7E84; } .ep3-vl small { font-size: 12px; color: #A99CA2; white-space: nowrap; }
-  .ep3-vl b { margin-left: auto; font-size: 16px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+  .ep3-vl b { margin-left: auto; font-size: 16px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
   .ep3-pv { padding: 9px 0; border-bottom: 1px solid #F2ECEF; } .ep2-ct + .ep3-pv { padding-top: 2px; }
   .ep3-pv-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-  .ep3-pv-h span { font-size: 14px; font-weight: 700; color: var(--ui-texto); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep3-pv-h em { font-style: normal; font-weight: 700; color: var(--ui-rosa-escuro); }
-  .ep3-pv-h b { font-size: 14.5px; font-weight: 700; white-space: nowrap; }
+  .ep3-pv-h span { font-size: 14px; font-weight: 600; color: var(--ui-texto); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ep3-pv-h em { font-style: normal; font-weight: 600; color: var(--ui-rosa-escuro); }
+  .ep3-pv-h b { font-size: 14.5px; font-weight: 600; white-space: nowrap; }
   .ep3-pv p { margin: 2px 0 0; font-size: 12.5px; color: #8A7E84; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ep3-pv-d { margin-top: 4px; }
   .ep3-pv-d p { display: flex; justify-content: space-between; gap: 10px; margin: 0; font-size: 12.5px; line-height: 1.65; color: #8A7E84; white-space: nowrap; }
@@ -4067,25 +3917,25 @@ const EP2_CSS = `
   .ep3-pv-d p.pr span, .ep3-pv-d p.pr b { color: var(--ui-verde); }
   .ep3-pv-itens { margin-top: 6px; }
   .ep3-tot { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--ui-texto); } .ep3-tot > span { font-size: 12px; color: var(--ui-texto-3); }
-  .ep3-tot > div { display: flex; justify-content: space-between; align-items: baseline; margin-top: 3px; } .ep3-tot > div span { font-size: 14.5px; font-weight: 700; } .ep3-tot > div b { font-size: 17px; font-weight: 700; }
-  .ep3-add { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 12px; border: none; border-radius: var(--ui-raio); padding: 11px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .ep3-tot > div { display: flex; justify-content: space-between; align-items: baseline; margin-top: 3px; } .ep3-tot > div span { font-size: 14.5px; font-weight: 600; } .ep3-tot > div b { font-size: 17px; font-weight: 600; }
+  .ep3-add { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 12px; border: none; border-radius: var(--ui-raio); padding: 11px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   .ep2-it { border: 1.5px solid #F0EBED; border-radius: 14px; padding: 12px; margin-bottom: 10px; background: var(--bg-body); }
   .ep2-it-top { display: flex; gap: 10px; align-items: center; }
   .ep2-it-f { width: 44px; height: 44px; border-radius: var(--ui-raio); background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
   .ep2-it-f { position: relative; } .ep2-it-f img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; } /* se a foto não carregar, aparece o ícone por baixo */ .ep2-it-f svg { width: 20px; height: 20px; }
-  .ep2-it-n { flex: 1; min-width: 0; } .ep2-it-n b { display: block; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
-  .ep2-chip { display: inline-block; margin: 4px 4px 0 0; font-size: 13px; font-weight: 700; color: #993556; background: var(--primary-light); border-radius: 7px; padding: 3px 8px; }
+  .ep2-it-n { flex: 1; min-width: 0; } .ep2-it-n b { display: block; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+  .ep2-chip { display: inline-block; margin: 4px 4px 0 0; font-size: 13px; font-weight: 600; color: #993556; background: var(--primary-light); border-radius: 7px; padding: 3px 8px; }
   .ep2-esc { margin-top: 10px; border-top: 1px solid var(--ui-linha); padding-top: 7px; }
   .ep2-ln { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13.5px; padding: 4px 0; color: var(--ui-cinza-texto); }
-  .ep2-ln span { color: #888780; } .ep2-ln b { font-weight: 700; color: var(--ui-texto); text-align: right; } .ep2-ln.neg b { color: var(--ui-vermelho); } .ep2-card > .ep2-ln.promo span, .ep2-ln.promo b { color: var(--ui-verde); }
+  .ep2-ln span { color: #888780; } .ep2-ln b { font-weight: 600; color: var(--ui-texto); text-align: right; } .ep2-ln.neg b { color: var(--ui-vermelho); } .ep2-card > .ep2-ln.promo span, .ep2-ln.promo b { color: var(--ui-verde); }
   .ep2-card > .ep2-ln span { color: var(--ui-cinza-texto); }
-  .ep2-ln.tt { border-top: 1px solid #F0EBED; margin-top: 6px; padding-top: 10px; font-size: 15.5px; } .ep2-ln.tt span { color: var(--ui-texto); font-weight: 700; } .ep2-ln.tt b { font-size: 18px; }
+  .ep2-ln.tt { border-top: 1px solid #F0EBED; margin-top: 6px; padding-top: 10px; font-size: 15.5px; } .ep2-ln.tt span { color: var(--ui-texto); font-weight: 600; } .ep2-ln.tt b { font-size: 18px; }
   .ep2-ln-in { align-items: center; }
   .ep2-mini { display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--ui-borda-campo); border-radius: 9px; padding: 4px 8px; width: 110px; background: var(--ui-branco); }
   .ep2-mini em { font-style: normal; font-size: 12px; color: var(--ui-texto-3); font-weight: 500; }
-  .ep2-mini input { width: 100%; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ui-texto); text-align: right; background: none; }
-  .ep2-sab { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 700; color: var(--ui-texto); padding: 3px 0; } .ep2-sab svg { color: var(--ui-rosa); }
-  .ep2-ad { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; background: #FFF6F9; border-radius: var(--ui-raio-p); padding: 8px 10px; font-size: 13px; font-weight: 700; color: var(--ui-texto); }
+  .ep2-mini input { width: 100%; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 16px; font-weight: 600; color: var(--ui-texto); text-align: right; background: none; }
+  .ep2-sab { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); padding: 3px 0; } .ep2-sab svg { color: var(--ui-rosa); }
+  .ep2-ad { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; background: #FFF6F9; border-radius: var(--ui-raio-p); padding: 8px 10px; font-size: 13px; font-weight: 600; color: var(--ui-texto); }
   .ep2-ad span { display: flex; align-items: center; gap: 6px; } .ep2-ad b { color: var(--ui-rosa-escuro); white-space: nowrap; }
   .ep2-foto { display: flex; align-items: center; gap: 10px; margin-top: 8px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 7px; text-decoration: none; color: var(--ui-texto); }
   .ep2-foto-i { width: 46px; height: 46px; border-radius: var(--ui-raio-p); background: linear-gradient(135deg, #F7C6D9, #C4B5FD); display: flex; align-items: center; justify-content: center; color: var(--ui-branco); overflow: hidden; position: relative; flex-shrink: 0; }
@@ -4095,29 +3945,29 @@ const EP2_CSS = `
   .ep2-ob svg { flex-shrink: 0; margin-top: 2px; }
   .ep2-recado-ed { display: flex; gap: 6px; align-items: center; margin-top: 8px; } .ep2-recado-ed .ep-input { flex: 1; }
   .ep2-pr { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--ui-linha); font-size: 12px; color: var(--ui-texto-2); }
-  .ep2-pr b { font-size: 16px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+  .ep2-pr b { font-size: 16px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
   .ep2-ac { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; }
-  .ep2-rm { display: inline-flex; align-items: center; gap: 5px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--ui-vermelho); cursor: pointer; padding: 6px 2px; }
-  .ep2-addi { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border: 2px dashed #F3C9DA; border-radius: var(--ui-raio); padding: 12px; background: #FFF6F9; color: var(--ui-rosa-escuro); font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .ep2-rm { display: inline-flex; align-items: center; gap: 5px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-vermelho); cursor: pointer; padding: 6px 2px; }
+  .ep2-addi { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border: 2px dashed #F3C9DA; border-radius: var(--ui-raio); padding: 12px; background: #FFF6F9; color: var(--ui-rosa-escuro); font-family: inherit; font-weight: 600; font-size: 14px; cursor: pointer; }
   .ep2-ajs { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; font-size: 12px; color: var(--ui-texto-3); }
   .ep2-aj { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; border: none; background: none; padding: 4px 0; font-family: inherit; font-size: 12.5px; font-weight: 500; color: #B0809A; cursor: pointer; } /* mais leve */
   .ep2-vazio { margin: 2px 0 6px; font-size: 13px; color: #888780; line-height: 1.45; }
   .ep2-pg { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--ui-linha); } .ep2-pg:first-of-type { border-top: none; }
   .ep2-pg-ic { width: 32px; height: 32px; border-radius: var(--ui-raio-p); background: var(--ui-verde-fundo); color: var(--ui-verde); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .ep2-pg > div { flex: 1; min-width: 0; } .ep2-pg div b { display: block; font-size: 13.5px; color: var(--ui-texto); } .ep2-pg small { font-size: 12px; color: #888780; }
-  .ep2-pg .v { font-size: 14px; font-weight: 700; color: var(--ui-verde); white-space: nowrap; }
+  .ep2-pg .v { font-size: 14px; font-weight: 600; color: var(--ui-verde); white-space: nowrap; }
   .ep2-pg-x { width: 32px; height: 32px; border-radius: 9px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); color: var(--ui-texto-3); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
   .ep2-pg.est { opacity: .5; } .ep2-pg.est .v, .ep2-pg.est div b { text-decoration: line-through; }
   .ep2-falta { margin-top: 10px; background: #FFFBEB; border-radius: var(--ui-raio); padding: 10px 12px; }
-  .ep2-falta > div:first-child { display: flex; justify-content: space-between; align-items: baseline; } .ep2-falta small { font-size: 12.5px; font-weight: 700; color: #92400E; } .ep2-falta b { font-size: 18px; font-weight: 700; color: var(--ui-laranja); }
+  .ep2-falta > div:first-child { display: flex; justify-content: space-between; align-items: baseline; } .ep2-falta small { font-size: 12.5px; font-weight: 600; color: #92400E; } .ep2-falta b { font-size: 18px; font-weight: 600; color: var(--ui-laranja); }
   .ep2-bar { height: 6px; border-radius: 9px; background: #FDE68A; margin-top: 7px; overflow: hidden; } .ep2-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; }
-  .ep2-rec { margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: var(--ui-raio); padding: 13px; background: #16A34A; color: var(--ui-branco); font-family: inherit; font-weight: 700; font-size: 14.5px; cursor: pointer; box-shadow: 0 6px 14px -6px rgba(22,163,74,.6); }
+  .ep2-rec { margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; border-radius: var(--ui-raio); padding: 13px; background: #16A34A; color: var(--ui-branco); font-family: inherit; font-weight: 600; font-size: 14.5px; cursor: pointer; box-shadow: 0 6px 14px -6px rgba(22,163,74,.6); }
   .ep2-prev { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; font-size: 12.5px; color: var(--ui-texto-2); }
   .ep2-prev-d { width: 150px; } .ep2-prev-d .cdata { font-size: 14px; padding: 0 10px; }
-  .ep2-prev em { font-style: normal; font-weight: 700; color: var(--ui-texto); }
+  .ep2-prev em { font-style: normal; font-weight: 600; color: var(--ui-texto); }
   .ep2-save-desk { display: none; } @media (min-width: 1024px) { .ep2-save-desk { display: flex; flex-direction: column; gap: 8px; } }
-  .ep2-mud { font-size: 12.5px; font-weight: 700; color: var(--ui-laranja); text-align: center; }
-  .ep2-b1, .ep2-b2 { border: none; border-radius: var(--ui-raio); padding: 13px; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+  .ep2-mud { font-size: 12.5px; font-weight: 600; color: var(--ui-laranja); text-align: center; }
+  .ep2-b1, .ep2-b2 { border: none; border-radius: var(--ui-raio); padding: 13px; font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; }
   .ep2-b1 { background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); } .ep2-b1.ok { background: #16A34A; box-shadow: none; } .ep2-b2 { background: var(--ui-cinza); color: var(--ui-cinza-texto); }
   .ep2-b1:disabled, .ep2-b2:disabled { opacity: .7; cursor: default; }
   .ep2-foot { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ui-branco); border-top: 1px solid #F0EBED; box-shadow: 0 -6px 16px rgba(44,18,25,.08); padding: 8px 12px 10px; display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; animation: ep2Sobe .2s ease; }
@@ -4125,17 +3975,17 @@ const EP2_CSS = `
   .ep2-foot .ep2-mud { grid-column: 1 / -1; }
   @keyframes ep2Sobe { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
   .ep2-toast { position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; display: inline-flex; align-items: center; gap: 8px; background: var(--ui-branco); color: var(--ui-texto); padding: 9px 15px 9px 11px; border-radius: 99px; border: 1px solid #EDE4E8; font-size: 13px; font-weight: 500; box-shadow: 0 6px 18px -6px rgba(44,18,25,.25); max-width: calc(100vw - 32px); white-space: nowrap; animation: ep2ToastIn .2s ease; }
-  .ep2-toast::before { content: "✓"; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .ep2-toast::before { content: "✓"; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 12px; font-weight: 600; flex-shrink: 0; }
   @keyframes ep2ToastIn { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
   .ep2-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
   @media (min-width: 768px) { .ep2-ov { align-items: center; } }
   .ep2-sh { width: 100%; max-width: 440px; background: var(--ui-branco); border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; padding: 10px 14px calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 2px; max-height: 88dvh; overflow-y: auto; }
   @media (min-width: 768px) { .ep2-sh { border-radius: 22px; } }
   .ep2-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 10px; }
-  .ep2-sh-t { font-size: 17px; font-weight: 700; color: var(--ui-texto); padding: 2px 6px 8px; }
-  .ep2-mi { display: flex; align-items: center; gap: 12px; border: none; background: none; border-radius: var(--ui-raio); padding: 13px 10px; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ui-texto); cursor: pointer; text-align: left; }
+  .ep2-sh-t { font-size: 17px; font-weight: 600; color: var(--ui-texto); padding: 2px 6px 8px; }
+  .ep2-mi { display: flex; align-items: center; gap: 12px; border: none; background: none; border-radius: var(--ui-raio); padding: 13px 10px; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); cursor: pointer; text-align: left; }
   .ep2-mi:hover { background: #FAF7F8; } .ep2-mi svg { width: 18px; height: 18px; color: var(--ui-texto-2); } .ep2-mi.perigo, .ep2-mi.perigo svg { color: var(--ui-vermelho); }
-  .ep2-mi.sel { background: #FFF1F6; } .ep2-mi em { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 700; color: var(--ui-rosa-escuro); }
+  .ep2-mi.sel { background: #FFF1F6; } .ep2-mi em { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 600; color: var(--ui-rosa-escuro); }
   .ep2-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .ep2-devol { margin: 12px 0 4px; border: 1.5px solid #FDE68A; background: #FFFBEB; border-radius: var(--ui-raio); padding: 10px 12px; }
   .ep2-devol b { display: block; font-size: 13.5px; color: #92400E; margin-bottom: 8px; }

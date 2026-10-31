@@ -48,7 +48,7 @@ const CSS_AMOSTRA = `
   .lu-gratis { position: relative; }
   .lu-convite { position: absolute; left: 0; right: 0; top: 140px; z-index: 2; width: calc(100% - 40px); max-width: 380px; margin: 0 auto; padding: 26px 22px; box-sizing: border-box; border-radius: 20px; background: var(--ui-branco); box-shadow: 0 12px 40px rgba(45, 31, 38, .18); text-align: center; }
   .lu-convite-ic { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 50%; background: var(--primary-light); color: var(--ui-rosa-escuro); }
-  .lu-convite b { display: block; font-size: 18px; font-weight: 700; color: var(--ui-texto); }
+  .lu-convite b { display: block; font-size: 18px; font-weight: 600; color: var(--ui-texto); }
   .lu-convite p { margin: 8px 0 16px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 `;
 
@@ -211,7 +211,7 @@ function LucratividadeTela() {
             <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Ingredientes</small><b className="s">{brl(dados.cmv)}</b>
               <i>pela ficha técnica</i></div>
             <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Taxas</small><b className="s">{brl(dados.custosVariaveis)}</b>
-              <i>{dados.custosVariaveis > 0 ? "cobradas por pedido" : <button type="button" className="lu-link" onClick={() => navigate("/custos")}>cadastrar em Custos</button>}</i></div>
+              <i>{dados.custosVariaveis > 0 ? "cobradas por pedido" : <button type="button" className="lu-link" onClick={() => navigate("/custos")}>Cadastrar taxas</button>}</i></div>
             <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Despesas</small><b className="s">{brl(despesasSemInsumos)}</b>
               <i>sem os ingredientes</i></div>
             <div className={`lu-k lu-k--lucro${dados.lucro < 0 ? " ruim" : ""}`}><span className="lu-ki l" aria-hidden="true"><Equals size={15} weight="bold" /></span><small>{ehMes ? "Lucro do mês" : "Lucro do período"}</small><b>{brl(dados.lucro)}</b>
@@ -340,7 +340,7 @@ const CSS = `
   .lu-pc-m .lu-p-bar { flex: 1; margin: 0; }
   .lu-p-bar { display: block; height: 5px; border-radius: 9px; background: var(--ui-linha); overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
   .lu-sf { color: var(--ui-laranja); font-weight: 600; display: flex; flex-wrap: wrap; align-items: center; gap: 3px; font-size: 12px; }
-  .lu-sf-bt { display: inline-flex; align-items: center; gap: 2px; width: 100%; margin-top: 6px; color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .lu-sf-bt { display: inline-flex; align-items: center; gap: 2px; width: 100%; margin-top: 6px; color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 600; white-space: nowrap; }
   .lu-pc--bt { cursor: pointer; transition: border-color .15s; } .lu-pc--bt:hover { border-color: #F7C9DA; }
   .lu-pc--bt:focus-visible { outline: 3px solid rgba(236, 72, 153, .4); outline-offset: 2px; }
   @media (max-width: 639px) {

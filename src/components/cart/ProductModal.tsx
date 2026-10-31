@@ -5,7 +5,6 @@ import { precoCardapio, precoDoTamanho, descontoCardapio, comDesconto, tamanhosE
 import { produtosDaLojaAtual, lojaAtualId } from '@/components/cardapio/lojaAtual'
 import { pesoDoNome, pesoDoTamanho } from '@/lib/itemSacola'
 import { r2 } from '@/lib/moeda'
-import { avisar } from '@/components/base'
 import { kitAtivo, calcularKit, selecaoInicial, kitUnico, kitsValidos, palavraKit, type KitSelecao } from '@/lib/kitQuantidade'
 import { Fragment, useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
@@ -565,7 +564,6 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const precosSabor = saborComPreco && !opSabor && !gTamanho ? ((gSabor as any)?.opcoes || []).map((o: any) => Number(o?.preco) || 0).filter((v: number) => v > 0) : []
   const valorTopo = semTamanho ? comDesconto(precoCardapio(product).valor, descPct) : precosSabor.length && !(calculo.final > 0) ? comDesconto(Math.min(...precosSabor), descPct) : calculo.final
   const pMin = precosTam.length ? Math.min(...precosTam) : valorTopo
-  const pMax = precosTam.length ? Math.max(...precosTam) : valorTopo
   // (20/10) os tamanhos têm preços diferentes? (decide se a linha do "a partir de" existe, escolhido ou não)
   const precosTodos = gTamanho ? (gTamanho.opcoes || []).map((o: any) => precoDoTamanho(o, tamanhoPorPeso, porKg)).filter((v: number) => v > 0) : []
   const precoTamVaria = precosTodos.length > 1 && Math.max(...precosTodos) > Math.min(...precosTodos)

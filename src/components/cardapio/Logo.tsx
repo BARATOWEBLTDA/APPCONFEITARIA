@@ -55,9 +55,6 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
     endereco.cep
   ].filter(Boolean).join(', ') : ''
 
-  const mostrarCidade = configuracoes?.mostrar_apenas_cidade && cidade
-  const mostrarCompleto = configuracoes?.mostrar_localizacao && enderecoCompleto
-
   const accent = borderColor || '#E85A8C'
   const iconeAtalho = (d: string) => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: 'block' }}>
@@ -84,11 +81,11 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
       </div>
 
       <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '18px', padding: '66px 16px 14px', margin: '0 14px', marginTop: '-70px', boxShadow: '0 8px 24px rgba(60,20,35,0.10)', zIndex: 20, position: 'relative', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 700, color: corNome || '#000000', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{storeName}{verificada && <SeloVerificado tamanho={20} />}</h1>
+        <h1 style={{ fontSize: '22px', fontWeight: 600, color: corNome || '#000000', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{storeName}{verificada && <SeloVerificado tamanho={20} />}</h1>
 
         {/* Status + nota numa linha só */}
         {(status || !hideStars) && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '5px', fontSize: '12.5px', fontWeight: 700, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '5px', fontSize: '12.5px', fontWeight: 600, flexWrap: 'wrap' }}>
             {status && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: status.aberto ? '#15803d' : '#dc2626' }}>
                 <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: status.aberto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
@@ -113,7 +110,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
           ].map((a, i) => (
             <div key={a.l2} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '9px 4px', borderLeft: i > 0 ? '1px solid #F0EBED' : 'none' }}>
               {iconeAtalho(a.d)}
-              <span style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-title)', lineHeight: 1.2 }}>{a.l1}<br />{a.l2}</span>
+              <span style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--text-title)', lineHeight: 1.2 }}>{a.l1}<br />{a.l2}</span>
             </div>
           ))}
         </div>
@@ -124,7 +121,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             <span style={{ fontSize: '12.5px', color: 'var(--text-secondary)', fontWeight: 500 }}>{cidade}</span>
             {enderecoCompleto && (
-              <button onClick={() => setModalEndereco(true)} style={{ fontSize: '12px', color: accent, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+              <button onClick={() => setModalEndereco(true)} style={{ fontSize: '12px', color: accent, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
                 Ver no mapa
               </button>
             )}
@@ -165,7 +162,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
                   href={`https://waze.com/ul?q=${encodeURIComponent(enderecoCompleto)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#fff', color: 'var(--ui-texto)', boxShadow: 'inset 0 0 0 1.5px #E5DDE1', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#fff', color: 'var(--ui-texto)', boxShadow: 'inset 0 0 0 1.5px #E5DDE1', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 600, textDecoration: 'none' }}
                 >
                   <img src="/waze.png" alt="Waze" width="20" height="20" style={{objectFit:'contain'}} />
                   Waze
@@ -174,7 +171,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
                   href={`https://maps.google.com/?q=${encodeURIComponent(enderecoCompleto)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#fff', color: 'var(--ui-texto)', boxShadow: 'inset 0 0 0 1.5px #E5DDE1', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#fff', color: 'var(--ui-texto)', boxShadow: 'inset 0 0 0 1.5px #E5DDE1', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 600, textDecoration: 'none' }}
                 >
                   <img src="/google-maps.png" alt="Google Maps" width="20" height="20" style={{objectFit:'contain'}} />
                   Google Maps
@@ -183,7 +180,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
 
               <button
                 onClick={() => setModalEndereco(false)}
-                style={{ width: '100%', padding: '0.85rem', background: 'var(--menu-hover-bg)', color: 'var(--text-primary)', border: 'none', borderRadius: '50px', fontFamily: 'inherit', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
+                style={{ width: '100%', padding: '0.85rem', background: 'var(--menu-hover-bg)', color: 'var(--text-primary)', border: 'none', borderRadius: '50px', fontFamily: 'inherit', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}
               >
                 Fechar
               </button>

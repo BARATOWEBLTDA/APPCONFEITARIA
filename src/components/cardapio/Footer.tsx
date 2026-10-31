@@ -1,3 +1,3 @@
-export function Footer({ textoRodape }: { textoRodape?: string }) {
+export function Footer(_props: { textoRodape?: string }) {
   return null
 }

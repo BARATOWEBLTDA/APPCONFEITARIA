@@ -35,7 +35,7 @@ export function getStoredNotifState(): boolean {
 }
 
 function setStoredNotifState(ativo: boolean) {
-  try { localStorage.setItem(STORAGE_KEY, ativo ? "1" : "0"); } catch {}
+  try { localStorage.setItem(STORAGE_KEY, ativo ? "1" : "0"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
 }
 
 /** Registra o service worker /sw.js se ainda não estiver ativo. Idempotente. */

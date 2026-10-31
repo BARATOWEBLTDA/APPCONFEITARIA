@@ -8,10 +8,10 @@
 .ic-pp-novo { display: flex; align-items: center; flex-wrap: wrap; gap: 0 5px; color: var(--ui-texto); }
 .ic-pp-novo b { font-size: 16px; font-weight: 600; }
 .ic-pp-novo small { font-size: 12.5px; color: var(--ui-texto-2); }
-.ic-pct { display: inline-grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; color: var(--ui-branco); font-size: 9.5px; font-weight: 700; line-height: 1; flex: none; }
+.ic-pct { display: inline-grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; color: var(--ui-branco); font-size: 9.5px; font-weight: 600; line-height: 1; flex: none; }
 .ic-pp-de { display: flex; align-items: center; gap: 6px; }
 .ic-pp-de s { font-size: 13px; color: var(--ui-texto-3); }
-.ic-off { padding: 1px 7px; border-radius: 999px; color: var(--ui-branco); font-size: 12px; font-weight: 700; line-height: 1.5; }
+.ic-off { padding: 1px 7px; border-radius: 999px; color: var(--ui-branco); font-size: 12px; font-weight: 600; line-height: 1.5; }
 
 /* modo de entrega, em texto embaixo */
 .ic-ent { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
@@ -59,11 +59,11 @@
 
 /* (14/10) cartão de Promoções: foto com o selo, nome, descrição (2 linhas) e preço */
 .ic-cp-ft { position: relative; }
-.ic-cp-nome { font-weight: 700; }
+.ic-cp-nome { font-weight: 600; }
 .ic-cp-desc { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ic-ent--esg { color: #B45309; font-weight: 600; }
 .ic-off { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px 1px 3px; border-radius: 6px; }
-.ic-off-pct { display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: var(--ui-branco); font-size: 9px; font-weight: 800; font-style: normal; line-height: 1; }
+.ic-off-pct { display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: var(--ui-branco); font-size: 9px; font-weight: 600; font-style: normal; line-height: 1; }
 
 /* (17/10) produtos em cartão branco: Promoções (2 por linha) e lista (foto à direita) */
 .ic-cp { gap: 0; overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda-campo); border-radius: 16px; }

@@ -70,7 +70,7 @@ export function expediente(d: Date, horarioBruto: any): { abre: number; fecha: n
 }
 
 /** Antecedência do pedido, em horas: a maior entre os produtos. */
-export function antecedenciaHoras(itensIds: string[], info: Record<string, InfoEntregaProduto> | undefined, prazoMinimoLoja: number, aceitaAgendamento: boolean): number {
+export function antecedenciaHoras(itensIds: string[], info: Record<string, InfoEntregaProduto> | undefined, _prazoMinimoLoja: number, _aceitaAgendamento: boolean): number {
   let maior = 0;
   for (const id of itensIds) {
     const p = info?.[id];

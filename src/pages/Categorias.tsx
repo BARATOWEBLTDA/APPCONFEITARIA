@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowUp, DotsThreeVertical, Info, PencilSimple, Plus, SquaresFour, Trash, UploadSimple, WarningCircle } from "@phosphor-icons/react";
+import { ArrowDown, ArrowUp, Info, PencilSimple, Plus, SquaresFour, Trash, UploadSimple, WarningCircle } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_CATEGORIAS, TOUR_CATEGORIAS } from "@/lib/comoTelas";
-import { Botao, BotaoIcone, Campo, MenuMais, Janela, TelaVazia, Titulo, avisar, confirmar, informar } from "@/components/base";
+import { Botao, Campo, MenuMais, Janela, TelaVazia, Titulo, avisar, confirmar, informar } from "@/components/base";
 import "./categorias.css";
 
 /**

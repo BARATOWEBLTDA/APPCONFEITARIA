@@ -1,52 +1,31 @@
-import { useRef } from 'react'
-import type { ReactNode } from 'react'
 import { CheckCircle, Copy, FilePdf, PencilSimple, Trash } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { Janela } from '@/components/base'
+import { MenuMais, type ItemMenuMais } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { nomeCliente, pixDoPedido, rs, temTelefone } from './pedidoTexto'
+import { pixDoPedido, rs, temTelefone } from './pedidoTexto'
 
 /**
- * "Mais ações" do pedido (08/10 · 3.11): a janela padrão do app (no celular sobe de baixo).
- * Antes era uma gaveta própria, com "Editar Pedido" e companhia em maiúsculas.
- * Quem escolhe faz a ação e depois fecha a janela (assim o "voltar" do Android não se perde).
+ * "Mais ações" do pedido (08/10 · 3.11). (31/10 · 5.84) No padrão MenuMais: o ⋮ abre o menu colado no botão,
+ * igual ao resto do app (antes abria uma janela de baixo).
  */
 export type AcaoMenu = 'confirmar_pix' | 'editar' | 'duplicar' | 'contatar' | 'compartilhar' | 'pdf' | 'excluir'
 
-type Props = { p: Pedido | null; aoFechar: () => void; aoEscolher: (p: Pedido, acao: AcaoMenu) => void }
+const Zap = ({ size }: { size?: number }) => <IconeWhatsApp size={size} />
 
-export default function MenuPedido({ p: atual, aoFechar, aoEscolher }: Props) {
-  // guarda o último pedido pra janela não ficar vazia enquanto faz o movimento de fechar
-  const ultimo = useRef<Pedido | null>(null)
-  if (atual) ultimo.current = atual
-  const p = atual || ultimo.current
-  // "Chamar no WhatsApp" e "Enviar resumo" abrem o WhatsApp: os dois com o logo oficial (IconeWhatsApp)
-  const px = p ? pixDoPedido(p) : null
-  const itens: [AcaoMenu, string, ReactNode][] = [
-    ...(px?.estado === 'conferir' ? [['confirmar_pix', `Confirmar Pix de ${rs(px.valor)}`, <CheckCircle size={20} weight="bold" />] as [AcaoMenu, string, ReactNode]] : []),
-    ['editar', 'Editar pedido', <PencilSimple size={20} weight="bold" />],
-    ['duplicar', 'Duplicar pedido', <Copy size={20} weight="bold" />],
-    ...(p && temTelefone(p) ? [['contatar', 'Chamar no WhatsApp', <IconeWhatsApp size={20} />] as [AcaoMenu, string, ReactNode]] : []),
-    ['compartilhar', 'Enviar resumo do pedido', <IconeWhatsApp size={20} />],
-    ['pdf', 'Baixar PDF', <FilePdf size={20} weight="bold" />],
+export function itensMenuPedido(p: Pedido, aoEscolher: (p: Pedido, acao: AcaoMenu) => void): ItemMenuMais[] {
+  const px = pixDoPedido(p)
+  const vai = (acao: AcaoMenu) => () => aoEscolher(p, acao)
+  return [
+    ...(px?.estado === 'conferir' ? [{ Ic: CheckCircle, t: `Confirmar Pix de ${rs(px.valor)}`, sub: 'O cliente já pagou pelo cardápio', aoTocar: vai('confirmar_pix') }] : []),
+    { Ic: PencilSimple, t: 'Editar pedido', sub: 'Itens, data e pagamento', aoTocar: vai('editar') },
+    { Ic: Copy, t: 'Duplicar pedido', sub: 'Um igual, para outra data', aoTocar: vai('duplicar') },
+    ...(temTelefone(p) ? [{ Ic: Zap, t: 'Chamar no WhatsApp', sub: 'Abre a conversa com o cliente', aoTocar: vai('contatar') }] : []),
+    { Ic: Zap, t: 'Enviar resumo do pedido', sub: 'O pedido escrito no WhatsApp', aoTocar: vai('compartilhar') },
+    { Ic: FilePdf, t: 'Baixar PDF', sub: 'Para imprimir ou mandar', aoTocar: vai('pdf') },
+    { Ic: Trash, t: 'Excluir pedido', sub: 'Apaga de vez', perigo: true, aoTocar: vai('excluir') },
   ]
-  return (
-    <Janela aberta={!!atual} aoFechar={aoFechar} tipo="conteudo" titulo={p ? `Pedido #${p.numero || ''}` : ''}>
-      {p && (
-        <>
-          <p className="pdm-quem">{nomeCliente(p)}</p>
-          <div className="pdm">
-            {itens.map(([acao, nome, ic]) => (
-              <button key={acao} type="button" className="pdm-it" onClick={() => aoEscolher(p, acao)}>
-                <span className="pdm-ic" aria-hidden="true">{ic}</span><span>{nome}</span>
-              </button>
-            ))}
-            <button type="button" className="pdm-it pdm-it--excluir" onClick={() => aoEscolher(p, 'excluir')}>
-              <span className="pdm-ic" aria-hidden="true"><Trash size={20} weight="bold" /></span><span>Excluir pedido</span>
-            </button>
-          </div>
-        </>
-      )}
-    </Janela>
-  )
+}
+
+export default function MenuPedido({ p, aoEscolher, className }: { p: Pedido; aoEscolher: (p: Pedido, acao: AcaoMenu) => void; className?: string }) {
+  return <MenuMais rotulo={`Mais ações do pedido #${p.numero || ''}`} className={className} itens={itensMenuPedido(p, aoEscolher)} />
 }

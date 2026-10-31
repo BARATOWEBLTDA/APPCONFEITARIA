@@ -367,7 +367,7 @@ export default function AdminUsuarios() {
         .au-root button { font-family: inherit; }
         .au-topo { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
         .au-topo-t { min-width: 0; }
-        .au-h1 { font-size: 22px; font-weight: 700; margin: 0; color: var(--ui-texto); }
+        .au-h1 { font-size: 22px; font-weight: 600; margin: 0; color: var(--ui-texto); }
         .au-sub { font-size: 15px; font-weight: 500; color: var(--ui-texto-2); margin: 4px 0 0; }
 
         .au-card { padding: 12px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
@@ -388,10 +388,10 @@ export default function AdminUsuarios() {
         .au-l::after { content: ""; order: 2; flex-basis: 100%; height: 0; }
         .au-quem { order: 1; flex: 1 1 0; display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 48px; }
         .au-acoes { order: 2; flex: none; display: flex; align-items: center; gap: 2px; }
-        .au-av { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; overflow: hidden; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 16px; font-weight: 700; }
+        .au-av { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; overflow: hidden; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 16px; font-weight: 600; }
         .au-av img { width: 100%; height: 100%; object-fit: cover; }
         .au-quem-tx { min-width: 0; display: flex; flex-direction: column; }
-        .au-quem-tx b { font-size: 15px; font-weight: 700; color: var(--ui-texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .au-quem-tx b { font-size: 15px; font-weight: 600; color: var(--ui-texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .au-quem-tx small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .au-bt-perigo { color: var(--ui-vermelho); }
         .au-bt-perigo:hover { background: var(--ui-vermelho-fundo); }
@@ -402,7 +402,7 @@ export default function AdminUsuarios() {
         .au-c--data { order: 5; }
         .au-nada { font-style: normal; color: var(--ui-texto-3); }
         .au-so-cel { font-style: normal; white-space: pre; }
-        .au-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-weight: 700; white-space: nowrap; }
+        .au-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-weight: 600; white-space: nowrap; }
         .au-tag em { font-style: normal; font-weight: 500; }
         .au-tag--pro { background: var(--ui-vinho); color: var(--ui-branco); }
         .au-tag--pro em { color: rgba(255,255,255,.8); }
@@ -433,7 +433,7 @@ export default function AdminUsuarios() {
         .au-erro { margin: 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); font-size: 14px; font-weight: 500; line-height: 1.4; }
         .au-j-apoio { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); overflow-wrap: anywhere; }
         .au-atalhos { display: flex; gap: 8px; flex-wrap: wrap; margin-top: -4px; }
-        .au-atalhos button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 700; cursor: pointer; }
+        .au-atalhos button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 600; cursor: pointer; }
         .au-atalhos button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
       `}</style>
     </div>

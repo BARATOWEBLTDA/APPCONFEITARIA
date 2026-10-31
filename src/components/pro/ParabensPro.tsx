@@ -24,7 +24,7 @@ export default function ParabensPro() {
   useEffect(() => {
     if (loading || !chave) return;
     let celebrado = true;
-    try { celebrado = !!localStorage.getItem(chave); } catch {}
+    try { celebrado = !!localStorage.getItem(chave); } catch { /* sem localStorage: a confirmação no banco decide */ }
     if (!isPro || celebrado) return;
     // 02/10: só abre depois de confirmar no banco que a conta LOGADA é PRO
     // (numa conta nova, um "PRO" de passagem abria a tela e ela ficava aberta)
@@ -33,7 +33,7 @@ export default function ParabensPro() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.id !== profile?.id) return;
       // já viu em outro aparelho: guarda aqui também e não abre
-      if (user.user_metadata?.pro_celebrado) { try { localStorage.setItem(chave, String(user.user_metadata.pro_celebrado)); } catch {} return; }
+      if (user.user_metadata?.pro_celebrado) { try { localStorage.setItem(chave, String(user.user_metadata.pro_celebrado)); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } return; }
       const { data } = await supabase.from("profiles").select("plano, pro_expira_em").eq("id", user.id).maybeSingle();
       const exp = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
       const proDeVerdade = data?.plano === "pro" && (!exp || exp > new Date());
@@ -47,7 +47,7 @@ export default function ParabensPro() {
   if (!aberto) return null;
   const fechar = () => {
     const agora = new Date().toISOString();
-    try { localStorage.setItem(chave, agora); } catch {}
+    try { localStorage.setItem(chave, agora); } catch { /* sem localStorage: o banco guarda (pro_celebrado) */ }
     supabase.auth.updateUser({ data: { pro_celebrado: agora } }).then(() => {}, () => {});
     setAberto(false); setTimeout(() => window.dispatchEvent(new Event("doonly:parabens-pro-fechou")), 350);
   };

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
-import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
-import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb,  SignOut, SlidersHorizontal, Storefront, Bug, Truck, User, WarningCircle, MagnifyingGlass } from "@phosphor-icons/react";
+import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, FileText, Lightbulb,  SignOut, SlidersHorizontal, Bug, User, WarningCircle, MagnifyingGlass } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -292,7 +291,6 @@ export default function Configuracoes() {
             {/* (18/10) Avançado entrou no grupo App (a seção "Outros" saiu) */}
             <ItemConfig icone={<SlidersHorizontal size={20} weight="bold" />} nome="Avançado" apoio="Excluir a conta" onClick={() => setAvancadoOpen(true)} />
             {/* (18/10) Minhas conquistas escondido por enquanto */}
-            {INDICACAO_ATIVA && <ItemConfig icone={<Gift size={20} weight="bold" />} nome="Indique e ganhe" apoio="Ganhe prêmios indicando" onClick={() => navigate("/indicar")} />}
 
             </div>
 

@@ -77,12 +77,12 @@ const CSS = `
   .ptc .ptc-corpo { margin-top: -18px; padding: 12px 14px 12px; background: var(--ui-branco); border-radius: 16px 16px 0 0; }
   .ptc .ptc-logo { top: -46px; right: 12px; width: 84px; height: 84px; border-width: 3px; box-shadow: 0 0 0 3px var(--ui-branco), 0 4px 12px rgba(44,18,25,.16); cursor: pointer; font-family: inherit; }
   .ptc .ptc-logo--vazia { border: 2px dashed #E8AFC4; background: #FFF4F8; padding: 0; }
-  .ptc .ptc-vazio { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 100%; height: 100%; color: var(--ui-rosa-escuro); font-size: 11px; font-weight: 700; }
-  .ptc .ptc-vazio small { font-size: 11px; font-weight: 700; }
+  .ptc .ptc-vazio { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 100%; height: 100%; color: var(--ui-rosa-escuro); font-size: 11px; font-weight: 600; }
+  .ptc .ptc-vazio small { font-size: 11px; font-weight: 600; }
   .ptc .ptc-nome { padding-right: 92px; font-size: 19px; white-space: nowrap; overflow: hidden; }
   .ptc .ptc-nome > span { overflow: hidden; text-overflow: ellipsis; }
   .ptc .ptc-sl { margin-top: 2px; font-size: 13px; }
-  .ptc .ptc-sobre { flex: none; font-weight: 700; color: #EC4899; }
+  .ptc .ptc-sobre { flex: none; font-weight: 600; color: #EC4899; }
   .ptc .ptc-desc { margin-top: 8px; font-size: 13.5px; line-height: 1.45; overflow-wrap: anywhere; }
   .ptc .ptc-desc--vazia { color: var(--ui-texto-3); font-style: italic; }
   .ptc .ptc-busca { display: flex; align-items: center; height: 38px; margin-top: 12px; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 20px; font-size: 13px; color: var(--ui-texto-3); }

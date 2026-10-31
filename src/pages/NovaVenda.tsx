@@ -23,7 +23,6 @@ import { pesoLivre } from '@/lib/itemPedido'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { CartProvider } from '@/context/CartContext'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
-import { carregarGruposDoBanco } from '@/lib/produto-grupos'
 import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
 import '@/components/pedidos/telaPedido.css'
 import './novaVenda.css'
@@ -134,7 +133,6 @@ const toTitleCase = (str: string): string => {
 // (o passo 1 se chama "Venda" por dentro; na tela aparece como "Produtos")
 const ETAPAS_ENCOMENDA = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
 const ETAPAS_PRONTA    = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
-const NOME_DO_PASSO: Record<string, string> = { Venda: 'Produtos' }
 
 // Em que situação o pedido entra: o valor gravado não muda, só o nome na tela (igual à lista de pedidos)
 const COMECOS = [
@@ -225,7 +223,7 @@ export default function NovaVenda() {
         if (data.bairro) setEnderecoBairro(data.bairro)
         if (data.localidade) setEnderecoCidade(data.localidade)
       }
-    } catch {}
+    } catch (e) { console.warn('[NovaVenda] busca do CEP', e) }
     setCepLoading(false)
   }
 
@@ -545,7 +543,7 @@ export default function NovaVenda() {
     if (!userId || salvando) return
     // (11/10) o Editar da Doo abre direto no Revisar: a data da encomenda é conferida aqui também
     if (tipo !== 'pronta_entrega' && (!dataEntrega || dataEntrega < hojeISO())) { trocarPasso(3); avisar(dataEntrega ? 'Essa data já passou. Escolha outra.' : 'Escolha a data da entrega.', { tipo: 'info' }); return }
-    if (!semCliente && !clienteId && !modoNovoCli && clienteNome.trim()) { trocarPasso(2); avisar('Escolha a cliente para continuar.', { tipo: 'info' }); return }
+    if (!semCliente && !clienteId && !modoNovoCli && clienteNome.trim()) { trocarPasso(2); avisar('Escolha o cliente para continuar.', { tipo: 'info' }); return }
     if (!situacaoPag) { trocarPasso(etapas.indexOf('Pagamento') + 1); avisar('Escolha quanto já entrou para continuar.', { tipo: 'info' }); return }
     // o total pode ter mudado depois do passo do pagamento (tirou um produto, deu desconto): o sinal continua tendo que ser menor
     if (situacaoPag === 'parcial' && !(r2(valorParcial) > 0 && r2(valorParcial) < total)) { trocarPasso(etapas.indexOf('Pagamento') + 1); avisar('O sinal precisa ser menor que o total. Confira o pagamento.', { tipo: 'info' }); return }
@@ -778,7 +776,6 @@ export default function NovaVenda() {
     )
   }
 
-  const nomePasso = (n: string) => NOME_DO_PASSO[n] || n
   const clienteEscolhida = clienteId ? clientes.find(x => x.id === clienteId) : undefined
   const podeUsarEndereco = !!clienteEscolhida?.rua && (clienteEscolhida.rua !== enderecoRua || (clienteEscolhida.numero || '') !== enderecoNumero)
   const usarEnderecoDaCliente = () => {

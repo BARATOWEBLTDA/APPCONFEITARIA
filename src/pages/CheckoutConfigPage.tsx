@@ -91,6 +91,18 @@ function CampoTaxa({ valor, aoMudar, rotulo, className = '' }: { valor: string; 
   )
 }
 
+// (31/10 · 5.84) fora do componente: criados dentro dele, eram refeitos a cada desenho da tela
+function Cabeca({ Ic, titulo, apoio, acao }: { Ic: typeof Wallet; titulo: string; apoio?: string; acao?: React.ReactNode }) {
+  return <div className="ep-cab"><span className="ep-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio} acao={acao}>{titulo}</Titulo></div>
+}
+function Chave({ on, rotulo, apoio, aoMudar }: { on: boolean; rotulo: string; apoio?: string; aoMudar: (v: boolean) => void }) {
+  return (
+    <button type="button" role="switch" aria-checked={on} className="ep-sw-l" onClick={() => aoMudar(!on)}>
+      <span className="ep-sw-tx"><b>{rotulo}</b>{apoio && <small>{apoio}</small>}</span><span className="ep-sw" aria-hidden="true" />
+    </button>
+  )
+}
+
 export default function CheckoutConfigPage({ embutido = false, parte = "tudo", so, onEstado }: { embutido?: boolean; parte?: "tudo" | "entrega" | "cupons"; so?: "pag" | "pix" | "ent" | "entCol"; onEstado?: (e: EstadoEntregaPagamento) => void } = {}) {
   const verEntrega = parte !== "cupons", verCupons = parte !== "entrega"
   const navigate = useNavigate()
@@ -101,7 +113,6 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const [imagemCupom, setImagemCupom] = useState<DadosImagemCupom | null>(null)
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
-  const [savingCupons, setSavingCupons] = useState(false)
   const cuponsAntigosNoPerfil = useRef(false) // (27/10) os cupons ainda vieram do perfil antigo: o próximo salvar limpa a cópia de lá
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -526,21 +537,6 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     setCupomForm(cupomVazio)
   }
 
-  const handleSalvarCupons = async () => {
-    if (!userId) return
-    // 10/10: grava tudo de uma vez (o que estava esperando os 2 s vai junto, sem gravar duas vezes) e confere o erro
-    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null }
-    setSavingCupons(true)
-    await salvarTudo({ aviso: 'Cupons salvos', limparCuponsDoPerfil: true })
-    setSavingCupons(false)
-  }
-
-  const formatDate = (iso: string) => {
-    if (!iso) return ''
-    const [y, m, d] = iso.split('-')
-    return `${d}/${m}/${y.slice(2)}`
-  }
-
   // (23/10) ticket do cupom: as regras em uma linha só ("Só no 1º pedido · 12 de 50 usos · até 25/12") e a situação
   const diaMes = (iso: string) => { const [, m, d] = iso.split('-'); return `${d}/${m}` }
   const hojeIso = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` })()
@@ -580,14 +576,6 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     : undefined
   const CURTO_PAG: Record<string, string> = { pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Crédito', debito: 'Débito' }
 
-  const Cabeca = ({ Ic, titulo, apoio, acao }: { Ic: typeof Wallet; titulo: string; apoio?: string; acao?: React.ReactNode }) => (
-    <div className="ep-cab"><span className="ep-cab-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><Titulo apoio={apoio} acao={acao}>{titulo}</Titulo></div>
-  )
-  const Chave = ({ on, rotulo, apoio, aoMudar }: { on: boolean; rotulo: string; apoio?: string; aoMudar: (v: boolean) => void }) => (
-    <button type="button" role="switch" aria-checked={on} className="ep-sw-l" onClick={() => aoMudar(!on)}>
-      <span className="ep-sw-tx"><b>{rotulo}</b>{apoio && <small>{apoio}</small>}</span><span className="ep-sw" aria-hidden="true" />
-    </button>
-  )
   const dinheiroBR = (v: string) => { const n = numBR(v); return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
 
   // com erro, "loading" continua ligado: o salvamento automático só arma depois de uma leitura que deu certo
@@ -683,7 +671,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                     <small className="ep-dica">Cobrada em todo pedido com entrega própria</small>
                   </div>
                   {/* (29/10 · 5.10) o que a cliente vê ao escolher entrega no cardápio */}
-                  <p className="ep-fixa-prev"><span>No cardápio, para a cliente</span><b>Entrega: {(numBR(valorEntregaPropria) || 0) > 0 ? `R$ ${valorEntregaPropria}` : 'Grátis'}</b></p>
+                  <p className="ep-fixa-prev"><span>No cardápio, para o cliente</span><b>Entrega: {(numBR(valorEntregaPropria) || 0) > 0 ? `R$ ${valorEntregaPropria}` : 'Grátis'}</b></p>
                 </div>
               ) : (
                 <div className="ep-bairros">

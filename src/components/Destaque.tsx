@@ -15,7 +15,7 @@ type Alvo = RefObject<HTMLElement | null> | string;
 const achar = (a: Alvo) => (typeof a === "string" ? document.querySelector<HTMLElement>(a) : a.current);
 
 export function jaViuDestaque(chave: string) { try { return localStorage.getItem(`doonly_destaque_${chave}`) === "1"; } catch { return true; } }
-export function marcarDestaque(chave: string) { try { localStorage.setItem(`doonly_destaque_${chave}`, "1"); } catch {} }
+export function marcarDestaque(chave: string) { try { localStorage.setItem(`doonly_destaque_${chave}`, "1"); } catch { /* sem localStorage: o destaque volta a aparecer */ } }
 
 export default function Destaque({ alvo, toque, titulo, texto, acao, aoAcao, aoFechar, mascote = false, raio = 16, passo, naoTexto = "Agora não", extra, sobreJanela = false, semNao = false }: {
   /** o que fica aceso (ref ou seletor) */
@@ -133,13 +133,13 @@ const CSS = `
   .dsq-bal--rodape::before { display: none; }
   .dsq-bal--masc { padding: 14px 14px 12px 88px; text-align: left; }
   .dsq-masc { position: absolute; left: 10px; bottom: 10px; width: 68px; height: auto; }
-  .dsq-bal b { display: block; margin-bottom: 3px; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
-  .dsq-passo { display: block; margin-bottom: 2px; font-style: normal; font-size: 12px; font-weight: 700; color: var(--ui-rosa-escuro); }
+  .dsq-bal b { display: block; margin-bottom: 3px; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+  .dsq-passo { display: block; margin-bottom: 2px; font-style: normal; font-size: 12px; font-weight: 600; color: var(--ui-rosa-escuro); }
   .dsq-bal p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
   .dsq-extra { margin-top: 10px; }
   .dsq-acoes { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 10px; }
   .dsq-bal--masc .dsq-acoes { justify-content: flex-start; margin-top: 8px; }
-  .dsq-sim, .dsq-nao { min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+  .dsq-sim, .dsq-nao { min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   .dsq-sim { background: var(--chocolate); color: var(--ui-branco); }
   .dsq-nao { background: none; color: var(--ui-texto-3); }
   @media (prefers-reduced-motion: reduce) { .dsq, .dsq-furo { animation: none; } }

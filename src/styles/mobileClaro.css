@@ -83,8 +83,22 @@
 @media (max-width: 600px) {
   html body .fd-tres { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   html body .fd-tres .fd-t.esc { grid-column: 1 / -1; }
+  /* (31/10 · 5.84) valores maiores, como o "Sobrou": Em caixa 26 px, A receber e A pagar 22 px */
+  html body .fd-tres .fd-t b { font-size: 22px; margin-top: 4px; }
+  html body .fd-tres .fd-t.esc b { font-size: 26px; }
+  html body .fd-tres .fd-t small { font-size: 12.5px; }
 }
 /* sem a barra (tudo zerado): o respiro entre o texto e Entrou/Saiu */
 html body .fd-res .fd-var + .fd-leg { margin-top: 12px; }
 /* "Escolher" é mais comprido que "Outro": cabe nos celulares de 360 px */
 @media (max-width: 400px) { html body .fd-per-chips button { padding: 0 4px !important; font-size: 14px !important; } }
+
+/* (31/10 · 5.84) toques pequenos ganham área de 44 px sem mudar o desenho: chave "Pausar os pedidos" e os links de texto */
+.clc-chave::after { content: ""; position: absolute; inset: -8px -4px; }
+.tpd-cli-perfil, .fap-mostrando button, .ap-exp button { position: relative; }
+.tpd-cli-perfil::after, .fap-mostrando button::after, .ap-exp button::after { content: ""; position: absolute; inset: -12px -6px; }
+
+/* (31/10 · 5.84) nome e número do pedido numa linha só: o nome encolhe com "…" e o "#65" fica sempre ao lado */
+.nm-num { display: flex !important; align-items: baseline; gap: 5px; min-width: 0; }
+.nm-num > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nm-num > small { flex: none; white-space: nowrap; }

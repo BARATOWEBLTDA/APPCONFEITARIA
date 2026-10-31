@@ -10,7 +10,7 @@
 /* barra de cima (aparece ao rolar) */
 .pm-barra { position: absolute; z-index: 6; top: 0; left: 0; right: 0; display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; min-height: 56px; padding: calc(env(safe-area-inset-top, 0px) + 6px) 8px 6px; background: var(--ui-branco); box-shadow: 0 1px 0 var(--ui-borda-campo); opacity: 0; transform: translateY(-100%); transition: opacity .18s, transform .18s; pointer-events: none; }
 .pm-barra.on, .pm--sem-foto .pm-barra { opacity: 1; transform: none; pointer-events: auto; }
-.pm-barra b { font-size: 16px; font-weight: 700; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-barra b { font-size: 16px; font-weight: 600; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pm-bt { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); cursor: pointer; }
 .pm-bt:hover { background: #F3EEF0; }
 .pm-bt-x { visibility: hidden; }
@@ -22,7 +22,7 @@
 .pm-ft-trilho::-webkit-scrollbar { display: none; }
 .pm-ft-trilho img { flex: none; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
 .pm-voltar { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; border: 0; border-radius: 50%; background: rgba(255,255,255,.95); color: var(--ui-texto); box-shadow: 0 2px 8px rgba(0,0,0,.18); cursor: pointer; }
-.pm-ft-n { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 20px); right: 12px; padding: 4px 10px; border-radius: 6px; background: rgba(44,18,25,.7); color: var(--ui-branco); font-size: 13px; font-weight: 700; }
+.pm-ft-n { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 20px); right: 12px; padding: 4px 10px; border-radius: 6px; background: rgba(44,18,25,.7); color: var(--ui-branco); font-size: 13px; font-weight: 600; }
 .pm-ft-pts { position: absolute; left: 0; right: 0; bottom: 12px; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
 .pm-ft-pts i { width: 8px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.6); box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: width .3s, background-color .3s; }
 .pm-ft-pts i.on { width: 20px; background: var(--ui-branco); }
@@ -31,31 +31,31 @@
 .pm-info { padding: 20px 16px 16px; }
 .pm-tit { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .pm-x-pc { display: none; }
-.pm-off { align-self: center; padding: 3px 9px; border-radius: 999px; background: #EAF7EE; color: #16803C; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.pm-off { align-self: center; padding: 3px 9px; border-radius: 999px; background: #EAF7EE; color: #16803C; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .pm-preco strong.pm-preco-promo { color: #16803C; }
 .pm-preco .pm-apartir { flex-basis: 100%; margin-bottom: -6px; font-size: 13.5px; color: var(--ui-texto-2); }
-.pm-info h2 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.25; }
+.pm-info h2 { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.25; }
 .pm-info > p { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); white-space: pre-line; }
 .pm-preco { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin-top: 12px; }
 .pm-preco s { font-size: 14px; color: var(--ui-texto-3); }
-.pm-preco strong { font-size: 18px; font-weight: 700; }
+.pm-preco strong { font-size: 18px; font-weight: 600; }
 .pm-preco em { font-style: normal; font-size: 14px; color: var(--ui-texto-2); }
 .pm-aviso { display: flex; gap: 10px; margin-top: 14px; padding: 12px; border-radius: var(--ui-raio); background: #F7F4F5; }
 .pm-aviso svg { flex: none; margin-top: 1px; color: var(--ui-texto-2); }
-.pm-aviso b { display: block; font-size: 14px; font-weight: 700; }
+.pm-aviso b { display: block; font-size: 14px; font-weight: 600; }
 .pm-aviso small { display: block; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); }
 
 /* grupos */
 .pm-g { scroll-margin-top: 64px; }
 .pm-g-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: #F3EEF0; transition: background-color .2s; }
-.pm-g-cab b { display: block; font-size: 16px; font-weight: 700; }
+.pm-g-cab b { display: block; font-size: 16px; font-weight: 600; }
 .pm-g-cab small { display: block; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); }
 .pm-g-dir { display: flex; align-items: center; gap: 8px; flex: none; }
 .pm-g-dir em { font-style: normal; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-.pm-obr { padding: 3px 8px; border-radius: 6px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-size: 12px; font-weight: 700; font-style: normal; }
+.pm-obr { padding: 3px 8px; border-radius: 6px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-size: 12px; font-weight: 600; font-style: normal; }
 .pm-ok { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #16a34a; color: var(--ui-branco); }
 .pm-g.falta .pm-g-cab { background: var(--ui-vermelho-fundo); box-shadow: inset 4px 0 0 var(--ui-vermelho); }
-.pm-g.falta .pm-g-cab small { color: #B91C1C; font-weight: 700; }
+.pm-g.falta .pm-g-cab small { color: #B91C1C; font-weight: 600; }
 .pm-g.falta .pm-obr { background: var(--ui-vermelho); }
 .pm-obr--leve { background: transparent !important; border: 1px solid #E4DCDD !important; color: #6B5D64 !important; font-weight: 600; box-shadow: none !important; } /* (28/10) igual no cardápio e na Nova venda: dentro do app, outro estilo pintava o fundo de branco */
 .pm-g.falta .pm-obr--leve { border-color: var(--ui-vermelho); color: var(--ui-branco); }
@@ -64,13 +64,13 @@
 .pm-op:disabled { opacity: .45; cursor: default; }
 .pm-op-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .pm-op-tx b { font-size: 15px; font-weight: 500; }
-.pm-op[aria-checked="true"] .pm-op-tx b { font-weight: 700; }
+.pm-op[aria-checked="true"] .pm-op-tx b { font-weight: 600; }
 /* (20/10) a opção escolhida fica destacada: fundo rosado e uma barrinha na cor do botão */
 .pm-op[aria-checked="true"] { width: 100%; margin: 0; padding: 10px 16px; border-bottom-color: transparent; background: #FFF4F8; background: color-mix(in srgb, var(--pm-cor, #EC4899) 7%, #fff); box-shadow: inset 3px 0 0 var(--pm-cor, #EC4899); }
 .pm-g-cab small.pm-g-resumo { color: var(--ui-texto); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pm-g-cab > span:first-child { min-width: 0; }
 .pm-op-tx small { font-size: 13px; color: var(--ui-texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } /* (30/10) no máximo 2 linhas */
-.pm-op-p { flex: none; font-size: 14px; font-weight: 700; }
+.pm-op-p { flex: none; font-size: 14px; font-weight: 600; }
 .pm-op-p.gratis { color: var(--ui-verde); }
 .pm-ctl { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #CFC3C9; border-radius: 50%; background: var(--ui-branco); transition: border-color .15s, background-color .15s; }
 .pm-ctl.cx { border-radius: 7px; }
@@ -82,7 +82,7 @@
 .pm-foto img { flex: none; width: 44px; height: 44px; border-radius: var(--ui-raio-p); object-fit: cover; }
 .pm-foto-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: #F3EEF0; color: var(--ui-texto-2); }
 .pm-foto-tx { flex: 1; min-width: 0; }
-.pm-foto-tx b { display: block; font-size: 15px; font-weight: 700; }
+.pm-foto-tx b { display: block; font-size: 15px; font-weight: 600; }
 .pm-foto-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); }
 .pm-foto-x { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: 0; border: 0; border-radius: var(--ui-raio-p); background: #F3EEF0; color: var(--ui-texto-2); cursor: pointer; }
 .pm-obs { padding: 12px 16px 24px; }
@@ -95,11 +95,11 @@
 .pm-qtd { flex: none; display: flex; align-items: center; height: 52px; border: 1px solid #E5DDE1; border-radius: var(--ui-raio); }
 .pm-qtd button { display: flex; align-items: center; justify-content: center; width: 44px; height: 50px; margin: 0; border: 0; background: none; color: var(--ui-texto); cursor: pointer; }
 .pm-qtd button:disabled { color: #CFC3C9 !important; cursor: default; }
-.pm-qtd b { min-width: 28px; padding: 0 2px; text-align: center; font-size: 16px; font-weight: 700; white-space: nowrap; }
-.pm-add { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; min-height: 52px; margin: 0; padding: 0 18px; border: 0; border-radius: var(--ui-raio); color: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+.pm-qtd b { min-width: 28px; padding: 0 2px; text-align: center; font-size: 16px; font-weight: 600; white-space: nowrap; }
+.pm-add { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; min-height: 52px; margin: 0; padding: 0 18px; border: 0; border-radius: var(--ui-raio); color: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
 .pm-add:hover { filter: brightness(.96); }
 .pm-add span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pm-add strong { flex: none; font-weight: 700; }
+.pm-add strong { flex: none; font-weight: 600; }
 .pm-add.so-texto { justify-content: center; }
 /* (20/10) faltando escolha, o botão fica apagado (celular e computador); tocar ainda mostra o que falta */
 .pm-add--falta { opacity: .45; }
@@ -135,7 +135,7 @@
   .pm-ft-seta.esq { left: 12px; }
   .pm-ft-seta.dir { right: 12px; }
   .pm-ft-seta:hover { background: #fff; }
-  .pm-ft-cont { position: absolute; top: 12px; right: 12px; z-index: 2; padding: 4px 9px; border-radius: 6px; background: rgba(44,18,25,.7); color: #fff; font-size: 13px; font-weight: 700; pointer-events: none; }
+  .pm-ft-cont { position: absolute; top: 12px; right: 12px; z-index: 2; padding: 4px 9px; border-radius: 6px; background: rgba(44,18,25,.7); color: #fff; font-size: 13px; font-weight: 600; pointer-events: none; }
   /* (21/10) de 3 fotos pra cima: as outras em quadrados, os 3 juntos na largura da grande */
   .pm-mini { display: flex; justify-content: center; gap: 12px; }
   .pm-mini button { flex: 0 0 calc((100% - 24px) / 3); aspect-ratio: 1 / 1; margin: 0; padding: 0; border: 0; border-radius: var(--ui-raio-cartao); overflow: hidden; background: #F3EEF0; cursor: pointer; transition: transform .15s, box-shadow .15s; }
@@ -197,7 +197,7 @@
   .pm-social { display: flex; align-items: center; gap: 10px; margin: 0; padding: 12px 14px; border: 1px solid #F9D1E0; border-radius: 12px; background: #FFF1F6; font-size: 14.5px; color: var(--ui-texto); }
   .pm-social svg { flex: none; color: var(--pm-cor, var(--ui-rosa)); }
   .pm-tambem { display: block; margin-top: 4px; }
-  .pm-tambem h3 { margin: 0 0 10px; font-size: 16px; font-weight: 700; color: var(--ui-texto); }
+  .pm-tambem h3 { margin: 0 0 10px; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
   .pm-tambem-l { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
   .pm-tambem-l button { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; overflow: hidden; border: 1px solid #F0E6EA; border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; transition: box-shadow .15s, transform .15s; }
   .pm-tambem-l button:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40, 20, 25, .1); }
@@ -205,8 +205,8 @@
   .pm-tambem-ft { position: relative; display: block; overflow: hidden; aspect-ratio: 4 / 3; background: #F3EEF0; }
   .pm-tambem-ft img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
   .pm-tambem-tx { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 10px; }
-  .pm-tambem-tx b { overflow: hidden; font-size: 13.5px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; text-overflow: ellipsis; }
-  .pm-tambem-tx em { font-style: normal; font-size: 13.5px; font-weight: 700; color: #15803D; white-space: nowrap; }
+  .pm-tambem-tx b { overflow: hidden; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; text-overflow: ellipsis; }
+  .pm-tambem-tx em { font-style: normal; font-size: 13.5px; font-weight: 600; color: #15803D; white-space: nowrap; }
   .pm-tambem-tx em small { display: block; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
 }
 /* (24/10) frase do complemento (ex.: Escrita no bolo) */

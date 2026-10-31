@@ -1,5 +1,5 @@
 /* Personalização (09/10 · 3.54). A lista usa categorias.css (ct-*); aqui só o que é daqui. */
-.pz-preco { flex: none; font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+.pz-preco { flex: none; font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
 .pz-preco.g { color: var(--ui-verde); }
 
 .pz-busca { display: flex; align-items: center; gap: 8px; min-height: 48px; margin-bottom: 12px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-3); }
@@ -17,13 +17,13 @@
 .pz-ex-l i { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda-campo); border-radius: 6px; color: var(--ui-branco); }
 .pz-ex-l.on i { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 .pz-ex-l span { flex: 1; min-width: 0; }
-.pz-ex-l b { font-weight: 700; color: var(--ui-rosa-escuro); }
+.pz-ex-l b { font-weight: 600; color: var(--ui-rosa-escuro); }
 .pz-ex-l b.g { color: var(--ui-verde); }
 
 /* formulário */
 .pz-form { display: flex; flex-direction: column; gap: 16px; }
 .pz-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
-.pz-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.pz-seg button { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 .pz-seg button[aria-checked="true"] { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
 .pz-prods { margin-top: -6px; }
 .pz-prods-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
@@ -60,7 +60,7 @@
 /* (24/10) tela vazia: o texto com os 3 ganhos e, ao lado, o celular com o exemplo do cardápio num painel rosa */
 .pz-vazio { display: flex; flex-direction: column; gap: 20px; padding: 24px 20px 0; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); font-family: var(--font-base); color: var(--ui-texto); }
 .pz-vazio-tx { display: flex; flex-direction: column; align-items: flex-start; }
-.pz-vazio-tx h2 { margin: 0; font-size: 21px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; }
+.pz-vazio-tx h2 { margin: 0; font-size: 21px; font-weight: 600; line-height: 1.25; letter-spacing: -.01em; }
 .pz-vazio-tx p { margin: 6px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--ui-texto-2); }
 .pz-vazio-lista { display: flex; flex-direction: column; gap: 10px; margin: 16px 0 20px; padding: 0; list-style: none; }
 .pz-vazio-lista li { display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 500; white-space: nowrap; }
@@ -78,28 +78,28 @@
 }
 .pz-cel-foto { display: block; width: 100%; height: 130px; object-fit: cover; }
 .pz-cel-prod { display: flex; flex-direction: column; gap: 1px; padding: 10px 14px 12px; }
-.pz-cel-prod b { font-size: 14px; font-weight: 700; }
+.pz-cel-prod b { font-size: 14px; font-weight: 600; }
 .pz-cel-prod span { font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
 .pz-cel-cab { display: flex; flex-direction: column; padding: 8px 14px; background: #F4EFF1; }
-.pz-cel-cab b { font-size: 12.5px; font-weight: 700; }
+.pz-cel-cab b { font-size: 12.5px; font-weight: 600; }
 .pz-cel-cab small { font-size: 10.5px; color: var(--ui-texto-2); }
 .pz-cel-op { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 14px; }
 .pz-cel-op + .pz-cel-op, .pz-cel-ref + .pz-cel-op { border-top: 1px solid var(--ui-linha); }
 .pz-cel-op > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .pz-cel-op b { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pz-cel-op small { font-size: 10px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pz-cel-op em { flex: none; font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; }
+.pz-cel-op em { flex: none; font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
 .pz-cel-op em.g { color: var(--ui-verde); }
 .pz-cel-op i { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border: 1.5px solid var(--ui-borda-campo); border-radius: 5px; color: var(--ui-branco); }
 .pz-cel-op.on i { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 .pz-cel-ref { display: flex; align-items: center; gap: 6px; margin: 0 14px 8px; padding: 7px 9px; border: 1.5px dashed #E7C2D2; border-radius: 9px; font-size: 10.5px; font-weight: 600; color: var(--ui-rosa-escuro); }
-.pz-cel-bt { margin: 10px 12px 14px; padding: 10px 0; border-radius: 12px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12.5px; font-weight: 700; text-align: center; }
+.pz-cel-bt { margin: 10px 12px 14px; padding: 10px 0; border-radius: 12px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12.5px; font-weight: 600; text-align: center; }
 /* balão do "Enviar foto de referência" (computador), em cima do canto do celular */
 .pz-balao { display: none; }
 @media (min-width: 900px) {
   .pz-balao { position: absolute; top: 355px; left: calc(50% + 120px); display: flex; flex-direction: column; gap: 1px; padding: 9px 12px; border-radius: 12px; background: var(--ui-texto); color: var(--ui-branco); box-shadow: 0 10px 24px rgba(40, 10, 20, .25); text-align: left; white-space: nowrap; }
   .pz-balao::before { content: ""; position: absolute; top: 15px; left: -5px; width: 10px; height: 10px; border-radius: 2px; background: var(--ui-texto); transform: rotate(45deg); }
-  .pz-balao small { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #FF9DC4; }
+  .pz-balao small { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #FF9DC4; }
   .pz-balao b { font-size: 13px; font-weight: 600; text-wrap: balance; }
   @media (prefers-reduced-motion: no-preference) { .pz-balao { animation: pzBoia 2.8s ease-in-out infinite alternate; } }
 }
@@ -140,7 +140,7 @@
 .pz-it-n { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .pz-it-n b { font-size: 14.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pz-it-n small { font-size: 12.5px; color: var(--ui-texto-2); }
-.pz-grupo-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; padding: 0 12px; background: #F7F3F5; font-size: 12.5px; font-weight: 700; color: var(--ui-texto-2); }
+.pz-grupo-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; padding: 0 12px; background: #F7F3F5; font-size: 12.5px; font-weight: 600; color: var(--ui-texto-2); }
 .pz-grupo-cab button { margin: 0; padding: 6px 0; border: 0; background: none; font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
 .pz-grupo .pz-it + .pz-it { border-top: 1px solid var(--ui-linha); }
 .pz-busca--p { margin: 10px 10px 6px; min-height: 42px; }
@@ -205,10 +205,10 @@
 @media (hover: hover) { .pz-cc:hover { border-color: #F3B3CA; } }
 .pz-cc-top { display: flex; align-items: center; justify-content: center; height: 104px; background: linear-gradient(160deg, #FFF3F7 0%, #FCE4EE 100%); color: var(--ui-rosa-escuro); }
 .pz-cc-in { display: flex; flex-direction: column; padding: 10px 12px 12px; }
-.pz-cc-nome { min-height: calc(2 * 1.3em); margin-bottom: 4px; font-size: 15px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pz-cc-nome { min-height: calc(2 * 1.3em); margin-bottom: 4px; font-size: 15px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .pz-cc-l { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 5px 0; border-top: 1px solid var(--ui-borda); }
 .pz-cc-l small { flex: none; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
-.pz-cc-l em { min-width: 0; font-style: normal; font-size: 13px; font-weight: 700; color: var(--ui-texto); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pz-cc-l em { min-width: 0; font-style: normal; font-size: 13px; font-weight: 600; color: var(--ui-texto); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pz-cc-l em.g { color: var(--ui-verde); }
 .pz-cc-l em.r { color: var(--ui-rosa-escuro); }
 .pz-cc-l em.n { font-weight: 500; color: var(--ui-texto-3); }
@@ -357,7 +357,7 @@
 .pz-capa-x { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ui-texto-3); cursor: pointer; }
 
 /* (31/10 · 5.79) tela vazia no estilo do Orçamentos: recursos com ícone em caixinha (título e uma linha) */
-@font-face { font-family: 'Caveat'; src: url('/fonts/Caveat-700.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Caveat'; src: url('/fonts/Caveat-700.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
 .pz-vazio-lista { gap: 12px; }
 .pz-vazio-lista li { gap: 12px; }
 .pz-vl-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
@@ -410,3 +410,5 @@
 /* a animação de entrada vai nas camadas (no pai, ela impedia o borrado de enxergar a tela de trás) */
 .pz-ver-veu { animation: none; }
 .pz-ver-veu::before, .pz-ver-veu > * { animation: pzVerEntra .18s ease-out both; }
+/* (31/10 · 5.84) celular: o "Ver" fica só com o olho e o "Criar complemento" cabe inteiro */
+@media (max-width: 420px) { .pz-ver-t { display: none; } .pz-vazio-ver.ui-bt { width: 48px; padding: 0; gap: 0; justify-content: center; flex: none; } }

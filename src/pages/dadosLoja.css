@@ -12,13 +12,13 @@
 /* resumo */
 .dl-st { gap: 8px; }
 .dl-st-row { display: flex; flex-direction: column; gap: 2px; }
-.dl-st-row b { font-size: 16px; font-weight: 700; }
+.dl-st-row b { font-size: 16px; font-weight: 600; }
 .dl-st-row span { font-size: 13.5px; font-weight: 500; color: var(--ui-laranja); }
 .dl-bar { height: 8px; margin: 4px 0; border-radius: 4px; background: var(--ui-linha); overflow: hidden; }
 .dl-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .3s; }
 .dl-bar i.ok { background: var(--ui-verde); }
 .dl-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.dl-chip { position: relative; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio-p); background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+.dl-chip { position: relative; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio-p); background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .dl-chip::after { content: ""; position: absolute; inset: -4px 0; }
 .dl-chip.ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
 
@@ -28,7 +28,7 @@
 /* (16/10) contador e "Escrever com IA" na mesma linha, embaixo do campo (antes o botão flutuava em cima) */
 .dl-desc-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
 .dl-desc-pe small { font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; }
-.dl-ia { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; margin-right: -8px; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.dl-ia { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; margin-right: -8px; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .dl-ia:disabled { opacity: .6; }
 /* (16/10) WhatsApp que recebe os pedidos: cartão verde em destaque */
 .dl-zapc { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: linear-gradient(135deg, #22B35E, #179A4E); color: #fff; box-shadow: 0 6px 16px -8px rgba(23, 154, 78, .7); }
@@ -36,9 +36,9 @@
 .dl-zapc-ic svg, .dl-zapc-ic svg * { fill: currentColor; color: #fff; }
 .dl-zapc-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .dl-zapc-tx small { font-size: 12.5px; color: rgba(255, 255, 255, .9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dl-zapc-tx b { font-size: 17px; font-weight: 700; white-space: nowrap; }
+.dl-zapc-tx b { font-size: 17px; font-weight: 600; white-space: nowrap; }
 .dl-zapc-bt { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px; background: #fff; color: #179A4E; cursor: pointer; }
-.dl-cep { flex: none; display: inline-flex; align-items: center; gap: 4px; padding-right: 4px; font-size: 13px; font-weight: 700; color: var(--ui-texto-3); white-space: nowrap; }
+.dl-cep { flex: none; display: inline-flex; align-items: center; gap: 4px; padding-right: 4px; font-size: 13px; font-weight: 600; color: var(--ui-texto-3); white-space: nowrap; }
 .dl-cep.ok { color: var(--ui-verde); }
 .dl-g2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .dl-g2n { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; }
@@ -47,7 +47,7 @@
 .dl-recebe > input { position: absolute !important; top: 0 !important; left: 0 !important; width: 1px !important; height: 1px !important; margin: 0 !important; opacity: 0; pointer-events: none; }
 .dl-cx { flex: none; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-top: 1px; border: 2px solid var(--ui-borda-campo); border-radius: 7px; background: var(--ui-branco); color: var(--ui-branco); }
 .dl-recebe input:checked + .dl-cx { border-color: var(--ui-rosa); background: var(--ui-rosa); }
-.dl-recebe b { display: block; font-size: 15px; font-weight: 700; color: var(--ui-texto); }
+.dl-recebe b { display: block; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
 .dl-recebe small { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
 
 /* horário */
@@ -73,7 +73,7 @@
 /* (15/10) mesmo visual dos primeiros passos (components/loja/EditoresLoja): mapa, lista "O que aparece", horário em lista */
 .dl-card .mpe, .dl-card .ppf-d-dica { margin-top: 0; }
 .dl-bloco { display: flex; flex-direction: column; }
-.dl-tit { margin: 8px 0 10px; font-size: 14px; font-weight: 700; color: var(--ui-texto); }
+.dl-tit { margin: 8px 0 10px; font-size: 14px; font-weight: 600; color: var(--ui-texto); }
 .dl-bloco > .dl-tit:first-child { margin-top: 0; }
 .dl-bloco .ppf-h-dias { margin-top: 10px; }
 .dl-bloco .ppf-h-lista + .ppf-h-cv, .dl-bloco .ppf-h-cv { margin-top: 20px; }
@@ -83,14 +83,14 @@
 .dl-root:has(+ .dl-ep) { padding-bottom: 8px; }
 .dl-ep { scroll-margin-top: 72px; }
 .dl-ep .ep--embutido { max-width: 640px; padding-top: 8px; }
-.ep-sec-tit { margin: 12px 4px 0; font-size: 20px; font-weight: 700; color: var(--ui-texto); }
+.ep-sec-tit { margin: 12px 4px 0; font-size: 20px; font-weight: 600; color: var(--ui-texto); }
 @media (min-width: 1024px) { .dl-ep .ep--embutido { max-width: 1120px; padding-left: 0; padding-right: 0; } }
 
 /* (17/10) card resumido (já preenchido) com "Editar" */
 .dl-editar { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font: 700 13.5px var(--font-base); white-space: nowrap; cursor: pointer; }
 .dl-cab .ui-tit .ui-tit-t { min-width: 0; }
 .dl-res { display: flex; flex-direction: column; gap: 4px; min-width: 0; margin-top: 12px; }
-.dl-res-t { font-size: 15px; font-weight: 700; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-res-t { font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dl-res-sub { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dl-res-zap, .dl-res-li { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dl-res-zap { color: var(--ui-texto-2); }
@@ -126,7 +126,7 @@
 .dl-li-tx b { font-size: 15px; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dl-li-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dl-li-tx small.falta { color: #9A4A06; font-weight: 600; }
-.dl-li-st { flex: none; padding: 3px 8px; border-radius: 6px; font-style: normal; font-size: 12px; font-weight: 700; }
+.dl-li-st { flex: none; padding: 3px 8px; border-radius: 6px; font-style: normal; font-size: 12px; font-weight: 600; }
 .dl-li-st.ok { background: #DDF3E4; color: #157A3C; }
 .dl-li-st.falta { background: #FDECD3; color: #9A4A06; }
 .dl-li-st.op { background: #F3EEF1; color: var(--ui-texto-3); font-weight: 600; }
@@ -149,21 +149,21 @@
 .dl-lista--pc .dl-li.on::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--ui-escolha); }
 .dl-painel { min-width: 0; padding: 20px 24px 24px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
 .dl-painel-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--ui-linha); }
-.dl-painel-cab h2 { margin: 0; font-family: var(--font-base); font-size: 17px; font-weight: 700; color: var(--ui-texto); }
+.dl-painel-cab h2 { margin: 0; font-family: var(--font-base); font-size: 17px; font-weight: 600; color: var(--ui-texto); }
 .dl-painel-st { display: inline-flex; align-items: center; gap: 5px; flex: none; font-size: 13px; font-weight: 500; color: var(--ui-verde); white-space: nowrap; }
 .dl-painel-st.falta { color: #9A4A06; white-space: normal; text-align: right; }
 .dl-painel .dl-folha .dl-card, .dl-painel .dl-folha .chk-card { padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; }
 
 /* (23/10) embutido na "Minha loja" do celular (tela Cardápio): blocos com título, mesmas linhas da lista */
 .dl-emb { display: flex; flex-direction: column; gap: 8px; font-family: var(--font-base); }
-.dl-emb-t { margin: 0 4px; font-size: 15px; font-weight: 700; color: var(--ui-texto); line-height: 1.3; }
+.dl-emb-t { margin: 0 4px; font-size: 15px; font-weight: 600; color: var(--ui-texto); line-height: 1.3; }
 .dl-emb .dl-li-img { flex: none; width: 40px; height: 40px; border-radius: var(--ui-raio); object-fit: cover; background: #F3EEF1; }
 .dl-emb-carregando { display: flex; justify-content: center; padding: 32px 0; }
 .dl-emb .dl-li--fixa { cursor: default; }
 .dl-emb .dl-li--fixa:active { background: none; }
 .dl-emb .dl-li-pro { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 7px; background: var(--chocolate, #3A2219); color: #F5C76B; white-space: nowrap; }
 .dl-emb { padding-top: 4px; }
-.dl-emb .ml-rank { flex: none; width: 24px; font-size: 14px; font-weight: 700; color: var(--ui-texto-2); text-align: center; }
+.dl-emb .ml-rank { flex: none; width: 24px; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); text-align: center; }
 .dl-bloco > .lch:first-child .lch-t { margin-top: 0; }
 .dl-mapa-nota { margin: 8px 2px 0; font-size: 12.5px; color: var(--ui-texto-3); }
 

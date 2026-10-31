@@ -88,7 +88,7 @@ const CSS = `
   .clc { position: relative; overflow: hidden; padding: 14px; border-radius: var(--ui-raio-cartao, 18px); color: var(--ui-branco); background: linear-gradient(135deg, var(--ui-vinho-escuro, #22130E), #5A3626); box-shadow: 0 10px 24px -12px rgba(34, 19, 14, .7); font-family: var(--font-base); text-align: left; }
   .clc::after { content: ""; position: absolute; right: -40px; top: -50px; width: 150px; height: 150px; border-radius: 50%; background: rgba(255, 255, 255, .06); pointer-events: none; }
   .clc-top { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .clc-st { min-width: 0; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clc-st { min-width: 0; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .clc-st i { flex: none; width: 7px; height: 7px; border-radius: 50%; }
   .clc-st--aberto { color: #86EFAC; background: rgba(134, 239, 172, .12); } .clc-st--aberto i { background: #4ADE80; animation: clcPisca 1.6s ease-in-out infinite; }
   .clc-st--fechado { color: #FCD34D; background: rgba(252, 211, 77, .12); } .clc-st--fechado i { background: #FBBF24; }

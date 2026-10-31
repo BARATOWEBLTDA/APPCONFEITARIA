@@ -83,9 +83,9 @@ async function lerPassosDoBanco(uid: string): Promise<EstadoPassos> {
   // campo novo que ainda não existe no banco dá erro e segue; queda de internet não: aí a leitura toda não vale
   const falhou = !!perfil.error || !!produtos.error || extras.some((r: any) => r.error && erroDeConexao(r.error));
   let logoLocal = false;
-  try { logoLocal = localStorage.getItem(chaveLogo(uid)) === "1"; } catch {}
+  try { logoLocal = localStorage.getItem(chaveLogo(uid)) === "1"; } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
   let local = false;
-  try { local = localStorage.getItem(chaveLocal(uid)) === "1"; } catch {}
+  try { local = localStorage.getItem(chaveLocal(uid)) === "1"; } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
   if (local && !falhou && !p.cardapio_compartilhado) {
     supabase.from("profiles").update({ cardapio_compartilhado: true }).eq("id", uid).then(() => {}, () => {});
   }
@@ -121,7 +121,7 @@ const chavePagamento = (uid: string) => `doonly_pp_pagamento_${uid}`;
 export function pagamentoConferido(uid: string) { try { return localStorage.getItem(chavePagamento(uid)) === "1"; } catch { return false; } }
 export function marcarPagamentoConferido(uid: string | null | undefined) {
   if (!uid) return;
-  try { localStorage.setItem(chavePagamento(uid), "1"); } catch {}
+  try { localStorage.setItem(chavePagamento(uid), "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
   supabase.auth.updateUser({ data: { pp_pagamento: true } }).then(() => {}, () => {});
   window.dispatchEvent(new Event("doonly:passos"));
 }
@@ -131,14 +131,14 @@ const chaveEntrega = (uid: string) => `doonly_pp_entrega_${uid}`;
 export function entregaConferida(uid: string) { try { return localStorage.getItem(chaveEntrega(uid)) === "1"; } catch { return false; } }
 export function marcarEntregaConferida(uid: string | null | undefined) {
   if (!uid) return;
-  try { localStorage.setItem(chaveEntrega(uid), "1"); } catch {}
+  try { localStorage.setItem(chaveEntrega(uid), "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
   supabase.auth.updateUser({ data: { pp_entrega: true } }).then(() => {}, () => {});
   window.dispatchEvent(new Event("doonly:passos"));
 }
 
 export function marcarCompartilhado(uid: string | null | undefined) {
   if (!uid) return;
-  try { localStorage.setItem(chaveLocal(uid), "1"); } catch {}
+  try { localStorage.setItem(chaveLocal(uid), "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
   supabase.from("profiles").update({ cardapio_compartilhado: true }).eq("id", uid).then(() => {}, () => {});
   window.dispatchEvent(new Event("doonly:passos"));
 }
@@ -146,7 +146,7 @@ export function marcarCompartilhado(uid: string | null | undefined) {
 export const avisarPassos = () => window.dispatchEvent(new Event("doonly:passos"));
 
 /** Marca o passo do logo também no aparelho (reserva se o campo logo_confirmado ainda não existir). */
-export function marcarLogoOk(uid: string) { try { localStorage.setItem(chaveLogo(uid), "1"); } catch {} }
+export function marcarLogoOk(uid: string) { try { localStorage.setItem(chaveLogo(uid), "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } }
 
 /**
  * Atualiza o perfil. Se o banco recusar por um campo que ainda não existe (SQL não rodado),
@@ -188,7 +188,7 @@ export function useLojaPronta(uid: string | null | undefined): boolean | null {
       if (!vivo || e.falhou) return;
       const ok = passosCompletos(e);
       setPronta(ok);
-      try { localStorage.setItem(chavePronta(uid), ok ? "1" : "0"); } catch {}
+      try { localStorage.setItem(chavePronta(uid), ok ? "1" : "0"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
     }).catch(() => {});
     ler();
     window.addEventListener("doonly:passos", ler);

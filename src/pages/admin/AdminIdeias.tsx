@@ -253,7 +253,7 @@ export default function AdminIdeias() {
       <style>{`
         .ai-root { font-family: var(--font-base); max-width: 1000px; margin: 0 auto; color: var(--ui-texto); }
         .ai-root button, .ai-root select { font-family: inherit; }
-        .ai-h1 { font-size: 22px; font-weight: 700; margin: 0; color: var(--ui-texto); }
+        .ai-h1 { font-size: 22px; font-weight: 600; margin: 0; color: var(--ui-texto); }
         .ai-sub { font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); margin: 4px 0 0; }
 
         .ai-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0 12px; }
@@ -266,7 +266,7 @@ export default function AdminIdeias() {
         .ai-stat.on { border-color: var(--ui-vinho); box-shadow: inset 0 0 0 1px var(--ui-vinho); }
         .ai-stat small { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ai-stat small i { flex: none; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .ai-stat b { display: block; font-size: 24px; font-weight: 700; line-height: 1.2; }
+        .ai-stat b { display: block; font-size: 24px; font-weight: 600; line-height: 1.2; }
 
         .ai-cartao { padding: 12px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
         .ai-tools { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -297,20 +297,20 @@ export default function AdminIdeias() {
         .ai-card:first-child { border-top: 0; }
         .ai-main { flex: 1; min-width: 0; }
         .ai-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-        .ai-tag { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-cinza-texto); }
+        .ai-tag { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-cinza-texto); }
         .ai-tag--alto { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
         .ai-tag--medio { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
         .ai-tag--baixo { background: var(--ui-cinza); color: var(--ui-texto-2); }
-        .ai-t { font-size: 15px; font-weight: 700; line-height: 1.4; margin: 0; overflow-wrap: anywhere; }
+        .ai-t { font-size: 15px; font-weight: 600; line-height: 1.4; margin: 0; overflow-wrap: anywhere; }
         .ai-d { font-size: 14px; font-weight: 500; color: var(--ui-texto-2); line-height: 1.5; margin: 4px 0 0; overflow-wrap: anywhere; }
         .ai-meta { font-size: 13px; font-weight: 500; color: var(--ui-texto-3); margin: 8px 0 0; overflow-wrap: anywhere; }
-        .ai-meta b { color: var(--ui-cinza-texto); font-weight: 700; }
+        .ai-meta b { color: var(--ui-cinza-texto); font-weight: 600; }
         .ai-card--implementada .ai-t, .ai-card--recusada .ai-t { color: var(--ui-texto-2); }
 
         .ai-side { display: flex; flex-direction: column; gap: 8px; width: 176px; flex-shrink: 0; }
         .ai-st {
           appearance: none; -webkit-appearance: none; width: 100%; min-height: 44px; border: 0; border-radius: var(--ui-raio);
-          padding: 0 32px 0 12px; font-size: 14px; font-weight: 700; cursor: pointer;
+          padding: 0 32px 0 12px; font-size: 14px; font-weight: 600; cursor: pointer;
           background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
         }
@@ -323,7 +323,7 @@ export default function AdminIdeias() {
         .ai-act {
           display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 12px;
           border-radius: var(--ui-raio); border: 1px solid var(--ui-borda); background: var(--ui-branco); text-decoration: none;
-          font-size: 14px; font-weight: 700; color: var(--ui-cinza-texto);
+          font-size: 14px; font-weight: 600; color: var(--ui-cinza-texto);
         }
         .ai-act:hover { background: var(--ui-cinza); }
         .ai-act--wa { color: var(--ui-verde); }

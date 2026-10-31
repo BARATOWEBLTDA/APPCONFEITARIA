@@ -4,27 +4,27 @@
 .aj .cl9-card + .cl9-card, .aj .aj-seg + .cl9-card, .aj .cl9-card + .aj-hist { margin-top: 12px; }
 .aj-intro { display: flex; align-items: flex-start; gap: 12px; }
 .aj-intro-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); } /* (16/10) ícone de lista: cinza quente */
-.aj-intro b { display: block; font-size: 16px; font-weight: 700; }
+.aj-intro b { display: block; font-size: 16px; font-weight: 600; }
 .aj-intro p { margin: 2px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 /* (24/10) "opcional" à direita, igual ao "obrigatório" dos campos de cima */
-.aj-rot { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+.aj-rot { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
 .aj-rot small { font-size: 12px; font-weight: 500; font-style: italic; color: var(--ui-texto-3); }
 .aj-cont { margin: -10px 0 0; text-align: right; font-size: 13px; color: var(--ui-texto-3); }
-.aj-erro { margin: 0; font-size: 14px; font-weight: 700; color: var(--ui-vermelho-escuro); }
+.aj-erro { margin: 0; font-size: 14px; font-weight: 600; color: var(--ui-vermelho-escuro); }
 .aj-dica { margin: 0; text-align: center; font-size: 13px; line-height: 1.5; color: var(--ui-texto-2); }
 .aj-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
-.aj-seg button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; margin: 0; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
-.aj-seg button[aria-selected="true"] { background: var(--ui-branco); color: var(--ui-texto); font-weight: 700; box-shadow: var(--ui-sombra-cartao); }
-.aj-seg i { font-style: normal; min-width: 22px; padding: 0 6px; border-radius: 999px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 12px; font-weight: 700; }
+.aj-seg button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; margin: 0; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.aj-seg button[aria-selected="true"] { background: var(--ui-branco); color: var(--ui-texto); font-weight: 600; box-shadow: var(--ui-sombra-cartao); }
+.aj-seg i { font-style: normal; min-width: 22px; padding: 0 6px; border-radius: 999px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 12px; font-weight: 600; }
 .aj-ok { align-items: center; text-align: center; padding: 28px 20px !important; }
 .aj-ok-ic { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: var(--ui-verde-fundo); color: var(--ui-verde); }
-.aj-ok h2 { margin: 0; font-size: 20px; font-weight: 700; }
+.aj-ok h2 { margin: 0; font-size: 20px; font-weight: 600; }
 .aj-ok p { margin: -8px 0 4px; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
 .aj-ok .ui-bt { width: 100%; }
 /* (23/10) situação da ideia em texto com bolinha (sem etiqueta arredondada); a legenda das etapas cabe em uma linha */
 .aj-fluxo { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; margin: 0 0 12px; font-size: 13px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; }
 .aj-fluxo svg { flex: none; }
-.aj-st { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.aj-st { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .aj-st::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .aj-st--rec { color: var(--ui-texto-3); }
 .aj-st--analise { color: #B45309; }
@@ -34,7 +34,7 @@
 .aj-h { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
 .aj-h-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .aj-h-top small { font-size: 13px; color: var(--ui-texto-3); }
-.aj-h b { font-size: 15px; font-weight: 700; }
+.aj-h b { font-size: 15px; font-weight: 600; }
 .aj-h p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 .aj-h em { align-self: flex-start; font-style: normal; font-size: 13px; color: var(--ui-texto-2); }
 /* (28/10 · 4.60) Sugerir: no computador, as abas do tamanho do texto */

@@ -3,7 +3,7 @@
 /* ── Calendário ── */
 .dh-cal { --dh-cor: var(--ui-rosa); font-family: var(--font-base); }
 .dh-mes { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -4px -6px 8px; }
-.dh-mes b { flex: 1; text-align: center; font-size: 16px; font-weight: 700; color: var(--ui-texto); }
+.dh-mes b { flex: 1; text-align: center; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
 .dh-mes .ui-bti:disabled { opacity: .3; cursor: default; }
 .dh-grade { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; text-align: center; }
 .dh-grade i { padding: 6px 0; overflow: hidden; white-space: nowrap; font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
@@ -13,8 +13,8 @@
   -webkit-tap-highlight-color: transparent;
 }
 .dh-grade button:hover:not(:disabled):not(.sel) { background: var(--ui-cinza); }
-.dh-grade button.hj { box-shadow: inset 0 0 0 1.5px var(--dh-cor); font-weight: 700; }
-.dh-grade button.sel { background: var(--dh-cor); color: var(--ui-branco); font-weight: 700; box-shadow: none; }
+.dh-grade button.hj { box-shadow: inset 0 0 0 1.5px var(--dh-cor); font-weight: 600; }
+.dh-grade button.sel { background: var(--dh-cor); color: var(--ui-branco); font-weight: 600; box-shadow: none; }
 .dh-grade button:disabled { color: var(--ui-texto-3); opacity: .45; cursor: default; box-shadow: none; }
 .dh-grade button:focus-visible { outline: 2px solid var(--dh-cor); outline-offset: 1px; }
 
@@ -26,7 +26,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 .dh-horas button:hover:not(.sel) { border-color: var(--ui-rosa); }
-.dh-horas button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); font-weight: 700; }
+.dh-horas button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); font-weight: 600; }
 .dh-outro { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px; margin-top: 16px; }
 .dh-outro > .ui-bt { margin-top: 23px; }
 
@@ -57,5 +57,5 @@
 .dh-roda::-webkit-scrollbar { display: none; }
 .dh-roda:focus-visible { box-shadow: inset 0 0 0 2px rgba(var(--ui-rosa-rgb), .35); border-radius: var(--ui-raio); }
 .dh-roda-it { height: 44px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ui-texto-3); cursor: pointer; transition: color .12s; }
-.dh-roda-it.sel { color: var(--ui-rosa-escuro); font-weight: 700; }
-.dh-dois { position: relative; padding: 0 6px; font-size: 22px; font-weight: 700; color: var(--ui-rosa-escuro); }
+.dh-roda-it.sel { color: var(--ui-rosa-escuro); font-weight: 600; }
+.dh-dois { position: relative; padding: 0 6px; font-size: 22px; font-weight: 600; color: var(--ui-rosa-escuro); }

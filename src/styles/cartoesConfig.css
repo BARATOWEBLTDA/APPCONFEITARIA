@@ -30,7 +30,7 @@
   display: flex !important; align-items: center !important; justify-content: center !important; font-size: 18px; line-height: 1;
 }
 .cfg-h, .chk-section-label, .cd-section-label {
-  margin: 0 !important; font-size: 16.5px !important; font-weight: 700 !important; color: var(--ui-texto) !important; letter-spacing: -.015em !important; line-height: 1.25 !important;
+  margin: 0 !important; font-size: 16.5px !important; font-weight: 600 !important; color: var(--ui-texto) !important; letter-spacing: -.015em !important; line-height: 1.25 !important;
 }
 .cfg-s, .chk-section-sub, .cd-section-sub {
   margin: 2px 0 0 !important; font-size: 12.5px !important; font-weight: 400 !important; color: var(--ui-texto-3) !important; line-height: 1.4 !important;
@@ -38,7 +38,7 @@
 
 /* Rótulos e campos */
 .dl-lbl, .chk-form-label {
-  display: block; font-size: 13px !important; font-weight: 700 !important; color: #3A2830 !important; margin: 14px 0 6px !important;
+  display: block; font-size: 13px !important; font-weight: 600 !important; color: #3A2830 !important; margin: 14px 0 6px !important;
 }
 .dl-in, .chk-input {
   min-height: 44px; border: 1.5px solid var(--ui-borda-campo) !important; border-radius: var(--ui-raio) !important;

@@ -6,7 +6,7 @@
 /* PRO */
 .orc-pro { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: 560px; padding: 24px 20px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
 .orc-pro-ic { display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; margin-bottom: 8px; border-radius: 16px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-.orc-pro h2 { margin: 0; font-size: 19px; font-weight: 700; }
+.orc-pro h2 { margin: 0; font-size: 19px; font-weight: 600; }
 .orc-pro p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 .orc-pro ul { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 14px; padding: 0; list-style: none; font-size: 14px; line-height: 1.4; }
 .orc-pro li { display: flex; align-items: flex-start; gap: 8px; }
@@ -16,7 +16,7 @@
 .orc-topo { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
 .orc-link { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); } /* (28/10) sem o rosa lavado */
 .orc-link-tx { display: flex; flex-direction: column; min-width: 0; }
-.orc-link-tx b { font-size: 15px; font-weight: 700; }
+.orc-link-tx b { font-size: 15px; font-weight: 600; }
 .orc-link-tx small { font-size: 13px; color: var(--ui-rosa-escuro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .orc-link-bts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 @media (min-width: 900px) {
@@ -30,7 +30,7 @@
 .orc-abas { display: flex; gap: 4px; padding: 4px; margin-bottom: 12px; border-radius: var(--ui-raio-cartao); background: var(--ui-cinza); overflow-x: auto; scrollbar-width: none; }
 .orc-abas button { flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; margin: 0; padding: 0 10px; border: 0; border-radius: var(--ui-raio); background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; white-space: nowrap; }
 .orc-abas button[aria-selected="true"] { background: var(--ui-branco); color: var(--ui-texto); box-shadow: var(--ui-sombra-cartao); }
-.orc-abas i { font-style: normal; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12px; font-weight: 700; line-height: 20px; }
+.orc-abas i { font-style: normal; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12px; font-weight: 600; line-height: 20px; }
 
 /* lista */
 .orc-lista { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
@@ -38,14 +38,14 @@
 .orc-it-b { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; margin: 0; padding: 10px 14px; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
 @media (hover: hover) { .orc-it-b:hover { background: #FBF8F9; } }
 .orc-it-b > svg { flex: none; color: var(--ui-texto-3); }
-.orc-av { flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: #FCE4EE; color: var(--ui-rosa-escuro); font-weight: 700; }
+.orc-av { flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: #FCE4EE; color: var(--ui-rosa-escuro); font-weight: 600; }
 .orc-it-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .orc-it-tx b { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .orc-it-tx b small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); }
 .orc-it-tx > small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .orc-it-dir { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 .orc-it-dir small { font-size: 13px; font-weight: 600; color: var(--ui-texto); }
-.orc-st { font-style: normal; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.orc-st { font-style: normal; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
 .orc-st--n { color: var(--ui-rosa-escuro); } .orc-st--r { color: var(--ui-texto-3); } .orc-st--e { color: #B45309; } .orc-st--a { color: var(--ui-verde); } .orc-st--x { color: var(--ui-texto-3); }
 .orc-cobrar { display: flex; align-items: center; gap: 6px; margin: -4px 14px 10px 68px; padding: 8px 10px; border-radius: 10px; background: #FFF7ED; color: #B45309; font-size: 13px; font-weight: 600; text-decoration: none; }
 
@@ -64,7 +64,7 @@
 .orc-etapas .on span { color: var(--ui-rosa-escuro); font-weight: 600; }
 .orc-etapas .ok span { color: var(--ui-texto); }
 .orc-card { margin: 0 0 12px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
-.orc-card h3 { margin: 0 0 12px; font-size: 16px; font-weight: 700; }
+.orc-card h3 { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
 .orc-card h3 small { margin-left: 4px; font-size: 12.5px; font-weight: 400; font-style: italic; color: var(--ui-texto-3); }
 .orc-2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 @media (min-width: 600px) { .orc-2 { grid-template-columns: 1fr 1fr; } }
@@ -107,7 +107,7 @@
 .orc-ext { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px 0 12px; }
 .orc-ext button { min-height: 36px; border-style: solid; border-color: var(--ui-borda); background: var(--ui-branco); font-size: 13px; }
 .orc-ext button[aria-pressed="true"] { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); }
-.orc-tot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-linha); font-size: 16px; font-weight: 700; }
+.orc-tot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-linha); font-size: 16px; font-weight: 600; }
 .orc-tot b { font-size: 20px; }
 .orc-lucro { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: #ECFDF3; color: #15803D; font-size: 13.5px; font-weight: 600; }
 .orc-lucro.ruim { background: #FEF2F2; color: var(--ui-vermelho); }
@@ -126,7 +126,7 @@
 .orc-prev { padding: 14px; border: 1px solid var(--ui-borda); border-radius: 14px; background: #FFFCFD; }
 .orc-prev-loja { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .orc-prev-loja img, .orc-prev-loja > span:first-child { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-.orc-prev-loja > span:first-child:not(:last-child) { display: flex; align-items: center; justify-content: center; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 700; }
+.orc-prev-loja > span:first-child:not(:last-child) { display: flex; align-items: center; justify-content: center; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-weight: 600; }
 .orc-prev-loja > span:last-child { display: flex; flex-direction: column; }
 .orc-prev-loja b { font-size: 15px; } .orc-prev-loja small { font-size: 12.5px; color: var(--ui-texto-2); }
 .orc-prev-msg { margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
@@ -135,9 +135,9 @@
 .orc-prev-itens > div:first-child { border-top: 0; }
 .orc-prev-itens span { min-width: 0; display: flex; flex-direction: column; }
 .orc-prev-itens b { font-size: 14.5px; font-weight: 600; } .orc-prev-itens small { font-size: 12.5px; color: var(--ui-texto-2); }
-.orc-prev-itens em { flex: none; font-style: normal; font-size: 14.5px; font-weight: 700; }
+.orc-prev-itens em { flex: none; font-style: normal; font-size: 14.5px; font-weight: 600; }
 .orc-prev-itens .ok em, .orc-prev-itens .ok b { color: var(--ui-verde); }
-.orc-prev-tot { display: flex; justify-content: space-between; align-items: baseline; padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--ui-borda); font-size: 16px; font-weight: 700; }
+.orc-prev-tot { display: flex; justify-content: space-between; align-items: baseline; padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--ui-borda); font-size: 16px; font-weight: 600; }
 .orc-prev-tot b { font-size: 19px; }
 .orc-prev-cond { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
 .orc-pronta { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; padding: 12px 14px; border-radius: var(--ui-raio-cartao); background: #ECFDF3; border: 1px solid #BBF7D0; color: #15803D; }
@@ -165,7 +165,7 @@
 .orc-esc-it:first-child { border-top: 0; }
 .orc-esc-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .orc-esc-tx b { font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .orc-esc-tx small { font-size: 12.5px; color: var(--ui-texto-2); }
-.orc-esc-it em { flex: none; display: flex; flex-direction: column; align-items: flex-end; font-style: normal; font-size: 14px; font-weight: 700; }
+.orc-esc-it em { flex: none; display: flex; flex-direction: column; align-items: flex-end; font-style: normal; font-size: 14px; font-weight: 600; }
 .orc-esc-it em small { font-size: 11.5px; font-weight: 500; color: var(--ui-texto-2); }
 
 /* páginas da cliente */
@@ -176,8 +176,8 @@
 .orp-ini { display: flex; align-items: center; justify-content: center; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .orp-topo > span:last-child { display: flex; flex-direction: column; } .orp-topo b { font-size: 17px; } .orp-topo small { font-size: 13px; color: var(--ui-texto-2); }
 .orp-card { margin: 0 0 12px; padding: 18px 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 20px; box-shadow: var(--ui-sombra-cartao); }
-.orp-card h1 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.25; }
-.orp-card h2 { margin: 0 0 12px; font-size: 16px; font-weight: 700; }
+.orp-card h1 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.25; }
+.orp-card h2 { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
 .orp-sub { margin: 4px 0 14px; font-size: 14px; line-height: 1.45; color: var(--ui-texto-2); }
 .orp-rot { margin: 0 0 8px; font-size: 13.5px; font-weight: 600; } .orp-rot small { margin-left: 4px; font-weight: 400; font-style: italic; color: var(--ui-texto-3); }
 .orp-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
@@ -196,7 +196,7 @@
 .orp-pe > *, .orp-pe > .orp-bt { max-width: 528px; margin: 0 auto; }
 .orp-pe--2 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; }
 @media (min-width: 600px) { .orp-pe--2 { padding-left: calc(50% - 264px); padding-right: calc(50% - 264px); } }
-.orp-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 52px; margin: 0; padding: 0 16px; border: 0; border-radius: 14px; background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); font-family: inherit; font-size: 16px; font-weight: 700; color: #fff; text-decoration: none; cursor: pointer; }
+.orp-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 52px; margin: 0; padding: 0 16px; border: 0; border-radius: 14px; background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); font-family: inherit; font-size: 16px; font-weight: 600; color: #fff; text-decoration: none; cursor: pointer; }
 .orp-bt:disabled { opacity: .6; cursor: default; }
 .orp-bt--sec { background: #F3EEF1; color: var(--ui-texto); box-shadow: none; }
 .orp-bt--perigo { background: var(--ui-vermelho); box-shadow: none; }
@@ -321,7 +321,7 @@
 
 /* (30/10 · 5.67) PRO no estilo da arte: recursos com ícone em caixinha, "PRO" em rosa, botão com seta;
    à direita o fundo rosa com o mascote de coroa, a frase escrita à mão e o celular */
-@font-face { font-family: 'Caveat'; src: url('/fonts/Caveat-700.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Caveat'; src: url('/fonts/Caveat-700.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
 .orc-pro h2 em { font-style: normal; color: var(--ui-rosa); }
 .orc-pro ul { gap: 12px; }
 .orc-pro li { align-items: center; gap: 12px; }
@@ -378,3 +378,5 @@
 @media (max-width: 900px) { .orc-pro-li-tx b, .orc-pro-li-tx small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
 /* (31/10 · 5.79) celular: o "Conhecer o PRO" no meio */
 @media (max-width: 900px) { .orc-pro-tx > .ui-bt { align-self: center; } }
+/* (31/10 · 5.84) celular: "Do cardápio" e "Personalizado" inteiros (antes "Do cardá…") */
+@media (max-width: 420px) { .orc-add .ui-bt { padding: 0 8px; gap: 6px; font-size: 14px; } .orc-add .ui-bt svg { width: 16px; height: 16px; } }

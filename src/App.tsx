@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { INDICACAO_ATIVA } from "@/lib/recursos";
 import CompletarCadastro from "@/components/CompletarCadastro";
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
@@ -18,7 +17,6 @@ import Layout from "@/components/Layout";
 import { useParams } from "react-router-dom";
 function PedidoVerRedirect() { const { id } = useParams(); return <Navigate to={`/pedidos/${id}/editar`} replace />; }
 import Inicio from "@/pages/Inicio";
-const RECEITAS_ATIVAS = false;
 /** (17/10) "Entrega e pagamento" agora fica dentro de Dados da loja: o link antigo abre lá, já nessa parte */
 function IrParaEntrega() {
   const de = (useLocation().state as any)?.de;
@@ -42,7 +40,6 @@ const NoticiaDetalhe = lazy(() => import("@/pages/NoticiaDetalhe"));
 const Agenda = lazy(() => import("@/pages/Agenda"));
 const Insumos = lazy(() => import("@/pages/Insumos"));
 const Assinar = lazy(() => import("@/pages/Assinar"));
-const ReceitasV2 = lazy(() => import("@/pages/ReceitasV2"));
 const SolicitarRecurso = lazy(() => import("@/pages/SolicitarRecurso"));
 const RelatarProblema = lazy(() => import("@/pages/RelatarProblema"));
 const AssistenteVirtual = lazy(() => import("@/pages/AssistenteVirtual"));
@@ -65,7 +62,6 @@ const AdminAjuda = lazy(() => import("@/pages/admin/AdminAjuda"));
 const Configuracoes = lazy(() => import("@/pages/Configuracoes"));
 const NotificacoesSons = lazy(() => import("@/pages/NotificacoesSons"));
 const MensagensWhatsApp = lazy(() => import("@/pages/MensagensWhatsApp"));
-const Indicar = lazy(() => import("@/pages/Indicar"));
 const CardapioPrevia = lazy(() => import("@/pages/CardapioPrevia"));
 const Produtos = lazy(() => import("@/pages/Produtos"));
 const Categorias = lazy(() => import("@/pages/Categorias"));
@@ -105,7 +101,6 @@ const PRE_CARREGAR: (() => Promise<unknown>)[] = [
   () => import("@/pages/Agenda"),
   () => import("@/pages/Insumos"),
   () => import("@/pages/Assinar"),
-  () => import("@/pages/ReceitasV2"),
   () => import("@/pages/SolicitarRecurso"),
   () => import("@/pages/RelatarProblema"),
   () => import("@/pages/AssistenteVirtual"),
@@ -113,7 +108,6 @@ const PRE_CARREGAR: (() => Promise<unknown>)[] = [
   () => import("@/pages/Configuracoes"),
   () => import("@/pages/NotificacoesSons"),
   () => import("@/pages/MensagensWhatsApp"),
-  () => import("@/pages/Indicar"),
   () => import("@/pages/CardapioPrevia"),
   () => import("@/pages/Produtos"),
   () => import("@/pages/Categorias"),
@@ -373,7 +367,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
           try {
             localStorage.setItem("doonly_tutorial_visto", "1");
             localStorage.setItem("doonly_tutorial_auto_aberto", "1");
-          } catch {}
+          } catch { /* sem localStorage (aba anônima): o banco já guarda que viu */ }
           setShowFirstTutorial(false);
         }
         // Se banco diz "não viu", respeita o estado local (que já foi calculado sync no init)
@@ -518,8 +512,8 @@ export default function App() {
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:slug" element={<NoticiaDetalhe />} />
           <Route path="/assinar" element={<Assinar />} />
-          {/* 13/10: Receitas escondida das confeiteiras até as fotos ficarem prontas (pra voltar: element={<ReceitasV2 />}) */}
-          <Route path="/receitas" element={RECEITAS_ATIVAS ? <ReceitasV2 /> : <Navigate to="/inicio" replace />} />
+          {/* (31/10 · 5.84) Receitas e Indique e ganhe saíram do código; os links antigos vão para o Início */}
+          <Route path="/receitas" element={<Navigate to="/inicio" replace />} />
           <Route path="/notificacoes" element={<Navigate to="/noticias" replace />} />
           <Route path="/solicitar-recurso" element={<SolicitarRecurso />} />
           <Route path="/relatar-problema" element={<RelatarProblema />} />
@@ -568,7 +562,7 @@ export default function App() {
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />
           <Route path="/configuracoes/mensagens" element={<MensagensWhatsApp />} />
-          <Route path="/indicar" element={INDICACAO_ATIVA ? <Indicar /> : <Navigate to="/inicio" replace />} />
+          <Route path="/indicar" element={<Navigate to="/inicio" replace />} />
           <Route path="/personalizacao" element={<Navigate to="/complementos" replace />} />
         </Route>
 

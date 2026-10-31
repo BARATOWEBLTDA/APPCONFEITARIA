@@ -18,7 +18,7 @@
   border: 0; border-radius: var(--ui-raio-botao);
   background: var(--bt-fundo); color: var(--bt-cor);
   box-shadow: 0 3px 0 var(--bt-sombra);
-  font-family: var(--font-base); font-size: 15px; font-weight: 700; line-height: 1.2;
+  font-family: var(--font-base); font-size: 15px; font-weight: 600; line-height: 1.2;
   text-decoration: none; white-space: nowrap;
   cursor: pointer; user-select: none; -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent; touch-action: manipulation;
@@ -77,7 +77,7 @@
 
 /* ───────── Campo ───────── */
 .ui-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; font-family: var(--font-base); text-align: left; }
-.ui-campo-r { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 700; line-height: 1.3; color: var(--ui-cinza-texto); }
+.ui-campo-r { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--ui-cinza-texto); }
 .ui-campo-r small { flex: none; font-size: 12px; font-weight: 500; font-style: italic; color: var(--ui-texto-3); }
 .ui-campo-r small.obr { color: var(--ui-texto-3); }
 .ui-campo-c {
@@ -100,14 +100,14 @@
 .ui-campo-c input[type="number"] { -moz-appearance: textfield; }
 .ui-campo-c input[type="number"]::-webkit-outer-spin-button, .ui-campo-c input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .ui-campo-c input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
-.ui-campo-pre { flex: none; font-size: 15px; font-weight: 700; color: var(--ui-texto-3); }
+.ui-campo-pre { flex: none; font-size: 15px; font-weight: 600; color: var(--ui-texto-3); }
 .ui-campo-ic { display: inline-flex; flex: none; color: var(--ui-rosa-escuro); }
 .ui-campo-olho { margin-right: -6px; }
 .ui-campo-msg { display: flex; align-items: flex-start; gap: 5px; margin: 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .ui-campo-msg svg { flex: none; margin-top: 2px; }
 .ui-campo--erro .ui-campo-c { border-color: var(--ui-vermelho); }
 .ui-campo--erro .ui-campo-c:focus-within { border-color: var(--ui-vermelho); }
-.ui-campo--erro .ui-campo-msg { color: var(--ui-vermelho); font-weight: 700; }
+.ui-campo--erro .ui-campo-msg { color: var(--ui-vermelho); font-weight: 600; }
 .ui-campo--off .ui-campo-c { background: var(--ui-cinza); border-color: var(--ui-cinza); cursor: not-allowed; }
 .ui-campo--off input, .ui-campo--off textarea { color: var(--ui-texto-3); -webkit-text-fill-color: var(--ui-texto-3); cursor: not-allowed; }
 .ui-campo--off .ui-campo-r { color: var(--ui-texto-3); }
@@ -117,10 +117,10 @@
 .ui-tit-t { flex: 1; min-width: 0; }
 .ui-tit-l { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .ui-tit-h { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-base); color: inherit; line-height: 1.25; }
-.ui-tit--tela .ui-tit-h { font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
-.ui-tit--janela .ui-tit-h { font-size: 18px; font-weight: 700; }
-.ui-tit--secao .ui-tit-h { font-size: 16px; font-weight: 700; }
-.ui-tit-n { display: inline-flex; align-items: center; justify-content: center; flex: none; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 7px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12px; font-weight: 700; font-style: normal; font-variant-numeric: tabular-nums; }
+.ui-tit--tela .ui-tit-h { font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+.ui-tit--janela .ui-tit-h { font-size: 18px; font-weight: 600; }
+.ui-tit--secao .ui-tit-h { font-size: 16px; font-weight: 600; }
+.ui-tit-n { display: inline-flex; align-items: center; justify-content: center; flex: none; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 7px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12px; font-weight: 600; font-style: normal; font-variant-numeric: tabular-nums; }
 .ui-tit-a { margin: 2px 0 0; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
 .ui-tit-acao { display: flex; align-items: center; gap: 6px; flex: none; }
 .ui-tit--vermelho .ui-tit-h { color: var(--ui-vermelho); }
@@ -139,7 +139,7 @@
 .ui-linha > span { flex: none; }
 .ui-linha > b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: var(--ui-texto); }
 /* conforto visual (09/10 · 3.98): o valor da linha fica em 500; só a situação colorida (Novo pedido, Pago, Falta…) vai em 700 */
-.ui-linha[class*="ui-linha--"] > b { font-weight: 700; }
+.ui-linha[class*="ui-linha--"] > b { font-weight: 600; }
 .ui-linha--azul > b { color: var(--ui-azul); }
 .ui-linha--laranja > b { color: var(--ui-laranja); }
 .ui-linha--verde > b { color: var(--ui-verde); }
@@ -150,7 +150,7 @@
 .ui-vazia { display: flex; flex-direction: column; align-items: center; padding: 32px 20px; font-family: var(--font-base); color: var(--ui-texto); text-align: center; }
 .ui-vazia--caixa { border: 1px dashed var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
 .ui-vazia-ic { display: inline-flex; align-items: center; justify-content: center; width: 68px; height: 68px; margin-bottom: 12px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa); }
-.ui-vazia-t { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
+.ui-vazia-t { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.3; text-wrap: balance; }
 .ui-vazia-x { max-width: 280px; margin: 4px 0 0; font-size: 13.5px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); text-wrap: balance; }
 .ui-vazia-acao { margin-top: 16px; max-width: 100%; }
 .ui-vazia--compacta { padding: 20px 16px; }
@@ -192,7 +192,7 @@
 .ui-janela-ic--verde { background: var(--ui-verde-fundo); color: var(--ui-verde); }
 .ui-janela-ic--laranja { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
 .ui-janela-ic--vermelho { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
-.ui-janela-t { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
+.ui-janela-t { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.3; text-wrap: balance; }
 .ui-janela-x { max-width: 320px; margin: 8px auto 0; font-size: 14px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); text-wrap: balance; }
 .ui-janela--aviso .ui-janela-pe { padding-top: 16px; }
 @media (min-width: 768px) {
@@ -252,12 +252,12 @@ html[data-ui-janela] .ui-aviso--saindo { animation-name: uiAvisoSomeCima; }
 .ui-aviso--info .ui-aviso-ic { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
 .ui-aviso--laranja .ui-aviso-ic { background: #FFEDD5; color: #C2410C; }
 .ui-aviso--azul .ui-aviso-ic { background: #DBEAFE; color: #1D4ED8; }
-.ui-aviso-rs { font-size: 12px; font-weight: 800; letter-spacing: -.2px; }
+.ui-aviso-rs { font-size: 12px; font-weight: 600; letter-spacing: -.2px; }
 .ui-aviso-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; padding-right: 6px; }
 .ui-aviso-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ui-aviso--2 .ui-aviso-t { font-size: 14.5px; font-weight: 700; }
+.ui-aviso--2 .ui-aviso-t { font-size: 14.5px; font-weight: 600; }
 .ui-aviso-d { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
-.ui-aviso-acao { flex: none; margin: 0 0 0 -4px; padding: 0 10px; min-height: 40px; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; border-radius: 10px; }
+.ui-aviso-acao { flex: none; margin: 0 0 0 -4px; padding: 0 10px; min-height: 40px; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 10px; }
 .ui-aviso-tempo { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: #F6EEF2; }
 .ui-aviso-tempo i { display: block; height: 100%; background: var(--ui-rosa); transform-origin: left; animation: uiAvisoTempo linear both; }
 @keyframes uiAvisoTempo { from { transform: scaleX(1); } to { transform: scaleX(0); } }

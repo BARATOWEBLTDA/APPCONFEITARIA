@@ -1,6 +1,5 @@
 import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
 import { kmTexto, pontoDoEndereco, taxaPorCidade } from '@/lib/taxaEntrega'
-import { NeveNatal, temaNatalLigado } from '@/components/tema/Natal'
 import { useState, useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
@@ -9,7 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Cake, Camera, CalendarBlank, CaretRight, Check, ImageSquare, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { useCart } from '@/hooks/useCart'
-import { CartItemComponent, unidadeItem } from '@/components/cart/CartItemComponent'
+import { CartItemComponent } from '@/components/cart/CartItemComponent'
 import { formatCurrency } from '@/utils/helpers'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { PerfilTab } from './PerfilTab'
@@ -36,6 +35,9 @@ import { PixPagamento } from './PixPagamento'
 import { reduzirFoto } from '@/lib/reduzirFoto'
 import { valorDoSinal } from '@/lib/pix'
 import '@/components/cart/sacola.css'
+
+// (31/10 · 5.84) nome do cliente com pelo menos 2 letras (chegavam pedidos com "??????" no nome)
+const nomeValido = (n: string) => /\p{L}.*\p{L}/u.test(n.trim())
 
 /**
  * Pedido em envio (10/10). Fica fora do componente pra valer mesmo se a sacola fechar e abrir:
@@ -297,7 +299,7 @@ function CartContent({
     if (!dataEntrega || !horaEntrega || horarioVenceu) falta = 'agenda'
     else if (ehEntrega && formaEntrega !== 'combinar' && (!rua.trim() || !numero.trim() || (config.entrega_por_bairro.length > 0 && !bairroSelecionado) || (formaEntrega === 'entrega_propria' && !areaOk))) falta = 'endereco'
     else if (!formaPagamento) falta = 'pagamento'
-    else if (!nome.trim() || telefone.replace(/\D/g, '').length < 10) falta = 'dados'
+    else if (!nomeValido(nome) || telefone.replace(/\D/g, '').length < 10) falta = 'dados'
     setFeErro(falta)
     if (horarioVenceu) {
       setDataEntrega(''); setHoraEntrega(''); acertarRelogio()
@@ -332,7 +334,7 @@ function CartContent({
         }
         tocarNota(880, 0, 0.15)
         tocarNota(1175, 0.12, 0.25)
-      } catch {}
+      } catch { /* navegador sem Web Audio: só não toca o som */ }
     }
   }, [!!pedidoConfirmado]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -503,7 +505,7 @@ function CartContent({
   }, [totalPrice]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const enviarPedido = async () => {
-    if (!nome.trim() || !telefone.trim()) return avisar('Preencha o seu nome e o WhatsApp', { tipo: 'erro' })
+    if (!nomeValido(nome) || !telefone.trim()) return avisar('Preencha o seu nome e o WhatsApp', { tipo: 'erro' })
     // (20/10) confere o cupom com o WhatsApp antes de enviar (cupom só pro primeiro pedido); se não valer, avisa e tira
     if (cupomAplicado) {
       try {
@@ -806,7 +808,7 @@ function CartContent({
 
   const okReceber = !!formaEntrega && (!comEndereco || (!!rua.trim() && !!numero.trim() && (config.entrega_por_bairro.length === 0 || !!bairroSelecionado) && (formaEntrega !== 'entrega_propria' || areaOk)))
   const okQuando = !!(dataEntrega && horaEntrega)
-  const okDados = !!nome.trim() && telefone.replace(/\D/g, '').length >= 10
+  const okDados = nomeValido(nome) && telefone.replace(/\D/g, '').length >= 10
   const antTexto = regras.horas >= 48 && regras.horas % 24 === 0 ? `${regras.horas / 24} dias` : `${regras.horas}h`
   const limparEndereco = () => { setRua(''); setNumero(''); setComplemento(''); setBairro(''); setCidade(''); setCep(''); setBairroSelecionado(''); setCepErro(''); setCepAviso('') }
   // O que ainda falta na entrega (o selo diz isso em vez de voltar pra "Obrigatório")
@@ -816,7 +818,6 @@ function CartContent({
     : formaEntrega === 'entrega_propria' && modoEnt === 'cidade' && !areaOk ? (cidade.trim() ? 'Fora da área' : 'Falta a cidade')
     : formaEntrega === 'entrega_propria' && modoEnt === 'raio' && (taxaArea.estado === 'fora' || taxaArea.estado === 'sem_local') ? (taxaArea.estado === 'fora' ? 'Fora da área' : 'Confira o endereço') : ''
 
-  const natal = temaNatalLigado() // (18/10) tema de Natal: neve e touquinha no Pedido enviado
   /* ═══ Pagar com Pix (20/10) ═══ */
   if (pedidoConfirmado && pixPara && !pixFeito && config.pix) return (
     <PixPagamento pix={config.pix} pedidoId={pixPara.pedidoId} numero={pedidoConfirmado.numero} total={pixPara.total}
@@ -843,7 +844,6 @@ function CartContent({
     const lugar = pixPara?.retirada ? 'retirada' : (pc.quando.startsWith('Retirada') ? 'retirada' : 'entrega')
     return (
       <div className="px-tela scf" style={{ '--px-cor': accent } as CSSProperties}>
-        {natal && <NeveNatal />}
         <div className="sc-topo sc-topo--loja" style={{ background: corTopo || '#BF6B84' }}>
           <span />
           <span className="sc-topo-loja">
@@ -858,7 +858,6 @@ function CartContent({
           <section className="px-card scf-ok">
             <span className="scf-ic"><Check size={30} weight="bold" /></span>
             <h2>Pedido enviado!</h2>
-            {natal && <p className="sc-enviado-festas">Boas festas!</p>}
             {pc.numero > 0 && <span className="scf-num">Pedido #{pc.numero}</span>}
             {/* (21/10) o que acontece agora, em passos curtos (cada um numa linha) */}
             <ol className="scf-passos">
@@ -1224,7 +1223,7 @@ function CartContent({
           <Cab t="Seus dados" sub="Para a loja falar com você" obr ok={okDados} falta={feErro === 'dados' ? 'Preencha o seu nome e o WhatsApp' : undefined} />
           <div className="sc-campos">
             <Campo rotulo="Nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Como você se chama?" autoComplete="name"
-              erro={feErro === 'dados' && !nome.trim() ? 'Falta o seu nome' : undefined} />
+              erro={feErro === 'dados' && !nomeValido(nome) ? (nome.trim() ? 'Escreva o seu nome' : 'Falta o seu nome') : undefined} />
             <Campo rotulo="WhatsApp" value={telefone} inputMode="tel" autoComplete="tel" placeholder="(41) 9 9999-0000"
               erro={feErro === 'dados' && telefone.replace(/\D/g, '').length < 10 ? 'Coloque o número com DDD' : undefined}
               onChange={e => { const d = digitosAoDigitar(e.target.value); setTelefone(d.length > 6 ? `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}` : d.length > 2 ? `(${d.slice(0, 2)}) ${d.slice(2)}` : d) }} />
@@ -1360,15 +1359,15 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
         .cpn-pedido { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 50px; margin: 0; padding: 6px 16px; border: 0; border-radius: 0; color: var(--ui-branco); font-family: inherit; text-align: left; white-space: nowrap; cursor: pointer; }
         .cpn-pedido-ic { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--ui-raio); background: rgba(255,255,255,.2); flex: none; }
         .cpn-pedido-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-        .cpn-pedido-tx b { font-size: 15px; font-weight: 700; line-height: 1.25; }
+        .cpn-pedido-tx b { font-size: 15px; font-weight: 600; line-height: 1.25; }
         .cpn-pedido-tx small { font-size: 13px; opacity: .9; }
-        .cpn-pedido strong { font-size: 16px; font-weight: 700; }
+        .cpn-pedido strong { font-size: 16px; font-weight: 600; }
         /* (19/10) menu branco (padrão iFood/99): parada em cinza, ativa na cor do topo da loja */
         .cpn-pe { box-shadow: 0 -2px 12px rgba(44,18,25,.08); }
         .cpn-menu { display: flex; padding-bottom: env(safe-area-inset-bottom, 0px); background: #fff; border-top: 1px solid #EFE7E3; }
         .cpn-menu button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; margin: 0; border: 0; background: none; color: #8A7F82; font-family: inherit; font-size: 12.5px; font-weight: 500; white-space: nowrap; cursor: pointer; }
         .cpn-ic { display: flex; align-items: center; justify-content: center; width: 52px; height: 30px; border-radius: var(--ui-raio); }
-        .cpn-menu button[aria-current="page"] { color: var(--cpn-ativa); font-weight: 700; }
+        .cpn-menu button[aria-current="page"] { color: var(--cpn-ativa); font-weight: 600; }
         .cpn-menu button[aria-current="page"] .cpn-ic { background: color-mix(in srgb, var(--cpn-ativa) 12%, #fff); }
         /* (20/10) bolinha com a quantidade, no ícone da sacola */
         .cpn-ic, .cpn-pedido-ic { position: relative; }

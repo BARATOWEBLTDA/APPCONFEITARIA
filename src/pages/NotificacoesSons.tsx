@@ -250,7 +250,7 @@ export default function NotificacoesSons() {
           display: flex; align-items: center; justify-content: center;
         }
         .ns-txt { flex: 1; min-width: 0; }
-        .ns-name { font-size: 14px; font-weight: 700; color: #2C2C2A; }
+        .ns-name { font-size: 14px; font-weight: 600; color: #2C2C2A; }
         .ns-desc { font-size: 12px; color: #888780; margin-top: 2px; line-height: 1.4; }
         .ns-desc--on { color: #16a34a; }
         .ns-desc--warn { color: var(--ui-vermelho); }

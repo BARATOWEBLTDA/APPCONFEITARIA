@@ -1,7 +1,8 @@
+import MenuPedido, { type AcaoMenu } from './MenuPedido'
 import { useEffect, useState } from 'react'
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
-import { ArrowRight, Bag, CaretDown, DotsThreeVertical } from '@phosphor-icons/react'
-import { Botao, BotaoIcone, Linha } from '@/components/base'
+import { ArrowRight, Bag, CaretDown } from '@phosphor-icons/react'
+import { Botao, Linha } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
 import { pixDoPedido, acaoDe, atrasado, precisaAceitar, chegouHa, criadoEm, dataCurta, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDoItem, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
 import { r2 } from '@/lib/moeda'
@@ -18,7 +19,7 @@ type Props = {
   p: Pedido
   aoAbrir: (p: Pedido) => void
   aoAvancar: (p: Pedido) => void
-  aoMenu: (p: Pedido) => void
+  aoMenu: (p: Pedido, acao: AcaoMenu) => void
   aoEndereco: (p: Pedido) => void
   mudando?: boolean
   /** (09/10 · 3.72) as boas-vindas abrem o cartão sozinhas e mostram o recado do item dentro dele */
@@ -94,7 +95,7 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
           <p className="pdc-nome"><b>{nomeCliente(p)}</b><span>#{p.numero || '—'}</span></p>
           <p className="pdc-res">{resumoItens(p)}</p>
         </div>
-        <BotaoIcone className="pdc-mais" rotulo="Mais ações" variante="limpo" tamanho="p" onClick={parar(() => aoMenu(p))}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
+        <span onClick={e => e.stopPropagation()}><MenuPedido p={p} aoEscolher={aoMenu} className="pdc-mais" /></span>
       </div>
       <div className="pdc-linhas">
         <div className="pdc-l1">
@@ -168,7 +169,7 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
         {acao && <Botao className={aceitar ? undefined : 'pd-passo'} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
       </div>
       <div role="cell">
-        <BotaoIcone rotulo="Mais ações" variante="limpo" tamanho="p" onClick={parar(() => aoMenu(p))}><DotsThreeVertical size={20} weight="bold" /></BotaoIcone>
+        <MenuPedido p={p} aoEscolher={aoMenu} />
       </div>
     </div>
   )

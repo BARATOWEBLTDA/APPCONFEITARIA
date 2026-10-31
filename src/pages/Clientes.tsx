@@ -10,7 +10,6 @@ import { digitosTelefone, digitosAoDigitar, linkWhatsApp } from "@/lib/telefone"
 import { useProfile, isPro, perfilAtual } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_CLIENTES, TOUR_CLIENTES } from "@/lib/comoTelas";
-import ReqTag from "@/components/ReqTag";
 import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
 import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, Crown, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, X } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
@@ -60,8 +59,6 @@ interface ImportContato {
 }
 
 const ORIGEM_OPTIONS = ["Instagram", "Indicação", "Google", "Facebook", "TikTok", "WhatsApp", "Loja física", "Outro"];
-const SEXO_OPTIONS   = ["Feminino", "Masculino", "Prefiro não informar"];
-const UF_OPTIONS     = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
 const emptyRapido = { nome: "", whatsapp: "", email: "", observacoes: "", data_nascimento: "" };
 
@@ -117,53 +114,6 @@ function getDaysUntil(data: string) {
   return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function getHoursUntil(data: string) {
-  const hoje = new Date();
-  const nasc = dataLocal(data);
-  const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
-  if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
-  return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60));
-}
-
-function formatSince(created_at: string): string {
-  const d = new Date(created_at);
-  const now = new Date();
-  const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "Novo cliente hoje";
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yy = String(d.getFullYear()).slice(-2);
-  return `Cliente desde ${dd}/${mm}/${yy}`;
-}
-
-/** "Cliente novo" (até 30 dias) ou "Cliente desde out/2026" (02/10) */
-function clienteDesde(created_at: string): string {
-  const d = new Date(created_at);
-  if (isNaN(d.getTime())) return "";
-  if ((Date.now() - d.getTime()) / 86400000 < 30) return "Cliente novo";
-  const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
-  return `Cliente desde ${mes}/${d.getFullYear()}`;
-}
-
-// "Cliente há X" — tempo relativo compacto
-function formatClienteHa(created_at: string): string {
-  const d = new Date(created_at);
-  const diffMs = Date.now() - d.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays < 1) return "Cliente novo";
-  if (diffDays < 7) return `Cliente há ${diffDays} ${diffDays === 1 ? "dia" : "dias"}`;
-  if (diffDays < 30) {
-    const semanas = Math.floor(diffDays / 7);
-    return `Cliente há ${semanas} ${semanas === 1 ? "semana" : "semanas"}`;
-  }
-  if (diffDays < 365) {
-    const meses = Math.floor(diffDays / 30);
-    return `Cliente há ${meses} ${meses === 1 ? "mês" : "meses"}`;
-  }
-  const anos = Math.floor(diffDays / 365);
-  return `Cliente há ${anos} ${anos === 1 ? "ano" : "anos"}`;
-}
-
 // Última compra: "hoje", "ontem", "há X dias", ou data
 function formatUltimaCompra(isoStr?: string | null): string {
   if (!isoStr) return "Sem pedidos";
@@ -184,12 +134,6 @@ function formatUltimaCompra(isoStr?: string | null): string {
   }
   const anos = Math.floor(diffDays / 365);
   return `há ${anos} ${anos === 1 ? "ano" : "anos"}`;
-}
-
-function formatMoneyCompacto(v?: number): string {
-  const n = v || 0;
-  if (n >= 1000) return `R$ ${(n / 1000).toFixed(1).replace(".", ",")}k`;
-  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
 function formatMoneyFull(v?: number): string {
@@ -221,9 +165,9 @@ export default function Clientes() {
 
   // Form state
   const [showForm,      setShowForm]      = useState(false);
-  const [formMode,      setFormMode]      = useState<FormMode>("rapido");
+  const [,              setFormMode]      = useState<FormMode>("rapido");
   const [editando,      setEditando]      = useState<string | null>(null);
-  const [rapido,        setRapido]        = useState(emptyRapido);
+  const [,              setRapido]        = useState(emptyRapido);
   const [completo,      setCompleto]      = useState(emptyCompleto);
   const [niverAberto, setNiverAberto] = useState(false);
   const [preview,       setPreview]       = useState<string | null>(null);
@@ -411,7 +355,7 @@ export default function Clientes() {
           estado: data.uf || f.estado,
         }));
       }
-    } catch {}
+    } catch (e) { console.warn('[Clientes] busca do CEP', e); }
     setCepLoading(false);
   };
 
@@ -537,7 +481,7 @@ export default function Clientes() {
         : explicarErro(error, "Não deu para excluir o cliente. Tente de novo."), { tipo: "erro" });
       return;
     }
-    voltarPerfil.current = null; // a cliente foi excluída: fica na lista
+    voltarPerfil.current = null; // o cliente foi excluído: fica na lista
     fecharForm();
     await fetchClientes(userId);
     avisar("Cliente excluída", { tipo: "ok" });
@@ -688,9 +632,6 @@ export default function Clientes() {
     .sort((a, b) => getDaysUntil(a.data_nascimento!) - getDaysUntil(b.data_nascimento!));
 
   // ── Form JSX ──────────────────────────────────────────────────────────────
-
-  // Iniciais pra avatar preview
-  const iniciais = (completo.nome || "").trim().split(/\s+/).slice(0,2).map(s => s[0]?.toUpperCase() || "").join("") || "?";
 
   const formJSX = (
     <Janela aberta={showForm} aoFechar={tryCloseForm} tipo="conteudo" titulo={editando ? "Editar cliente" : "Novo cliente"}

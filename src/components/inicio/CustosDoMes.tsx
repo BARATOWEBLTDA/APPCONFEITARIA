@@ -60,9 +60,9 @@ const CSS = `
   .cdm-g { flex: none; width: 104px; height: auto; }
   .cdm-tx { min-width: 0; display: flex; flex-direction: column; }
   .cdm-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cdm-tx b { font-size: 26px; font-weight: 700; line-height: 1.15; color: var(--ui-texto); }
+  .cdm-tx b { font-size: 26px; font-weight: 600; line-height: 1.15; color: var(--ui-texto); }
   .cdm-tx span { font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; }
   .cdm-p { margin: 12px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--ui-texto-2); }
   .cdm-p b { color: var(--ui-texto); }
-  .cdm-ver { display: inline-flex; align-items: center; gap: 2px; min-height: 40px; margin: 4px 0 -8px -8px; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .cdm-ver { display: inline-flex; align-items: center; gap: 2px; min-height: 40px; margin: 4px 0 -8px -8px; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
 `;

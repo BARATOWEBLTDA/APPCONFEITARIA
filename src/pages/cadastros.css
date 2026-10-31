@@ -1,6 +1,6 @@
 /* (21/10) Cadastros: lista em grupos, com os mesmos ícones rosa da tela do Cardápio */
 .cad { max-width: 720px; margin: 0 auto; padding: 16px 16px calc(96px + env(safe-area-inset-bottom, 0px)); font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
-.cad-t { margin: 18px 2px 8px; font-size: 12.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--ui-texto-3); }
+.cad-t { margin: 18px 2px 8px; font-size: 12.5px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--ui-texto-3); }
 .cad-c { overflow: hidden; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
 .cad-it, .cad-at { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 10px 12px; border: 0; background: none; color: inherit; font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .cad-it + .cad-it { border-top: 1px solid var(--ui-linha); }
@@ -13,7 +13,7 @@
 .cad-tx small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .cad-tx small.ok { color: var(--ui-verde); font-weight: 600; }
 .cad-tx small.lar { color: var(--ui-laranja); font-weight: 600; }
-.cad-n { flex: none; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cad-n { flex: none; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .cad-seta { flex: none; color: var(--ui-texto-3); }
 .cad-at { border: 1px solid #F5C99B; border-radius: var(--ui-raio-cartao); background: #FFF8EF; }
 .cad-at-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ui-laranja-fundo); color: var(--ui-laranja); }

@@ -56,8 +56,10 @@ export default function MapaEndereco({ busca, soCidade, selo, altura }: { busca:
       const m = Lf.map(caixa.current, { center: BRASIL, zoom: 3, zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false, attributionControl: true });
       m.attributionControl.setPrefix(false);
       Lf.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(m);
-      m.fitBounds([[-33.8, -73.9], [5.3, -34.8]], { animate: false });
+      try { m.fitBounds([[-33.8, -73.9], [5.3, -34.8]], { animate: false }); } catch { m.setView(BRASIL, 3, { animate: false }); }
       mapa.current = m;
+      // aba que abre depois: o mapa ganha tamanho e precisa se redesenhar
+      if (typeof ResizeObserver !== "undefined") { const ro = new ResizeObserver(() => { try { m.invalidateSize(); } catch { /* removido */ } }); ro.observe(caixa.current!); m.on("unload", () => ro.disconnect()); }
       setPronto(true);
     }).catch(() => {});
     return () => { vivo = false; mapa.current?.remove(); mapa.current = null; };
@@ -69,15 +71,19 @@ export default function MapaEndereco({ busca, soCidade, selo, altura }: { busca:
     const m = mapa.current, Lf = L.current;
     if (!pronto || !m || !Lf) return;
     let vivo = true;
+    // (31/10 · 5.84) mapa escondido (aba fechada, tamanho 0): o "voar" do Leaflet dá NaN e quebrava a tela inteira
+    // do pedido de entrega. Sem tamanho, vai direto, sem animação; e um erro do mapa nunca derruba a tela.
+    const visivel = () => { const c = m.getContainer(); return c.clientWidth > 0 && c.clientHeight > 0; };
+    const ir = (fn: () => void) => { try { m.invalidateSize(); fn(); } catch { /* mapa fora da tela: tenta de novo na próxima mudança */ } };
     if (!busca) {
       pino.current?.remove(); pino.current = null;
-      m.flyToBounds([[-33.8, -73.9], [5.3, -34.8]], { duration: 1 });
+      ir(() => visivel() ? m.flyToBounds([[-33.8, -73.9], [5.3, -34.8]], { duration: 1 }) : m.fitBounds([[-33.8, -73.9], [5.3, -34.8]], { animate: false }));
       return;
     }
     localizar(busca, soCidade).then(r => {
-      if (!vivo || !r || !mapa.current) return;
+      if (!vivo || !r || !mapa.current || !Number.isFinite(r.p[0]) || !Number.isFinite(r.p[1])) return;
       const zoom = r.rua ? 17 : 12;
-      m.flyTo(r.p, zoom, { duration: 1.2 });
+      ir(() => visivel() ? m.flyTo(r.p, zoom, { duration: 1.2 }) : m.setView(r.p, zoom, { animate: false }));
       if (r.rua) {
         const icone = Lf.divIcon({ className: "mpe-pino", html: "<i></i>", iconSize: [28, 36], iconAnchor: [14, 34] });
         if (pino.current) pino.current.setLatLng(r.p); else pino.current = Lf.marker(r.p, { icon: icone, interactive: false }).addTo(m);

@@ -11,13 +11,13 @@
 .aa-row:first-child { border-top: 0; }
 .aa-row-b { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 64px; margin: 0; padding: 10px 0; border: 0; background: none; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
 .aa-row--off .aa-av, .aa-row--off .aa-row-tx b, .aa-row--off .aa-row-tx small { opacity: .6; }
-.aa-av { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 18px; font-weight: 700; }
+.aa-av { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 18px; font-weight: 600; }
 .aa-av img { width: 100%; height: 100%; object-fit: cover; }
 .aa-row-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.aa-row-tx b { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aa-row-tx b { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .aa-row-tx small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .aa-row-tx .aa-bio { color: var(--ui-texto-3); }
-.aa-tag { align-self: flex-start; margin-top: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-style: normal; font-weight: 700; }
+.aa-tag { align-self: flex-start; margin-top: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-style: normal; font-weight: 600; }
 .aa-acoes { display: none; }
 .aa-perigo { color: var(--ui-vermelho) !important; }
 @media (hover: hover) { .aa-perigo:hover:not(:disabled) { background: var(--ui-vermelho-fundo) !important; } }
@@ -29,7 +29,7 @@
 
 /* menu (celular) */
 .aa-menu { display: flex; flex-direction: column; margin: 0 -8px; }
-.aa-menu button { display: flex; align-items: center; gap: 12px; min-height: 52px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer; }
+.aa-menu button { display: flex; align-items: center; gap: 12px; min-height: 52px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
 .aa-menu button svg { color: var(--ui-texto-2); }
 .aa-menu button.perigo, .aa-menu button.perigo svg { color: var(--ui-vermelho); }
 @media (hover: hover) { .aa-menu button:hover { background: var(--ui-linha); } }
@@ -38,7 +38,7 @@
 .aa-form { display: flex; flex-direction: column; gap: 16px; padding-bottom: 8px; }
 .aa-foto-upload { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 12px 16px; border: 1.5px dashed var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-fundo); color: var(--ui-texto-2); font-family: inherit; text-align: left; cursor: pointer; }
 .aa-foto-upload > span:last-child { display: flex; flex-direction: column; gap: 2px; }
-.aa-foto-upload b { font-size: 14px; font-weight: 700; color: var(--ui-texto); }
+.aa-foto-upload b { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
 .aa-foto-upload small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
 @media (hover: hover) { .aa-foto-upload:hover:not(:disabled) { border-color: var(--ui-rosa); color: var(--ui-rosa-escuro); } }
 .aa-foto-preview { display: flex; align-items: center; gap: 12px; }
@@ -46,5 +46,5 @@
 .aa-check { display: flex; align-items: flex-start; gap: 12px; min-height: 44px; padding: 6px 0; cursor: pointer; }
 .aa-check input { flex: none; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--ui-rosa); cursor: pointer; }
 .aa-check > span { display: flex; flex-direction: column; gap: 2px; }
-.aa-check b { font-size: 15px; font-weight: 700; }
+.aa-check b { font-size: 15px; font-weight: 600; }
 .aa-check small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }

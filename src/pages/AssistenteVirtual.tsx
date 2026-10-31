@@ -56,9 +56,9 @@ export default function AssistenteVirtual() {
         .av-wrap { max-width: 720px; margin: 0 auto; padding: 16px 16px 96px; }
         .av-hero { text-align: center; background: linear-gradient(150deg, #22130E, #5A3626); color: var(--ui-branco); border-radius: 18px; padding: 24px 18px; }
         .av-doo { width: 80px; height: 80px; object-fit: cover; object-position: top center; border-radius: var(--ui-raio-janela); background: #FCE7F3; margin: 0 auto 12px; display: block; }
-        .av-hero h1 { font-size: 21px; font-weight: 700; line-height: 1.25; margin: 0 0 8px; }
+        .av-hero h1 { font-size: 21px; font-weight: 600; line-height: 1.25; margin: 0 0 8px; }
         .av-hero p { font-size: 14px; line-height: 1.5; color: rgba(255,255,255,.85); margin: 0; }
-        .av-lbl { margin: 18px 2px 0; font-size: 13px; font-weight: 700; color: var(--ui-texto-2); }
+        .av-lbl { margin: 18px 2px 0; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
         .av-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
         @media (min-width: 901px) { .av-wrap { max-width: 1066px !important; padding-top: 24px !important; } .av-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
         .av-item { position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; margin: 0; padding: 14px; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; font-family: inherit; text-align: left; color: var(--ui-texto); }
@@ -66,11 +66,11 @@ export default function AssistenteVirtual() {
         .av-e { width: 40px; height: 40px; border-radius: var(--ui-raio); background: #FCE7F3; color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: 2px; }
         .av-item b, .av-item small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
         .av-item b { font-size: 14.5px; } .av-item small { font-size: 12.5px; color: var(--ui-texto-2); }
-        .av-novo { position: absolute; top: 10px; right: 10px; padding: 2px 8px; border-radius: 6px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 11.5px; font-weight: 700; }
+        .av-novo { position: absolute; top: 10px; right: 10px; padding: 2px 8px; border-radius: 6px; background: var(--ui-rosa); color: var(--ui-branco); font-style: normal; font-size: 11.5px; font-weight: 600; }
         .av-aviso { margin: 14px 0 0; text-align: center; font-size: 12.5px; color: var(--ui-texto-3); }
-        .av-cta { width: 100%; height: 52px; margin-top: 18px; border: none; border-radius: var(--ui-raio); background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .av-cta { width: 100%; height: 52px; margin-top: 18px; border: none; border-radius: var(--ui-raio); background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; gap: 8px; }
         .av-sub { text-align: center; font-size: 12.5px; color: var(--ui-texto-3); margin: 10px 0 0; }
-        .av-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+        .av-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
       `}</style>
     </div>
   );

@@ -92,10 +92,10 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         .kp { display: flex; flex-direction: column; gap: 8px; font-family: var(--font-base); }
         .kp-kits { display: flex; gap: 8px; flex-wrap: wrap; }
         .kp-kits button { flex: 1; min-width: 110px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 9px 8px; border: 1.5px solid #EAE3E6; border-radius: var(--ui-raio-p); background: var(--ui-branco); font-family: inherit; cursor: pointer; color: var(--ui-texto); }
-        .kp-kits button b { font-size: 14px; } .kp-kits button span { font-size: 12px; color: var(--ui-texto-2); font-weight: 700; }
+        .kp-kits button b { font-size: 14px; } .kp-kits button span { font-size: 12px; color: var(--ui-texto-2); font-weight: 600; }
         .kp-kits button.on { border-color: var(--ui-texto); background: var(--ui-vinho-escuro); color: var(--ui-branco); } .kp-kits button.on span { color: var(--ui-branco); }
         .kp-livre { display: flex; align-items: center; gap: 10px; }
-        .kp-livre > span { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); } .kp-livre em { font-style: normal; margin-left: auto; font-weight: 700; color: var(--ui-texto); }
+        .kp-livre > span { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); } .kp-livre em { font-style: normal; margin-left: auto; font-weight: 600; color: var(--ui-texto); }
         .kp-regra { background: #FFF5F9; border: 1px solid #F9D1E0; border-radius: var(--ui-raio-p); padding: 9px 11px; font-size: 12.5px; color: var(--ui-cinza-texto); line-height: 1.4; }
         .kp-tot { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 14px; color: var(--ui-texto-2); margin-top: 2px; white-space: nowrap; }
         .kp-tot b { font-size: 20px; color: var(--ui-texto); }
@@ -103,18 +103,18 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         .kp-barra { height: 6px; background: #EFE9EB; border-radius: 3px; overflow: hidden; }
         .kp-barra i { display: block; height: 100%; background: var(--ui-rosa); transition: width .15s; } .kp-barra i.ok { background: #16a34a; } .kp-barra i.erro { background: var(--ui-vermelho); }
         .kp-sabor { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--ui-linha); }
-        .kp-sabor > span { font-size: 14px; font-weight: 700; color: var(--ui-texto); }
+        .kp-sabor > span { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
         .kp-sab-nome { display: inline-flex; align-items: center; gap: 8px; }
         .kp-sab-nome svg { color: var(--ui-rosa); flex-shrink: 0; }
         .kp-kits .kp-cheio { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
         .kp-kits button.on .kp-cheio { color: rgba(255,255,255,.6); }
         .kp-livre .kp-cheio { margin-right: 6px; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
         .kp-stp { display: flex; align-items: center; border: 1px solid #EAE3E6; border-radius: 9px; overflow: hidden; background: var(--ui-branco); }
-        .kp-stp button { width: 34px; height: 34px; border: none; background: none; font-size: 18px; font-weight: 700; color: var(--ui-rosa-escuro); cursor: pointer; }
+        .kp-stp button { width: 34px; height: 34px; border: none; background: none; font-size: 18px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
         .kp-stp button:last-child { color: #16a34a; } .kp-stp button:disabled { color: #D6CBD0; cursor: default; }
         .kp-stp b { min-width: 48px; text-align: center; font-size: 14px; white-space: nowrap; }
         .kp-stp .kp-mais { width: auto; min-width: 44px; padding: 0 10px; font-size: 14px; }
-        .kp-status { font-size: 12.5px; font-weight: 700; color: var(--ui-laranja); margin: 2px 0 0; } .kp-status.ok { color: #16a34a; } .kp-status.erro { color: var(--ui-vermelho); }
+        .kp-status { font-size: 12.5px; font-weight: 600; color: var(--ui-laranja); margin: 2px 0 0; } .kp-status.ok { color: #16a34a; } .kp-status.erro { color: var(--ui-vermelho); }
       `}</style>
     </div>
   )

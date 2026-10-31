@@ -76,9 +76,9 @@ export function notificarAvisosCadastro(avisos: AvisoCadastro[]) {
   const d = new Date(), hoje = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
   const k = "doonly_avisos_notificados";
   let feitos: { dia: string; chaves: string[] } = { dia: hoje, chaves: [] };
-  try { const v = JSON.parse(localStorage.getItem(k) || "null"); if (v?.dia === hoje && Array.isArray(v.chaves)) feitos = v; } catch {}
+  try { const v = JSON.parse(localStorage.getItem(k) || "null"); if (v?.dia === hoje && Array.isArray(v.chaves)) feitos = v; } catch { /* sem localStorage ou valor inválido: começa do zero */ }
   const novos = avisos.filter(a => !a.semNotificar && !feitos.chaves.includes(a.chave));
   if (!novos.length) return;
   for (const a of novos) criarNotificacaoPessoal({ tipo: "aviso", titulo: a.titulo, mensagem: a.texto, link: a.link, chave: a.chave }).catch(() => {});
-  try { localStorage.setItem(k, JSON.stringify({ dia: hoje, chaves: [...feitos.chaves, ...novos.map(a => a.chave)] })); } catch {}
+  try { localStorage.setItem(k, JSON.stringify({ dia: hoje, chaves: [...feitos.chaves, ...novos.map(a => a.chave)] })); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
 }

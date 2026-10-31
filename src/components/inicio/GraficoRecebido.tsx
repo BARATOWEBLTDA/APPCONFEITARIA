@@ -28,6 +28,19 @@ type Periodo = 7 | 30 | "mes";
 const MESES_LONGOS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const isoDe = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
+// (31/10 · 5.84) fora do componente do gráfico (antes era refeito a cada desenho)
+function Dica({ active, payload, rotulo }: any) {
+  if (!active || !payload?.length) return null;
+  const p = payload[0].payload;
+  return (
+    <div className="grf-dica">
+      <small>{diaLongo(p.iso, p.dia)}</small>
+      <b>{brl(p.acum)}</b>
+      <span>{rotulo}: {brl(p.antes)}</span>
+    </div>
+  );
+}
+
 export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
   const [periodo, setPeriodo] = useState<Periodo>(30);
 
@@ -67,18 +80,6 @@ export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
   const txt = periodo === "mes"
     ? { titulo: `Recebido em ${mes}`, compara: `em relação ao mesmo período de ${mesAnt}`, nada: `Nada recebido no mesmo período de ${mesAnt}`, legA: "Este mês", legB: "Mês passado", dica: "Mês passado" }
     : { titulo: `Recebido nos últimos ${periodo} dias`, compara: `em relação aos ${periodo} dias anteriores`, nada: `Nada recebido nos ${periodo} dias anteriores`, legA: `Últimos ${periodo} dias`, legB: `${periodo} dias anteriores`, dica: "Período anterior" };
-
-  const Dica = ({ active, payload }: any) => {
-    if (!active || !payload?.length) return null;
-    const p = payload[0].payload;
-    return (
-      <div className="grf-dica">
-        <small>{diaLongo(p.iso, p.dia)}</small>
-        <b>{brl(p.acum)}</b>
-        <span>{txt.dica}: {brl(p.antes)}</span>
-      </div>
-    );
-  };
 
   const { serie, total, totalAntes, pct, hojeValor } = g;
   const n = serie.length;
@@ -120,7 +121,7 @@ export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
             <CartesianGrid stroke="var(--ui-linha)" vertical={false} />
             <XAxis dataKey="dia" tick={{ fontSize: 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} interval={intervalo} padding={{ left: 4, right: 4 }} />
             <YAxis width={78} tick={{ fontSize: 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} tickFormatter={curto} tickCount={4} allowDecimals={false} />
-            <Tooltip content={<Dica />} cursor={{ stroke: "var(--ui-rosa)", strokeDasharray: "4 4" }} isAnimationActive={false} />
+            <Tooltip content={<Dica rotulo={txt.dica} />} cursor={{ stroke: "var(--ui-rosa)", strokeDasharray: "4 4" }} isAnimationActive={false} />
             <Line type="monotone" dataKey="antes" stroke="#B9AFB3" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} isAnimationActive={false} />
             <Area type="monotone" dataKey="acum" stroke="var(--ui-rosa)" strokeWidth={2.5} fill="url(#grfArea)" dot={false}
               activeDot={{ r: 5, fill: "var(--ui-rosa)", stroke: "#fff", strokeWidth: 2 }} />

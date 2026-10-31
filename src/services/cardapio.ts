@@ -1,4 +1,3 @@
-import { temaAtivo, NATAL, AVISO_NATAL_PADRAO, CAPA_NATAL_PADRAO } from '@/lib/temaCardapio'
 import { modoDaLoja } from '@/lib/taxaEntrega'
 import { cupomDisponivel } from '@/lib/cupons'
 import { COR_BOTOES, corDoItem } from '@/lib/coresCardapio'
@@ -119,11 +118,10 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
 
   // (18/10) Três cores, todas no topo: borda da logo, nome e faixa do topo (grátis: as prontas; PRO: qualquer uma).
   // Botões e ícones ficam sempre no rosa do Doonly.
-  // (18/10) tema de Natal: usa as cores dele no topo
-  const tema = temaAtivo(profile)
-  const borda = tema === 'natal' ? NATAL.borda : corDoItem('cor_borda', profile.cor_borda, isPro)
-  const nome = tema === 'natal' ? NATAL.nome : corDoItem('cor_nome', profile.cor_nome, isPro)
-  const topo = tema === 'natal' ? NATAL.topo : corDoItem('cor_navbar', profile.cor_navbar, isPro)
+  // (31/10 · 5.84) o tema de Natal saiu do código (já não ligava desde a 5.46)
+  const borda = corDoItem('cor_borda', profile.cor_borda, isPro)
+  const nome = corDoItem('cor_nome', profile.cor_nome, isPro)
+  const topo = corDoItem('cor_navbar', profile.cor_navbar, isPro)
 
   const design: DesignSettings = {
     user_id: userId,
@@ -146,12 +144,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     cor_sacola: COR_BOTOES,
     cor_rodape: COR_BOTOES,
     ocultar_categorias: profile.ocultar_categorias || false,
-    tema,
-    tema_aviso: tema === 'natal' ? String(profile.tema_aviso ?? AVISO_NATAL_PADRAO).trim() : '',
-    tema_capa_url: tema === 'natal' ? (profile.tema_capa_url || CAPA_NATAL_PADRAO) : '',
-    tema_laco: profile.tema_laco !== false,
-    tema_destaque: profile.tema_destaque || '',
-    facebook_pixel_id: profile.facebook_pixel_id || '', // (19/10) Marketing › Pixel do Facebook
+    facebook_pixel_id: isPro ? profile.facebook_pixel_id || '' : '', // (19/10) Marketing › Pixel do Facebook · (31/10 · 5.84) só no PRO
   }
 
   const config: Configuracoes = {
@@ -187,7 +180,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
       ? { chave: profile.pix_chave, nome: profile.pix_nome, cidade: profile.pix_cidade, modo: ['sinal', 'total'].includes(profile.pix_modo) ? profile.pix_modo : 'escolha', pct: Number(profile.pix_sinal_pct) || 50, retirada: profile.pagar_na_retirada === true }
       : null,
     prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,
-    msg_pedido: profile.mensagens_whatsapp?.pedido_cardapio || null,
+    msg_pedido: isPro ? profile.mensagens_whatsapp?.pedido_cardapio || null : null, // (31/10 · 5.84) texto próprio só no PRO
     instagram: profile.instagram || null,
     loja_pausada: profile.loja_pausada === true,
     facebook: profile.facebook || null,

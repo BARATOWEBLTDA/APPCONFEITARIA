@@ -156,7 +156,7 @@ export default function SolicitarRecurso() {
                 <span className="aj-intro-ic" aria-hidden="true"><Lightbulb size={24} weight="duotone" /></span>
                 <div><b>Sua ideia pode virar recurso</b><p>Conte o que falta no seu dia a dia. A gente lê todas e conta o andamento em "Minhas ideias".</p></div>
               </div>
-              <Campo rotulo="O que você gostaria?" obrigatorio maxLength={60} placeholder="Ex.: colocar promoção nos produtos"
+              <Campo rotulo="O que você gostaria?" obrigatorio maxLength={60} placeholder="Ex.: promoção por produto"
                 value={titulo} onChange={e => setTitulo(e.target.value)} />
               <CampoArea rotulo="Como isso te ajudaria?" opcional rows={4} maxLength={500}
                 placeholder="Conte uma situação real: quando acontece e o que você faz hoje"

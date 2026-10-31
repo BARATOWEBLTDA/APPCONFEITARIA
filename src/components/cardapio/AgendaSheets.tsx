@@ -133,9 +133,9 @@ const CSS = `
   @media (min-width: 768px) { .ags { border-radius: 22px; } }
   @keyframes agsSobe { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
   .ags-alca { display: block; width: 40px; height: 4px; border-radius: 9px; background: #E5DDE1; margin: 0 auto 12px; }
-  .ags-hd b { display: block; font-size: 18px; font-weight: 700; } .ags-hd small { font-size: 13px; color: var(--ui-texto-2); }
+  .ags-hd b { display: block; font-size: 18px; font-weight: 600; } .ags-hd small { font-size: 13px; color: var(--ui-texto-2); }
   .ags-mes { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 8px; }
-  .ags-mes b { font-size: 15px; font-weight: 700; }
+  .ags-mes b { font-size: 15px; font-weight: 600; }
   .ags-mes b { font-size: 16px; }
   .ags-mes button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--ui-raio); border: none; background: var(--ui-cinza); color: var(--ui-texto); cursor: pointer; font-family: inherit; }
   .ags-mes button:disabled { opacity: .35; cursor: default; }
@@ -146,20 +146,20 @@ const CSS = `
   .ags-d { position: relative; }
   /* Hoje: só um pontinho discreto embaixo do número (sem contorno, para não parecer seleção) */
   .ags-d.hoje::after { content: ""; position: absolute; left: 50%; bottom: 5px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
-  .ags-d.hoje:not(:disabled) { font-weight: 700; }
-  .ags-d.sel { background: var(--ui-rosa); color: var(--ui-branco); font-weight: 700; box-shadow: none; }
+  .ags-d.hoje:not(:disabled) { font-weight: 600; }
+  .ags-d.sel { background: var(--ui-rosa); color: var(--ui-branco); font-weight: 600; box-shadow: none; }
   .ags-leg { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--ui-texto-2); margin: 10px 0 12px; }
   .ags-leg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
   .ags-leg .l1 { background: var(--ui-vinho-escuro); } .ags-leg .l2 { background: #E5DDE1; }
-  .ags-ok { display: block; width: 100%; border: none; border-radius: var(--ui-raio); padding: 14px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+  .ags-ok { display: block; width: 100%; border: none; border-radius: var(--ui-raio); padding: 14px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
   .ags-ok:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   .ags-hrs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
   .ags-hrs button { height: 48px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ui-texto); cursor: pointer; }
-  .ags-hrs button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); font-weight: 700; }
-  .ags-hrs .ags-outro { grid-column: 1 / -1; border-style: dashed; color: var(--ui-rosa-escuro); font-size: 15px; font-weight: 700; }
+  .ags-hrs button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); font-weight: 600; }
+  .ags-hrs .ags-outro { grid-column: 1 / -1; border-style: dashed; color: var(--ui-rosa-escuro); font-size: 15px; font-weight: 600; }
   .ags-outro-box { margin-top: 12px; padding: 14px; border-radius: var(--ui-raio-cartao); background: #FAF7F8; }
   .ags-outro-box p { margin: 0 0 10px; font-size: 13px; color: var(--ui-texto-2); }
-  .ags-outro-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; font-size: 20px; font-weight: 700; }
+  .ags-outro-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; font-size: 20px; font-weight: 600; }
   .ags-outro-row select { height: 48px; min-width: 96px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 18px; font-weight: 500; color: var(--ui-texto); text-align: center; padding: 0 10px; }
   .ags-vazio { grid-column: 1 / -1; font-size: 13.5px; color: var(--ui-texto-2); text-align: center; padding: 10px 0; }
 `;

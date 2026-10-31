@@ -761,7 +761,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
       },
       {
         id: 'pixel',
-        titulo: 'Pixel do Facebook',
+        titulo: 'Pixel do Facebook (PRO)',
         exemplo: 'Para anunciar no Instagram.',
         imagens: [{ src: '/ajuda/cupons-pixel.webp', alt: 'Aba Pixel do Facebook com o campo do ID', marcas: [
           'Abra **Pixel do Facebook**.',
@@ -1282,7 +1282,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
           '**Saiu**: uma compra ou despesa.',
           '**Receber**: o pagamento de um pedido.',
         ] }],
-        dica: 'No computador: **Receber pedido**, **Entrada** e **Saída**, no topo.',
+        dica: 'No computador, os mesmos botões ficam no **topo**.',
       },
       {
         id: 'saida',
@@ -1491,7 +1491,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
       },
       {
         id: 'editar',
-        titulo: 'Trocar o texto',
+        titulo: 'Trocar o texto (PRO)',
         exemplo: 'Quer chamar o cliente pelo nome?',
         imagens: [{ src: '/ajuda/mensagens-editar.webp', alt: 'Janela da mensagem com o texto e a prévia', marcas: [
           'Escreva do **seu jeito**.',

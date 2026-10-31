@@ -11,7 +11,7 @@ import DadosLoja from "@/pages/DadosLoja";
  * A loja para o cliente (logo, nome e WhatsApp, aparência, redes) · Como você vende (horário, entrega, pagamento, Pix, endereço)
  * · O que você vende (produtos, categorias, complementos). Cada linha mostra o valor atual; tocar abre a parte para editar.
  */
-type Visual = { logo: string; foto: string; tema: string; banners: number };
+type Visual = { logo: string; foto: string; banners: number };
 type Contas = { produtos: number; categorias: number; complementos: number };
 
 const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
@@ -26,11 +26,11 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
   useEffect(() => {
     if (!uid) return;
     let vivo = true;
-    const ler = () => supabase.from("profiles").select("logo_url, foto_url, tema_cardapio, banner_url, banner1_url, banner2_url, banner3_url").eq("id", uid).maybeSingle()
+    const ler = () => supabase.from("profiles").select("logo_url, foto_url, banner_url, banner1_url, banner2_url, banner3_url").eq("id", uid).maybeSingle()
       .then(({ data }) => {
         if (!vivo || !data) return;
         const d: any = data;
-        setVis({ logo: d.logo_url || "", foto: d.foto_url || "", tema: d.tema_cardapio === "natal" ? "Natal" : "Normal",
+        setVis({ logo: d.logo_url || "", foto: d.foto_url || "",
           banners: [d.banner_url, d.banner1_url, d.banner2_url, d.banner3_url].filter(Boolean).length }); // (27/10) o banner_url é o 1º dos 4 (antes contava 3)
       }, () => {});
     ler();

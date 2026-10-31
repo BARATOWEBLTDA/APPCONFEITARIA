@@ -21,8 +21,8 @@ import { registrarEtapa } from "@/lib/historicoPedido";
 import { avisarDesfeito, avisarMudanca } from "@/lib/avisoPedido";
 import AppPageHeader from "@/components/AppPageHeader";
 import CalendarioSheet from "@/components/CalendarioSheet";
-import { Botao, BotaoIcone, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
-import { formaDoItem, grupoDoStatus, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDeProduto, nomeDoItem, precisaAceitar, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
+import { Botao, BotaoIcone, Linha, MenuMais, TelaVazia, Titulo, avisar, confirmar, type ItemMenuMais } from "@/components/base";
+import { formaDoItem, grupoDoStatus, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDoItem, precisaAceitar, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
 import { NomeComQtd } from "@/components/pedidos/CartaoPedido";
 import FiltroLateral, { SITUACOES_FILTRO, STATUS_PADRAO } from "@/components/pedidos/FiltroPedidos";
 import "@/components/pedidos/pedidos.css";
@@ -171,7 +171,6 @@ export default function Agenda() {
   // Cancelados ficam de fora por padrão (dá pra ligar no filtro), igual ao total do dia
   const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_PADRAO);
   const [filtroAberto, setFiltroAberto] = useState(false);
-  const [menuDe, setMenuDe] = useState<any | null>(null);
   const [reagendando, setReagendando] = useState<any | null>(null);
 
   /* Autenticação — (10/10) o getSession lê a conta do próprio aparelho (o getUser vai à rede: sem internet a tela ficava carregando pra sempre) */
@@ -493,7 +492,15 @@ export default function Agenda() {
   };
 
   // "Mais ações": fecha a janela antes de fazer (assim o "voltar" do Android não se perde)
-  const doMenu = (fn: (p: any) => void) => () => { const p = menuDe; setMenuDe(null); if (p) window.setTimeout(() => fn(p), 220); };
+  // (31/10 · 5.84) ⋮ do pedido no padrão MenuMais (antes abria uma janela de baixo)
+  const itensDoPedido = (p: any): ItemMenuMais[] => [
+    { Ic: PencilSimple, t: "Editar pedido", sub: "Itens, data e pagamento", aoTocar: () => abrirEditar(p.id) },
+    ...(STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado") ? [{ Ic: Check, t: "Marcar pronto", sub: "O pedido está feito", aoTocar: () => marcarComoPronto(p) }] : []),
+    { Ic: CalendarBlank, t: "Mudar a data da entrega", sub: "Escolha o novo dia", aoTocar: () => setReagendando(p) },
+    { Ic: Copy, t: "Duplicar pedido", sub: "Um igual, para outra data", aoTocar: () => duplicarPedido(p) },
+    { Ic: FilePdf, t: "Baixar PDF", sub: "Para imprimir ou mandar", aoTocar: () => baixarPdf(p) },
+    { Ic: Trash, t: "Excluir pedido", sub: "Apaga de vez", perigo: true, aoTocar: () => excluirPedido(p) },
+  ];
 
   // Cancelado escondido é o normal: o número no botão conta só as outras situações que foram escondidas
   const filtrosDesligados = SITUACOES_FILTRO.filter(f => f.k !== "cancelado" && !f.grupos.every(g => statusSelecionados.includes(g))).length;
@@ -524,7 +531,7 @@ export default function Agenda() {
       setAtencao({ atr: a.error ? [] : (a.data || []), prox: b.error ? [] : (b.data || []) });
     })();
     return () => { vale = false; };
-  }, [userId, mostrarAtencao, hoje, pedidos]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId, mostrarAtencao, hoje, pedidos]);
   const temAtencao = !!atencao && (atencao.atr.length > 0 || atencao.prox.length > 0);
   const irParaDia = (iso: string) => { setRefDate(parseISO(iso)); setDiaSel(iso); };
   const acaoAtencao = (p: any, atr: boolean) => {
@@ -607,7 +614,7 @@ export default function Agenda() {
               }>Pedidos do dia</Titulo>
               <div className="ag3-lista">
                 {pedidosDiaFiltrados.map((p: any) => (
-                  <CartaoAgenda key={p.id} p={p} ocupado={ocupados.has(p.id)} aoAbrir={() => abrirEditar(p.id)} aoMenu={() => setMenuDe(p)} aoPronto={() => marcarComoPronto(p)} aoWhats={() => abrirWhatsApp(p)} />
+                  <CartaoAgenda key={p.id} p={p} ocupado={ocupados.has(p.id)} aoAbrir={() => abrirEditar(p.id)} itensMenu={itensDoPedido(p)} aoPronto={() => marcarComoPronto(p)} aoWhats={() => abrirWhatsApp(p)} />
                 ))}
               </div>
             </>
@@ -623,17 +630,6 @@ export default function Agenda() {
         onClose={() => setFiltroAberto(false)} pedidos={pedidosDoDia} />
     )}
 
-    {/* Mais ações do pedido */}
-    <MenuAgenda p={menuDe} aoFechar={() => setMenuDe(null)}
-      itens={[
-        { nome: "Editar pedido", Ic: PencilSimple, fn: doMenu(p => abrirEditar(p.id)) },
-        ...(menuDe && STATUS_PODE_FICAR_PRONTO.includes(menuDe.status || "agendado") ? [{ nome: "Marcar pronto", Ic: Check, fn: doMenu(marcarComoPronto) }] : []),
-        { nome: "Mudar a data da entrega", Ic: CalendarBlank, fn: doMenu(p => setReagendando(p)) },
-        { nome: "Duplicar pedido", Ic: Copy, fn: doMenu(duplicarPedido) },
-        { nome: "Baixar PDF", Ic: FilePdf, fn: doMenu(baixarPdf) },
-      ]}
-      aoExcluir={doMenu(excluirPedido)}
-    />
 
     {reagendando && (
       <CalendarioSheet valor={reagendando.data_entrega || ""} min={isoDate(new Date())} titulo="Nova data da entrega"
@@ -743,7 +739,7 @@ function Atencao({ atr, prox, hoje, ocupados, acaoDe, aoAbrir, aoVerDia }: any) 
             {foto && <img src={foto} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
           </span>
           <span className="ag3-at-tx">
-            <b>{nome} <small>#{p.numero ?? "—"}</small></b>
+            <b className="nm-num"><span>{nome}</span><small>#{p.numero ?? "—"}</small></b>
             <span>{ehAtr ? `Atrasado · ${quando(p, true)}` : quando(p)}</span>
           </span>
         </button>
@@ -772,7 +768,7 @@ function Atencao({ atr, prox, hoje, ocupados, acaoDe, aoAbrir, aoVerDia }: any) 
 }
 
 /* ═══ Cartão do pedido na Agenda (o mesmo de antes, no padrão do guia) ═══ */
-function CartaoAgenda({ p, ocupado, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
+function CartaoAgenda({ p, ocupado, aoAbrir, itensMenu, aoPronto, aoWhats }: any) {
   const atr = pedidoAtrasado(p);
   const sit = situacaoDe(p);
   const itens = p.pedido_itens || [];
@@ -807,13 +803,11 @@ function CartaoAgenda({ p, ocupado, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
             {extras > 0 && <em>+{extras}</em>}
           </span>
           <span className="ag3-pc-quem">
-            <b>{nome} <small>#{p.numero ?? "—"}</small></b>
+            <b className="nm-num"><span>{nome}</span><small>#{p.numero ?? "—"}</small></b>
             {p.created_at && <span>Feito em {criadoEmTexto(p.created_at)}</span>}
           </span>
         </button>
-        <BotaoIcone rotulo={`Mais ações do pedido #${p.numero || ""}`} variante="limpo" onClick={aoMenu}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
-        </BotaoIcone>
+        <MenuMais rotulo={`Mais ações do pedido #${p.numero || ""}`} itens={itensMenu} />
       </div>
 
       <div className="ag3-pc-info">
@@ -845,33 +839,9 @@ function CartaoAgenda({ p, ocupado, aoAbrir, aoMenu, aoPronto, aoWhats }: any) {
 }
 
 /* ═══ "Mais ações" na janela padrão (mesmo visual da lista de Pedidos) ═══ */
-function MenuAgenda({ p: atual, aoFechar, itens, aoExcluir }: { p: any; aoFechar: () => void; itens: { nome: string; Ic: any; fn: () => void }[]; aoExcluir: () => void }) {
-  const ultimo = useRef<any>(null);
-  if (atual) ultimo.current = atual;
-  const p = atual || ultimo.current;
-  return (
-    <Janela aberta={!!atual} aoFechar={aoFechar} tipo="conteudo" titulo={p ? `Pedido #${p.numero || ""}` : ""}>
-      {p && (
-        <>
-          <p className="pdm-quem">{p.cliente_nome ? nomeDeGente(p.cliente_nome) : "Cliente não informado"} · {nomeDaSituacao(p.status, p.tipo_entrega || 'retirada')}</p>
-          <div className="pdm">
-            {itens.map(({ nome, Ic, fn }) => (
-              <button key={nome} type="button" className="pdm-it" onClick={fn}>
-                <span className="pdm-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><span>{nome}</span>
-              </button>
-            ))}
-            <button type="button" className="pdm-it pdm-it--excluir" onClick={aoExcluir}>
-              <span className="pdm-ic" aria-hidden="true"><Trash size={20} weight="bold" /></span><span>Excluir pedido</span>
-            </button>
-          </div>
-        </>
-      )}
-    </Janela>
-  );
-}
 
 /* ── (23/10) Busca: enquanto digita, uma lista logo abaixo com os pedidos de QUALQUER dia ──
-   Busca no banco (não só no mês que o calendário carregou): nome da cliente, número do pedido (#1010) e telefone (6 dígitos ou mais).
+   Busca no banco (não só no mês que o calendário carregou): nome do cliente, número do pedido (#1010) e telefone (6 dígitos ou mais).
    Mostra até 5, do mais novo para o mais antigo; "Ver os N pedidos" abre até 50 na própria lista. Tocar abre o pedido. */
 const fotoDoPedido = (p: any) => {
   for (const it of p.pedido_itens || []) { const f = primeiraFoto(it.imagem_url) || primeiraFoto(it.produtos?.imagem_url); if (f) return f; }

@@ -28,7 +28,7 @@ export default function EstiloFinanceiro() {
       /* valores no Bold (700): o Black (800/900) ficou pesado. Só o saldo do caixa e o custo da hora continuam no Black */
       .fd-k b, .fd-k2 b, .pvc-g b, .far-k b, .far-it-v b, .fap-k b, .fap-it-v b, .fap-pg b, .tx-k b, .tx-it-v,
       .cu-k:not(.destaque) b, .cu-it-v, .cu-mo-l b, .lu-l b, .lu-eq-v, .lu-p-h span, .cxc-mv-v, .fd-fl-res b, .tx-dl b {
-        font-weight: 700 !important;
+        font-weight: 600 !important;
       }
       .tx-seg, .fo-seg { background: #E9DFE4 !important; }
     `}</style>
