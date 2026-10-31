@@ -386,8 +386,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
     {/* (11/10) fora da seção "Foto do topo": no modelo Premium ela não existe e o recorte do banner não abria */}
     {recorteTopo.janela}{recorteBanner.janela}
     {!identityCard && (
-      <AppPageHeader title="Aparência" subtitle="Personalize a aparência do seu cardápio digital" onBack={() => navigate(voltarPara)}
-        heroi={<Palette size={30} weight="fill" />}
+      <AppPageHeader title="Aparência" onBack={() => navigate(voltarPara)}
         infoIcon="🎨" infoComo={COMO_APARENCIA} infoTour={TOUR_APARENCIA}
         infoContent={<>
           <p>Aqui você deixa o <strong>cardápio com a cara da sua confeitaria</strong>: a logo, os banners de promoção e as cores.</p>
@@ -400,7 +399,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
         à direita as escolhas pequenas (tema, link e cores). No celular, um embaixo do outro, na mesma ordem de antes. */}
     <div className="ap ap--2col">
       {/* (30/10 · 5.56) banner de abertura da tela, no topo, antes de tudo */}
-      {!identityCard && <img className="ap-banner-topo" src={bannerAparencia} alt="Personalize sua loja e encante seus clientes! Uma loja com a sua cara vende mais." width={2172} height={724} />}
+      {!identityCard && <div className="ap-banner-topo"><img src={bannerAparencia} alt="Personalize sua loja e encante seus clientes! Uma loja com a sua cara vende mais." width={2172} height={724} /></div>}
       <div className="ap-col ap-col-esq">
 
 

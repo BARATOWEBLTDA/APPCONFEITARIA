@@ -34,7 +34,7 @@ interface AppPageHeaderProps {
   /** (30/10 · 5.54) computador: topo grande com ícone, subtítulo e arcos rosa no fundo (Aparência) */
   heroi?: ReactNode
   title: string
-  subtitle: string
+  subtitle?: string
   /** (28/10) computador: complemento do título em cinza, sem negrito ("Pedido #65 · Bruno Eduardo Pacheco"). No celular não aparece (lá vai no subtítulo) */
   titleExtra?: string
   /** (29/10 · 4.92) uma linha embaixo do título, só no computador (o Início usa pro resumo do dia) */
@@ -100,7 +100,7 @@ export default function AppPageHeader({ heroi, title, subtitle, titleExtra, resu
               </button>
             )}
           </div>
-          <p className="cab-s">{subtitle}</p>
+          {subtitle && <p className="cab-s">{subtitle}</p>}
           {resumo && <div className="cab-resumo">{resumo}</div>}
         </div>
         {rightActions && <div className="cab-acoes">{rightActions}</div>}

@@ -364,4 +364,10 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 @media (min-width: 1500px) { .ap-sec-topo .ui-tit-acao { display: none; } } /* com a pré-visualização do lado, o "Ver como fica" sobra */
 
 /* (30/10 · 5.56) banner no topo da tela: largura toda, centralizado, antes de tudo */
-.ap-banner-topo { order: -1; grid-column: 1 / -1; display: block; width: 100%; max-width: 1100px; height: auto; margin: 0 auto; border-radius: var(--ui-raio-cartao); }
+.ap-banner-topo { order: -1; grid-column: 1 / -1; display: flex; justify-content: center; width: 100%; max-width: 1100px; margin: 0 auto; overflow: hidden; border-radius: var(--ui-raio-cartao); background: linear-gradient(90deg, #FDCDE8, #FCB4D9 55%, #FC9ACB); }
+.ap-banner-topo img { display: block; width: 100%; height: auto; }
+/* (5.56) PC: mais baixo (220 px). A arte fica inteira no meio e as pontas viram o mesmo rosa, sem emenda */
+@media (min-width: 901px) {
+  .ap-banner-topo { height: 220px; max-width: none; }
+  .ap-banner-topo img { width: auto; height: 100%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+}
