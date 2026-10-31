@@ -28,7 +28,7 @@ import { useNavigate } from "react-router-dom";
 const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido"));
 import {
   HandCoins, MagnifyingGlass, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
-  CaretRight, Cake, Receipt, ClipboardText,
+  CaretRight, Cake, Receipt, ClipboardText, ArrowUp, ArrowDown, Minus,
   WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
@@ -64,6 +64,21 @@ const STATUS_ATIVOS = ["aguardando_pagamento", "aguardando_aceite", "novo", "pen
  */
 /** (15/10) o que o Início mostrou por último (mesma sessão): volta na hora, sem "Carregando…" */
 let cacheInicio: { uid: string; dia: string; dados: any } | null = null;
+
+/** (30/10 · 5.60) Indicador de variação: compara com o período anterior equivalente.
+ *  Subiu: verde com seta para cima. Caiu: vermelho com seta para baixo. Igual: cinza. Sem base: "Sem dados para comparar". */
+function Variacao({ atual, anterior, quando }: { atual: number; anterior: number; quando: string }) {
+  if (!(anterior > 0)) return <span className="ini-var ini-var--sem">Sem dados para comparar</span>;
+  const pct = Math.round(((atual - anterior) / anterior) * 1000) / 10;
+  const tipo = pct > 0 ? "sobe" : pct < 0 ? "desce" : "igual";
+  const Ic = tipo === "sobe" ? ArrowUp : tipo === "desce" ? ArrowDown : Minus;
+  const txt = `${pct > 0 ? "+" : ""}${pct.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+  return (
+    <span className={`ini-var ini-var--${tipo}`} title={`${txt} ${quando}`}>
+      <i><Ic size={12} weight="bold" aria-hidden="true" />{txt}</i>{tipo === "igual" ? "sem variação" : quando}
+    </span>
+  );
+}
 
 export default function Inicio() {
   const navigate = useNavigate();
@@ -120,6 +135,8 @@ export default function Inicio() {
   const [aniversariantesDetalhe, setAniversariantesDetalhe] = useState<{ nome: string; dias: number } | null>(c0?.dados.aniversariantesDetalhe ?? null);
   const [resumoSemana, setResumoSemana] = useState(c0?.dados.resumoSemana ?? { vendas: 0, pedidos: 0 });
   const [resumoAnterior, setResumoAnterior] = useState(c0?.dados.resumoAnterior ?? { vendas: 0, pedidos: 0 });
+  // (30/10 · 5.60) bases de comparação dos cartões: o mês passado até o mesmo dia e o mesmo dia da semana passada
+  const [compara, setCompara] = useState<{ recebidoMesAnt: number; entregasSemanaPassada: number }>(c0?.dados.compara ?? { recebidoMesAnt: 0, entregasSemanaPassada: 0 });
   const [chartData, setChartData] = useState<ChartPoint[]>(c0?.dados.chartData ?? []);
   const [proximasEntregas, setProximasEntregas] = useState<Array<{ id: string; cliente: string; data: string; valor: number; hora?: string | null; produto?: string | null; tipo?: string | null }>>(c0?.dados.proximasEntregas ?? []);
   // Onboarding: se cliente novo, o card destaque muda pra empty state contextual
@@ -577,6 +594,11 @@ export default function Inicio() {
       // Recebido no mês: do dia 1 até hoje (igual ao Financeiro)
       const inicioMesISO = dataISO(inicioMes);
       const recebidoMes = Math.round(entradasRes.itens.filter(e => e.data >= inicioMesISO).reduce((s, e) => s + e.valor, 0) * 100) / 100;
+      // (30/10 · 5.60) o mês passado do dia 1 até o mesmo dia (ou o último dia, se o mês passado for mais curto)
+      const diasMesAnt = new Date(hoje.getFullYear(), hoje.getMonth(), 0).getDate();
+      const iniMesAntISO = dataISO(new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1));
+      const fimMesAntISO = dataISO(new Date(hoje.getFullYear(), hoje.getMonth() - 1, Math.min(hoje.getDate(), diasMesAnt)));
+      const recebidoMesAnt = Math.round(entradasRes.itens.filter(e => e.data >= iniMesAntISO && e.data <= fimMesAntISO).reduce((s, e) => s + e.valor, 0) * 100) / 100;
 
       // (16/10) as entregas (hoje e próximas) só com pedido aceito: o novo fica no cartão do topo, não aparece duas vezes
       const aceitos = (l: any[] | null) => (l || []).filter(p => !naoAceito(p));
@@ -598,6 +620,9 @@ export default function Inicio() {
       const proximasLista = [...hojeAceitos, ...aceitos(proximasEntregasRes.data)].slice(0, 5).map(entregaDoPedido);
       setCounts(novosCounts);
       const semanaLista = aceitos(semanaRes.data).map(entregaDoPedido);
+      const semanaPassadaISO = dataISO(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 7));
+      const comparaNovo = { recebidoMesAnt, entregasSemanaPassada: semanaLista.filter(e => e.data === semanaPassadaISO).length };
+      setCompara(comparaNovo);
       const fixosMes = ((fixosRes.data as any[]) || []).filter(x => x.ativo !== false).reduce((s2, x) => s2 + (Number(x.valor) || 0), 0);
       setSemana(semanaLista); setTotalFixos(fixosMes);
       setPedidosNovos(novosLista);
@@ -616,7 +641,7 @@ export default function Inicio() {
           entregasDeHoje: entregasHojeLista, aniversariantesDetalhe: proxAniv,
           resumoSemana: { vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 },
           resumoAnterior: { vendas: vendasAnt, pedidos: pedidosSemanaAntRes.data?.length || 0 },
-          chartData: chart, proximasEntregas: proximasLista } };
+          chartData: chart, proximasEntregas: proximasLista, compara: comparaNovo } };
       }
     } catch (err) {
       console.error("Erro ao carregar dados do início:", err);
@@ -898,18 +923,22 @@ export default function Inicio() {
                 <div className="ini-dk-kh"><span><CurrencyDollar size={20} weight="bold" /></span>Recebido no mês</div>
                 {/* sem centavos, igual ao Financeiro mostra: os dois lugares têm que exibir o mesmo número */}
                 <b>{loading ? "—" : counts.recebidoMes.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</b><small>dinheiro que entrou</small>
+                {!loading && <Variacao atual={counts.recebidoMes} anterior={compara.recebidoMesAnt} quando="vs. mês passado" />}
               </div>
               <div className="ini-dk-kpi">
                 <div className="ini-dk-kh"><span><Receipt size={20} weight="bold" /></span>Pedidos na semana</div>
                 <b>{loading ? "—" : resumoSemana.pedidos}</b><small>últimos 7 dias</small>
+                {!loading && <Variacao atual={resumoSemana.pedidos} anterior={resumoAnterior.pedidos} quando="vs. 7 dias antes" />}
               </div>
               <div className="ini-dk-kpi">
                 <div className="ini-dk-kh"><span><CalendarDots size={20} weight="bold" /></span>Entregas hoje</div>
                 <b>{loading ? "—" : counts.entregasHoje}</b><small>{proxHora ? `próxima às ${String(proxHora).slice(0, 5)}` : "para entregar"}</small>
+                {!loading && <Variacao atual={counts.entregasHoje} anterior={compara.entregasSemanaPassada} quando="vs. semana passada" />}
               </div>
               <div className="ini-dk-kpi">
                 <div className="ini-dk-kh"><span><ChartLineUp size={20} weight="bold" /></span>Ticket médio</div>
                 <b>{loading ? "—" : formatCurrency(resumoSemana.pedidos ? resumoSemana.vendas / resumoSemana.pedidos : 0)}</b><small>por pedido na semana</small>
+                {!loading && <Variacao atual={resumoSemana.pedidos ? resumoSemana.vendas / resumoSemana.pedidos : 0} anterior={resumoAnterior.pedidos ? resumoAnterior.vendas / resumoAnterior.pedidos : 0} quando="vs. 7 dias antes" />}
               </div>
             </div>
           </div>
@@ -2019,6 +2048,13 @@ export default function Inicio() {
           .ini-dk-kpi b { display: block; font-size: 26px; font-weight: 700; margin-top: 10px; color: var(--ui-texto); }
           .ini-dk-kpi--dest b { color: var(--ui-branco); }
           .ini-dk-kpi small { font-size: 12.5px; color: var(--ui-texto-3); } .ini-dk-kpi--dest small { color: rgba(255,255,255,.7); }
+          /* (30/10 · 5.60) indicador de variação embaixo do valor */
+          .ini-var { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .ini-var i { flex: none; display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 999px; font-style: normal; font-weight: 600; }
+          .ini-var--sobe i { background: #E3F5E9; color: #157A3C; }
+          .ini-var--desce i { background: #FDE8E8; color: #C62828; }
+          .ini-var--igual i { background: #F1EEEF; color: var(--ui-texto-2); }
+          .ini-var--sem { color: var(--ui-texto-3); }
           /* o bloco antigo de números sai (agora fica no topo) */
 
           /* duas colunas: conteúdo + lateral */
