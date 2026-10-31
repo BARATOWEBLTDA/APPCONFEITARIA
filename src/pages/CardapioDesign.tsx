@@ -496,13 +496,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
 
       </div>
       <div className="ap-col ap-col-dir">
-      {/* (27/10) nome da loja no link (PRO) */}
-      <section className="ap-card ap-largo ap-sec-link">
-        <Cabeca Ic={LinkSimple} titulo="Link do cardápio" apoio="O endereço da sua loja" />
-        <p className="ap-exp">É por esse link que a cliente abre o seu cardápio. Com o <b>nome da loja no fim</b>, ele fica mais fácil de lembrar e passa mais confiança no Instagram e no WhatsApp. Ao mudar, o link antigo continua funcionando.</p>
-        <NomeNoLink />
-      </section>
-
       {/* Cores (18/10): só as três do topo da loja. Grátis: cores prontas; PRO: qualquer cor */}
       <section className={`ap-card ap-largo ap-sec-cores`}>
         <Cabeca Ic={Palette} titulo="Cores do topo" apoio="Faixa, borda da logo e nome da loja" />
@@ -565,6 +558,14 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
           </button>
         )}
       </section>
+
+      {/* (27/10) nome da loja no link (PRO) · (30/10 · 5.53) embaixo das cores */}
+      <section className="ap-card ap-largo ap-sec-link">
+        <Cabeca Ic={LinkSimple} titulo="Link do cardápio" apoio="O endereço da sua loja" />
+        <p className="ap-exp">É por esse link que a cliente abre o seu cardápio. Com o <b>nome da loja no fim</b>, ele fica mais fácil de lembrar e passa mais confiança no Instagram e no WhatsApp. Ao mudar, o link antigo continua funcionando.</p>
+        <NomeNoLink />
+      </section>
+
       </div>
 
       {/* (17/10) galeria de banners prontos */}
