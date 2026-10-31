@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  getInstallPrompt, onInstallChange, promptInstall, isStandalone, wasInstalledNow,
+  getInstallPrompt, onInstallChange, promptInstall, isStandalone, wasInstalledNow, jaInstaladoNoAparelho,
 } from "@/lib/installPrompt";
 
 /**
@@ -48,6 +48,9 @@ export default function InstalarAppCard() {
   const [instalado, setInstalado] = useState(() => isStandalone() || wasInstalledNow());
   const [temPrompt, setTemPrompt] = useState(() => !!getInstallPrompt());
   const [copiado, setCopiado] = useState(false);
+  // (31/10 · 5.71) já instalado neste celular (aberto pelo navegador): o Chrome não oferece de novo
+  const [jaTem, setJaTem] = useState(false);
+  useEffect(() => { void jaInstaladoNoAparelho().then(setJaTem); }, []);
 
   useEffect(() => onInstallChange(() => {
     setTemPrompt(!!getInstallPrompt());
@@ -113,11 +116,16 @@ export default function InstalarAppCard() {
         </p>
       )}
 
-      {modo === "menu" && (
-        <p className="ia-warn">
-          Toque no menu <b>⋮</b> do navegador e escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.
-        </p>
-      )}
+      {modo === "menu" && (jaTem ? (
+        <p className="ia-warn">O Doonly já está instalado neste celular. Abra pelo ícone na tela inicial.</p>
+      ) : (
+        /* (31/10 · 5.71) Android sem o convite pronto (o Chrome só oferece depois de uns segundos de uso, ou é outro navegador) */
+        <ol className="ia-steps">
+          <li><i>1</i><span>Toque nos <b>3 pontinhos ⋮</b> no canto de cima do navegador</span></li>
+          <li><i>2</i><span>Escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b></span></li>
+          <li><i>3</i><span>Toque em <b>Instalar</b></span></li>
+        </ol>
+      ))}
 
     </div>
   );

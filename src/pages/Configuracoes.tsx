@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, type ReactNode } from "react";
 import { INDICACAO_ATIVA } from "@/lib/recursos";
 import { useNavigate } from "react-router-dom";
 import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, FileText, Gift, Lightbulb,  SignOut, SlidersHorizontal, Storefront, Bug, Truck, User, WarningCircle, MagnifyingGlass } from "@phosphor-icons/react";
-import { isStandalone } from "@/lib/installPrompt";
+import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { explicarErro, erroDeConexao, SEM_INTERNET } from "@/lib/erros";
@@ -90,6 +90,8 @@ export default function Configuracoes() {
   const [termosOpen, setTermosOpen] = useState(false);
   const [editarOpen, setEditarOpen] = useState(false);
   const [instalarOpen, setInstalarOpen] = useState(false); // (14/10) "Instalar o app" virou item da lista
+  // (31/10 · 5.71) com o convite do Chrome pronto, o toque já abre a janela de instalar do próprio celular (sem passo no meio)
+  const abrirInstalar = () => { if (getInstallPrompt()) void promptInstall(); else setInstalarOpen(true); };
   const [avancadoOpen, setAvancadoOpen] = useState(false); // (14/10) "Avançado" virou item da lista
   const [excluirOpen, setExcluirOpen] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
@@ -252,7 +254,7 @@ export default function Configuracoes() {
               if (a.ir === "conta") { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }
               else if (a.ir === "assinatura") navigate(pro ? "/minha-assinatura" : "/assinar");
               else if (a.ir === "notif") navigate("/configuracoes/notificacoes");
-              else if (a.ir === "instalar") setInstalarOpen(true);
+              else if (a.ir === "instalar") abrirInstalar();
               else if (a.ir === "termos") setTermosOpen(true);
               else if (a.ir === "avancado") setAvancadoOpen(true);
               else if (a.ir === "suporte") window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener");
@@ -285,7 +287,7 @@ export default function Configuracoes() {
             <div className="cf9-grupo">
             <h2 className="cf9-sec">App</h2>
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
-            {!isStandalone() && <ItemConfig icone={<DownloadSimple size={20} weight="bold" />} nome="Instalar o app" apoio="Abra direto, como um app" onClick={() => setInstalarOpen(true)} />}
+            {!isStandalone() && <ItemConfig icone={<DownloadSimple size={20} weight="bold" />} nome="Instalar o app" apoio="Abra direto, como um app" onClick={abrirInstalar} />}
             <AtualizarAppItem />
             {/* (18/10) Avançado entrou no grupo App (a seção "Outros" saiu) */}
             <ItemConfig icone={<SlidersHorizontal size={20} weight="bold" />} nome="Avançado" apoio="Excluir a conta" onClick={() => setAvancadoOpen(true)} />

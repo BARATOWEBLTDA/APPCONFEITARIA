@@ -52,3 +52,14 @@ export function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
   return window.matchMedia?.("(display-mode: standalone)").matches || (navigator as any).standalone === true;
 }
+
+/** (31/10 · 5.71) O app já está instalado neste aparelho (aberto pelo navegador)? Só o Chrome do Android sabe dizer.
+ *  Nesse caso o Chrome não oferece instalar de novo, então a tela avisa para abrir pelo ícone. */
+export async function jaInstaladoNoAparelho(): Promise<boolean> {
+  try {
+    const f = (navigator as any).getInstalledRelatedApps;
+    if (typeof f !== "function") return false;
+    const apps = await f.call(navigator);
+    return Array.isArray(apps) && apps.length > 0;
+  } catch { return false; }
+}

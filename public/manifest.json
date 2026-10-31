@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "Doonly",
   "short_name": "Doonly",
   "description": "Gestão inteligente para confeitarias",
@@ -32,6 +33,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://doonly.com.br/manifest.json"
     }
   ]
 }
