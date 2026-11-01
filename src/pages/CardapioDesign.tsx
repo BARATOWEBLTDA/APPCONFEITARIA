@@ -219,6 +219,20 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
     setUploading(null);
   };
 
+  // (31/10 · 5.92) a galeria já vem carregada: assim que a Aparência abre, busca a lista e baixa as imagens em segundo plano
+  useEffect(() => {
+    let vivo = true;
+    const t = window.setTimeout(async () => {
+      const r = await lerBannersProntos();
+      if (!vivo) return;
+      const lista = r.ok ? r.lista.filter(b => b.categoria !== CATEGORIA_CAPA_NATAL) : null;
+      if (lista) {
+        setGaleria(g => (g.lista ? g : { ...g, lista, erro: false }));
+        lista.forEach(b => { const im = new Image(); im.decoding = "async"; im.src = b.imagem_url; });
+      }
+    }, 600);
+    return () => { vivo = false; window.clearTimeout(t); };
+  }, []);
   const abrirGaleria = async () => {
     const vazio = (isPro ? [0, 1, 2, 3] : [0]).find(i => !bannerValues[i]);
     setGaleria(g => ({ ...g, aberta: true, slot: vazio ?? 0, cat: "" }));
@@ -523,13 +537,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
 
 
       {/* (17/10) galeria de banners prontos */}
-      <Janela aberta={galeria.aberta} aoFechar={() => setGaleria(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Banners prontos"
-        acoes={<Botao variante="secundario" cheio onClick={() => setGaleria(g => ({ ...g, aberta: false }))}>Fechar</Botao>} umaAcao>
+      <Janela aberta={galeria.aberta} aoFechar={() => setGaleria(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Banners prontos" className="ui-janela--produtos ap-gal-janela">
         {isPro && (
           <div className="ap-gal-slots" role="radiogroup" aria-label="Onde colocar">
-            <span>Colocar no</span>
+            <span>Colocar no banner</span>
             {[0, 1, 2, 3].map(i => (
-              <button key={i} type="button" role="radio" aria-checked={galeria.slot === i} className={galeria.slot === i ? "on" : ""} onClick={() => setGaleria(g => ({ ...g, slot: i }))}>Banner {i + 1}</button>
+              <button key={i} type="button" role="radio" aria-checked={galeria.slot === i} aria-label={`Banner ${i + 1}`} className={galeria.slot === i ? "on" : ""} onClick={() => setGaleria(g => ({ ...g, slot: i }))}>{i + 1}</button>
             ))}
           </div>
         )}
@@ -553,7 +566,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
                   const bloqueado = b.so_pro && !isPro;
                   return (
                     <button key={b.id} type="button" className={`ap-gal-it${bloqueado ? " bloq" : ""}`} onClick={() => usarDaGaleria(b)} disabled={!!usandoGaleria}>
-                      <img src={b.imagem_url} alt={b.titulo} loading="lazy" />
+                      <img src={b.imagem_url} alt={b.titulo} decoding="async" />
+                      {bannerValues.includes(b.imagem_url) && <span className="ap-gal-uso"><Check size={13} weight="bold" aria-hidden="true" />Em uso</span>}
                       {bloqueado && <span className="ap-gal-pro"><Crown size={13} weight="fill" aria-hidden="true" />PRO</span>}
                       {usandoGaleria === b.id && <span className="ap-gal-gira"><span className="ui-gira" aria-label="Salvando" /></span>}
                     </button>

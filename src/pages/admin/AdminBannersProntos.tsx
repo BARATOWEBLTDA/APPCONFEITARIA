@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { ArrowDown, ArrowUp, Crown, Images, Trash, UploadSimple, WarningCircle } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Titulo, avisar, confirmar } from "@/components/base";
 import { CATEGORIAS_BANNER, TAMANHO_BANNER, type BannerPronto } from "@/lib/bannersProntos";
+import { paraWebp } from "@/lib/imagemLeve";
 import "./admin-banners-prontos.css";
 
 /**
@@ -40,9 +41,11 @@ export default function AdminBannersProntos() {
     let falhas = 0;
     for (const f of arquivos) {
       if (!f.type.startsWith("image/") || f.size > 5 * 1024 * 1024) { falhas++; continue; }
-      const ext = (f.name.split(".").pop() || "jpg").toLowerCase();
+      // (31/10 · 5.92) sobe em WebP de até 1500 px (PNG de 2 MB vira ~100 KB); sem WebP no navegador, sobe o original
+      let corpo: Blob = f, ext = (f.name.split(".").pop() || "jpg").toLowerCase(), tipo = f.type;
+      try { corpo = await paraWebp(f); ext = "webp"; tipo = "image/webp"; } catch { /* navegador sem WebP: segue com o arquivo original */ }
       const caminho = `galeria/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
-      const up = await supabase.storage.from("admin-banners").upload(caminho, f, { cacheControl: "31536000", upsert: false, contentType: f.type });
+      const up = await supabase.storage.from("admin-banners").upload(caminho, corpo, { cacheControl: "31536000", upsert: false, contentType: tipo });
       if (up.error) { falhas++; continue; }
       const url = supabase.storage.from("admin-banners").getPublicUrl(caminho).data.publicUrl;
       const titulo = f.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").slice(0, 60);
@@ -52,6 +55,33 @@ export default function AdminBannersProntos() {
     setEnviando(false);
     if (falhas) avisar(`${falhas} ${falhas === 1 ? "imagem não foi enviada" : "imagens não foram enviadas"} (só imagens de até 5 MB).`, { tipo: "erro" });
     else avisar(arquivos.length === 1 ? "Banner adicionado" : "Banners adicionados", { tipo: "ok" });
+    void carregar();
+  };
+
+  // (31/10 · 5.92) os banners antigos (PNG/JPG de ~2 MB): converte cada um em WebP, sobe com o mesmo nome terminando
+  // em .webp e troca o endereço na galeria. Quem já usa o banner no cardápio passa para o leve pelo SQL banners_leves.sql.
+  const [otimizando, setOtimizando] = useState("");
+  const pesados = lista.filter(b => /\/admin-banners\/.+\.(png|jpe?g)$/i.test(b.imagem_url));
+  const otimizar = async () => {
+    let feitos = 0, falhas = 0;
+    for (const b of pesados) {
+      setOtimizando(`${feitos + falhas + 1} de ${pesados.length}`);
+      try {
+        const caminhoAntigo = decodeURIComponent(b.imagem_url.split("/admin-banners/")[1] || "");
+        const baixado = await supabase.storage.from("admin-banners").download(caminhoAntigo);
+        if (baixado.error || !baixado.data) throw baixado.error;
+        const leve = await paraWebp(baixado.data);
+        const caminho = caminhoAntigo.replace(/\.(png|jpe?g)$/i, ".webp");
+        const up = await supabase.storage.from("admin-banners").upload(caminho, leve, { cacheControl: "31536000", upsert: true, contentType: "image/webp" });
+        if (up.error) throw up.error;
+        const url = supabase.storage.from("admin-banners").getPublicUrl(caminho).data.publicUrl;
+        const { error } = await supabase.from("banners_prontos").update({ imagem_url: url }).eq("id", b.id);
+        if (error) throw error;
+        feitos++;
+      } catch (e) { console.warn("[banners] não deu para otimizar", b.id, e); falhas++; }
+    }
+    setOtimizando("");
+    avisar(falhas ? `${feitos} banners ficaram leves e ${falhas} não deram certo.` : `${feitos} banners ficaram leves.`, { tipo: falhas ? "erro" : "ok" });
     void carregar();
   };
 
@@ -88,6 +118,7 @@ export default function AdminBannersProntos() {
           <div className="abp-topo">
             <input ref={arquivoRef} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={enviar} />
             <Botao icone={<UploadSimple size={20} weight="bold" />} onClick={() => arquivoRef.current?.click()} carregando={enviando}>Adicionar banners</Botao>
+            {pesados.length > 0 && <Botao variante="secundario" carregando={!!otimizando} onClick={otimizar}>{otimizando ? `Deixando leve ${otimizando}…` : `Deixar ${pesados.length} ${pesados.length === 1 ? "banner leve" : "banners leves"}`}</Botao>}
             <span className="abp-conta">{lista.length} {lista.length === 1 ? "banner" : "banners"} · {lista.filter(b => b.ativo).length} na galeria</span>
           </div>
 
