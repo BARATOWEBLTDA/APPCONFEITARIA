@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CTA_PRO } from "@/lib/beneficiosPro";
 import { Crown } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -58,7 +59,7 @@ export default function NomeNoLink() {
         <p><small>Hoje</small>{linha("cardapio", "nnl-url--hoje")}</p>
         <p><small>No PRO</small>{linha(sugestao || "nome-da-loja", "nnl-url--pro")}</p>
       </div>
-      <Botao variante="vinho" tamanho="m" icone={<Crown size={18} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
+      <Botao variante="vinho" tamanho="m" icone={<Crown size={18} weight="fill" />} onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao>
     </div>
   );
 

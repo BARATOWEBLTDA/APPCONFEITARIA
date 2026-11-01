@@ -47,7 +47,12 @@ export default function MinhaAssinatura() {
   }, [profile?.id, !!proDesde]); // eslint-disable-line react-hooks/exhaustive-deps
   const assinanteDesde = proDesde || desde;
 
-  const dias = proExpiraEm ? Math.max(0, Math.ceil((proExpiraEm.getTime() - Date.now()) / 86400000)) : null;
+  // (31/10 · 5.97) nos 7 dias grátis: selo "Teste grátis" e a 1ª cobrança no lugar da próxima (o webhook grava "teste")
+  const emTeste = (profile as any)?.assinatura_status === "teste";
+  // o webhook guarda o PRO até a cobrança + uma folga (3 dias; 1 no teste): a data da cobrança é sem a folga
+  const folga = (profile as any)?.assinatura_origem === "hotmart" ? (emTeste ? 1 : 3) : 0;
+  const cobranca = proExpiraEm ? new Date(proExpiraEm.getTime() - folga * 86400000) : null;
+  const dias = cobranca ? Math.max(0, Math.ceil((cobranca.getTime() - Date.now()) / 86400000)) : null;
   const whats = () => {
     const quem = [profile?.nome, (profile as any)?.nome_loja].filter(Boolean).join(" · ");
     const msg = `Olá! Tenho uma dúvida sobre a minha assinatura do Doonly PRO.${quem ? `\nNome: ${quem}` : ""}${(profile as any)?.email ? `\nE-mail da conta: ${(profile as any).email}` : ""}`;
@@ -66,12 +71,12 @@ export default function MinhaAssinatura() {
             <div className="mas-top">
               <span className="mas-cr"><Crown size={24} weight="fill" aria-hidden="true" /></span>
               <b>Doonly PRO</b>
-              <span className="mas-at">Ativo</span>
+              <span className={`mas-at${emTeste ? " mas-at--teste" : ""}`}>{emTeste ? "Teste grátis" : "Ativo"}</span>
             </div>
-            <p className="mas-v">{VALOR} <small>por mês</small></p>
+            <p className="mas-v">{emTeste ? <>Grátis <small>até {cobranca ? diaMes(new Date(cobranca.getTime() - 86400000)) : "o 7º dia"}</small></> : <>{VALOR} <small>por mês</small></>}</p>
             {assinanteDesde && <div className="mas-l">Assinante desde<b>{dataBR(assinanteDesde)}</b></div>}
-            <div className="mas-l">Pagamento<b>Hotmart, todo mês</b></div>
-            <div className="mas-l">Próxima cobrança<b>{proExpiraEm && dias != null && dias > 400 ? "Sem vencimento" : proExpiraEm ? `${diaMes(proExpiraEm)} · ${dias === 0 ? "hoje" : dias === 1 ? "amanhã" : `em ${dias} dias`}` : "Veja na Hotmart"}</b></div>
+            <div className="mas-l">Pagamento<b>{emTeste ? `Hotmart, ${VALOR} por mês` : "Hotmart, todo mês"}</b></div>
+            <div className="mas-l">{emTeste ? "Primeira cobrança" : "Próxima cobrança"}<b>{cobranca && dias != null && dias > 400 ? "Sem vencimento" : cobranca ? `${diaMes(cobranca)} · ${dias === 0 ? "hoje" : dias === 1 ? "amanhã" : `em ${dias} dias`}` : "Veja na Hotmart"}</b></div>
           </section>
 
           <section className="mas-c">
@@ -103,6 +108,7 @@ export default function MinhaAssinatura() {
         .mas-top { display: flex; align-items: center; gap: 12px; }
         .mas-cr { flex: none; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 14px; background: var(--chocolate); color: #F5C76B; }
         .mas-top b { flex: 1; font-size: 17px; font-weight: 600; }
+        .mas-at--teste { background: #FDF2E2 !important; color: #A15C07 !important; }
         .mas-at { padding: 4px 10px; border-radius: 6px; background: #E7F6EC; color: #15803D; font-size: 13px; font-weight: 600; }
         .mas-v { margin: 14px 0 6px; font-size: 28px; font-weight: 600; color: var(--ui-texto); }
         .mas-v small { font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }

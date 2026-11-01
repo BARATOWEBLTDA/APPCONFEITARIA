@@ -2,6 +2,7 @@
 // lucro = vendido (pedidos entregues no mês) − custo dos ingredientes (ficha técnica) − despesas pagas
 // (sem as de insumos, que já estão no custo da ficha). Mais: ponto de equilíbrio e lucro por produto.
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
+import { CTA_PRO } from "@/lib/beneficiosPro";
 import { useEffect, useRef, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -82,7 +83,7 @@ export default function Lucratividade() {
         <span className="lu-convite-ic" aria-hidden="true"><ChartLineUp size={28} weight="duotone" /></span>
         <b>Seu lucro de verdade está aqui</b>
         <p>Quanto sobra de cada produto e do mês, já tirando ingredientes, taxas e despesas.</p>
-        <Botao tamanho="m" onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
+        <Botao tamanho="m" onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao>
       </div>
       </div>
       <style>{CSS}{CSS_AMOSTRA}</style>

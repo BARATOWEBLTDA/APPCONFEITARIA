@@ -1,4 +1,5 @@
 import type React from 'react'
+import { SELO_TESTE } from "@/lib/beneficiosPro";
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -130,7 +131,7 @@ export default function AppPageHeader({ heroi, title, subtitle, titleExtra, resu
 /**
  * A logo da loja (ou a foto) no canto direito da faixa rosa. Abre o menu da conta.
  * (13/10) Agora também no computador, como nos outros apps de gestão: a marca Doonly fica no topo do menu da esquerda.
- * No computador, conta grátis ganha o atalho "Seja PRO" do lado; conta PRO ganha a coroinha na logo.
+ * No computador, conta grátis ganha o atalho do PRO ("7 dias grátis") do lado; conta PRO ganha a coroinha na logo.
  */
 export function LogoDaLoja({ className = '' }: { className?: string }) {
   const [menuAberto, setMenuAberto] = useState(false)
@@ -167,7 +168,7 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
           <a className="cab-ver-cardapio" href={linkCardapio} target="_blank" rel="noopener noreferrer"><ArrowSquareOut size={12} weight="bold" aria-hidden="true" />Ver cardápio</a>
         )}
         {!carregandoPlano && !isPro && (
-          <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />Seja PRO</button>
+          <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}</button>
         )}
         <div className="cab-foto-caixa">
           {/* (07/10 · 3.07) a foto abre o menu da conta em todo lugar onde aparece */}

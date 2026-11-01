@@ -32,7 +32,7 @@ function Cabeca({ Ic, titulo, apoio, acao }: { Ic: typeof Palette; titulo: strin
 function ProSlot({ n }: { n: number }) {
   const navigate = useNavigate();
   return (
-    <button type="button" className="ap-slot ap-slot--pro" onClick={() => avisar("Os banners 2 a 4 são do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })} aria-label={`Banners ${n} a 4, no plano PRO`}>
+    <button type="button" className="ap-slot ap-slot--pro" onClick={() => avisar("Os banners 2 a 4 são do plano PRO.", { tipo: "info", acao: { rotulo: "Testar grátis", aoTocar: () => navigate("/assinar") } })} aria-label={`Banners ${n} a 4, no plano PRO`}>
       <Lock size={20} weight="bold" aria-hidden="true" /><b>No PRO</b>
     </button>
   );
@@ -490,7 +490,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
                         <button key={p.cor} type="button" role="radio" aria-checked={on} aria-label={travada ? `${p.nome}, no plano PRO` : p.nome} title={p.nome}
                           className={`${on ? "on" : ""}${travada ? " ap-cor-pro" : ""}`} style={{ background: p.cor }}
                           onClick={() => {
-                            if (travada) { avisar(`A cor ${p.nome.toLowerCase()} é do plano PRO.`, { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } }); return; }
+                            if (travada) { avisar(`A cor ${p.nome.toLowerCase()} é do plano PRO.`, { tipo: "info", acao: { rotulo: "Testar grátis", aoTocar: () => navigate("/assinar") } }); return; }
                             setActivePicker(null); handleColorChange(it.campo, p.cor, it.set);
                           }}>
                           {on ? <Check size={16} weight="bold" aria-hidden="true" /> : travada ? <Lock size={12} weight="bold" aria-hidden="true" /> : null}
@@ -502,7 +502,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
                     onClick={() => setActivePicker(aberta ? null : it.campo)}><Plus size={16} weight="bold" aria-hidden="true" /></button>
                 ) : (
                   <button type="button" className="ap-outra ap-outra--pro" aria-label="Outra cor, no plano PRO"
-                    onClick={() => avisar("Qualquer outra cor é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => navigate("/assinar") } })}><Lock size={14} weight="bold" aria-hidden="true" /></button>
+                    onClick={() => avisar("Qualquer outra cor é do plano PRO.", { tipo: "info", acao: { rotulo: "Testar grátis", aoTocar: () => navigate("/assinar") } })}><Lock size={14} weight="bold" aria-hidden="true" /></button>
                     ))}
                   </div>
                 ))}

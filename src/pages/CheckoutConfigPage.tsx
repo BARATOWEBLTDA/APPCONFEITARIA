@@ -2,6 +2,7 @@
 // O que salva continua igual (salva sozinho 2s depois de mexer; cupons na tabela loja_cupons).
 // Mudou o visual: campos e botões do app, cupom novo/editar numa janela, convite pro PRO sem borrão.
 import CampoData from '@/components/CampoData'
+import { CTA_PRO } from "@/lib/beneficiosPro";
 import { Check, Crown, PencilSimple, Plus, Trash, QrCode, ShareNetwork, Ticket, Truck, Wallet, WarningCircle, PixLogo, Money, CreditCard, Storefront, Moped, Motorcycle, Car, ChatCircleText } from "@phosphor-icons/react"
 import type { Icon } from "@phosphor-icons/react"
 import ListaChaves from "@/components/loja/ListaChaves"
@@ -813,7 +814,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
           {!cupomDisponivel(isPro) ? (
             <div className="ep-pro">
               <p>Crie cupons para atrair clientes novos e trazer de volta quem já comprou.</p>
-              <Botao variante="vinho" icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
+              <Botao variante="vinho" icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao>
             </div>
           ) : cupons.length === 0 ? (
             <div className="ep-vazio">

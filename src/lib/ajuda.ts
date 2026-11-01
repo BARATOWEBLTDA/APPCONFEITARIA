@@ -1534,14 +1534,14 @@ export const ARTIGOS: ArtigoAjuda[] = [
     slug: 'assinatura',
     tema: 'conta',
     titulo: 'Plano PRO',
-    resumo: 'O que o PRO libera.',
+    resumo: 'O que o PRO libera e o teste grátis de 7 dias.',
     minutos: 1,
     abrir: { rota: '/minha-assinatura', rotulo: 'Abrir Minha assinatura' },
     secoes: [
       {
         id: 'plano',
         titulo: 'Minha assinatura',
-        texto: ['Em **Menu**, toque em **Assinatura**. No plano grátis, ela mostra o que o PRO libera e o botão para assinar.'],
+        texto: ['Em **Menu**, toque em **Assinatura**. No plano grátis, ela mostra o que o PRO libera e o botão **Testar grátis por 7 dias**.', 'O teste pede o cartão na Hotmart, mas só cobra no **8º dia**. Cancelou antes, não paga nada. Depois, R$ 29,90 por mês, sem fidelidade.'],
         imagens: [{ src: '/ajuda/assinatura.webp', alt: 'Plano PRO ativo com a próxima cobrança', marcas: [
           'A **próxima cobrança**.',
           'O que está **liberado**.',

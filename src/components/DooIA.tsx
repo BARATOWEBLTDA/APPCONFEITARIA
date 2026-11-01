@@ -423,7 +423,7 @@ function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'ima
   if (errorType === 'limite_diario') return caso === 'imagem' ? 'Você chegou ao limite de imagens de hoje. Amanhã libera de novo.' : 'Você chegou ao limite de mensagens de hoje. Amanhã libera de novo.'
   if (status === 429 || errorType === 'rate_limit_error') return 'Muitas mensagens em seguida. Aguarde um momento e tente novamente.'
   // (11/10) só o erro de plano mostra o "Assine o PRO" (outro 403 cai no aviso genérico)
-  if (errorType === 'pro_required') return 'A Doo faz parte do plano PRO. Assine o PRO para continuar.'
+  if (errorType === 'pro_required') return 'A Doo faz parte do plano PRO. Teste o PRO grátis por 7 dias para continuar.'
   if (status === 401 || errorType === 'authentication_error') return 'Problema de autenticação. Contate o suporte do Doonly.'
   if (status === 413 || errorType === 'too_large' || errorType === 'request_too_large') {
     return caso === 'foto' ? 'A foto ficou grande demais. Tente outra.' : `A conversa ficou grande demais. ${PEDE_NOVA_CONVERSA}`

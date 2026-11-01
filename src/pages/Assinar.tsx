@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Crown, Lock, CaretDown, CaretRight, Check } from "@phosphor-icons/react";
-import { BENEFICIOS } from "@/lib/beneficiosPro";
+import { BENEFICIOS, CTA_PRO, DIAS_TESTE, PRECO_PRO, SELO_TESTE } from "@/lib/beneficiosPro";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Titulo } from "@/components/base";
@@ -17,17 +17,18 @@ import "./assinar.css";
  * Mantém: vantagens primeiro, ordenadas pelo que mais pesa pra confeiteira, e o checkout da Hotmart
  * com o e-mail e o nome da conta preenchidos.
  */
-const PRECO_CHEIO = "R$ 29,90";
-const PRECO_1O_MES = "R$ 8,97"; // 70% de desconto no 1º mês (30% de R$ 29,90)
+// (31/10 · 5.97) o PRO começa com 7 dias grátis (a Hotmart pede o cartão e só cobra no 8º dia); saiu o desconto do 1º mês
+const PRECO_CHEIO = PRECO_PRO;
 
 const DUVIDAS: [string, string][] = [
+  ["Quando sou cobrada?", `Só no ${DIAS_TESTE + 1}º dia. A Hotmart pede o cartão, mas cancelando antes você não paga nada.`],
   ["Posso cancelar?", "Sim, quando quiser, sem multa."],
   ["E os meus dados?", "Continuam salvos, mesmo se você voltar para o plano grátis."],
   ["Como pago?", "Pela Hotmart, um site seguro de pagamentos. Use o mesmo e-mail da sua conta: assim o PRO liga sozinho."],
 ];
 const dataBR = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
 
-/** Checkout do Doonly PRO na Hotmart (com o cupom do 1º mês) */
+/** Checkout do Doonly PRO na Hotmart (com os 7 dias grátis) */
 const CHECKOUT_HOTMART = "https://pay.hotmart.com/M107866310B?checkoutMode=10";
 
 export default function Assinar() {
@@ -37,6 +38,9 @@ export default function Assinar() {
   // (21/10) computador: sem o voltar no topo (o menu da esquerda já leva de volta)
   const [computador, setComputador] = useState(() => window.matchMedia("(min-width: 901px)").matches);
   useEffect(() => { const mq = window.matchMedia("(min-width: 901px)"); const f = () => setComputador(mq.matches); mq.addEventListener("change", f); return () => mq.removeEventListener("change", f); }, []);
+  const emTeste = (profile as any)?.assinatura_status === "teste";
+  const folga = (profile as any)?.assinatura_origem === "hotmart" ? (emTeste ? 1 : 3) : 0;
+  const cobranca = proExpiraEm ? new Date(proExpiraEm.getTime() - folga * 86400000) : null;
   const [aberta, setAberta] = useState<number | null>(null);
   const ir = (destino: string | null) => { if (!destino) return; if (destino === "doo") abrirDooIA(); else navigate(destino); };
 
@@ -76,7 +80,8 @@ export default function Assinar() {
             <span className="pro9-st-tx">
               <b>Você é PRO</b>
               <small>
-                <span className="pro9-pc">Ativo · </span>{proExpiraEm ? `Renova em ${dataBR(proExpiraEm)} · ` : ""}{PRECO_CHEIO}<span className="pro9-pc"> por mês</span>
+                {/* (31/10 · 5.97) nos 7 dias grátis: "Teste grátis" e a 1ª cobrança (sem a folga que o webhook dá) */}
+                <span className="pro9-pc">{emTeste ? "Teste grátis · " : "Ativo · "}</span>{cobranca ? `${emTeste ? "1ª cobrança" : "Renova"} em ${dataBR(cobranca)} · ` : ""}{PRECO_CHEIO}<span className="pro9-pc"> por mês</span>
               </small>
             </span>
             <button type="button" className="pro9-st-bt" onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</button>
@@ -107,7 +112,7 @@ export default function Assinar() {
           <div>
             <h1>Sua confeitaria mais lucrativa e organizada</h1>
             <p>Ferramentas que vendem, calculam e organizam por você.</p>
-            <span className="pro9-selo">1º mês por {PRECO_1O_MES}</span>
+            <span className="pro9-selo">{SELO_TESTE} para testar</span>
           </div>
         </section>
 
@@ -115,11 +120,11 @@ export default function Assinar() {
           {/* (21/10) celular: a oferta (preço) sobe pra logo depois do topo, antes da lista */}
           <aside className="pro9-lado">
             <section className="cl9-card pro9-oferta">
-              <span className="pro9-desc">70% de desconto no 1º mês</span>
+              <span className="pro9-desc">Hoje você não paga nada</span>
               <b className="pro9-oferta-t">Plano PRO mensal</b>
-              <div className="pro9-preco"><s>{PRECO_CHEIO}</s><b>{PRECO_1O_MES}</b><small>no 1º mês</small></div>
-              <p className="pro9-oferta-s">Depois, {PRECO_CHEIO} por mês. Sem fidelidade: cancele quando quiser.</p>
-              <Botao cheio icone={<Crown size={20} weight="fill" />} onClick={assinarNaHotmart}>Assinar o PRO</Botao>
+              <div className="pro9-preco"><b>Grátis</b><small>por {DIAS_TESTE} dias</small></div>
+              <p className="pro9-oferta-s">Depois, {PRECO_CHEIO} por mês. Cancele antes do {DIAS_TESTE + 1}º dia e não paga nada.</p>
+              <Botao cheio icone={<Crown size={20} weight="fill" />} onClick={assinarNaHotmart}>{CTA_PRO}</Botao>
               <p className="pro9-seg"><Lock size={14} weight="bold" /> Pagamento seguro pela Hotmart</p>
             </section>
             {computador && duvidas}
@@ -142,8 +147,8 @@ export default function Assinar() {
       {/* Celular: botão fixo pra assinar sem rolar até o fim */}
       {!isPro && (
         <div className="pro9-fixo">
-          <span><small>1º mês</small><b>{PRECO_1O_MES}</b></span>
-          <Botao onClick={assinarNaHotmart}>Assinar o PRO</Botao>
+          <span><small>Depois, {PRECO_CHEIO}/mês</small><b>{SELO_TESTE}</b></span>
+          <Botao onClick={assinarNaHotmart}>Testar grátis</Botao>
         </div>
       )}
     </>

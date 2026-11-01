@@ -250,7 +250,7 @@ export default function OrcamentoEditar() {
   const titulo = o?.id ? `Orçamento de ${(o.cliente_nome || 'cliente').split(' ')[0]}` : 'Novo orçamento'
   if (erro) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para abrir o orçamento" texto={erro} acao={<Botao onClick={() => navigate('/orcamentos')}>Voltar para a lista</Botao>} /></div></>)
   if (!o) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><div className="orc-carregando"><span className="ui-gira" aria-label="Carregando" /></div></div></>)
-  if (!isPro) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Orçamentos é um recurso do PRO" texto="Assine o PRO para montar e enviar orçamentos." acao={<Botao onClick={() => navigate('/orcamentos')}>Voltar</Botao>} /></div></>)
+  if (!isPro) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Orçamentos é um recurso do PRO" texto={`Teste o PRO grátis por 7 dias para montar e enviar orçamentos.`} acao={<Botao onClick={() => navigate('/orcamentos')}>Voltar</Botao>} /></div></>)
 
   const pediu = o.origem === 'link' ? (
     <section className="orc-card orc-pediu">

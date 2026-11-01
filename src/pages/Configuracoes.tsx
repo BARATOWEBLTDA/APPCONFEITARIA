@@ -277,7 +277,7 @@ export default function Configuracoes() {
               apoio={userEmail || "Foto, nome, telefone e senha"}
               onClick={() => { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }} />
             <ItemConfig icone={<Crown size={20} weight="fill" />} nome="Minha assinatura"
-              apoio={pro ? "Plano PRO · ativo" : "Plano grátis · conheça o PRO"} destaque={!pro}
+              apoio={pro ? "Plano PRO · ativo" : "Plano grátis · 7 dias de PRO grátis"} destaque={!pro}
               onClick={() => navigate(pro ? "/minha-assinatura" : "/assinar")} />
 
             </div>

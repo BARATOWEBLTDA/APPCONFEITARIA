@@ -23,3 +23,10 @@ export const BENEFICIOS: Beneficio[] = [
   [AddressBook, "Importe clientes dos contatos", "Traga os contatos direto da agenda do celular (Android).", "Importar contatos", "Traga da agenda do celular", "/clientes"],
   [FilePdf, "Relatórios em PDF", "Agenda do dia, pedidos e fichas técnicas prontos para mandar ou imprimir.", "Relatórios em PDF", "Agenda, pedidos e fichas", null],
 ];
+
+/** (31/10 · 5.97) O PRO começa com 7 dias grátis na Hotmart (pede o cartão e só cobra no 8º dia).
+ *  Um texto só para o botão em todo o app, e o selo curto onde o botão não cabe. */
+export const DIAS_TESTE = 7;
+export const CTA_PRO = `Testar grátis por ${DIAS_TESTE} dias`;
+export const SELO_TESTE = `${DIAS_TESTE} dias grátis`;
+export const PRECO_PRO = "R$ 29,90";

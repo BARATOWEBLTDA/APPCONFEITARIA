@@ -1,5 +1,6 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import { resumoItens } from "@/components/pedidos/pedidoTexto";
+import { SELO_TESTE } from "@/lib/beneficiosPro";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
@@ -796,7 +797,7 @@ export default function Inicio() {
           {/* (22/10) a coroa do PRO do lado do sino (como o Clube do iFood): leva pra assinatura */}
           {profile && (
             <button type="button" className="ini-hero-ac ini-hero-ac--pro" onClick={() => navigate(isPro ? "/minha-assinatura" : "/assinar")}
-              aria-label={isPro ? "Minha assinatura PRO" : "Assinar o plano PRO"} title={isPro ? "Minha assinatura" : "Seja PRO"}>
+              aria-label={isPro ? "Minha assinatura PRO" : "Assinar o plano PRO"} title={isPro ? "Minha assinatura" : "Testar o PRO grátis"}>
               <img src="/coroa.png" alt="" aria-hidden="true" />
             </button>
           )}
@@ -834,10 +835,10 @@ export default function Inicio() {
                   type="button"
                   className="ini-plan-tag ini-plan-tag--pc ini-plan-tag--upgrade"
                   onClick={() => navigate("/assinar")}
-                  aria-label="Assinar o plano PRO"
+                  aria-label="Testar o PRO grátis por 7 dias"
                 >
                   <img src="/coroa.png" alt="" className="ini-plan-coroa" aria-hidden="true" />
-                  <span>Seja PRO</span>
+                  <span>{SELO_TESTE}</span>
                 </button>
               )
             )}
@@ -857,10 +858,10 @@ export default function Inicio() {
                     type="button"
                     className="ini-plan-tag ini-plan-tag--mob ini-plan-tag--upgrade"
                     onClick={() => navigate("/assinar")}
-                    aria-label="Assinar o plano PRO"
+                    aria-label="Testar o PRO grátis por 7 dias"
                   >
                     <img src="/coroa.png" alt="" className="ini-plan-coroa" aria-hidden="true" />
-                    <span>Seja PRO</span>
+                    <span>{SELO_TESTE}</span>
                   </button>
                 )
               )}

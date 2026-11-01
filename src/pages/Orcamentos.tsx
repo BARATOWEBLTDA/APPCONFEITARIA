@@ -3,6 +3,7 @@
  * Em cima, o link fixo da loja para pedir orçamento (copiar e compartilhar) e o "Novo orçamento" (montar sem pedido).
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { CTA_PRO } from "@/lib/beneficiosPro";
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, CaretRight, Copy, Crown, FileText, LinkSimple, Package, Plus, ShareNetwork, WarningCircle } from '@phosphor-icons/react'
 import mascoteCoroa from '@/assets/mascote-coroa.webp'
@@ -123,7 +124,7 @@ export default function Orcamentos() {
               <li key={t}><span className="orc-pro-li-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><span className="orc-pro-li-tx"><b>{t}</b><small>{sub}</small></span></li>
             ))}
           </ul>
-          <Botao icone={<Crown size={20} weight="fill" />} iconeDepois={<ArrowRight size={18} weight="bold" />} onClick={() => navigate('/assinar')}>Conhecer o PRO</Botao>
+          <Botao icone={<Crown size={20} weight="fill" />} iconeDepois={<ArrowRight size={18} weight="bold" />} onClick={() => navigate('/assinar')}>{CTA_PRO}</Botao>
           </div>
           <figure className="orc-pro-ex" aria-hidden="true">
             <span className="orc-pro-frase">Mais propostas,<br />mais vendas!</span>

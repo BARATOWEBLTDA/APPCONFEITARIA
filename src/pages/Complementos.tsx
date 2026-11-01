@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from "react";
+import { CTA_PRO } from "@/lib/beneficiosPro";
 import { useNavigate } from "react-router-dom";
 import { Calculator, Camera, Check, Crown, Eye, Storefront, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
@@ -301,7 +302,7 @@ export default function Complementos() {
               </ul>
               <div className="pz-vazio-bts">
                 {pro
-                  ? <Botao className="pz-vazio-cta" icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
+                  ? <Botao className="pz-vazio-cta" onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao>
                   : <Botao className="pz-vazio-cta" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>}
                 <Botao variante="secundario" className="pz-vazio-ver" icone={<Eye size={20} weight="bold" />} aria-label="Ver como fica" onClick={() => setVerExemplo(true)}><span className="pz-ver-t">Ver</span></Botao>
               </div>
@@ -401,7 +402,7 @@ export default function Complementos() {
       {/* menu */}
 
       {/* nova / editar */}
-      {limiteAberto && <RecursoPro titulo={`${LIMITE_COMPLEMENTOS_GRATIS} complementos no plano grátis`} texto={`No plano grátis, a loja tem até ${LIMITE_COMPLEMENTOS_GRATIS} complementos. Apague um para criar outro, ou assine o PRO para ter quantos quiser.`} onClose={() => setLimiteAberto(false)} />}
+      {limiteAberto && <RecursoPro titulo={`${LIMITE_COMPLEMENTOS_GRATIS} complementos no plano grátis`} texto={`No plano grátis, a loja tem até ${LIMITE_COMPLEMENTOS_GRATIS} complementos. Apague um para criar outro, ou use o PRO para ter quantos quiser.`} onClose={() => setLimiteAberto(false)} />}
       <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada
         titulo={etapa === 2 ? (form.onde === "produtos" ? "Em quais produtos?" : "Em quais categorias?") : editando ? "Editar complemento" : "Novo complemento"}
         acoes={etapa === 2

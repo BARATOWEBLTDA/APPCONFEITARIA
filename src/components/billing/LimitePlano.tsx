@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { SELO_TESTE } from "@/lib/beneficiosPro";
 import { Crown } from "@phosphor-icons/react";
 import { Botao, Janela } from "@/components/base";
 
@@ -9,10 +10,10 @@ import { Botao, Janela } from "@/components/base";
 export default function LimitePlano({ tipo, limite, onClose }: { tipo: "produtos" | "clientes"; limite: number; onClose: () => void }) {
   const navigate = useNavigate();
   const txt = tipo === "produtos"
-    ? { t: `${limite} produtos no cardápio`, s: `No plano grátis, até ${limite} produtos ficam no cardápio ao mesmo tempo. Tire um do cardápio para colocar outro, ou assine o PRO e mostre todo o seu cardápio. Os produtos fora do cardápio continuam salvos.` }
-    : { t: `Você chegou a ${limite} clientes`, s: `O plano grátis guarda até ${limite} clientes. No PRO, toda a sua clientela e o histórico de compras ficam em um lugar só, sem limite. O que você já cadastrou continua salvo.` };
+    ? { t: `${limite} produtos no cardápio`, s: `No plano grátis, até ${limite} produtos ficam no cardápio ao mesmo tempo. Tire um do cardápio para colocar outro, ou teste o PRO por ${SELO_TESTE} e mostre todo o seu cardápio. Os produtos fora do cardápio continuam salvos.` }
+    : { t: `Você chegou a ${limite} clientes`, s: `O plano grátis guarda até ${limite} clientes. No PRO, toda a sua clientela e o histórico de compras ficam em um lugar só, sem limite, e dá para testar com ${SELO_TESTE}. O que você já cadastrou continua salvo.` };
   return (
     <Janela aberta aoFechar={onClose} titulo={txt.t} texto={txt.s} icone={<Crown size={32} weight="fill" />} tom="laranja"
-      acoes={<><Botao variante="secundario" onClick={onClose}>Agora não</Botao><Botao variante="vinho" onClick={() => navigate("/assinar")} data-foco-inicial>Conhecer o PRO</Botao></>} />
+      acoes={<><Botao variante="secundario" onClick={onClose}>Agora não</Botao><Botao variante="vinho" onClick={() => navigate("/assinar")} data-foco-inicial>Testar grátis</Botao></>} />
   );
 }

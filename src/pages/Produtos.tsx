@@ -3091,7 +3091,7 @@ export default function Produtos() {
                         onClick={async () => {
                           setPreviewMenu(false);
                           // Ficha técnica em PDF é recurso PRO (relatórios em PDF)
-                          if (!isPro) { avisar("A ficha técnica em PDF é do plano PRO.", { tipo: "info", acao: { rotulo: "Ver o PRO", aoTocar: () => irFechandoJanela(() => navigate("/assinar")) } }); return; }
+                          if (!isPro) { avisar("A ficha técnica em PDF é do plano PRO.", { tipo: "info", acao: { rotulo: "Testar grátis", aoTocar: () => irFechandoJanela(() => navigate("/assinar")) } }); return; }
                           try {
                             await gerarFichaProduto(previewProduto, userId);
                           } catch (err) {

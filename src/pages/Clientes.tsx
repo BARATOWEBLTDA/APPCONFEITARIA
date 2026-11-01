@@ -559,7 +559,7 @@ export default function Clientes() {
   // Importar (PRO): quem é do grátis vê o convite do PRO em vez de um botão apagado
   const importarContatos = async () => {
     if (!usuarioEhPro) {
-      const ok = await confirmar({ titulo: "Importar contatos é do PRO", texto: "No PRO você traz os clientes direto da agenda do celular, sem digitar um por um.", rotulo: "Conhecer o PRO", icone: "info" });
+      const ok = await confirmar({ titulo: "Importar contatos é do PRO", texto: "No PRO você traz os clientes direto da agenda do celular, sem digitar um por um. Teste com 7 dias grátis.", rotulo: "Testar grátis", icone: "info" });
       if (ok) navigate("/assinar");
       return;
     }
