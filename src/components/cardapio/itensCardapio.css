@@ -147,3 +147,9 @@
   .ic-cp--dq .ic-cp-nome { font-size: 16.5px; -webkit-line-clamp: 1; }
   .ic-cp--dq .ic-cp-desc { -webkit-line-clamp: 1; }
 }
+
+/* (31/10 · 5.94) computador: produtos das categorias em 2 colunas largas (como nos apps de delivery),
+   e a foto da linha preenche a caixa inteira (sem as sobras borradas) */
+.ic-sec--pc .ic-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ic-sec--pc .ic-ln-ft img.ic-fundo { display: none; }
+.ic-sec--pc .ic-ln-ft img.ic-inteira { object-fit: cover; }
