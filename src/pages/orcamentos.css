@@ -74,7 +74,8 @@
 .orc-ev-data .ui-campo-r { display: flex; margin-bottom: 6px; font-size: 13.5px; font-weight: 600; }
 .orc-kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; margin: 0; font-size: 14px; }
 .orc-kv dt { color: var(--ui-texto-2); } .orc-kv dd { margin: 0; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
-.orc-kv a { color: var(--ui-rosa-escuro); }
+.orc-kv a { position: relative; color: var(--ui-rosa-escuro); }
+.orc-kv a::after { content: ""; position: absolute; inset: -12px -4px; } /* (01/11 · 5.99) área de toque de 44px */
 .orc-desc { margin: 10px 0 0; font-size: 14px; line-height: 1.5; }
 .orc-fotos { display: flex; gap: 8px; margin-top: 10px; }
 .orc-fotos button { width: 64px; height: 64px; margin: 0; padding: 0; border: 0; border-radius: 12px; overflow: hidden; cursor: zoom-in; }
@@ -196,7 +197,7 @@
 .orp-pe > *, .orp-pe > .orp-bt { max-width: 528px; margin: 0 auto; }
 .orp-pe--2 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; }
 @media (min-width: 600px) { .orp-pe--2 { padding-left: calc(50% - 264px); padding-right: calc(50% - 264px); } }
-.orp-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 52px; margin: 0; padding: 0 16px; border: 0; border-radius: 14px; background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); font-family: inherit; font-size: 16px; font-weight: 600; color: #fff; text-decoration: none; cursor: pointer; }
+.orp-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 52px; margin: 0; padding: 0 16px; border: 0; border-radius: 14px; background: var(--ui-rosa-botao, #CC2E66); box-shadow: 0 3px 0 var(--ui-rosa-escuro); font-family: inherit; font-size: 16px; font-weight: 600; color: #fff; text-decoration: none; cursor: pointer; }
 .orp-bt:disabled { opacity: .6; cursor: default; }
 .orp-bt--sec { background: #F3EEF1; color: var(--ui-texto); box-shadow: none; }
 .orp-bt--perigo { background: var(--ui-vermelho); box-shadow: none; }
@@ -315,7 +316,7 @@
   .orc-pro-it em { flex: none; font-style: normal; font-size: 12px; font-weight: 600; }
   .orc-pro-tot { display: flex; justify-content: space-between; padding: 10px 0; font-size: 13px; }
   .orc-pro-tot b { font-size: 15px; font-weight: 600; }
-  .orc-pro-bt { padding: 10px 0; border-radius: 12px; background: var(--ui-rosa); color: #fff; font-size: 12.5px; font-weight: 600; text-align: center; }
+  .orc-pro-bt { padding: 10px 0; border-radius: 12px; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 12.5px; font-weight: 600; text-align: center; }
   .orc-pro-bt2 { margin-top: 6px; padding: 9px 0; border-radius: 12px; background: #F3EEF0; font-size: 12px; font-weight: 500; text-align: center; color: var(--ui-texto); }
 }
 

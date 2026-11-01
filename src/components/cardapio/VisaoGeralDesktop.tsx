@@ -42,12 +42,17 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
   const [periodo, setPeriodo] = useState<Periodo>("7d");
   const [dados, setDados] = useState<{ visitas: string[]; pedidos: any[]; produtos: any[]; temCupom: boolean } | null>(null);
   const [qr, setQr] = useState("");
+  // (01/11 · 5.99) a busca falhou (sem internet): mostra o aviso com "Tentar de novo" em vez de "Carregando…" para sempre
+  const [falhou, setFalhou] = useState(false);
+  const [tentativa, setTentativa] = useState(0);
   const [copiado, setCopiado] = useState(false);
   const situacao = useMemo(() => situacaoLoja(profile?.horario), [profile?.horario]);
 
   // Busca 60 dias de visitas/pedidos (dá pra comparar até "30 dias" com o período anterior)
   useEffect(() => {
     if (!profile?.id) return;
+    let vivo = true;
+    setFalhou(false);
     const desde = new Date(); desde.setDate(desde.getDate() - 60);
     Promise.all([
       supabase.from("cardapio_visitas").select("created_at").eq("user_id", profile.id).gte("created_at", desde.toISOString()),
@@ -55,13 +60,21 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
         .eq("user_id", profile.id).eq("origem", "cardapio").order("created_at", { ascending: false }).limit(500),
       supabase.from("produtos").select("id, imagem_url, descricao, disponivel").eq("user_id", profile.id),
       supabase.from("loja_cupons").select("cupons").eq("user_id", profile.id).maybeSingle(),
-    ]).then(([v, p, pr, c]) => setDados({
-      visitas: ((v.data as any[]) || []).map(x => x.created_at),
-      pedidos: (p.data as any[]) || [],
-      produtos: ((pr.data as any[]) || []).filter(x => x.disponivel !== false),
-      temCupom: Array.isArray((c.data as any)?.cupons) && (c.data as any).cupons.some((x: any) => x?.ativo),
-    }));
-  }, [profile?.id]);
+    ]).then(([v, p, pr, c]) => {
+      if (!vivo) return;
+      if (v.error || p.error || pr.error) { setFalhou(true); return; }
+      setDados({
+        visitas: ((v.data as any[]) || []).map(x => x.created_at),
+        pedidos: (p.data as any[]) || [],
+        produtos: ((pr.data as any[]) || []).filter(x => x.disponivel !== false),
+        temCupom: Array.isArray((c.data as any)?.cupons) && (c.data as any).cupons.some((x: any) => x?.ativo),
+      });
+    }).catch(() => { if (vivo) setFalhou(true); });
+    return () => { vivo = false; };
+  }, [profile?.id, tentativa]);
+  const carregando = falhou
+    ? <p className="vgd-vazio">Não deu para carregar. <button type="button" className="vgd-tentar" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</button></p>
+    : <p className="vgd-vazio">Carregando…</p>;
 
   useEffect(() => {
     if (!linkCardapio) return;
@@ -171,7 +184,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
             ))}
           </div>
         </div>
-        {!metr ? <p className="vgd-vazio">Carregando…</p> : (
+        {!metr ? carregando : (
           <>
             <div className="vgd-kp">
               {([[Eye, "Visitas", String(metr.vis), variacao(metr.vis, metr.ant?.vis)],
@@ -211,7 +224,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
             <div><p className="vgd-ct">Últimos pedidos do cardápio</p><p className="vgd-cs">Os que chegaram pelo seu link</p></div>
             {ultimos.length > 0 && <Botao variante="link" iconeDepois={<CaretRight size={16} weight="bold" />} onClick={() => navigate("/pedidos")}>Ver todos</Botao>}
           </div>
-          {!dados ? <p className="vgd-vazio">Carregando…</p> : ultimos.length === 0 ? (
+          {!dados ? carregando : ultimos.length === 0 ? (
             <p className="vgd-vazio">Nenhum pedido pelo cardápio ainda. Compartilhe o link para receber o primeiro.</p>
           ) : ultimos.map(p => {
             const [st0, cor] = STATUS[p.status] || ["Agendado", "bl"];
@@ -235,7 +248,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
 
         <div className="vgd-card">
           <div className="vgd-rowh"><div><p className="vgd-ct">Mais pedidos pelo cardápio</p><p className="vgd-cs">{quandoTxt.charAt(0).toUpperCase() + quandoTxt.slice(1)}</p></div></div>
-          {!metr ? <p className="vgd-vazio">Carregando…</p> : metr.top.length === 0 ? (
+          {!metr ? carregando : metr.top.length === 0 ? (
             <p className="vgd-vazio">Os produtos aparecem aqui quando chegarem pedidos {quandoTxt}.</p>
           ) : (
             <ol className="vgd-top">
@@ -304,6 +317,8 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
         .vgd-pe:hover .vgd-pt b { color: var(--ui-rosa-escuro); }
         .vgd-sit.ok { color: var(--ui-verde); } .vgd-sit.am { color: var(--ui-laranja); } .vgd-sit.bl { color: var(--ui-azul); } .vgd-sit.rs { color: var(--ui-rosa-escuro); } .vgd-sit.cz { color: var(--ui-texto-3); } .vgd-sit.rd { color: var(--ui-vermelho); }
         .vgd-vazio { margin: 14px 0 4px; font-size: 13.5px; color: var(--ui-texto-2); }
+        .vgd-tentar { position: relative; margin: 0; padding: 0; border: 0; background: none; color: var(--ui-rosa-escuro); font: inherit; font-weight: 600; cursor: pointer; }
+        .vgd-tentar::after { content: ""; position: absolute; inset: -12px -6px; }
         .vgd-top { margin: 10px 0 0; padding: 0; list-style: none; }
         .vgd-top li { position: relative; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 0 10px; border-top: 1px solid var(--ui-linha); font-size: 14px; }
         .vgd-top-n { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex: none; border-radius: 50%; background: #F1ECEE; font-size: 12px; font-weight: 600; color: var(--ui-texto-2); }

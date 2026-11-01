@@ -27,9 +27,9 @@ export default function AdminUsuarios() {
     // (11/10) De 1.000 em 1.000 (o banco corta em 1.000 linhas sem avisar) e conferindo os erros:
     // antes, se a leitura dos planos falhava, todo mundo aparecia como Grátis.
     const { data, error } = await buscarTudo<any>((de, ate) =>
-      supabase.from("admin_users").select("*").order("created_at", { ascending: false }).order("id").range(de, ate));
+      supabase.rpc("admin_usuarios").select("*").order("created_at", { ascending: false }).order("id").range(de, ate));
     if (error) { setErroCarregar(explicarErro(error, "Tente de novo em instantes.")); setLoading(false); return; }
-    // Mescla plano e pro_expira_em vindos de profiles (caso a view admin_users não inclua)
+    // (01/11 · 5.99) a lista vem da função admin_usuarios (a view admin_users saiu). Mescla plano e pro_expira_em vindos de profiles
     // em lotes de 100: com todos os ids num pedido só, o endereço ficava grande demais
     const ids = data.map(u => u.id).filter(Boolean);
     const mapa = new Map<string, any>();

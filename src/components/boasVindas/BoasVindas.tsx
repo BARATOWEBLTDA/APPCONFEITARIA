@@ -46,12 +46,7 @@ const AVISOS = 6
  * Pra navegar logo depois que as boas-vindas fecham: elas acabaram de pedir um "voltar" pra tirar a entrada
  * delas do histórico, e esse voltar desfaria a navegação. Espera ele terminar (ou 600ms) e só então segue.
  */
-export function depoisDoVoltar(fn: () => void) {
-  let foi = false
-  const ir = () => { if (!foi) { foi = true; fn() } }
-  if (window.history.state?.bvTela) { window.addEventListener('popstate', () => setTimeout(ir, 0), { once: true }); setTimeout(ir, 600) }
-  else ir()
-}
+export { depoisDoVoltar } from '@/lib/depoisDoVoltar'
 
 const vibrarLeve = () => {
   try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(15) } catch { /* sem vibração: segue */ }
@@ -349,7 +344,7 @@ function DemoDoo() {
     <div className="bv-doo bv-cai" ref={caixa} aria-hidden="true">
       <div className="bv-doo-palco" style={{ width: DOO_LARGURA, height: DOO_ALTURA, transform: `translateX(-50%) scale(${escala})` }}>
         <div className="bv-doo-hd">
-          <span className="bv-doo-av"><img src="/Sistema/doo.png" alt="" /><i /></span>
+          <span className="bv-doo-av"><img src="/Sistema/doo.webp" alt="" /><i /></span>
           <div className="bv-doo-ht">
             <b>Doo IA <em>PRO</em></b>
             <small className={passo === 'escrevendo' || passo === 'criando' ? 'esc' : ''}><i />{passo === 'escrevendo' ? 'Escrevendo…' : passo === 'criando' ? 'Criando a imagem…' : 'Online · responde na hora'}</small>
@@ -360,7 +355,7 @@ function DemoDoo() {
           {enviado && <div className="bv-doo-m eu"><div className="bv-doo-bd">{PEDIDO_DOO}</div></div>}
           {(passo === 'escrevendo' || passo === 'criando') && (
             <div className="bv-doo-m doo">
-              <img src="/Sistema/doo.png" alt="" className="bv-doo-mav" />
+              <img src="/Sistema/doo.webp" alt="" className="bv-doo-mav" />
               <div className="bv-doo-mc">
                 <div className="bv-doo-bd bv-doo-dig">{passo === 'criando' ? <><span className="bv-doo-spin" />Criando sua imagem…</> : <><i /><i /><i /></>}</div>
                 <p className="bv-doo-digt">{passo === 'criando' ? 'Leva uns segundinhos' : 'A Doo está escrevendo…'}</p>
@@ -369,7 +364,7 @@ function DemoDoo() {
           )}
           {passo === 'pronto' && (
             <div className="bv-doo-m doo bv-doo-resp">
-              <img src="/Sistema/doo.png" alt="" className="bv-doo-mav" />
+              <img src="/Sistema/doo.webp" alt="" className="bv-doo-mav" />
               <div className="bv-doo-mc">
                 <div className="bv-doo-bd">
                   <span>Prontinho! Seu topo de Natal com o nome <b>Família Rocha</b>:</span>

@@ -281,7 +281,7 @@ export default function NotificacoesSons() {
         .ns-vol { margin-top: 12px; padding: 12px 14px; border-radius: var(--ui-raio); background: #F7F4F5; }
         .ns-vol-l { display: flex; align-items: baseline; justify-content: space-between; font-size: 13.5px; color: var(--ui-texto); }
         .ns-vol-l b { font-size: 16px; font-weight: 600; }
-        .ns-vol input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; margin: 12px 0 6px; border-radius: 99px; background: linear-gradient(to right, var(--ui-rosa) var(--v), #E5DDE0 var(--v)); outline: none; cursor: pointer; }
+        .ns-vol input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; margin: 0; border-radius: 99px; background: linear-gradient(to right, var(--ui-rosa) var(--v), #E5DDE0 var(--v)) center / 100% 6px no-repeat; outline: none; cursor: pointer; } /* (01/11 · 5.99) a faixa continua fina; a área de toque ficou com 30px */
         .ns-vol input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid var(--ui-rosa); box-shadow: 0 1px 4px rgba(0,0,0,.15); }
         .ns-vol input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 2px solid var(--ui-rosa); }
         .ns-vol input[type=range]:disabled { cursor: default; }

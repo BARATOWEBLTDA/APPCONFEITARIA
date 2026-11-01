@@ -152,7 +152,7 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
           {profile && (
             <button type="button" className="cab-cel-ac cab-cel-ac--pro" onClick={() => navigate(isPro ? '/minha-assinatura' : '/assinar')}
               aria-label={isPro ? 'Minha assinatura PRO' : 'Assinar o plano PRO'}>
-              <img src="/coroa.png" alt="" aria-hidden="true" />
+              <img src="/coroa.webp" alt="" aria-hidden="true" />
             </button>
           )}
           <button type="button" className="cab-cel-ac" onClick={() => navigate('/noticias')} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? 's' : ''}` : 'Novidades'}>
@@ -180,7 +180,7 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
               ? <img src={avatarDaConta(profile)} alt="" className="cab-foto-img" />
               : <User size={24} weight="bold" aria-hidden="true" />}
           </button>
-          {isPro && <span className="cab-foto-pro" aria-label="Plano PRO"><Crown size={11} weight="fill" /></span>}
+          {isPro && <span className="cab-foto-pro" role="img" aria-label="Plano PRO"><Crown size={11} weight="fill" /></span>}
           {/* sem foto: a câmera é o atalho pra colocar uma */}
           {!avatarDaConta(profile) && (
             <button type="button" className="cab-foto-cam" disabled={enviandoFoto} onClick={() => fileInputRef.current?.click()} aria-label="Colocar uma foto" title="Colocar uma foto">

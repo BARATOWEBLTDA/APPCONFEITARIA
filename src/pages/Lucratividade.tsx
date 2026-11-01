@@ -8,7 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { useNavigate } from "react-router-dom";
 import { CaretRight, ChartLineUp, Equals, Minus, ShoppingBagOpen, Warning, WarningCircle } from "@phosphor-icons/react";
-import PeriodoFiltro, { iso as isoDia, periodoDoDia, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
+import PeriodoFiltro, { iso as isoDia, periodoDoDia, periodoDoMes, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
 import { useDiaAtual } from "@/hooks/useAoVoltar";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_LUCRATIVIDADE, TOUR_LUCRATIVIDADE } from "@/lib/comoTelas";
@@ -94,7 +94,8 @@ export default function Lucratividade() {
 function LucratividadeTela() {
   const navigate = useNavigate();
   // (23/10) o mesmo filtro de período do Financeiro e de Transações (abre no mês de hoje)
-  const [periodo, setPeriodo] = useState<Periodo>(periodoInicial);
+  // (01/11 · 5.99) nos 5 primeiros dias o mês novo ainda está quase vazio: abre no mês que acabou de fechar
+  const [periodo, setPeriodo] = useState<Periodo>(() => { const h = new Date(); return h.getDate() <= 5 ? periodoDoMes(h.getFullYear(), h.getMonth() - 1) : periodoInicial(); });
   const diaAtual = useDiaAtual();
   useEffect(() => { setPeriodo(p => periodoDoDia(p)); }, [diaAtual]);
   const ehMes = periodo.tipo === "mes";
@@ -296,7 +297,7 @@ const CSS = `
   .lu-vazio-ic { width: 60px; height: 60px; border-radius: 18px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: inline-flex; align-items: center; justify-content: center; }
   .lu-vazio b { display: block; font-size: 17px; font-weight: 600; margin-top: 12px; }
   .lu-vazio p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 400px; text-wrap: balance; }
-  .lu-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .lu-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   /* a conta em 4 cartões */
   .lu-conta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .lu-conta > .lu-k--lucro { grid-column: 1 / -1; }
@@ -316,7 +317,7 @@ const CSS = `
   /* aviso de ficha técnica: uma faixa só */
   .lu-aviso { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 14px; padding: 10px 12px; font-size: 13.5px; font-weight: 500; line-height: 1.45; }
   .lu-aviso > span { flex: 1 1 260px; text-wrap: balance; } .lu-aviso svg { flex-shrink: 0; } /* (24/10) balance: as duas linhas do mesmo tamanho (antes sobrava "é." sozinho na 2ª linha) */
-  .lu-aviso-bt { flex: none; min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .lu-aviso-bt { flex: none; min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
   /* produto + equilíbrio */
   .lu-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "prod" "eq"; }
   @media (min-width: 1024px) { .lu-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); grid-template-areas: "prod eq"; align-items: start; gap: 16px; } }
@@ -364,5 +365,6 @@ const CSS = `
   .lu-eq-t { margin: 4px 0 0; font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; }
   .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }
   .lu-sec { margin-top: 12px; min-height: 44px; padding: 0 16px; border: 1px solid #EADFE3; border-radius: 12px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
-  .lu-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 600; text-decoration: underline; cursor: pointer; }
+  .lu-link { position: relative; border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 600; text-decoration: underline; cursor: pointer; }
+  .lu-link::after { content: ""; position: absolute; inset: -13px -6px; }
 `;

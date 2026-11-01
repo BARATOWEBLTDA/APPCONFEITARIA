@@ -51,7 +51,7 @@ export default function DialogoApp({ tipo = 'aviso', titulo, texto, icone = 'inf
         .dlg-x { margin: 8px auto 0; font-size: 14px; color: var(--ui-texto-2); line-height: 1.5; max-width: 320px; text-wrap: balance; }
         .dlg-bts { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; margin-top: 20px; }
         .dlg-b1, .dlg-b2 { border: none; border-radius: var(--ui-raio-botao); padding: 14px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
-        .dlg-b1 { background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); } .dlg-b1.perigo { background: var(--ui-vermelho); box-shadow: 0 3px 0 var(--ui-vermelho-escuro); }
+        .dlg-b1 { background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); } .dlg-b1.perigo { background: var(--ui-vermelho); box-shadow: 0 3px 0 var(--ui-vermelho-escuro); }
         .dlg-b2 { background: var(--ui-cinza); color: var(--ui-cinza-texto); } .dlg-full { width: 100%; margin-top: 20px; }
       `}</style>
     </div>, document.body)

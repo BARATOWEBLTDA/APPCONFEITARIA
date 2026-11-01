@@ -819,7 +819,7 @@ export default function FichaTecnica() {
             <DooInfoModal
               open
               onClose={() => setInfoCustoAberto(null)}
-              image="/Sistema/precifique.png"
+              image="/Sistema/precifique.webp"
               imageAlt="Precificação"
               ariaLabel={`Como calculamos o custo de ${ins.nome}`}
               title={MODAL_TITLE_VARIANTS[tituloModalIndex](primeiroNome)}

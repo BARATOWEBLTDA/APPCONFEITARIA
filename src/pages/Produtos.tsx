@@ -1948,7 +1948,7 @@ export default function Produtos() {
                       <p className="pl-lin-tipo">{(p as any).antecedencia ? "Encomenda" : "Pronta entrega"}</p>
                       {temFicha
                         ? <p className={`pl-lin-lucro pl-lin-lucro--${tier}`}>Lucro estimado R$&nbsp;{formatPreco(lucro)} ({margem.toFixed(0)}%)</p>
-                        : <button type="button" className="pl-lin-ficha" onClick={e => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}>Criar ficha técnica</button>}
+                        : <button type="button" className="pl-lin-ficha" onClick={e => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}>Montar ficha técnica<CaretRight size={13} weight="bold" aria-hidden="true" /></button>}
                     </div>
                   );
                 })()}
@@ -2342,11 +2342,11 @@ export default function Produtos() {
 
                     {!isPro ? (
                       <div className="prod-var-fotos-lock">
-                        <img src="/log.png" alt="Doonly" className="prod-var-fotos-lock-logo" />
+                        <img src="/log.webp" alt="Doonly" className="prod-var-fotos-lock-logo" />
                         <div>
                           <div style={{fontSize: 13, fontWeight: 600, color: "#2D1F26", display: "inline-flex", alignItems: "center", gap: 6}}>
                             Recurso PRO
-                            <img src="/coroa.png" alt="" style={{width: 14, height: 14, objectFit: "contain"}} />
+                            <img src="/coroa.webp" alt="" style={{width: 14, height: 14, objectFit: "contain"}} />
                           </div>
                           <div style={{fontSize: 12, color: "#6B5D64", marginTop: 2}}>Fotos personalizadas por variação — venda muito mais com fotos que valorizam cada opção.</div>
                         </div>
@@ -3756,7 +3756,7 @@ export default function Produtos() {
         .prod-preview-btn-editar {
           flex: 1;
           padding: 13px;
-          background: var(--ui-rosa);
+          background: var(--ui-rosa-botao, #CC2E66);
           color: var(--ui-branco);
           border: none;
           border-radius: var(--ui-raio-p);
@@ -4126,7 +4126,7 @@ export default function Produtos() {
           all: unset;
           flex: 1;
           padding: 14px 20px;
-          background: var(--ui-rosa);
+          background: var(--ui-rosa-botao, #CC2E66);
           color: var(--ui-branco);
           border-radius: var(--ui-raio-p);
           font-family: var(--font-base) !important;
@@ -4504,7 +4504,7 @@ export default function Produtos() {
         .prod-cat-criar-btn {
           flex: 2;
           padding: 10px;
-          background: var(--ui-rosa);
+          background: var(--ui-rosa-botao, #CC2E66);
           color: var(--ui-branco);
           border: none;
           border-radius: var(--ui-raio-p);

@@ -109,7 +109,7 @@ body .prod-modal--novo .prod-modal-footer--novo { display: grid !important; grid
 @media (min-width: 641px) { body .prod-modal--novo .prod-modal-footer--novo { padding: 12px 24px 16px !important; } }
 body .prod-modal--novo .prod-btn-cancelar-novo { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-cinza) !important; color: var(--ui-texto) !important; font-size: 15px; font-weight: 600; }
 body .prod-modal--novo .prod-btn-cancelar-novo:hover { filter: brightness(.97); }
-body .prod-modal--novo .prod-btn-avancar-novo { gap: 8px; min-height: 48px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-rosa) !important; color: var(--ui-branco) !important; font-size: 15px; font-weight: 600; letter-spacing: 0; box-shadow: 0 3px 0 var(--ui-rosa-escuro) !important; }
+body .prod-modal--novo .prod-btn-avancar-novo { gap: 8px; min-height: 48px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-rosa-botao, #CC2E66) !important; color: var(--ui-branco) !important; font-size: 15px; font-weight: 600; letter-spacing: 0; box-shadow: 0 3px 0 var(--ui-rosa-escuro) !important; }
 body .prod-modal--novo .prod-btn-avancar-novo:disabled { background: #F5DCE6 !important; color: var(--ui-branco) !important; box-shadow: 0 3px 0 #E8C4D2 !important; }
 body .prod-modal--novo .prod-btn-avancar-novo .prod-spinner-sm { border-color: rgba(255, 255, 255, .35); border-top-color: var(--ui-branco); }
 body .prod-modal--novo .prod-btn-avancar-novo:only-child { grid-column: 1 / -1; }

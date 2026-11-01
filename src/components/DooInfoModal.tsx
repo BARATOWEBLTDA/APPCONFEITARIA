@@ -8,7 +8,7 @@ import "@/components/base/base.css";
 interface DooInfoModalProps {
   open: boolean;
   onClose: () => void;
-  /** Caminho da imagem do mascote (ex: "/Sistema/precifique.png") */
+  /** Caminho da imagem do mascote (ex: "/Sistema/precifique.webp") */
   image: string;
   imageAlt?: string;
   /** Título (aceita JSX pra destacar o nome, o produto…) */

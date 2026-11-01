@@ -184,7 +184,7 @@ const CSS = `
   .cxc-convite p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 380px; text-wrap: balance; }
   .cxc-convite--foco { border: 2px solid #F3A9C6; box-shadow: 0 0 0 6px rgba(232,90,140,.12), 0 14px 30px -10px rgba(195,58,110,.45) !important; position: relative; z-index: 2; }
   .cxc-depois { display: block; min-height: 44px; margin: 4px auto 0; border: none; background: none; padding: 8px 16px; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-texto-3); cursor: pointer; }
-  .cxc-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+  .cxc-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
   .cxc-movs { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 12px 14px; font-family: var(--font-base); }
   .cxc-movs-t { margin: 0 0 4px; font-size: 14.5px; font-weight: 600; color: var(--ui-texto); }
   .cxc-movs-vazio { margin: 6px 0 2px; font-size: 13px; color: #888780; line-height: 1.45; }
@@ -207,6 +207,6 @@ const CSS = `
   .cxs-in span { font-size: 18px; color: var(--ui-texto-2); font-weight: 600; }
   .cxs-in input { flex: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 23px; font-weight: 600; color: var(--ui-texto); background: none; }
   .cxs-erro { margin: 10px 0 0; font-size: 13px; font-weight: 600; color: var(--ui-vermelho); }
-  .cxs-cta { margin-top: 16px; width: 100%; border: none; border-radius: var(--ui-raio-botao); padding: 15px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+  .cxs-cta { margin-top: 16px; width: 100%; border: none; border-radius: var(--ui-raio-botao); padding: 15px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
   .cxs-cta:disabled { opacity: .6; cursor: default; }
 `;

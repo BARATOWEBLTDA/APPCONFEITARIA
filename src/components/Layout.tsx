@@ -349,7 +349,7 @@ export default function Layout() {
                   className={`bn-item${isActive ? " bn-item--active" : ""}`}
                   data-tour={item.tour}
                   aria-current={isActive ? "page" : undefined}
-                  aria-label={item.to === "/pedidos" && paraAceitar > 0 ? `Pedidos, ${paraAceitar} para aceitar` : undefined}
+                  aria-label={item.to === "/pedidos" && paraAceitar > 0 ? `Pedidos, ${paraAceitar} para aceitar` : item.mais ? item.label : undefined}
                   onClick={irPara}
                 >
                   <span className="bn-icon"><item.Icone size={24} weight={isActive ? "fill" : "bold"} />
@@ -736,7 +736,7 @@ export default function Layout() {
           }
           .bn-item:active .bn-icon { transform: scale(0.9); }
           .bn-icon { position: relative; }
-          .bn-bolinha { position: absolute; top: -6px; left: 14px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--primary, #E8578E); color: #fff; font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--vinho-profundo); }
+          .bn-bolinha { position: absolute; top: -6px; left: 14px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--vinho-profundo); }
           .bn-label {
             font-size: 12px;
             font-weight: 500; /* (09/10 · 3.97) era 600: o guia usa 500 no texto de apoio e 700 no que está marcado */

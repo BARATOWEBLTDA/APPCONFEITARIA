@@ -510,12 +510,13 @@ export default function Pedidos() {
   const sitAtual: Sit = sit ?? (nSit.aceitar > 0 ? 'aceitar' : nSit.agenda > 0 || nSit.prontos === 0 ? 'agenda' : 'prontos')
   const gruposCel = useMemo(() => agrupar(pedidosFiltrados.filter(p => sitDe(p) === sitAtual)), [agrupar, pedidosFiltrados, sitAtual])
 
-  // (22/10) o filtro conta só o que a aba aberta vai mostrar (celular: a aba da situação; computador: Encomendas ou Pronta entrega)
+  // (22/10) o filtro conta o que a aba aberta vai mostrar (computador: Encomendas ou Pronta entrega).
+  // (01/11 · 5.99) no celular as abas já são as situações: contando só a aba aberta, todas as outras situações apareciam com 0
   const pedidosDoFiltro = useMemo(() => {
     const q = semAcento(busca)
-    return pedidos.filter(p => (computador ? (p.tipo_venda || 'encomenda') === aba : sitDe(p) === sitAtual)
+    return pedidos.filter(p => (!computador || (p.tipo_venda || 'encomenda') === aba)
       && (!q || semAcento(p.cliente_nome || '').includes(q) || String(p.numero).includes(q)))
-  }, [pedidos, busca, computador, aba, sitAtual])
+  }, [pedidos, busca, computador, aba])
 
   const nFiltros = (statusSelecionados.length !== STATUS_PADRAO.length || !STATUS_PADRAO.every(s => statusSelecionados.includes(s)) ? 1 : 0) + (periodoFiltro !== 'todos' ? 1 : 0)
   const filtrando = nFiltros > 0 || !!busca.trim()

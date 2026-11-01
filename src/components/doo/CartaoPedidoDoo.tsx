@@ -155,7 +155,7 @@ const CSS = `
   .cpd-erro { margin: 10px 0 0; font-size: 13px; color: #B91C1C; font-weight: 600; }
   .cpd-bts { display: flex; gap: 8px; margin-top: 12px; }
   .cpd-b1, .cpd-b2 { border-radius: var(--ui-raio); padding: 12px 10px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-  .cpd-b1 { flex: 2; border: none; background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+  .cpd-b1 { flex: 2; border: none; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
   .cpd-b1:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   .cpd-b2 { flex: 1; border: 1.5px solid #EAE3E6; background: var(--ui-branco); color: var(--ui-texto); }
   .cpd-x { display: block; width: 100%; margin-top: 4px; padding: 8px; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); cursor: pointer; }

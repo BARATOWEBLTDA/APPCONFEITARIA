@@ -256,7 +256,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
           <img src="/Sistema/banner-passos.webp" alt="" aria-hidden="true" className="ppb-img" />
           <b className="ppb-t">{faltam === 1 ? "Falta só 1 passo" : "Seu cardápio quase no ar"}</b>
           <small className="ppb-sub">{feitos === 0 ? `${passos.length} passos rápidos, uns 5 minutos` : `${feitos} de ${passos.length} prontos`}</small>
-          <div className="ppb-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
+          <div className="ppb-bar" role="progressbar" aria-valuemin={0} aria-valuemax={passos.length} aria-valuenow={feitos} aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
         </div>
         <div className="ppb-at" ref={atRef}>
           <span className="ppb-n" aria-hidden="true">{atual + 1}</span>
@@ -605,7 +605,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
           <div className="ppf-ia">
             {opcoes ? (
               <>
-                <div className="ppf-ia-cab"><img src="/Sistema/doo.png" alt="" aria-hidden="true" /><b>Escolha a que mais combina</b></div>
+                <div className="ppf-ia-cab"><img src="/Sistema/doo.webp" alt="" aria-hidden="true" /><b>Escolha a que mais combina</b></div>
                 <div className="ppf-ia-ops" role="radiogroup" aria-label="Opções da Doo IA">
                   {opcoes.map((t, i) => (
                     <button type="button" key={i} role="radio" aria-checked={escolhida === i} className={escolhida === i ? "on" : ""} onClick={() => setEscolhida(i)}>
@@ -620,7 +620,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
               </>
             ) : (
               <>
-                <div className="ppf-ia-cab"><img src="/Sistema/doo.png" alt="" aria-hidden="true" /><span><b>A Doo IA escreve para você</b><small>Responda e escolha entre 3 opções</small></span></div>
+                <div className="ppf-ia-cab"><img src="/Sistema/doo.webp" alt="" aria-hidden="true" /><span><b>A Doo IA escreve para você</b><small>Responda e escolha entre 3 opções</small></span></div>
                 <p className="ppf-ia-l">O que você faz?</p>
                 <div className="ppf-d-opc">
                   {FAZ.map(f => <button type="button" key={f} className={faz.includes(f) ? "on" : ""} aria-pressed={faz.includes(f)} onClick={() => alternar(faz, setFaz, f)}>{f}</button>)}
@@ -889,11 +889,11 @@ const CSS = `
   .ppb-bar { width: 58%; height: 8px; margin-top: 10px; border-radius: 4px; background: rgba(214, 63, 117, .15); overflow: hidden; }
   .ppb-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .4s ease; }
   .ppb-at { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 0; }
-  .ppb-n { flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); font-size: 14px; font-weight: 600; }
+  .ppb-n { flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-size: 14px; font-weight: 600; }
   .ppb-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .ppb-tx b { font-size: 15px; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppb-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppb-btn { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ppb-btn { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .ppb-btn:active { background: var(--ui-rosa-escuro); }
   .pp--destaque .ppb-at { animation: ppDestaque 1.1s ease-in-out 2; }
   .ppb-lista { padding: 0 14px; border-top: 1px solid var(--ui-linha); }
@@ -946,7 +946,7 @@ const CSS = `
   .pp--destaque .pp-at { animation: ppDestaque 1.1s ease-in-out 2; }
   @keyframes ppDestaque { 0%, 100% { box-shadow: 0 0 0 0 rgba(232, 90, 140, 0); } 50% { box-shadow: 0 0 0 4px rgba(232, 90, 140, .45); } }
   @media (prefers-reduced-motion: reduce) { .pp--destaque .pp-at { animation: none; box-shadow: 0 0 0 3px rgba(232, 90, 140, .45); } }
-  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-branco); background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; text-align: center; text-decoration: none; }
+  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-branco); background: var(--ui-rosa-botao, #CC2E66); box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; text-align: center; text-decoration: none; }
   .pp-btn:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   /* (15/10) "Fazer agora"/"Começar" no chocolate do onboarding: não compete com o rosa da Nova venda */
   .pp-at .pp-btn { background: var(--chocolate); box-shadow: 0 3px 0 var(--chocolate-escuro); }
@@ -973,11 +973,11 @@ const CSS = `
   .pp-hero { display: flex; flex-direction: column; gap: 18px; padding: 26px 26px 24px; border: 1px solid #F6DCE6; border-radius: 18px; background: linear-gradient(180deg, #FFF6F9, #FDF0F5); }
   .pp-hero-topo { flex: 1; display: flex; align-items: center; gap: 16px; }
   .pp-hero-tx { flex: 1; min-width: 0; display: flex; gap: 22px; align-items: flex-start; }
-  .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(214, 69, 122, .25); }
+  .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(214, 69, 122, .25); }
   .pp-hero-t { display: block; margin-top: 4px; font-size: 26px; font-weight: 600; letter-spacing: -.015em; color: #241A1E; line-height: 1.2; }
   .pp-hero-s { display: block; margin-top: 4px; font-size: 18px; color: var(--ui-texto-2); }
   .pp-hero-p { margin: 18px 0 0; max-width: 380px; font-size: 16px; line-height: 1.6; color: #6B5C62; }
-  .pp-hero-btn { display: inline-flex; align-items: center; gap: 12px; min-height: 54px; margin-top: 26px; padding: 0 30px; border: 0; border-radius: 12px; font-family: inherit; font-size: 17px; font-weight: 600; color: #fff; background: var(--ui-rosa); box-shadow: 0 6px 16px rgba(214, 69, 122, .28); cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease; }
+  .pp-hero-btn { display: inline-flex; align-items: center; gap: 12px; min-height: 54px; margin-top: 26px; padding: 0 30px; border: 0; border-radius: 12px; font-family: inherit; font-size: 17px; font-weight: 600; color: #fff; background: var(--ui-rosa-botao, #CC2E66); box-shadow: 0 6px 16px rgba(214, 69, 122, .28); cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease; }
   .pp-hero-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(214, 69, 122, .34); }
   .pp-hero-masc { position: relative; flex: none; width: clamp(140px, 12vw, 190px); display: flex; justify-content: center; }
   .pp-hero-masc::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -4px; height: 18px; border-radius: 50%; background: rgba(214, 69, 122, .14); }
@@ -1001,7 +1001,7 @@ const CSS = `
   .pp-li-seta { flex: none; color: #B4AAAE; }
   .pp-li--vez { background: #FDEBF1; border-radius: 12px; border-bottom-color: transparent; }
   .pp-li--vez:not(:disabled):hover { background: #FBE2EB; }
-  .pp-li--vez .pp-li-n { background: var(--ui-rosa); color: #fff; }
+  .pp-li--vez .pp-li-n { background: var(--ui-rosa-botao, #CC2E66); color: #fff; }
   .pp-li--vez .pp-li-seta { color: var(--ui-rosa); }
   .pp-li--ok .pp-li-n { background: var(--ui-verde); color: #fff; }
   .pp-li--ok .pp-li-tx b { color: var(--ui-texto-2); text-decoration: line-through; text-decoration-color: #C9B9BF; }
@@ -1236,7 +1236,7 @@ const CSS = `
   .ppf-cep { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 12.5px; font-weight: 600; color: var(--ui-verde); }
   .ppf-dias { display: flex; gap: 6px; }
   .ppf-dias button { flex: 1; aspect-ratio: 1; min-height: 44px; max-width: 48px; border: none; border-radius: 50%; font-family: inherit; font-size: 15px; font-weight: 600; background: var(--ui-cinza); color: var(--ui-texto-2); cursor: pointer; }
-  .ppf-dias button.on { background: var(--ui-rosa); color: var(--ui-branco); }
+  .ppf-dias button.on { background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); }
   .ppf-bl { background: var(--ui-cinza); border-radius: var(--ui-raio); padding: 12px; margin-top: 12px; }
   .ppf-bl b { display: block; font-size: 13.5px; margin-bottom: 8px; }
   .ppf-hr { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 52px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 6px 12px; background: var(--ui-branco); font-family: inherit; color: var(--ui-rosa-escuro); text-align: left; cursor: pointer; }

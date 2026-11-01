@@ -8,9 +8,9 @@
 
 /* ───────── Botão ───────── */
 .ui-bt {
-  --bt-fundo: var(--ui-rosa);
+  --bt-fundo: var(--ui-rosa-botao, var(--ui-rosa));
   --bt-cor: var(--ui-branco);
-  --bt-sombra: var(--ui-rosa-escuro);
+  --bt-sombra: var(--ui-rosa-botao-sombra, var(--ui-rosa-escuro));
   position: relative;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   min-height: 48px; min-width: 0; max-width: 100%;

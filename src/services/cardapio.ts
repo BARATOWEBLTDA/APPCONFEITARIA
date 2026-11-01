@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { fotoDaLoja } from '@/hooks/useProfile'
 import { Produto, DesignSettings, Configuracoes } from '@/types/database'
 import { problemaNaChave, tipoDaChave } from '@/lib/pix'
+import { lojaAntecipada, restoAntecipado } from '@/lib/cardapioAntecipado'
 
 export interface CardapioData {
   design: DesignSettings | null
@@ -46,7 +47,7 @@ const EMPTY_RESULT: CardapioData = {
 const funcaoFaltando = (e: any) => !!e && (e.code === 'PGRST202' || e.code === '42883' || /could not find the function/i.test(String(e.message || '')))
 
 async function perfilDaLoja(chave: string, coluna: 'codigo_publico' | 'id'): Promise<any | null> {
-  const { data, error } = await supabase.rpc('cardapio_loja', { p_chave: chave })
+  const { data, error } = await (lojaAntecipada(chave) ?? supabase.rpc('cardapio_loja', { p_chave: chave }))
   if (!error) return data || null
   if (!funcaoFaltando(error)) return null
   const { data: profile } = await supabase.from('profiles').select('*').eq(coluna, chave).maybeSingle()
@@ -81,7 +82,8 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
   // (17/10) Produtos e categorias pelas funções do banco (SQL cardapio_produtos): o cliente sem login
   // não conseguia ler as tabelas direto e o cardápio aparecia vazio. As funções também não entregam
   // os campos internos da ficha técnica (custo, salário desejado…).
-  const [rProd, rCat, { data: temCupom }, rVitrine] = await Promise.all([
+  const antecipado = restoAntecipado(userId)
+  const [rProd, rCat, { data: temCupom }, rVitrine] = antecipado ? await antecipado : await Promise.all([
     supabase.rpc('cardapio_produtos', { p_loja: userId }),
     supabase.rpc('cardapio_categorias', { p_loja: userId }),
     // Só sim/não — os códigos dos cupons não vêm mais pro navegador do cliente

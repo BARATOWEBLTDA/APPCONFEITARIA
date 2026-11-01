@@ -87,7 +87,7 @@ export default function SucessoProdutoTela(p: Props) {
       </div>
 
       <style>{`
-        .spa { position: relative; width: 100%; max-width: 400px; margin: 0 auto; padding: 26px 18px 12px; border-radius: 20px; background: var(--ui-rosa); color: #fff; text-align: center; font-family: var(--font-base); box-shadow: 0 20px 50px rgba(0,0,0,.3); overflow: hidden; animation: spa-pop .3s cubic-bezier(.2,1.3,.4,1) both; }
+        .spa { position: relative; width: 100%; max-width: 400px; margin: 0 auto; padding: 26px 18px 12px; border-radius: 20px; background: var(--ui-rosa-botao, #CC2E66); color: #fff; text-align: center; font-family: var(--font-base); box-shadow: 0 20px 50px rgba(0,0,0,.3); overflow: hidden; animation: spa-pop .3s cubic-bezier(.2,1.3,.4,1) both; }
         @keyframes spa-pop { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .spa-ok { display: flex; align-items: center; justify-content: center; width: 62px; height: 62px; margin: 0 auto 14px; border-radius: 50%; background: #fff; color: var(--ui-rosa-escuro); box-shadow: 0 0 0 8px rgba(255,255,255,.22); }
         .spa-t { margin: 0 0 6px; font-size: 20px; font-weight: 600; line-height: 1.25; color: #fff; }

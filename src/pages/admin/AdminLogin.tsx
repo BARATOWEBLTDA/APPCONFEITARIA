@@ -44,7 +44,7 @@ export default function AdminLogin() {
     <div className="al-root">
       <div className="al-card">
         <div className="al-logo">
-          <img src="/logoapp.png" alt="Doonly" />
+          <img src="/logoapp.webp" alt="Doonly" />
           <span className="al-badge">Admin</span>
         </div>
         <h1 className="al-h1">Painel administrativo</h1>

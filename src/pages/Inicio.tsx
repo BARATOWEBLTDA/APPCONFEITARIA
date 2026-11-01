@@ -798,7 +798,7 @@ export default function Inicio() {
           {profile && (
             <button type="button" className="ini-hero-ac ini-hero-ac--pro" onClick={() => navigate(isPro ? "/minha-assinatura" : "/assinar")}
               aria-label={isPro ? "Minha assinatura PRO" : "Assinar o plano PRO"} title={isPro ? "Minha assinatura" : "Testar o PRO grátis"}>
-              <img src="/coroa.png" alt="" aria-hidden="true" />
+              <img src="/coroa.webp" alt="" aria-hidden="true" />
             </button>
           )}
           <button type="button" className={`ini-hero-ac${notifCount > 0 ? " ini-hero-ac--tem" : ""}`} onClick={() => navigate("/noticias")} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? "s" : ""}` : "Novidades"} title="Novidades">
@@ -827,7 +827,7 @@ export default function Inicio() {
             {profile && (
               isPro ? (
                 <span className="ini-plan-tag ini-plan-tag--pc ini-plan-tag--pro" aria-label="Plano PRO">
-                  <img src="/coroa.png" alt="" className="ini-plan-coroa" aria-hidden="true" />
+                  <img src="/coroa.webp" alt="" className="ini-plan-coroa" aria-hidden="true" />
                   <span>PRO</span>
                 </span>
               ) : (
@@ -837,7 +837,7 @@ export default function Inicio() {
                   onClick={() => navigate("/assinar")}
                   aria-label="Testar o PRO grátis por 7 dias"
                 >
-                  <img src="/coroa.png" alt="" className="ini-plan-coroa" aria-hidden="true" />
+                  <img src="/coroa.webp" alt="" className="ini-plan-coroa" aria-hidden="true" />
                   <span>{SELO_TESTE}</span>
                 </button>
               )
@@ -850,7 +850,7 @@ export default function Inicio() {
               {profile && (
                 isPro ? (
                   <span className="ini-plan-tag ini-plan-tag--mob ini-plan-tag--pro" aria-label="Plano PRO">
-                    <img src="/coroa.png" alt="" className="ini-plan-coroa" aria-hidden="true" />
+                    <img src="/coroa.webp" alt="" className="ini-plan-coroa" aria-hidden="true" />
                     <span>PRO</span>
                   </span>
                 ) : (
@@ -860,7 +860,7 @@ export default function Inicio() {
                     onClick={() => navigate("/assinar")}
                     aria-label="Testar o PRO grátis por 7 dias"
                   >
-                    <img src="/coroa.png" alt="" className="ini-plan-coroa" aria-hidden="true" />
+                    <img src="/coroa.webp" alt="" className="ini-plan-coroa" aria-hidden="true" />
                     <span>{SELO_TESTE}</span>
                   </button>
                 )
@@ -945,7 +945,15 @@ export default function Inicio() {
         );
       })()}
 
-      {!computador && (
+      {/* (01/11 · 5.99) celular, primeira abertura do dia: um esqueleto enquanto carrega. Antes as partes apareciam e o
+          "pedido novo" entrava por cima de tudo, empurrando a tela uns 140 px para baixo bem na hora do toque. */}
+      {!computador && loading && (
+        <div className="ini-esq" aria-busy="true" aria-label="Carregando o seu dia">
+          <i className="ini-esq-b ini-esq-b--busca" /><i className="ini-esq-b ini-esq-b--dia" />
+          <div className="ini-esq-grade"><i className="ini-esq-b" /><i className="ini-esq-b" /><i className="ini-esq-b" /><i className="ini-esq-b" /></div>
+        </div>
+      )}
+      {!computador && !loading && (
       <div className="ini-content">
         {/* ── Coluna principal ── */}
         <div className="ini-main">
@@ -1263,6 +1271,12 @@ export default function Inicio() {
         .ini-hero-msg .ini-hero-msg-hl { color: var(--ui-branco); font-weight: 600; }
         .ini-hero-msg--neutral { color: rgba(255, 255, 255, 0.92); }
 
+        .ini-esq { display: flex; flex-direction: column; gap: 14px; padding: 0 var(--space-4, 16px); margin-top: var(--space-3, 12px); }
+        .ini-esq-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .ini-esq-b { display: block; height: 88px; border-radius: 14px; background: linear-gradient(90deg, #F4EFF1 0, #FAF6F8 50%, #F4EFF1 100%) 0 0 / 200% 100%; animation: ini-esq 1.2s linear infinite; }
+        .ini-esq-b--busca { height: 48px; } .ini-esq-b--dia { height: 260px; }
+        @keyframes ini-esq { to { background-position: -200% 0; } }
+        @media (prefers-reduced-motion: reduce) { .ini-esq-b { animation: none; } }
         /* Skeleton do nome enquanto carrega — evita flash de "bem-vinda" grande */
         .ini-hero-name-skel {
           display: inline-block;
@@ -1293,7 +1307,7 @@ export default function Inicio() {
           .ini-root .ini-hero-acoes { position: relative; z-index: 2; display: flex; gap: 6px; flex: none; }
           .ini-root .ini-hero-ac { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .12); color: var(--ui-branco); cursor: pointer; -webkit-tap-highlight-color: transparent; }
           .ini-root .ini-hero-ac:active { background: rgba(255, 255, 255, .22); }
-          .ini-root .ini-hero-bolinha { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--ui-rosa); border: 2px solid var(--vinho-escuro); font-style: normal; font-size: 10.5px; font-weight: 600; line-height: 14px; text-align: center; color: var(--ui-branco); }
+          .ini-root .ini-hero-bolinha { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--ui-rosa-botao, #CC2E66); border: 2px solid var(--vinho-escuro); font-style: normal; font-size: 10.5px; font-weight: 600; line-height: 14px; text-align: center; color: var(--ui-branco); }
           @media (min-width: 901px) { .ini-root .ini-hero-acoes { display: none; } }
 
         .ini-profile-btn {
@@ -2036,7 +2050,7 @@ export default function Inicio() {
           .ini-dk-bts { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
           .ini-dk-sep { width: 1px; height: 28px; margin: 0 6px; background: rgba(255,255,255,.35); }
           .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--ui-raio); font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-          .ini-dk-bt--1 { border: none; background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+          .ini-dk-bt--1 { border: none; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
           .ini-dk-bt--2 { border: 1.5px solid rgba(255,255,255,.7); background: transparent; color: var(--ui-branco); }
           .ini-dk-bt:hover { transform: translateY(-1px); }
           .ini-dk-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 0; }

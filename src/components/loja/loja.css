@@ -100,7 +100,7 @@
 .lj-link-tx b { font-size: 17px; }
 .lj-bt { min-height: 40px; border-color: transparent; background: var(--ui-cinza); color: var(--ui-texto); }
 .lj-bt:hover { background: #ECE6E9; }
-.lj-bt--pri { background: var(--ui-rosa); color: #fff; }
+.lj-bt--pri { background: var(--ui-rosa-botao, #CC2E66); color: #fff; }
 .lj-bt--pri:hover { background: var(--ui-rosa-escuro); }
 .lj-bt:focus-visible { outline-color: rgba(var(--ui-rosa-rgb), .45); }
 

@@ -155,7 +155,7 @@ const CSS = `
   .cid-erro { margin: 10px 0 0; font-size: 13px; color: #B91C1C; font-weight: 600; }
   .cid-bts { display: flex; gap: 8px; margin-top: 14px; }
   .cid-b1, .cid-b2 { flex: 1; border-radius: var(--ui-raio); padding: 12px 10px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-  .cid-b1 { border: none; background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); flex: 2; }
+  .cid-b1 { border: none; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); flex: 2; }
   .cid-b2 { flex: 1; }
   .cid-b1:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   .cid-b2 { border: 1.5px solid #EAE3E6; background: var(--ui-branco); color: var(--ui-texto); }

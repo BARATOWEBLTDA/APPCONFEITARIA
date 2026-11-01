@@ -52,7 +52,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-modelo-pe b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
 .ap-modelo-pe small { flex-shrink: 0; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
 .ap-modelo-pe small.pro { color: var(--ui-vinho, #5A3626); }
-.ap-modelo-ok { position: absolute; top: 8px; right: 8px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); z-index: 2; }
+.ap-modelo-ok { position: absolute; top: 8px; right: 8px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); z-index: 2; }
 /* mini prévias dos modelos */
 .ap .cd-layout-preview { position: relative; width: 100%; height: 120px; overflow: hidden; background: var(--ui-linha); }
 .ap .cd-lp-lines { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 8px; padding: 0 12px; }
@@ -359,7 +359,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .nnl-pill { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 5px 5px 5px 14px; border: 1px solid #F3D3E0; border-radius: 14px; background: #fff; box-sizing: border-box; color: var(--ui-rosa-escuro); }
 .nnl-pill > span { flex: 1; min-width: 0; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nnl-pill > span b { font-weight: 600; }
-.nnl-pill button { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 38px; margin: 0; padding: 0 14px; border: 0; border-radius: 10px; background: var(--ui-rosa); color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.nnl-pill button { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 38px; margin: 0; padding: 0 14px; border: 0; border-radius: 10px; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .nnl .ui-bt { width: auto; }
 
 /* (30/10 · 5.56) banner no topo da tela: largura toda, centralizado, antes de tudo */
@@ -411,7 +411,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
   .ap--2col .ap-banner-topo { align-self: start; }
 }
 /* (31/10 · 5.84) celular: "Ver como fica" vira só o olho, e "Foto do topo" / "Atrás do nome" cabem numa linha */
-@media (max-width: 420px) { .ap-vcf-t { display: none; } .ap-vcf.ui-bt { width: 40px; padding: 0; gap: 0; justify-content: center; } }
+@media (max-width: 420px) { .ap-vcf-t { display: none; } .ap-vcf.ui-bt { flex: none; width: 44px; min-width: 44px; padding: 0; gap: 0; justify-content: center; } }
 
 /* (31/10 · 5.91) Link personalizado: sem o "Copiar"; no grátis, o antes (hoje) × depois (PRO) */
 .nnl-url { display: block; min-width: 0; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

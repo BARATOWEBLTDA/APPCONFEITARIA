@@ -113,7 +113,7 @@ body .prod-preview-menu-sub { font-size: 12.5px; }
   .pl-lin-lucro--alto { color: #15803D; }
   .pl-lin-lucro--medio { color: var(--ui-laranja); }
   .pl-lin-lucro--baixo { color: var(--ui-vermelho); }
-  .pl-lin-ficha { position: relative; display: inline-block; margin: 0; padding: 0; border: 0; background: none; color: var(--ui-laranja); font-family: inherit; font-size: 12.5px; font-weight: 600; line-height: 1.5; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+  .pl-lin-ficha { position: relative; display: inline-flex; align-items: center; gap: 2px; margin: 0; padding: 0; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1.5; white-space: nowrap; cursor: pointer; } /* (01/11 · 5.99) o mesmo "Montar ficha técnica ›" do computador */
   .pl-lin-ficha::after { content: ""; position: absolute; inset: -12px -6px; } /* (22/10) B12: área de toque de 44 px */
 }
 

@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-import CompletarCadastro from "@/components/CompletarCadastro";
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
@@ -9,14 +8,11 @@ import { Botao, confirmar } from "@/components/base";
 import { Mascote, NomeDoonly } from "@/components/marca/Mascote";
 import { ArrowClockwise } from "@phosphor-icons/react";
 import { NotificationProvider } from "@/context/NotificationContext";
-import BoasVindas, { depoisDoVoltar } from "@/components/boasVindas/BoasVindas";
-import { AceiteTermos } from "@/components/termos/AceiteTermos";
+import { depoisDoVoltar } from "@/lib/depoisDoVoltar";
+import { anteciparCardapio } from "@/lib/cardapioAntecipado";
 import { TERMOS_VERSAO } from "@/lib/termos";
-import Auth from "@/pages/Auth";
-import Layout from "@/components/Layout";
 import { useParams } from "react-router-dom";
 function PedidoVerRedirect() { const { id } = useParams(); return <Navigate to={`/pedidos/${id}/editar`} replace />; }
-import Inicio from "@/pages/Inicio";
 /** (17/10) "Entrega e pagamento" agora fica dentro de Dados da loja: o link antigo abre lá, já nessa parte */
 function IrParaEntrega() {
   const de = (useLocation().state as any)?.de;
@@ -28,6 +24,27 @@ import { guardarDestinoDoLogin } from "@/lib/destinoLogin";
 
 /* (26/10) cada tela vira um pedaço separado do app: abre só o necessário (antes eram 3,6 MB de uma vez, o que segurava a abertura).
    Depois que a primeira tela aparece, as outras são baixadas em segundo plano (preCarregarTelas), então trocar de tela continua rápido. */
+/* (01/11 · 5.99) o login, o menu e o Início também viraram pedaços: quem abre o cardápio da loja (o cliente) não baixa mais
+   o app inteiro da confeiteira. Para a confeiteira não esperar em fila, o pedaço da tela que ela abriu começa a baixar já aqui. */
+const carregarAuth = () => import("@/pages/Auth");
+const carregarLayout = () => import("@/components/Layout");
+const carregarInicio = () => import("@/pages/Inicio");
+const Auth = lazy(carregarAuth);
+const Layout = lazy(carregarLayout);
+const Inicio = lazy(carregarInicio);
+const BoasVindas = lazy(() => import("@/components/boasVindas/BoasVindas"));
+const AceiteTermos = lazy(() => import("@/components/termos/AceiteTermos").then(m => ({ default: m.AceiteTermos })));
+const CompletarCadastro = lazy(() => import("@/components/CompletarCadastro"));
+if (typeof window !== "undefined") {
+  const rota = window.location.pathname;
+  const loja = rota.match(/^\/c\/([^/]+)/);
+  if (loja) { void import("@/pages/CardapioPublico").catch(() => {}); anteciparCardapio(decodeURIComponent(loja[1]).toLowerCase()); }
+  if (/^\/(login|cadastro)\/?$/.test(rota) || (rota === "/" && !temSessaoGuardada())) void carregarAuth().catch(() => {});
+  else if (!/^\/(c|o|orcamento|cardapio|admin|termos|privacidade|esqueci-senha|reset-password|redefinir-senha|nova-senha|alterar-senha)(\/|$)/.test(rota)) {
+    if (temSessaoGuardada()) { void carregarLayout().catch(() => {}); if (/^\/(inicio)?\/?$/.test(rota)) void carregarInicio().catch(() => {}); }
+    else void carregarAuth().catch(() => {});
+  }
+}
 const EsqueciSenha = lazy(() => import("@/pages/EsqueciSenha"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const Termos = lazy(() => import("@/pages/Termos"));
@@ -89,6 +106,9 @@ const Lucratividade = lazy(() => import("@/pages/Lucratividade"));
 const FichaTecnica = lazy(() => import("@/pages/FichaTecnica"));
 const NaoEncontrada = lazy(() => import("@/pages/NaoEncontrada"));
 const PRE_CARREGAR: (() => Promise<unknown>)[] = [
+  carregarLayout,
+  carregarInicio,
+  carregarAuth,
   () => import("@/pages/EsqueciSenha"),
   () => import("@/pages/ResetPassword"),
   () => import("@/pages/Termos"),
@@ -141,7 +161,8 @@ function preCarregarTelas() {
   let i = 0;
   const proximo = () => { if (i >= PRE_CARREGAR.length) return; PRE_CARREGAR[i++]().catch(() => {}).finally(() => window.setTimeout(proximo, 40)); };
   const ocioso = (window as any).requestIdleCallback || ((f: () => void) => window.setTimeout(f, 1500));
-  window.setTimeout(() => ocioso(proximo), 1500);
+  // (01/11 · 5.99) espera a primeira tela carregar os dados (antes começava em 1,5 s e disputava a internet com o Início)
+  window.setTimeout(() => ocioso(proximo), 6000);
 }
 
 

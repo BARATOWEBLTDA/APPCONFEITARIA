@@ -6,6 +6,9 @@ import { SeloVerificado } from '@/components/cardapio/SeloVerificado'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getCardapioByCodigo, getCardapioBySlug } from '@/services/cardapio'
 import { supabase } from '@/lib/supabase'
+import { Botao } from '@/components/base'
+import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
+import './naoEncontrada.css'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { BannerAd } from '@/components/cardapio/BannerAd'
 import { Logo } from '@/components/cardapio/Logo'
@@ -340,12 +343,14 @@ function CardapioContent() {
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
       if (design?.user_id) {
         localStorage.setItem('cardapio_user_id', design.user_id)
-        // Registra a visita (1x por sessão de navegador, pra não inflar o número)
+        // Registra a visita: (01/11 · 5.99) uma por aparelho a cada 30 minutos (antes uma por aba aberta, o que inflava o número)
         const visitKey = `cardapio_visita_${design.user_id}`
+        let ultima = 0
+        try { ultima = Number(localStorage.getItem(visitKey) || sessionStorage.getItem(visitKey) || 0) } catch { /* sem armazenamento */ }
         // (4.27) a prévia dentro do app (?previa=1) não conta como visita
-        if (!sessionStorage.getItem(visitKey) && !new URLSearchParams(window.location.search).has('previa')) {
+        if (Date.now() - ultima > 30 * 60 * 1000 && !new URLSearchParams(window.location.search).has('previa')) {
           supabase.from('cardapio_visitas').insert({ user_id: design.user_id }).then(() => {})
-          sessionStorage.setItem(visitKey, '1')
+          try { localStorage.setItem(visitKey, String(Date.now())) } catch { try { sessionStorage.setItem(visitKey, String(Date.now())) } catch { /* sem armazenamento */ } }
         }
       }
 
@@ -420,26 +425,23 @@ function CardapioContent() {
     </div>
   )
 
-  if (error || !design) return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-body)' }}>
-      <div style={{ textAlign:'center' }}>
-        {/* (31/10 · 5.84) dentro da prévia (a dona vendo o próprio cardápio) o texto é para ela, não para o cliente */}
-        {!falhaCarga && (new URLSearchParams(window.location.search).has('previa') || window.self !== window.top) ? (<>
-          <h1 style={{ fontSize:'22px', fontWeight:600, color:'var(--text-title)' }}>Seu cardápio aparece aqui</h1>
-          <p style={{ color:'var(--text-secondary)' }}>Ele aparece quando tiver produto no cardápio.</p>
-        </>) : (<>
-          <h1 style={{ fontSize:'24px', fontWeight:600, color:'var(--text-title)' }}>{falhaCarga ? 'Não deu para abrir o cardápio' : 'Cardápio não encontrado'}</h1>
-          <p style={{ color:'var(--text-secondary)' }}>{error || 'Verifique o link e tente novamente.'}</p>
-        </>)}
-        {falhaCarga && (
-          <button type="button" onClick={() => window.location.reload()}
-            style={{ marginTop: 16, height: 48, padding: '0 28px', border: 'none', borderRadius: 12, background: '#E85A8C', color: '#fff', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
-            Tentar de novo
-          </button>
-        )}
+  // (01/11 · 5.99) link errado ou loja que saiu: mesma página do "não existe" do app (antes era uma tela branca sem marca)
+  if (error || !design) {
+    const previa = !falhaCarga && (new URLSearchParams(window.location.search).has('previa') || window.self !== window.top)
+    return (
+      <div className="ne-root">
+        <div className="ne-fundo" />
+        <main className="ne-cartao" role={falhaCarga ? 'alert' : undefined}>
+          <Mascote pose="senha" className="ne-masc" />
+          <NomeDoonly className="ne-nome" />
+          {/* (31/10 · 5.84) dentro da prévia (a dona vendo o próprio cardápio) o texto é para ela, não para o cliente */}
+          <h1 className="ne-h">{previa ? 'Seu cardápio aparece aqui' : falhaCarga ? 'Não deu para abrir o cardápio' : 'Cardápio não encontrado'}</h1>
+          <p className="ne-p">{previa ? 'Ele aparece quando tiver produto no cardápio.' : falhaCarga ? (error || 'Confira a internet e tente de novo.') : 'Confira o link com a confeitaria. Ele pode ter mudado.'}</p>
+          {falhaCarga && <Botao cheio onClick={() => window.location.reload()}>Tentar de novo</Botao>}
+        </main>
       </div>
-    </div>
-  )
+    )
+  }
 
   const isDesktop = device === 'desktop'
   const categorias = getCategories()

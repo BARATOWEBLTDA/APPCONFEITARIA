@@ -95,7 +95,7 @@ export default function Assinar() {
                 const conteudo = (<>
                   <span className="pro9-ic"><Ic size={20} weight="duotone" /></span>
                   <span className="pro9-l2-tx"><b>{t}</b><small>{d}</small></span>
-                  {para ? <CaretRight size={16} weight="bold" className="pro9-seta" aria-hidden="true" /> : <span className="pro9-visto" aria-label="Incluso"><Check size={12} weight="bold" /></span>}
+                  {para ? <CaretRight size={16} weight="bold" className="pro9-seta" aria-hidden="true" /> : <span className="pro9-visto" role="img" aria-label="Incluso"><Check size={12} weight="bold" /></span>}
                 </>);
                 return para
                   ? <button key={t} type="button" className="pro9-l2-i" onClick={() => ir(para)}>{conteudo}</button>
@@ -108,7 +108,7 @@ export default function Assinar() {
       ) : (
       <div className="cl9 pro9">
         <section className="pro9-hero">
-          <img src="/pro.png" alt="" />
+          <img src="/pro.webp" alt="" />
           <div>
             <h1>Sua confeitaria mais lucrativa e organizada</h1>
             <p>Ferramentas que vendem, calculam e organizam por você.</p>

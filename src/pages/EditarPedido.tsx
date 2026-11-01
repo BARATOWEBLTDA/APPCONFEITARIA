@@ -1727,7 +1727,7 @@ export default function EditarPedido() {
         aberta={itemMenu !== null && !!itens[itemMenu]} aoFechar={() => setItemMenu(null)} tipo="conteudo"
         titulo={itemMenu !== null && itens[itemMenu] ? itemComQtd(nomeDeProduto(itens[itemMenu].nome_produto), itens[itemMenu].quantidade, formaDoItem(itens[itemMenu])) : 'Item'}
         acoes={itemMenu !== null && itens[itemMenu] ? <>
-          <Botao variante="secundario" icone={<Trash size={20} weight="bold" />} onClick={() => { const i = itemMenu; setItemMenu(null); removerComDesfazer(i) }}>Remover item</Botao>
+          <Botao variante="secundario" icone={<Trash size={20} weight="bold" />} onClick={() => { const i = itemMenu; setItemMenu(null); removerComDesfazer(i) }}>Remover</Botao>
           <Botao onClick={() => setItemMenu(null)}>Pronto</Botao>
         </> : undefined}
       >
@@ -2458,7 +2458,7 @@ export default function EditarPedido() {
         .ep-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .ep-btn--ghost { background: #F1EFE8; color: #2C2C2A; }
         .ep-btn--ghost:hover:not(:disabled) { background: #E8E5DC; }
-        .ep-btn--primary { background: var(--ui-rosa); color: var(--ui-branco); }
+        .ep-btn--primary { background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); }
         .ep-btn--primary:hover:not(:disabled) { background: var(--ui-rosa-escuro); }
         .ep-btn--success {
           background: #0F6E56;
@@ -3784,7 +3784,7 @@ const EP2_CSS = `
   .ep2-cb { display: flex; align-items: center; justify-content: center; gap: 5px; border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); border-radius: var(--ui-raio-botao); padding: 9px 4px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-cinza-texto); text-decoration: none; cursor: pointer; }
   .ep2-cb.wa { background: #16A34A; border-color: #16A34A; color: var(--ui-branco); }
   .ep2-cb.mute { grid-column: span 2; color: var(--ui-texto-3); font-weight: 500; border-style: dashed; } .ep2-cb.mute u { color: var(--ui-rosa-escuro); font-weight: 600; }
-  .ep2-add { display: inline-flex; align-items: center; gap: 4px; border: none; background: var(--ui-rosa); color: var(--ui-branco); border-radius: var(--ui-raio-p); padding: 9px 11px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+  .ep2-add { display: inline-flex; align-items: center; gap: 4px; border: none; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); border-radius: var(--ui-raio-p); padding: 9px 11px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
   /* itens (03/10): fechados com resumo no celular, abrem ao tocar; no computador ficam abertos */
   .ep2-sec-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
   .ep2-sec-h .ep2-ct { margin: 0; } .ep2-sec-h span { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; } .ep2-sec-h span b { color: var(--ui-texto); font-weight: 600; }
@@ -3874,7 +3874,7 @@ const EP2_CSS = `
   .ep2-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; padding: 0 2px; }
   .ep2-cal i { font-style: normal; font-size: 12px; font-weight: 500; color: var(--ui-texto-3); padding: 4px 0; }
   .ep2-cal button { border: none; background: none; border-radius: var(--ui-raio-p); padding: 8px 0; font-family: inherit; font-size: 14px; color: var(--ui-texto); cursor: pointer; }
-  .ep2-cal button.hj { box-shadow: inset 0 0 0 1.5px var(--ui-rosa); } .ep2-cal button.sel { background: var(--ui-rosa); color: var(--ui-branco); font-weight: 600; }
+  .ep2-cal button.hj { box-shadow: inset 0 0 0 1.5px var(--ui-rosa); } .ep2-cal button.sel { background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-weight: 600; }
   .ep2-cal-ok { width: 100%; margin-top: 14px; }
   /* ══ itens do pedido (03/10): modelo aprovado — nome em uma linha, campos com rótulo, adicionais em caixinhas
         (uma por linha), referência grande e centralizada, valor no fim. Nada quebra linha (só o recado). ══ */
@@ -3968,7 +3968,7 @@ const EP2_CSS = `
   .ep2-save-desk { display: none; } @media (min-width: 1024px) { .ep2-save-desk { display: flex; flex-direction: column; gap: 8px; } }
   .ep2-mud { font-size: 12.5px; font-weight: 600; color: var(--ui-laranja); text-align: center; }
   .ep2-b1, .ep2-b2 { border: none; border-radius: var(--ui-raio); padding: 13px; font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; }
-  .ep2-b1 { background: var(--ui-rosa); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); } .ep2-b1.ok { background: #16A34A; box-shadow: none; } .ep2-b2 { background: var(--ui-cinza); color: var(--ui-cinza-texto); }
+  .ep2-b1 { background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); } .ep2-b1.ok { background: #16A34A; box-shadow: none; } .ep2-b2 { background: var(--ui-cinza); color: var(--ui-cinza-texto); }
   .ep2-b1:disabled, .ep2-b2:disabled { opacity: .7; cursor: default; }
   .ep2-foot { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ui-branco); border-top: 1px solid #F0EBED; box-shadow: 0 -6px 16px rgba(44,18,25,.08); padding: 8px 12px 10px; display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; animation: ep2Sobe .2s ease; }
   html.teclado-aberto .ep2-foot { bottom: var(--teclado, 0px); }

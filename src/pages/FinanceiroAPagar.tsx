@@ -7,14 +7,14 @@ import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, MagnifyingGlass, Plus, Receipt, WarningCircle, X } from "@phosphor-icons/react";
+import { CheckCircle, MagnifyingGlass, PencilSimple, Plus, Receipt, WarningCircle, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_A_PAGAR, TOUR_A_PAGAR } from "@/lib/comoTelas";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { erroDeConexao } from "@/lib/erros";
 import { faltaNoBanco } from "@/lib/pagamentos";
-import { Botao, BotaoIcone, TelaVazia, confirmar, avisar as avisarBase } from "@/components/base";
+import { Botao, CaixasEscolha, MenuMais, TelaVazia, confirmar, avisar as avisarBase } from "@/components/base";
 
 /**
  * Financeiro · Passo 5 (03/10) — Contas a pagar.
@@ -206,7 +206,11 @@ export default function FinanceiroAPagar() {
                       </div>
                       <b className="fap-it-v">{brl(c.valor)}</b>
                       <div className="fap-bts">
-                        <BotaoIcone rotulo="Cancelar conta" tamanho="p" onClick={() => cancelar(c)}><X size={16} weight="bold" /></BotaoIcone>
+                        {/* (01/11 · 5.99) o "×" solto não dizia o que fazia: virou o menu ⋮ (o mesmo do resto do app) */}
+                        <MenuMais rotulo={`Opções de ${c.descricao}`} itens={[
+                          { Ic: PencilSimple, t: "Corrigir", sub: "Nome, valor ou vencimento", aoTocar: () => setRevisar(c) },
+                          { Ic: X, t: "Cancelar conta", sub: "Ela sai da lista sem mexer no caixa", perigo: true, aoTocar: () => cancelar(c) },
+                        ]} />
                         <Botao tamanho="p" onClick={() => setPagar(c)}>Pagar</Botao>
                       </div>
                     </div>
@@ -268,8 +272,12 @@ export function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose:
   return (
     <Folha titulo={`Pagar · ${conta.descricao}`} sub={`Vence ${dataCurta(conta.vencimento)} · ${brl(conta.valor)}`} onClose={onClose} umaAcao
       acoes={<Botao cheio carregando={salvando} onClick={confirmar}>{doCaixa ? "Confirmar pagamento" : "Marcar como paga"}</Botao>}>
-      <p className="fo-lb">De onde saiu o dinheiro?</p>
-      <div className="fo-seg"><button type="button" className={doCaixa ? "on" : ""} onClick={() => setDoCaixa(true)}>Do caixa da loja</button><button type="button" className={!doCaixa ? "on" : ""} onClick={() => setDoCaixa(false)}>Outra pessoa pagou</button></div>
+      <p className="fo-lb" id="fap-origem">De onde saiu o dinheiro?</p>
+      {/* (01/11 · 5.99) caixinhas com bolinha no lugar do seletor lado a lado (o padrão do app) */}
+      <CaixasEscolha rotuloId="fap-origem" valor={doCaixa ? "caixa" : "outra"} onMudar={v => setDoCaixa(v === "caixa")} opcoes={[
+        { v: "caixa", t: "Do caixa da loja", sub: "Sai do saldo e entra no Financeiro" },
+        { v: "outra", t: "Outra pessoa pagou", sub: "Marca como paga, sem mexer no caixa" },
+      ]} />
       <label className="fo-lb" htmlFor="fap-v">Quanto foi pago?</label>
       <div className="fo-in"><span>R$</span><input id="fap-v" inputMode="numeric" value={valor} onChange={e => { setValor(mascaraBRL(e.target.value)); setErro(""); }} /></div>
       {doCaixa && <p className="fo-lb">Forma de pagamento</p>}
@@ -326,9 +334,11 @@ function NovaContaSheet({ onClose, onFeito, conta, onCancelar }: { onClose: () =
     <Folha titulo={conta ? "Revisar conta" : "Nova conta a pagar"} sub={conta ? "Corrija o que estiver errado" : "Ela só sai do caixa quando você pagar"} onClose={onClose} umaAcao
       acoes={<Botao cheio carregando={salvando} onClick={salvar}>{conta ? "Salvar" : fixa ? "Cadastrar conta fixa" : "Cadastrar conta"}</Botao>}>
       {!conta && <>
-        <p className="fo-lb">Essa conta se repete todo mês?</p>
-        <div className="fo-seg"><button type="button" className={!fixa ? "on" : ""} onClick={() => setFixa(false)}>Só esta vez</button><button type="button" className={fixa ? "on" : ""} onClick={() => setFixa(true)}>Todo mês</button></div>
-        {fixa && <div className="fo-dica">Ela fica nos seus custos fixos e aparece aqui todo mês, no mesmo dia.</div>}
+        <p className="fo-lb" id="fap-repete">Essa conta se repete todo mês?</p>
+        <CaixasEscolha rotuloId="fap-repete" valor={fixa ? "mes" : "uma"} onMudar={v => setFixa(v === "mes")} opcoes={[
+          { v: "uma", t: "Só esta vez", sub: "Sai da lista depois de paga" },
+          { v: "mes", t: "Todo mês", sub: "Volta todo mês, no mesmo dia" },
+        ]} />
       </>}
       <label className="fo-lb" htmlFor="fap-d">Conta</label>
       <input id="fap-d" className="fo-txt" placeholder="Ex.: Fornecedor de chocolate" value={descricao} onChange={e => { setDescricao(e.target.value); setErro(""); }} />

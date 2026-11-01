@@ -862,10 +862,11 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
               onChange={e => setCupomForm({ ...cupomForm, codigo: e.target.value.toUpperCase().replace(/\s/g, '') })} />
             <div className="ui-campo">
               <span className="ui-campo-r" id="ep-tipo"><span>Tipo de desconto</span></span>
-              <div className="ep-seg" role="radiogroup" aria-labelledby="ep-tipo">
-                <button type="button" role="radio" aria-checked={cupomForm.tipo === 'percentual'} onClick={() => setCupomForm({ ...cupomForm, tipo: 'percentual' })}>Porcentagem (%)</button>
-                <button type="button" role="radio" aria-checked={cupomForm.tipo !== 'percentual'} onClick={() => setCupomForm({ ...cupomForm, tipo: 'fixo' })}>Valor (R$)</button>
-              </div>
+              {/* (01/11 · 5.99) caixinhas com bolinha no lugar do seletor lado a lado */}
+              <CaixasEscolha rotuloId="ep-tipo" valor={cupomForm.tipo === 'percentual' ? 'percentual' : 'fixo'} onMudar={v => setCupomForm({ ...cupomForm, tipo: v })} opcoes={[
+                { v: 'percentual', t: 'Porcentagem', sub: 'Ex.: 10% de desconto no pedido' },
+                { v: 'fixo', t: 'Valor em reais', sub: 'Ex.: R$ 10,00 de desconto no pedido' },
+              ]} />
             </div>
             <Campo rotulo="Desconto" obrigatorio inputMode="decimal" placeholder="0" value={cupomForm.valor}
               prefixo={cupomForm.tipo === 'percentual' ? undefined : 'R$'} depois={cupomForm.tipo === 'percentual' ? <span className="ep-depois">%</span> : undefined}

@@ -182,7 +182,7 @@ export default function FinanceiroAReceber() {
               </div>
               {/* (22/10) computador: tabela (como em Pedidos), cabe tudo numa tela. O celular continua com os cartões */}
               <div className="far-tab" role="table" aria-label={titulo}>
-                <div className="far-tr far-th" role="row"><span role="columnheader">Pedido</span><span role="columnheader">Entrega</span><span role="columnheader">Total</span><span role="columnheader">Pago</span><span role="columnheader">Falta</span><span role="columnheader" aria-label="Ações" /></div>
+                <div className="far-tr far-th" role="row"><span role="columnheader">Pedido</span><span role="columnheader">Entrega</span><span role="columnheader">Total</span><span role="columnheader">Pago</span><span role="columnheader">Falta</span><span role="columnheader"><span className="ui-so-leitor">Ações</span></span></div>
                 {lista.map(it => (
                   <div key={it.id} className="far-tr" role="row">
                     <span role="cell" className="far-td-p"><b>{it.cliente_nome || "Cliente"}</b>{it.numero ? <em>#{it.numero}</em> : null}<span className={`far-tg ${it.dias !== null && it.dias < 0 ? "far-tg--atr" : ""}`}>{quando(it.dias)}</span></span>

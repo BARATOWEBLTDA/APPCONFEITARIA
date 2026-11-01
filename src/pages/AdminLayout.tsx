@@ -52,7 +52,7 @@ export default function AdminLayout() {
       {/* Sidebar desktop */}
       <aside className="adm-sidebar">
         <div className="adm-sidebar-logo">
-          <img src="/logoapp.png" alt="Doonly" style={{ height: "48px", objectFit: "contain" }} />
+          <img src="/logoapp.webp" alt="Doonly" style={{ height: "48px", objectFit: "contain" }} />
           <span className="adm-admin-badge">Admin</span>
         </div>
 
@@ -76,7 +76,7 @@ export default function AdminLayout() {
 
       {/* Mobile header */}
       <div className="adm-mobile-header">
-        <img src="/logoapp.png" alt="Doonly" style={{ height: "36px", objectFit: "contain" }} />
+        <img src="/logoapp.webp" alt="Doonly" style={{ height: "36px", objectFit: "contain" }} />
         <span className="adm-admin-badge">Admin</span>
         <button className="adm-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">

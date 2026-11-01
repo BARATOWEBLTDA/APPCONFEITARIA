@@ -62,3 +62,15 @@ html body :is(
   .mas-op-tx b, .mas-l b, .ns-name, .cc-linha-tx b, .ce-partes b, .ap-crot b, .ap-tema-pe b, .cp9-ped b, .ag3-at-tx b,
   .orc-link-tx b, .lu-pc-tx b, .cf-dicas b, .nl-it-t, .acp-et b, .cad-n
 ) { font-weight: 500; }
+
+/* (01/11 · 5.99) O zoom de pinça foi liberado (acessibilidade: quem enxerga pouco precisa ampliar).
+   No iPhone, campo com letra menor que 16px dá zoom sozinho quando é tocado: no celular todo campo de digitar fica com 16px.
+   Os campos de letra grande (valor em destaque) continuam como estão. */
+@media (pointer: coarse) {
+  :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]), select, textarea):not(:is(.esc-kg-preco, .fo-in--grande, .an-emoji-input, .nv3-livre-qtd) *) {
+    font-size: 16px !important;
+  }
+}
+
+/* (01/11 · 5.99) texto só para leitor de tela (não aparece) */
+.ui-so-leitor { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

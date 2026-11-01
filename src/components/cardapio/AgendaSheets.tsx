@@ -147,15 +147,15 @@ const CSS = `
   /* Hoje: só um pontinho discreto embaixo do número (sem contorno, para não parecer seleção) */
   .ags-d.hoje::after { content: ""; position: absolute; left: 50%; bottom: 5px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
   .ags-d.hoje:not(:disabled) { font-weight: 600; }
-  .ags-d.sel { background: var(--ui-rosa); color: var(--ui-branco); font-weight: 600; box-shadow: none; }
+  .ags-d.sel { background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-weight: 600; box-shadow: none; }
   .ags-leg { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--ui-texto-2); margin: 10px 0 12px; }
   .ags-leg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
   .ags-leg .l1 { background: var(--ui-vinho-escuro); } .ags-leg .l2 { background: #E5DDE1; }
-  .ags-ok { display: block; width: 100%; border: none; border-radius: var(--ui-raio); padding: 14px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+  .ags-ok { display: block; width: 100%; border: none; border-radius: var(--ui-raio); padding: 14px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
   .ags-ok:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   .ags-hrs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
   .ags-hrs button { height: 48px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ui-texto); cursor: pointer; }
-  .ags-hrs button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); font-weight: 600; }
+  .ags-hrs button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-weight: 600; }
   .ags-hrs .ags-outro { grid-column: 1 / -1; border-style: dashed; color: var(--ui-rosa-escuro); font-size: 15px; font-weight: 600; }
   .ags-outro-box { margin-top: 12px; padding: 14px; border-radius: var(--ui-raio-cartao); background: #FAF7F8; }
   .ags-outro-box p { margin: 0 0 10px; font-size: 13px; color: var(--ui-texto-2); }

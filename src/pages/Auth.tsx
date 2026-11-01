@@ -157,9 +157,8 @@ export default function Auth() {
   const [cadastroLoading, setCadastroLoading] = useState(false);
   const [cadastroError, setCadastroError] = useState("");
   const [showCadastroSenha, setShowCadastroSenha] = useState(false);
-  const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
   const [cadastroForm, setCadastroForm] = useState({
-    nome: "", nomeLoja: "", telefone: "", email: "", senha: "", confirmarSenha: ""
+    nome: "", nomeLoja: "", telefone: "", email: "", senha: ""
   });
   const [cadastroErrors, setCadastroErrors] = useState<Record<string, string>>({});
   const [cadastroTouched, setCadastroTouched] = useState<Record<string, boolean>>({});
@@ -276,27 +275,12 @@ export default function Auth() {
       }
     }
 
-    // Confirmação de senha: revalida sempre que senha OU confirmação mudam
-    if (field === "senha" && cadastroTouched.confirmarSenha) {
-      const confErr = nextForm.confirmarSenha && nextForm.confirmarSenha !== value ? "As senhas digitadas não são iguais" : "";
-      setCadastroErrors(prev => ({ ...prev, confirmarSenha: confErr }));
-    }
-    if (field === "confirmarSenha" && cadastroTouched.confirmarSenha) {
-      const confErr = value && value !== nextForm.senha ? "As senhas digitadas não são iguais" : "";
-      setCadastroErrors(prev => ({ ...prev, confirmarSenha: confErr }));
-    }
   };
 
   const handleCadastroBlur = (field: keyof typeof cadastroForm) => {
     // campo vazio só acusa ao clicar em "Criar conta" (não ao passar pelo campo)
     if (!String(cadastroForm[field] ?? "").trim()) return;
     setCadastroTouched(prev => ({ ...prev, [field]: true }));
-    if (field === "confirmarSenha") {
-      const confErr = cadastroForm.confirmarSenha && cadastroForm.confirmarSenha !== cadastroForm.senha
-        ? "As senhas digitadas não são iguais" : "";
-      setCadastroErrors(prev => ({ ...prev, confirmarSenha: confErr }));
-      return;
-    }
     const validator = validate[field as keyof typeof validate];
     if (validator) {
       setCadastroErrors(prev => ({ ...prev, [field]: validator(cadastroForm[field]) }));
@@ -316,10 +300,9 @@ export default function Auth() {
       email: validate.email(cadastroForm.email),
       telefone: validate.telefone(cadastroForm.telefone),
       senha: validate.senha(cadastroForm.senha),
-      confirmarSenha: !cadastroForm.confirmarSenha ? "Repita a senha" : cadastroForm.confirmarSenha !== cadastroForm.senha ? "As senhas digitadas não são iguais" : "",
     };
     setCadastroErrors(nextErrors);
-    setCadastroTouched({ nome: true, nomeLoja: true, email: true, telefone: true, senha: true, confirmarSenha: true });
+    setCadastroTouched({ nome: true, nomeLoja: true, email: true, telefone: true, senha: true });
 
     const hasError = Object.values(nextErrors).some(e => e);
     if (hasError) return;
@@ -745,7 +728,7 @@ export default function Auth() {
           </div>
           </div>
 
-          {/* Senha + confirmação (lado a lado no computador; as regras ficam logo abaixo da senha) */}
+          {/* (01/11 · 5.99) só a senha: o "Confirmar a senha" saiu (o olho mostra o que foi digitado; quem erra troca pelo "Esqueci a senha") */}
           <div className="cad-par cad-par--senha">
           <div className="cad-field-wrap cad-a-senha">
             <label className="cad-lb" htmlFor="cad-senha">Senha</label>
@@ -758,8 +741,8 @@ export default function Auth() {
                 onChange={e => handleCadastroChange("senha", e.target.value)}
                 onBlur={() => handleCadastroBlur("senha")}
                 required
-                autoComplete="off"
-                enterKeyHint="next"
+                autoComplete="new-password"
+                enterKeyHint="done"
                 aria-invalid={!!(cadastroTouched.senha && cadastroErrors.senha)}
               />
               <button
@@ -789,36 +772,6 @@ export default function Auth() {
             ))}
           </ul>
 
-          {/* Confirmar Senha */}
-          <div className="cad-field-wrap cad-a-conf">
-            <label className="cad-lb" htmlFor="cad-confirmar">Confirmar a senha</label>
-            <div className={`cad-field ${cadastroTouched.confirmarSenha && cadastroErrors.confirmarSenha ? "has-error" : ""}`}>
-              <input
-                id="cad-confirmar"
-                type={showConfirmarSenha ? "text" : "password"}
-                placeholder="Repita a senha"
-                value={cadastroForm.confirmarSenha}
-                onChange={e => handleCadastroChange("confirmarSenha", e.target.value)}
-                onBlur={() => handleCadastroBlur("confirmarSenha")}
-                required
-                autoComplete="off"
-                enterKeyHint="done"
-                aria-invalid={!!(cadastroTouched.confirmarSenha && cadastroErrors.confirmarSenha)}
-              />
-              <button
-                type="button"
-                tabIndex={-1}
-                className="cad-eye"
-                onClick={() => setShowConfirmarSenha(!showConfirmarSenha)}
-                aria-label={showConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}
-              >
-                {showConfirmarSenha ? <EyeSlash size={20} weight="regular" /> : <Eye size={20} weight="regular" />}
-              </button>
-            </div>
-            {cadastroTouched.confirmarSenha && cadastroErrors.confirmarSenha && (
-              <span className="cad-error">{cadastroErrors.confirmarSenha}</span>
-            )}
-          </div>
           </div>
 
           {cadastroError && (
@@ -1214,12 +1167,11 @@ export default function Auth() {
           .cad-par { display: grid; column-gap: 14px; row-gap: 10px; align-items: start; }
           /* 13/10: minmax(0, …) e min-width 0: sem isso o campo da direita (WhatsApp, Confirmar a senha) passava para fora do cartão */
           .cad-par--loja { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-          .cad-par--senha { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "senha conf" "regras regras"; }
+          .cad-par--senha { grid-template-columns: minmax(0, 1fr); grid-template-areas: "senha" "regras"; }
           .cad-par > * { min-width: 0; }
           .cad-par .cad-field, .cad-par input { min-width: 0; max-width: 100%; box-sizing: border-box; }
           .cad-par input { width: 100%; }
           .cad-par--senha .cad-a-senha { grid-area: senha; }
-          .cad-par--senha .cad-a-conf { grid-area: conf; }
           .cad-par--senha .cad-a-regras { grid-area: regras; margin-top: 0; }
           .cad-btn { margin-top: 6px; }
           .cad-mobile-login-link { padding-top: 0; }

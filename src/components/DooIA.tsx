@@ -768,7 +768,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           {/* Cabeçalho */}
           <div className="dz-hd">
             <button type="button" className="dz-hb dz-voltar" onClick={handleClose} aria-label="Fechar a Doo"><CaretLeft size={20} weight="bold" /></button>
-            <div className="dz-hav"><img src="/Sistema/doo.png" alt="" /><i aria-hidden="true" /></div>
+            <div className="dz-hav"><img src="/Sistema/doo.webp" alt="" /><i aria-hidden="true" /></div>
             <div className="dz-ht">
               <b>Doo IA{isPro && <> <em>PRO</em></>}</b>
               <small className={loading || generatingImage ? 'dz-esc' : ''}><i aria-hidden="true" />{loading ? 'Escrevendo…' : generatingImage ? 'Criando a imagem…' : 'Online · responde na hora'}</small>
@@ -784,7 +784,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             {showSuggestions && (
               <div className="dz-ini">
                 <div className="dz-hero">
-                  <div className="dz-hav2"><img src="/Sistema/doo.png" alt="" /></div>
+                  <div className="dz-hav2"><img src="/Sistema/doo.webp" alt="" /></div>
                   <b>{nomeConfeiteira ? `Oi, ${nomeConfeiteira}! Eu sou a Doo` : 'Oi! Eu sou a Doo'}</b>
                   <p>Sua assistente de confeitaria: calculo preços, crio receitas, registro pedidos e cadastro ingredientes.</p>
                 </div>
@@ -803,7 +803,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
             {messages.map((msg, i) => (
               <div key={i} className={`dz-m ${msg.role === 'user' ? 'dz-m--eu' : 'dz-m--doo'}`}>
-                {msg.role === 'assistant' && <img src="/Sistema/doo.png" alt="" className="dz-mav" />}
+                {msg.role === 'assistant' && <img src="/Sistema/doo.webp" alt="" className="dz-mav" />}
                 <div className="dz-mc">
                   <div className="dz-bd">
                     {msg.attachmentPreview && <img src={msg.attachmentPreview} alt="Referência" className="dz-anexo" />}
@@ -861,7 +861,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
             {(loading || generatingImage) && (
               <div className="dz-m dz-m--doo">
-                <img src="/Sistema/doo.png" alt="" className="dz-mav" />
+                <img src="/Sistema/doo.webp" alt="" className="dz-mav" />
                 <div className="dz-mc">
                   <div className="dz-bd dz-dig">{generatingImage ? <><span className="dz-spin" />Criando sua imagem…</> : <><i /><i /><i /></>}</div>
                   <p className="dz-digt">{generatingImage ? 'Leva uns segundinhos' : 'A Doo está escrevendo…'}</p>
@@ -982,7 +982,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-ib { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .dz-txt { flex: 1; min-width: 0; height: 44px; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); padding: 0 2px; }
         .dz-txt::placeholder { color: #B5AAB0; }
-        .dz-snd { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--ui-rosa); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(232,90,140,.35); transition: background .15s; }
+        .dz-snd { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(232,90,140,.35); transition: background .15s; }
         .dz-snd:disabled { background: #F3D2DE; box-shadow: none; cursor: default; }
 
         /* janela de quem não é PRO */

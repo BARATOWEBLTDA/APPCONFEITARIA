@@ -104,7 +104,8 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         .fl-b { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 16px 14px; }
         .fl-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 2px 7px; }
         .fl-sec b { font-size: 12px; font-weight: 600; color: var(--ui-texto-3); }
-        .fl-lk { border: none; background: none; padding: 0; font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+        .fl-lk { position: relative; border: none; background: none; padding: 0; font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+        .fl-lk::after { content: ""; position: absolute; inset: -13px -6px; } /* (01/11 · 5.99) área de toque de 44px sem mudar o desenho */
         .fl-grp { border: 1px solid #F0EBED; border-radius: 14px; overflow: hidden; }
         .fl-ln { display: flex; align-items: center; gap: 10px; width: 100%; border: none; border-top: 1px solid var(--ui-linha); background: var(--ui-branco); padding: 12px; font-family: inherit; font-size: 14.5px; color: var(--ui-texto); text-align: left; cursor: pointer; }
         .fl-grp > .fl-ln:first-child, .fl-grp > div:first-child > .fl-ln { border-top: none; }
@@ -121,7 +122,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         .fl-per .cdata { padding: 0 10px; font-size: 14px; gap: 6px; } /* De/Até lado a lado, sem quebrar */
         .fl-f { display: flex; align-items: center; gap: 10px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--ui-cinza); }
         .fl-limpar { border: none; background: none; padding: 10px 6px; font-family: inherit; font-size: 14.5px; font-weight: 600; color: var(--ui-texto-3); cursor: pointer; }
-        .fl-ver { flex: 1; border: none; border-radius: var(--ui-raio-botao); padding: 14px; background: var(--ui-rosa); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+        .fl-ver { flex: 1; border: none; border-radius: var(--ui-raio-botao); padding: 14px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
         .fl-ver:disabled { background: #E7E4E5; color: var(--ui-texto-3); box-shadow: none; cursor: default; } /* (22/10) 0 pedidos: cinza, sem tocar */
       `}</style>
     </div>, document.body)

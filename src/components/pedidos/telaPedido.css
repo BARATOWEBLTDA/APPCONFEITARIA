@@ -312,7 +312,7 @@
 .tpj-motivos { flex-wrap: wrap; margin: 0 0 8px; padding: 0; overflow: visible; }
 .tpj-cat { flex: none; min-height: 44px; margin: 0; padding: 0 14px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-2); font-family: var(--font-base); font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .tpj-motivos .tpj-cat { white-space: normal; text-align: left; }
-.tpj-cat[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); }
+.tpj-cat[aria-pressed="true"] { border-color: var(--ui-rosa); background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); }
 .tpj-cat:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 .tpj-txt { margin: 0 0 16px; font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); }
 .tpj-bloco { margin-bottom: 16px; }

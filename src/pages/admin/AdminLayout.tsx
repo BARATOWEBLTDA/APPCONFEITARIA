@@ -174,7 +174,7 @@ export default function AdminLayout() {
       <aside className="adm-sidebar">
         <div className="adm-sidebar-top">
           <div className="adm-logo-square">
-            <img src="/logoapp.png" alt="Doonly" />
+            <img src="/logoapp.webp" alt="Doonly" />
           </div>
           <div className="adm-brand">
             <span className="adm-brand-name">Doonly</span>
@@ -188,7 +188,7 @@ export default function AdminLayout() {
       {/* Mobile header — só a marca; navegação fica na barra de baixo */}
       <div className="adm-mobile-header">
         <div className="adm-logo-square adm-logo-square--sm">
-          <img src="/logoapp.png" alt="Doonly" />
+          <img src="/logoapp.webp" alt="Doonly" />
         </div>
         <div className="adm-brand">
           <span className="adm-brand-name">Doonly</span>
@@ -282,7 +282,7 @@ export default function AdminLayout() {
         .adm-nav-item.on { background: rgba(255,255,255,.12); color: var(--ui-branco); font-weight: 600; }
         .adm-nav-item.on .adm-nav-icon { color: #F28AB0; }
         .adm-nav-label { flex: 1; }
-        .adm-nav-badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+        .adm-nav-badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
         .adm-sidebar-bottom { padding: 12px; border-top: 1px solid rgba(255,255,255,.08); }
         .adm-user { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; padding: 10px; border-radius: var(--ui-raio); background: rgba(255,255,255,.06); }
         .adm-user-avt { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); font-size: 15px; font-weight: 600; }
@@ -305,7 +305,7 @@ export default function AdminLayout() {
         .adm-bnav-it.on { color: var(--ui-branco); font-weight: 600; }
         .adm-bnav-it.on .adm-bnav-ic { color: #F28AB0; }
         .adm-bnav-ic { position: relative; display: flex; }
-        .adm-bnav-badge { position: absolute; top: -6px; right: -12px; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid var(--vinho-profundo); border-radius: 99px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+        .adm-bnav-badge { position: absolute; top: -6px; right: -12px; min-width: 20px; height: 20px; padding: 0 5px; border: 2px solid var(--vinho-profundo); border-radius: 99px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
         .adm-sheet-ov { position: fixed; top: 0; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ui-veu); }
         .adm-sheet { position: fixed; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); max-height: 75vh; overflow-y: auto; padding: 10px 12px 12px; border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; background: var(--ui-branco); animation: admSheetIn .2s ease-out; }
         @keyframes admSheetIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }

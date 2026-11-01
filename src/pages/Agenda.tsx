@@ -671,7 +671,7 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
 
       <div className="ag3-sem" aria-hidden="true">{SEMANA_CURTA.map(d => <span key={d}>{d}</span>)}</div>
 
-      <div className="ag3-dias" role="grid">
+      <div className="ag3-dias">
         {cells.map(c => {
           const st = dayStats[c.iso];
           const sel = c.iso === diaSel;

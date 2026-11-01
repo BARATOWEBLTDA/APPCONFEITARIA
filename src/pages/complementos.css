@@ -93,7 +93,7 @@
 .pz-cel-op i { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border: 1.5px solid var(--ui-borda-campo); border-radius: 5px; color: var(--ui-branco); }
 .pz-cel-op.on i { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 .pz-cel-ref { display: flex; align-items: center; gap: 6px; margin: 0 14px 8px; padding: 7px 9px; border: 1.5px dashed #E7C2D2; border-radius: 9px; font-size: 10.5px; font-weight: 600; color: var(--ui-rosa-escuro); }
-.pz-cel-bt { margin: 10px 12px 14px; padding: 10px 0; border-radius: 12px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 12.5px; font-weight: 600; text-align: center; }
+.pz-cel-bt { margin: 10px 12px 14px; padding: 10px 0; border-radius: 12px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-size: 12.5px; font-weight: 600; text-align: center; }
 /* balão do "Enviar foto de referência" (computador), em cima do canto do celular */
 .pz-balao { display: none; }
 @media (min-width: 900px) {

@@ -27,4 +27,17 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  // (01/11 · 5.99) junta os pedaços muito pequenos (cada ícone virava um arquivo de 1 KB: mais de 100 pedidos na abertura)
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            // ícones usados por várias telas: agrupados por quem usa (cada tela baixa só os que precisa)
+            { name: 'icones', test: /@phosphor-icons/, entriesAware: true, entriesAwareMergeThreshold: 24_000 },
+          ],
+        },
+      },
+    },
+  },
 })

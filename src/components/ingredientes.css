@@ -74,7 +74,7 @@
 .ig-foto2-bts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; }
 .ig-foto2-bts button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; margin: 0; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: background .15s, border-color .15s; }
 .ig-foto2-bts button:disabled { opacity: .6; cursor: default; }
-.ig-bt-net { border: 1px solid var(--ui-rosa); background: var(--ui-rosa); color: var(--ui-branco); }
+.ig-bt-net { border: 1px solid var(--ui-rosa); background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); }
 .ig-bt-net:hover:not(:disabled) { background: var(--ui-rosa-escuro); border-color: var(--ui-rosa-escuro); }
 .ig-bt-cel { border: 1px solid var(--ui-borda); background: var(--ui-branco); color: var(--ui-texto); }
 .ig-bt-cel:hover:not(:disabled) { border-color: var(--ui-texto-3); }
