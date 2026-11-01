@@ -20,7 +20,7 @@ export default function MapaRaios({ loja, faixas, nome }: { loja: Ponto; faixas:
     let vivo = true;
     Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]).then(([mod]) => {
       if (!vivo || !caixa.current || mapa.current) return;
-      const Lf = (mod as any).default || mod;
+      const Lf = (mod as { default?: typeof import("leaflet") }).default || mod;
       L.current = Lf;
       const m = Lf.map(caixa.current, { center: [loja.lat, loja.lng], zoom: 12, zoomControl: true, scrollWheelZoom: false, attributionControl: true });
       m.attributionControl.setPrefix(false);
@@ -47,14 +47,14 @@ export default function MapaRaios({ loja, faixas, nome }: { loja: Ponto; faixas:
       Lf.circle([loja.lat, loja.lng], { radius: (f.km * 1000) / 1.3, color: CORES[Math.min(i, CORES.length - 1)], weight: 1.5, opacity: 0.8, fillOpacity: 0.1, dashArray: i === 0 ? undefined : "5 4", interactive: false }).addTo(g);
     });
     const icone = Lf.divIcon({ className: "mpr-pino", html: "<i></i>", iconSize: [28, 36], iconAnchor: [14, 34] });
-    Lf.marker([loja.lat, loja.lng], { icon: icone, interactive: false }).addTo(g);
+    Lf.marker([loja.lat, loja.lng], { icon: icone, interactive: false, keyboard: false }).addTo(g);
     const maior = Math.max(1, ...faixas.map(f => f.km));
     const b = Lf.latLng(loja.lat, loja.lng).toBounds((maior * 2000 * 1.08) / 1.3);
     m.fitBounds(b, { animate: false });
   }, [pronto, chave]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="mpr" role="img" aria-label={`Mapa com ${faixas.length} ${faixas.length === 1 ? "raio" : "raios"} de entrega em volta da loja`}>
+    <div className="mpr" role="group" aria-label={`Mapa com ${faixas.length} ${faixas.length === 1 ? "raio" : "raios"} de entrega em volta da loja`}>
       <div ref={caixa} className="mpr-mapa" />
       {nome && <span className="mpr-selo">{nome}</span>}
       <style>{`

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowCounterClockwise, WarningCircle, Info, XCircle, CheckCircle } from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 import { useTravarRolagem } from '@/hooks/useTravarRolagem'
 
 /**
@@ -11,7 +12,7 @@ import { useTravarRolagem } from '@/hooks/useTravarRolagem'
 export type IconeDialogo = 'alerta' | 'erro' | 'info' | 'estorno' | 'ok'
 export type DialogoOpcoes = { titulo: string; texto?: string; icone?: IconeDialogo; rotuloConfirmar?: string; perigo?: boolean }
 
-const ICONES: Record<IconeDialogo, { el: any; cor: string; fundo: string }> = {
+const ICONES: Record<IconeDialogo, { el: Icon; cor: string; fundo: string }> = {
   alerta: { el: WarningCircle, cor: '#B45309', fundo: '#FEF3C7' },
   erro: { el: XCircle, cor: '#DC2626', fundo: '#FEE2E2' },
   info: { el: Info, cor: '#C33A6E', fundo: '#FCE7F3' },

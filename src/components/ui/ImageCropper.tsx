@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import Cropper from 'react-easy-crop'
+import type { Area } from 'react-easy-crop'
 import { MagnifyingGlassMinus, MagnifyingGlassPlus, X } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, avisar } from '@/components/base'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
@@ -35,7 +36,7 @@ const createImage = (url: string): Promise<HTMLImageElement> =>
 
 const LADO_MAXIMO = 1600
 
-async function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<Blob> {
+async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
   const image = await createImage(imageSrc)
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
@@ -64,13 +65,13 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
   const MIN = encaixar ? 0.6 : 1
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
   const [loading, setLoading] = useState(false)
   const caixa = useRef<HTMLDivElement>(null)
   const cancelar = () => { if (!loading) onCancel() }
   useSobreposicao(true, cancelar, caixa)
 
-  const onCropComplete = useCallback((_: any, pixels: any) => {
+  const onCropComplete = useCallback((_: Area, pixels: Area) => {
     setCroppedAreaPixels(pixels)
   }, [])
 
@@ -127,7 +128,7 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
             type="range" min={MIN} max={3} step={0.05} value={zoom}
             onChange={e => setZoom(Number(e.target.value))}
             aria-label="Aproximar a foto"
-            style={{ ['--fill' as any]: `${((zoom - MIN) / (3 - MIN) * 100).toFixed(1)}%` }}
+            style={{ ['--fill']: `${((zoom - MIN) / (3 - MIN) * 100).toFixed(1)}%` } as React.CSSProperties}
           />
           <BotaoIcone rotulo="Aproximar" onClick={() => mudarZoom(0.2)} disabled={zoom >= 3}><MagnifyingGlassPlus size={20} weight="bold" /></BotaoIcone>
         </div>

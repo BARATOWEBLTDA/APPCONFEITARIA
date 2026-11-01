@@ -8,16 +8,39 @@ import { explicarErro } from "@/lib/erros";
 import { pesoDoTamanho } from "@/lib/itemSacola";
 import { supabase } from "@/lib/supabase";
 import { criarPersonalizacoesV1, criarBreakdownV1, SNAPSHOT_VERSION_ATUAL } from "@/lib/pedido-snapshot";
+import type { OpcaoSnapshotV1 } from "@/lib/pedido-snapshot";
 import { r2, somarReais } from "@/lib/moeda";
 import { comDesconto, descontoCardapio, precosDosSabores } from "@/lib/precoCardapio";
 import { precoLivre } from "@/lib/kitQuantidade";
+import type { KitEscolha, KitQtdConfig } from "@/lib/kitQuantidade";
+import type { GrupoJson, ProdutoPrecoJson } from "@/lib/precoCardapio";
+import type { PostgrestError } from "@supabase/supabase-js";
+
+/** Escolhas gravadas no item (tamanho, kit, sabor… e o que a janela do produto acrescenta): jsonb do pedido_itens */
+export type PersonalizacoesItem = {
+  massa?: OpcaoSnapshotV1 | null; recheios?: OpcaoSnapshotV1[]; cobertura?: OpcaoSnapshotV1 | null; sabor?: OpcaoSnapshotV1 | null; tamanho?: OpcaoSnapshotV1 | null;
+  kit?: KitEscolha | null; extras?: { id?: string; nome?: string; valor?: number; frase?: string | null }[]; foto_referencia?: string | null;
+};
+/** As escolhas que uma opção de venda (tamanho, kit ou sabor) grava no item */
+export type PersOpcao = {
+  tamanho?: { nome: string; preco: number; peso_kg: number | null };
+  kit?: KitEscolha;
+  sabor?: { id: string; nome: string; adicional: number; preco_proprio: number };
+};
+/** Uma opção de venda do produto (tamanho, kit ou sabor) com o preço já com a promoção */
+export type OpcaoVenda = { label: string; valor: number; pers: PersOpcao };
+/** A linha gravada em "pedidos" (o que o insert devolve) */
+export type PedidoCriado = {
+  id: string; numero?: number | null; status?: string; status_pagamento?: string; valor_recebido?: number; valor_total?: number;
+  data_entrega?: string | null; horario_entrega?: string | null; [coluna: string]: unknown;
+};
 
 export const FORMAS_PAGAMENTO = ["PIX", "Dinheiro", "Crédito", "Débito"] as const;
 export type SituacaoPag = "total" | "parcial" | "fiado" | "na_entrega";
 
 export type ItemPedido = {
   produto_id?: string; nome_produto: string; quantidade: number; valor_unitario: number;
-  imagem_url?: string; forma_venda?: string; observacoes: string; opcaoLabel?: string; personalizacoes?: any;
+  imagem_url?: string; forma_venda?: string; observacoes: string; opcaoLabel?: string; personalizacoes?: PersonalizacoesItem;
 };
 
 /** Quantas quantidades o kit livre oferece na Nova venda (mínimo, mínimo + passo…). Mais que isso, ela aumenta a quantidade do item. */
@@ -29,7 +52,7 @@ const MAX_OPCOES_KIT_LIVRE = 8;
  * em % vale pra tudo; em valor não vale pra tamanho de preço fixo nem pra kit.
  */
 /** (14/10) kit "ele escolhe": a opção de uma quantidade qualquer (válida pelo mínimo, máximo e passo) */
-export function opcaoKitLivre(p: any, q: number): { label: string; valor: number; pers: any } | null {
+export function opcaoKitLivre(p: ProdutoPrecoJson, q: number): OpcaoVenda | null {
   const kq = p?.kit_qtd;
   if (!kq?.ativo || kq.modo !== "livre") return null;
   const min = Number(kq.livre?.min) || 0, max = Number(kq.livre?.max) || 0;
@@ -39,7 +62,7 @@ export function opcaoKitLivre(p: any, q: number): { label: string; valor: number
 }
 
 /** (14/10) quantidades redondas que costumam vender (10, 25, 50, cento…), só as que o kit aceita */
-export function quantidadesSugeridas(p: any): number[] {
+export function quantidadesSugeridas(p: ProdutoPrecoJson): number[] {
   const kq = p?.kit_qtd;
   if (!kq?.ativo || kq.modo !== "livre") return [];
   const min = Number(kq.livre?.min) || 0, max = Number(kq.livre?.max) || 0, passo = Number(kq.livre?.passo) || 1;
@@ -47,16 +70,16 @@ export function quantidadesSugeridas(p: any): number[] {
   return Array.from(new Set([min, 10, 25, 50, 100, 150, 200, 300, 500, 1000].filter(ok))).sort((a, b) => a - b).slice(0, 6);
 }
 
-export function opcoesDoProduto(p: any): { label: string; valor: number; pers: any }[] {
+export function opcoesDoProduto(p: ProdutoPrecoJson): OpcaoVenda[] {
   const desc = descontoCardapio(p);
   const gt = p?.grupo_tamanhos;
   if (gt?.ativo && Array.isArray(gt.opcoes)) {
     const porPeso = gt.modo_preco_tamanho === "por_peso";
-    const ops = gt.opcoes.filter((o: any) => o?.nome?.trim()).map((o: any) => {
+    const ops = gt.opcoes.filter((o) => o?.nome?.trim()).map((o) => {
       const peso = pesoDoTamanho(o, porPeso); // (10/10) sem peso_kg, lê o peso do nome ("1,5kg")
       const valor = comDesconto(porPeso ? (Number(p.preco_normal) || 0) * peso : Number(o.preco) || 0, desc);
       return { label: o.nome, valor, pers: { tamanho: { nome: o.nome, preco: valor, peso_kg: peso || null } } };
-    }).filter((o: any) => o.valor > 0);
+    }).filter((o) => o.valor > 0);
     if (ops.length) return ops;
   }
   const kq = p?.kit_qtd;
@@ -67,17 +90,17 @@ export function opcoesDoProduto(p: any): { label: string; valor: number; pers: a
     const qtds: number[] = min > 0 ? [min] : [];
     if (min > 0 && passo > 0) for (let q = min + passo; q <= max && qtds.length < MAX_OPCOES_KIT_LIVRE; q += passo) qtds.push(q);
     if (min > 0 && max > qtds[qtds.length - 1] && qtds.length < MAX_OPCOES_KIT_LIVRE) qtds.push(max); // o máximo, como o cardápio
-    return qtds.map(q => ({ label: `${q} unidades`, valor: comDesconto(precoLivre(kq, q), desc), pers: { kit: { modo: "livre", total: q, sabores: [] } } }))
+    return qtds.map<OpcaoVenda>(q => ({ label: `${q} unidades`, valor: comDesconto(precoLivre(kq, q), desc), pers: { kit: { modo: "livre", total: q, sabores: [] } } }))
       .filter(o => o.valor > 0);
   }
   if (kq?.ativo && Array.isArray(kq.kits) && kq.kits.length) {
-    return kq.kits.filter((k: any) => (k.qtd || 0) > 0 && (k.preco || 0) > 0).map((k: any) => ({
+    return kq.kits.filter((k) => (k.qtd || 0) > 0 && (k.preco || 0) > 0).map((k) => ({
       label: `${k.qtd} unidades`, valor: comDesconto(Number(k.preco), desc), pers: { kit: { modo: "fechado", total: k.qtd, sabores: [] } },
     }));
   }
   // (24/10) "cada sabor tem o seu preço": o sabor é a escolha (antes entrava o preço do mais barato sem perguntar)
   if (precosDosSabores(p)) {
-    return (p.grupo_sabores.opcoes || []).filter((o: any) => !o?.esgotado && (Number(o?.preco) || 0) > 0 && String(o?.nome || "").trim()).map((o: any) => {
+    return (p.grupo_sabores.opcoes || []).filter((o) => !o?.esgotado && (Number(o?.preco) || 0) > 0 && String(o?.nome || "").trim()).map((o) => {
       const valor = comDesconto(Number(o.preco), desc);
       return { label: o.nome, valor, pers: { sabor: { id: o.id, nome: o.nome, adicional: 0, preco_proprio: Number(o.preco) } } };
     });
@@ -86,7 +109,7 @@ export function opcoesDoProduto(p: any): { label: string; valor: number; pers: a
 }
 
 /** Preço do produto sem tamanho nem kit, já com a promoção (11/10: antes a Nova venda e a Doo cobravam o preço cheio). */
-export const precoDeVenda = (p: any): number => comDesconto(Number(p?.preco_normal) || 0, descontoCardapio(p)); // a mesma conta do cardápio
+export const precoDeVenda = (p: ProdutoPrecoJson): number => comDesconto(Number(p?.preco_normal) || 0, descontoCardapio(p)); // a mesma conta do cardápio
 
 export const hojeISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 
@@ -151,7 +174,7 @@ export function pendenciasPedido(d: DadosPedido): string[] {
  * Se o pedido falhar, quem chamou guarda esse id e manda de volta em d.clienteId na próxima tentativa
  * (antes cada tentativa cadastrava a mesma cliente de novo).
  */
-export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok: true; pedido: any; aviso?: string; clienteId: string | null } | { ok: false; erro: string; clienteId: string | null }> {
+export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok: true; pedido: PedidoCriado; aviso?: string; clienteId: string | null } | { ok: false; erro: string; clienteId: string | null }> {
   const total = totalDe(d);
   const subtotal = subtotalDe(d.itens);
   const acrescimo = r2(d.acrescimo);
@@ -168,11 +191,11 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
   const avisos: string[] = [];
   let clienteIdFinal = d.clienteId;
   if (!d.semCliente && !d.clienteId && d.clienteNovo && d.clienteNome.trim()) {
-    const end: any = d.tipoEntrega === "entrega" ? { rua: d.endereco.rua || null, numero: d.endereco.numero || null, bairro: d.endereco.bairro || null, cidade: d.endereco.cidade || null, complemento: d.endereco.complemento || null } : {};
+    const end: Record<string, string | null> = d.tipoEntrega === "entrega" ? { rua: d.endereco.rua || null, numero: d.endereco.numero || null, bairro: d.endereco.bairro || null, cidade: d.endereco.cidade || null, complemento: d.endereco.complemento || null } : {};
     const { data: cliNovo, error: errCli } = await supabase.from("clientes")
       .insert({ user_id: userId, nome: d.clienteNome.trim(), whatsapp: d.clienteTelefone.trim() || null, ...end })
       .select("id").single();
-    if (!errCli && (cliNovo as any)?.id) clienteIdFinal = (cliNovo as any).id;
+    if (!errCli && (cliNovo as { id?: string } | null)?.id) clienteIdFinal = (cliNovo as { id: string }).id;
     else {
       // (11/10) antes só ia pro console: o pedido saía sem cliente ligada e ninguém ficava sabendo
       console.error("[Doonly] não deu para cadastrar o cliente novo:", errCli);
@@ -180,7 +203,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     }
   }
 
-  const linhaPedido: any = {
+  const linhaPedido: Record<string, unknown> = {
     user_id: userId,
     cliente_id: clienteIdFinal,
     cliente_nome: d.semCliente ? "" : d.clienteNome,
@@ -217,10 +240,10 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     ({ data: novoPedido, error } = await supabase.from("pedidos").insert(semAcrescimo).select().single());
   }
   // (17/10 · R07) "esse id já existe": a tentativa anterior tinha gravado e só a resposta se perdeu no caminho
-  if (error && d.idTentativa && (error as any).code === "23505" && /pkey/i.test(String(error.message || ""))) {
+  if (error && d.idTentativa && (error as PostgrestError).code === "23505" && /pkey/i.test(String(error.message || ""))) {
     const { data: jaGravado } = await supabase.from("pedidos").select("*, pedido_itens(id)").eq("id", d.idTentativa).maybeSingle();
     if (jaGravado) {
-      const { pedido_itens: itensGravados, ...pedidoGravado } = jaGravado as any;
+      const { pedido_itens: itensGravados, ...pedidoGravado } = jaGravado as PedidoCriado & { pedido_itens?: { id: string }[] | null };
       if (Array.isArray(itensGravados) && itensGravados.length > 0) return { ok: true, pedido: pedidoGravado, clienteId: clienteIdFinal };
       // gravou sem os produtos: atualiza com o que está na tela agora (ela pode ter mudado algo antes de tentar de novo) e grava os produtos
       const { id: _id, user_id: _uid, ...atual } = linhaPedido;
@@ -229,7 +252,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     }
   }
   if (error || !novoPedido) return { ok: false, clienteId: clienteIdFinal, erro: explicarErro(error, "Não deu para registrar a venda. Tente de novo.") };
-  const pid = (novoPedido as any).id;
+  const pid = (novoPedido as PedidoCriado).id;
 
   const itensInsert = d.itens.map(it => ({
     pedido_id: pid,
@@ -249,9 +272,9 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
     // Apaga o pedido recém-criado (ainda sem histórico nem recebimento) e devolve o erro, pra ela tentar de novo.
     const falha = explicarErro(errItens, "Não deu para salvar os produtos do pedido, então a venda não foi registrada. Tente de novo.");
     const { data: apagado, error: errApagar } = await supabase.from("pedidos").delete().eq("id", pid).select("id");
-    if (errApagar || !(apagado as any[] | null)?.length) {
+    if (errApagar || !(apagado as { id: string }[] | null)?.length) {
       if (errApagar) console.error("[Doonly] pedido sem produtos que não deu para apagar:", errApagar);
-      const n = (novoPedido as any).numero ? ` #${(novoPedido as any).numero}` : "";
+      const n = (novoPedido as PedidoCriado).numero ? ` #${(novoPedido as PedidoCriado).numero}` : "";
       return { ok: false, clienteId: clienteIdFinal, erro: `O pedido${n} ficou salvo sem os produtos. Abra a lista de pedidos e confira esse pedido antes de registrar de novo.` };
     }
     return { ok: false, clienteId: clienteIdFinal, erro: falha };
@@ -274,7 +297,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
       // O pedido passa a mostrar o que está gravado de verdade (a soma dos recebimentos dele, em geral zero)
       // e a tela avisa; o pedido não se perde.
       const { data: linhas, error: errLer } = await supabase.from("pagamentos").select("valor").eq("pedido_id", pid).is("estornado_em", null);
-      const gravado = errLer ? 0 : Math.round(((linhas as any[]) || []).reduce((s, l) => s + (Number(l.valor) || 0), 0) * 100) / 100;
+      const gravado = errLer ? 0 : Math.round(((linhas as { valor: number | null }[]) || []).reduce((s, l) => s + (Number(l.valor) || 0), 0) * 100) / 100;
       if (gravado < valorRecebido - 0.009) { // (se a soma bate, o pagamento entrou e só a resposta se perdeu: nada a corrigir)
         const real = gravado > 0 ? (gravado >= total - 0.009 ? "pago" : "parcial") : "pendente";
         const { error: errVolta } = await supabase.from("pedidos").update({ status_pagamento: real, valor_recebido: gravado }).eq("id", pid);
@@ -282,8 +305,8 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
           console.error("[pedidos] não consegui corrigir o pagamento do pedido:", errVolta);
           avisos.push("O pedido foi salvo, mas o recebimento não entrou no financeiro. Abra o pedido e confira o pagamento.");
         } else {
-          (novoPedido as any).status_pagamento = real;
-          (novoPedido as any).valor_recebido = gravado;
+          (novoPedido as PedidoCriado).status_pagamento = real;
+          (novoPedido as PedidoCriado).valor_recebido = gravado;
           avisos.push("O pedido foi salvo, mas o recebimento não foi registrado. Abra o pedido e registre o recebimento.");
         }
       }
@@ -309,14 +332,14 @@ export async function excluirPedido(pedidoId: string): Promise<{ ok: true } | { 
   // (27/10) pedido cancelado em que ela ficou com o sinal: o dinheiro continua no caixa (o recebimento fica sem pedido).
   // Antes a exclusão estornava e o saldo e o "Recebido no mês" caíam com o dinheiro ainda na mão dela.
   const { data: ped } = await supabase.from("pedidos").select("status").eq("id", pedidoId).maybeSingle();
-  const cancelado = (ped as any)?.status === "cancelado";
+  const cancelado = (ped as { status?: string } | null)?.status === "cancelado";
   let estornou = false;
   if (!errPag && !cancelado && (ativos || []).length > 0) {
     const r = await ajustarRecebido({ pedidoId, alvo: 0 }); // alvo zero = estorna todos os ativos (nada é apagado)
     if (!r.ok) return { ok: false, estornou: true, erro: "Não deu para estornar os recebimentos deste pedido, então ele não foi excluído. Confira os pagamentos do pedido e tente de novo." };
     estornou = true;
     // marca que o estorno veio da exclusão (não é devolução de dinheiro): o saldo em caixa informado antes não mexe por isso
-    const { error: errMarca } = await supabase.from("pagamentos").update({ observacao: ESTORNO_POR_EXCLUSAO }).in("id", (ativos as any[]).map(a => a.id));
+    const { error: errMarca } = await supabase.from("pagamentos").update({ observacao: ESTORNO_POR_EXCLUSAO }).in("id", (ativos as { id: string }[]).map(a => a.id));
     if (errMarca) console.error("[Doonly] marca do estorno por exclusão:", errMarca);
   }
   const depoisDoEstorno = estornou ? " Os recebimentos dele já foram estornados." : "";
@@ -331,7 +354,7 @@ export async function excluirPedido(pedidoId: string): Promise<{ ok: true } | { 
 
 /* ── Doo IA: catálogo, clientes e o rascunho que ela prepara ─────────────── */
 export type ProdutoCat = {
-  id: string; nome: string; preco_normal: number; forma_venda?: string; imagem_url?: string; categoria?: string; grupo_tamanhos?: any; grupo_sabores?: any; kit_qtd?: any;
+  id: string; nome: string; preco_normal: number; forma_venda?: string; imagem_url?: string; categoria?: string; grupo_tamanhos?: GrupoJson | null; grupo_sabores?: GrupoJson | null; kit_qtd?: KitQtdConfig | null;
   promocao?: boolean | null; tipo_promocao?: string | null; desconto_percentual?: number | null; preco_promocional?: number | null;
 };
 export type ClienteCat = { id: string; nome: string; telefone?: string; whatsapp?: string; rua?: string; numero?: string; bairro?: string; cidade?: string; complemento?: string };
@@ -350,11 +373,14 @@ const CAMPOS_CLIENTE = "id,nome,telefone,whatsapp,rua,numero,bairro,cidade,compl
  * Produtos pra vender (Nova venda e Doo), com os campos da promoção.
  * Se a leitura com a promoção falhar por causa do banco (coluna que a conta não tem), lê sem ela: a venda não trava.
  */
-export async function lerProdutosDeVenda(uid: string, extra = ""): Promise<{ data: any[] | null; error: any }> {
+/** Produto lido pra venda (os campos acima; "extra" pode trazer mais, como disponivel) */
+export type ProdutoVenda = ProdutoCat & { disponivel?: boolean | null };
+
+export async function lerProdutosDeVenda(uid: string, extra = ""): Promise<{ data: ProdutoVenda[] | null; error: PostgrestError | null }> {
   const ler = (campos: string) => supabase.from("produtos").select(campos + extra).eq("user_id", uid).order("nome");
-  let r: { data: any; error: any } = await ler(`${CAMPOS_PRODUTO},${CAMPOS_PROMOCAO}`);
+  let r: { data: unknown; error: PostgrestError | null } = await ler(`${CAMPOS_PRODUTO},${CAMPOS_PROMOCAO}`);
   if (r.error && /^(42703|PGRST204)$/.test(String(r.error.code || ""))) r = await ler(CAMPOS_PRODUTO);
-  return { data: (r.data as any[]) || null, error: r.error };
+  return { data: (r.data as ProdutoVenda[]) || null, error: r.error };
 }
 
 export async function listarCatalogo(uid: string): Promise<{ produtos: ProdutoCat[]; clientes: ClienteCat[]; taxaPadrao: number }> {
@@ -362,7 +388,7 @@ export async function listarCatalogo(uid: string): Promise<{ produtos: ProdutoCa
     lerProdutosDeVenda(uid, ",disponivel"),
     supabase.from("clientes").select(CAMPOS_CLIENTE).eq("user_id", uid).order("nome").limit(TETO_CLIENTES_DOO),
   ]);
-  return { produtos: ((p.data as any[]) || []).filter(x => x.disponivel !== false), clientes: (c.data as any[]) || [], taxaPadrao: 0 };
+  return { produtos: ((p.data as ProdutoVenda[]) || []).filter(x => x.disponivel !== false), clientes: (c.data as ClienteCat[]) || [], taxaPadrao: 0 };
 }
 
 /** Sem acento, sem maiúscula e com um espaço só: "  José  da SILVA" → "jose da silva". */
@@ -386,7 +412,7 @@ export async function procurarClientesPorNome(uid: string, nome: string): Promis
   const { data, error } = await supabase.from("clientes").select(CAMPOS_CLIENTE).eq("user_id", uid)
     .ilike("nome", `${padraoSemAcento(nome)}%`).order("nome").limit(300); // o padrão é largo (nome curto acha muita gente): o nome exato é conferido abaixo
   if (error) { console.error("[Doonly] busca de cliente pelo nome:", error); return []; }
-  return ((data as any[]) || []).filter(c => nomeLimpo(c.nome) === alvo);
+  return ((data as ClienteCat[]) || []).filter(c => nomeLimpo(c.nome) === alvo);
 }
 
 export type RascunhoPedido = {

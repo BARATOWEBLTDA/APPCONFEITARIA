@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { Check, Eye, ShareNetwork, X } from '@phosphor-icons/react'
-import { getCardapioUrl } from '@/hooks/useProfile'
+import { getCardapioUrl, type Profile } from '@/hooks/useProfile'
 import './loja.css'
 
 /**
@@ -9,7 +9,7 @@ import './loja.css'
  * Copiar, Abrir e WhatsApp). "Compartilhar" abre o compartilhar do celular (WhatsApp, Instagram...);
  * onde ele não existe (computador), copia o link. "Ver cardápio" mostra como o cliente vê. O X fecha de vez.
  */
-export function LojaProntaCartao({ profile, onFechar }: { profile: any; onFechar: () => void }) {
+export function LojaProntaCartao({ profile, onFechar }: { profile: Profile | null; onFechar: () => void }) {
   const navigate = useNavigate()
   const link = getCardapioUrl(profile)
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 import { refreshProfile } from "@/hooks/useProfile";
 import { digitosTelefone, mascaraTelefone } from "@/lib/telefone";
 import { Botao, Campo } from "@/components/base";
@@ -14,7 +15,7 @@ import IconeWhatsApp from "@/components/IconeWhatsApp";
 // (11/10) máscara única do app (aceita colar com +55)
 const maskTel = mascaraTelefone;
 
-export default function CompletarCadastro({ user, nomeInicial, lojaInicial = "", telefoneInicial = "", onPronto }: { user: any; nomeInicial: string; lojaInicial?: string; telefoneInicial?: string; onPronto: () => void }) {
+export default function CompletarCadastro({ user, nomeInicial, lojaInicial = "", telefoneInicial = "", onPronto }: { user: User; nomeInicial: string; lojaInicial?: string; telefoneInicial?: string; onPronto: () => void }) {
   const meta = user?.user_metadata || {};
   const [nome, setNome] = useState(nomeInicial || meta.full_name || meta.name || "");
   // (10/10) o que já está no cadastro vem preenchido (só falta um dos dois): ela não redigita nem grava por cima

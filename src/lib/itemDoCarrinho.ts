@@ -1,13 +1,18 @@
 import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
 import { r2 } from '@/lib/moeda'
+import type { CartItem, EscolhasV3 } from '@/types/cart'
+import type { ExtraEscolhido } from '@/lib/kitTexto'
+
+/** Item da sacola com o que a janela do produto acrescenta (complementos e foto de referência) */
+export type ItemDoCarrinho = CartItem & { extrasBiblioteca?: ExtraEscolhido[] | null; fotoReferencia?: string | null }
 
 /**
  * Item do carrinho (janela de produto do cardápio) → item de pedido (03/10).
  * Uma regra só: usada pelo cardápio (ao enviar o pedido) e pelo Editar pedido (ao adicionar um item com opções).
  * Guarda tudo o que foi escolhido: tamanho, massa, recheios, cobertura, sabor, kit, adicionais e foto de referência.
  */
-export function itemDoCarrinhoParaPedido(item: any) {
-  const escolhas = item.escolhas || {}
+export function itemDoCarrinhoParaPedido(item: ItemDoCarrinho) {
+  const escolhas: EscolhasV3 = item.escolhas || {}
   const personalizacoes = escolhas.massa || escolhas.recheios || escolhas.cobertura || escolhas.sabor || escolhas.tamanho || escolhas.kit
     ? {
         massa: escolhas.massa || null,
@@ -30,7 +35,7 @@ export function itemDoCarrinhoParaPedido(item: any) {
   const personalizacoesFinal = (temExtras || item.fotoReferencia)
     ? {
         ...(personalizacoes || {}),
-        ...(temExtras ? { extras: item.extrasBiblioteca.map((x: any) => ({ ...(x.id ? { id: x.id } : {}), nome: x.nome, valor: Number(x.valor) || 0, ...(x.frase ? { frase: x.frase } : {}) })) } : {}),
+        ...(temExtras ? { extras: item.extrasBiblioteca.map((x) => ({ ...(x.id ? { id: x.id } : {}), nome: x.nome, valor: Number(x.valor) || 0, ...(x.frase ? { frase: x.frase } : {}) })) } : {}),
         ...(item.fotoReferencia ? { foto_referencia: item.fotoReferencia } : {}),
       }
     : personalizacoes

@@ -48,7 +48,7 @@ export const somarDias = (d: Date, n: number) => new Date(d.getFullYear(), d.get
 export const isoDia = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 export const deIso = (s: string) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, (m || 1) - 1, d || 1); };
 
-export function lerHorario(h: any): NonNullable<HorarioLoja> {
+export function lerHorario(h: unknown): NonNullable<HorarioLoja> {
   let x = h;
   if (typeof x === "string") { try { x = JSON.parse(x); } catch { x = null; } }
   if (!x || typeof x !== "object") return PADRAO;
@@ -56,7 +56,7 @@ export function lerHorario(h: any): NonNullable<HorarioLoja> {
 }
 
 /** Abre e fecha (em minutos do dia) naquele dia, ou null se a loja não abre. */
-export function expediente(d: Date, horarioBruto: any): { abre: number; fecha: number } | null {
+export function expediente(d: Date, horarioBruto: unknown): { abre: number; fecha: number } | null {
   const h = lerHorario(horarioBruto);
   const dia = d.getDay();
   let a: string | undefined, f: string | undefined;
@@ -91,7 +91,7 @@ export type RegrasAgenda = {
   sugestao: { data: string; hora: string } | null; // pronta entrega: já vem marcado
 };
 
-export function calcularRegras(agora: Date, horario: any, horas: number): RegrasAgenda {
+export function calcularRegras(agora: Date, horario: unknown, horas: number): RegrasAgenda {
   let minimo = new Date(agora.getTime() + horas * 3600_000);
   const hoje = expediente(agora, horario);
   const agoraMin = agora.getHours() * 60 + agora.getMinutes();
@@ -112,7 +112,7 @@ export function calcularRegras(agora: Date, horario: any, horas: number): Regras
 }
 
 /** Horários do dia, de hora em hora, a partir do mínimo (o último é 1h antes de fechar). */
-export function horariosDoDia(d: Date, horario: any, minimo: Date): string[] {
+export function horariosDoDia(d: Date, horario: unknown, minimo: Date): string[] {
   const ex = expediente(d, horario);
   if (!ex) return [];
   const dia = inicioDoDia(d).getTime();
@@ -126,7 +126,7 @@ export function horariosDoDia(d: Date, horario: any, minimo: Date): string[] {
 }
 
 /** "Outro horário": de 15 em 15 minutos, da abertura até o fechamento, a partir do mínimo. */
-export function horariosLivres(d: Date, horario: any, minimo: Date): string[] {
+export function horariosLivres(d: Date, horario: unknown, minimo: Date): string[] {
   const ex = expediente(d, horario);
   if (!ex) return [];
   const dia = inicioDoDia(d).getTime();
@@ -142,17 +142,17 @@ export function horariosLivres(d: Date, horario: any, minimo: Date): string[] {
  * Antes só olhava a de hora em hora (que para 1h antes de fechar): às 17:01, com a loja aberta até 18:00,
  * "hoje" ficava riscado no calendário mesmo tendo 17:15, 17:30, 17:45 e 18:00 livres.
  */
-export const diaDisponivel = (d: Date, horario: any, minimo: Date) =>
+export const diaDisponivel = (d: Date, horario: unknown, minimo: Date) =>
   horariosDoDia(d, horario, minimo).length > 0 || horariosLivres(d, horario, minimo).length > 0;
 
 /** Os horários que a tela mostra como botões: de hora em hora; se não sobrou nenhum, os de 15 em 15. */
-export function horariosParaMostrar(d: Date, horario: any, minimo: Date): string[] {
+export function horariosParaMostrar(d: Date, horario: unknown, minimo: Date): string[] {
   const deHora = horariosDoDia(d, horario, minimo);
   return deHora.length ? deHora : horariosLivres(d, horario, minimo);
 }
 
 /** A data (aaaa-mm-dd) e a hora (hh:mm) escolhidas ainda valem? Dentro do expediente e a partir do mínimo. */
-export function horarioPermitido(dataIso: string, hora: string, horario: any, minimo: Date): boolean {
+export function horarioPermitido(dataIso: string, hora: string, horario: unknown, minimo: Date): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dataIso || "") || !/^\d{2}:\d{2}$/.test(hora || "")) return false;
   const d = deIso(dataIso);
   return horariosLivres(d, horario, minimo).includes(hora) || horariosDoDia(d, horario, minimo).includes(hora);
@@ -171,7 +171,7 @@ export type SituacaoLoja = {
   abre: { dias: number; diaSemana: number; minutos: number } | null; // só quando está fechado
 };
 
-export function situacaoDaLoja(horarioBruto: any, agora: Date = agoraLoja()): SituacaoLoja | null {
+export function situacaoDaLoja(horarioBruto: unknown, agora: Date = agoraLoja()): SituacaoLoja | null {
   if (!horarioBruto) return null;
   let h = horarioBruto;
   if (typeof h === "string") { try { h = JSON.parse(h); } catch { return null; } }
@@ -191,7 +191,7 @@ export function situacaoDaLoja(horarioBruto: any, agora: Date = agoraLoja()): Si
 /** "08:00" a partir dos minutos do dia (meia-noite aparece como "00:00"). */
 export const horaTexto = (min: number) => hhmm(min);
 
-export function primeiraData(horario: any, minimo: Date, limiteDias = 90): Date | null {
+export function primeiraData(horario: unknown, minimo: Date, limiteDias = 90): Date | null {
   for (let i = 0; i <= limiteDias; i++) {
     const d = somarDias(inicioDoDia(minimo), i);
     if (diaDisponivel(d, horario, minimo)) return d;
@@ -212,7 +212,7 @@ export function rotuloCurto(d: Date): string {
 
 // (16/10) texto da situação pro cartão do link (computador e celular): "Aberto agora · fecha às 23:59"
 const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
-export function situacaoLoja(horario: any): { aberto: boolean; txt: string } | null {
+export function situacaoLoja(horario: unknown): { aberto: boolean; txt: string } | null {
   const s = situacaoDaLoja(horario);
   if (!s) return null;
   if (s.aberto) return { aberto: true, txt: `Aberto agora · fecha às ${horaTexto(s.fecha)}` };

@@ -17,7 +17,7 @@ export async function lerPredefs(): Promise<PredefRend[]> {
   if (cache) return cache;
   try {
     const { data } = await supabase.auth.getUser();
-    const l = (data?.user?.user_metadata as any)?.rend_predef;
+    const l = (data?.user?.user_metadata as { rend_predef?: PredefRend[] } | undefined)?.rend_predef;
     return Array.isArray(l) ? l.filter(p => p && typeof p.nome === "string") : [];
   } catch { return []; }
 }

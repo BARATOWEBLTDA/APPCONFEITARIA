@@ -58,7 +58,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   // Abrir o sininho marca as que estão aparecendo como lidas
   const markAsSeen = () => {
-    const ids = (notificacoes as any[]).filter(n => !n.lida).map(n => n.id);
+    const ids = (notificacoes as unknown as { id: string; lida?: boolean }[]).filter(n => !n.lida).map(n => n.id);
     if (ids.length) marcarLidas(ids);
   };
 

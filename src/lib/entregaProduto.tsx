@@ -39,7 +39,10 @@ export type SeloEntrega =
   | { tipo: "pronta" }
   | { tipo: "encomenda"; prazo: string };
 
-export function seloEntrega(produto: any): SeloEntrega | null {
+/** O que o selo lê do produto (Produtos → Modo de entrega) */
+export type ProdutoEntrega = { id?: string; antecedencia?: string | null; pronta_entrega?: boolean | null };
+
+export function seloEntrega(produto: ProdutoEntrega | null | undefined): SeloEntrega | null {
   const ant = produto?.antecedencia as string | undefined;
   if (ant && horasAntecedencia(ant) > 0) return { tipo: "encomenda", prazo: rotuloAntecedencia(ant) };
   if (produto?.pronta_entrega === true) return { tipo: "pronta" };
@@ -58,7 +61,7 @@ const IconeCalendario = ({ size = 12 }: { size?: number }) => (
 );
 
 /** Selo pequeno no canto de baixo da foto do card (o card precisa ter position: relative na foto) */
-export function SeloEntregaFoto({ produto }: { produto: any }) {
+export function SeloEntregaFoto({ produto }: { produto: ProdutoEntrega | null | undefined }) {
   const s = seloEntrega(produto);
   if (!s) return null;
   const pronta = s.tipo === "pronta";
@@ -81,7 +84,7 @@ export function SeloEntregaFoto({ produto }: { produto: any }) {
 }
 
 /** Aviso no detalhe do produto — só pra encomenda */
-export function AvisoAntecedencia({ produto }: { produto: any }) {
+export function AvisoAntecedencia({ produto }: { produto: ProdutoEntrega | null | undefined }) {
   const s = seloEntrega(produto);
   if (!s || s.tipo !== "encomenda") return null;
   return (
@@ -91,9 +94,9 @@ export function AvisoAntecedencia({ produto }: { produto: any }) {
     }}>
       <span style={{ marginTop: 1 }}><IconeCalendario size={16} /></span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <strong style={{ display: "block", fontSize: 13.5, fontWeight: 600, lineHeight: 1.3, textWrap: "balance" } as any}>Encomende com {s.prazo} de antecedência</strong>
+        <strong style={{ display: "block", fontSize: 13.5, fontWeight: 600, lineHeight: 1.3, textWrap: "balance" }}>Encomende com {s.prazo} de antecedência</strong>
         {/* 02/10: bloco (antes ficava solto na linha e ignorava a altura de linha) e um texto que ajuda */}
-        <span style={{ display: "block", marginTop: 3, fontSize: 12.5, color: "#6B5D64", lineHeight: 1.4, textWrap: "balance" } as any}>Você escolhe o dia ao finalizar o pedido.</span>
+        <span style={{ display: "block", marginTop: 3, fontSize: 12.5, color: "#6B5D64", lineHeight: 1.4, textWrap: "balance" }}>Você escolhe o dia ao finalizar o pedido.</span>
       </div>
     </div>
   );

@@ -11,7 +11,9 @@ import { supabase } from "@/lib/supabase";
  * Precisa da variável VITE_GOOGLE_CLIENT_ID (o "Client ID" do Google, o mesmo do Supabase).
  * Sem ela, ou se o Google não carregar, usa o jeito antigo (redirecionamento) como reserva.
  */
-declare global { interface Window { google?: any } }
+/** O pedaço da biblioteca do Google (Identity Services) que este botão usa */
+type GoogleIdentity = { accounts?: { id?: { initialize: (cfg: Record<string, unknown>) => void; renderButton: (el: HTMLElement, opcoes: Record<string, unknown>) => void } } };
+declare global { interface Window { google?: GoogleIdentity } }
 
 const CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined)?.trim();
 let scriptGoogle: Promise<void> | null = null;

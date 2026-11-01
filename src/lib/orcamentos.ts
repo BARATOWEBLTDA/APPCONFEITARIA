@@ -111,7 +111,7 @@ export function maisDias(n: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-const BASE = (import.meta as any).env?.VITE_PUBLIC_URL || 'https://doonly.com.br'
+const BASE = (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_PUBLIC_URL || 'https://doonly.com.br'
 /** O link fixo da loja para pedir orçamento */
 export const linkPedirOrcamento = (codigo?: string | null, origem?: string) => (codigo ? `${origem || BASE}/o/${codigo}` : '')
 /** O link da proposta para a cliente aprovar */

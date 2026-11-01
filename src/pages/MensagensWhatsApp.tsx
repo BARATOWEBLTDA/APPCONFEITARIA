@@ -30,7 +30,7 @@ function textoZap(t: string): ReactNode[] {
 export default function MensagensWhatsApp() {
   const navigate = useNavigate();
   // (18/10) aberta pela aba Cardápio: o voltar leva pra lá (senão, pra Configurações)
-  const voltarPara = (useLocation().state as any)?.de === "/cardapio" ? "/cardapio" : "/configuracoes";
+  const voltarPara = (useLocation().state as { de?: string } | null)?.de === "/cardapio" ? "/cardapio" : "/configuracoes";
   const { profile } = useProfile();
   const salvas = profile?.mensagens_whatsapp || {};
   const [editando, setEditando] = useState<Modelo | null>(null);

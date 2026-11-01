@@ -39,7 +39,7 @@ export default function ImagemCupom({ dados, aoFechar }: { dados: DadosImagemCup
     const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
     if (nav.share && nav.canShare?.({ files: [arquivo] })) {
       try { await nav.share({ files: [arquivo], text: `Use o cupom ${dados.codigo} no nosso cardápio:\n${dados.link}` }); return; }
-      catch (e: any) { if (e?.name === "AbortError") return; } // ela fechou a janela
+      catch (e: unknown) { if ((e as Error)?.name === "AbortError") return; } // ela fechou a janela
     }
     baixar();
     avisar("A imagem foi baixada. É só postar onde quiser.", { tipo: "ok" });

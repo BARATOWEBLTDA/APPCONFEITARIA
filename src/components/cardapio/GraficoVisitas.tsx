@@ -8,7 +8,9 @@ import "@/components/inicio/graficoRecebido.css";
  */
 export type PontoVisita = { rot: string; dica: string; n: number; nAntes: number | null; futuro?: boolean };
 
-function Dica({ active, payload, rotuloAntes }: any) {
+/** Ponto do gráfico como chega na dica (com a soma e o período anterior) */
+type PontoDica = PontoVisita & { acum: number | null; antes: number | null; unidade: string };
+function Dica({ active, payload, rotuloAntes }: { active?: boolean; payload?: { payload: PontoDica }[]; rotuloAntes?: string }) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload;
   if (p.acum == null) return null;

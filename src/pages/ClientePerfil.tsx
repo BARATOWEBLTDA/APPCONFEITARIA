@@ -10,7 +10,7 @@ import { explicarErro } from "@/lib/erros";
 import { digitosTelefone, linkWhatsApp } from "@/lib/telefone";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia, Titulo, avisar } from "@/components/base";
-import { situacaoDe } from "@/components/pedidos/pedidoTexto";
+import { situacaoDe, type Pedido as PedidoTexto } from "@/components/pedidos/pedidoTexto";
 import "./clientes.css";
 
 /**
@@ -47,6 +47,8 @@ interface Pedido {
   created_at?: string;
   data_pedido?: string;
   valor_total?: number;
+  cliente_whatsapp?: string | null;
+  cliente_telefone?: string | null;
 }
 
 function formatPhone(phone?: string) {
@@ -127,21 +129,21 @@ export default function ClientePerfil() {
       if (cData) {
         const uid = user.id;
         const [porId, porNome] = await Promise.all([
-          buscarTudo<any>((de, ate) => supabase.from("pedidos").select("*").eq("user_id", uid).eq("cliente_id", id).order("id").range(de, ate)),
-          buscarTudo<any>((de, ate) => supabase.from("pedidos").select("*").eq("user_id", uid).is("cliente_id", null).eq("cliente_nome", cData.nome).order("id").range(de, ate)),
+          buscarTudo<Pedido>((de, ate) => supabase.from("pedidos").select("*").eq("user_id", uid).eq("cliente_id", id).order("id").range(de, ate)),
+          buscarTudo<Pedido>((de, ate) => supabase.from("pedidos").select("*").eq("user_id", uid).is("cliente_id", null).eq("cliente_nome", cData.nome).order("id").range(de, ate)),
         ]);
         if (cancelado) return;
         if (porId.error || porNome.error) { falhou(porId.error || porNome.error); return; }
         const vistos = new Set<string>();
         // (27/10) pedido sem cadastro com o mesmo nome só entra se o telefone bate (ou se o pedido não tem telefone):
         // antes duas clientes "Maria" somavam os pedidos uma da outra
-        const dig = (t: any) => String(t || "").replace(/\D/g, "").slice(-11);
-        const telsCliente = [dig((cData as any).telefone), dig((cData as any).whatsapp)].filter(t => t.length >= 10);
-        const doMesmoTel = (p: any) => { const t = [dig(p.cliente_whatsapp), dig(p.cliente_telefone)].filter(x => x.length >= 10); return !t.length || !telsCliente.length || t.some(x => telsCliente.includes(x)); };
+        const dig = (t: unknown) => String(t || "").replace(/\D/g, "").slice(-11);
+        const telsCliente = [dig((cData as Cliente & { telefone?: string }).telefone), dig((cData as Cliente).whatsapp)].filter(t => t.length >= 10);
+        const doMesmoTel = (p: Pedido) => { const t = [dig(p.cliente_whatsapp), dig(p.cliente_telefone)].filter(x => x.length >= 10); return !t.length || !telsCliente.length || t.some(x => telsCliente.includes(x)); };
         const lista = [...(porId.data || []), ...(porNome.data || []).filter(doMesmoTel)]
-          .filter((p: any) => (vistos.has(p.id) ? false : (vistos.add(p.id), true)))
-          .sort((a: any, b: any) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-        setPedidos(lista as any);
+          .filter((p: Pedido) => (vistos.has(p.id) ? false : (vistos.add(p.id), true)))
+          .sort((a: Pedido, b: Pedido) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+        setPedidos(lista as Pedido[]);
       }
       setLoading(false);
     };
@@ -294,7 +296,7 @@ export default function ClientePerfil() {
                 acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Nova venda para {primeiro}</Botao>} />
             ) : (<>
               {visiveis.map(p => {
-                const st = situacaoDe(p as any);
+                const st = situacaoDe(p as PedidoTexto);
                 const cancelado = p.status === "cancelado";
                 return (
                   <button key={p.id} type="button" className="cp9-ped" onClick={() => navigate(`/pedidos/${p.id}/editar`)}>

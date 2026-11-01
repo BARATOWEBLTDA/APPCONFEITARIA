@@ -48,7 +48,7 @@ export default function BuscaRapida() {
   useEffect(() => { setAberta(false); }, [pathname]);
 
   const itens: Item[] = useMemo(() => {
-    const link = profile ? getCardapioUrl(profile as any) : "";
+    const link = profile ? getCardapioUrl(profile) : "";
     return [
       { g: "Principal", t: "Início", ic: House, rota: "/inicio", chaves: "resumo dia" },
       { g: "Principal", t: "Pedidos", ic: ClipboardText, rota: "/pedidos", chaves: "encomendas pronta entrega quadro aceitar" },

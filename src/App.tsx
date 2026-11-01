@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
+import type { Session } from "@supabase/supabase-js";
 import { erroDeConexao } from "@/lib/erros";
 import { momentoSeguro } from "@/lib/autoAtualizar";
 import { Botao, confirmar } from "@/components/base";
@@ -15,7 +16,7 @@ import { useParams } from "react-router-dom";
 function PedidoVerRedirect() { const { id } = useParams(); return <Navigate to={`/pedidos/${id}/editar`} replace />; }
 /** (17/10) "Entrega e pagamento" agora fica dentro de Dados da loja: o link antigo abre lá, já nessa parte */
 function IrParaEntrega() {
-  const de = (useLocation().state as any)?.de;
+  const de = (useLocation().state as { de?: string } | null)?.de;
   return <Navigate to="/cardapio-config" replace state={{ secao: "entrega", ...(de ? { de } : {}) }} />;
 }
 import FaixaComoCliente from "@/components/cardapio/FaixaComoCliente";
@@ -160,7 +161,7 @@ function preCarregarTelas() {
   if (preCarregou) return; preCarregou = true;
   let i = 0;
   const proximo = () => { if (i >= PRE_CARREGAR.length) return; PRE_CARREGAR[i++]().catch(() => {}).finally(() => window.setTimeout(proximo, 40)); };
-  const ocioso = (window as any).requestIdleCallback || ((f: () => void) => window.setTimeout(f, 1500));
+  const ocioso = window.requestIdleCallback || ((f: () => void) => window.setTimeout(f, 1500));
   // (01/11 · 5.99) espera a primeira tela carregar os dados (antes começava em 1,5 s e disputava a internet com o Início)
   window.setTimeout(() => ocioso(proximo), 6000);
 }
@@ -244,8 +245,11 @@ function AbrirPelaNotificacao() {
   return null;
 }
 
+/** O que a entrada lê do perfil (tutorial e cadastro completo) */
+type PerfilEntrada = { tutorial_visto?: boolean | null; nome?: string | null; nome_loja?: string | null; telefone?: string | null };
+
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<any>(undefined);
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
   // (11/10) a sessão não pôde ser renovada por falta de internet (ver SemInternetNaEntrada)
   const [semRede, setSemRede] = useState(false);
   const semRedeRef = useRef(false);
@@ -374,10 +378,10 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
           return;
         }
         const viaGoogle = session.user?.app_metadata?.provider === "google"
-          || (session.user?.identities || []).some((i: any) => i?.provider === "google");
-        const faltaDado = !String((data as any)?.nome_loja || "").trim() || String((data as any)?.telefone || "").replace(/\D/g, "").length < 10;
+          || (session.user?.identities || []).some((i) => i?.provider === "google");
+        const faltaDado = !String((data as PerfilEntrada | null)?.nome_loja || "").trim() || String((data as PerfilEntrada | null)?.telefone || "").replace(/\D/g, "").length < 10;
         if (viaGoogle && faltaDado) {
-          const falta = { nome: String((data as any)?.nome || ""), loja: String((data as any)?.nome_loja || ""), telefone: String((data as any)?.telefone || "") };
+          const falta = { nome: String((data as PerfilEntrada | null)?.nome || ""), loja: String((data as PerfilEntrada | null)?.nome_loja || ""), telefone: String((data as PerfilEntrada | null)?.telefone || "") };
           if (tentativa > 0 || appJaAberto.current) completarDepois.current = falta;
           else setCompletar(falta);
         } else completarDepois.current = null;
@@ -412,7 +416,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
         const { data, error } = await supabase.from("profiles").select("termos_versao").eq("id", uid).maybeSingle();
         if (cancelado) return;
         if (error || !data) { setTermos("ok"); return; }
-        if ((data as any).termos_versao === TERMOS_VERSAO) {
+        if ((data as { termos_versao?: string | null }).termos_versao === TERMOS_VERSAO) {
           try { localStorage.setItem(`doonly_termos_${uid}`, TERMOS_VERSAO); } catch { /* sem storage */ }
           setTermos("ok");
         } else setTermos("pedir");
@@ -429,7 +433,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   if (!session) return <NavigateWithSearch to="/login" replace />;
 
   const entrouPeloGoogle = session.user?.app_metadata?.provider === "google"
-    || (session.user?.identities || []).some((i: any) => i?.provider === "google");
+    || (session.user?.identities || []).some((i) => i?.provider === "google");
   if (entrouPeloGoogle && !perfilConferido) {
     return <div style={{ position: "fixed", inset: 0, background: "linear-gradient(180deg, #FCE7F3 0, #FAF7F8 240px)" }} aria-busy="true" />;
   }

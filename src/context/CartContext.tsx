@@ -3,6 +3,10 @@ import { CartItem } from '@/types/cart'
 import { subtotalSacola } from '@/lib/itemSacola'
 import { avisar } from '@/components/base'
 import { pixelEvento } from '@/lib/facebookPixel'
+import type { ItemDoCarrinho } from '@/lib/itemDoCarrinho'
+
+/** Item como fica guardado no sessionStorage (a foto grande pode ter ficado de fora) */
+type ItemGuardado = ItemDoCarrinho & { fotoNaoGuardada?: boolean }
 
 /** Quantidade máxima de um item no pedido do cardápio (o banco recusa acima disso) */
 export const QTD_MAXIMA = 50
@@ -45,7 +49,7 @@ function lerSacola(loja?: string): { itens: CartItem[]; semFoto: boolean } {
       sessionStorage.removeItem(chaveSacola(loja))
       return { itens: [], semFoto: false }
     }
-    const lista: any[] = Array.isArray(bruto?.itens) ? bruto.itens : []
+    const lista: ItemGuardado[] = Array.isArray(bruto?.itens) ? bruto.itens : []
     let semFoto = false
     const itens = lista
       // (11/10) preço nulo, zero ou inválido: item descartado
@@ -66,7 +70,7 @@ function gravarSacola(loja: string, items: CartItem[]) {
     const paraGuardar = (semFotos: boolean) => JSON.stringify({
       v: 1,
       em: Date.now(),
-      itens: items.map((i: any) => {
+      itens: items.map((i: ItemGuardado) => {
         if (!i.fotoReferencia || (!semFotos && pesoDaFoto(i.fotoReferencia) <= FOTO_MAXIMA)) return i
         const { fotoReferencia: _foto, ...semFoto } = i
         return { ...semFoto, fotoNaoGuardada: true }
@@ -106,12 +110,12 @@ export function CartProvider({ children, loja }: { children: ReactNode; loja?: s
 
   // Chave da linha: produto + TODAS as escolhas (tamanho, sabor, massa, recheios, cobertura,
   // adicionais, foto, observação) + preço. Opções diferentes = linha diferente na sacola.
-  const chaveLinha = (it: any): string => {
+  const chaveLinha = (it: ItemDoCarrinho): string => {
     const base = JSON.stringify({
       id: it.id,
       escolhas: it.escolhas ?? null,
       massa: norm(it.selectedMassa), recheio: norm(it.selectedRecheio), cobertura: norm(it.selectedCobertura),
-      extras: Array.isArray(it.extrasBiblioteca) ? it.extrasBiblioteca.map((x: any) => x.id).sort() : [],
+      extras: Array.isArray(it.extrasBiblioteca) ? it.extrasBiblioteca.map((x) => x.id).sort() : [],
       foto: it.fotoReferencia ?? null,
       obs: (it.observations || '').trim(),
       preco: it.price,

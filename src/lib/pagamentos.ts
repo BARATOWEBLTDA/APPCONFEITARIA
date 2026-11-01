@@ -15,7 +15,9 @@ const hojeBR = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
-const tabelaNaoExiste = (e: any) => !!e && (e.code === "42P01" || e.code === "PGRST205" || /pagamentos/i.test(e.message || "") && /exist|schema cache|not find/i.test(e.message || ""));
+type PedidoPagamento = { valor_total?: number | null; valor_recebido?: number | null; status_pagamento?: string | null };
+type LinhaRecebimento = { id: string; valor: number | null; created_at: string | null; recebido_em: string | null };
+const tabelaNaoExiste = (e: { code?: string; message?: string } | null) => !!e && (e.code === "42P01" || e.code === "PGRST205" || /pagamentos/i.test(e.message || "") && /exist|schema cache|not find/i.test(e.message || ""));
 
 /** Texto gravado na observação do recebimento estornado porque o PEDIDO FOI EXCLUÍDO (10/10). Não é devolução de dinheiro: o caixa lê isso. */
 export const ESTORNO_POR_EXCLUSAO = "Pedido excluído";
@@ -49,7 +51,7 @@ export function normalizarForma(f?: string | null): string | null {
 /** Atualiza o pedido do jeito antigo (só usado se a tabela de pagamentos ainda não existir). */
 async function gravarNoPedidoLegado(pedidoId: string, novoRecebido: number) {
   const { data: p } = await supabase.from("pedidos").select("valor_total").eq("id", pedidoId).maybeSingle();
-  const total = Number((p as any)?.valor_total) || 0;
+  const total = Number((p as PedidoPagamento | null)?.valor_total) || 0;
   const v = r2(Math.min(Math.max(0, novoRecebido), Math.max(total, novoRecebido)));
   const status = v > 0 && v >= total - 0.009 ? "pago" : v > 0 ? "parcial" : "pendente";
   await supabase.from("pedidos").update({ valor_recebido: v, status_pagamento: status }).eq("id", pedidoId);
@@ -58,7 +60,7 @@ async function gravarNoPedidoLegado(pedidoId: string, novoRecebido: number) {
 
 async function recebidoAtual(pedidoId: string): Promise<number> {
   const { data: p } = await supabase.from("pedidos").select("valor_total, status_pagamento, valor_recebido").eq("id", pedidoId).maybeSingle();
-  const pp: any = p || {};
+  const pp: PedidoPagamento = p || {};
   if (pp.status_pagamento === "pago") return Number(pp.valor_total) || 0;
   if (pp.status_pagamento === "parcial") return Number(pp.valor_recebido) || 0;
   return 0;
@@ -85,7 +87,7 @@ export async function registrarPagamento(opts: {
   });
   if (!error) {
     const { data: p } = await supabase.from("pedidos").select("valor_recebido, status_pagamento").eq("id", opts.pedidoId).maybeSingle();
-    return { ok: true, legado: false, valor_recebido: Number((p as any)?.valor_recebido) || 0, status_pagamento: (p as any)?.status_pagamento };
+    return { ok: true, legado: false, valor_recebido: Number((p as PedidoPagamento | null)?.valor_recebido) || 0, status_pagamento: (p as PedidoPagamento | null)?.status_pagamento };
   }
   // (17/10 · R06) o banco recusou porque esse mesmo recebimento acabou de entrar (dois toques, duas abas, nova tentativa):
   // não é erro, o dinheiro já está registrado uma vez
@@ -121,7 +123,7 @@ export async function ajustarRecebido(opts: { pedidoId: string; alvo: number; fo
     console.error("[pagamentos] não consegui ajustar:", error);
     return { ok: false, legado: false };
   }
-  let soma = r2((ativos || []).reduce((s: number, p: any) => s + (Number(p.valor) || 0), 0));
+  let soma = r2((ativos || []).reduce((s: number, p: LinhaRecebimento) => s + (Number(p.valor) || 0), 0));
   if (alvo > soma + 0.009) {
     const r = await registrarPagamento({ pedidoId: opts.pedidoId, userId: opts.userId, valor: alvo - soma, forma: opts.forma, tipo: "pagamento", observacao: "Ajuste no Editar pedido" });
     return { ok: r.ok, legado: r.legado };
@@ -129,7 +131,7 @@ export async function ajustarRecebido(opts: { pedidoId: string; alvo: number; fo
   // (4.29) o que sobra depois de estornar SUBSTITUI o recebimento estornado: fica com a data dele, não com a de hoje
   // (sinal de 160 no dia 8 corrigido pra 100 no dia 12 continua sendo dinheiro que entrou no dia 8)
   let dataSubstituida: string | undefined;
-  for (const p of (ativos || []) as any[]) {
+  for (const p of (ativos || []) as LinhaRecebimento[]) {
     if (soma <= alvo + 0.009) break;
     if (!dataSubstituida && p.recebido_em) dataSubstituida = String(p.recebido_em).slice(0, 10);
     const { error: e2 } = await supabase.from("pagamentos").update({ estornado_em: new Date().toISOString() }).eq("id", p.id).is("estornado_em", null);

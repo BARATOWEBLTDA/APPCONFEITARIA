@@ -196,9 +196,9 @@ export function usePushSubscription() {
       setIsSubscribed(true)
       setLoading(false)
       return true
-    } catch (err: any) {
+    } catch (err) {
       console.error('Push subscribe error:', err)
-      setError(err?.message || 'Erro ao ativar notificações.')
+      setError((err as Error)?.message || 'Erro ao ativar notificações.')
       setLoading(false)
       return false
     }

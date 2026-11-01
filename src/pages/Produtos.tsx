@@ -13,7 +13,7 @@ import { avisarPassos, lerPassos, passosCompletos, useLojaPronta } from "@/lib/p
 import RevisaoProduto, { ResumoProduto } from "@/components/produto/RevisaoProduto";
 import ResumoEdicao from "@/components/produto/ResumoEdicao";
 import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/produto/EscolhasProduto";
-import { kitAtivo, precoMinKit, type KitQtdConfig } from "@/lib/kitQuantidade";
+import { kitAtivo, precoMinKit, type KitQtdConfig, type KitFechado } from "@/lib/kitQuantidade";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
 import { precoCardapioComPromocao, precosDosSabores, ehCentoLivre } from "@/lib/precoCardapio";
 import { supabase } from "@/lib/supabase";
@@ -60,9 +60,9 @@ const skuLivre = (base: string, usados: Set<string>): string => {
   }
   return `${pre}-${Date.now().toString().slice(-6)}`;
 };
-const skusDe = (lista: any[]) => new Set(lista.map(p => String(p?.sku || "").trim().toUpperCase()).filter(Boolean));
+const skusDe = (lista: { sku?: string | null }[]) => new Set(lista.map(p => String(p?.sku || "").trim().toUpperCase()).filter(Boolean));
 
-const precoDaLista = (prod: any) => {
+const precoDaLista = (prod: Produto) => {
   // (11/10) pela função única do cardápio: mesma regra de promoção e mesmo arredondamento do cartão da cliente
   const pc = precoCardapioComPromocao(prod);
   const unidade = ehCentoLivre(prod) ? "o cento" : pc.aPartir || prod?.grupo_tamanhos?.ativo ? "" : unidadeDoPreco(prod?.forma_venda);
@@ -95,7 +95,7 @@ type KitItem = { nome: string; quantidade: string };
 // Tipos pra novo sistema Produto + Variações + Personalização
 type Variacao = { id: string; nome: string; preco: number; foto?: string };
 type OpcaoPersonalizacao = { id: string; nome: string; adicional: number; foto?: string; tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade" };
-type OpcaoTamanho = { id: string; nome: string; preco: number; peso_kg?: number | null; serve?: string; foto?: string };
+type OpcaoTamanho = { id: string; nome: string; preco: number; peso_kg?: number | null; serve?: string; foto?: string; esgotado?: boolean };
 type DistribuicaoModo = "nenhuma" | "igual" | "livre";
 type GrupoPersonalizacao = {
   ativo: boolean;
@@ -220,7 +220,17 @@ type Produto = {
   desconto_percentual?: number;
   updated_at?: string;
   created_at?: string;
+  // ── Colunas novas (antes lidas com cast) ─────────────────────
+  sku?: string | null;
+  destaque?: boolean;
+  antecedencia?: string | null;
+  kit_qtd?: KitQtdConfig | null;
+  aceita_referencia?: boolean;
+  produto_insumos?: ProdutoInsumoLido[];
 };
+
+/** Linha da ficha técnica embutida na leitura da lista (produto_insumos com o insumo) */
+type ProdutoInsumoLido = { quantidade: number; unidade_utilizada: string; insumos: { custo_unitario: number; unidade: string } | null };
 
 // Um adicional (extra) de um produto: nome + valor + origem opcional na biblioteca
 type Adicional = {
@@ -633,7 +643,7 @@ const EMPTY: Produto = {
   massas_disponiveis: [], recheios_disponiveis: [], coberturas_disponiveis: [],
   tamanhos_disponiveis: [], precos_variacoes: {}, fotos_variacoes: {}, usar_foto_variacao: false, oferece_pacote: false, pronta_entrega: undefined,
   // (24/10) produto novo vem como encomenda com 2 dias de antecedência marcado (antes vinha "Sem prazo")
-  ...({ antecedencia: "48h" } as any),
+  ...({ antecedencia: "48h" } as Partial<Produto>),
   kit_itens: [], kit_serve_pessoas: "", kit_prazo_encomenda: "",
   zero_acucar: false,
   tem_vela: false, valor_vela: 0,
@@ -782,14 +792,14 @@ export default function Produtos() {
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes" | "personalizavel">("simples");
   const [editTab, setEditTab] = useState<"resumo" | "info" | "opcoes" | "preco" | "fotos" | "entrega">("resumo");
   // (14/10) edição em resumo: guarda o produto como está salvo, pra saber se mudou algo e pra desfazer no "Voltar"
-  const formSalvo = useRef<any>(null);
+  const formSalvo = useRef<Produto | null>(null);
   const NOME_SECAO: Record<string, string> = { info: "Nome e descrição", opcoes: "Escolhas", fotos: "Fotos", preco: "Preço e promoção", entrega: "Cardápio e entrega" };
   useEffect(() => { setEscTela(0); }, [editTab]); // trocar de aba volta a lista das escolhas
   // Tela de sucesso depois de publicar um produto novo
   const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; imagem?: string; primeiro: boolean; fora?: boolean; pronta?: boolean | null; semExtras?: boolean }>(null);
   const [form, setForm] = useState<Produto>(EMPTY);
   // (24/10) produto simples no cadastro novo (sem tamanhos, sem kit e sem preço pelo sabor): a promoção vem com a caixinha
-  const simplesNovo = !form.id && !((form.grupo_tamanhos as any)?.ativo && ((form.grupo_tamanhos as any).opcoes?.length || 0) > 0) && !kitAtivo((form as any).kit_qtd) && !precosDosSabores(form);
+  const simplesNovo = !form.id && !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes?.length || 0) > 0) && !kitAtivo(form.kit_qtd) && !precosDosSabores(form);
   useEffect(() => { setEscTela(0); }, [form.id]); // (14/10) outro produto: as escolhas abrem na lista
 
   // Auto-sync: se modo do tamanho é por_peso, forma_venda vira kg automaticamente.
@@ -858,7 +868,7 @@ export default function Produtos() {
 
   // Auto-abre cadastro quando vem de Pedidos
   useEffect(() => {
-    if (!loading && (location.state as any)?.abrirCadastro) {
+    if (!loading && (location.state as { abrirCadastro?: boolean } | null)?.abrirCadastro) {
       window.history.replaceState({ ...(window.history.state || {}), usr: null }, ""); // (11/10) mantém idx e key do roteador (o voltarOuIr usa)
       // Abre igual ao botão "Novo produto" (a escolha com imagens: bolos, doces, salgados…).
       // Antes abria a janela sem zerar e caía na tela antiga de tipo de cadastro.
@@ -922,8 +932,8 @@ export default function Produtos() {
         supabase.from("custos_variaveis").select("*").eq("user_id", uid),
       ]);
       // (13/10) a mesma conta da Ficha técnica: taxa do crédito (pior caso) + custo fixo por pedido
-      if (!vars.error) setVendaConta({ pct: taxaPctDaForma("credito", (vars.data as any[]) || []), fixo: fixoPorPedido((vars.data as any[]) || []) });
-      const v = (cv.data as any)?.custos_invisiveis_pct;
+      if (!vars.error) setVendaConta({ pct: taxaPctDaForma("credito", (vars.data as Parameters<typeof taxaPctDaForma>[1]) || []), fixo: fixoPorPedido((vars.data as Parameters<typeof taxaPctDaForma>[1]) || []) });
+      const v = (cv.data as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct;
       setCvConta(!cv.error && v != null ? Number(v) : null);
       setMaoConta(mao); // (16/10) fixos + salário, igual à tela Custos
     } catch { /* sem esses dados o lucro usa o que está salvo no produto */ }
@@ -946,7 +956,7 @@ export default function Produtos() {
    * Considera preço promocional quando o produto está em promoção,
    * para refletir o lucro REAL que a confeiteira terá na venda.
    */
-  const calcularLucro = (p: any): {
+  const calcularLucro = (p: Produto): {
     cmv: number;
     lucro: number;
     margem: number;
@@ -965,7 +975,7 @@ export default function Produtos() {
   const loadCategorias = async (uid: string): Promise<string[] | null> => {
     const { data, error } = await supabase.from("categorias").select("nome").eq("user_id", uid).order("nome");
     if (error || !data) return null;
-    const nomes = data.map((c: any) => c.nome as string);
+    const nomes = data.map((c: { nome: string }) => c.nome as string);
     categoriasLidas.current = true;
     setCategorias(nomes);
     return nomes;
@@ -985,9 +995,9 @@ export default function Produtos() {
   // (14/10) sem a tela de tipo: a categoria é sugerida pelo nome e o tipo sai do nome/categoria ao continuar
   const sugCategoria = useMemo(() => categoriaSugerida(form.nome, categorias), [form.nome, categorias]);
   // (14/10) Tamanho (preço fixo) + "cada sabor tem o seu preço": ela escolhe de onde vem o preço, antes das tabelas
-  const comboTamSabor = (f: any) => !kitAtivo(f.kit_qtd) && !!f.grupo_tamanhos?.ativo && (f.grupo_tamanhos.opcoes?.length || 0) > 0
+  const comboTamSabor = (f: Produto) => !kitAtivo(f.kit_qtd) && !!f.grupo_tamanhos?.ativo && (f.grupo_tamanhos.opcoes?.length || 0) > 0
     && (f.grupo_tamanhos.modo_preco_tamanho || "preco_fixo") === "preco_fixo" && !!f.grupo_sabores?.ativo && !!f.grupo_sabores?.sabor_tem_preco_proprio && (f.grupo_sabores.opcoes?.length || 0) > 0;
-  const regraCombo = (f: any): RegraConflitoTamanho | null => !comboTamSabor(f) ? null
+  const regraCombo = (f: Produto): RegraConflitoTamanho | null => !comboTamSabor(f) ? null
     : (f.grupo_sabores?.regra_conflito_tamanho || (f.id ? REGRA_CONFLITO_DEFAULT : null)) as RegraConflitoTamanho | null;
   // (14/10) a categoria sugerida já entra sozinha (sem a linha "Usar"); se ela trocar na mão, o app não mexe mais
   const [catAuto, setCatAuto] = useState<string | null>(null);
@@ -1011,14 +1021,14 @@ export default function Produtos() {
     setTipoCadastro(tp);
     // bolo (menos o de pote) começa por kg no Tamanho; o resto, preço fixo. Só enquanto o tamanho e o kit estão vazios.
     setForm(f => {
-      if (f.grupo_tamanhos?.opcoes?.length || kitAtivo((f as any).kit_qtd) || !["kg", "unidade"].includes(f.forma_venda)) return f;
+      if (f.grupo_tamanhos?.opcoes?.length || kitAtivo(f.kit_qtd) || !["kg", "unidade"].includes(f.forma_venda)) return f;
       const fv = tp === "bolos" && !ehBoloNoPote(f.nome) ? "kg" : "unidade";
       return fv === f.forma_venda ? f : { ...f, forma_venda: fv };
     });
   };
   // Liga/desliga e edita o kit (Tamanhos e Sabores saem quando o kit liga)
   const onKitChange = (k: KitQtdConfig) => setForm(f => {
-    const ligando = k.ativo && !kitAtivo((f as any).kit_qtd);
+    const ligando = k.ativo && !kitAtivo(f.kit_qtd);
     return {
       ...f,
       kit_qtd: k,
@@ -1028,7 +1038,7 @@ export default function Produtos() {
         forma_venda: "kit",
       } : {}),
       ...(k.ativo && precoMinKit(k) > 0 ? { preco_normal: precoMinKit(k) } : {}),
-    } as any;
+    } as Produto;
   });
   const openEditar = async (p: Produto) => {
     // Migração silenciosa: "sob-encomenda" era misturado no forma_venda,
@@ -1039,8 +1049,8 @@ export default function Produtos() {
       pMigrado.pronta_entrega = false;
     }
     // Tamanhos ligados sem modo salvo = preço fixo (senão a tela de edição "sugere" pelo peso e muda os preços)
-    const gtEd: any = (pMigrado as any).grupo_tamanhos;
-    if (gtEd?.ativo && !gtEd.modo_preco_tamanho) (pMigrado as any).grupo_tamanhos = { ...gtEd, modo_preco_tamanho: "preco_fixo" };
+    const gtEd: GrupoTamanhos = pMigrado.grupo_tamanhos;
+    if (gtEd?.ativo && !gtEd.modo_preco_tamanho) pMigrado.grupo_tamanhos = { ...gtEd, modo_preco_tamanho: "preco_fixo" };
     { const fm = migrarAdicionaisLegacy({ ...EMPTY, ...pMigrado }); setForm(fm); formSalvo.current = fm; }
     setFichaTecnica([]);
     // Detecta tipo baseado nos dados salvos
@@ -1065,10 +1075,10 @@ export default function Produtos() {
       // Resposta atrasada de outro produto (abriu um, fechou e abriu outro): descarta
       if (fichaPedida.current !== p.id) return;
       if (data && !error) {
-        const itens = data.map((d: any) => ({
+        const itens = data.map((d: { insumo_id: string; quantidade: number; unidade_utilizada: string | null; insumos: unknown }) => ({
           insumo_id: d.insumo_id,
           quantidade: Number(d.quantidade) || 0,
-          unidade_utilizada: d.unidade_utilizada || (d.insumos as any)?.unidade || "",
+          unidade_utilizada: d.unidade_utilizada || (d.insumos as Insumo | null)?.unidade || "",
           insumo: d.insumos as Insumo,
         }));
         setFichaTecnica(itens);
@@ -1199,20 +1209,20 @@ export default function Produtos() {
 
   // (17/10) Liga/desliga do cartão: um toque tira ou põe no cardápio, sem abrir o produto
   const MAX_DESTAQUES = 6;
-  const qtdDestaques = (semId?: string) => produtos.filter(x => (x as any).destaque === true && x.id !== semId).length;
+  const qtdDestaques = (semId?: string) => produtos.filter(x => x.destaque === true && x.id !== semId).length;
   // no cadastro aberto não tem o "Ver destaques" (fecharia a tela e perderia o que ela mexeu)
   const avisarLimiteDestaques = (comAcao = true) => avisar(`Já tem ${MAX_DESTAQUES} destaques`, {
     tipo: "erro", detalhe: "Tire um para destacar este.", ...(comAcao ? { acao: { rotulo: "Ver destaques", aoTocar: () => { setPreviewProduto(null); setSoDestaques(true); setFiltroOrfaos(false); } } } : {}) });
   const alternarDestaque = async (p: Produto) => {
     if (!p.id) return;
-    const novo = (p as any).destaque !== true;
+    const novo = p.destaque !== true;
     if (novo && p.disponivel === false) { showToast("error", "Produto fora do cardápio", "Mostre o produto no cardápio para poder destacar."); return false; }
     if (novo && qtdDestaques(p.id) >= MAX_DESTAQUES) { avisarLimiteDestaques(); return false; }
-    setProdutos(l => l.map(x => (x.id === p.id ? ({ ...x, destaque: novo } as any) : x)));
-    const { error } = await supabase.from("produtos").update({ destaque: novo } as any).eq("id", p.id);
+    setProdutos(l => l.map(x => (x.id === p.id ? { ...x, destaque: novo } : x)));
+    const { error } = await supabase.from("produtos").update({ destaque: novo }).eq("id", p.id);
     if (error) {
-      setProdutos(l => l.map(x => (x.id === p.id ? ({ ...x, destaque: !novo } as any) : x)));
-      if (/limite_destaques/.test(`${error.message} ${(error as any).hint || ""}`)) avisarLimiteDestaques();
+      setProdutos(l => l.map(x => (x.id === p.id ? { ...x, destaque: !novo } : x)));
+      if (/limite_destaques/.test(`${error.message} ${error.hint || ""}`)) avisarLimiteDestaques();
       else showToast("error", "Não deu certo", explicarErro(error));
       return false;
     }
@@ -1224,7 +1234,7 @@ export default function Produtos() {
     const novo = p.disponivel === false;
     if (novo && passouDoLimite()) { setLimiteAberto(true); return; }
     // (27/10) fora do cardápio sai também dos destaques (o banco faz o mesmo)
-    setProdutos(l => l.map(x => (x.id === p.id ? ({ ...x, disponivel: novo, ...(novo ? {} : { destaque: false }) } as any) : x)));
+    setProdutos(l => l.map(x => (x.id === p.id ? { ...x, disponivel: novo, ...(novo ? {} : { destaque: false }) } : x)));
     const { error } = await supabase.from("produtos").update({ disponivel: novo }).eq("id", p.id);
     if (error) {
       setProdutos(l => l.map(x => (x.id === p.id ? { ...x, disponivel: !novo } : x)));
@@ -1264,7 +1274,7 @@ export default function Produtos() {
     if (erroLer || !insumos) { console.error("[Doonly]", erroLer); return false; }
     if (insumos.length === 0) return true;
     const { error: erroGravar } = await supabase.from("produto_insumos").insert(
-      insumos.map((i: any) => ({ ...i, produto_id: paraId, user_id: userId }))
+      insumos.map((i: Record<string, unknown>) => ({ ...i, produto_id: paraId, user_id: userId }))
     );
     if (erroGravar) { console.error("[Doonly]", erroGravar); return false; }
     return true;
@@ -1276,7 +1286,7 @@ export default function Produtos() {
     let ok = 0, falhas = 0, semFicha = 0;
     const usadosSku = skusDe(produtos); // (21/10) a cópia ganha um SKU novo (nunca repete)
     for (const p of selecionados) {
-      const { id, created_at, updated_at, produto_insumos, user_id, ...limpo } = p as any;
+      const { id, created_at, updated_at, produto_insumos, user_id, ...limpo } = p;
       const sku = limpo.sku ? skuLivre(limpo.sku, usadosSku) : null;
       if (sku) usadosSku.add(sku);
       const novo = { ...limpo, sku, nome: proximoNomeCopia(p.nome), user_id: userId, disponivel: false };
@@ -1320,7 +1330,7 @@ export default function Produtos() {
     if (!form.nome.trim()) return avisar("Dê um nome ao produto", { tipo: "erro" });
     if (!(form.categoria || "").trim()) return avisar("Escolha a categoria do produto", { tipo: "erro" }); // (27/10) categoria vazia no banco vinha como null e travava o salvar
     // (14/10) todo produto diz se é pronta entrega ou encomenda (na edição fica na aba Fotos, em "Como o cliente recebe")
-    if (!((form as any).pronta_entrega === true || (form as any).antecedencia)) {
+    if (!(form.pronta_entrega === true || form.antecedencia)) {
       if (form.id) setEditTab("entrega");
       return avisar("Marque se o produto é pronta entrega ou encomenda.", { tipo: "erro" });
     }
@@ -1332,8 +1342,8 @@ export default function Produtos() {
     let precoBase = form.preco_normal;
 
     // (14/10) kit por quantidade: confere quantidades e preço também na edição (trocar pra "Ele escolhe" salvava o produto a R$ 0,00 no cardápio)
-    if (kitAtivo((form as any).kit_qtd)) {
-      const fk = faltaKit((form as any).kit_qtd);
+    if (kitAtivo(form.kit_qtd)) {
+      const fk = faltaKit(form.kit_qtd);
       if (fk) {
         if (form.id) setEditTab(/preço/i.test(fk.msg) ? "preco" : "opcoes");
         return avisar(fk.msg, { tipo: "erro" });
@@ -1348,7 +1358,7 @@ export default function Produtos() {
       precoBase = Math.min(...valores);
     } else if (isPersonalizavel) {
       const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos];
-      const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0) || kitAtivo((form as any).kit_qtd);
+      const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0) || kitAtivo(form.kit_qtd);
       // Produto simples (sem opções) também pode ser publicado — só precisa do preço
       if (!algumAtivo && !(form.preco_normal > 0) && !(tipoCadastro === "bolos" && !form.id)) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço do produto", { tipo: "erro" }); }
       // Se tem Tamanhos ativos, preço base vem do MENOR tamanho
@@ -1361,7 +1371,7 @@ export default function Produtos() {
           precoBase = form.preco_normal;
         } else if (regraCombo(form) === "preco_sabor") {
           // (14/10) Tamanho + "só o sabor": o preço vem dos sabores; o tamanho é só o nome
-          const precosS = (gs?.opcoes || []).map((o: any) => Number(o.preco) || 0).filter((p: number) => p > 0);
+          const precosS = (gs?.opcoes || []).map((o: OpcaoSabor) => Number(o.preco) || 0).filter((p: number) => p > 0);
           if (precosS.length === 0) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço dos sabores", { tipo: "erro" }); }
           precoBase = Math.min(...precosS);
         } else {
@@ -1370,10 +1380,10 @@ export default function Produtos() {
           precoBase = Math.min(...precosT);
         }
       } else if (gs?.ativo && gs.opcoes.length > 0 && gs.sabor_tem_preco_proprio) {
-        const precosS = gs.opcoes.map((o: any) => o.preco || 0).filter((p: number) => p > 0);
+        const precosS = gs.opcoes.map((o: OpcaoSabor) => o.preco || 0).filter((p: number) => p > 0);
         if (precosS.length === 0) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço dos sabores", { tipo: "erro" }); }
         precoBase = Math.min(...precosS);
-      } else if (!kitAtivo((form as any).kit_qtd)) { // o kit já foi conferido acima (preço de cada kit)
+      } else if (!kitAtivo(form.kit_qtd)) { // o kit já foi conferido acima (preço de cada kit)
         if (!form.preco_normal || form.preco_normal <= 0) { if (form.id) setEditTab("preco"); return avisar("Coloque o preço do produto", { tipo: "erro" }); }
       }
     } else {
@@ -1384,12 +1394,12 @@ export default function Produtos() {
     // Antes só a criação conferia: na edição dava pra salvar tamanho sem nome, sem preço ou sem peso
     // (e o cardápio cobrava o menor preço, ou o preço de 1 kg).
     let formSalvar: Produto = form;
-    const gtForm: any = form.grupo_tamanhos;
-    if (gtForm?.ativo && !kitAtivo((form as any).kit_qtd)) {
+    const gtForm: GrupoTamanhos = form.grupo_tamanhos;
+    if (gtForm?.ativo && !kitAtivo(form.kit_qtd)) {
       // Tamanhos ligados sem modo definido: é preço fixo por tamanho
-      const modoT: string = gtForm.modo_preco_tamanho || "preco_fixo";
+      const modoT: NonNullable<GrupoTamanhos["modo_preco_tamanho"]> = gtForm.modo_preco_tamanho || "preco_fixo";
       // Linha em branco (sem nome, preço nem peso) sai sozinha
-      let ops: OpcaoTamanho[] = (gtForm.opcoes || []).filter((o: any) => String(o?.nome || "").trim() || o?.preco > 0 || o?.peso_kg > 0);
+      let ops: OpcaoTamanho[] = (gtForm.opcoes || []).filter((o: OpcaoTamanho) => String(o?.nome || "").trim() || o?.preco > 0 || o?.peso_kg > 0);
       if (ops.some(o => !String(o.nome || "").trim())) {
         return avisar("Tem um tamanho sem nome. Coloque o nome ou apague esse tamanho.", { tipo: "erro" });
       }
@@ -1398,8 +1408,8 @@ export default function Produtos() {
         ops = ops.map(o => ({ ...o, preco: 0 }));
       } else if (modoT === "preco_fixo") {
         // Exceção: o preço vem só do sabor (nenhum tamanho tem preço) — aí o tamanho é só um rótulo
-        const gsForm: any = form.grupo_sabores;
-        const saborDaPreco = !!gsForm?.ativo && !!gsForm.sabor_tem_preco_proprio && (gsForm.opcoes || []).some((o: any) => o?.preco > 0)
+        const gsForm: GrupoSabores = form.grupo_sabores;
+        const saborDaPreco = !!gsForm?.ativo && !!gsForm.sabor_tem_preco_proprio && (gsForm.opcoes || []).some((o: OpcaoSabor) => o?.preco > 0)
           && gsForm.regra_conflito_tamanho !== "tamanho_base_sabor_adicional"; // (14/10) "tamanho + sabor": o tamanho precisa de preço
         const semPreco = ops.find(o => !(o.preco > 0));
         if (semPreco && !(saborDaPreco && ops.every(o => !(o.preco > 0)))) {
@@ -1428,9 +1438,9 @@ export default function Produtos() {
     let ajustePromo: Partial<Produto> = {};
     if (form.tipo_promocao !== "percentual") {
       const pp = Number(form.preco_promocional) || 0;
-      const gtS: any = formSalvar.grupo_tamanhos;
-      const semPromoEmValor = kitAtivo((form as any).kit_qtd) || !!precosDosSabores(formSalvar) // (14/10) preço pelo sabor: promoção só em %
-        || (!!gtS?.ativo && (gtS.modo_preco_tamanho || "preco_fixo") === "preco_fixo" && (gtS.opcoes || []).some((o: any) => o?.preco > 0));
+      const gtS: GrupoTamanhos = formSalvar.grupo_tamanhos;
+      const semPromoEmValor = kitAtivo(form.kit_qtd) || !!precosDosSabores(formSalvar) // (14/10) preço pelo sabor: promoção só em %
+        || (!!gtS?.ativo && (gtS.modo_preco_tamanho || "preco_fixo") === "preco_fixo" && (gtS.opcoes || []).some((o: OpcaoTamanho) => o?.preco > 0));
       if (semPromoEmValor) {
         if (pp > 0 || form.promocao) ajustePromo = { promocao: false, preco_promocional: 0 };
       } else if (pp > 0 && pp >= (Number(form.preco_normal) || 0)) {
@@ -1461,33 +1471,33 @@ export default function Produtos() {
 
     // ─── Limpar campos que NÃO pertencem à tabela produtos ───
     // (evita Supabase rejeitar silenciosamente o update inteiro)
-    const { produto_insumos, created_at, ...formLimpo } = formSalvar as any;
+    const { produto_insumos, created_at, ...formLimpo } = formSalvar;
 
     // Edição: se mexeu nos preços dos tamanhos (preço fixo), o "a partir de" acompanha
     // (27/10) lê os tamanhos que vão ser gravados (com "só o sabor" os preços dos tamanhos já foram zerados)
-    const gtSalvar = (formSalvar as any).grupo_tamanhos;
+    const gtSalvar = formSalvar.grupo_tamanhos;
     if (form.id && gtSalvar?.ativo && (gtSalvar.modo_preco_tamanho || "preco_fixo") === "preco_fixo") {
-      const pt = (gtSalvar.opcoes || []).map((o: any) => Number(o.preco)).filter((p: number) => p > 0);
+      const pt = (gtSalvar.opcoes || []).map((o: OpcaoTamanho) => Number(o.preco)).filter((p: number) => p > 0);
       if (pt.length) precoBase = Math.min(...pt);
     }
 
     // Kit por quantidade: o preço base é o menor preço do kit
-    if (kitAtivo((form as any).kit_qtd) && precoMinKit((form as any).kit_qtd) > 0) precoBase = precoMinKit((form as any).kit_qtd);
+    if (kitAtivo(form.kit_qtd) && precoMinKit(form.kit_qtd) > 0) precoBase = precoMinKit(form.kit_qtd);
 
     // (14/10) SKU: só vai quando tem; se o banco ainda não tem a coluna (SQL 4.36), salva sem ele e avisa
     if (!String(formLimpo.sku || "").trim()) delete formLimpo.sku;
     else {
       // (21/10) o SKU não pode repetir na loja
       formLimpo.sku = String(formLimpo.sku).trim().toUpperCase();
-      const dono = produtos.find((p: any) => p.id !== form.id && String(p.sku || "").trim().toUpperCase() === formLimpo.sku);
+      const dono = produtos.find((p: Produto) => p.id !== form.id && String(p.sku || "").trim().toUpperCase() === formLimpo.sku);
       if (dono) {
         showToast("error", "Esse SKU já está em uso", `O código ${formLimpo.sku} já está no produto "${dono.nome}". Escreva outro ou use Gerar.`);
         setSaving(false);
         return;
       }
     }
-    const skuRepetido = (e: any) => /sku_repetido|SKU repetido/i.test(`${e?.message || ""} ${e?.hint || ""}`);
-    const semColunaSku = (e: any) => /sku/i.test(String(e?.message || "")) && /column|coluna|schema/i.test(String(e?.message || ""));
+    const skuRepetido = (e: { message?: string; hint?: string } | null) => /sku_repetido|SKU repetido/i.test(`${e?.message || ""} ${e?.hint || ""}`);
+    const semColunaSku = (e: { message?: string; hint?: string } | null) => /sku/i.test(String(e?.message || "")) && /column|coluna|schema/i.test(String(e?.message || ""));
     const payload = {
       ...formLimpo,
       nome: nomeProduto(String(formLimpo.nome || form.nome || "")),
@@ -1500,11 +1510,11 @@ export default function Produtos() {
     let produtoId = form.id;
     if (form.id) {
       const estavaFora = produtos.find(x => x.id === form.id)?.disponivel === false;
-      if (estavaFora && (payload as any).disponivel !== false && passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
+      if (estavaFora && payload.disponivel !== false && passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
       let { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
-      if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ error } = await supabase.from("produtos").update(sem).eq("id", form.id)); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
+      if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload; void _s; ({ error } = await supabase.from("produtos").update(sem).eq("id", form.id)); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
       if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou use Gerar."); setSaving(false); return; }
-      if (error && /limite_destaques/.test(`${error.message} ${(error as any).hint || ""}`)) { avisarLimiteDestaques(false); setSaving(false); return; }
+      if (error && /limite_destaques/.test(`${error.message} ${error.hint || ""}`)) { avisarLimiteDestaques(false); setSaving(false); return; }
       if (error) {
         console.error("Erro ao atualizar produto:", error);
         showToast("error", "Não deu para salvar", explicarErro(error));
@@ -1512,11 +1522,11 @@ export default function Produtos() {
         return;
       }
     } else {
-      if ((payload as any).disponivel !== false && passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
+      if (payload.disponivel !== false && passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
       let { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
-      if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload as any; void _s; ({ data: novo, error } = await supabase.from("produtos").insert({ ...sem, user_id: userId }).select("id").single()); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
+      if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload; void _s; ({ data: novo, error } = await supabase.from("produtos").insert({ ...sem, user_id: userId }).select("id").single()); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
       if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou use Gerar."); setSaving(false); return; }
-      if (error && /limite_destaques/.test(`${error.message} ${(error as any).hint || ""}`)) { avisarLimiteDestaques(false); setSaving(false); return; }
+      if (error && /limite_destaques/.test(`${error.message} ${error.hint || ""}`)) { avisarLimiteDestaques(false); setSaving(false); return; }
       if (error) {
         console.error("Erro ao criar produto:", error);
         showToast("error", "Não deu para criar", explicarErro(error));
@@ -1588,8 +1598,8 @@ export default function Produtos() {
     // (15/10) o aviso de sucesso não mostra mais preço nem categoria: só o nome e o que falta (foto)
     setSucesso({
       pronta: passosAgora && !passosAgora.falhou ? passosCompletos(passosAgora) : null,
-      semExtras: !!extras && !(extras as any).error && ((extras as any).count ?? 0) === 0,
-      id: produtoId, nome: (payload as any).nome || form.nome,
+      semExtras: !!extras && !extras.error && (extras.count ?? 0) === 0,
+      id: produtoId, nome: payload.nome || form.nome,
       imagem: (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0],
       primeiro: eraPrimeiro, fora: form.disponivel === false,
     });
@@ -1656,11 +1666,11 @@ export default function Produtos() {
 
   const produtosFiltrados = (() => {
     let lista = [...produtos];
-    if (soDestaques) lista = lista.filter(p => (p as any).destaque === true);
+    if (soDestaques) lista = lista.filter(p => p.destaque === true);
     if (catsFiltro) lista = lista.filter(p => catsFiltro.includes(p.categoria || "__sem"));
     if (buscaTexto.trim()) {
       const t = buscaTexto.toLowerCase();
-      lista = lista.filter(p => p.nome.toLowerCase().includes(t) || p.descricao?.toLowerCase().includes(t) || String((p as any).sku || "").toLowerCase().includes(t));
+      lista = lista.filter(p => p.nome.toLowerCase().includes(t) || p.descricao?.toLowerCase().includes(t) || String(p.sku || "").toLowerCase().includes(t));
     }
     switch (ordenarPor) {
       case "alfabetica":
@@ -1921,7 +1931,7 @@ export default function Produtos() {
                 </div>
               </div>
               <div className="prod-card-info">
-                <p className={`prod-card-nome${(p as any).destaque === true ? " prod-card-nome--dq" : ""}`} title={(p as any).destaque === true ? `${p.nome} (em destaque)` : p.nome}>{p.nome}</p>
+                <p className={`prod-card-nome${p.destaque === true ? " prod-card-nome--dq" : ""}`} title={p.destaque === true ? `${p.nome} (em destaque)` : p.nome}>{p.nome}</p>
                 {/* (21/10) celular: lista, uma informação por linha (preço ativo, tipo, lucro estimado ou Criar ficha) */}
                 {(() => {
                   const pl = precoDaLista(p);
@@ -1945,7 +1955,7 @@ export default function Produtos() {
                         <button type="button" role="switch" aria-checked={p.disponivel !== false} aria-label={`Mostrar ${p.nome} no cardápio`}
                           className="pl-chave pl-lin-chave" onClick={e => { e.stopPropagation(); void alternarNoCardapio(p); }}><span /></button>
                       </div>
-                      <p className="pl-lin-tipo">{(p as any).antecedencia ? "Encomenda" : "Pronta entrega"}</p>
+                      <p className="pl-lin-tipo">{p.antecedencia ? "Encomenda" : "Pronta entrega"}</p>
                       {temFicha
                         ? <p className={`pl-lin-lucro pl-lin-lucro--${tier}`}>Lucro estimado R$&nbsp;{formatPreco(lucro)} ({margem.toFixed(0)}%)</p>
                         : <button type="button" className="pl-lin-ficha" onClick={e => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}>Montar ficha técnica<CaretRight size={13} weight="bold" aria-hidden="true" /></button>}
@@ -1966,7 +1976,7 @@ export default function Produtos() {
                         ? <div><dt><s className="pl-ficha-de">R$&nbsp;{formatPreco(cheio)}</s></dt><dd className="pl-ficha-promo">R$&nbsp;{formatPreco(pl.final)}</dd></div>
                         : <div><dt>{rotulo}</dt><dd>R$&nbsp;{formatPreco(cheio)}</dd></div>}
                       {/* Mesma regra do cardápio: só é encomenda quando tem antecedência marcada */}
-                      <div><dt>Tipo</dt><dd>{(p as any).antecedencia ? "Encomenda" : "Pronta entrega"}</dd></div>
+                      <div><dt>Tipo</dt><dd>{p.antecedencia ? "Encomenda" : "Pronta entrega"}</dd></div>
                       <div className="pl-ficha-on"><dt>Cardápio</dt><dd>
                         <button type="button" role="switch" aria-checked={p.disponivel !== false} aria-label={`Mostrar ${p.nome} no cardápio`}
                           className="pl-chave" onClick={e => { e.stopPropagation(); void alternarNoCardapio(p); }}><span /></button>
@@ -2064,7 +2074,7 @@ export default function Produtos() {
             {/* (14/10) edição: abre num resumo com "Editar" em cada parte (as abas saíram) */}
             {form.id && editTab === "resumo" && (
               <div className="prod-modal-body">
-                <ResumoEdicao form={form} isPro={isPro} onEditar={(t: any) => setEditTab(t)} />
+                <ResumoEdicao form={form} isPro={isPro} onEditar={(t: Parameters<React.ComponentProps<typeof ResumoEdicao>["onEditar"]>[0]) => setEditTab(t)} />
               </div>
             )}
 
@@ -2216,11 +2226,11 @@ export default function Produtos() {
                 {form.id && <div className="prod-field">
                   <label className="prod-field-label-novo" htmlFor="prod-sku-input">SKU <OptTag /></label>
                   <div className="prod-sku">
-                    <input id="prod-sku-input" placeholder="Ex.: BOL-0427" value={(form as any).sku || ""} maxLength={24} autoCapitalize="characters"
-                      onChange={e => setForm(f => ({ ...(f as any), sku: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") }))} />
+                    <input id="prod-sku-input" placeholder="Ex.: BOL-0427" value={form.sku || ""} maxLength={24} autoCapitalize="characters"
+                      onChange={e => setForm(f => ({ ...f, sku: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") }))} />
                     <button type="button" onClick={() => {
                       const pre = (String(form.categoria || form.nome || "PRD").normalize("NFD").replace(/[^A-Za-z]/g, "").slice(0, 3) || "PRD").toUpperCase().padEnd(3, "X");
-                      setForm(f => ({ ...(f as any), sku: skuLivre(pre, skusDe(produtos)) }));
+                      setForm(f => ({ ...f, sku: skuLivre(pre, skusDe(produtos)) }));
                     }}>Gerar</button>
                   </div>
                 </div>}
@@ -2232,7 +2242,7 @@ export default function Produtos() {
             {/* (13/10) Escolhas: a mesma tela pra todos os tipos, no cadastro e na edição */}
             {((wizardStep === 3 && !form.id) || (form.id && editTab === "opcoes")) && (
               <div className="prod-modal-body">
-                <EscolhasProduto form={form} setForm={setForm as any} tipo={form.id ? null : tipoCadastro} onKitChange={onKitChange} outros={produtos.filter(p => p.id !== form.id)} tela={escTela} setTela={setEscTela} edicao={!!form.id} />
+                <EscolhasProduto form={form} setForm={setForm as React.ComponentProps<typeof EscolhasProduto>["setForm"]} tipo={form.id ? null : tipoCadastro} onKitChange={onKitChange} outros={produtos.filter(p => p.id !== form.id)} tela={escTela} setTela={setEscTela} edicao={!!form.id} />
               </div>
             )}
 
@@ -2416,7 +2426,7 @@ export default function Produtos() {
                   {/* (14/10) tabelinha: Tamanho | Preço (editável) | À venda (só na edição: desmarcado = esgotado) */}
                   <div className={`prod-dtab prod-ptab${form.id ? " prod-ptab--3" : ""}`} role="table" aria-label="Preço por tamanho">
                     <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">{form.grupo_tamanhos?.nome_exibicao === "Quantidades" ? "Quantidade" : "Tamanho"}</span><span role="columnheader">Preço</span>{form.id && <span role="columnheader">À venda</span>}</div>
-                    {form.grupo_tamanhos.opcoes.map((op: any) => {
+                    {form.grupo_tamanhos.opcoes.map((op: OpcaoTamanho) => {
                       const esg = !!op.esgotado;
                       return (
                         <div className={`prod-dtab-l${esg ? " esg" : ""}`} role="row" key={op.id}>
@@ -2429,7 +2439,7 @@ export default function Produtos() {
                           </span>
                           {form.id && <span role="cell">
                             <button type="button" className={`prod-ptab-ck${esg ? "" : " on"}`} role="checkbox" aria-checked={!esg} aria-label={`${op.nome} à venda`}
-                              onClick={() => setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), opcoes: (f.grupo_tamanhos?.opcoes || []).map((o: any) => o.id === op.id ? { ...o, esgotado: esg ? undefined : true } : o) } }))}>
+                              onClick={() => setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), opcoes: (f.grupo_tamanhos?.opcoes || []).map((o: OpcaoTamanho) => o.id === op.id ? { ...o, esgotado: esg ? undefined : true } : o) } }))}>
                               {!esg && <CheckIc size={14} weight="bold" />}
                             </button>
                           </span>}
@@ -2438,7 +2448,7 @@ export default function Produtos() {
                     })}
                   </div>
                 {/* (14/10) promoção em % pros tamanhos de preço fixo (antes não tinha onde pôr) */}
-                {!kitAtivo((form as any).kit_qtd) && (() => {
+                {!kitAtivo(form.kit_qtd) && (() => {
                   const pct = Number(form.desconto_percentual) || 0;
                   const on = !!form.promocao && form.tipo_promocao === "percentual";
                   return (<>
@@ -2490,12 +2500,12 @@ export default function Produtos() {
                     return (
                   <div className={`prod-dtab prod-ptab${promoS ? " prod-ptab--promo" : ""}`} role="table" aria-label="Preço por sabor">
                     <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Sabor</span><span role="columnheader">Preço</span>{promoS && <span role="columnheader">Com {pctS}%</span>}</div>
-                    {form.grupo_sabores.opcoes.map((op: any) => (
+                    {form.grupo_sabores.opcoes.map((op: OpcaoSabor) => (
                       <div className="prod-dtab-l" role="row" key={op.id}>
                         <span role="cell">{op.nome}</span>
                         <span role="cell"><label className="prod-ptab-in"><span>R$</span>
                           <input type="text" inputMode="numeric" placeholder="0,00" aria-label={`Preço de ${op.nome}`} value={op.preco ? formatPreco(op.preco) : ""}
-                            onChange={e => { const preco = parsePreco(e.target.value); setForm(f => ({ ...f, grupo_sabores: { ...(f.grupo_sabores as GrupoSabores), opcoes: (f.grupo_sabores?.opcoes || []).map((o: any) => o.id === op.id ? { ...o, preco } : o) } })); }} />
+                            onChange={e => { const preco = parsePreco(e.target.value); setForm(f => ({ ...f, grupo_sabores: { ...(f.grupo_sabores as GrupoSabores), opcoes: (f.grupo_sabores?.opcoes || []).map((o: OpcaoSabor) => o.id === op.id ? { ...o, preco } : o) } })); }} />
                         </label></span>
                         {promoS && <b role="cell">{op.preco > 0 ? `R$ ${formatPreco(Math.round(op.preco * (100 - pctS)) / 100)}` : "—"}</b>}
                       </div>
@@ -2531,8 +2541,8 @@ export default function Produtos() {
               {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
               {/* Aparece quando: (a) não tem tamanho, OU (b) modo é por_peso (precisa do R$/kg) */}
               {/* Kit (02/10): sem "preço base" — o preço vem dos kits montados. Fica só a promoção. */}
-              {((wizardStep === 5 && !entTela && !form.id) || (form.id && editTab === "preco")) && kitAtivo((form as any).kit_qtd) && (() => {
-                const kq: any = (form as any).kit_qtd;
+              {((wizardStep === 5 && !entTela && !form.id) || (form.id && editTab === "preco")) && kitAtivo(form.kit_qtd) && (() => {
+                const kq: KitQtdConfig = form.kit_qtd;
                 const pct = Number(form.desconto_percentual) || 0;
                 const promoOn = !!form.promocao && form.tipo_promocao === "percentual";
                 return (
@@ -2551,12 +2561,12 @@ export default function Produtos() {
                     ) : (
                       <div className="prod-dtab prod-ptab" role="table" aria-label="Preço dos kits">
                         <div className="prod-dtab-l prod-dtab-h" role="row"><span role="columnheader">Kit</span><span role="columnheader">Preço</span></div>
-                        {(kq?.kits || []).filter((x: any) => (x.qtd || 0) > 0).sort((x: any, y: any) => x.qtd - y.qtd).map((x: any) => (
+                        {(kq?.kits || []).filter((x: KitFechado) => (x.qtd || 0) > 0).sort((x: KitFechado, y: KitFechado) => x.qtd - y.qtd).map((x: KitFechado) => (
                           <div className="prod-dtab-l" role="row" key={x.id}>
                             <span role="cell">Kit de {x.qtd} un.</span>
                             <span role="cell"><label className="prod-ptab-in"><span>R$</span>
                               <input type="text" inputMode="numeric" placeholder="0,00" aria-label={`Preço do kit de ${x.qtd}`} value={x.preco ? formatPreco(x.preco) : ""}
-                                onChange={e => { const v = parsePreco(e.target.value); onKitChange({ ...kq, kits: kq.kits.map((y: any) => y.id === x.id ? { ...y, preco: v } : y) }); }} />
+                                onChange={e => { const v = parsePreco(e.target.value); onKitChange({ ...kq, kits: kq.kits.map((y: KitFechado) => y.id === x.id ? { ...y, preco: v } : y) }); }} />
                             </label></span>
                           </div>
                         ))}
@@ -2585,7 +2595,7 @@ export default function Produtos() {
                 );
               })()}
 
-              {((wizardStep === 5 && !entTela && !form.id) || (form.id && editTab === "preco")) && !kitAtivo((form as any).kit_qtd) && (
+              {((wizardStep === 5 && !entTela && !form.id) || (form.id && editTab === "preco")) && !kitAtivo(form.kit_qtd) && (
                 !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) ||
                 form.grupo_tamanhos?.modo_preco_tamanho === "por_peso"
               ) && (
@@ -2600,7 +2610,7 @@ export default function Produtos() {
                     const kgPromoV = Number(form.preco_promocional) || 0;
                     const promoOnKg = kgPromo || kgPromoV > 0;
                     const comPromo = promoOnKg && kgPromoV > 0 && kgPromoV < kgCheio;
-                    const pesosT = (form.grupo_tamanhos!.opcoes || []).filter((o: any) => Number(o.peso_kg) > 0);
+                    const pesosT = (form.grupo_tamanhos!.opcoes || []).filter((o: OpcaoTamanho) => Number(o.peso_kg) > 0);
                     const r = (v: number) => Math.round(v * 100) / 100;
                     return (<>
                       <p className="prod-section-label prod-section-label--novo">Qual é o preço base do kg?</p>
@@ -2613,7 +2623,7 @@ export default function Produtos() {
                       {pesosT.length > 0 && (
                         <div className="prod-dtab" role="table" aria-label="Preço de cada peso">
                           <div className={`prod-dtab-l prod-dtab-h${comPromo ? "" : " prod-dtab-l--2"}`} role="row"><span role="columnheader">Peso</span><span role="columnheader">Preço</span>{comPromo && <span role="columnheader">Promoção</span>}</div>
-                          {pesosT.map((o: any) => (
+                          {pesosT.map((o: OpcaoTamanho) => (
                             <div className={`prod-dtab-l${comPromo ? "" : " prod-dtab-l--2"}`} role="row" key={o.id}>
                               <span role="cell">{o.nome}</span>
                               <span role="cell">R$ {formatPreco(r(Number(o.peso_kg) * kgCheio))}</span>
@@ -2716,15 +2726,15 @@ export default function Produtos() {
               )}
 
               {/* (14/10) esgotar um tamanho só (na edição): no cardápio ele aparece apagado e não dá pra escolher */}
-              {form.id && editTab === "preco" && !kitAtivo((form as any).kit_qtd) && form.grupo_tamanhos?.ativo && form.grupo_tamanhos.modo_preco_tamanho === "por_peso" && (form.grupo_tamanhos.opcoes.length || 0) > 0 && (
+              {form.id && editTab === "preco" && !kitAtivo(form.kit_qtd) && form.grupo_tamanhos?.ativo && form.grupo_tamanhos.modo_preco_tamanho === "por_peso" && (form.grupo_tamanhos.opcoes.length || 0) > 0 && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">Tamanhos à venda</p>
                   <div className="prod-opcs">
-                    {form.grupo_tamanhos.opcoes.map((op: any) => {
+                    {form.grupo_tamanhos.opcoes.map((op: OpcaoTamanho) => {
                       const aVenda = !op.esgotado;
                       return (
                         <button key={op.id} type="button" className={`prod-opc${aVenda ? " on" : ""}`} role="checkbox" aria-checked={aVenda}
-                          onClick={() => setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), opcoes: (f.grupo_tamanhos?.opcoes || []).map((o: any) => o.id === op.id ? { ...o, esgotado: aVenda ? true : undefined } : o) } }))}>
+                          onClick={() => setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), opcoes: (f.grupo_tamanhos?.opcoes || []).map((o: OpcaoTamanho) => o.id === op.id ? { ...o, esgotado: aVenda ? true : undefined } : o) } }))}>
                           <i aria-hidden="true">{aVenda && <CheckIc size={14} weight="bold" />}</i>
                           <span><b>{op.nome}</b><small>{aVenda ? "À venda" : "Esgotado: aparece apagado no cardápio"}</small></span>
                         </button>
@@ -2784,7 +2794,7 @@ export default function Produtos() {
 
               {/* (14/10) cadastro novo: uma seção só com as opções, cada uma com caixinha e explicação */}
               {((wizardStep === 5 && entTela && !form.id) || (form.id && editTab === "entrega")) && (() => {
-                const enc = !!(form as any).antecedencia;
+                const enc = !!form.antecedencia;
                 const op = (on: boolean, t: string, sub: string, fn: () => void) => (
                   <button type="button" className={`prod-opc${on ? " on" : ""}`} role="checkbox" aria-checked={on} onClick={fn}>
                     <i aria-hidden="true">{on && <CheckIc size={14} weight="bold" />}</i>
@@ -2799,34 +2809,34 @@ export default function Produtos() {
                     <div className="prod-so-cel">
                       <div className="prod-tipo" role="radiogroup" aria-label="Como você vende este produto">
                         <button type="button" role="radio" aria-checked={form.pronta_entrega === true} className={form.pronta_entrega === true ? "on" : ""}
-                          onClick={() => setForm(f => ({ ...(f as any), pronta_entrega: true, antecedencia: null }))}><span className="prod-tipo-ic" aria-hidden="true"><Lightning size={22} weight="fill" /></span><b>Pronta entrega</b><small>Tem feito, sai na hora</small></button>
+                          onClick={() => setForm(f => ({ ...f, pronta_entrega: true, antecedencia: null }))}><span className="prod-tipo-ic" aria-hidden="true"><Lightning size={22} weight="fill" /></span><b>Pronta entrega</b><small>Tem feito, sai na hora</small></button>
                         <button type="button" role="radio" aria-checked={form.pronta_entrega !== true} className={form.pronta_entrega !== true ? "on" : ""}
-                          onClick={() => setForm(f => ({ ...(f as any), pronta_entrega: false, antecedencia: (f as any).pronta_entrega || !(f as any).antecedencia ? "48h" : (f as any).antecedencia }))}><span className="prod-tipo-ic" aria-hidden="true"><CalendarBlank size={22} weight="fill" /></span><b>Sob encomenda</b><small>O cliente pede antes</small></button>
+                          onClick={() => setForm(f => ({ ...f, pronta_entrega: false, antecedencia: f.pronta_entrega || !f.antecedencia ? "48h" : f.antecedencia }))}><span className="prod-tipo-ic" aria-hidden="true"><CalendarBlank size={22} weight="fill" /></span><b>Sob encomenda</b><small>O cliente pede antes</small></button>
                       </div>
-                      {form.pronta_entrega !== true && <PrazoEncomenda valor={(form as any).antecedencia ?? null} aoMudar={v => setForm(f => ({ ...(f as any), antecedencia: v }))} />}
+                      {form.pronta_entrega !== true && <PrazoEncomenda valor={form.antecedencia ?? null} aoMudar={v => setForm(f => ({ ...f, antecedencia: v }))} />}
                     </div>
                     <div className="prod-so-pc">
                       <CaixasEscolha rotulo="Como você vende este produto" valor={(form.pronta_entrega === true ? "pronta" : enc ? "encomenda" : "") as "pronta" | "encomenda"}
                         opcoes={[{ v: "pronta", t: "Pronta entrega", sub: "Tem feito, sai na hora" }, { v: "encomenda", t: "Sob encomenda", sub: "O cliente pede com antecedência" }]}
-                        onMudar={v => setForm(f => ({ ...(f as any), pronta_entrega: v === "pronta", antecedencia: v === "pronta" ? null : (f as any).antecedencia || "48h" }))} />
-                      {enc && form.pronta_entrega !== true && <PrazoEncomenda valor={(form as any).antecedencia ?? null} aoMudar={v => setForm(f => ({ ...(f as any), antecedencia: v }))} />}
+                        onMudar={v => setForm(f => ({ ...f, pronta_entrega: v === "pronta", antecedencia: v === "pronta" ? null : f.antecedencia || "48h" }))} />
+                      {enc && form.pronta_entrega !== true && <PrazoEncomenda valor={form.antecedencia ?? null} aoMudar={v => setForm(f => ({ ...f, antecedencia: v }))} />}
                     </div>
                     <p className="prod-section-label prod-section-label--novo prod-lbl-sep">No cardápio</p>
                     <div className="prod-opcs">
-                      {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só para você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false, ...(f.disponivel !== false ? { destaque: false } : {}) } as any)))}
+                      {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só para você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false, ...(f.disponivel !== false ? { destaque: false } : {}) } as Produto)))}
                       {/* (27/10) Destaques: até 6, no topo do cardápio em cartão grande */}
-                      {op((form as any).destaque === true, "Destacar no cardápio", `${qtdDestaques(form.id) + ((form as any).destaque === true ? 1 : 0)} de ${MAX_DESTAQUES} · no topo, em cartão grande`, () => {
-                        const ligar = (form as any).destaque !== true;
+                      {op(form.destaque === true, "Destacar no cardápio", `${qtdDestaques(form.id) + (form.destaque === true ? 1 : 0)} de ${MAX_DESTAQUES} · no topo, em cartão grande`, () => {
+                        const ligar = form.destaque !== true;
                         if (ligar && form.disponivel === false) { avisar("Mostre o produto no cardápio para poder destacar.", { tipo: "erro" }); return; }
                         if (ligar && qtdDestaques(form.id) >= MAX_DESTAQUES) { avisarLimiteDestaques(false); return; }
-                        setForm(f => ({ ...(f as any), destaque: ligar }));
+                        setForm(f => ({ ...f, destaque: ligar }));
                       })}
                       {/* (19/10) foto de referência só nos produtos que pedem (personalizados, topos de bolo) */}
-                      {op((form as any).aceita_referencia === true, "Aceita foto de referência", "O cliente manda a foto do modelo", () => setForm(f => ({ ...(f as any), aceita_referencia: !(f as any).aceita_referencia })))}
+                      {op(form.aceita_referencia === true, "Aceita foto de referência", "O cliente manda a foto do modelo", () => setForm(f => ({ ...f, aceita_referencia: !f.aceita_referencia })))}
                     </div>
                     {/* (24/10) quando usar a foto de referência */}
                     <p className="prod-ref-dica">
-                      {(form as any).aceita_referencia === true
+                      {form.aceita_referencia === true
                         ? <>No pedido aparece um campo para o cliente <b>anexar uma foto de referência</b>. Ela chega junto com o pedido para você ver.</>
                         : <>Ligue em produtos <b>personalizados</b>, como bolos decorados, topos de bolo e kits temáticos. Em produtos de linha, deixe desligado.</>}
                     </p>
@@ -2877,7 +2887,7 @@ export default function Produtos() {
                   if (wizardStep >= 5) {
                     const fPreco = ((): FaltaCampo => {
                     // Kit por quantidade: o preço vem dos kits
-                    if (kitAtivo((form as any).kit_qtd)) { const kq: any = (form as any).kit_qtd; const semP = kq.modo === "livre" ? !(kq.livre?.preco_cento > 0) : (kq.kits || []).find((x: any) => (x.qtd || 0) > 0 && !(x.preco > 0)); return !semP ? null : kq.modo === "livre" ? { msg: "Coloque o preço do cento", alvo: 'input[aria-label="Preço do cento"]' } : { msg: `Coloque o preço do kit de ${(semP as any).qtd}`, alvo: `input[aria-label="Preço do kit de ${(semP as any).qtd}"]` }; }
+                    if (kitAtivo(form.kit_qtd)) { const kq: KitQtdConfig = form.kit_qtd; const semP = kq.modo === "livre" ? !(kq.livre?.preco_cento > 0) : (kq.kits || []).find((x: KitFechado) => (x.qtd || 0) > 0 && !(x.preco > 0)); return !semP ? null : kq.modo === "livre" ? { msg: "Coloque o preço do cento", alvo: 'input[aria-label="Preço do cento"]' } : { msg: `Coloque o preço do kit de ${(semP as KitFechado).qtd}`, alvo: `input[aria-label="Preço do kit de ${(semP as KitFechado).qtd}"]` }; }
                     const gt = form.grupo_tamanhos;
                     const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
                     // 11/10: preço promocional maior ou igual ao cheio não é promoção: avisa e não avança
@@ -2890,7 +2900,7 @@ export default function Produtos() {
                       const r = regraCombo(form);
                       if (!r) return { msg: "Escolha de onde vem o preço", alvo: '[aria-label="De onde vem o preço"]' };
                       if (r === "preco_sabor") {
-                        const semS = (form.grupo_sabores?.opcoes || []).find((o: any) => !(Number(o.preco) > 0));
+                        const semS = (form.grupo_sabores?.opcoes || []).find((o: OpcaoSabor) => !(Number(o.preco) > 0));
                         return semS ? { msg: `Coloque o preço de ${semS.nome}`, alvo: `input[aria-label="Preço de ${String(semS.nome).replace(/(["\\])/g, "\\$1")}"]` } : null;
                       }
                     }
@@ -2905,13 +2915,13 @@ export default function Produtos() {
                     }
                     // (14/10) preço pelo sabor: todo sabor precisa de preço; não pede preço cheio
                     if (precosDosSabores(form)) {
-                      const semS = (form.grupo_sabores?.opcoes || []).find((o: any) => !(Number(o.preco) > 0));
+                      const semS = (form.grupo_sabores?.opcoes || []).find((o: OpcaoSabor) => !(Number(o.preco) > 0));
                       return semS ? { msg: `Coloque o preço de ${semS.nome}`, alvo: `input[aria-label="Preço de ${String(semS.nome).replace(/(["\\])/g, "\\$1")}"]` } : null;
                     }
                     return (form.preco_normal || 0) > 0 ? promoMaior : { msg: "Coloque o preço do produto", alvo: 'input[aria-label="Preço cheio"]' };
                     })();
                     if (fPreco) return fPreco;
-                    if ((wizardStep === 6 || entTela) && !((form as any).pronta_entrega === true || (form as any).antecedencia)) return { msg: "Marque pronta entrega ou sob encomenda", alvo: ".prod-sec-ent" };
+                    if ((wizardStep === 6 || entTela) && !(form.pronta_entrega === true || form.antecedencia)) return { msg: "Marque pronta entrega ou sob encomenda", alvo: ".prod-sec-ent" };
                     return null;
                   }
                   // Passo 4: Fotos — sempre pode avançar (fotos opcionais)
@@ -3024,14 +3034,14 @@ export default function Produtos() {
                 const temVariacoes = (pv.tamanhos_disponiveis || []).length > 0 || (pv.recheios_disponiveis || []).length > 0;
                 const promo = descontoPromocao(pv) > 0; // 10/10: vale também pra promoção em %
                 const partes: string[] = [];
-                const contar = (grupo: any, label: string, labelPlural: string) => {
+                const contar = (grupo: { ativo?: boolean; opcoes?: unknown[] } | undefined, label: string, labelPlural: string) => {
                   if (grupo?.ativo && (grupo.opcoes?.length || 0) > 0) { const n = grupo.opcoes.length; partes.push(`${n} ${n === 1 ? label : labelPlural}`); }
                 };
                 contar(pv.grupo_massas, "massa", "massas");
                 contar(pv.grupo_recheios, "recheio", "recheios");
                 contar(pv.grupo_coberturas, "cobertura", "coberturas");
                 contar(pv.grupo_sabores, "sabor", "sabores");
-                contar((pv as any).grupo_tamanhos, "tamanho", "tamanhos");
+                contar(pv.grupo_tamanhos, "tamanho", "tamanhos");
                 const opcoes = partes.length === 0 ? "Nenhuma" : partes.length <= 2 ? partes.join(" e ") : `${partes.slice(0, -1).join(", ")} e ${partes[partes.length - 1]}`;
                 const { temFicha, lucro, margem } = calcularLucro(pv);
                 const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
@@ -3043,7 +3053,7 @@ export default function Produtos() {
                       {cad && <LinhaUi rotulo="Cadastrado em">{cad.getDate()} de {MESES[cad.getMonth()]}{cad.getFullYear() !== new Date().getFullYear() ? ` de ${cad.getFullYear()}` : ""}</LinhaUi>}
                       <LinhaUi rotulo="Categoria" tom={catOk ? undefined : "laranja"}>{catOk ? pv.categoria : "Sem categoria"}</LinhaUi>
                       <LinhaUi rotulo="Preço">
-                        {(() => { const pl = precoDaLista(pv); return <>{pl.de > 0 && <><s className="prod-preview-de">R$ {formatPreco(pl.de)}</s> </>}{pl.aPartir || (temVariacoes && !(pv as any).grupo_tamanhos?.ativo) ? "a partir de " : ""}R$ {formatPreco(pl.final)}{pl.unidade ? ` ${pl.unidade}` : ""}</>; })()}
+                        {(() => { const pl = precoDaLista(pv); return <>{pl.de > 0 && <><s className="prod-preview-de">R$ {formatPreco(pl.de)}</s> </>}{pl.aPartir || (temVariacoes && !pv.grupo_tamanhos?.ativo) ? "a partir de " : ""}R$ {formatPreco(pl.final)}{pl.unidade ? ` ${pl.unidade}` : ""}</>; })()}
                       </LinhaUi>
                       <LinhaUi rotulo="Opções">{opcoes}</LinhaUi>
                       <LinhaUi rotulo="Ficha técnica" tom={temFicha ? "verde" : "laranja"}>{temFicha ? `Lucro de R$ ${formatPreco(lucro)} por venda (${margem.toFixed(0)}%)` : "Ainda não montada"}</LinhaUi>
@@ -3119,7 +3129,7 @@ export default function Produtos() {
                           // Limpa TODOS os campos que não pertencem à tabela produtos
                           const {
                             id, created_at, updated_at, produto_insumos, user_id, ...limpo
-                          } = previewProduto as any;
+                          } = previewProduto;
                           const novo = {
                             ...limpo,
                             sku: limpo.sku ? skuLivre(limpo.sku, skusDe(produtos)) : null, // (21/10) a cópia ganha um SKU novo
@@ -3179,13 +3189,13 @@ export default function Produtos() {
                         onClick={async () => {
                           setPreviewMenu(false);
                           const ok = await alternarDestaque(previewProduto);
-                          if (ok) setPreviewProduto({ ...previewProduto, destaque: (previewProduto as any).destaque !== true } as any);
+                          if (ok) setPreviewProduto({ ...previewProduto, destaque: previewProduto.destaque !== true });
                         }}
                       >
-                        <span className="prod-preview-menu-ico" style={{ color: "#E8A23A" }}><Star size={18} weight={(previewProduto as any).destaque === true ? "regular" : "fill"} /></span>
+                        <span className="prod-preview-menu-ico" style={{ color: "#E8A23A" }}><Star size={18} weight={previewProduto.destaque === true ? "regular" : "fill"} /></span>
                         <span>
-                          <div className="prod-preview-menu-title">{(previewProduto as any).destaque === true ? "Tirar do destaque" : "Destacar no cardápio"}</div>
-                          <div className="prod-preview-menu-sub">{(previewProduto as any).destaque === true ? "Continua no cardápio, na categoria" : `No topo do cardápio · ${qtdDestaques(previewProduto.id)} de ${MAX_DESTAQUES}`}</div>
+                          <div className="prod-preview-menu-title">{previewProduto.destaque === true ? "Tirar do destaque" : "Destacar no cardápio"}</div>
+                          <div className="prod-preview-menu-sub">{previewProduto.destaque === true ? "Continua no cardápio, na categoria" : `No topo do cardápio · ${qtdDestaques(previewProduto.id)} de ${MAX_DESTAQUES}`}</div>
                         </span>
                       </button>
                       <button
@@ -3353,7 +3363,7 @@ export default function Produtos() {
         .prod-hero-eyebrow {
           font-size: var(--text-sm);
           font-weight: var(--fw-black);
-          color: var(--primary);
+          color: #B02C5F;
           line-height: 1;
         }
         .prod-hero-title {
@@ -3380,7 +3390,7 @@ export default function Produtos() {
           display: inline-flex;
           align-items: center;
           gap: var(--space-2);
-          background: var(--primary);
+          background: var(--ui-rosa-botao, #CC2E66);
           color: var(--text-inverse);
           border: none;
           padding: var(--space-4) var(--space-6);
@@ -3390,7 +3400,7 @@ export default function Produtos() {
           cursor: pointer;
           font-family: var(--font-base) !important;
           letter-spacing: 0;
-          box-shadow: 0 4px 0 var(--primary-dark);
+          box-shadow: 0 4px 0 var(--ui-rosa-botao-sombra, #A51E50);
           transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
         }
         .prod-hero-btn-primary:hover { filter: brightness(1.05); }

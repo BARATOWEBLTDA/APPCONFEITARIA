@@ -12,6 +12,19 @@ import { useAoVoltar } from "@/hooks/useAoVoltar";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 import { erroDeConexao } from "@/lib/erros";
+import type { PostgrestError, User } from "@supabase/supabase-js";
+import type { HorarioLoja } from "@/lib/agendaCardapio";
+
+type EnderecoPassos = { cep?: string; rua?: string; numero?: string; complemento?: string; bairro?: string; cidade?: string; estado?: string };
+/** O perfil como vem do banco (endereço e horário podem vir em texto JSON) */
+type PerfilLido = {
+  nome_loja?: string | null; descricao_loja?: string | null; logo_url?: string | null; foto_url?: string | null;
+  endereco?: unknown; horario?: unknown; mostrar_localizacao?: boolean | null; mostrar_apenas_cidade?: boolean | null; formas_entrega?: string[] | null;
+  design_escolhido?: unknown; cardapio_compartilhado?: boolean | null; logo_confirmado?: boolean | null; caixa_inicio_em?: string | null;
+};
+/** Os dados do perfil que as janelinhas dos passos recebem (endereço e horário já lidos) */
+export type PerfilDosPassos = Omit<PerfilLido, "endereco" | "horario"> & { endereco: EnderecoPassos; horario: NonNullable<HorarioLoja> | null };
+type RespostaPerfil = { data: unknown; error: PostgrestError | null };
 
 /** Foto de perfil enviada pela própria confeiteira (não a que vem do login com Google). */
 const fotoPropria = (url?: string | null) => !!url && !/googleusercontent\.com|gravatar\.com|graph\.facebook/i.test(url);
@@ -27,7 +40,7 @@ export type EstadoPassos = {
   /** (13/10) informou o saldo do caixa (ou já tem produto: conta antiga não volta a ver os passos) */
   caixa: boolean;
   /** dados atuais, pra abrir as janelinhas já preenchidas */
-  perfil: any;
+  perfil: PerfilDosPassos;
   /**
    * (10/10) A leitura falhou (sem internet, por exemplo): os passos acima NÃO valem. Quem mostra o cartão ignora
    * este resultado e mantém o que já tinha (antes aparecia tudo "não feito" e, depois, a comemoração de novo).
@@ -35,7 +48,7 @@ export type EstadoPassos = {
   falhou?: boolean;
 };
 
-const lerJson = (v: any) => { if (!v) return null; if (typeof v === "object") return v; try { return JSON.parse(v); } catch { return null; } };
+const lerJson = <T>(v: unknown): T | null => { if (!v) return null; if (typeof v === "object") return v as T; try { return JSON.parse(v as string); } catch { return null; } };
 
 // Campos novos (vêm de SQLs que podem ainda não ter sido rodados): lidos à parte, um por um,
 // pra um campo faltando não derrubar a leitura do resto (antes o cartão mostrava tudo "não feito").
@@ -64,13 +77,13 @@ async function lerPassosDoBanco(uid: string): Promise<EstadoPassos> {
   // e só se faltar algum campo novo no banco é que lê os campos novos um por um, como antes.
   // Dos produtos, basta saber se tem algum e se tem algum disponível (antes baixava todos).
   const [conta, perfilTudo, algumProduto, algumDisponivel] = await Promise.all([
-    supabase.auth.getSession().then(r => ({ data: { user: r.data.session?.user || null } }), () => ({ data: { user: null } } as any)),
+    supabase.auth.getSession().then(r => ({ data: { user: r.data.session?.user || null } }), () => ({ data: { user: null } } as { data: { user: User | null } })),
     supabase.from("profiles").select(`${CAMPOS_BASE}, ${CAMPOS_NOVOS.join(", ")}`).eq("id", uid).maybeSingle(),
     supabase.from("produtos").select("id").eq("user_id", uid).limit(1),
     supabase.from("produtos").select("id").eq("user_id", uid).not("disponivel", "is", false).limit(1),
   ]);
-  let perfil: any = perfilTudo;
-  let extras: any[] = [];
+  let perfil: RespostaPerfil = perfilTudo;
+  let extras: RespostaPerfil[] = [];
   if (perfilTudo.error && !erroDeConexao(perfilTudo.error)) {
     [perfil, ...extras] = await Promise.all([
       supabase.from("profiles").select(CAMPOS_BASE).eq("id", uid).maybeSingle(),
@@ -78,10 +91,10 @@ async function lerPassosDoBanco(uid: string): Promise<EstadoPassos> {
     ]);
   }
   const produtos = { error: algumProduto.error || algumDisponivel.error, total: (algumProduto.data || []).length, disponivel: (algumDisponivel.data || []).length };
-  const p: any = { ...(perfil.error ? {} : (perfil.data || {})) };
-  extras.forEach((r: any) => { if (!r.error && r.data) Object.assign(p, r.data); });
+  const p: PerfilLido = { ...(perfil.error ? {} : ((perfil.data as PerfilLido | null) || {})) };
+  extras.forEach((r) => { if (!r.error && r.data) Object.assign(p, r.data); });
   // campo novo que ainda não existe no banco dá erro e segue; queda de internet não: aí a leitura toda não vale
-  const falhou = !!perfil.error || !!produtos.error || extras.some((r: any) => r.error && erroDeConexao(r.error));
+  const falhou = !!perfil.error || !!produtos.error || extras.some((r) => r.error && erroDeConexao(r.error));
   let logoLocal = false;
   try { logoLocal = localStorage.getItem(chaveLogo(uid)) === "1"; } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
   let local = false;
@@ -89,8 +102,8 @@ async function lerPassosDoBanco(uid: string): Promise<EstadoPassos> {
   if (local && !falhou && !p.cardapio_compartilhado) {
     supabase.from("profiles").update({ cardapio_compartilhado: true }).eq("id", uid).then(() => {}, () => {});
   }
-  const end = lerJson(p.endereco) || {};
-  const hor = lerJson(p.horario);
+  const end: EnderecoPassos = lerJson<EnderecoPassos>(p.endereco) || {};
+  const hor = lerJson<NonNullable<HorarioLoja>>(p.horario);
   return {
     descricao: !!String(p.descricao_loja || "").trim(),
     // Conta com logo enviado, "usar minha foto" escolhido, ou uma foto de perfil que ela mesma enviou
@@ -101,12 +114,12 @@ async function lerPassosDoBanco(uid: string): Promise<EstadoPassos> {
     produto: produtos.disponivel > 0,
     compartilhou: !!p.cardapio_compartilhado || local,
     // (13/10) salvo também na conta (user_metadata), não só no aparelho
-    pagamento: pagamentoConferido(uid) || !!(conta as any)?.data?.user?.user_metadata?.pp_pagamento || produtos.total > 0,
+    pagamento: pagamentoConferido(uid) || !!conta?.data?.user?.user_metadata?.pp_pagamento || produtos.total > 0,
     // (29/10 · 5.08) entrega: salvou o passo, ou já mudou as formas de entrega (o padrão do banco é só retirada:
     // quem fez o antigo "Pagamento e entrega" já tinha ligado a entrega e não precisa fazer de novo)
-    entrega: entregaConferida(uid) || !!(conta as any)?.data?.user?.user_metadata?.pp_entrega || produtos.total > 0
+    entrega: entregaConferida(uid) || !!conta?.data?.user?.user_metadata?.pp_entrega || produtos.total > 0
       || (Array.isArray(p.formas_entrega) && p.formas_entrega.some((f: string) => f !== "retirada")),
-    caixa: p.caixa_inicio_em != null || !!(conta as any)?.data?.user?.user_metadata?.pp_caixa || produtos.total > 0,
+    caixa: p.caixa_inicio_em != null || !!conta?.data?.user?.user_metadata?.pp_caixa || produtos.total > 0,
     perfil: { ...p, endereco: end, horario: hor },
     falhou,
   };

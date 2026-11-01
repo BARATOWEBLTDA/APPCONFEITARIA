@@ -64,8 +64,8 @@
 .orc-etapas .on span { color: var(--ui-rosa-escuro); font-weight: 600; }
 .orc-etapas .ok span { color: var(--ui-texto); }
 .orc-card { margin: 0 0 12px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
-.orc-card h3 { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
-.orc-card h3 small { margin-left: 4px; font-size: 12.5px; font-weight: 400; font-style: italic; color: var(--ui-texto-3); }
+.orc-card :is(h2, h3) { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
+.orc-card :is(h2, h3) small { margin-left: 4px; font-size: 12.5px; font-weight: 400; font-style: italic; color: var(--ui-texto-3); }
 .orc-2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 @media (min-width: 600px) { .orc-2 { grid-template-columns: 1fr 1fr; } }
 .orc-2 + .orc-2, .orc-ev + .orc-2 { margin-top: 12px; }
@@ -323,7 +323,7 @@
 /* (30/10 · 5.67) PRO no estilo da arte: recursos com ícone em caixinha, "PRO" em rosa, botão com seta;
    à direita o fundo rosa com o mascote de coroa, a frase escrita à mão e o celular */
 @font-face { font-family: 'Caveat'; src: url('/fonts/Caveat-700.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
-.orc-pro h2 em { font-style: normal; color: var(--ui-rosa); }
+.orc-pro h2 em { font-style: normal; color: var(--ui-rosa-botao, #CC2E66); }
 .orc-pro ul { gap: 12px; }
 .orc-pro li { align-items: center; gap: 12px; }
 .orc-pro-li-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }

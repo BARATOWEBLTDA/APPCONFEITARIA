@@ -9,9 +9,11 @@ import { Camera, CheckCircle, Eye, FilePdf, PencilSimple, Paperclip, Plus, Trash
 import "./adminPDFs.css";
 
 const emptyForm = { titulo: "", descricao: "", categoria: "", capa_url: "", pdf_url: "" };
+/** PDF da biblioteca (tabela biblioteca_pdf) */
+type PdfBiblioteca = { id: string; titulo: string; descricao: string; categoria: string; capa_url?: string | null; pdf_url?: string | null; created_at?: string };
 
 export default function AdminPDFs() {
-  const [pdfs, setPdfs] = useState<any[]>([]);
+  const [pdfs, setPdfs] = useState<PdfBiblioteca[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -93,7 +95,7 @@ export default function AdminPDFs() {
     setShowForm(false); setForm(emptyForm); setEditId(null); setCapaPreview(null); setPdfName(""); setSaving(false);
   };
 
-  const handleEdit = (p: any) => {
+  const handleEdit = (p: PdfBiblioteca) => {
     setForm({ titulo: p.titulo, descricao: p.descricao, categoria: p.categoria, capa_url: p.capa_url || "", pdf_url: p.pdf_url || "" });
     setCapaPreview(p.capa_url || null);
     setPdfName(p.pdf_url ? "Arquivo atual" : "");

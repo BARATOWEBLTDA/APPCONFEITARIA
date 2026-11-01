@@ -10,13 +10,16 @@
  *   pesoLivre({ quantidade: 1, personalizacoes: { tamanho: { nome: 'M' } } }, 'kg')   → false
  *   pesoLivre({ quantidade: 2 }, 'unidade')                                           → false
  */
-export function pesoLivre(item: { personalizacoes?: any; forma_venda?: string | null } | null | undefined, formaVendaDoProduto?: string | null): boolean {
+/** O que esta regra lê das personalizações gravadas (os dois formatos: com e sem "escolhas") */
+type PersPeso = { escolhas?: PersPeso | null; tamanho?: unknown; kit?: unknown };
+
+export function pesoLivre(item: { personalizacoes?: unknown; forma_venda?: string | null } | null | undefined, formaVendaDoProduto?: string | null): boolean {
   const forma = formaVendaDoProduto ?? item?.forma_venda ?? null;
   if (forma !== "kg") return false;
   let pers = item?.personalizacoes;
   if (typeof pers === "string") { try { pers = JSON.parse(pers); } catch { pers = null; } }
-  const escolhas = pers?.escolhas ?? pers; // os dois formatos que o app grava
-  if (escolhas?.tamanho || pers?.tamanho) return false;
-  if (escolhas?.kit || pers?.kit) return false;
+  const escolhas = (pers as PersPeso)?.escolhas ?? (pers as PersPeso); // os dois formatos que o app grava
+  if (escolhas?.tamanho || (pers as PersPeso)?.tamanho) return false;
+  if (escolhas?.kit || (pers as PersPeso)?.kit) return false;
   return true;
 }

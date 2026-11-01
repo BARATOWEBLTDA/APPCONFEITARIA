@@ -26,7 +26,10 @@ export function textoSaboresKit(sabores: { nome: string; qtd: number }[] | null 
 }
 
 /** (24/10) Nome do complemento com a frase que o cliente escreveu: 'Escrita no bolo: "Parabéns, Ana!"' */
-export function nomeExtra(x: any): string {
+/** Complemento escolhido (biblioteca de adicionais), como vai na sacola e no pedido */
+export type ExtraEscolhido = { id?: string; nome?: string; name?: string; valor?: number | string; frase?: string | null }
+
+export function nomeExtra(x: ExtraEscolhido | null | undefined): string {
   const nome = String((x && (x.nome || x.name)) || '').trim()
   const frase = String((x && x.frase) || '').trim()
   return frase ? `${nome}: “${frase}”` : nome

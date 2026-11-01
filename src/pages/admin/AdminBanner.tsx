@@ -69,8 +69,8 @@ export default function AdminBanner() {
 
       showMsg("Imagem enviada", "ok");
       await load();
-    } catch (err: any) {
-      showMsg("Erro no upload: " + (err.message || err), "err");
+    } catch (err) {
+      showMsg("Erro no upload: " + ((err as Error).message || err), "err");
     } finally {
       setUploadingId(null);
       if (e.target) e.target.value = "";

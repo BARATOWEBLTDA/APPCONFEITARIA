@@ -4,6 +4,7 @@ import { mascaraBRL, lerBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
 import { Botao, CaixasEscolha } from "@/components/base";
 import { supabase } from "@/lib/supabase";
+import type { PostgrestError } from "@supabase/supabase-js";
 import { faltaNoBanco } from "@/lib/pagamentos";
 import { APORTE, RETIRADA, nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
 
@@ -88,7 +89,7 @@ export default function DespesaSheet({ onClose, onSalvo, onReceberPedido, tipo =
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setSalvando(""); setErro("Sua sessão expirou. Entre de novo para lançar."); return; }
     const desc = descricao.trim() || nomeCategoriaFin(categoria);
-    let error: any;
+    let error: PostgrestError | null;
     if (aPagar) {
       ({ error } = await supabase.from("contas_pagar").insert({ user_id: user.id, descricao: desc, categoria, valor: v, vencimento }));
     } else {

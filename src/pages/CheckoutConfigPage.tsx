@@ -36,6 +36,26 @@ const PAGAMENTOS = [
   // 02/10: só as 4 formas (as mesmas que o cliente vê na finalização). As antigas continuam salvas, mas não aparecem.
 ]
 
+/** Endereço da loja (gravado como JSON no perfil) */
+type EnderecoLoja = { rua?: string; numero?: string; bairro?: string; cidade?: string; estado?: string; uf?: string; cep?: string }
+/** Faixa de raio / cidade como vem do banco */
+type FaixaSalva = { km?: number | string | null; cidade?: string | null; valor?: number | string | null; ativo?: boolean | null }
+/** Os campos de entrega do perfil (SQL entrega_por_raio_cidade) */
+type PerfilEntrega = {
+  entrega_modo?: string | null; entrega_por_raio?: FaixaSalva[] | null; entrega_por_cidade?: FaixaSalva[] | null; entrega_fora_valor?: number | string | null
+  loja_lat?: number | string | null; loja_lng?: number | string | null; endereco?: string | EnderecoLoja | null; nome_loja?: string | null
+}
+/** Cupom como fica gravado (loja_cupons ou o perfil antigo) */
+type CupomSalvo = {
+  codigo?: string | null; tipo?: string | null; valor?: number | string | null; ativo?: boolean | null; data_inicio?: string | null; data_fim?: string | null
+  limite_uso?: number | string | null; valor_minimo?: number | string | null; usos?: number | string | null; publico?: string | null
+}
+/** O Pix da loja como vem do banco */
+type ConfigPix = {
+  pix_online?: boolean | null; pix_chave?: string | null; pix_nome?: string | null; nome_loja?: string | null; endereco?: string | { cidade?: string } | null
+  pix_cidade?: string | null; pix_modo?: string | null; pix_sinal_pct?: number | string | null; pagar_na_retirada?: boolean | null
+}
+
 const ICONE_PAG: Record<string, Icon> = { pix: PixLogo, dinheiro: Money, credito: CreditCard, debito: CreditCard }
 const ICONE_ENT: Record<string, Icon> = { retirada: Storefront, entrega_propria: Moped, motoboy: Motorcycle, uber_flash: Car, combinar: ChatCircleText }
 
@@ -108,7 +128,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const verEntrega = parte !== "cupons", verCupons = parte !== "entrega"
   const navigate = useNavigate()
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
-  const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio"
+  const voltarPara = (useLocation().state as { de?: string } | null)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio"
   const { isPro } = usePlano()
   const { profile } = useProfile()
   const [imagemCupom, setImagemCupom] = useState<DadosImagemCupom | null>(null)
@@ -129,7 +149,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const [foraEntrega, setForaEntrega] = useState(false)
   const [foraValor, setForaValor] = useState('')
   const [lojaPonto, setLojaPonto] = useState<Ponto | null>(null)
-  const [enderecoLoja, setEnderecoLoja] = useState<any>(null)
+  const [enderecoLoja, setEnderecoLoja] = useState<EnderecoLoja | null>(null)
   const [nomeLoja, setNomeLoja] = useState('')
   const [novasColunas, setNovasColunas] = useState(false)
   const [buscandoLoja, setBuscandoLoja] = useState(false)
@@ -179,20 +199,20 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         setFormasPagamento(primeiraVez && (!fp.length || (fp.length === 1 && fp[0] === 'pix')) ? PAGAMENTOS.map(p => p.key) : fp)
         setFormasEntrega(data.formas_entrega || ['retirada'])
         setValorEntregaPropria(reaisParaCampo(data.valor_entrega_propria) || (data.valor_entrega_propria != null ? '0,00' : ''))
-        setEntregaPorBairro((data.entrega_por_bairro || []).map((b: any) => ({ bairro: b.bairro, valor: reaisParaCampo(b.valor) || '0,00' })))
+        setEntregaPorBairro((data.entrega_por_bairro || []).map((b: { bairro: string; valor?: number | string | null }) => ({ bairro: b.bairro, valor: reaisParaCampo(b.valor) || '0,00' })))
         {
           const temBairros = Array.isArray(data.entrega_por_bairro) && data.entrega_por_bairro.length > 0
           const { data: ex, error: erroEx } = await supabase.from('profiles').select('entrega_modo, entrega_por_raio, entrega_por_cidade, entrega_fora_valor, loja_lat, loja_lng, endereco, nome_loja').eq('id', user.id).maybeSingle()
-          const x: any = ex || {}
+          const x: PerfilEntrega = ex || {}
           setNovasColunas(!erroEx)
           const m = x.entrega_modo
           setModoEntrega(m === 'fixa' || m === 'bairro' || m === 'raio' || m === 'cidade' ? m : temBairros ? 'bairro' : 'fixa')
-          setRaios((Array.isArray(x.entrega_por_raio) ? x.entrega_por_raio : []).map((f: any) => ({ km: String(f.km ?? '').replace('.', ','), valor: reaisParaCampo(f.valor) || '0,00', ativo: f.ativo !== false })))
-          setCidades((Array.isArray(x.entrega_por_cidade) ? x.entrega_por_cidade : []).map((c: any) => ({ cidade: c.cidade || '', valor: reaisParaCampo(c.valor) || '0,00', ativo: c.ativo !== false })))
+          setRaios((Array.isArray(x.entrega_por_raio) ? x.entrega_por_raio : []).map((f: FaixaSalva) => ({ km: String(f.km ?? '').replace('.', ','), valor: reaisParaCampo(f.valor) || '0,00', ativo: f.ativo !== false })))
+          setCidades((Array.isArray(x.entrega_por_cidade) ? x.entrega_por_cidade : []).map((c: FaixaSalva) => ({ cidade: c.cidade || '', valor: reaisParaCampo(c.valor) || '0,00', ativo: c.ativo !== false })))
           setForaEntrega(x.entrega_fora_valor != null)
           setForaValor(x.entrega_fora_valor != null ? reaisParaCampo(x.entrega_fora_valor) || '0,00' : '')
           setLojaPonto(x.loja_lat != null && x.loja_lng != null ? { lat: Number(x.loja_lat), lng: Number(x.loja_lng) } : null)
-          let end: any = null
+          let end: EnderecoLoja | null = null
           try { end = typeof x.endereco === 'string' ? JSON.parse(x.endereco) : x.endereco } catch { end = null }
           setEnderecoLoja(end && typeof end === 'object' ? end : null)
           setNomeLoja(x.nome_loja || '')
@@ -205,7 +225,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         if (erroCupons) { setErroCarga(true); return }
         const listaCupons = Array.isArray(lc?.cupons) ? lc!.cupons : (data.cupons_desconto || [])
         cuponsAntigosNoPerfil.current = !Array.isArray(lc?.cupons) && Array.isArray(data.cupons_desconto) && data.cupons_desconto.length > 0
-        setCupons((listaCupons || []).map((c: any) => ({
+        setCupons((listaCupons || []).map((c: CupomSalvo) => ({
           codigo: c.codigo || '',
           tipo: c.tipo || 'percentual',
           valor: c.valor?.toString() || '0',
@@ -219,7 +239,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         })))
         setAceitaAgendamento(data.aceita_agendamento !== false)
         setPrazoMinimo(data.prazo_minimo_horas != null ? data.prazo_minimo_horas.toString() : '24')
-        const d: any = data
+        const d: ConfigPix = data
         setPixOnline(d.pix_online === true)
         const tipo = tipoDaChave(d.pix_chave || '')
         setPixTipo(tipo)
@@ -295,7 +315,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       }
       const usosNoBanco: Record<string, number> = {}
       const { data: atual } = await supabase.from('loja_cupons').select('cupons').eq('user_id', t.userId).maybeSingle()
-      if (Array.isArray(atual?.cupons)) atual.cupons.forEach((c: any) => { if (c?.codigo) usosNoBanco[String(c.codigo).toUpperCase()] = Number(c.usos) || 0 })
+      if (Array.isArray(atual?.cupons)) atual.cupons.forEach((c: CupomSalvo | null) => { if (c?.codigo) usosNoBanco[String(c.codigo).toUpperCase()] = Number(c.usos) || 0 })
       // Cupons: tabela privada (o visitante do cardápio não consegue ler)
       const cuponsParaSalvar = t.cupons.filter(c => c.codigo.trim()).map(c => ({
         codigo: c.codigo,
@@ -431,7 +451,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       if (!vivo || !Array.isArray(data)) return
       const sem = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
       const mapa = new Map<string, string>()
-      data.forEach((c: any) => {
+      data.forEach((c: { bairro?: string | null; cidade?: string | null }) => {
         const b = String(c.bairro || '').trim()
         if (!b || (cidadeLoja && c.cidade && sem(String(c.cidade)) !== sem(cidadeLoja))) return
         if (!mapa.has(sem(b))) mapa.set(sem(b), b)
@@ -446,7 +466,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     if (modoEntrega !== 'cidade' || !/^[A-Z]{2}$/.test(ufLoja)) return
     let vivo = true
     fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${ufLoja}/municipios`)
-      .then(r => r.json()).then((l: any[]) => { if (vivo && Array.isArray(l)) setCidadesUf(l.map(x => String(x.nome)).sort((a, b) => a.localeCompare(b, 'pt-BR'))) })
+      .then(r => r.json()).then((l: { nome: string }[]) => { if (vivo && Array.isArray(l)) setCidadesUf(l.map(x => String(x.nome)).sort((a, b) => a.localeCompare(b, 'pt-BR'))) })
       .catch(() => {})
     return () => { vivo = false }
   }, [modoEntrega, ufLoja])
@@ -556,7 +576,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const abrirImagemCupom = (c: typeof cupons[number]) => {
     const vitrine = { codigo: c.codigo, tipo: c.tipo, valor: numBR(c.valor), valor_minimo: c.valor_minimo ? numBR(c.valor_minimo) : null, data_fim: c.data_fim || null, publico: c.publico === 'primeiro_pedido' ? 'primeiro_pedido' as const : 'todos' as const }
     const regra = regraCupom(vitrine)
-    const p: any = profile || {}
+    const p: { nome_loja?: string | null; logo_url?: string | null; foto_url?: string | null; cor_botao?: string | null } = profile || {}
     setImagemCupom({
       nomeLoja: p.nome_loja || '', logo: fotoDaLoja(p), cor: p.cor_botao || '',
       desconto: textoDesconto(c), regra: regra.charAt(0).toUpperCase() + regra.slice(1),

@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { MapPin, Lightning, CalendarBlank, Truck, Storefront, CaretRight } from '@phosphor-icons/react'
 import { DesignSettings, Configuracoes } from '@/types/database'
 import { seloEntrega, horasAntecedencia, rotuloAntecedencia } from '@/lib/entregaProduto'
+import type { ProdutoEntrega } from '@/lib/entregaProduto'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
 import './cardapioModelo1.css'
 import { Vouchers } from './Vouchers'
@@ -19,7 +20,7 @@ interface CardapioModeloProps {
   design: DesignSettings
   config: Configuracoes | null
   verificada?: boolean
-  produtos?: any[]
+  produtos?: ProdutoEntrega[]
 }
 
 const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
@@ -29,7 +30,7 @@ const curtoHora = (m: number) => `${Math.floor(m / 60) % 24}h${m % 60 ? String(m
 type Status = { aberto: boolean; msg: string; curto: string }
 
 // (11/10) a situação vem de UMA conta só (lib/agendaCardapio), a mesma do selo do modelo padrão e da Visão geral
-export function getStatusLoja(horarioJson: any): Status | null {
+export function getStatusLoja(horarioJson: unknown): Status | null {
   const s = situacaoDaLoja(horarioJson)
   if (!s) return null
   if (s.aberto) return { aberto: true, msg: `Aberto agora · até ${horaTexto(s.fecha)}`, curto: `Aberto · até ${curtoHora(s.fecha)}` }
@@ -43,7 +44,7 @@ export function getStatusLoja(horarioJson: any): Status | null {
 /** Endereço do jeito que a loja escolheu em Dados da loja (Completo · Só a cidade · Não mostrar) */
 export function getEnderecoData(config: Configuracoes | null): { linha: string; completo: string; cidade: string } | null {
   if (!config?.endereco) return null
-  const c: any = config
+  const c: Configuracoes = config
   const modo = c.mostrar_localizacao ? 'completo' : c.mostrar_apenas_cidade ? 'cidade' : 'nada'
   if (modo === 'nada') return null
   try {
@@ -60,8 +61,8 @@ export function getEnderecoData(config: Configuracoes | null): { linha: string; 
 
 /** (20/10) Faixa com o que o cliente quer saber antes de pedir, com os dados que a loja já cadastrou:
  *  quanto custa a entrega, o menor prazo das encomendas e se tem pronta entrega. */
-export function faixaDaLoja(config: Configuracoes | null, produtos: any[] = []) {
-  const c: any = config || {}
+export function faixaDaLoja(config: Configuracoes | null, produtos: ProdutoEntrega[] = []) {
+  const c: Configuracoes = config || {}
   const formas: string[] = c.formas_entrega || []
   const propria = formas.includes('entrega_propria')
   const outra = formas.some(f => f === 'motoboy' || f === 'uber_flash')
@@ -85,7 +86,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
   const corFaixa = topoEscurecido(!ehBranco(design.cor_navbar) ? design.cor_navbar! : (!ehBranco(design.cor_borda) ? design.cor_borda! : '#BF6B84')) // (20/10) escurecida
   const corIcone = !ehBranco(design.cor_botao) ? design.cor_botao! : '#EC4899'
   // (4.27) loja com os pedidos pausados aparece fechada, seja qual for o horário
-  const status = (config as any)?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja(config?.horario || null)
+  const status = config?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja(config?.horario || null)
   const endereco = getEnderecoData(config)
   const faixa = faixaDaLoja(config, produtos)
 
@@ -108,7 +109,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
           : <div className="cm1-hero-faixa" style={{ backgroundColor: corFaixa }}><span className="cm1-hero-pontos" /></div>}
       </div>
 
-      <div className="cm1-content" style={{ background: fundo, ['--cm1-fundo' as any]: fundo }}>
+      <div className="cm1-content" style={{ background: fundo, ['--cm1-fundo']: fundo } as React.CSSProperties}>
         <div className="cm1-logo" style={{ borderColor: accent }}>
           {design.logo_url
             ? <img src={design.logo_url} alt={design.nome_loja || ''} />

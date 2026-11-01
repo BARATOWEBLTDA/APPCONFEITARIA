@@ -21,6 +21,9 @@ type MaisVendido = { nome: string; qtd: number; imagem?: string };
  * Celular (23/10): "Minha loja", no estilo do Dora: o cartão da loja, a loja para o cliente, como você vende,
  * o que você vende e, para quem é PRO, os mais vendidos dos últimos 30 dias (sem os números e os gráficos).
  */
+/** Pedido do cardápio com os itens (mais vendidos) */
+type PedidoVendido = { id: string; status: string; pedido_itens?: { nome_produto: string; quantidade: number; produtos?: { imagem_url?: string } | null }[] | null };
+
 export default function Cardapio() {
   const navigate = useNavigate();
   const { profile } = useProfile();
@@ -53,20 +56,20 @@ export default function Cardapio() {
     try {
       const desde = new Date(); desde.setDate(desde.getDate() - 30);
       // (11/10) de 1.000 em 1.000, senão a lista vinha cortada
-      const res = await buscarTudo<any>((de, ate) => supabase
+      const res = await buscarTudo<PedidoVendido>((de, ate) => supabase
         .from("pedidos")
         .select("id, status, pedido_itens(nome_produto, quantidade, produtos(imagem_url))")
         .eq("user_id", profile.id)
         .eq("origem", "cardapio")
         .gte("created_at", desde.toISOString())
         .order("id")
-        .range(de, ate));
+        .range(de, ate) as PromiseLike<{ data: PedidoVendido[] | null; error: unknown }>); // o produto vem como objeto (o Supabase sem o esquema acha que é lista)
       if (minha !== buscaAtual.current) return;
       if (res.error) throw res.error;
       // 10/10: pedido cancelado não é venda
       const contagem: Record<string, { qtd: number; imagem?: string }> = {};
-      (res.data || []).filter((p: any) => p.status !== "cancelado").forEach((p: any) => {
-        p.pedido_itens?.forEach((item: any) => {
+      (res.data || []).filter((p: PedidoVendido) => p.status !== "cancelado").forEach((p: PedidoVendido) => {
+        p.pedido_itens?.forEach((item: PedidoVendido["pedido_itens"][number]) => {
           if (!contagem[item.nome_produto]) contagem[item.nome_produto] = { qtd: 0, imagem: item.produtos?.imagem_url };
           contagem[item.nome_produto].qtd += 1; // (24/10) uma venda por pedido (a quantidade em kg dava "42.5 vendas")
         });

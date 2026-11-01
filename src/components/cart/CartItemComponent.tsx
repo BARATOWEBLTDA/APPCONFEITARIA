@@ -1,6 +1,12 @@
 import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
 import { Cake, Minus, Plus, Trash } from '@phosphor-icons/react'
 import { CartItem } from '@/types/cart'
+import type { EscolhasV3 } from '@/types/cart'
+import type { ItemDoCarrinho } from '@/lib/itemDoCarrinho'
+import type { ExtraEscolhido } from '@/lib/kitTexto'
+
+/** Linha da sacola com os campos que podem vir de versões antigas (referência) */
+type ItemLinha = ItemDoCarrinho & { referencia_url?: string | null; escolhas?: EscolhasV3 & { referencia?: unknown } }
 import { formatCurrency } from '@/utils/helpers'
 import { detalhesItem, kgLivre, valorLinha } from '@/lib/itemSacola'
 import { sufixoVenda, unidadeCliente } from '@/lib/formaVenda'
@@ -9,7 +15,7 @@ import { sufixoVenda, unidadeCliente } from '@/lib/formaVenda'
  * Unidade do preço como no cardápio ("o cento", "a caixa", "por kg"…).
  * Vazio quando é por unidade, quando tem tamanho/kit (o preço é do item inteiro) ou por kg livre (já tem a linha "por kg").
  */
-export function unidadeItem(item: any): string {
+export function unidadeItem(item: Partial<CartItem> | null | undefined): string {
   if (!item || kgLivre(item) || item?.escolhas?.tamanho || item?.escolhas?.kit) return ''
   return sufixoVenda(item.saleType) === 'un' ? '' : unidadeCliente(item.saleType)
 }
@@ -25,7 +31,7 @@ interface Props {
 /** Item da sacola (08/10 · 3.30): foto, escolhas numa linha, obs. e quantidade (lixeira quando está em 1). */
 export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E85A8C' }: Props) {
   // Age só nesta linha da sacola (mesmo produto com opções diferentes = linhas separadas)
-  const linha = (item as any).lineId ?? item.id
+  const linha = item.lineId ?? item.id
   const livre = kgLivre(item)
   const passo = livre ? 0.5 : 1
   const ultimo = item.quantity <= passo
@@ -33,14 +39,14 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
   const inc = () => onUpdateQuantity(linha, Math.round((item.quantity + passo) * 10) / 10)
   const qtd = livre ? `${String(item.quantity).replace('.', ',')} kg` : String(item.quantity)
   const foto = item.imageUrl ? item.imageUrl.split(',')[0] : ''
-  const kit = (item as any).escolhas?.kit
+  const kit = item.escolhas?.kit
   const detalhes = detalhesItem(item)
-  const adicionais: any[] = Array.isArray((item as any).extrasBiblioteca) ? (item as any).extrasBiblioteca : []
+  const adicionais: ExtraEscolhido[] = Array.isArray((item as ItemLinha).extrasBiblioteca) ? (item as ItemLinha).extrasBiblioteca : []
   const escolhasLinhas = detalhes.slice(0, detalhes.length - adicionais.length)
   const unidade = unidadeItem(item)
   const total = valorLinha(item)
-  const descontoLinha = Math.round((Number((item as any)?.precoBreakdown?.desconto) || 0) * (Number(item.quantity) || 0) * 100) / 100
-  const temReferencia = !!((item as any).referencia_url || (item as any).fotoReferencia || (item as any).escolhas?.referencia)
+  const descontoLinha = Math.round((Number(item?.precoBreakdown?.desconto) || 0) * (Number(item.quantity) || 0) * 100) / 100
+  const temReferencia = !!((item as ItemLinha).referencia_url || (item as ItemLinha).fotoReferencia || (item as ItemLinha).escolhas?.referencia)
 
   return (
     <div className="sc-it">
@@ -52,7 +58,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
         ) : null}
         {/* (19/10) uma escolha por linha (tamanho, massa, recheios...) e os adicionais com "+" */}
         {escolhasLinhas.length > 0 && <ul className="sc-it-det">{escolhasLinhas.map((d, k) => <li key={k}>{d}</li>)}</ul>}
-        {adicionais.length > 0 && <ul className="sc-it-det sc-it-add">{adicionais.map((x: any, k: number) => <li key={k}>+ {nomeExtra(x)}</li>)}</ul>}
+        {adicionais.length > 0 && <ul className="sc-it-det sc-it-add">{adicionais.map((x, k: number) => <li key={k}>+ {nomeExtra(x)}</li>)}</ul>}
         {item.observations && <small className="sc-it-obs">Obs.: {item.observations}</small>}
         {temReferencia && <small className="sc-it-ref">Foto de referência anexada</small>}
       </div>

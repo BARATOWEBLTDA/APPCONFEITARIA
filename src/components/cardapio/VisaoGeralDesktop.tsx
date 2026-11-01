@@ -8,6 +8,15 @@ import IconeWhatsApp from "@/components/IconeWhatsApp";
 const GraficoVisitas = lazy(() => import("@/components/cardapio/GraficoVisitas"));
 import { Botao } from "@/components/base";
 import { situacaoLoja } from "@/lib/agendaCardapio";
+import type { Profile } from "@/hooks/useProfile";
+
+/** Pedido do cardápio como vem da busca desta tela */
+type PedidoResumo = {
+  id: string; numero?: number | null; cliente_nome?: string | null; valor_total?: number | string | null; status: string;
+  tipo_entrega?: string | null; created_at: string; pedido_itens?: { nome_produto?: string | null; quantidade?: number | string | null }[] | null;
+};
+type ProdutoResumo = { id: string; imagem_url?: string | null; descricao?: string | null; disponivel?: boolean | null };
+type Variacao = { txt: string; up: boolean; neutro?: boolean } | null;
 
 /**
  * Visão geral do Cardápio digital — COMPUTADOR (aprovada 02/10).
@@ -36,11 +45,11 @@ const STATUS: Record<string, [string, string]> = {
   aguardando_retirada: ["Pronto", "ok"], em_entrega: ["Saiu para entrega", "bl"], entregue: ["Entregue", "ok"], concluido: ["Entregue", "ok"], cancelado: ["Cancelado", "cz"],
 };
 
-export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _publicado, onShare }: { profile: any; linkCardapio: string; publicado: boolean; onShare: () => void }) {
+export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _publicado, onShare }: { profile: (Profile & { horario?: unknown }) | null; linkCardapio: string; publicado: boolean; onShare: () => void }) {
   const navigate = useNavigate();
   const [completo, setCompleto] = useState<boolean | null>(null);
   const [periodo, setPeriodo] = useState<Periodo>("7d");
-  const [dados, setDados] = useState<{ visitas: string[]; pedidos: any[]; produtos: any[]; temCupom: boolean } | null>(null);
+  const [dados, setDados] = useState<{ visitas: string[]; pedidos: PedidoResumo[]; produtos: ProdutoResumo[]; temCupom: boolean } | null>(null);
   const [qr, setQr] = useState("");
   // (01/11 · 5.99) a busca falhou (sem internet): mostra o aviso com "Tentar de novo" em vez de "Carregando…" para sempre
   const [falhou, setFalhou] = useState(false);
@@ -64,10 +73,10 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
       if (!vivo) return;
       if (v.error || p.error || pr.error) { setFalhou(true); return; }
       setDados({
-        visitas: ((v.data as any[]) || []).map(x => x.created_at),
-        pedidos: (p.data as any[]) || [],
-        produtos: ((pr.data as any[]) || []).filter(x => x.disponivel !== false),
-        temCupom: Array.isArray((c.data as any)?.cupons) && (c.data as any).cupons.some((x: any) => x?.ativo),
+        visitas: ((v.data as { created_at: string }[]) || []).map(x => x.created_at),
+        pedidos: (p.data as unknown as PedidoResumo[]) || [],
+        produtos: ((pr.data as ProdutoResumo[]) || []).filter(x => x.disponivel !== false),
+        temCupom: Array.isArray((c.data as { cupons?: unknown } | null)?.cupons) && (c.data as { cupons: { ativo?: boolean }[] }).cupons.some((x) => x?.ativo),
       });
     }).catch(() => { if (vivo) setFalhou(true); });
     return () => { vivo = false; };
@@ -191,7 +200,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
                 [Receipt, "Pedidos pelo cardápio", String(metr.ped), variacao(metr.ped, metr.ant?.ped)],
                 [CurrencyCircleDollar, "Vendido pelo cardápio", brl(metr.rec), variacao(metr.rec, metr.ant?.rec)],
                 [ChartLineUp, "Conversão", `${metr.conv.toFixed(1).replace(".", ",")}%`, metr.vis ? { txt: `${Math.round(metr.conv)} de cada 100 visitas compram`, up: true, neutro: true } : { txt: "sem visitas ainda", up: true, neutro: true }],
-              ] as [typeof Eye, string, string, any][]).map(([Ic, l, v, d]) => (
+              ] as [typeof Eye, string, string, Variacao][]).map(([Ic, l, v, d]) => (
                 <div className="vgd-k" key={l}>
                   <span className="vgd-k-ic" aria-hidden="true"><Ic size={18} weight="bold" /></span>
                   <small>{l}</small><b>{v}</b>
@@ -283,7 +292,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
         .vgd-lk button:hover { color: var(--ui-rosa-escuro); }
         .vgd-btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .vgd-b { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: none; border-radius: var(--ui-raio-botao); font: 600 14px var(--font-base); text-decoration: none; cursor: pointer; white-space: nowrap; }
-        .vgd-bw { background: #25D366; color: var(--ui-branco); } .vgd-bw:hover { background: #1FBE5B; }
+        .vgd-bw { background: #15803D; color: var(--ui-branco); } .vgd-bw:hover { background: #166534; }
         .vgd-bs { background: #F1ECEE; color: var(--ui-texto); } .vgd-bs:hover { background: #E9E1E5; }
         .vgd-qr { display: flex; flex-direction: column; align-items: center; width: 168px; padding: 14px 12px 10px; border: 1px solid var(--ui-borda); border-radius: 16px; background: #FBF9FA; text-align: center; }
         .vgd-qr img { width: 112px; height: 112px; padding: 6px; border-radius: 10px; background: var(--ui-branco); }

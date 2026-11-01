@@ -1,5 +1,5 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
-import { resumoItens } from "@/components/pedidos/pedidoTexto";
+import { resumoItens, type Pedido } from "@/components/pedidos/pedidoTexto";
 import { SELO_TESTE } from "@/lib/beneficiosPro";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
@@ -42,6 +42,16 @@ import AdminBannerMobile from "@/components/AdminBannerMobile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 
 interface ChartPoint { iso: string; dia: string; valor: number; }
+/** Cliente com a data de nascimento (aniversariantes) */
+type ClienteAniv = { nome: string; data_nascimento?: string | null };
+/** Foto do produto do item (o Supabase pode devolver o produto como lista) */
+type FotoProduto = { imagem_url?: string | null };
+/** Linha de pedido lida no Início (só os campos de cada busca) */
+type LinhaPedido = {
+  id?: string; numero?: number | null; cliente_nome?: string | null; data_entrega?: string | null; valor_total?: number | string | null;
+  horario_entrega?: string | null; tipo_entrega?: string | null; status?: string | null; origem?: string | null; created_at?: string | null;
+  pedido_itens?: { nome_produto?: string; quantidade?: number; valor_unitario?: number; personalizacoes?: unknown; produtos?: FotoProduto | FotoProduto[] | null }[];
+};
 
 // Status atuais do app (+ os antigos, pra pedidos velhos). Antes faltavam "agendado", "aguardando_aceite",
 // "finalizado"… e os pedidos sumiam de "Entregas hoje", "Próximas entregas" e "Atrasados" (30/09)
@@ -63,7 +73,14 @@ const STATUS_ATIVOS = ["aguardando_pagamento", "aguardando_aceite", "novo", "pen
  *  - Gráfico do que entrou no caixa nos últimos 30 dias
  */
 /** (15/10) o que o Início mostrou por último (mesma sessão): volta na hora, sem "Carregando…" */
-let cacheInicio: { uid: string; dia: string; dados: any } | null = null;
+type DadosInicio = {
+  counts: { pedidosPendentes: number; entregasHoje: number; valorEntregasHoje: number; aniversariantes: number; recebidoMes: number; pedidosAtrasados: number };
+  pedidosNovos: PedidoNovo[]; semana: EntregaResumo[]; totalFixos: number; entregasDeHoje: EntregaResumo[];
+  aniversariantesDetalhe: { nome: string; dias: number } | null;
+  resumoSemana: { vendas: number; pedidos: number }; resumoAnterior: { vendas: number; pedidos: number };
+  chartData: ChartPoint[]; proximasEntregas: EntregaResumo[]; compara: { recebidoMesAnt: number; entregasSemanaPassada: number };
+};
+let cacheInicio: { uid: string; dia: string; dados: DadosInicio } | null = null;
 
 /** (30/10 · 5.60) Indicador de variação: compara com o período anterior equivalente.
  *  Subiu: verde com seta para cima. Caiu: vermelho com seta para baixo. Igual: cinza. Sem base: "Sem dados para comparar". */
@@ -198,7 +215,7 @@ export default function Inicio() {
       if (dbErr) throw dbErr;
 
       await refetchProfile();
-    } catch (err: any) {
+    } catch (err) {
       console.error("[foto] erro no upload:", err);
       informar({ titulo: "Não deu para trocar a foto", texto: "Confira a internet e tente de novo.", icone: "erro" });
     } finally {
@@ -563,19 +580,19 @@ export default function Inicio() {
       // o Supabase não lança erro: ele devolve. Sem isso a tela ficava zerada, como se não houvesse pedido nenhum
       const falhou = !!(entregasHojeRes.error || proximasEntregasRes.error || pedidosAtrasadosRes.error || entradasRes.erro || proximaEntregaHojeRes.error);
       if (falhou && manterTela()) return;
-      const entregaDoPedido = (p: any): EntregaResumo => ({
+      const entregaDoPedido = (p: LinhaPedido): EntregaResumo => ({
         id: p.id,
         cliente: p.cliente_nome || "Cliente",
         data: p.data_entrega,
         valor: Number(p.valor_total) || 0,
         hora: p.horario_entrega || null,
         // 4.06: o que vai e se é retirada, pro destaque e pra lista do "Seu dia"
-        produto: p.pedido_itens?.length ? resumoItens(p) : null,
+        produto: p.pedido_itens?.length ? resumoItens(p as Pedido) : null,
         tipo: p.tipo_entrega || null,
         // 4.29: número do pedido e a foto do primeiro produto que tem foto (lista de Próximas entregas)
         numero: p.numero ?? null,
         status: p.status ?? null,
-        foto: String((p.pedido_itens || []).map((it: any) => (Array.isArray(it.produtos) ? it.produtos[0] : it.produtos)?.imagem_url).find((u: any) => !!u) || "").split(",")[0].trim() || null,
+        foto: String((p.pedido_itens || []).map((it: LinhaPedido['pedido_itens'][number]) => (Array.isArray(it.produtos) ? it.produtos[0] : it.produtos)?.imagem_url).find((u: string | null | undefined) => !!u) || "").split(",")[0].trim() || null,
       });
 
       // Aniversariantes nos próximos 7 dias
@@ -584,9 +601,9 @@ export default function Inicio() {
 
       // Resumo semana
       const vendasSemana = (pedidosSemanaRes.data || [])
-        .reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
+        .reduce((s: number, p: { valor_total?: number | string | null }) => s + (Number(p.valor_total) || 0), 0);
       const vendasAnt = (pedidosSemanaAntRes.data || [])
-        .reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
+        .reduce((s: number, p: { valor_total?: number | string | null }) => s + (Number(p.valor_total) || 0), 0);
 
       // Gráfico — o que entrou em cada dia nos últimos 60 dias (o gráfico mostra 7 ou 30 e compara com o período anterior)
       const chart = construirChart60d(entradasRes.itens);
@@ -601,17 +618,17 @@ export default function Inicio() {
       const recebidoMesAnt = Math.round(entradasRes.itens.filter(e => e.data >= iniMesAntISO && e.data <= fimMesAntISO).reduce((s, e) => s + e.valor, 0) * 100) / 100;
 
       // (16/10) as entregas (hoje e próximas) só com pedido aceito: o novo fica no cartão do topo, não aparece duas vezes
-      const aceitos = (l: any[] | null) => (l || []).filter(p => !naoAceito(p));
+      const aceitos = (l: LinhaPedido[] | null) => (l || []).filter(p => !naoAceito(p));
       const hojeAceitos = aceitos(proximaEntregaHojeRes.data);
       const entregasHojeAceitas = aceitos(entregasHojeRes.data);
-      const novosLista: PedidoNovo[] = (pedidosPendentesRes.data || []).filter(naoAceito).map((p: any) => {
+      const novosLista: PedidoNovo[] = (pedidosPendentesRes.data || []).filter(naoAceito).map((p: LinhaPedido) => {
         const e = entregaDoPedido(p);
         return { id: p.id, numero: p.numero ?? null, cliente: e.cliente, status: p.status, produto: e.produto ?? null, data: p.data_entrega || null, valor: e.valor, criado: p.created_at, foto: e.foto ?? null };
       });
       const novosCounts = {
         pedidosPendentes: novosLista.length,
         entregasHoje: entregasHojeAceitas.length,
-        valorEntregasHoje: entregasHojeAceitas.reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
+        valorEntregasHoje: entregasHojeAceitas.reduce((s: number, p: LinhaPedido) => s + (Number(p.valor_total) || 0), 0),
         aniversariantes: aniversariantes.length,
         recebidoMes,
         pedidosAtrasados: pedidosAtrasadosRes.count || 0,
@@ -623,7 +640,7 @@ export default function Inicio() {
       const semanaPassadaISO = dataISO(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 7));
       const comparaNovo = { recebidoMesAnt, entregasSemanaPassada: semanaLista.filter(e => e.data === semanaPassadaISO).length };
       setCompara(comparaNovo);
-      const fixosMes = ((fixosRes.data as any[]) || []).filter(x => x.ativo !== false).reduce((s2, x) => s2 + (Number(x.valor) || 0), 0);
+      const fixosMes = ((fixosRes.data as { valor: number | string; ativo?: boolean | null }[]) || []).filter(x => x.ativo !== false).reduce((s2, x) => s2 + (Number(x.valor) || 0), 0);
       setSemana(semanaLista); setTotalFixos(fixosMes);
       setPedidosNovos(novosLista);
       setEntregasDeHoje(entregasHojeLista);
@@ -654,11 +671,11 @@ export default function Inicio() {
   };
 
   /** Calcula aniversariantes nos próximos 7 dias: hoje até hoje + 6 (ignora ano). */
-  const calcularAniversariantes = (clientes: any[]): Array<{ nome: string; dias: number }> => {
+  const calcularAniversariantes = (clientes: ClienteAniv[]): Array<{ nome: string; dias: number }> => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     return clientes
-      .map((c: any) => {
+      .map((c: ClienteAniv) => {
         if (!c.data_nascimento) return null;
         const [, mes, dia] = c.data_nascimento.split("-").map(Number);
         const proximoAniv = new Date(hoje.getFullYear(), mes - 1, dia);
@@ -817,7 +834,7 @@ export default function Inicio() {
               {!profile && erroCarga ? null : profile && nome.trim() ? null : profile ? (
                 // 02/10: o nome da confeitaria (o pessoal só se a loja ainda não tiver nome)
                 // 09/10 · 4.01: só o nome da loja, sem "Confeitaria", "Doceria" etc., pra caber com a etiqueta do plano
-                (nomeCurtoLoja((profile as any).nome_loja) || "!")
+                (nomeCurtoLoja(profile.nome_loja) || "!")
               ) : (
                 <span className="ini-hero-name-skel" aria-hidden="true" />
               )}
@@ -1073,7 +1090,7 @@ export default function Inicio() {
               return temDados ? (
                 <div className="ini-chart-inner" style={{ width: "100%", minWidth: 0 }}>
                   {/* initialDimension: evita o aviso "width(-1) and height(-1)" no primeiro desenho, antes de medir o espaço */}
-                  <Suspense fallback={null}><GraficoRecebido dados={chartData as any} /></Suspense>
+                  <Suspense fallback={null}><GraficoRecebido dados={chartData} /></Suspense>
                 </div>
               ) : (
                 <TelaVazia compacta icone={<ChartLineUp size={30} />} titulo="Nada recebido ainda" texto="O gráfico aparece aqui quando entrar o primeiro pagamento." />
@@ -1110,7 +1127,7 @@ export default function Inicio() {
                 return temDados ? (
                   <div className="ini-chart-inner" style={{ width: "100%", minWidth: 0 }}>
                     {/* initialDimension: evita o aviso "width(-1) and height(-1)" no primeiro desenho, antes de medir o espaço */}
-                    <Suspense fallback={null}><GraficoRecebido dados={chartData as any} /></Suspense>
+                    <Suspense fallback={null}><GraficoRecebido dados={chartData} /></Suspense>
                   </div>
                 ) : (
                   <TelaVazia compacta icone={<ChartLineUp size={30} />} titulo="Nada recebido ainda" texto="O gráfico aparece aqui quando entrar o primeiro pagamento." />

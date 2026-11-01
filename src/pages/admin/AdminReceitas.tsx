@@ -17,12 +17,18 @@ const FILTROS: [Status | "todas", string][] = [
 const NOME_STATUS: Record<Status, string> = { pendente: "Pendente", aprovada: "Aprovada", rejeitada: "Recusada" };
 const VAZIO_STATUS: Record<Status, string> = { pendente: "pendente", aprovada: "aprovada", rejeitada: "recusada" };
 
+/** Receita enviada pela comunidade (com quem enviou) */
+type ReceitaComunidade = {
+  id: string; nome?: string | null; categoria?: string | null; foto_url?: string | null; status: string; created_at?: string
+  ingredientes?: string | null; modo_preparo?: string | null; profiles?: { nome?: string | null; foto_url?: string | null } | null
+};
+
 export default function AdminReceitas() {
-  const [receitas, setReceitas] = useState<any[]>([]);
+  const [receitas, setReceitas] = useState<ReceitaComunidade[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<Status | "todas">("pendente");
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<any | null>(null);
+  const [selected, setSelected] = useState<ReceitaComunidade | null>(null);
   const [aberta, setAberta] = useState(false);
 
   useEffect(() => { load(); }, []);
@@ -34,7 +40,7 @@ export default function AdminReceitas() {
     setLoading(false);
   };
 
-  const abrir = (r: any) => { setSelected(r); setAberta(true); };
+  const abrir = (r: ReceitaComunidade) => { setSelected(r); setAberta(true); };
   const fechar = () => setAberta(false);
 
   const handleStatus = async (id: string, status: Status) => {

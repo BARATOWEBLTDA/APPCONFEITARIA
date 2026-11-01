@@ -5,6 +5,7 @@ import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
 import { EXEMPLO_DESCRICAO, EditorHorario, OpcoesMostrar, type Horario } from "@/components/loja/EditoresLoja";
 import { useNavigate } from "react-router-dom";
 import { Check, PencilSimpleLine, ImageSquare, MapPin, Clock, Basket, Wallet, Coins, Sparkle, CaretRight, RocketLaunch, Lightbulb, ArrowRight, Info, PixLogo, Money, CreditCard, Moped } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
 import ListaChaves from "@/components/loja/ListaChaves";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
@@ -107,7 +108,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const kIncompleto = uid ? `doonly_pp_incompleto_${uid}` : "";
   const pulados = useRef<Set<Passo>>(new Set());
   // o que acabou de ser salvo (logo novo), até a releitura dos passos chegar
-  const [perfilNovo, setPerfilNovo] = useState<Record<string, any>>({});
+  const [perfilNovo, setPerfilNovo] = useState<Record<string, unknown>>({});
   // (29/10 · 4.97) computador: clicar em "Logo da loja" abre direto o seletor de arquivos (sem a janela da prévia)
   const logoInput = useRef<HTMLInputElement>(null);
   const [logoCrop, setLogoCrop] = useState<string | null>(null);
@@ -185,7 +186,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   const fechar = () => { try { localStorage.setItem(kFechado, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } setFechado(true); };
   // "Salvar e continuar": fecha e abre o próximo passo que falta.
   // "Fazer depois": pula este (fica pendente) e segue pro próximo, sem voltar nele nesta sequência.
-  const seguir = (pular: boolean, patch?: Record<string, any>) => {
+  const seguir = (pular: boolean, patch?: Record<string, unknown>) => {
     if (patch) setPerfilNovo(p => ({ ...p, ...patch }));
     const agora = folha as Passo | null;
     if (pular && agora) pulados.current.add(agora);
@@ -198,7 +199,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   };
   // quantos passos ainda faltam além deste que acabou de ser feito
   const passosFaltando = (feito: Passo) => ORDEM.some(k => k !== feito && !estado[k]);
-  const salvo = (patch?: Record<string, any>) => seguir(false, patch);
+  const salvo = (patch?: Record<string, unknown>) => seguir(false, patch);
   // logo pelo atalho do computador: mesmo caminho do "salvar e continuar" (abre o próximo passo que falta)
   const escolheuLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]; e.target.value = ""; if (!f) return;
@@ -227,7 +228,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     );
   }
 
-  const I = (C: any) => <C size={20} weight="regular" />;
+  const I = (C: Icon) => <C size={20} weight="regular" />;
   const passos: { feito: boolean; ic: ReactNode; t: string; s: string; pq: string; abrir: () => void }[] = [
     // (29/10 · 4.95) pq: por que o passo importa (aparece no bloco do passo da vez, no computador)
     // (23/10) "Criar sua conta" saiu (já está feito e não é configurar o cardápio); nomes curtos que cabem inteiros no celular
@@ -399,7 +400,7 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     supabase.from("profiles").select("formas_pagamento").eq("id", uid).maybeSingle().then(({ data }) => {
       if (!vivo) return;
       // o padrão do banco (só Pix) conta como "não escolheu ainda": fica tudo marcado
-      const fp: string[] = Array.isArray((data as any)?.formas_pagamento) ? (data as any).formas_pagamento : [];
+      const fp: string[] = Array.isArray((data as { formas_pagamento?: unknown } | null)?.formas_pagamento) ? (data as { formas_pagamento: string[] }).formas_pagamento : [];
       if (fp.length && !(fp.length === 1 && fp[0] === "pix")) setPaga(fp);
       setCarregou(true);
     }, () => { if (vivo) setCarregou(true); });
@@ -536,7 +537,13 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
 }
 
 /* ── Janelinha: a Janela de formulário do app (components/financeiro/Folha) ── */
-type FolhaProps = { uid: string; perfil: any; onClose: () => void; onSalvo: (patch?: Record<string, any>) => void; onDepois: () => void };
+/** Dados do perfil que as janelinhas leem pra abrir já preenchidas */
+type PerfilPassos = {
+  nome_loja?: string | null; descricao_loja?: string | null; foto_url?: string | null; logo_url?: string | null;
+  endereco?: { cep?: string; rua?: string; numero?: string; complemento?: string; bairro?: string; cidade?: string; estado?: string } | null;
+  mostrar_apenas_cidade?: boolean | null; mostrar_localizacao?: boolean | null; horario?: Partial<Horario> | null;
+};
+type FolhaProps = { uid: string; perfil: PerfilPassos; onClose: () => void; onSalvo: (patch?: Record<string, unknown>) => void; onDepois: () => void };
 
 const FAZ = ["Bolos", "Doces", "Salgados", "Tortas", "Kit festa", "Outros"];
 
@@ -779,7 +786,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
   const selo = !busca ? "" : mostrar === "nada" ? "O endereço não aparece no cardápio" : mostrar === "completo" ? ([ruaNum, end.bairro.trim()].filter(Boolean).join(" · ") || cidadeUf) : cidadeUf;
   // (29/10 · 5.02) computador: janela larga já no tamanho maior, com o mapa sempre à direita
   const largo = useLargo();
-  const campo = (k: keyof typeof end, rotulo: string, ph = "", extra: any = {}) => (
+  const campo = (k: keyof typeof end, rotulo: string, ph = "", extra: React.InputHTMLAttributes<HTMLInputElement> = {}) => (
     <div className="ppf-f"><label className="ppf-l" htmlFor={`pp-${k}`}>{rotulo}</label>
       <input id={`pp-${k}`} className="ppf-in" autoComplete="off" value={end[k]} placeholder={ph} onChange={e => setEnd(x => ({ ...x, [k]: e.target.value }))} {...extra} /></div>
   );

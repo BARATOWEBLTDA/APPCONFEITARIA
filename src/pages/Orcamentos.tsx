@@ -58,8 +58,8 @@ export default function Orcamentos() {
     if (!lista.some(o => daAba(o, 'novos')) && lista.some(o => daAba(o, 'enviados'))) setAba('enviados')
   }, [lista.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const link = linkPedirOrcamento((profile as any)?.codigo_publico, window.location.origin.includes('localhost') ? window.location.origin : undefined)
-  const nomeLoja = (profile as any)?.nome_loja || 'Minha confeitaria'
+  const link = linkPedirOrcamento(profile?.codigo_publico, window.location.origin.includes('localhost') ? window.location.origin : undefined)
+  const nomeLoja = profile?.nome_loja || 'Minha confeitaria'
   const contagem = useMemo(() => Object.fromEntries(ABAS.map(([k]) => [k, lista.filter(o => daAba(o, k)).length])) as Record<Aba, number>, [lista])
   const visiveis = lista.filter(o => daAba(o, aba))
   const pc = useComputador()

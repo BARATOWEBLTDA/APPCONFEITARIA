@@ -21,7 +21,7 @@ type PropsTitulo = {
 }
 
 export function Titulo({ children, nivel = 'secao', contagem, apoio, acao, tom, id, className = '' }: PropsTitulo) {
-  const Marca = nivel === 'tela' ? 'h1' : nivel === 'janela' ? 'h2' : 'h3'
+  const Marca = nivel === 'tela' ? 'h1' : 'h2' // (6.02) seção também é h2: depois do h1 da tela não pode pular nível
   const classes = ['ui-tit', `ui-tit--${nivel}`, tom ? `ui-tit--${tom}` : '', className].filter(Boolean).join(' ')
   return (
     <div className={classes}>

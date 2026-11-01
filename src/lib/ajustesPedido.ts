@@ -35,7 +35,7 @@ export async function ajustarValorPedido(opts: {
   }
   if (lido.error) return { ok: false, novoTotal: daTela, erro: explicarErro(lido.error, ERRO_AJUSTE) };
   if (!lido.data) return { ok: false, novoTotal: daTela, erro: "Esse pedido não existe mais." };
-  const atual: any = lido.data;
+  const atual = lido.data as { valor_total?: number | null; desconto?: number | null; acrescimo?: number | null };
   const antes = r2(Number(atual.valor_total) || 0);
   const novoTotal = r2(opts.tipo === "acrescimo" ? antes + valor : antes - valor);
   if (novoTotal < 0) return { ok: false, novoTotal: antes, erro: "O desconto passa do valor do pedido" };

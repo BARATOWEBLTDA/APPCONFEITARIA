@@ -11,7 +11,16 @@ import "./escolhas.css";
  * Só lê o form (não muda nada).
  */
 type Op = { id: string; nome: string; adicional?: number; preco?: number; peso_kg?: number | null };
-type G = { ativo?: boolean; min?: number; max?: number; opcoes?: Op[]; modo_preco_tamanho?: string; sabor_tem_preco_proprio?: boolean };
+type G = { ativo?: boolean; min?: number; max?: number; opcoes?: Op[]; modo_preco_tamanho?: string; sabor_tem_preco_proprio?: boolean; regra_conflito_tamanho?: string };
+/** O que a revisão lê do formulário do produto (os grupos são lidos pelo nome do campo) */
+export type FormRevisao = {
+  nome?: string; categoria?: string; descricao?: string | null; sku?: string | null; forma_venda?: string;
+  preco_normal?: number | string; preco_promocional?: number | string | null; promocao?: boolean; tipo_promocao?: string;
+  desconto_percentual?: number | string | null; imagem_url?: string | null; disponivel?: boolean; aceita_referencia?: boolean;
+  pronta_entrega?: boolean | null; antecedencia?: string | null;
+  kit_qtd?: KitQtdConfig | null; grupo_tamanhos?: G | null; grupo_sabores?: G | null;
+  [campo: string]: unknown;
+};
 
 const GRUPOS: [string, string, string][] = [
   ["grupo_massas", "massa", "massas"], ["grupo_recheios", "recheio", "recheios"],
@@ -22,7 +31,7 @@ const rs = (v: number) => `R$ ${textoBRL(v) || "0,00"}`;
 const pesoDe = (o: Op) => Number(o.peso_kg) || Number(String(o.nome).replace(",", ".").match(/(\d+(?:\.\d+)?)/)?.[1]) || 0;
 
 // (15/10) promoção só vale ligada; em % aplica o desconto (antes usava o preço promocional mesmo com a promoção desligada)
-function precoBase(form: any): number {
+function precoBase(form: FormRevisao): number {
   const cheio = Number(form.preco_normal) || 0;
   if (!form.promocao) return cheio;
   const pct = Number(form.desconto_percentual) || 0;
@@ -31,7 +40,7 @@ function precoBase(form: any): number {
   return promo > 0 && promo < cheio ? promo : cheio;
 }
 
-export function resumoRevisao(form: any) {
+export function resumoRevisao(form: FormRevisao) {
   const kit = form.kit_qtd as KitQtdConfig | null;
   const tam = form.grupo_tamanhos as G | undefined;
   const temTam = !!tam?.ativo && (tam.opcoes?.length || 0) > 0;
@@ -83,7 +92,7 @@ export function resumoRevisao(form: any) {
     if (!g?.ativo || !(g.opcoes?.length)) return;
     const o = g.opcoes![0];
     // (14/10) com tamanho e "só o tamanho", o sabor não muda o preço
-    const v = g.sabor_tem_preco_proprio ? (temTam && !porPeso && (g as any).regra_conflito_tamanho !== "preco_sabor" && (g as any).regra_conflito_tamanho !== "tamanho_base_sabor_adicional" ? 0 : Number(o.preco) || 0) : Number(o.adicional) || 0;
+    const v = g.sabor_tem_preco_proprio ? (temTam && !porPeso && g.regra_conflito_tamanho !== "preco_sabor" && g.regra_conflito_tamanho !== "tamanho_base_sabor_adicional" ? 0 : Number(o.preco) || 0) : Number(o.adicional) || 0;
     linhas.push({ nome: o.nome, valor: v });
   });
   // (24/10) promoção em %: o cardápio tira o desconto de tudo (tamanho, kit, sabor e o que custa a mais).
@@ -115,7 +124,7 @@ export function resumoRevisao(form: any) {
   return { aPartir, escolhas, linhas, total, avisos };
 }
 
-export default function RevisaoProduto({ form }: { form: any }) {
+export default function RevisaoProduto({ form }: { form: FormRevisao }) {
   const r = resumoRevisao(form);
   return (
     <div className="rev">
@@ -142,7 +151,7 @@ export default function RevisaoProduto({ form }: { form: any }) {
 /**
  * (14/10) Revisão: todas as informações do produto numa tabelinha (rótulo | valor), antes de publicar.
  */
-export function ResumoProduto({ form }: { form: any }) {
+export function ResumoProduto({ form }: { form: FormRevisao }) {
   const r = resumoRevisao(form);
   const kit = form.kit_qtd as KitQtdConfig | null;
   const tam = form.grupo_tamanhos as G | undefined;

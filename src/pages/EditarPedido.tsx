@@ -40,14 +40,27 @@ import { historicoAssentado } from '@/components/base/useSobreposicao'
 
 import { useEffect, useState, useRef } from 'react'
 import MapaEndereco, { type BuscaMapa } from '@/components/MapaEndereco'
-import { distanciaKm, kmTexto, modoDaLoja, pontoDoEndereco, taxaPorCidade, taxaPorRaio, type Ponto } from '@/lib/taxaEntrega'
+import { distanciaKm, kmTexto, modoDaLoja, pontoDoEndereco, taxaPorCidade, taxaPorRaio, type Ponto, type FaixaRaio, type TaxaCidade } from '@/lib/taxaEntrega'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import HorarioSheet from '@/components/HorarioSheet'
-import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
+import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL, type PersonalizacoesV1, type PrecoBreakdownV1 } from '@/lib/pedido-snapshot'
+import type { ExtraEscolhido } from '@/lib/kitTexto'
+import type { ItemDoCarrinho } from '@/lib/itemDoCarrinho'
+import type { Pedido as PedidoTexto } from '@/components/pedidos/pedidoTexto'
+import type { Produto as ProdutoCardapio } from '@/types/database'
+import type { Icon } from '@phosphor-icons/react'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
+/** Escolhas gravadas no item (jsonb personalizacoes): o formato v1 + o que o cardápio acrescenta */
+interface PersonalizacoesItem extends PersonalizacoesV1 {
+  extras?: ExtraEscolhido[] | null
+  kit?: { total?: number; sabores?: { nome: string; qtd: number }[] } | null
+  foto_referencia?: string | null
+  [k: string]: unknown
+}
+
 type PedidoItem = {
   id?: string
   produto_id?: string | null
@@ -56,7 +69,35 @@ type PedidoItem = {
   valor_unitario: number
   observacoes?: string
   imagem_url?: string | null
+  personalizacoes?: PersonalizacoesItem | null
+  foto_referencia?: string | null
+  preco_breakdown?: Partial<PrecoBreakdownV1> | null
+  snapshot_version?: number | null
 }
+
+/** Linha de pagamentos (recebimentos do pedido) */
+type PagamentoLinha = { id: string; valor: number; forma: string | null; tipo: string | null; recebido_em: string | null; estornado_em: string | null; created_at: string }
+/** Linha de pedido_ajustes (desconto/acréscimo com motivo) */
+type AjusteLinha = { tipo: string; valor: number; motivo: string | null; created_at?: string }
+/** Endereço guardado antes de editar (pra desfazer) */
+type EnderecoEditado = { enderecoCep: string; enderecoRua: string; enderecoNumero: string; enderecoBairro: string; enderecoCidade: string; enderecoComplemento: string }
+/** Endereço da loja no perfil (jsonb ou texto JSON) */
+type EnderecoLoja = { rua?: string; numero?: string; bairro?: string; cidade?: string }
+type PerfilLoja = { nome_loja?: string | null; endereco?: string | EnderecoLoja | null }
+type BairroTaxa = { bairro: string; valor: number }
+/** Colunas da regra de entrega no perfil */
+type RegraLojaBanco = {
+  valor_entrega_propria?: number | null
+  entrega_por_bairro?: BairroTaxa[] | null
+  entrega_modo?: string | null
+  entrega_por_raio?: FaixaRaio[] | null
+  entrega_por_cidade?: TaxaCidade[] | null
+  entrega_fora_valor?: number | null
+  loja_lat?: number | null
+  loja_lng?: number | null
+}
+type ClienteCartao = { foto_url?: string | null; created_at?: string | null; data_nascimento?: string | null }
+type PedidoDoCliente = { id: string; valor_total: number; valor_recebido: number; status: string; status_pagamento: string | null; created_at: string }
 
 type Pedido = {
   id: string
@@ -85,7 +126,13 @@ type Pedido = {
   origem?: string
   data_prevista_pagamento?: string
   created_at?: string
+  updated_at?: string
   pedido_itens?: PedidoItem[]
+  endereco_cep?: string | null
+  acrescimo?: number
+  retirado_por?: string | null
+  cupom_codigo?: string | null
+  cupom_desconto?: number | null
 }
 
 interface Cliente {
@@ -203,9 +250,9 @@ export default function EditarPedido() {
   }, [])
   // (11/10) o quadro de pedidos manda abrir já na janela de cancelar: navigate(`/pedidos/${id}/editar`, { state: { abrirCancelar: true } }).
   // O pedido é guardado aqui e o state é limpo na hora, pra o "voltar" e o recarregar não abrirem a janela de novo.
-  const abrirCancelarRef = useRef((location.state as any)?.abrirCancelar === true)
+  const abrirCancelarRef = useRef((location.state as { abrirCancelar?: boolean } | null)?.abrirCancelar === true)
   useEffect(() => {
-    if ((location.state as any)?.abrirCancelar === true) navigate(location.pathname + location.search, { replace: true, state: null })
+    if ((location.state as { abrirCancelar?: boolean } | null)?.abrirCancelar === true) navigate(location.pathname + location.search, { replace: true, state: null })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [pedido, setPedido] = useState<Pedido | null>(null)
@@ -283,10 +330,10 @@ export default function EditarPedido() {
   const [cancelando, setCancelando] = useState(false)
 
   // ══════════════ Tela nova (03/10): etapas, pagamentos, ajustes e "alterações não salvas" ══════════════
-  const [pagamentos, setPagamentos] = useState<any[]>([])
+  const [pagamentos, setPagamentos] = useState<PagamentoLinha[]>([])
   const [pagamentosOk, setPagamentosOk] = useState(false) // a tabela de pagamentos existe (SQL do Passo 1)
   const [pagamentosFalhou, setPagamentosFalhou] = useState(false) // (11/10) não deu pra LER os recebimentos (internet): não é o modo antigo
-  const [ajustesHist, setAjustesHist] = useState<any[]>([])
+  const [ajustesHist, setAjustesHist] = useState<AjusteLinha[]>([])
   const [ajustesPendentes, setAjustesPendentes] = useState<{ tipo: 'desconto' | 'acrescimo'; valor: number; motivo: string }[]>([])
   const [etapasAberto, setEtapasAberto] = useState(false)
   const [receberAberto, setReceberAberto] = useState(false)
@@ -322,15 +369,15 @@ export default function EditarPedido() {
     // a tela mostra o recebido que está no pedido e avisa que não deu pra carregar a lista.
     if (r.error && faltaNoBanco(r.error)) { setPagamentosOk(false); setPagamentosFalhou(false); setPagamentos([]) }
     else if (r.error) { console.error('[Doonly] recebimentos do pedido', r.error); setPagamentosFalhou(true) }
-    else { setPagamentosOk(true); setPagamentosFalhou(false); setPagamentos((r.data as any[]) || []) }
+    else { setPagamentosOk(true); setPagamentosFalhou(false); setPagamentos((r.data as PagamentoLinha[]) || []) }
     const a = await supabase.from('pedido_ajustes').select('tipo, valor, motivo, created_at').eq('pedido_id', pid).order('created_at', { ascending: true })
-    if (!a.error) setAjustesHist((a.data as any[]) || [])
+    if (!a.error) setAjustesHist((a.data as AjusteLinha[]) || [])
     else if (faltaNoBanco(a.error)) setAjustesHist([])
   }
   // (20/10) Pix pelo cardápio: o cliente tocou em "Já paguei"; ela confere no banco e confirma (vira recebimento)
   const [confirmandoPix, setConfirmandoPix] = useState(false)
   const confirmarPixDoCardapio = async () => {
-    const px = pedido ? pixDoPedido(pedido as any) : null
+    const px = pedido ? pixDoPedido(pedido as PedidoTexto) : null
     if (!pedido || !px || px.estado !== 'conferir' || confirmandoPix) return
     const ok = await confirmar({ titulo: `Confirmar o Pix de ${formatMoney(px.valor)}?`, texto: `Confira no app do banco se o Pix entrou. ${px.tipo === 'sinal' ? 'Fica como sinal pago do pedido.' : 'O pedido fica pago.'}`, rotulo: 'Confirmar', rotuloVoltar: 'Ainda não' })
     if (!ok) return
@@ -348,7 +395,7 @@ export default function EditarPedido() {
     if (!pedido) return
     const { data } = await supabase.from('pedidos').select('status, status_pagamento, valor_recebido, valor_total, desconto, acrescimo, updated_at').eq('id', pedido.id).maybeSingle()
     if (data) {
-      const d: any = data
+      const d: Partial<Pedido> = data
       setPedido(p => p ? { ...p, ...d } : p)
       setStatusPedido(d.status || statusPedido)
       // o ajuste feito no "Finalizar pedido" mexe no desconto/acréscimo: a tela acompanha (sem virar "alteração")
@@ -365,9 +412,9 @@ export default function EditarPedido() {
 
   // ── Itens (03/10): fechados com resumo, abrem ao tocar; remover com "Desfazer"; adicionar com opções ──
   const [itemMenu, setItemMenu] = useState<number | null>(null) // ⋯ de um item
-  const [removido, setRemovido] = useState<{ item: any; idx: number } | null>(null)
-  const removidoTimer = useRef<any>(null)
-  const [produtoOpcoes, setProdutoOpcoes] = useState<any | null>(null)
+  const [removido, setRemovido] = useState<{ item: PedidoItem; idx: number } | null>(null)
+  const removidoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [produtoOpcoes, setProdutoOpcoes] = useState<ProdutoCardapio | null>(null)
   const removerComDesfazer = (idx: number) => {
     const item = itens[idx]
     setItens(prev => prev.filter((_, i) => i !== idx))
@@ -383,24 +430,24 @@ export default function EditarPedido() {
   // foto do item: a do próprio item ou a do cadastro do produto
   // fotos dos produtos do próprio pedido (mesmo inativos ou fora da lista de adicionar)
   const [fotosProdutos, setFotosProdutos] = useState<Record<string, string>>({})
-  const idsProdutosItens = [...new Set(itens.map((x: any) => x.produto_id).filter(Boolean))].sort().join(',')
+  const idsProdutosItens = [...new Set(itens.map((x: PedidoItem) => x.produto_id).filter(Boolean))].sort().join(',')
   useEffect(() => {
     if (!idsProdutosItens) return
     ;(async () => {
       const { data } = await supabase.from('produtos').select('id, imagem_url').in('id', idsProdutosItens.split(','))
       const m: Record<string, string> = {}
-      for (const p of (data as any[]) || []) if (p.imagem_url) m[p.id] = p.imagem_url
+      for (const p of (data as { id: string; imagem_url: string | null }[]) || []) if (p.imagem_url) m[p.id] = p.imagem_url
       setFotosProdutos(m)
     })()
   }, [idsProdutosItens])
-  const fotoDoItem = (it: any): string | null => {
+  const fotoDoItem = (it: PedidoItem): string | null => {
     const f = it.imagem_url || fotosProdutos[it.produto_id] || produtos.find(x => x.id === it.produto_id)?.imagem_url || ''
     return String(f).split(/,(?=\s*https?:)/).map(s => s.trim()).filter(Boolean)[0] || null // várias fotos separadas por vírgula: pega a primeira
   }
   // produto com opções (tamanho, recheios, kit…) abre a janela do cardápio; simples entra direto
   const escolherProduto = async (p: Produto) => {
     const { data } = await supabase.from('produtos').select('*').eq('id', p.id).maybeSingle()
-    const completo: any = data || p
+    const completo: ProdutoCardapio & Produto & { kit_qtd?: unknown } = data || p
     const temOpcoes = carregarGruposDoBanco(completo).some(g => g.ativo && g.opcoes.length > 0) || kitAtivo(completo.kit_qtd)
     if (temOpcoes) { setModalProduto(false); setBuscaProduto(''); setCatDropdownAberto(false); setProdutoOpcoes(completo); return }
     addItem(completo)
@@ -419,12 +466,12 @@ export default function EditarPedido() {
         supabase.from('pedidos').select('id, valor_total, valor_recebido, status, status_pagamento, created_at').eq('cliente_id', clienteId).neq('status', 'cancelado'),
       ])
       if (!vivo) return
-      const outros = ((ps.data as any[]) || []).filter(x => x.id !== pedido?.id)
+      const outros = ((ps.data as PedidoDoCliente[]) || []).filter(x => x.id !== pedido?.id)
       // (11/10) "Último pedido" = quando o pedido foi FEITO, no dia daqui (antes usava a data de entrega e mostrava data futura).
       const feitos = outros.map(x => (x.created_at ? new Date(x.created_at).getTime() : NaN)).filter(t => !isNaN(t))
       const ultimoFeito = feitos.length ? new Date(Math.max(...feitos)) : null
       setClienteInfo({
-        foto: (c.data as any)?.foto_url || null, desde: (c.data as any)?.created_at || null, nascimento: (c.data as any)?.data_nascimento || null,
+        foto: (c.data as ClienteCartao | null)?.foto_url || null, desde: (c.data as ClienteCartao | null)?.created_at || null, nascimento: (c.data as ClienteCartao | null)?.data_nascimento || null,
         // "Já gastou" = o que já entrou no caixa nos outros pedidos (pago = total, sinal = o recebido, fiado = 0); antes somava pedido não pago
         pedidos: outros.length, gasto: somarReais(outros.map(x => valorRecebidoPedido(x))),
         ultimo: ultimoFeito ? `${ultimoFeito.getFullYear()}-${String(ultimoFeito.getMonth() + 1).padStart(2, '0')}-${String(ultimoFeito.getDate()).padStart(2, '0')}` : null,
@@ -451,7 +498,7 @@ export default function EditarPedido() {
   const [dataSheet, setDataSheet] = useState(false)
   const [lojaInfo, setLojaInfo] = useState<{ nome: string; endereco: { linha1: string; linha2: string; completo: string } | null } | null>(null)
   const [enderecoDaCliente, setEnderecoDaCliente] = useState<{ rua: string; numero: string; bairro: string; cidade: string; complemento: string; cep: string } | null>(null)
-  const enderecoAntes = useRef<any>(null)
+  const enderecoAntes = useRef<EnderecoEditado | null>(null)
   useTravarRolagem(dataSheet)
   const enderecoTemAlgo = !!(enderecoRua || enderecoNumero || enderecoBairro) // só a cidade (sugerida pela loja) não conta como endereço
   const enderecoCompleto = [[enderecoRua, enderecoNumero].filter(Boolean).join(', '), enderecoComplemento, enderecoBairro, enderecoCidade, enderecoCep ? `CEP ${enderecoCep}` : ''].filter(Boolean).join(' - ')
@@ -492,27 +539,27 @@ export default function EditarPedido() {
     ;(async () => {
       const { data: { user } } = await supabase.auth.getUser(); if (!user) return
       const { data } = await supabase.from('profiles').select('nome_loja, endereco').eq('id', user.id).maybeSingle()
-      let a: any = {}; try { a = (data as any)?.endereco ? (typeof (data as any).endereco === 'string' ? JSON.parse((data as any).endereco) : (data as any).endereco) : {} } catch { a = {} }
+      let a: EnderecoLoja = {}; try { a = (data as PerfilLoja | null)?.endereco ? (typeof (data as PerfilLoja).endereco === 'string' ? JSON.parse((data as PerfilLoja).endereco as string) : (data as PerfilLoja).endereco) : {} } catch { a = {} }
       const l1 = [a.rua, a.numero].filter(Boolean).join(', '), l2 = [a.bairro, a.cidade].filter(Boolean).join(' · ')
-      setLojaInfo({ nome: (data as any)?.nome_loja || '', endereco: (l1 || l2) ? { linha1: l1 || l2, linha2: l1 ? l2 : '', completo: [l1, a.bairro, a.cidade].filter(Boolean).join(' - ') } : null })
+      setLojaInfo({ nome: (data as PerfilLoja | null)?.nome_loja || '', endereco: (l1 || l2) ? { linha1: l1 || l2, linha2: l1 ? l2 : '', completo: [l1, a.bairro, a.cidade].filter(Boolean).join(' - ') } : null })
       // (28/10 · 4.49) a regra da taxa da loja, pra sugerir o valor neste pedido (sem as colunas novas, fica só fixa/bairro)
       const { data: r1 } = await supabase.from('profiles').select('valor_entrega_propria, entrega_por_bairro').eq('id', user.id).maybeSingle()
       const { data: r2, error: e2 } = await supabase.from('profiles').select('entrega_modo, entrega_por_raio, entrega_por_cidade, entrega_fora_valor, loja_lat, loja_lng').eq('id', user.id).maybeSingle()
-      const x: any = { ...(r1 || {}), ...(!e2 && r2 ? r2 : {}) }
+      const x: RegraLojaBanco = { ...(r1 || {}), ...(!e2 && r2 ? r2 : {}) }
       setRegraTaxa({ modo: modoDaLoja(x), fixa: Number(x.valor_entrega_propria) || 0, bairros: Array.isArray(x.entrega_por_bairro) ? x.entrega_por_bairro : [],
         raios: Array.isArray(x.entrega_por_raio) ? x.entrega_por_raio : [], cidades: Array.isArray(x.entrega_por_cidade) ? x.entrega_por_cidade : [],
         fora: x.entrega_fora_valor ?? null, loja: x.loja_lat != null && x.loja_lng != null ? { lat: Number(x.loja_lat), lng: Number(x.loja_lng) } : null })
     })()
   }, [])
   // (28/10 · 4.49) taxa sugerida pela regra da loja para o endereço deste pedido
-  const [regraTaxa, setRegraTaxa] = useState<{ modo: string; fixa: number; bairros: any[]; raios: any[]; cidades: any[]; fora: number | null; loja: Ponto | null } | null>(null)
+  const [regraTaxa, setRegraTaxa] = useState<{ modo: string; fixa: number; bairros: BairroTaxa[]; raios: FaixaRaio[]; cidades: TaxaCidade[]; fora: number | null; loja: Ponto | null } | null>(null)
   const [taxaSugerida, setTaxaSugerida] = useState<{ valor: number; texto: string } | { valor: null; texto: string } | null>(null)
   useEffect(() => {
     const r = regraTaxa
     if (!r || tipoEntrega !== 'entrega') { setTaxaSugerida(null); return }
     if (r.modo === 'fixa') { setTaxaSugerida({ valor: r.fixa, texto: 'Taxa única da loja' }); return }
     if (r.modo === 'bairro') {
-      const b = r.bairros.find((x: any) => String(x.bairro).trim().toLowerCase() === enderecoBairro.trim().toLowerCase())
+      const b = r.bairros.find((x: BairroTaxa) => String(x.bairro).trim().toLowerCase() === enderecoBairro.trim().toLowerCase())
       setTaxaSugerida(b ? { valor: Number(b.valor) || 0, texto: `Taxa do bairro ${b.bairro}` } : enderecoBairro.trim() ? { valor: r.fixa, texto: 'Bairro fora da lista: taxa única' } : null); return
     }
     if (r.modo === 'cidade') {
@@ -530,7 +577,7 @@ export default function EditarPedido() {
       // (29/10 · 5.10) a mesma conta do cardápio: caminho de carro, pelo banco. Sem a função nova no banco: reta + 30%
       const { data: rr, error: er } = await supabase.rpc('minha_taxa_entrega', { p_lat: pt.lat, p_lng: pt.lng, p_cidade: enderecoCidade || null })
       if (!vivo) return
-      const res: any = rr
+      const res: { km?: number | null; ok?: boolean; valor?: number } | null = rr
       if (!er && res && res.km != null) {
         const kmR = Number(res.km)
         setTaxaSugerida(res.ok ? { valor: Number(res.valor) || 0, texto: `Taxa pela distância (${kmTexto(kmR)} de carro)` } : { valor: null, texto: `Fora da área de entrega (${kmTexto(kmR)} de carro)` })
@@ -548,7 +595,7 @@ export default function EditarPedido() {
     ;(async () => {
       const { data } = await supabase.from('clientes').select('rua, numero, bairro, cidade, complemento, cep').eq('id', clienteId).maybeSingle()
       if (!vivo) return
-      const c: any = data || {}
+      const c: { rua?: string; numero?: string; bairro?: string; cidade?: string; complemento?: string; cep?: string } = data || {}
       setEnderecoDaCliente(c.rua || c.bairro || c.cidade ? { rua: c.rua || '', numero: c.numero || '', bairro: c.bairro || '', cidade: c.cidade || '', complemento: c.complemento || '', cep: c.cep || '' } : null)
     })()
     return () => { vivo = false }
@@ -566,7 +613,7 @@ export default function EditarPedido() {
   useEffect(() => { if (!carregando && pedido && snapshotRef.current === null) snapshotRef.current = JSON.stringify(estadoEditavel()) })
   const alteracoes = (() => {
     if (!snapshotRef.current) return 0
-    const antes = JSON.parse(snapshotRef.current), agora: any = estadoEditavel()
+    const antes = JSON.parse(snapshotRef.current), agora: Record<string, unknown> = estadoEditavel()
     let n = Object.keys(agora).filter(k => JSON.stringify(antes[k]) !== JSON.stringify(agora[k])).length
     if (ajustesPendentes.length) n = Math.max(n, ajustesPendentes.length)
     return n
@@ -585,7 +632,7 @@ export default function EditarPedido() {
       if (cancelado) return
       if (error || !pedidoData) {
         // (11/10) pedido que não existe mais (excluído, link antigo) não é falta de internet; e o "voltar" não cai aqui de novo
-        const naoExiste = !error || ['PGRST116', '22P02'].includes(String((error as any).code || ''))
+        const naoExiste = !error || ['PGRST116', '22P02'].includes(String(error.code || ''))
         if (naoExiste) avisarJanela('Esse pedido não existe mais', 'Ele pode ter sido excluído.', 'alerta')
         else avisarJanela('Não foi possível abrir o pedido', explicarErro(error, 'Tente de novo em instantes.'), 'erro')
         setSalvando(false)
@@ -608,13 +655,13 @@ export default function EditarPedido() {
       setEnderecoBairro(p.endereco_bairro || '')
       setEnderecoCidade(p.endereco_cidade || 'Curitiba')
       setEnderecoComplemento(p.endereco_complemento || '')
-      { const d = String((p as any).endereco_cep || '').replace(/\D/g, ''); setEnderecoCep(d.length === 8 ? `${d.slice(0, 5)}-${d.slice(5)}` : d) } // CEP: antes não era lido
+      { const d = String(p.endereco_cep || '').replace(/\D/g, ''); setEnderecoCep(d.length === 8 ? `${d.slice(0, 5)}-${d.slice(5)}` : d) } // CEP: antes não era lido
       // Popular valores (Fase 4)
       setDesconto(p.desconto || 0)
       setTaxaEntrega(p.taxa_entrega || 0)
       // Acréscimo: se a coluna existir na tabela, popula; senão fica 0
-      if (typeof (p as any).acrescimo === 'number') {
-        setAcrescimo((p as any).acrescimo)
+      if (typeof p.acrescimo === 'number') {
+        setAcrescimo(p.acrescimo)
       }
       // Popular pagamento (Fase 5)
       setFormaPagamento(p.forma_pagamento || 'PIX')
@@ -638,11 +685,11 @@ export default function EditarPedido() {
         imagem_url: it.imagem_url || null,
         // As escolhas do item (tamanho, massa, recheios, kit, adicionais, foto de referência) vão junto:
         // antes não eram carregadas, e salvar a edição apagava todas elas.
-        personalizacoes: (it as any).personalizacoes ?? null,
+        personalizacoes: it.personalizacoes ?? null,
         // (27/10) a foto de referência fica na coluna própria (as listas de pedidos não baixam a foto)
-        foto_referencia: (it as any).foto_referencia || (it as any).personalizacoes?.foto_referencia || null,
-        preco_breakdown: (it as any).preco_breakdown ?? null,
-        snapshot_version: (it as any).snapshot_version ?? null,
+        foto_referencia: it.foto_referencia || it.personalizacoes?.foto_referencia || null,
+        preco_breakdown: it.preco_breakdown ?? null,
+        snapshot_version: it.snapshot_version ?? null,
       })))
       // (11/10) a "foto" do que está salvo é tirada junto com os dados que acabaram de chegar (logo no próximo desenho),
       // e não depois da segunda espera (clientes e produtos): o que ela mexesse nesse meio tempo era marcado como salvo.
@@ -706,7 +753,7 @@ export default function EditarPedido() {
         }
       }
       // Tenta salvar com as colunas novas (motivo/mostrar)
-      const payloadCompleto: any = {
+      const payloadCompleto: Record<string, unknown> = {
         status: 'cancelado',
         motivo_cancelamento: motivoLimpo || null,
         mostrar_motivo_ao_cliente: motivoLimpo ? mostrarMotivoCliente : false,
@@ -742,7 +789,7 @@ export default function EditarPedido() {
       await new Promise(r => window.setTimeout(r, 60))
       await historicoAssentado()
       navigate('/pedidos', { replace: true })
-    } catch (err: any) {
+    } catch (err: unknown) {
       avisarJanela('Não foi possível cancelar', explicarErro(err, 'Algo deu errado. Tente de novo em instantes.'), 'erro')
       setCancelando(false)
     }
@@ -813,11 +860,11 @@ export default function EditarPedido() {
     // receber, estornar ou finalizar); antes saía da situação de quando a tela abriu
     const pagoPdf = recebidoAtual > 0.009
       ? (faltaReceber <= 0.009 ? 'pago' : 'parcial')
-      : ((pedido as any).status_pagamento === 'pago' && total <= 0.009 ? 'pago' : 'pendente') // pedido de valor zero já marcado como pago
+      : (pedido.status_pagamento === 'pago' && total <= 0.009 ? 'pago' : 'pendente') // pedido de valor zero já marcado como pago
     await gerarPedidoPDF({
       id: pedido.id,
       numero: pedido.numero,
-      retirado_por: (pedido as any).retirado_por || null,
+      retirado_por: pedido.retirado_por || null,
       cliente_nome: clienteNome,
       cliente_telefone: clienteTelefone,
       status: statusPedido,
@@ -841,7 +888,7 @@ export default function EditarPedido() {
       observacoes: pedido.observacoes,
       data_prevista_pagamento: faltaReceber > 0.009 ? (dataPrevistaPagamento || null) : null,
       origem: pedido.origem,
-      cupom_codigo: (pedido as any).cupom_codigo,
+      cupom_codigo: pedido.cupom_codigo,
       created_at: pedido.created_at,
       pedido_itens: itens.map(it => ({ ...it, forma_venda: produtos.find(x => x.id === it.produto_id)?.forma_venda || null })),
     })
@@ -866,12 +913,12 @@ export default function EditarPedido() {
       }
 
       // (17/10 · R09) o pedido mudou em outro aparelho depois que esta tela abriu: pergunta antes de salvar por cima
-      const versaoAberta = (pedido as any)?.updated_at
+      const versaoAberta = pedido?.updated_at
       if (versaoAberta && pedido?.id) {
         const { data: agora } = await supabase.from('pedidos').select('updated_at, status').eq('id', pedido.id).maybeSingle()
-        const versaoAgora = (agora as any)?.updated_at
+        const versaoAgora = agora?.updated_at
         if (versaoAgora && new Date(versaoAgora).getTime() !== new Date(versaoAberta).getTime()) {
-          const label = (STATUS_CONFIG[(agora as any).status] || {}).label || (agora as any).status
+          const label = (STATUS_CONFIG[agora.status] || {}).label || agora.status
           const seguir = await confirmar({
             titulo: 'Este pedido mudou em outro aparelho',
             texto: `Depois que você abriu, alguém alterou o pedido (agora está "${label}"). Salvar vai trocar pelo que está nesta tela.`,
@@ -921,7 +968,7 @@ export default function EditarPedido() {
       const statusMudou = statusAntigo && statusAntigo !== statusPedido
 
       // Payload completo (com acrescimo — se coluna não existir, cai no fallback abaixo)
-      const payloadCompleto: any = {
+      const payloadCompleto: Record<string, unknown> = {
         cliente_id: clienteId,
         cliente_nome: clienteNome,
         cliente_telefone: clienteTelefone,
@@ -929,7 +976,7 @@ export default function EditarPedido() {
         ...(statusPag !== undefined ? { status_pagamento: statusPag, valor_recebido: valorRecebido } : {}),
         valor_total: total,
         valor_produtos: valorProdutos,
-        ...((pedido as any)?.cupom_codigo ? { cupom_desconto: descontoCupom } : {}), // o cupom cortado fica gravado, senão o desconto à parte sumia a cada salvar
+        ...(pedido?.cupom_codigo ? { cupom_desconto: descontoCupom } : {}), // o cupom cortado fica gravado, senão o desconto à parte sumia a cada salvar
         desconto: descontoEfetivo, // (11/10) o que foi descontado de verdade (o cupom não passa do valor dos itens)
         acrescimo: acrescimo,
         taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
@@ -961,7 +1008,7 @@ export default function EditarPedido() {
         setSalvando(false)
         return
       }
-      const idsAntigos: string[] = ((antigos as any[]) || []).map(x => x.id).filter(Boolean)
+      const idsAntigos: string[] = ((antigos as { id: string }[]) || []).map(x => x.id).filter(Boolean)
       let idsNovos: string[] = []
 
       if (itens.length > 0) {
@@ -973,19 +1020,19 @@ export default function EditarPedido() {
           valor_unitario: it.valor_unitario,
           observacoes: it.observacoes || '',
           imagem_url: it.imagem_url || null,
-          foto_referencia: (it as any).foto_referencia || null,
+          foto_referencia: it.foto_referencia || null,
           // ─── Snapshot Passo 0A ─────────────────────────────────────
           // EditarPedido preserva o snapshot original de cada item se existir,
           // e cria snapshot básico pra itens novos adicionados na edição
           // Mantém TUDO o que o item já tinha (kit, adicionais, foto de referência…); só completa o formato
-          personalizacoes: (it as any).personalizacoes && typeof (it as any).personalizacoes === 'object'
-            ? { ...criarPersonalizacoesV1((it as any).personalizacoes), ...(it as any).personalizacoes }
+          personalizacoes: it.personalizacoes && typeof it.personalizacoes === 'object'
+            ? { ...criarPersonalizacoesV1(it.personalizacoes), ...it.personalizacoes }
             : criarPersonalizacoesV1({}),
-          preco_breakdown: (it as any).preco_breakdown || criarBreakdownV1({ final: it.valor_unitario }),
-          snapshot_version: (it as any).snapshot_version || SNAPSHOT_VERSION_ATUAL,
+          preco_breakdown: it.preco_breakdown || criarBreakdownV1({ final: it.valor_unitario }),
+          snapshot_version: it.snapshot_version || SNAPSHOT_VERSION_ATUAL,
         }))
         const { data: novos, error: errIns } = await supabase.from('pedido_itens').insert(itensInsert).select('id')
-        idsNovos = ((novos as any[]) || []).map(x => x.id).filter(Boolean)
+        idsNovos = ((novos as { id: string }[]) || []).map(x => x.id).filter(Boolean)
         if (errIns) {
           avisarJanela('Não foi possível salvar', explicarErro(errIns, 'Nada foi alterado. Tente de novo em instantes.'), 'erro')
           setSalvando(false)
@@ -1063,7 +1110,7 @@ export default function EditarPedido() {
       setRecarga(x => x + 1)
       avisar('Alterações salvas.')
       setTimeout(() => setSalvouOk(false), 1800)
-    } catch (err: any) {
+    } catch (err: unknown) {
       avisarJanela('Não foi possível salvar', explicarErro(err, 'Algo deu errado. Tente de novo em instantes.'), 'erro')
       setSalvando(false)
     }
@@ -1087,7 +1134,7 @@ export default function EditarPedido() {
   // 4.03: item vendido por kg anda de 0,5 em 0,5 e aceita meio quilo (antes arredondava 1,5 kg pra 1)
   // (11/10) só o PESO LIVRE (lib/itemPedido). Bolo por kg com tamanho escolhido ("M · 2 kg") ou kit conta em unidades:
   // passo 1, mínimo 1. Antes aparecia como "1 kg" e o "+" somava meio quilo.
-  const porKg = (it: { produto_id?: string | null; personalizacoes?: any }) => pesoLivre(it, produtos.find(x => x.id === it.produto_id)?.forma_venda)
+  const porKg = (it: { produto_id?: string | null; personalizacoes?: unknown }) => pesoLivre(it, produtos.find(x => x.id === it.produto_id)?.forma_venda)
   const updateQtd = (idx: number, delta: number) => {
     setItens(prev => prev.map((it, i) => {
       if (i !== idx) return it
@@ -1120,11 +1167,11 @@ export default function EditarPedido() {
     if (!snapshotRef.current) return true
     try { return JSON.stringify(JSON.parse(snapshotRef.current).itens) === JSON.stringify(itens.map(it => [it.produto_id || it.nome_produto, it.quantidade, it.valor_unitario, it.observacoes || ''])) } catch { return false }
   })()
-  const subtotalGravado = (pedido as any)?.valor_produtos != null ? r2((pedido as any).valor_produtos) : null
+  const subtotalGravado = pedido?.valor_produtos != null ? r2(pedido.valor_produtos) : null
   const subtotalItens = itensIguaisAFoto && subtotalGravado != null ? subtotalGravado : somarReais(itens.map(valorDaLinha))
   // (11/10) o cupom do cardápio fica guardado em reais: ao tirar itens, ele não pode passar do valor dos itens
   // (cupom de R$ 30 em R$ 24 de itens comia R$ 6 do frete). O desconto dado à parte continua inteiro.
-  const cupomGravado = (pedido as any)?.cupom_codigo ? r2(Math.min(Number((pedido as any)?.cupom_desconto) || 0, desconto)) : 0
+  const cupomGravado = pedido?.cupom_codigo ? r2(Math.min(Number(pedido?.cupom_desconto) || 0, desconto)) : 0
   // só corta o cupom quando ela diminuiu os itens nesta edição (pedido antigo gravado com cupom maior abre igual ao banco)
   const tetoCupom = subtotalGravado != null && subtotalItens < subtotalGravado ? subtotalItens : cupomGravado
   const descontoEfetivo = r2(desconto - cupomGravado + Math.min(cupomGravado, tetoCupom))
@@ -1146,14 +1193,14 @@ export default function EditarPedido() {
   // (11/10) r2 agora é o de lib/moeda (um só pro app)
   const pagAtivos = pagamentos.filter(g => !g.estornado_em)
   // se a lista de recebimentos não carregou (internet), vale o recebido que está no pedido
-  const recebidoAtual = pagamentosOk && !pagamentosFalhou ? r2(pagAtivos.reduce((s, g) => s + (Number(g.valor) || 0), 0)) : (pedido ? valorRecebidoPedido(pedido as any) : 0)
+  const recebidoAtual = pagamentosOk && !pagamentosFalhou ? r2(pagAtivos.reduce((s, g) => s + (Number(g.valor) || 0), 0)) : (pedido ? valorRecebidoPedido(pedido) : 0)
   const faltaReceber = Math.max(0, r2(total - recebidoAtual))
   // (11/10) recebido maior que o total (tirou um item ou deu desconto depois de pago): antes a tela dizia só "Pedido pago"
   const recebidoAMais = statusPedido !== 'cancelado' ? Math.max(0, r2(recebidoAtual - total)) : 0
   // Conta de cada item (03/10): preço do produto + adicionais − promoção = valor do item.
   // Vem do preco_breakdown gravado; se não fechar com o valor (item antigo ou editado), mostra só o valor.
-  function contaDoItem(it: any) {
-    const bd = it.preco_breakdown || {}
+  function contaDoItem(it: PedidoItem) {
+    const bd: Partial<PrecoBreakdownV1> = it.preco_breakdown || {}
     const base = Number(bd.base_efetivo ?? bd.preco_base_original) || 0
     const adicionais = Number(bd.adicionais_total) || 0
     const desconto = Number(bd.desconto) || 0
@@ -1169,11 +1216,11 @@ export default function EditarPedido() {
 
   // forma de venda do item (kg, cento…) vem do produto cadastrado: "Bolo red velvet 1,5 kg" em vez de "1,5x"
   // (11/10) kg só no peso livre; com tamanho ou kit o item conta em unidades ("1x Bolo red velvet")
-  const formaDoItem = (it: { produto_id?: string | null; personalizacoes?: any }) => {
+  const formaDoItem = (it: { produto_id?: string | null; personalizacoes?: unknown }) => {
     const forma = produtos.find(x => x.id === it.produto_id)?.forma_venda || null
     return forma === 'kg' && !pesoLivre(it, forma) ? null : forma
   }
-  const porUnidade = (it: any, eKit: boolean) => { const f = formaDoItem(it); return eKit ? 'por kit' : f === 'kg' ? 'o kg' : f === 'cento' ? 'o cento' : f === 'fatia' ? 'a fatia' : 'cada' }
+  const porUnidade = (it: { produto_id?: string | null; personalizacoes?: unknown }, eKit: boolean) => { const f = formaDoItem(it); return eKit ? 'por kit' : f === 'kg' ? 'o kg' : f === 'cento' ? 'o cento' : f === 'fatia' ? 'a fatia' : 'cada' }
 
   // ── Etapas do pedido ───────────────────────────────────────────────────
   // Etapas dinâmicas (03/10): mudam com o tipo (entrega/retirada) e com o status
@@ -1213,7 +1260,7 @@ export default function EditarPedido() {
   const atualizarVersao = async () => {
     if (!pedido) return
     const { data } = await supabase.from('pedidos').select('updated_at').eq('id', pedido.id).maybeSingle()
-    if (data) setPedido(p => p ? ({ ...p, updated_at: (data as any).updated_at } as any) : p)
+    if (data) setPedido(p => p ? { ...p, updated_at: data.updated_at } : p)
   }
   const salvarRecado = async () => {
     if (!pedido || salvandoRecado) return
@@ -1222,7 +1269,7 @@ export default function EditarPedido() {
     const { error } = await supabase.from('pedidos').update({ observacoes: limpo || null }).eq('id', pedido.id)
     setSalvandoRecado(false)
     if (error) { avisarJanela('Não foi possível salvar o recado', explicarErro(error, 'Tente de novo em instantes.'), 'erro'); return }
-    setPedido(p => p ? ({ ...p, observacoes: limpo || undefined } as any) : p)
+    setPedido(p => p ? { ...p, observacoes: limpo || undefined } : p)
     void atualizarVersao()
     setRecadoAberto(false)
   }
@@ -1232,7 +1279,7 @@ export default function EditarPedido() {
     const { error } = await supabase.from('pedidos').update({ retirado_por: limpo || null }).eq('id', pedido.id)
     if (error && faltaNoBanco(error)) { console.warn('retirado_por ainda não existe no banco (rode o SQL)', error.message); return 'sem-coluna' }
     if (error) { console.error('[Doonly] quem retirou', error); return 'erro' }
-    setPedido(p => p ? ({ ...p, retirado_por: limpo || null } as any) : p)
+    setPedido(p => p ? { ...p, retirado_por: limpo || null } : p)
     void atualizarVersao()
     if (limpo) supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: 'Retirado por', descricao: limpo }).then(() => {}, () => {})
     return 'ok'
@@ -1245,7 +1292,7 @@ export default function EditarPedido() {
       const nome = nomeForcado ?? quemRetirou
       setRetiradaAberta(false)
       // "Pular" sem nome e sem nome gravado antes: não há o que salvar
-      const nadaASalvar = !nome.trim() && !(pedido as any)?.retirado_por
+      const nadaASalvar = !nome.trim() && !pedido?.retirado_por
       const r = nadaASalvar ? 'ok' : await salvarQuemRetirou(nome)
       if (r === 'erro') { avisarJanela('Não deu para salvar quem retirou', 'Confira a internet e tente de novo.', 'erro'); return }
       if (depoisRetirada === 'etapa') {
@@ -1262,7 +1309,7 @@ export default function EditarPedido() {
     if (!pedido || novo === statusPedido || mudandoEtapaRef.current) return
     if (alteracoes > 0) { avisarJanela('Salve antes de mudar a etapa', 'Você tem alterações não salvas. Salve ou descarte antes de mudar a etapa do pedido.', 'info'); return }
     if (novo === 'entregue' && faltaReceber > 0.009) { setFinalizarAberto(true); return }
-    if (novo === 'entregue' && tipoEntrega === 'retirada' && !pularRetirada) { setQuemRetirou((pedido as any).retirado_por || ''); setDepoisRetirada('etapa'); setRetiradaAberta(true); return }
+    if (novo === 'entregue' && tipoEntrega === 'retirada' && !pularRetirada) { setQuemRetirou(pedido.retirado_por || ''); setDepoisRetirada('etapa'); setRetiradaAberta(true); return }
     mudandoEtapaRef.current = true; setMudandoEtapa(true)
     try {
       const { error } = await supabase.from('pedidos').update({ status: novo }).eq('id', pedido.id)
@@ -1295,7 +1342,7 @@ export default function EditarPedido() {
     return false
   }
   const abrirReceber = () => { if (semAlteracoesPendentes('registrar o recebimento')) setReceberAberto(true) }
-  const estornarPagamento = async (g: any) => {
+  const estornarPagamento = async (g: PagamentoLinha) => {
     if (!semAlteracoesPendentes('estornar')) return
     const ok = await confirmarJanela({ titulo: `Estornar ${formatMoney(Number(g.valor) || 0)}?`, texto: 'Use quando o recebimento foi lançado errado. O valor sai do caixa e volta a faltar neste pedido. Ele continua no histórico, riscado.', icone: 'estorno', rotuloConfirmar: 'Estornar', perigo: true })
     if (!ok) return
@@ -1399,8 +1446,8 @@ export default function EditarPedido() {
             </div>
             {tipoEntrega === 'retirada' && statusPedido === 'entregue' && (
               <Linha rotulo="Retirado por">
-                {(pedido as any).retirado_por ? <>{(pedido as any).retirado_por}{' '}</> : null}
-                <button type="button" className="tpd-ret-bt" onClick={() => { setQuemRetirou((pedido as any).retirado_por || ''); setDepoisRetirada('editar'); setRetiradaAberta(true) }}>{(pedido as any).retirado_por ? 'Mudar' : 'Informar'}</button>
+                {pedido.retirado_por ? <>{pedido.retirado_por}{' '}</> : null}
+                <button type="button" className="tpd-ret-bt" onClick={() => { setQuemRetirou(pedido.retirado_por || ''); setDepoisRetirada('editar'); setRetiradaAberta(true) }}>{pedido.retirado_por ? 'Mudar' : 'Informar'}</button>
               </Linha>
             )}
             {atrasadoHoje && <p className="tpd-aviso atr">A data de entrega já passou.</p>}
@@ -1428,7 +1475,7 @@ export default function EditarPedido() {
 
       {/* abas: só no celular */}
       <div className="tpd-abas" role="tablist" aria-label="Partes do pedido">
-        {([['itens', 'Itens', Cake], ['entrega', tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada', tipoEntrega === 'entrega' ? Truck : Storefront], ['pagamento', 'Pagamento', CreditCard]] as [Tab, string, any][]).map(([k, l, Ic]) => (
+        {([['itens', 'Itens', Cake], ['entrega', tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada', tipoEntrega === 'entrega' ? Truck : Storefront], ['pagamento', 'Pagamento', CreditCard]] as [Tab, string, Icon][]).map(([k, l, Ic]) => (
           <button key={k} type="button" role="tab" aria-selected={tab === k} className="tpd-aba" onClick={() => setTab(k)}><Ic size={20} weight={tab === k ? 'fill' : 'bold'} aria-hidden="true" /><span>{l}</span></button>
         ))}
       </div>
@@ -1449,20 +1496,20 @@ export default function EditarPedido() {
               <Titulo contagem={itens.length} acao={<Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setModalProduto(true)}><span className="tpd-add-g">Adicionar item</span><span className="tpd-add-c">Adicionar</span></Botao>}>Itens do pedido</Titulo>
               {itens.length === 0 ? <p className="tpd-vz">Nenhum item ainda: use o Adicionar item.</p> : (
                 <ul className="tpd-itens">
-                  {itens.map((it: any, idx) => {
-                    const p = it.personalizacoes || {}
-                    const extras: any[] = Array.isArray(p.extras) ? p.extras : []
-                    const sabores: any[] = p.kit?.sabores || []
+                  {itens.map((it: PedidoItem, idx) => {
+                    const p: PersonalizacoesItem = it.personalizacoes || {}
+                    const extras: ExtraEscolhido[] = Array.isArray(p.extras) ? p.extras : []
+                    const sabores: { nome: string; qtd: number }[] = p.kit?.sabores || []
                     const eKit = !!p.kit?.total
                     const q = it.quantidade || 1
                     const campos: [string, string][] = []
                     if (p.tamanho?.nome) campos.push(['Tamanho', `${p.tamanho.nome}${p.tamanho.peso_kg && !/kg/i.test(p.tamanho.nome) ? ` (${String(p.tamanho.peso_kg).replace('.', ',')} kg)` : ''}`])
                     if (p.massa?.nome) campos.push(['Massa', p.massa.nome])
                     if (p.sabor?.nome) campos.push(['Sabor', p.sabor.nome])
-                    if (Array.isArray(p.recheios) && p.recheios.length) campos.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: any) => r.nome).join(', ')])
+                    if (Array.isArray(p.recheios) && p.recheios.length) campos.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: { nome: string }) => r.nome).join(', ')])
                     if (p.cobertura?.nome) campos.push(['Cobertura', p.cobertura.nome])
                     if (sabores.length) campos.push(['Sabores', textoSaboresKit(sabores)])
-                    if (extras.length) campos.push(['Adicionais', extras.map((e: any) => nomeExtra(e)).join(', ')])
+                    if (extras.length) campos.push(['Adicionais', extras.map((e: ExtraEscolhido) => nomeExtra(e)).join(', ')])
                     const obs = (it.observacoes || '').trim()
                     const foto = fotoDoItem(it)
                     const fotoRef: string = it.foto_referencia || p.foto_referencia || ''
@@ -1613,10 +1660,10 @@ export default function EditarPedido() {
           <div className="ep2-card">
             <Titulo>Valores</Titulo>
             {/* cada item com o seu valor e de onde ele vem (produto, adicionais, promoção) — a aba Itens não tem valores */}
-            {itens.map((it: any, idx) => {
+            {itens.map((it: PedidoItem, idx) => {
               const c = contaDoItem(it), q = it.quantidade || 1
               const eKit = !!it.personalizacoes?.kit?.total
-              const extras: any[] = Array.isArray(it.personalizacoes?.extras) ? it.personalizacoes.extras : []
+              const extras: ExtraEscolhido[] = Array.isArray(it.personalizacoes?.extras) ? it.personalizacoes.extras : []
               const origem: string[] = []
               if (!c.fecha && q !== 1) origem.push(`${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}`)
               return (
@@ -1635,12 +1682,12 @@ export default function EditarPedido() {
             <div className="ep2-ln ep3-pv-itens"><span>Itens</span><b>{formatMoney(subtotalItens)}</b></div>
             {tipoEntrega === 'entrega' && <div className="ep2-ln"><span>Taxa de entrega</span><b>{formatMoney(taxaEntrega)}</b></div>}
             {/* cupom do cardápio separado do desconto dado à parte (03/10) */}
-            {descontoCupom > 0 && <div className="ep2-ln promo"><span>Cupom {String((pedido as any)?.cupom_codigo || '').toUpperCase()}</span><b>− {formatMoney(descontoCupom)}</b></div>}
+            {descontoCupom > 0 && <div className="ep2-ln promo"><span>Cupom {String(pedido?.cupom_codigo || '').toUpperCase()}</span><b>− {formatMoney(descontoCupom)}</b></div>}
             {descontoManual > 0 && <div className="ep2-ln neg"><span>Desconto</span><b>− {formatMoney(descontoManual)}</b></div>}
             {acrescimo > 0 && <div className="ep2-ln"><span>Acréscimo</span><b>+ {formatMoney(acrescimo)}</b></div>}
             <div className="ep2-ln tt"><span>Total do pedido</span><b>{formatMoney(total)}</b></div>
             {[...ajustesHist, ...ajustesPendentes.map(a => ({ ...a, pendente: true }))].length > 0 && (
-              <div className="ep2-ajs">{[...ajustesHist, ...ajustesPendentes.map(a => ({ ...a, pendente: true }))].map((a: any, i) => (
+              <div className="ep2-ajs">{[...ajustesHist, ...ajustesPendentes.map(a => ({ ...a, pendente: true }))].map((a: AjusteLinha & { pendente?: boolean }, i) => (
                 <span key={i}>{a.tipo === 'desconto' ? 'Desconto' : 'Acréscimo'} de {formatMoney(Number(a.valor) || 0)}{a.motivo ? ` · ${a.motivo}` : ''}{a.pendente ? ' (ainda não salvo)' : ''}</span>
               ))}</div>
             )}
@@ -1650,7 +1697,7 @@ export default function EditarPedido() {
           <div className="ep2-card">
             <Titulo>Pagamentos</Titulo>
             {(() => {
-              const px = pixDoPedido(pedido as any)
+              const px = pixDoPedido(pedido as PedidoTexto)
               if (!px) return null
               return px.estado === 'conferir'
                 ? <div className="ep2-pix"><p><b>{px.tipo === 'sinal' ? 'Sinal no Pix a conferir' : 'Pix a conferir'}</b><b>{formatMoney(px.valor)}</b></p><small>Confira no app do banco e confirme.</small><Botao tamanho="m" cheio carregando={confirmandoPix} onClick={confirmarPixDoCardapio}>Confirmar Pix</Botao></div>
@@ -1713,8 +1760,8 @@ export default function EditarPedido() {
       {produtoOpcoes && (
         <CartProvider>
           <ProductModal isOpen product={produtoOpcoes} onClose={() => setProdutoOpcoes(null)} corBotao="#E85A8C" rotuloAdicionar="Adicionar ao pedido"
-            onAdicionar={(item: any) => {
-              setItens(prev => [...prev, { ...itemDoCarrinhoParaPedido(item), observacoes: item.observations || '', imagem_url: produtoOpcoes.imagem_url || null } as any])
+            onAdicionar={(item: ItemDoCarrinho) => {
+              setItens(prev => [...prev, { ...itemDoCarrinhoParaPedido(item), observacoes: item.observations || '', imagem_url: produtoOpcoes.imagem_url || null } as PedidoItem])
               setProdutoOpcoes(null); avisar(`${produtoOpcoes.nome} adicionado.`)
             }} />
         </CartProvider>
@@ -1767,10 +1814,10 @@ export default function EditarPedido() {
 
       {receberAberto && pedido && <ReceberSheet item={{
         id: pedido.id, numero: pedido.numero ?? null, cliente_nome: clienteNome, valor_total: total, valor_recebido: recebidoAtual,
-        status: statusPedido, status_pagamento: (pedido as any).status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento,
+        status: statusPedido, status_pagamento: pedido.status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento,
         data_entrega: dataEntrega, horario_entrega: horarioEntrega, data_prevista_pagamento: dataPrevistaPagamento || null,
         total, recebido: recebidoAtual, falta: faltaReceber, dataRef: null, dias: null,
-      } as any} onClose={() => setReceberAberto(false)} onFeito={async (msg) => { setReceberAberto(false); await recarregarDinheiro(); avisar(msg) }} />}
+      } as React.ComponentProps<typeof ReceberSheet>['item']} onClose={() => setReceberAberto(false)} onFeito={async (msg) => { setReceberAberto(false); await recarregarDinheiro(); avisar(msg) }} />}
 
       <Janela aberta={recadoAberto} aoFechar={() => setRecadoAberto(false)} tipo="conteudo" titulo="Recado do cliente"
         acoes={<><Botao variante="secundario" onClick={() => setRecadoAberto(false)}>Cancelar</Botao><Botao carregando={salvandoRecado} onClick={salvarRecado}>Salvar</Botao></>}>
@@ -1785,7 +1832,7 @@ export default function EditarPedido() {
       </Janela>
       {finalizarAberto && pedido && <FinalizarPedidoSheet
         pedido={{ id: pedido.id, numero: pedido.numero ?? null, cliente_nome: clienteNome, status: statusPedido, valor_total: total, valor_recebido: recebidoAtual,
-          status_pagamento: (pedido as any).status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento }}
+          status_pagamento: pedido.status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento }}
         novoStatus="entregue" novoStatusLabel="Entregue"
         onCancelar={() => setFinalizarAberto(false)}
         onParcial={() => { recarregarDinheiro() }}
@@ -1927,7 +1974,7 @@ export default function EditarPedido() {
                   return (
                     <li key={passo} className={`${feito ? 'feito' : ''}${atual ? ' atual' : ''}`} aria-current={atual ? 'step' : undefined}>
                       <i aria-hidden="true">{feito && <Check size={14} weight="bold" />}</i>
-                      <span><b>{NOME_PASSO[passo] || passo}</b>{d ? <small>{quando(d)}</small> : atual ? <small>Situação de agora</small> : feito ? <small>Sem horário registrado</small> : null}{passo === 'entregue' && tipoEntrega === 'retirada' && (pedido as any)?.retirado_por && <small>Retirado por {(pedido as any).retirado_por}</small>}</span>
+                      <span><b>{NOME_PASSO[passo] || passo}</b>{d ? <small>{quando(d)}</small> : atual ? <small>Situação de agora</small> : feito ? <small>Sem horário registrado</small> : null}{passo === 'entregue' && tipoEntrega === 'retirada' && pedido?.retirado_por && <small>Retirado por {pedido.retirado_por}</small>}</span>
                     </li>
                   )
                 })}

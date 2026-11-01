@@ -1,6 +1,7 @@
 import { SeloVerificado } from './SeloVerificado'
 import { useState } from 'react'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
+import type { Configuracoes } from '@/types/database'
 
 interface LogoProps {
   logoUrl?: string
@@ -11,7 +12,7 @@ interface LogoProps {
   storeDescription?: string
   corNome?: string
   avaliacaoMedia?: number
-  configuracoes?: any
+  configuracoes?: Configuracoes | null
   hideStars?: boolean
   /** (4.25) abre a janela Sobre a loja */
   aoAbrirSobre?: () => void
@@ -22,7 +23,7 @@ const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta",
 // (11/10) a situação vem de UMA conta só (lib/agendaCardapio), a mesma do Modelo 1 e da Visão geral.
 // Antes este selo usava a abertura dos dias úteis no sábado e no domingo ("Abre hoje às 08:00" com a loja abrindo às 09:00)
 // e escrevia "Fechado · Fechado" quando a loja não abria em nenhum dia.
-function getStatusLoja(horarioJson: any): { aberto: boolean; msg?: string } | null {
+function getStatusLoja(horarioJson: unknown): { aberto: boolean; msg?: string } | null {
   const s = situacaoDaLoja(horarioJson)
   if (!s) return null
   if (s.aberto) return { aberto: true }

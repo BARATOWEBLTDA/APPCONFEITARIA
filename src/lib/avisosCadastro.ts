@@ -14,6 +14,13 @@ export type AvisoCadastro = {
   nivel: "urgente" | "atencao" | "normal"; curto: { t: string; s: string };
 };
 
+/** O que os avisos leem do perfil da loja */
+type PerfilAvisos = {
+  formas_pagamento?: string[] | null; formas_entrega?: string[] | null; entrega_modo?: string | null; valor_entrega_propria?: number | null;
+  entrega_por_bairro?: unknown[] | null; caixa_inicio_em?: string | null; banner_url?: string | null; banner1_url?: string | null; banner_topo_url?: string | null;
+};
+type ProdutoAvisos = { id: string; descricao: string | null; produto_insumos: { id: string }[] | null };
+
 const diaISO = (somar = 0) => { const d = new Date(); d.setDate(d.getDate() + somar); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 
 export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
@@ -27,7 +34,7 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
   ]);
   const l: AvisoCadastro[] = [];
   // contas primeiro (são as mais urgentes): atrasada, hoje, amanhã. A chave muda com a situação, pra avisar de novo quando vira "hoje"
-  if (!contas.error) for (const c of (contas.data as any[]) || []) {
+  if (!contas.error) for (const c of (contas.data as { id: string; descricao: string | null; vencimento: string | null; valor: number | null }[]) || []) {
     const v = String(c.vencimento || "").slice(0, 10);
     const sit = v < diaISO(0) ? "atrasada" : v === diaISO(0) ? "hoje" : "amanha";
     l.push({ chave: sit === "amanha" ? `conta_vence_${c.id}` : `conta_${sit}_${c.id}`, icone: "conta",
@@ -38,8 +45,8 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
   }
   // (16/10) custos fixos e taxa da maquininha ficam na mesma tela: viram um aviso só ("Custos e taxas")
   const faltaFixos = !fixos.error && (fixos.data || []).length === 0;
-  const vendeCartao = !perfil.error && ((perfil.data as any)?.formas_pagamento || []).some((f: string) => f === "credito" || f === "debito");
-  const temTaxa = ((variaveis.data as any[]) || []).some(v => v.forma || /maquin/i.test(String(v.nome || "")));
+  const vendeCartao = !perfil.error && ((perfil.data as PerfilAvisos | null)?.formas_pagamento || []).some((f: string) => f === "credito" || f === "debito");
+  const temTaxa = ((variaveis.data as { forma?: string | null; nome?: string | null }[]) || []).some(v => v.forma || /maquin/i.test(String(v.nome || "")));
   const faltaTaxa = vendeCartao && !variaveis.error && !temTaxa;
   if (faltaFixos || faltaTaxa) {
     const s = faltaFixos && faltaTaxa ? "Aluguel, luz e a maquininha" : faltaFixos ? "Aluguel, luz, internet" : "Para ver o lucro de cada venda";
@@ -47,13 +54,13 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
       texto: faltaFixos && faltaTaxa ? "Aluguel, luz e a taxa da maquininha entram no custo de cada produto." : faltaFixos ? "Aluguel, luz e internet entram no custo. Sem eles, o lucro parece maior." : "A taxa muda no débito e no crédito. Cadastre para ver o lucro de cada venda.", link: "/custos", estado: { abrir: faltaFixos ? "fixo" : "maquininha" }, nivel: "normal",
       curto: { t: faltaFixos ? "Custos e taxas" : "Taxa da maquininha", s } });
   }
-  const semFicha = !produtos.error ? ((produtos.data as any[]) || []).filter(p => !(p.produto_insumos || []).length).length : 0;
+  const semFicha = !produtos.error ? ((produtos.data as ProdutoAvisos[]) || []).filter(p => !(p.produto_insumos || []).length).length : 0;
   if (semFicha > 0)
     l.push({ chave: "falta_ficha_tecnica", icone: "ficha", titulo: semFicha === 1 ? "1 produto sem ficha técnica" : `${semFicha} produtos sem ficha técnica`, texto: "Monte a receita de cada produto para saber o custo e o lucro de verdade.", link: "/ficha-tecnica", estado: { abrir: "sem-ficha" }, nivel: "normal", curto: { t: `${semFicha} sem ficha técnica`, s: "Para saber o custo de verdade" } });
-  if (!perfil.error && perfil.data && (perfil.data as any).caixa_inicio_em == null)
+  if (!perfil.error && perfil.data && (perfil.data as PerfilAvisos).caixa_inicio_em == null)
     l.push({ chave: "falta_saldo_caixa", icone: "caixa", titulo: "Informe o saldo do caixa", texto: "Diga quanto tem hoje na gaveta e no banco para o Financeiro bater certinho.", link: "/financeiro", estado: { abrir: "saldo" }, nivel: "normal", curto: { t: "Saldo do caixa", s: "Quanto tem hoje" } });
   // (16/10) o "Pra vender mais" do cardápio veio pra cá: taxa de entrega, descrição dos produtos e banner
-  const pf: any = !perfil.error ? perfil.data : null;
+  const pf: PerfilAvisos | null = !perfil.error ? perfil.data : null;
   if (pf) {
     const fe: string[] = Array.isArray(pf.formas_entrega) ? pf.formas_entrega : [];
     // (28/10) por raio ou por cidade já é uma taxa definida
@@ -61,7 +68,7 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
     if (semTaxa) l.push({ chave: "falta_taxa_entrega", icone: "entrega", titulo: "Defina a taxa de entrega", texto: "Sem a taxa, o cardápio mostra entrega grátis e o frete sai do seu bolso.",
       link: "/checkout-config", nivel: "atencao", curto: { t: "Taxa de entrega", s: "Sem ela, a entrega sai grátis" } });
   }
-  const semDesc = !produtos.error ? ((produtos.data as any[]) || []).filter(p => !String(p.descricao || "").trim()).length : 0;
+  const semDesc = !produtos.error ? ((produtos.data as ProdutoAvisos[]) || []).filter(p => !String(p.descricao || "").trim()).length : 0;
   if (semDesc > 0) l.push({ chave: "falta_descricao", icone: "descricao", semNotificar: true, titulo: semDesc === 1 ? "1 produto sem descrição" : `${semDesc} produtos sem descrição`,
     texto: "Conte o sabor, o tamanho e quantas pessoas serve. Ajuda a escolher.", link: "/produtos", nivel: "normal", curto: { t: `${semDesc} sem descrição`, s: "Sabor, tamanho e quantos serve" } });
   if (pf && !(pf.banner_url || pf.banner1_url || pf.banner_topo_url)) l.push({ chave: "falta_banner", icone: "banner", semNotificar: true, titulo: "Crie um banner de promoção",

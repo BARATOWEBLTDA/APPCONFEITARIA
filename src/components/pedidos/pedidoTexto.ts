@@ -11,7 +11,7 @@ export type PedidoItem = {
   nome_produto: string; quantidade: number; valor_unitario: number
   observacoes?: string
   imagem_url?: string | null
-  personalizacoes?: any
+  personalizacoes?: unknown
   produtos?: { imagem_url?: string | null; forma_venda?: string | null } | null
   forma_venda?: string | null
 }
@@ -145,13 +145,15 @@ export function atrasado(p: Pick<Pedido, 'data_entrega' | 'status'>): boolean {
 }
 
 // ── Quanto já entrou e quanto falta (Financeiro · Passo 0) ──
-export function recebidoPedido(p: any): number {
+/** O que as contas de dinheiro leem do pedido */
+type PedidoValores = { valor_total?: number | string | null; valor_recebido?: number | string | null; status?: string | null; status_pagamento?: string | null }
+export function recebidoPedido(p: PedidoValores | null | undefined): number {
   const total = Number(p?.valor_total) || 0
   if (p?.status_pagamento === 'pago') return total
   if (p?.status_pagamento === 'parcial') return Math.min(total, Number(p?.valor_recebido) || 0)
   return 0
 }
-export function saldoPedido(p: any): number {
+export function saldoPedido(p: PedidoValores | null | undefined): number {
   if (p?.status === 'cancelado' || p?.status_pagamento === 'estornado') return 0
   return Math.max(0, Math.round(((Number(p?.valor_total) || 0) - recebidoPedido(p)) * 100) / 100)
 }
@@ -233,22 +235,25 @@ export function itensOrdenados(p: Pedido): PedidoItem[] {
  * (11/10) Produto por kg só conta em kg quando é PESO LIVRE. Com tamanho escolhido ("M · 2 kg") ou kit,
  * a quantidade é de unidades: devolve null e o item sai como "1x Bolo red velvet · M (2 kg)", não "1 kg".
  */
-export const formaDoItem = (it: { forma_venda?: string | null; personalizacoes?: any; produtos?: { forma_venda?: string | null } | null }) => {
+export const formaDoItem = (it: { forma_venda?: string | null; personalizacoes?: unknown; produtos?: { forma_venda?: string | null } | null }) => {
   const forma = it.produtos?.forma_venda || it.forma_venda || null
   return forma === 'kg' && !pesoLivre(it, forma) ? null : forma
 }
 /** O tamanho escolhido no item, pra ir junto do nome: "M (2 kg)". Vazio quando o item não tem tamanho. */
-export function tamanhoDoItem(it: { personalizacoes?: any }): string {
-  let pers = it?.personalizacoes
-  if (typeof pers === 'string') { try { pers = JSON.parse(pers) } catch { pers = null } }
-  const t = pers?.tamanho ?? pers?.escolhas?.tamanho
+/** O tamanho como fica gravado nas personalizações (texto ou objeto, com ou sem "escolhas") */
+type TamanhoGravado = string | { nome?: string | null; peso_kg?: number | string | null } | null
+type PersTamanho = { tamanho?: TamanhoGravado; escolhas?: { tamanho?: TamanhoGravado } | null }
+export function tamanhoDoItem(it: { personalizacoes?: unknown }): string {
+  let pers = it?.personalizacoes as PersTamanho | string | null
+  if (typeof pers === 'string') { try { pers = JSON.parse(pers) as PersTamanho } catch { pers = null } }
+  const t = (pers as PersTamanho)?.tamanho ?? (pers as PersTamanho)?.escolhas?.tamanho
   const nome = String((typeof t === 'string' ? t : t?.nome) || '').trim()
   if (!nome) return ''
-  const peso = Number(t?.peso_kg) || 0
+  const peso = Number((t as { peso_kg?: number | string | null })?.peso_kg) || 0
   return peso > 0 && !/kg/i.test(nome) ? `${nome} (${numeroBR(peso)} kg)` : nome
 }
 /** Nome do item com o tamanho: "Bolo red velvet · M (2 kg)" */
-export function nomeDoItem(it: { nome_produto?: string | null; personalizacoes?: any }): string {
+export function nomeDoItem(it: { nome_produto?: string | null; personalizacoes?: unknown }): string {
   const nome = nomeDeProduto(it?.nome_produto || ''), tam = tamanhoDoItem(it)
   return tam ? `${nome} · ${tam}` : nome
 }

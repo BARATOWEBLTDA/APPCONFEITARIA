@@ -6,7 +6,10 @@ import { CaretRight, Check, Crown, Receipt } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
-import { useProfile, refreshProfile } from "@/hooks/useProfile";
+import { useProfile, refreshProfile, type Profile } from "@/hooks/useProfile";
+
+/** O perfil com os dados da assinatura (Hotmart) */
+type PerfilAssinatura = (Profile & { assinatura_status?: string | null; assinatura_origem?: string | null; email?: string | null }) | null;
 import { BENEFICIOS } from "@/lib/beneficiosPro";
 import { voltarOuIr } from "@/lib/voltar"; // 11/10: seta de voltar que funciona com a tela aberta direto
 
@@ -39,23 +42,23 @@ export default function MinhaAssinatura() {
   useEffect(() => { if (conferido && !isPro) navigate("/assinar", { replace: true }); }, [conferido, isPro, navigate]);
 
   // (21/10) "Assinante desde": a data gravada quando o PRO ligou (profiles.pro_desde); a conquista fica só de reserva
-  const proDesde = (profile as any)?.pro_desde ? new Date((profile as any).pro_desde) : null;
+  const proDesde = profile?.pro_desde ? new Date(profile.pro_desde) : null;
   useEffect(() => {
     if (!profile?.id || proDesde) return;
     supabase.from("conquistas_usuario").select("conquistada_em").eq("user_id", profile.id).eq("codigo", "pro").maybeSingle()
-      .then(({ data }) => { if ((data as any)?.conquistada_em) setDesde(new Date((data as any).conquistada_em)); });
+      .then(({ data }) => { if ((data as { conquistada_em?: string | null } | null)?.conquistada_em) setDesde(new Date((data as { conquistada_em: string }).conquistada_em)); });
   }, [profile?.id, !!proDesde]); // eslint-disable-line react-hooks/exhaustive-deps
   const assinanteDesde = proDesde || desde;
 
   // (31/10 · 5.97) nos 7 dias grátis: selo "Teste grátis" e a 1ª cobrança no lugar da próxima (o webhook grava "teste")
-  const emTeste = (profile as any)?.assinatura_status === "teste";
+  const emTeste = (profile as PerfilAssinatura)?.assinatura_status === "teste";
   // o webhook guarda o PRO até a cobrança + uma folga (3 dias; 1 no teste): a data da cobrança é sem a folga
-  const folga = (profile as any)?.assinatura_origem === "hotmart" ? (emTeste ? 1 : 3) : 0;
+  const folga = (profile as PerfilAssinatura)?.assinatura_origem === "hotmart" ? (emTeste ? 1 : 3) : 0;
   const cobranca = proExpiraEm ? new Date(proExpiraEm.getTime() - folga * 86400000) : null;
   const dias = cobranca ? Math.max(0, Math.ceil((cobranca.getTime() - Date.now()) / 86400000)) : null;
   const whats = () => {
-    const quem = [profile?.nome, (profile as any)?.nome_loja].filter(Boolean).join(" · ");
-    const msg = `Olá! Tenho uma dúvida sobre a minha assinatura do Doonly PRO.${quem ? `\nNome: ${quem}` : ""}${(profile as any)?.email ? `\nE-mail da conta: ${(profile as any).email}` : ""}`;
+    const quem = [profile?.nome, profile?.nome_loja].filter(Boolean).join(" · ");
+    const msg = `Olá! Tenho uma dúvida sobre a minha assinatura do Doonly PRO.${quem ? `\nNome: ${quem}` : ""}${(profile as PerfilAssinatura)?.email ? `\nE-mail da conta: ${(profile as PerfilAssinatura).email}` : ""}`;
     window.open(`https://wa.me/${WHATSAPP_EQUIPE}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 

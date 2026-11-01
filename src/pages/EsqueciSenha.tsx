@@ -66,8 +66,8 @@ export default function EsqueciSenha() {
       if (resetError) throw resetError;
       setSent(true);
       setFalta(ESPERA);
-    } catch (err: any) {
-      const msg = err?.message || "";
+    } catch (err) {
+      const msg = (err as Error)?.message || "";
       if (/rate limit|too many/i.test(msg)) {
         setError("Muitos pedidos seguidos. Espere 1 minuto e tente de novo.");
       } else if (!navigator.onLine || /failed to fetch|network|load failed/i.test(msg)) {

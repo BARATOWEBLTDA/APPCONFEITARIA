@@ -213,7 +213,7 @@ export default function Layout() {
     <div className={`layout-root${recolhido ? " menu-recolhido" : ""}`} data-rota={location.pathname}>
       {/* (13/10) as telas do Cardápio digital agora têm abas na faixa rosa (AppPageHeader), não um 2º menu lateral */}
       {/* ── Sidebar Desktop ── */}
-      <aside className="sidebar">
+      <aside className="sidebar" aria-label="Menu">
         {/* (13/10) topo do menu: a marca Doonly (branca) e o sino. A logo da loja fica no canto direito da faixa rosa. */}
         <div className="sb-topo">
           <button type="button" className="sb-marca" onClick={() => navigate("/inicio")} aria-label="Doonly, ir para o início">

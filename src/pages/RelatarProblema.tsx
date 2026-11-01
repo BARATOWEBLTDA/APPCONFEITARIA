@@ -8,6 +8,9 @@ import "./clientes.css";
 import "./ajuda.css";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
+
+/** Contato da conta (vem do perfil) */
+type PerfilContato = { telefone?: string | null; email?: string | null } | null;
 import { voltarOuIr } from "@/lib/voltar"; // 11/10: voltar que funciona com a tela aberta direto (antes o navigate(-1) não fazia nada)
 
 /** "Relatar um problema" (09/10): mesmo padrão do "Sugerir uma melhoria", com os componentes do app */
@@ -23,7 +26,7 @@ export default function RelatarProblema() {
   const [ok, setOk] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const pode = texto.trim().length >= 5 && !enviando;
-  const primeiroNome = String((profile as any)?.nome || "").trim().split(" ")[0];
+  const primeiroNome = String(profile?.nome || "").trim().split(" ")[0];
 
   const enviar = async () => {
     if (!pode) return;
@@ -32,9 +35,9 @@ export default function RelatarProblema() {
       const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase.from("sugestoes").insert({
         user_id: user?.id || null,
-        nome: (profile as any)?.nome || null,
-        telefone: (profile as any)?.telefone || null,
-        email: (profile as any)?.email || user?.email || null,
+        nome: profile?.nome || null,
+        telefone: (profile as PerfilContato)?.telefone || null,
+        email: (profile as PerfilContato)?.email || user?.email || null,
         tipo: "problema",
         titulo: `Problema${parte ? ` em ${parte}` : ""}`,
         descricao: texto.trim(),
@@ -45,7 +48,7 @@ export default function RelatarProblema() {
       });
       if (error) throw error;
       setOk(true);
-    } catch (e: any) {
+    } catch (e) {
       setErro("Não deu para enviar agora. Confira a internet e tente de novo.");
       console.error(e);
     } finally { setEnviando(false); }

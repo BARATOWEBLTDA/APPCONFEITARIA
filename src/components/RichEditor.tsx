@@ -1,4 +1,5 @@
 import { useEditor, EditorContent } from "@tiptap/react";
+import type { Content, JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Underline from "@tiptap/extension-underline";
@@ -20,8 +21,8 @@ import {
 } from "@phosphor-icons/react";
 
 interface Props {
-  content: any;
-  onChange: (json: any) => void;
+  content: Content;
+  onChange: (json: JSONContent) => void;
   onUpload?: (file: File, tipo: "imagem" | "audio" | "arquivo") => Promise<string | null>;
 }
 
@@ -54,12 +55,12 @@ const FileExtension = Image.extend({
       src: {
         default: null,
         parseHTML: (el: HTMLElement) => el.getAttribute("data-src") || el.getAttribute("src") || el.querySelector("a")?.getAttribute("href") || null,
-        renderHTML: (attrs: Record<string, any>) => (attrs.src ? { "data-src": attrs.src } : {}),
+        renderHTML: (attrs: Record<string, unknown>) => (attrs.src ? { "data-src": attrs.src } : {}),
       },
       filename: {
         default: "arquivo",
         parseHTML: (el: HTMLElement) => el.getAttribute("data-filename") || el.getAttribute("filename") || el.querySelector("a")?.getAttribute("download") || "arquivo",
-        renderHTML: (attrs: Record<string, any>) => ({ "data-filename": attrs.filename || "arquivo" }),
+        renderHTML: (attrs: Record<string, unknown>) => ({ "data-filename": attrs.filename || "arquivo" }),
       },
     };
   },
@@ -126,7 +127,7 @@ export default function RichEditor({ content, onChange }: Props) {
       if (error) throw error;
       const { data } = supabase.storage.from("noticias-anexos").getPublicUrl(fileName);
       return data.publicUrl;
-    } catch (err: any) {
+    } catch (err: unknown) {
       avisar(explicarErro(err, "Não deu para enviar o arquivo. Tente de novo."), { tipo: "erro" });
       return null;
     } finally {
@@ -381,7 +382,7 @@ export default function RichEditor({ content, onChange }: Props) {
 }
 
 // Sub-componentes
-function ToolBtn({ children, onClick, active, disabled, title }: any) {
+function ToolBtn({ children, onClick, active, disabled, title }: { children?: React.ReactNode; onClick?: () => void; active?: boolean; disabled?: boolean; title?: string }) {
   return (
     <button
       type="button"
@@ -400,7 +401,7 @@ function Sep() {
 }
 
 // Renderer read-only (usado na página de leitura)
-export function RichContent({ content }: { content: any }) {
+export function RichContent({ content }: { content: Content }) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ link: false, underline: false }),

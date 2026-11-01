@@ -58,12 +58,12 @@ export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mu
   }
 
   return (
-    <div ref={ref} className="pdq" role="list" style={{ gridTemplateColumns: `repeat(${colunas.length}, minmax(208px, 1fr))`, height: altura ?? undefined }}>
+    <div ref={ref} className="pdq" style={{ gridTemplateColumns: `repeat(${colunas.length}, minmax(208px, 1fr))`, height: altura ?? undefined }}>
       {colunas.map(col => {
         const lista = porColuna[col.chave] || []
         return (
           <section
-            key={col.chave} role="listitem" aria-label={col.nome}
+            key={col.chave} aria-label={col.nome}
             className={`pdq-col${sobre === col.chave ? ' sobre' : ''}`}
             onDragOver={e => { e.preventDefault(); if (sobre !== col.chave) setSobre(col.chave) }}
             onDragLeave={() => sobre === col.chave && setSobre(null)}

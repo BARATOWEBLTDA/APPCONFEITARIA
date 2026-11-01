@@ -4,6 +4,8 @@
  * valia a última que carregou (o pedido podia ir pra loja errada). Agora cada aba guarda a sua na memória.
  * O localStorage continua sendo gravado e fica só de reserva.
  */
+import type { Produto } from '@/types/database'
+
 export type LojaAtual = {
   userId: string
   whatsapp: string
@@ -35,6 +37,6 @@ export function lojaAtualCheckout(): Record<string, unknown> | null {
 }
 
 /* (21/10) Produtos da loja desta aba: a janela do produto usa pro "Peça também" (sem buscar de novo) */
-let produtosDaLoja: any[] = []
-export function definirProdutosDaLoja(lista: any[]) { produtosDaLoja = Array.isArray(lista) ? lista : [] }
-export const produtosDaLojaAtual = (): any[] => produtosDaLoja
+let produtosDaLoja: Produto[] = []
+export function definirProdutosDaLoja(lista: Produto[]) { produtosDaLoja = Array.isArray(lista) ? lista : [] }
+export const produtosDaLojaAtual = (): Produto[] => produtosDaLoja

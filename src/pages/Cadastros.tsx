@@ -3,7 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Basket, Cake, CaretRight, ChatCircleText, ClipboardText, ShoppingBag, SquaresFour, Stack, Storefront, Users, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_CADASTROS, TOUR_CADASTROS } from "@/lib/comoTelas";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, type Profile } from "@/hooks/useProfile";
+import type { Icon } from "@phosphor-icons/react";
+
+/** O perfil com o horário e a pausa da loja */
+type PerfilLoja = (Profile & { loja_pausada?: boolean | null; horario?: unknown }) | null;
 import { supabase } from "@/lib/supabase";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import "./cadastros.css";
@@ -39,7 +43,7 @@ export default function Cadastros() {
         conta("categorias"), conta("biblioteca_extras"), conta("insumos"), conta("clientes"),
       ]);
       if (!vivo) return;
-      const lista = (prods || []) as any[];
+      const lista = (prods || []) as { id: string; produto_insumos?: { id: string }[] | null }[];
       setN({
         produtos: prods ? lista.length : -1,
         semFicha: prods ? lista.filter(p => !(p.produto_insumos || []).length).length : 0,
@@ -51,15 +55,15 @@ export default function Cadastros() {
 
   const loja = useMemo(() => {
     const resto = cel ? "cardápio" : "link e aparência";
-    if ((profile as any)?.loja_pausada === true) return { txt: `Pausado · ${resto}`, tom: "lar" };
-    const s = situacaoLoja((profile as any)?.horario);
+    if ((profile as PerfilLoja)?.loja_pausada === true) return { txt: `Pausado · ${resto}`, tom: "lar" };
+    const s = situacaoLoja((profile as PerfilLoja)?.horario);
     if (!s) return { txt: cel ? "Cardápio, horário e entrega" : "Link, aparência e compartilhar", tom: "" };
     return s.aberto ? { txt: `Aberto agora · ${resto}`, tom: "ok" } : { txt: `Fechado agora · ${resto}`, tom: "lar" };
   }, [profile, cel]);
 
   const comFicha = n && n.produtos >= 0 ? n.produtos - n.semFicha : -1;
   // (22/10) no computador o número vem com o nome ("7 produtos"): a página vira uma grade de cartões
-  const linha = (Ic: any, titulo: string, sub: ReactNode, ir: () => void, qtd?: number, tom = "", un?: [string, string]) => (
+  const linha = (Ic: Icon, titulo: string, sub: ReactNode, ir: () => void, qtd?: number, tom = "", un?: [string, string]) => (
     <button type="button" className="cad-it" onClick={ir}>
       <span className="cad-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
       <span className="cad-tx"><b>{titulo}</b><small className={tom}>{sub}</small></span>

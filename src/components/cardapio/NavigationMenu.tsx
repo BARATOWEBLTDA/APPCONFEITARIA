@@ -6,6 +6,7 @@ import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaShee
 import { agoraLoja, antecedenciaHoras, calcularRegras, deIso, horarioPermitido, primeiraData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Cake, Camera, CalendarBlank, CaretRight, Check, ImageSquare, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { useCart } from '@/hooks/useCart'
 import { CartItemComponent } from '@/components/cart/CartItemComponent'
@@ -14,7 +15,9 @@ import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { PerfilTab } from './PerfilTab'
 import { PedidosTab } from './PedidosTab'
 import { guardarCliente } from './contaCliente'
-import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
+import { itemDoCarrinhoParaPedido, type ItemDoCarrinho } from '@/lib/itemDoCarrinho'
+import type { ExtraEscolhido } from '@/lib/kitTexto'
+import type { HorarioLoja } from '@/lib/agendaCardapio'
 import { contarItens, detalhesItem, qtdItem, semMeioEmoji, valorLinha } from '@/lib/itemSacola'
 import { r2, somarReais } from '@/lib/moeda'
 import { Campo, CampoArea, avisar } from '@/components/base'
@@ -37,6 +40,19 @@ import { valorDoSinal } from '@/lib/pix'
 import '@/components/cart/sacola.css'
 
 // (31/10 · 5.84) nome do cliente com pelo menos 2 letras (chegavam pedidos com "??????" no nome)
+/** Item da sacola: o do carrinho + o que a janela do produto acrescenta */
+type ItemSacola = ItemDoCarrinho & { pedeReferencia?: string }
+/** Complemento na sacola (o valor já vem como número da janela do produto) */
+type ExtraNaSacola = ExtraEscolhido & { valor?: number }
+/** Endereço guardado no aparelho depois de um pedido com entrega */
+type EnderecoSalvo = { rua?: string; numero?: string; complemento?: string; bairro?: string; cidade?: string; cep?: string }
+/** Resposta do banco ao validar o cupom */
+type RespostaCupom = { ok?: boolean; codigo?: string; tipo?: string; valor?: number | string; erro?: string } | null
+/** Resposta do banco com a taxa de entrega por raio */
+type RespostaTaxa = { ok?: boolean; valor?: number | string; km?: number | string | null; erro?: string } | null
+/** Resposta do banco ao criar o pedido */
+type RespostaPedido = { valor_total?: unknown; taxa_entrega?: unknown; cupom_desconto?: unknown; cliente_id?: string; acesso?: string; numero?: number } | null
+
 const nomeValido = (n: string) => /\p{L}.*\p{L}/u.test(n.trim())
 
 /**
@@ -118,7 +134,7 @@ interface CheckoutConfig {
   /** (20/10) Pix pelo cardápio */
   pix?: import('@/lib/pix').PixLoja | null
   /** Finalizar encomenda (02/10) */
-  horario?: any
+  horario?: HorarioLoja
   antecedencias?: Record<string, { ant?: string | null; pronta?: boolean | null }>
 }
 
@@ -152,7 +168,7 @@ const LABEL_PAGAMENTO: Record<string, { label: string }> = {
   mercado_pago:     { label: 'Mercado Pago' },
   pagamento_retirada: { label: 'Pagamento na retirada' },
 }
-const ICONE_PAGAMENTO: Record<string, any> = { pix: PixLogo, dinheiro: Money, credito: CreditCard, debito: CreditCard }
+const ICONE_PAGAMENTO: Record<string, Icon> = { pix: PixLogo, dinheiro: Money, credito: CreditCard, debito: CreditCard }
 
 /** "Sáb, 11 de out" */
 function dataCurta(iso: string): string {
@@ -192,14 +208,36 @@ function SugestaoSacola({ produto, cor }: { produto: Produto; cor: string }) {
   )
 }
 
+type Carrinho = ReturnType<typeof useCart>
+interface CartContentProps {
+  step: 'cart' | 'finalizar'
+  setStep: (s: 'cart' | 'finalizar') => void
+  items: ItemSacola[]
+  totalPrice: number
+  updateQuantity: Carrinho['updateQuantity']
+  updateObservations: Carrinho['updateObservations']
+  removeItem: Carrinho['removeItem']
+  clearCart: () => void
+  updateFotoReferencia?: Carrinho['updateFotoReferencia']
+  config: CheckoutConfig
+  onClose: () => void
+  corBotao?: string
+  corTopo?: string
+  logoUrl?: string
+  sugestoes?: Produto[]
+  verificada?: boolean
+  direto?: boolean
+  aoMostrarMenu?: (v: boolean) => void
+}
+
 /* ─── Conteúdo interno do carrinho (reutilizado em mobile e desktop) ─── */
 function CartContent({
   step, setStep, items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart, updateFotoReferencia,
   config, onClose, corBotao, corTopo, logoUrl, sugestoes = [], verificada = false, direto = false, aoMostrarMenu,
-}: any) {
+}: CartContentProps) {
   const [limparPergunta, setLimparPergunta] = useState(false)
   // (24/10) itens que aceitam foto de referência (o produto pede ou o complemento marcado pede)
-  const itensComRef = (items || []).filter((it: any) => it.pedeReferencia || it.fotoReferencia)
+  const itensComRef = (items || []).filter((it) => it.pedeReferencia || it.fotoReferencia)
   const [refCarregando, setRefCarregando] = useState<string | null>(null)
   const enviarRef = async (linha: string, ev: React.ChangeEvent<HTMLInputElement>) => {
     const campo = ev.target
@@ -235,7 +273,7 @@ function CartContent({
   const [bairro, setBairro] = useState('')
   const [cidade, setCidade] = useState('')
   const [cepLoading, setCepLoading] = useState(false)
-  const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; itens: any[]; whatsapp: string; storeName: string; total: number; quando: string; zap?: string; mensagem?: string} | null>(null)
+  const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; itens: ItemSacola[]; whatsapp: string; storeName: string; total: number; quando: string; zap?: string; mensagem?: string} | null>(null)
   // (20/10) Pix pelo cardápio: o pedido já foi criado e falta pagar (pixPara); depois de "Já paguei" (pixFeito) ou "Pagar depois"
   const [pixPara, setPixPara] = useState<{ pedidoId: string; total: number; retirada: boolean; tipo: 'sinal' | 'total' } | null>(null)
   const [pixFeito, setPixFeito] = useState<{ tipo: 'sinal' | 'total'; valor: number } | 'depois' | null>(null)
@@ -261,7 +299,7 @@ function CartContent({
     const m = (config.formas_pagamento || []).filter((k: string) => ['pix', 'dinheiro', 'credito', 'debito'].includes(k))
     return m.length ? m : ['pix']
   }, [config.formas_pagamento])
-  const horasAnt = useMemo(() => antecedenciaHoras(items.map((i: any) => i.id), config.antecedencias, config.prazo_minimo_horas, config.aceita_agendamento !== false),
+  const horasAnt = useMemo(() => antecedenciaHoras(items.map((i) => i.id), config.antecedencias, config.prazo_minimo_horas, config.aceita_agendamento !== false),
     [items, config.antecedencias, config.prazo_minimo_horas, config.aceita_agendamento])
   // (11/10) as regras eram calculadas uma vez só, com a hora de quando o finalizar abriu.
   // Agora o relógio é lido de novo ao abrir a data ou o horário (e mais uma vez na hora de enviar).
@@ -278,7 +316,7 @@ function CartContent({
     if (!formaPagamento && metodosPag.length === 1) setFormaPagamento(metodosPag[0])
     if (!formaPagamento && comPagarDepois && !pagaDepois) setFormaPagamento('pix')
   }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
-  const irPara = (r: any) => setTimeout(() => r.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  const irPara = (r: React.RefObject<HTMLElement | null>) => setTimeout(() => r.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   // 10/10: trava também por ref (dois toques seguidos não mandam dois pedidos)
   const enviandoRef = useRef(false)
   const enviarFinalizar = async () => {
@@ -319,7 +357,7 @@ function CartContent({
   useEffect(() => {
     if (pedidoConfirmado) {
       try {
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+        const ctx = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)()
         const tocarNota = (freq: number, inicio: number, duracao: number) => {
           const osc = ctx.createOscillator()
           const gain = ctx.createGain()
@@ -354,16 +392,16 @@ function CartContent({
   const [telefone, setTelefone] = useState(clienteLogado?.telefone || '')
 
   // Endereços que o cliente já usou nesta loja (salvos no aparelho depois de cada pedido com entrega)
-  const enderecosSalvos: any[] = useMemo(() => {
+  const enderecosSalvos: EnderecoSalvo[] = useMemo(() => {
     try {
       const uid = lojaAtualId()
       const lista = JSON.parse(localStorage.getItem(`enderecos_${uid}_${telefone.replace(/\D/g, '')}`) || '[]')
-      return Array.isArray(lista) ? lista.filter((e: any) => e && e.rua) : []
+      return Array.isArray(lista) ? lista.filter((e: EnderecoSalvo) => e && e.rua) : []
     } catch { return [] }
   }, [telefone])
-  const usarEndereco = (e: any) => {
+  const usarEndereco = (e: EnderecoSalvo) => {
     setRua(e.rua || ''); setNumero(e.numero || ''); setComplemento(e.complemento || ''); setBairro(e.bairro || ''); setCidade(e.cidade || ''); setCep(e.cep || '')
-    setBairroSelecionado(config.entrega_por_bairro.some((b: any) => b.bairro === e.bairro) ? e.bairro : '')
+    setBairroSelecionado(config.entrega_por_bairro.some((b) => b.bairro === e.bairro) ? e.bairro : '')
     setEndNovo(false); setFeErro('')
   }
   useEffect(() => {
@@ -406,7 +444,7 @@ function CartContent({
       if (!pt) { setTaxaArea({ estado: 'sem_local', valor: 0, km: null }); return }
       const { data, error } = await supabase.rpc('cardapio_taxa_entrega', { p_loja: lojaAtualId(), p_lat: pt.lat, p_lng: pt.lng, p_cidade: cidade || null })
       if (!vivo) return
-      const r: any = data
+      const r = data as RespostaTaxa
       if (error || !r) { setTaxaArea({ estado: 'erro', valor: 0, km: null, ...pt }); return }
       if (r.ok) setTaxaArea({ estado: 'ok', valor: Number(r.valor) || 0, km: r.km != null ? Number(r.km) : null, ...pt })
       else setTaxaArea({ estado: r.erro === 'fora_area' ? 'fora' : r.erro === 'sem_local' ? 'sem_local' : 'erro', valor: 0, km: r.km != null ? Number(r.km) : null, ...pt })
@@ -423,13 +461,13 @@ function CartContent({
     if (formaEntrega === 'entrega_propria' && modoEnt === 'cidade') return taxaCidade?.ok ? taxaCidade.valor : 0
     if (formaEntrega === 'entrega_propria') {
       if (config.entrega_por_bairro.length > 0 && bairroSelecionado) {
-        const b = config.entrega_por_bairro.find((x: any) => x.bairro === bairroSelecionado)
+        const b = config.entrega_por_bairro.find((x) => x.bairro === bairroSelecionado)
         return b ? b.valor : config.valor_entrega_propria
       }
       return config.valor_entrega_propria
     }
     return 0
-  }, [formaEntrega, bairroSelecionado, config, modoEnt, taxaArea, taxaCidade?.ok, (taxaCidade as any)?.valor])
+  }, [formaEntrega, bairroSelecionado, config, modoEnt, taxaArea, taxaCidade?.ok, (taxaCidade as { valor?: number } | null)?.valor])
 
   // 10/10: o desconto nunca passa do subtotal (percentual vai de 0 a 100) e o total nunca fica negativo
   const desconto = useMemo(() => {
@@ -455,7 +493,7 @@ function CartContent({
       // Validação no banco: ativo, período, valor mínimo e limite de usos
       // (20/10) com o WhatsApp já preenchido, confere também o cupom "só no primeiro pedido"
       const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: loja, p_codigo: code, p_subtotal: totalPrice, p_telefone: telefone.replace(/\D/g, '') || null })
-      const r: any = data
+      const r = data as RespostaCupom
       if (!error && r?.ok) {
         subtotalDoCupom.current = totalPrice
         setCupomAplicado({ codigo: r.codigo, tipo: r.tipo, valor: Number(r.valor) || 0 })
@@ -496,7 +534,7 @@ function CartContent({
         if (subtotal <= 0) { if (valendo) setCupomAplicado(null); return }
         const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: lojaAtualId(), p_codigo: cupomAplicado.codigo, p_subtotal: subtotal })
         if (!valendo || error) return
-        const r: any = data
+        const r = data as RespostaCupom
         if (r?.ok) setCupomAplicado({ codigo: r.codigo, tipo: r.tipo, valor: Number(r.valor) || 0 })
         else { setCupomAplicado(null); avisar(r?.erro || 'O cupom não vale mais para essa sacola.', { tipo: 'info' }) }
       } catch { /* sem internet: mantém o cupom */ }
@@ -510,7 +548,7 @@ function CartContent({
     if (cupomAplicado) {
       try {
         const { data, error } = await supabase.rpc('cardapio_validar_cupom', { p_loja: lojaAtualId(), p_codigo: cupomAplicado.codigo, p_subtotal: totalPrice, p_telefone: telefone.replace(/\D/g, '') })
-        const r: any = data
+        const r = data as RespostaCupom
         if (!error && r && !r.ok) { setCupomAplicado(null); esquecerCupomEscolhido(); return avisar(`${cupomCurto(r.erro || '')}. Confira o novo total.`, { tipo: 'erro' }) }
       } catch { /* sem internet: o banco confere ao criar o pedido */ }
     }
@@ -538,7 +576,7 @@ function CartContent({
       let m = ''
       if (numPedido) m += `*PEDIDO #${numPedido}*\n\n`
 
-      items.forEach((item: any) => {
+      items.forEach((item) => {
         const qtd = qtdItem(item) // bolo por kg COM tamanho é "1×", não "1 kg"
         m += `*${qtd} ${item.name}* — ${formatCurrency(valorLinha(item))}\n`
         const detalhes: string[] = []
@@ -553,7 +591,7 @@ function CartContent({
           if (e.sabor?.nome) detalhes.push(`Sabor ${e.sabor.nome}`)
           if (e.massa?.nome) detalhes.push(`Massa ${e.massa.nome}`)
           if (e.recheios?.length) {
-            const nomes = e.recheios.map((r: any) => r.nome)
+            const nomes = e.recheios.map((r) => r.nome)
             const lista = nomes.length > 1 ? nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1] : nomes[0]
             detalhes.push(`Recheio${nomes.length > 1 ? 's' : ''}: ${lista}`)
           }
@@ -567,7 +605,7 @@ function CartContent({
         if (detalhes.length) m += `_${detalhes.join(' · ')}_\n`
         // Adicionais cadastrados pela confeiteira (topo de bolo, vela...)
         if (Array.isArray(item.extrasBiblioteca) && item.extrasBiblioteca.length) {
-          m += `Adicionais: ${item.extrasBiblioteca.map((x: any) => x.valor > 0 ? `${nomeExtra(x)} (+${formatCurrency(x.valor)})` : nomeExtra(x)).join(', ')}\n`
+          m += `Adicionais: ${item.extrasBiblioteca.map((x: ExtraNaSacola) => x.valor > 0 ? `${nomeExtra(x)} (+${formatCurrency(x.valor)})` : nomeExtra(x)).join(', ')}\n`
         }
         if (item.observations) m += `Obs.: ${item.observations}\n`
         // 10/10: a foto vai gravada no pedido; na mensagem só entra se for um link (nunca a imagem em texto)
@@ -656,7 +694,7 @@ function CartContent({
       // O id é gerado aqui, então o pedido é gravado sem precisar ler a tabela de volta.
       // Tentando de novo com os mesmos dados, o id é o mesmo (não cria outro pedido na loja).
       // (27/10) a assinatura leva os itens: trocou um item por outro do mesmo preço, é outro pedido
-      const itensSemId = items.map((item: any) => itemDoCarrinhoParaPedido(item))
+      const itensSemId = items.map((item) => itemDoCarrinhoParaPedido(item))
       const tentativa = await abrirTentativa(JSON.stringify({ dadosPedido, itensSemId }))
       const novoPedidoId = tentativa.id
 
@@ -674,7 +712,7 @@ function CartContent({
       if (viaBanco.error && !semFuncao) return falhou(viaBanco.error)
       pedidoIdCriado = novoPedidoId
       // o Pix sai com o total que o banco calculou (é o que fica no pedido)
-      const srv: any = viaBanco.data
+      const srv = viaBanco.data as RespostaPedido
       if (srv && Number.isFinite(Number(srv.valor_total))) {
         totalCriado = r2(Number(srv.valor_total))
         if (Number.isFinite(Number(srv.taxa_entrega))) freteMsg = r2(Number(srv.taxa_entrega))
@@ -686,7 +724,7 @@ function CartContent({
         if (!tentativa.gravado) {
           const { error: erroPedido } = await supabase.from('pedidos').insert({ id: novoPedidoId, ...dadosPedido })
           // "Esse id já existe" numa nova tentativa: o pedido tinha gravado e só a resposta se perdeu no caminho
-          const jaGravado = !!erroPedido && (erroPedido as any).code === '23505' && /pkey/i.test(String(erroPedido.message || ''))
+          const jaGravado = !!erroPedido && erroPedido.code === '23505' && /pkey/i.test(String(erroPedido.message || ''))
           if (erroPedido && !jaGravado) return falhou(erroPedido)
           marcarGravada(tentativa)
         }
@@ -696,7 +734,7 @@ function CartContent({
           // Pedido sem itens não vale: tenta desfazer. Se o banco não deixar apagar, a próxima tentativa completa esse mesmo pedido.
           // (23503 no pedido_id = o pedido não existe mais no banco: começa do zero na próxima. 23503 em outra coluna,
           //  como um produto que a loja apagou, não: aí a tentativa continua a mesma e não cria pedido repetido)
-          const pedidoSumiu = (erroItens as any).code === '23503' && /pedido_id|pedidos/i.test(`${erroItens.message || ''} ${(erroItens as any).details || ''}`)
+          const pedidoSumiu = erroItens.code === '23503' && /pedido_id|pedidos/i.test(`${erroItens.message || ''} ${erroItens.details || ''}`)
           if (await desfazerPedido(novoPedidoId) || pedidoSumiu) fecharTentativa()
           return falhou(erroItens)
         }
@@ -707,7 +745,7 @@ function CartContent({
       try {
         // Loga o cliente automaticamente após o pedido (se ainda não estiver logado)
         // (4.23) o banco devolve um código de acesso: com ele o cliente vê os próprios pedidos na aba Pedidos
-        const acesso: string | undefined = (viaBanco.data as any)?.acesso || undefined
+        const acesso: string | undefined = (viaBanco.data as RespostaPedido)?.acesso || undefined
         const salvo = (() => { try { return JSON.parse(localStorage.getItem(`cardapio_cliente_${confeteiraUserId}`) || 'null') } catch { return null } })()
         const mesmoTel = salvo && String(salvo.telefone || '').replace(/\D/g, '').slice(-11) === telefone.replace(/\D/g, '').slice(-11)
         // (27/10) com o código de acesso a cliente já fica logada (antes dependia do id e às vezes pedia pra entrar)
@@ -717,9 +755,9 @@ function CartContent({
         // Entrega: guarda o endereço em "Dados pessoais" pra próxima compra (sem repetir)
         if (formaEntrega === 'entrega_propria' && rua.trim()) {
           const chave = `enderecos_${confeteiraUserId}_${telefone.replace(/\D/g, '')}`
-          const lista: any[] = JSON.parse(localStorage.getItem(chave) || '[]')
+          const lista: EnderecoSalvo[] = JSON.parse(localStorage.getItem(chave) || '[]')
           const cepLimpo = cep.replace(/\D/g, '')
-          const jaTem = lista.some((e: any) =>
+          const jaTem = lista.some((e) =>
             (e.rua || '').trim().toLowerCase() === rua.trim().toLowerCase() &&
             (e.numero || '').trim() === numero.trim() &&
             (e.cep || '').replace(/\D/g, '') === cepLimpo)
@@ -733,7 +771,7 @@ function CartContent({
         // Número do pedido (função segura no banco)
         const { data: num } = await supabase.rpc('cardapio_numero_pedido', { p_pedido: novoPedidoId })
         if (typeof num === 'number') numeroPedido = num
-        else if (typeof (viaBanco.data as any)?.numero === 'number') numeroPedido = (viaBanco.data as any).numero
+        else if (typeof (viaBanco.data as RespostaPedido)?.numero === 'number') numeroPedido = (viaBanco.data as RespostaPedido).numero
       } catch (err) { console.error('[Doonly] depois de gravar o pedido:', err) }
     } catch (err) {
       return falhou(err)
@@ -870,8 +908,8 @@ function CartContent({
           <section className="px-card scf-res">
             {pc.quando && <p className="scf-quando"><CalendarBlank size={18} weight="bold" />{pc.quando}</p>}
             <ul className="scf-itens">
-              {pc.itens.map((it: any, k: number) => {
-                const extras: any[] = Array.isArray(it.extrasBiblioteca) ? it.extrasBiblioteca : []
+              {pc.itens.map((it, k: number) => {
+                const extras: ExtraEscolhido[] = Array.isArray(it.extrasBiblioteca) ? it.extrasBiblioteca : []
                 const escolhas = detalhesItem(it).slice(0, detalhesItem(it).length - extras.length)
                 const kit = it.escolhas?.kit
                 if (kit?.sabores?.length) escolhas.push(`${kit.total} un. · ${textoSaboresKit(kit.sabores)}`)
@@ -920,8 +958,8 @@ function CartContent({
       <span className="sc-topo-curva" aria-hidden="true" />
     </div>
   )
-  const economia = Math.round(items.reduce((t: number, it: any) => t + (Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0), 0) * 100) / 100
-  const naSacola = new Set(items.map((it: any) => it.id))
+  const economia = Math.round(items.reduce((t: number, it) => t + (Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0), 0) * 100) / 100
+  const naSacola = new Set(items.map((it) => it.id))
   const pecaTambem = (sugestoes as Produto[]).filter(p => !naSacola.has(p.id)).slice(0, 8)
 
   const topo = (
@@ -957,7 +995,7 @@ function CartContent({
               <button type="button" style={{ color: accent }} onClick={onClose}><Plus size={16} weight="bold" aria-hidden="true" />Adicionar mais</button>
             </div>
             <div className="sc-itens">
-              {items.map((item: any) => (
+              {items.map((item) => (
                 <CartItemComponent key={item.lineId ?? item.id} item={item} cor={accent} onUpdateQuantity={updateQuantity} onUpdateObservations={updateObservations} onRemove={removeItem} />
               ))}
             </div>
@@ -1035,7 +1073,7 @@ function CartContent({
             <div className="sc-campos">
               {enderecosSalvos.length > 0 && !endNovo ? (
                 <>
-                  {enderecosSalvos.map((e: any, i: number) => {
+                  {enderecosSalvos.map((e, i: number) => {
                     const on = rua === e.rua && numero === e.numero
                     return (
                       <button key={i} type="button" className="sc-salvo" aria-pressed={on} style={on ? { borderColor: accent } : undefined} onClick={() => usarEndereco(e)}>
@@ -1070,7 +1108,7 @@ function CartContent({
                 <>
                   <p className="sc-rot">Cidade</p>
                   <div className="sc-chips">
-                    {(config.entrega_por_cidade || []).map((c: any) => {
+                    {(config.entrega_por_cidade || []).map((c) => {
                       const on = !outraCidade && cidade.trim().toLowerCase() === String(c.cidade).trim().toLowerCase()
                       return (
                         <button type="button" key={c.cidade} aria-pressed={on} style={on ? { borderColor: accent, color: accent } : undefined}
@@ -1104,7 +1142,7 @@ function CartContent({
                 <>
                   <p className="sc-rot">Bairro</p>
                   <div className="sc-chips">
-                    {config.entrega_por_bairro.map((b: any) => {
+                    {config.entrega_por_bairro.map((b) => {
                       const on = bairroSelecionado === b.bairro
                       return (
                         <button type="button" key={b.bairro} aria-pressed={on} style={on ? { borderColor: accent, color: accent } : undefined}
@@ -1146,7 +1184,7 @@ function CartContent({
           <section>
             <Cab t={itensComRef.length === 1 ? 'Foto de referência' : 'Fotos de referência'} sub="Mostre a ideia que você quer" opc />
             <div className="sc-refs">
-              {itensComRef.map((it: any) => {
+              {itensComRef.map((it) => {
                 const linha = it.lineId ?? it.id
                 const foto = it.fotoReferencia as string | undefined
                 const carregando = refCarregando === linha
@@ -1378,7 +1416,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
       {/* ═══ MOBILE: tab bar + cart vindo de baixo ═══ */}
       {isMobile && (
         <>
-          <div ref={rodapeRef} className="cpn-pe fixed bottom-0 left-0 right-0 z-30" style={{ ['--cpn-ativa' as any]: corAtiva }}>
+          <div ref={rodapeRef} className="cpn-pe fixed bottom-0 left-0 right-0 z-30" style={{ ['--cpn-ativa']: corAtiva } as CSSProperties}>
             {count > 0 && (
               <button type="button" className="cpn-pedido" style={{ background: accent }} onClick={() => setIsOpen(true)}>
                 {/* (20/10) a quantidade fica no ícone da sacola (antes ia em "Pedidos" e parecia pedido feito) */}

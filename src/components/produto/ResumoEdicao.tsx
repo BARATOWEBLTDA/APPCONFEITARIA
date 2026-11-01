@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import { Cake, CurrencyCircleDollar, Image as ImageIc, ListChecks, PencilSimple, Storefront } from "@phosphor-icons/react";
 import { precoCardapioComPromocao, tamanhosEsgotados } from "@/lib/precoCardapio";
 import { textoBRL } from "@/lib/moeda";
-import { escolhasAtivas } from "@/components/produto/EscolhasProduto";
-import { resumoRevisao } from "@/components/produto/RevisaoProduto";
+import { escolhasAtivas, type FormEscolhas } from "@/components/produto/EscolhasProduto";
+import { resumoRevisao, type FormRevisao } from "@/components/produto/RevisaoProduto";
 import "./escolhas.css";
 
 /**
@@ -15,10 +15,10 @@ type Parte = "info" | "opcoes" | "fotos" | "preco" | "entrega";
 const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", quantidade: "Quantidade" };
 // (14/10) singular / plural pra "3 tamanhos cadastrados"
 const NOME: Record<string, [string, string]> = { tamanho: ["tamanho", "tamanhos"], massa: ["massa", "massas"], recheio: ["recheio", "recheios"], cobertura: ["cobertura", "coberturas"], sabor: ["sabor", "sabores"], quantidade: ["quantidade", "quantidades"] };
-const GRUPO: Record<string, string> = { tamanho: "grupo_tamanhos", massa: "grupo_massas", recheio: "grupo_recheios", cobertura: "grupo_coberturas", sabor: "grupo_sabores" };
+const GRUPO: Record<string, "grupo_tamanhos" | "grupo_massas" | "grupo_recheios" | "grupo_coberturas" | "grupo_sabores"> = { tamanho: "grupo_tamanhos", massa: "grupo_massas", recheio: "grupo_recheios", cobertura: "grupo_coberturas", sabor: "grupo_sabores" };
 const rs = (v: number) => `R$ ${textoBRL(v) || "0,00"}`;
 
-export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: any; isPro?: boolean; onEditar: (p: Parte) => void }) {
+export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: FormEscolhas & FormRevisao; isPro?: boolean; onEditar: (p: Parte) => void }) {
   const fotos = String(form.imagem_url || "").split(",").map((x: string) => x.trim()).filter(Boolean);
   const pc = precoCardapioComPromocao(form);
   const r = resumoRevisao(form);

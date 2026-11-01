@@ -8,9 +8,11 @@ import { Check, FilePdf, Storefront, X } from '@phosphor-icons/react'
 import { CampoArea, Janela, avisar } from '@/components/base'
 import { supabase } from '@/lib/supabase'
 import { explicarErro } from '@/lib/erros'
-import { brl, hojeISO, textoEntrega, dataLonga, textoCondicoes, totalOrcamento, valorSinal, type Orcamento } from '@/lib/orcamentos'
+import { brl, hojeISO, textoEntrega, dataLonga, textoCondicoes, totalOrcamento, valorSinal, type ItemOrcamento, type Orcamento } from '@/lib/orcamentos'
 import './orcamentos.css'
 
+/** O que a função do banco devolve */
+type RespostaRpc = { ok?: boolean; erro?: string } | null
 type Ver = Orcamento & { loja: { nome: string; logo?: string | null; codigo?: string } | null; pedido_numero?: number | null }
 
 export default function OrcamentoVer() {
@@ -21,8 +23,8 @@ export default function OrcamentoVer() {
   const [motivo, setMotivo] = useState('')
 
   const carregar = () => supabase.rpc('orcamento_ver', { p_token: token }).then(({ data, error }) => {
-    const d = !error && data ? (data as any) : null
-    if (d) d.itens = (d.itens || []).map((i: any, k: number) => ({ ...i, id: String(k), quantidade: Number(i.quantidade) || 1, valor_unitario: Number(i.valor_unitario) || 0 }))
+    const d = !error && data ? (data as Ver) : null
+    if (d) d.itens = (d.itens || []).map((i: ItemOrcamento, k: number) => ({ ...i, id: String(k), quantidade: Number(i.quantidade) || 1, valor_unitario: Number(i.valor_unitario) || 0 }))
     setO(d)
   })
   useEffect(() => { document.title = 'Orçamento'; void carregar() }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -32,7 +34,7 @@ export default function OrcamentoVer() {
     try {
       const { data, error } = await supabase.rpc('orcamento_responder', { p_token: token, p_aprovar: aprovar, p_motivo: aprovar ? null : motivo.trim() || null })
       if (error) throw error
-      if (!(data as any)?.ok) avisar((data as any)?.erro || 'Não deu para responder agora.', { tipo: 'erro' })
+      if (!(data as RespostaRpc)?.ok) avisar((data as RespostaRpc)?.erro || 'Não deu para responder agora.', { tipo: 'erro' })
       setRecusar(false); await carregar(); window.scrollTo({ top: 0 })
     } catch (e) { avisar(explicarErro(e, 'Não deu para responder. Confira a internet e tente de novo.'), { tipo: 'erro' }) }
     finally { setIndo(false) }

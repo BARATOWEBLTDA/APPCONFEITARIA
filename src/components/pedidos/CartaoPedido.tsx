@@ -193,7 +193,7 @@ export function LinhaCompacta({ p, aoAbrir, aoAvancar, mudando }: Props) {
   // botão curto pra caber na linha: "Marcar pronto" vira "Pronto", "Marcar entregue" vira "Entregue"
   const rot = acao ? acao.rotulo.replace(/^Marcar /, '').replace(/^./, c => c.toUpperCase()) : ''
   return (
-    <div className={`pdk${atr ? ' atr' : ''}`} role="button" tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>
+    <article className={`pdk${atr ? ' atr' : ''}`} tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>
       <Foto p={p} />
       <div className="pdk-tx">
         <p className="pdk-nome"><b>{nomeCliente(p)}</b><span>#{p.numero || '—'}</span></p>
@@ -208,6 +208,6 @@ export function LinhaCompacta({ p, aoAbrir, aoAvancar, mudando }: Props) {
         <b className="pdk-v">{rs(p.valor_total)}</b>
         {acao && <Botao className={aceitar ? 'pdk-bt' : 'pdk-bt pd-passo'} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{rot}</Botao>}
       </div>
-    </div>
+    </article>
   )
 }

@@ -28,7 +28,7 @@ export default function FaixaComoCliente() {
   const voltar = () => {
     try { sessionStorage.removeItem(CHAVE) } catch { /* sem armazenamento */ }
     setLigada(false)
-    if (((window.history.state as any)?.idx ?? 0) > 0) navigate(-1)
+    if (((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0) navigate(-1)
     else navigate('/inicio')
   }
   return (

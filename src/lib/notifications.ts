@@ -44,10 +44,10 @@ function setStoredNotifState(ativo: boolean) {
 export function ehIphone(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
-  return /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && (navigator as any).maxTouchPoints > 1);
+  return /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
 }
 export function estaInstalado(): boolean {
-  return !!(window.matchMedia?.("(display-mode: standalone)").matches || (navigator as any).standalone);
+  return !!(window.matchMedia?.("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone);
 }
 export const precisaInstalarNoIphone = (): boolean => ehIphone() && !estaInstalado();
 export const PASSOS_INSTALAR_IPHONE =

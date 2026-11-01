@@ -71,7 +71,7 @@ export default function AdminNotifTemplates() {
     load();
   }, []);
 
-  const editar = (evento: string, campo: keyof Template, valor: any) => {
+  const editar = (evento: string, campo: keyof Template, valor: Template[keyof Template]) => {
     setTemplates(t => ({ ...t, [evento]: { ...t[evento], [campo]: valor } }));
     setDirty(d => ({ ...d, [evento]: true }));
   };

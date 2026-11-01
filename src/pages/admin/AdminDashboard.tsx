@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   const abrirBoasVindas = async () => {
     try {
       const { data } = await supabase.auth.getUser();
-      const md: any = data.user?.user_metadata || {};
+      const md: { nome?: string; full_name?: string; name?: string } = data.user?.user_metadata || {};
       setNome(String(md.nome || md.full_name || md.name || "").trim().split(/\s+/)[0]);
     } catch { /* sem nome: a primeira tela fala só "você" */ }
     setBoasVindas(true);

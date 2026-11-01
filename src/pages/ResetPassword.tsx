@@ -125,8 +125,8 @@ export default function ResetPassword() {
     let err: { message?: string } | null = null;
     try {
       ({ error: err } = await supabase.auth.updateUser({ password: senha }));
-    } catch (falha: any) {
-      err = { message: falha?.message || "failed to fetch" };
+    } catch (falha) {
+      err = { message: (falha as Error)?.message || "failed to fetch" };
     }
     setLoading(false);
 

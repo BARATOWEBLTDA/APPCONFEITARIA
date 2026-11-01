@@ -30,6 +30,11 @@ const diaLocal = (dataHora: string) => { const d = new Date(dataHora); return `$
 const FORMA: Record<string, string> = { pix: "Pix", dinheiro: "Dinheiro", credito: "Crédito", debito: "Débito" };
 const TIPO: Record<string, string> = { sinal: "Sinal", parcial: "Parcial", restante: "Restante", total: "Pagamento", pagamento: "Pagamento", migracao: "Pagamento" };
 
+/** Recebimento (tabela pagamentos), com as colunas que cada busca abaixo traz */
+type PagCaixa = { id: string; valor: number; forma: string | null; tipo?: string | null; recebido_em?: string; pedido_id: string | null; created_at?: string | null; estornado_em?: string | null; observacao?: string | null };
+/** Lançamento manual (tabela financeiro), com as colunas que cada busca abaixo traz */
+type LancCaixa = { id: string; tipo: string | null; categoria: string | null; descricao: string | null; valor: number; data?: string; created_at?: string | null; estornado_em?: string | null };
+
 /** "Saída · Ingredientes"; a categoria só aparece quando não é a mesma coisa que o título (4.29) */
 const detalheLanc = (entrada: boolean, categoria?: string | null, descricao?: string | null) => {
   const cat = nomeCategoriaFin(categoria), desc = String(descricao || "").trim();
@@ -42,7 +47,7 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
   const { data: perfil, error: ePerfil } = await supabase.from("profiles").select("caixa_saldo_inicial, caixa_inicio_em").eq("id", uid).maybeSingle();
   // 10/10: só é "falta o SQL" quando a coluna não existe; queda de internet vira erro (a tela oferece "Tentar de novo")
   if (ePerfil) return faltaNoBanco(ePerfil) ? { ...vazio, precisaSql: true } : { ...vazio, erro: true };
-  const p: any = perfil || {};
+  const p: { caixa_saldo_inicial?: number | null; caixa_inicio_em?: string | null } = perfil || {};
   if (p.caixa_inicio_em == null || p.caixa_saldo_inicial == null) return vazio;
 
   const inicio: string = p.caixa_inicio_em;
@@ -51,23 +56,23 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
   const saldoInicial = r2(p.caixa_saldo_inicial);
 
   // 10/10: tudo de 1.000 em 1.000 (o Supabase corta em 1.000 linhas sem avisar e o saldo ficava errado)
-  const finDesde = (colunas: string) => buscarTudo<any>((de, ate) => supabase.from("financeiro").select(colunas)
+  const finDesde = (colunas: string) => buscarTudo<LancCaixa>((de, ate) => supabase.from("financeiro").select<string, LancCaixa>(colunas)
     .eq("user_id", uid).gte("created_at", inicio).gte("data", diaInicio).lte("data", hoje).order("id").range(de, ate));
   // lançamento com data no futuro ainda não saiu do caixa; (4.29) com data ANTES do dia em que ela contou o caixa também não
   // mexe: esse dinheiro já estava (ou já não estava) na conta quando ela informou o saldo
   const [pag, fin0, pagEst, finEst, pagExtra] = await Promise.all([
-    buscarTudo<any>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at")
+    buscarTudo<PagCaixa>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at")
       .eq("user_id", uid).is("estornado_em", null).gte("created_at", inicio).gte("recebido_em", diaInicio).lte("recebido_em", hoje).order("id").range(de, ate)),
     finDesde("id, tipo, categoria, descricao, valor, data, created_at, estornado_em"),
     // registrado ANTES do início do caixa e estornado DEPOIS (a conta está mais abaixo)
-    buscarTudo<any>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, pedido_id, estornado_em, observacao")
+    buscarTudo<PagCaixa>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, pedido_id, estornado_em, observacao")
       .eq("user_id", uid).lt("created_at", inicio).gte("estornado_em", inicio).order("id").range(de, ate)),
-    buscarTudo<any>((de, ate) => supabase.from("financeiro").select("id, tipo, categoria, descricao, valor, estornado_em")
+    buscarTudo<LancCaixa>((de, ate) => supabase.from("financeiro").select("id, tipo, categoria, descricao, valor, estornado_em")
       .eq("user_id", uid).lt("created_at", inicio).gte("estornado_em", inicio).lte("data", diaInicio).order("id").range(de, ate)),
     // (27/10) registrados depois do início que o caixa contava errado:
     //  · o que sobrou ao diminuir um recebimento antigo (fica com a data antiga, então caía fora do "desde o início")
     //  · recebimentos estornados porque o pedido foi excluído (não é devolução: o dinheiro continua na gaveta)
-    buscarTudo<any>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at, estornado_em, observacao")
+    buscarTudo<PagCaixa>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at, estornado_em, observacao")
       .eq("user_id", uid).gte("created_at", inicio).in("observacao", [SUBSTITUI_RECEBIMENTO, ESTORNO_POR_EXCLUSAO]).order("id").range(de, ate)),
   ]);
   // sem a coluna de estorno (SQL não rodado), busca sem ela. 10/10: só quando o erro é mesmo de coluna
@@ -76,25 +81,25 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
   // 10/10: outro erro (internet, servidor) não vira saldo: antes os recebimentos sumiam ou os estornados voltavam a contar
   if ((pag.error && !semPagamentos) || fin.error
     || (pagEst.error && !faltaNoBanco(pagEst.error)) || (finEst.error && !faltaNoBanco(finEst.error))) return { ...vazio, erro: true };
-  const extras: any[] = pagExtra.error ? [] : pagExtra.data.filter((g: any) => g.observacao === ESTORNO_POR_EXCLUSAO
+  const extras: PagCaixa[] = pagExtra.error ? [] : pagExtra.data.filter((g) => g.observacao === ESTORNO_POR_EXCLUSAO
     ? !!g.estornado_em && g.recebido_em >= diaInicio && g.recebido_em <= hoje
     : !g.estornado_em && g.recebido_em < diaInicio);
-  const pagamentos: any[] = semPagamentos ? [] : [...pag.data, ...extras.map(g => g.observacao === SUBSTITUI_RECEBIMENTO ? { ...g, recebido_em: diaLocal(g.created_at) } : g)];
-  const lancamentos: any[] = fin.data.filter(l => !l.estornado_em); // estornado não conta
+  const pagamentos: PagCaixa[] = semPagamentos ? [] : [...pag.data, ...extras.map(g => g.observacao === SUBSTITUI_RECEBIMENTO ? { ...g, recebido_em: diaLocal(g.created_at) } : g)];
+  const lancamentos: LancCaixa[] = fin.data.filter(l => !l.estornado_em); // estornado não conta
   // estorno feito porque o pedido foi excluído não é devolução: o dinheiro contado no saldo informado continua lá
-  const pagDesfeitos: any[] = pagEst.error ? [] : pagEst.data.filter((g: any) => g.observacao !== ESTORNO_POR_EXCLUSAO);
-  const finDesfeitos: any[] = finEst.error ? [] : finEst.data;
+  const pagDesfeitos: PagCaixa[] = pagEst.error ? [] : pagEst.data.filter((g) => g.observacao !== ESTORNO_POR_EXCLUSAO);
+  const finDesfeitos: LancCaixa[] = finEst.error ? [] : finEst.data;
 
   // nome do pedido (número e cliente) só dos recebimentos mais recentes, os que aparecem em "Últimas movimentações"
   // (10/10: com todos os recebimentos, a lista de ids pode passar do tamanho que o servidor aceita)
-  const ordemPag = (g: any) => `${g.recebido_em} ${g.created_at || ""}`;
+  const ordemPag = (g: PagCaixa) => `${g.recebido_em} ${g.created_at || ""}`;
   const recentes = [...pagamentos].sort((a, b) => ordemPag(b).localeCompare(ordemPag(a))).slice(0, 40);
   const estornosRecentes = [...pagDesfeitos].sort((a, b) => String(b.estornado_em).localeCompare(String(a.estornado_em))).slice(0, 20);
   const ids = [...new Set([...recentes, ...estornosRecentes].map(g => g.pedido_id).filter(Boolean))];
-  const nomes: Record<string, { numero: any; cliente: string }> = {};
+  const nomes: Record<string, { numero: number | null; cliente: string }> = {};
   if (ids.length) {
     const { data: peds } = await supabase.from("pedidos").select("id, numero, cliente_nome").in("id", ids);
-    for (const x of (peds as any[]) || []) nomes[x.id] = { numero: x.numero, cliente: x.cliente_nome || "" };
+    for (const x of (peds as { id: string; numero: number | null; cliente_nome: string | null }[]) || []) nomes[x.id] = { numero: x.numero, cliente: x.cliente_nome || "" };
   }
 
   let saldo = saldoInicial, entrouHoje = 0, saiuHoje = 0;

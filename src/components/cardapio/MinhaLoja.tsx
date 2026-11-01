@@ -29,7 +29,7 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
     const ler = () => supabase.from("profiles").select("logo_url, foto_url, banner_url, banner1_url, banner2_url, banner3_url").eq("id", uid).maybeSingle()
       .then(({ data }) => {
         if (!vivo || !data) return;
-        const d: any = data;
+        const d: { logo_url?: string | null; foto_url?: string | null; banner_url?: string | null; banner1_url?: string | null; banner2_url?: string | null; banner3_url?: string | null } = data;
         setVis({ logo: d.logo_url || "", foto: d.foto_url || "",
           banners: [d.banner_url, d.banner1_url, d.banner2_url, d.banner3_url].filter(Boolean).length }); // (27/10) o banner_url é o 1º dos 4 (antes contava 3)
       }, () => {});

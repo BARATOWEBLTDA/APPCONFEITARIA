@@ -25,7 +25,7 @@ export default function Marketing() {
   // (19/10) Cupons vieram de Dados da loja pra cá (primeira aba)
   const loc = useLocation();
   const [aba, setAba] = useState<Aba>(new URLSearchParams(loc.search).get("aba") === "pixel" ? "pixel" : "cupons");
-  const salvo = String((profile as any)?.facebook_pixel_id || "");
+  const salvo = String((profile as { facebook_pixel_id?: string | null } | null)?.facebook_pixel_id || "");
   const [id, setId] = useState(salvo);
   const [tentou, setTentou] = useState(false);
   const [salvando, setSalvando] = useState(false);

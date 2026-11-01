@@ -29,10 +29,10 @@ export async function duplicarPedido(id: string): Promise<{ id: string; aviso: s
   const { data: orig, error } = await supabase.from("pedidos").select("*, pedido_itens(*)").eq("id", id).maybeSingle();
   if (error || !orig) return { erro: explicarErro(error, "Não deu para carregar o pedido para duplicar. Tente de novo.") };
 
-  const novo: any = {};
+  const novo: Record<string, unknown> = {};
   Object.entries(orig).forEach(([k, v]) => { if (!FORA_DO_PEDIDO.has(k)) novo[k] = v; });
   Object.assign(novo, { status: "agendado", status_pagamento: "pendente", valor_recebido: 0, origem: "manual" });
-  const itensOrig: any[] = orig.pedido_itens || [];
+  const itensOrig: Record<string, unknown>[] = orig.pedido_itens || [];
   const tinhaDesconto = !!orig.cupom_codigo || Number(orig.desconto) > 0 || Number(orig.cupom_desconto) > 0;
   const tinhaAcrescimo = Number(orig.acrescimo) > 0;
   // só mexe nas colunas que o pedido original tem (a conta pode não ter "acrescimo" nem "cupom_desconto")
@@ -51,8 +51,8 @@ export async function duplicarPedido(id: string): Promise<{ id: string; aviso: s
   const { data: criado, error: e2 } = await supabase.from("pedidos").insert(novo).select("id, numero").single();
   if (e2 || !criado?.id) return { erro: explicarErro(e2, ERRO_DUPLICAR) };
 
-  const itens = itensOrig.map((it: any) => {
-    const n: any = {};
+  const itens = itensOrig.map((it) => {
+    const n: Record<string, unknown> = {};
     Object.entries(it).forEach(([k, v]) => { if (!FORA_DO_ITEM.has(k)) n[k] = v; });
     n.pedido_id = criado.id;
     return n;
@@ -63,9 +63,9 @@ export async function duplicarPedido(id: string): Promise<{ id: string; aviso: s
       const falha = explicarErro(e3, ERRO_DUPLICAR);
       // não deixa cópia pela metade (11/10: se nem apagar der, avisa qual pedido ficou sem produtos)
       const { data: apagada, error: e4 } = await supabase.from("pedidos").delete().eq("id", criado.id).select("id");
-      if (e4 || !(apagada as any[] | null)?.length) {
+      if (e4 || !(apagada as { id: string }[] | null)?.length) {
         if (e4) console.error("[Doonly] cópia sem produtos que não deu para apagar:", e4);
-        return { erro: `A cópia${(criado as any).numero ? ` (pedido #${(criado as any).numero})` : ""} ficou salva sem os produtos. Abra a lista de pedidos e exclua essa cópia.` };
+        return { erro: `A cópia${(criado as { numero?: number | null }).numero ? ` (pedido #${(criado as { numero?: number | null }).numero})` : ""} ficou salva sem os produtos. Abra a lista de pedidos e exclua essa cópia.` };
       }
       return { erro: falha };
     }

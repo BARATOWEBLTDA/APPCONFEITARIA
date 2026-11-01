@@ -438,12 +438,17 @@ function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'ima
   return 'Problema de conexão. Verifique sua internet e tente novamente.'
 }
 
+/** O que as rotas da Doo devolvem (chat e imagem) */
+type RespostaDoo = { error?: string | { type?: string } | null; status?: number | string; data?: { url?: string }[]; content?: { text?: string }[]; stop_reason?: string }
+/** Erro lançado por lerResposta */
+type ErroDoo = { type?: string; status?: number }
+
 /** Lê a resposta das rotas da Doo. Erro vira { type, status } (o chat responde 200 e manda o erro dentro do JSON). */
-async function lerResposta(res: Response): Promise<any> {
-  let data: any = null
+async function lerResposta(res: Response): Promise<RespostaDoo> {
+  let data: RespostaDoo | null = null
   try { data = await res.json() } catch { /* resposta sem JSON (ex.: o 413 da hospedagem) */ }
   if (!res.ok || !data || data.error) {
-    const tipo = typeof data?.error === 'string' ? data.error : data?.error?.type
+    const tipo = typeof data?.error === 'string' ? data.error : (data?.error as { type?: string } | null)?.type
     throw { type: tipo || (res.ok ? 'api_error' : ''), status: res.ok ? (Number(data?.status) || 500) : res.status }
   }
   return data
@@ -714,8 +719,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             : { role: 'assistant', content: texto, ...(cortada ? { cortada: true } : {}) }])
         }
       }
-    } catch (err: any) {
-      const frase = getErrorMessage(err?.type ?? '', err?.status, imgPayload ? 'foto' : isImageRequest(text) ? 'imagem' : 'texto')
+    } catch (err: unknown) {
+      const frase = getErrorMessage((err as ErroDoo)?.type ?? '', (err as ErroDoo)?.status, imgPayload ? 'foto' : isImageRequest(text) ? 'imagem' : 'texto')
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: frase,

@@ -44,8 +44,8 @@ export const KIT_VAZIO: KitQtdConfig = {
   passo_sabor: 25,
 }
 
-export function kitAtivo(k: any): k is KitQtdConfig {
-  return !!(k && k.ativo)
+export function kitAtivo(k: unknown): k is KitQtdConfig {
+  return !!(k && (k as KitQtdConfig).ativo)
 }
 
 /** Kits fechados válidos (quantidade e preço preenchidos), do menor pro maior */

@@ -11,7 +11,7 @@ export type TaxaCidade = { cidade: string; valor: number }
 export type Ponto = { lat: number; lng: number }
 
 /** O modo gravado; sem ele (lojas antigas), a lista de bairros decide */
-export function modoDaLoja(cfg: { entrega_modo?: string | null; entrega_por_bairro?: any[] | null }): ModoEntrega {
+export function modoDaLoja(cfg: { entrega_modo?: string | null; entrega_por_bairro?: unknown[] | null }): ModoEntrega {
   const m = cfg.entrega_modo
   if (m === 'fixa' || m === 'bairro' || m === 'raio' || m === 'cidade') return m
   return Array.isArray(cfg.entrega_por_bairro) && cfg.entrega_por_bairro.length > 0 ? 'bairro' : 'fixa'
@@ -44,7 +44,7 @@ export function taxaPorRaio(faixas: FaixaRaio[], km: number, fora: number | null
 /** A taxa da cidade (sem acento e sem diferença de maiúscula); fora da lista, o valor de fora (ou não entrega) */
 export const semAcento = (s: string) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase()
 export function taxaPorCidade(lista: TaxaCidade[], cidade: string, fora: number | null): { ok: true; valor: number; cidade?: string } | { ok: false } {
-  const c = (lista || []).find(x => (x as any).ativo !== false && semAcento(x.cidade) === semAcento(cidade))
+  const c = (lista || []).find(x => (x as TaxaCidade & { ativo?: boolean }).ativo !== false && semAcento(x.cidade) === semAcento(cidade))
   if (c) return { ok: true, valor: Math.max(0, Number(c.valor) || 0), cidade: c.cidade }
   return fora != null ? { ok: true, valor: Math.max(0, fora) } : { ok: false }
 }
@@ -101,7 +101,7 @@ export async function atualizarPontoDaLoja(uid: string, e: { rua?: string; numer
     const pt = await pontoDoEndereco(e)
     if (!pt) return
     const { data } = await supabase.from('profiles').select('loja_lat, loja_lng').eq('id', uid).maybeSingle()
-    const d: any = data
+    const d = data as { loja_lat?: number | string | null; loja_lng?: number | string | null } | null
     if (d && d.loja_lat != null && d.loja_lng != null && distanciaKm({ lat: Number(d.loja_lat), lng: Number(d.loja_lng) }, pt) <= 0.08) return
     await supabase.from('profiles').update({ loja_lat: pt.lat, loja_lng: pt.lng }).eq('id', uid)
   } catch { /* sem internet ou campo ainda não existe: segue */ }

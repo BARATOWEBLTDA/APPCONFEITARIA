@@ -70,10 +70,22 @@ function formatPhone(v: string, digitando = false) {
  * (23/10) embutido: a mesma lista, sem o topo, dentro da "Minha loja" do celular (tela Cardápio), em dois blocos:
  * "A loja para o cliente" e "Como você vende". extras = linhas da Minha loja que entram no primeiro bloco (logo e aparência).
  */
+/** O que a tela recebe de quem abriu (Configurações, Entrega e pagamento) */
+type EstadoNavegacao = { de?: string; secao?: string } | null;
+/** Redes sociais da loja (colunas novas do perfil) */
+type RedesLoja = { instagram?: string | null; facebook?: string | null } | null;
+/** Endereço da loja (gravado como JSON no perfil) */
+type EnderecoSalvo = { cep?: string; rua?: string; numero?: string; complemento?: string; bairro?: string; cidade?: string; estado?: string };
+/** Resumo de pagamento e entrega lido do perfil */
+type PagamentoSalvo = {
+  formas_pagamento?: string[] | null; formas_entrega?: string[] | null; valor_entrega_propria?: number | string | null; entrega_por_bairro?: unknown[] | null
+  pix_online?: boolean | null; pix_chave?: string | null; pix_modo?: string | null; pix_sinal_pct?: number | string | null
+};
+
 export default function DadosLoja({ embutido = false, extras }: { embutido?: boolean; extras?: { antes?: ReactNode; depois?: ReactNode } } = {}) {
   const navigate = useNavigate();
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
-  const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
+  const voltarPara = (useLocation().state as EstadoNavegacao)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -120,7 +132,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
         if (r.error) setRedesNoBanco(false);
         else {
           setRedesNoBanco(true);
-          const ig = (r.data as any)?.instagram ? "@" + (r.data as any).instagram : "", fb = (r.data as any)?.facebook || "";
+          const ig = (r.data as RedesLoja)?.instagram ? "@" + (r.data as RedesLoja).instagram : "", fb = (r.data as RedesLoja)?.facebook || "";
           let guardado: { instagram?: string; facebook?: string } = {};
           try { guardado = JSON.parse(localStorage.getItem(`doonly:redes:${user.id}`) || "{}") || {}; } catch { /* sem armazenamento */ }
           setInstagram(ig || guardado.instagram || ""); setFacebook(fb || guardado.facebook || "");
@@ -131,7 +143,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
         setNome(data.nome_loja || "");
         setTelefone(formatPhone(data.telefone || ""));
         setDescricao(data.descricao_loja || "");
-        let addr: any = {};
+        let addr: EnderecoSalvo = {};
         try { addr = data.endereco ? (typeof data.endereco === "string" ? JSON.parse(data.endereco) : data.endereco) : {}; } catch { /* ignora */ }
         setEnd({ cep: addr.cep || "", rua: addr.rua || "", numero: addr.numero || "", complemento: addr.complemento || "", bairro: addr.bairro || "", cidade: addr.cidade || "", estado: addr.estado || "" });
         if (addr.cep) setCepOk(true);
@@ -140,7 +152,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
         setMostrarLocal(!jaTemEndereco ? "completo" : data.mostrar_localizacao ? "completo" : data.mostrar_apenas_cidade ? "cidade" : "nada");
         // (27/10) só pelo endereço de retirada salvo: antes "retirada" nas formas de entrega (o padrão) ligava de novo
         // depois que ela desligava, e o próximo salvar punha o endereço da casa dela de volta no cardápio
-        setRecebeAqui(!jaTemEndereco || !!(data as any).endereco_retirada);
+        setRecebeAqui(!jaTemEndereco || !!(data as { endereco_retirada?: string | null }).endereco_retirada);
         if (data.horario) {
           try {
             const h = typeof data.horario === "string" ? JSON.parse(data.horario) : data.horario;
@@ -197,7 +209,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   }, [descricao, loading]);
 
   // (17/10) veio do antigo "Entrega e pagamento": desce direto pra essa parte
-  const irEntrega = (useLocation().state as any)?.secao === "entrega";
+  const irEntrega = (useLocation().state as EstadoNavegacao)?.secao === "entrega";
   useEffect(() => {
     if (loading || !irEntrega) return;
     const t = window.setTimeout(() => document.getElementById("entrega-pagamento")?.scrollIntoView({ block: "start" }), 400);
@@ -359,7 +371,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     if (!userId) return;
     supabase.from("profiles").select("formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, pix_online, pix_chave, pix_modo, pix_sinal_pct").eq("id", userId).maybeSingle().then(({ data }) => {
       if (!data) return;
-      const d: any = data;
+      const d: PagamentoSalvo = data;
       setEp(e => e || { formasPagamento: d.formas_pagamento || [], formasEntrega: d.formas_entrega || [], taxa: Number(d.valor_entrega_propria) || 0,
         porBairro: Array.isArray(d.entrega_por_bairro) ? d.entrega_por_bairro.length : 0, pixOnline: !!d.pix_online, pixPronto: !!d.pix_chave,
         pixTipo: "", pixModo: d.pix_modo || "escolha", pixPct: String(d.pix_sinal_pct || 50) });

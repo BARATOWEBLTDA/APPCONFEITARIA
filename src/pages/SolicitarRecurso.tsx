@@ -6,6 +6,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
 import { useProfile } from "@/hooks/useProfile";
+
+/** Contato da conta (vem do perfil) */
+type PerfilContato = { telefone?: string | null; email?: string | null } | null;
 import { PaperPlaneTilt, CheckCircle, Lightbulb, CaretRight } from "@phosphor-icons/react";
 import { Botao, Campo, CampoArea, TelaVazia } from "@/components/base";
 import "./clientes.css";
@@ -103,8 +106,8 @@ export default function SolicitarRecurso() {
       const { error } = await supabase.from("sugestoes").insert({
         user_id: user?.id || null,
         nome: profile?.nome || null,
-        telefone: (profile as any)?.telefone || null,
-        email: (profile as any)?.email || null,
+        telefone: (profile as PerfilContato)?.telefone || null,
+        email: (profile as PerfilContato)?.email || null,
         titulo: tit,
         descricao: descricao.trim() || tit, // descrição é opcional: repete o título
         area,
@@ -116,7 +119,7 @@ export default function SolicitarRecurso() {
       if (error) throw error;
       setEnviado(true);
       carregarHistorico();
-    } catch (err: any) {
+    } catch (err) {
       setErro(explicarErro(err, "Não foi possível enviar. Tente de novo em instantes."));
     }
     setEnviando(false);

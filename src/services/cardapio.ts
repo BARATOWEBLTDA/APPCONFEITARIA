@@ -6,6 +6,64 @@ import { fotoDaLoja } from '@/hooks/useProfile'
 import { Produto, DesignSettings, Configuracoes } from '@/types/database'
 import { problemaNaChave, tipoDaChave } from '@/lib/pix'
 import { lojaAntecipada, restoAntecipado } from '@/lib/cardapioAntecipado'
+import type { PixLoja } from '@/lib/pix'
+
+/** O perfil da loja como vem da função cardapio_loja (ou da tabela profiles) */
+type PerfilLoja = {
+  id: string
+  codigo_publico?: string | null
+  plano?: string | null
+  pro_expira_em?: string | null
+  slug_personalizado?: string | null
+  cardapio_modelo?: string | null
+  logo_url?: string | null
+  foto_url?: string | null
+  nome_loja?: string | null
+  descricao_loja?: string | null
+  cor_borda?: string | null
+  cor_nome?: string | null
+  cor_navbar?: string | null
+  banner_url?: string | null
+  banner1_url?: string | null
+  banner2_url?: string | null
+  banner3_url?: string | null
+  banner_topo_url?: string | null
+  banner_gradient?: string | null
+  ocultar_categorias?: boolean | null
+  facebook_pixel_id?: string | null
+  telefone?: string | null
+  avaliacao_media?: number | null
+  endereco?: string | null
+  mostrar_localizacao?: boolean | null
+  mostrar_apenas_cidade?: boolean | null
+  horario?: string | null
+  formas_pagamento?: string[] | null
+  formas_entrega?: string[] | null
+  valor_entrega_propria?: number | null
+  entrega_modo?: string | null
+  entrega_por_bairro?: { bairro: string; valor: number }[] | null
+  entrega_por_raio?: { km: number; valor: number }[] | null
+  entrega_por_cidade?: { cidade: string; valor: number; ativo?: boolean }[] | null
+  entrega_fora_valor?: number | null
+  endereco_retirada?: string | null
+  horario_retirada?: string | null
+  exibir_campo_troco?: boolean | null
+  cupons_desconto?: { ativo?: boolean }[] | null
+  aceita_agendamento?: boolean | null
+  pix_online?: boolean | null
+  pix_chave?: string | null
+  pix_nome?: string | null
+  pix_cidade?: string | null
+  pix_modo?: PixLoja['modo'] | null
+  pix_sinal_pct?: number | string | null
+  pagar_na_retirada?: boolean | null
+  prazo_minimo_horas?: number | null
+  mensagens_whatsapp?: { pedido_cardapio?: string | null } | null
+  instagram?: string | null
+  loja_pausada?: boolean | null
+  facebook?: string | null
+}
+type ErroBanco = { code?: string; message?: string } | null
 
 export interface CardapioData {
   design: DesignSettings | null
@@ -44,9 +102,9 @@ const EMPTY_RESULT: CardapioData = {
  * (plano interno, Hotmart, caixa, cupons, indicação). Se a função ainda não existir no banco
  * (SQL 4.22 ainda não rodado), lê o perfil como antes.
  */
-const funcaoFaltando = (e: any) => !!e && (e.code === 'PGRST202' || e.code === '42883' || /could not find the function/i.test(String(e.message || '')))
+const funcaoFaltando = (e: ErroBanco) => !!e && (e.code === 'PGRST202' || e.code === '42883' || /could not find the function/i.test(String(e.message || '')))
 
-async function perfilDaLoja(chave: string, coluna: 'codigo_publico' | 'id'): Promise<any | null> {
+async function perfilDaLoja(chave: string, coluna: 'codigo_publico' | 'id'): Promise<PerfilLoja | null> {
   const { data, error } = await (lojaAntecipada(chave) ?? supabase.rpc('cardapio_loja', { p_chave: chave }))
   if (!error) return data || null
   if (!funcaoFaltando(error)) return null
@@ -78,7 +136,7 @@ export async function getCardapioBySlug(slug: string): Promise<CardapioData> {
   return fetchByUserId(profile.id, profile)
 }
 
-async function fetchByUserId(userId: string, profile: any): Promise<CardapioData> {
+async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<CardapioData> {
   // (17/10) Produtos e categorias pelas funções do banco (SQL cardapio_produtos): o cliente sem login
   // não conseguia ler as tabelas direto e o cardápio aparecia vazio. As funções também não entregam
   // os campos internos da ficha técnica (custo, salário desejado…).
@@ -94,8 +152,8 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
   // (27/10) sem leitura direta da tabela: ela trazia custo e salário da ficha técnica para o navegador do cliente
   // (27/10) falha ao buscar os produtos vira erro (com "Tentar de novo"), não uma loja vazia
   if (rProd.error) throw rProd.error
-  const produtos: any[] | null = Array.isArray(rProd.data) ? rProd.data : null
-  let categorias: any[] | null = Array.isArray(rCat.data) ? rCat.data : null
+  const produtos: Produto[] | null = Array.isArray(rProd.data) ? rProd.data : null
+  let categorias: { nome: string; imagem_url?: string | null }[] | null = Array.isArray(rCat.data) ? rCat.data : null
   if (rCat.error && funcaoFaltando(rCat.error)) {
     const { data } = await supabase.from('categorias').select('nome, imagem_url').eq('user_id', userId).order('ordem').order('nome')
     categorias = data
@@ -104,7 +162,7 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
   const categoryImages: { [key: string]: string } = {}
   const categoriasList: string[] = []
   if (categorias) {
-    categorias.forEach((c: any) => {
+    categorias.forEach((c) => {
       categoriasList.push(c.nome)
       if (c.imagem_url) categoryImages[c.nome] = c.imagem_url
     })
@@ -165,14 +223,14 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     // (28/10 · 4.49) raio e cidade. Nesses modos a lista de bairros não vale (o cardápio olha a lista pra pedir o bairro)
     entrega_modo: modoDaLoja(profile),
     entrega_por_raio: Array.isArray(profile.entrega_por_raio) ? profile.entrega_por_raio : [],
-    entrega_por_cidade: Array.isArray(profile.entrega_por_cidade) ? profile.entrega_por_cidade.filter((c: any) => c?.ativo !== false) : [],
+    entrega_por_cidade: Array.isArray(profile.entrega_por_cidade) ? profile.entrega_por_cidade.filter((c) => c?.ativo !== false) : [],
     entrega_fora_valor: profile.entrega_fora_valor ?? null,
     endereco_retirada: profile.endereco_retirada || '',
     horario_retirada: profile.horario_retirada || '',
     exibir_campo_troco: profile.exibir_campo_troco !== false,
     cupons_desconto: [],
     // Cupons são recurso PRO (liberado pra loja grátis enquanto testa: lib/cupons)
-    tem_cupom: cupomDisponivel(isPro) && (temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c: any) => c?.ativo))),
+    tem_cupom: cupomDisponivel(isPro) && (temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c) => c?.ativo))),
     cupons_vitrine: cupomDisponivel(isPro) && Array.isArray(rVitrine?.data) ? rVitrine.data : [],
     aceita_agendamento: profile.aceita_agendamento !== false,
     // (20/10) Pix pelo cardápio: só quando a loja ligou, aceita Pix e preencheu chave, nome e cidade

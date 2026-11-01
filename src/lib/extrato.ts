@@ -21,6 +21,9 @@ export type MovExtrato = {
   /** (24/10) extrato: quem pagou (ou o que foi), o número do pedido e a hora do lançamento */
   quem?: string; pedidoNumero?: number | null; hora?: string;
 };
+type LinhaPagamento = { id: string; valor: number | null; forma: string | null; tipo: string | null; recebido_em: string; pedido_id: string | null; created_at: string | null; estornado_em: string | null };
+type LinhaFinanceiro = { id: string; tipo: string | null; categoria: string | null; descricao: string | null; valor: number | null; data: string; created_at?: string | null; estornado_em?: string | null; forma?: string | null };
+type PedidoDoPagamento = { id: string; numero: number | null; cliente_nome: string | null; clientes?: { nome?: string | null } | { nome?: string | null }[] | null };
 const horaDe = (iso?: string | null) => { if (!iso || !/T|\s\d{2}:/.test(iso)) return ""; const d = new Date(iso); return isNaN(d.getTime()) ? "" : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
 
 const FORMA: Record<string, string> = { pix: "Pix", dinheiro: "Dinheiro", credito: "Crédito", debito: "Débito", boleto: "Boleto" };
@@ -34,10 +37,10 @@ export const nomeForma = (f?: string | null) => (f ? FORMA[f] || f : "");
  * ou os recebimentos sumiam).
  */
 export async function carregarExtrato(uid: string, ini: string, fim: string): Promise<{ itens: MovExtrato[]; semEstornoManual: boolean; erro: boolean }> {
-  const lancamentos = (colunas: string) => buscarTudo<any>((de, ate) => supabase.from("financeiro").select(colunas)
+  const lancamentos = (colunas: string) => buscarTudo<LinhaFinanceiro>((de, ate) => supabase.from("financeiro").select<string, LinhaFinanceiro>(colunas)
     .eq("user_id", uid).gte("data", ini).lte("data", fim).order("id").range(de, ate));
   const [pag, fin1] = await Promise.all([
-    buscarTudo<any>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at, estornado_em")
+    buscarTudo<LinhaPagamento>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at, estornado_em")
       .eq("user_id", uid).gte("recebido_em", ini).lte("recebido_em", fim).order("id").range(de, ate)),
     lancamentos("id, tipo, categoria, descricao, valor, data, created_at, estornado_em, forma"),
   ]);
@@ -53,15 +56,15 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
     console.error("[extrato] não consegui carregar:", fin.error || pag.error);
     return { itens: [], semEstornoManual, erro: true };
   }
-  const pagamentos: any[] = pag.error ? [] : pag.data;
+  const pagamentos: LinhaPagamento[] = pag.error ? [] : pag.data;
   const ids = [...new Set(pagamentos.map(g => g.pedido_id).filter(Boolean))] as string[];
-  const nomes: Record<string, { numero: any; cliente: string }> = {};
+  const nomes: Record<string, { numero: number | null; cliente: string }> = {};
   // em blocos de 100 pedidos: com muitos recebimentos, a lista de ids pode passar do tamanho que o servidor aceita (10/10)
   for (let i = 0; i < ids.length; i += 100) {
     const bloco = ids.slice(i, i + 100);
     // 09/10: o nome vem também do cadastro do cliente (pedido feito só com o cliente escolhido não tinha cliente_nome)
-    const r1: any = await supabase.from("pedidos").select("id, numero, cliente_nome, clientes(nome)").in("id", bloco);
-    const data: any[] = (r1.error ? (await supabase.from("pedidos").select("id, numero, cliente_nome").in("id", bloco)).data : r1.data) || [];
+    const r1 = await supabase.from("pedidos").select("id, numero, cliente_nome, clientes(nome)").in("id", bloco);
+    const data: PedidoDoPagamento[] = (r1.error ? (await supabase.from("pedidos").select("id, numero, cliente_nome").in("id", bloco)).data : r1.data) || [];
     for (const x of data) {
       const cad = Array.isArray(x.clientes) ? x.clientes[0]?.nome : x.clientes?.nome;
       nomes[x.id] = { numero: x.numero, cliente: String(x.cliente_nome || cad || "").trim() };

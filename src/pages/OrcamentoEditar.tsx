@@ -12,7 +12,10 @@ import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { Botao, CaixasEscolha, Campo, CampoArea, Janela, MenuMais, TelaVazia, avisar, confirmar } from '@/components/base'
 import { supabase } from '@/lib/supabase'
 import { explicarErro } from '@/lib/erros'
-import { useProfile } from '@/hooks/useProfile'
+import { useProfile, type Profile } from '@/hooks/useProfile'
+import type { PostgrestError } from '@supabase/supabase-js'
+import type { ProdutoPrecoJson } from '@/lib/precoCardapio'
+import type { ProdutoCustoJson } from '@/lib/produto-precificacao'
 import { usePlano } from '@/hooks/usePlano'
 import { linkWhatsApp } from '@/lib/telefone'
 import { precoCardapioComPromocao } from '@/lib/precoCardapio'
@@ -25,7 +28,9 @@ import {
 import { COMO_ORCAMENTO, TOUR_ORCAMENTO } from '@/lib/comoTelas'
 import './orcamentos.css'
 
-type Prod = { id: string; nome: string; categoria?: string | null; imagem_url?: string | null; [k: string]: any }
+type Prod = ProdutoPrecoJson & { id: string; nome: string; categoria?: string | null; imagem_url?: string | null }
+/** O perfil com a logo da loja (vem do banco junto com o resto) */
+type PerfilComLogo = (Profile & { logo_url?: string | null }) | null
 const novoId = () => Math.random().toString(36).slice(2, 10)
 const foto1 = (f?: string | null) => (f ? String(f).split(/,(?=\s*(?:https?:|\/))/)[0].trim() : '')
 const lerReais = (s: string) => { const d = s.replace(/\D/g, ''); return d ? parseInt(d, 10) / 100 : 0 }
@@ -56,7 +61,7 @@ export default function OrcamentoEditar() {
   const [custos, setCustos] = useState<Record<string, number | null>>({})
   const [pedidoNumero, setPedidoNumero] = useState<number | null>(null)
   const [foto, setFoto] = useState('')
-  const nomeLoja = (profile as any)?.nome_loja || 'Minha confeitaria'
+  const nomeLoja = profile?.nome_loja || 'Minha confeitaria'
 
   // carrega o orçamento (ou começa um novo) e os produtos do cardápio
   useEffect(() => {
@@ -66,7 +71,7 @@ export default function OrcamentoEditar() {
       const uid = u.user?.id || ''
       const [{ data: prods }, orc] = await Promise.all([
         supabase.from('produtos').select('*').eq('user_id', uid).order('nome'),
-        id && id !== 'novo' ? supabase.from('orcamentos').select('*').eq('id', id).maybeSingle() : Promise.resolve({ data: VAZIO(uid), error: null } as any),
+        id && id !== 'novo' ? supabase.from('orcamentos').select('*').eq('id', id).maybeSingle() : Promise.resolve({ data: VAZIO(uid), error: null } as { data: Orcamento | null; error: PostgrestError | null }),
       ])
       if (!vivo) return
       setProdutos((prods as Prod[]) || [])
@@ -85,7 +90,7 @@ export default function OrcamentoEditar() {
       }
       if (d.pedido_id) {
         const { data: p } = await supabase.from('pedidos').select('numero').eq('id', d.pedido_id).maybeSingle()
-        if (vivo && p) setPedidoNumero((p as any).numero)
+        if (vivo && p) setPedidoNumero((p as { numero: number | null }).numero)
       }
     })().catch(e => setErro(explicarErro(e, 'Tente de novo em instantes.')))
     return () => { vivo = false }
@@ -103,10 +108,10 @@ export default function OrcamentoEditar() {
         lerMaoObraConta(uid).catch(() => null),
         supabase.from('profiles').select('custos_invisiveis_pct').eq('id', uid).maybeSingle(),
       ])
-      const cv = (pf as any)?.custos_invisiveis_pct != null ? Number((pf as any).custos_invisiveis_pct) : null
+      const cv = (pf as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct != null ? Number((pf as { custos_invisiveis_pct?: number | null }).custos_invisiveis_pct) : null
       const novo: Record<string, number | null> = {}
       for (const x of ids) {
-        const p = ((data as any[]) || []).find(y => y.id === x)
+        const p = ((data as (ProdutoCustoJson & { id: string })[]) || []).find(y => y.id === x)
         const c = p ? calcularCustoLucro(p, mao, cv) : null
         novo[x] = c && c.temFicha ? c.custoTotal : null
       }
@@ -141,7 +146,7 @@ export default function OrcamentoEditar() {
   const salvar = async (extra: Partial<Orcamento> = {}): Promise<Orcamento | null> => {
     if (!o) return null
     setSalvando(true)
-    const dados: any = {
+    const dados: Record<string, unknown> = {
       cliente_nome: o.cliente_nome?.trim() || null, cliente_telefone: o.cliente_telefone?.trim() || null,
       data_evento: o.data_evento || null, nome_evento: o.nome_evento?.trim() || null, local_evento: o.local_evento?.trim() || null,
       pessoas: o.pessoas || null, itens: (o.itens || []).map(({ id: iid, ...i }) => ({ id: iid, ...i, quantidade: Number(i.quantidade) || 1, valor_unitario: Number(i.valor_unitario) || 0 })),
@@ -154,7 +159,7 @@ export default function OrcamentoEditar() {
       if (!o.id) {
         const { data, error } = await supabase.from('orcamentos').insert({ user_id: o.user_id, origem: 'manual', status: extra.status || 'rascunho', ...dados }).select().single()
         if (error) throw error
-        const novo = { ...(data as Orcamento), itens: (data as any).itens?.map((i: any) => ({ ...i, id: i.id || novoId() })) || [] }
+        const novo = { ...(data as Orcamento), itens: (data as Orcamento).itens?.map((i: ItemOrcamento) => ({ ...i, id: i.id || novoId() })) || [] }
         setO(novo); setMudou(false)
         window.history.replaceState(window.history.state, '', `/orcamentos/${novo.id}`)
         return novo
@@ -164,12 +169,12 @@ export default function OrcamentoEditar() {
       if (error) throw error
       if (!data) {
         const { data: atual } = await supabase.from('orcamentos').select('*').eq('id', o.id).maybeSingle()
-        if (atual) setO({ ...(atual as Orcamento), itens: ((atual as any).itens || []).map((i: any) => ({ ...i, id: i.id || novoId() })) })
+        if (atual) setO({ ...(atual as Orcamento), itens: ((atual as Orcamento).itens || []).map((i: ItemOrcamento) => ({ ...i, id: i.id || novoId() })) })
         setMudou(false)
         avisar('O cliente já respondeu este orçamento.', { tipo: 'erro' })
         return null
       }
-      const novo = { ...(data as Orcamento), itens: (data as any).itens?.map((i: any) => ({ ...i, id: i.id || novoId() })) || [] }
+      const novo = { ...(data as Orcamento), itens: (data as Orcamento).itens?.map((i: ItemOrcamento) => ({ ...i, id: i.id || novoId() })) || [] }
       setO(novo); setMudou(false)
       return novo
     } catch (e) {
@@ -187,7 +192,7 @@ export default function OrcamentoEditar() {
   }
 
   // (28/10) a validade de 7/15/30 dias conta do dia do envio (antes contava do dia em que o rascunho foi criado)
-  const dadosEnvio = (): any | null => {
+  const dadosEnvio = (): Partial<Orcamento> | null => {
     if (!o) return null
     if (validadeTipo === 'data' && o.validade && o.validade < hojeISO()) { avisar('A validade já passou. Escolha outra data.', { tipo: 'erro' }); return null }
     return { status: 'enviado', enviado_em: o.enviado_em || new Date().toISOString(), ...(validadeTipo !== 'data' ? { validade: maisDias(Number(validadeTipo)) } : {}) }
@@ -254,7 +259,7 @@ export default function OrcamentoEditar() {
 
   const pediu = o.origem === 'link' ? (
     <section className="orc-card orc-pediu">
-      <h3>O que ele pediu</h3>
+      <h2>O que ele pediu</h2>
       <dl className="orc-kv">
         {o.ocasiao && <><dt>Para</dt><dd>{o.ocasiao}{o.pessoas ? ` · ${o.pessoas} pessoas` : ''}</dd></>}
         {o.data_evento && <><dt>Data</dt><dd>{dataLonga(o.data_evento)}</dd></>}
@@ -277,10 +282,10 @@ export default function OrcamentoEditar() {
             <small>{o.respondido_em ? `Respondido em ${new Date(o.respondido_em).toLocaleDateString('pt-BR')}` : ''}{o.motivo_recusa ? ` · “${o.motivo_recusa}”` : ''}</small>
             {o.pedido_id && <Botao tamanho="m" onClick={() => navigate(`/pedidos/${o.pedido_id}/editar`)}>Abrir o pedido</Botao>}
           </section>
-          <Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as any)?.logo_url} />
+          <Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url} />
           <div className="orc-acoes-fim"><Botao variante="secundario" icone={<FilePdf size={18} weight="bold" />} onClick={baixarPdf}>Baixar PDF</Botao></div>
         </div>
-        {pediu && <aside className="orc-ed-lado">{pediu}</aside>}
+        {pediu && <aside className="orc-ed-lado" aria-label="Resumo do orçamento">{pediu}</aside>}
       </div>
       {foto && <Janela aberta aoFechar={() => setFoto('')} tipo="conteudo" titulo="Foto de referência"><img className="orc-foto-g" src={foto} alt="Foto de referência" /></Janela>}
     </>)
@@ -319,7 +324,7 @@ export default function OrcamentoEditar() {
         {etapa === 1 && (<>
           <div className="orc-so-cel">{pediu}</div>
           <section className="orc-card">
-            <h3 className="orc-h-acao">Cliente{!verCampos && <button type="button" className="orc-link-bt" onClick={() => setEditarCli(true)}><PencilSimple size={14} weight="bold" />Editar</button>}</h3>
+            <h2 className="orc-h-acao">Cliente{!verCampos && <button type="button" className="orc-link-bt" onClick={() => setEditarCli(true)}><PencilSimple size={14} weight="bold" />Editar</button>}</h2>
             {verCampos ? (
               <div className="orc-2">
                 <Campo rotulo="Nome" value={o.cliente_nome || ''} placeholder="Nome do cliente" onChange={e => muda({ cliente_nome: e.target.value })} />
@@ -336,7 +341,7 @@ export default function OrcamentoEditar() {
           </section>
 
           <section className="orc-card">
-            <h3>Evento</h3>
+            <h2>Evento</h2>
             <div className="orc-ev">
               <div className="orc-ev-data">
                 <span className="ui-campo-r"><span>Data</span></span>
@@ -351,7 +356,7 @@ export default function OrcamentoEditar() {
           </section>
 
           <section className="orc-card">
-            <h3>Itens</h3>
+            <h2>Itens</h2>
             {(o.itens || []).length === 0 && <p className="orc-vz">Coloque os produtos do seu cardápio ou um item personalizado (ex.: bolo de 2 andares com tema).</p>}
             {(o.itens || []).map(i => (
               <div key={i.id} className="orc-item">
@@ -400,7 +405,7 @@ export default function OrcamentoEditar() {
 
         {etapa === 2 && (<>
           <section className="orc-card">
-            <h3>Vale até</h3>
+            <h2>Vale até</h2>
             <div className="orc-seg" role="radiogroup" aria-label="Vale até">
               {([['7', '7 dias'], ['15', '15 dias'], ['30', '30 dias'], ['data', 'Data']] as const).map(([k, t]) => (
                 <button key={k} type="button" role="radio" aria-checked={validadeTipo === k} onClick={() => { setValidadeTipo(k); if (k !== 'data') muda({ validade: maisDias(Number(k)) }) }}>{t}</button>
@@ -412,7 +417,7 @@ export default function OrcamentoEditar() {
           </section>
 
           <section className="orc-card">
-            <h3>Sinal para reservar a data</h3>
+            <h2>Sinal para reservar a data</h2>
             {/* (29/10 · 5.04) caixinhas com o que cada uma faz (antes: seletor de 4 partes) */}
             <CaixasEscolha rotulo="Sinal para reservar a data" valor={(o.sinal_tipo || 'sem') as 'sem' | '50' | 'total' | 'valor'} opcoes={[
               { v: 'sem', t: 'Sem sinal', sub: 'Ele aceita e paga tudo depois' },
@@ -425,7 +430,7 @@ export default function OrcamentoEditar() {
           </section>
 
           <section className="orc-card">
-            <h3>Como ele paga</h3>
+            <h2>Como ele paga</h2>
             <div className="orc-seg" role="radiogroup" aria-label="Como ele paga">
               {(['pix', 'dinheiro', 'cartao', 'combinar'] as const).map(k => (
                 <button key={k} type="button" role="radio" aria-checked={o.forma_pagamento === k} onClick={() => muda({ forma_pagamento: k })}>{k === 'combinar' ? 'Combinar' : FORMA_ORC[k]}</button>
@@ -435,7 +440,7 @@ export default function OrcamentoEditar() {
           </section>
 
           <section className="orc-card">
-            <h3>Recado para ele <small>opcional</small></h3>
+            <h2>Recado para ele <small>opcional</small></h2>
             <CampoArea rotulo="" aria-label="Recado para o cliente" rows={3} value={o.mensagem || ''} placeholder="Ex.: Oi, Ana! Que alegria fazer parte do aniversário da Malu." onChange={e => muda({ mensagem: e.target.value })} />
             {!(o.mensagem || '').trim() && <button type="button" className="orc-link-bt" onClick={recadoPronto}><Plus size={14} weight="bold" />Usar um recado pronto</button>}
             <p className="orc-nota">Se ele não responder em 3 dias, o orçamento fica em destaque na lista para você pedir o retorno.</p>
@@ -444,8 +449,8 @@ export default function OrcamentoEditar() {
 
         {etapa === 3 && (<>
           <section className="orc-card">
-            <h3>Assim o cliente vê</h3>
-            <Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as any)?.logo_url} />
+            <h2>Assim o cliente vê</h2>
+            <Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url} />
           </section>
           <section className="orc-pronta"><Check size={18} weight="bold" aria-hidden="true" /><span><b>Pronto para enviar</b><small>{(o.itens || []).length} {(o.itens || []).length === 1 ? 'item' : 'itens'} · {brl(total)}{o.status === 'enviado' ? ' · já enviado (o link continua o mesmo)' : ''}</small></span></section>
           <div className="orc-envio">
@@ -459,10 +464,10 @@ export default function OrcamentoEditar() {
 
       </div>
 
-      <aside className="orc-ed-lado">
+      <aside className="orc-ed-lado" aria-label="Resumo do orçamento">
         {pediu}
         {/* no computador, a prévia ao vivo fica do lado enquanto ela monta (na etapa Enviar ela já está no meio) */}
-        {etapa < 3 && <section className="orc-card"><h3>Assim o cliente vê</h3><Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as any)?.logo_url} />
+        {etapa < 3 && <section className="orc-card"><h2>Assim o cliente vê</h2><Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url} />
           {/* (28/10) no computador os botões ficam aqui, embaixo do total (como o Resumo da Nova venda) */}
           <div className="orc-lado-bts">{botoesEtapa}</div>
         </section>}

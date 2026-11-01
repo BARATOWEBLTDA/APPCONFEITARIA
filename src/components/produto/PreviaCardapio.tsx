@@ -10,10 +10,10 @@ import { CartProvider } from "@/context/CartContext";
  * O cartão do produto (com promoção mostra o preço riscado e o selo) e, ao lado, "Ver por dentro",
  * que abre o produto em modo prévia. O cartão é só pra ver (tocar nele não abre nada).
  */
-export default function PreviaCardapio({ form, cor = "#E85A8C" }: { form: any; cor?: string }) {
+export default function PreviaCardapio({ form, cor = "#E85A8C" }: { form: Record<string, unknown> & { id?: string }; cor?: string }) {
   const [aberto, setAberto] = useState(false);
   const produto = { ...form, id: form.id || "previa", disponivel: true } as unknown as Produto;
-  const travar = { onClickCapture: (e: any) => { e.preventDefault(); e.stopPropagation(); }, onKeyDownCapture: (e: any) => { e.preventDefault(); e.stopPropagation(); } };
+  const travar = { onClickCapture: (e: React.SyntheticEvent) => { e.preventDefault(); e.stopPropagation(); }, onKeyDownCapture: (e: React.SyntheticEvent) => { e.preventDefault(); e.stopPropagation(); } };
   return (
     <div className="prev-cardapio prev-cardapio--v2">
       <p className="prod-section-label prev-cardapio-t">Assim aparece no cardápio</p>

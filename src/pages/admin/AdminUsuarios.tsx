@@ -5,13 +5,21 @@ import { Botao, BotaoIcone, Campo, Janela, TelaVazia, avisar, confirmar, informa
 import { buscarTudo } from "@/lib/buscarTudo";
 import { explicarErro } from "@/lib/erros";
 
+/** Usuário da lista (função admin_usuarios + plano de profiles) */
+type UsuarioAdmin = {
+  id: string; email?: string | null; nome?: string | null; telefone?: string | null; foto_url?: string | null; created_at?: string | null
+  banned_until?: string | null; is_admin?: boolean | null; plano?: string | null; pro_expira_em?: string | null; indicado_por?: string | null
+};
+/** O plano de cada conta (profiles) */
+type PlanoUsuario = Pick<UsuarioAdmin, "id" | "plano" | "pro_expira_em" | "indicado_por">;
+
 export default function AdminUsuarios() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UsuarioAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [erroCarregar, setErroCarregar] = useState("");
   const [search, setSearch] = useState("");
-  const [confirmDelete, setConfirmDelete] = useState<any | null>(null);
-  const [confirmBlock, setConfirmBlock] = useState<any | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<UsuarioAdmin | null>(null);
+  const [confirmBlock, setConfirmBlock] = useState<UsuarioAdmin | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState({ nome: "", email: "", senha: "", telefone: "" });
   const [creating, setCreating] = useState(false);
@@ -26,13 +34,13 @@ export default function AdminUsuarios() {
     setLoading(true); setErroCarregar("");
     // (11/10) De 1.000 em 1.000 (o banco corta em 1.000 linhas sem avisar) e conferindo os erros:
     // antes, se a leitura dos planos falhava, todo mundo aparecia como Grátis.
-    const { data, error } = await buscarTudo<any>((de, ate) =>
+    const { data, error } = await buscarTudo<UsuarioAdmin>((de, ate) =>
       supabase.rpc("admin_usuarios").select("*").order("created_at", { ascending: false }).order("id").range(de, ate));
     if (error) { setErroCarregar(explicarErro(error, "Tente de novo em instantes.")); setLoading(false); return; }
     // (01/11 · 5.99) a lista vem da função admin_usuarios (a view admin_users saiu). Mescla plano e pro_expira_em vindos de profiles
     // em lotes de 100: com todos os ids num pedido só, o endereço ficava grande demais
     const ids = data.map(u => u.id).filter(Boolean);
-    const mapa = new Map<string, any>();
+    const mapa = new Map<string, PlanoUsuario>();
     for (let i = 0; i < ids.length; i += 100) {
       const { data: planos, error: erroPlanos } = await supabase.from("profiles").select("id, plano, pro_expira_em, indicado_por").in("id", ids.slice(i, i + 100));
       if (erroPlanos) { setErroCarregar(explicarErro(erroPlanos, "Tente de novo em instantes.")); setLoading(false); return; }
@@ -46,12 +54,12 @@ export default function AdminUsuarios() {
    * Ativa PRO por N dias (padrão 30). Se já é PRO ativo, desativa.
    * Uso: botão da coroa na lista de usuários (ativar abre a janela de dias).
    */
-  const [proAlvo, setProAlvo] = useState<any | null>(null);
+  const [proAlvo, setProAlvo] = useState<UsuarioAdmin | null>(null);
   const [proDias, setProDias] = useState("30");
   const [proErro, setProErro] = useState("");
   const [proSalvando, setProSalvando] = useState(false);
 
-  const handleTogglePRO = async (u: any) => {
+  const handleTogglePRO = async (u: UsuarioAdmin) => {
     const isPROAtivo = u.plano === "pro" && (!u.pro_expira_em || new Date(u.pro_expira_em) > new Date());
     console.log("[PRO] Iniciando toggle:", { userId: u.id, email: u.email, isPROAtivo });
 
@@ -146,8 +154,8 @@ export default function AdminUsuarios() {
       setShowCreate(false);
       setCreateForm({ nome: "", email: "", senha: "", telefone: "" });
       await load();
-    } catch (err: any) {
-      setCreateError(err.message);
+    } catch (err) {
+      setCreateError((err as Error).message);
     }
     setCreating(false);
   };
@@ -159,8 +167,8 @@ export default function AdminUsuarios() {
       await callEdge({ action: "delete", userId: confirmDelete.id });
       setConfirmDelete(null);
       await load();
-    } catch (err: any) {
-      avisar(err.message, { tipo: "erro" });
+    } catch (err) {
+      avisar((err as Error).message, { tipo: "erro" });
     }
     setActionLoading(false);
   };
@@ -173,8 +181,8 @@ export default function AdminUsuarios() {
       await callEdge({ action, userId: confirmBlock.id });
       setConfirmBlock(null);
       await load();
-    } catch (err: any) {
-      avisar(err.message, { tipo: "erro" });
+    } catch (err) {
+      avisar((err as Error).message, { tipo: "erro" });
     }
     setActionLoading(false);
   };

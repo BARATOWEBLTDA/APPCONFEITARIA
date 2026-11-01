@@ -38,7 +38,7 @@ function mesmoTrechoDoMesAnterior(agora: Date): { inicio: Date; fim: Date } {
 }
 
 // Aniversariantes nos próximos 7 dias (hoje até hoje + 6)
-function calcularAniversariantesSemana(clientes: any[]): { total: number; primeiro: string | null; nomes: string[]; dias: number } {
+function calcularAniversariantesSemana(clientes: { nome?: string | null; data_nascimento?: string | null }[]): { total: number; primeiro: string | null; nomes: string[]; dias: number } {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
   let total = 0;
@@ -191,8 +191,8 @@ export function useAtualizacoes(): { updates: Update[]; loading: boolean } {
       }
 
       // 5️⃣ Recorde/comparação de faturamento (só se tem >= 1 pedido nos 2 meses)
-      const fatMes = (pedidosMesRes.data || []).reduce((s: number, p: any) => s + Number(p.valor_total || 0), 0);
-      const fatMesAnt = (pedidosMesAntRes.data || []).reduce((s: number, p: any) => s + Number(p.valor_total || 0), 0);
+      const fatMes = (pedidosMesRes.data || []).reduce((s: number, p: { valor_total?: number | string | null }) => s + Number(p.valor_total || 0), 0);
+      const fatMesAnt = (pedidosMesAntRes.data || []).reduce((s: number, p: { valor_total?: number | string | null }) => s + Number(p.valor_total || 0), 0);
       if (fatMes > 0 && fatMesAnt > 0) {
         const diff = ((fatMes - fatMesAnt) / fatMesAnt) * 100;
         // 11/10: o texto diz o que foi comparado (os mesmos dias dos dois meses)
@@ -247,8 +247,8 @@ export function useAtualizacoes(): { updates: Update[]; loading: boolean } {
 
       // 7️⃣ Clientes sumidos: compraram no último ano, mas não nos últimos 60 dias
       {
-        const ativos = new Set((clientesComVendaRes.data || []).map((v: any) => v.cliente_id));
-        const sumidos = new Set((compraramAntesRes.data || []).map((v: any) => v.cliente_id).filter((id: any) => !ativos.has(id))).size;
+        const ativos = new Set((clientesComVendaRes.data || []).map((v: { cliente_id: string }) => v.cliente_id));
+        const sumidos = new Set((compraramAntesRes.data || []).map((v: { cliente_id: string }) => v.cliente_id).filter((id: string) => !ativos.has(id))).size;
         if (sumidos >= 3) {
           lista.push({
             key: "clientes-sumidos",

@@ -25,7 +25,7 @@ export const SITUACOES_FILTRO = [
 ]
 const DATAS_FILTRO: [string, string][] = [['todos', 'Todas as datas'], ['hoje', 'Hoje'], ['amanha', 'Amanhã'], ['semana', 'Próximos 7 dias'], ['mes', 'Este mês'], ['personalizado', 'Escolher período']]
 /** A mesma regra de data da lista (uma só, pra a contagem bater) */
-export function bateData(p: any, periodo: string, ini: string, fim: string): boolean {
+export function bateData(p: { data_entrega?: string | null }, periodo: string, ini: string, fim: string): boolean {
   if (periodo === 'todos') return true
   if (!p.data_entrega) return false
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0)

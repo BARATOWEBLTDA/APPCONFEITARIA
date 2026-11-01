@@ -21,8 +21,8 @@ type FormaCusto = "credito" | "debito" | null;
 type CustoVariavel = { id: string; nome: string; tipo: "percentual" | "fixo"; valor: number; ativo: boolean; forma?: FormaCusto };
 const FORMA_TXT: Record<string, string> = { credito: "no crédito", debito: "no débito" };
 /** Grava; se a coluna "forma" ainda não existir no banco (SQL 4.33 não rodado), grava sem ela */
-async function gravarVariavel(id: string | null, uid: string, payload: Record<string, any>) {
-  const ir = (dados: Record<string, any>) => id ? supabase.from("custos_variaveis").update(dados).eq("id", id) : supabase.from("custos_variaveis").insert({ user_id: uid, ...dados });
+async function gravarVariavel(id: string | null, uid: string, payload: Record<string, unknown>) {
+  const ir = (dados: Record<string, unknown>) => id ? supabase.from("custos_variaveis").update(dados).eq("id", id) : supabase.from("custos_variaveis").insert({ user_id: uid, ...dados });
   let r = await ir(payload);
   if (r.error && "forma" in payload && /forma|PGRST204|42703|column/i.test(`${r.error.code} ${r.error.message}`)) {
     const { forma: _f, ...sem } = payload; r = await ir(sem);
@@ -59,7 +59,7 @@ export default function Custos() {
     if (!user) { if (erroDeConexao(eUser)) { setErro(true); setCarregando(false); } return; }
     setUid(user.id);
     supabase.from("profiles").select("custos_invisiveis_pct").eq("id", user.id).maybeSingle()
-      .then(({ data, error }) => { const x = (data as any)?.custos_invisiveis_pct; setCv(!error && x != null ? Number(x) : null); }, () => {});
+      .then(({ data, error }) => { const x = (data as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct; setCv(!error && x != null ? Number(x) : null); }, () => {});
     const [f, v, m] = await Promise.all([
       supabase.from("custos_fixos").select("id, nome, valor, ativo, dia_vencimento").eq("user_id", user.id).order("nome"),
       supabase.from("custos_variaveis").select("*").eq("user_id", user.id).order("nome"),
@@ -69,10 +69,10 @@ export default function Custos() {
       console.error("[custos] não consegui carregar:", f.error || v.error || m.error);
       setErro(true); setCarregando(false); return;
     }
-    setFixos(((f.data as any[]) || []).map(x => ({ ...x, valor: Number(x.valor) || 0 })));
-    setVariaveis(((v.data as any[]) || []).map(x => ({ ...x, valor: Number(x.valor) || 0 })));
+    setFixos(((f.data as CustoFixo[]) || []).map(x => ({ ...x, valor: Number(x.valor) || 0 })));
+    setVariaveis(((v.data as CustoVariavel[]) || []).map(x => ({ ...x, valor: Number(x.valor) || 0 })));
     if (m.data) {
-      const d: any = m.data;
+      const d: { salario_mensal?: number | string | null; horas_dia?: number | string | null; dias_semana?: number | string | null; dias_semana_array?: number[] | null } = m.data;
       const arr: number[] = Array.isArray(d.dias_semana_array) && d.dias_semana_array.length > 0
         ? d.dias_semana_array : Array.from({ length: Math.min(Math.max(Number(d.dias_semana) || 5, 1), 7) }, (_, i) => i + 1);
       setMo({ salario_mensal: Number(d.salario_mensal) || 0, horas_dia: Number(d.horas_dia) || 8, dias_semana_array: arr });
@@ -341,7 +341,7 @@ function MaquininhaSheet({ uid, onClose, onFeito }: { uid: string; onClose: () =
     setOcupado(true);
     // (27/10) o que já existe é atualizado (tentar de novo depois de um erro não duplica a taxa)
     const { data: atuais } = await supabase.from("custos_variaveis").select("id, nome, forma").eq("user_id", uid);
-    const lista = ((atuais as any[]) || []);
+    const lista = ((atuais as { id: string; nome: string; forma: FormaCusto }[]) || []);
     const linhas: [string, number, FormaCusto][] = [["Maquininha (débito)", d, "debito"], ["Maquininha (crédito)", c, "credito"]];
     for (const [nome, valor, forma] of linhas) {
       if (valor <= 0) continue;

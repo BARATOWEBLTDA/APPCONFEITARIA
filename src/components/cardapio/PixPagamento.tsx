@@ -75,7 +75,7 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
     try {
       const { data, error } = await supabase.rpc('cardapio_pix_informado', { p_pedido: pedidoId, p_tipo: tipo })
       if (error) throw error
-      const r: any = data
+      const r = data as { tipo?: string; valor?: number | string } | null
       aoPagar({ tipo: r?.tipo === 'sinal' ? 'sinal' : r?.tipo === 'total' ? 'total' : tipo, valor: Number(r?.valor) || valor })
     } catch {
       avisar('Não deu para avisar a loja. Confira a internet e toque de novo.', { tipo: 'erro' })

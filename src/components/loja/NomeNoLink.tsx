@@ -23,15 +23,15 @@ const NOME_VALIDO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 export default function NomeNoLink() {
   const { profile } = useProfile();
   const { isPro } = usePlano();
-  const atual = String((profile as any)?.slug_personalizado || "");
+  const atual = String(profile?.slug_personalizado || "");
   const [nome, setNome] = useState(atual);
   const [salvando, setSalvando] = useState(false);
   const navigate = useNavigate();
   useEffect(() => { setNome(atual); }, [atual]);
-  const codigo = (profile as any)?.codigo_publico || "";
+  const codigo = profile?.codigo_publico || "";
   if (!profile?.id || !codigo) return null;
 
-  const sugestao = paraNomeNoLink((profile as any)?.nome_loja || "");
+  const sugestao = paraNomeNoLink(profile?.nome_loja || "");
   const limpo = paraNomeNoLink(nome);
   const erro = nome && (limpo.length < 3 || !NOME_VALIDO.test(limpo)) ? "Use 3 letras ou mais" : limpo === "cardapio" ? "Escolha outro nome" : undefined;
   const mudou = limpo !== atual;

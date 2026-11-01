@@ -8,6 +8,7 @@ import { Botao, CaixasEscolha, Janela } from "@/components/base";
 import { lerPredefs, gravarPredefs, chaveTam, type PredefRend } from "@/lib/predefRendimento";
 import { ProductModal } from "@/components/cart/ProductModal";
 import { CartProvider } from "@/context/CartContext";
+import type { Produto } from "@/types/database";
 import "./escolhas.css";
 
 /**
@@ -25,8 +26,18 @@ type Opcao = { id: string; nome: string; adicional: number; preco?: number };
 type Grupo = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: Opcao[]; sabor_tem_preco_proprio?: boolean };
 type OpTam = { id: string; nome: string; preco: number; peso_kg?: number | null; serve?: string };
 type GrupoTam = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: OpTam[]; modo_preco_tamanho?: string; nome_exibicao?: string; rendimento_unidade?: string; rendimento_predef?: string };
+type CampoGrupo = "grupo_massas" | "grupo_recheios" | "grupo_coberturas" | "grupo_sabores";
+/** O que esta tela lê e grava no formulário do produto (os outros campos passam direto) */
+export type FormEscolhas = {
+  nome?: string; categoria?: string; forma_venda?: string; preco_normal?: number | string;
+  kit_qtd?: KitQtdConfig | null;
+  grupo_tamanhos?: Partial<GrupoTam> | null;
+  grupo_massas?: Partial<Grupo> | null; grupo_recheios?: Partial<Grupo> | null;
+  grupo_coberturas?: Partial<Grupo> | null; grupo_sabores?: Partial<Grupo> | null;
+  [campo: string]: unknown;
+};
 
-const CAMPO: Record<"massa" | "recheio" | "cobertura" | "sabor", string> = {
+const CAMPO: Record<"massa" | "recheio" | "cobertura" | "sabor", CampoGrupo> = {
   massa: "grupo_massas", recheio: "grupo_recheios", cobertura: "grupo_coberturas", sabor: "grupo_sabores",
 };
 const ROTULO: Record<Chave, string> = {
@@ -78,15 +89,15 @@ const primeiraMaiuscula = (s: string) => { const t = s.trim().replace(/\s+/g, " 
 const norm = (s: string) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** (13/10) "Usar de outro produto": os jeitos diferentes que ela já usou (sem repetir), pra copiar com um toque */
-type Copia = { de: string; resumo: string; opcoes: any[]; grupo: any };
-function copiasDe(outros: any[] | undefined, campo: string, chave: (g: any) => string | null): Copia[] {
+type Copia = { de: string; resumo: string; opcoes: Opcao[]; grupo: Partial<Grupo> };
+function copiasDe(outros: FormEscolhas[] | undefined, campo: CampoGrupo, chave: (g: Partial<Grupo>) => string | null): Copia[] {
   const vistos = new Set<string>(); const lista: Copia[] = [];
   for (const p of outros || []) {
     const g = p?.[campo];
     if (!g?.ativo || !(g.opcoes?.length)) continue;
     const k = chave(g); if (!k || vistos.has(k)) continue;
     vistos.add(k);
-    lista.push({ de: String(p.nome || "Produto"), resumo: g.opcoes.map((o: any) => o.nome).join(", "), opcoes: g.opcoes, grupo: g });
+    lista.push({ de: String(p.nome || "Produto"), resumo: g.opcoes.map((o) => o.nome).join(", "), opcoes: g.opcoes, grupo: g });
     if (lista.length >= 3) break;
   }
   return lista;
@@ -108,13 +119,13 @@ export function sugestoesDoProduto(tipo: string | null | undefined, nome: string
 }
 
 type Props = {
-  form: any;
-  setForm: (fn: (f: any) => any) => void;
+  form: FormEscolhas;
+  setForm: (fn: (f: FormEscolhas) => FormEscolhas) => void;
   /** tipo escolhido no passo 1 (bolos, doces…); na edição vem vazio e o nome/categoria decidem */
   tipo?: string | null;
   onKitChange: (k: KitQtdConfig) => void;
   /** os outros produtos da confeiteira (pra "Usar de outro produto") */
-  outros?: any[];
+  outros?: FormEscolhas[];
   /** (14/10) 0 = checklist; 1..n = a tela da escolha marcada número n */
   tela?: number;
   setTela?: (n: number) => void;
@@ -124,14 +135,14 @@ type Props = {
 /** (14/10) ordem das escolhas (a mesma do checklist e das telas) */
 // (14/10) ordem fixa do checklist, todas sempre à mostra
 export const TODAS_ESCOLHAS: Chave[] = ["tamanho", "massa", "recheio", "cobertura", "sabor", "quantidade"];
-export function escolhaAtiva(form: any, c: Chave): boolean {
+export function escolhaAtiva(form: FormEscolhas, c: Chave): boolean {
   if (c === "quantidade") return kitAtivo(form.kit_qtd);
   if (c === "tamanho") return !!form.grupo_tamanhos?.ativo;
   return !!form[CAMPO[c]]?.ativo;
 }
-export function escolhasAtivas(form: any): Chave[] { return TODAS_ESCOLHAS.filter(c => escolhaAtiva(form, c)); }
+export function escolhasAtivas(form: FormEscolhas): Chave[] { return TODAS_ESCOLHAS.filter(c => escolhaAtiva(form, c)); }
 /** O que falta numa escolha pra seguir (null = tudo certo) */
-export function faltaDaEscolha(form: any, c: Chave): { msg: string; alvo?: string } | null {
+export function faltaDaEscolha(form: FormEscolhas, c: Chave): { msg: string; alvo?: string } | null {
   if (c === "quantidade") return faltaKit(form.kit_qtd, { semPreco: true }); // (14/10) o preço dos kits é no passo Preço
   if (c === "tamanho") {
     const g = form.grupo_tamanhos;
@@ -140,9 +151,9 @@ export function faltaDaEscolha(form: any, c: Chave): { msg: string; alvo?: strin
       ? { msg: "Marque pelo menos 1 peso", alvo: ".esc-pesos" }
       : { msg: "Coloque pelo menos 1 tamanho", alvo: 'input[aria-label="Outro tamanho"]' };
     // (14/10) tamanho sem nome ou com nome repetido não passa (antes seguia e só travava no fim)
-    const iVazio = g.opcoes.findIndex((o: any) => !String(o?.nome || "").trim());
+    const iVazio = g.opcoes.findIndex((o) => !String(o?.nome || "").trim());
     if (iVazio >= 0) return { msg: "Tem um tamanho sem nome", alvo: `input[aria-label="Nome do tamanho ${iVazio + 1}"]` };
-    const nomes = g.opcoes.map((o: any) => String(o.nome).trim().toLowerCase());
+    const nomes = g.opcoes.map((o) => String(o.nome).trim().toLowerCase());
     const iRep = nomes.findIndex((n: string, i: number) => nomes.indexOf(n) !== i);
     if (iRep >= 0) return { msg: `"${String(g.opcoes[iRep].nome).trim()}" está repetido`, alvo: `input[aria-label="Nome do tamanho ${iRep + 1}"]` };
     // (14/10) o preço do kg agora vai no último passo (Preço e revisão), igual ao preço fixo
@@ -252,7 +263,7 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
       </Janela>
       {verPrevia && (
         <CartProvider>
-          <ProductModal isOpen previa onClose={() => setVerPrevia(false)} onAdicionar={() => setVerPrevia(false)} product={EXEMPLO_PRODUTO as any} />
+          <ProductModal isOpen previa onClose={() => setVerPrevia(false)} onAdicionar={() => setVerPrevia(false)} product={EXEMPLO_PRODUTO as unknown as Produto} />
         </CartProvider>
       )}
       <p className="esc-s">Marque o que vale{nome ? <> para o <b>{nome}</b></> : null}. {edicao ? "Use Editar para mudar." : "Você cadastra cada um em seguida."}</p>
@@ -281,7 +292,7 @@ function faltaCurta(msg: string): string {
   return "Falta completar · veja em Editar"; // (15/10) tocar na linha desmarca: quem abre é o Editar
 }
 
-function resumo(c: Chave, form: any): string {
+function resumo(c: Chave, form: FormEscolhas): string {
   if (c === "quantidade") {
     const k = form.kit_qtd as KitQtdConfig;
     const lista = (k.kits || []).map(x => x.qtd).filter(Boolean);
@@ -318,7 +329,7 @@ function UsarDeOutro({ copias, onUsar }: { copias: Copia[]; onUsar: (c: Copia) =
 }
 
 /* ── Massa, recheio, cobertura e sabor ── */
-function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "recheio" | "cobertura" | "sabor"; form: any; setForm: Props["setForm"]; outros?: any[] }) {
+function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "recheio" | "cobertura" | "sabor"; form: FormEscolhas; setForm: Props["setForm"]; outros?: FormEscolhas[] }) {
   const campo = CAMPO[chave];
   const g: Grupo = { ativo: true, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], ...(form[campo] || {}) };
   const [nova, setNova] = useState("");
@@ -351,7 +362,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
             <p><b>Preço de cada sabor: no último passo</b>Aqui você só cadastra os sabores. No passo Preço, coloca quanto custa cada um.</p></div>
         );
         const EX: Record<string, string> = { recheio: "Nutella", massa: "Red velvet", cobertura: "Pasta americana", sabor: "Pistache" };
-        const precos = ((form.grupo_tamanhos?.ativo ? form.grupo_tamanhos.opcoes : []) || []).map((o: any) => Number(o.preco) || 0).filter((v: number) => v > 0);
+        const precos = ((form.grupo_tamanhos?.ativo ? form.grupo_tamanhos.opcoes : []) || []).map((o) => Number(o.preco) || 0).filter((v: number) => v > 0);
         const base = precos.length ? Math.min(...precos) : Number(form.preco_normal) > 0 ? Number(form.preco_normal) : 80;
         const nomeP = String(form.nome || "").trim().split(/\s+/)[0]?.toLowerCase() || "bolo";
         return (
@@ -388,7 +399,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
       <button type="button" className="esc-rend-linha esc-av-linha" onClick={() => setAvancado(true)}>
         <span className="esc-av-ic" aria-hidden="true"><GearSix size={20} weight="bold" /></span>
         <span className="esc-tx"><b>Avançado</b>
-          <small>{quantosAtual === 1 ? "Escolhe 1" : quantosAtual >= 99 ? "À vontade" : `Escolhe até ${quantosAtual}`} · {g.min >= 1 ? "Obrigatório" : "Opcional"}{(g as any).sabor_tem_preco_proprio ? " · Preço por sabor" : ""}</small></span>
+          <small>{quantosAtual === 1 ? "Escolhe 1" : quantosAtual >= 99 ? "À vontade" : `Escolhe até ${quantosAtual}`} · {g.min >= 1 ? "Obrigatório" : "Opcional"}{g.sabor_tem_preco_proprio ? " · Preço por sabor" : ""}</small></span>
         <span className="esc-rend-bt">Editar</span>
       </button>
       <Janela aberta={avancado} aoFechar={() => setAvancado(false)} titulo="Avançado" tipo="conteudo" umaAcao
@@ -424,15 +435,15 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
         </div>
       </Janela>
       <UsarDeOutro
-        copias={copiasDe(outros, campo, gg => { const k = gg.opcoes.map((o: any) => norm(o.nome)).join("|"); return k === g.opcoes.map(o => norm(o.nome)).join("|") ? null : k; })}
-        onUsar={c => set({ opcoes: c.opcoes.map((o: any) => ({ id: uid(), nome: o.nome, adicional: Number(o.adicional) || 0, ...(o.preco ? { preco: o.preco } : {}) })),
+        copias={copiasDe(outros, campo, gg => { const k = gg.opcoes.map((o) => norm(o.nome)).join("|"); return k === g.opcoes.map(o => norm(o.nome)).join("|") ? null : k; })}
+        onUsar={c => set({ opcoes: c.opcoes.map((o) => ({ id: uid(), nome: o.nome, adicional: Number(o.adicional) || 0, ...(o.preco ? { preco: o.preco } : {}) })),
           max: Number(c.grupo.max) || g.max, min: c.grupo.min ?? g.min, ...(chave === "sabor" ? { sabor_tem_preco_proprio: !!c.grupo.sabor_tem_preco_proprio } : {}) })} />
     </div>
   );
 }
 
 /* ── Tamanho: modelos prontos e a lista (o preço de cada um fica no passo Preço) ── */
-function CartaoTamanho({ form, setForm }: { form: any; setForm: Props["setForm"] }) {
+function CartaoTamanho({ form, setForm }: { form: FormEscolhas; setForm: Props["setForm"] }) {
   const g: GrupoTam = { ativo: true, min: 1, max: 1, opcoes: [], ...(form.grupo_tamanhos || {}) };
   const porPeso = g.modo_preco_tamanho === "por_peso";
   const [novo, setNovo] = useState("");
@@ -614,7 +625,7 @@ function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: P
     const t = window.setTimeout(() => { marcarDestaque("rendimento"); setDica(true); }, 600);
     return () => window.clearTimeout(t);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const exemplo = g.opcoes.slice(0, 2).map((o, i) => ({ nome: `${o.nome || (i ? "Grande" : "Pequeno")}${Number((o as any).peso_kg) > 0 && !/kg|\d\s*g\b/i.test(o.nome || "") ? ` · ${String((o as any).peso_kg).replace(".", ",")} kg` : ""}` /* (27/10) "1 kg" em vez de "1 kg · 1 kg" */, serve: i ? "Serve até 20 pessoas" : "Serve até 10 pessoas" }));
+  const exemplo = g.opcoes.slice(0, 2).map((o, i) => ({ nome: `${o.nome || (i ? "Grande" : "Pequeno")}${Number(o.peso_kg) > 0 && !/kg|\d\s*g\b/i.test(o.nome || "") ? ` · ${String(o.peso_kg).replace(".", ",")} kg` : ""}` /* (27/10) "1 kg" em vez de "1 kg · 1 kg" */, serve: i ? "Serve até 20 pessoas" : "Serve até 10 pessoas" }));
   return (<>
     {dica && (
       <Destaque alvo={linhaRef} sobreJanela mascote raio={14} semNao titulo="Defina o rendimento" acao="Entendi"

@@ -3,7 +3,8 @@
  * Só no cardápio público: carrega o pixel com o ID que a confeiteira colocou e manda os eventos padrão
  * (PageView, ViewContent, AddToCart, InitiateCheckout e Purchase). Sem ID válido, nada é carregado.
  */
-declare global { interface Window { fbq?: any; _fbq?: any } }
+type Fbq = ((...args: unknown[]) => void) & { callMethod?: (...args: unknown[]) => void; queue: unknown[][]; push: Fbq; loaded: boolean; version: string };
+declare global { interface Window { fbq?: Fbq; _fbq?: Fbq } }
 
 export const pixelValido = (id: unknown): id is string => typeof id === "string" && /^[0-9]{10,20}$/.test(id.trim());
 
@@ -14,7 +15,7 @@ export function iniciarPixel(id: unknown) {
   const pid = id.trim();
   if (!window.fbq) {
     // snippet oficial do Meta, sem o <noscript>
-    const f: any = function (...args: any[]) { f.callMethod ? f.callMethod(...args) : f.queue.push(args); };
+    const f = function (...args: unknown[]) { f.callMethod ? f.callMethod(...args) : f.queue.push(args); } as Fbq;
     f.push = f; f.loaded = true; f.version = "2.0"; f.queue = [];
     window.fbq = f; if (!window._fbq) window._fbq = f;
     const s = document.createElement("script");

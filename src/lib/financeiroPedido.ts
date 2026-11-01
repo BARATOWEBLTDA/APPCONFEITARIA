@@ -13,7 +13,7 @@
  */
 const STATUS_CONCLUIDOS = ["entregue", "concluido"];
 
-export function valorRecebidoPedido(p: { status?: string | null; status_pagamento?: string | null; valor_total?: any; valor_recebido?: any }): number {
+export function valorRecebidoPedido(p: { status?: string | null; status_pagamento?: string | null; valor_total?: number | string | null; valor_recebido?: number | string | null }): number {
   const total = Number(p.valor_total) || 0;
   if (p.status === "cancelado" || p.status_pagamento === "estornado") return 0;
   if (p.status_pagamento === "pago") return total;

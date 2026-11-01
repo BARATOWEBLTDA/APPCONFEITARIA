@@ -48,6 +48,6 @@ export function mascaraReais(v: string): string {
 }
 /** Valor salvo (número) para o texto do campo de dinheiro: 0.1 → "0,10" (antes aparecia "0.1"). */
 export function reaisParaCampo(v: number | string | null | undefined): string {
-  const n = typeof v === "number" ? v : parseNumBR(v as any);
+  const n = typeof v === "number" ? v : parseNumBR(v);
   return n > 0 ? n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "";
 }

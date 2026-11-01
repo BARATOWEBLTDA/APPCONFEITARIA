@@ -4,6 +4,7 @@ import { ArrowRight, CaretRight, Heart, Newspaper, WarningCircle } from "@phosph
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, TelaVazia, avisar } from "@/components/base";
 import { RichContent } from "@/components/RichEditor";
+import type { JSONContent } from "@tiptap/react";
 import { supabase } from "@/lib/supabase";
 import { linhaDeTempo } from "@/lib/noticias";
 import "./noticias.css";
@@ -38,7 +39,7 @@ interface Noticia {
   id: string;
   titulo: string;
   descricao: string;
-  conteudo: any;
+  conteudo: JSONContent | null;
   imagem_capa: string | null;
   slug: string;
   autor: string;
@@ -105,9 +106,9 @@ export default function NoticiaDetalhe() {
         let fora = new Set<string>();
         if (user) {
           const r = await supabase.from("noticias_lidas").select("noticia_id, excluida_em").not("excluida_em", "is", null);
-          if (!r.error && r.data) fora = new Set(r.data.map((x: any) => x.noticia_id));
+          if (!r.error && r.data) fora = new Set(r.data.map((x: { noticia_id: string }) => x.noticia_id));
         }
-        if (!velho()) setOutras(((lista || []) as any[]).filter(x => !fora.has(x.id)).slice(0, 3));
+        if (!velho()) setOutras(((lista || []) as typeof outras).filter(x => !fora.has(x.id)).slice(0, 3));
       })();
     } catch {
       if (!velho()) setEstado("erro");

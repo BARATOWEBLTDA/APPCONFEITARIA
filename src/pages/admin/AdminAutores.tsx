@@ -63,8 +63,8 @@ export default function AdminAutores() {
       if (error) throw error;
       const { data } = supabase.storage.from("autores-fotos").getPublicUrl(fileName);
       setForm(f => ({ ...f, foto_url: data.publicUrl }));
-    } catch (err: any) {
-      showMsg("Erro upload: " + err.message, "err");
+    } catch (err) {
+      showMsg("Erro upload: " + (err as Error).message, "err");
     }
     setUploadingFoto(false);
     e.target.value = "";

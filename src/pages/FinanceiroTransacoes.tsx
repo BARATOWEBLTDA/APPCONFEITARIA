@@ -42,6 +42,11 @@ const saldoDoPeriodo = (p: Periodo) => p.tipo === "mes" ? "Saldo do mês" : p.ti
 
 const PADRAO = { periodo: "mes", tipo: "todas", formas: FORMAS.map(f => f.k) };
 /** do que a gaveta guarda para o período de verdade (datas) */
+/** O perfil com o dia em que o caixa começou */
+type PerfilCaixa = { caixa_inicio_em?: string | null } | null;
+/** O que a gaveta de filtros devolve */
+type FiltroExtrato = { periodo: string; ini?: string; fim?: string; tipo: "todas" | "entrada" | "saida"; formas: string[] };
+
 function periodoDaGaveta(k: string, atual: Periodo, ini?: string, fim?: string): Periodo {
   const h = new Date();
   if (k === "hoje") return periodoHoje();
@@ -67,7 +72,7 @@ export default function FinanceiroTransacoes() {
   const { isPro } = usePlano();
   const { profile } = useProfile();
   // (27/10) o mesmo aviso do Financeiro: lançamento com data antes do caixa não muda o saldo
-  const inicioCaixa = (profile as any)?.caixa_inicio_em ? isoDe(new Date((profile as any).caixa_inicio_em)) : null;
+  const inicioCaixa = (profile as PerfilCaixa)?.caixa_inicio_em ? isoDe(new Date((profile as PerfilCaixa).caixa_inicio_em)) : null;
   const [proAberto, setProAberto] = useState(false); // (27/10) baixar a planilha é do PRO
   const [nova, setNova] = useState<"entrada" | "saida" | null>(null);
   const [filtroAberto, setFiltroAberto] = useState(false);
@@ -153,7 +158,7 @@ export default function FinanceiroTransacoes() {
   const vivos = itens.filter(i => !i.estornado);
   const nTipo = (t: string) => vivos.filter(i => passa(i, t, formas)).length;
   const nForma = (f: string) => vivos.filter(i => i.forma === f && (tipo === "todas" || i.tipo === tipo)).length;
-  const aplicarFiltro = (v: Record<string, any>) => {
+  const aplicarFiltro = (v: FiltroExtrato) => {
     setTipo(v.tipo); setFormas(v.formas);
     if (v.periodo !== periodo.tipo || (v.periodo === "personalizado" && (v.ini !== periodo.ini || v.fim !== periodo.fim))) setPeriodo(periodoDaGaveta(v.periodo, periodo, v.ini, v.fim));
   };

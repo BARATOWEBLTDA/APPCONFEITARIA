@@ -51,9 +51,13 @@ function formaDe(f?: string | null): FormaPagamento["chave"] {
 const NOME_FORMA: Record<FormaPagamento["chave"], string> = { pix: "Pix", cartao: "Cartão", dinheiro: "Dinheiro", outras: "Outras" };
 const NOME_TIPO: Record<string, string> = { sinal: "Sinal", parcial: "Parte", restante: "Restante", total: "Pago", pagamento: "Pago", migracao: "Pago" };
 
+type LinhaSaida = { tipo?: string | null; categoria?: string | null; valor: number; data: string; estornado_em?: string | null };
+type LinhaPagamento = { id: string; valor: number; forma?: string | null; tipo: string; recebido_em: string; created_at: string; pedidos: { cliente_nome?: string | null } | { cliente_nome?: string | null }[] | null };
+type LinhaVenda = { id: string; status: string; data_entrega: string; pedido_itens: { nome_produto?: string | null; quantidade: number; valor_unitario: number }[] | null };
+
 async function saidasNoPeriodo(uid: string, ini: string, ate: string) {
-  const buscar = (colunas: string) => buscarTudo<any>((de, a) => supabase.from("financeiro")
-    .select(colunas).eq("user_id", uid).gte("data", ini).lte("data", ate).order("id").range(de, a));
+  const buscar = (colunas: string) => buscarTudo<LinhaSaida>((de, a) => supabase.from("financeiro")
+    .select<string, LinhaSaida>(colunas).eq("user_id", uid).gte("data", ini).lte("data", ate).order("id").range(de, a));
   let r = await buscar("tipo, categoria, valor, data, estornado_em");
   if (r.error && faltaNoBanco(r.error)) r = await buscar("tipo, categoria, valor, data");
   if (r.error) return { itens: [] as { valor: number; data: string }[], erro: true };
@@ -76,10 +80,10 @@ export async function carregarPeriodo(uid: string, ini: string, ate: string): Pr
     const [entradas, saidas, pag, vend] = await Promise.all([
       entradasNoPeriodo(uid, ini, ate),
       saidasNoPeriodo(uid, ini, ate),
-      buscarTudo<any>((de, a) => supabase.from("pagamentos")
+      buscarTudo<LinhaPagamento>((de, a) => supabase.from("pagamentos")
         .select("id, valor, forma, tipo, recebido_em, created_at, pedidos(cliente_nome)")
         .eq("user_id", uid).is("estornado_em", null).gte("recebido_em", ini).lte("recebido_em", ate).order("id").range(de, a)),
-      buscarTudo<any>((de, a) => supabase.from("pedidos").select("id, status, data_entrega, pedido_itens(nome_produto, quantidade, valor_unitario)")
+      buscarTudo<LinhaVenda>((de, a) => supabase.from("pedidos").select("id, status, data_entrega, pedido_itens(nome_produto, quantidade, valor_unitario)")
         .eq("user_id", uid).neq("status", "cancelado").gte("data_entrega", ini).lte("data_entrega", ate).order("id").range(de, a)),
     ]);
     if (entradas.erro || saidas.erro || vend.error) return vazio;

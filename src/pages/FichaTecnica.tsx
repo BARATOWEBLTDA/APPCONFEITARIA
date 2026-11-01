@@ -274,13 +274,13 @@ export default function FichaTecnica() {
   const loadVenda = async (uid: string) => {
     const { data, error } = await supabase.from("custos_variaveis").select("*").eq("user_id", uid);
     if (error) return;
-    const vars = (data as any[]) || [];
+    const vars = (data as Parameters<typeof taxaPctDaForma>[1]) || [];
     setVenda({ credito: taxaPctDaForma("credito", vars), pix: taxaPctDaForma("pix", vars), fixo: fixoPorPedido(vars) });
   };
   // Custos invisíveis salvos na conta (09/10): coluna nova, lida à parte pra não quebrar se o SQL ainda não rodou
   const loadCvConta = async (uid: string) => {
     const { data, error } = await supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle();
-    const v = (data as any)?.custos_invisiveis_pct;
+    const v = (data as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct;
     setCvConta(!error && v != null ? Number(v) : null);
   };
   // (16/10) salário, jornada e custos fixos vêm da tela Custos (a mesma hora lá e aqui)
@@ -292,7 +292,7 @@ export default function FichaTecnica() {
       const desde = new Date(Date.now() - 30 * 86400000).toISOString();
       const { data } = await supabase.from("pedidos").select("status, created_at, pedido_itens(produto_id, quantidade)").eq("user_id", uid).gte("created_at", desde);
       const m: Record<string, number> = {};
-      for (const p of (data as any[]) || []) {
+      for (const p of (data as { status: string; pedido_itens?: { produto_id?: string | null; quantidade?: number }[] | null }[]) || []) {
         if (p.status === "cancelado") continue;
         for (const it of p.pedido_itens || []) if (it.produto_id) m[it.produto_id] = (m[it.produto_id] || 0) + 1;
       }
@@ -334,7 +334,7 @@ export default function FichaTecnica() {
 
   // Abre direto a ficha de um produto quando navega de Produtos com state.produtoId
   useEffect(() => {
-    const pid = (location.state as any)?.produtoId;
+    const pid = (location.state as { produtoId?: string } | null)?.produtoId;
     if (!loading && pid && !selected) {
       const p = produtos.find(x => x.id === pid);
       // Veio de outra tela (ex.: sucesso do cadastro): abre no topo, com o cabeçalho visível
@@ -580,11 +580,11 @@ export default function FichaTecnica() {
             <i style={{ width: pc(Math.max(0, lucroLive)), background: "var(--ui-verde)" }} />
           </div>
           <div className="fd-leg">
-            <span style={{ ["--c" as any]: "var(--ui-rosa)" }}>Ingredientes</span>
-            <span style={{ ["--c" as any]: "#F59E0B" }}>Invisíveis</span>
-            {moLive > 0 && <span style={{ ["--c" as any]: "var(--ui-vinho)" }}>Mão de obra</span>}
-            {taxaLive + fixoLive > 0 && <span style={{ ["--c" as any]: "#94A3B8" }}>Taxas</span>}
-            <span style={{ ["--c" as any]: "var(--ui-verde)" }}>Lucro</span>
+            <span style={{ ["--c" as string]: "var(--ui-rosa)" }}>Ingredientes</span>
+            <span style={{ ["--c" as string]: "#F59E0B" }}>Invisíveis</span>
+            {moLive > 0 && <span style={{ ["--c" as string]: "var(--ui-vinho)" }}>Mão de obra</span>}
+            {taxaLive + fixoLive > 0 && <span style={{ ["--c" as string]: "#94A3B8" }}>Taxas</span>}
+            <span style={{ ["--c" as string]: "var(--ui-verde)" }}>Lucro</span>
           </div>
         </>
       );

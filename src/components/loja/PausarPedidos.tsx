@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { PauseCircle, Storefront } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
-import { useProfile } from '@/hooks/useProfile'
+import { useProfile, type Profile } from '@/hooks/useProfile'
+
+/** Campos da loja que vêm junto do perfil (fora do tipo Profile) */
+type PerfilLoja = Profile & { loja_pausada?: boolean | null; horario?: unknown }
 import { avisar } from '@/components/base'
 import { explicarErro } from '@/lib/erros'
 import { useLojaPronta } from '@/lib/primeirosPassos'
@@ -34,7 +37,7 @@ export function PausarPedidos({ compacto = false, escuro = false }: { compacto?:
       <span className="lj-pausa-tx"><b>Loja em montagem</b><small>Termine os primeiros passos</small></span>
     </div>
   )
-  const pausada = local ?? ((profile as any).loja_pausada === true)
+  const pausada = local ?? ((profile as PerfilLoja).loja_pausada === true)
   // (4.29) celular: o cartão inteiro em verde (aberta) ou vermelho (pausada)
   const cheio = !compacto && !escuro
 
@@ -59,7 +62,7 @@ export function PausarPedidos({ compacto = false, escuro = false }: { compacto?:
   // Antes dizia "Loja aberta" (a chave) enquanto o cardápio dizia "Fechado" (o horário): parecia contradição.
   if (escuro) {
     const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
-    const s = situacaoDaLoja((profile as any).horario)
+    const s = situacaoDaLoja((profile as PerfilLoja).horario)
     const tom = pausada ? 'pausada' : !s || s.aberto ? 'aberta' : 'fechada'
     const linha = pausada ? 'Pedidos pausados'
       : !s ? 'Recebendo pedidos'

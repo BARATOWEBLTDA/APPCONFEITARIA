@@ -6,13 +6,24 @@ import { gerarDocumento, abrirJanela, esc, brl, dataBR, card, kv, pill } from "@
 import { nomeExtra } from "@/lib/kitTexto";
 import { formaDoItem, qtdCurta, saldoPedido, tamanhoDoItem } from "@/components/pedidos/pedidoTexto";
 import { r2, somarReais } from "@/lib/moeda";
+import type { ExtraEscolhido } from "@/lib/kitTexto";
+
+/** Opção escolhida: o nome (formato antigo) ou a opção com nome */
+type NomeOuOpcao = string | { nome?: string } | null | undefined;
+/** As escolhas gravadas no item (os dois formatos que o app grava) */
+type PersonalizacoesPDF = {
+  sabor?: NomeOuOpcao; massa?: NomeOuOpcao; recheios?: NomeOuOpcao[]; recheio?: NomeOuOpcao; cobertura?: NomeOuOpcao;
+  tamanho?: { nome?: string; peso_kg?: number | null } | null;
+  kit?: { sabores?: { nome: string; qtd: number }[] } | null;
+  extras?: ExtraEscolhido[];
+};
 
 type PedidoItemPDF = {
   nome_produto?: string;
   quantidade?: number;
   valor_unitario?: number;
   observacoes?: string | null;
-  personalizacoes?: any;
+  personalizacoes?: PersonalizacoesPDF | null;
   forma_venda?: string | null;
   produtos?: { forma_venda?: string | null } | null;
 };
@@ -57,9 +68,9 @@ const STATUS: Record<string, string> = {
 const PAGAMENTO: Record<string, string> = { pix: "Pix", PIX: "Pix", dinheiro: "Dinheiro", credito: "Cartão de crédito", debito: "Cartão de débito", cartao: "Cartão", link_pagamento: "Link de pagamento", mercado_pago: "Mercado Pago", pagamento_retirada: "Na retirada", boleto: "Boleto" };
 
 /** Escolhas do item (tamanho, massa, recheios, cobertura, kit, adicionais) numa linha. */
-function escolhas(pz: any): string {
+function escolhas(pz: PersonalizacoesPDF | null | undefined): string {
   if (!pz || typeof pz !== "object") return "";
-  const nome = (v: any) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
+  const nome = (v: NomeOuOpcao) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
   const p: string[] = [];
   // (11/10) mesmo texto do resto do app: pelo peso sai "M (2 kg)"
   const tam = tamanhoDoItem({ personalizacoes: pz });
@@ -69,8 +80,8 @@ function escolhas(pz: any): string {
   const rec = Array.isArray(pz.recheios) ? pz.recheios.map(nome).filter(Boolean).join(" e ") : nome(pz.recheio);
   if (rec) p.push(`Recheio ${rec}`);
   if (nome(pz.cobertura)) p.push(`Cobertura ${nome(pz.cobertura)}`);
-  if (pz.kit?.sabores?.length) p.push(pz.kit.sabores.map((x: any) => `${x.nome} × ${x.qtd}`).join(" · "));
-  if (Array.isArray(pz.extras) && pz.extras.length) p.push(`Adicionais: ${pz.extras.map((x: any) => nomeExtra(x)).filter(Boolean).join(", ")}`);
+  if (pz.kit?.sabores?.length) p.push(pz.kit.sabores.map((x) => `${x.nome} × ${x.qtd}`).join(" · "));
+  if (Array.isArray(pz.extras) && pz.extras.length) p.push(`Adicionais: ${pz.extras.map((x) => nomeExtra(x)).filter(Boolean).join(", ")}`);
   return p.join(" · ");
 }
 

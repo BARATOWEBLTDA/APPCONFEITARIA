@@ -5,6 +5,7 @@
  */
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 export const UNIDADES_INSUMO = ["g", "kg", "ml", "L", "un"] as const;
 export const EMBALAGENS_INSUMO = ["Avulso", "Pacote", "Caixa", "Lata", "Pote", "Garrafa", "Frasco", "Bandeja", "Bisnaga", "Sachê", "Envelope", "Balde", "Rolo"];
@@ -27,13 +28,15 @@ export type RascunhoInsumo = {
 export type InsumoResumo = { id: string; nome: string; unidade: string; qtd_embalagem: number; valor_compra: number; custo_unitario: number };
 
 const CAMPOS_RESUMO = "id, nome, unidade, qtd_embalagem, valor_compra, custo_unitario";
-const paraResumo = (i: any): InsumoResumo => ({ id: i.id, nome: i.nome, unidade: i.unidade, qtd_embalagem: Number(i.qtd_embalagem) || 1, valor_compra: Number(i.valor_compra) || 0, custo_unitario: Number(i.custo_unitario) || 0 });
+/** O insumo como vem do banco (as colunas de CAMPOS_RESUMO, e às vezes a marca) */
+type InsumoLido = { id: string; nome: string; unidade: string; qtd_embalagem: number | null; valor_compra: number | null; custo_unitario: number | null; marca?: string | null };
+const paraResumo = (i: InsumoLido): InsumoResumo => ({ id: i.id, nome: i.nome, unidade: i.unidade, qtd_embalagem: Number(i.qtd_embalagem) || 1, valor_compra: Number(i.valor_compra) || 0, custo_unitario: Number(i.custo_unitario) || 0 });
 /** Quantos ingredientes a Doo recebe (11/10: antes 200). Os que passarem disso ainda são achados pelo nome no cartão. */
 const TETO_INSUMOS_DOO = 500;
 
 export async function listarInsumosResumo(uid: string): Promise<InsumoResumo[]> {
   const { data } = await supabase.from("insumos").select(CAMPOS_RESUMO).eq("user_id", uid).order("nome").limit(TETO_INSUMOS_DOO);
-  return ((data as any[]) || []).map(paraResumo);
+  return ((data as InsumoLido[]) || []).map(paraResumo);
 }
 
 const nomeLimpo = (s: unknown) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -50,7 +53,7 @@ export async function procurarInsumoPorNome(uid: string, nome: string, marca = "
   const padrao = alvo.replace(/[^a-z0-9 ]/gu, "_").replace(/[aeioucn]/g, "_").replace(/ /g, "%");
   const { data, error } = await supabase.from("insumos").select(`${CAMPOS_RESUMO}, marca`).eq("user_id", uid).ilike("nome", `${padrao}%`).order("nome").limit(300);
   if (error) { console.error("[Doonly] busca de ingrediente pelo nome:", error); return null; }
-  const iguais = ((data as any[]) || []).filter(i => nomeLimpo(i.nome) === alvo && (!nomeLimpo(marca) || !nomeLimpo(i.marca) || nomeLimpo(i.marca) === nomeLimpo(marca)));
+  const iguais = ((data as InsumoLido[]) || []).filter(i => nomeLimpo(i.nome) === alvo && (!nomeLimpo(marca) || !nomeLimpo(i.marca) || nomeLimpo(i.marca) === nomeLimpo(marca)));
   return iguais.length === 1 ? paraResumo(iguais[0]) : null;
 }
 
@@ -66,7 +69,13 @@ export function custoLegivel(unidade: string, qtd: number, valor: number): strin
   return `${brl(porUnidade)} por unidade`;
 }
 
-export function normalizarRascunho(r: any): RascunhoInsumo | null {
+/** O rascunho como a IA mandou (JSON): cada campo é conferido abaixo */
+export type RascunhoInsumoBruto = {
+  acao?: string; insumo_id?: string | null; nome?: unknown; marca?: unknown; categoria?: string; unidade?: string;
+  embalagem_tipo?: string; qtd_embalagem?: unknown; valor_compra?: unknown;
+};
+
+export function normalizarRascunho(r: RascunhoInsumoBruto | null | undefined): RascunhoInsumo | null {
   if (!r || r.acao !== "insumo" || !String(r.nome || "").trim()) return null;
   const unidade = (UNIDADES_INSUMO as readonly string[]).includes(r.unidade) ? r.unidade : (String(r.unidade).toLowerCase() === "l" ? "L" : "g");
   return {
@@ -100,10 +109,10 @@ export async function salvarInsumoDoo(uid: string, r: RascunhoInsumo, soPrecoDe?
       custo_unitario: r.valor_compra / r.qtd_embalagem, updated_at: new Date().toISOString(),
     }).eq("id", r.insumo_id).eq("user_id", uid).select("id");
     if (error) return { ok: false, erro: explicarErro(error, "Não deu para atualizar o ingrediente. Tente de novo.") };
-    if ((mudou as any[] | null)?.length) return { ok: true, id: r.insumo_id };
+    if ((mudou as { id: string }[] | null)?.length) return { ok: true, id: r.insumo_id };
     return { ok: false, erro: "Esse ingrediente não está mais no cadastro. Feche e peça de novo para a Doo." };
   }
-  const payload: any = {
+  const payload: Record<string, unknown> = {
     nome: r.nome.trim(), marca: (r.marca || "").trim(), categoria: r.categoria || "Ingredientes",
     unidade: r.unidade, embalagem_tipo: r.embalagem_tipo || "Avulso",
     valor_compra: r.valor_compra, qtd_embalagem: r.qtd_embalagem,
@@ -114,17 +123,17 @@ export async function salvarInsumoDoo(uid: string, r: RascunhoInsumo, soPrecoDe?
   if (r.insumo_id) {
     // (27/10) a mesma trava do caminho de cima: unidade de outra família (g × un) com o ingrediente já cadastrado não grava
     const { data: atual } = await supabase.from("insumos").select("nome, unidade").eq("id", r.insumo_id).eq("user_id", uid).maybeSingle();
-    if (atual && familiaUnidade(String((atual as any).unidade || "")) !== familiaUnidade(r.unidade))
-      return { ok: false, erro: `No cadastro, ${(atual as any).nome} está em ${(atual as any).unidade}. Atualize pela tela de Insumos.` };
+    if (atual && familiaUnidade(String((atual as { unidade?: string }).unidade || "")) !== familiaUnidade(r.unidade))
+      return { ok: false, erro: `No cadastro, ${(atual as { nome?: string }).nome} está em ${(atual as { unidade?: string }).unidade}. Atualize pela tela de Insumos.` };
     // (11/10) confere se a linha mudou mesmo: com um id que não existe (a IA errou, ou o ingrediente foi apagado)
     // o banco não reclama e a tela dizia "atualizado" sem gravar nada. Nesse caso, cadastra como ingrediente novo.
     const { data: mudou, error } = await supabase.from("insumos").update(payload).eq("id", r.insumo_id).eq("user_id", uid).select("id");
     if (error) return { ok: false, erro: explicarErro(error, "Não deu para atualizar o ingrediente. Tente de novo.") };
-    if ((mudou as any[] | null)?.length) return { ok: true, id: r.insumo_id };
+    if ((mudou as { id: string }[] | null)?.length) return { ok: true, id: r.insumo_id };
   }
   const { data, error } = await supabase.from("insumos")
     .insert({ imagem_url: "", ...payload, user_id: uid, quantidade_estoque: 0, estoque_minimo: 0 }).select("id").single();
-  return error || !data ? { ok: false, erro: explicarErro(error, "Não deu para cadastrar o ingrediente. Tente de novo.") } : { ok: true, id: (data as any).id };
+  return error || !data ? { ok: false, erro: explicarErro(error, "Não deu para cadastrar o ingrediente. Tente de novo.") } : { ok: true, id: (data as { id: string }).id };
 }
 
 /**
@@ -133,7 +142,7 @@ export async function salvarInsumoDoo(uid: string, r: RascunhoInsumo, soPrecoDe?
  * Antes apagava tudo e inseria de novo: se o insert falhasse, a ficha ficava vazia.
  * Ingrediente repetido na lista entra uma vez só (o último vale), senão o upsert recusa tudo.
  */
-export async function gravarInsumosDoProduto(produtoId: string, itens: { insumo_id: string; [k: string]: any }[]): Promise<{ error: any }> {
+export async function gravarInsumosDoProduto(produtoId: string, itens: { insumo_id: string; [k: string]: unknown }[]): Promise<{ error: PostgrestError | null }> {
   const unicos = [...new Map(itens.map(i => [i.insumo_id, i])).values()]
   if (unicos.length) {
     const { error } = await supabase.from('produto_insumos').upsert(unicos, { onConflict: 'produto_id,insumo_id' })

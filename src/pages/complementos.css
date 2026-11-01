@@ -384,7 +384,7 @@
 }
 
 /* (31/10 · 5.80) "PRO" em rosa no título do convite; botões na mesma linha (o principal bem mais largo) */
-.pz-vazio-tx h2 em { font-style: normal; color: var(--ui-rosa); }
+.pz-vazio-tx h2 em { font-style: normal; color: var(--ui-rosa-botao, #CC2E66); }
 @media (max-width: 900px) {
   .pz-vazio-bts { flex-direction: row; flex-wrap: nowrap; align-items: stretch; }
   .pz-vazio-bts .pz-vazio-cta { flex: 1 1 auto; }

@@ -164,7 +164,7 @@ export default function NotificacoesSons() {
             <div className="ns-vol">
               <div className="ns-vol-l"><span>Volume</span><b>{volume}%</b></div>
               <input type="range" min={0} max={100} step={5} value={volume} disabled={!alerta} aria-label="Volume dos sons"
-                onChange={e => mudarVolume(Number(e.target.value))} style={{ ["--v" as any]: `${volume}%` }} />
+                onChange={e => mudarVolume(Number(e.target.value))} style={{ ["--v" as string]: `${volume}%` }} />
               <div className="ns-vol-p"><small>Sem som</small><Botao variante="secundario" tamanho="m" icone={<Play size={16} weight="fill" />} disabled={!alerta || volume === 0} onClick={() => tocarToque(toque)}>Testar som</Botao></div>
             </div>
           </div>

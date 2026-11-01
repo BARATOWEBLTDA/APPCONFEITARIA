@@ -6,6 +6,7 @@ import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { unidadePreco } from '@/lib/formaVenda'
 import { tamanhosEsgotados, descontoCardapio, precoCardapioComPromocao, ehCentoLivre } from '@/lib/precoCardapio'
+import type { ProdutoPrecoJson } from '@/lib/precoCardapio'
 // (o cartão antigo ProductCard saiu; o CSS dele continua carregando por aqui, na mesma ordem)
 import './cardapioLista.css'
 import './itensCardapio.css'
@@ -18,7 +19,7 @@ import './itensCardapio.css'
 
 /** Preço do cartão: o de antes riscado (promoção), o final, a unidade ("por kg") e se é "a partir de" */
 export function precoDoCartao(product: Produto) {
-  const p = product as any
+  const p = product as Produto & ProdutoPrecoJson
   // (11/10) a promoção e os centavos saem da mesma conta do produto aberto (lib/precoCardapio):
   // promoção em valor não entra em produto com tamanhos de preço fixo nem em kit
   const pc = precoCardapioComPromocao(product)
@@ -126,7 +127,7 @@ export function montarSecoes(produtos: Produto[], categorias: string[], agrupar:
   // com tamanhos de preço fixo não dá desconto, então o produto fica na categoria dele
   const emPromocao = (p: Produto) => descontoCardapio(p) > 0
   // (27/10) Destaques: até 6, marcados pela confeiteira; o que está em destaque não se repete em Promoções
-  const destaques = produtos.filter(p => (p as any).destaque === true).slice(0, 6)
+  const destaques = produtos.filter(p => (p as Produto & { destaque?: boolean }).destaque === true).slice(0, 6)
   const promo = produtos.filter(p => emPromocao(p) && !destaques.includes(p))
   const resto = produtos
   const secoes: Secao[] = []

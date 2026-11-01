@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Plus, PencilSimple, Trash, ArrowUp, ArrowDown, Eye, EyeSlash, Image as ImageIcon, CaretDown, PushPin, Bell, WarningCircle, Newspaper, DotsThree } from "@phosphor-icons/react";
 import RichEditor from "@/components/RichEditor";
+import type { JSONContent } from "@tiptap/react";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import { explicarErro } from "@/lib/erros";
 import "./admin-noticias.css";
@@ -11,7 +12,7 @@ interface Noticia {
   emoji: string;
   titulo: string;
   descricao: string;
-  conteudo: any;
+  conteudo: JSONContent | null;
   imagem_capa: string | null;
   icone_url: string | null;
   slug: string;
@@ -39,9 +40,9 @@ interface AutorOpt {
 const EMOJIS_SUGERIDOS = ["📢", "👋", "💡", "🤖", "🎨", "✨", "🎂", "🍰", "⭐", "🚀", "🔥", "🎁", "📱", "🎉"];
 const CATEGORIAS = ["Dica", "Novidade", "Boas-vindas", "Aviso", "Tutorial"];
 
-function estimarTempoLeitura(conteudo: any): number {
+function estimarTempoLeitura(conteudo: JSONContent | null): number {
   if (!conteudo) return 1;
-  const textoJoin = (nodes: any[]): string => nodes.map((n: any) => n.text || (n.content ? textoJoin(n.content) : "")).join(" ");
+  const textoJoin = (nodes: JSONContent[]): string => nodes.map((n: JSONContent) => n.text || (n.content ? textoJoin(n.content) : "")).join(" ");
   const texto = conteudo.content ? textoJoin(conteudo.content) : "";
   const palavras = texto.trim().split(/\s+/).length;
   return Math.max(1, Math.ceil(palavras / 200));
@@ -66,7 +67,7 @@ export default function AdminNoticias() {
   const [notif, setNotif] = useState(NOTIF_VAZIA);
   const [uploadingNotifImg, setUploadingNotifImg] = useState(false);
   const notifImgRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 0 });
+  const [form, setForm] = useState({ emoji: "📢", titulo: "", descricao: "", conteudo: null as JSONContent | null, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 0 });
 
   useEffect(() => { load(); loadAutores(); }, []);
 
@@ -92,7 +93,7 @@ export default function AdminNoticias() {
   const abrirNovo = () => {
     setEditing(null);
     // (24/10) novidade nova já começa com 10 a 30 "Gostei" (dá para trocar no campo)
-    const inicial = { emoji: "📢", titulo: "", descricao: "", conteudo: null as any, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 10 + Math.floor(Math.random() * 21) };
+    const inicial = { emoji: "📢", titulo: "", descricao: "", conteudo: null as JSONContent | null, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 10 + Math.floor(Math.random() * 21) };
     setForm(inicial);
     formAoAbrir.current = JSON.stringify(inicial);
     setNotif(NOTIF_VAZIA);
@@ -120,7 +121,7 @@ export default function AdminNoticias() {
       if (error) throw error;
       const { data } = supabase.storage.from("noticias-capas").getPublicUrl(fileName);
       setForm(f => ({ ...f, imagem_capa: data.publicUrl }));
-    } catch (err: any) { showMsg("Erro upload: " + err.message, "err"); }
+    } catch (err) { showMsg("Erro upload: " + (err as Error).message, "err"); }
     setUploadingCapa(false);
     e.target.value = "";
   };
@@ -136,7 +137,7 @@ export default function AdminNoticias() {
       if (error) throw error;
       const { data } = supabase.storage.from("noticias-capas").getPublicUrl(fileName);
       setForm(f => ({ ...f, icone_url: data.publicUrl }));
-    } catch (err: any) { showMsg("Erro upload: " + err.message, "err"); }
+    } catch (err) { showMsg("Erro upload: " + (err as Error).message, "err"); }
     setUploadingIcone(false);
     e.target.value = "";
   };
@@ -152,7 +153,7 @@ export default function AdminNoticias() {
       if (error) throw error;
       const { data } = supabase.storage.from("noticias-capas").getPublicUrl(fileName);
       setNotif(n => ({ ...n, imagemModo: "custom", imagemUrl: data.publicUrl }));
-    } catch (err: any) { showMsg("Erro upload: " + err.message, "err"); }
+    } catch (err) { showMsg("Erro upload: " + (err as Error).message, "err"); }
     setUploadingNotifImg(false);
     e.target.value = "";
   };
@@ -242,15 +243,15 @@ export default function AdminNoticias() {
           const resumo = total === 0 ? "nenhum aparelho está com os avisos ativados ainda" : `aviso no celular enviado para ${ap(enviados)} de ${total}${falhas ? ` (${falhas} falharam)` : ""}`;
           if (semAviso) showMsg(`${acao}! ${resumo.charAt(0).toUpperCase() + resumo.slice(1)}, mas o aviso dentro do app não gravou.`, "err");
           else showMsg(`${acao}! ${resumo.charAt(0).toUpperCase() + resumo.slice(1)}.`, total === 0 || falhas ? "err" : "ok");
-        } catch (pushErr: any) {
-          showMsg(`${acao}, mas a notificação falhou: ${pushErr.message}`, "err");
+        } catch (pushErr) {
+          showMsg(`${acao}, mas a notificação falhou: ${(pushErr as Error).message}`, "err");
         }
       } else {
         showMsg(`${acao}!`, "ok");
       }
       setModalOpen(false);
       await load();
-    } catch (err: any) { showMsg("Erro: " + err.message, "err"); }
+    } catch (err) { showMsg("Erro: " + (err as Error).message, "err"); }
     salvandoRef.current = false;
     setSaving(false);
   };

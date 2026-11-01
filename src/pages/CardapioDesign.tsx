@@ -9,6 +9,9 @@ import { useRecorte } from "@/components/ui/useRecorte";
 import { ArrowCounterClockwise, ArrowsClockwise, Camera, Check, Eye, Info, Crown, Image as ImageIcon, Images, LinkSimple, Lock, MapPin, Palette, Plus, Sparkle, Storefront, X } from "@phosphor-icons/react";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { situacaoLoja } from "@/lib/agendaCardapio";
+
+/** Campos do perfil lidos aqui que não estão no tipo do Supabase */
+type PerfilDesign = { foto_url?: string | null; hide_stars?: boolean | null; avaliacao_media?: number | string | null; endereco?: string | { cidade?: string } | null; horario?: unknown };
 import AppPageHeader from "@/components/AppPageHeader";
 import bannerAparencia from "@/assets/banner-aparencia.webp";
 import { COMO_APARENCIA, TOUR_APARENCIA } from "@/lib/comoTelas";
@@ -41,7 +44,7 @@ function ProSlot({ n }: { n: number }) {
 export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliacoesCard }: { identityCard?: React.ReactNode; avaliacoesCard?: React.ReactNode } = {}) {
   const navigate = useNavigate();
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
-  const voltarPara = (useLocation().state as any)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
+  const voltarPara = (useLocation().state as { de?: string } | null)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
   const [loading, setLoading] = useState(true);
   const [erroCarga, setErroCarga] = useState(false); // (27/10) leitura falhou: não abre com o padrão (gravaria por cima do que ela tinha)
   const [tentativaCarga, setTentativaCarga] = useState(0);
@@ -124,12 +127,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
       const { data, error: erroPerfil } = await supabase.from("profiles").select("logo_url, foto_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, banner_topo_url, descricao_loja, endereco, horario, tema_cardapio, tema_aviso, tema_auto, tema_inicio, tema_fim, tema_capa_url, tema_laco, tema_destaque, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo, hide_stars, avaliacao_media").eq("id", user.id).single();
       if (erroPerfil || !data) { setErroCarga(true); setLoading(false); return; }
       if (data) {
-        setLogoUrl(data.logo_url || ""); setFotoPerfil((data as any).foto_url || "");
-        setHideStars(!!(data as any).hide_stars);
-        setAvaliacaoMedia(Number((data as any).avaliacao_media) || 5.0);
+        setLogoUrl(data.logo_url || ""); setFotoPerfil((data as PerfilDesign).foto_url || "");
+        setHideStars(!!(data as PerfilDesign).hide_stars);
+        setAvaliacaoMedia(Number((data as PerfilDesign).avaliacao_media) || 5.0);
         setNomeLoja(data.nome_loja || "");
-        try { const e: any = typeof (data as any).endereco === "string" ? JSON.parse((data as any).endereco) : (data as any).endereco; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
-        setHorario((data as any).horario ?? null);
+        try { const e: { cidade?: string } | null = typeof (data as PerfilDesign).endereco === "string" ? JSON.parse((data as PerfilDesign).endereco as string) : (data as PerfilDesign).endereco as { cidade?: string } | null; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
+        setHorario((data as PerfilDesign).horario ?? null);
         setBannerUrl(data.banner_url || "");
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
@@ -589,7 +592,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
           <div className={`ap-topo-capa${bannerTopoUrl ? " ap-topo-capa--foto" : " ap-topo-capa--vazia"}`} style={bannerTopoUrl ? undefined : { backgroundColor: topoEscurecido(corAtual("cor_navbar", corNavbar)) }}>
             {bannerTopoUrl ? <img className="ap-topo-capa-img" src={bannerTopoUrl} alt="" /> : <span className="ap-topo-pill"><ImageIcon size={16} weight="bold" aria-hidden="true" />Foto do topo · 1200 × 400</span>}
             {bannerTopoUrl && <BotaoIcone rotulo="Tirar a foto do topo" variante="neutro" tamanho="p" className="ap-tirar ap-topo-x" onClick={handleRemoveBannerTopo}><X size={18} weight="bold" /></BotaoIcone>}
-            {(() => { const sit = situacaoLoja(horario as any); const aberto = !sit || sit.aberto; return (
+            {(() => { const sit = situacaoLoja(horario); const aberto = !sit || sit.aberto; return (
               <span className={`ap-topo-st${aberto ? " aberto" : ""}`}><i aria-hidden="true" />{aberto ? "Aberto agora" : "Fechado"}</span>
             ); })()}
             {uploading === "banner-topo" && <span className="ap-topo-gira"><span className="ui-gira" aria-label="Enviando" /></span>}

@@ -97,7 +97,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         .select("design_escolhido")
         .eq("id", userId)
         .single();
-      const escolheuDesign = designErr ? false : !!(designData as any)?.design_escolhido;
+      const escolheuDesign = designErr ? false : !!(designData as { design_escolhido?: boolean } | null)?.design_escolhido;
 
       const list: Step[] = [
         {

@@ -11,7 +11,7 @@
  */
 type Resposta<T> = { data: T[] | null; error: unknown };
 
-export async function buscarTudo<T = any>(
+export async function buscarTudo<T = unknown>(
   consulta: (de: number, ate: number) => PromiseLike<Resposta<T>>,
   porPagina = 1000,
   maximoDePaginas = 50,

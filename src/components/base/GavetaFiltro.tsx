@@ -21,7 +21,7 @@ export type GrupoFiltro = {
   /** caixinhas: mostra "Marcar todas / Desmarcar todas" */
   todas?: boolean;
   /** algo embaixo de uma opção quando ela está marcada (ex.: as datas do "Escolher período") */
-  depois?: (k: string, valor: Record<string, any>, mudar: (id: string, v: any) => void) => ReactNode;
+  depois?: (k: string, valor: ValorFiltro, mudar: (id: string, v: unknown) => void) => ReactNode;
 };
 export type ValorFiltro = Record<string, any>;
 
@@ -42,7 +42,7 @@ export default function GavetaFiltro({ titulo = "Filtros", grupos, valor, padrao
   const caixa = useRef<HTMLDivElement>(null);
   const fechar = () => { if (saindo) return; setSaindo(true); window.setTimeout(aoFechar, 180); };
   useSobreposicao(true, fechar, caixa);
-  const mudar = (id: string, v: any) => setRasc(r => ({ ...r, [id]: v }));
+  const mudar = (id: string, v: unknown) => setRasc(r => ({ ...r, [id]: v }));
   const n = contar ? contar(rasc) : null;
   const aplicar = () => { aoAplicar(rasc); fechar(); };
 

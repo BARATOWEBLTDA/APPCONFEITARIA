@@ -50,7 +50,7 @@ export default function SucessoProdutoTela(p: Props) {
     <div className="spa" role="alertdialog" aria-modal="true" aria-labelledby="spa-t">
       {p.primeiro && (
         <div className="spa-confete" aria-hidden="true">
-          {CONFETE.map(([l, c, d, dur, gira], i) => <i key={i} style={{ left: `${l}%`, background: c, animationDelay: `${d}s`, animationDuration: `${dur}s`, ['--gira' as any]: `${gira}deg` }} />)}
+          {CONFETE.map(([l, c, d, dur, gira], i) => <i key={i} style={{ left: `${l}%`, background: c, animationDelay: `${d}s`, animationDuration: `${dur}s`, ['--gira']: `${gira}deg` } as React.CSSProperties} />)}
         </div>
       )}
       {/* (30/10 · 5.27) no PC: check ao lado do título (mais baixo e mais largo) e textos mais curtos */}

@@ -16,6 +16,9 @@ import './orcamentos.css'
 type Loja = { id: string; codigo: string; nome: string; logo?: string | null; aceita: boolean }
 const lerReais = (s: string) => { const d = s.replace(/\D/g, ''); return d ? parseInt(d, 10) / 100 : 0 }
 
+/** O que a função do banco devolve */
+type RespostaRpc = { ok?: boolean; erro?: string } | null
+
 export default function OrcamentoPedir() {
   const { codigo } = useParams()
   const [loja, setLoja] = useState<Loja | null | undefined>(undefined)
@@ -64,7 +67,7 @@ export default function OrcamentoPedir() {
         p_dados: { nome: nome.trim(), telefone: tel, ocasiao: ocasiao || null, descricao: descricao.trim(), pessoas: pessoas || null, data: data || null, orcamento: orcamento || null, fotos },
       })
       if (error) throw error
-      if (!(r as any)?.ok) { avisar((r as any)?.erro || 'Não deu para enviar. Tente de novo.', { tipo: 'erro' }); return }
+      if (!(r as RespostaRpc)?.ok) { avisar((r as RespostaRpc)?.erro || 'Não deu para enviar. Tente de novo.', { tipo: 'erro' }); return }
       setEnviado(true); window.scrollTo({ top: 0 })
     } catch (e) { avisar(explicarErro(e, 'Não deu para enviar. Confira a internet e tente de novo.'), { tipo: 'erro' }) }
     finally { setEnviando(false) }

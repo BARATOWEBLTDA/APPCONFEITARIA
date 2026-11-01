@@ -30,7 +30,7 @@ export default function CardapioPrevia() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setUrl(`${window.location.origin}/cardapio/${user.id}`);
     });
-  }, [profile?.id, (profile as any)?.codigo_publico]);
+  }, [profile?.id, profile?.codigo_publico]);
 
   // (22/10) B11 · celular: abre o cardápio de verdade em tela cheia, com a faixa "Você está vendo como cliente"
   const celular = typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches;

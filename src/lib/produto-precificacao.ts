@@ -22,6 +22,7 @@ import { supabase } from "@/lib/supabase";
  */
 
 import { pesoDoNome } from "@/lib/itemSacola";
+import type { PromocaoJson } from "@/lib/precoCardapio";
 
 // ─── Tipos ──────────────────────────────────────────────────────────
 
@@ -273,7 +274,7 @@ export const REGRA_CONFLITO_HINT: Record<RegraConflitoTamanho, string> = {
 // Uma conta só pra Produtos, Ficha técnica e o PDF da ficha (antes cada tela fazia a sua).
 
 /** Desconto da promoção, de 0 a 1. Mesma regra do cardápio (cartão do produto): em % ou em valor. */
-export function descontoPromocao(p: any): number {
+export function descontoPromocao(p: PromocaoJson | null | undefined): number {
   if (!p?.promocao) return 0;
   const pct = Number(p.desconto_percentual) || 0;
   if (p.tipo_promocao === "percentual" && pct > 0) return Math.min(pct, 100) / 100;
@@ -284,7 +285,7 @@ export function descontoPromocao(p: any): number {
 }
 
 /** Preço que o cliente paga pelo produto: o preço cheio já com a promoção (em valor ou em %). */
-export function precoQueClientePaga(p: any): number {
+export function precoQueClientePaga(p: PromocaoJson | null | undefined): number {
   const normal = Number(p?.preco_normal) || 0;
   const d = descontoPromocao(p);
   return d > 0 ? Math.round(normal * (1 - d) * 100) / 100 : normal;
@@ -322,12 +323,12 @@ export function custoDaHora(mao: MaoObraConta): number {
 /** Lê na conta o salário, a jornada e os custos fixos ativos (null quando não tem nada cadastrado) */
 export async function lerMaoObraConta(uid: string): Promise<MaoObraConta> {
   const [m, f] = await Promise.all([
-    supabase.from("config_mao_obra").select("*").eq("user_id", uid).maybeSingle().then(r => r, () => ({ data: null } as any)),
-    supabase.from("custos_fixos").select("valor, ativo").eq("user_id", uid).then(r => r, () => ({ data: null } as any)),
+    supabase.from("config_mao_obra").select("*").eq("user_id", uid).maybeSingle().then(r => r, () => ({ data: null } as { data: null })),
+    supabase.from("custos_fixos").select("valor, ativo").eq("user_id", uid).then(r => r, () => ({ data: null } as { data: null })),
   ]);
-  const d: any = m.data || {};
+  const d: { salario_mensal?: number | null; dias_semana_array?: unknown[] | null; dias_semana?: number | null; horas_dia?: number | null } = m.data || {};
   const salario = Number(d.salario_mensal) || 0;
-  const fixos = ((f.data as any[]) || []).filter(x => x.ativo !== false).reduce((s, x) => s + (Number(x.valor) || 0), 0);
+  const fixos = ((f.data as { valor: number | null; ativo: boolean | null }[]) || []).filter(x => x.ativo !== false).reduce((s, x) => s + (Number(x.valor) || 0), 0);
   if (salario <= 0 && fixos <= 0) return null;
   const dias = Array.isArray(d.dias_semana_array) && d.dias_semana_array.length ? d.dias_semana_array.length : (Number(d.dias_semana) || 5);
   return { salario, horasSemana: (Number(d.horas_dia) || 8) * dias, fixos };
@@ -338,8 +339,14 @@ export async function lerMaoObraConta(uid: string): Promise<MaoObraConta> {
  * `p` vem com produto_insumos(quantidade, unidade_utilizada, insumos(custo_unitario, unidade)).
  * `mao` e `cvConta` são os valores salvos na conta; sem eles valem os do próprio produto (25% quando nunca mudou).
  */
-export function calcularCustoLucro(p: any, mao: MaoObraConta = null, cvConta: number | null = null, venda: CustoDaVenda | null = null) {
-  const itens: any[] = (p?.produto_insumos || []).filter((x: any) => x?.insumos);
+/** O que a conta de custo e lucro lê do produto (com produto_insumos(quantidade, unidade_utilizada, insumos(custo_unitario, unidade))) */
+export type ProdutoCustoJson = PromocaoJson & {
+  produto_insumos?: { quantidade?: number | string | null; unidade_utilizada?: string | null; insumos?: { unidade?: string; custo_unitario?: number } | null }[] | null;
+  cv_percentual?: number | string | null; salario_desejado?: number | string | null; tempo_preparo_min?: number | string | null; horas_semanais?: number | string | null;
+};
+
+export function calcularCustoLucro(p: ProdutoCustoJson | null | undefined, mao: MaoObraConta = null, cvConta: number | null = null, venda: CustoDaVenda | null = null) {
+  const itens = (p?.produto_insumos || []).filter((x) => x?.insumos);
   const cmv = itens.reduce((s, pi) => s + custoIngrediente(Number(pi.quantidade) || 0, pi.unidade_utilizada || pi.insumos?.unidade || "", pi.insumos), 0);
   const cvPct = cvConta != null ? Number(cvConta) || 0 : (p?.cv_percentual != null ? Number(p.cv_percentual) || 0 : 25);
   const cv = cmv * (cvPct / 100);

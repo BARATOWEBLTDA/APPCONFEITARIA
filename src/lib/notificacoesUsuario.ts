@@ -10,6 +10,10 @@ export interface Notif {
   user_id?: string | null; tipo?: string | null; link?: string | null; lida: boolean; chave?: string | null;
 }
 
+/** A linha da tabela notificacoes (o "lida" é calculado abaixo) */
+type NotifLinha = Omit<Notif, "lida">;
+type EstadoNotif = { notificacao_id: string; lida_em: string | null; excluida: boolean | null };
+
 export async function carregarNotificacoes(limite = 100): Promise<Notif[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
@@ -17,7 +21,7 @@ export async function carregarNotificacoes(limite = 100): Promise<Notif[]> {
     supabase.from("notificacoes").select("*").order("created_at", { ascending: false }).limit(limite),
     supabase.from("notificacoes_estado").select("notificacao_id, lida_em, excluida").eq("user_id", user.id),
   ]);
-  const mapa = new Map<string, any>((est || []).map((e: any) => [e.notificacao_id, e]));
+  const mapa = new Map<string, EstadoNotif>((est || []).map((e: EstadoNotif) => [e.notificacao_id, e]));
   // Compatibilidade: o que foi visto antes desta versão (data salva no aparelho) conta como lido
   const antigo = Number(localStorage.getItem("notif_last_seen_ms") || 0) || (localStorage.getItem("notif_last_seen") ? new Date(localStorage.getItem("notif_last_seen")!).getTime() : 0);
   // (21/10) conta a pagar: cada situação era um aviso novo e os antigos ficavam ("Vence amanhã" + "Vence hoje" + "Atrasada"
@@ -25,14 +29,14 @@ export async function carregarNotificacoes(limite = 100): Promise<Notif[]> {
   const SIT = ["vence", "hoje", "atrasada"]
   const daConta = (ch: string) => { const m = /^conta_(vence|hoje|atrasada)_(.+)$/.exec(ch || ""); return m ? { sit: SIT.indexOf(m[1]), id: m[2] } : null }
   const maisNova = new Map<string, number>()
-  for (const n of (ns || []) as any[]) { const c = daConta(n.chave); if (c && c.sit > (maisNova.get(c.id) ?? -1)) maisNova.set(c.id, c.sit) }
+  for (const n of (ns || []) as NotifLinha[]) { const c = daConta(n.chave); if (c && c.sit > (maisNova.get(c.id) ?? -1)) maisNova.set(c.id, c.sit) }
   return (ns || [])
-    .filter((n: any) => !(n.user_id && n.user_id !== user.id))
-    .filter((n: any) => !mapa.get(n.id)?.excluida)
+    .filter((n: NotifLinha) => !(n.user_id && n.user_id !== user.id))
+    .filter((n: NotifLinha) => !mapa.get(n.id)?.excluida)
     // (22/10) B4: a tela de Conquistas saiu do menu; os avisos antigos de conquista não aparecem mais (continuam no banco)
-    .filter((n: any) => n.tipo !== "conquista")
-    .filter((n: any) => { const c = daConta(n.chave); return !c || c.sit === maisNova.get(c.id) })
-    .map((n: any) => ({ ...n, lida: !!mapa.get(n.id)?.lida_em || (antigo > 0 && new Date(n.created_at).getTime() <= antigo && !n.user_id) }));
+    .filter((n: NotifLinha) => n.tipo !== "conquista")
+    .filter((n: NotifLinha) => { const c = daConta(n.chave); return !c || c.sit === maisNova.get(c.id) })
+    .map((n: NotifLinha) => ({ ...n, lida: !!mapa.get(n.id)?.lida_em || (antigo > 0 && new Date(n.created_at).getTime() <= antigo && !n.user_id) }));
 }
 
 async function salvarEstado(ids: string[], patch: { lida_em?: string; excluida?: boolean }) {
@@ -80,7 +84,7 @@ export function avisoDoPro(proExpiraEm: string, agora: Date = new Date()): { tip
 }
 
 /** PRO vencendo (3 dias antes) e mensalidade atrasada — conferido quando ela abre o app */
-export async function verificarAvisosPro(profile: any) {
+export async function verificarAvisosPro(profile: { pro_expira_em?: string | null } | null | undefined) {
   if (!profile?.pro_expira_em) return;
   const aviso = avisoDoPro(profile.pro_expira_em);
   if (!aviso) return;
@@ -99,7 +103,7 @@ export async function contarNovidadesNaoLidas(): Promise<number> {
       q.order("publicado_em", { ascending: false }).limit(60),
       supabase.from("noticias_lidas").select("noticia_id").eq("user_id", session.user.id),
     ]);
-    const vistas = new Set((lidas || []).map((x: any) => x.noticia_id));
-    return (ns || []).filter((n: any) => !vistas.has(n.id)).length;
+    const vistas = new Set((lidas || []).map((x: { noticia_id: string }) => x.noticia_id));
+    return (ns || []).filter((n: { id: string }) => !vistas.has(n.id)).length;
   } catch { return 0; }
 }

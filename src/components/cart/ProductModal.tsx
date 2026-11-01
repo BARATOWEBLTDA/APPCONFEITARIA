@@ -15,8 +15,10 @@ import { useCart } from '@/hooks/useCart'
 import { supabase } from '@/lib/supabase'
 import { Produto } from '@/types/database'
 import { formatCurrency } from '@/utils/helpers'
-import type { EscolhasV3, EscolhaOpcao, PrecoBreakdownCarrinho } from '@/types/cart'
-import { carregarGruposDoBanco, type GrupoOpcoes, type TipoGrupo } from '@/lib/produto-grupos'
+import type { EscolhasV3, EscolhaOpcao, PrecoBreakdownCarrinho, CartItem } from '@/types/cart'
+import { carregarGruposDoBanco, type GrupoOpcoes, type TipoGrupo, type OpcaoGenerica } from '@/lib/produto-grupos'
+import type { KitQtdConfig } from '@/lib/kitQuantidade'
+import type { RegraConflitoTamanho, TipoAdicional } from '@/lib/produto-precificacao'
 import {
   calcularAdicionalOpcao,
   existeConflitoSaborTamanho,
@@ -34,6 +36,31 @@ interface ExtraBiblioteca {
   descricao?: string | null
   categorias: string[] // IDs dos produtos vinculados (vazio = todos)
   pede_referencia?: boolean // (19/10) marcado no cardápio, abre o anexo da foto de referência (ex.: Topo de bolo)
+  categorias_cardapio?: string[]
+}
+
+/** Campos do produto que vêm do banco além do tipo Produto */
+type ProdutoModal = Produto & {
+  kit_qtd?: KitQtdConfig | null
+  quantidade_base?: number | null
+  aceita_referencia?: boolean
+  grupo_tamanhos?: { rendimento_unidade?: string } | null
+}
+
+/** Opção de grupo com os campos extras gravados no banco */
+type Opcao = OpcaoGenerica & { esgotado?: boolean; tipo_adicional?: TipoAdicional }
+
+/** Grupo com os campos de configuração gravados no banco */
+type GrupoCfg = GrupoOpcoes & {
+  rendimento_unidade?: string
+  modo_preco_tamanho?: string
+  regra_conflito_tamanho?: RegraConflitoTamanho
+}
+
+/** O item que vai pra sacola (ou pro pedido em edição) */
+type ItemSacola = CartItem & {
+  extrasBiblioteca?: { id: string; nome: string; valor: number; frase?: string }[]
+  pedeReferencia?: string
 }
 
 interface Props {
@@ -42,7 +69,7 @@ interface Props {
   product: Produto | null
   corBotao?: string
   /** Editar pedido (03/10): recebe o item escolhido em vez de colocar no carrinho */
-  onAdicionar?: (item: any) => void
+  onAdicionar?: (item: ItemSacola) => void
   rotuloAdicionar?: string
   /** (14/10) Prévia do cadastro: janela menor no centro, sem foto de referência/observação, botão "Entendi" só fecha */
   previa?: boolean
@@ -58,12 +85,15 @@ const TEXTO_FALTA: Record<string, string> = {
 // ═══ Um grupo de opções (faixa cinza + lista) ═════════════════════
 // (11/10) Fica FORA do ProductModal: declarado lá dentro, era um componente novo a cada render
 // e a lista inteira era desmontada e montada de novo a cada toque (perdia o foco e a rolagem).
+/** escolha única: o id (ou null) · várias: a lista de ids */
+type AoMudar = (v: string | string[] | null) => void
+
 interface GrupoProps {
   chave: string
   g: GrupoOpcoes
   multi: boolean
   valor: string | string[] | null
-  aoMudar: (v: any) => void
+  aoMudar: AoMudar
   /** onde o modal guarda cada seção (pra rolar até a que falta) */
   secoes: React.MutableRefObject<Record<string, HTMLElement | null>>
   /** grupo obrigatório que ficou sem escolha */
@@ -71,7 +101,7 @@ interface GrupoProps {
   emFatias: boolean
   corBotao: string
   /** texto do preço ao lado da opção ("" = não mostra) */
-  precoDaOpcao: (g: GrupoOpcoes, op: any) => string
+  precoDaOpcao: (g: GrupoOpcoes, op: Opcao) => string
 }
 
 function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corBotao, precoDaOpcao }: GrupoProps) {
@@ -87,14 +117,14 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
     : g.min_selecionavel > 0 ? `Escolha de ${g.min_selecionavel} a ${max} opções`
     : `Escolha até ${max} ${max === 1 ? 'opção' : 'opções'}`
   const falta = faltou === chave
-  const unG = String((g as any).rendimento_unidade || '').trim() // (13/10) além de pessoas e fatias, a unidade que ela escreveu (copos, potes…)
-  const nomeOp = (op: any) => {
+  const unG = String((g as GrupoCfg).rendimento_unidade || '').trim() // (13/10) além de pessoas e fatias, a unidade que ela escreveu (copos, potes…)
+  const nomeOp = (op: Opcao) => {
     const peso = op.peso_kg && pesoDoNome(op.nome) !== Number(op.peso_kg) ? `${String(op.peso_kg).replace('.', ',')} kg` : '' // (10/10) não repete quando o nome já é o peso
     return peso && g.tipo === 'tamanho' ? `${op.nome} · ${peso}` : op.nome
   }
-  const serveOp = (op: any) => op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : unG && unG !== 'pessoas' ? `Serve até ${String(op.serve).trim()} ${unG}` : `Serve até ${String(op.serve).trim()} pessoas`) : `Serve até ${op.serve}`) : ''
+  const serveOp = (op: Opcao) => op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? (emFatias ? `${String(op.serve).trim()} fatias` : unG && unG !== 'pessoas' ? `Serve até ${String(op.serve).trim()} ${unG}` : `Serve até ${String(op.serve).trim()} pessoas`) : `Serve até ${op.serve}`) : ''
   // (20/10) escolha única feita: o subtítulo mostra o que foi escolhido ("5 kg · serve até 50 pessoas")
-  const opEscolhida = !multi && valor ? g.opcoes.find((o: any) => o.id === valor) : null
+  const opEscolhida = !multi && valor ? g.opcoes.find((o) => o.id === valor) : null
   const resumo = opEscolhida ? [nomeOp(opEscolhida), serveOp(opEscolhida).replace(/^Serve/, 'serve')].filter(Boolean).join(' · ') : ''
   const tocar = (id: string) => {
     if (multi) {
@@ -118,7 +148,7 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
         </span>
       </header>
       <div role={multi ? 'group' : 'radiogroup'} aria-label={titulo}>
-        {g.opcoes.map((op: any) => {
+        {g.opcoes.map((op: Opcao) => {
           const on = marcado(op.id)
           const preco = precoDaOpcao(g, op)
           const serve = serveOp(op)
@@ -148,7 +178,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const [quantity, setQuantity] = useState(1)
   // Kit por quantidade (docinhos/salgados): quantos de cada sabor
   const [kitSel, setKitSel] = useState<KitSelecao>({ kitId: '', qtdLivre: 0, qtds: {} })
-  const kitCfg = kitAtivo((product as any)?.kit_qtd) ? (product as any).kit_qtd : null
+  const kitCfg = kitAtivo((product as ProdutoModal)?.kit_qtd) ? (product as ProdutoModal).kit_qtd : null
   const kitInfo = kitCfg ? calcularKit(kitCfg, kitSel) : null
   const [observations, setObservations] = useState('')
   const [imgIndex, setImgIndex] = useState(0)
@@ -178,21 +208,21 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     }
     // (11/10) trocou de produto: a lista de adicionais do produto anterior sai da tela na hora
     if (extrasDoProduto.current !== product.id) { extrasDoProduto.current = product.id; setExtrasBiblioteca([]) }
-    const uid = (product as any).user_id
+    const uid = product.user_id
     if (!uid) return
     // 02/10: pelo cardápio (cliente sem login) a tabela não pode ser lida direto — usa a função segura.
     // Se a função ainda não existir no banco (SQL não rodado), tenta a leitura direta.
     // (11/10) resposta atrasada de outro produto (ou depois de fechar) não entra na tela
     let valendo = true
     ;(async () => {
-      let data: any[] | null = null
+      let data: unknown[] | null = null
       // (24/10) a v4 traz foto de referência, categorias e frase · (27/10) as versões antigas saíram do banco
       const r = await supabase.rpc('cardapio_extras_v4', { p_loja: uid })
       if (!r.error && Array.isArray(r.data)) data = r.data
       else {
         // a confeiteira logada (Nova venda) lê a própria tabela
         const d = await supabase.from('biblioteca_extras').select('*').eq('user_id', uid)
-        data = (d.data as any[]) || null
+        data = (d.data as unknown[]) || null
       }
       return { data }
     })().then(({ data }) => {
@@ -201,8 +231,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
         // Filtra: (24/10) nas categorias marcadas (pelo nome da categoria do produto), nos produtos marcados ou em todos
         const filtrados = (data as ExtraBiblioteca[]).filter(e => {
           const cats: string[] = Array.isArray(e.categorias) ? e.categorias : []
-          const doCardapio: string[] = Array.isArray((e as any).categorias_cardapio) ? (e as any).categorias_cardapio : []
-          if (doCardapio.length > 0) return doCardapio.includes(String((product as any).categoria || ''))
+          const doCardapio: string[] = Array.isArray(e.categorias_cardapio) ? e.categorias_cardapio : []
+          if (doCardapio.length > 0) return doCardapio.includes(String(product.categoria || ''))
           return cats.length === 0 || cats.includes(product.id)
         })
         setExtrasBiblioteca(filtrados)
@@ -249,7 +279,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       setExtrasMarcados(new Set()); setFrases({})
       setEscolhaMassa(null); setEscolhasRecheio([]); setEscolhaCobertura(null)
       setEscolhaSabor(null); setEscolhaTamanho(null)
-      if (kitAtivo((product as any).kit_qtd)) setKitSel(selecaoInicial((product as any).kit_qtd))
+      if (kitAtivo((product as ProdutoModal).kit_qtd)) setKitSel(selecaoInicial((product as ProdutoModal).kit_qtd))
     }
   }, [product, isOpen])
 
@@ -269,9 +299,9 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const descPct = product ? descontoCardapio(product) : 0
 
   // ═══ Helpers de opção ═════════════════════════════════════════════
-  const acharOpcao = (g: GrupoOpcoes | null, id: string | null): any => {
+  const acharOpcao = (g: GrupoOpcoes | null, id: string | null): Opcao | null => {
     if (!g || !id) return null
-    return g.opcoes.find((o: any) => o.id === id) || null
+    return g.opcoes.find((o) => o.id === id) || null
   }
 
   const opMassa = acharOpcao(gMassa, escolhaMassa)
@@ -281,13 +311,13 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const opsRecheios = escolhasRecheio.map(id => acharOpcao(gRecheio, id)).filter(Boolean)
   // 10/10: tamanho "pelo peso" cadastrado sem o peso → lê o peso do nome da opção ("0,5kg", "500g").
   // O mesmo valor vale pro preço da opção, pro total e pro que vai pra sacola.
-  const tamanhoPorPeso = (gTamanho as any)?.modo_preco_tamanho === 'por_peso'
+  const tamanhoPorPeso = (gTamanho as GrupoCfg)?.modo_preco_tamanho === 'por_peso'
   const pesoOpTamanho = opTamanho ? pesoDoTamanho(opTamanho, tamanhoPorPeso) : 0
 
   // ═══ Cálculo do preço em tempo real ═══════════════════════════════
   const calculo = useMemo<PrecoBreakdownCarrinho>(() => {
     if (!product) {
-      return { base: 0, adicionais: 0, subtotal: 0, desconto: 0, final: 0 } as any
+      return { base: 0, adicionais: 0, subtotal: 0, desconto: 0, final: 0 } as unknown as PrecoBreakdownCarrinho
     }
     let baseEfetivo = basePrice
 
@@ -301,7 +331,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     // Se Sabor tem preço próprio: pode ser conflito ou não
     let adicionalSaborForcado = 0
     if (opSabor && gSabor) {
-      const gs = grupos.find(x => x.tipo === 'sabor') as any
+      const gs = grupos.find(x => x.tipo === 'sabor') as GrupoCfg
       const temPrecoProprio = !!gs?.sabor_tem_preco_proprio
       if (temPrecoProprio && opSabor.preco > 0) {
         // Verifica conflito com tamanho
@@ -310,7 +340,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
           sabor_tem_preco_proprio: true,
           sabor_tem_opcao_com_preco: true,
           tamanho_ativo: !!gTamanho,
-          tamanho_tem_opcao_com_preco: !!gTamanho?.opcoes.some((o: any) => (o.preco || 0) > 0),
+          tamanho_tem_opcao_com_preco: !!gTamanho?.opcoes.some((o) => (o.preco || 0) > 0),
         })
         if (tamanhoPorPeso) {
           // (11/10) tamanho pelo peso: o preço do sabor é por kg (antes 3 kg custava o mesmo que 1 kg).
@@ -335,7 +365,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     let adicionaisTotal = 0
     const ctx = {
       quantidade_pedido: quantity,
-      quantidade_base: (product as any).quantidade_base || null,
+      quantidade_base: (product as ProdutoModal).quantidade_base || null,
       forma_venda: product.forma_venda,
       tamanho_escolhido_peso_kg: pesoOpTamanho || null,
     }
@@ -348,7 +378,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     if (adicionalSaborForcado > 0) {
       adicionaisTotal += adicionalSaborForcado
     } else if (opSabor) {
-      const gs = grupos.find(x => x.tipo === 'sabor') as any
+      const gs = grupos.find(x => x.tipo === 'sabor') as GrupoCfg
       if (!gs?.sabor_tem_preco_proprio) {
         adicionaisTotal += calcularAdicionalOpcao(opSabor, ctx)
       }
@@ -437,7 +467,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const [pedidos30, setPedidos30] = useState(0)
   useEffect(() => {
     setPedidos30(0)
-    const loja = (product as any)?.user_id || lojaAtualId(), id = product?.id
+    const loja = product?.user_id || lojaAtualId(), id = product?.id
     if (!isOpen || !loja || !id || previa || onAdicionar) return
     let vivo = true
     void supabase.rpc('cardapio_pedidos_do_produto', { p_loja: loja, p_produto: id }).then(({ data }) => { if (vivo && typeof data === 'number') setPedidos30(data) })
@@ -446,9 +476,9 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   // (21/10) Peça também: 3 da mesma categoria (completa com outras), disponíveis e com foto
   const sugestoes = useMemo(() => {
     if (!product || previa || onAdicionar) return [] as Produto[]
-    const todos = produtosDaLojaAtual().filter((p: any) => p.id !== product.id && p.disponivel !== false && p.imagem_url && !tamanhosEsgotados(p)) as Produto[]
-    const cat = (product as any).categoria
-    return [...todos.filter((p: any) => p.categoria === cat), ...todos.filter((p: any) => p.categoria !== cat)].slice(0, 3)
+    const todos = (produtosDaLojaAtual() as Produto[]).filter((p) => p.id !== product.id && p.disponivel !== false && p.imagem_url && !tamanhosEsgotados(p)) as Produto[]
+    const cat = product.categoria
+    return [...todos.filter((p) => p.categoria === cat), ...todos.filter((p) => p.categoria !== cat)].slice(0, 3)
   }, [product?.id, isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ═══ Early return DEPOIS de todos os hooks (regra do React) ══════
@@ -467,7 +497,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       escolhas.recheios = opsRecheios.map(r => ({ id: r.id, nome: r.nome, adicional: r.adicional || 0 }))
     }
     if (opSabor) {
-      const gs = grupos.find(x => x.tipo === 'sabor') as any
+      const gs = grupos.find(x => x.tipo === 'sabor') as GrupoCfg
       const e: EscolhaOpcao = { id: opSabor.id, nome: opSabor.nome, adicional: opSabor.adicional || 0 }
       if (gs?.sabor_tem_preco_proprio && opSabor.preco) e.preco_proprio = opSabor.preco
       escolhas.sabor = e
@@ -502,8 +532,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       // Personalização (biblioteca de extras)
       extrasBiblioteca: extrasEscolhidos.length > 0 ? extrasEscolhidos : undefined,
       // (24/10) o item aceita foto de referência: o Finalizar pedido mostra o campo para enviar
-      pedeReferencia: !onAdicionar && ((product as any).aceita_referencia === true || !!refDoExtra) ? (refDoExtra && (product as any).aceita_referencia !== true ? refDoExtra.nome : 'Foto de referência') : undefined,
-    } as any)
+      pedeReferencia: !onAdicionar && ((product as ProdutoModal).aceita_referencia === true || !!refDoExtra) ? (refDoExtra && (product as ProdutoModal).aceita_referencia !== true ? refDoExtra.nome : 'Foto de referência') : undefined,
+    } as ItemSacola)
     onClose()
   }
 
@@ -522,7 +552,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   // Por kg COM tamanho a quantidade fica 1 (o tamanho já define o peso).
   const kgLivre = isKg && !gTamanho && !kitCfg
   // (24/10) kit "ele escolhe" (cento): a quantidade já é escolhida em unidades lá em cima; o contador "1 kit" embaixo confundia e cortava o botão
-  const semQuantidade = (isKg && !kgLivre) || (!!kitCfg && (kitCfg as any).modo === 'livre')
+  const semQuantidade = (isKg && !kgLivre) || (!!kitCfg && kitCfg.modo === 'livre')
   const passo = kgLivre ? 0.5 : 1
   const minimo = kgLivre ? 0.5 : 1
   // (21/10) kit: "1 kit" (antes só "1": não dava pra saber se era 1 kit ou 1 doce)
@@ -530,7 +560,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   // (21/10) kit faltando: o botão diz quantos faltam ("Faltam 75 doces")
   const textoFalta = (p: string) => {
     if (p !== 'kit' || !kitInfo || !kitCfg) return TEXTO_FALTA[p]
-    const palavra = palavraKit(kitCfg as any)
+    const palavra = palavraKit(kitCfg)
     if (kitInfo.restante > 0) return `Faltam ${kitInfo.restante} ${palavra}`
     if (kitInfo.restante < 0) return `Passou ${-kitInfo.restante} ${palavra}`
     return TEXTO_FALTA.kit
@@ -551,24 +581,24 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
   // Preço do topo: com tamanhos e nada escolhido, a faixa de preços; senão o preço calculado
   const semTamanho = !!gTamanho && !opTamanho && !kitInfo
-  const gSaborCfg = grupos.find(x => x.tipo === 'sabor') as any
+  const gSaborCfg = grupos.find(x => x.tipo === 'sabor') as GrupoCfg
   const saborComPreco = !!gSabor && !!gSaborCfg?.sabor_tem_preco_proprio
   // (11/10) pelo peso com sabor de preço próprio escolhido: o kg custa o preço do sabor (igual ao total)
   const porKg = tamanhoPorPeso && saborComPreco && opSabor && opSabor.preco > 0 ? opSabor.preco : basePrice
   // (11/10) a mesma conta do total e do cartão: preço do tamanho + desconto (lib/precoCardapio)
   const precosTam = semTamanho ? (gTamanho!.opcoes || [])
-    .map((o: any) => comDesconto(precoDoTamanho(o, tamanhoPorPeso, porKg), descPct))
+    .map((o) => comDesconto(precoDoTamanho(o, tamanhoPorPeso, porKg), descPct))
     .filter((v: number) => v > 0) : []
   // (24/10) "cada sabor tem o seu preço" sem sabor escolhido: mostra o sabor mais barato (na prévia do cadastro
   // o preço do produto ainda é 0 e aparecia "R$ 0,00 conforme o sabor")
-  const precosSabor = saborComPreco && !opSabor && !gTamanho ? ((gSabor as any)?.opcoes || []).map((o: any) => Number(o?.preco) || 0).filter((v: number) => v > 0) : []
+  const precosSabor = saborComPreco && !opSabor && !gTamanho ? (gSabor?.opcoes || []).map((o) => Number(o?.preco) || 0).filter((v: number) => v > 0) : []
   const valorTopo = semTamanho ? comDesconto(precoCardapio(product).valor, descPct) : precosSabor.length && !(calculo.final > 0) ? comDesconto(Math.min(...precosSabor), descPct) : calculo.final
   const pMin = precosTam.length ? Math.min(...precosTam) : valorTopo
   // (20/10) os tamanhos têm preços diferentes? (decide se a linha do "a partir de" existe, escolhido ou não)
-  const precosTodos = gTamanho ? (gTamanho.opcoes || []).map((o: any) => precoDoTamanho(o, tamanhoPorPeso, porKg)).filter((v: number) => v > 0) : []
+  const precosTodos = gTamanho ? (gTamanho.opcoes || []).map((o) => precoDoTamanho(o, tamanhoPorPeso, porKg)).filter((v: number) => v > 0) : []
   const precoTamVaria = precosTodos.length > 1 && Math.max(...precosTodos) > Math.min(...precosTodos)
   // (20/10) "a partir de" com promoção: o menor preço sem desconto, riscado
-  const cheios = semTamanho && descPct > 0 ? (gTamanho!.opcoes || []).map((o: any) => precoDoTamanho(o, tamanhoPorPeso, porKg)).filter((v: number) => v > 0) : []
+  const cheios = semTamanho && descPct > 0 ? (gTamanho!.opcoes || []).map((o) => precoDoTamanho(o, tamanhoPorPeso, porKg)).filter((v: number) => v > 0) : []
   const pMinCheio = cheios.length ? Math.min(...cheios) : 0
   const temFoto = images.length > 0
   const aviso = selo?.tipo === 'encomenda' ? (
@@ -582,14 +612,14 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   // Antes mostrava o preço cheio (o botão cobrava com desconto) e, pelo peso, o `preco` antigo da opção.
   const regraSabor = gSaborCfg?.regra_conflito_tamanho || REGRA_CONFLITO_DEFAULT
   // Sabor e tamanho (de preço fixo) com preço: vale a regra que a loja escolheu no cadastro
-  const disputaPreco = saborComPreco && !!gTamanho && !tamanhoPorPeso && gTamanho.opcoes.some((o: any) => (o.preco || 0) > 0)
+  const disputaPreco = saborComPreco && !!gTamanho && !tamanhoPorPeso && gTamanho.opcoes.some((o) => (o.preco || 0) > 0)
   const ctxOpcao = {
     quantidade_pedido: quantity,
-    quantidade_base: (product as any).quantidade_base || null,
+    quantidade_base: (product as ProdutoModal).quantidade_base || null,
     forma_venda: product.forma_venda,
     tamanho_escolhido_peso_kg: pesoOpTamanho || null,
   }
-  const precoDaOpcao = (g: GrupoOpcoes, op: any): string => {
+  const precoDaOpcao = (g: GrupoOpcoes, op: Opcao): string => {
     const comPromo = (v: number) => formatCurrency(comDesconto(v, descPct))
     if (g.tipo === 'tamanho') {
       // regra "o preço vem do sabor": com um sabor de preço próprio escolhido, o tamanho não muda o preço
@@ -617,7 +647,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     const ad = calcularAdicionalOpcao(op, ctxOpcao)
     return ad > 0 ? `+ ${comPromo(ad)}` : ''
   }
-  const emFatias = (product as any)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
+  const emFatias = (product as ProdutoModal)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
   // O que todo grupo recebe igual (o componente Grupo fica fora daqui pra não ser remontado a cada toque)
   const doGrupo = { secoes, faltou, emFatias, corBotao, precoDaOpcao }
 
@@ -634,7 +664,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
           {gTamanho && !kitInfo && precoTamVaria && <small className="pm-apartir" style={semTamanho ? undefined : { visibility: 'hidden' }}>a partir de</small>}
           {/* (20/10) "a partir de" numa linha só dele; o preço cheio riscado vem depois do preço */}
           <strong className={descPct > 0 ? 'pm-preco-promo' : undefined}>{formatCurrency(semTamanho ? pMin : valorTopo)}</strong>
-          <em>{semTamanho ? '' /* (20/10) com tamanhos o bolo é vendido por tamanho: sem "por kg" */ : kitCfg ? ((kitCfg as any).modo === 'livre' ? (Number((kitCfg as any).livre?.min) === 100 ? 'o cento' : `${(kitCfg as any).livre?.min} un.`) : kitUnico(kitCfg as any) ? `o kit · ${kitsValidos(kitCfg as any)[0].qtd} ${palavraKit(kitCfg as any)}` : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadePreco(product.forma_venda)}</em>
+          <em>{semTamanho ? '' /* (20/10) com tamanhos o bolo é vendido por tamanho: sem "por kg" */ : kitCfg ? (kitCfg.modo === 'livre' ? (Number(kitCfg.livre?.min) === 100 ? 'o cento' : `${kitCfg.livre?.min} un.`) : kitUnico(kitCfg) ? `o kit · ${kitsValidos(kitCfg)[0].qtd} ${palavraKit(kitCfg)}` : 'o kit') : gTamanho ? '' : saborComPreco && !opSabor ? 'conforme o sabor' : unidadePreco(product.forma_venda)}</em>
           {semTamanho ? (pMinCheio > pMin && <s>{formatCurrency(pMinCheio)}</s>) : (descPct > 0 && calculo.subtotal > valorTopo && <s>{formatCurrency(calculo.subtotal)}</s>)}
           {descPct > 0 && <span className="pm-off">-{Math.round(descPct * 100)}%</span>}
         </div>
@@ -643,21 +673,21 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
       {kitCfg && (
         <section ref={el => { secoes.current['kit'] = el }} className={`pm-g${faltou === 'kit' ? ' falta' : ''}`}>
-          <header className="pm-g-cab"><span><b>{(kitCfg as any).modo === 'livre' ? 'Quantidade e sabores' : 'Monte o seu kit'}</b><small>{faltou === 'kit' ? 'Complete o kit para continuar' : `Até ${(kitCfg as any).max_sabores || 1} ${((kitCfg as any).max_sabores || 1) === 1 ? 'sabor' : 'sabores'}, de ${Math.max(1, (kitCfg as any).passo_sabor || 1)} em ${Math.max(1, (kitCfg as any).passo_sabor || 1)}`}</small></span>
+          <header className="pm-g-cab"><span><b>{kitCfg.modo === 'livre' ? 'Quantidade e sabores' : 'Monte o seu kit'}</b><small>{faltou === 'kit' ? 'Complete o kit para continuar' : `Até ${kitCfg.max_sabores || 1} ${(kitCfg.max_sabores || 1) === 1 ? 'sabor' : 'sabores'}, de ${Math.max(1, kitCfg.passo_sabor || 1)} em ${Math.max(1, kitCfg.passo_sabor || 1)}`}</small></span>
             {/* (21/10) "Obrigatório" discreto no kit: o botão de baixo já não deixa avançar sem montar */}
             <span className="pm-g-dir">{kitInfo?.completo ? <i className="pm-ok"><Check size={14} weight="bold" /></i> : <i className="pm-obr pm-obr--leve">Obrigatório</i>}</span></header>
           <div className="pm-kit"><KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} desconto={descPct} /></div>
         </section>
       )}
-      {gTamanho && <Grupo {...doGrupo} chave="tamanho" g={gTamanho} multi={false} valor={escolhaTamanho} aoMudar={setEscolhaTamanho} />}
-      {gSabor && <Grupo {...doGrupo} chave="sabor" g={gSabor} multi={false} valor={escolhaSabor} aoMudar={setEscolhaSabor} />}
-      {gMassa && <Grupo {...doGrupo} chave="massa" g={gMassa} multi={false} valor={escolhaMassa} aoMudar={setEscolhaMassa} />}
+      {gTamanho && <Grupo {...doGrupo} chave="tamanho" g={gTamanho} multi={false} valor={escolhaTamanho} aoMudar={setEscolhaTamanho as AoMudar} />}
+      {gSabor && <Grupo {...doGrupo} chave="sabor" g={gSabor} multi={false} valor={escolhaSabor} aoMudar={setEscolhaSabor as AoMudar} />}
+      {gMassa && <Grupo {...doGrupo} chave="massa" g={gMassa} multi={false} valor={escolhaMassa} aoMudar={setEscolhaMassa as AoMudar} />}
       {gRecheio && (
         <Grupo {...doGrupo} chave="recheio" g={gRecheio} multi={gRecheio.max_selecionavel > 1}
           valor={gRecheio.max_selecionavel > 1 ? escolhasRecheio : (escolhasRecheio[0] || null)}
-          aoMudar={(v: any) => setEscolhasRecheio(Array.isArray(v) ? v : (v ? [v] : []))} />
+          aoMudar={(v: string | string[] | null) => setEscolhasRecheio(Array.isArray(v) ? v : (v ? [v] : []))} />
       )}
-      {gCobertura && <Grupo {...doGrupo} chave="cobertura" g={gCobertura} multi={false} valor={escolhaCobertura} aoMudar={setEscolhaCobertura} />}
+      {gCobertura && <Grupo {...doGrupo} chave="cobertura" g={gCobertura} multi={false} valor={escolhaCobertura} aoMudar={setEscolhaCobertura as AoMudar} />}
 
       {extrasBiblioteca.length > 0 && (
         <section className="pm-g">
@@ -688,7 +718,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       )}
 
       {/* (24/10) a foto de referência é enviada no fim do pedido, antes de pagar (aqui só avisa) */}
-      {!onAdicionar && !previa && ((product as any).aceita_referencia === true || refDoExtra) && (
+      {!onAdicionar && !previa && ((product as ProdutoModal).aceita_referencia === true || refDoExtra) && (
         <p className="pm-ref-aviso"><Camera size={16} weight="bold" aria-hidden="true" />A foto de referência vai no fim do pedido</p>
       )}
 
@@ -743,7 +773,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
   return createPortal(
     <div className={`pm-veu${previa ? ' pm-veu--previa' : ''}`} onClick={onClose}>
-      <div ref={caixaRef} tabIndex={-1} className={`pm${temFoto ? '' : ' pm--sem-foto'}`} style={{ ['--pm-cor' as any]: corBotao }} role="dialog" aria-modal="true" aria-label={nome} onClick={e => e.stopPropagation()}>
+      <div ref={caixaRef} tabIndex={-1} className={`pm${temFoto ? '' : ' pm--sem-foto'}`} style={{ ['--pm-cor']: corBotao } as React.CSSProperties} role="dialog" aria-modal="true" aria-label={nome} onClick={e => e.stopPropagation()}>
         {/* celular: barra que aparece ao rolar · computador: topo com o nome */}
         <div className={`pm-barra${barra ? ' on' : ''}`}>
           <button type="button" className="pm-bt" aria-label="Voltar" onClick={onClose}><ArrowLeft size={22} weight="bold" /></button>

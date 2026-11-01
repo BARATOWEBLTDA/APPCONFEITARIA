@@ -6,7 +6,8 @@ import type { PixLoja } from '@/lib/pix'
 import { PixPagamento } from './PixPagamento'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 import '@/components/cart/sacola.css'
-import { renderItemFromSnapshot } from '@/lib/pedido-snapshot'
+import { renderItemFromSnapshot, type PedidoItemRaw } from '@/lib/pedido-snapshot'
+import type { ExtraEscolhido } from '@/lib/kitTexto'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { linkWhatsApp } from '@/lib/telefone'
 import { lojaAtualCheckout, lojaAtualNome, lojaAtualWhatsApp, lojaAtualLogo, lojaAtualVerificada } from './lojaAtual'
@@ -163,9 +164,9 @@ export function AcompanharPedido({ p, cor, corTopo, aoAtualizar }: { p: Pedido; 
 
       <ul className="acp-itens">
         {itens.map((it, i) => {
-          const r = renderItemFromSnapshot({ ...it, snapshot_version: it.snapshot_version ?? 1 } as any)
+          const r = renderItemFromSnapshot({ ...it, snapshot_version: it.snapshot_version ?? 1 } as PedidoItemRaw)
           const pz = it.personalizacoes || {}
-          const extras: any[] = Array.isArray(pz.extras) ? pz.extras : []
+          const extras: ExtraEscolhido[] = Array.isArray(pz.extras) ? pz.extras : []
           const linhas = r.personalizacoesRender.map(l => `${l.label} ${l.valor}`)
           if (pz.kit?.sabores?.length) linhas.push(`${pz.kit.total} un. · ${textoSaboresKit(pz.kit.sabores)}`)
           return (

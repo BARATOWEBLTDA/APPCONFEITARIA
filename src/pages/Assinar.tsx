@@ -6,7 +6,10 @@ import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Titulo } from "@/components/base";
 import { usePlano } from "@/hooks/usePlano";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, type Profile } from "@/hooks/useProfile";
+
+/** O perfil com os dados da assinatura (Hotmart) */
+type PerfilAssinatura = (Profile & { assinatura_status?: string | null; assinatura_origem?: string | null; email?: string | null }) | null;
 import { voltarOuIr } from "@/lib/voltar";
 import { abrirDooIA } from "@/components/MenuContaItens"; // 11/10: seta de voltar que funciona com a tela aberta direto (link de notificação)
 import "./clientes.css";
@@ -38,8 +41,8 @@ export default function Assinar() {
   // (21/10) computador: sem o voltar no topo (o menu da esquerda já leva de volta)
   const [computador, setComputador] = useState(() => window.matchMedia("(min-width: 901px)").matches);
   useEffect(() => { const mq = window.matchMedia("(min-width: 901px)"); const f = () => setComputador(mq.matches); mq.addEventListener("change", f); return () => mq.removeEventListener("change", f); }, []);
-  const emTeste = (profile as any)?.assinatura_status === "teste";
-  const folga = (profile as any)?.assinatura_origem === "hotmart" ? (emTeste ? 1 : 3) : 0;
+  const emTeste = (profile as PerfilAssinatura)?.assinatura_status === "teste";
+  const folga = (profile as PerfilAssinatura)?.assinatura_origem === "hotmart" ? (emTeste ? 1 : 3) : 0;
   const cobranca = proExpiraEm ? new Date(proExpiraEm.getTime() - folga * 86400000) : null;
   const [aberta, setAberta] = useState<number | null>(null);
   const ir = (destino: string | null) => { if (!destino) return; if (destino === "doo") abrirDooIA(); else navigate(destino); };
@@ -50,7 +53,7 @@ export default function Assinar() {
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setEmailConta(data.user?.email || "")).catch(() => {}); }, []);
   const assinarNaHotmart = () => {
     const u = new URL(CHECKOUT_HOTMART);
-    const email = emailConta || (profile as any)?.email || "";
+    const email = emailConta || (profile as PerfilAssinatura)?.email || "";
     if (email) u.searchParams.set("email", email);
     if (profile?.nome) u.searchParams.set("name", String(profile.nome));
     window.open(u.toString(), "_blank");

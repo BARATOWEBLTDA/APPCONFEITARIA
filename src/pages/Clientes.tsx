@@ -142,6 +142,11 @@ function formatMoneyFull(v?: number): string {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
+/** Pedido lido pra somar as compras de cada cliente */
+type PedidoDoCliente = { cliente_id?: string | null; cliente_nome?: string | null; valor_total?: number | string | null; valor_recebido?: number | string | null; data_entrega?: string | null; created_at?: string | null; status?: string | null };
+/** Contato escolhido na agenda do Android (Contact Picker API) */
+type ContatoAndroid = { name?: string[]; tel?: string[] };
+
 export default function Clientes() {
   const navigate = useNavigate();
   const { profile } = useProfile();
@@ -216,7 +221,7 @@ export default function Clientes() {
     // e "Pedidos", "Total gasto" e "Última compra" ficavam errados em conta grande.
     const [{ data: cls, error: erroCls }, { data: peds, error: erroPeds }] = await Promise.all([
       buscarTudo<Cliente>((de, ate) => supabase.from("clientes").select("*").eq("user_id", uid).order("nome").order("id").range(de, ate)),
-      buscarTudo<any>((de, ate) => supabase.from("pedidos")
+      buscarTudo<PedidoDoCliente>((de, ate) => supabase.from("pedidos")
         .select("cliente_id, cliente_nome, valor_total, valor_recebido, data_entrega, created_at, status")
         .eq("user_id", uid).order("id").range(de, ate)),
     ]);
@@ -226,7 +231,7 @@ export default function Clientes() {
       // Agrupa métricas por cliente_id em memória (O(n) — 1 pass só)
       type Agg = { total: number; totalValor: number; ultima: string | null };
       const map = new Map<string, Agg>();
-      (peds || []).forEach((p: any) => {
+      (peds || []).forEach((p: PedidoDoCliente) => {
         // (24/10) pedido antigo sem cliente_id conta pelo nome, como no perfil do cliente (antes a lista dizia
         // "Ainda não comprou" e o perfil mostrava os pedidos)
         const chave = p.cliente_id || (String(p.cliente_nome || "").trim() ? `nome:${String(p.cliente_nome).trim().toLowerCase()}` : "");
@@ -366,7 +371,7 @@ export default function Clientes() {
 
     // Converte strings vazias em null (Supabase reclama de "" em campos DATE/UUID)
     const toNullable = (v?: string) => (v && v.trim() ? v.trim() : null);
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       user_id: userId,
       nome: completo.nome.trim(),
       whatsapp: toNullable(completo.whatsapp),
@@ -526,7 +531,7 @@ export default function Clientes() {
       // ficando o que tem nome (guarda a posição de cada número já visto)
       const jaNaSelecao = new Map<string, number>();
       const importados: ImportContato[] = contatosAndroid
-        .map((c: any) => {
+        .map((c: ContatoAndroid) => {
           const nome = Array.isArray(c.name) && c.name.length > 0 ? c.name[0] : "";
           const telRaw = Array.isArray(c.tel) && c.tel.length > 0 ? c.tel[0] : "";
           const telNorm = digitosTelefone(telRaw); // sem o código do país (o DDD 55 continua inteiro)
@@ -548,11 +553,11 @@ export default function Clientes() {
         }, []);
 
       setImportSheet(importados);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Erro ao selecionar contatos:", err);
       // Fechar a lista de contatos do Android sem escolher não é erro
-      if (err?.name === "AbortError") return;
-      avisar(err?.name === "SecurityError" ? "O celular não deixou abrir os contatos. Libere o acesso e tente de novo." : "Não deu para abrir os contatos. Tente de novo.", { tipo: "erro" });
+      if ((err as Error)?.name === "AbortError") return;
+      avisar((err as Error)?.name === "SecurityError" ? "O celular não deixou abrir os contatos. Libere o acesso e tente de novo." : "Não deu para abrir os contatos. Tente de novo.", { tipo: "erro" });
     }
   };
 
@@ -791,13 +796,13 @@ export default function Clientes() {
         return (
           <div className="cl9">
             {/* (22/10) celular: os números numa faixa só (3 lado a lado, rótulo curto). O ticket médio fica no Financeiro */}
-            <div className="cl9-faixa" role="list">
-              <div role="listitem"><b>{clientes.length}</b><small>{clientes.length === 1 ? "cliente" : "clientes"}</small></div>
-              <div role="listitem"><b>{compraram30}</b><small>compraram</small></div>
+            <div className="cl9-faixa">
+              <div><b>{clientes.length}</b><small>{clientes.length === 1 ? "cliente" : "clientes"}</small></div>
+              <div><b>{compraram30}</b><small>compraram</small></div>
               {aniversariantes.length > 0 ? (
-                <button type="button" role="listitem" className="cl9-faixa-bt" onClick={() => setShowNiver(true)} aria-label={`${aniversariantes.length} aniversários nos próximos 30 dias, ver a lista`}><b>{aniversariantes.length}</b><small>aniversários</small></button>
+                <button type="button" className="cl9-faixa-bt" onClick={() => setShowNiver(true)} aria-label={`${aniversariantes.length} aniversários nos próximos 30 dias, ver a lista`}><b>{aniversariantes.length}</b><small>aniversários</small></button>
               ) : (
-                <div role="listitem"><b>0</b><small>aniversários</small></div>
+                <div><b>0</b><small>aniversários</small></div>
               )}
             </div>
             <div className="cl9-nums" role="list">

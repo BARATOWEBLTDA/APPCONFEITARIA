@@ -174,7 +174,7 @@ export default function PraFazer() {
   }] : [];
 
   // (23/10) plano PRO vencendo ou em atraso: antes só aparecia na tela Notificações (que saiu)
-  const avisoPro = (profile as any)?.pro_expira_em ? avisoDoPro((profile as any).pro_expira_em) : null;
+  const avisoPro = profile?.pro_expira_em ? avisoDoPro(profile.pro_expira_em) : null;
   const itemPro: Item[] = avisoPro ? [{
     chave: `${avisoPro.chave}`, nivel: avisoPro.tipo === "pro_atrasado" ? "urgente" : "atencao", Ic: Crown, ordem: -90, acao: "Renovar", link: "/assinar", fechar: false,
     t: avisoPro.tipo === "pro_atrasado" ? "Mensalidade do PRO em atraso" : "Seu PRO vence em breve",

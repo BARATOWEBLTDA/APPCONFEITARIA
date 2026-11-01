@@ -9,6 +9,11 @@ import { recebidoPedido, saldoPedido } from "@/components/pedidos/pedidoTexto";
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const real = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const dm = (s: string) => `${s.slice(8, 10)}/${s.slice(5, 7)}`;
+/** Os campos lidos do pedido (CAMPOS abaixo) */
+type PedidoResumo = {
+  numero: number | null; cliente_nome: string | null; valor_total: number | null; status: string | null; status_pagamento: string | null;
+  valor_recebido: number | null; data_entrega: string | null; horario_entrega: string | null; created_at: string; origem: string | null;
+};
 
 export async function resumoDoNegocio(uid: string): Promise<string> {
   const agora = new Date();
@@ -23,13 +28,13 @@ export async function resumoDoNegocio(uid: string): Promise<string> {
       .order("data_entrega", { ascending: true }).order("horario_entrega", { ascending: true, nullsFirst: false }).limit(40),
   ]);
   if (mes.error || prox.error) return "";
-  const doMes = (mes.data || []) as any[];
+  const doMes = (mes.data || []) as PedidoResumo[];
   const deHoje = doMes.filter(p => iso(new Date(p.created_at)) === hoje);
-  const soma = (l: any[], f: (p: any) => number) => Math.round(l.reduce((s, p) => s + f(p), 0) * 100) / 100;
-  const total = (p: any) => Number(p.valor_total) || 0;
-  const entregas = ((prox.data || []) as any[]);
+  const soma = (l: PedidoResumo[], f: (p: PedidoResumo) => number) => Math.round(l.reduce((s, p) => s + f(p), 0) * 100) / 100;
+  const total = (p: PedidoResumo) => Number(p.valor_total) || 0;
+  const entregas = ((prox.data || []) as PedidoResumo[]);
   const entregasHoje = entregas.filter(p => String(p.data_entrega).slice(0, 10) === hoje);
-  const linha = (p: any) => `- #${p.numero ?? "?"} · ${p.cliente_nome || "Venda avulsa"} · ${dm(String(p.data_entrega).slice(0, 10))}${p.horario_entrega ? ` ${String(p.horario_entrega).slice(0, 5)}` : ""} · ${real(total(p))} · ${p.status}`;
+  const linha = (p: PedidoResumo) => `- #${p.numero ?? "?"} · ${p.cliente_nome || "Venda avulsa"} · ${dm(String(p.data_entrega).slice(0, 10))}${p.horario_entrega ? ` ${String(p.horario_entrega).slice(0, 5)}` : ""} · ${real(total(p))} · ${p.status}`;
   return `
 
 # DADOS DO NEGÓCIO DELA (do app, agora)

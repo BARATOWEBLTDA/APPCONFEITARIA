@@ -4,14 +4,15 @@
  * Cada resposta antecipada é usada uma vez só; se não servir, o cardápio busca do jeito normal.
  */
 import { supabase } from '@/lib/supabase'
+import type { PostgrestError } from '@supabase/supabase-js'
 
-type Resposta = { data: any; error: any }
-let loja: { chave: string; p: Promise<Resposta> } | null = null
+type Resposta<T = unknown> = { data: T; error: PostgrestError | null }
+let loja: { chave: string; p: Promise<Resposta<{ id?: string } | null>> } | null = null
 let resto: { id: string; p: Promise<Resposta[]> } | null = null
 
 export function anteciparCardapio(chave: string) {
   if (!chave) return
-  const p = Promise.resolve(supabase.rpc('cardapio_loja', { p_chave: chave })) as Promise<Resposta>
+  const p = Promise.resolve(supabase.rpc('cardapio_loja', { p_chave: chave })) as Promise<Resposta<{ id?: string } | null>>
   loja = { chave, p }
   p.then(r => {
     const id = r?.data?.id
@@ -28,7 +29,7 @@ export function anteciparCardapio(chave: string) {
   }, () => { /* sem internet: o cardápio tenta de novo do jeito normal */ })
 }
 
-export function lojaAntecipada(chave: string): Promise<Resposta> | null {
+export function lojaAntecipada(chave: string): Promise<Resposta<{ id?: string } | null>> | null {
   if (!loja || loja.chave !== chave) return null
   const p = loja.p; loja = null; return p
 }

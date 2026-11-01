@@ -67,10 +67,10 @@ function retanguloRedondo(ctx: CanvasRenderingContext2D, x: number, y: number, w
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-const espacar = (ctx: CanvasRenderingContext2D, px: number) => { if ("letterSpacing" in ctx) (ctx as any).letterSpacing = `${px}px`; };
+const espacar = (ctx: CanvasRenderingContext2D, px: number) => { if ("letterSpacing" in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = `${px}px`; };
 
 export async function gerarImagemCupom(d: DadosImagemCupom): Promise<Blob> {
-  try { await (document as any).fonts?.ready; } catch { /* segue com a fonte que tiver */ }
+  try { await (document as Document & { fonts?: FontFaceSet }).fonts?.ready; } catch { /* segue com a fonte que tiver */ }
   const familia = `${getComputedStyle(document.body).fontFamily || "sans-serif"}`;
   const cv = document.createElement("canvas");
   cv.width = L; cv.height = A;

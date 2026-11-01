@@ -78,7 +78,7 @@ export function useAvatarUpload(options: Options = {}) {
 
       await refetch();
       options.onSuccess?.();
-    } catch (err: any) {
+    } catch (err) {
       // (11/10) a frase certa pro que houve: "sem internet" só quando foi a conexão
       informar({ titulo: "Não deu para trocar a foto", texto: explicarErro(err, "Tente de novo em instantes."), icone: "erro" });
     } finally {

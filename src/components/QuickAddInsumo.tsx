@@ -7,6 +7,7 @@ import { parseNumBR } from "@/lib/numeroBR";
 // 13/10: "Quanto pagou" igual aos outros campos de dinheiro: digita 749 e aparece 7,49
 const reais = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 import { supabase } from "@/lib/supabase";
+import type { PostgrestError } from "@supabase/supabase-js";
 import { apiFetch } from "@/lib/apiFetch";
 import { Botao, BotaoIcone, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base";
 import "@/pages/clientes.css";
@@ -268,7 +269,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       const { data } = await supabase.from("insumo_categorias").select("nome").or(`is_default.eq.true,user_id.eq.${userId}`).order("nome");
       if (!cancel && data && data.length > 0) {
         // 4.29: "Limpeza" saiu da lista (só aparece se o ingrediente já estiver nela)
-        setCategorias([...new Set([...CATEGORIAS_DEFAULT, ...data.map((c: any) => c.nome)])]
+        setCategorias([...new Set([...CATEGORIAS_DEFAULT, ...data.map((c: { nome: string }) => c.nome)])]
           .filter(c => c.trim().toLowerCase() !== "limpeza" || c === inicial.current.categoria));
       }
     })();
@@ -281,7 +282,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     let cancel = false;
     (async () => {
       const { data } = await supabase.from("produto_insumos").select("produto_id").eq("insumo_id", editing.id);
-      if (!cancel && data) setUsadoEm(new Set(data.map((r: any) => r.produto_id)).size);
+      if (!cancel && data) setUsadoEm(new Set(data.map((r: { produto_id: string }) => r.produto_id)).size);
     })();
     return () => { cancel = true; };
   }, [editing?.id]);
@@ -350,7 +351,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         return;
       }
     }
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       nome: form.nome.trim(),
       marca: form.marca.trim(),
       categoria: form.categoria,
@@ -363,7 +364,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       updated_at: new Date().toISOString(),
     };
 
-    let data: any, error: any;
+    let data: InsumoQuick | null, error: PostgrestError | null;
     if (isEditing && editing) {
       ({ data, error } = await supabase.from("insumos").update(payload).eq("id", editing.id).select().single());
     } else {

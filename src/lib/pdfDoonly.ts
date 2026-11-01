@@ -12,9 +12,9 @@ import { fotoDaLoja } from "@/hooks/useProfile";
 import { avisar } from "@/components/base";
 export type Loja = { nome: string; contato: string; logo: string | null; inicial: string; isPro: boolean };
 
-export const esc = (s: any): string =>
+export const esc = (s: unknown): string =>
   String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-export const brl = (v: any): string => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+export const brl = (v: unknown): string => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 export const dataBR = (iso?: string | null): string => {
   if (!iso) return "";
   const d = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(iso + "T12:00:00") : new Date(iso);
@@ -24,7 +24,7 @@ export const dataBR = (iso?: string | null): string => {
 /** Dados da loja pro cabeçalho: logo da Aparência → foto do perfil → inicial. */
 export async function buscarLoja(): Promise<Loja> {
   const { data: { user } } = await supabase.auth.getUser();
-  let p: any = null;
+  let p: { nome?: string | null; nome_loja?: string | null; telefone?: string | null; endereco?: string | { cidade?: string; estado?: string } | null; logo_url?: string | null; foto_url?: string | null; plano?: string | null; pro_expira_em?: string | null } | null = null;
   if (user) {
     const { data, error } = await supabase.from("profiles")
       .select("nome, nome_loja, telefone, endereco, logo_url, foto_url, plano, pro_expira_em").eq("id", user.id).maybeSingle();

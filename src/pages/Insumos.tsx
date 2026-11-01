@@ -114,7 +114,7 @@ export default function Insumos() {
     // pra ingrediente usado em fichas técnicas)
     const { data: usos, error: erroUsos } = await supabase.from("produto_insumos").select("produto_id").eq("insumo_id", i.id);
     if (erroUsos || !usos) { avisar(explicarErro(erroUsos, "Não deu para conferir as fichas técnicas. Tente de novo."), { tipo: "erro" }); return; }
-    const n = new Set(usos.map((r: any) => r.produto_id)).size;
+    const n = new Set(usos.map((r: { produto_id: string }) => r.produto_id)).size;
     const ok = await confirmar({
       titulo: `Excluir ${i.nome}?`,
       texto: n > 0

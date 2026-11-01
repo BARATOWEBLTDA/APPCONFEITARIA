@@ -66,7 +66,7 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
         if (dados.clienteNovo && res.clienteId) clienteCriada.current = res.clienteId;
         setErro(res.erro); return;
       }
-      const p: any = res.pedido;
+      const p = res.pedido;
       if (res.aviso) avisar(res.aviso, { tipo: "erro" }); // (10/10) pedido salvo, recebimento não
       onFeito("salvo", { id: p.id, numero: p.numero, resumo: `${dados.clienteNome || "venda avulsa"}, ${brl(total)}` });
     } catch (e) {

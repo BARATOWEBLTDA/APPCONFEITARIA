@@ -22,7 +22,7 @@ const getCtx = (): AudioContext | null => {
   if (typeof window === 'undefined') return null
   if (!ctx) {
     try {
-      const AC = window.AudioContext || (window as any).webkitAudioContext
+      const AC = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
       ctx = new AC()
     } catch {
       return null

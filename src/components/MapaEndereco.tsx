@@ -51,7 +51,7 @@ export default function MapaEndereco({ busca, soCidade, selo, altura }: { busca:
     let vivo = true;
     Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]).then(([mod]) => {
       if (!vivo || !caixa.current || mapa.current) return;
-      const Lf = (mod as any).default || mod;
+      const Lf = (mod as { default?: typeof import("leaflet") }).default || mod;
       L.current = Lf;
       const m = Lf.map(caixa.current, { center: BRASIL, zoom: 3, zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false, attributionControl: true });
       m.attributionControl.setPrefix(false);

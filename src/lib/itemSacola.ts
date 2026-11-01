@@ -6,18 +6,33 @@
 
 import { r2, somarReais } from '@/lib/moeda'
 import { nomeExtra } from '@/lib/kitTexto'
+import type { ExtraEscolhido } from '@/lib/kitTexto'
+import type { EscolhasV3 } from '@/types/cart'
+import type { OpcaoGrupoJson } from '@/lib/precoCardapio'
+
+/** O que estas contas leem de um item da sacola (CartItem e o que vem guardado) */
+export type ItemSacolaLeitura = {
+  price?: number
+  quantity?: number
+  saleType?: string | null
+  escolhas?: EscolhasV3 | null
+  selectedMassa?: string | null
+  selectedRecheio?: string | null
+  selectedCobertura?: string | null
+  extrasBiblioteca?: ExtraEscolhido[] | null
+}
 
 /**
  * Valor de uma linha da sacola (11/10): preço × quantidade, já em centavos certos.
  * A linha, o subtotal, o total, a mensagem do WhatsApp e o pedido gravado usam esta mesma conta
  * (antes 0,5 kg de R$ 19,99 aparecia R$ 10,00 na linha e R$ 9,99 no total).
  */
-export function valorLinha(item: any): number {
+export function valorLinha(item: ItemSacolaLeitura): number {
   return r2((Number(item?.price) || 0) * (Number(item?.quantity) || 0))
 }
 
 /** Subtotal da sacola: a soma das linhas já arredondadas. */
-export function subtotalSacola(items: any[]): number {
+export function subtotalSacola(items: ItemSacolaLeitura[]): number {
   return somarReais((items || []).map(valorLinha))
 }
 
@@ -36,7 +51,7 @@ export function cortarTexto(texto: unknown, maximo: number): string {
 }
 
 /** Por kg e sem tamanho/kit: a quantidade é o peso (anda de 0,5 em 0,5). */
-export function kgLivre(item: any): boolean {
+export function kgLivre(item: ItemSacolaLeitura): boolean {
   return item?.saleType === 'kg' && !item?.escolhas?.tamanho && !item?.escolhas?.kit
 }
 
@@ -64,24 +79,24 @@ export function pesoDoNome(nome: unknown): number {
 }
 
 /** Peso de uma opção de tamanho vendida pelo peso: o cadastrado; se faltar, o que está escrito no nome. */
-export function pesoDoTamanho(op: any, porPeso: boolean): number {
+export function pesoDoTamanho(op: OpcaoGrupoJson | null | undefined, porPeso: boolean): number {
   const p = Number(op?.peso_kg) || 0
   if (p > 0) return p
   return porPeso ? pesoDoNome(op?.nome) : 0
 }
 
 /** "2×" ou "1,5 kg" */
-export function qtdItem(item: any): string {
+export function qtdItem(item: ItemSacolaLeitura): string {
   return kgLivre(item) ? `${num(item.quantity)} kg` : `${Math.floor(Number(item.quantity) || 0)}×`
 }
 
 /** Quantos itens tem na sacola (peso livre conta 1). */
-export function contarItens(items: any[]): number {
+export function contarItens(items: ItemSacolaLeitura[]): number {
   return (items || []).reduce((acc, i) => acc + (kgLivre(i) ? 1 : Math.floor(Number(i.quantity) || 0)), 0)
 }
 
 /** "M · 2 kg", "Massa chocolate", "Recheios: brigadeiro e ninho"… */
-export function detalhesItem(item: any): string[] {
+export function detalhesItem(item: ItemSacolaLeitura): string[] {
   const ls: string[] = []
   const e = item?.escolhas
   if (e) {
@@ -93,7 +108,7 @@ export function detalhesItem(item: any): string[] {
     if (e.sabor?.nome) ls.push(`Sabor ${e.sabor.nome}`)
     if (e.massa?.nome) ls.push(`Massa ${e.massa.nome}`)
     if (e.recheios?.length) {
-      const n = e.recheios.map((r: any) => r.nome)
+      const n = e.recheios.map((r) => r.nome)
       ls.push(`Recheio${n.length > 1 ? 's' : ''} ${n.length > 1 ? n.slice(0, -1).join(', ') + ' e ' + n[n.length - 1] : n[0]}`)
     }
     if (e.cobertura?.nome) ls.push(`Cobertura ${e.cobertura.nome}`)
@@ -102,6 +117,6 @@ export function detalhesItem(item: any): string[] {
     if (item?.selectedRecheio) ls.push(`Recheio ${item.selectedRecheio}`)
     if (item?.selectedCobertura) ls.push(`Cobertura ${item.selectedCobertura}`)
   }
-  if (Array.isArray(item?.extrasBiblioteca)) item.extrasBiblioteca.forEach((x: any) => ls.push(nomeExtra(x)))
+  if (Array.isArray(item?.extrasBiblioteca)) item.extrasBiblioteca.forEach((x) => ls.push(nomeExtra(x)))
   return ls
 }

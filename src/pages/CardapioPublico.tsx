@@ -24,6 +24,7 @@ import { Vouchers } from '@/components/cardapio/Vouchers'
 import { unidadeItem } from '@/components/cart/CartItemComponent'
 import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
+import type { CartItem } from '@/types/cart'
 import { PerfilTab } from '@/components/cardapio/PerfilTab'
 import { PedidosTab } from '@/components/cardapio/PedidosTab'
 import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X, Lightning, CalendarBlank, Minus, Plus, Trash, FileText, CaretRight } from '@phosphor-icons/react'
@@ -54,6 +55,9 @@ const corValida = (c: string | undefined | null): boolean => {
 // (20/10) a faixa do topo usa a cor da loja escurecida (mais legível e com cara premium)
 const corDoTopo = (design: DesignSettings) => topoEscurecido(corValida(design.cor_navbar) ? design.cor_navbar! : (corValida(design.cor_borda) ? design.cor_borda! : '#BF6B84'))
 
+/** Categoria do menu ("Todos" + as que têm produto) */
+type CategoriaMenu = { name: string; icon: string }
+
 /* ── Topo do computador ── */
 function DeskNav({ design, config, isPro = false }: { design: DesignSettings; config: Configuracoes | null; isPro?: boolean }) {
   const navBg = corDoTopo(design)
@@ -63,9 +67,9 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
   const [contaAba, setContaAba] = useState<'pedidos' | 'perfil'>('pedidos')
   // 10/10: a loja desta página (antes vinha do localStorage, que é do navegador inteiro)
   const confeteiraUserId = design.user_id || ''
-  const status = (config as any)?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja((config as any)?.horario || null)
+  const status = config?.loja_pausada ? { aberto: false, msg: 'Pedidos pausados no momento', curto: 'Pedidos pausados' } : getStatusLoja(config?.horario || null)
   let cidade = ''
-  try { const e = config?.endereco ? (typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco) : null; if (e?.cidade && ((config as any)?.mostrar_localizacao || (config as any)?.mostrar_apenas_cidade)) cidade = [e.cidade, e.estado].filter(Boolean).join(' - ') } catch { /* endereço inválido: sai sem a cidade */ }
+  try { const e = config?.endereco ? (typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco) : null; if (e?.cidade && (config?.mostrar_localizacao || config?.mostrar_apenas_cidade)) cidade = [e.cidade, e.estado].filter(Boolean).join(' - ') } catch { /* endereço inválido: sai sem a cidade */ }
   const sub = status?.msg || '' // (14/10) a cidade vai numa linha só dela
   // (20/10) com a cliente conectada, o topo mostra o nome dela; sem conta, continua "Minha conta"
   const [nomeCliente, setNomeCliente] = useState(() => (lerCliente(confeteiraUserId)?.nome || '').trim().split(/\s+/)[0] || '')
@@ -143,8 +147,8 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
 }
 
 /* ── Categorias (coluna da esquerda) ── */
-function DeskCategorias({ categories, counts, total, selectedCategory, onSelectCategory, cor }: any) {
-  const cats = categories.filter((c: any) => c.name !== 'Todos')
+function DeskCategorias({ categories, counts, total, selectedCategory, onSelectCategory, cor }: { categories: CategoriaMenu[]; counts: Record<string, number>; total: number; selectedCategory: string | null; onSelectCategory: (c: string | null) => void; cor: string }) {
+  const cats = categories.filter((c: CategoriaMenu) => c.name !== 'Todos')
   const item = (nome: string | null, rotulo: string, n: number) => {
     const sel = selectedCategory === nome
     return (
@@ -157,18 +161,18 @@ function DeskCategorias({ categories, counts, total, selectedCategory, onSelectC
     <nav className="cp-cats" aria-label="Categorias">
       <p>Categorias</p>
       {item(null, 'Todos os produtos', total)}
-      {cats.map((c: any) => item(c.name, c.name, counts[c.name] || 0))}
+      {cats.map((c: CategoriaMenu) => item(c.name, c.name, counts[c.name] || 0))}
     </nav>
   )
 }
 
 /* ── Sua sacola (coluna da direita) ── */
-const descontoDaLinha = (it: any) => Math.round((Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0) * 100) / 100
+const descontoDaLinha = (it: CartItem) => Math.round((Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0) * 100) / 100
 // (20/10) a coluna é a sacola de verdade: muda a quantidade aqui e "Finalizar pedido" vai direto pro finalizar
-function DeskSacola({ cartCount, cartTotal, design, items }: any) {
+function DeskSacola({ cartCount, cartTotal, design, items }: { cartCount: number; cartTotal: number; design: DesignSettings; items: CartItem[] }) {
   const { updateQuantity, removeItem } = useCart()
   // Desconto da promoção (02/10): o preço do item já vem com desconto; aqui mostra quanto ela economiza
-  const economia = Math.round((items || []).reduce((s: number, it: any) => s + (Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0), 0) * 100) / 100
+  const economia = Math.round((items || []).reduce((s: number, it: CartItem) => s + (Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0), 0) * 100) / 100
   const cor = design.cor_botao || design.cor_borda || '#E85A8C'
   return (
     <section className="cp-box cp-sacola">
@@ -177,7 +181,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
         <div className="cp-vazio"><ShoppingBag size={32} aria-hidden="true" /><b>Seu pedido está vazio</b><small>Escolha um produto para começar.</small></div>
       ) : (<>
         <div className="cp-sac-lista">
-        {items.map((item: any) => {
+        {items.map((item: CartItem) => {
           const img = item.imageUrl?.split(',')[0]?.trim()
           const linha = item.lineId ?? item.id
           const livre = kgLivre(item)
@@ -226,7 +230,7 @@ function PedirOrcamento({ codigo, cor, pc }: { codigo: string; cor: string; pc?:
 }
 
 /* ── Rodapé do computador ── */
-function DeskFooterBar({ design, config, isPro }: any) {
+function DeskFooterBar({ design, config, isPro }: { design: DesignSettings; config: Configuracoes | null; isPro: boolean }) {
   const nome = design?.nome_loja || 'Confeitaria'
   const ano = new Date().getFullYear()
   let cnpj = ''
@@ -331,12 +335,12 @@ function CardapioContent() {
         tem_cupom: !!config.tem_cupom,
         aceita_agendamento: config.aceita_agendamento !== false,
         prazo_minimo_horas: config.prazo_minimo_horas ?? 24,
-        msg_pedido: (config as any).msg_pedido || null,
-        loja_pausada: (config as any).loja_pausada === true,
+        msg_pedido: config.msg_pedido || null,
+        loja_pausada: config.loja_pausada === true,
         pix: config.pix || null,
         // Finalizar encomenda (02/10): horário da loja e antecedência de cada produto, pro agendamento
-        horario: (config as any).horario || null,
-        antecedencias: Object.fromEntries((produtos || []).map((p: any) => [p.id, { ant: p.antecedencia || null, pronta: p.pronta_entrega ?? null }])),
+        horario: config.horario || null,
+        antecedencias: Object.fromEntries((produtos || []).map((p: Produto & { antecedencia?: string | null; pronta_entrega?: boolean | null }) => [p.id, { ant: p.antecedencia || null, pronta: p.pronta_entrega ?? null }])),
       } : null
       definirLojaAtual({ userId: design.user_id || '', whatsapp: config?.telefone || '', nome: design.nome_loja || '', checkout: checkoutConfig, logo: design.logo_url || null, verificada: !!isPro })
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
@@ -368,7 +372,7 @@ function CardapioContent() {
       const pageTitle = `${design.nome_loja} — Cardápio Digital`
       const pageDesc  = design.descricao_loja || `Conheça o cardápio de ${design.nome_loja}. Encomende pelo WhatsApp!`
       const pageUrl   = window.location.href
-      const ogImage   = (design as any).og_image_url || design.logo_url || ''
+      const ogImage   = (design as DesignSettings & { og_image_url?: string }).og_image_url || design.logo_url || ''
 
       // (23/10) aba do navegador: "Cardápio Confeitaria Doce Formiga" e a logo da loja no lugar do ícone do Doonly
       document.title = `Cardápio ${String(design.nome_loja || '').trim() || 'online'}`
@@ -445,7 +449,7 @@ function CardapioContent() {
 
   const isDesktop = device === 'desktop'
   const categorias = getCategories()
-  const contagem = categorias.reduce((acc: Record<string, number>, c: any) => { acc[c.name] = produtos.filter(p => p.categoria === c.name).length; return acc }, {} as Record<string, number>)
+  const contagem = categorias.reduce((acc: Record<string, number>, c: CategoriaMenu) => { acc[c.name] = produtos.filter(p => p.categoria === c.name).length; return acc }, {} as Record<string, number>)
 
   /* ═══ CELULAR ═══ */
   if (!isDesktop) {
@@ -476,7 +480,7 @@ function CardapioContent() {
             </div>
           </>
         )}
-{(config as any)?.loja_pausada && (
+{config?.loja_pausada && (
           <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Para encomendar, chame a loja no WhatsApp.</small></span></div>
         )}
                 {/* Espaço embaixo: menu (60px) e, com itens, a barra "Ver seu pedido" (~64px) não cobrem o último produto */}
@@ -492,7 +496,7 @@ function CardapioContent() {
               selectedCategory={selectedCategory}
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              categories={!design.ocultar_categorias ? categorias.map((c: any) => c.name) : []}
+              categories={!design.ocultar_categorias ? categorias.map((c: CategoriaMenu) => c.name) : []}
               onCategorySelect={!design.ocultar_categorias ? setSelectedCategory : undefined}
               categoryCounts={contagem}
               telefone={config?.telefone}
@@ -521,7 +525,7 @@ function CardapioContent() {
         )}
 
         <main className="cp-meio">
-          {(config as any)?.loja_pausada && (
+          {config?.loja_pausada && (
           <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Para encomendar, chame a loja no WhatsApp.</small></span></div>
         )}
           {produtos.length === 0 ? <EmptyState telefone={config?.telefone} /> : (<>
@@ -549,7 +553,7 @@ function CardapioContent() {
                 <h2 className="ic-h2">{filteredProdutos.length === 1 ? '1 produto' : `${filteredProdutos.length} produtos`}</h2>
                 <div className="ic-lista">{filteredProdutos.map((p: Produto) => <LinhaProduto key={p.id} produto={p} cor={cor} pc />)}</div>
               </section>
-            ) : montarSecoes(filteredProdutos, selectedCategory ? [selectedCategory] : (!design.ocultar_categorias ? categorias.map((c: any) => c.name).filter((n: string) => n !== 'Todos') : []), !design.ocultar_categorias)
+            ) : montarSecoes(filteredProdutos, selectedCategory ? [selectedCategory] : (!design.ocultar_categorias ? categorias.map((c: CategoriaMenu) => c.name).filter((n: string) => n !== 'Todos') : []), !design.ocultar_categorias)
                 .map(sec => <SecaoCardapio key={sec.id} secao={sec} cor={cor} pc />)
           ) : (
             <div className="cp-nada"><MagnifyingGlass size={32} aria-hidden="true" />

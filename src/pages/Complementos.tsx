@@ -5,7 +5,7 @@ import { Calculator, Camera, Check, Crown, Eye, Storefront, TextT, Info, Magnify
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { formatarNomeItem, parecefrase } from "@/lib/nomeItem";
-import { precoCardapioComPromocao } from "@/lib/precoCardapio";
+import { precoCardapioComPromocao, type ProdutoPrecoJson } from "@/lib/precoCardapio";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
@@ -607,7 +607,7 @@ function PreviaReal({ itens, produtos }: { itens: Complemento[]; produtos: Produ
   if (!prod) return null;
   const lista = itens.filter(c => aparece(c, prod)).slice(0, 4);
   if (!lista.length) return null;
-  const preco = precoCardapioComPromocao(prod as any);
+  const preco = precoCardapioComPromocao(prod as ProdutoLite & ProdutoPrecoJson);
   const marcado = lista[0];
   const total = preco.final + (Number(marcado.valor) || 0);
   const rs = (v: number) => `R$ ${brl(v)}`;

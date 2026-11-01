@@ -275,7 +275,12 @@ export type GrupoAntigoTamanhos = {
  * Se o produto já tem `grupos_opcoes` (pós-migração), usa direto.
  * Senão, monta a partir das 4 colunas antigas.
  */
-export function carregarGruposDoBanco(produto: any): GrupoOpcoes[] {
+/** Opção como pode vir das colunas antigas (jsonb): campos a mais que a UI grava */
+type OpcaoAntiga = { id?: string; nome?: string; adicional?: number; tipo_adicional?: string; preco?: number; peso_kg?: number | null; serve?: string; foto?: string; esgotado?: boolean };
+/** As colunas antigas do produto (jsonb: o formato é conferido abaixo, campo a campo) */
+type ProdutoComGruposAntigos = { id?: string; grupo_massas?: unknown; grupo_recheios?: unknown; grupo_coberturas?: unknown; grupo_sabores?: unknown; grupo_tamanhos?: unknown };
+
+export function carregarGruposDoBanco(produto: ProdutoComGruposAntigos | null | undefined): GrupoOpcoes[] {
   // Sempre monta a partir das colunas antigas (que são o que a UI edita).
   // O grupos_opcoes[] é apenas destino de escrita, nunca fonte de leitura,
   // pra evitar divergência (ex: modo_avancado, serve, novos campos que a UI
@@ -298,10 +303,10 @@ export function carregarGruposDoBanco(produto: any): GrupoOpcoes[] {
       // — copia tudo que não é gerenciado explicitamente acima
       Object.keys(antigo).forEach(k => {
         if (!["ativo", "min", "max", "foto_por_opcao", "distribuicao", "opcoes"].includes(k)) {
-          (g as any)[k] = (antigo as any)[k];
+          (g as Record<string, unknown>)[k] = (antigo as Record<string, unknown>)[k];
         }
       });
-      g.opcoes = (antigo.opcoes || []).map((o: any) => ({
+      g.opcoes = (antigo.opcoes || []).map((o: OpcaoAntiga) => ({
         id: o.id || `opc_${gerarId()}`,
         nome: o.nome || "",
         adicional: o.adicional ?? 0,
@@ -316,11 +321,11 @@ export function carregarGruposDoBanco(produto: any): GrupoOpcoes[] {
     grupos.push(g);
   };
 
-  mapearAntigo("massa", produto?.grupo_massas);
-  mapearAntigo("recheio", produto?.grupo_recheios);
-  mapearAntigo("cobertura", produto?.grupo_coberturas);
-  mapearAntigo("sabor", produto?.grupo_sabores);
-  mapearAntigo("tamanho", produto?.grupo_tamanhos);
+  mapearAntigo("massa", produto?.grupo_massas as GrupoAntigoPersonalizacao | undefined);
+  mapearAntigo("recheio", produto?.grupo_recheios as GrupoAntigoPersonalizacao | undefined);
+  mapearAntigo("cobertura", produto?.grupo_coberturas as GrupoAntigoPersonalizacao | undefined);
+  mapearAntigo("sabor", produto?.grupo_sabores as GrupoAntigoPersonalizacao | undefined);
+  mapearAntigo("tamanho", produto?.grupo_tamanhos as GrupoAntigoTamanhos | undefined);
 
   return grupos;
 }
@@ -332,8 +337,8 @@ export function carregarGruposDoBanco(produto: any): GrupoOpcoes[] {
  * Salva na coluna nova `grupos_opcoes` E nas 4 antigas em paralelo,
  * pra manter compatibilidade durante a transição.
  */
-export function salvarGruposParaBanco(grupos: GrupoOpcoes[]): Record<string, any> {
-  const payload: Record<string, any> = {
+export function salvarGruposParaBanco(grupos: GrupoOpcoes[]): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
     grupos_opcoes: grupos,
   };
 
@@ -376,10 +381,10 @@ export function salvarGruposParaBanco(grupos: GrupoOpcoes[]): Record<string, any
   if (tamanho) {
     // Preserva campos extras (modo_avancado, modo_preco_tamanho, etc)
     // que a UI armazena diretamente no grupo, além dos campos padrões
-    const extras: Record<string, any> = {};
+    const extras: Record<string, unknown> = {};
     Object.keys(tamanho).forEach(k => {
       if (!["tipo", "nome_exibicao", "ativo", "min_selecionavel", "max_selecionavel", "distribuicao", "opcoes", "foto_por_opcao"].includes(k)) {
-        extras[k] = (tamanho as any)[k];
+        extras[k] = (tamanho as Record<string, unknown>)[k];
       }
     });
     payload.grupo_tamanhos = {

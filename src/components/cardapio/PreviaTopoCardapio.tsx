@@ -12,7 +12,7 @@ import "./cardapioModelo1.css";
  * e um pedaço da busca e das categorias. Usa as cores da loja, então acompanha o que ela escolher em Aparência.
  */
 export type DadosPrevia = {
-  nome_loja?: string | null; logo_url?: string | null; foto_url?: string | null; horario?: any; loja_pausada?: boolean | null;
+  nome_loja?: string | null; logo_url?: string | null; foto_url?: string | null; horario?: unknown; loja_pausada?: boolean | null;
   cor_navbar?: string | null; cor_borda?: string | null; cor_nome?: string | null; banner_topo_url?: string | null;
   descricao_loja?: string | null;
 };

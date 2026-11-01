@@ -27,7 +27,7 @@ const SEMANA = ["D", "S", "T", "Q", "Q", "S", "S"];
 
 /** Calendário do mês: dias sem horário possível ficam apagados e riscados. */
 export function CalendarioSheet({ titulo, horario, minimo, valor, onEscolher, onClose }: {
-  titulo: string; horario: any; minimo: Date; valor: string; onEscolher: (iso: string) => void; onClose: () => void;
+  titulo: string; horario: unknown; minimo: Date; valor: string; onEscolher: (iso: string) => void; onClose: () => void;
 }) {
   const hoje = inicioDoDia(agoraLoja()); // (27/10) horário de Brasília
   const base = valor ? deIso(valor) : (inicioDoDia(minimo) > hoje ? inicioDoDia(minimo) : hoje);
@@ -77,7 +77,7 @@ export function CalendarioSheet({ titulo, horario, minimo, valor, onEscolher, on
 
 /** Horários do dia escolhido, de hora em hora, e "Outro horário" (de 15 em 15 min, dentro do expediente). */
 export function HorariosSheet({ data, horario, minimo, valor, onEscolher, onClose }: {
-  data: string; horario: any; minimo: Date; valor: string; onEscolher: (h: string) => void; onClose: () => void;
+  data: string; horario: unknown; minimo: Date; valor: string; onEscolher: (h: string) => void; onClose: () => void;
 }) {
   // (11/10) na última hora antes de fechar não sobra horário "de hora em hora": aí os botões são os de 15 em 15
   // (antes a tela ficava só com "Outro horário")

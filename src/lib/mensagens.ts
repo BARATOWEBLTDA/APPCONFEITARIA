@@ -142,7 +142,7 @@ export function preencher(texto: string, dados: Record<string, string | number |
 export function montarMensagem(chave: ChaveMensagem, dados: Record<string, string | number | null | undefined>, textoSalvo?: string | null): string {
   const m = modeloPorChave(chave);
   // (31/10 · 5.84) texto personalizado só no PRO (no grátis, o padrão do app)
-  const perfil: any = perfilAtual();
+  const perfil = perfilAtual();
   const pro = perfil?.plano === "pro" && (!perfil?.pro_expira_em || new Date(perfil.pro_expira_em) > new Date());
   const salvo = textoSalvo !== undefined ? textoSalvo : pro ? perfil?.mensagens_whatsapp?.[chave] : null;
   let texto = (salvo && salvo.trim()) ? salvo : m.padrao;
@@ -160,7 +160,13 @@ const DIAS_SEMANA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta"
 const reais = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 /** Dados de um pedido pras etiquetas de "Falar com o cliente sobre o pedido" */
-export function dadosDoPedido(p: any, primeiroNome: string): Record<string, string> {
+/** O que as etiquetas leem do pedido */
+export type PedidoParaMensagem = {
+  numero?: number | string | null; data_entrega?: string | null; horario_entrega?: string | null;
+  valor_total?: number | string | null; valor_recebido?: number | string | null; status?: string | null; status_pagamento?: string | null;
+};
+
+export function dadosDoPedido(p: PedidoParaMensagem, primeiroNome: string): Record<string, string> {
   let data = "";
   if (p?.data_entrega) {
     const d = new Date(String(p.data_entrega).slice(0, 10) + "T12:00:00");

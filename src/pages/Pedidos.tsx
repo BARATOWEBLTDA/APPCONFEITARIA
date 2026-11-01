@@ -19,7 +19,7 @@ import { excluirPedido as excluirPedidoNoBanco } from '@/lib/pedidosDoo'
 import { buscarTudo } from '@/lib/buscarTudo'
 import { linkWhatsApp } from '@/lib/telefone'
 import { pedidoAtrasado } from '@/lib/pedidoStatus'
-import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
+import { gerarPedidoPDF, type PedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { supabase } from '@/lib/supabase'
 import { registrarEtapa } from "@/lib/historicoPedido";
@@ -120,7 +120,7 @@ export default function Pedidos() {
     if (!quieto) setEstado('carregando')
     const v = versao.current
     // (10/10) de 1.000 em 1.000: a lista não corta mais quando a conta passa de mil pedidos (o "id" deixa a ordem fixa)
-    const { data, error } = await buscarTudo<any>((de, ate) => supabase
+    const { data, error } = await buscarTudo<Pedido>((de, ate) => supabase
       .from('pedidos')
       .select('*, clientes(foto_url), pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, preco_breakdown, snapshot_version, imagem_url, produtos(imagem_url, forma_venda))')
       .eq('user_id', uid)
@@ -244,10 +244,10 @@ export default function Pedidos() {
       // entrado (pelo cardápio, em outro aparelho). O valor registrado é o que falta DE VERDADE; se já está pago, não registra de novo.
       const { data: noBanco, error: errLer } = await supabase.from('pedidos').select('valor_total, valor_recebido, status_pagamento, status').eq('id', id).maybeSingle()
       if (errLer || !noBanco) { avisar('Não deu para conferir o pagamento deste pedido. Confira a internet e tente de novo.', { tipo: 'erro' }); return }
-      const atual = { ...pedido, ...(noBanco as any) } as Pedido
+      const atual = { ...pedido, ...(noBanco as Partial<Pedido>) } as Pedido
       if (grupoDoStatus(atual.status) !== 'aguardando_pagamento') {
         // já saiu de "Aguardando pagamento" em outro lugar: a lista só passa a mostrar o que está gravado
-        mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, ...(noBanco as any) } : p))
+        mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, ...(noBanco as Partial<Pedido>) } : p))
         avisar(`O pedido #${pedido.numero || ''} já tinha sido atualizado.`, { tipo: 'info' })
         return
       }
@@ -263,7 +263,7 @@ export default function Pedidos() {
       if (r && !r.ok) {
         // relê o pedido: se o pagamento entrou e só a resposta se perdeu, a lista já mostra pago e o próximo toque não cobra de novo
         const { data: gravado } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', id).maybeSingle()
-        if (gravado) mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, ...(gravado as any) } : p))
+        if (gravado) mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, ...(gravado as Partial<Pedido>) } : p))
         avisar(r.erro || 'Não deu para registrar o recebimento. Confira a internet e tente de novo.', { tipo: 'erro' }); return
       }
       const novo = !r ? { valor_total: atual.valor_total, valor_recebido: atual.valor_recebido, status_pagamento: atual.status_pagamento } // já estava pago: fica o que está gravado
@@ -324,7 +324,7 @@ export default function Pedidos() {
         const pedido = pedidos.find(p => p.id === id)
         // o recebido que está no banco agora (a lista pode estar velha); se a leitura falhar, vale o da lista
         const { data: noBanco } = await supabase.from('pedidos').select('valor_total, valor_recebido, status_pagamento').eq('id', id).maybeSingle()
-        if (recebidoPedido({ ...pedido, ...((noBanco as any) || {}) }) > 0.009) { navigate(`/pedidos/${id}/editar`, { state: { abrirCancelar: true } }); return }
+        if (recebidoPedido({ ...pedido, ...((noBanco as Partial<Pedido>) || {}) }) > 0.009) { navigate(`/pedidos/${id}/editar`, { state: { abrirCancelar: true } }); return }
       }
       await updateStatus(id, status)
     } finally { travar(id, false) }
@@ -344,7 +344,7 @@ export default function Pedidos() {
         if (r.estornou) {
           // o pedido ficou, mas os recebimentos já saíram: a lista mostra o que está gravado
           const { data } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', p.id).maybeSingle()
-          if (data) mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...(data as any) } : x))
+          if (data) mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...(data as Partial<Pedido>) } : x))
         }
         return false
       }
@@ -370,7 +370,7 @@ export default function Pedidos() {
       const r = await registrarPagamento({ pedidoId: p.id, userId, valor: px.valor, forma: 'pix', tipo: px.tipo, origem: 'cardapio', observacao: 'Pix pelo cardápio' })
       if (!r.ok) { avisar(r.erro || 'Não deu para confirmar o Pix. Tente de novo.', { tipo: 'erro' }); return }
       const { data } = await supabase.from('pedidos').select('valor_recebido, status_pagamento').eq('id', p.id).maybeSingle()
-      mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...((data as any) || { valor_recebido: px.valor, status_pagamento: px.tipo === 'sinal' ? 'parcial' : 'pago' }) } : x))
+      mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, ...((data as Partial<Pedido>) || { valor_recebido: px.valor, status_pagamento: px.tipo === 'sinal' ? 'parcial' : 'pago' }) } : x))
       avisar(px.tipo === 'sinal' ? 'Sinal confirmado.' : 'Pix confirmado. Pedido pago.', { tipo: 'ok' })
     } finally { confirmandoPix.current = false }
   }
@@ -424,7 +424,7 @@ export default function Pedidos() {
       const janela = abrirJanela()
       // busca o pedido completo (com as escolhas de cada item) pro comprovante sair inteiro
       const { data } = await supabase.from('pedidos').select('*, pedido_itens(*, produtos(forma_venda))').eq('id', p.id).maybeSingle()
-      await gerarPedidoPDF((data || p) as any, janela)
+      await gerarPedidoPDF((data || p) as PedidoPDF, janela)
       fechar(); return
     }
     if (acao === 'excluir') {
@@ -448,7 +448,7 @@ export default function Pedidos() {
       const { data: aceitos, error } = await supabase.from('pedidos').update({ status: 'agendado' }).in('id', ids)
         .in('status', ['aguardando_aceite', 'novo', 'pendente']).select('id')
       if (error) { avisar('Não deu para aceitar os pedidos. Confira a internet e tente de novo.', { tipo: 'erro' }); return }
-      const feitos = (aceitos || []).map((r: any) => r.id as string)
+      const feitos = (aceitos || []).map((r: { id: string }) => r.id as string)
       feitos.forEach(id => registrarEtapa(id, 'agendado'))
       mudarPedidos(prev => prev.map(p => feitos.includes(p.id) ? { ...p, status: 'agendado' } : p))
       if (feitos.length < ids.length && userId) void fetchPedidos(userId, true) // algum mudou em outro aparelho: mostra como está
@@ -465,7 +465,7 @@ export default function Pedidos() {
     return pedidos.filter(p => {
       // (10/10) a mesma regra do "X pra aceitar" do Início (STATUS_PENDENTES em pages/Inicio.tsx), de qualquer origem
       if (filtroAguardando && computador) return ['aguardando_aceite', 'aguardando_pagamento', 'novo', 'pendente'].includes(p.status)
-      if (filtroAtrasados) return pedidoAtrasado(p as any, hoje)
+      if (filtroAtrasados) return pedidoAtrasado(p, hoje)
       if (computador && (p.tipo_venda || 'encomenda') !== aba) return false
       const okStatus = statusSelecionados.includes(grupoDoStatus(p.status))
       const okBusca = !q || semAcento(p.cliente_nome || '').includes(q) || String(p.numero).includes(q)
@@ -676,7 +676,7 @@ export default function Pedidos() {
 
       {pendingPag && (
         <FinalizarPedidoSheet
-          pedido={pendingPag.pedido as any}
+          pedido={pendingPag.pedido}
           novoStatus={pendingPag.novoStatus}
           novoStatusLabel={nomeDaSituacao(pendingPag.novoStatus)}
           aguardandoPagamento={grupoDoStatus(pendingPag.pedido.status) === 'aguardando_pagamento'}

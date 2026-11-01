@@ -2,6 +2,16 @@ import { kitAtivo, precoMinKit } from '@/lib/kitQuantidade'
 import { pesoDoTamanho } from '@/lib/itemSacola'
 import { r2 } from '@/lib/moeda'
 import { descontoPromocao } from '@/lib/produto-precificacao'
+import type { KitQtdConfig } from '@/lib/kitQuantidade'
+
+/** Opção de tamanho/sabor como vem do banco (jsonb) */
+export type OpcaoGrupoJson = { id?: string; nome?: string; preco?: number | string | null; peso_kg?: number | string | null; esgotado?: boolean | null }
+/** Grupo de tamanhos/sabores como vem do banco (jsonb) */
+export type GrupoJson = { ativo?: boolean; opcoes?: OpcaoGrupoJson[]; modo_preco_tamanho?: string; sabor_tem_preco_proprio?: boolean; regra_conflito_tamanho?: string }
+/** Campos da promoção do produto */
+export type PromocaoJson = { id?: string; preco_normal?: number | string | null; promocao?: boolean | null; tipo_promocao?: string | null; desconto_percentual?: number | string | null; preco_promocional?: number | string | null }
+/** O que as contas de preço leem do produto */
+export type ProdutoPrecoJson = PromocaoJson & { grupo_tamanhos?: GrupoJson | null; grupo_sabores?: GrupoJson | null; kit_qtd?: KitQtdConfig | null }
 
 /**
  * Preço cheio de uma opção de tamanho, do jeito que o total cobra (11/10).
@@ -9,7 +19,7 @@ import { descontoPromocao } from '@/lib/produto-precificacao'
  * - Preço fixo: o preço da opção
  * Devolve 0 quando a opção não muda o preço (sem peso ou sem preço).
  */
-export function precoDoTamanho(op: any, porPeso: boolean, precoBase: number): number {
+export function precoDoTamanho(op: OpcaoGrupoJson, porPeso: boolean, precoBase: number): number {
   if (porPeso) {
     const kg = pesoDoTamanho(op, true)
     return kg > 0 ? r2((Number(precoBase) || 0) * kg) : 0
@@ -21,28 +31,28 @@ export function precoDoTamanho(op: any, porPeso: boolean, precoBase: number): nu
  * (14/10) Produto sem tamanho e sem kit em que "cada sabor tem o seu preço": o preço vem dos sabores.
  * Devolve os preços dos sabores (só os maiores que zero), ou null quando não é esse o caso.
  */
-export function precosDosSabores(p: any): number[] | null {
+export function precosDosSabores(p: ProdutoPrecoJson): number[] | null {
   if (kitAtivo(p?.kit_qtd)) return null
   const gt = p?.grupo_tamanhos
   // (14/10) tamanho só como nome (preço fixo sem preço nenhum): o preço também vem dos sabores
-  if (gt?.ativo && (gt.opcoes || []).length > 0 && (gt.modo_preco_tamanho === 'por_peso' || (gt.opcoes || []).some((o: any) => (Number(o?.preco) || 0) > 0))) return null
+  if (gt?.ativo && (gt.opcoes || []).length > 0 && (gt.modo_preco_tamanho === 'por_peso' || (gt.opcoes || []).some((o: OpcaoGrupoJson) => (Number(o?.preco) || 0) > 0))) return null
   const gs = p?.grupo_sabores
   if (!gs?.ativo || !gs.sabor_tem_preco_proprio || !(gs.opcoes || []).length) return null
-  return (gs.opcoes || []).filter((o: any) => !o?.esgotado).map((o: any) => r2(Number(o?.preco) || 0)).filter((v: number) => v > 0)
+  return (gs.opcoes || []).filter((o: OpcaoGrupoJson) => !o?.esgotado).map((o: OpcaoGrupoJson) => r2(Number(o?.preco) || 0)).filter((v: number) => v > 0)
 }
 
 /** (14/10) todos os tamanhos marcados como esgotados: o produto não dá pra pedir agora */
-export function tamanhosEsgotados(p: any): boolean {
+export function tamanhosEsgotados(p: ProdutoPrecoJson): boolean {
   const gt = p?.grupo_tamanhos
-  const ops: any[] = gt?.ativo ? (gt.opcoes || []) : []
+  const ops: OpcaoGrupoJson[] = gt?.ativo ? (gt.opcoes || []) : []
   return ops.length > 0 && ops.every(o => !!o?.esgotado)
 }
 
 /** O produto tem tamanhos de preço fixo valendo (grupo ativo, com preço em alguma opção)? */
-function temTamanhoDePrecoFixo(p: any): boolean {
+function temTamanhoDePrecoFixo(p: ProdutoPrecoJson): boolean {
   const gt = p?.grupo_tamanhos
   if (!gt?.ativo || gt.modo_preco_tamanho === 'por_peso') return false
-  return (gt.opcoes || []).some((o: any) => (Number(o?.preco) || 0) > 0)
+  return (gt.opcoes || []).some((o: OpcaoGrupoJson) => (Number(o?.preco) || 0) > 0)
 }
 
 /**
@@ -51,7 +61,7 @@ function temTamanhoDePrecoFixo(p: any): boolean {
  * - Promoção em valor (preço promocional): só pra produto sem kit e sem tamanhos de preço fixo.
  *   Antes ela virava um desconto proporcional em todos os tamanhos (P de 80 por 40 deixava o M de 120 por 60).
  */
-export function descontoCardapio(p: any): number {
+export function descontoCardapio(p: ProdutoPrecoJson): number {
   if (!p?.promocao) return 0
   const pct = Number(p.desconto_percentual) || 0
   const emPorcento = p.tipo_promocao === 'percentual' && pct > 0
@@ -72,14 +82,14 @@ export function comDesconto(valor: number, desconto: number): number {
  * - Com tamanhos: menor tamanho (pelo peso: menor peso × preço base) — "a partir de" quando tem mais de 1
  * - Sem nada: o preço do produto
  */
-export function precoCardapio(p: any): { valor: number; aPartir: boolean } {
+export function precoCardapio(p: ProdutoPrecoJson): { valor: number; aPartir: boolean } {
   // (24/10) "ele escolhe" (cento): o preço é o do cento, sem "a partir de" (igual ao produto vendido pelo cento)
   if (kitAtivo(p?.kit_qtd) && p.kit_qtd.modo === 'livre' && Number(p.kit_qtd.livre?.preco_cento) > 0) return { valor: r2(Number(p.kit_qtd.livre.preco_cento)), aPartir: false }
   if (kitAtivo(p?.kit_qtd)) return { valor: r2(precoMinKit(p.kit_qtd)), aPartir: true }
   const gt = p?.grupo_tamanhos
-  const todas: any[] = gt?.ativo ? (gt.opcoes || []) : []
+  const todas: OpcaoGrupoJson[] = gt?.ativo ? (gt.opcoes || []) : []
   // (14/10) o "a partir de" conta só os tamanhos à venda (se todos estiverem esgotados, conta todos)
-  const ops: any[] = todas.some(o => !o?.esgotado) ? todas.filter(o => !o?.esgotado) : todas
+  const ops: OpcaoGrupoJson[] = todas.some(o => !o?.esgotado) ? todas.filter(o => !o?.esgotado) : todas
   if (ops.length > 0) {
     if (gt.modo_preco_tamanho === 'por_peso') {
       const pesos = ops.map(o => pesoDoTamanho(o, true)).filter(x => x > 0) // (10/10) sem peso_kg, lê o peso do nome
@@ -90,7 +100,7 @@ export function precoCardapio(p: any): { valor: number; aPartir: boolean } {
     // (14/10) com "cada sabor tem o seu preço": "só o sabor" usa o sabor mais barato; "tamanho + sabor" soma os dois mais baratos
     const gs = p?.grupo_sabores
     const regra = gs?.regra_conflito_tamanho
-    const sab: number[] = gs?.ativo && gs?.sabor_tem_preco_proprio ? (gs.opcoes || []).filter((o: any) => !o?.esgotado).map((o: any) => Number(o?.preco) || 0).filter((x: number) => x > 0) : []
+    const sab: number[] = gs?.ativo && gs?.sabor_tem_preco_proprio ? (gs.opcoes || []).filter((o: OpcaoGrupoJson) => !o?.esgotado).map((o: OpcaoGrupoJson) => Number(o?.preco) || 0).filter((x: number) => x > 0) : []
     if (sab.length && regra === 'preco_sabor') return { valor: r2(Math.min(...sab)), aPartir: true }
     if (sab.length && precos.length && regra === 'tamanho_base_sabor_adicional') return { valor: r2(Math.min(...precos) + Math.min(...sab)), aPartir: true }
     if (precos.length) return { valor: r2(Math.min(...precos)), aPartir: ops.length > 1 }
@@ -105,7 +115,7 @@ export function precoCardapio(p: any): { valor: number; aPartir: boolean } {
  * Preço do cartão já com a promoção (11/10): `de` é o preço cheio riscado (0 = sem promoção).
  * O produto aberto usa as mesmas funções (descontoCardapio + comDesconto), então o número é o mesmo.
  */
-export function precoCardapioComPromocao(p: any): { de: number; final: number; aPartir: boolean } {
+export function precoCardapioComPromocao(p: ProdutoPrecoJson): { de: number; final: number; aPartir: boolean } {
   const pc = precoCardapio(p)
   const d = descontoCardapio(p)
   const final = comDesconto(pc.valor, d)
@@ -113,6 +123,6 @@ export function precoCardapioComPromocao(p: any): { de: number; final: number; a
 }
 
 /** (24/10) Kit "ele escolhe" (o cliente diz quantos quer): o preço do cartão é "o cento" */
-export function ehCentoLivre(p: any): boolean {
+export function ehCentoLivre(p: ProdutoPrecoJson): boolean {
   return kitAtivo(p?.kit_qtd) && p.kit_qtd.modo === 'livre' && Number(p.kit_qtd.livre?.preco_cento) > 0
 }

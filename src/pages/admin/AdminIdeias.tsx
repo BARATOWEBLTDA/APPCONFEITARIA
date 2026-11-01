@@ -108,7 +108,7 @@ export default function AdminIdeias() {
     if (ids.length) {
       const { data: ps } = await supabase.from("profiles").select("id, nome_loja, telefone").in("id", ids);
       const map: Record<string, PerfilMini> = {};
-      (ps || []).forEach((p: any) => { map[p.id] = { nome_loja: p.nome_loja, telefone: p.telefone }; });
+      (ps || []).forEach((p: PerfilMini & { id: string }) => { map[p.id] = { nome_loja: p.nome_loja, telefone: p.telefone }; });
       setPerfis(map);
     }
     setLoading(false);

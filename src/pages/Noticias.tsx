@@ -6,6 +6,10 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_NOVIDADES, TOUR_NOVIDADES } from "@/lib/comoTelas";
 import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
+import type { PostgrestError } from "@supabase/supabase-js";
+
+/** Notícia que ela já leu (ou tirou da lista) */
+type NoticiaLida = { noticia_id: string; excluida_em?: string | null };
 import { semAcento } from "@/lib/noticias";
 import "./noticias.css";
 
@@ -84,11 +88,11 @@ export default function Noticias() {
   const [ocultas, setOcultas] = useState<Set<string>>(new Set());
   useEffect(() => {
     (async () => {
-      let r: any = await supabase.from("noticias_lidas").select("noticia_id, excluida_em");
+      let r: { data: NoticiaLida[] | null; error: PostgrestError | null } = await supabase.from("noticias_lidas").select("noticia_id, excluida_em");
       if (r.error) r = await supabase.from("noticias_lidas").select("noticia_id"); // banco ainda sem a coluna
       if (r.error || !r.data) return;
-      setLidas(new Set(r.data.map((x: any) => x.noticia_id)));
-      setOcultas(new Set(r.data.filter((x: any) => x.excluida_em).map((x: any) => x.noticia_id)));
+      setLidas(new Set(r.data.map((x: NoticiaLida) => x.noticia_id)));
+      setOcultas(new Set(r.data.filter((x: NoticiaLida) => x.excluida_em).map((x: NoticiaLida) => x.noticia_id)));
     })();
   }, []);
   const [estado, setEstado] = useState<"carregando" | "erro" | "pronto">("carregando");

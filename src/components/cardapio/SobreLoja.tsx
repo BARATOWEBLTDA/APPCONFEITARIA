@@ -24,7 +24,7 @@ type Aba = 'sobre' | 'horario' | 'pagamento'
 const DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
 const PAGAMENTO: Record<string, string> = { pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Cartão de crédito', debito: 'Cartão de débito' }
 
-function semana(horario: any): { dia: string; texto: string; hoje: boolean }[] {
+function semana(horario: unknown): { dia: string; texto: string; hoje: boolean }[] {
   const agora = new Date()
   const hojeIdx = (agora.getDay() + 6) % 7 // segunda = 0
   return DIAS.map((dia, i) => {
@@ -46,7 +46,7 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
   const [aba, setAba] = useState<Aba>(abaInicial)
   useEffect(() => { if (aberta) setAba(abaInicial) }, [aberta, abaInicial])
 
-  const cfg: any = config || {}
+  const cfg: Configuracoes = config || {}
   const cor = topoEscurecido(design.cor_navbar || design.cor_borda || '#BF6B84') // (14/10) mesma cor do topo do cardápio (20/10: escurecida)
   const end = getEnderecoData(config)
   const zap = linkWhatsApp(config?.telefone)
@@ -132,7 +132,7 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
   if (largo) return (
     <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" titulo={design.nome_loja || 'Sobre a loja'} umaAcao={!!zap}
       acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={20} />Chamar no WhatsApp</a> : undefined}>
-      <div className="sl sl--largo" style={{ ['--sl-cor' as any]: cor }}>
+      <div className="sl sl--largo" style={{ ['--sl-cor']: cor } as React.CSSProperties}>
         <div className="sl-col sl-corpo">{blocoSobre}{largo && end && aberta && buscaMapa && <MapaEndereco busca={buscaMapa} soCidade={soCidade} selo="" />}</div>
         <div className="sl-col sl-corpo"><div className="sl-bloco sl-hor"><h3>Horário</h3>{blocoHorario}</div>{blocoPagamento}</div>
       </div>
@@ -142,7 +142,7 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
   return (
     <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" titulo={design.nome_loja || 'Sobre a loja'} umaAcao={!!zap}
       acoes={zap ? <a className="cp-zap" href={zap} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={20} />Chamar no WhatsApp</a> : undefined}>
-      <div className="sl" style={{ ['--sl-cor' as any]: cor }}>
+      <div className="sl" style={{ ['--sl-cor']: cor } as React.CSSProperties}>
         <div className="sl-abas" role="tablist">
           {([['sobre', 'Sobre'], ['horario', 'Horário'], ['pagamento', 'Pagamento']] as const).map(([k, t]) => (
             <button key={k} type="button" role="tab" aria-selected={aba === k} onClick={() => setAba(k)}>{t}</button>
@@ -178,14 +178,14 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
  * (29/10 · 5.01) Prévia da aba Horário do "Sobre a loja", do jeito que a cliente vê no cardápio.
  * Usada no passo "Horário" (computador): muda na hora em que a confeiteira mexe nos dias e horários.
  */
-export function PreviaSobreHorario({ nome, horario, corTopo }: { nome: string; horario: any; corTopo?: string | null }) {
+export function PreviaSobreHorario({ nome, horario, corTopo }: { nome: string; horario: unknown; corTopo?: string | null }) {
   const cor = topoEscurecido(corTopo || '#BF6B84')
   const status = situacaoDaLoja(horario)
   const dias = horario ? semana(horario) : []
   return (
     <div className="sl-prev" aria-label="Prévia do Sobre a loja">
       <div className="sl-prev-cab"><b>{nome}</b><span aria-hidden="true">×</span></div>
-      <div className="sl" style={{ ['--sl-cor' as any]: cor }}>
+      <div className="sl" style={{ ['--sl-cor']: cor } as React.CSSProperties}>
         <div className="sl-abas" aria-hidden="true">
           <button type="button" tabIndex={-1}>Sobre</button>
           <button type="button" tabIndex={-1} aria-selected="true">Horário</button>

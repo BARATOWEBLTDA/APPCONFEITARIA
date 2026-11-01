@@ -8,13 +8,19 @@ import { digitosTelefone, linkWhatsApp } from '@/lib/telefone'
 import { explicarErro } from '@/lib/erros'
 import { lojaAtualWhatsApp } from './lojaAtual'
 import { digitosAoDigitar } from './telefoneDigitado'
+import type { ExtraEscolhido } from '@/lib/kitTexto'
 import './contaCliente.css'
+
+/** Escolhas gravadas no item (jsonb): o que a conta do cliente lê (complementos e kit) */
+export type PersonalizacoesCliente = { extras?: ExtraEscolhido[] | null; kit?: { total?: number; sabores?: { nome: string; qtd: number }[] } | null; [campo: string]: unknown }
+/** Resposta do banco ao entrar com o WhatsApp */
+type RespostaEntrar = { status?: string; token?: string; erro?: string; cliente?: { id: string; nome: string; telefone?: string } | null } | null
 
 /** token: código de acesso que o banco dá depois de um pedido ou de entrar com o número de um pedido (4.23) */
 export type Cliente = { id: string; nome: string; telefone: string; token?: string }
 export type ItemPedido = { nome_produto: string; quantidade: number; valor_unitario: number; produtos?: { imagem_url?: string; forma_venda?: string | null }
   /** (21/10) escolhas e adicionais (sem a foto de referência, que vem só como sim/não) */
-  personalizacoes?: any; tem_foto_referencia?: boolean; snapshot_version?: number | null; observacoes?: string | null }
+  personalizacoes?: PersonalizacoesCliente | null; tem_foto_referencia?: boolean; snapshot_version?: number | null; observacoes?: string | null }
 export type Pedido = {
   id: string; numero: number; status: string; created_at: string; valor_total: number
   forma_pagamento: string; status_pagamento: string; tipo_entrega: string
@@ -54,13 +60,13 @@ export function guardarCliente(loja: string, c: Cliente | null) {
 }
 
 /** A função nova ainda não existe no banco (SQL 4.23 não rodado) */
-export const semFuncaoNova = (e: any) => !!e && (e.code === 'PGRST202' || e.code === '42883' || /could not find the function/i.test(String(e.message || '')))
+export const semFuncaoNova = (e: { code?: string; message?: string } | null | undefined) => !!e && (e.code === 'PGRST202' || e.code === '42883' || /could not find the function/i.test(String(e.message || '')))
 
 /** (27/10) Novo código de acesso para quem já entrou com o WhatsApp (o antigo venceu ou foi trocado) */
 async function renovarAcesso(loja: string, cliente: Cliente): Promise<Cliente | null> {
   try {
     const { data, error } = await supabase.rpc('cardapio_entrar', { p_loja: loja, p_telefone: cliente.telefone, p_numero: null, p_nome: cliente.nome || null })
-    const r: any = data
+    const r = data as RespostaEntrar
     if (error || r?.status !== 'ok' || !r.token) return null
     const novo: Cliente = { ...cliente, id: r.cliente?.id || cliente.id, token: r.token }
     guardarCliente(loja, novo)
@@ -80,7 +86,7 @@ export function usePedidosCliente(loja: string, cliente: Cliente | null) {
       // (4.23) com o código de acesso; sem a função nova no banco, busca do jeito antigo
       let { data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', { p_loja: loja, p_telefone: cliente.telefone, p_token: cliente.token || '' })
       // (27/10) acesso vencido: renova a entrada pelo WhatsApp e busca de novo (antes aparecia "Nenhum pedido ainda")
-      if (!error && (data as any)?.erro === 'token_invalido') {
+      if (!error && (data as { erro?: string } | null)?.erro === 'token_invalido') {
         const novo = await renovarAcesso(loja, cliente)
         if (novo) ({ data, error } = await supabase.rpc('cardapio_pedidos_do_cliente', { p_loja: loja, p_telefone: novo.telefone, p_token: novo.token || '' }))
       }
@@ -137,7 +143,7 @@ export function JanelaEntrar({ aberta, aoFechar, loja, cor, aoEntrar }: { aberta
       if (error && semFuncaoNova(error)) { await entrarAntigo(digitos); setIndo(false); return }
       // (11/10) falha na consulta (sem internet, banco fora) não é "número novo"
       if (error) { setErro(explicarErro(error, 'Não deu para entrar agora. Tente de novo.')); setIndo(false); return }
-      const r: any = data
+      const r = data as RespostaEntrar
       if (r?.status === 'ok' && r.cliente) {
         const c: Cliente = { id: r.cliente.id, nome: r.cliente.nome, telefone: r.cliente.telefone || tel, token: r.token }
         guardarCliente(loja, c); aoEntrar(c); aoFechar()

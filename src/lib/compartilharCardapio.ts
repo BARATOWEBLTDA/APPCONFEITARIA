@@ -15,7 +15,7 @@ export async function compartilharTexto(texto: string, titulo = "Doonly"): Promi
   const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
   if (nav.share) {
     try { await nav.share({ title: titulo, text: texto }); return true; }
-    catch (e: any) { if (e?.name === "AbortError") return false; } // ela fechou a janela
+    catch (e) { if ((e as Error)?.name === "AbortError") return false; } // ela fechou a janela
   }
   try { await navigator.clipboard.writeText(texto); avisar("Copiado. É só colar onde quiser.", { tipo: "ok" }); return true; }
   catch { avisar("Não deu para copiar. Tente de novo.", { tipo: "erro" }); return false; }

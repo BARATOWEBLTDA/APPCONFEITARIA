@@ -58,7 +58,7 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
     if (!feitos?.length) { avisar(`O pedido #${um.numero ?? ""} já tinha mudado. Abra Pedidos para ver como está.`, { tipo: "info" }); return; }
     registrarEtapa(um.id, "agendado");
     // o Início mostra o destaque do "Pedidos" no 1º pedido aceito (aí o aviso curto não aparece por cima)
-    if (!aoAceitar(um.id)) avisarMudanca({ numero: um.numero as any, cliente_nome: (um as any).cliente_nome || (um as any).cliente || null }, "agendado");
+    if (!aoAceitar(um.id)) avisarMudanca({ numero: um.numero, cliente_nome: (um as PedidoNovo & { cliente_nome?: string | null }).cliente_nome || um.cliente || null }, "agendado");
   };
   const maisAntigo = novos.reduce((a, p) => (!a || p.criado < a ? p.criado : a), "");
 

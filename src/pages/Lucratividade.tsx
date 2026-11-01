@@ -15,9 +15,16 @@ import { COMO_LUCRATIVIDADE, TOUR_LUCRATIVIDADE } from "@/lib/comoTelas";
 import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
-import { calcularCustoLucro, lerMaoObraConta } from "@/lib/produto-precificacao";
+import { calcularCustoLucro, lerMaoObraConta, type ProdutoCustoJson } from "@/lib/produto-precificacao";
 import { carregarIntervalo, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
+/** Item vendido (com o produto, que vem como objeto) */
+type ItemLucro = {
+  nome_produto?: string | null; quantidade?: number | string | null; valor_unitario?: number | string | null
+  personalizacoes?: { tamanho?: unknown } | null
+  produtos?: { id: string; nome?: string | null; forma_venda?: string | null; imagem_url?: string | null } | null
+};
+type PedidoLucro = { status: string; pedido_itens?: ItemLucro[] | null };
 type Produto = { chave: string; nome: string; foto: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean; kg?: boolean };
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -26,18 +33,18 @@ const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "cu
  * Ex.: ingredientes R$ 14,60 e custo total R$ 18,25 → 1,25. Assim o lucro por produto bate com a ficha técnica.
  * Se a busca falhar, fica 1 (só ingredientes, como era antes).
  */
-async function fatorDaFicha(uid: string, ids: string[], mao: any): Promise<Record<string, number>> {
+async function fatorDaFicha(uid: string, ids: string[], mao: unknown): Promise<Record<string, number>> {
   const out: Record<string, number> = {};
   if (!ids.length) return out;
   const [{ data: prods, error }, { data: perfil }] = await Promise.all([
     supabase.from("produtos").select("id, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais, produto_insumos(quantidade, unidade_utilizada, insumos(*))").in("id", ids),
-    supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle().then(r => r, () => ({ data: null } as any)),
+    supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle().then(r => r, () => ({ data: null } as { data: null })),
   ]);
   if (error || !prods) return out;
   void mao;
   const conta = await lerMaoObraConta(uid).catch(() => null); // (16/10) a mesma hora da Ficha técnica: fixos + salário
-  const cvConta = (perfil as any)?.custos_invisiveis_pct;
-  for (const p of prods as any[]) {
+  const cvConta = (perfil as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct;
+  for (const p of prods as (ProdutoCustoJson & { id: string })[]) {
     const r = calcularCustoLucro(p, conta, cvConta != null ? Number(cvConta) : null);
     if (r.cmv > 0) out[p.id] = r.custoTotal / r.cmv;
   }
@@ -132,18 +139,18 @@ function LucratividadeTela() {
       const [d, peds, cf, mo] = await Promise.all([
         carregarIntervalo(user.id, ini, fim),
         // de 1.000 em 1.000, igual ao painel (o Supabase corta em 1.000 linhas sem avisar)
-        buscarTudo<any>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda, imagem_url))")
-          .eq("user_id", user.id).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, ate)),
+        buscarTudo<PedidoLucro>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda, imagem_url))")
+          .eq("user_id", user.id).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, ate) as PromiseLike<{ data: PedidoLucro[] | null; error: unknown }>),
         supabase.from("custos_fixos").select("valor, ativo").eq("user_id", user.id),
         supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", user.id).maybeSingle(),
       ]);
       if (cancelado) return;
       if (d.erro || peds.error || cf.error || mo.error) { clearTimeout(relogio); setErro(true); return; }
       setDados(d);
-      setFixos({ custos: ((cf.data as any[]) || []).filter(x => x.ativo !== false).reduce((s, x) => s + (Number(x.valor) || 0), 0), salario: Number((mo.data as any)?.salario_mensal) || 0 });
+      setFixos({ custos: ((cf.data as { valor: number | string; ativo?: boolean | null }[]) || []).filter(x => x.ativo !== false).reduce((s, x) => s + (Number(x.valor) || 0), 0), salario: Number((mo.data as { salario_mensal?: number | string | null } | null)?.salario_mensal) || 0 });
       // lucro por produto
       const itens = peds.data.filter(p => p.status !== "cancelado").flatMap(p => p.pedido_itens || []);
-      const ids = [...new Set(itens.map((it: any) => it.produtos?.id).filter(Boolean))] as string[];
+      const ids = [...new Set(itens.map((it: ItemLucro) => it.produtos?.id).filter(Boolean))] as string[];
       const [custo, peloPeso, fator] = await Promise.all([custoPorProduto(ids), produtosPeloPeso(itens), fatorDaFicha(user.id, ids, mo.data)]);
       if (cancelado) return;
       const mapa: Record<string, Produto> = {};
@@ -239,16 +246,16 @@ function LucratividadeTela() {
                 <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> para ver o lucro de cada um.</p>
               ) : (
                 // (4.29) em cartões, como no cardápio: foto, nome e o lucro embaixo
-                <ul className="lu-pg">
+                <div className="lu-pg">
                   {produtos.map(p => (
-                    <li key={p.chave} className={`lu-pc${p.chave.startsWith("nome:") ? "" : " lu-pc--bt"}`}
+                    <div key={p.chave} className={`lu-pc${p.chave.startsWith("nome:") ? "" : " lu-pc--bt"}`}
                       {...(p.chave.startsWith("nome:") ? {} : { role: "button", tabIndex: 0, "aria-label": `${p.nome}: ${p.semFicha ? "montar a ficha técnica" : "ver a ficha técnica"}`,
                         onClick: () => navigate("/ficha-tecnica", { state: { produtoId: p.chave } }),
                         onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate("/ficha-tecnica", { state: { produtoId: p.chave } }); } } })}>
                       <span className="lu-pc-foto">{p.foto ? <img src={p.foto} alt="" loading="lazy" /> : <ShoppingBagOpen size={28} aria-hidden="true" />}</span>
                       <span className="lu-pc-tx">
                         <b className="lu-pc-nm">{p.nome}</b>
-                        <small>{(p as any).kg ? `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} kg vendidos` : `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} ${p.qtd === 1 ? "vendido" : "vendidos"}`} · {brl(p.vendido)}</small>
+                        <small>{p.kg ? `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} kg vendidos` : `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} ${p.qtd === 1 ? "vendido" : "vendidos"}`} · {brl(p.vendido)}</small>
                         <span className="lu-pc-l">Lucro</span>
                         {/* sem ficha o custo é zero: mostrar "lucro = preço" engana, então fica um traço */}
                         <strong className={p.semFicha ? "sf" : p.lucro < 0 ? "ruim" : ""}>{p.semFicha ? "—" : brl(p.lucro)}</strong>
@@ -256,9 +263,9 @@ function LucratividadeTela() {
                           ? <span className="lu-sf"><Warning size={12} weight="bold" /> sem ficha técnica{!p.chave.startsWith("nome:") && <b className="lu-sf-bt">Montar ficha <CaretRight size={12} weight="bold" /></b>}</span>
                           : <span className="lu-pc-m"><span className="lu-p-bar"><i className={p.lucro < 0 ? "ruim" : ""} style={{ width: `${Math.max(2, Math.min(100, p.margem))}%` }} /></span>margem {p.margem}%</span>}
                       </span>
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </section>
 

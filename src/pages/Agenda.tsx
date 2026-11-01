@@ -27,6 +27,30 @@ import { NomeComQtd } from "@/components/pedidos/CartaoPedido";
 import FiltroLateral, { SITUACOES_FILTRO, STATUS_PADRAO } from "@/components/pedidos/FiltroPedidos";
 import "@/components/pedidos/pedidos.css";
 import "./agenda.css";
+import type { Pedido as PedidoTexto, PedidoItem as PedidoItemTexto } from "@/components/pedidos/pedidoTexto";
+
+/* ── Tipos do que a agenda lê do banco ── */
+/** Escolhas do item que a agenda lê (jsonb personalizacoes) */
+type PersonalizacoesAgenda = { tamanho?: string | { nome?: string } | null; kit?: { sabores?: { nome: string; qtd: number | string }[] } | null; [k: string]: unknown };
+/** Item do pedido como a agenda lê (pedido_itens com o produto) */
+type ItemAgenda = Omit<PedidoItemTexto, "personalizacoes"> & { personalizacoes?: PersonalizacoesAgenda | null };
+/** Pedido como a agenda guarda: o da lista + o dia em que aparece no calendário */
+type PedidoAgenda = Omit<PedidoTexto, "pedido_itens"> & {
+  pedido_itens?: ItemAgenda[];
+  _diaAgenda?: string | null;
+  cliente_whatsapp?: string | null;
+  data_prevista_pagamento?: string | null;
+  desconto?: number | null;
+  taxa_entrega?: number | null;
+  acrescimo?: number | null;
+};
+/** O resumo que "Precisa de atenção" e a busca leem (só algumas colunas) */
+type PedidoResumo = Pick<PedidoAgenda, "id" | "numero" | "status" | "cliente_nome" | "data_entrega" | "horario_entrega">
+  & Partial<Pick<PedidoAgenda, "origem" | "tipo_entrega" | "created_at">>
+  & { pedido_itens?: { imagem_url?: string | null; produtos?: { imagem_url?: string | null } | null }[] };
+/** O mínimo pra mudar a situação e avisar (serve pro pedido do dia e pro do resumo) */
+type PedidoAcao = Pick<PedidoAgenda, "id" | "status"> & { numero?: number | null; tipo_entrega?: string | null; cliente_nome?: string | null };
+type AcaoAtencao = { t: string; fn: () => void; principal?: boolean };
 
 /**
  * Agenda (08/10 · 3.18, no padrão do guia).
@@ -51,9 +75,10 @@ const grupoDe = (s: string): Grupo => GRUPO_DO_STATUS[s] || "agendado";
 /* (21/10) Situação no calendário: as 4 cores da legenda. "Pra aceitar" é o mesmo critério da bolinha do Pedidos
    (pedido novo, ou pedido do cardápio esperando o pagamento). Em produção entra em "Na agenda". */
 type Sit = "atr" | "ace" | "age" | "ok";
+type StatsDia = { total: number; atr: number; ace: number; age: number; ok: number; etq: { sit: Sit; t: string; h: string }[] };
 const ORDEM_SIT: Sit[] = ["atr", "ace", "age", "ok"];
-const praAceitar = (p: any) => ["aguardando_aceite", "novo", "pendente"].includes(p.status) || (p.status === "aguardando_pagamento" && p.origem === "cardapio");
-const sitDoPedido = (p: any, hoje?: string): Sit | null => {
+const praAceitar = (p: Pick<PedidoAgenda, "status" | "origem">) => ["aguardando_aceite", "novo", "pendente"].includes(p.status) || (p.status === "aguardando_pagamento" && p.origem === "cardapio");
+const sitDoPedido = (p: PedidoAgenda, hoje?: string): Sit | null => {
   if (p.status === "cancelado") return null;
   if (pedidoAtrasado(p, hoje)) return "atr";
   if (praAceitar(p)) return "ace";
@@ -87,7 +112,7 @@ const relativo = (iso: string) => { const d = diffDias(iso); return d === 0 ? "H
 /** "Quinta-feira, 8 de outubro" */
 const diaPorExtenso = (iso: string) => { const d = parseISO(iso); return `${SEMANA[d.getDay()].replace("-feira", "")}, ${d.getDate()} de ${MESES[d.getMonth()]}`; }; // (26/10) "Segunda, 26 de outubro": cabe ao lado do "Falta receber"
 /** "Hoje às 10:00", "Amanhã", "20 de outubro às 14:00" */
-const quandoEntrega = (p: any) => {
+const quandoEntrega = (p: Pick<PedidoAgenda, "data_entrega" | "horario_entrega">) => {
   if (!p.data_entrega) return "Sem data";
   const h = p.horario_entrega ? ` às ${String(p.horario_entrega).slice(0, 5)}` : "";
   const r = relativo(p.data_entrega);
@@ -106,7 +131,7 @@ const primeiraFoto = (f?: string | null) => (f ? String(f).split(/,(?=\s*https?:
  * Forma de venda do item pra escrever a quantidade (11/10): só é "kg" quando o produto por kg é de PESO LIVRE.
  * Bolo por kg com tamanho escolhido ("M · 2 kg") ou kit conta em unidades (antes saía "1 kg" na agenda e no PDF do dia).
  */
-const formaNaAgenda = (it: any): string | null => {
+const formaNaAgenda = (it: ItemAgenda): string | null => {
   const forma = formaDoItem(it);
   return forma === "kg" && !pesoLivre(it, "kg") ? null : forma;
 };
@@ -136,7 +161,7 @@ export default function Agenda() {
   const [resAberto, setResAberto] = useState(false); // (23/10) lista de resultados embaixo da busca
   const topoRef = useRef<HTMLDivElement>(null);
 
-  const [pedidos, setPedidos] = useState<any[]>([]);
+  const [pedidos, setPedidos] = useState<PedidoAgenda[]>([]);
   const [loading, setLoading] = useState(true);
   const [demorou, setDemorou] = useState(false);
   // (10/10) períodos (do primeiro ao último dia que o calendário mostra) que já foram buscados
@@ -150,7 +175,7 @@ export default function Agenda() {
   const [ocupados, setOcupados] = useState<ReadonlySet<string>>(() => new Set());
   // (11/10) sobe a cada mudança feita aqui na tela: a recarga por trás que começou antes não sobrescreve a agenda
   const versao = useRef(0);
-  const mudarPedidos = (f: (prev: any[]) => any[]) => { versao.current++; setPedidos(f); };
+  const mudarPedidos = (f: (prev: PedidoAgenda[]) => PedidoAgenda[]) => { versao.current++; setPedidos(f); };
   const ocupar = (id: string, ligar: boolean) => {
     versao.current++;
     if (ligar) ocupadosRef.current.add(id); else ocupadosRef.current.delete(id);
@@ -171,7 +196,7 @@ export default function Agenda() {
   // Cancelados ficam de fora por padrão (dá pra ligar no filtro), igual ao total do dia
   const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_PADRAO);
   const [filtroAberto, setFiltroAberto] = useState(false);
-  const [reagendando, setReagendando] = useState<any | null>(null);
+  const [reagendando, setReagendando] = useState<PedidoAgenda | null>(null);
 
   /* Autenticação — (10/10) o getSession lê a conta do próprio aparelho (o getUser vai à rede: sem internet a tela ficava carregando pra sempre) */
   useEffect(() => {
@@ -230,12 +255,12 @@ export default function Agenda() {
       const feitoDe = parseISO(faixa.ini); feitoDe.setHours(0, 0, 0, 0);
       const feitoAte = parseISO(faixa.fim); feitoAte.setHours(24, 0, 0, 0);
       const [comData, semData] = await Promise.all([
-        buscarTudo<any>((de, ate) => supabase.from("pedidos").select(CAMPOS).eq("user_id", userId)
+        buscarTudo<PedidoAgenda>((de, ate) => supabase.from("pedidos").select(CAMPOS).eq("user_id", userId)
           .gte("data_entrega", faixa.ini).lte("data_entrega", faixa.fim)
           .order("data_entrega", { ascending: true })
           .order("horario_entrega", { ascending: true, nullsFirst: false })
           .order("id").range(de, ate)),
-        buscarTudo<any>((de, ate) => supabase.from("pedidos").select(CAMPOS).eq("user_id", userId)
+        buscarTudo<PedidoAgenda>((de, ate) => supabase.from("pedidos").select(CAMPOS).eq("user_id", userId)
           .is("data_entrega", null).gte("created_at", feitoDe.toISOString()).lt("created_at", feitoAte.toISOString())
           .order("id").range(de, ate)),
       ]);
@@ -253,7 +278,7 @@ export default function Agenda() {
       }
 
       // Status antigos viram os atuais (senão somem da lista do dia — igual à tela de Pedidos)
-      const pedidosNormalizados = [...comData.data, ...semData.data].map((p: any) => ({
+      const pedidosNormalizados = [...comData.data, ...semData.data].map((p: PedidoAgenda) => ({
         ...p,
         status: ANTIGOS[p.status] || p.status,
         // (11/10) Em que dia o pedido aparece no calendário: o da entrega; sem data de entrega, o dia em que foi feito, no horário daqui
@@ -262,7 +287,7 @@ export default function Agenda() {
         _diaAgenda: p.data_entrega ? String(p.data_entrega).slice(0, 10) : (p.created_at ? isoDate(new Date(p.created_at)) : null),
       }));
       // entra no lugar do que já estava guardado desse período (e de pedido que mudou de data)
-      const ids = new Set(pedidosNormalizados.map((p: any) => p.id));
+      const ids = new Set(pedidosNormalizados.map((p: PedidoAgenda) => p.id));
       setPedidos(prev => [...prev.filter(p => !ids.has(p.id) && !(p._diaAgenda >= faixa.ini && p._diaAgenda <= faixa.fim)), ...pedidosNormalizados]);
       setFaixas(prev => prev.some(f => f.ini === faixa.ini && f.fim === faixa.fim) ? prev : [...prev, faixa]);
       velhas.current.delete(chave);
@@ -312,7 +337,7 @@ export default function Agenda() {
 
   /* Mapa por dia com contagens por grupo + atrasado */
   const dayStats = useMemo(() => {
-    const m: Record<string, { total: number; atr: number; ace: number; age: number; ok: number; etq: { sit: Sit; t: string; h: string }[] }> = {};
+    const m: Record<string, StatsDia> = {};
     pedidosBuscados.forEach(p => {
       const dia = p._diaAgenda; // o dia em que o pedido aparece (o da entrega; sem data, o dia em que foi feito)
       const sit = dia ? sitDoPedido(p, hoje) : null; // atrasado é pela data de ENTREGA: pedido sem data não é atrasado
@@ -336,7 +361,7 @@ export default function Agenda() {
   );
 
   const pedidosDiaFiltrados = useMemo(
-    () => pedidosDoDia.filter((p: any) => statusSelecionados.includes(grupoDoStatus(p.status))),
+    () => pedidosDoDia.filter((p: PedidoAgenda) => statusSelecionados.includes(grupoDoStatus(p.status))),
     [pedidosDoDia, statusSelecionados]
   );
 
@@ -350,7 +375,7 @@ export default function Agenda() {
   const abrirEditar = (id: string) => navigate(`/pedidos/${id}/editar`);
 
   // (24/10) aviso em cartão com "Desfazer" (volta para a situação de antes)
-  const avisarComDesfazer = (p: any, novo: string) => {
+  const avisarComDesfazer = (p: PedidoAcao, novo: string) => {
     const anterior = p.status;
     avisarMudanca(p, novo, {
       desfazer: anterior && anterior !== novo ? async () => {
@@ -363,7 +388,7 @@ export default function Agenda() {
     });
   };
 
-  const marcarComoPronto = async (p: any) => {
+  const marcarComoPronto = async (p: PedidoAcao) => {
     if (ocupadosRef.current.has(p.id)) return; // (11/10) toque duplo: a situação muda uma vez só
     ocupar(p.id, true);
     try {
@@ -378,7 +403,7 @@ export default function Agenda() {
   };
 
   /* (21/10) Aceitar e Produzir, nos atalhos do dia vazio (o mesmo update da lista de Pedidos) */
-  const mudarSituacao = async (p: any, novo: string) => {
+  const mudarSituacao = async (p: PedidoAcao, novo: string) => {
     if (ocupadosRef.current.has(p.id)) return;
     ocupar(p.id, true);
     try {
@@ -390,7 +415,7 @@ export default function Agenda() {
     } finally { ocupar(p.id, false); }
   };
 
-  const abrirWhatsApp = (p: any) => {
+  const abrirWhatsApp = (p: PedidoAgenda) => {
     const tel = [p.cliente_whatsapp, p.cliente_telefone].find(t => telefoneValido(t)) || "";
     if (!tel) { avisar("Esse cliente não tem telefone cadastrado.", { tipo: "erro" }); return; }
     const nome = p.cliente_nome ? nomeDeGente(p.cliente_nome).split(" ")[0] : "";
@@ -401,7 +426,7 @@ export default function Agenda() {
   };
 
   const duplicando = useRef(false); // dois toques seguidos não criam duas cópias
-  const duplicarPedido = async (p: any) => {
+  const duplicarPedido = async (p: PedidoAgenda) => {
     if (duplicando.current) return;
     duplicando.current = true;
     try {
@@ -412,7 +437,7 @@ export default function Agenda() {
     } finally { duplicando.current = false; }
   };
 
-  const excluirPedido = async (p: any) => {
+  const excluirPedido = async (p: PedidoAgenda) => {
     const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ""}?`, texto: "Ele some da agenda, da lista de pedidos e do financeiro. Não dá para desfazer.", rotulo: "Excluir", perigo: true });
     if (!ok) return;
     // (10/10) pela função única: estorna os recebimentos antes de apagar (antes o dinheiro continuava no financeiro)
@@ -441,16 +466,16 @@ export default function Agenda() {
     } finally { ocupar(p.id, false); }
   };
 
-  const baixarPdf = async (p: any) => {
+  const baixarPdf = async (p: PedidoAgenda) => {
     const janela = pdf.abrirJanela();
     const { data } = await supabase.from("pedidos").select("*, pedido_itens(*, produtos(forma_venda))").eq("id", p.id).maybeSingle();
-    await gerarPedidoPDF((data || { id: p.id }) as any, janela);
+    await gerarPedidoPDF((data || { id: p.id }) as Parameters<typeof gerarPedidoPDF>[0], janela);
   };
 
   // ── Agenda do dia em PDF (modelo padrão · recurso PRO) ──
   const imprimirAgendaDoDia = () => {
     if (!isPro) { avisar("Imprimir a agenda do dia é do plano PRO.", { tipo: "info", acao: { rotulo: "Testar grátis", aoTocar: () => navigate("/assinar") } }); return; }
-    const lista = [...(pedidosDoDia as any[])].filter(p => p.status !== "cancelado")
+    const lista = [...(pedidosDoDia as PedidoAgenda[])].filter(p => p.status !== "cancelado")
       .sort((a, b) => String(a.horario_entrega || "99").localeCompare(String(b.horario_entrega || "99")));
     const dia = new Date(diaSel + "T12:00:00");
     const diaTxt = dia.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" });
@@ -459,16 +484,16 @@ export default function Agenda() {
       em_producao: ["Em produção", "am"], em_preparo: ["Em produção", "am"], em_entrega: ["Saiu para entrega", "am"], a_caminho: ["Saiu para entrega", "am"],
       aguardando_pagamento: ["Aguardando pagamento", "rd"], aguardando_aceite: ["Novo pedido", "rd"], novo: ["Novo pedido", "rd"],
     };
-    const nomeOp = (v: any) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
+    const nomeOp = (v: string | { nome?: string } | null | undefined) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
     const produzir = new Map<string, { qtd: number; forma: string | null; extra: Map<string, number> }>();
     const linhas = lista.map(p => {
-      const itens = (p.pedido_itens || []).map((it: any) => {
+      const itens = (p.pedido_itens || []).map((it: ItemAgenda) => {
         const tam = nomeOp(it.personalizacoes?.tamanho);
         const chave = [it.nome_produto, tam].filter(Boolean).join(" ");
         const forma = formaNaAgenda(it); // (11/10) bolo com tamanho não é "1 kg": conta em unidades
         const atual = produzir.get(chave) || { qtd: 0, forma, extra: new Map() };
         atual.qtd += Number(it.quantidade) || 1;
-        (it.personalizacoes?.kit?.sabores || []).forEach((x: any) => atual.extra.set(x.nome, (atual.extra.get(x.nome) || 0) + (Number(x.qtd) || 0) * (Number(it.quantidade) || 1)));
+        (it.personalizacoes?.kit?.sabores || []).forEach((x: { nome: string; qtd: number | string }) => atual.extra.set(x.nome, (atual.extra.get(x.nome) || 0) + (Number(x.qtd) || 0) * (Number(it.quantidade) || 1)));
         produzir.set(chave, atual);
         return itemComQtd(chave, Number(it.quantidade) || 1, forma, true);
       }).join(" + ");
@@ -493,7 +518,7 @@ export default function Agenda() {
 
   // "Mais ações": fecha a janela antes de fazer (assim o "voltar" do Android não se perde)
   // (31/10 · 5.84) ⋮ do pedido no padrão MenuMais (antes abria uma janela de baixo)
-  const itensDoPedido = (p: any): ItemMenuMais[] => [
+  const itensDoPedido = (p: PedidoAgenda): ItemMenuMais[] => [
     { Ic: PencilSimple, t: "Editar pedido", sub: "Itens, data e pagamento", aoTocar: () => abrirEditar(p.id) },
     ...(STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado") ? [{ Ic: Check, t: "Marcar pronto", sub: "O pedido está feito", aoTocar: () => marcarComoPronto(p) }] : []),
     { Ic: CalendarBlank, t: "Mudar a data da entrega", sub: "Escolha o novo dia", aoTocar: () => setReagendando(p) },
@@ -506,8 +531,8 @@ export default function Agenda() {
   const filtrosDesligados = SITUACOES_FILTRO.filter(f => f.k !== "cancelado" && !f.grupos.every(g => statusSelecionados.includes(g))).length;
   const mostrarTodas = () => setStatusSelecionados(TODAS_SITUACOES);
   // 4.08: a agenda não mostra o total vendido no dia (isso é do Financeiro); mostra só o que falta receber, quando existe
-  const aReceberDoDia = pedidosDoDia.filter((p: any) => p.status !== "cancelado" && saldoPedido(p) > 0.009);
-  const faltaDoDia = somarReais(aReceberDoDia.map((p: any) => saldoPedido(p))); // (11/10) soma em centavos certos
+  const aReceberDoDia = pedidosDoDia.filter((p: PedidoAgenda) => p.status !== "cancelado" && saldoPedido(p) > 0.009);
+  const faltaDoDia = somarReais(aReceberDoDia.map((p: PedidoAgenda) => saldoPedido(p))); // (11/10) soma em centavos certos
   const stDia = dayStats[diaSel] || { total: 0 };
   const relDia = relativo(diaSel);
   const diaVazio = diaCarregado && stDia.total === 0; // só diz "Nenhum pedido" depois de buscar
@@ -515,7 +540,7 @@ export default function Agenda() {
   /* (21/10) Dia sem pedido: em vez do quadro vazio, o que precisa de atenção (atrasados) e os próximos dias.
      Busca à parte (os atrasados podem ser de meses que o calendário não carregou). Só quando o dia está vazio e sem busca. */
   const mostrarAtencao = diaVazio && !busca.trim();
-  const [atencao, setAtencao] = useState<{ atr: any[]; prox: any[] } | null>(null);
+  const [atencao, setAtencao] = useState<{ atr: PedidoResumo[]; prox: PedidoResumo[] } | null>(null);
   useEffect(() => {
     if (!userId || !mostrarAtencao) return;
     let vale = true;
@@ -528,15 +553,16 @@ export default function Agenda() {
           .order("data_entrega", { ascending: true }).order("horario_entrega", { ascending: true, nullsFirst: false }).limit(3),
       ]);
       if (!vale || !naTela.current) return;
-      setAtencao({ atr: a.error ? [] : (a.data || []), prox: b.error ? [] : (b.data || []) });
+      // (tipos) o cliente sem esquema acha que "produtos" vem em lista; no banco vem um só (por isso o unknown)
+      setAtencao({ atr: a.error ? [] : (a.data as unknown as PedidoResumo[] || []), prox: b.error ? [] : (b.data as unknown as PedidoResumo[] || []) });
     })();
     return () => { vale = false; };
   }, [userId, mostrarAtencao, hoje, pedidos]);
   const temAtencao = !!atencao && (atencao.atr.length > 0 || atencao.prox.length > 0);
   const irParaDia = (iso: string) => { setRefDate(parseISO(iso)); setDiaSel(iso); };
-  const acaoAtencao = (p: any, atr: boolean) => {
+  const acaoAtencao = (p: PedidoResumo, atr: boolean): AcaoAtencao | null => {
     // (27/10) primeiro aceitar: "Pronto" só em pedido já aceito
-    if (precisaAceitar(p)) return { t: "Aceitar", fn: () => mudarSituacao(p, "agendado"), principal: true };
+    if (precisaAceitar(p as PedidoTexto)) return { t: "Aceitar", fn: () => mudarSituacao(p, "agendado"), principal: true };
     if ((atr || p.status === "em_producao") && STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado")) return { t: "Pronto", fn: () => marcarComoPronto(p) };
     if (grupoDe(p.status) === "agendado" && p.status !== "aguardando_pagamento") return { t: "Produzir", fn: () => mudarSituacao(p, "em_producao") };
     return null;
@@ -601,7 +627,7 @@ export default function Agenda() {
           ) : pedidosDoDia.length === 0 ? (
             mostrarAtencao && !atencao ? null
             : mostrarAtencao && temAtencao ? (
-              <Atencao atr={atencao!.atr} prox={atencao!.prox} hoje={hoje} ocupados={ocupados} acaoDe={acaoAtencao} aoAbrir={(p: any) => abrirEditar(p.id)} aoVerDia={irParaDia} />
+              <Atencao atr={atencao!.atr} prox={atencao!.prox} hoje={hoje} ocupados={ocupados} acaoDe={acaoAtencao} aoAbrir={(p: PedidoResumo) => abrirEditar(p.id)} aoVerDia={irParaDia} />
             ) : (
               <TelaVazia icone={<CalendarBlank size={30} />} titulo="Nenhum pedido nesse dia" texto={busca.trim() ? `Nada com “${busca.trim()}” nesse dia.` : "Os pedidos desse dia aparecem aqui."} />
             )
@@ -613,7 +639,7 @@ export default function Agenda() {
                 <Botao variante="link" icone={<Printer size={16} weight="bold" />} onClick={imprimirAgendaDoDia}>Imprimir o dia{!isPro && <span className="ag3-pro">PRO</span>}</Botao>
               }>Pedidos do dia</Titulo>
               <div className="ag3-lista">
-                {pedidosDiaFiltrados.map((p: any) => (
+                {pedidosDiaFiltrados.map((p: PedidoAgenda) => (
                   <CartaoAgenda key={p.id} p={p} ocupado={ocupados.has(p.id)} aoAbrir={() => abrirEditar(p.id)} itensMenu={itensDoPedido(p)} aoPronto={() => marcarComoPronto(p)} aoWhats={() => abrirWhatsApp(p)} />
                 ))}
               </div>
@@ -640,7 +666,7 @@ export default function Agenda() {
 }
 
 /* ═══ Calendário do mês ═══ */
-function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHoje }: any) {
+function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHoje }: { refDate: Date; setRefDate: (d: Date) => void; diaSel: string; setDiaSel: (iso: string) => void; dayStats: Record<string, StatsDia>; irParaHoje: () => void }) {
   const cells = useMemo(() => {
     const ano = refDate.getFullYear();
     const mes = refDate.getMonth();
@@ -709,15 +735,15 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
 }
 
 /* ═══ Dia vazio: "Precisa de atenção" e "Próximos dias" (21/10) ═══ */
-function Atencao({ atr, prox, hoje, ocupados, acaoDe, aoAbrir, aoVerDia }: any) {
+function Atencao({ atr, prox, hoje, ocupados, acaoDe, aoAbrir, aoVerDia }: { atr: PedidoResumo[]; prox: PedidoResumo[]; hoje: string; ocupados: ReadonlySet<string>; acaoDe: (p: PedidoResumo, atr: boolean) => AcaoAtencao | null; aoAbrir: (p: PedidoResumo) => void; aoVerDia: (iso: string) => void }) {
   const diaMes = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
-  const quando = (p: any, semSemana = false) => {
+  const quando = (p: PedidoResumo, semSemana = false) => {
     const iso = String(p.data_entrega || "").slice(0, 10);
     const rel = relativo(iso);
     const dia = rel || (semSemana ? diaMes(iso) : `${SEMANA_CURTA[parseISO(iso).getDay()]} ${diaMes(iso)}`);
     return [dia, p.horario_entrega ? String(p.horario_entrega).slice(0, 5) : ""].filter(Boolean).join(" · ");
   };
-  const item = (p: any, ehAtr: boolean) => {
+  const item = (p: PedidoResumo, ehAtr: boolean) => {
     const it = (p.pedido_itens || [])[0];
     const foto = primeiraFoto(it?.imagem_url || it?.produtos?.imagem_url);
     const nome = p.cliente_nome ? nomeDeGente(p.cliente_nome) : "Cliente";
@@ -744,13 +770,13 @@ function Atencao({ atr, prox, hoje, ocupados, acaoDe, aoAbrir, aoVerDia }: any) 
       {atr.length > 0 && (
         <section className="ag3-at ag3-at--atr">
           <h3 className="ag3-at-t atr">Precisa de atenção</h3>
-          {atr.map((p: any) => item(p, true))}
+          {atr.map((p: PedidoResumo) => item(p, true))}
         </section>
       )}
       {prox.length > 0 && (
         <section className="ag3-at ag3-at--prox">
           <h3 className="ag3-at-t">Próximos dias</h3>
-          {prox.map((p: any) => item(p, pedidoAtrasado(p, hoje)))}
+          {prox.map((p: PedidoResumo) => item(p, pedidoAtrasado(p, hoje)))}
           {diaProx && <Botao variante="link" className="ag3-at-ver" onClick={() => aoVerDia(diaProx)}>Ver os pedidos de {relativo(diaProx).toLowerCase() || diaMes(diaProx)}</Botao>}
         </section>
       )}
@@ -759,7 +785,7 @@ function Atencao({ atr, prox, hoje, ocupados, acaoDe, aoAbrir, aoVerDia }: any) 
 }
 
 /* ═══ Cartão do pedido na Agenda (o mesmo de antes, no padrão do guia) ═══ */
-function CartaoAgenda({ p, ocupado, aoAbrir, itensMenu, aoPronto, aoWhats }: any) {
+function CartaoAgenda({ p, ocupado, aoAbrir, itensMenu, aoPronto, aoWhats }: { p: PedidoAgenda; ocupado: boolean; aoAbrir: () => void; itensMenu: ItemMenuMais[]; aoPronto: () => void; aoWhats: () => void }) {
   const atr = pedidoAtrasado(p);
   const sit = situacaoDe(p);
   const itens = p.pedido_itens || [];
@@ -809,7 +835,7 @@ function CartaoAgenda({ p, ocupado, aoAbrir, itensMenu, aoPronto, aoWhats }: any
 
       {itens.length > 0 && (
         <div className="ag3-pc-itens">
-          {itens.map((it: any, i: number) => (
+          {itens.map((it: ItemAgenda, i: number) => (
             <p key={i}><span><NomeComQtd nome={nomeDoItem(it)} qtd={Number(it.quantidade) || 1} forma={formaNaAgenda(it)} /></span><span>{rs(r2((Number(it.valor_unitario) || 0) * (Number(it.quantidade) || 0)))}</span></p>
           ))}
           {taxaEntrega > 0 && <p className="dim"><span>Taxa de entrega</span><span>{rs(taxaEntrega)}</span></p>}
@@ -834,12 +860,12 @@ function CartaoAgenda({ p, ocupado, aoAbrir, itensMenu, aoPronto, aoWhats }: any
 /* ── (23/10) Busca: enquanto digita, uma lista logo abaixo com os pedidos de QUALQUER dia ──
    Busca no banco (não só no mês que o calendário carregou): nome do cliente, número do pedido (#1010) e telefone (6 dígitos ou mais).
    Mostra até 5, do mais novo para o mais antigo; "Ver os N pedidos" abre até 50 na própria lista. Tocar abre o pedido. */
-const fotoDoPedido = (p: any) => {
+const fotoDoPedido = (p: PedidoResumo) => {
   for (const it of p.pedido_itens || []) { const f = primeiraFoto(it.imagem_url) || primeiraFoto(it.produtos?.imagem_url); if (f) return f; }
   return "";
 };
 /** Igual ao quandoEntrega, com o ano quando não é o ano de agora */
-const quandoBusca = (p: any) => {
+const quandoBusca = (p: PedidoResumo) => {
   const t = quandoEntrega(p);
   if (!p.data_entrega || relativo(p.data_entrega)) return t;
   const ano = parseISO(p.data_entrega).getFullYear();
@@ -850,7 +876,7 @@ const LIMITE_INICIAL = 5, LIMITE_TUDO = 50;
 function ResultadosBusca({ userId, busca, comCancelados, onAbrir }: { userId: string; busca: string; comCancelados: boolean; onAbrir: (id: string) => void }) {
   const q = busca.trim();
   const [limite, setLimite] = useState(LIMITE_INICIAL);
-  const [res, setRes] = useState<{ q: string; itens: any[]; total: number } | null>(null);
+  const [res, setRes] = useState<{ q: string; itens: PedidoResumo[]; total: number } | null>(null);
   const [erro, setErro] = useState(false);
   useEffect(() => { setLimite(LIMITE_INICIAL); }, [q]);
   useEffect(() => {
@@ -878,7 +904,7 @@ function ResultadosBusca({ userId, busca, comCancelados, onAbrir }: { userId: st
       if (!vivo) return;
       if (error) { setErro(true); return; }
       setErro(false);
-      setRes({ q, itens: data || [], total: count ?? (data || []).length });
+      setRes({ q, itens: data as unknown as PedidoResumo[] || [], total: count ?? (data || []).length });
     }, 250);
     return () => { vivo = false; window.clearTimeout(t); };
   }, [userId, q, comCancelados, limite]);
@@ -894,7 +920,7 @@ function ResultadosBusca({ userId, busca, comCancelados, onAbrir }: { userId: st
       <p className="ag3-res-t" aria-live="polite">{titulo}</p>
       {!erro && itens.length > 0 && (
         <ul className={"ag3-res-l" + (limite > LIMITE_INICIAL ? " rola" : "")}>
-          {itens.map((p: any) => {
+          {itens.map((p: PedidoResumo) => {
             const atr = pedidoAtrasado({ data_entrega: p.data_entrega, status: ANTIGOS[p.status] || p.status });
             const foto = fotoDoPedido(p);
             return (

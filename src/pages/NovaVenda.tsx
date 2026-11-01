@@ -2,7 +2,13 @@ import { precoCardapioComPromocao, ehCentoLivre } from "@/lib/precoCardapio";
 import { unidadePreco } from "@/lib/formaVenda";
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { criarPedido, novoIdTentativa, lerProdutosDeVenda, opcoesDoProduto as opcoesDoProdutoLib, opcaoKitLivre, quantidadesSugeridas, precoDeVenda, totalDe, type DadosPedido } from '@/lib/pedidosDoo'
+import { criarPedido, novoIdTentativa, lerProdutosDeVenda, opcoesDoProduto as opcoesDoProdutoLib, opcaoKitLivre, quantidadesSugeridas, precoDeVenda, totalDe, type DadosPedido, type ItemPedido } from '@/lib/pedidosDoo'
+import type { GrupoJson, OpcaoGrupoJson } from '@/lib/precoCardapio'
+import type { KitQtdConfig } from '@/lib/kitQuantidade'
+import type { ExtraEscolhido } from '@/lib/kitTexto'
+import type { PedidoPDF } from '@/lib/gerarPedidoPDF'
+import type { PedidoParaMensagem } from '@/lib/mensagens'
+import type { Produto as ProdutoDb } from '@/types/database'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -44,14 +50,25 @@ interface ItemVenda {
   observacoes: string
   /** Tamanho ou kit escolhido (vai pro pedido como as escolhas do item) */
   opcaoLabel?: string
-  personalizacoes?: any
+  personalizacoes?: ItemPedido['personalizacoes']
+}
+
+/** As escolhas do item (jsonb), só o que esta tela lê */
+type PersLeitura = {
+  tamanho?: { nome?: string } | null
+  massa?: { nome?: string } | null
+  cobertura?: { nome?: string } | null
+  sabor?: { nome?: string } | null
+  recheios?: { nome?: string }[]
+  extras?: ExtraEscolhido[]
+  kit?: { total?: number; sabores?: { nome: string; qtd: number }[] } | null
 }
 
 /** (24/10) as escolhas do item, uma por linha: "2 kg", "Recheio Ninho", "Cobertura Chantilly", "100 un. · 50 coxinhas · 50 risoles" */
 function linhasDoItem(it: ItemVenda): string[] {
-  const p = it.personalizacoes || {}
+  const p = it.personalizacoes as PersLeitura || {}
   const l: string[] = []
-  const nm = (x: any) => String(x?.nome || '').trim()
+  const nm = (x: { nome?: string } | null | undefined) => String(x?.nome || '').trim()
   if (nm(p.tamanho)) l.push(nm(p.tamanho))
   if (p.kit?.total) { const sab = textoSaboresKit(p.kit.sabores); l.push(`${p.kit.total} un.${sab ? ` · ${sab}` : ''}`) }
   if (nm(p.massa)) l.push(`Massa ${nm(p.massa)}`)
@@ -84,14 +101,35 @@ interface Produto {
   forma_venda?: string
   imagem_url?: string
   categoria?: string
-  grupo_tamanhos?: any
-  kit_qtd?: any
+  grupo_tamanhos?: GrupoJson | null
+  kit_qtd?: KitQtdConfig | null
   // promoção (11/10): a venda sai pelo preço que o cliente paga, como no cardápio
   promocao?: boolean | null
   tipo_promocao?: string | null
   desconto_percentual?: number | null
   preco_promocional?: number | null
 }
+
+/** Opção de tamanho/kit/sabor oferecida na venda (a mesma regra da Doo IA) */
+type OpcaoVenda = ReturnType<typeof opcoesDoProdutoLib>[number]
+
+/** O pedido como volta gravado do banco (só o que esta tela lê) */
+type PedidoGravado = PedidoParaMensagem & { id: string; numero?: number | null; valor_total?: number | null; status_pagamento?: string | null }
+
+/** O que a tela de sucesso mostra da venda registrada */
+type VendaRegistrada = {
+  id: string; numero: number | null; itens: ItemVenda[]
+  clienteNome: string; clienteTelefone: string
+  total: number; recebido: number; falta: number; statusPagamento: string
+  tipo: TipoVenda; dataEntrega: string; horarioEntrega: string
+  bruto: PedidoGravado
+}
+
+/** As marcas desta tela nas entradas do histórico */
+type EstadoHistorico = { uiJanela?: unknown; nvSessao?: string; nvProf?: number; nvEtapa?: number; nvDe?: number }
+
+/** Tamanho do produto com o "serve até" gravado no cadastro */
+type OpcaoServe = OpcaoGrupoJson & { serve?: string | number | null }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 // "2026-10-20" → "Terça, 20/10" (o que aparece no campo de data)
@@ -206,7 +244,7 @@ export default function NovaVenda() {
   const salvandoRef = useRef(false)
   salvandoRef.current = salvando
   const [sucessoAberto, setSucessoAberto] = useState(false)
-  const [pedidoCriado, setPedidoCriado] = useState<any>(null)
+  const [pedidoCriado, setPedidoCriado] = useState<VendaRegistrada | null>(null)
   const [horaSheetAberto, setHoraSheetAberto] = useState(false)
   const [calNv, setCalNv] = useState<'entrega' | 'pagamento' | null>(null) // calendário do app
   const [enderecoCep, setEnderecoCep] = useState('')
@@ -256,21 +294,21 @@ export default function NovaVenda() {
       if (!vivo) return
       if (e1 || e2) { falhou(e1 || e2); return }
       // cidade da loja (profiles.endereco, em JSON); sem ela, o campo fica vazio
-      const lerEndereco = (cru: any): any => { try { return cru ? (typeof cru === 'string' ? JSON.parse(cru) : cru) : {} } catch { return {} } }
-      cidadeDaLoja.current = String(lerEndereco((loja as any)?.endereco)?.cidade || '').trim()
+      const lerEndereco = (cru: unknown): { cidade?: string } => { try { return cru ? (typeof cru === 'string' ? JSON.parse(cru) : cru as { cidade?: string }) : {} } catch { return {} } }
+      cidadeDaLoja.current = String(lerEndereco((loja as { endereco?: unknown } | null)?.endereco)?.cidade || '').trim()
       if (cidadeDaLoja.current) setEnderecoCidade(atual => atual || cidadeDaLoja.current)
       setProdutos((prds || []) as Produto[])
       setClientes(cls || [])
       // (21/10) "Últimos clientes": os dos pedidos mais recentes (se a leitura falhar, a lista mostra os primeiros por nome)
       supabase.from('pedidos').select('cliente_id').eq('user_id', user.id).not('cliente_id', 'is', null)
         .order('created_at', { ascending: false }).limit(60)
-        .then(({ data }) => { if (vivo && data) setRecentes([...new Set((data as any[]).map(r => r.cliente_id).filter(Boolean))].slice(0, 5)) }, () => {})
+        .then(({ data }) => { if (vivo && data) setRecentes([...new Set((data as { cliente_id: string }[]).map(r => r.cliente_id).filter(Boolean))].slice(0, 5)) }, () => {})
       setErroCarga('')
       setProdutosLoaded(true)
       // Veio da página da cliente ("Novo pedido"): já começa com ela escolhida (08/10 · 3.34)
       const doLink = new URLSearchParams(window.location.search).get('cliente')
-      const escolhida = doLink ? (cls || []).find((c: any) => c.id === doLink) : null
-      if (escolhida) selecionarCliente(escolhida as any)
+      const escolhida = doLink ? (cls || []).find((c: Cliente) => c.id === doLink) : null
+      if (escolhida) selecionarCliente(escolhida as Cliente)
     }).catch(falhou)
     return () => { vivo = false }
   }, [tentativaCarga]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -360,7 +398,7 @@ export default function NovaVenda() {
   const lixoAbaixo = useRef(false) // tem entrada de outra venda logo abaixo: sair pelo "voltar" não tiraria desta tela
 
   const empurrarPasso = (passo: number, de = 0) => {
-    const st = (window.history.state || {}) as any
+    const st = (window.history.state || {}) as EstadoHistorico
     if (st.uiJanela) return // tem janela do app fechando por cima: não mexe (segue sem a entrada)
     if (!sessaoNv.current) sessaoNv.current = Math.random().toString(36).slice(2)
     try {
@@ -372,7 +410,7 @@ export default function NovaVenda() {
   const irParaPasso = (passo: number) => { empurrarPasso(passo, etapa); setEtapa(passo) }
   /** Troca de passo sem entrada nova (só acerta a marca da entrada atual). */
   const trocarPasso = (passo: number) => {
-    const st = window.history.state as any
+    const st = window.history.state as EstadoHistorico | null
     if (profNv.current > 0 && st?.nvSessao === sessaoNv.current) { try { window.history.replaceState({ ...st, nvEtapa: passo, nvDe: 0 }, '') } catch { /* nada */ } }
     setEtapa(passo)
   }
@@ -382,7 +420,7 @@ export default function NovaVenda() {
     recolhendo.current = true
     let feito = false
     const fim = () => { if (feito) return; feito = true; window.removeEventListener('popstate', chegou); recolhendo.current = false; profNv.current = 0; resolve() }
-    const chegou = () => { if (!(Number((window.history.state as any)?.nvProf) > 0)) fim() }
+    const chegou = () => { if (!(Number((window.history.state as EstadoHistorico | null)?.nvProf) > 0)) fim() }
     window.addEventListener('popstate', chegou)
     window.setTimeout(fim, 600) // segurança: nunca fica esperando
     try { window.history.go(-quantas) } catch { fim() }
@@ -391,7 +429,7 @@ export default function NovaVenda() {
   // Voltou pra esta tela pelo histórico e caiu numa entrada de uma venda antiga: tira essas entradas (senão cada "voltar" não faria nada)
   const limpouVelhas = useRef(false)
   useEffect(() => {
-    const st = window.history.state as any
+    const st = window.history.state as EstadoHistorico | null
     const velhas = Number(st?.nvProf) || 0
     if (limpouVelhas.current || velhas <= 0 || st?.nvSessao === sessaoNv.current) return
     limpouVelhas.current = true
@@ -402,7 +440,7 @@ export default function NovaVenda() {
   useEffect(() => {
     const aoVoltarNoHistorico = () => {
       if (recolhendo.current || perguntandoSaida.current) return
-      const st = (window.history.state || {}) as any
+      const st = (window.history.state || {}) as EstadoHistorico
       if (st.uiJanela) return // o voltar fechou uma janela e ainda tem outra por cima
       const prof = st.nvSessao === sessaoNv.current ? Number(st.nvProf) || 0 : 0
       if (prof === profNv.current) return // nada desta venda saiu do histórico (foi uma janela do app fechando)
@@ -442,7 +480,7 @@ export default function NovaVenda() {
   const voltarEtapa = () => {
     if (etapa <= 1) { sairDaVenda(); return }
     // a entrada de baixo é o passo anterior: volta pelo histórico (o mesmo caminho do voltar do aparelho)
-    const st = window.history.state as any
+    const st = window.history.state as EstadoHistorico | null
     if (profNv.current > 0 && st?.nvSessao === sessaoNv.current && st.nvEtapa === etapa && st.nvDe === etapa - 1) { window.history.back(); return }
     trocarPasso(etapa - 1)
   }
@@ -463,14 +501,14 @@ export default function NovaVenda() {
   const [qtdLivre, setQtdLivre] = useState<number | null>(null) // (14/10) kit "ele escolhe": quantidade escolhida
   // (16/10) "Outro tamanho": vendeu um peso que não está na lista (o preço sai do preço do kg, e dá pra mudar)
   const [outro, setOutro] = useState<{ aberto: boolean; peso: string; valor: number }>({ aberto: false, peso: '', valor: 0 })
-  const [escolhaProduto, setEscolhaProduto] = useState<{ p: Produto; opcoes: { label: string; valor: number; pers: any }[] } | null>(null)
+  const [escolhaProduto, setEscolhaProduto] = useState<{ p: Produto; opcoes: OpcaoVenda[] } | null>(null)
   // (24/10) produto com massa, recheio, cobertura, sabor ou kit: abre a mesma janela de escolhas do cardápio
   // (igual ao "Adicionar item" do pedido). Só tamanho continua na tabela de tamanhos (com o "Outro tamanho").
-  const [produtoOpcoes, setProdutoOpcoes] = useState<any | null>(null)
+  const [produtoOpcoes, setProdutoOpcoes] = useState<ProdutoDb | null>(null)
   // (30/10 · 5.62) sabores, recheios e o "monte o seu kit" não abrem mais a janela de escolhas: na venda de balcão
   // ela só marca o produto. Tamanho ou kit com preço diferente ainda pergunta qual (muda o valor)
   const abrirProduto = (p: Produto) => addProduto(p)
-  const addProduto = (p: Produto, escolha?: { label: string; valor: number; pers: any }) => {
+  const addProduto = (p: Produto, escolha?: OpcaoVenda) => {
     if (!escolha) {
       const ops = opcoesDoProduto(p)
       if (ops.length > 1) { setEscolhaProduto({ p, opcoes: ops }); setModalProduto(false); return }
@@ -503,7 +541,7 @@ export default function NovaVenda() {
   // (5.64) recados abertos (o campo só aparece quando ela toca em "+ Recado")
   const [recadoAberto, setRecadoAberto] = useState<number[]>([])
   // (28/10) produto por kg sem tamanho anda de meio em meio quilo (antes só ia de 1 em 1 kg)
-  const passoDo = (it: { personalizacoes?: any; forma_venda?: string | null }) => pesoLivre(it) ? 0.5 : 1
+  const passoDo = (it: { personalizacoes?: unknown; forma_venda?: string | null }) => pesoLivre(it) ? 0.5 : 1
   const atualizarQtd = (idx: number, qtd: number) => {
     qtd = Math.round(qtd * 2) / 2
     if (qtd < passoDo(itens[idx] || {})) return
@@ -558,9 +596,9 @@ export default function NovaVenda() {
       // Salvar: a mesma função usada pela Doo IA (lib/pedidosDoo) — pedido igual nos dois caminhos
       const res = await criarPedido(userId, {
         idTentativa: idTentativaRef.current,
-        tipo: (tipo || 'encomenda') as any, itens, semCliente, clienteId: clienteId || jaCriada, clienteNome, clienteTelefone,
+        tipo: (tipo || 'encomenda') as DadosPedido['tipo'], itens, semCliente, clienteId: clienteId || jaCriada, clienteNome, clienteTelefone,
         clienteNovo,
-        tipoEntrega: tipoEntrega as any, vemBuscar: buscaDepois, dataEntrega, horarioEntrega,
+        tipoEntrega: tipoEntrega as DadosPedido['tipoEntrega'], vemBuscar: buscaDepois, dataEntrega, horarioEntrega,
         endereco: { rua: enderecoRua, numero: enderecoNumero, bairro: enderecoBairro, cidade: enderecoCidade, complemento: enderecoComplemento },
         taxaEntrega, desconto, acrescimo, formaPagamento, situacaoPag, valorParcial, dataPrevistaPagamento,
         // "Pronto" de retirada entra como "Pronto pra retirar" (o mesmo caminho da lista e da tela do pedido)
@@ -576,7 +614,7 @@ export default function NovaVenda() {
       clienteCriada.current = null
       idTentativaRef.current = novoIdTentativa() // a próxima venda é outro pedido
       if (res.aviso) avisar(res.aviso, { tipo: 'info' })
-      const novoPedido: any = res.pedido
+      const novoPedido: PedidoGravado = res.pedido
       // a cliente nova entra na lista da tela (a próxima venda já acha ela na busca)
       if (clienteNovo && res.clienteId && !clientes.some(c => c.id === res.clienteId)) {
         const comEndereco = tipoEntrega === 'entrega' ? { rua: enderecoRua, numero: enderecoNumero, bairro: enderecoBairro, cidade: enderecoCidade, complemento: enderecoComplemento } : {}
@@ -619,7 +657,7 @@ export default function NovaVenda() {
     if (!pc?.id) return
     const janela = abrirJanela()
     const { data } = await supabase.from('pedidos').select('*, pedido_itens(*, produtos(forma_venda))').eq('id', pc.id).maybeSingle()
-    await gerarPedidoPDF((data || { id: pc.id, numero: pc.numero, valor_total: pc.total }) as any, janela)
+    await gerarPedidoPDF((data || { id: pc.id, numero: pc.numero, valor_total: pc.total }) as PedidoPDF, janela)
   }
 
   // Veio do "Editar" do cartão da Doo IA: abre preenchida, direto no Revisar
@@ -627,7 +665,7 @@ export default function NovaVenda() {
   const jaAbriu = useRef(false)
   const rascunhoLido = useRef('') // a entrada do histórico de onde o rascunho já foi lido (não preenche duas vezes)
   useEffect(() => {
-    const d = (locNV.state as any)?.rascunhoDoo as DadosPedido | undefined
+    const d = (locNV.state as { rascunhoDoo?: DadosPedido } | null)?.rascunhoDoo as DadosPedido | undefined
     const chegouComATelaAberta = jaAbriu.current
     jaAbriu.current = true
     if (!d || rascunhoLido.current === locNV.key) return
@@ -644,14 +682,14 @@ export default function NovaVenda() {
     clienteCriada.current = null
     setOrigemDoo(true)
     if (d.tipo !== tipo) preenchidaRef.current = true
-    setTipo(d.tipo as any); setItens(d.itens as any)
+    setTipo(d.tipo as TipoVenda); setItens(d.itens as ItemVenda[])
     clienteDoEnderecoRef.current = d.clienteId || null
     setSemCliente(d.semCliente); setClienteId(d.clienteId); setClienteNome(d.clienteNome); setClienteTelefone(d.clienteTelefone); setModoNovoCli(d.clienteNovo)
-    setTipoEntrega(d.tipoEntrega as any); setDataEntrega(d.dataEntrega); setHorarioEntrega(d.horarioEntrega)
+    setTipoEntrega(d.tipoEntrega as TipoEntrega); setDataEntrega(d.dataEntrega); setHorarioEntrega(d.horarioEntrega)
     setEnderecoRua(d.endereco.rua); setEnderecoNumero(d.endereco.numero); setEnderecoBairro(d.endereco.bairro); setEnderecoCidade(d.endereco.cidade); setEnderecoComplemento(d.endereco.complemento)
     setTaxaEntrega(d.taxaEntrega); setDesconto(d.desconto); setAcrescimo(d.acrescimo)
     setFormaPagamento(d.formaPagamento); setSituacaoPag(d.situacaoPag); setValorParcial(d.valorParcial); setDataPrevistaPagamento(d.dataPrevistaPagamento)
-    setStatusPedido((d.statusPedido || 'agendado') as any); setObservacoes(d.observacoes)
+    setStatusPedido((d.statusPedido || 'agendado') as typeof statusPedido); setObservacoes(d.observacoes)
     // (11/10) mais de uma cliente com o nome que a Doo ouviu: abre no passo da cliente pra ela escolher qual é
     trocarPasso(!d.semCliente && !d.clienteId && !d.clienteNovo && d.clienteNome ? 2 : 5)
   }, [locNV.key]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -722,7 +760,7 @@ export default function NovaVenda() {
             <p>{naAgenda ? 'Já está em Pedidos e na Agenda.' : 'Já está em Pedidos.'}</p>
             <div className="nv3-ok-res">
               <div className="nv3-ok-its">
-                {(pc.itens || []).map((it: any, idx: number) => (
+                {(pc.itens || []).map((it: ItemVenda, idx: number) => (
                   <p key={idx}><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${linhasDoItem(it)[0] ? ` · ${linhasDoItem(it)[0]}` : ''}`, it.quantidade, it.forma_venda === 'kg' && !pesoLivre(it, 'kg') ? null : it.forma_venda)}</span><b>{rs(r2(it.valor_unitario * it.quantidade))}</b></p>
                 ))}
               </div>
@@ -1199,7 +1237,7 @@ export default function NovaVenda() {
     {produtoOpcoes && (
       <CartProvider>
         <ProductModal isOpen product={produtoOpcoes} onClose={() => setProdutoOpcoes(null)} corBotao="#E85A8C" rotuloAdicionar="Adicionar"
-          onAdicionar={(item: any) => {
+          onAdicionar={(item) => {
             const it = itemDoCarrinhoParaPedido(item)
             setItens(prev => [...prev, { produto_id: it.produto_id, nome_produto: it.nome_produto, quantidade: it.quantidade, valor_unitario: it.valor_unitario,
               imagem_url: produtoOpcoes.imagem_url, forma_venda: produtoOpcoes.forma_venda, observacoes: item.observations || '', personalizacoes: it.personalizacoes }])
@@ -1215,7 +1253,7 @@ export default function NovaVenda() {
           {/* (14/10) kit "ele escolhe": quantidades redondas em botões + campo pra qualquer outra (antes era uma lista de 100, 150, 200…) */}
           {escolhaProduto.p.kit_qtd?.modo === 'livre' ? (() => {
             const p = escolhaProduto.p
-            const kq: any = p.kit_qtd
+            const kq: KitQtdConfig = p.kit_qtd
             const min = Number(kq.livre?.min) || 1, max = Number(kq.livre?.max) || 0, passo = Number(kq.livre?.passo) || 1
             const q = qtdLivre ?? min
             const op = opcaoKitLivre(p, q)
@@ -1242,12 +1280,12 @@ export default function NovaVenda() {
           })() : (() => {
             const kit = !!escolhaProduto.p.kit_qtd?.ativo
             const porSabor = !kit && !!escolhaProduto.opcoes[0]?.pers?.sabor // (24/10) "cada sabor tem o seu preço"
-            const ops: any[] = (escolhaProduto.p as any).grupo_tamanhos?.opcoes || []
-            const dados = (o: { label: string }) => ops.find(x => String(x?.nome || '').trim() === o.label) || {}
+            const ops: OpcaoServe[] = escolhaProduto.p.grupo_tamanhos?.opcoes || []
+            const dados = (o: { label: string }): OpcaoServe => ops.find(x => String(x?.nome || '').trim() === o.label) || {}
             const serveDe = (o: { label: string }) => { const v = String(dados(o).serve || '').trim(); return /^\d+$/.test(v) ? `${v} pessoas` : v }
             const comServe = !kit && escolhaProduto.opcoes.some(o => serveDe(o))
             // preço do kg: produto vendido por kg, ou tamanhos com preço pelo peso
-            const precoKg = !kit && (escolhaProduto.p.forma_venda === 'kg' || (escolhaProduto.p as any).grupo_tamanhos?.modo_preco_tamanho === 'por_peso') ? precoDeVenda(escolhaProduto.p) : 0
+            const precoKg = !kit && (escolhaProduto.p.forma_venda === 'kg' || escolhaProduto.p.grupo_tamanhos?.modo_preco_tamanho === 'por_peso') ? precoDeVenda(escolhaProduto.p) : 0
             const pesoNum = parseFloat(outro.peso.replace(',', '.')) || 0
             const addOutro = () => {
               const label = pesoNum > 0 ? `${String(pesoNum).replace('.', ',')} kg` : 'Outro tamanho'
@@ -1321,7 +1359,7 @@ export default function NovaVenda() {
                   {/* (24/10) o mesmo preço do cartão do cardápio: com a promoção, "a partir de" quando tem tamanho/kit, e a unidade (o kg, o cento) */}
                   {(() => {
                     const pc = precoCardapioComPromocao(p)
-                    const un = ehCentoLivre(p) ? 'o cento' : pc.aPartir || (p as any).grupo_tamanhos?.ativo ? '' : unidadePreco(p.forma_venda)
+                    const un = ehCentoLivre(p) ? 'o cento' : pc.aPartir || p.grupo_tamanhos?.ativo ? '' : unidadePreco(p.forma_venda)
                     return <span className="tpj-preco">{pc.aPartir && <small>a partir de</small>}{rs(pc.final)}{un && <small>{un}</small>}</span>
                   })()}
                 </button>

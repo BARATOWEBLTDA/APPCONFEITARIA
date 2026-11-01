@@ -4,6 +4,20 @@ import { valorRecebidoPedido } from "@/lib/financeiroPedido";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { faltaNoBanco, normalizarForma } from "@/lib/pagamentos";
 import { pesoDoTamanho } from "@/lib/itemSacola";
+import type { OpcaoGrupoJson } from "@/lib/precoCardapio";
+
+type LinhaPagamento = { valor: number; recebido_em: string };
+type LinhaLancamento = { tipo: string | null; categoria: string | null; valor: number; data: string; estornado_em?: string | null; forma?: string | null };
+type PedidoRecebidoAntigo = { valor_total: number | null; valor_recebido: number | null; status: string | null; status_pagamento: string | null; data_entrega: string };
+type LinhaFicha = { produto_id: string; quantidade: number | null; unidade_utilizada: string | null; insumos: { custo_unitario: number | null; unidade: string | null } | null };
+type ProdutoDoItem = { id: string; forma_venda?: string | null };
+/** Item de pedido lido com CAMPOS_ITEM_CUSTO */
+export type ItemCusto = { quantidade?: number | string | null; personalizacoes?: unknown; produtos?: ProdutoDoItem | ProdutoDoItem[] | null };
+/** As escolhas gravadas no item (os dois formatos: com e sem "escolhas") */
+type PersCusto = { escolhas?: PersCusto | null; tamanho?: OpcaoGrupoJson | null; kit?: { total?: number | string | null } | null };
+type PedidoVendido = { id: string; valor_total: number | null; status: string; data_entrega: string; forma_pagamento: string | null; pedido_itens: ItemCusto[] | null };
+type PagamentoDoPedido = { pedido_id: string; valor: number | null; forma: string | null; taxa_pct?: number | null };
+type ContaPendente = { valor: number | null; vencimento: string | null; custo_fixo_id: string | null };
 
 /**
  * Financeiro · Passo 7 (03/10) — os números do mês do painel, com UMA regra cada:
@@ -42,13 +56,13 @@ const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart
 export const ehInsumo = (cat?: string | null) => /insumo|ingrediente|mat[eé]ria/i.test(cat || "");
 
 /** Recebimentos de pedidos (sem os estornados) entre dois dias, pela data do recebimento. */
-const buscarPagamentos = (uid: string, ini: string, ate: string) => buscarTudo<any>((de, a) => supabase.from("pagamentos")
+const buscarPagamentos = (uid: string, ini: string, ate: string) => buscarTudo<LinhaPagamento>((de, a) => supabase.from("pagamentos")
   .select("valor, recebido_em").eq("user_id", uid).is("estornado_em", null).gte("recebido_em", ini).lte("recebido_em", ate).order("id").range(de, a));
 
 /** Lançamentos manuais entre dois dias. Sem a coluna de estorno (SQL não rodado), busca sem ela; outro erro volta como erro. */
 async function buscarLancamentos(uid: string, ini: string, ate: string) {
-  const buscar = (colunas: string) => buscarTudo<any>((de, a) => supabase.from("financeiro")
-    .select(colunas).eq("user_id", uid).gte("data", ini).lte("data", ate).order("id").range(de, a));
+  const buscar = (colunas: string) => buscarTudo<LinhaLancamento>((de, a) => supabase.from("financeiro")
+    .select<string, LinhaLancamento>(colunas).eq("user_id", uid).gte("data", ini).lte("data", ate).order("id").range(de, a));
   // (4.29) forma: como a entrada avulsa foi recebida (coluna do SQL 4.31; sem ela, busca sem)
   const r = await buscar("tipo, categoria, valor, data, estornado_em, forma");
   if (!r.error || !faltaNoBanco(r.error)) return r;
@@ -57,7 +71,7 @@ async function buscarLancamentos(uid: string, ini: string, ate: string) {
 }
 
 /** Regra antiga do recebido (sem a tabela de pagamentos): pedidos pelo dia da entrega. */
-const buscarRecebidoAntigo = (uid: string, ini: string, ate: string) => buscarTudo<any>((de, a) => supabase.from("pedidos")
+const buscarRecebidoAntigo = (uid: string, ini: string, ate: string) => buscarTudo<PedidoRecebidoAntigo>((de, a) => supabase.from("pedidos")
   .select("valor_total, valor_recebido, status, status_pagamento, data_entrega").eq("user_id", uid).gte("data_entrega", ini).lte("data_entrega", ate).order("id").range(de, a));
 
 /**
@@ -97,8 +111,8 @@ export async function custoPorProduto(produtoIds: string[]): Promise<Record<stri
   if (!produtoIds.length) return out;
   const blocos: string[][] = [];
   for (let i = 0; i < produtoIds.length; i += 30) blocos.push(produtoIds.slice(i, i + 30));
-  const partes = await Promise.all(blocos.map(bloco => buscarTudo<any>((de, ate) => supabase.from("produto_insumos")
-    .select("produto_id, quantidade, unidade_utilizada, insumos(custo_unitario, unidade)").in("produto_id", bloco)
+  const partes = await Promise.all(blocos.map(bloco => buscarTudo<LinhaFicha>((de, ate) => supabase.from("produto_insumos")
+    .select<string, LinhaFicha>("produto_id, quantidade, unidade_utilizada, insumos(custo_unitario, unidade)").in("produto_id", bloco)
     .order("produto_id").order("insumo_id").range(de, ate))));
   const falha = partes.find(p => p.error);
   if (falha) throw falha.error;
@@ -117,27 +131,27 @@ export async function custoPorProduto(produtoIds: string[]): Promise<Record<stri
 /** O que a busca dos itens precisa trazer pra conta do custo (use dentro de pedido_itens(...)). */
 export const CAMPOS_ITEM_CUSTO = "quantidade, personalizacoes, produtos(id, forma_venda)";
 
-const produtoDoItem = (it: any) => (Array.isArray(it?.produtos) ? it.produtos[0] : it?.produtos) || null;
+const produtoDoItem = (it: ItemCusto) => (Array.isArray(it?.produtos) ? it.produtos[0] : it?.produtos) || null;
 /** Tamanho e kit escolhidos no item (os dois formatos que o app grava). */
-function escolhasDoItem(it: any): { tamanho: any; totalKit: number } {
+function escolhasDoItem(it: ItemCusto): { tamanho: OpcaoGrupoJson | null; totalKit: number } {
   let pers = it?.personalizacoes;
   if (typeof pers === "string") { try { pers = JSON.parse(pers); } catch { pers = null; } }
-  const esc = pers?.escolhas ?? pers;
-  return { tamanho: esc?.tamanho ?? pers?.tamanho ?? null, totalKit: Number(esc?.kit?.total ?? pers?.kit?.total) || 0 };
+  const esc = (pers as PersCusto)?.escolhas ?? (pers as PersCusto);
+  return { tamanho: esc?.tamanho ?? (pers as PersCusto)?.tamanho ?? null, totalKit: Number(esc?.kit?.total ?? (pers as PersCusto)?.kit?.total) || 0 };
 }
 
 /**
  * Dos produtos vendidos COM tamanho, quais têm os tamanhos "pelo peso" (preço do kg × peso do tamanho). (11/10)
  * Só busca os produtos que precisam (item com tamanho e produto que não é "por kg"). Se a busca falhar, lança erro.
  */
-export async function produtosPeloPeso(itens: any[]): Promise<Set<string>> {
+export async function produtosPeloPeso(itens: ItemCusto[]): Promise<Set<string>> {
   const ids = [...new Set(itens.filter(it => escolhasDoItem(it).tamanho && produtoDoItem(it)?.id && produtoDoItem(it)?.forma_venda !== "kg")
     .map(it => produtoDoItem(it).id as string))];
   const out = new Set<string>();
   for (let i = 0; i < ids.length; i += 30) {
     const { data, error } = await supabase.from("produtos").select("id, grupo_tamanhos").in("id", ids.slice(i, i + 30));
     if (error) throw error;
-    for (const p of (data as any[]) || []) if (p.grupo_tamanhos?.modo_preco_tamanho === "por_peso") out.add(p.id);
+    for (const p of (data as { id: string; grupo_tamanhos: { modo_preco_tamanho?: string } | null }[]) || []) if (p.grupo_tamanhos?.modo_preco_tamanho === "por_peso") out.add(p.id);
   }
   return out;
 }
@@ -150,7 +164,7 @@ export async function produtosPeloPeso(itens: any[]): Promise<Set<string>> {
  *   - Item simples (unidade, ou kg com o peso na quantidade): 1, como sempre foi.
  * Tamanho de preço fixo (cada tamanho com o seu preço) fica em 1: não dá pra saber de que tamanho é a ficha.
  */
-export function multiplicadorDoItem(it: any, peloPeso: Set<string>): number {
+export function multiplicadorDoItem(it: ItemCusto, peloPeso: Set<string>): number {
   const { tamanho, totalKit } = escolhasDoItem(it);
   if (totalKit > 0) return 1;
   const prod = produtoDoItem(it);
@@ -178,7 +192,7 @@ async function calcularIntervalo(uid: string, ini: string, fim: string): Promise
   const [pag, fin, vend] = await Promise.all([
     buscarPagamentos(uid, ini, ate),
     buscarLancamentos(uid, ini, ate),
-    buscarTudo<any>((de, a) => supabase.from("pedidos").select(`id, valor_total, status, data_entrega, forma_pagamento, pedido_itens(${CAMPOS_ITEM_CUSTO})`)
+    buscarTudo<PedidoVendido>((de, a) => supabase.from("pedidos").select(`id, valor_total, status, data_entrega, forma_pagamento, pedido_itens(${CAMPOS_ITEM_CUSTO})`)
       .eq("user_id", uid).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, a)),
   ]);
   if (fin.error || vend.error) return MES_COM_ERRO;
@@ -206,14 +220,14 @@ async function calcularIntervalo(uid: string, ini: string, fim: string): Promise
   // ── Vendido e custo dos ingredientes ──
   const vendidos = vend.data.filter(p => p.status !== "cancelado");
   const vendido = r2(vendidos.reduce((s, p) => s + (Number(p.valor_total) || 0), 0));
-  const ids = [...new Set(vendidos.flatMap(p => (p.pedido_itens || []).map((it: any) => it.produtos?.id).filter(Boolean)))] as string[];
+  const ids = [...new Set(vendidos.flatMap(p => (p.pedido_itens || []).map((it) => (it.produtos as ProdutoDoItem)?.id).filter(Boolean)))] as string[];
   // se uma das duas falhar, lança: carregarMes devolve erro (custo zerado inflaria o lucro)
   const [custo, peloPeso] = await Promise.all([custoPorProduto(ids), produtosPeloPeso(vendidos.flatMap(p => p.pedido_itens || []))]);
   let cmv = 0, semFicha = 0;
   for (const p of vendidos) {
     let faltou = false;
     for (const it of p.pedido_itens || []) {
-      const c = custo[it.produtos?.id];
+      const c = custo[(it.produtos as ProdutoDoItem)?.id];
       if (!c) { faltou = true; continue; }
       cmv += c * multiplicadorDoItem(it, peloPeso) * (Number(it.quantidade) || 0); // 11/10: tamanho pelo peso e kit contam inteiros
     }
@@ -263,22 +277,22 @@ export function taxaPctDaForma(forma: string | null | undefined, vars: Variavel[
 export const fixoPorPedido = (vars: Variavel[]) => vars.filter(v => v.ativo !== false && v.tipo === "fixo").reduce((s, v) => s + (Number(v.valor) || 0), 0);
 
 /** Taxas e custos por pedido dos pedidos entregues. Leitura que falha lança (o mês todo vira erro, sem lucro inflado). */
-async function custosVariaveisDosPedidos(uid: string, pedidos: any[]): Promise<number> {
+async function custosVariaveisDosPedidos(uid: string, pedidos: PedidoVendido[]): Promise<number> {
   if (!pedidos.length) return 0;
   const vr = await supabase.from("custos_variaveis").select("*").eq("user_id", uid);
   if (vr.error) { if (faltaNoBanco(vr.error)) return 0; throw vr.error; }
   const vars = (vr.data as Variavel[]) || [];
   if (!vars.length) return 0;
   const ids = pedidos.map(p => p.id);
-  const pags: any[] = [];
+  const pags: PagamentoDoPedido[] = [];
   for (let i = 0; i < ids.length; i += 100) {
     const fatia = ids.slice(i, i + 100);
     let r = await supabase.from("pagamentos").select("pedido_id, valor, forma, taxa_pct").in("pedido_id", fatia).is("estornado_em", null);
-    if (r.error && faltaNoBanco(r.error)) r = await supabase.from("pagamentos").select("pedido_id, valor, forma").in("pedido_id", fatia).is("estornado_em", null) as any;
+    if (r.error && faltaNoBanco(r.error)) r = await supabase.from("pagamentos").select("pedido_id, valor, forma").in("pedido_id", fatia).is("estornado_em", null) as typeof r;
     if (r.error) { if (faltaNoBanco(r.error)) break; throw r.error; }
-    pags.push(...((r.data as any[]) || []));
+    pags.push(...((r.data as PagamentoDoPedido[]) || []));
   }
-  const porPedido = new Map<string, any[]>();
+  const porPedido = new Map<string, PagamentoDoPedido[]>();
   for (const g of pags) { const l = porPedido.get(g.pedido_id) || []; l.push(g); porPedido.set(g.pedido_id, l); }
   let total = 0;
   for (const p of pedidos) {
@@ -307,8 +321,8 @@ export type ResumoAPagar = { total: number; qtd: number; vencidas: number; proxi
 export async function resumoAPagar(uid: string, hoje: string = iso(new Date())): Promise<ResumoAPagar | null> {
   const { data, error } = await supabase.from("contas_pagar").select("valor, vencimento, custo_fixo_id").eq("user_id", uid).eq("status", "pendente").order("vencimento", { ascending: true });
   if (error) return faltaNoBanco(error) ? null : { total: 0, qtd: 0, vencidas: 0, proxima: null, erro: true };
-  const l = umaPorContaFixa((data as any[]) || []);
-  const dia = (c: any) => String(c.vencimento || "").slice(0, 10);
+  const l = umaPorContaFixa((data as ContaPendente[]) || []);
+  const dia = (c: ContaPendente) => String(c.vencimento || "").slice(0, 10);
   return {
     total: r2(l.reduce((s, c) => s + (Number(c.valor) || 0), 0)), qtd: l.length,
     vencidas: l.filter(c => dia(c) && dia(c) < hoje).length,

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { desfazerPushDesteAparelho } from "@/hooks/usePushSubscription";
 
 export interface Profile {
@@ -135,7 +136,7 @@ function buscarPerfil(): Promise<void> {
 
 // Tempo real só do perfil da conta logada (filtro no servidor) — 02/10
 let canalUid: string | null = null;
-let canal: any = null;
+let canal: RealtimeChannel | null = null;
 function ligarTempoReal(uid: string) {
   if (canalUid === uid) return;
   try { if (canal) supabase.removeChannel(canal); } catch { /* ignora */ }
@@ -144,7 +145,7 @@ function ligarTempoReal(uid: string) {
     .channel(`profile-${uid}`)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${uid}` }, (payload) => {
       const novo = payload.new as Profile;
-      if ((novo as any)?.id !== uid) return;
+      if ((novo as Profile | null)?.id !== uid) return;
       notifyListeners({ ...(globalProfile?.id === uid ? globalProfile : {}), ...novo } as Profile);
     })
     .subscribe();
@@ -219,7 +220,7 @@ export const fotoPessoal = (url?: string | null) => !!url && /googleusercontent\
  * (18/10) Toda foto de perfil do app é a logo do cardápio (não tem mais foto pessoal).
  * Contas antigas sem logo: usa a foto que ela mesma enviou (nunca a do Google).
  */
-export function fotoDaLoja(p: any): string {
+export function fotoDaLoja(p: { logo_url?: string | null; foto_url?: string | null } | null | undefined): string {
   const logo = String(p?.logo_url || "");
   if (logo) return logo;
   const foto = String(p?.foto_url || "");
@@ -255,7 +256,7 @@ export async function sairDaConta(): Promise<boolean> {
   try { erro = (await supabase.auth.signOut()).error; } catch (e) { erro = e; }
   if (erro) {
     // primeiro pelo caminho do próprio Supabase (apaga a sessão e avisa as telas que saiu)…
-    try { await (supabase.auth as any)._removeSession?.(); } catch { /* segue pro plano B */ }
+    try { await (supabase.auth as unknown as { _removeSession?: () => Promise<unknown> })._removeSession?.(); } catch { /* segue pro plano B */ }
     // …e, por garantia, apaga a sessão guardada (igual ao "Lembrar de mim" desmarcado)
     try {
       Object.keys(localStorage).filter(k => /^sb-.*-auth-token/.test(k)).forEach(k => localStorage.removeItem(k));
@@ -282,7 +283,7 @@ export async function sairDaConta(): Promise<boolean> {
  * apontando pra outro ambiente.
  */
 const CANONICAL_BASE_URL =
-  (import.meta as any).env?.VITE_PUBLIC_URL || "https://doonly.com.br";
+  (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_PUBLIC_URL || "https://doonly.com.br";
 
 /**
  * Retorna a URL pública canônica do cardápio.

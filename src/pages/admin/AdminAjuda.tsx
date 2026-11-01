@@ -18,7 +18,7 @@ export default function AdminAjuda() {
   useEffect(() => {
     (async () => {
       let r = await supabase.from("ajuda_votos").select("artigo, util, motivo, created_at, updated_at").limit(5000);
-      if (r.error) r = await supabase.from("ajuda_votos").select("artigo, util, created_at").limit(5000) as any;
+      if (r.error) r = await supabase.from("ajuda_votos").select("artigo, util, created_at").limit(5000) as typeof r;
       if (r.error) { setErro(true); setVotos([]); return; }
       setVotos((r.data || []) as Voto[]);
     })();

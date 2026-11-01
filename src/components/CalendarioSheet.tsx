@@ -38,7 +38,7 @@ export default function CalendarioSheet({ valor, titulo = 'Escolha a data', min,
   return (
     <Janela aberta aoFechar={onClose} tipo="conteudo" titulo={titulo} umaAcao
       acoes={<Botao disabled={!dia} onClick={() => dia && onConfirmar(dia)} data-foco-inicial>{dia ? `Usar ${dataPorExtenso(dia, true)}` : 'Escolha um dia'}</Botao>}>
-      <div className="dh-cal" style={cor ? { ['--dh-cor' as any]: cor } : undefined}>
+      <div className="dh-cal" style={cor ? { ['--dh-cor']: cor } as React.CSSProperties : undefined}>
         <div className="dh-mes">
           <BotaoIcone rotulo="Mês anterior" onClick={() => mudar(-1)} disabled={!podeVoltar}><CaretLeft size={20} weight="bold" /></BotaoIcone>
           <b aria-live="polite">{MESES[mes.m]} de {mes.a}</b>

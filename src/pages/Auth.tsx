@@ -1,5 +1,6 @@
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote';
 import { useState, useEffect, useRef } from "react";
+import type { PostgrestError } from "@supabase/supabase-js";
 import BotaoGoogle from "@/components/BotaoGoogle";
 import { Botao } from "@/components/base";
 import TermosModal from "@/components/TermosModal";
@@ -19,8 +20,11 @@ import { destinoDepoisDoLogin } from "@/lib/destinoLogin";
 // ───────────────────────────────────────────────────────────────
 // iPhone/iPad (inclui iPad que se apresenta como Mac): o login com Google abre no Safari,
 // fora do app instalado — por isso fica escondido nesses aparelhos (30/09)
+/** O erro do login/cadastro (Supabase Auth ou de rede) */
+type ErroAuth = { message?: string; status?: number; code?: string } | null;
+
 const IS_IOS = typeof navigator !== "undefined" &&
-  (/iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && (navigator as any).maxTouchPoints > 1));
+  (/iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
 
 // ───────────────────────────────────────────────────────────────
 // Validadores puros — reutilizáveis, testáveis
@@ -236,12 +240,12 @@ export default function Auth() {
       const dest = (signInData.user?.email || "").toLowerCase() === "gestao@doonly.com.br" ? "/admin" : (destinoDepoisDoLogin() || "/inicio");
       setFading(true);
       setTimeout(() => navigate(dest), 700);
-    } catch (err: any) {
+    } catch (err) {
       // Se email não foi confirmado, oferece ação de reenviar
-      const msg = err?.message || "";
+      const msg = (err as ErroAuth)?.message || "";
       // cada erro com a sua mensagem (antes, até "sem internet" virava "senha incorreta")
-      const status = Number(err?.status) || 0;
-      const codigo = String(err?.code || "");
+      const status = Number((err as ErroAuth)?.status) || 0;
+      const codigo = String((err as ErroAuth)?.code || "");
       // (11/10) os códigos específicos vêm antes do "status 400" (antes viravam "E-mail ou senha incorretos")
       if (!navigator.onLine || /failed to fetch|networkerror|network request failed|load failed/i.test(msg)) {
         setError("Sem conexão. Confira a internet e tente de novo.");
@@ -385,14 +389,14 @@ export default function Auth() {
             // (4.22) quem indicou vem da função indicador_por_codigo (o perfil das outras contas não fica mais aberto);
             // sem a função no banco, lê como antes
             let indicador: { id: string } | null = null;
-            let errBuscar: any = null;
+            let errBuscar: PostgrestError | null = null;
             {
               const r = await supabase.rpc("indicador_por_codigo", { p_codigo: refCode });
               const semFuncao = !!r.error && (r.error.code === "PGRST202" || r.error.code === "42883" || /could not find the function/i.test(String(r.error.message || "")));
               if (!r.error) indicador = r.data ? { id: String(r.data) } : null;
               else if (semFuncao) {
                 const v = await supabase.from("profiles").select("id").eq("codigo_indicacao", refCode).maybeSingle();
-                indicador = (v.data as any) || null; errBuscar = v.error;
+                indicador = (v.data as { id: string } | null) || null; errBuscar = v.error;
               } else errBuscar = r.error;
             }
 
@@ -462,9 +466,9 @@ export default function Auth() {
 
       setFading(true);
       setTimeout(() => navigate("/inicio"), 700);
-    } catch (err: any) {
+    } catch (err) {
       // Tradução amigável dos erros mais comuns do Supabase
-      const msg = err?.message || "";
+      const msg = (err as ErroAuth)?.message || "";
       if (/already registered|already exists|user already/i.test(msg)) {
         setCadastroError("Este e-mail já tem cadastro. Faça login.");
       } else if (/password/i.test(msg)) {

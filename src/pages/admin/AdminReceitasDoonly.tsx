@@ -15,9 +15,13 @@ import { ArrowDown, ArrowUp, Cake, Camera, Medal, PencilSimple, Plus, SquaresFou
 import "./adminReceitasDoonly.css";
 
 const emptyForm = { nome: "", categoria: "", ingredientes: "", modo_preparo: "", foto_url: "" };
+/** Receita do Doonly (tabela receitas_doonly) */
+type ReceitaDoonly = { id: string; nome: string; categoria: string; ingredientes: string; modo_preparo: string; foto_url?: string | null };
+/** Categoria da tela de Receitas (tabela receitas_categorias) */
+type CategoriaReceita = { id: string; nome: string; imagem_url?: string | null; ordem?: number | null };
 
 export default function AdminReceitasDoonly() {
-  const [receitas, setReceitas] = useState<any[]>([]);
+  const [receitas, setReceitas] = useState<ReceitaDoonly[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -29,7 +33,7 @@ export default function AdminReceitasDoonly() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   // ── Categorias (cartões da tela de Receitas do app) ──
-  const [categorias, setCategorias] = useState<any[]>([]);
+  const [categorias, setCategorias] = useState<CategoriaReceita[]>([]);
   const [novaCat, setNovaCat] = useState("");
   const [enviandoCat, setEnviandoCat] = useState<string | null>(null);
   const catFileRef = useRef<HTMLInputElement>(null);
@@ -85,7 +89,7 @@ export default function AdminReceitasDoonly() {
     const { error } = await supabase.from("receitas_categorias").update({ imagem_url: null }).eq("id", id);
     if (!falhou(error, "Não deu para tirar a foto. Tente de novo.")) loadCategorias();
   };
-  const apagarCategoria = async (c: any) => {
+  const apagarCategoria = async (c: CategoriaReceita) => {
     const usadas = receitas.filter(r => r.categoria === c.nome).length;
     if (usadas > 0) { await informar({ titulo: `"${c.nome}" ainda tem receitas`, texto: `São ${usadas} receita${usadas === 1 ? "" : "s"} nela. Troque a categoria delas antes de apagar.`, icone: "alerta" }); return; }
     if (!(await confirmar({ titulo: `Apagar a categoria "${c.nome}"?`, texto: "Ela sai da tela de Receitas do app.", rotulo: "Apagar", perigo: true }))) return;
@@ -137,7 +141,7 @@ export default function AdminReceitasDoonly() {
     setShowForm(false); setForm(emptyForm); setEditId(null); setPreview(null); setSaving(false);
   };
 
-  const handleEdit = (r: any) => {
+  const handleEdit = (r: ReceitaDoonly) => {
     setForm({ nome: r.nome, categoria: r.categoria, ingredientes: r.ingredientes, modo_preparo: r.modo_preparo, foto_url: r.foto_url || "" });
     setPreview(r.foto_url || null);
     setEditId(r.id);

@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { Copy, Eye, QrCode, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, type Profile } from "@/hooks/useProfile";
+
+/** Campos da loja que vêm junto do perfil (fora do tipo Profile) */
+type PerfilLoja = Profile & { loja_pausada?: boolean | null; horario?: unknown };
 import { avisar } from "@/components/base";
 import { explicarErro } from "@/lib/erros";
 import { situacaoLoja } from "@/lib/agendaCardapio";
@@ -23,8 +26,8 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   const [local, setLocal] = useState<boolean | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [qr, setQr] = useState("");
-  const pausada = local ?? ((profile as any)?.loja_pausada === true);
-  const sit = useMemo(() => situacaoLoja((profile as any)?.horario), [(profile as any)?.horario]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pausada = local ?? ((profile as PerfilLoja)?.loja_pausada === true);
+  const sit = useMemo(() => situacaoLoja((profile as PerfilLoja)?.horario), [(profile as PerfilLoja)?.horario]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!link) return;
@@ -60,7 +63,7 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   };
   const baixarQr = () => {
     if (!qr) return;
-    const a = document.createElement("a"); a.href = qr; a.download = `qrcode-cardapio-${(profile as any)?.codigo_publico || "doonly"}.png`; a.click();
+    const a = document.createElement("a"); a.href = qr; a.download = `qrcode-cardapio-${profile?.codigo_publico || "doonly"}.png`; a.click();
   };
 
   const tom = pausada ? "pausa" : sit && !sit.aberto ? "fechado" : "aberto";

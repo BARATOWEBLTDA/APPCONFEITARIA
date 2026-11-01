@@ -29,7 +29,9 @@ const MESES_LONGOS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho"
 const isoDe = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 // (31/10 · 5.84) fora do componente do gráfico (antes era refeito a cada desenho)
-function Dica({ active, payload, rotulo }: any) {
+/** Ponto do gráfico como chega na dica (com a soma e o período anterior) */
+type PontoDica = Ponto & { acum: number; antes: number };
+function Dica({ active, payload, rotulo }: { active?: boolean; payload?: { payload: PontoDica }[]; rotulo?: string }) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload;
   return (
