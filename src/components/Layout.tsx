@@ -87,16 +87,16 @@ function SubitemMenu({ to, icone: Icone, children, end, tambem }: { to: string; 
 
 /** (13/10) Grupo do menu (Cadastros, Financeiro, Minha conta): abre e fecha, fica aberto quando a tela é dele.
  *  Recolhido (só ícones): o ícone leva pra primeira tela do grupo. */
-function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children, tour }: { id: string; rotulo: string; icone: Icon; rotas: string[]; recolhido: boolean; children: ReactNode; tour?: string }) {
+function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children, tour, aberto, onAbrir }: { id: string; rotulo: string; icone: Icon; rotas: string[]; recolhido: boolean; children: ReactNode; tour?: string; aberto: boolean; onAbrir: (id: string | null) => void }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const dentro = rotas.some(r => pathname === r || pathname.startsWith(r + "/"));
   // (19/10) ao abrir ou recarregar (F5) os grupos começam fechados; só abre o grupo da tela em que você está.
   // Abrir e fechar vale enquanto usa, sem ficar lembrado (antes voltava aberto depois do F5).
-  const [aberto, setAberto] = useState<boolean>(dentro);
-  useEffect(() => { if (dentro) setAberto(true); }, [dentro]);
+  // (31/10 · 5.95) um grupo aberto por vez: abrir um fecha o anterior, assim o menu nunca fica gigante (quem guarda é o Layout)
+  useEffect(() => { if (dentro) onAbrir(id); }, [dentro]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { try { localStorage.removeItem(`doonly_menu_grupo_${id}`); } catch { /* sem localStorage (aba anônima): nada a limpar */ } }, [id]);
-  const alternar = () => setAberto(a => !a);
+  const alternar = () => onAbrir(aberto ? null : id);
   if (recolhido) {
     return (
       <button type="button" className={`nav-item${dentro ? " active" : ""}`} data-tour={tour} onClick={() => navigate(rotas[0])} title={rotulo} aria-label={rotulo}>
@@ -122,6 +122,7 @@ export default function Layout() {
   const { profile } = useProfile();
   const paraAceitar = usePedidosParaAceitar(profile?.id);
   const { isPro } = usePlano();
+  const [grupoAberto, setGrupoAberto] = useState<string | null>(null);
   // (11/10) saiu e entrou de novo neste aparelho: os avisos de pedido voltam a ligar sozinhos
   useEffect(() => { void reativarPushSeSaiu(); }, []);
   const {
@@ -222,14 +223,14 @@ export default function Layout() {
           <ItemMenu to="/orcamentos" icone={FileText}>Orçamentos</ItemMenu>
           {/* (13/10) as telas do Cardápio digital viraram um grupo do menu (antes eram abas na faixa rosa) */}
           {/* (14/10) Produtos, Categorias e Personalização foram pra Cadastros: aqui fica só o que é da loja online */}
-          <GrupoMenu id="cardapio" rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO.filter(r => !ROTAS_CATALOGO.includes(r)), "/cardapio-preview"]} recolhido={recolhido}>
+          <GrupoMenu id="cardapio" aberto={grupoAberto === "cardapio"} onAbrir={setGrupoAberto} rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO.filter(r => !ROTAS_CATALOGO.includes(r)), "/cardapio-preview"]} recolhido={recolhido}>
             <SubitemMenu to="/cardapio" end icone={ChartBar}>Visão geral</SubitemMenu>
             <SubitemMenu to="/cardapio-design" icone={Palette}>Aparência</SubitemMenu>
             <SubitemMenu to="/cardapio-config" icone={Storefront}>Dados da loja</SubitemMenu>
             {linkCardapio && <a className="nav-subitem" href={linkCardapio} target="_blank" rel="noopener noreferrer"><span className="nav-subicon" aria-hidden="true"><ArrowSquareOut size={16} weight="bold" /></span>Ver meu cardápio</a>}
           </GrupoMenu>
           {/* (13/10) grupos que abrem e fecham (ficam abertos quando a tela é deles; o que ela abrir ou fechar fica lembrado) */}
-          <GrupoMenu id="cadastros" rotulo="Cadastros" icone={Users} rotas={[...ROTAS_CATALOGO, "/clientes", "/insumos", "/ficha-tecnica"]} recolhido={recolhido}>
+          <GrupoMenu id="cadastros" aberto={grupoAberto === "cadastros"} onAbrir={setGrupoAberto} rotulo="Cadastros" icone={Users} rotas={[...ROTAS_CATALOGO, "/clientes", "/insumos", "/ficha-tecnica"]} recolhido={recolhido}>
             <SubitemMenu to="/produtos" end icone={Cake}>Produtos</SubitemMenu>
             <SubitemMenu to="/categorias" icone={SquaresFour} tambem={["/produtos/categorias"]}>Categorias</SubitemMenu>
             <SubitemMenu to="/complementos" icone={Stack}>Complementos</SubitemMenu>
@@ -237,7 +238,7 @@ export default function Layout() {
             <SubitemMenu to="/insumos" icone={Package}>Ingredientes</SubitemMenu>
             <SubitemMenu to="/ficha-tecnica" icone={ClipboardText}>Ficha técnica</SubitemMenu>
           </GrupoMenu>
-          <GrupoMenu id="financeiro" rotulo="Financeiro" icone={CurrencyDollar} rotas={["/financeiro", "/custos", "/lucratividade"]} recolhido={recolhido}>
+          <GrupoMenu id="financeiro" aberto={grupoAberto === "financeiro"} onAbrir={setGrupoAberto} rotulo="Financeiro" icone={CurrencyDollar} rotas={["/financeiro", "/custos", "/lucratividade"]} recolhido={recolhido}>
             <SubitemMenu to="/financeiro" end icone={SquaresFour}>Visão geral</SubitemMenu>
             <SubitemMenu to="/financeiro/transacoes" icone={ArrowsDownUp}>Transações</SubitemMenu>
             <SubitemMenu to="/financeiro/a-receber" icone={HandCoins}>A receber</SubitemMenu>
@@ -251,7 +252,7 @@ export default function Layout() {
             <span className="nav-icon"><Sparkle size={20} weight={dooOpen ? "fill" : "bold"} /></span>
             <span className="nav-rotulo">Doo IA</span>
           </button>
-          <GrupoMenu id="conta" rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar"]} recolhido={recolhido}>
+          <GrupoMenu id="conta" aberto={grupoAberto === "conta"} onAbrir={setGrupoAberto} rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar"]} recolhido={recolhido}>
             <SubitemMenu to="/configuracoes" end icone={Gear}>Configurações</SubitemMenu>
             <SubitemMenu to={isPro ? "/minha-assinatura" : "/assinar"} icone={Crown} tambem={["/assinar", "/minha-assinatura"]}>Minha assinatura</SubitemMenu>
           </GrupoMenu>
