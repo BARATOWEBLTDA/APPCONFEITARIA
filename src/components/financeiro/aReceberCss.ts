@@ -18,12 +18,12 @@ export const CSS_A_RECEBER = `
   /* 11/10: o valor cabe inteiro. A letra encolhe até caber na largura do cartão (--far-n = letras do maior valor;
      0,64 = largura média de cada letra de um valor em reais na Poppins Bold). Nunca passa do tamanho de antes nem fica menor que 10px. */
   .far-k b { font-size: max(10px, min(clamp(13.5px, 3.9vw, 17px), calc(100cqi / (var(--far-n, 11) * .64)))); }
-  .far-k i { font-style: normal; font-size: 13px; color: #888780; }
+  .far-k i { font-style: normal; font-size: 13px; color: #6F6E68; }
   .far-k--atr { border-color: #FECACA; background: #FFF7F7; } .far-k--atr b { color: var(--ui-vermelho); }
   .far-k--zero b { color: var(--ui-texto-3); }
   .far-carregando { text-align: center; color: var(--ui-texto-3); font-size: 14px; padding: 30px 0; }
   .far-vazio { background: var(--ui-branco); border-radius: var(--ui-raio-cartao); padding: 30px 20px; text-align: center; border: 1px solid #F0EBED; }
-  .far-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; }
+  .far-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #15803D; display: inline-flex; align-items: center; justify-content: center; }
   .far-vazio b { display: block; font-size: 17px; font-weight: 600; margin-top: 12px; color: var(--ui-texto); }
   .far-vazio p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 360px; text-wrap: balance; }
   .far-gt { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
@@ -52,7 +52,7 @@ export const CSS_A_RECEBER = `
   .far-tg { flex-shrink: 0; font-size: 12px; font-weight: 600; color: #92400E; background: var(--ui-laranja-fundo); padding: 3px 8px; border-radius: 7px; }
   .far-tg--atr { color: var(--ui-vermelho-escuro); background: var(--ui-vermelho-fundo); }
   .far-it-v { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
-  .far-it-v small { font-size: 12.5px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; } /* em uma linha só */
+  .far-it-v small { font-size: 12.5px; color: #6F6E68; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; } /* em uma linha só */
   .far-it-v b { font-size: 15.5px; font-weight: 600; color: var(--ui-laranja); white-space: nowrap; }
   .far-bar { height: 6px; border-radius: 9px; background: var(--ui-linha); margin-top: 9px; overflow: hidden; }
   .far-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; }
@@ -61,7 +61,7 @@ export const CSS_A_RECEBER = `
   .far-it-a > span { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--ui-texto-2); }
   .far-bts { display: flex; gap: 6px; }
   .far-ver { min-width: 44px; height: 44px; padding: 0 12px; gap: 6px; font-family: inherit; font-size: 13.5px; font-weight: 600; flex-shrink: 0; border-radius: var(--ui-raio-p); border: 1.5px solid var(--ui-borda-campo); background: var(--ui-branco); color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .far-rec { border: none; border-radius: var(--ui-raio-p); padding: 0 16px; height: 44px; background: #16A34A; color: var(--ui-branco); font-family: inherit; font-weight: 600; font-size: 13.5px; cursor: pointer; }
+  .far-rec { border: none; border-radius: var(--ui-raio-p); padding: 0 16px; height: 44px; background: #15803D; color: var(--ui-branco); font-family: inherit; font-weight: 600; font-size: 13.5px; cursor: pointer; }
   .far-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
   @media (min-width: 768px) { .far-ov { align-items: center; } }
   .far-sh { width: 100%; max-width: 460px; background: var(--ui-branco); border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; padding: 10px 18px calc(20px + env(safe-area-inset-bottom, 0px)); max-height: 92dvh; overflow-y: auto; color: var(--ui-texto); animation: farSobe .22s ease; }
@@ -86,7 +86,7 @@ export const CSS_A_RECEBER = `
   .far-prev b { display: block; font-size: 14px; color: #92400E; } .far-prev small { font-size: 13px; color: #92400E; }
   .far-prev--ok { background: #F0FDF4; border-color: #BBF7D0; } .far-prev--ok b, .far-prev--ok small { color: #166534; }
   .far-erro { margin: 10px 0 0; font-size: 13px; font-weight: 600; color: var(--ui-vermelho); }
-  .far-cta { margin-top: 16px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: var(--ui-raio-botao); padding: 15px; background: #16A34A; color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
+  .far-cta { margin-top: 16px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: var(--ui-raio-botao); padding: 15px; background: #15803D; color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(22,163,74,.3); }
   .far-cta:disabled { opacity: .6; cursor: default; }
   .far-toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; background: var(--ui-vinho-escuro); color: var(--ui-branco); padding: 12px 16px; border-radius: var(--ui-raio); font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 26px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }
 `;

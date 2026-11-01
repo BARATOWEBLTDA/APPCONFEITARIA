@@ -23,7 +23,7 @@
 .dl-chip.ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
 
 /* campos */
-.dl-zap { color: #16a34a; }
+.dl-zap { color: #15803D; }
 .dl-desc textarea { resize: none; overflow: hidden; min-height: 84px; }
 /* (16/10) contador e "Escrever com IA" na mesma linha, embaixo do campo (antes o botão flutuava em cima) */
 .dl-desc-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
@@ -110,7 +110,7 @@
 .dl-rede-n small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
 .dl-rede-sw { flex: none; position: relative; width: 44px; height: 26px; border-radius: 999px; background: #CFC4C9; transition: background .15s; }
 .dl-rede-sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .15s; }
-.dl-rede-l[aria-checked="true"] .dl-rede-sw { background: #16A34A; }
+.dl-rede-l[aria-checked="true"] .dl-rede-sw { background: #15803D; }
 .dl-rede-l[aria-checked="true"] .dl-rede-sw::after { transform: translateX(18px); }
 #dl-redes .dl-cab { margin-bottom: 12px; }
 

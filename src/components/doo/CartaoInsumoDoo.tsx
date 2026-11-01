@@ -133,7 +133,7 @@ const CSS = `
   .cid-k { margin: 0; font-size: 12px; font-weight: 600; color: var(--ui-rosa); }
   .cid-hd b { display: block; font-size: 16px; font-weight: 600; margin-top: 1px; }
   .cid-kv { display: grid; grid-template-columns: 96px 1fr; gap: 7px 10px; margin: 12px 0 0; font-size: 14px; }
-  .cid-kv dt { color: #888780; font-weight: 500; } .cid-kv dd { margin: 0; font-weight: 600; }
+  .cid-kv dt { color: #6F6E68; font-weight: 500; } .cid-kv dd { margin: 0; font-weight: 600; }
   .cid-antes { color: var(--ui-texto-3) !important; font-weight: 500 !important; text-decoration: line-through; }
   .cid-custo { color: var(--ui-verde); font-weight: 600 !important; }
   .cid-custo--ed { margin: 8px 0 0; font-size: 13px; }

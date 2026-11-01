@@ -53,7 +53,7 @@
 .pm-g-dir { display: flex; align-items: center; gap: 8px; flex: none; }
 .pm-g-dir em { font-style: normal; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .pm-obr { padding: 3px 8px; border-radius: 6px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-size: 12px; font-weight: 600; font-style: normal; }
-.pm-ok { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #16a34a; color: var(--ui-branco); }
+.pm-ok { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #15803D; color: var(--ui-branco); }
 .pm-g.falta .pm-g-cab { background: var(--ui-vermelho-fundo); box-shadow: inset 4px 0 0 var(--ui-vermelho); }
 .pm-g.falta .pm-g-cab small { color: #B91C1C; font-weight: 600; }
 .pm-g.falta .pm-obr { background: var(--ui-vermelho); }

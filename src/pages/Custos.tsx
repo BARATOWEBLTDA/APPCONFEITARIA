@@ -436,7 +436,7 @@ const CSS = `
   .cu-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; min-width: 0; }
   .cu-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .cu-k b { display: block; font-size: clamp(16px, 4.6vw, 21px); font-weight: 600; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cu-k i { display: block; font-style: normal; font-size: 13px; color: #888780; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cu-k i { display: block; font-style: normal; font-size: 13px; color: #6F6E68; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-k small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-k.destaque { background: radial-gradient(130% 160% at 0 0, #5A3626, var(--ui-vinho-escuro) 70%); border: none; color: var(--ui-branco); }
   .cu-k.destaque small, .cu-k.destaque i { color: rgba(255,255,255,.72); }
@@ -446,14 +446,14 @@ const CSS = `
   .cu-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px; }
   .cu-ct { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .cu-ct > div { flex: 1; min-width: 0; }
-  .cu-ct b { display: block; font-size: 15.5px; font-weight: 600; } .cu-ct small { font-size: 12.5px; color: #888780; }
+  .cu-ct b { display: block; font-size: 15.5px; font-weight: 600; } .cu-ct small { font-size: 12.5px; color: #6F6E68; }
   .cu-ic { width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .cu-ph { height: 90px; background: #FAF7F8; border-radius: var(--ui-raio-p); }
-  .cu-vazio { margin: 6px 0 4px; font-size: 13px; color: #888780; line-height: 1.45; }
+  .cu-vazio { margin: 6px 0 4px; font-size: 13px; color: #6F6E68; line-height: 1.45; }
   .cu-it { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid var(--ui-linha); padding: 11px 2px; font-family: inherit; color: var(--ui-texto); cursor: pointer; }
   .cu-it:first-of-type { border-top: none; }
   .cu-it-t { flex: 1; min-width: 0; } .cu-it-t b { display: block; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cu-it-t small { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #888780; margin-top: 2px; }
+  .cu-it-t small { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6F6E68; margin-top: 2px; }
   .cu-it-t small em { min-width: 0; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cu-it-v { font-size: 14px; font-weight: 600; white-space: nowrap; } .cu-it-ar { color: #C9BEC3; flex-shrink: 0; }
   .cu-it.off { opacity: .55; }

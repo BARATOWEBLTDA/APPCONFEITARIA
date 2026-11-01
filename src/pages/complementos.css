@@ -290,7 +290,7 @@
 .pz-preco--gratis .ui-campo-c { background: #F3F1F2; }
 .pz-preco--gratis input { color: #B5AAAE; }
 .pz-preco--gratis .pz-tx-gr { background: #DCF3E4; color: #15803D; }
-.pz-preco--gratis .pz-tx-gr i { border-color: #16A34A; background: #16A34A; }
+.pz-preco--gratis .pz-tx-gr i { border-color: #15803D; background: #15803D; }
 /* (30/10 · 5.40) segunda tela: em quais produtos / categorias */
 .pz-etapa2 { display: flex; flex-direction: column; gap: var(--gap-stack); }
 .pz-etapa2-t { margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--ui-texto-2); }

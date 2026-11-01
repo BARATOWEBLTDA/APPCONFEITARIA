@@ -201,7 +201,7 @@ const CSS = `
   .kq-mod { border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio-cartao); padding: 16px 12px; background: var(--ui-branco); display: flex; flex-direction: column; align-items: center; text-align: center; font-family: inherit; color: var(--ui-texto); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
   .kq-mod:hover { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
   .kq-mod-e { width: 52px; height: 52px; border-radius: 15px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
-  .kq-mod b { font-size: 15px; font-weight: 600; } .kq-mod small { font-size: 12px; color: #888780; line-height: 1.35; margin-top: 3px; text-wrap: balance; }
+  .kq-mod b { font-size: 15px; font-weight: 600; } .kq-mod small { font-size: 12px; color: #6F6E68; line-height: 1.35; margin-top: 3px; text-wrap: balance; }
   .kq-mod--wide { grid-column: 1 / -1; display: grid; grid-template-columns: 52px 1fr; column-gap: 12px; text-align: left; align-items: center; }
   .kq-mod--wide .kq-mod-e { grid-row: span 2; margin: 0; } .kq-mod--wide small { margin-top: 0; }
   .kq-addrow { display: flex; gap: 8px; margin-top: 10px; }
@@ -212,7 +212,7 @@ const CSS = `
   .kq-box:focus, .kq-box--rs:focus-within { outline: none; border-color: var(--ui-texto); }
   .kq-box--rs { width: auto; display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; font-size: 13px; color: var(--ui-texto-2); }
   .kq-box--rs input { width: 70px; border: none; outline: none; padding: 7px 0; font-family: inherit; font-weight: 600; font-size: 16px; color: var(--ui-texto); background: none; }
-  .kq-box--rs.ok input { color: #16a34a; } .kq-box--rs.falta { border-color: #FDBA74; background: #FFF7ED; }
+  .kq-box--rs.ok input { color: #15803D; } .kq-box--rs.falta { border-color: #FDBA74; background: #FFF7ED; }
   .kq-link { border: none; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 0 0; cursor: pointer; }
   /* (14/10) kit no padrão das outras escolhas */
   .kq-v2 .kq-lbl { margin: 22px 0 10px; font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); }

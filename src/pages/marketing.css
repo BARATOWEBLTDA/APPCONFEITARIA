@@ -4,7 +4,7 @@
 .mk-abas button, .mk-aba-breve { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); white-space: nowrap; }
 .mk-abas button { cursor: pointer; }
 .mk-abas button[aria-selected="true"] { background: var(--ui-branco); color: var(--ui-rosa-escuro); box-shadow: 0 1px 3px rgba(44, 18, 25, .08); }
-.mk-aba-breve { color: var(--ui-texto-3); font-weight: 500; }
+.mk-aba-breve { color: var(--ui-texto-2); font-weight: 500; }
 .mk-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 1024px) { .mk-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; } }
 .mk-card { background: var(--ui-branco); border: 1px solid #F0E6EA; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }

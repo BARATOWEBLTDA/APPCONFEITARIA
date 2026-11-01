@@ -59,7 +59,7 @@ body .prod-card-de { font-size: 13px; font-weight: 500; color: var(--ui-texto-3)
 .pl-chave[aria-checked="true"] span { transform: translateX(18px); }
 .pl-chave::after { content: ""; position: absolute; inset: -9px -4px; }
 @media (max-width: 359px) { .pl-ficha dt, .pl-ficha dd, .pl-sem-ficha { font-size: 11.5px; } .pl-ficha > div { gap: 4px; } .pl-sem-ficha-x { display: none; } }
-.pl-ficha dd.pl-ficha-promo { color: #3B9A60; }
+.pl-ficha dd.pl-ficha-promo { color: #2F7D4E; }
 body .prod-card-bottom { margin-top: 8px; }
 /* sem ficha técnica: botão pontilhado */
 .pl-sem-ficha { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; min-height: 36px; margin: 0; padding: 0 6px; border: 1.5px dashed var(--ui-laranja); border-radius: 8px; background: transparent; color: var(--ui-laranja); font-family: inherit; font-size: 12.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }

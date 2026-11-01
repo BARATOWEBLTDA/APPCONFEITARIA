@@ -72,7 +72,7 @@ export default function CompletarCadastro({ user, nomeInicial, lojaInicial = "",
         .ccad h1 { margin: 14px 0 0; text-align: center; font-size: 22px; font-weight: 600; line-height: 1.25; }
         .ccad-sub { max-width: 320px; margin: 6px auto 0; text-align: center; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
         .ccad-form { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
-        .ccad-zap { color: #16A34A; }
+        .ccad-zap { color: #15803D; }
         .ccad-erro { margin: 14px 0 0; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); font-size: 14px; }
         .ccad .ccad-cta { margin-top: 24px; }
         .ccad-dep { margin: 12px 0 0; text-align: center; font-size: 13px; color: var(--ui-texto-3); }

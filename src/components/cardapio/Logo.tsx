@@ -87,7 +87,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
         {(status || !hideStars) && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '5px', fontSize: '12.5px', fontWeight: 600, flexWrap: 'wrap' }}>
             {status && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: status.aberto ? '#15803d' : '#dc2626' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: status.aberto ? '#15803d' : '#B91C1C' }}>
                 <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: status.aberto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
                 {status.aberto ? 'Aberto agora' : configuracoes?.loja_pausada ? 'Pedidos pausados no momento' : status.msg ? `Fechado · ${status.msg}` : 'Fechado'}
               </span>

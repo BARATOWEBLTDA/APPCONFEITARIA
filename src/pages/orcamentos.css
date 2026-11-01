@@ -241,7 +241,7 @@
 .orq-t { display: flex; align-items: center; gap: 8px; margin: 2px 2px 12px; font-size: 15px; font-weight: 500; }
 .orq-t i { font-style: normal; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 7px; background: var(--ui-branco); font-size: 12px; line-height: 22px; text-align: center; color: var(--ui-texto-2); }
 .orq-lista { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin: 0 -4px; padding: 0 4px 4px; }
-.orq-vazio { display: flex; align-items: center; justify-content: center; min-height: 72px; margin: 0; padding: 12px; border: 1.5px dashed #D3C6CC; border-radius: var(--ui-raio); font-size: 13px; color: var(--ui-texto-3); text-align: center; }
+.orq-vazio { display: flex; align-items: center; justify-content: center; min-height: 72px; margin: 0; padding: 12px; border: 1.5px dashed #D3C6CC; border-radius: var(--ui-raio); font-size: 13px; color: var(--ui-texto-2); text-align: center; }
 .orq-c { padding: 12px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); box-shadow: var(--ui-sombra-cartao); cursor: pointer; outline: 0; }
 .orq-c + .orq-c { margin-top: 10px; }
 @media (hover: hover) { .orq-c:hover { border-color: #E4D6DC; } }

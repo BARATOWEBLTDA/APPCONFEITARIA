@@ -187,13 +187,13 @@ const CSS = `
   .cxc-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
   .cxc-movs { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 12px 14px; font-family: var(--font-base); }
   .cxc-movs-t { margin: 0 0 4px; font-size: 14.5px; font-weight: 600; color: var(--ui-texto); }
-  .cxc-movs-vazio { margin: 6px 0 2px; font-size: 13px; color: #888780; line-height: 1.45; }
+  .cxc-movs-vazio { margin: 6px 0 2px; font-size: 13px; color: #6F6E68; line-height: 1.45; }
   .cxc-mv { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--ui-linha); }
   .cxc-mv:first-of-type { border-top: none; }
   .cxc-mv-ic { width: 32px; height: 32px; border-radius: var(--ui-raio-p); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .cxc-mv-ic.e { background: var(--ui-verde-fundo); color: var(--ui-verde); } .cxc-mv-ic.s { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
   .cxc-mv-t { flex: 1; min-width: 0; } .cxc-mv-t b { display: block; font-size: 13.5px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cxc-mv-t small { font-size: 12px; color: #888780; }
+  .cxc-mv-t small { font-size: 12px; color: #6F6E68; }
   .cxc-mv-v { font-size: 13.5px; font-weight: 600; white-space: nowrap; } .cxc-mv-v.e { color: var(--ui-verde); } .cxc-mv-v.s { color: var(--ui-vermelho); }
   .cxs-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
   @media (min-width: 768px) { .cxs-ov { align-items: center; } }

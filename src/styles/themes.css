@@ -151,7 +151,7 @@
   /* Status (semânticos — aliases dos gamificados) */
   --success:          var(--gam-success);
   --warning:          #E8A05A;
-  --error:            #DC2626; /* guia: um vermelho só (era #D14848) */
+  --error:            #B91C1C; /* (01/11 · 5.99) um tom mais fechado: texto vermelho em fundo rosado passa do mínimo de leitura */ /* guia: um vermelho só (era #D14848) */
   --info:             var(--gam-info);
 
   /* Sombras */
@@ -627,7 +627,7 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   --ui-verde-fundo:     #DCFCE7;
   --ui-laranja:         #B45309;
   --ui-laranja-fundo:   #FEF3C7;
-  --ui-vermelho:        #DC2626;
+  --ui-vermelho:        #B91C1C;
   --ui-vermelho-escuro: #991B1B;
   --ui-vermelho-fundo:  #FEE2E2;
   --ui-azul:            #185FA5;

@@ -313,7 +313,7 @@ const CSS = `
   .lu-margem { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ui-texto-2); } .lu-margem .lu-bar { flex: 1; }
   .lu-margem b { font-weight: 600; color: var(--ui-texto); }
   .lu-bar { height: 8px; border-radius: 9px; background: var(--ui-linha); overflow: hidden; } .lu-bar i { display: block; height: 100%; background: var(--ui-rosa); border-radius: 9px; }
-  .lu-bar.grande { height: 12px; margin: 14px 0 8px; } .lu-bar i.ok { background: #16A34A; }
+  .lu-bar.grande { height: 12px; margin: 14px 0 8px; } .lu-bar i.ok { background: #15803D; }
   /* aviso de ficha técnica: uma faixa só */
   .lu-aviso { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 14px; padding: 10px 12px; font-size: 13.5px; font-weight: 500; line-height: 1.45; }
   .lu-aviso > span { flex: 1 1 260px; text-wrap: balance; } .lu-aviso svg { flex-shrink: 0; } /* (24/10) balance: as duas linhas do mesmo tamanho (antes sobrava "é." sozinho na 2ª linha) */

@@ -3609,7 +3609,6 @@ export default function Produtos() {
         .prod-card-lucro-label {
           font-size: var(--font-caption);
           font-weight: 500;
-          opacity: 0.75;
         }
         .prod-card-lucro strong {
           font-size: var(--font-helper);

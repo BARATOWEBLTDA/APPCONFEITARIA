@@ -10,7 +10,7 @@
 .acp-et:not(:last-child)::after { content: ""; position: absolute; left: 13px; top: 28px; bottom: -14px; width: 2px; background: #EFE6EA; }
 .acp-et--feito:not(:last-child)::after { background: #A7D8B8; }
 .acp-et i { position: relative; z-index: 1; flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #F1ECEE; color: #B8A9AE; font-style: normal; font-size: 13px; font-weight: 600; }
-.acp-et--feito i { background: #16a34a; color: var(--ui-branco); }
+.acp-et--feito i { background: #15803D; color: var(--ui-branco); }
 .acp-et--agora i { background: var(--acp-cor); color: var(--ui-branco); box-shadow: 0 0 0 4px color-mix(in srgb, var(--acp-cor) 18%, transparent); }
 .acp-et--atencao i { background: #F59E0B; color: var(--ui-branco); box-shadow: 0 0 0 4px #FDECC8; }
 .acp-et span { min-width: 0; display: flex; flex-direction: column; gap: 1px; padding-top: 3px; }
@@ -32,7 +32,7 @@
 .acp-itens .acp-total { padding-top: 10px; border-top: 1px solid #F3EEF0; }
 .acp-itens .acp-total b, .acp-itens .acp-total em { font-size: 16px; }
 
-.acp-zap { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; margin: 12px; border-radius: var(--ui-raio); background: #16a34a; color: var(--ui-branco); font-size: 16px; font-weight: 600; text-decoration: none; }
+.acp-zap { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; margin: 12px; border-radius: var(--ui-raio); background: #15803D; color: var(--ui-branco); font-size: 16px; font-weight: 600; text-decoration: none; }
 
 .acp-it-l1 { display: flex; align-items: baseline; gap: 8px; }
 .acp-it-l1 b { flex: 1; }

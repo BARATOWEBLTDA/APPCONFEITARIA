@@ -405,12 +405,12 @@ const CSS = `
   .fap-k b { display: block; font-size: clamp(13.5px, 3.9vw, 17px); letter-spacing: -.02em; font-weight: 600; color: var(--ui-texto); margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* 11/10: o valor cabe inteiro, igual em A receber (a letra encolhe até o maior dos 3 valores caber no cartão) */
   .fap-k b { font-size: max(10px, min(clamp(13.5px, 3.9vw, 17px), calc(100cqi / (var(--fap-n, 11) * .64)))); }
-  .fap-k i { font-style: normal; font-size: 13px; color: #888780; }
+  .fap-k i { font-style: normal; font-size: 13px; color: #6F6E68; }
   .fap-k--atr { border-color: #FECACA; background: #FFF7F7; } .fap-k--atr b { color: var(--ui-vermelho); }
   .fap-k--zero b { color: var(--ui-texto-3); }
   .fap-carregando { text-align: center; color: var(--ui-texto-3); font-size: 14px; padding: 30px 0; }
   .fap-vazio { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 28px 20px; text-align: center; }
-  .fap-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #16A34A; display: inline-flex; align-items: center; justify-content: center; }
+  .fap-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #15803D; display: inline-flex; align-items: center; justify-content: center; }
   .fap-vazio b { display: block; font-size: 17px; font-weight: 600; color: var(--ui-texto); margin-top: 12px; }
   .fap-vazio p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 380px; text-wrap: balance; }
   .fap-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 600; cursor: pointer; text-decoration: underline; }
@@ -432,7 +432,7 @@ const CSS = `
   .fap-tg { flex-shrink: 0; font-size: 12px; font-weight: 600; color: #92400E; background: var(--ui-laranja-fundo); padding: 3px 8px; border-radius: 7px; }
   .fap-tg--atr { color: var(--ui-vermelho-escuro); background: var(--ui-vermelho-fundo); }
   .fap-it-v { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
-  .fap-it-v small { font-size: 12.5px; color: #888780; } .fap-it-v b { font-size: 15.5px; font-weight: 600; color: var(--ui-vermelho); white-space: nowrap; }
+  .fap-it-v small { font-size: 12.5px; color: #6F6E68; } .fap-it-v b { font-size: 15.5px; font-weight: 600; color: var(--ui-vermelho); white-space: nowrap; }
   .fap-it-a { display: flex; justify-content: space-between; align-items: center; margin-top: 11px; gap: 8px; }
   .fap-it-a > span { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--ui-texto-2); }
   .fap-bts { display: flex; gap: 6px; }

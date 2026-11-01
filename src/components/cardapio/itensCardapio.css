@@ -95,7 +95,7 @@
 /* (17/10) preço em verde, como nos apps de delivery (iFood, 99Food) — o antigo riscado continua cinza */
 /* (20/10) verde só no preço com desconto; o preço normal fica escuro */
 .ic-pp-linha b, .ic-ln-preco b { color: var(--ui-texto); }
-.ic-pp-linha s + b { color: #3B9A60; }
+.ic-pp-linha s + b { color: #2F7D4E; }
 
 /* (20/10) computador: cartões de promoção mais largos, nome inteiro (até 3 linhas) e descrição com mais espaço */
 .ic-sec--pc .ic-grade { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }

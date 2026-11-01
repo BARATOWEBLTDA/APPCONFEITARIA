@@ -10,7 +10,7 @@
 .px-valor em { margin-top: 6px; padding: 4px 10px; border-radius: 999px; background: #F7F4F5; font-style: normal; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); white-space: nowrap; }
 
 .px-copiar { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin: 0; border: 1.5px solid var(--px-cor); border-radius: var(--ui-raio); background: color-mix(in srgb, var(--px-cor) 9%, #fff); color: var(--px-cor); font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
-.px-copiar.ok { border-color: #16a34a; background: #EAF7EE; color: #166534; }
+.px-copiar.ok { border-color: #15803D; background: #EAF7EE; color: #166534; }
 .px-cod { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-top: -4px; font-family: ui-monospace, monospace; font-size: 12px; color: var(--ui-texto-3, #9A8A8F); text-align: center; user-select: all; }
 .px-passos { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 12px 0 0; border-top: 1px solid #F3EEF0; list-style: none; }
 .px-passos li { display: flex; align-items: center; gap: 10px; font-size: 14px; white-space: nowrap; }
@@ -51,7 +51,7 @@
 /* Pedido enviado (21/10): mesmo visual da tela do Pix */
 .scf { position: relative; }
 .scf-ok { align-items: center; gap: 6px; text-align: center; }
-.scf-ic { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin-bottom: 4px; border-radius: 50%; background: #16a34a; color: var(--ui-branco); animation: scCheck .5s .1s both cubic-bezier(.34,1.56,.64,1); }
+.scf-ic { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin-bottom: 4px; border-radius: 50%; background: #15803D; color: var(--ui-branco); animation: scCheck .5s .1s both cubic-bezier(.34,1.56,.64,1); }
 .scf-ok h2 { margin: 0; font-size: 22px; font-weight: 600; }
 .scf-ok p { margin: 0; font-size: 14px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .scf-num { margin-top: 6px; padding: 4px 12px; border-radius: 999px; background: color-mix(in srgb, var(--px-cor) 10%, #fff); color: var(--px-cor); font-size: 13px; font-weight: 600; }
@@ -77,14 +77,14 @@
 .scf-passos { display: flex; flex-direction: column; gap: 8px; align-self: stretch; margin: 10px 0 0; padding: 12px 0 0; border-top: 1px solid #F3EEF0; list-style: none; text-align: left; }
 .scf-passos li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .scf-passos i { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: color-mix(in srgb, var(--px-cor) 12%, #fff); color: var(--px-cor); font-style: normal; font-size: 12px; font-weight: 600; }
-.scf-passos li.ok i { background: #16a34a; color: var(--ui-branco); }
+.scf-passos li.ok i { background: #15803D; color: var(--ui-branco); }
 .scf-lin { display: flex; justify-content: space-between; gap: 8px; margin: 0; font-size: 14px; color: var(--ui-texto-2); white-space: nowrap; }
 .scf-lin b { color: var(--ui-texto); }
 .scf-lin small { font-size: 12px; font-weight: 600; color: #B45309; }
 .scf-tot { padding-top: 10px; border-top: 1px solid #F3EEF0; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
 .scf-pix b { color: #16794A; }
 .scf-pe { gap: 8px; }
-.scf-zap { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; margin: 0; border: 1.5px solid #16a34a; border-radius: var(--ui-raio); background: #EAF7EE; color: #166534; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.scf-zap { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; margin: 0; border: 1.5px solid #15803D; border-radius: var(--ui-raio); background: #EAF7EE; color: #166534; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 .scf-passos li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
 /* (27/10) trocar entre sinal e tudo (Pix aberto pelo acompanhamento) */

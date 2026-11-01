@@ -96,7 +96,7 @@ const CSS = `
   @keyframes clcPisca { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
   .clc-chave { flex: none; position: relative; width: 48px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .22); cursor: pointer; transition: background-color .15s linear; }
   .clc-chave span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .15s ease-out; }
-  .clc-chave[aria-checked="true"] { background: #16A34A; }
+  .clc-chave[aria-checked="true"] { background: #15803D; }
   .clc-chave[aria-checked="true"] span { transform: translateX(20px); }
   .clc-chave:disabled { opacity: .6; }
   .clc-chave:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 2px; }

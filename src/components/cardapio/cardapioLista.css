@@ -54,5 +54,5 @@
 .cl-vazio span { font-size: 14px; color: var(--ui-texto-2); }
 .cl-vazio--loja { padding: 56px 16px; }
 .cl-vazio-ic { display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; margin-bottom: 8px; border-radius: 50%; background: #F3EEF0; color: var(--ui-texto-3); }
-.cl-vazio-zap { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin-top: 16px; padding: 0 20px; border-radius: var(--ui-raio); background: #16a34a; color: var(--ui-branco); font-size: 15px; font-weight: 600; text-decoration: none; }
+.cl-vazio-zap { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin-top: 16px; padding: 0 20px; border-radius: var(--ui-raio); background: #15803D; color: var(--ui-branco); font-size: 15px; font-weight: 600; text-decoration: none; }
 .cl-vazio-zap:hover { filter: brightness(.96); }

@@ -1099,7 +1099,7 @@ const CSS = `
   .ppf-d-ajuda > p { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
   .ppf-d-ajuda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
   .ppf-d-ajuda li { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppf-d-ajuda li svg { flex: none; color: #16A34A; }
+  .ppf-d-ajuda li svg { flex: none; color: #15803D; }
   .ppf-d-ajuda li b { font-weight: 600; color: var(--ui-texto); }
   .ppf-d-ajuda > small { display: block; margin-top: 10px; font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppf-ia { margin-top: 14px; border: 1.5px solid #F4C6D7; border-radius: 16px; background: #FFF8FB; padding: 14px; }
@@ -1156,7 +1156,7 @@ const CSS = `
   .ppf-p-tx--gratis { background: #F3F1F2; border-color: #E8E3E5; }
   .ppf-p-tx--gratis em, .ppf-p-tx--gratis input { color: #B5AAAE; }
   .ppf-p-tx--gratis button { background: #DCF3E4; color: #15803D; }
-  .ppf-p-tx--gratis button i { border-color: #16A34A; background: #16A34A; }
+  .ppf-p-tx--gratis button i { border-color: #15803D; background: #15803D; }
   .ppf-p-mais { display: inline-flex; align-items: center; gap: 4px; margin: 12px 2px 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; }
   .ppf-cx-pq--cel { margin-top: 18px; }
   .ppf-p-taxa-b { margin: 0; font-size: 13px; color: var(--ui-texto-2); }
@@ -1181,7 +1181,7 @@ const CSS = `
   .ppf-cx--zero { background: #F3F1F2; border-color: #E8E3E5; }
   .ppf-cx--zero span, .ppf-cx--zero input { color: #B5AAAE; }
   .ppf-cx--zero button { background: #DCF3E4; color: #15803D; }
-  .ppf-cx--zero button i { border-color: #16A34A; background: #16A34A; }
+  .ppf-cx--zero button i { border-color: #15803D; background: #15803D; }
   /* computador: prévia do Financeiro ao lado */
   .ppf-d--cx { min-height: 300px; }
   .ppf-cx-prev { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; row-gap: 2px; align-items: center; padding: 16px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); }
@@ -1191,7 +1191,7 @@ const CSS = `
   .ppf-cx-prev em { grid-column: 1 / -1; margin-top: 8px; font-style: normal; font-size: 12.5px; color: var(--ui-texto-3); }
   .ppf-cx-pq { margin: 14px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
   .ppf-cx-pq li { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ui-texto-2); }
-  .ppf-cx-pq svg { flex: none; color: #16A34A; }
+  .ppf-cx-pq svg { flex: none; color: #15803D; }
   .ppf-cx-av2 { display: flex; gap: 8px; margin: 14px 2px 0; font-size: 13px; line-height: 1.5; color: var(--ui-texto-2); }
   .ppf-cx-av2 svg { flex: none; margin-top: 2px; color: var(--ui-texto-3); }
   .ppf-cx-av2 b { font-weight: 500; color: var(--ui-texto); }

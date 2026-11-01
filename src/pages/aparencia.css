@@ -129,7 +129,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-topo-x { position: absolute; z-index: 2; top: 8px; left: 8px; }
 .ap-topo-st { position: absolute; z-index: 2; left: 12px; bottom: 26px; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.95); color: var(--ui-texto); font-size: 12.5px; font-weight: 600; white-space: nowrap; pointer-events: none; }
 .ap-topo-st i { width: 7px; height: 7px; border-radius: 50%; background: var(--ui-vermelho, #DC2626); }
-.ap-topo-st.aberto i { background: #16a34a; }
+.ap-topo-st.aberto i { background: #15803D; }
 .ap-topo-gira { position: absolute; z-index: 3; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.6); color: var(--ui-rosa); }
 .ap-topo-corpo { position: relative; z-index: 2; margin-top: -16px; padding: 14px 12px 10px; border-radius: 16px 16px 0 0; background: var(--ui-branco); }
 .ap-topo-logo { position: absolute; right: 12px; top: -44px; width: 76px; height: 76px; margin: 0; padding: 2px; border: 3px solid; border-radius: 50%; background: var(--ui-branco); box-shadow: 0 0 0 3px var(--ui-branco), 0 4px 12px rgba(44,18,25,.18); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ui-rosa); }
@@ -196,7 +196,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-tema-auto small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
 .ap-chave { flex: none; position: relative; width: 48px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: var(--ui-borda-campo, #D6CBD0); cursor: pointer; transition: background-color .15s linear; }
 .ap-chave span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s ease-out; }
-.ap-chave[aria-checked="true"] { background: #16A34A; }
+.ap-chave[aria-checked="true"] { background: #15803D; }
 .ap-chave[aria-checked="true"] span { transform: translateX(20px); }
 .ap-tema-datas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .ap-tema-datas label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }

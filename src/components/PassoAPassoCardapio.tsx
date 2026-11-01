@@ -295,7 +295,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         <style>{`
           .pap-done {
             position: relative;
-            background: linear-gradient(135deg, #16a34a, var(--ui-verde));
+            background: linear-gradient(135deg, #15803D, var(--ui-verde));
             color: var(--ui-branco);
             padding: 14px 16px;
             border-radius: 6px;
@@ -420,7 +420,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           .pap-share-check {
             width: 18px; height: 18px;
             border-radius: 50%;
-            background: #16a34a;
+            background: #15803D;
             color: var(--ui-branco);
             display: flex;
             align-items: center;
@@ -466,7 +466,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           }
           .pap-share-btn:active { transform: scale(0.97); }
           .pap-share-btn-wa {
-            background: #16a34a;
+            background: #15803D;
             color: var(--ui-branco);
           }
           .pap-share-btn-wa:hover { background: var(--ui-verde); }
@@ -610,7 +610,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           margin-bottom: 14px;
           font-size: 13px;
           font-weight: 600;
-          color: #16a34a;
+          color: #15803D;
         }
         .pap-progress-bar {
           flex: 1;
@@ -621,7 +621,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         }
         .pap-progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #16a34a, #22c55e);
+          background: linear-gradient(90deg, #15803D, #22c55e);
           transition: width 0.4s ease;
         }
 
@@ -761,7 +761,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
           color: #6B7280;
         }
         .pap-item.done .pap-item-ic {
-          background: #16a34a;
+          background: #15803D;
           color: var(--ui-branco);
         }
         .pap-item.next .pap-item-ic {

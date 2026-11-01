@@ -236,7 +236,7 @@ export default function NotificacoesSons() {
         .ns-root { font-family: var(--font-base); padding: 16px 4px 100px; max-width: 640px; margin: 0 auto; }
         .ns-sec {
           font-size: 13px; font-weight: 500;
-          color: #888780; margin: 6px 6px 8px;
+          color: #6F6E68; margin: 6px 6px 8px;
         }
         .ns-card {
           background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao);
@@ -251,8 +251,8 @@ export default function NotificacoesSons() {
         }
         .ns-txt { flex: 1; min-width: 0; }
         .ns-name { font-size: 14px; font-weight: 600; color: #2C2C2A; }
-        .ns-desc { font-size: 12px; color: #888780; margin-top: 2px; line-height: 1.4; }
-        .ns-desc--on { color: #16a34a; }
+        .ns-desc { font-size: 12px; color: #6F6E68; margin-top: 2px; line-height: 1.4; }
+        .ns-desc--on { color: #15803D; }
         .ns-desc--warn { color: var(--ui-vermelho); }
         .ns-desc--atencao { color: #B45309; font-weight: 600; }
         .ns-passos { list-style: none; margin: 10px 0 0; padding: 10px 12px; border: 1px solid #F5C99B; border-radius: 12px; background: #FFF8EF; font-weight: 400; font-size: 13.5px; line-height: 1.6; color: var(--ui-texto); }

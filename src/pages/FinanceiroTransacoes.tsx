@@ -308,7 +308,7 @@ function DetalheSheet({ m, semEstorno, onClose, onAbrirPedido, onEstornado }: { 
 const CSS = `
   .tx-hd { display: flex; align-items: center; gap: 8px; }
   .tx-hd-bt { display: flex; align-items: center; gap: 6px; min-height: 44px; border: none; border-radius: var(--ui-raio-botao); padding: 0 14px; font-family: var(--font-base); font-size: 14px; font-weight: 600; color: var(--ui-branco); cursor: pointer; white-space: nowrap; }
-  .tx-hd-bt.e { background: #16A34A; } .tx-hd-bt.s { background: var(--ui-vinho-escuro); } .tx-hd-bt.n { background: var(--ui-branco); color: var(--ui-texto); }
+  .tx-hd-bt.e { background: #15803D; } .tx-hd-bt.s { background: var(--ui-vinho-escuro); } .tx-hd-bt.n { background: var(--ui-branco); color: var(--ui-texto); }
   .tx { position: relative; max-width: 980px; margin: 0 auto; padding: 14px 0 150px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
   @media (min-width: 768px) { .tx { padding-bottom: 96px; } }
   /* (24/10) cartão do saldo, como extrato de banco */
@@ -349,6 +349,6 @@ const CSS = `
   /* Entrou e Saiu presos no rodapé (celular), iguais aos do Financeiro */
   .txp-barra { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 51; display: flex; gap: 6px; padding: 14px 12px 10px; box-sizing: border-box; background: linear-gradient(rgba(244,238,241,0), var(--ui-fundo, #F4EEF1) 35%); font-family: var(--font-base); }
   .txp-barra button { flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; height: 48px; border: 0; border-radius: 14px; font-family: inherit; font-size: 14.5px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 4px 14px rgba(42,21,32,.14); color: var(--ui-branco); }
-  .txp-barra .e { background: #16A34A; } .txp-barra .s { background: var(--ui-vinho-escuro, #1F1117); }
+  .txp-barra .e { background: #15803D; } .txp-barra .s { background: var(--ui-vinho-escuro, #1F1117); }
   @media (min-width: 768px) { .txp-barra { display: none; } }
 `;

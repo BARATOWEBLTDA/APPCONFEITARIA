@@ -39,7 +39,7 @@
 .cc-sit-pt { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #B91C1C; }
 .cc-sit--and .cc-sit-pt { animation: ccPulso 1.6s ease-in-out infinite; }
 @keyframes ccPulso { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-.cc-sit-ok { flex: none; display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #16a34a; color: var(--ui-branco); }
+.cc-sit-ok { flex: none; display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #15803D; color: var(--ui-branco); }
 .cc-passos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 8px; }
 .cc-passos i { height: 4px; border-radius: 2px; background: var(--ui-borda-campo); }
 .cc-itens { margin: 12px 0 0; padding: 12px 0 0; list-style: none; border-top: 1px solid #F3EEF0; }

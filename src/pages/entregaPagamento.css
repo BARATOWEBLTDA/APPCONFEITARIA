@@ -50,7 +50,7 @@
 .epv-t { display: flex; align-items: flex-start; gap: 8px; width: 100%; height: 62px; margin: 0; padding: 11px 14px 0; border: 0; border-radius: 14px 14px 0 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .epv-t:focus-visible, .epv-sh:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
 .epv-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.epv-tx b { font-size: 20px; font-weight: 600; line-height: 1.15; color: var(--ui-rosa); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.epv-tx b { font-size: 20px; font-weight: 600; line-height: 1.15; color: #B02C5F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .epv-tx small { margin-top: 2px; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .epv-sit { flex: none; display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--ui-texto-3); }
 .epv-sit i { width: 8px; height: 8px; border-radius: 50%; background: #B9AFB3; }
@@ -99,7 +99,7 @@
 .ep-res-chips span { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 7px; background: var(--ui-verde-fundo, #F3FBF6); color: var(--ui-verde, #166534); font-size: 12.5px; font-weight: 600; white-space: nowrap; }
 .ep-res-obs { font-size: 12.5px; color: var(--ui-texto-2); }
 .ep-res-li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; color: var(--ui-texto); white-space: nowrap; }
-.ep-res-li svg { flex: none; color: var(--ui-verde, #16A34A); }
+.ep-res-li svg { flex: none; color: var(--ui-verde, #15803D); }
 .ep-res-li em { margin-left: auto; font-style: normal; font-weight: 600; color: var(--ui-texto); }
 
 /* (17/10) ícones dos cards em rosa com desenho branco, igual à lista da aba Cardápio */
@@ -175,8 +175,8 @@
 .ep-tx button i { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border: 1.5px solid #CDBFC5; border-radius: 4px; color: #fff; box-sizing: border-box; }
 .ep-tx--gratis { background: #F3F1F2; border-color: #E8E3E5; }
 .ep-tx--gratis em, .ep-tx--gratis input { color: #B5AAAE; }
-.ep-tx--gratis button { border-color: #16A34A; background: #EAF7EF; color: #15803D; }
-.ep-tx--gratis button i { border-color: #16A34A; background: #16A34A; }
+.ep-tx--gratis button { border-color: #15803D; background: #EAF7EF; color: #15803D; }
+.ep-tx--gratis button i { border-color: #15803D; background: #15803D; }
 .ep-faixas .ep-faixa-rs { width: 176px; }
 .ep-bairro { grid-template-columns: minmax(0, 1fr) 176px 44px; }
 .ep-bairro--check { grid-template-columns: 24px minmax(0, 1fr) 176px; }
@@ -204,7 +204,7 @@
 .ep-tx button { height: 28px; border: 0; border-radius: 7px; background: #F1EDEF; }
 .ep-tx button i { border-color: #C9BCC2; background: var(--ui-branco); }
 .ep-tx--gratis button { border: 0; background: #DCF3E4; color: #15803D; }
-.ep-tx--gratis button i { border-color: #16A34A; background: #16A34A; }
+.ep-tx--gratis button i { border-color: #15803D; background: #15803D; }
 @media (max-width: 600px) {
   .ep-faixas .ep-faixa .ui-campo { width: 52px; }
   .ep-faixas .ep-faixa-rs { width: auto; flex: 1; max-width: 176px; margin-left: 0; }

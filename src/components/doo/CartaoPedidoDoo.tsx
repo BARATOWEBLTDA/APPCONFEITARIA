@@ -139,10 +139,10 @@ const CSS = `
   .cpd-it { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
   .cpd-q { font-weight: 600; color: var(--ui-rosa-escuro); min-width: 22px; }
   .cpd-n { flex: 1; min-width: 0; } .cpd-n b { font-weight: 600; display: block; line-height: 1.3; }
-  .cpd-n small { display: block; font-size: 12px; color: #888780; margin-top: 2px; }
+  .cpd-n small { display: block; font-size: 12px; color: #6F6E68; margin-top: 2px; }
   .cpd-v { font-weight: 600; white-space: nowrap; }
   .cpd-kv { display: grid; grid-template-columns: 86px 1fr; gap: 6px 10px; margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--ui-linha); font-size: 13.5px; }
-  .cpd-kv dt { color: #888780; font-weight: 500; } .cpd-kv dd { margin: 0; font-weight: 600; }
+  .cpd-kv dt { color: #6F6E68; font-weight: 500; } .cpd-kv dd { margin: 0; font-weight: 600; }
   .cpd-neg { color: #B91C1C; }
   .cpd-tot { margin-top: 12px; background: var(--ui-vinho-escuro); color: var(--ui-branco); border-radius: var(--ui-raio); padding: 10px 12px; }
   .cpd-tot div { display: flex; justify-content: space-between; align-items: baseline; }

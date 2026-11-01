@@ -347,7 +347,7 @@
 /* o cartão quitado: verde, "Quitado" no lugar da data e a barrinha cheia; depois sai da lista */
 .bv-rec .bv-rec-ok { border-color: #86EFAC; background: #F0FDF4; }
 .bv-rec-tg { display: inline-flex; align-items: center; gap: 4px; color: #166534; background: #DCFCE7; animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
-.bv-rec .far-it-v b.bv-rec-pago { color: #16A34A; }
+.bv-rec .far-it-v b.bv-rec-pago { color: #15803D; }
 .bv-rec .far-bar i { transition: width .6s ease; }
 .bv-rec .bv-rec-sai { animation: bvRecSai .55s ease-in forwards; }
 @keyframes bvRecSai { 40% { opacity: 0; transform: translateX(36px); } 100% { opacity: 0; transform: translateX(36px); max-height: 0; margin-bottom: -10px; padding-top: 0; padding-bottom: 0; border-width: 0; } }

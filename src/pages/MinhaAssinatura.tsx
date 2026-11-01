@@ -109,7 +109,7 @@ export default function MinhaAssinatura() {
         .mas-cr { flex: none; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 14px; background: var(--chocolate); color: #F5C76B; }
         .mas-top b { flex: 1; font-size: 17px; font-weight: 600; }
         .mas-at--teste { background: #FDF2E2 !important; color: #A15C07 !important; }
-        .mas-at { padding: 4px 10px; border-radius: 6px; background: #E7F6EC; color: #15803D; font-size: 13px; font-weight: 600; }
+        .mas-at { padding: 4px 10px; border-radius: 6px; background: #E7F6EC; color: #166534; font-size: 13px; font-weight: 600; }
         .mas-v { margin: 14px 0 6px; font-size: 28px; font-weight: 600; color: var(--ui-texto); }
         .mas-v small { font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
         .mas-l { display: flex; justify-content: space-between; gap: 10px; padding: 11px 0; border-top: 1px solid var(--ui-linha); font-size: 14.5px; color: var(--ui-texto-2); }

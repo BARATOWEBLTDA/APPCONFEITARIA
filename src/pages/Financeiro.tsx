@@ -542,7 +542,7 @@ const CSS = `
   .fd-hd-mes button:disabled { opacity: .35; cursor: default; }
   .fd-hd-bt { display: flex; align-items: center; gap: 6px; min-height: 44px; border: none; border-radius: var(--ui-raio-botao); padding: 0 14px; font-family: var(--font-base); font-size: 14px; font-weight: 600; color: var(--ui-branco); cursor: pointer; white-space: nowrap; }
   .fd-hd-bt { font-weight: 600; }
-  .fd-hd-bt.e { background: #16A34A; } .fd-hd-bt.s { background: var(--ui-vinho-escuro); }
+  .fd-hd-bt.e { background: #15803D; } .fd-hd-bt.s { background: var(--ui-vinho-escuro); }
   .fd-hd-bt.r { background: var(--ui-branco); color: #B45309; }
   .fd-hd-bt.r em { font-style: normal; min-width: 22px; padding: 1px 7px; border-radius: 11px; background: #B45309; color: var(--ui-branco); font-size: 12px; font-weight: 600; text-align: center; }
   /* foco no convite do saldo: o resto fica levemente apagado (sem bloquear) */
@@ -551,7 +551,7 @@ const CSS = `
   .fd-acoes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .fd-bt { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 84px; border: none; border-radius: 16px; padding: 10px 4px; font-family: inherit; font-size: clamp(11.5px, 3.4vw, 14px); font-weight: 600; white-space: nowrap; cursor: pointer; }
   .fd-bt i { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; color: var(--ui-branco); font-style: normal; }
-  .fd-bt.e { background: #ECFDF3; color: var(--ui-verde); } .fd-bt.e i { background: #16A34A; }
+  .fd-bt.e { background: #ECFDF3; color: var(--ui-verde); } .fd-bt.e i { background: #15803D; }
   .fd-bt.s { background: #FEF2F2; color: var(--ui-vermelho); } .fd-bt.s i { background: var(--ui-vermelho); }
   .fd-bt.r { background: #FFFBEB; color: #B45309; } .fd-bt.r i { background: #B45309; }
   .fd-bt em { position: absolute; top: 8px; right: 8px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: #B45309; color: var(--ui-branco); font-style: normal; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
@@ -595,7 +595,7 @@ const CSS = `
   .fd-k small { padding-right: 30px; }
   .fd-k small, .fd-k2 small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .fd-k b, .fd-k2 b { display: block; font-size: clamp(16px, 4.6vw, 24px); font-weight: 600; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ui-texto); }
-  .fd-k i, .fd-k2 i { display: flex; align-items: center; gap: 3px; font-style: normal; font-size: 13px; color: #888780; line-height: 1.35; }
+  .fd-k i, .fd-k2 i { display: flex; align-items: center; gap: 3px; font-style: normal; font-size: 13px; color: #6F6E68; line-height: 1.35; }
   .fd-k b.e { color: var(--ui-verde); } .fd-k b.s { color: var(--ui-vermelho); } .fd-k b.l { color: var(--ui-rosa-escuro); }
   .fd-venc { font-style: normal; font-weight: 600; color: var(--ui-vermelho); } /* 11/10: conta já vencida */
   .fd-contas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -671,7 +671,7 @@ const CSS = `
   .fdp-barra { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 51; display: flex; align-items: stretch; gap: 6px; padding: 14px 12px 10px; box-sizing: border-box; background: linear-gradient(rgba(244,238,241,0), var(--ui-fundo, #F4EEF1) 35%); font-family: var(--font-base); }
   .fdp-bts { flex: 1; min-width: 0; display: flex; align-items: stretch; gap: 6px; border-radius: 14px; }
   .fdp-barra button { position: relative; flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; height: 48px; padding: 0 8px; border: 0; border-radius: 14px; font-family: inherit; font-size: 14.5px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: 0 4px 14px rgba(42,21,32,.14); }
-  .fdp-barra .e { background: #16A34A; color: var(--ui-branco); } .fdp-barra .s { background: var(--ui-vinho-escuro, #1F1117); color: var(--ui-branco); } .fdp-barra .r { flex-grow: 1.25; background: var(--ui-branco); color: #B45309; }
+  .fdp-barra .e { background: #15803D; color: var(--ui-branco); } .fdp-barra .s { background: var(--ui-vinho-escuro, #1F1117); color: var(--ui-branco); } .fdp-barra .r { flex-grow: 1.25; background: var(--ui-branco); color: #B45309; }
   .fdp-barra em { min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: #B45309; color: var(--ui-branco); font-style: normal; font-size: 11px; display: flex; align-items: center; justify-content: center; }
   /* últimas movimentações */
   .fd-mov { list-style: none; margin: 2px 0 0; padding: 0; }

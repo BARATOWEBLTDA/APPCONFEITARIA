@@ -36,7 +36,7 @@
 .edh-hh b { display: block; font-size: 17px; font-weight: 600; color: var(--ui-texto); }
 .edh-cv { display: flex; align-items: center; gap: 6px; margin: 10px 2px 0; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; }
 .edh-cv b { display: inline-flex; align-items: center; gap: 5px; min-width: 0; font-weight: 600; color: #16803C; overflow: hidden; text-overflow: ellipsis; }
-.edh-cv b i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #16A34A; }
+.edh-cv b i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #15803D; }
 .edh-cv b.off { color: #B42318; }
 .edh-cv b.off i { background: #D92D20; }
 .edh-cv b.vazio { color: var(--ui-texto-3); font-weight: 500; }
