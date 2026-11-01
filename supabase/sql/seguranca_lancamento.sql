@@ -69,3 +69,7 @@ drop policy if exists "Users can view own suggestions" on public.sugestoes;
 drop policy if exists "Users can view own profile" on public.profiles;
 drop policy if exists "Admin vê todas indicações" on public.indicacoes;
 drop view if exists public.admin_users;
+
+-- (6.01) Histórico do pedido: o app grava sem dizer de quem é e a regra recusava (linha do tempo incompleta).
+--        Agora o banco preenche com a conta de quem está logada. (já aplicado em 01/11)
+alter table public.pedido_historico alter column user_id set default auth.uid();

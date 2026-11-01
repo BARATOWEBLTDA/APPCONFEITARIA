@@ -120,6 +120,8 @@
 .pdq-cartao.arrastando { opacity: .5; }
 .pdq-cartao:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 .pdq-linhas { margin-top: 8px; }
+.pdq-l { align-items: center; gap: 6px; }
+.pdq-ic { display: inline-flex; color: var(--ui-texto-3); }
 .pdq-cartao .ui-bt { margin-top: 12px; }
 
 /* tablet em pé */

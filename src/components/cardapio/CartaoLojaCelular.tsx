@@ -101,7 +101,7 @@ const CSS = `
   .clc-chave:disabled { opacity: .6; }
   .clc-chave:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 2px; }
   .clc-bts { position: relative; z-index: 1; display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 6px; margin-top: 12px; }
-  .clc-b { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 60px; padding: 0 2px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, .14); color: var(--ui-branco); font: 700 11.5px var(--font-base); white-space: nowrap; cursor: pointer; }
+  .clc-b { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 60px; padding: 0 2px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, .14); color: var(--ui-branco); font: 600 11.5px var(--font-base); white-space: nowrap; cursor: pointer; }
   .clc-b span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
   .clc-b:disabled { opacity: .5; }
   .clc-b--pri { background: var(--ui-branco); color: var(--ui-texto); }

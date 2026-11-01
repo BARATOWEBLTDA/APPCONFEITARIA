@@ -1371,7 +1371,7 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
         .cpn-menu button[aria-current="page"] .cpn-ic { background: color-mix(in srgb, var(--cpn-ativa) 12%, #fff); }
         /* (20/10) bolinha com a quantidade, no ícone da sacola */
         .cpn-ic, .cpn-pedido-ic { position: relative; }
-        .cpn-bolinha { position: absolute; top: -3px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #EF4444; color: #fff; font: 700 11px/18px system-ui, sans-serif; font-style: normal; text-align: center; box-shadow: 0 0 0 2px #fff; }
+        .cpn-bolinha { position: absolute; top: -3px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #EF4444; color: #fff; font: 600 11px/18px system-ui, sans-serif; font-style: normal; text-align: center; box-shadow: 0 0 0 2px #fff; }
         .cpn-bolinha--sacola { top: -6px; right: -7px; background: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,.08); }
       `}</style>
 

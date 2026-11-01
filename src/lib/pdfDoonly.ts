@@ -106,7 +106,7 @@ const CSS = `
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 html, body { font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #2C1219; background: #EFE9EC; font-size: 12.5px; line-height: 1.45; }
 .bar-acoes { position: sticky; top: 0; z-index: 5; display: flex; justify-content: center; padding: 10px; background: rgba(239,233,236,.92); }
-.bar-acoes button { border: none; border-radius: 10px; padding: 10px 18px; background: linear-gradient(90deg,#E85A8C,#C33A6E); color: #fff; font: 700 13px "Poppins", sans-serif; cursor: pointer; }
+.bar-acoes button { border: none; border-radius: 10px; padding: 10px 18px; background: linear-gradient(90deg,#E85A8C,#C33A6E); color: #fff; font: 600 13px "Poppins", sans-serif; cursor: pointer; }
 .pg { max-width: 794px; margin: 0 auto 30px; background: #fff; padding: 32px 32px 26px; border-radius: 6px; box-shadow: 0 10px 30px rgba(60,20,35,.12); }
 @media print { html, body { background: #fff; } .bar-acoes { display: none; } .pg { box-shadow: none; border-radius: 0; margin: 0; padding: 0; max-width: none; } }
 .hd { display: flex; justify-content: space-between; gap: 18px; padding: 22px 24px; border-radius: 16px; color: #fff; background: linear-gradient(135deg,#E85A8C,#C33A6E); margin-bottom: 18px; }

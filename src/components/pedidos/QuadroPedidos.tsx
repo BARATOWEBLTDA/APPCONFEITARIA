@@ -1,6 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { DragEvent } from 'react'
-import { Botao, Linha, Titulo } from '@/components/base'
+import type { ReactNode } from 'react'
+import { Storefront, Truck, Wallet } from '@phosphor-icons/react'
+import { Botao, Titulo } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
 import { SITUACOES, pixDoPedido, acaoDe, precisaAceitar, atrasado, dataCurta, grupoDoStatus, nomeCliente, resumoItens, rs, saldoPedido } from './pedidoTexto'
 
@@ -10,6 +12,11 @@ import { SITUACOES, pixDoPedido, acaoDe, precisaAceitar, atrasado, dataCurta, gr
  */
 const FIXAS = ['aguardando_aceite', 'agendado', 'em_producao', 'finalizado', 'entregue']
 const LIMITE_ENTREGUES = 10
+
+// (6.01) no quadro o cartão é estreito: ícone no lugar de "Retirada:"/"Pagamento:", pra data e valor caberem inteiros
+function LinhaIcone({ icone, rotulo, tom, children }: { icone: ReactNode; rotulo: string; tom?: string; children: ReactNode }) {
+  return <p className={`ui-linha pdq-l${tom ? ` ui-linha--${tom}` : ''}`}><span className="pdq-ic" title={rotulo}>{icone}<span className="ui-so-leitor">{rotulo}:</span></span><b>{children}</b></p>
+}
 
 type Props = { pedidos: Pedido[]; aoAbrir: (p: Pedido) => void; aoAvancar: (p: Pedido) => void; aoMover: (id: string, status: string) => void; mudando: string | null }
 
@@ -76,8 +83,8 @@ export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mu
                   <p className="pdc-nome"><b>{nomeCliente(p)}</b><span>#{p.numero || '—'}</span></p>
                   <p className="pdc-res">{resumoItens(p)}</p>
                   <div className="pdq-linhas">
-                    <Linha rotulo={p.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataCurta(p.data_entrega, p.horario_entrega)}</Linha>
-                    {!cancelado && (() => { const px = pixDoPedido(p); return px ? <Linha rotulo="Pagamento" tom="laranja">{px.estado === 'conferir' ? 'Pix a conferir' : 'Aguardando Pix'}</Linha> : falta > 0.009 ? <Linha rotulo="Pagamento" tom="laranja">Falta {rs(falta, true)}</Linha> : <Linha rotulo="Pagamento" tom="verde">Pago</Linha> })()}
+                    <LinhaIcone icone={p.tipo_entrega === 'entrega' ? <Truck size={16} aria-hidden="true" /> : <Storefront size={16} aria-hidden="true" />} rotulo={p.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataCurta(p.data_entrega, p.horario_entrega)}</LinhaIcone>
+                    {!cancelado && (() => { const px = pixDoPedido(p); const pg = (tom: string, txt: ReactNode) => <LinhaIcone icone={<Wallet size={16} aria-hidden="true" />} rotulo="Pagamento" tom={tom}>{txt}</LinhaIcone>; return px ? pg('laranja', px.estado === 'conferir' ? 'Pix a conferir' : 'Aguardando Pix') : falta > 0.009 ? pg('laranja', `Falta ${rs(falta, true)}`) : pg('verde', 'Pago') })()}
                   </div>
                   {acao && <Botao className={precisaAceitar(p) ? undefined : 'pd-passo'} tamanho="p" cheio carregando={mudando === p.id} onClick={e => { e.stopPropagation(); aoAvancar(p) }}>{acao.rotulo}</Botao>}
                 </article>
