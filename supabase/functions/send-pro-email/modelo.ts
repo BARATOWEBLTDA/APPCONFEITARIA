@@ -21,24 +21,35 @@ const GANHOU: string[] = [
   "Sem o “Feito com Doonly” no cardápio e nos PDFs",
 ];
 
-export function assuntoPro(nome: string): string {
+/** (31/10) PRO com 7 dias grátis: quem está no teste recebe o e-mail do teste, com o dia da 1ª cobrança */
+export type Teste = { cobranca: string } | null;
+const PRECO = "R$ 29,90";
+
+export function assuntoPro(nome: string, teste: Teste = null): string {
   const n = primeiroNomeDe(nome);
+  if (teste) return n ? `Seus 7 dias grátis do Doonly PRO começaram, ${n}` : "Seus 7 dias grátis do Doonly PRO começaram";
   return n ? `Seu Doonly PRO está ativo, ${n}` : "Seu Doonly PRO está ativo";
 }
+const abertura = (teste: Teste) => teste
+  ? "Seu teste começou. Tudo do Doonly PRO já está liberado na sua conta por 7 dias."
+  : "Obrigado por assinar. Tudo do Doonly PRO já está liberado na sua conta.";
+const cobrancaTexto = (teste: Teste) => teste
+  ? `A 1ª cobrança, de ${PRECO}, é só no dia ${teste.cobranca}, pela Hotmart. Quer cancelar? Faça antes desse dia e não paga nada: abra Minha assinatura no app.`
+  : "A cobrança é mensal, pela Hotmart, sem fidelidade. Para ver ou cancelar, abra Minha assinatura no app.";
 
-export function textoPro(nome: string): string {
+export function textoPro(nome: string, teste: Teste = null): string {
   const n = primeiroNomeDe(nome);
   return [
     n ? `Olá, ${n}!` : "Olá!",
     "",
-    "Obrigado por assinar. Tudo do Doonly PRO já está liberado na sua conta.",
+    abertura(teste),
     "",
-    "O que você ganhou:",
+    teste ? "O que você pode testar:" : "O que você ganhou:",
     ...GANHOU.map(g => `- ${g.replace(/[“”]/g, '"')}`),
     "",
     `Abrir o Doonly: ${APP_URL}`,
     "",
-    "A cobrança é mensal, pela Hotmart, sem fidelidade. Para ver ou cancelar, abra Minha assinatura no app.",
+    cobrancaTexto(teste),
     "",
     `Dúvida? Fale com a gente no WhatsApp: https://wa.me/${ZAP_EQUIPE} ou contato@doonly.com.br`,
     "",
@@ -46,7 +57,7 @@ export function textoPro(nome: string): string {
   ].join("\n");
 }
 
-export function htmlPro(nome: string): string {
+export function htmlPro(nome: string, teste: Teste = null): string {
   const n = esc(primeiroNomeDe(nome));
   const ganhou = GANHOU.map((g, i) => `
                 <tr>
@@ -63,7 +74,7 @@ export function htmlPro(nome: string): string {
   <meta name="color-scheme" content="light only">
   <meta name="supported-color-schemes" content="light">
   <meta name="x-apple-disable-message-reformatting">
-  <title>Seu Doonly PRO está ativo</title>
+  <title>${teste ? "Seus 7 dias grátis do Doonly PRO" : "Seu Doonly PRO está ativo"}</title>
   <style>
     @media (max-width: 620px) {
       .px { padding-left: 24px !important; padding-right: 24px !important; }
@@ -74,7 +85,7 @@ export function htmlPro(nome: string): string {
 </head>
 <body style="margin:0;padding:0;background-color:#F4EEF1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#2C1219;-webkit-font-smoothing:antialiased;">
   <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#F4EEF1;opacity:0;">
-    Tudo do PRO já está liberado na sua conta.
+    ${teste ? "7 dias para testar tudo do PRO, sem pagar nada agora." : "Tudo do PRO já está liberado na sua conta."}
   </div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4EEF1;">
     <tr>
@@ -90,9 +101,9 @@ export function htmlPro(nome: string): string {
 
           <tr>
             <td class="px" style="padding:32px 40px 8px;">
-              <h1 class="h1" style="margin:0;font-size:26px;font-weight:800;line-height:1.25;color:#2C1219;">${n ? `Seu PRO está ativo, ${n}!` : "Seu PRO está ativo!"}</h1>
+              <h1 class="h1" style="margin:0;font-size:26px;font-weight:800;line-height:1.25;color:#2C1219;">${teste ? (n ? `Seus 7 dias grátis começaram, ${n}!` : "Seus 7 dias grátis começaram!") : (n ? `Seu PRO está ativo, ${n}!` : "Seu PRO está ativo!")}</h1>
               <p style="margin:12px 0 0;font-size:16px;line-height:1.6;color:#4B3A42;">
-                Obrigado por assinar. Tudo do <strong style="color:#2C1219;">Doonly PRO</strong> já está liberado na sua conta.
+                ${teste ? `Seu teste começou. Tudo do <strong style="color:#2C1219;">Doonly PRO</strong> já está liberado na sua conta por 7 dias.` : `Obrigado por assinar. Tudo do <strong style="color:#2C1219;">Doonly PRO</strong> já está liberado na sua conta.`}
               </p>
             </td>
           </tr>
@@ -102,7 +113,7 @@ export function htmlPro(nome: string): string {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FDF7F9;border:1px solid #F3DCE6;border-radius:16px;">
                 <tr>
                   <td style="padding:20px 20px 22px;">
-                    <div style="margin:0 0 14px;font-size:16px;font-weight:800;color:#2C1219;">O que você ganhou</div>
+                    <div style="margin:0 0 14px;font-size:16px;font-weight:800;color:#2C1219;">${teste ? "O que você pode testar" : "O que você ganhou"}</div>
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${ganhou}
                     </table>
                   </td>
@@ -125,7 +136,9 @@ export function htmlPro(nome: string): string {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F3EEF1;border-radius:12px;">
                 <tr>
                   <td style="padding:14px 16px;font-size:14px;line-height:1.5;color:#4B3A42;">
-                    A cobrança é mensal, pela Hotmart, <strong style="color:#2C1219;">sem fidelidade</strong>. Para ver ou cancelar, abra <strong style="color:#2C1219;">Minha assinatura</strong> no app.
+                    ${teste
+                      ? `A 1ª cobrança, de ${PRECO}, é só no dia <strong style="color:#2C1219;">${esc(teste.cobranca)}</strong>, pela Hotmart. Quer cancelar? Faça antes desse dia e não paga nada: abra <strong style="color:#2C1219;">Minha assinatura</strong> no app.`
+                      : `A cobrança é mensal, pela Hotmart, <strong style="color:#2C1219;">sem fidelidade</strong>. Para ver ou cancelar, abra <strong style="color:#2C1219;">Minha assinatura</strong> no app.`}
                   </td>
                 </tr>
               </table>
@@ -147,7 +160,7 @@ export function htmlPro(nome: string): string {
         </table>
 
         <p style="margin:16px 0 0;font-size:12px;line-height:1.5;color:#9A8E94;text-align:center;">
-          Você recebeu este e-mail porque assinou o Doonly PRO.<br>
+          Você recebeu este e-mail porque ${teste ? "começou o teste do" : "assinou o"} Doonly PRO.<br>
           <a href="https://doonly.com.br" style="color:#9A8E94;text-decoration:none;">doonly.com.br</a> &middot; &copy; 2026 Doonly
         </p>
       </td>

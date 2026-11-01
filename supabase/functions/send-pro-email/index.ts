@@ -11,7 +11,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { assuntoPro, htmlPro, textoPro } from "./modelo.ts";
+import { assuntoPro, htmlPro, textoPro, type Teste } from "./modelo.ts";
 
 const json = (corpo: unknown, status = 200) =>
   new Response(JSON.stringify(corpo), { status, headers: { "Content-Type": "application/json" } });
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     if (!userId) return json({ motivo: "Falta a conta." }, 400);
 
     const { data: perfil } = await db.from("profiles")
-      .select("nome, plano, pro_email_enviado_em").eq("id", userId).maybeSingle();
+      .select("nome, plano, pro_email_enviado_em, pro_expira_em, assinatura_status").eq("id", userId).maybeSingle();
     if (!perfil) return json({ motivo: "Conta não encontrada." }, 404);
     if (perfil.plano !== "pro") return json({ enviado: false, motivo: "A conta não está PRO." });
     if (perfil.pro_email_enviado_em &&
@@ -50,6 +50,13 @@ Deno.serve(async (req) => {
     if (!email) return json({ enviado: false, motivo: "Conta sem e-mail." });
 
     const nome = perfil.nome || (u.user.user_metadata as Record<string, string> | null)?.nome || "";
+    // (31/10) começou os 7 dias grátis: o e-mail fala do teste e do dia da 1ª cobrança
+    // (o webhook guarda o PRO até a cobrança + 1 dia de folga)
+    let teste: Teste = null;
+    if (perfil.assinatura_status === "teste" && perfil.pro_expira_em) {
+      const cobra = new Date(new Date(perfil.pro_expira_em).getTime() - 86400000);
+      teste = { cobranca: cobra.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "America/Sao_Paulo" }) };
+    }
 
     // marca antes de enviar: se o gatilho disparar duas vezes seguidas, só um e-mail sai
     await db.from("profiles").update({ pro_email_enviado_em: new Date().toISOString() }).eq("id", userId);
@@ -60,9 +67,9 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: "Doonly <contato@doonly.com.br>",
         to: [email],
-        subject: assuntoPro(nome),
-        html: htmlPro(nome),
-        text: textoPro(nome),
+        subject: assuntoPro(nome, teste),
+        html: htmlPro(nome, teste),
+        text: textoPro(nome, teste),
       }),
     });
     if (!r.ok) {
