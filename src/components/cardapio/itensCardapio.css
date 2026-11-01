@@ -129,9 +129,10 @@
   .ic-cp .ic-pp-linha b { font-size: 14.5px; }
 }
 
-/* (24/10) uma linha separando as categorias, e quantos produtos tem cada uma ao lado do título */
-.ic-sec + .ic-sec { margin-top: 26px; border-top: 1px solid #E3D9DE; }
-.ic-sec + .ic-sec > .ic-h2 { margin-top: 20px; }
+/* (24/10) quantos produtos tem cada categoria ao lado do título.
+   (31/10 · 5.96) sem a linha separando as categorias: o espaço e o título já separam */
+.ic-sec + .ic-sec { margin-top: 30px; }
+.ic-sec + .ic-sec > .ic-h2 { margin-top: 0; }
 .ic-h2 { display: flex; align-items: baseline; gap: 8px; }
 .ic-h2 small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--ui-texto-3); white-space: nowrap; }
 
