@@ -147,15 +147,15 @@ export default function Custos() {
           </section>
 
           <section className="cu-card cu-a-mo">
-            <div className="cu-ct"><span className="cu-ic"><Clock size={18} weight="duotone" /></span><div><b>Mão de obra</b><small>O seu trabalho também tem preço</small></div></div>
+            <div className="cu-ct"><span className="cu-ic"><Clock size={18} weight="duotone" /></span><div><b>Mão de obra</b><small>O seu trabalho também tem preço</small></div>
+              {/* (01/11 · 5.98) "Editar" no canto, como o "+ Adicionar" dos cartões ao lado (antes um botão na largura toda) */}
+              <button type="button" className="cu-add" onClick={() => setEditMo(true)}><PencilSimple size={14} weight="bold" />Editar</button></div>
             <div className="cu-mo">
               <div className="cu-mo-l"><span>Salário</span><b>{brl(mo.salario_mensal)}</b></div>
               <div className="cu-mo-l"><span>Jornada</span><b>{mo.horas_dia}h por dia · {diasTxt(mo.dias_semana_array)}</b></div>
               <div className="cu-mo-l"><span>Salário por hora</span><b className="rosa">{brl(valorHora)}</b></div>
               <div className="cu-mo-l"><span>Salário por dia</span><b>{brl(valorHora * mo.horas_dia)}</b></div>
             </div>
-            {/* (16/10) botão de verdade (antes era um "Editar" pequeno no canto) */}
-            <button type="button" className="cu-bt" onClick={() => setEditMo(true)}><PencilSimple size={16} weight="bold" />Editar salário e jornada</button>
           </section>
 
           <section className="cu-card cu-a-var">
@@ -183,13 +183,13 @@ export default function Custos() {
 
           {/* (16/10) custos invisíveis: antes só dava pra mudar dentro da Ficha técnica */}
           <section className="cu-card cu-a-cv">
-            <div className="cu-ct"><span className="cu-ic"><Fire size={18} weight="duotone" /></span><div><b>Custos invisíveis</b><small>Gás do forno, perdas, descartáveis</small></div></div>
+            <div className="cu-ct"><span className="cu-ic"><Fire size={18} weight="duotone" /></span><div><b>Custos invisíveis</b><small>Gás do forno, perdas, descartáveis</small></div>
+              <button type="button" className="cu-add" onClick={() => setEditCv(true)}><PencilSimple size={14} weight="bold" />Editar</button></div>
             <div className="cu-mo">
               <div className="cu-mo-l"><span>Sobre os ingredientes</span><b className="rosa">{String(cv ?? 25).replace(".", ",")}%</b></div>
               <div className="cu-mo-l"><span>Ex.: R$ 100,00 de ingredientes</span><b>+ {brl((cv ?? 25))}</b></div>
             </div>
             <p className="cu-vazio">{cv == null ? "Usando o padrão de 25%. " : ""}A maioria das confeiteiras usa entre 20% e 30%. Entra em todas as fichas técnicas.</p>
-            <button type="button" className="cu-bt" onClick={() => setEditCv(true)}><PencilSimple size={16} weight="bold" />Editar porcentagem</button>
           </section>
         </div>
         </>)}
@@ -463,7 +463,8 @@ const CSS = `
   .cu-it-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: #FFF1F6; color: var(--ui-rosa-escuro); }
   .cu-it--falta .cu-it-t small { color: var(--ui-rosa-escuro); }
   .cu-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 44px; margin-top: 10px; border: 1.5px solid #F3C9DA; border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
-  .cu-mo { display: block; width: 100%; text-align: left; background: #FAF7F8; border: none; border-radius: var(--ui-raio); padding: 4px 12px 4px; font-family: inherit; color: var(--ui-texto); }
+  /* (01/11 · 5.98) sem a caixa cinza dentro do cartão: as linhas no mesmo jeito das listas de custos ao lado */
+  .cu-mo { display: block; width: 100%; text-align: left; background: none; border: none; border-radius: 0; padding: 0; font-family: inherit; color: var(--ui-texto); }
   .cu-mo-l { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F0EBED; font-size: 13.5px; }
   .cu-mo-l span { color: var(--ui-texto-2); } .cu-mo-l b { font-weight: 600; text-align: right; } .cu-mo-l b.rosa { color: var(--ui-rosa-escuro); }
   .cu-mo-l:last-child { border-bottom: 0; }

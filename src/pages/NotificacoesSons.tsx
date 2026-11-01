@@ -1,7 +1,7 @@
 import { COMO_NOTIFICACOES, TOUR_NOTIFICACOES } from "@/lib/comoTelas";
 import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { DeviceMobile, SpeakerHigh, CashRegister, PaperPlaneTilt, BellRinging, Check, Play } from "@phosphor-icons/react";
+import { DeviceMobile, SpeakerHigh, CashRegister, PaperPlaneTilt, BellRinging, Play } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { Botao, avisar } from "@/components/base";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -156,7 +156,7 @@ export default function NotificacoesSons() {
             <div className="ns-toques" role="radiogroup" aria-label="Toque de pedido novo">
               {TOQUES.map(t => (
                 <button key={t.id} type="button" role="radio" aria-checked={toque === t.id} className={`ns-toque${toque === t.id ? " on" : ""}`} disabled={!alerta} onClick={() => escolherToque(t.id)}>
-                  <i className="ns-chk" aria-hidden="true">{toque === t.id && <Check size={14} weight="bold" />}</i>
+                  <i className="ns-chk" aria-hidden="true" />
                   <span><b>{t.nome}</b><small>Repete a cada {t.cada}s</small></span>
                 </button>
               ))}
@@ -274,8 +274,10 @@ export default function NotificacoesSons() {
         .ns-toque > span { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
         .ns-toque b { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ns-toque small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
-        .ns-chk { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; box-sizing: border-box; border: 2px solid #D6CBD0; border-radius: 6px; background: var(--ui-branco); color: #fff; }
-        .ns-toque.on .ns-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+        /* (01/11 · 5.98) escolha de um só: bolinha (a mesma do filtro e da Entrega), não a caixinha quadrada de marcar */
+        .ns-chk { position: relative; flex: none; width: 22px; height: 22px; box-sizing: border-box; border: 1.8px solid #D6CBD0; border-radius: 50%; background: var(--ui-branco); }
+        .ns-toque.on .ns-chk { border-color: var(--ui-escolha); }
+        .ns-toque.on .ns-chk::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--ui-escolha); }
         .ns-vol { margin-top: 12px; padding: 12px 14px; border-radius: var(--ui-raio); background: #F7F4F5; }
         .ns-vol-l { display: flex; align-items: baseline; justify-content: space-between; font-size: 13.5px; color: var(--ui-texto); }
         .ns-vol-l b { font-size: 16px; font-weight: 600; }

@@ -38,7 +38,9 @@ const num = (s: string) => Math.round((parseFloat(String(s).replace(/\./g, "").r
 const funcaoNaoExiste = (e: unknown) => ["PGRST202", "42883"].includes(String((e as { code?: unknown } | null)?.code || "")) || faltaNoBanco(e);
 const FORMAS = [{ k: "pix", l: "Pix" }, { k: "dinheiro", l: "Dinheiro" }, { k: "credito", l: "Crédito" }, { k: "debito", l: "Débito" }, { k: "boleto", l: "Boleto" }];
 type Filtro = "atrasadas" | "semana" | "mes" | "todas";
-const FILTROS: [Filtro, string, string][] = [["atrasadas", "Atrasadas", "Atrasadas"], ["semana", "Esta semana", "Semana"], ["mes", "Este mês", "Mês"], ["todas", "Todas", "Todas"]];
+// (01/11 · 5.98) "Este mês" virou "Próximos 30 dias": no fim do mês, as contas de daqui a 2 ou 3 dias sumiam da lista
+// (e apareciam na Visão geral do Financeiro). A "semana" já eram os próximos 7 dias.
+const FILTROS: [Filtro, string, string][] = [["atrasadas", "Atrasadas", "Atrasadas"], ["semana", "Próximos 7 dias", "7 dias"], ["mes", "Próximos 30 dias", "30 dias"], ["todas", "Todas", "Todas"]];
 const MES_CURTO = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const CATEGORIAS = ["Insumos", "Embalagens", "Aluguel", "Energia e água", "Internet", "Gás", "Transporte", "Marketing", "Equipamentos", "Outros"];
 
@@ -115,7 +117,7 @@ export default function FinanceiroAPagar() {
   // (13/10) filtro por dias: Atrasadas, Esta semana, Este mês e Todas
   const [filtro, setFiltro] = useState<Filtro>("mes");
   const [filtroAberto, setFiltroAberto] = useState(false);
-  const fimMes = useMemo(() => { const d = new Date(); return `${competencia(0)}-${String(new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()).padStart(2, "0")}`; }, [hoje]); // eslint-disable-line react-hooks/exhaustive-deps
+  const fimMes = useMemo(() => isoDia(29), [hoje]); // eslint-disable-line react-hooks/exhaustive-deps
   const doFiltro = useCallback((f: Filtro) => contas.filter(c =>
     f === "atrasadas" ? c.vencimento < hoje : f === "semana" ? c.vencimento <= isoDia(6) : f === "mes" ? c.vencimento <= fimMes : true), [contas, hoje, fimMes]);
   // (24/10) busca, igual ao A receber (pelo nome da conta ou pela categoria)
@@ -172,7 +174,7 @@ export default function FinanceiroAPagar() {
             contar={v => doFiltro(v.mostrar).length}
             rotulo={n => n === 0 ? "Nenhuma conta" : `Ver ${n} ${n === 1 ? "conta" : "contas"}`}
             aoAplicar={v => setFiltro(v.mostrar)} aoFechar={() => setFiltroAberto(false)} />}
-          {filtro !== "todas" && <p className="fap-mostrando">{filtro === "atrasadas" ? "Mostrando as atrasadas" : filtro === "semana" ? "Mostrando até o fim desta semana" : "Mostrando até o fim deste mês"} · <button type="button" className="fap-link" onClick={() => setFiltro("todas")}>ver todas</button></p>}
+          {filtro !== "todas" && <p className="fap-mostrando">{filtro === "atrasadas" ? "Mostrando as atrasadas" : filtro === "semana" ? "Mostrando os próximos 7 dias" : "Mostrando os próximos 30 dias"} · <button type="button" className="fap-link" onClick={() => setFiltro("todas")}>ver todas</button></p>}
 
           {carregando && <p className="fap-carregando">Carregando…</p>}
           {!carregando && contas.length === 0 && (
@@ -184,7 +186,7 @@ export default function FinanceiroAPagar() {
           )}
           {!carregando && contas.length > 0 && visiveis.length === 0 && (
             <div className="fap-vazio fap-vazio--p">
-              <b>{termo ? "Nenhuma conta com esse nome" : filtro === "atrasadas" ? "Nenhuma conta atrasada" : filtro === "semana" ? "Nada vence esta semana" : "Nada vence este mês"}</b>
+              <b>{termo ? "Nenhuma conta com esse nome" : filtro === "atrasadas" ? "Nenhuma conta atrasada" : filtro === "semana" ? "Nada vence nos próximos 7 dias" : "Nada vence nos próximos 30 dias"}</b>
               <p>{termo ? <button type="button" className="fap-link" onClick={() => setBusca("")}>Limpar a busca</button> : <button type="button" className="fap-link" onClick={() => setFiltro("todas")}>Ver todas as contas</button>}</p>
             </div>
           )}

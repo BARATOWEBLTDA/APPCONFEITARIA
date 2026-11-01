@@ -380,3 +380,6 @@
 @media (max-width: 900px) { .orc-pro-tx > .ui-bt { align-self: center; } }
 /* (31/10 · 5.84) celular: "Do cardápio" e "Personalizado" inteiros (antes "Do cardá…") */
 @media (max-width: 420px) { .orc-add .ui-bt { padding: 0 8px; gap: 6px; font-size: 14px; } .orc-add .ui-bt svg { width: 16px; height: 16px; } }
+
+/* (01/11 · 5.98) computador: a lista começa na linha do título, como as outras telas (antes 12 px para dentro) */
+@media (min-width: 901px) { .orc:not(.orc-ed) { padding-left: 0; padding-right: 0; } }

@@ -270,7 +270,7 @@ function LucratividadeTela() {
                 <b className="lu-eq-v">{brl(metaEquilibrio)} <small>no mês</small></b>
                 <p className="lu-eq-t">custos fixos + salário ({brl(fixos.custos + fixos.salario)})</p>
                 <div className="lu-bar grande"><i className={dados.vendido >= metaEquilibrio ? "ok" : ""} style={{ width: `${Math.min(100, (dados.vendido / metaEquilibrio) * 100)}%` }} /></div>
-                <p className="lu-eq-s">{dados.vendido >= metaEquilibrio ? `Bateu! ${brl(dados.vendido - metaEquilibrio)} acima do necessário.` : `Faltam ${brl(metaEquilibrio - dados.vendido)} em vendas (${Math.round((dados.vendido / metaEquilibrio) * 100)}% do caminho).`}</p>
+                <p className="lu-eq-s">{dados.vendido >= metaEquilibrio ? `Bateu! ${brl(dados.vendido - metaEquilibrio)} acima do necessário.` : `Faltam ${brl(metaEquilibrio - dados.vendido)} · ${Math.round((dados.vendido / metaEquilibrio) * 100)}% do caminho`}</p>
                 <p className="lu-nota">Com a sua margem de ingredientes de {Math.round(margemBruta * 100)}%.</p>
               </>) : fixos && (fixos.custos + fixos.salario) > 0 ? (
                 <p className="lu-eq-t">{dados.vendido > 0
@@ -329,12 +329,14 @@ const CSS = `
   /* (24/10) computador: cartões de pelo menos 200 px (com 4 colunas no notebook o nome e "16 vendidos · R$ 10.400,00" quebravam) */
   @media (min-width: 1024px) { .lu-pg { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
   .lu-pc { overflow: hidden; border: 1px solid #F0EBED; border-radius: 14px; background: var(--ui-branco); display: flex; flex-direction: column; }
-  .lu-pc-foto { aspect-ratio: 4 / 3; background: #F8F3F5; color: #C9B8BF; display: flex; align-items: center; justify-content: center; }
-  .lu-pc-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* (01/11 · 5.98) foto sempre da mesma altura (a de um produto saía mais baixa e empurrava o resto do cartão) */
+  .lu-pc-foto { position: relative; flex: none; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: #F8F3F5; color: #C9B8BF; display: flex; align-items: center; justify-content: center; }
+  .lu-pc-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .lu-pc-tx { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 12px; min-width: 0; }
   .lu-pc-nm { font-size: 14px; font-weight: 500; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .lu-pc-tx small { font-size: 12px; color: var(--ui-texto-2); }
-  .lu-pc-l { margin-top: auto; padding-top: 6px; font-size: 12px; color: var(--ui-texto-2); }
+  /* (01/11 · 5.98) "Lucro" logo abaixo do nome, na mesma altura em todos os cartões (antes descia até o fim do cartão) */
+  .lu-pc-l { margin-top: 0; padding-top: 6px; font-size: 12px; color: var(--ui-texto-2); }
   .lu-pc-tx strong { font-size: 18px; font-weight: 600; color: var(--ui-verde); letter-spacing: -.01em; }
   .lu-pc-tx strong.ruim { color: var(--ui-vermelho); } .lu-pc-tx strong.sf { color: var(--ui-texto); }
   .lu-pc-m { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ui-texto-2); }
@@ -360,7 +362,7 @@ const CSS = `
   }
   .lu-eq-v { display: block; font-size: 26px; font-weight: 600; letter-spacing: -.02em; } .lu-eq-v small { font-size: 13px; font-weight: 400; color: var(--ui-texto-2); }
   .lu-eq-t { margin: 4px 0 0; font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; }
-  .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }
+  .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }
   .lu-sec { margin-top: 12px; min-height: 44px; padding: 0 16px; border: 1px solid #EADFE3; border-radius: 12px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   .lu-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 600; text-decoration: underline; cursor: pointer; }
 `;

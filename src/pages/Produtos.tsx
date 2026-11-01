@@ -35,7 +35,7 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import Categorias from "@/pages/Categorias";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_PRODUTOS, TOUR_PRODUTOS } from "@/lib/comoTelas";
-import { ArrowLeft as ArrowLeftIc, Camera, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Lightning, CalendarBlank, Star } from "@phosphor-icons/react";
+import { ArrowLeft as ArrowLeftIc, Camera, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Lightning, CalendarBlank, Star, CaretRight } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, CaixasEscolha, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
@@ -1960,9 +1960,11 @@ export default function Produtos() {
                   const cheio = pl.de > 0 ? pl.de : pl.final;
                   return (
                     <dl className="pl-ficha">
-                      <div><dt>{rotulo}</dt><dd>R$&nbsp;{formatPreco(cheio)}</dd></div>
-                      {/* (24/10) sem promoção a linha fica reservada (vazia) no computador: Tipo e Cardápio ficam na mesma altura em todos os cartões */}
-                      {pl.de > 0 ? <div><dt>Promoção</dt><dd className="pl-ficha-promo">R$&nbsp;{formatPreco(pl.final)}</dd></div> : <div className="pl-ficha-vaga" aria-hidden="true" />}
+                      {/* (01/11 · 5.98) a promoção entra na linha do preço (o cheio riscado e o novo em verde), como no cardápio:
+                          sem a linha "Promoção", o cartão sem promoção não fica com um vão */}
+                      {pl.de > 0
+                        ? <div><dt><s className="pl-ficha-de">R$&nbsp;{formatPreco(cheio)}</s></dt><dd className="pl-ficha-promo">R$&nbsp;{formatPreco(pl.final)}</dd></div>
+                        : <div><dt>{rotulo}</dt><dd>R$&nbsp;{formatPreco(cheio)}</dd></div>}
                       {/* Mesma regra do cardápio: só é encomenda quando tem antecedência marcada */}
                       <div><dt>Tipo</dt><dd>{(p as any).antecedencia ? "Encomenda" : "Pronta entrega"}</dd></div>
                       <div className="pl-ficha-on"><dt>Cardápio</dt><dd>
@@ -1977,16 +1979,17 @@ export default function Produtos() {
                   const { lucro, margem, temFicha } = calcularLucro(p);
                   if (!temFicha) {
                     return (
+                      /* (01/11 · 5.98) o mesmo "Montar ficha ›" da Lucratividade (antes um botão laranja tracejado) */
                       <button type="button" className="pl-sem-ficha"
                         onClick={e => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}>
-                        <ListChecks size={16} weight="bold" aria-hidden="true" />Criar ficha<span className="pl-sem-ficha-x">técnica</span>
+                        Montar ficha técnica<CaretRight size={14} weight="bold" aria-hidden="true" />
                       </button>
                     );
                   }
                   const tier = margem >= 50 ? "alto" : margem >= 25 ? "medio" : "baixo";
                   return (
                     <div className={`prod-card-lucro prod-card-lucro--${tier}`}>
-                      <span className="prod-card-lucro-label">Lucro/venda</span>
+                      <span className="prod-card-lucro-label">Lucro</span>
                       <strong>R$ {formatPreco(lucro)} <span className="prod-card-lucro-pct">({margem.toFixed(0)}%)</span></strong>
                     </div>
                   );

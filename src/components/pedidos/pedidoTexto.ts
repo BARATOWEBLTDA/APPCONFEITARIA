@@ -182,6 +182,7 @@ export function dataCurta(data?: string | null, hora?: string | null): string {
   const h = hora ? ` às ${hora5(hora)}` : ''
   if (dias === 0) return `Hoje${h}`
   if (dias === 1) return `Amanhã${h}`
+  if (dias === -1) return `Ontem${h}` // (01/11 · 5.98)
   const sem = SEMANA[d.getDay()].slice(0, 3)
   return `${sem.charAt(0).toUpperCase()}${sem.slice(1)}, ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}${h}` // (29/10 · 4.84) 01/11, como no resto do app
 }
@@ -199,7 +200,8 @@ export function chegouHa(iso?: string | null, agora: Date = new Date()): string 
   if (dataISO(c) === dataISO(agora)) return `Chegou há ${Math.floor(min / 60)} h`
   const ontem = new Date(agora); ontem.setDate(agora.getDate() - 1)
   if (dataISO(c) === dataISO(ontem)) return `Chegou ontem às ${hm}`
-  return `Chegou em ${String(c.getDate()).padStart(2, '0')}/${String(c.getMonth() + 1).padStart(2, '0')} às ${hm}`
+  // (01/11 · 5.98) sem o "em": no computador cortava ("Chegou em 29/10 à…")
+  return `Chegou ${String(c.getDate()).padStart(2, '0')}/${String(c.getMonth() + 1).padStart(2, '0')} às ${hm}`
 }
 
 export function criadoEm(iso?: string): string {

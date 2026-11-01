@@ -568,7 +568,7 @@ export const TOUR_DADOS_LOJA: PassoTour[] = [
   { el: ".dl-lista-c", titulo: "Partes", texto: "Cada parte mostra o que já foi preenchido. O visto verde indica a parte pronta." },
   { el: ".dl-li-st.falta", titulo: "O que falta", texto: "Complete esta parte para o cardápio funcionar por completo." },
   { el: ".dl-painel", titulo: "Edição", texto: "A parte escolhida abre aqui. As alterações são salvas sozinhas." },
-  { el: ".dl-lista-salva", titulo: "Salvamento automático", texto: "Tudo é salvo sozinho ao fechar a parte, sem botão de salvar." },
+  { el: ".dl-lista-salva, .dl-painel-st", titulo: "Salvamento automático", texto: "Tudo é salvo sozinho ao fechar a parte, sem botão de salvar." },
 ];
 
 export const COMO_NOVA_VENDA: Como = {

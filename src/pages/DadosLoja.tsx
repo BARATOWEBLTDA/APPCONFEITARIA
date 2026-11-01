@@ -678,7 +678,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
               </button>
             ))}
           </div>
-          <p className="dl-lista-salva"><Check size={16} weight="bold" aria-hidden="true" />Tudo salva sozinho.</p>
+          {/* (01/11 · 5.98) o "Tudo salva sozinho." daqui saiu: repetia o "Tudo salvo" do canto do painel */}
         </div>
         <section className="dl-painel" aria-label={TITULO[parteVista]}>
           <div className="dl-painel-cab">

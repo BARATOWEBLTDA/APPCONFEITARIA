@@ -136,3 +136,15 @@ body .prod-preview-menu-sub { font-size: 12.5px; }
 
 /* (31/10 · 5.79) celular: a chave de mostrar no cardápio um pouco mais para baixo (estava colada no nome) */
 @media (max-width: 900px) { .pl-lin-chave { margin-top: 10px; align-self: flex-start; } }
+
+/* (01/11 · 5.98) cartão do computador mais limpo: sem as linhas entre os dados, promoção na linha do preço,
+   "Montar ficha técnica ›" em link rosa e o lucro numa linha simples (sem a caixa amarela) */
+.pl-ficha > div, .pl-ficha > .pl-ficha-vaga + div { border-top: 0 !important; padding: 3px 0; }
+.pl-ficha-vaga { display: none !important; }
+.pl-ficha dt .pl-ficha-de { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
+body .pl-sem-ficha { justify-content: flex-start; gap: 2px; min-height: 32px; padding: 0; border: 0; border-radius: 0; color: var(--ui-rosa-escuro); font-size: 13.5px; font-weight: 600; }
+body .prod-card-lucro, body .prod-card-lucro--alto, body .prod-card-lucro--medio, body .prod-card-lucro--baixo { display: flex; flex-direction: row !important; align-items: baseline; justify-content: space-between; gap: 6px; padding: 3px 0; border-radius: 0; background: none !important; }
+body .prod-card-lucro-label { color: var(--ui-texto-2); font-weight: 500; }
+body .prod-card-lucro strong { font-size: 13px; font-weight: 600; color: var(--ui-verde); }
+body .prod-card-lucro--baixo strong { color: var(--ui-vermelho); }
+body .prod-card-lucro-pct { color: var(--ui-texto-2); font-weight: 500; }

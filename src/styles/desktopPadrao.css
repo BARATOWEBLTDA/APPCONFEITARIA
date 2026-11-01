@@ -30,9 +30,10 @@
     max-width: var(--col) !important; width: 100%; margin-left: auto !important; margin-right: auto !important; box-sizing: border-box;
   }
   html body .layout-root[data-rota] .layout-main > :has(> .cab) { max-width: none !important; margin-left: 0 !important; margin-right: 0 !important; }
-  /* formulário e leitura: 900px, começando na linha do título */
-  html body .layout-root[data-rota]:is([data-rota="/configuracoes/notificacoes"], [data-rota="/configuracoes/mensagens"], [data-rota="/noticias"], [data-rota="/relatar-problema"], [data-rota="/solicitar-recurso"]) .layout-main > :not(.cab):not(style) {
-    max-width: 900px !important; margin-left: max(0px, calc((100% - 1200px) / 2)) !important; margin-right: auto !important;
+  /* (01/11 · 5.98) formulário e leitura (Mensagens, Notificações, Novidades, Relatar, Sugerir) na mesma largura das outras telas:
+     antes paravam em 900px e cada uma ainda tinha a sua largura por dentro (640, 720, 760), sobrando um vão à direita */
+  html body .layout-root[data-rota]:is([data-rota="/configuracoes/notificacoes"], [data-rota="/configuracoes/mensagens"], [data-rota="/noticias"], [data-rota="/relatar-problema"], [data-rota="/solicitar-recurso"]) .layout-main :is(.mz, .ns-root, .nl, .cl9) {
+    max-width: none !important; margin-left: 0 !important; margin-right: 0 !important;
   }
   /* o topo segue a coluna: título, busca e "Ver cardápio" sempre no mesmo lugar */
   html body .layout-root[data-rota] .cab { padding-left: var(--lado) !important; padding-right: 28px !important; }
@@ -93,7 +94,10 @@
   html body [data-rota="/financeiro/a-pagar"] .cab-voltar, html body [data-rota="/custos"] .cab-voltar,
   html body [data-rota="/lucratividade"] .cab-voltar, html body [data-rota="/cardapio-config"] .cab-voltar,
   html body [data-rota="/cardapio-design"] .cab-voltar, html body [data-rota="/configuracoes/notificacoes"] .cab-voltar,
-  html body [data-rota="/configuracoes/mensagens"] .cab-voltar { display: none !important; }
+  html body [data-rota="/configuracoes/mensagens"] .cab-voltar,
+  /* (01/11 · 5.98) Central de Ajuda, Relatar um problema e Sugerir uma melhoria: sem a seta, como as outras telas do computador */
+  html body [data-rota="/ajuda"] .cab-voltar, html body [data-rota="/relatar-problema"] .cab-voltar,
+  html body [data-rota="/solicitar-recurso"] .cab-voltar { display: none !important; }
 
   /* ── 9. Topo branco (o menu da esquerda continua chocolate) ── */
   html body .cab { background: var(--ui-branco) !important; color: var(--ui-texto) !important; border-bottom: 1px solid var(--ui-borda); box-shadow: none !important; }

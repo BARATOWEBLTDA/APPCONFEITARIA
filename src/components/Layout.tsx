@@ -187,8 +187,15 @@ export default function Layout() {
       const it = nav?.querySelector<HTMLElement>(".nav-subitem.active") || nav?.querySelector<HTMLElement>(".nav-item.active");
       if (!nav || !it) return;
       const n = nav.getBoundingClientRect(), r = it.getBoundingClientRect();
-      if (r.top < n.top) nav.scrollBy({ top: r.top - n.top - 12, behavior: "smooth" });
-      else if (r.bottom > n.bottom - 36) nav.scrollBy({ top: r.bottom - n.bottom + 48, behavior: "smooth" });
+      // (31/10 · 5.98) rola em itens inteiros: o de cima nunca fica cortado pela metade (antes o "Início" aparecia pela metade)
+      const topos = Array.from(nav.querySelectorAll<HTMLElement>(":scope > .nav-item, :scope > .nav-grupo > .nav-item, .nav-subitem"))
+        .map(e => e.getBoundingClientRect().top - n.top + nav.scrollTop - 4).filter(t => t >= 0).sort((a, b) => a - b);
+      const fim = r.bottom - n.top + nav.scrollTop;          // fim do item ativo, contado do topo do menu
+      const precisa = fim - nav.clientHeight + 40;           // quanto rolar para ele aparecer inteiro (com folga do "Mais opções")
+      let alvo = nav.scrollTop;
+      if (r.top < n.top) alvo = Math.max(0, topos.filter(t => t <= r.top - n.top + nav.scrollTop).pop() ?? 0);
+      else if (precisa > nav.scrollTop) alvo = topos.find(t => t >= precisa) ?? precisa;
+      if (Math.abs(alvo - nav.scrollTop) > 2) nav.scrollTo({ top: alvo, behavior: "smooth" });
     }, 450);
     return () => window.clearTimeout(t);
   }, [location.pathname]);
@@ -212,7 +219,13 @@ export default function Layout() {
           <button type="button" className="sb-marca" onClick={() => navigate("/inicio")} aria-label="Doonly, ir para o início">
             {recolhido ? <Mascote pose="acenando" className="sb-marca-masc" /> : <NomeDoonly cor="branco" className="sb-marca-nome" />}
           </button>
-          {computador && <SinoMenu />}
+          {/* (31/10 · 5.98) a seta de recolher subiu para o lado do sino: embaixo ela tomava a altura de um item do menu */}
+          {!recolhido ? (
+            <span className="sb-topo-bts">
+              {computador && <SinoMenu />}
+              <button type="button" className="sb-recolher" onClick={alternarRecolhido} aria-label="Recolher o menu" title="Recolher o menu"><CaretDoubleLeft size={16} weight="bold" /></button>
+            </span>
+          ) : computador && <SinoMenu />}
         </div>
 
         <nav ref={navRef} className="sidebar-nav" aria-label="Menu principal">
@@ -266,11 +279,9 @@ export default function Layout() {
         {/* (22/10) o cartão da loja fica fixo embaixo, fora do menu que rola: no notebook (1366 × 768) ele ficava cortado */}
         <div className="sb-pe">
           {/* (30/10 · 5.61) sem a versão; a seta de recolher em cima e o status da loja por último */}
-          <div className="sb-pe-l">
-            <button type="button" className="sb-recolher" onClick={alternarRecolhido} aria-label={recolhido ? "Abrir o menu" : "Recolher o menu"} title={recolhido ? "Abrir o menu" : "Recolher o menu"}>
-              {recolhido ? <CaretDoubleRight size={16} weight="bold" /> : <CaretDoubleLeft size={16} weight="bold" />}
-            </button>
-          </div>
+          {recolhido && <div className="sb-pe-l">
+            <button type="button" className="sb-recolher" onClick={alternarRecolhido} aria-label="Abrir o menu" title="Abrir o menu"><CaretDoubleRight size={16} weight="bold" /></button>
+          </div>}
           {!recolhido && <div className="sb-pausar"><PausarPedidos escuro /></div>}
         </div>
       </aside>
@@ -574,6 +585,12 @@ export default function Layout() {
         .sb-mais:hover { background: rgba(255,255,255,0.12); color: var(--ui-branco); }
         .sb-mais:focus-visible { outline: 3px solid rgba(255,255,255,0.7); outline-offset: -3px; }
         .sb-pe { flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-top: 10px; }
+        .sb-topo-bts { display: flex; align-items: center; gap: 6px; flex: none; }
+        /* (31/10 · 5.98) notebook (até 820 px de altura): itens um pouco mais baixos, para o menu caber com um grupo aberto */
+        @media (max-height: 820px) {
+          .sidebar:not(.x) .nav-item, .sidebar:not(.x) .nav-item--group { min-height: 40px; }
+          .sidebar:not(.x) .nav-grupo .nav-group-body .nav-subitem { min-height: 34px; }
+        }
         .sb-pe-l { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
         .sb-recolher { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); cursor: pointer; }
         .sb-recolher:hover { background: rgba(255,255,255,0.12); color: var(--ui-branco); }

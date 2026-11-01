@@ -145,7 +145,8 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
   const entrega = p.tipo_entrega === 'entrega'
   const cancelado = grupoDoStatus(p.status) === 'cancelado'
   // dentro do grupo do dia, basta a hora; atrasado e concluído mostram a data
-  const quando = atr || comDia ? dataLonga(p.data_entrega, p.horario_entrega).replace(/ \(.*\)$/, '') : (horaCurta(p.horario_entrega) || 'Sem hora')
+  // (01/11 · 5.98) data curta ("Ontem às 15:00", "Sex, 30/10 às 15:00"): a longa ("30 de outubro às 15:…") cortava no notebook
+  const quando = atr || comDia ? dataCurta(p.data_entrega, p.horario_entrega) : (horaCurta(p.horario_entrega) || 'Sem hora')
   return (
     <div className={`pdl${aceitar ? ' aceitar' : ''}`} role="row" tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>
       <div className="pdl-quem" role="cell">

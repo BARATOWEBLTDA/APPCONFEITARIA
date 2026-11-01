@@ -175,8 +175,9 @@ export default function FinanceiroTransacoes() {
         </>}
         rightActions={
           <div className="tx-hd">
-            <button type="button" className="tx-hd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Entrada</button>
-            <button type="button" className="tx-hd-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Saída</button>
+            {/* (01/11 · 5.98) "Entrou / Saiu", os mesmos nomes da Visão geral e da barra do celular (antes "Entrada / Saída") */}
+            <button type="button" className="tx-hd-bt e" onClick={() => setNova("entrada")}><ArrowUp size={15} weight="bold" />Entrou</button>
+            <button type="button" className="tx-hd-bt s" onClick={() => setNova("saida")}><ArrowDown size={15} weight="bold" />Saiu</button>
             <button type="button" className="tx-hd-bt n" onClick={exportar}><DownloadSimple size={16} weight="bold" />Exportar</button>
           </div>
         }

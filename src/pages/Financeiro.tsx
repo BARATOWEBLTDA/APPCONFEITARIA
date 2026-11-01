@@ -161,7 +161,24 @@ export default function Financeiro() {
   const quandoPer = tipo === "hoje" ? "hoje" : tipo === "7dias" ? "nos últimos 7 dias" : tipo === "30dias" ? "nos últimos 30 dias"
     : tipo === "mes" ? (mesAtual ? `em ${mesNome} até hoje` : `em ${mesNome}`) : `de ${extenso(per.ini, per.ate)}`;
   // (22/10) período sem nenhum movimento: um aviso só no lugar de quatro cartões vazios
-  const semMov = !!ok && movs !== null && movs.length === 0 && ok.recebido === 0 && ok.despesas === 0 && ok.maisVendidos.length === 0;
+  // (01/11 · 5.98) sem dinheiro entrando nem saindo no período: some o gráfico vazio e os cartões vazios
+  // (antes só sumiam quando também não tinha pedido entregue; aí ficava o aviso + o gráfico em branco embaixo).
+  // Os "Mais vendidos" continuam, no lugar das movimentações.
+  const semMov = !!ok && movs !== null && movs.length === 0 && ok.recebido === 0 && ok.despesas === 0;
+
+  const vendCard = (
+        <div className="fd-a-vend fd-card">
+          <div className="fd-ct"><span><b>Mais vendidos</b><small className="fd-ct-sub">Pedidos com entrega no período</small></span></div>
+          {!ok ? <div className="fd-ph fd-ph--p" /> : ok.maisVendidos.length === 0 ? <p className="fd-vazio">Nenhum pedido com entrega no período.</p> : (
+            <ol className="fd-mv">
+              {ok.maisVendidos.map((v, i) => (
+                <li key={v.nome}><span className="fd-mv-n">{i + 1}</span>
+                  <span className="fd-mv-tx"><span className="fd-mv-nm">{v.nome}</span><span className="fd-mv-q">{v.pedidos} {v.pedidos === 1 ? "pedido" : "pedidos"}</span></span><b>{brl(v.valor)}</b></li>
+              ))}
+            </ol>
+          )}
+        </div>
+  );
 
   return (
     <>
@@ -281,7 +298,7 @@ export default function Financeiro() {
 
         {semMov ? (
           /* (31/10 · 5.74) o cartão "Nada entrou nem saiu" saiu: repetia o R$ 0,00 do topo */
-          null
+          ok && ok.maisVendidos.length > 0 ? vendCard : null
         ) : <>
         {/* últimas movimentações, do jeito de um extrato */}
         <div className="fd-a-movs fd-card">
@@ -314,17 +331,7 @@ export default function Financeiro() {
           </>)}
         </div>
 
-        <div className="fd-a-vend fd-card">
-          <div className="fd-ct"><span><b>Mais vendidos</b><small className="fd-ct-sub">Pedidos com entrega no período</small></span></div>
-          {!ok ? <div className="fd-ph fd-ph--p" /> : ok.maisVendidos.length === 0 ? <p className="fd-vazio">Nenhum pedido com entrega no período.</p> : (
-            <ol className="fd-mv">
-              {ok.maisVendidos.map((v, i) => (
-                <li key={v.nome}><span className="fd-mv-n">{i + 1}</span>
-                  <span className="fd-mv-tx"><span className="fd-mv-nm">{v.nome}</span><span className="fd-mv-q">{v.pedidos} {v.pedidos === 1 ? "pedido" : "pedidos"}</span></span><b>{brl(v.valor)}</b></li>
-              ))}
-            </ol>
-          )}
-        </div>
+        {vendCard}
         </>}
 
         <div className="fd-a-mais fd-mais">
@@ -599,14 +606,15 @@ const CSS = `
   .fd-nada small { font-size: 13px; color: var(--ui-texto-2); text-wrap: pretty; }
   /* sem movimento: as áreas dos cartões escondidos saem da grade (senão sobra espaço vazio) */
   .fd.fd.fd--nada { grid-template-areas: "res" "tres" "movs" "mais"; }
+  .fd.fd--nada .fd-a-vend { grid-area: movs; }
   .fd.fd.fd--neg.fd--nada { grid-template-areas: "res" "tres" "aviso" "movs" "mais"; }
   @media (min-width: 768px) {
     .fd.fd.fd--nada { grid-template-areas: "res" "tres" "listas" "movs" "mais"; }
     .fd.fd.fd--neg.fd--nada { grid-template-areas: "res" "tres" "aviso" "listas" "movs" "mais"; }
   }
   @media (min-width: 1024px) {
-    .fd.fd.fd--nada { grid-template-areas: "res res res res res res res tres tres tres tres tres" "movs movs movs movs movs movs movs movs movs movs movs movs" "listas listas listas listas listas listas listas listas listas listas listas listas" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
-    .fd.fd.fd--neg.fd--nada { grid-template-areas: "res res res res res res res tres tres tres tres tres" "aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso" "movs movs movs movs movs movs movs movs movs movs movs movs" "listas listas listas listas listas listas listas listas listas listas listas listas" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
+    .fd.fd.fd--nada { grid-template-areas: "res res res res res res res tres tres tres tres tres" "listas listas listas listas listas listas listas listas listas listas listas listas" "movs movs movs movs movs movs movs movs movs movs movs movs" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
+    .fd.fd.fd--neg.fd--nada { grid-template-areas: "res res res res res res res tres tres tres tres tres" "aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso aviso" "listas listas listas listas listas listas listas listas listas listas listas listas" "movs movs movs movs movs movs movs movs movs movs movs movs" "mais mais mais mais mais mais mais mais mais mais mais mais"; }
   }
   .fd-ct { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
   .fd-ct b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }

@@ -367,7 +367,8 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-banner-topo img { display: block; width: 100%; height: auto; }
 /* (5.56) PC: mais baixo (220 px). A arte fica inteira no meio e as pontas viram o mesmo rosa, sem emenda */
 @media (min-width: 901px) {
-  .ap-banner-topo { height: 220px; max-width: none; }
+  /* (01/11 · 5.98) 220 → 130 px: no notebook a faixa ocupava 1/3 da tela antes de qualquer opção */
+  .ap-banner-topo { height: 130px; max-width: none; }
   .ap-banner-topo img { width: auto; height: 100%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
 }
 

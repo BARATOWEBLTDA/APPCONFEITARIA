@@ -696,7 +696,9 @@ export default function NovaVenda() {
   // subtítulo (10/10): no passo 1 explica a escolha; depois mostra o tipo escolhido; no fim, que a venda foi registrada
   const subtituloTopo = sucessoAberto ? 'Venda registrada' : etapa === 1 || !tipo ? 'Encomenda ou pronta entrega' : tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'
   // (16/10) a seta do topo volta um passo (no primeiro, pergunta antes de cancelar), igual ao "Voltar" de baixo
-  const cabecalho = <AppPageHeader title="Nova venda" subtitle={subtituloTopo} infoComo={COMO_NOVA_VENDA} infoTour={TOUR_NOVA_VENDA} onBack={sucessoAberto ? () => navigate('/pedidos') : voltarEtapa} />
+  // (01/11 · 5.98) computador: no 1º passo sem a seta de voltar (é uma tela do menu, como as outras); do 2º passo em diante ela volta o passo
+  const semVoltarPc = !sucessoAberto && etapa <= 1 && typeof window !== 'undefined' && window.matchMedia('(min-width: 901px)').matches
+  const cabecalho = <AppPageHeader title="Nova venda" subtitle={subtituloTopo} infoComo={COMO_NOVA_VENDA} infoTour={TOUR_NOVA_VENDA} onBack={semVoltarPc ? undefined : sucessoAberto ? () => navigate('/pedidos') : voltarEtapa} />
 
   // ═══ Venda registrada ═══
   if (sucessoAberto && pedidoCriado) {
