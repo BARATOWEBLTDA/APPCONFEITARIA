@@ -445,8 +445,11 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
 
 
       <section className="ap-card ap-largo ap-sec-link">
-        <Cabeca Ic={LinkSimple} titulo="Link do cardápio" apoio="O endereço da sua loja" />
-        <p className="ap-exp">É por esse link que o cliente abre o seu cardápio. Com o <b>nome da loja no fim</b>, ele fica mais fácil de lembrar e passa mais confiança no Instagram e no WhatsApp. Ao mudar, o link antigo continua funcionando.</p>
+        <Cabeca Ic={LinkSimple} titulo="Link personalizado" apoio={isPro ? "O nome da loja no fim do link" : "Recurso do plano PRO"} />
+        {/* (31/10 · 5.91) aqui é para personalizar (PRO); no grátis, o cartão mostra o que muda no link */}
+        <p className="ap-exp">{isPro
+          ? <>Escolha o nome que aparece no fim do link. Ao mudar, o link antigo <b>continua funcionando</b>.</>
+          : <>No PRO, o link do cardápio leva o <b>nome da sua loja</b>: fica mais fácil de lembrar e passa mais confiança no Instagram e no WhatsApp.</>}</p>
         <NomeNoLink />
       </section>
       </div>

@@ -713,10 +713,10 @@ export const ARTIGOS: ArtigoAjuda[] = [
       },
       {
         id: 'link',
-        titulo: 'Nome no link (PRO)',
-        imagens: [{ src: '/ajuda/aparencia-link.webp', alt: 'Nome da loja no link do cardápio', marcas: [
+        titulo: 'Link personalizado (PRO)',
+        imagens: [{ src: '/ajuda/aparencia-link.webp', alt: 'Nome da loja no fim do link do cardápio', marcas: [
           'Escreva o **nome** da loja.',
-          '**Copiar** o link.',
+          'Veja **como fica** o link.',
         ] }],
         dica: 'Mudou? O link antigo **continua** funcionando.',
       },

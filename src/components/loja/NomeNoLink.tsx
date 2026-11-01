@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { Copy, Crown, LinkSimple } from "@phosphor-icons/react";
-import { getCardapioUrl } from "@/hooks/useProfile";
+import { Crown } from "@phosphor-icons/react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import { Botao, Campo, avisar } from "@/components/base";
 import { useProfile, refreshProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
-import RecursoPro from "@/components/billing/RecursoPro";
 
 /** "Doce Formiga!" → "doce-formiga": sem acento, minúsculo, hífen no lugar dos espaços (até 40 letras) */
 export function paraNomeNoLink(t: string): string {
@@ -26,7 +25,7 @@ export default function NomeNoLink() {
   const atual = String((profile as any)?.slug_personalizado || "");
   const [nome, setNome] = useState(atual);
   const [salvando, setSalvando] = useState(false);
-  const [proAberto, setProAberto] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => { setNome(atual); }, [atual]);
   const codigo = (profile as any)?.codigo_publico || "";
   if (!profile?.id || !codigo) return null;
@@ -50,24 +49,16 @@ export default function NomeNoLink() {
     setSalvando(false);
   };
 
-  // (30/10 · 5.54) o link numa pílula branca com "Copiar", em destaque
-  const copiar = async () => {
-    try { await navigator.clipboard.writeText(getCardapioUrl(profile)); avisar("Link copiado", { tipo: "ok" }); }
-    catch { avisar("Não deu para copiar. Tente de novo.", { tipo: "erro" }); }
-  };
-  const pilula = (fim: string) => (
-    <div className="nnl-pill">
-      <LinkSimple size={18} aria-hidden="true" />
-      <span>doonly.com.br/c/{codigo}/<b>{fim}</b></span>
-      <button type="button" onClick={copiar}><Copy size={15} weight="bold" aria-hidden="true" />Copiar</button>
-    </div>
-  );
+  // (31/10 · 5.91) aqui é para personalizar o link, não para copiar (copiar fica em Minha loja / Visão geral)
+  const linha = (fim: string, cls = "") => <span className={`nnl-url ${cls}`.trim()}>doonly.com.br/c/{codigo}/<b>{fim}</b></span>;
 
   if (!isPro) return (
-    <div className="nnl">
-      {pilula("cardapio")}
-      <Botao variante="suave" tamanho="m" icone={<Crown size={18} weight="fill" />} onClick={() => setProAberto(true)}>Usar o nome da loja</Botao>
-      {proAberto && <RecursoPro titulo="Nome da loja no link" texto={`No PRO o seu link fica doonly.com.br/c/${codigo}/${sugestao || "nome-da-loja"}, mais fácil de lembrar e de divulgar.`} onClose={() => setProAberto(false)} />}
+    <div className="nnl nnl--gratis">
+      <div className="nnl-comp">
+        <p><small>Hoje</small>{linha("cardapio", "nnl-url--hoje")}</p>
+        <p><small>No PRO</small>{linha(sugestao || "nome-da-loja", "nnl-url--pro")}</p>
+      </div>
+      <Botao variante="vinho" tamanho="m" icone={<Crown size={18} weight="fill" />} onClick={() => navigate("/assinar")}>Conhecer o PRO</Botao>
     </div>
   );
 
@@ -75,7 +66,8 @@ export default function NomeNoLink() {
     <div className="nnl">
       <Campo rotulo="Nome no link" placeholder={sugestao || "nome-da-loja"} value={nome} erro={erro}
         onChange={e => setNome(e.target.value.toLowerCase())} autoCapitalize="none" autoCorrect="off" spellCheck={false} />
-      {pilula(limpo || "cardapio")}
+      <p className="nnl-assim"><small>Assim fica</small>{linha(limpo || "cardapio", "nnl-url--pro")}</p>
+      {!nome && sugestao && <Botao variante="link" tamanho="p" onClick={() => setNome(sugestao)}>Usar “{sugestao}”</Botao>}
       {mudou && <Botao tamanho="m" carregando={salvando} onClick={salvar}>Salvar link</Botao>}
     </div>
   );
