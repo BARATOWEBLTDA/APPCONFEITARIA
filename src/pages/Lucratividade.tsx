@@ -3,7 +3,7 @@
 // (sem as de insumos, que já estão no custo da ficha). Mais: ponto de equilíbrio e lucro por produto.
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { CTA_PRO } from "@/lib/beneficiosPro";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { useNavigate } from "react-router-dom";
@@ -80,7 +80,7 @@ export default function Lucratividade() {
           <div className="lu-k lu-k--lucro"><span className="lu-ki l"><Equals size={15} weight="bold" /></span><small>Lucro do mês</small><b>R$ 2.154,00</b>
             <div className="lu-margem"><div className="lu-bar"><i style={{ width: "44%" }} /></div><span>margem de <b>44%</b></span></div></div>
         </div>
-        <section className="lu-card"><p className="lu-ct">Lucro por produto <small>Pela ficha técnica, sem despesas</small></p>
+        <section className="lu-card"><p className="lu-ct">Lucro por produto <small>Já pagando ingredientes e a sua hora</small></p>
           <ul className="lu-pg">{[["Bolo de brigadeiro", "6 vendidos · R$ 720,00", "R$ 412,00", 57], ["Caixa de doces", "9 vendidos · R$ 405,00", "R$ 230,00", 57], ["Torta de morango", "3 vendidos · R$ 390,00", "R$ 168,00", 43]].map(([n, q, l, m]) => (
             <li key={n as string} className="lu-pc"><span className="lu-pc-foto"><ShoppingBagOpen size={28} /></span><span className="lu-pc-tx"><b className="lu-pc-nm">{n}</b><small>{q}</small><span className="lu-pc-l">Lucro</span><strong>{l}</strong><span className="lu-pc-m"><span className="lu-p-bar"><i style={{ width: `${m}%` }} /></span>margem {m}%</span></span></li>
           ))}</ul>
@@ -180,6 +180,11 @@ function LucratividadeTela() {
   const margemBruta = dados && dados.vendido > 0 ? (dados.vendido - dados.cmv - dados.custosVariaveis) / dados.vendido : 0;
   const metaEquilibrio = fixos && margemBruta > 0 ? (fixos.custos + fixos.salario) / margemBruta : 0;
   const semFicha = (produtos || []).filter(p => p.semFicha);
+  const gruposProd = [
+    { k: "ruim", t: "Dando prejuízo", itens: (produtos || []).filter(p => !p.semFicha && p.lucro < 0).sort((a, b) => a.lucro - b.lucro) },
+    { k: "bom", t: "Dando lucro", itens: (produtos || []).filter(p => !p.semFicha && p.lucro >= 0) },
+    { k: "sf", t: "Sem ficha técnica", itens: semFicha },
+  ].filter(g => g.itens.length > 0);
   // 10/10: produto vendido sem ficha (ou custo de ingredientes zerado) = lucro e margem maiores do que são: avisa
   const qtdSemFicha = produtos && produtos.length ? semFicha.length : (dados?.semFicha || 0);
   const faltaFicha = !!dados && dados.qtdVendidos > 0 && (dados.cmv === 0 || qtdSemFicha > 0);
@@ -241,13 +246,15 @@ function LucratividadeTela() {
 
           <div className="lu-grid">
             <section className="lu-card lu-a-prod">
-              <p className="lu-ct">Lucro por produto <small>Pela ficha técnica, sem despesas</small></p>
+              <p className="lu-ct">Lucro por produto <small>Já pagando ingredientes e a sua hora</small></p>
               {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
                 <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> para ver o lucro de cada um.</p>
               ) : (
-                // (4.29) em cartões, como no cardápio: foto, nome e o lucro embaixo
+                // (6.06) lista: prejuízo primeiro (o que mais importa não fica no fim), depois lucro, depois sem ficha
                 <div className="lu-pg">
-                  {produtos.map(p => (
+                  {gruposProd.map(g => (<Fragment key={g.k}>
+                  {gruposProd.length > 1 && <p className={`lu-gt${g.k === "ruim" ? " ruim" : ""}`}>{g.t}<i>{g.itens.length}</i></p>}
+                  {g.itens.map(p => (
                     <div key={p.chave} className={`lu-pc${p.chave.startsWith("nome:") ? "" : " lu-pc--bt"}`}
                       {...(p.chave.startsWith("nome:") ? {} : { role: "button", tabIndex: 0, "aria-label": `${p.nome}: ${p.semFicha ? "montar a ficha técnica" : "ver a ficha técnica"}`,
                         onClick: () => navigate("/ficha-tecnica", { state: { produtoId: p.chave } }),
@@ -265,6 +272,7 @@ function LucratividadeTela() {
                       </span>
                     </div>
                   ))}
+                  </Fragment>))}
                 </div>
               )}
             </section>
@@ -312,11 +320,14 @@ const CSS = `
   .lu-k { position: relative; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 14px; min-width: 0; }
   .lu-k small { display: block; padding-right: 32px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lu-k > b { display: block; margin: 6px 0 4px; font-size: clamp(17px, 4.6vw, 26px); font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .lu-k > b.s { color: var(--ui-vermelho); }
+  .lu-k > b.s { color: var(--ui-texto); } /* (6.06) gasto normal do mês não é alarme: número escuro, o "−" já diz que é gasto */
   .lu-k i { display: block; font-style: normal; font-size: 12.5px; color: var(--ui-texto-2); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lu-ki { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
-  .lu-ki.n { background: var(--ui-cinza); color: var(--ui-texto-2); } .lu-ki.s { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); } .lu-ki.l { background: #FCE7F3; color: var(--ui-rosa-escuro); }
-  .lu-k--lucro { border-color: #F7C9DA; background: #FFF8FB; } .lu-k--lucro > b { color: var(--ui-rosa-escuro); } .lu-k--lucro.ruim > b { color: var(--ui-vermelho); }
+  .lu-ki.n { background: var(--ui-cinza); color: var(--ui-texto-2); } .lu-ki.s { background: var(--ui-cinza); color: var(--ui-texto-2); } .lu-ki.l { background: #DCFCE7; color: #15803D; } .lu-k--lucro.ruim .lu-ki.l { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
+  /* (6.06) lucro: verde quando sobra, vermelho só no prejuízo */
+  .lu-k--lucro { border-color: #BBF7D0; background: #F0FDF4; } .lu-k--lucro > b { color: #15803D; }
+  .lu-k--lucro.ruim { border-color: #FECACA; background: #FEF2F2; } .lu-k--lucro.ruim > b { color: var(--ui-vermelho); }
+  .lu-margem .lu-bar i { background: #22C55E; }
   .lu-margem { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ui-texto-2); } .lu-margem .lu-bar { flex: 1; }
   .lu-margem b { font-weight: 600; color: var(--ui-texto); }
   .lu-bar { height: 8px; border-radius: 9px; background: var(--ui-linha); overflow: hidden; } .lu-bar i { display: block; height: 100%; background: var(--ui-rosa); border-radius: 9px; }
@@ -332,42 +343,29 @@ const CSS = `
   .lu-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 16px 18px; }
   .lu-ct { margin: 0 0 10px; font-size: 15.5px; font-weight: 600; } .lu-ct small { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 400; color: var(--ui-texto-2); }
   .lu-vz { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
-  .lu-pg { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  @media (min-width: 640px) { .lu-pg { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; } }
-  /* (24/10) computador: cartões de pelo menos 200 px (com 4 colunas no notebook o nome e "16 vendidos · R$ 10.400,00" quebravam) */
-  @media (min-width: 1024px) { .lu-pg { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
-  .lu-pc { overflow: hidden; border: 1px solid #F0EBED; border-radius: 14px; background: var(--ui-branco); display: flex; flex-direction: column; }
-  /* (01/11 · 5.98) foto sempre da mesma altura (a de um produto saía mais baixa e empurrava o resto do cartão) */
-  .lu-pc-foto { position: relative; flex: none; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: #F8F3F5; color: #C9B8BF; display: flex; align-items: center; justify-content: center; }
+  /* (6.06) uma lista compacta em todas as larguras: foto pequena, nome, vendidos, lucro e margem (cartões grandes viravam um mar de quadrados) */
+  .lu-pg { margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; }
+  .lu-gt { display: flex; align-items: center; gap: 6px; margin: 14px 0 2px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+  .lu-gt:first-child { margin-top: 0; } .lu-gt.ruim { color: var(--ui-vermelho); }
+  .lu-gt i { font-style: normal; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ui-cinza); font-size: 12px; line-height: 20px; text-align: center; color: var(--ui-texto-2); }
+  .lu-pc { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--ui-linha); background: var(--ui-branco); }
+  .lu-pc:last-child, .lu-pc:has(+ .lu-gt) { border-bottom: 0; }
+  .lu-pc-foto { position: relative; flex: none; width: 52px; height: 52px; border-radius: 12px; overflow: hidden; background: #F8F3F5; color: #C9B8BF; display: flex; align-items: center; justify-content: center; }
   .lu-pc-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-  .lu-pc-tx { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 12px; min-width: 0; }
-  .lu-pc-nm { font-size: 14px; font-weight: 500; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .lu-pc-tx small { font-size: 12px; color: var(--ui-texto-2); }
-  /* (01/11 · 5.98) "Lucro" logo abaixo do nome, na mesma altura em todos os cartões (antes descia até o fim do cartão) */
-  .lu-pc-l { margin-top: 0; padding-top: 6px; font-size: 12px; color: var(--ui-texto-2); }
-  .lu-pc-tx strong { font-size: 18px; font-weight: 600; color: var(--ui-verde); letter-spacing: -.01em; }
+  .lu-pc-tx { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nm v" "sub m"; column-gap: 10px; row-gap: 2px; align-items: center; }
+  .lu-pc-nm { grid-area: nm; font-size: 14.5px; font-weight: 500; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lu-pc-tx small { grid-area: sub; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lu-pc-l { display: none; }
+  .lu-pc-tx strong { grid-area: v; justify-self: end; font-size: 15px; font-weight: 600; color: var(--ui-verde); white-space: nowrap; }
   .lu-pc-tx strong.ruim { color: var(--ui-vermelho); } .lu-pc-tx strong.sf { color: var(--ui-texto); }
-  .lu-pc-m { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ui-texto-2); }
-  .lu-pc-m .lu-p-bar { flex: 1; margin: 0; }
-  .lu-p-bar { display: block; height: 5px; border-radius: 9px; background: var(--ui-linha); overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
-  .lu-sf { color: var(--ui-laranja); font-weight: 600; display: flex; flex-wrap: wrap; align-items: center; gap: 3px; font-size: 12px; }
-  .lu-sf-bt { display: inline-flex; align-items: center; gap: 2px; width: 100%; margin-top: 6px; color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 600; white-space: nowrap; }
-  .lu-pc--bt { cursor: pointer; transition: border-color .15s; } .lu-pc--bt:hover { border-color: #F7C9DA; }
-  .lu-pc--bt:focus-visible { outline: 3px solid rgba(236, 72, 153, .4); outline-offset: 2px; }
-  @media (max-width: 639px) {
-    .lu-pg { grid-template-columns: minmax(0, 1fr); gap: 0; }
-    .lu-pc { flex-direction: row; align-items: center; gap: 12px; border: 0; border-bottom: 1px solid var(--ui-linha); border-radius: 0; padding: 10px 0; }
-    .lu-pc:last-child { border-bottom: 0; }
-    .lu-pc-foto { flex: none; width: 52px; height: 52px; aspect-ratio: auto; border-radius: 12px; overflow: hidden; }
-    .lu-pc-tx { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nm v" "sub m"; column-gap: 10px; row-gap: 2px; align-items: center; padding: 0; }
-    .lu-pc-nm { grid-area: nm; -webkit-line-clamp: 1; }
-    .lu-pc-tx small { grid-area: sub; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .lu-pc-l { display: none; }
-    .lu-pc-tx strong { grid-area: v; justify-self: end; font-size: 15px; }
-    .lu-pc-m { grid-area: m; justify-self: end; white-space: nowrap; }
-    .lu-sf { grid-column: 1 / -1; justify-self: start; white-space: nowrap; }
-    .lu-pc-m .lu-p-bar, .lu-sf-bt { display: none; }
-  }
+  .lu-pc-m { grid-area: m; justify-self: end; display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+  .lu-p-bar { display: none; width: 64px; height: 5px; border-radius: 9px; background: var(--ui-linha); overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
+  @media (min-width: 640px) { .lu-p-bar { display: block; } }
+  .lu-sf { grid-column: 1 / -1; justify-self: start; color: var(--ui-laranja); font-weight: 600; display: flex; align-items: center; gap: 3px; font-size: 12px; white-space: nowrap; }
+  .lu-sf-bt { display: none; }
+  .lu-pc--bt { cursor: pointer; } .lu-pc--bt:hover .lu-pc-nm { color: var(--ui-rosa-escuro); }
+  .lu-pc--bt:focus-visible { outline: 3px solid rgba(236, 72, 153, .4); outline-offset: 2px; border-radius: 8px; }
+
   .lu-eq-v { display: block; font-size: 26px; font-weight: 600; letter-spacing: -.02em; } .lu-eq-v small { font-size: 13px; font-weight: 400; color: var(--ui-texto-2); }
   .lu-eq-t { margin: 4px 0 0; font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; }
   .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }
