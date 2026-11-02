@@ -7,7 +7,8 @@ export const APORTE = "Aporte (dinheiro seu)";
 export const RETIRADA = "Retirada para você";
 
 /** true = não conta como venda nem como despesa (aporte ou retirada da dona). */
-export const ehDinheiroDaDona = (cat?: string | null) => /^\s*(aporte|retirada pra)/i.test(cat || "");
+// (6.05) "Retirada para você" não batia com "retirada pra" e entrava como despesa do negócio
+export const ehDinheiroDaDona = (cat?: string | null) => /^\s*(aporte|retirada pa?ra)/i.test(cat || "");
 
 /** Nome na tela. "Insumos" (valor antigo, ainda salvo) aparece como "Ingredientes". */
 export const nomeCategoriaFin = (cat?: string | null) => {
