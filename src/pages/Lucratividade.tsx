@@ -28,28 +28,6 @@ type PedidoLucro = { status: string; pedido_itens?: ItemLucro[] | null };
 type Produto = { chave: string; nome: string; foto: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean; kg?: boolean };
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-/**
- * Quanto o custo total da ficha é maior que só os ingredientes, por produto (13/10).
- * Ex.: ingredientes R$ 14,60 e custo total R$ 18,25 → 1,25. Assim o lucro por produto bate com a ficha técnica.
- * Se a busca falhar, fica 1 (só ingredientes, como era antes).
- */
-async function fatorDaFicha(uid: string, ids: string[], mao: unknown): Promise<Record<string, number>> {
-  const out: Record<string, number> = {};
-  if (!ids.length) return out;
-  const [{ data: prods, error }, { data: perfil }] = await Promise.all([
-    supabase.from("produtos").select("id, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais, produto_insumos(quantidade, unidade_utilizada, insumos(*))").in("id", ids),
-    supabase.from("profiles").select("custos_invisiveis_pct").eq("id", uid).maybeSingle().then(r => r, () => ({ data: null } as { data: null })),
-  ]);
-  if (error || !prods) return out;
-  void mao;
-  const conta = await lerMaoObraConta(uid).catch(() => null); // (16/10) a mesma hora da Ficha técnica: fixos + salário
-  const cvConta = (perfil as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct;
-  for (const p of prods as (ProdutoCustoJson & { id: string })[]) {
-    const r = calcularCustoLucro(p, conta, cvConta != null ? Number(cvConta) : null);
-    if (r.cmv > 0) out[p.id] = r.custoTotal / r.cmv;
-  }
-  return out;
-}
 
 const CSS_AMOSTRA = `
   .lu-amostra { filter: blur(6px); opacity: .7; pointer-events: none; user-select: none; max-height: calc(100dvh - 140px); overflow: hidden; }
@@ -80,7 +58,7 @@ export default function Lucratividade() {
           <div className="lu-k lu-k--lucro"><span className="lu-ki l"><Equals size={15} weight="bold" /></span><small>Lucro do mês</small><b>R$ 2.154,00</b>
             <div className="lu-margem"><div className="lu-bar"><i style={{ width: "44%" }} /></div><span>margem de <b>44%</b></span></div></div>
         </div>
-        <section className="lu-card"><p className="lu-ct">Lucro por produto <small>Já pagando ingredientes e a sua hora</small></p>
+        <section className="lu-card"><p className="lu-ct">Lucro por produto <small>O que sobra depois dos ingredientes</small></p>
           <ul className="lu-pg">{[["Bolo de brigadeiro", "6 vendidos · R$ 720,00", "R$ 412,00", 57], ["Caixa de doces", "9 vendidos · R$ 405,00", "R$ 230,00", 57], ["Torta de morango", "3 vendidos · R$ 390,00", "R$ 168,00", 43]].map(([n, q, l, m]) => (
             <li key={n as string} className="lu-pc"><span className="lu-pc-foto"><ShoppingBagOpen size={28} /></span><span className="lu-pc-tx"><b className="lu-pc-nm">{n}</b><small>{q}</small><span className="lu-pc-l">Lucro</span><strong>{l}</strong><span className="lu-pc-m"><span className="lu-p-bar"><i style={{ width: `${m}%` }} /></span>margem {m}%</span></span></li>
           ))}</ul>
@@ -152,7 +130,8 @@ function LucratividadeTela() {
       // lucro por produto
       const itens = peds.data.filter(p => p.status !== "cancelado").flatMap(p => p.pedido_itens || []);
       const ids = [...new Set(itens.map((it: ItemLucro) => it.produtos?.id).filter(Boolean))] as string[];
-      const [custo, peloPeso, fator] = await Promise.all([custoPorProduto(ids), produtosPeloPeso(itens), fatorDaFicha(user.id, ids, mo.data)]);
+      // (6.08) a mesma régua do Lucro do mês: o produto tira só os ingredientes (a sua hora entra no Ponto de equilíbrio)
+      const [custo, peloPeso] = await Promise.all([custoPorProduto(ids), produtosPeloPeso(itens)]);
       if (cancelado) return;
       const mapa: Record<string, Produto> = {};
       for (const it of itens) {
@@ -163,7 +142,7 @@ function LucratividadeTela() {
         const c = id ? custo[id] : 0;
         // 11/10: tamanho pelo peso ("M · 2 kg") e kit (50 un) custam o tamanho/kit inteiro, não 1 kg ou 1 unidade
         // 13/10: custo total da ficha (ingredientes + custos invisíveis + mão de obra), igual à tela da ficha técnica
-        if (c) p.custo += c * (fator[id] || 1) * multiplicadorDoItem(it, peloPeso) * q; else p.semFicha = true;
+        if (c) p.custo += c * multiplicadorDoItem(it, peloPeso) * q; else p.semFicha = true;
       }
       const lista = Object.values(mapa).map(p => ({ ...p, lucro: p.vendido - p.custo, margem: p.vendido > 0 ? Math.round(((p.vendido - p.custo) / p.vendido) * 100) : 0 }))
         .sort((a, b) => b.lucro - a.lucro);
@@ -247,32 +226,40 @@ function LucratividadeTela() {
 
           <div className="lu-grid">
             <section className="lu-card lu-a-prod">
-              <p className="lu-ct">Lucro por produto <small>Já pagando ingredientes e a sua hora</small></p>
+              <p className="lu-ct">Lucro por produto <small>O que sobra depois dos ingredientes</small></p>
               {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
                 <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> para ver o lucro de cada um.</p>
               ) : (
                 <>
                 {emPrejuizo.length > 0 && <p className="lu-prej"><i aria-hidden="true" />{emPrejuizo.length === 1 ? "1 produto está dando prejuízo" : `${emPrejuizo.length} produtos estão dando prejuízo`}</p>}
-                <div className="lu-pg">
+                <div className="lu-pg lu-tab">
+                  <div className="lu-th" aria-hidden="true"><span /><span>Produto</span><span>Vendidos</span><span>Faturou</span><span>Lucro</span><span>Margem</span></div>
                   {prodVisiveis.map(p => {
                     const semId = p.chave.startsWith("nome:");
+                    const qtd = p.kg ? `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} kg` : `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} ${p.qtd === 1 ? "vendido" : "vendidos"}`;
+                    const ruim = !p.semFicha && p.lucro < 0;
+                    const lucro = p.semFicha
+                      ? <strong className={`sf${semId ? " sem-id" : ""}`}>{semId ? "Sem ficha" : "Montar ficha"}</strong>
+                      : <strong className={ruim ? "ruim" : ""}>{brl(p.lucro)}</strong>;
+                    const margem = p.semFicha ? "—" : `${p.margem}%`;
                     return (
                     <div key={p.chave} className={`lu-pc${semId ? "" : " lu-pc--bt"}`}
                       {...(semId ? {} : { role: "button", tabIndex: 0, "aria-label": `${p.nome}: ${p.semFicha ? "montar a ficha técnica" : "ver a ficha técnica"}`,
                         onClick: () => navigate("/ficha-tecnica", { state: { produtoId: p.chave } }),
                         onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate("/ficha-tecnica", { state: { produtoId: p.chave } }); } } })}>
-                      <span className="lu-pc-foto">{p.foto ? <img src={p.foto} alt="" loading="lazy" /> : <ShoppingBagOpen size={28} aria-hidden="true" />}</span>
+                      <span className="lu-pc-foto">{p.foto ? <img src={p.foto} alt="" loading="lazy" /> : <ShoppingBagOpen size={24} aria-hidden="true" />}</span>
+                      {/* celular: nome e "x vendidos · R$" à esquerda, lucro e margem à direita */}
                       <span className="lu-pc-tx">
                         <b className="lu-pc-nm">{p.nome}</b>
-                        <small>{p.kg ? `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} kg vendidos` : `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} ${p.qtd === 1 ? "vendido" : "vendidos"}`} · {brl(p.vendido)}</small>
-                        {/* sem ficha o custo é zero: mostrar "lucro = preço" engana; no lugar vai o caminho pra montar a ficha */}
-                        {p.semFicha
-                          ? <strong className={`sf${semId ? " sem-id" : ""}`}>{semId ? "Sem ficha" : "Montar ficha"}</strong>
-                          : <strong className={p.lucro < 0 ? "ruim" : ""}>{brl(p.lucro)}</strong>}
-                        {!p.semFicha && (p.lucro < 0
-                          ? <span className="lu-pc-m">prejuízo</span>
-                          : <span className="lu-pc-m"><span className="lu-p-bar"><i style={{ width: `${Math.max(2, Math.min(100, p.margem))}%` }} /></span>margem {p.margem}%</span>)}
+                        <small>{qtd} · {brl(p.vendido)}</small>
+                        {lucro}
+                        {!p.semFicha && <span className={`lu-pc-m${ruim ? " ruim" : ""}`}>margem {p.margem}%</span>}
                       </span>
+                      {/* computador: uma coluna por número, alinhadas */}
+                      <span className="lu-col lu-col-q">{qtd}</span>
+                      <span className="lu-col lu-col-f">{brl(p.vendido)}</span>
+                      <span className="lu-col lu-col-l">{lucro}</span>
+                      <span className={`lu-col lu-col-m${ruim ? " ruim" : ""}`}>{margem}</span>
                     </div>
                   ); })}
                 </div>
@@ -354,7 +341,23 @@ const CSS = `
   .lu-pc { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--ui-linha); background: var(--ui-branco); }
   .lu-pc:last-child { border-bottom: 0; }
   /* computador: duas colunas (uma lista comprida de 37 linhas cansava) */
-  @media (min-width: 1024px) { .lu-pg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; } .lu-pc:nth-last-child(2):nth-child(odd) { border-bottom: 0; } }
+  .lu-th, .lu-col { display: none; }
+  .lu-pc-m.ruim { color: var(--ui-vermelho); }
+  /* (6.08) computador: uma tabela (Produto · Vendidos · Faturou · Lucro · Margem), o nome inteiro e a ordem clara */
+  @media (min-width: 1024px) {
+    .lu-tab .lu-th, .lu-tab .lu-pc { display: grid; grid-template-columns: 40px minmax(0, 1fr) 110px 130px 130px 80px; column-gap: 16px; align-items: center; }
+    .lu-tab .lu-th { padding: 0 0 8px; border-bottom: 1px solid var(--ui-linha); font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
+    .lu-tab .lu-th span:nth-child(n+3) { text-align: right; }
+    .lu-tab .lu-pc { padding: 8px 0; }
+    .lu-tab .lu-pc-foto { width: 40px; height: 40px; border-radius: 10px; }
+    .lu-tab .lu-pc-tx { display: block; }
+    .lu-tab .lu-pc-tx > :not(.lu-pc-nm) { display: none; }
+    .lu-tab .lu-col { display: block; text-align: right; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lu-tab .lu-col-q, .lu-tab .lu-col-m { color: var(--ui-texto-2); }
+    .lu-tab .lu-col-m.ruim { color: var(--ui-vermelho); }
+    .lu-tab .lu-col strong { font-size: 14px; font-weight: 600; color: var(--ui-verde); } .lu-tab .lu-col strong.ruim { color: var(--ui-vermelho); }
+    .lu-tab .lu-col strong.sf { color: var(--ui-rosa-escuro); } .lu-tab .lu-col strong.sf.sem-id { color: var(--ui-texto-2); font-weight: 500; }
+  }
   .lu-prej { display: flex; align-items: center; gap: 8px; margin: 2px 0 4px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .lu-prej i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ui-vermelho); }
   .lu-mais { display: block; width: 100%; min-height: 44px; margin-top: 6px; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
