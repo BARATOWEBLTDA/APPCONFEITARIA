@@ -22,7 +22,7 @@ import { carregarIntervalo, custoPorProduto, multiplicadorDoItem, produtosPeloPe
 type ItemLucro = {
   nome_produto?: string | null; quantidade?: number | string | null; valor_unitario?: number | string | null
   personalizacoes?: { tamanho?: unknown } | null
-  produtos?: { id: string; nome?: string | null; forma_venda?: string | null; imagem_url?: string | null } | null
+  produtos?: { id: string; nome?: string | null; forma_venda?: string | null; imagem_url?: string | null; kit_qtd?: unknown } | null
 };
 type PedidoLucro = { status: string; pedido_itens?: ItemLucro[] | null };
 type Produto = { chave: string; nome: string; foto: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean; kg?: boolean };
@@ -139,7 +139,7 @@ function LucratividadeTela() {
       const [d, peds, cf, mo] = await Promise.all([
         carregarIntervalo(user.id, ini, fim),
         // de 1.000 em 1.000, igual ao painel (o Supabase corta em 1.000 linhas sem avisar)
-        buscarTudo<PedidoLucro>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda, imagem_url))")
+        buscarTudo<PedidoLucro>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda, imagem_url, kit_qtd))")
           .eq("user_id", user.id).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, ate) as PromiseLike<{ data: PedidoLucro[] | null; error: unknown }>),
         supabase.from("custos_fixos").select("valor, ativo").eq("user_id", user.id),
         supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", user.id).maybeSingle(),

@@ -5,6 +5,7 @@ import { parseNumBR } from "@/lib/numeroBR";
 import { explicarErro } from "@/lib/erros";
 import { calcularCustoLucro, custoDaHora, lerMaoObraConta, precoQueClientePaga, type CustoDaVenda, type MaoObraConta } from "@/lib/produto-precificacao";
 import { taxaPctDaForma, fixoPorPedido } from "@/lib/painelFinanceiro";
+import { qtdBaseDoKit } from "@/lib/kitQuantidade";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { gravarInsumosDoProduto } from "@/lib/insumosDoo";
@@ -103,6 +104,7 @@ type Produto = {
   imagem_url?: string;
   categoria: string;
   forma_venda: string;
+  kit_qtd?: unknown;
   created_at: string;
   rendimento_qtd?: string;
   rendimento_peso?: string;
@@ -614,6 +616,9 @@ export default function FichaTecnica() {
           {/* Ingredientes */}
           <section className="cl9-card">
             <Titulo contagem={ficha.length || undefined}>Ingredientes</Titulo>
+            {/* (6.03) pra que quantidade é a receita: o custo de cada pedido parte daqui (kit pela quantidade, bolo pelo peso) */}
+            {(() => { const base = qtdBaseDoKit(selected.kit_qtd); return base > 0 ? <p className="fd-dica">Monte a receita para {base} unidades. Num pedido maior, o custo acompanha a quantidade.</p>
+              : selected.forma_venda === "kg" ? <p className="fd-dica">Monte a receita para 1 kg. Num bolo maior, o custo acompanha o peso.</p> : null; })()}
             {ficha.length === 0 ? (
               <TelaVazia compacta icone={<Egg size={28} />}
                 titulo={insumosCadastrados.length === 0 ? "Cadastre seus ingredientes" : "Nenhum ingrediente nesta ficha"}

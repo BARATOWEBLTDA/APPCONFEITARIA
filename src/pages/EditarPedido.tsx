@@ -1508,7 +1508,7 @@ export default function EditarPedido() {
                     if (p.sabor?.nome) campos.push(['Sabor', p.sabor.nome])
                     if (Array.isArray(p.recheios) && p.recheios.length) campos.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: { nome: string }) => r.nome).join(', ')])
                     if (p.cobertura?.nome) campos.push(['Cobertura', p.cobertura.nome])
-                    if (sabores.length) campos.push(['Sabores', textoSaboresKit(sabores)])
+                    if (sabores.length) campos.push(['Sabores', textoSaboresKit(sabores, '\n')]) // (6.03) um sabor por linha (telaPedido.css: pre-line)
                     if (extras.length) campos.push(['Adicionais', extras.map((e: ExtraEscolhido) => nomeExtra(e)).join(', ')])
                     const obs = (it.observacoes || '').trim()
                     const foto = fotoDoItem(it)

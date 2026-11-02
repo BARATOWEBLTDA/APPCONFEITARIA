@@ -141,6 +141,17 @@ export default function Financeiro() {
     return () => { cancelado = true; };
   }, [uid, versao, dia]);
 
+  // (6.03) período de um dia só (Hoje): o gráfico mostra os últimos 7 dias, com o dia escolhido em destaque
+  const umDia = per.ini === per.ate;
+  const [dias7, setDias7] = useState<DiaFluxo[] | null | undefined>(undefined); // undefined = carregando, null = falhou
+  useEffect(() => {
+    if (!uid || !umDia) { setDias7(undefined); return; }
+    let cancelado = false;
+    setDias7(undefined);
+    carregarPeriodo(uid, somar(per.ate, -6), per.ate).then(d => { if (!cancelado) setDias7(d.erro ? null : d.dias); }, () => { if (!cancelado) setDias7(null); });
+    return () => { cancelado = true; };
+  }, [uid, chavePer, versao, dia]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const depoisDeMudar = async () => { await recarregar(); setVersao(v => v + 1); };
   // voltou pro app: busca tudo de novo
   useAoVoltar(() => { depoisDeMudar(); });
@@ -259,9 +270,9 @@ export default function Financeiro() {
         )}
 
         {!semMov && <div className="fd-a-fluxo fd-card">
-          <div className="fd-ct fd-ct--fluxo"><span><b>Entrou e saiu por dia</b><small className="fd-ct-sub">{extenso(per.ini, per.ate)}</small></span>
+          <div className="fd-ct fd-ct--fluxo"><span><b>Entrou e saiu por dia</b><small className="fd-ct-sub">{umDia && dias7 ? "Últimos 7 dias" : extenso(per.ini, per.ate)}</small></span>
             <span className="fd-lg"><span><i className="e" />Entrou</span><span><i className="s" />Saiu</span></span></div>
-          {ok ? <BarrasPorDia dias={ok.dias} /> : <div className="fd-ph" />}
+          {ok && !(umDia && dias7 === undefined) ? <BarrasPorDia dias={umDia && dias7 ? dias7 : ok.dias} foco={umDia && dias7 ? per.ate : null} /> : <div className="fd-ph" />}
         </div>}
 
         {/* computador: listas com o botão em cada linha */}
@@ -383,7 +394,8 @@ function dataTag(iso: string, dias: number | null) {
  * Verde e vermelha do mesmo tamanho, lado a lado · duas linhas de escala com valor · "hoje" no eixo ·
  * tocar (ou passar o mouse) num dia mostra os valores dele em cima, numa linha só.
  */
-function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
+/** foco: com o período de um dia, o gráfico traz os 7 dias até ele, com o dia do período em destaque (o total embaixo é dos 7 dias, como diz o subtítulo) */
+function BarrasPorDia({ dias, foco = null }: { dias: DiaFluxo[]; foco?: string | null }) {
   const caixa = useRef<HTMLDivElement>(null);
   const [W, setW] = useState(320);
   const [sel, setSel] = useState<number | null>(null);
@@ -405,7 +417,7 @@ function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
     }
   } else for (const d of dias) {
     const dt = deIso(d.data);
-    grupos.push({ label: dias.length <= 7 ? `${SEMANA[dt.getDay()]} ${String(dt.getDate()).padStart(2, "0")}` : String(dt.getDate()), titulo: `${SEMANA[dt.getDay()]}, ${dm(d.data)}`, entradas: d.entradas, saidas: d.saidas, hoje: d.data === hoje });
+    grupos.push({ label: dias.length <= 7 ? `${SEMANA[dt.getDay()]} ${String(dt.getDate()).padStart(2, "0")}` : String(dt.getDate()), titulo: `${SEMANA[dt.getDay()]}, ${dm(d.data)}`, entradas: d.entradas, saidas: d.saidas, hoje: d.data === (foco || hoje) });
   }
   const H = 150, topo = 8, base = H - 2, dir = 64; // dir: espaço da escala
   const max = Math.max(1, ...grupos.map(g => Math.max(g.entradas, g.saidas)));
@@ -421,7 +433,7 @@ function BarrasPorDia({ dias }: { dias: DiaFluxo[] }) {
   return (
     <div className="fd-fluxo" ref={caixa}>
       <div className={`fd-fl-dica${gs ? "" : " vazia"}`} aria-live="polite">
-        {gs ? <><b>{gs.hoje && !porSemana ? "Hoje" : gs.titulo}</b><span><em className="e">+ {brl(gs.entradas)}</em> · <em className="s">− {brl(gs.saidas)}</em></span></>
+        {gs ? <><b>{gs.hoje && !porSemana && (!foco || foco === hoje) ? "Hoje" : gs.titulo}</b><span><em className="e">+ {brl(gs.entradas)}</em> · <em className="s">− {brl(gs.saidas)}</em></span></>
           : vazio ? "Nenhuma entrada ou saída neste período" : "Escolha um dia para ver os valores"}
       </div>
       <svg viewBox={`0 0 ${W} ${H + 22}`} width="100%" height={H + 22} role="img" aria-label={`Entradas e saídas ${porSemana ? "por semana" : "por dia"}`}

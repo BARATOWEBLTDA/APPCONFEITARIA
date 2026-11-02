@@ -5,12 +5,13 @@ import { buscarTudo } from "@/lib/buscarTudo";
 import { faltaNoBanco, normalizarForma } from "@/lib/pagamentos";
 import { pesoDoTamanho } from "@/lib/itemSacola";
 import type { OpcaoGrupoJson } from "@/lib/precoCardapio";
+import { qtdBaseDoKit } from "@/lib/kitQuantidade";
 
 type LinhaPagamento = { valor: number; recebido_em: string };
 type LinhaLancamento = { tipo: string | null; categoria: string | null; valor: number; data: string; estornado_em?: string | null; forma?: string | null };
 type PedidoRecebidoAntigo = { valor_total: number | null; valor_recebido: number | null; status: string | null; status_pagamento: string | null; data_entrega: string };
 type LinhaFicha = { produto_id: string; quantidade: number | null; unidade_utilizada: string | null; insumos: { custo_unitario: number | null; unidade: string | null } | null };
-type ProdutoDoItem = { id: string; forma_venda?: string | null };
+type ProdutoDoItem = { id: string; forma_venda?: string | null; kit_qtd?: unknown };
 /** Item de pedido lido com CAMPOS_ITEM_CUSTO */
 export type ItemCusto = { quantidade?: number | string | null; personalizacoes?: unknown; produtos?: ProdutoDoItem | ProdutoDoItem[] | null };
 /** As escolhas gravadas no item (os dois formatos: com e sem "escolhas") */
@@ -129,7 +130,7 @@ export async function custoPorProduto(produtoIds: string[]): Promise<Record<stri
 }
 
 /** O que a busca dos itens precisa trazer pra conta do custo (use dentro de pedido_itens(...)). */
-export const CAMPOS_ITEM_CUSTO = "quantidade, personalizacoes, produtos(id, forma_venda)";
+export const CAMPOS_ITEM_CUSTO = "quantidade, personalizacoes, produtos(id, forma_venda, kit_qtd)";
 
 const produtoDoItem = (it: ItemCusto) => (Array.isArray(it?.produtos) ? it.produtos[0] : it?.produtos) || null;
 /** Tamanho e kit escolhidos no item (os dois formatos que o app grava). */
@@ -166,8 +167,9 @@ export async function produtosPeloPeso(itens: ItemCusto[]): Promise<Set<string>>
  */
 export function multiplicadorDoItem(it: ItemCusto, peloPeso: Set<string>): number {
   const { tamanho, totalKit } = escolhasDoItem(it);
-  if (totalKit > 0) return 1;
   const prod = produtoDoItem(it);
+  // (6.03) kit: a ficha vale pela quantidade do preço base (ex.: 1 cento); 500 salgados custam 5 fichas, não 1
+  if (totalKit > 0) { const base = qtdBaseDoKit(prod?.kit_qtd); return base > 0 ? totalKit / base : 1; }
   if (tamanho && prod && (prod.forma_venda === "kg" || peloPeso.has(prod.id))) {
     const peso = pesoDoTamanho(tamanho, true); // o peso gravado; se faltar, o que está no nome do tamanho
     if (peso > 0) return peso;

@@ -53,6 +53,20 @@ export function kitsValidos(k: KitQtdConfig): KitFechado[] {
   return (k.kits || []).filter(x => x.qtd > 0 && x.preco > 0).sort((a, b) => a.qtd - b.qtd)
 }
 
+/**
+ * (6.03) Quantas unidades a ficha técnica de um kit cobre: a do preço base do produto
+ * (pelo cento: a quantidade mínima; kits prontos: o kit mais barato, o mesmo de precoMinKit).
+ * 0 quando não é kit ou não dá pra saber.
+ */
+export function qtdBaseDoKit(k: unknown): number {
+  if (!kitAtivo(k)) return 0
+  if (k.modo === "livre") return Number(k.livre?.min) || 0
+  const v = kitsValidos(k)
+  if (!v.length) return 0
+  const menor = Math.min(...v.map(x => x.preco))
+  return v.find(x => x.preco === menor)?.qtd || 0
+}
+
 /** Preço de uma quantidade no modo livre (preço por cento) */
 export function precoLivre(k: KitQtdConfig, qtd: number): number {
   return r2(((k.livre?.preco_cento || 0) * qtd) / 100)

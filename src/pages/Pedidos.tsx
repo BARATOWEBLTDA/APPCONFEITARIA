@@ -504,9 +504,10 @@ export default function Pedidos() {
   // celular: quantos em cada aba, a aba escolhida (ou a primeira com pedido) e os grupos dela
   const nSit = useMemo(() => {
     const n: Record<Sit, number> = { aceitar: 0, agenda: 0, prontos: 0, concluidos: 0 }
-    pedidosFiltrados.forEach(p => { n[sitDe(p)]++ })
+    // (6.03) Concluídos mostra só os entregues de hoje: o total de sempre só cresce e não diz nada
+    pedidosFiltrados.forEach(p => { const s = sitDe(p); if (s !== 'concluidos') n[s]++; else if (grupoDoStatus(p.status) === 'entregue' && String(p.data_entrega || '').slice(0, 10) === hoje) n.concluidos++ })
     return n
-  }, [pedidosFiltrados])
+  }, [pedidosFiltrados, hoje])
   const sitAtual: Sit = sit ?? (nSit.aceitar > 0 ? 'aceitar' : nSit.agenda > 0 || nSit.prontos === 0 ? 'agenda' : 'prontos')
   const gruposCel = useMemo(() => agrupar(pedidosFiltrados.filter(p => sitDe(p) === sitAtual)), [agrupar, pedidosFiltrados, sitAtual])
 
@@ -591,7 +592,7 @@ export default function Pedidos() {
               <div className="pdk-abas" role="tablist" aria-label="Situação dos pedidos">
                 {SITS.map(t => (
                   <button key={t.k} type="button" role="tab" aria-selected={sitAtual === t.k} className={`pdk-aba${t.k === 'aceitar' && nSit.aceitar > 0 ? ' alerta' : ''}`} onClick={() => { setSit(t.k); window.scrollTo(0, 0) }}>
-                    <span className="pdk-aba-t">{t.curto ? <><span className="pdk-aba-l">{t.nome}</span><span className="pdk-aba-c">{t.curto}</span></> : t.nome}</span>{t.k !== 'concluidos' ? <i>{nSit[t.k]}</i> : <i className="pdk-aba-sem" aria-hidden="true">0</i>}
+                    <span className="pdk-aba-t">{t.curto ? <><span className="pdk-aba-l">{t.nome}</span><span className="pdk-aba-c">{t.curto}</span></> : t.nome}</span><i>{nSit[t.k]}</i>
                   </button>
                 ))}
               </div>
