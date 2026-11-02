@@ -3,11 +3,11 @@
 // (sem as de insumos, que já estão no custo da ficha). Mais: ponto de equilíbrio e lucro por produto.
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { CTA_PRO } from "@/lib/beneficiosPro";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { useNavigate } from "react-router-dom";
-import { CaretRight, ChartLineUp, Equals, Minus, ShoppingBagOpen, Warning, WarningCircle } from "@phosphor-icons/react";
+import { ChartLineUp, Equals, Minus, ShoppingBagOpen, Warning, WarningCircle } from "@phosphor-icons/react";
 import PeriodoFiltro, { iso as isoDia, periodoDoDia, periodoDoMes, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
 import { useDiaAtual } from "@/hooks/useAoVoltar";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -111,6 +111,7 @@ function LucratividadeTela() {
   const [fixos, setFixos] = useState<{ custos: number; salario: number } | null>(null);
   const [erro, setErro] = useState(false); // não deu pra carregar (10/10)
   const [tentativa, setTentativa] = useState(0);
+  const [verTodosProd, setVerTodosProd] = useState(false);
   // (19/10) o id da conta que já está na memória: trocar de mês não pede o usuário de novo ao Supabase
   // (duas buscas seguidas do usuário podiam travar e a tela ficava em branco pra sempre)
   const { profile } = useProfile();
@@ -180,11 +181,11 @@ function LucratividadeTela() {
   const margemBruta = dados && dados.vendido > 0 ? (dados.vendido - dados.cmv - dados.custosVariaveis) / dados.vendido : 0;
   const metaEquilibrio = fixos && margemBruta > 0 ? (fixos.custos + fixos.salario) / margemBruta : 0;
   const semFicha = (produtos || []).filter(p => p.semFicha);
-  const gruposProd = [
-    { k: "ruim", t: "Dando prejuízo", itens: (produtos || []).filter(p => !p.semFicha && p.lucro < 0).sort((a, b) => a.lucro - b.lucro) },
-    { k: "bom", t: "Dando lucro", itens: (produtos || []).filter(p => !p.semFicha && p.lucro >= 0) },
-    { k: "sf", t: "Sem ficha técnica", itens: semFicha },
-  ].filter(g => g.itens.length > 0);
+  // (6.07) uma lista só: prejuízo primeiro (o pior em cima), depois lucro, depois sem ficha; mostra 10 e "Ver todos"
+  const emPrejuizo = (produtos || []).filter(p => !p.semFicha && p.lucro < 0).sort((a, b) => a.lucro - b.lucro);
+  const listaProd = [...emPrejuizo, ...(produtos || []).filter(p => !p.semFicha && p.lucro >= 0), ...semFicha];
+  const LIMITE_PROD = 10;
+  const prodVisiveis = verTodosProd ? listaProd : listaProd.slice(0, LIMITE_PROD);
   // 10/10: produto vendido sem ficha (ou custo de ingredientes zerado) = lucro e margem maiores do que são: avisa
   const qtdSemFicha = produtos && produtos.length ? semFicha.length : (dados?.semFicha || 0);
   const faltaFicha = !!dados && dados.qtdVendidos > 0 && (dados.cmv === 0 || qtdSemFicha > 0);
@@ -250,30 +251,35 @@ function LucratividadeTela() {
               {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
                 <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> para ver o lucro de cada um.</p>
               ) : (
-                // (6.06) lista: prejuízo primeiro (o que mais importa não fica no fim), depois lucro, depois sem ficha
+                <>
+                {emPrejuizo.length > 0 && <p className="lu-prej"><i aria-hidden="true" />{emPrejuizo.length === 1 ? "1 produto está dando prejuízo" : `${emPrejuizo.length} produtos estão dando prejuízo`}</p>}
                 <div className="lu-pg">
-                  {gruposProd.map(g => (<Fragment key={g.k}>
-                  {gruposProd.length > 1 && <p className={`lu-gt${g.k === "ruim" ? " ruim" : ""}`}>{g.t}<i>{g.itens.length}</i></p>}
-                  {g.itens.map(p => (
-                    <div key={p.chave} className={`lu-pc${p.chave.startsWith("nome:") ? "" : " lu-pc--bt"}`}
-                      {...(p.chave.startsWith("nome:") ? {} : { role: "button", tabIndex: 0, "aria-label": `${p.nome}: ${p.semFicha ? "montar a ficha técnica" : "ver a ficha técnica"}`,
+                  {prodVisiveis.map(p => {
+                    const semId = p.chave.startsWith("nome:");
+                    return (
+                    <div key={p.chave} className={`lu-pc${semId ? "" : " lu-pc--bt"}`}
+                      {...(semId ? {} : { role: "button", tabIndex: 0, "aria-label": `${p.nome}: ${p.semFicha ? "montar a ficha técnica" : "ver a ficha técnica"}`,
                         onClick: () => navigate("/ficha-tecnica", { state: { produtoId: p.chave } }),
                         onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate("/ficha-tecnica", { state: { produtoId: p.chave } }); } } })}>
                       <span className="lu-pc-foto">{p.foto ? <img src={p.foto} alt="" loading="lazy" /> : <ShoppingBagOpen size={28} aria-hidden="true" />}</span>
                       <span className="lu-pc-tx">
                         <b className="lu-pc-nm">{p.nome}</b>
                         <small>{p.kg ? `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} kg vendidos` : `${p.qtd.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} ${p.qtd === 1 ? "vendido" : "vendidos"}`} · {brl(p.vendido)}</small>
-                        <span className="lu-pc-l">Lucro</span>
-                        {/* sem ficha o custo é zero: mostrar "lucro = preço" engana, então fica um traço */}
-                        <strong className={p.semFicha ? "sf" : p.lucro < 0 ? "ruim" : ""}>{p.semFicha ? "—" : brl(p.lucro)}</strong>
+                        {/* sem ficha o custo é zero: mostrar "lucro = preço" engana; no lugar vai o caminho pra montar a ficha */}
                         {p.semFicha
-                          ? <span className="lu-sf"><Warning size={12} weight="bold" /> sem ficha técnica{!p.chave.startsWith("nome:") && <b className="lu-sf-bt">Montar ficha <CaretRight size={12} weight="bold" /></b>}</span>
-                          : <span className="lu-pc-m"><span className="lu-p-bar"><i className={p.lucro < 0 ? "ruim" : ""} style={{ width: `${Math.max(2, Math.min(100, p.margem))}%` }} /></span>margem {p.margem}%</span>}
+                          ? <strong className={`sf${semId ? " sem-id" : ""}`}>{semId ? "Sem ficha" : "Montar ficha"}</strong>
+                          : <strong className={p.lucro < 0 ? "ruim" : ""}>{brl(p.lucro)}</strong>}
+                        {!p.semFicha && (p.lucro < 0
+                          ? <span className="lu-pc-m">prejuízo</span>
+                          : <span className="lu-pc-m"><span className="lu-p-bar"><i style={{ width: `${Math.max(2, Math.min(100, p.margem))}%` }} /></span>margem {p.margem}%</span>)}
                       </span>
                     </div>
-                  ))}
-                  </Fragment>))}
+                  ); })}
                 </div>
+                {listaProd.length > LIMITE_PROD && (
+                  <button type="button" className="lu-mais" onClick={() => setVerTodosProd(v => !v)}>{verTodosProd ? "Ver menos" : `Ver todos (${listaProd.length})`}</button>
+                )}
+                </>
               )}
             </section>
 
@@ -345,11 +351,13 @@ const CSS = `
   .lu-vz { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
   /* (6.06) uma lista compacta em todas as larguras: foto pequena, nome, vendidos, lucro e margem (cartões grandes viravam um mar de quadrados) */
   .lu-pg { margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; }
-  .lu-gt { display: flex; align-items: center; gap: 6px; margin: 14px 0 2px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
-  .lu-gt:first-child { margin-top: 0; } .lu-gt.ruim { color: var(--ui-vermelho); }
-  .lu-gt i { font-style: normal; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ui-cinza); font-size: 12px; line-height: 20px; text-align: center; color: var(--ui-texto-2); }
   .lu-pc { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--ui-linha); background: var(--ui-branco); }
-  .lu-pc:last-child, .lu-pc:has(+ .lu-gt) { border-bottom: 0; }
+  .lu-pc:last-child { border-bottom: 0; }
+  /* computador: duas colunas (uma lista comprida de 37 linhas cansava) */
+  @media (min-width: 1024px) { .lu-pg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; } .lu-pc:nth-last-child(2):nth-child(odd) { border-bottom: 0; } }
+  .lu-prej { display: flex; align-items: center; gap: 8px; margin: 2px 0 4px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+  .lu-prej i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ui-vermelho); }
+  .lu-mais { display: block; width: 100%; min-height: 44px; margin-top: 6px; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
   .lu-pc-foto { position: relative; flex: none; width: 52px; height: 52px; border-radius: 12px; overflow: hidden; background: #F8F3F5; color: #C9B8BF; display: flex; align-items: center; justify-content: center; }
   .lu-pc-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .lu-pc-tx { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nm v" "sub m"; column-gap: 10px; row-gap: 2px; align-items: center; }
@@ -357,10 +365,10 @@ const CSS = `
   .lu-pc-tx small { grid-area: sub; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lu-pc-l { display: none; }
   .lu-pc-tx strong { grid-area: v; justify-self: end; font-size: 15px; font-weight: 600; color: var(--ui-verde); white-space: nowrap; }
-  .lu-pc-tx strong.ruim { color: var(--ui-vermelho); } .lu-pc-tx strong.sf { color: var(--ui-texto); }
+  .lu-pc-tx strong.ruim { color: var(--ui-vermelho); } .lu-pc-tx strong.sf { font-size: 14px; color: var(--ui-rosa-escuro); } .lu-pc-tx strong.sf.sem-id { color: var(--ui-texto-2); font-weight: 500; }
   .lu-pc-m { grid-area: m; justify-self: end; display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
   .lu-p-bar { display: none; width: 64px; height: 5px; border-radius: 9px; background: var(--ui-linha); overflow: hidden; } .lu-p-bar i { display: block; height: 100%; background: #22C55E; border-radius: 9px; } .lu-p-bar i.ruim { background: #F87171; }
-  @media (min-width: 640px) { .lu-p-bar { display: block; } }
+  @media (min-width: 640px) and (max-width: 1023px) { .lu-p-bar { display: block; } } /* nas 2 colunas do computador a barra apertava o nome */
   .lu-sf { grid-column: 1 / -1; justify-self: start; color: var(--ui-laranja); font-weight: 600; display: flex; align-items: center; gap: 3px; font-size: 12px; white-space: nowrap; }
   .lu-sf-bt { display: none; }
   .lu-pc--bt { cursor: pointer; } .lu-pc--bt:hover .lu-pc-nm { color: var(--ui-rosa-escuro); }
