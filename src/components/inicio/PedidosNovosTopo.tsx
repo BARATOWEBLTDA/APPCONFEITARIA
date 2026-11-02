@@ -60,6 +60,7 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
     // o Início mostra o destaque do "Pedidos" no 1º pedido aceito (aí o aviso curto não aparece por cima)
     if (!aoAceitar(um.id)) avisarMudanca({ numero: um.numero, cliente_nome: (um as PedidoNovo & { cliente_nome?: string | null }).cliente_nome || um.cliente || null }, "agendado");
   };
+  const nAceitar = novos.filter(p => grupoDoStatus(p.status) === "aguardando_aceite").length;
   const maisAntigo = novos.reduce((a, p) => (!a || p.criado < a ? p.criado : a), "");
 
   // (22/10) um cartão só, em linhas: cor só na bolinha (laranja = pra aceitar, vermelho = atrasado)
@@ -81,7 +82,8 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
       {novos.length > 1 && (
         <div className="pnt-l">
           <span className="pnt-dot pnt-dot--ace" aria-hidden="true" />
-          <span className="pnt-tx"><b>{novos.length} pedidos para aceitar</b><small>O mais antigo chegou {ha(maisAntigo, agora)}</small></span>
+          {/* (6.04) o título diz o que tem lá: pra aceitar, esperando o Pix ou os dois */}
+          <span className="pnt-tx"><b>{novos.length} {nAceitar === novos.length ? "pedidos para aceitar" : nAceitar === 0 ? "pedidos esperando o Pix" : "pedidos novos"}</b><small>O mais antigo chegou {ha(maisAntigo, agora)}</small></span>
           <button type="button" className="pnt-bt" onClick={() => navigate("/pedidos?filtro=aguardando")}>Ver</button>
         </div>
       )}

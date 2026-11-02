@@ -42,8 +42,10 @@ type Sit = 'aceitar' | 'agenda' | 'prontos' | 'concluidos'
 const SITS: { k: Sit; nome: string; curto?: string }[] = [
   { k: 'aceitar', nome: 'Para aceitar', curto: 'Novos' }, { k: 'agenda', nome: 'Agendados' }, { k: 'prontos', nome: 'Prontos' }, { k: 'concluidos', nome: 'Concluídos' },
 ]
-/** Em que aba do celular o pedido fica: em produção e esperando pagamento ficam em Agendados */
-const sitDe = (p: Pedido): Sit => terminou(p) ? 'concluidos' : precisaAceitar(p) ? 'aceitar'
+/** Em que aba do celular o pedido fica: em produção fica em Agendados; esperando o Pix fica em Novos (6.04) */
+/** (6.04) pedido do cardápio esperando o Pix: é pedido novo (o Início e o número no menu contam junto com os pra aceitar) */
+const esperaPix = (p: Pedido) => grupoDoStatus(p.status) === 'aguardando_pagamento'
+const sitDe = (p: Pedido): Sit => terminou(p) ? 'concluidos' : precisaAceitar(p) || esperaPix(p) ? 'aceitar'
   : ['finalizado', 'aguardando_retirada', 'em_entrega'].includes(grupoDoStatus(p.status)) ? 'prontos' : 'agenda'
 const MEDIDA_TABLET = '(min-width: 768px)'
 
@@ -475,7 +477,7 @@ export default function Pedidos() {
   }, [pedidos, busca, aba, statusSelecionados, periodoFiltro, dataInicio, dataFim, filtroAguardando, filtroAtrasados, hoje, computador]) // "hoje": os filtros de data e de atrasado andam com o dia
 
   // Agrupado por dia: Atrasado, Hoje, Amanhã, os próximos dias, Sem data e Concluídos
-  const agrupar = useCallback((lista: Pedido[]) => {
+  const agrupar = useCallback((lista: Pedido[], cel = false) => {
     // (11/10) "hoje" vem do useDiaAtual: com a lista aberta de um dia pro outro, os grupos se refazem sozinhos
     const [ah, mh, dh] = hoje.split('-').map(Number)
     const hojeIso = hoje, amanhaIso = dataISO(new Date(ah, mh - 1, dh + 1))
@@ -486,7 +488,9 @@ export default function Pedidos() {
     const add = (chave: string, titulo: string, itens: Pedido[]) => { if (itens.length) g.push({ chave, titulo, itens }) }
     // pedidos pra aceitar vêm primeiro, em destaque (3.14); os outros seguem agrupados por dia
     add('aceitar', 'Para aceitar', lista.filter(p => !terminou(p) && precisaAceitar(p)).sort(porHora))
-    const ativos = lista.filter(p => !terminou(p) && !precisaAceitar(p)).sort(porHora)
+    // (6.04) celular: os que esperam o Pix ficam na aba Novos, num grupo logo depois dos pra aceitar
+    if (cel) add('pix', 'Esperando o Pix', lista.filter(p => !terminou(p) && esperaPix(p)).sort(porHora))
+    const ativos = lista.filter(p => !terminou(p) && !precisaAceitar(p) && !(cel && esperaPix(p))).sort(porHora)
     // (11/10) "Atrasado" pela regra única (lib/pedidoStatus): a data passou E o pedido ainda não ficou pronto.
     // O que já está pronto (ou saiu pra entrega) e é de um dia anterior não é atraso: fica num grupo à parte, pra não sumir da lista.
     const passados = ativos.filter(p => p.data_entrega && p.data_entrega.slice(0, 10) < hojeIso)
@@ -509,7 +513,7 @@ export default function Pedidos() {
     return n
   }, [pedidosFiltrados, hoje])
   const sitAtual: Sit = sit ?? (nSit.aceitar > 0 ? 'aceitar' : nSit.agenda > 0 || nSit.prontos === 0 ? 'agenda' : 'prontos')
-  const gruposCel = useMemo(() => agrupar(pedidosFiltrados.filter(p => sitDe(p) === sitAtual)), [agrupar, pedidosFiltrados, sitAtual])
+  const gruposCel = useMemo(() => agrupar(pedidosFiltrados.filter(p => sitDe(p) === sitAtual), true), [agrupar, pedidosFiltrados, sitAtual])
 
   // (22/10) o filtro conta o que a aba aberta vai mostrar (computador: Encomendas ou Pronta entrega).
   // (01/11 · 5.99) no celular as abas já são as situações: contando só a aba aberta, todas as outras situações apareciam com 0
