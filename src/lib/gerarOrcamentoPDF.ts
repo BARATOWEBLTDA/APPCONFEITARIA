@@ -2,16 +2,17 @@
 // Orçamento em PDF no modelo padrão do Doonly (03/11: estilo de sistema, o mesmo do
 // pedido). Usado no Baixar PDF do orçamento (OrcamentoEditar). Recurso do PRO.
 // ─────────────────────────────────────────────────────────────────────────────
-import { gerarDocumento, abrirJanela, esc, brl, dataBR, card, kv, telBR, diaLongo } from "@/lib/pdfDoonly";
+import { gerarDocumento, abrirJanela, esc, brl, dataBR, card, kv, telBR, diaLongo, type Loja } from "@/lib/pdfDoonly";
 import { FORMA_ORC, hojeISO, somarItens, totalOrcamento, valorSinal, type Orcamento } from "@/lib/orcamentos";
 
 const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
 const qtdBR = (q: number) => String(Math.round((Number(q) || 0) * 1000) / 1000).replace(".", ",");
 
 /** `o` já com os extras que valem agora (desconto, acréscimo e entrega ligados ou não). */
-export async function gerarOrcamentoPDF(o: Orcamento, janelaAberta?: Window | null): Promise<void> {
+/** `loja`: só na página pública do link (sem login); no app ela é lida do perfil. */
+export async function gerarOrcamentoPDF(o: Orcamento, janelaAberta?: Window | null, loja?: Loja): Promise<void> {
   const janela = janelaAberta ?? abrirJanela(); // abre já no clique (senão o navegador bloqueia)
-  await gerarDocumento((loja) => {
+  await gerarDocumento((lj) => {
     const entrega = o.tipo_entrega === "entrega";
     const itens = o.itens || [];
     const subtotal = somarItens(itens);
@@ -66,7 +67,7 @@ export async function gerarOrcamentoPDF(o: Orcamento, janelaAberta?: Window | nu
     </div>`;
 
     // (03/11) espaço pra carimbo e assinatura da loja e o "de acordo" da cliente (orçamento impresso e assinado)
-    const assinaturas = `<div class="ass fim"><div><span></span><b>${esc(loja.nome)}</b><small>Carimbo e assinatura</small></div>`
+    const assinaturas = `<div class="ass fim"><div><span></span><b>${esc(lj.nome)}</b><small>Carimbo e assinatura</small></div>`
       + `<div><span></span><b>${esc((o.cliente_nome || "").trim() || "Cliente")}</b><small>De acordo · Data: ____/____/______</small></div></div>`;
     const feito = o.created_at ? new Date(o.created_at) : new Date();
     const numero = o.numero ? `#${o.numero}` : "";
@@ -82,5 +83,5 @@ export async function gerarOrcamentoPDF(o: Orcamento, janelaAberta?: Window | nu
       alerta: !!o.validade && String(o.validade).slice(0, 10) < hojeISO(),
       corpo: `${blocoMsg}${blocoCli}${tabela}<div class="g2 lado fim">${condicoes}${totais}</div>${assinaturas}`,
     };
-  }, janela);
+  }, janela, loja);
 }

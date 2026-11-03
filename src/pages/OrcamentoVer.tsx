@@ -1,6 +1,6 @@
 /**
  * (24/10) Página pública da proposta (/orcamento/:token): a cliente vê os itens, os valores, a data e as condições
- * e aprova (vira pedido na Agenda da loja) ou recusa. "Baixar PDF" imprime a página (dá para salvar em PDF).
+ * e aprova (vira pedido na Agenda da loja) ou recusa. "Baixar PDF" gera o mesmo PDF da loja (03/11; antes imprimia a página).
  */
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
@@ -9,11 +9,13 @@ import { CampoArea, Janela, avisar } from '@/components/base'
 import { supabase } from '@/lib/supabase'
 import { explicarErro } from '@/lib/erros'
 import { brl, hojeISO, textoEntrega, dataLonga, textoCondicoes, totalOrcamento, valorSinal, type ItemOrcamento, type Orcamento } from '@/lib/orcamentos'
+import { gerarOrcamentoPDF } from '@/lib/gerarOrcamentoPDF'
+import { lojaPublica } from '@/lib/pdfDoonly'
 import './orcamentos.css'
 
 /** O que a função do banco devolve */
 type RespostaRpc = { ok?: boolean; erro?: string } | null
-type Ver = Orcamento & { loja: { nome: string; logo?: string | null; codigo?: string } | null; pedido_numero?: number | null }
+type Ver = Orcamento & { loja: { nome: string; logo?: string | null; codigo?: string; contato?: { telefone?: string | null; instagram?: string | null; cidade?: string | null; estado?: string | null } | null } | null; pedido_numero?: number | null }
 
 export default function OrcamentoVer() {
   const { token } = useParams()
@@ -94,7 +96,7 @@ export default function OrcamentoVer() {
         <p className="orc-prev-cond">{textoCondicoes(o, total)}{sinal > 0 && o.sinal_tipo !== 'total' ? ` · resto ${brl(Math.max(0, total - sinal))} na entrega` : ''}</p>
       </section>
 
-      <button type="button" className="orp-pdf" onClick={() => window.print()}><FilePdf size={18} weight="bold" />Baixar PDF</button>
+      <button type="button" className="orp-pdf" onClick={() => void gerarOrcamentoPDF(o, null, lojaPublica(o.loja))}><FilePdf size={18} weight="bold" />Baixar PDF</button>
 
       {o.status === 'enviado' && !vencido && (
         <div className="orp-pe orp-pe--2">

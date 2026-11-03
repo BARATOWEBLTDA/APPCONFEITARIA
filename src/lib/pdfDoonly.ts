@@ -40,6 +40,16 @@ export const telBR = (v?: string | null): string => {
   return n.length === 11 ? `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}` : n.length === 10 ? `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}` : String(v || "").trim();
 };
 
+/** Loja do cabeçalho a partir do que a página pública recebe (nome, logo e contato). */
+export function lojaPublica(l: { nome?: string | null; logo?: string | null; contato?: { telefone?: string | null; instagram?: string | null; cidade?: string | null; estado?: string | null } | null } | null | undefined, isPro = true): Loja {
+  const nome = (l?.nome || "Confeitaria").trim();
+  const c = l?.contato || {};
+  return {
+    nome, contato: [telBR(c.telefone), arrobaInstagram(c.instagram), [c.cidade, c.estado].filter(Boolean).join(", ")].filter(Boolean).join(" · "),
+    logo: l?.logo || null, inicial: nome.charAt(0).toUpperCase() || "D", isPro,
+  };
+}
+
 /** Dados da loja pro cabeçalho: logo da Aparência → foto do perfil → inicial. */
 export async function buscarLoja(): Promise<Loja> {
   const { data: { user } } = await supabase.auth.getUser();
@@ -124,11 +134,12 @@ ${corpo}
 }
 
 /** Fluxo completo: janela aberta no clique → busca a loja → escreve o documento. */
-export async function gerarDocumento(montarCorpo: (loja: Loja) => Promise<Doc> | Doc, janela?: Window | null): Promise<void> {
+export async function gerarDocumento(montarCorpo: (loja: Loja) => Promise<Doc> | Doc, janela?: Window | null, lojaPronta?: Loja): Promise<void> {
   const w = janela ?? abrirJanela();
   if (!w) return;
   try {
-    const loja = await buscarLoja();
+    // (03/11) página pública (link da cliente): a loja já vem pronta, sem login
+    const loja = lojaPronta ?? await buscarLoja();
     const doc = await montarCorpo(loja);
     w.document.open(); w.document.write(montarHtml(loja, doc)); w.document.close();
   } catch (e) {
