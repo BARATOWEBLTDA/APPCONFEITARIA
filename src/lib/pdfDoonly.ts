@@ -1,13 +1,17 @@
 // ── pdfDoonly.ts ─────────────────────────────────────────────────────────────
-// Modelo padrão de PDF do Doonly (aprovado 02/10). Todos os relatórios usam este
-// modelo: faixa rosa da loja (logo, nome, WhatsApp, cidade), cartões claros, os
-// números importantes num bloco vinho e o mesmo rodapé. Fonte Poppins, a mesma do app (27/10: era Geist).
+// Modelo padrão de PDF do Doonly (03/11: estilo de sistema, compacto). Todos os
+// documentos usam este modelo: cabeçalho numa faixa baixa (logo, nome, contato numa
+// linha só, e o número do documento à direita) com uma linha rosa embaixo, quadros
+// com título cinza, tabela com títulos que se repetem em cada página e o mesmo
+// rodapé em todas as páginas (quando foi gerado · "Feito com Doonly" no grátis ·
+// Página X de Y). Da 2ª página em diante, o topo diz de quem é e qual documento.
 // Abre uma janela com o documento e chama a impressão (dá pra salvar em PDF,
 // inclusive no iPhone). A janela é aberta ANTES de buscar os dados, senão o
-// navegador bloqueia como pop-up.
+// navegador bloqueia como pop-up. O nome do arquivo salvo é o título ("Pedido #148").
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from "@/lib/supabase";
 import { fotoDaLoja } from "@/hooks/useProfile";
+import { arrobaInstagram } from "@/lib/redesSociais";
 
 import { avisar } from "@/components/base";
 export type Loja = { nome: string; contato: string; logo: string | null; inicial: string; isPro: boolean };
@@ -20,14 +24,20 @@ export const dataBR = (iso?: string | null): string => {
   const d = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(iso + "T12:00:00") : new Date(iso);
   return isNaN(d.getTime()) ? "" : d.toLocaleDateString("pt-BR");
 };
+/** (41) 99876-5432 a partir de qualquer jeito que o número foi digitado */
+export const telBR = (v?: string | null): string => {
+  const t = String(v || "").replace(/\D/g, "");
+  const n = t.length === 13 && t.startsWith("55") ? t.slice(2) : t;
+  return n.length === 11 ? `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}` : n.length === 10 ? `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}` : String(v || "").trim();
+};
 
 /** Dados da loja pro cabeçalho: logo da Aparência → foto do perfil → inicial. */
 export async function buscarLoja(): Promise<Loja> {
   const { data: { user } } = await supabase.auth.getUser();
-  let p: { nome?: string | null; nome_loja?: string | null; telefone?: string | null; endereco?: string | { cidade?: string; estado?: string } | null; logo_url?: string | null; foto_url?: string | null; plano?: string | null; pro_expira_em?: string | null } | null = null;
+  let p: { nome?: string | null; nome_loja?: string | null; telefone?: string | null; instagram?: string | null; endereco?: string | { cidade?: string; estado?: string } | null; logo_url?: string | null; foto_url?: string | null; plano?: string | null; pro_expira_em?: string | null } | null = null;
   if (user) {
     const { data, error } = await supabase.from("profiles")
-      .select("nome, nome_loja, telefone, endereco, logo_url, foto_url, plano, pro_expira_em").eq("id", user.id).maybeSingle();
+      .select("nome, nome_loja, telefone, instagram, endereco, logo_url, foto_url, plano, pro_expira_em").eq("id", user.id).maybeSingle();
     // (27/10) não leu o perfil: para com o aviso de "tente de novo" (antes o PDF de uma conta PRO saía com a marca do Doonly)
     if (error || !data) throw error || new Error("perfil não carregou");
     p = data;
@@ -35,11 +45,10 @@ export async function buscarLoja(): Promise<Loja> {
   const nome = (p?.nome_loja || p?.nome || "Minha confeitaria").trim();
   let cidade = "";
   try { const e = typeof p?.endereco === "string" ? JSON.parse(p.endereco) : p?.endereco; cidade = [e?.cidade, e?.estado].filter(Boolean).join(", "); } catch { /* endereço inválido: sai sem a cidade */ }
-  const tel = String(p?.telefone || "").replace(/\D/g, "");
-  const telFmt = tel.length === 11 ? `(${tel.slice(0, 2)}) ${tel.slice(2, 7)}-${tel.slice(7)}` : tel.length === 10 ? `(${tel.slice(0, 2)}) ${tel.slice(2, 6)}-${tel.slice(6)}` : (p?.telefone || "");
   const expira = p?.pro_expira_em ? new Date(p.pro_expira_em) : null;
   return {
-    nome, contato: [telFmt, cidade].filter(Boolean).join(" · "),
+    // (03/11) contato numa linha só: WhatsApp · @instagram · cidade
+    nome, contato: [telBR(p?.telefone), arrobaInstagram(p?.instagram), cidade].filter(Boolean).join(" · "),
     logo: fotoDaLoja(p) || null, inicial: nome.charAt(0).toUpperCase() || "D",
     isPro: p?.plano === "pro" && (!expira || expira > new Date()),
   };
@@ -53,23 +62,55 @@ export function abrirJanela(): Window | null {
   return w;
 }
 
-export type Doc = { titulo: string; tipo: string; numero: string; sub?: string; tag?: string; corpo: string };
+/**
+ * titulo: nome do arquivo ao salvar ("Pedido #148").
+ * tipo + numero: o que vai no canto direito do cabeçalho. Número com "#" sai junto
+ * ("Pedido #148"); texto (nome do produto, dia) sai embaixo do tipo.
+ */
+export type Doc = { titulo: string; tipo: string; numero: string; sub?: string; corpo: string };
 
-export function montarHtml(loja: Loja, d: Doc): string {
+/** Texto pronto pra ir dentro de content: "…" no CSS (sem quebrar a regra nem fechar o <style>) */
+const cssTexto = (s: string) => `"${String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\r\n]+/g, " ").replace(/</g, "\\3C ")}"`;
+
+/** Chrome, Edge, Android: sabem pôr o rodapé e o "Página X de Y" em todas as páginas. Safari/iPhone e Firefox não. */
+const sabeRodapeDePagina = () => {
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+  return /Chrome\/|Chromium\//.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+};
+
+export function montarHtml(loja: Loja, d: Doc, rodapeDePagina = sabeRodapeDePagina()): string {
   const gerado = new Date().toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).replace(",", " às");
-  const av = loja.logo ? `<img src="${esc(loja.logo)}" alt="">` : esc(loja.inicial);
-  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(d.titulo)} · ${esc(loja.nome)}</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  const av = loja.logo ? `<img src="${esc(loja.logo)}" alt="">` : `<span>${esc(loja.inicial)}</span>`;
+  const comNumero = d.numero.startsWith("#");
+  const titulo = comNumero ? `${d.tipo} ${d.numero}` : d.tipo;
+  const linhasDireita = [comNumero ? "" : d.numero, d.sub || ""].filter(Boolean);
+  const marca = "Feito com Doonly · doonly.com.br";
+  // (03/11) cabeçalho e rodapé de página: o Chrome os desenha em todas as páginas (e some o cabeçalho do próprio navegador)
+  const pagina = rodapeDePagina ? `
+@page {
+  @top-left { content: ${cssTexto(`${loja.nome} · ${d.titulo}`)}; ${MARGEM_CIMA} }
+  @top-right { content: "Página " counter(page) " de " counter(pages); ${MARGEM_CIMA} }
+  @bottom-left { content: ${cssTexto(`Gerado em ${gerado}`)}; ${MARGEM_BAIXO} }
+  ${loja.isPro ? "" : `@bottom-center { content: ${cssTexto(marca)}; ${MARGEM_BAIXO} color: #C33A6E; font-weight: 500; }`}
+  @bottom-right { content: "Página " counter(page) " de " counter(pages); ${MARGEM_BAIXO} }
+}
+@page :first { @top-left { content: none; } @top-right { content: none; } }
+@media print { .ft { display: none; } }` : "";
+  // os títulos das colunas viram <thead>: o navegador repete a linha no topo de cada página
+  const corpo = d.corpo.replace(/<table class="tb">\s*(<tr>\s*<th[\s\S]*?<\/tr>)/g, '<table class="tb"><thead>$1</thead>');
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(d.titulo)}</title>
+<meta name="viewport" content="width=840">
 <style>${fontesPoppins()}</style>
-<style>${CSS}</style></head><body>
+<style>${CSS}${pagina}</style></head><body>
 <div class="bar-acoes"><button onclick="window.print()">Salvar PDF / Imprimir</button></div>
 <div class="pg">
-<div class="hd"><div class="hb"><div class="av">${av}</div><div><p class="lj">${esc(loja.nome)}</p>${loja.contato ? `<p class="ct">${esc(loja.contato)}</p>` : ""}</div></div>
-<div class="hn"><p class="hl">${esc(d.tipo)}</p><p class="hv">${esc(d.numero)}</p>${d.sub ? `<p class="hs">${esc(d.sub)}</p>` : ""}${d.tag ? `<span class="tag">${esc(d.tag)}</span>` : ""}</div></div>
-${d.corpo}
-<div class="ft"><span>Gerado em ${esc(gerado)}</span>${loja.isPro ? "" : `<span class="fb">Feito com <b>Doonly</b> · doonly.com.br</span>`}</div>
+<div class="hd"><div class="av">${av}</div>
+<div class="lj"><b>${esc(loja.nome)}</b>${loja.contato ? `<span>${esc(loja.contato)}</span>` : ""}</div>
+<div class="nr"><b>${esc(titulo)}</b>${linhasDireita.map(l => `<span>${esc(l)}</span>`).join("")}</div></div>
+${corpo}
+<div class="ft"><span>Gerado em ${esc(gerado)}</span>${loja.isPro ? "" : `<span class="fb">${esc(marca)}</span>`}</div>
 </div>
-<script>window.onload=function(){var i=[].slice.call(document.images);Promise.all(i.map(function(m){return m.complete?1:new Promise(function(r){m.onload=m.onerror=r})})).then(function(){setTimeout(function(){window.print()},350)})}<\/script>
+<script>${ESPERA_E_IMPRIME}<\/script>
 </body></html>`;
 }
 
@@ -88,7 +129,9 @@ export async function gerarDocumento(montarCorpo: (loja: Loja) => Promise<Doc> |
 }
 
 // Peças prontas pro corpo dos documentos
-export const card = (titulo: string, html: string, extra = "") => `<div class="card ${extra}"><p class="ctt">${esc(titulo)}</p>${html}</div>`;
+/** Quadro com título cinza. Com tabela dentro, pode continuar na página seguinte. */
+export const card = (titulo: string, html: string, extra = "") =>
+  `<div class="card${/<table class="tb">/.test(html) ? " tab" : ""}${extra ? ` ${extra}` : ""}">${titulo ? `<p class="ctt">${esc(titulo)}</p>` : ""}<div class="cc">${html}</div></div>`;
 export const kv = (pares: [string, string][]) => `<dl class="kv">${pares.filter(([, v]) => v).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join("")}</dl>`;
 export const kpis = (itens: [string, string, boolean?][]) =>
   `<div class="kpis k${itens.length}">${itens.map(([l, v, hi]) => `<div class="${hi ? "hi" : ""}"><small>${esc(l)}</small><b>${v}</b></div>`).join("")}</div>`;
@@ -101,62 +144,101 @@ function fontesPoppins(): string {
   return f("400", "400") + f("500", "500") + f("600", "600 700") + f("700", "800 900");
 }
 
+/**
+ * (03/11) só imprime com a Poppins e o logo já carregados (antes podia sair com outra
+ * fonte e o logo em branco: a fonte só começa a baixar quando é usada). No máximo 5 s
+ * de espera: se a internet falhar, imprime assim mesmo.
+ */
+const ESPERA_E_IMPRIME = `(function(){
+var feito=false;function imprime(){if(feito)return;feito=true;setTimeout(function(){window.print()},300)}
+function imagens(){return Promise.all([].slice.call(document.images).map(function(m){return m.complete&&m.naturalWidth?1:new Promise(function(r){m.onload=m.onerror=r})}))}
+function fontes(){var f=document.fonts;if(!f||!f.load)return Promise.resolve();return Promise.all(["400","500","600"].map(function(p){return f.load(p+" 12px Poppins").catch(function(){})})).then(function(){return f.ready})}
+function vai(){Promise.all([fontes(),imagens()]).then(imprime,imprime);setTimeout(imprime,5000)}
+if(document.readyState==="complete")vai();else window.addEventListener("load",vai);
+})();`;
+
+const MARGEM = `font-family: "Poppins", sans-serif; font-size: 8px; font-weight: 400; color: #8A7F84;`;
+const MARGEM_CIMA = `${MARGEM} vertical-align: bottom; padding-bottom: 4mm;`;
+const MARGEM_BAIXO = `${MARGEM} vertical-align: top; padding-top: 4mm;`;
+
 const CSS = `
-@page { size: A4; margin: 12mm; }
+@page { size: A4; margin: 14mm 12mm 15mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-html, body { font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #2C1219; background: #EFE9EC; font-size: 12.5px; line-height: 1.45; }
+html, body { font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #2C1219; background: #EFE9EC; font-size: 10.5px; line-height: 1.4; }
+b, strong { font-weight: 600; }
 .bar-acoes { position: sticky; top: 0; z-index: 5; display: flex; justify-content: center; padding: 10px; background: rgba(239,233,236,.92); }
 .bar-acoes button { border: none; border-radius: 10px; padding: 10px 18px; background: linear-gradient(90deg,#E85A8C,#C33A6E); color: #fff; font: 600 13px "Poppins", sans-serif; cursor: pointer; }
-.pg { max-width: 794px; margin: 0 auto 30px; background: #fff; padding: 32px 32px 26px; border-radius: 6px; box-shadow: 0 10px 30px rgba(60,20,35,.12); }
+@media (pointer: coarse) { .bar-acoes { padding: 18px; } .bar-acoes button { font-size: 28px; padding: 20px 40px; border-radius: 18px; } }
+.pg { max-width: 794px; margin: 0 auto 30px; background: #fff; padding: 14mm 12mm; border-radius: 6px; box-shadow: 0 10px 30px rgba(60,20,35,.12); }
+/* (03/11) no celular a tela mostra a folha inteira em miniatura (viewport 840), igual ao PDF que vai sair */
 @media print { html, body { background: #fff; } .bar-acoes { display: none; } .pg { box-shadow: none; border-radius: 0; margin: 0; padding: 0; max-width: none; } }
-.hd { display: flex; justify-content: space-between; gap: 18px; padding: 22px 24px; border-radius: 16px; color: #fff; background: linear-gradient(135deg,#E85A8C,#C33A6E); margin-bottom: 18px; }
-.hb { display: flex; gap: 14px; align-items: center; min-width: 0; }
-.av { width: 56px; height: 56px; border-radius: 14px; background: rgba(255,255,255,.22); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 600; overflow: hidden; flex-shrink: 0; }
+/* cabeçalho: uma faixa baixa, linha rosa embaixo */
+.hd { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 2px solid #C33A6E; margin-bottom: 10px; }
+.av { width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; overflow: hidden; border: 1px solid #EEE5E9; background: #FCEFF5; color: #C33A6E; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; }
 .av img { width: 100%; height: 100%; object-fit: cover; background: #fff; }
-.lj { font-size: 20px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
-.ct { font-size: 12px; opacity: .92; margin-top: 3px; }
-.hn { text-align: right; flex-shrink: 0; }
-.hl { font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; opacity: .85; }
-.hv { font-size: 22px; font-weight: 600; letter-spacing: -.02em; margin-top: 2px; }
-.hs { font-size: 11.5px; opacity: .92; }
-.tag { display: inline-block; margin-top: 7px; padding: 3px 11px; border-radius: 999px; background: rgba(255,255,255,.22); font-size: 11px; font-weight: 600; }
-.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-.card { border: 1px solid #F1E6EB; background: #FFF9FB; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; break-inside: avoid; }
-.g2 .card { margin-bottom: 0; }
-.ctt { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #776B71; padding-bottom: 7px; margin-bottom: 9px; border-bottom: 1px solid #F1E6EB; }
-.kv { display: grid; grid-template-columns: 112px 1fr; gap: 5px 10px; }
-.kv dt { color: #776B71; font-weight: 600; } .kv dd { font-weight: 600; }
-.tb { width: 100%; border-collapse: collapse; }
-.tb th { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #776B71; text-align: left; padding: 5px 6px; border-bottom: 1px solid #F1E6EB; }
-.tb td { padding: 8px 6px; border-bottom: 1px solid #F6EEF2; vertical-align: top; }
-.tb tr { break-inside: avoid; } .tb tr:last-child td { border-bottom: none; }
-.tb small { display: block; color: #7A6E74; font-size: 11px; margin-top: 2px; }
-.c { text-align: center !important; } .r { text-align: right !important; white-space: nowrap; }
-.tb .sub td { font-weight: 600; background: #FCEFF5; }
-.tot { border-radius: 14px; padding: 14px 16px; background: #2C1219; color: #fff; display: flex; flex-direction: column; gap: 5px; justify-content: center; break-inside: avoid; }
-.tot div { display: flex; justify-content: space-between; gap: 10px; }
-.tot span { opacity: .75; }
-.tot .tt { border-top: 1px solid rgba(255,255,255,.2); padding-top: 8px; margin-top: 3px; font-size: 16px; }
-.tot .tt span { opacity: 1; font-weight: 600; } .tot .tt b { font-size: 20px; font-weight: 600; }
-.tot .rest b { color: #F9A8D4; }
-.neg { color: #DC2626; } .tot .neg { color: #FCA5A5; } .pos { color: #15803D; }
-.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 600; white-space: nowrap; }
+.lj { flex: 1; min-width: 0; }
+.lj b, .nr b { display: block; font-size: 15px; line-height: 1.25; }
+.lj b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lj span { display: block; color: #776B71; }
+.nr { text-align: right; flex-shrink: 0; max-width: 55%; }
+.nr span { display: block; color: #776B71; }
+/* quadros com título cinza (padrão de sistema) */
+.card { border: 1px solid #E6DCE1; border-radius: 6px; margin-bottom: 8px; break-inside: avoid; }
+.card.tab { break-inside: auto; }
+.ctt { font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #776B71; background: #F8F3F5; padding: 4px 9px; border-bottom: 1px solid #E6DCE1; border-radius: 6px 6px 0 0; break-after: avoid; }
+.cc { padding: 5px 9px; }
+.cc > p + p { margin-top: 4px; }
+.cc > .tb { width: calc(100% + 18px); margin: -5px -9px; }
+.cc > .tb th { background: transparent; border-top: none; }
+.kv { display: grid; grid-template-columns: fit-content(45%) minmax(0, 1fr); gap: 1px 10px; }
+.kv dt { min-width: 64px; }
+.kv dt { color: #776B71; } .kv dd { font-weight: 500; overflow-wrap: anywhere; }
+.kv dd i { font-style: normal; color: #776B71; font-weight: 400; margin: 0 6px; }
+/* tabela */
+.tb { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+.tb th { font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #776B71; background: #F8F3F5; text-align: left; padding: 4px 9px; border-top: 1px solid #E6DCE1; border-bottom: 1px solid #E6DCE1; }
+.tb td { padding: 4px 9px; border-bottom: 1px solid #F0E8EC; vertical-align: top; }
+.tb tr { break-inside: avoid; }
+.tb tbody tr:last-child td { border-bottom: 1px solid #E6DCE1; }
+.cc > .tb tbody tr:last-child td { border-bottom: none; }
+.tb td b { overflow-wrap: anywhere; }
+.tb small { display: block; color: #776B71; font-size: 9.5px; line-height: 1.35; overflow-wrap: anywhere; }
+.tb small.rc { color: #A3305E; } .tb small.rc b { font-weight: 600; }
+.tb .n { color: #A0959A; width: 26px; }
+.tb th.c { width: 64px; } .tb th.r { width: 96px; }
+.c { text-align: center !important; white-space: nowrap; } .r { text-align: right !important; white-space: nowrap; }
+.tb .sub td { font-weight: 600; background: #F8F3F5; }
+.fim { break-before: avoid; }
+/* totais e pagamento */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; align-items: start; break-inside: avoid; }
+.g2.lado { grid-template-columns: minmax(0, 1fr) 230px; }
+.g2 > .card, .g2 > div { margin-bottom: 0; }
+.tot { border: 1px solid #E6DCE1; border-radius: 6px; padding: 6px 9px; break-inside: avoid; }
+.tot div { display: flex; justify-content: space-between; gap: 10px; padding: 1px 0; }
+.tot span { color: #776B71; } .tot b { white-space: nowrap; }
+.tot .tt { border-top: 1px solid #E6DCE1; margin-top: 4px; padding-top: 5px; font-size: 13px; }
+.tot .tt span { color: #2C1219; font-weight: 600; }
+.tot .rest b { color: #C33A6E; }
+.neg { color: #B91C1C; } .pos { color: #15803D; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 9.5px; font-weight: 600; white-space: nowrap; }
 .ok { background: #DCFCE7; color: #15803D; } .am { background: #FEF3C7; color: #B45309; } .rd { background: #FEE2E2; color: #B91C1C; } .bl { background: #DBEAFE; color: #1D4ED8; }
-.obs { margin-top: 10px; font-size: 11.5px; color: #6B5D64; background: #fff; border: 1px dashed #F1D3E0; border-radius: 10px; padding: 8px 10px; }
-.kpis { display: grid; gap: 10px; margin-bottom: 12px; grid-template-columns: repeat(4, 1fr); }
+.obs { margin-top: 5px; padding: 5px 8px; background: #FBF7F9; border-radius: 4px; color: #4A3A41; overflow-wrap: anywhere; }
+.ob { overflow-wrap: anywhere; white-space: pre-line; }
+/* números grandes (ficha técnica, agenda) */
+.kpis { display: grid; gap: 8px; margin-bottom: 8px; grid-template-columns: repeat(4, 1fr); break-inside: avoid; }
 .kpis.k3 { grid-template-columns: repeat(3, 1fr); } .kpis.k2 { grid-template-columns: repeat(2, 1fr); }
-.kpis div { border: 1px solid #F1E6EB; border-radius: 14px; padding: 12px 14px; background: #FFF9FB; }
-.kpis small { display: block; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #776B71; }
-.kpis b { font-size: 18px; font-weight: 600; display: block; margin-top: 3px; }
-.kpis .hi { background: #2C1219; border-color: #2C1219; color: #fff; } .kpis .hi small { color: #F9A8D4; }
+.kpis div { border: 1px solid #E6DCE1; border-radius: 6px; padding: 6px 9px; }
+.kpis small { display: block; font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #776B71; }
+.kpis b { font-size: 14px; display: block; margin-top: 1px; white-space: nowrap; }
+.kpis .hi b { color: #C33A6E; }
 .bars { display: flex; align-items: flex-end; gap: 10px; height: 140px; }
 .bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 5px; }
-.bar i { width: 100%; border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg,#F472B6,#C33A6E); min-height: 2px; }
-.bar span { font-size: 10.5px; color: #776B71; } .bar em { font-style: normal; font-size: 9.5px; color: #6B5D64; font-weight: 600; }
-.hr { font-weight: 600; color: #C33A6E; white-space: nowrap; } .ck { text-align: center; font-size: 15px; color: #C4B8BE; }
-.thx { text-align: center; margin-top: 16px; font-size: 13.5px; font-weight: 600; color: #C33A6E; }
-.vazio { color: #776B71; text-align: center; padding: 14px 0; }
-.ft { margin-top: 22px; display: flex; justify-content: space-between; gap: 10px; font-size: 10.5px; color: #776B71; border-top: 1px solid #F1E6EB; padding-top: 9px; }
-.fb b { color: #C33A6E; }
-@media (max-width: 640px) { .pg { padding: 16px; } .g2 { grid-template-columns: 1fr; } .kpis { grid-template-columns: 1fr 1fr; } .hd { flex-direction: column; } .hn { text-align: left; } }
+.bar i { width: 100%; border-radius: 5px 5px 2px 2px; background: #C33A6E; min-height: 2px; }
+.bar span { font-size: 9.5px; color: #776B71; } .bar em { font-style: normal; font-size: 9px; color: #6B5D64; font-weight: 600; }
+.hr { font-weight: 600; color: #C33A6E; white-space: nowrap; } .ck { text-align: center; font-size: 13px; color: #A0959A; }
+.thx { text-align: center; margin-top: 12px; font-size: 11px; color: #776B71; }
+.vazio { color: #776B71; text-align: center; padding: 10px 0; }
+/* rodapé no fim do documento: só onde o navegador não põe o rodapé em cada página (Safari/iPhone) */
+.ft { margin-top: 14px; display: flex; justify-content: space-between; gap: 10px; font-size: 8px; color: #8A7F84; border-top: 1px solid #E6DCE1; padding-top: 6px; }
+.fb { color: #C33A6E; font-weight: 500; }
 `;
