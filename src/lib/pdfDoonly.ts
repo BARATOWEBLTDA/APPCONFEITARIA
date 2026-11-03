@@ -24,6 +24,15 @@ export const dataBR = (iso?: string | null): string => {
   const d = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(iso + "T12:00:00") : new Date(iso);
   return isNaN(d.getTime()) ? "" : d.toLocaleDateString("pt-BR");
 };
+/** "Sábado, 21/11/2026 às 15:30" (sem hora: só o dia; sem data: "") */
+export function diaLongo(data?: string | null, hora?: string | null): string {
+  if (!data) return "";
+  const d = new Date(String(data).slice(0, 10) + "T12:00:00");
+  if (isNaN(d.getTime())) return "";
+  const sem = d.toLocaleDateString("pt-BR", { weekday: "long" });
+  const h = hora ? String(hora).slice(0, 5) : "";
+  return `${sem.charAt(0).toUpperCase()}${sem.slice(1)}, ${d.toLocaleDateString("pt-BR")}${h ? ` às ${h}` : ""}`;
+}
 /** (41) 99876-5432 a partir de qualquer jeito que o número foi digitado */
 export const telBR = (v?: string | null): string => {
   const t = String(v || "").replace(/\D/g, "");
@@ -67,7 +76,7 @@ export function abrirJanela(): Window | null {
  * tipo + numero: o que vai no canto direito do cabeçalho. Número com "#" sai junto
  * ("Pedido #148"); texto (nome do produto, dia) sai embaixo do tipo.
  */
-export type Doc = { titulo: string; tipo: string; numero: string; sub?: string; corpo: string };
+export type Doc = { titulo: string; tipo: string; numero: string; sub?: string; destaque?: string; alerta?: boolean; corpo: string };
 
 /** Texto pronto pra ir dentro de content: "…" no CSS (sem quebrar a regra nem fechar o <style>) */
 const cssTexto = (s: string) => `"${String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\r\n]+/g, " ").replace(/</g, "\\3C ")}"`;
@@ -106,7 +115,7 @@ export function montarHtml(loja: Loja, d: Doc, rodapeDePagina = sabeRodapeDePagi
 <div class="pg">
 <div class="hd"><div class="av">${av}</div>
 <div class="lj"><b>${esc(loja.nome)}</b>${loja.contato ? `<span>${esc(loja.contato)}</span>` : ""}</div>
-<div class="nr"><b>${esc(titulo)}</b>${linhasDireita.map(l => `<span>${esc(l)}</span>`).join("")}</div></div>
+<div class="nr"><b>${esc(titulo)}</b>${linhasDireita.map(l => `<span>${esc(l)}</span>`).join("")}${d.destaque ? `<em${d.alerta ? ' class="al"' : ""}>${esc(d.destaque)}</em>` : ""}</div></div>
 ${corpo}
 <div class="ft"><span>Gerado em ${esc(gerado)}</span>${loja.isPro ? "" : `<span class="fb">${esc(marca)}</span>`}</div>
 </div>
@@ -183,6 +192,14 @@ b, strong { font-weight: 600; }
 .lj span { display: block; color: #776B71; }
 .nr { text-align: right; flex-shrink: 0; max-width: 55%; }
 .nr span { display: block; color: #776B71; }
+.nr em { display: inline-block; margin-top: 3px; font-style: normal; font-weight: 600; font-size: 10px; color: #C33A6E; background: #FCEFF5; border-radius: 4px; padding: 1px 7px; }
+.nr em.al { color: #B91C1C; background: #FEE2E2; }
+/* carimbo e assinatura */
+.ass { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 46px; break-inside: avoid; }
+.ass div { text-align: center; }
+.ass span { display: block; border-top: 1px solid #2C1219; margin-bottom: 4px; }
+.ass b { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ass small { display: block; color: #776B71; font-size: 9px; }
 /* quadros com título cinza (padrão de sistema) */
 .card { border: 1px solid #E6DCE1; border-radius: 6px; margin-bottom: 8px; break-inside: avoid; }
 .card.tab { break-inside: auto; }

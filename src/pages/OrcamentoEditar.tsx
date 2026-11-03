@@ -20,7 +20,7 @@ import { usePlano } from '@/hooks/usePlano'
 import { linkWhatsApp } from '@/lib/telefone'
 import { precoCardapioComPromocao } from '@/lib/precoCardapio'
 import { calcularCustoLucro, lerMaoObraConta } from '@/lib/produto-precificacao'
-import { abrirJanela, card, esc, gerarDocumento, kv } from '@/lib/pdfDoonly'
+import { gerarOrcamentoPDF } from '@/lib/gerarOrcamentoPDF'
 import {
   FORMA_ORC, brl, hojeISO, textoEntrega, dataLonga, linkProposta, maisDias, somarItens, textoCondicoes, textoProposta, totalOrcamento, valorSinal,
   type ItemOrcamento, type Orcamento,
@@ -215,26 +215,10 @@ export default function OrcamentoEditar() {
     try { await navigator.clipboard.writeText(linkProposta(salvo.token, window.location.origin)); avisar('Link copiado. Ele já pode abrir e aprovar.', { tipo: 'ok' }) }
     catch { avisar('Não deu para copiar. Tente de novo.', { tipo: 'erro' }) }
   }
+  // (03/11) PDF no padrão novo (o mesmo do pedido), com os extras que valem agora
   const baixarPdf = () => {
-    if (!o) return
-    const janela = abrirJanela()
-    void gerarDocumento(() => ({
-      titulo: `Orçamento #${o.numero || ''}`, tipo: 'Orçamento', numero: o.numero ? `#${o.numero}` : '',
-      sub: [o.cliente_nome, o.data_evento ? dataLonga(o.data_evento) : ''].filter(Boolean).join(' · '),
-      corpo: [
-        o.mensagem ? card('Recado', `<p>${esc(o.mensagem)}</p>`) : '',
-        card('Evento', kv([['Cliente', esc(o.cliente_nome || '')], ['Evento', esc(o.nome_evento || '')], ['Data', esc(dataLonga(o.data_evento))], ['Pessoas', o.pessoas ? String(o.pessoas) : ''], ['Local', esc(o.local_evento || '')]])),
-        card('Itens', kv([
-          // (27/10) o nome vai sem esc: o kv já protege o rótulo ("Bolo & Cia" saía "&amp;" e o Total saía com <b> escrito)
-          ...(o.itens || []).map(i => [`${i.quantidade > 1 ? `${i.quantidade} × ` : ''}${i.nome}`, brl(i.quantidade * i.valor_unitario)] as [string, string]),
-          ...(extras.desconto && o.desconto > 0 ? [['Desconto', `− ${brl(o.desconto)}`] as [string, string]] : []),
-          ...(extras.acrescimo && o.acrescimo > 0 ? [['Acréscimo', brl(o.acrescimo)] as [string, string]] : []),
-          ...(extras.entrega ? [['Entrega', textoEntrega(o.taxa_entrega)] as [string, string]] : []),
-          ['Total', `<b>${brl(total)}</b>`],
-        ])),
-        card('Condições', `<p>${esc(textoCondicoes(o, total))}</p>`),
-      ].join(''),
-    }), janela)
+    if (!ov) return
+    void gerarOrcamentoPDF(ov)
   }
 
   const excluir = async () => {

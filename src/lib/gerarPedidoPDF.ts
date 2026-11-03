@@ -2,7 +2,7 @@
 // Comprovante do pedido / da venda no modelo padrão de PDF do Doonly (03/11: estilo de sistema).
 // Usado em Pedidos, Editar pedido e Nova venda. Grátis pra todos.
 // ─────────────────────────────────────────────────────────────────────────────
-import { gerarDocumento, abrirJanela, esc, brl, dataBR, card, kv, telBR } from "@/lib/pdfDoonly";
+import { gerarDocumento, abrirJanela, esc, brl, dataBR, card, kv, telBR, diaLongo } from "@/lib/pdfDoonly";
 import { nomeExtra } from "@/lib/kitTexto";
 import { formaDoItem, qtdCurta, recebidoPedido, saldoPedido, tamanhoDoItem } from "@/components/pedidos/pedidoTexto";
 import { r2, somarReais } from "@/lib/moeda";
@@ -80,16 +80,6 @@ function escolhas(pz: PersonalizacoesPDF | null | undefined): string {
   return p.join(" · ");
 }
 
-/** "Sábado, 21/11/2026 às 15:30" (sem hora: só o dia) */
-function diaEHora(data?: string | null, hora?: string | null): string {
-  if (!data) return "";
-  const d = new Date(String(data).slice(0, 10) + "T12:00:00");
-  if (isNaN(d.getTime())) return "";
-  const sem = d.toLocaleDateString("pt-BR", { weekday: "long" });
-  const h = hora ? String(hora).slice(0, 5) : "";
-  return `${sem.charAt(0).toUpperCase()}${sem.slice(1)}, ${d.toLocaleDateString("pt-BR")}${h ? ` às ${h}` : ""}`;
-}
-
 export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | null): Promise<void> {
   const janela = janelaAberta ?? abrirJanela(); // abre já no clique (senão o navegador bloqueia)
   await gerarDocumento(() => {
@@ -113,7 +103,7 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
       .map(x => String(x || "").trim()).filter(Boolean);
     // (10/10) cada parte passa pelo esc(): o endereço é digitado pela cliente no cardápio
     const linhaEndereco = endereco.length ? [esc(endereco.slice(0, 2).join(", ")), endereco[2] ? esc(endereco[2]) : ""].filter(Boolean).join(sep) : "";
-    const quando = diaEHora(pedido.data_entrega, pedido.horario_entrega);
+    const quando = diaLongo(pedido.data_entrega, pedido.horario_entrega);
     const blocoCliente = prontaEntrega
       ? (linhaCliente ? card("Cliente", kv([["Cliente", linhaCliente]])) : "")
       : card(entrega ? "Cliente e entrega" : "Cliente e retirada", kv([
