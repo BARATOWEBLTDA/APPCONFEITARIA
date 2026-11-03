@@ -7,7 +7,8 @@ import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { pedidoAtrasado, STATUS_AINDA_NAO_PRONTO, STATUS_PODE_FICAR_PRONTO } from "@/lib/pedidoStatus";
 import { duplicarPedido as duplicarPedidoLib } from "@/lib/duplicarPedido";
 import { gerarPedidoPDF } from "@/lib/gerarPedidoPDF";
-import * as pdf from "@/lib/pdfDoonly";
+import { gerarAgendaPDF } from "@/lib/gerarAgendaPDF";
+import { abrirJanela } from "@/lib/pdfDoonly";
 import { usePlano } from "@/hooks/usePlano";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
@@ -22,7 +23,7 @@ import { avisarDesfeito, avisarMudanca } from "@/lib/avisoPedido";
 import AppPageHeader from "@/components/AppPageHeader";
 import CalendarioSheet from "@/components/CalendarioSheet";
 import { Botao, BotaoIcone, Linha, MenuMais, TelaVazia, Titulo, avisar, confirmar, type ItemMenuMais } from "@/components/base";
-import { formaDoItem, grupoDoStatus, itemComQtd, nomeDaSituacao, nomeDeGente, nomeDoItem, precisaAceitar, qtdCurta, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
+import { formaDoItem, grupoDoStatus, nomeDaSituacao, nomeDeGente, nomeDoItem, precisaAceitar, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
 import { NomeComQtd } from "@/components/pedidos/CartaoPedido";
 import FiltroLateral, { SITUACOES_FILTRO, STATUS_PADRAO } from "@/components/pedidos/FiltroPedidos";
 import "@/components/pedidos/pedidos.css";
@@ -467,53 +468,17 @@ export default function Agenda() {
   };
 
   const baixarPdf = async (p: PedidoAgenda) => {
-    const janela = pdf.abrirJanela();
+    const janela = abrirJanela();
     const { data } = await supabase.from("pedidos").select("*, pedido_itens(*, produtos(forma_venda))").eq("id", p.id).maybeSingle();
     await gerarPedidoPDF((data || { id: p.id }) as Parameters<typeof gerarPedidoPDF>[0], janela);
   };
 
   // ── Agenda do dia em PDF (modelo padrão · recurso PRO) ──
+  // (03/11) folha de trabalho do dia no padrão novo de PDF: lê os pedidos completos (com o recado de cada item)
   const imprimirAgendaDoDia = () => {
     if (!isPro) { avisar("Imprimir a agenda do dia é do plano PRO.", { tipo: "info", acao: { rotulo: "Testar grátis", aoTocar: () => navigate("/assinar") } }); return; }
-    const lista = [...(pedidosDoDia as PedidoAgenda[])].filter(p => p.status !== "cancelado")
-      .sort((a, b) => String(a.horario_entrega || "99").localeCompare(String(b.horario_entrega || "99")));
-    const dia = new Date(diaSel + "T12:00:00");
-    const diaTxt = dia.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" });
-    const STATUS_PDF: Record<string, [string, "ok" | "am" | "rd" | "bl"]> = {
-      finalizado: ["Pronto", "ok"], pronto: ["Pronto", "ok"], aguardando_retirada: ["Pronto", "ok"], entregue: ["Entregue", "ok"], concluido: ["Entregue", "ok"],
-      em_producao: ["Em produção", "am"], em_preparo: ["Em produção", "am"], em_entrega: ["Saiu para entrega", "am"], a_caminho: ["Saiu para entrega", "am"],
-      aguardando_pagamento: ["Aguardando pagamento", "rd"], aguardando_aceite: ["Novo pedido", "rd"], novo: ["Novo pedido", "rd"],
-    };
-    const nomeOp = (v: string | { nome?: string } | null | undefined) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
-    const produzir = new Map<string, { qtd: number; forma: string | null; extra: Map<string, number> }>();
-    const linhas = lista.map(p => {
-      const itens = (p.pedido_itens || []).map((it: ItemAgenda) => {
-        const tam = nomeOp(it.personalizacoes?.tamanho);
-        const chave = [it.nome_produto, tam].filter(Boolean).join(" ");
-        const forma = formaNaAgenda(it); // (11/10) bolo com tamanho não é "1 kg": conta em unidades
-        const atual = produzir.get(chave) || { qtd: 0, forma, extra: new Map() };
-        atual.qtd += Number(it.quantidade) || 1;
-        (it.personalizacoes?.kit?.sabores || []).forEach((x: { nome: string; qtd: number | string }) => atual.extra.set(x.nome, (atual.extra.get(x.nome) || 0) + (Number(x.qtd) || 0) * (Number(it.quantidade) || 1)));
-        produzir.set(chave, atual);
-        return itemComQtd(chave, Number(it.quantidade) || 1, forma, true);
-      }).join(" + ");
-      const [stTxt0, stCor] = STATUS_PDF[p.status] || ["Agendado", "bl"];
-      const stTxt = stTxt0 === "Entregue" && p.tipo_entrega !== "entrega" ? "Retirado" : stTxt0;
-      const ent = p.tipo_entrega === "entrega";
-      const end = ent ? [[p.endereco_rua, p.endereco_numero].filter(Boolean).join(", "), p.endereco_bairro].filter(Boolean).join(" · ") : "";
-      return `<tr><td class="hr">${p.horario_entrega ? String(p.horario_entrega).slice(0, 5) : "—"}</td><td><b>${pdf.esc(p.cliente_nome || "Venda avulsa")}</b><small>${ent ? "Entrega" : "Retirada"}${end ? ` · ${pdf.esc(end)}` : ""}</small></td><td>${pdf.esc(itens)}</td><td>${pdf.pill(stTxt, stCor)}</td><td class="ck">☐</td></tr>`;
-    }).join("");
-    const prod = [...produzir.entries()].map(([nome, v]) => [nome, `${qtdCurta(v.qtd, v.forma).replace(/x$/, "")}${v.extra.size ? ` (${[...v.extra.entries()].map(([n, q]) => `${n} ${q}`).join(" · ")})` : ""}`] as [string, string]);
-    const entregas = lista.filter(p => p.tipo_entrega === "entrega").length;
-    pdf.gerarDocumento(() => ({
-      titulo: `Agenda do dia · ${diaTxt}`,
-      tipo: "Agenda do dia",
-      numero: diaTxt.charAt(0).toUpperCase() + diaTxt.slice(1),
-      sub: `${lista.length} pedido${lista.length !== 1 ? "s" : ""}`,
-      corpo: pdf.kpis([["Pedidos", String(lista.length)], ["Entregas", String(entregas)], ["Retiradas", String(lista.length - entregas)]])
-        + pdf.card("Pedidos do dia", lista.length ? `<table class="tb"><tr><th>Hora</th><th>Cliente</th><th>Itens</th><th>Situação</th><th class="c">Feito</th></tr>${linhas}</table>` : `<p class="vazio">Nenhum pedido neste dia.</p>`)
-        + (prod.length ? pdf.card("Para produzir hoje", pdf.kv(prod.map(([n, q]) => [n, pdf.esc(q)] as [string, string]))) : ""),
-    }));
+    const ids = (pedidosDoDia as PedidoAgenda[]).filter(p => p.status !== "cancelado").map(p => p.id);
+    void gerarAgendaPDF(diaSel, ids);
   };
 
   // "Mais ações": fecha a janela antes de fazer (assim o "voltar" do Android não se perde)

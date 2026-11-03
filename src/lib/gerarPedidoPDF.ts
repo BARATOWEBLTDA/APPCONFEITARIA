@@ -63,7 +63,7 @@ export type PedidoPDF = {
 const PAGAMENTO: Record<string, string> = { pix: "Pix", PIX: "Pix", dinheiro: "Dinheiro", credito: "Cartão de crédito", debito: "Cartão de débito", cartao: "Cartão", link_pagamento: "Link de pagamento", mercado_pago: "Mercado Pago", pagamento_retirada: "Na retirada", boleto: "Boleto" };
 
 /** Escolhas do item (tamanho, massa, recheios, cobertura, kit, adicionais) numa linha. */
-function escolhas(pz: PersonalizacoesPDF | null | undefined): string {
+export function escolhas(pz: PersonalizacoesPDF | null | undefined): string {
   if (!pz || typeof pz !== "object") return "";
   const nome = (v: NomeOuOpcao) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
   const p: string[] = [];

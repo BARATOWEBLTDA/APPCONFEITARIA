@@ -140,7 +140,7 @@ export async function gerarDocumento(montarCorpo: (loja: Loja) => Promise<Doc> |
 // Peças prontas pro corpo dos documentos
 /** Quadro com título cinza. Com tabela dentro, pode continuar na página seguinte. */
 export const card = (titulo: string, html: string, extra = "") =>
-  `<div class="card${/<table class="tb">/.test(html) ? " tab" : ""}${extra ? ` ${extra}` : ""}">${titulo ? `<p class="ctt">${esc(titulo)}</p>` : ""}<div class="cc">${html}</div></div>`;
+  `<div class="card${/<table class="tb[" ]/.test(html) ? " tab" : ""}${extra ? ` ${extra}` : ""}">${titulo ? `<p class="ctt">${esc(titulo)}</p>` : ""}<div class="cc">${html}</div></div>`;
 export const kv = (pares: [string, string][]) => `<dl class="kv">${pares.filter(([, v]) => v).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join("")}</dl>`;
 export const kpis = (itens: [string, string, boolean?][]) =>
   `<div class="kpis k${itens.length}">${itens.map(([l, v, hi]) => `<div class="${hi ? "hi" : ""}"><small>${esc(l)}</small><b>${v}</b></div>`).join("")}</div>`;
@@ -194,6 +194,13 @@ b, strong { font-weight: 600; }
 .nr span { display: block; color: #776B71; }
 .nr em { display: inline-block; margin-top: 3px; font-style: normal; font-weight: 600; font-size: 10px; color: #C33A6E; background: #FCEFF5; border-radius: 4px; padding: 1px 7px; }
 .nr em.al { color: #B91C1C; background: #FEE2E2; }
+/* agenda do dia */
+.tb.ag td.hr { width: 46px; } .tb.ag td.ag-q { width: 36%; }
+.tb .it + .it { margin-top: 4px; }
+.tb small.al { color: #B91C1C; font-weight: 500; }
+.tb small.ag-ob { margin-top: 4px; padding: 3px 6px; background: #FBF7F9; border-radius: 4px; color: #4A3A41; }
+.tb small.ag-ob b { font-weight: 600; }
+.tb td.ck { width: 44px; }
 /* carimbo e assinatura */
 .ass { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 46px; break-inside: avoid; }
 .ass div { text-align: center; }
@@ -202,7 +209,12 @@ b, strong { font-weight: 600; }
 .ass small { display: block; color: #776B71; font-size: 9px; }
 /* quadros com título cinza (padrão de sistema) */
 .card { border: 1px solid #E6DCE1; border-radius: 6px; margin-bottom: 8px; break-inside: avoid; }
-.card.tab { break-inside: auto; }
+.card.tab { break-inside: auto; border: none; border-radius: 0; }
+/* quadro com tabela que continua na outra página: sem moldura lateral (senão ela desce até o pé da folha) */
+.card.tab > .ctt { border: 1px solid #E6DCE1; }
+.card.tab > .cc { padding: 0; }
+.card.tab > .cc > .tb { width: 100%; margin: 0; }
+.card.tab > .cc > .tb tbody tr:last-child td { border-bottom: 1px solid #E6DCE1; }
 .ctt { font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #776B71; background: #F8F3F5; padding: 4px 9px; border-bottom: 1px solid #E6DCE1; border-radius: 6px 6px 0 0; break-after: avoid; }
 .cc { padding: 5px 9px; }
 .cc > p + p { margin-top: 4px; }
