@@ -151,7 +151,8 @@ function fontesPoppins(): string {
  */
 const ESPERA_E_IMPRIME = `(function(){
 var feito=false;function imprime(){if(feito)return;feito=true;setTimeout(function(){window.print()},300)}
-function imagens(){return Promise.all([].slice.call(document.images).map(function(m){return m.complete&&m.naturalWidth?1:new Promise(function(r){m.onload=m.onerror=r})}))}
+function some(m){var p=m.parentNode;(p&&p.className==="av"?p:m).style.display="none"}
+function imagens(){return Promise.all([].slice.call(document.images).map(function(m){if(m.complete)return m.naturalWidth?1:(some(m),1);return new Promise(function(r){m.onload=r;m.onerror=function(){some(m);r()}})}))}
 function fontes(){var f=document.fonts;if(!f||!f.load)return Promise.resolve();return Promise.all(["400","500","600"].map(function(p){return f.load(p+" 12px Poppins").catch(function(){})})).then(function(){return f.ready})}
 function vai(){Promise.all([fontes(),imagens()]).then(imprime,imprime);setTimeout(imprime,5000)}
 if(document.readyState==="complete")vai();else window.addEventListener("load",vai);
@@ -197,28 +198,32 @@ b, strong { font-weight: 600; }
 /* tabela */
 .tb { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
 .tb th { font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #776B71; background: #F8F3F5; text-align: left; padding: 4px 9px; border-top: 1px solid #E6DCE1; border-bottom: 1px solid #E6DCE1; }
-.tb td { padding: 4px 9px; border-bottom: 1px solid #F0E8EC; vertical-align: top; }
+.tb td { padding: 4px 9px; border-bottom: 1px solid #F0E8EC; vertical-align: top; overflow-wrap: anywhere; }
 .tb tr { break-inside: avoid; }
 .tb tbody tr:last-child td { border-bottom: 1px solid #E6DCE1; }
 .cc > .tb tbody tr:last-child td { border-bottom: none; }
 .tb td b { overflow-wrap: anywhere; }
 .tb small { display: block; color: #776B71; font-size: 9.5px; line-height: 1.35; overflow-wrap: anywhere; }
 .tb small.rc { color: #A3305E; } .tb small.rc b { font-weight: 600; }
-.tb .n { color: #A0959A; width: 26px; }
-.tb th.c { width: 64px; } .tb th.r { width: 96px; }
+/* (03/11) texto numa linha só, com "…" quando não cabe (a coluna fica com o espaço que sobra) */
+.tb td.um { max-width: 0; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; overflow-wrap: normal; }
+.tb td.n { color: #A0959A; width: 30px; white-space: nowrap; overflow-wrap: normal; }
+.tb th.c { width: 64px; } .tb th.r { width: 96px; } .tb th.qt { width: 86px; }
 .c { text-align: center !important; white-space: nowrap; } .r { text-align: right !important; white-space: nowrap; }
 .tb .sub td { font-weight: 600; background: #F8F3F5; }
 .fim { break-before: avoid; }
+.prod { margin-bottom: 8px; display: flex; align-items: center; gap: 10px; } .prod > div { min-width: 0; } .prod img { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; border: 1px solid #E6DCE1; flex-shrink: 0; } .prod b { display: block; font-size: 14px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .prod span { display: block; color: #776B71; } .prod i { font-style: normal; margin: 0 6px; }
 /* totais e pagamento */
 .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; align-items: start; break-inside: avoid; }
 .g2.lado { grid-template-columns: minmax(0, 1fr) 230px; }
 .g2 > .card, .g2 > div { margin-bottom: 0; }
+.g2 > div > .card:last-child { margin-bottom: 0; }
 .tot { border: 1px solid #E6DCE1; border-radius: 6px; padding: 6px 9px; break-inside: avoid; }
 .tot div { display: flex; justify-content: space-between; gap: 10px; padding: 1px 0; }
 .tot span { color: #776B71; } .tot b { white-space: nowrap; }
 .tot .tt { border-top: 1px solid #E6DCE1; margin-top: 4px; padding-top: 5px; font-size: 13px; }
 .tot .tt span { color: #2C1219; font-weight: 600; }
-.tot .rest b { color: #C33A6E; }
+.tot .rest b { color: #C33A6E; } .tot .rest b.neg { color: #B91C1C; }
 .neg { color: #B91C1C; } .pos { color: #15803D; }
 .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 9.5px; font-weight: 600; white-space: nowrap; }
 .ok { background: #DCFCE7; color: #15803D; } .am { background: #FEF3C7; color: #B45309; } .rd { background: #FEE2E2; color: #B91C1C; } .bl { background: #DBEAFE; color: #1D4ED8; }

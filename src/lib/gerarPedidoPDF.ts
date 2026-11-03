@@ -136,7 +136,7 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
         + `<td class="c">${esc(qtdCurta(q, forma).replace(/x$/, ""))}</td><td class="r">${brl(u)}${forma === "kg" ? "/kg" : ""}</td><td class="r">${brl(r2(q * u))}</td></tr>`;
     });
     // os 2 últimos itens descem junto com os totais (o total nunca fica sozinho numa página)
-    const tabela = `<table class="tb"><thead><tr><th>#</th><th>Item</th><th class="c">Qtd</th><th class="r">Unit.</th><th class="r">Total</th></tr></thead><tbody>`
+    const tabela = `<table class="tb"><thead><tr><th>#</th><th>Item</th><th class="c qt">Quantidade</th><th class="r">Unit.</th><th class="r">Total</th></tr></thead><tbody>`
       + (linhas.length ? linhas.map((l, i) => i >= linhas.length - 2 && i > 0 ? l.replace("<tr>", '<tr class="fim">') : l).join("") : `<tr><td colspan="5" class="vazio">Sem itens</td></tr>`)
       + `</tbody></table>`;
 
