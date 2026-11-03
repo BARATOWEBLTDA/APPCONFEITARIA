@@ -90,13 +90,14 @@ export function situacaoDe(p: Pedido): { nome: string; tom?: Tom } {
 
 /**
  * O próximo passo do pedido (10/10): o MESMO caminho e os MESMOS verbos na lista, no quadro e na tela do pedido.
- *   Retirada: Produzir → Marcar pronto (vai pra "Pronto pra retirar") → Marcar retirado.
- *   Entrega:  Produzir → Marcar pronto (vai pra "Pronto") → Saiu pra entrega → Marcar entregue.
- * Pedido de retirada que já está em "Pronto" (antigo) segue direto pra Marcar retirado.
+ *   (6.09) o botão é sempre um verbo (o próximo passo), pra não ser lido como a situação do pedido.
+ *   Retirada: Produzir → Finalizar (vai pra "Pronto pra retirar") → Entregar.
+ *   Entrega:  Produzir → Finalizar (vai pra "Pronto") → Enviar (vai pra "Saiu pra entrega") → Entregar.
+ * Pedido de retirada que já está em "Pronto" (antigo) segue direto pra Entregar.
  */
 export const VERBOS = {
-  receber: 'Recebi', aceitar: 'Aceitar', produzir: 'Produzir', pronto: 'Marcar pronto',
-  saiu: 'Saiu para entrega', entregue: 'Marcar entregue', retirado: 'Marcar retirado',
+  receber: 'Recebi', aceitar: 'Aceitar', produzir: 'Produzir', pronto: 'Finalizar',
+  saiu: 'Enviar', entregue: 'Entregar', retirado: 'Entregar',
 } as const
 export function proximoPasso(status: string, tipoEntrega?: string | null, origem?: string | null): { rotulo: string; proximo: string; pago?: boolean } | null {
   const g = grupoDoStatus(status)

@@ -67,7 +67,7 @@ export const COMO_PEDIDOS: Como = {
   artigo: "pedidos",
   dicas: [
     [Bell, <>Pedidos novos do cardápio chegam em <b>Para aceitar</b>. Ao aceitar, eles vão para a agenda.</>],
-    [ArrowRight, <>O botão de cada pedido avança para a <b>próxima etapa</b>: Produzir, Pronto e Entregue.</>],
+    [ArrowRight, <>O botão de cada pedido avança para a <b>próxima etapa</b>: Produzir, Finalizar, Enviar e Entregar.</>],
     [HandCoins, <>O valor que <b>falta receber</b> fica em destaque até você registrar o pagamento.</>],
     [Funnel, <>Use o <b>filtro</b> para escolher a situação e a data da entrega.</>],
   ],

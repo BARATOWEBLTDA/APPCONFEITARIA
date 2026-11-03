@@ -297,17 +297,17 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'pronto',
         titulo: 'Marcar como pronto',
-        imagens: [{ src: '/ajuda/pedidos-pronto.webp', alt: 'Pedido da Ana Paula em produção com o botão Pronto', marcas: [
-          'Terminou? Toque em **Pronto**.',
+        imagens: [{ src: '/ajuda/pedidos-pronto.webp', alt: 'Pedido da Ana Paula em produção com o botão Finalizar', marcas: [
+          'Fica no grupo **Em produção**. Terminou? Toque em **Finalizar**.',
         ] }],
       },
       {
         id: 'entregar',
         titulo: 'Entregar',
-        imagens: [{ src: '/ajuda/pedidos-entregar.webp', alt: 'Aba Prontos com os botões Retirado e Saiu para entrega', marcas: [
+        imagens: [{ src: '/ajuda/pedidos-entregar.webp', alt: 'Aba Prontos com os botões Entregar e Enviar', marcas: [
           'Os pedidos ficam em **Prontos**.',
-          'O cliente buscou? **Retirado**.',
-          'Vai levar? **Saiu para entrega**.',
+          'O cliente buscou? **Entregar**.',
+          'Vai levar? **Enviar**. Chegou? **Entregar**.',
         ] }],
       },
       {

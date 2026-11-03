@@ -58,7 +58,7 @@ const MEDIDA_TABLET = '(min-width: 768px)'
 const CHAVE_TELA = 'doonly_pedidos_tela_'
 const VALE_POR = 30 * 60 * 1000               // saiu da lista há menos de meia hora
 const VALE_POR_AO_VOLTAR = 6 * 60 * 60 * 1000 // pelo "voltar" do aparelho ou do navegador
-type TelaGuardada = { em: number; busca: string; aba: 'encomenda' | 'pronta_entrega'; modo: 'lista' | 'quadro'; status: string[]; periodo: string; ini: string; fim: string; y: number }
+type TelaGuardada = { em: number; busca: string; aba: 'encomenda' | 'pronta_entrega'; modo: 'lista' | 'quadro'; status: string[]; periodo: string; ini: string; fim: string; y: number; sit?: string | null }
 function lerTela(uid: string): TelaGuardada | null {
   try {
     // tira o que ficou de outra conta neste aparelho
@@ -154,6 +154,8 @@ export default function Pedidos() {
       if (t && !comFiltroRapido && (faz < VALE_POR || (tipoNavegacao === 'POP' && faz < VALE_POR_AO_VOLTAR))) {
         setBusca(String(t.busca || '')); setAba(t.aba === 'pronta_entrega' ? 'pronta_entrega' : 'encomenda'); setModo(t.modo === 'quadro' ? 'quadro' : 'lista')
         setStatusSelecionados(t.status.filter(s => typeof s === 'string')); setPeriodoFiltro(String(t.periodo || 'todos')); setDataInicio(String(t.ini || '')); setDataFim(String(t.fim || ''))
+        // (6.09) a aba do celular também volta (antes abria sempre na primeira com pedido)
+        if (SITS.some(x => x.k === t.sit)) setSit(t.sit as Sit)
         rolagemPraVoltar.current = Number(t.y) > 0 ? Number(t.y) : null
       }
       setUserId(user.id)
@@ -165,10 +167,10 @@ export default function Pedidos() {
   // Guarda como a lista está: a cada mudança e ao sair da tela (com a rolagem do momento)
   useEffect(() => {
     if (!userId) return
-    const guardar = () => guardarTela(userId, { busca, aba, modo, status: statusSelecionados, periodo: periodoFiltro, ini: dataInicio, fim: dataFim, em: Date.now(), y: rolagemGuardada.current })
+    const guardar = () => guardarTela(userId, { busca, aba, modo, status: statusSelecionados, periodo: periodoFiltro, ini: dataInicio, fim: dataFim, em: Date.now(), y: rolagemGuardada.current, sit })
     guardar()
     return guardar // ao sair da tela (ou antes da próxima mudança): com a rolagem e a hora do momento
-  }, [userId, busca, aba, modo, statusSelecionados, periodoFiltro, dataInicio, dataFim])
+  }, [userId, busca, aba, modo, statusSelecionados, periodoFiltro, dataInicio, dataFim, sit])
   useEffect(() => {
     // com janela aberta a página fica presa no topo (trava da rolagem): essa posição não conta
     const aoRolar = () => { if (document.body.style.position !== 'fixed') rolagemGuardada.current = window.scrollY }
@@ -480,7 +482,7 @@ export default function Pedidos() {
   const agrupar = useCallback((lista: Pedido[], cel = false) => {
     // (11/10) "hoje" vem do useDiaAtual: com a lista aberta de um dia pro outro, os grupos se refazem sozinhos
     const [ah, mh, dh] = hoje.split('-').map(Number)
-    const hojeIso = hoje, amanhaIso = dataISO(new Date(ah, mh - 1, dh + 1))
+    const hojeIso = hoje, amanhaIso = dataISO(new Date(ah, mh - 1, dh + 1)), ontemIso = dataISO(new Date(ah, mh - 1, dh - 1))
     const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
     const rot = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${DIAS[new Date(y, m - 1, d).getDay()]}, ${d}/${m}` }
     const porHora = (a: Pedido, b: Pedido) => String(a.data_entrega || '').localeCompare(String(b.data_entrega || '')) || String(a.horario_entrega || '').localeCompare(String(b.horario_entrega || ''))
@@ -490,7 +492,10 @@ export default function Pedidos() {
     add('aceitar', 'Para aceitar', lista.filter(p => !terminou(p) && precisaAceitar(p)).sort(porHora))
     // (6.04) celular: os que esperam o Pix ficam na aba Novos, num grupo logo depois dos pra aceitar
     if (cel) add('pix', 'Esperando o Pix', lista.filter(p => !terminou(p) && esperaPix(p)).sort(porHora))
-    const ativos = lista.filter(p => !terminou(p) && !precisaAceitar(p) && !(cel && esperaPix(p))).sort(porHora)
+    // (6.09) os que estão em produção ficam num grupo só, no topo: dá pra ver o que está no forno sem filtrar
+    const emProducao = (p: Pedido) => grupoDoStatus(p.status) === 'em_producao'
+    add('producao', 'Em produção', lista.filter(p => !terminou(p) && !precisaAceitar(p) && emProducao(p)).sort(porHora))
+    const ativos = lista.filter(p => !terminou(p) && !precisaAceitar(p) && !(cel && esperaPix(p)) && !emProducao(p)).sort(porHora)
     // (11/10) "Atrasado" pela regra única (lib/pedidoStatus): a data passou E o pedido ainda não ficou pronto.
     // O que já está pronto (ou saiu pra entrega) e é de um dia anterior não é atraso: fica num grupo à parte, pra não sumir da lista.
     const passados = ativos.filter(p => p.data_entrega && p.data_entrega.slice(0, 10) < hojeIso)
@@ -501,7 +506,22 @@ export default function Pedidos() {
     const futuros = ativos.filter(p => p.data_entrega && p.data_entrega > amanhaIso)
     ;[...new Set(futuros.map(p => p.data_entrega))].forEach(d => { const t = rot(d); add('d' + d, t.charAt(0).toUpperCase() + t.slice(1), futuros.filter(p => p.data_entrega === d)) })
     add('semdata', 'Sem data', ativos.filter(p => !p.data_entrega))
-    add('concluidos', 'Concluídos', lista.filter(terminou).sort((a, b) => -porHora(a, b)))
+    const fim = lista.filter(terminou).sort((a, b) => -porHora(a, b))
+    if (!cel) add('concluidos', 'Concluídos', fim)
+    else if (fim.length) {
+      // (6.09) celular: Concluídos separado por dia, com "Hoje" sempre em cima (o número da aba é o de hoje)
+      const diaDe = (p: Pedido) => String(p.data_entrega || '').slice(0, 10)
+      const titulo = (d: string) => {
+        if (!d) return 'Sem data'
+        const t = rot(d)
+        return d === hojeIso ? `Hoje · ${t}` : d === ontemIso ? `Ontem · ${t}` : d === amanhaIso ? `Amanhã · ${t}` : t.charAt(0).toUpperCase() + t.slice(1)
+      }
+      const dias = [...new Set(fim.map(diaDe))]
+      if (!dias.includes(hojeIso)) g.push({ chave: 'c-hoje', titulo: titulo(hojeIso), itens: [] })
+      dias.forEach(d => { const itens = fim.filter(p => diaDe(p) === d); if (d === hojeIso) g.push({ chave: 'c-hoje', titulo: titulo(d), itens }); else add('c' + (d || 'sem'), titulo(d), itens) })
+      // hoje sempre primeiro, mesmo quando tem entrega marcada pra frente
+      g.sort((a, b) => Number(b.chave === 'c-hoje') - Number(a.chave === 'c-hoje'))
+    }
     return g
   }, [hoje])
   const grupos = useMemo(() => agrupar(pedidosFiltrados), [agrupar, pedidosFiltrados])
@@ -514,6 +534,20 @@ export default function Pedidos() {
   }, [pedidosFiltrados, hoje])
   const sitAtual: Sit = sit ?? (nSit.aceitar > 0 ? 'aceitar' : nSit.agenda > 0 || nSit.prontos === 0 ? 'agenda' : 'prontos')
   const gruposCel = useMemo(() => agrupar(pedidosFiltrados.filter(p => sitDe(p) === sitAtual), true), [agrupar, pedidosFiltrados, sitAtual])
+  // (6.09) celular: buscou ou filtrou e a aba aberta ficou vazia? vai pra primeira aba que tem o resultado
+  // (antes o filtro achava o pedido, mas ele ficava escondido em outra aba)
+  const filtroAntes = useRef<string | null>(null)
+  useEffect(() => {
+    const agora = JSON.stringify([busca.trim(), statusSelecionados, periodoFiltro, dataInicio, dataFim])
+    const antes = filtroAntes.current
+    filtroAntes.current = agora
+    if (computador || antes === null || antes === agora) return
+    const n: Record<Sit, number> = { aceitar: 0, agenda: 0, prontos: 0, concluidos: 0 }
+    pedidosFiltrados.forEach(p => { n[sitDe(p)]++ })
+    if (n[sitAtual] > 0) return
+    const alvo = SITS.find(t => n[t.k] > 0)
+    if (alvo) setSit(alvo.k)
+  }, [busca, statusSelecionados, periodoFiltro, dataInicio, dataFim, computador, pedidosFiltrados, sitAtual])
 
   // (22/10) o filtro conta o que a aba aberta vai mostrar (computador: Encomendas ou Pronta entrega).
   // (01/11 · 5.99) no celular as abas já são as situações: contando só a aba aberta, todas as outras situações apareciam com 0
@@ -636,8 +670,10 @@ export default function Pedidos() {
                       {g.chave === 'aceitar' ? (
                         <div className="pdk-topo"><span>{g.itens.length === 1 ? 'Chegou pelo cardápio' : 'Chegaram pelo cardápio'}</span>
                           {g.itens.length > 1 && <button type="button" className="pdk-todos" onClick={() => aceitarTodos(g.itens)}>Aceitar todos</button>}</div>
-                      ) : !unico && <p className={`pdk-t${g.chave === 'atrasado' ? ' t-vermelho' : ''}`}>{g.titulo}<i>{g.itens.length}</i></p>}
-                      <div className="pdk-lista">{g.itens.map(p => <LinhaCompacta key={p.id} {...props(p)} />)}</div>
+                      ) : !unico && <p className={`pdk-t${g.chave === 'atrasado' ? ' t-vermelho' : ''}`}>{g.titulo}{g.itens.length > 0 && <i>{g.itens.length}</i>}</p>}
+                      {g.itens.length === 0
+                        ? <p className="pdk-nada">Nenhum pedido entregue hoje ainda.</p>
+                        : <div className="pdk-lista">{g.itens.map(p => <LinhaCompacta key={p.id} {...props(p)} />)}</div>}
                     </section>
                   )
                 })}

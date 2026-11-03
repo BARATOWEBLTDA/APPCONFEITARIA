@@ -190,7 +190,7 @@ export function LinhaCompacta({ p, aoAbrir, aoAvancar, mudando }: Props) {
   const pg = textoPagamento(p, falta)
   const quando = !p.data_entrega && p.tipo_venda === 'pronta_entrega' ? 'Pronta entrega' : dataCurta(p.data_entrega, p.horario_entrega)
   const dm = p.data_entrega ? `${p.data_entrega.slice(8, 10)}/${p.data_entrega.slice(5, 7)}` : ''
-  // botão curto pra caber na linha: "Marcar pronto" vira "Pronto", "Marcar entregue" vira "Entregue"
+  // (6.09) os botões já são verbos curtos (Produzir, Finalizar, Entregar); tira um "Marcar " que sobrar
   const rot = acao ? acao.rotulo.replace(/^Marcar /, '').replace(/^./, c => c.toUpperCase()) : ''
   return (
     <article className={`pdk${atr ? ' atr' : ''}`} tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>

@@ -222,3 +222,5 @@
 @media (min-width: 601px) { .pdk-aba-sem { display: none; } }
 .pdk-aba-c { display: none; }
 @media (max-width: 600px) { .pdk-aba-l { display: none; } .pdk-aba-c { display: inline; } }
+/* (6.09) Concluídos no celular: hoje sem entrega ainda */
+.pdk-nada { margin: 0 0 4px; padding: 14px 16px; border: 1px dashed var(--ui-borda); border-radius: var(--ui-raio-cartao); font-size: 14px; color: var(--ui-texto-2); }

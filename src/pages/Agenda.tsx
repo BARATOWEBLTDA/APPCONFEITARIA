@@ -520,7 +520,7 @@ export default function Agenda() {
   // (31/10 · 5.84) ⋮ do pedido no padrão MenuMais (antes abria uma janela de baixo)
   const itensDoPedido = (p: PedidoAgenda): ItemMenuMais[] => [
     { Ic: PencilSimple, t: "Editar pedido", sub: "Itens, data e pagamento", aoTocar: () => abrirEditar(p.id) },
-    ...(STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado") ? [{ Ic: Check, t: "Marcar pronto", sub: "O pedido está feito", aoTocar: () => marcarComoPronto(p) }] : []),
+    ...(STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado") ? [{ Ic: Check, t: "Finalizar", sub: "O pedido está pronto", aoTocar: () => marcarComoPronto(p) }] : []),
     { Ic: CalendarBlank, t: "Mudar a data da entrega", sub: "Escolha o novo dia", aoTocar: () => setReagendando(p) },
     { Ic: Copy, t: "Duplicar pedido", sub: "Um igual, para outra data", aoTocar: () => duplicarPedido(p) },
     { Ic: FilePdf, t: "Baixar PDF", sub: "Para imprimir ou mandar", aoTocar: () => baixarPdf(p) },
@@ -563,7 +563,7 @@ export default function Agenda() {
   const acaoAtencao = (p: PedidoResumo, atr: boolean): AcaoAtencao | null => {
     // (27/10) primeiro aceitar: "Pronto" só em pedido já aceito
     if (precisaAceitar(p as PedidoTexto)) return { t: "Aceitar", fn: () => mudarSituacao(p, "agendado"), principal: true };
-    if ((atr || p.status === "em_producao") && STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado")) return { t: "Pronto", fn: () => marcarComoPronto(p) };
+    if ((atr || p.status === "em_producao") && STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado")) return { t: "Finalizar", fn: () => marcarComoPronto(p) };
     if (grupoDe(p.status) === "agendado" && p.status !== "aguardando_pagamento") return { t: "Produzir", fn: () => mudarSituacao(p, "em_producao") };
     return null;
   };
@@ -847,7 +847,7 @@ function CartaoAgenda({ p, ocupado, aoAbrir, itensMenu, aoPronto, aoWhats }: { p
 
       {(podePronto || temTel) && (
         <div className={"ag3-pc-bts" + (podePronto && temTel ? "" : " um")}>
-          {podePronto && <Botao variante="secundario" tamanho="m" carregando={!!ocupado} onClick={aoPronto}>Marcar pronto</Botao>}
+          {podePronto && <Botao variante="secundario" tamanho="m" carregando={!!ocupado} onClick={aoPronto}>Finalizar</Botao>}
           {temTel && <Botao variante="secundario" tamanho="m" className="ag3-whats" icone={<IconeWhatsApp size={20} />} onClick={aoWhats}>WhatsApp</Botao>}
         </div>
       )}
