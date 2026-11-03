@@ -806,7 +806,7 @@ function CartaoAgenda({ p, ocupado, aoAbrir, itensMenu, aoPronto, aoWhats }: { p
     : falta <= 0.009 ? { t: "Pago", tom: "verde" as const }
     : recebido > 0 ? { t: `Falta ${rs(falta).replace(" ", "\u00A0")} · sinal pago`, tom: "laranja" as const } // (27/10) o que falta vem primeiro: com valor de 4 dígitos o fim era cortado
     : { t: `Falta receber ${rs(falta)}`, tom: "laranja" as const };
-  const nome = p.cliente_nome ? nomeDeGente(p.cliente_nome) : "Cliente não informado";
+  const nome = p.cliente_nome?.trim() ? nomeDeGente(p.cliente_nome) : "Sem nome";
   const ref = useRef<HTMLElement>(null);
 
   return (

@@ -4,7 +4,7 @@ import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { ArrowRight, Bag, CaretDown } from '@phosphor-icons/react'
 import { Botao, Linha } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { pixDoPedido, acaoDe, atrasado, precisaAceitar, chegouHa, criadoEm, dataCurta, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDoItem, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus } from './pedidoTexto'
+import { pixDoPedido, acaoDe, atrasado, precisaAceitar, chegouHa, criadoEm, dataCurta, dataLonga, enderecoCurto, formaDoItem, fotoDoPedido, horaCurta, itensOrdenados, nomeCliente, nomeDoItem, partesDaQtd, recebidoPedido, resumoItens, rs, saldoPedido, situacaoDe, telefoneBonito, grupoDoStatus, passoDeDepois } from './pedidoTexto'
 import { r2 } from '@/lib/moeda'
 
 /**
@@ -100,7 +100,7 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
       <div className="pdc-linhas">
         <div className="pdc-l1">
           <Linha rotulo="Situação" tom={sit.tom}>{sit.nome}</Linha>
-          {acao && <Botao className={aceitar ? undefined : 'pd-passo'} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
+          {acao && <Botao className={aceitar ? undefined : `pd-passo${passoDeDepois(p) ? ' pd-passo--depois' : ''}`} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
         </div>
         {!cancelado && <Linha rotulo="Pagamento" tom={textoPagamento(p, falta).tom}>{textoPagamento(p, falta).texto}</Linha>}
         <Linha rotulo={entrega ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataLonga(p.data_entrega, p.horario_entrega)}</Linha>
@@ -167,7 +167,7 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
       </p>
       <div className="pdl-acao" role="cell">
         {aceitar && aoRecusar && <Botao className="pd-recusar" variante="secundario" tamanho="p" disabled={mudando} onClick={parar(() => aoRecusar(p))}>Recusar</Botao>}
-        {acao && <Botao className={aceitar ? undefined : 'pd-passo'} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
+        {acao && <Botao className={aceitar ? undefined : `pd-passo${passoDeDepois(p) ? ' pd-passo--depois' : ''}`} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
       </div>
       <div role="cell">
         <MenuPedido p={p} aoEscolher={aoMenu} />
@@ -206,7 +206,7 @@ export function LinhaCompacta({ p, aoAbrir, aoAvancar, mudando }: Props) {
       </div>
       <div className="pdk-dir">
         <b className="pdk-v">{rs(p.valor_total)}</b>
-        {acao && <Botao className={aceitar ? 'pdk-bt' : 'pdk-bt pd-passo'} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{rot}</Botao>}
+        {acao && <Botao className={aceitar ? 'pdk-bt' : `pdk-bt pd-passo${passoDeDepois(p) ? ' pd-passo--depois' : ''}`} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{rot}</Botao>}
       </div>
     </article>
   )

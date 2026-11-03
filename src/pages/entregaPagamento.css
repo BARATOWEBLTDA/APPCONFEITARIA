@@ -243,3 +243,5 @@
 .ep-sep { padding-top: 8px; border-top: 0; }
 .ep-mapa-topo ~ .ep-taxa, .dl-painel .ep-card:has(.ep-mapa-topo) .ep-taxa { max-width: none; }
 .dl-painel .ep-card:has(.ep-mapa-topo) .ep-modo { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* (6.10) chave com 11 números: dá pra trocar entre CPF e celular */
+.ep-pix-troca { align-self: flex-start; margin: -10px 0 0; padding: 4px 0; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }

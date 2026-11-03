@@ -659,8 +659,8 @@ export const ARTIGOS: ArtigoAjuda[] = [
         texto: ['Toque em **Pix pelo cardápio**.'],
         imagens: [{ src: '/ajuda/loja-pix.webp', alt: 'Janela Pix pelo cardápio com a chave e o sinal', marcas: [
           'Ligue o **Pix pelo cardápio**.',
-          'O **tipo da chave**.',
-          'A **chave Pix**.',
+          'A **chave Pix**: o tipo o app reconhece sozinho.',
+          'O **nome** que aparece no banco do cliente.',
           'Sinal, total ou **o cliente escolhe**.',
         ] }],
         dica: 'Você confere o Pix em **Pedidos**.',

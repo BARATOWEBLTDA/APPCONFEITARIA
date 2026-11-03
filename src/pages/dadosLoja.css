@@ -24,7 +24,9 @@
 
 /* campos */
 .dl-zap { color: #15803D; }
-.dl-desc textarea { resize: none; overflow: hidden; min-height: 84px; }
+.dl-desc textarea { resize: none; overflow-y: auto; min-height: 150px; padding-bottom: 60px !important; }
+.dl-desc-caixa { position: relative; }
+.dl-desc-ia { position: absolute; right: 10px; bottom: 10px; }
 /* (16/10) contador e "Escrever com IA" na mesma linha, embaixo do campo (antes o botão flutuava em cima) */
 .dl-desc-pe { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
 .dl-desc-pe small { font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; }

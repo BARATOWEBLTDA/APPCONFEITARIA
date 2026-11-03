@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { Storefront, Truck, Wallet } from '@phosphor-icons/react'
 import { Botao, Titulo } from '@/components/base'
 import type { Pedido } from './pedidoTexto'
-import { SITUACOES, pixDoPedido, acaoDe, precisaAceitar, atrasado, dataCurta, grupoDoStatus, nomeCliente, resumoItens, rs, saldoPedido } from './pedidoTexto'
+import { SITUACOES, pixDoPedido, acaoDe, precisaAceitar, atrasado, dataCurta, grupoDoStatus, nomeCliente, resumoItens, rs, saldoPedido, passoDeDepois } from './pedidoTexto'
 
 /**
  * Quadro (08/10 · 3.11 — antes "Kanban"): uma coluna por situação, só no tablet e no computador.
@@ -86,7 +86,7 @@ export default function QuadroPedidos({ pedidos, aoAbrir, aoAvancar, aoMover, mu
                     <LinhaIcone icone={p.tipo_entrega === 'entrega' ? <Truck size={16} aria-hidden="true" /> : <Storefront size={16} aria-hidden="true" />} rotulo={p.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataCurta(p.data_entrega, p.horario_entrega)}</LinhaIcone>
                     {!cancelado && (() => { const px = pixDoPedido(p); const pg = (tom: string, txt: ReactNode) => <LinhaIcone icone={<Wallet size={16} aria-hidden="true" />} rotulo="Pagamento" tom={tom}>{txt}</LinhaIcone>; return px ? pg('laranja', px.estado === 'conferir' ? 'Pix a conferir' : 'Aguardando Pix') : falta > 0.009 ? pg('laranja', `Falta ${rs(falta, true)}`) : pg('verde', 'Pago') })()}
                   </div>
-                  {acao && <Botao className={precisaAceitar(p) ? undefined : 'pd-passo'} tamanho="p" cheio carregando={mudando === p.id} onClick={e => { e.stopPropagation(); aoAvancar(p) }}>{acao.rotulo}</Botao>}
+                  {acao && <Botao className={precisaAceitar(p) ? undefined : `pd-passo${passoDeDepois(p) ? ' pd-passo--depois' : ''}`} tamanho="p" cheio carregando={mudando === p.id} onClick={e => { e.stopPropagation(); aoAvancar(p) }}>{acao.rotulo}</Botao>}
                 </article>
               )
             })}

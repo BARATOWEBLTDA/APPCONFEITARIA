@@ -3,7 +3,7 @@ import { COMO_PEDIDOS, TOUR_PEDIDOS } from "@/lib/comoTelas";
 import { compartilharTexto } from "@/lib/compartilharCardapio";
 import { montarMensagem, dadosDoPedido } from '@/lib/mensagens'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
-import { Cake, CalendarDots, Funnel, Kanban, Lightning, ListBullets, MagnifyingGlass, Plus, Receipt, WarningCircle, X } from '@phosphor-icons/react'
+import { Cake, CalendarDots, CaretDown, Funnel, Kanban, Lightning, ListBullets, MagnifyingGlass, Plus, Receipt, WarningCircle, X } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
 import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
@@ -479,6 +479,11 @@ export default function Pedidos() {
   }, [pedidos, busca, aba, statusSelecionados, periodoFiltro, dataInicio, dataFim, filtroAguardando, filtroAtrasados, hoje, computador]) // "hoje": os filtros de data e de atrasado andam com o dia
 
   // Agrupado por dia: Atrasado, Hoje, Amanhã, os próximos dias, Sem data e Concluídos
+  // (6.10) lista mais curta: agendados mostram os próximos 7 dias (o resto fica em "Mais pra frente", fechado)
+  // e concluídos os últimos 7 dias ("Ver mais antigos" traz mais 30). Buscando ou filtrando, mostra tudo.
+  const [verDepois, setVerDepois] = useState(false)
+  const [diasConcluidos, setDiasConcluidos] = useState(7)
+  const abreTudo = !!busca.trim() || periodoFiltro !== 'todos' || statusSelecionados.length !== STATUS_PADRAO.length || !STATUS_PADRAO.every(x => statusSelecionados.includes(x))
   const agrupar = useCallback((lista: Pedido[], cel = false) => {
     // (11/10) "hoje" vem do useDiaAtual: com a lista aberta de um dia pro outro, os grupos se refazem sozinhos
     const [ah, mh, dh] = hoje.split('-').map(Number)
@@ -503,12 +508,20 @@ export default function Pedidos() {
     add('antes', 'De dias anteriores', passados.filter(p => !pedidoAtrasado(p, hojeIso)))
     add('hoje', `Hoje · ${rot(hojeIso)}`, ativos.filter(p => p.data_entrega === hojeIso))
     add('amanha', `Amanhã · ${rot(amanhaIso)}`, ativos.filter(p => p.data_entrega === amanhaIso))
+    const semanaIso = dataISO(new Date(ah, mh - 1, dh + 6))
+    const porDia = (lst: Pedido[]) => [...new Set(lst.map(p => p.data_entrega))].forEach(d => { const t = rot(d); add('d' + d, t.charAt(0).toUpperCase() + t.slice(1), lst.filter(p => p.data_entrega === d)) })
     const futuros = ativos.filter(p => p.data_entrega && p.data_entrega > amanhaIso)
-    ;[...new Set(futuros.map(p => p.data_entrega))].forEach(d => { const t = rot(d); add('d' + d, t.charAt(0).toUpperCase() + t.slice(1), futuros.filter(p => p.data_entrega === d)) })
+    porDia(futuros.filter(p => abreTudo || p.data_entrega <= semanaIso))
+    const depois = abreTudo ? [] : futuros.filter(p => p.data_entrega > semanaIso)
+    if (depois.length) { if (verDepois) porDia(depois); else g.push({ chave: 'depois', titulo: 'Mais pra frente', itens: depois }) }
     add('semdata', 'Sem data', ativos.filter(p => !p.data_entrega))
-    const fim = lista.filter(terminou).sort((a, b) => -porHora(a, b))
+    // concluídos: só os últimos dias (com 1.500 entregues a lista ficava enorme e lenta)
+    const corte = dataISO(new Date(ah, mh - 1, dh - (diasConcluidos - 1)))
+    const fimTodos = lista.filter(terminou).sort((a, b) => -porHora(a, b))
+    const fim = abreTudo ? fimTodos : fimTodos.filter(p => !p.data_entrega || p.data_entrega.slice(0, 10) >= corte)
+    const fimFora = fimTodos.length - fim.length
     if (!cel) add('concluidos', 'Concluídos', fim)
-    else if (fim.length) {
+    else if (fimTodos.length) {
       // (6.09) celular: Concluídos separado por dia, com "Hoje" sempre em cima (o número da aba é o de hoje)
       const diaDe = (p: Pedido) => String(p.data_entrega || '').slice(0, 10)
       const titulo = (d: string) => {
@@ -522,8 +535,9 @@ export default function Pedidos() {
       // hoje sempre primeiro, mesmo quando tem entrega marcada pra frente
       g.sort((a, b) => Number(b.chave === 'c-hoje') - Number(a.chave === 'c-hoje'))
     }
+    if (fimFora > 0) g.push({ chave: 'antigos', titulo: 'Ver mais antigos', itens: [] })
     return g
-  }, [hoje])
+  }, [hoje, abreTudo, verDepois, diasConcluidos])
   const grupos = useMemo(() => agrupar(pedidosFiltrados), [agrupar, pedidosFiltrados])
   // celular: quantos em cada aba, a aba escolhida (ou a primeira com pedido) e os grupos dela
   const nSit = useMemo(() => {
@@ -560,6 +574,10 @@ export default function Pedidos() {
   const nFiltros = (statusSelecionados.length !== STATUS_PADRAO.length || !STATUS_PADRAO.every(s => statusSelecionados.includes(s)) ? 1 : 0) + (periodoFiltro !== 'todos' ? 1 : 0)
   const filtrando = nFiltros > 0 || !!busca.trim()
   const limparTudo = () => { setBusca(''); setStatusSelecionados(STATUS_PADRAO); setPeriodoFiltro('todos'); setDataInicio(''); setDataFim('') }
+  // (6.10) "Mais pra frente" (fechado) e "Ver mais antigos" no fim da lista
+  const BotaoMais = ({ g }: { g: { chave: string; itens: Pedido[] } }) => g.chave === 'depois'
+    ? <button type="button" className="pd-mais" onClick={() => setVerDepois(true)}><span><b>Mais pra frente</b><small>{g.itens.length === 1 ? '1 pedido' : `${g.itens.length} pedidos`} depois de 7 dias</small></span><CaretDown size={18} weight="bold" aria-hidden="true" /></button>
+    : <button type="button" className="pd-mais pd-mais--link" onClick={() => setDiasConcluidos(d => d + 30)}><b>Ver mais antigos</b></button>
   const nEncomendas = pedidos.filter(p => (p.tipo_venda || 'encomenda') === 'encomenda').length
   const nPronta = pedidos.filter(p => p.tipo_venda === 'pronta_entrega').length
   const sairDoFiltroRapido = () => { setFiltroAguardando(false); setFiltroAtrasados(false); navigate('/pedidos', { replace: true }) }
@@ -665,6 +683,7 @@ export default function Pedidos() {
               <div className="pd-grupos pdk-grupos">
                 {gruposCel.map(g => {
                   const unico = gruposCel.length === 1 && (g.chave === 'aceitar' || g.chave === 'concluidos')
+                  if (g.chave === 'depois' || g.chave === 'antigos') return <BotaoMais key={g.chave} g={g} />
                   return (
                     <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
                       {g.chave === 'aceitar' ? (
@@ -681,7 +700,7 @@ export default function Pedidos() {
               )
             ) : (
               <div className="pd-grupos">
-                {grupos.map(g => (
+                {grupos.map(g => g.chave === 'depois' || g.chave === 'antigos' ? <BotaoMais key={g.chave} g={g} /> : (
                   <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
                     <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? (g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite para entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite para entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>
                     <div className="pdl-tabela" role="table">{g.itens.map(p => <LinhaPedido key={p.id} {...props(p)} comDia={g.chave === 'concluidos' || g.chave === 'semdata' || g.chave === 'antes'} />)}</div>

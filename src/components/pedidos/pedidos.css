@@ -224,3 +224,13 @@
 @media (max-width: 600px) { .pdk-aba-l { display: none; } .pdk-aba-c { display: inline; } }
 /* (6.09) Concluídos no celular: hoje sem entrega ainda */
 .pdk-nada { margin: 0 0 4px; padding: 14px 16px; border: 1px dashed var(--ui-borda); border-radius: var(--ui-raio-cartao); font-size: 14px; color: var(--ui-texto-2); }
+/* (6.10) "Mais pra frente" (pedidos depois de 7 dias, fechado) e "Ver mais antigos" (concluídos) */
+.pd-mais { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 60px; margin: 0 0 4px; padding: 12px 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
+.pd-mais span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pd-mais b { font-size: 15px; font-weight: 600; }
+.pd-mais small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pd-mais svg { flex: none; color: var(--ui-texto-2); }
+.pd-mais--link { justify-content: center; min-height: 48px; border: 0; background: none; color: var(--ui-rosa-escuro); }
+@media (hover: hover) { .pd-mais:hover { background: var(--ui-cinza); } .pd-mais--link:hover { background: none; text-decoration: underline; } }
+/* (6.10) passo de um pedido de outro dia: botão claro (o escuro fica pro que é de hoje ou está atrasado) */
+.ui-bt.pd-passo.pd-passo--depois { --bt-fundo: var(--ui-cinza); --bt-cor: var(--ui-cinza-texto); --bt-sombra: transparent; box-shadow: none; }

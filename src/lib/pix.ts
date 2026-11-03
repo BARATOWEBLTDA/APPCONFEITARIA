@@ -31,6 +31,22 @@ export function tipoDaChave(chave: string): TipoChave {
   return 'cpf'
 }
 
+/**
+ * (6.10) Descobre o tipo enquanto a pessoa digita (a tela não pergunta mais o tipo da chave).
+ * 11 números: CPF se os dígitos fecham, senão celular. Tem "@": e-mail. Letras e números com tracinho: aleatória.
+ */
+export function adivinharTipo(chave: string): TipoChave {
+  const c = String(chave || '').trim()
+  if (c.includes('@')) return 'email'
+  if (/[a-z]/i.test(c)) return /^[0-9a-f-]+$/i.test(c) ? 'aleatoria' : 'email'
+  const d = c.replace(/\D/g, '')
+  if (c.startsWith('+') || c.includes('(') || /^55\d{10,11}$/.test(d)) return 'celular'
+  if (d.length === 11) return cpfValido(d) ? 'cpf' : 'celular'
+  if (d.length === 10) return 'celular'
+  return 'cpf'
+}
+export const NOME_TIPO_CHAVE: Record<TipoChave, string> = { cpf: 'CPF', celular: 'celular', email: 'e-mail', aleatoria: 'chave aleatória' }
+
 /** Dígitos verificadores do CPF */
 export function cpfValido(d: string): boolean {
   if (!/^\d{11}$/.test(d) || /^(\d)\1{10}$/.test(d)) return false
@@ -48,9 +64,9 @@ export function cnpjValido(d: string): boolean {
 export function problemaNaChave(chave: string, tipo: TipoChave): string {
   const c = normalizarChave(chave, tipo)
   if (!c) return 'Escreva a chave Pix'
-  if (tipo === 'cpf' && c.length !== 11 && c.length !== 14) return 'CPF tem 11 números e CNPJ tem 14'
+  if (tipo === 'cpf' && c.length !== 11 && c.length !== 14) return 'Confira a chave: CPF tem 11 números, CNPJ 14 e celular vai com DDD'
   // (27/10) confere os dígitos: o celular (11 números) passava como CPF e o Pix saía com uma chave que não existe
-  if (tipo === 'cpf' && c.length === 11 && !cpfValido(c)) return 'CPF inválido. Se for celular, use a aba Celular'
+  if (tipo === 'cpf' && c.length === 11 && !cpfValido(c)) return 'CPF inválido. Confira os números'
   if (tipo === 'cpf' && c.length === 14 && !cnpjValido(c)) return 'CNPJ inválido. Confira os números'
   if (tipo === 'celular' && !/^\+55\d{10,11}$/.test(c)) return 'Coloque o celular com DDD'
   if (tipo === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c)) return 'Confira o e-mail'

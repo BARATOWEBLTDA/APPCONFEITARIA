@@ -206,7 +206,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     if (!t) return;
     t.style.height = "auto";
     t.style.height = `${t.scrollHeight + 2}px`;
-  }, [descricao, loading]);
+  }); // (6.10) a cada desenho: na janela "Sobre a loja" o campo aparece depois e ficava com a altura de 3 linhas, cortando o texto
 
   // (17/10) veio do antigo "Entrega e pagamento": desce direto pra essa parte
   const irEntrega = (useLocation().state as EstadoNavegacao)?.secao === "entrega";
@@ -488,11 +488,14 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
             )}
           </div>
           <div id="dl-desc" className="dl-desc" ref={descRef}>
-            <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={3} autoComplete="off"
-              placeholder={EXEMPLO_DESCRICAO} onChange={(e) => setDescricao(e.target.value)} />
+            {/* (6.10) igual à descrição do produto: caixa maior e o "Gerar com IA" dentro, no canto de baixo */}
+            <div className="dl-desc-caixa">
+              <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={5} autoComplete="off"
+                placeholder={EXEMPLO_DESCRICAO} onChange={(e) => setDescricao(e.target.value)} />
+              <span className="dl-desc-ia"><BotaoIA carregando={gerando} onClick={gerarDescricao} /></span>
+            </div>
             <div className="dl-desc-pe">
               <small>{descricao.length} de 200 caracteres</small>
-              <BotaoIA carregando={gerando} onClick={gerarDescricao} />
             </div>
           </div>
           </>)}

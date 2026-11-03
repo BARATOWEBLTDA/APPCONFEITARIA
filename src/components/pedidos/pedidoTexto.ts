@@ -226,7 +226,15 @@ export function nomeDeProduto(s: string): string {
   if (t === t.toUpperCase() && /[A-ZÀ-Ú]/.test(t)) return t.charAt(0) + t.slice(1).toLowerCase()
   return t.charAt(0).toUpperCase() + t.slice(1)
 }
-export const nomeCliente = (p: Pedido) => (p.cliente_nome ? nomeDeGente(p.cliente_nome) : 'Cliente não informado')
+// (6.10) "Sem nome" no lugar de "Cliente não informado" (cortado no celular parecia erro)
+export const nomeCliente = (p: Pedido) => (p.cliente_nome?.trim() ? nomeDeGente(p.cliente_nome) : 'Sem nome')
+/** (6.10) O passo de um pedido de outro dia (e que não está atrasado nem pra aceitar) usa o botão claro */
+export function passoDeDepois(p: Pedido): boolean {
+  if (precisaAceitar(p) || atrasado(p) || !p.data_entrega) return false
+  const d = new Date()
+  const hoje = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return p.data_entrega.slice(0, 10) > hoje
+}
 
 export function itensOrdenados(p: Pedido): PedidoItem[] {
   return [...(p.pedido_itens || [])].sort((a, b) => (b.valor_unitario || 0) * (b.quantidade || 1) - (a.valor_unitario || 0) * (a.quantidade || 1))

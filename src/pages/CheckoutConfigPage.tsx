@@ -6,7 +6,7 @@ import { CTA_PRO } from "@/lib/beneficiosPro";
 import { Check, Crown, PencilSimple, Plus, Trash, QrCode, ShareNetwork, Ticket, Truck, Wallet, WarningCircle, PixLogo, Money, CreditCard, Storefront, Moped, Motorcycle, Car, ChatCircleText } from "@phosphor-icons/react"
 import type { Icon } from "@phosphor-icons/react"
 import ListaChaves from "@/components/loja/ListaChaves"
-import { normalizarChave, problemaNaChave, tipoDaChave, type TipoChave } from '@/lib/pix'
+import { adivinharTipo, NOME_TIPO_CHAVE, normalizarChave, problemaNaChave, tipoDaChave, type TipoChave } from '@/lib/pix'
 import { cupomDisponivel, MAX_CUPONS_ATIVOS, regraCupom, textoDesconto } from '@/lib/cupons'
 import type { DadosImagemCupom } from '@/lib/imagemCupom'
 import ImagemCupom from '@/components/marketing/ImagemCupom'
@@ -741,36 +741,29 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         {(!so || so === 'pix') && formasPagamento.includes('pix') && (
         <section className="ep-card">
           <Cabeca Ic={QrCode} titulo="Pix pelo cardápio" apoio="O cliente paga com QR Code" />
-          <Chave on={pixOnline} rotulo="Receber Pix pelo cardápio" apoio={pixOnline ? 'Você confirma em Pedidos' : 'Desligado: paga pelo WhatsApp'} aoMudar={setPixOnline} />
+          <Chave on={pixOnline} rotulo="Receber Pix pelo cardápio" apoio={pixOnline ? 'O cliente paga ao fazer o pedido' : 'Desligado: paga pelo WhatsApp'} aoMudar={setPixOnline} />
           {pixOnline && (
             <div className="ep-pix">
-              <div className="ui-campo">
-                <span className="ui-campo-r" id="ep-pix-tipo"><span>Tipo da chave</span></span>
-                <div className="ep-seg ep-seg--4" role="radiogroup" aria-labelledby="ep-pix-tipo">
-                  {([['cpf', 'CPF/CNPJ'], ['celular', 'Celular'], ['email', 'E-mail'], ['aleatoria', 'Aleatória']] as [TipoChave, string][]).map(([k, n]) => (
-                    <button key={k} type="button" role="radio" aria-checked={pixTipo === k} onClick={() => { if (pixTipo !== k) { setPixTipo(k); setPixChave('') } }}>{n}</button>
-                  ))}
-                </div>
-              </div>
-              <Campo rotulo="Chave Pix" value={pixChave}
-                inputMode={pixTipo === 'cpf' || pixTipo === 'celular' ? 'numeric' : pixTipo === 'email' ? 'email' : 'text'}
-                prefixo={pixTipo === 'celular' ? '+55' : undefined}
-                placeholder={pixTipo === 'cpf' ? 'Só os números' : pixTipo === 'celular' ? '(41) 9 9999-0000' : pixTipo === 'email' ? 'voce@email.com' : 'Cole a chave aqui'}
+              {/* (6.10) sem "Tipo da chave": o app reconhece pelo que foi digitado e mostra embaixo */}
+              <Campo rotulo="Sua chave Pix" value={pixChave} inputMode="text" autoComplete="off" autoCapitalize="off" spellCheck={false}
+                placeholder="CPF, CNPJ, celular, e-mail ou aleatória"
                 erro={pixChave.trim() && problemaNaChave(pixChave, pixTipo) ? problemaNaChave(pixChave, pixTipo) : undefined}
-                onChange={e => setPixChave(e.target.value)} />
-              <div className="ep-g2">
-                <Campo rotulo="Nome de quem recebe" value={pixNome} maxLength={25} onChange={e => setPixNome(e.target.value)} />
-                <Campo rotulo="Cidade" value={pixCidade} maxLength={15} onChange={e => setPixCidade(e.target.value)} />
-              </div>
+                dica={pixChave.trim() ? `Chave de ${pixTipo === 'cpf' && pixChave.replace(/\D/g, '').length === 14 ? 'CNPJ' : NOME_TIPO_CHAVE[pixTipo]}` : 'O tipo da chave o app reconhece sozinho'}
+                onChange={e => { setPixChave(e.target.value); setPixTipo(adivinharTipo(e.target.value)) }} />
+              {pixChave.replace(/\D/g, '').length === 11 && !/[a-z@]/i.test(pixChave) && (
+                <button type="button" className="ep-pix-troca" onClick={() => setPixTipo(pixTipo === 'cpf' ? 'celular' : 'cpf')}>
+                  {pixTipo === 'cpf' ? 'É um celular? Toque aqui' : 'É um CPF? Toque aqui'}
+                </button>
+              )}
+              <Campo rotulo="Nome de quem recebe" value={pixNome} maxLength={25} dica="Aparece no banco do cliente ao pagar" onChange={e => setPixNome(e.target.value)} />
+              <Campo rotulo="Cidade" value={pixCidade} maxLength={15} onChange={e => setPixCidade(e.target.value)} />
               <div className="ui-campo">
                 <span className="ui-campo-r" id="ep-pix-modo"><span>Quanto o cliente paga no Pix</span></span>
-                <div className="ppf-mos ppf-mos--chk ep-pix-modo" role="radiogroup" aria-labelledby="ep-pix-modo">
-                  {([['escolha', 'O cliente escolhe', 'Sinal ou o total, na hora de pagar'], ['sinal', 'Só o sinal', 'O resto ele paga na entrega'], ['total', 'Só o total', 'Paga tudo antes']] as const).map(([k, n, sub]) => (
-                    <button key={k} type="button" role="radio" aria-checked={pixModo === k} className={pixModo === k ? 'on' : ''} onClick={() => setPixModo(k)}>
-                      <i aria-hidden="true">{pixModo === k && <Check size={13} weight="bold" />}</i><span><b>{n}</b><small><em>{sub}</em></small></span>
-                    </button>
-                  ))}
-                </div>
+                <CaixasEscolha rotuloId="ep-pix-modo" valor={pixModo} onMudar={v => setPixModo(v)} opcoes={[
+                  { v: 'escolha' as const, t: 'O cliente escolhe', sub: 'O sinal ou o total, na hora de pagar' },
+                  { v: 'sinal' as const, t: 'Só o sinal', sub: 'O resto ele paga na entrega' },
+                  { v: 'total' as const, t: 'Tudo antes', sub: 'Paga o pedido inteiro ao pedir' },
+                ]} />
               </div>
               {pixModo !== 'total' && (
                 <div className="ui-campo">

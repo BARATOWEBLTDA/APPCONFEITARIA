@@ -12,7 +12,8 @@ export const BENEFICIOS: Beneficio[] = [
   [ChartLineUp, "Saiba quanto você lucra de verdade", "Relatórios de lucratividade por produto e por mês, para decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
   [Robot, "A Doo IA sem aperto", "No PRO a Doo IA responde até 150 mensagens por dia e cria imagens. No grátis são 10 mensagens por mês.", "Doo IA 150 por dia", "E cria imagens", "doo"],
   [FileText, "Orçamentos que o cliente aprova", "Monte a proposta, mande o link e o cliente aprova pelo celular. Aprovou, vira pedido.", "Orçamentos", "Proposta com link para aprovar", "/orcamentos"],
-  [Stack, "Complementos no cardápio", "Topo de bolo, velas e outros extras que o cliente marca no produto, com foto ou frase.", "Complementos", "Extras que o cliente marca", "/complementos"],
+  // (6.10) o grátis também tem complementos (até 3) e PDFs (com o "Feito com Doonly"): o texto diz o que o PRO muda de verdade
+  [Stack, "Complementos sem limite", "Topo de bolo, velas e outros extras que o cliente marca no produto. No grátis, até 3. No PRO, quantos quiser.", "Complementos sem limite", "Extras que o cliente marca", "/complementos"],
   [Tag, "Cupons sem limite", "No grátis, 1 cupom ativo. No PRO, quantos quiser, e os 2 mais novos aparecem no topo do cardápio.", "Cupons sem limite", "E os 2 mais novos no topo", "/marketing"],
   [ChatCircleText, "Mensagens do seu jeito", "Troque os textos prontos do WhatsApp e anuncie com o Pixel do Facebook.", "Mensagens e Pixel", "Textos do seu jeito e anúncios", "/configuracoes/mensagens"],
   [Palette, "Cardápio com a cara da sua marca", "Qualquer cor no topo da loja, até 4 fotos por produto e um link com o nome da sua loja.", "Cardápio com a sua marca", "Qualquer cor e até 4 fotos", "/cardapio-design"],
@@ -21,7 +22,7 @@ export const BENEFICIOS: Beneficio[] = [
   [Crown, "Sem marca d'água", "O cardápio só com a sua marca, sem o \"Feito com Doonly\".", "Sem marca d'água", "Só a sua marca no cardápio", null],
   [Infinito, "Todo o cardápio no ar", "No grátis, até 10 produtos no cardápio ao mesmo tempo. No PRO, todos.", "Produtos sem limite", "Todo o cardápio no ar", null],
   [AddressBook, "Importe clientes dos contatos", "Traga os contatos direto da agenda do celular (Android).", "Importar contatos", "Traga da agenda do celular", "/clientes"],
-  [FilePdf, "Relatórios em PDF", "Agenda do dia, pedidos e fichas técnicas prontos para mandar ou imprimir.", "Relatórios em PDF", "Agenda, pedidos e fichas", null],
+  [FilePdf, "PDFs só com a sua marca", "Pedidos, agenda do dia e fichas técnicas sem o \"Feito com Doonly\" no rodapé.", "PDFs com a sua marca", "Sem o \"Feito com Doonly\"", null],
 ];
 
 /** (31/10 · 5.97) O PRO começa com 7 dias grátis na Hotmart (pede o cartão e só cobra no 8º dia).
