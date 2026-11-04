@@ -6,9 +6,10 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { CalendarBlank, Check, Copy, Eye, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, Phone, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import { CalendarBlank, Check, Copy, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, Phone, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import CampoData from '@/components/CampoData'
+import CalendarioMes from '@/components/CalendarioMes'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { Botao, CaixasEscolha, Campo, CampoArea, Janela, MenuMais, TelaVazia, avisar, confirmar } from '@/components/base'
 import { supabase } from '@/lib/supabase'
@@ -66,7 +67,6 @@ export default function OrcamentoEditar() {
   const [mudou, setMudou] = useState(false)
   const [produtos, setProdutos] = useState<Prod[]>([])
   const [escolher, setEscolher] = useState(false)
-  const [verPrevia, setVerPrevia] = useState(false)
   const [produtoOpcoes, setProdutoOpcoes] = useState<Record<string, any> | null>(null) // eslint-disable-line @typescript-eslint/no-explicit-any
   const [busca, setBusca] = useState('')
   const [extras, setExtras] = useState({ desconto: false, acrescimo: false, entrega: false })
@@ -268,7 +268,7 @@ export default function OrcamentoEditar() {
         {o.ocasiao && <><dt>Para</dt><dd>{o.ocasiao}{o.pessoas ? ` · ${o.pessoas} pessoas` : ''}</dd></>}
         {o.data_evento && <><dt>Data</dt><dd>{dataLonga(o.data_evento)}</dd></>}
         {Number(o.orcamento_cliente) > 0 && <><dt>Quer gastar</dt><dd>até {brl(Number(o.orcamento_cliente))}</dd></>}
-        {o.cliente_telefone && <><dt>WhatsApp</dt><dd><a href={linkWhatsApp(o.cliente_telefone)} target="_blank" rel="noopener noreferrer">{o.cliente_telefone}</a></dd></>}
+        {o.cliente_telefone && <><dt>WhatsApp</dt><dd><a href={linkWhatsApp(o.cliente_telefone)} target="_blank" rel="noopener noreferrer">{mascaraTelefone(o.cliente_telefone)}</a></dd></>}
       </dl>
       {o.descricao && <p className="orc-desc">“{o.descricao}”</p>}
       {(o.fotos || []).length > 0 && <div className="orc-fotos">{(o.fotos || []).map((f, k) => <button key={k} type="button" onClick={() => setFoto(f)} aria-label={`Ver a foto ${k + 1}`}><img src={f} alt="" /></button>)}</div>}
@@ -299,9 +299,8 @@ export default function OrcamentoEditar() {
   const cliPronto = !!(o.cliente_nome || '').trim() && (o.cliente_telefone || '').replace(/\D/g, '').length >= 10
   const verCampos = editarCli ?? !cliPronto
   const botoesEtapa = etapa < 5 ? (<>
-    {etapa === 1
-      ? <Botao variante="secundario" carregando={salvando && etapa === 1} onClick={async () => { const ok = await salvar(); if (ok) avisar('Rascunho salvo', { tipo: 'ok' }) }}>Rascunho</Botao>
-      : <Botao variante="secundario" onClick={() => { setEtapa(e => Math.max(1, e - 1)); window.scrollTo({ top: 0 }) }}>Voltar</Botao>}
+    {/* (6.49) o "Rascunho" foi pro fim (etapa Enviar); a etapa 1 tem só o Continuar */}
+    {etapa > 1 && <Botao variante="secundario" onClick={() => { setEtapa(e => Math.max(1, e - 1)); window.scrollTo({ top: 0 }) }}>Voltar</Botao>}
     <Botao carregando={salvando} onClick={() => void continuar()}>Continuar</Botao>
   </>) : null
 
@@ -310,7 +309,7 @@ export default function OrcamentoEditar() {
   return (<>
     <AppPageHeader title={titulo} subtitle={o.numero ? `Orçamento #${o.numero}` : 'Monte a proposta e envie o link'} voltar="/orcamentos" infoComo={COMO_ORCAMENTO} infoTour={TOUR_ORCAMENTO}
       rightActions={<MenuMais rotulo="Mais ações do orçamento" itens={[{ Ic: Trash, t: "Excluir orçamento", sub: "Apaga de vez", perigo: true, aoTocar: () => { void excluir() } }]} />} />
-    <div className="orc orc-ed">
+    <div className={`orc orc-ed${etapa === 1 ? " orc-ed--largo" : ""}`}>
       <div className="orc-ed-main">
         {/* (6.43) etapas numeradas: a bolinha rosa é a atual; com ✓ as feitas; toca numa pra ir (as da frente só sem nada faltando) */}
         <ol className="orc-etapas orc-etapas--n" aria-label="Etapas">
@@ -327,7 +326,8 @@ export default function OrcamentoEditar() {
           })}
         </ol>
 
-        {etapa === 1 && (<>
+        {/* (6.49) PC: cliente e evento à esquerda; à direita o calendário do mês, com os dias que já têm pedido */}
+        {etapa === 1 && (<div className="orc-e1"><div className="orc-e1-col">
           {pediu}
           <section className="orc-card">
             <h2 className="orc-h-acao">Cliente{!verCampos && <button type="button" className="orc-link-bt" onClick={() => setEditarCli(true)}><PencilSimple size={14} weight="bold" />Editar</button>}</h2>
@@ -360,8 +360,12 @@ export default function OrcamentoEditar() {
               <Campo rotulo="Local" opcional value={o.local_evento || ''} placeholder="Ex.: Salão do prédio" onChange={e => muda({ local_evento: e.target.value })} />
             </div>
           </section>
-
-        </>)}
+          </div>
+          <section className="orc-card orc-e1-cal">
+            <h2>Data do evento</h2>
+            <CalendarioMes valor={o.data_evento || ''} onChange={d => muda({ data_evento: d })} userId={o.user_id} />
+          </section>
+        </div>)}
 
         {etapa === 2 && (<>
           <section className="orc-card">
@@ -498,23 +502,19 @@ export default function OrcamentoEditar() {
               <Botao variante="secundario" icone={<Copy size={18} weight="bold" />} onClick={() => void copiarLink()}>Copiar link</Botao>
               <Botao variante="secundario" icone={<FilePdf size={18} weight="bold" />} onClick={baixarPdf}>Baixar PDF</Botao>
             </div>
+            {o.status !== 'enviado' && !respondido && <button type="button" className="orc-rasc" disabled={salvando} onClick={async () => { const ok = await salvar(); if (ok) { avisar('Rascunho salvo. Você envia quando quiser.', { tipo: 'ok' }); navigate('/orcamentos') } }}>Salvar como rascunho e enviar depois</button>}
           </div>
         </>)}
 
         {/* (04/11 · 6.47) a prévia do lado saiu: a tela fica numa coluna só, no meio. A prévia abre no "Ver como fica";
             no computador os botões ficam aqui embaixo, no canto e do tamanho do texto */}
-        {etapa < 5 && <button type="button" className="orc-ver-cel" onClick={() => setVerPrevia(true)}><Eye size={18} weight="bold" aria-hidden="true" />Ver como fica</button>}
         {etapa < 5 && <div className="orc-acoes-pc">
-          <Botao variante="link" icone={<Eye size={18} weight="bold" />} onClick={() => setVerPrevia(true)}>Ver como fica</Botao>
           <span>{botoesEtapa}</span>
         </div>}
       </div>
     </div>
 
-    <Janela aberta={verPrevia} aoFechar={() => setVerPrevia(false)} tipo="conteudo" titulo="Assim o cliente vê">
-      <Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url}
-        montando={{ condicoes: etapa >= 4 || (o.status !== 'rascunho' && o.status !== 'novo') }} />
-    </Janela>
+
 
     {etapa < 5 && (
       <div className="orc-pe">
