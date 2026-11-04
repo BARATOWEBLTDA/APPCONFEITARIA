@@ -121,7 +121,7 @@ export function montarHtml(loja: Loja, d: Doc, rodapeDePagina = sabeRodapeDePagi
 <meta name="viewport" content="width=840">
 <style>${fontesPoppins()}</style>
 <style>${CSS}${pagina}</style></head><body>
-<div class="bar-acoes"><button onclick="window.print()">Salvar PDF / Imprimir</button></div>
+<div class="bar-acoes"><button id="bt-share" type="button" style="display:none" disabled>Preparando o PDF…</button><button id="bt-print" onclick="window.print()">Salvar PDF / Imprimir</button></div>
 <div class="pg">
 <div class="hd"><div class="av">${av}</div>
 <div class="lj"><b>${esc(loja.nome)}</b>${loja.contato ? `<span>${esc(loja.contato)}</span>` : ""}</div>
@@ -129,6 +129,7 @@ export function montarHtml(loja: Loja, d: Doc, rodapeDePagina = sabeRodapeDePagi
 ${corpo}
 <div class="ft"><span>Gerado em ${esc(gerado)}</span>${loja.isPro ? "" : `<span class="fb">${esc(marca)}</span>`}</div>
 </div>
+<script>${compartilharPdf(d.titulo)}<\/script>
 <script>${ESPERA_E_IMPRIME}<\/script>
 </body></html>`;
 }
@@ -170,12 +171,32 @@ function fontesPoppins(): string {
  * de espera: se a internet falhar, imprime assim mesmo.
  */
 const ESPERA_E_IMPRIME = `(function(){
-var feito=false;function imprime(){if(feito)return;feito=true;setTimeout(function(){window.print()},300)}
+var feito=false;function imprime(){if(feito||window.__compartilha)return;feito=true;setTimeout(function(){window.print()},300)}
 function some(m){var p=m.parentNode;(p&&p.className==="av"?p:m).style.display="none"}
 function imagens(){return Promise.all([].slice.call(document.images).map(function(m){if(m.complete)return m.naturalWidth?1:(some(m),1);return new Promise(function(r){m.onload=r;m.onerror=function(){some(m);r()}})}))}
 function fontes(){var f=document.fonts;if(!f||!f.load)return Promise.resolve();return Promise.all(["400","500","600"].map(function(p){return f.load(p+" 12px Poppins").catch(function(){})})).then(function(){return f.ready})}
 function vai(){Promise.all([fontes(),imagens()]).then(imprime,imprime);setTimeout(imprime,5000)}
 if(document.readyState==="complete")vai();else window.addEventListener("load",vai);
+})();`;
+
+/**
+ * (6.64) Celular: a aba do documento é "about:blank", então o "Compartilhar" do navegador mandava esse
+ * endereço em vez do arquivo. Onde o aparelho compartilha arquivos (Android, iPhone), a página monta um PDF
+ * de verdade em segundo plano (html2pdf, carregado só aqui) e o botão "Compartilhar PDF" abre a lista de apps
+ * (WhatsApp, e-mail…) com o arquivo. Nesses aparelhos a impressão não abre sozinha; "Salvar / Imprimir" continua.
+ */
+const compartilharPdf = (titulo: string) => `(function(){
+var b=document.getElementById("bt-share"),pr=document.getElementById("bt-print");if(!b)return;
+var pode=false;try{pode=!!(window.matchMedia&&matchMedia("(pointer: coarse)").matches&&navigator.canShare&&navigator.canShare({files:[new File(["x"],"a.pdf",{type:"application/pdf"})]}))}catch(e){}
+if(!pode)return;window.__compartilha=true;b.style.display="";b.parentNode.className+=" dois";if(pr)pr.textContent="Imprimir";
+var nome=${JSON.stringify(titulo.replace(/[\\/:*?"<>|]+/g, " ").trim() || "Documento").replace(/</g, "\\u003c")}+".pdf",arq=null;
+function pronto(f){arq=f;b.disabled=false;b.textContent="Compartilhar PDF"}
+function falhou(){b.textContent="Não deu para montar o PDF";b.disabled=true;window.__compartilha=false}
+function monta(){var el=document.querySelector(".pg");var fn=document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve();
+fn.then(function(){return window.html2pdf().set({margin:[8,6,10,6],filename:nome,image:{type:"jpeg",quality:.95},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css","legacy"],avoid:[".card:not(.tab)","tr",".kpis"]}}).from(el).outputPdf("blob")})
+.then(function(bl){pronto(new File([bl],nome,{type:"application/pdf"}))},falhou)}
+var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";s.onload=monta;s.onerror=falhou;document.head.appendChild(s);
+b.onclick=function(){if(!arq)return;navigator.share({files:[arq],title:nome.replace(/\.pdf$/,"")}).catch(function(){})};
 })();`;
 
 const MARGEM = `font-family: "Poppins", sans-serif; font-size: 8px; font-weight: 400; color: #8A7F84;`;
@@ -187,7 +208,8 @@ const CSS = `
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 html, body { font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #2C1219; background: #EFE9EC; font-size: 10.5px; line-height: 1.4; }
 b, strong { font-weight: 600; }
-.bar-acoes { position: sticky; top: 0; z-index: 5; display: flex; justify-content: center; padding: 10px; background: rgba(239,233,236,.92); }
+.bar-acoes { position: sticky; top: 0; z-index: 5; display: flex; justify-content: center; gap: 10px; padding: 10px; background: rgba(239,233,236,.92); }
+.bar-acoes button:disabled { opacity: .6; } .bar-acoes.dois #bt-print { background: #fff; color: #C33A6E; box-shadow: inset 0 0 0 2px #E85A8C; }
 .bar-acoes button { border: none; border-radius: 10px; padding: 10px 18px; background: linear-gradient(90deg,#E85A8C,#C33A6E); color: #fff; font: 600 13px "Poppins", sans-serif; cursor: pointer; }
 @media (pointer: coarse) { .bar-acoes { padding: 18px; } .bar-acoes button { font-size: 28px; padding: 20px 40px; border-radius: 18px; } }
 .pg { max-width: 794px; margin: 0 auto 30px; background: #fff; padding: 14mm 12mm; border-radius: 6px; box-shadow: 0 10px 30px rgba(60,20,35,.12); }
