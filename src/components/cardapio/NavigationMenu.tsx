@@ -881,6 +881,17 @@ function CartContent({
     : formaEntrega === 'entrega_propria' && modoEnt === 'raio' && (taxaArea.estado === 'fora' || taxaArea.estado === 'sem_local') ? (taxaArea.estado === 'fora' ? 'Fora da área' : 'Confira o endereço') : ''
 
   /* ═══ Pagar com Pix (20/10) ═══ */
+  // (6.32) os mais vendidos da loja (antes de qualquer return: regra dos hooks)
+  const [maisVendidos, setMaisVendidos] = useState<Record<string, number>>({})
+  const lojaDasSugestoes = (sugestoes as Produto[])[0]?.user_id
+  useEffect(() => {
+    if (!lojaDasSugestoes) return
+    let vivo = true
+    supabase.rpc('cardapio_mais_vendidos', { p_loja: lojaDasSugestoes }).then(({ data }) => {
+      if (vivo && Array.isArray(data)) setMaisVendidos(Object.fromEntries((data as { produto_id: string; qtd: number }[]).map(r => [r.produto_id, Number(r.qtd) || 0])))
+    }, () => { /* sem os mais vendidos: segue pela categoria e pelo preço */ })
+    return () => { vivo = false }
+  }, [lojaDasSugestoes])
   if (pedidoConfirmado && pixPara && !pixFeito && config.pix) return (
     <PixPagamento pix={config.pix} pedidoId={pixPara.pedidoId} numero={pedidoConfirmado.numero} total={pixPara.total}
       tipo={pixPara.tipo} corTopo={corTopo} logoUrl={logoUrl} verificada={verificada}
@@ -984,7 +995,13 @@ function CartContent({
   )
   const economia = Math.round(items.reduce((t: number, it) => t + (Number(it?.precoBreakdown?.desconto) || 0) * (Number(it?.quantity) || 0), 0) * 100) / 100
   const naSacola = new Set(items.map((it) => it.id))
-  const pecaTambem = (sugestoes as Produto[]).filter(p => !naSacola.has(p.id)).slice(0, 8)
+  // (04/11 · 6.32) "Aproveite e peça junto": 1º produtos de OUTRA categoria (tem bolo na sacola → docinho, bebida),
+  // depois os mais vendidos da loja nos últimos 60 dias e, no empate, os mais baratos (vão por impulso)
+  const catsNaSacola = new Set((sugestoes as Produto[]).filter(p => naSacola.has(p.id)).map(p => p.categoria || ''))
+  const pecaTambem = (sugestoes as Produto[]).filter(p => !naSacola.has(p.id))
+    .map(p => ({ p, outra: catsNaSacola.has(p.categoria || '') ? 1 : 0, vendas: maisVendidos[p.id] || 0, preco: precoDoCartao(p).final || 0 }))
+    .sort((a, b) => a.outra - b.outra || b.vendas - a.vendas || a.preco - b.preco)
+    .slice(0, 8).map(x => x.p)
 
   const topo = (
     <div className="sc-topo">
@@ -1027,8 +1044,8 @@ function CartContent({
 
             {/* (19/10) Peça também: outros produtos da loja, como no iFood */}
             {pecaTambem.length > 0 && (
-              <section className="sc-sug" aria-label="Peça também">
-                <b className="sc-sug-tit">Peça também</b>
+              <section className="sc-sug" aria-label="Aproveite e peça junto">
+                <b className="sc-sug-tit">Aproveite e peça junto</b>
                 <div className="sc-sug-lista">{pecaTambem.map(p => <SugestaoSacola key={p.id} produto={p} cor={accent} />)}</div>
               </section>
             )}
