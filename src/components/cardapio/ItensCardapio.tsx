@@ -69,6 +69,9 @@ function useAbrir(produto: Produto) {
 export function CartaoPromo({ produto, cor = '#E85A8C', pc = false, grande = false }: { produto: Produto; cor?: string; pc?: boolean; grande?: boolean }) {
   const { aberto, fechar, props } = useAbrir(produto)
   const foto = fotoDe(produto)
+  // (04/11 · 6.33) selo de desconto em cima da foto ("-17%")
+  const { de, final } = precoDoCartao(produto)
+  const pct = de > final && de > 0 ? Math.round(((de - final) / de) * 100) : 0
   return (
     <>
       <article className={`ic-cp${grande ? ' ic-cp--dq' : ''}`} {...props}>
@@ -77,6 +80,7 @@ export function CartaoPromo({ produto, cor = '#E85A8C', pc = false, grande = fal
           {/* (20/10) computador: a foto aparece inteira (sem corte), com a própria foto borrada preenchendo as sobras */}
           {foto ? (pc ? <><img className="ic-fundo" src={foto} alt="" aria-hidden="true" loading="lazy" /><img className="ic-inteira" src={foto} alt="" loading="lazy" /></> : <img src={foto} alt="" loading="lazy" />) : <span className="ic-sem"><Cake size={32} aria-hidden="true" /></span>}
           {/* (20/10) o prazo aparece só dentro do produto, no celular e no computador */}
+          {pct >= 1 && <span className="ic-selo-pct" style={{ background: cor }}>-{pct}%</span>}
         </div>
         <b className="ic-cp-nome">{produto.nome}</b>
         {produto.descricao ? <p className="ic-cp-desc">{produto.descricao}</p> : pc ? <p className="ic-cp-desc" aria-hidden="true" /> : null}
@@ -151,11 +155,11 @@ export function SecaoCardapio({ secao, cor, pc = false }: { secao: Secao; cor: s
     <section id={secao.id} className={`ic-sec${pc ? ' ic-sec--pc' : ''}`}>
       {/* (24/10) o título diz quantos produtos tem a categoria; uma linha separa uma categoria da outra (CSS) */}
       <h2 className="ic-h2">{secao.nome}{secao.tipo === 'destaque' && <Star size={20} weight="fill" className="ic-h2-estrela" aria-hidden="true" />}{secao.tipo === 'lista' && <small>{secao.produtos.length === 1 ? '1 produto' : `${secao.produtos.length} produtos`}</small>}</h2>
-      {/* (27/10) celular: Destaques (cartões grandes) e Promoções numa fileira que desliza; computador: grade */}
+      {/* (27/10) celular: Destaques numa fileira que desliza · (6.33) Promoções em cartões quadrados, 2 por linha; computador: grade */}
       {secao.tipo === 'destaque'
         ? <div className="ic-grade ic-fila ic-fila--dq">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc={pc} grande />)}</div>
         : secao.tipo === 'promo'
-        ? <div className="ic-grade ic-fila">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc={pc} />)}</div>
+        ? <div className="ic-grade ic-grade--promo">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc={pc} />)}</div>
         : <div className="ic-lista">{secao.produtos.map(p => <LinhaProduto key={p.id} produto={p} cor={cor} pc={pc} />)}</div>}
     </section>
   )

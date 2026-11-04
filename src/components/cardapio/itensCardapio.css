@@ -154,3 +154,10 @@
 .ic-sec--pc .ic-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ic-sec--pc .ic-ln-ft img.ic-fundo { display: none; }
 .ic-sec--pc .ic-ln-ft img.ic-inteira { object-fit: cover; }
+
+/* (04/11 · 6.33) Promoções no celular: cartões quadrados, 2 por linha (antes deslizavam pro lado igual aos Destaques) */
+.ic-sec:not(.ic-sec--pc) .ic-grade--promo { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ic-sec:not(.ic-sec--pc) .ic-grade--promo .ic-cp-ft { aspect-ratio: 1; }
+.ic-sec:not(.ic-sec--pc) .ic-grade--promo .ic-cp-desc { display: none; }
+.ic-sec:not(.ic-sec--pc) .ic-grade--promo .ic-cp-nome { -webkit-line-clamp: 1; white-space: nowrap; display: block; text-overflow: ellipsis; }
+.ic-selo-pct { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 3px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 700; line-height: 1.2; color: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .18); }
