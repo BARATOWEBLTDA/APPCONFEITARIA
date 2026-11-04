@@ -37,7 +37,7 @@ export default function CalendarioSheet({ valor, titulo = 'Escolha a data', min,
   const hoje = hojeIso()
   return (
     <Janela aberta aoFechar={onClose} tipo="conteudo" titulo={titulo} umaAcao
-      acoes={<Botao disabled={!dia} onClick={() => dia && onConfirmar(dia)} data-foco-inicial>{dia ? `Usar ${dataPorExtenso(dia, true)}` : 'Escolha um dia'}</Botao>}>
+      acoes={<Botao disabled={!dia} onClick={() => dia && onConfirmar(dia)} data-foco-inicial>{dia ? <>{/* (6.44) no computador a data por extenso; no celular a curta, pra caber numa linha */}<span className="cal-usar-g">Usar {new Date(`${dia}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</span><span className="cal-usar-c">Usar {dataPorExtenso(dia, true)}</span></> : 'Escolha um dia'}</Botao>}>
       <div className="dh-cal" style={cor ? { ['--dh-cor']: cor } as React.CSSProperties : undefined}>
         <div className="dh-mes">
           <BotaoIcone rotulo="Mês anterior" onClick={() => mudar(-1)} disabled={!podeVoltar}><CaretLeft size={20} weight="bold" /></BotaoIcone>

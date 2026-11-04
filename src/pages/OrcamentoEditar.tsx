@@ -18,7 +18,7 @@ import type { PostgrestError } from '@supabase/supabase-js'
 import type { ProdutoPrecoJson } from '@/lib/precoCardapio'
 import type { ProdutoCustoJson } from '@/lib/produto-precificacao'
 import { usePlano } from '@/hooks/usePlano'
-import { linkWhatsApp } from '@/lib/telefone'
+import { linkWhatsApp, mascaraTelefone, digitosAoDigitar } from '@/lib/telefone'
 import { precoCardapioComPromocao } from '@/lib/precoCardapio'
 import { calcularCustoLucro, lerMaoObraConta } from '@/lib/produto-precificacao'
 import { gerarOrcamentoPDF } from '@/lib/gerarOrcamentoPDF'
@@ -324,12 +324,12 @@ export default function OrcamentoEditar() {
             {verCampos ? (
               <div className="orc-2">
                 <Campo rotulo="Nome" value={o.cliente_nome || ''} placeholder="Nome do cliente" onChange={e => muda({ cliente_nome: e.target.value })} />
-                <Campo rotulo="WhatsApp" value={o.cliente_telefone || ''} inputMode="tel" placeholder="(41) 9 9999-0000" onChange={e => muda({ cliente_telefone: e.target.value })} />
+                <Campo rotulo="WhatsApp" value={mascaraTelefone(o.cliente_telefone || '')} inputMode="tel" autoComplete="tel" placeholder="(41) 99999-0000" onChange={e => muda({ cliente_telefone: digitosAoDigitar(e.target.value) })} />
               </div>
             ) : (
               <div className="orc-cli">
                 <span className="orc-av" aria-hidden="true">{(o.cliente_nome || '?').trim().charAt(0).toUpperCase()}</span>
-                <span className="orc-cli-tx"><b>{o.cliente_nome}</b><small>{o.cliente_telefone}{o.origem === 'link' ? ' · pediu pelo link' : ''}</small></span>
+                <span className="orc-cli-tx"><b>{o.cliente_nome}</b><small>{mascaraTelefone(o.cliente_telefone || '')}{o.origem === 'link' ? ' · pediu pelo link' : ''}</small></span>
                 <a className="orc-cli-ic" href={linkWhatsApp(o.cliente_telefone || '') || '#'} target="_blank" rel="noreferrer" aria-label="Chamar no WhatsApp" title="WhatsApp"><IconeWhatsApp size={20} /></a>
                 <a className="orc-cli-ic" href={`tel:+55${(o.cliente_telefone || '').replace(/\D/g, '')}`} aria-label="Ligar" title="Ligar"><Phone size={20} weight="bold" /></a>
               </div>

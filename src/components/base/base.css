@@ -326,3 +326,5 @@ html[data-ui-janela] .ui-aviso--saindo { animation-name: uiAvisoSomeCima; }
 /* (6.27) menu pequeno aberto (ex.: Adicionar foto): escurece em volta; tocar fora fecha */
 .ui-menu-veu { position: fixed; inset: 0; z-index: 29; background: rgba(30, 12, 20, .22); animation: uiVeuMenu .15s ease-out both; cursor: default; }
 @keyframes uiVeuMenu { from { opacity: 0; } }
+.cal-usar-g { display: none; }
+@media (min-width: 768px) { .cal-usar-g { display: inline; } .cal-usar-c { display: none; } }
