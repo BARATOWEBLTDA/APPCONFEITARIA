@@ -1812,8 +1812,9 @@ export default function Produtos() {
         <Botao icone={<PlusIc size={20} weight="bold" />} onClick={openNovo} className="pl-novo"><span className="pl-novo-g">Novo produto</span><span className="pl-novo-c">Novo</span></Botao>
       </div>
       {filtroProdAberto && (() => {
-        const cats = [...todasCategorias, ...(produtos.some(p => !p.categoria) ? ["__sem"] : [])];
         const nCat = (c: string) => produtos.filter(p => (p.categoria || "__sem") === c).length;
+        // (04/11 · 6.36) só as categorias que têm produto (categoria nova aparece quando ganhar o 1º produto)
+        const cats = [...todasCategorias.filter(c => nCat(c) > 0), ...(produtos.some(p => !p.categoria) ? ["__sem"] : [])];
         return <GavetaFiltro valor={{ ordem: ordenarPor, cats: catsFiltro || cats }} padrao={{ ordem: "recentes", cats }}
           grupos={[
             { id: "ordem", titulo: "Ordenar", tipo: "radio", opcoes: [{ k: "recentes", label: "Mais recentes" }, { k: "alfabetica", label: "Nome (A a Z)" }, { k: "categoria", label: "Categoria" }, { k: "preco", label: "Menor preço" }] },
