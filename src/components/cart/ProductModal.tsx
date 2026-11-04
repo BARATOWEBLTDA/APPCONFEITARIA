@@ -416,6 +416,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
   // ═══ Validação: obrigatórios preenchidos ═══════════════════════════
   const podeAdicionar = useMemo(() => {
+    // (6.61) no orçamento os tamanhos, sabores e recheios não aparecem: só o kit (quantos de cada doce) ainda precisa fechar
+    if (orcamento) return !(kitInfo && !kitInfo.completo)
     if (gMassa && gMassa.min_selecionavel > 0 && !escolhaMassa) return false
     if (gCobertura && gCobertura.min_selecionavel > 0 && !escolhaCobertura) return false
     if (gSabor && gSabor.min_selecionavel > 0 && !escolhaSabor) return false
@@ -423,7 +425,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     if (gRecheio && gRecheio.min_selecionavel > 0 && escolhasRecheio.length < gRecheio.min_selecionavel) return false
     if (kitInfo && !kitInfo.completo) return false
     return true
-  }, [gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length, kitInfo?.completo])
+  }, [orcamento, gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length, kitInfo?.completo])
 
   // ═══ 08/10 · 3.29 — tela no estilo iFood ═══════════════════════════
   const caixaRef = useRef<HTMLDivElement>(null)
@@ -439,13 +441,14 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   // O que falta escolher (na ordem da tela)
   const pendente = useMemo(() => {
     if (kitInfo && !kitInfo.completo) return 'kit'
+    if (orcamento) return null
     if (gTamanho && gTamanho.min_selecionavel > 0 && !escolhaTamanho) return 'tamanho'
     if (gSabor && gSabor.min_selecionavel > 0 && !escolhaSabor) return 'sabor'
     if (gMassa && gMassa.min_selecionavel > 0 && !escolhaMassa) return 'massa'
     if (gRecheio && gRecheio.min_selecionavel > 0 && escolhasRecheio.length < gRecheio.min_selecionavel) return 'recheio'
     if (gCobertura && gCobertura.min_selecionavel > 0 && !escolhaCobertura) return 'cobertura'
     return null
-  }, [kitInfo?.completo, gTamanho, gSabor, gMassa, gRecheio, gCobertura, escolhaTamanho, escolhaSabor, escolhaMassa, escolhasRecheio.length, escolhaCobertura])
+  }, [orcamento, kitInfo?.completo, gTamanho, gSabor, gMassa, gRecheio, gCobertura, escolhaTamanho, escolhaSabor, escolhaMassa, escolhasRecheio.length, escolhaCobertura])
   useEffect(() => { if (faltou && faltou !== pendente) setFaltou(null) }, [pendente, faltou])
 
   // Fotos: trocam sozinhas a cada 4 s, bem suave (para quando o cliente mexe; não roda com "reduzir movimento")
@@ -521,7 +524,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
     ;(onAdicionar || addItem)({
       id: product.id, name: product.nome, description: product.descricao || '',
-      price: calculo.final,
+      price: orcamento && !kitInfo ? precoOrc : calculo.final,
       imageUrl: product.imagem_url,
       saleType: product.forma_venda,
       quantity, observations,
@@ -603,6 +606,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   // (20/10) "a partir de" com promoção: o menor preço sem desconto, riscado
   const cheios = semTamanho && descPct > 0 ? (gTamanho!.opcoes || []).map((o) => precoDoTamanho(o, tamanhoPorPeso, porKg)).filter((v: number) => v > 0) : []
   const pMinCheio = cheios.length ? Math.min(...cheios) : 0
+  // (6.61) no orçamento sem escolher tamanho: entra o preço de partida (ela ajusta o valor no item depois)
+  const precoOrc = semTamanho ? pMin : valorTopo
   const temFoto = images.length > 0
   // (6.54) no orçamento a confeiteira só escolhe as opções: sem aviso de prazo/pronta entrega, sem "Peça também" e sem "pedido X vezes"
   const aviso = orcamento ? null : selo?.tipo === 'encomenda' ? (
@@ -683,6 +688,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
           <div className="pm-kit"><KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} desconto={descPct} /></div>
         </section>
       )}
+      {!orcamento && (<>
       {gTamanho && <Grupo {...doGrupo} chave="tamanho" g={gTamanho} multi={false} valor={escolhaTamanho} aoMudar={setEscolhaTamanho as AoMudar} />}
       {gSabor && <Grupo {...doGrupo} chave="sabor" g={gSabor} multi={false} valor={escolhaSabor} aoMudar={setEscolhaSabor as AoMudar} />}
       {gMassa && <Grupo {...doGrupo} chave="massa" g={gMassa} multi={false} valor={escolhaMassa} aoMudar={setEscolhaMassa as AoMudar} />}
@@ -692,6 +698,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
           aoMudar={(v: string | string[] | null) => setEscolhasRecheio(Array.isArray(v) ? v : (v ? [v] : []))} />
       )}
       {gCobertura && <Grupo {...doGrupo} chave="cobertura" g={gCobertura} multi={false} valor={escolhaCobertura} aoMudar={setEscolhaCobertura as AoMudar} />}
+      </>)}
 
       {extrasBiblioteca.length > 0 && (
         <section className="pm-g">
@@ -749,7 +756,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       {tamanhosEsgotados(product) ? <button type="button" className="pm-add so-texto" disabled style={{ background: '#B5AAB0', cursor: 'not-allowed' }}><span>Esgotado no momento</span></button> :
       <button type="button" className={`pm-add${faltou ? ' treme' : ''}${pendente ? ' so-texto pm-add--falta' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
         <span>{pendente ? textoFalta(pendente) : (rotuloAdicionar || 'Adicionar')}</span>
-        {!pendente && <strong>{formatCurrency(totalDisplay)}</strong>}
+        {!pendente && <strong>{formatCurrency(orcamento && !kitInfo ? r2(precoOrc * quantity) : totalDisplay)}</strong>}
       </button>}
     </footer>
   )
