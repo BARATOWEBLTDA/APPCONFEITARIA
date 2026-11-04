@@ -1,22 +1,38 @@
-/* (04/11 · 6.49) calendário do mês aberto na tela */
+/* (04/11 · 6.50) calendário do mês (react-day-picker) nas cores do Doonly */
 .cmes { display: flex; flex-direction: column; gap: var(--space-3); font-family: var(--font-base); }
-.cmes-nav { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
-.cmes-nav b { font-size: 16px; font-weight: 600; color: var(--ui-texto); }
-.cmes-nav button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: 0; padding: 0; border: 0; border-radius: 12px; background: #F4F1F2; color: var(--ui-texto); cursor: pointer; }
-.cmes-nav button:disabled { opacity: .35; cursor: default; }
-.cmes-grade { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-1); }
-.cmes-sem { padding-bottom: var(--space-1); font-size: 12px; font-weight: 500; color: var(--ui-texto-3); text-align: center; }
-.cmes-d { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; max-height: 46px; margin: 0; padding: 0; border: 1.5px solid transparent; border-radius: 12px; background: none; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ui-texto); cursor: pointer; }
-.cmes-d:hover:not(:disabled) { background: #F7F4F5; }
-.cmes-d:disabled { color: #CFC6CA; cursor: default; }
-.cmes-d.hoje { border-color: var(--ui-rosa-claro); }
-.cmes-d.on { border-color: var(--ui-rosa); background: var(--ui-rosa); color: #fff; font-weight: 600; }
-.cmes-d i { position: absolute; bottom: 5px; left: 50%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: #3B82F6; }
-.cmes-d i.cheio { background: var(--ui-laranja); }
-.cmes-d.on i { background: #fff; }
-.cmes-pe { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--ui-linha); }
-.cmes-pe > span:first-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cmes-rdp.rdp-root {
+  --rdp-accent-color: var(--ui-rosa);
+  --rdp-accent-background-color: var(--ui-rosa-claro);
+  --rdp-day-height: 44px;
+  --rdp-day-width: auto;
+  --rdp-day_button-height: 40px;
+  --rdp-day_button-width: 40px;
+  --rdp-day_button-border-radius: 999px;
+  --rdp-selected-border: 0;
+  --rdp-today-color: var(--ui-rosa-escuro);
+  --rdp-nav-height: 40px;
+  --rdp-nav_button-height: 36px;
+  --rdp-nav_button-width: 36px;
+  --rdp-outside-opacity: .35;
+  --rdp-disabled-opacity: .3;
+  width: 100%; margin: 0; font-family: inherit;
+}
+.cmes-rdp .rdp-months { max-width: none; width: 100%; }
+.cmes-rdp .rdp-month { width: 100%; }
+.cmes-rdp .rdp-month_grid { width: 100%; border-collapse: separate; border-spacing: 0 2px; table-layout: fixed; }
+.cmes-rdp .rdp-month_caption { height: 40px; padding-left: var(--space-2); }
+.cmes-rdp .rdp-caption_label { font-size: 16px; font-weight: 600; color: var(--ui-texto); text-transform: capitalize; }
+.cmes-rdp .rdp-nav { gap: var(--space-1); }
+.cmes-rdp .rdp-button_previous, .cmes-rdp .rdp-button_next { border-radius: 10px; background: #F4F1F2; }
+.cmes-rdp .rdp-button_previous:disabled, .cmes-rdp .rdp-button_next:disabled { opacity: .35; }
+.cmes-rdp .rdp-chevron { fill: var(--ui-texto); width: 16px; height: 16px; }
+.cmes-rdp .rdp-weekday { padding-bottom: var(--space-1); font-size: 12px; font-weight: 500; color: var(--ui-texto-3); text-transform: capitalize; opacity: 1; }
+.cmes-rdp .rdp-day { text-align: center; }
+.cmes-rdp .rdp-day_button { margin: 0 auto; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ui-texto); transition: background .12s; }
+.cmes-rdp .rdp-day_button:hover:not(:disabled) { background: #F7F4F5; }
+.cmes-rdp .rdp-today:not(.rdp-selected) .rdp-day_button { position: relative; color: var(--ui-rosa-escuro); font-weight: 600; }
+.cmes-rdp .rdp-selected { font-size: inherit; }
+.cmes-rdp .rdp-selected .rdp-day_button { border: 0; background: var(--ui-rosa); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(232, 90, 140, .35); }
+.cmes-pe { padding-top: var(--space-3); border-top: 1px solid var(--ui-linha); }
 .cmes-pe b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
 .cmes-pe small { font-size: 13px; color: var(--ui-texto-2); }
-.cmes-leg { display: inline-flex; align-items: center; gap: 6px; flex: none; font-size: 12.5px; color: var(--ui-texto-3); white-space: nowrap; }
-.cmes-leg i { width: 6px; height: 6px; border-radius: 50%; background: #3B82F6; }
