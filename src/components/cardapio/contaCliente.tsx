@@ -230,7 +230,7 @@ export function CartaoPedido({ p, cor }: { p: Pedido; cor: string }) {
     : ''
   const itens = p.pedido_itens || []
   // 10/10: o WhatsApp é o da loja desta aba, e o link trata o +55 e o DDD 55 (lib/telefone)
-  const zap = linkWhatsApp(lojaAtualWhatsApp(), `Oi! Queria saber do meu pedido #${p.numero}`)
+  const zap = linkWhatsApp(lojaAtualWhatsApp(), `Oi! Tudo bem? Queria saber como está o meu pedido *#${p.numero}*.`)
   const pago = p.status_pagamento === 'pago'
   const sinal = !pago && p.status_pagamento === 'parcial' && Number(p.valor_recebido) > 0
   const pag = PAGAMENTO[p.forma_pagamento] || p.forma_pagamento || ''

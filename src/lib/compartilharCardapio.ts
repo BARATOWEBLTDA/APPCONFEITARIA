@@ -5,7 +5,9 @@ import { avisar } from "@/components/base";
  * (Início, Cardápio, prévia, passo a passo). O link fica sozinho na linha de baixo e vai dentro do texto:
  * se for separado, cada celular junta texto e link de um jeito (e às vezes o link aparecia duas vezes).
  */
-export const textoCardapio = (link: string) => `Olá! Já dá para fazer seu pedido pelo nosso cardápio online:\n${link}`;
+// (6.82) com o nome da loja quando tem; o link sozinho na última linha
+export const textoCardapio = (link: string, nomeLoja?: string | null) =>
+  `Oi! Agora você pode fazer o seu pedido ${nomeLoja?.trim() ? `na *${nomeLoja.trim()}* ` : ""}pelo nosso cardápio online. É rapidinho:\n${link}`;
 
 /**
  * (16/10) Todo "Compartilhar" do app abre a janela do próprio celular (WhatsApp, Instagram, o que ela tiver).
@@ -21,4 +23,4 @@ export async function compartilharTexto(texto: string, titulo = "Doonly"): Promi
   catch { avisar("Não deu para copiar. Tente de novo.", { tipo: "erro" }); return false; }
 }
 
-export const compartilharCardapio = (link: string, nomeLoja?: string) => compartilharTexto(textoCardapio(link), nomeLoja || "Meu cardápio");
+export const compartilharCardapio = (link: string, nomeLoja?: string) => compartilharTexto(textoCardapio(link, nomeLoja), nomeLoja || "Meu cardápio");

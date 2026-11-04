@@ -415,18 +415,22 @@ export default function Pedidos() {
     if (acao === 'compartilhar') {
       const itens = p.pedido_itens || []
       const linhasItens = itens.map(it => `• ${itemComQtd(nomeDoItem(it), it.quantidade, formaDoItem(it))}`).join('\n')
-      const [y, m, d] = (p.data_entrega || '').split('-')
-      const dataEnt = p.data_entrega ? `${d}/${m}/${y}` : '—'
-      const hora = p.horario_entrega ? ` às ${p.horario_entrega.slice(0, 5)}` : ''
+      // (6.82) mesmo padrão das outras mensagens: rótulos em negrito, data "sábado, 08/11 às 15:00" e o que falta pagar
+      const SEM = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
+      const dEnt = p.data_entrega ? new Date(`${p.data_entrega.slice(0, 10)}T12:00:00`) : null
+      const quando = dEnt ? `${SEM[dEnt.getDay()]}, ${dEnt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}${p.horario_entrega ? ` às ${p.horario_entrega.slice(0, 5)}` : ''}` : 'a combinar'
+      const falta = saldoPedido(p)
       const resumo = [
         `*Pedido #${p.numero || ''}*`,
-        p.cliente_nome ? `Cliente: ${nomeCliente(p)}` : '',
-        `${p.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'}: ${dataEnt}${hora}`,
+        '',
+        p.cliente_nome ? `*Cliente:* ${nomeCliente(p)}` : '',
+        `*${p.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'}:* ${quando}`,
         '',
         linhasItens ? `*Itens:*\n${linhasItens}` : '',
         '',
-        `*Total: ${rs(p.valor_total)}*`,
-      ].filter(Boolean).join('\n')
+        `*Total:* ${rs(p.valor_total)}`,
+        falta > 0.009 && p.status !== 'cancelado' ? `*Falta pagar:* ${rs(falta)}` : '',
+      ].filter((l, i, arr) => l !== '' || (i > 0 && arr[i - 1] !== '')).join('\n').replace(/\n{3,}/g, '\n\n').trim()
       // (16/10) compartilhar nativo do celular (WhatsApp, Telegram...); no computador copia o resumo
       void compartilharTexto(resumo, `Pedido #${p.numero || ''}`)
       fechar(); return

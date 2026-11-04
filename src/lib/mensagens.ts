@@ -33,7 +33,7 @@ export const MODELOS: Modelo[] = [
     curto: "Pedido pelo cardápio",
     resumo: "Quando o cliente pede",
     quando: "O cliente manda para o seu WhatsApp quando termina o pedido no cardápio",
-    padrao: "Oi, *{loja}*! Acabei de fazer um pedido pelo cardápio.\n\n{pedido}",
+    padrao: "Olá, *{loja}*! Acabei de fazer o meu pedido pelo cardápio.\n\n{pedido}", // (6.82) texto revisto
     etiquetas: [
       { k: "pedido", rotulo: "Itens do pedido", exemplo: PEDIDO_EXEMPLO },
       { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
@@ -49,10 +49,12 @@ export const MODELOS: Modelo[] = [
     curto: "Sobre o pedido",
     resumo: "Você manda pelos pedidos",
     quando: "Você manda pelo botão de WhatsApp na Agenda e em Pedidos",
-    padrao: "Olá {nome}! Sobre o seu pedido #{numero}, tudo certo?",
+    // (6.82) a conversa já começa com o que importa do pedido; linha com etiqueta vazia some sozinha
+    padrao: "Oi, {nome}! Tudo bem?\n\nAqui é da *{loja}*, sobre o seu pedido *#{numero}*:\n\n*Quando:* {quando}\n*Total:* {total}\n*Falta pagar:* {falta}",
     etiquetas: [
       { k: "nome", rotulo: "Nome do cliente", exemplo: "Ana" },
       { k: "numero", rotulo: "Nº do pedido", exemplo: "214" },
+      { k: "quando", rotulo: "Data e horário", exemplo: "sábado, 17/10 às 15:00" },
       { k: "data", rotulo: "Data da entrega", exemplo: "sábado, 17/10" },
       { k: "horario", rotulo: "Horário", exemplo: "15:00" },
       { k: "total", rotulo: "Total", exemplo: "R$ 140,00" },
@@ -66,7 +68,7 @@ export const MODELOS: Modelo[] = [
     curto: "Parabéns de aniversário",
     resumo: "Você manda em Clientes",
     quando: "Você manda pelo botão de parabéns em Clientes",
-    padrao: "Feliz aniversário, {nome}! Que o seu dia seja muito doce.",
+    padrao: "Feliz aniversário, {nome}! 🎂\n\nQue o seu dia seja tão doce quanto você. Um abraço da *{loja}*!", // (6.82)
     etiquetas: [
       { k: "nome", rotulo: "Nome do cliente", exemplo: "Ana" },
       { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
@@ -107,6 +109,9 @@ export function preencher(texto: string, dados: Record<string, string | number |
   });
   // 2) limpa o que sobrou em volta das etiquetas vazias
   if (t.includes("\uE000") || t.includes("\uE002")) {
+    // (6.82) linha que é só um rótulo e etiquetas vazias ("*Falta pagar:* {falta}") some inteira
+    t = t.replace(/(^|\n)[ \t]*(?:\*[^*\n]{1,30}:\*|[^\n:*]{1,30}:)?[ \t]*[\uE000\uE002](?:[ \t]*[\uE000\uE002])*[ \t]*(?=\n|$)/g, "$1\uE003")
+      .replace(/\n?\uE003/g, "").replace(/\n{3,}/g, "\n\n");
     t = t.replace(SOBRA_DIA, "$1\uE000").replace(/\uE002/g, "\uE000"); // "no dia {data}" → "no {data}" (o "no" sai logo abaixo)
     let antes = "";
     while (antes !== t) {
@@ -175,13 +180,17 @@ export function dadosDoPedido(p: PedidoParaMensagem, primeiroNome: string): Reco
   const total = Number(p?.valor_total) || 0;
   // (11/10) a mesma conta da lista: pedido cancelado não tem nada a cobrar, e o recebido segue a situação do pagamento
   const falta = saldoPedido(p);
+  const horario = p?.horario_entrega ? String(p.horario_entrega).slice(0, 5) : "";
   return {
     nome: primeiroNome || "",
     numero: p?.numero ? String(p.numero) : "",
     data,
-    horario: p?.horario_entrega ? String(p.horario_entrega).slice(0, 5) : "",
+    horario,
+    // (6.82) data e horário juntos ("sábado, 17/10 às 15:00")
+    quando: [data, horario ? `às ${horario}` : ""].filter(Boolean).join(" "),
     total: total ? reais(total) : "",
-    falta: reais(falta),
+    // (6.82) nada a pagar: a etiqueta fica vazia (a linha "Falta pagar" some da mensagem)
+    falta: falta > 0.009 ? reais(falta) : "",
     loja: perfilAtual()?.nome_loja || "",
   };
 }

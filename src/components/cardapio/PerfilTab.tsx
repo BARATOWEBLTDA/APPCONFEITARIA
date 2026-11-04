@@ -35,7 +35,7 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
   }
   // (21/10) a loja: WhatsApp e horário (Sobre a loja)
   const loja = lojaAtualNome()
-  const zapLoja = linkWhatsApp(lojaAtualWhatsApp(), 'Oi! Vim pelo cardápio.')
+  const zapLoja = linkWhatsApp(lojaAtualWhatsApp(), 'Oi! Vim pelo seu cardápio e queria tirar uma dúvida.')
   const status = getStatusLoja(lojaAtualCheckout()?.horario || null)
 
   // Os endereços ficam no aparelho, por loja e telefone (a sacola usa a mesma lista)
