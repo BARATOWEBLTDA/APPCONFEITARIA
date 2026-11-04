@@ -419,3 +419,20 @@
 .pz-ver-ex .pz-cel-wrap--real { display: flex !important; margin: 0; padding: 0; position: static; background: none; }
 .pz-ver-ex .pz-cel-wrap--real figcaption { display: none; }
 @media (max-width: 767px) { .pz-ver-bt { width: 44px; padding: 0 !important; justify-content: center; gap: 0 !important; } }
+
+/* (04/11 · 6.24) mais espaço entre o título e os cartões no PC */
+@media (min-width: 768px) { .pz-cheio-l > .ui-tit { margin-bottom: 24px; } }
+/* (04/11 · 6.24) foto do complemento: menu (IA ou galeria) e as 3 fotos da IA */
+.pz-capa-menu-w { position: relative; flex: none; }
+.pz-capa-bt { border: 0; font-family: inherit; }
+.pz-capa-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; display: flex; flex-direction: column; min-width: 210px; padding: 6px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); box-shadow: 0 12px 30px rgba(40, 15, 25, .14); }
+.pz-capa-menu button, .pz-capa-menu label { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer; }
+.pz-capa-menu button:hover, .pz-capa-menu label:hover { background: #F7F4F5; }
+.pz-capa-menu svg { color: var(--ui-rosa-escuro); }
+.pz-capa-ia { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.pz-capa-ia small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+.pz-capa-ia > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pz-capa-ia button { aspect-ratio: 4 / 3; margin: 0; padding: 0; overflow: hidden; border: 2px solid transparent; border-radius: 12px; background: #F3EEF0; cursor: pointer; }
+.pz-capa-ia button[aria-pressed="true"] { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px var(--ui-rosa-claro); }
+.pz-capa-ia img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pz-sub-tit { display: block; margin: -2px 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }

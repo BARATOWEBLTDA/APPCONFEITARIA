@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { CTA_PRO } from "@/lib/beneficiosPro";
 import { useNavigate } from "react-router-dom";
+import { Sparkle, Image as ImagemIc } from "@phosphor-icons/react";
 import { Calculator, Camera, Check, Crown, Eye, Storefront, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
@@ -68,6 +69,9 @@ export default function Complementos() {
   const [temFrase, setTemFrase] = useState(false);
   const [temCapa, setTemCapa] = useState(false); // (30/10 · 5.42) liga sozinho quando o banco tiver a coluna imagem_url
   const [subindoCapa, setSubindoCapa] = useState(false);
+  const [capaMenu, setCapaMenu] = useState(false);
+  const [capasIA, setCapasIA] = useState<string[]>([]);
+  const [buscandoCapa, setBuscandoCapa] = useState(false);
   const [busca, setBusca] = useState("");
   const [verExemplo, setVerExemplo] = useState(false); // (5.79) celular: o exemplo do cardápio abre no "Ver como fica"
   const [verReal, setVerReal] = useState(false); // (6.22) prévia com os complementos dela
@@ -145,6 +149,19 @@ export default function Complementos() {
     setTentou(true);
     if (!form.nome.trim() || !form.onde || (!form.gratis && form.valor <= 0)) return;
     setTentou(false); setEtapa(2);
+  };
+  /** (04/11 · 6.24) a IA busca fotos pelo nome do complemento e mostra 3 para escolher */
+  const acharCapa = async () => {
+    const nome = form.nome.trim();
+    if (nome.length < 3) { avisar("Escreva o nome do complemento primeiro. A IA busca a foto por ele.", { tipo: "info" }); return; }
+    setBuscandoCapa(true); setCapasIA([]);
+    try {
+      const res = await apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(`${nome} confeitaria`)}`);
+      const data = await res.json();
+      if (data.images?.length) setCapasIA(data.images.slice(0, 3));
+      else avisar("Não achamos foto para esse nome. Escolha uma do celular.", { tipo: "info" });
+    } catch { avisar("Não deu para buscar agora. Confira a internet e tente de novo.", { tipo: "erro" }); }
+    setBuscandoCapa(false);
   };
   const recorteCapa = useRecorte(async (foto) => {
     if (!userId) return;
@@ -422,11 +439,27 @@ export default function Complementos() {
             <div className="pz-capa">
               <span className={`pz-capa-img${form.capa ? " pz-capa-img--foto" : ""}`}><img src={form.capa || capaDesenho(form.nome)} alt="" /></span>
               <span className="pz-capa-tx"><b>Capa</b><small>{form.capa ? "Foto sua" : "Sem foto, usamos um desenho"}</small></span>
-              <label className="pz-capa-bt">
-                <input type="file" accept="image/*" onChange={recorteCapa.escolher} hidden />
-                {subindoCapa ? "Enviando…" : form.capa ? "Trocar" : "Adicionar foto"}
-              </label>
+              {/* (04/11 · 6.24) foto: a IA acha 3 na internet pelo nome (igual aos ingredientes) ou ela escolhe do celular */}
+              <span className="pz-capa-menu-w">
+                <button type="button" className="pz-capa-bt" aria-expanded={capaMenu} onClick={() => setCapaMenu(m => !m)}>
+                  {subindoCapa ? "Enviando…" : buscandoCapa ? "Buscando…" : form.capa ? "Trocar" : "Adicionar foto"}
+                </button>
+                {capaMenu && (
+                  <span className="pz-capa-menu" role="menu">
+                    <button type="button" role="menuitem" onClick={() => { setCapaMenu(false); void acharCapa(); }}><Sparkle size={18} weight="bold" />Achar foto com IA</button>
+                    <label role="menuitem"><input type="file" accept="image/*" onChange={e => { setCapaMenu(false); setCapasIA([]); recorteCapa.escolher(e); }} hidden /><ImagemIc size={18} weight="bold" />Da galeria</label>
+                  </span>
+                )}
+              </span>
               {form.capa && <button type="button" className="pz-capa-x" onClick={() => setForm(f => ({ ...f, capa: "" }))} aria-label="Tirar a foto"><X size={14} weight="bold" /></button>}
+            </div>
+          )}
+          {temCapa && capasIA.length > 0 && (
+            <div className="pz-capa-ia">
+              <small>Escolha a foto que combina</small>
+              <div>{capasIA.map((url, i) => (
+                <button key={url} type="button" aria-pressed={form.capa === url} aria-label={`Usar a foto ${i + 1}`} onClick={() => setForm(f => ({ ...f, capa: f.capa === url ? "" : url }))}><img src={url} alt="" /></button>
+              ))}</div>
             </div>
           )}
           <div className="pz-nome">
@@ -461,7 +494,8 @@ export default function Complementos() {
           {/* (24/10) o que o complemento pede ao cliente: foto e/ou frase, num quadro só */}
           {/* (30/10 · 5.34) o título fora do quadro, igual aos outros campos */}
           <div className="ui-campo">
-          <span className="ui-campo-r"><span>O cliente precisa mandar</span></span>
+          <span className="ui-campo-r"><span>O cliente precisa mandar</span><small>opcional</small></span>
+          <small className="pz-sub-tit">Se não marcar nada, vocês combinam pelo WhatsApp.</small>
           <div className="pz-pede">
           <button type="button" role="checkbox" aria-checked={form.pedeRef} className="pz-ref pz-ref--l" onClick={() => setForm(f => ({ ...f, pedeRef: !f.pedeRef }))}>
             <i className="pz-chk" aria-hidden="true">{form.pedeRef && <Check size={14} weight="bold" />}</i>
@@ -479,7 +513,7 @@ export default function Complementos() {
           {/* (30/10 · 5.37) a prévia saiu (o Bruno pediu): a coluna da direita é só "Onde aparece" */}
           {/* (24/10) onde aparece: 3 opções em lista (antes "Em todos / Escolher" e uma lista solta de produtos) */}
           <div className="ui-campo">
-            <span className="ui-campo-r"><span>Onde aparece no cardápio</span></span>
+            <span className="ui-campo-r"><span>Onde aparece no cardápio</span><small className="obr">obrigatório</small></span>
             <div className="pz-onde" role="radiogroup" aria-label="Onde aparece no cardápio">
               {([
                 /* (30/10 · 5.38) o recomendado vem primeiro */
