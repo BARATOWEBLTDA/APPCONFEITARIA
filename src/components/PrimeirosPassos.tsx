@@ -1074,23 +1074,26 @@ const CSS = `
     .ppf-pe .ep { width: 100%; max-width: none; margin: 18px 0 0; padding: 0; }
     .ppf-pe .ep-card { padding: 0; gap: 12px; border: 0; border-radius: 0; background: none; box-shadow: none; }
     .ppf-pe--pag .ep { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
-    .ppf-pe--ent .ep { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); column-gap: 32px; align-items: start; }
-    .ppf-pe--ent .ep > * { min-width: 0; }
-    /* (29/10 · 5.09) "Como cobrar a entrega" à esquerda, embaixo das formas; à direita, no topo, o mapa / a taxa / as listas */
-    .ppf-pe--ent .ep { row-gap: 10px; }
-    .ppf-pe--ent .mpr { height: 190px; }
-    .ppf-pe--ent { min-height: min(680px, calc(94dvh - 196px)); } /* (29/10 · 5.18) já no tamanho de 5 faixas: não cresce ao montar */
-    .ppf-pe--ent .ep-card--taxa, .ppf-pe--ent .ep-card--taxa .ep-taxa { display: contents; }
-    .ppf-pe--ent .ep > .ep-card:first-child { grid-column: 1; grid-row: 1; }
-    .ppf-pe--ent .ep-taxa > .ep-modo-t { grid-column: 1; grid-row: 2; margin: 10px 0 0; }
-    .ppf-pe--ent .ep-taxa > .ep-modo { grid-column: 1; grid-row: 3; }
-    .ppf-pe--ent .ep-taxa > :not(.ep-modo-t):not(.ep-modo), .ppf-pe--ent .ep-card--taxa > .ep-taxa-off { grid-column: 2; grid-row: 1 / span 4; min-width: 0; }
+    /* (6.63) o passo usa o editor da Minha loja (um cartão só): à esquerda as escolhas, à direita o mapa no topo */
+    .ppf-pe--ent { min-height: min(680px, calc(94dvh - 196px)); } /* já no tamanho maior: não cresce ao mexer */
+    .ppf-pe--ent .ep { display: block; }
+    .ppf-pe--ent .ep-card { width: 100%; max-width: none; box-sizing: border-box;  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 32px; row-gap: 12px; align-items: start; }
+    .ppf-pe--ent .ep-card { grid-template-rows: auto auto auto 1fr; align-content: start; }
+    .ppf-pe--ent .ep-card > * { min-width: 0; align-self: start; }
+    /* esquerda: o título e como cobrar · direita: o mapa no topo e as formas de entrega embaixo dele */
+    .ppf-pe--ent .ep-card > :first-child { grid-column: 1; grid-row: 1; }
+    .ppf-pe--ent .ep-card > .ep-taxa { grid-column: 1; grid-row: 2 / span 3; max-width: none; padding-top: 0; border-top: 0; }
+    .ppf-pe--ent .ep-card > .ep-mapa-topo { grid-column: 2; grid-row: 1 / span 2; width: 100%; }
+    .ppf-pe--ent .ep-card > .ep-mapa-topo > * { width: 100% !important; }
+    .ppf-pe--ent .ep-card > p.ep-modo-t { grid-column: 2; grid-row: 3; margin: 4px 0 0; }
+    .ppf-pe--ent .ep-card > :last-child:not(.ep-taxa):not(.ep-mapa-topo) { grid-column: 2; grid-row: 4; }
+    .ppf-pe--ent .mpr, .ppf-pe--ent .ep-mapa-topo .mpe { height: 240px !important; }
   }
   /* (30/10 · 5.21) celular: o editor completo da entrega numa coluna só */
   @media (max-width: 900px) { .ppf-pe .ep { display: flex; flex-direction: column; align-items: stretch; gap: 16px; max-width: none; margin: 12px 0 0; padding: 0; } .ppf-pe .ep-card { padding: 0; border: 0; background: none; box-shadow: none; } .ppf-pe .ep-card--taxa .ep-taxa { padding-top: 0; border-top: 0; } }
   /* (29/10 · 5.20) notebook de tela baixa (1366×768, 1280×720): tudo um pouco mais compacto pra não rolar */
   @media (max-height: 820px) {
-    .ppf-pe--ent .mpr { height: 140px; }
+    .ppf-pe--ent .mpr, .ppf-pe--ent .ep-mapa-topo .mpe { height: 200px !important; }
     .ppf-pe .lch-l { min-height: 46px; padding-top: 3px; padding-bottom: 3px; }
     .ppf-pe .ep-faixas .ep-faixa { padding-top: 4px; padding-bottom: 4px; }
     .ppf-pe .ep-mapa-leg { display: none; }

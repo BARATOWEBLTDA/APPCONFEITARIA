@@ -2303,6 +2303,8 @@ export default function Produtos() {
                       })}
                     </div>
 
+                    {/* (6.63) no computador as dicas ficam à direita da foto (a janela alarga e não precisa rolar) */}
+                    <div className="prod-dicas-cx">
                     <p className="prod-section-label prod-dicas-t">Dicas para a foto que vende</p>
                     <ul className="prod-dicas">
                       <li><Sun size={18} weight="bold" aria-hidden="true" />Luz de janela, sem flash</li>
@@ -2312,6 +2314,7 @@ export default function Produtos() {
                       <li><Crop size={18} weight="bold" aria-hidden="true" />Em pé ou quadrada, no centro</li>
                       <li><TextTSlash size={18} weight="bold" aria-hidden="true" />Sem texto ou filtro por cima</li>
                     </ul>
+                    </div>
                   </div>
                 );
               })()}
@@ -2830,15 +2833,8 @@ export default function Produtos() {
                         if (ligar && qtdDestaques(form.id) >= MAX_DESTAQUES) { avisarLimiteDestaques(false); return; }
                         setForm(f => ({ ...f, destaque: ligar }));
                       })}
-                      {/* (19/10) foto de referência só nos produtos que pedem (personalizados, topos de bolo) */}
-                      {op(form.aceita_referencia === true, "Aceita foto de referência", "O cliente manda a foto do modelo", () => setForm(f => ({ ...f, aceita_referencia: !f.aceita_referencia })))}
+                      {/* (6.63) "Aceita foto de referência" saiu daqui: a foto de referência se liga no Adicional (ex.: Topo de bolo) */}
                     </div>
-                    {/* (24/10) quando usar a foto de referência */}
-                    <p className="prod-ref-dica">
-                      {form.aceita_referencia === true
-                        ? <>No pedido aparece um campo para o cliente <b>anexar uma foto de referência</b>. Ela chega junto com o pedido para você ver.</>
-                        : <>Ligue em produtos <b>personalizados</b>, como bolos decorados, topos de bolo e kits temáticos. Em produtos de linha, deixe desligado.</>}
-                    </p>
                   </div>
                 );
               })()}
