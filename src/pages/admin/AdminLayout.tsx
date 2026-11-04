@@ -1,6 +1,7 @@
 import { Suspense, useState, useEffect } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { NomeDoonly } from "@/components/marca/Mascote";
 import {
   ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images,
   Cake, Medal, FilePdf, ChartBar, Lightbulb, Lifebuoy,
@@ -173,13 +174,9 @@ export default function AdminLayout() {
       {/* Sidebar desktop */}
       <aside className="adm-sidebar">
         <div className="adm-sidebar-top">
-          <div className="adm-logo-square">
-            <img src="/logoapp.webp" alt="Doonly" />
-          </div>
-          <div className="adm-brand">
-            <span className="adm-brand-name">Doonly</span>
-            <span className="adm-brand-role">Painel administrativo</span>
-          </div>
+          {/* (03/11) a mesma marca do app da confeiteira, com a etiqueta Admin */}
+          <NomeDoonly cor="branco" className="adm-marca" />
+          <span className="adm-etq">Admin</span>
         </div>
         {renderNav()}
         {renderBottom()}
@@ -187,13 +184,8 @@ export default function AdminLayout() {
 
       {/* Mobile header — só a marca; navegação fica na barra de baixo */}
       <div className="adm-mobile-header">
-        <div className="adm-logo-square adm-logo-square--sm">
-          <img src="/logoapp.webp" alt="Doonly" />
-        </div>
-        <div className="adm-brand">
-          <span className="adm-brand-name">Doonly</span>
-          <span className="adm-brand-role">Admin</span>
-        </div>
+        <NomeDoonly cor="branco" className="adm-marca adm-marca--cel" />
+        <span className="adm-etq">Admin</span>
       </div>
 
       {/* Mobile: barra de navegação inferior */}
@@ -264,7 +256,10 @@ export default function AdminLayout() {
 
         /* Menu do computador */
         .adm-sidebar { position: fixed; top: 0; bottom: 0; left: 0; z-index: 30; display: flex; flex-direction: column; width: 260px; background: var(--vinho-profundo); }
-        .adm-sidebar-top { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
+        .adm-sidebar-top { display: flex; align-items: center; gap: 10px; padding: 22px 20px 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
+        .adm-marca { display: block; height: 34px; width: auto; }
+        .adm-marca--cel { height: 28px; }
+        .adm-etq { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 99px; background: rgba(var(--ui-rosa-rgb, 232, 93, 140), .22); color: #FFD3E2; font-size: 12px; font-weight: 600; letter-spacing: .02em; }
         .adm-logo-square { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-rosa); }
         .adm-logo-square img { width: 26px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
         .adm-logo-square--sm { width: 44px; height: 44px; }
