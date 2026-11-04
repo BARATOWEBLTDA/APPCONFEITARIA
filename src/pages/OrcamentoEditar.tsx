@@ -503,6 +503,7 @@ export default function OrcamentoEditar() {
 
         {/* (04/11 · 6.47) a prévia do lado saiu: a tela fica numa coluna só, no meio. A prévia abre no "Ver como fica";
             no computador os botões ficam aqui embaixo, no canto e do tamanho do texto */}
+        {etapa < 5 && <button type="button" className="orc-ver-cel" onClick={() => setVerPrevia(true)}><Eye size={18} weight="bold" aria-hidden="true" />Ver como fica</button>}
         {etapa < 5 && <div className="orc-acoes-pc">
           <Botao variante="link" icone={<Eye size={18} weight="bold" />} onClick={() => setVerPrevia(true)}>Ver como fica</Botao>
           <span>{botoesEtapa}</span>
