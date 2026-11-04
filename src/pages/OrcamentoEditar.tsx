@@ -505,7 +505,8 @@ export default function OrcamentoEditar() {
       <aside className="orc-ed-lado" aria-label="Resumo do orçamento">
         {pediu}
         {/* no computador, a prévia ao vivo fica do lado enquanto ela monta (na etapa Enviar ela já está no meio) */}
-        {etapa < 5 && <section className="orc-card"><h2>Assim o cliente vê</h2><Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url} />
+        {etapa < 5 && <section className="orc-card"><h2>Assim o cliente vê</h2><Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url}
+          montando={{ condicoes: etapa >= 4 || (o.status !== 'rascunho' && o.status !== 'novo') }} />
           {/* (28/10) no computador os botões ficam aqui, embaixo do total (como o Resumo da Nova venda) */}
           <div className="orc-lado-bts">{botoesEtapa}</div>
         </section>}
@@ -561,7 +562,11 @@ export default function OrcamentoEditar() {
 }
 
 /** O orçamento como a cliente vê (prévia na etapa Enviar e o resumo depois de respondido) */
-export function Resumo({ o, total, sinal, nomeLoja, logo }: { o: Orcamento; total: number; sinal: number; nomeLoja: string; logo?: string | null }) {
+/** (6.46) montando: na prévia enquanto ela monta, o total só aparece com itens e as condições só a partir da etapa Condições
+ *  (antes "Pagamento combinado com a loja · Vale até…" aparecia sem ela ter escolhido nada) */
+export function Resumo({ o, total, sinal, nomeLoja, logo, montando }: { o: Orcamento; total: number; sinal: number; nomeLoja: string; logo?: string | null; montando?: { condicoes: boolean } }) {
+  const temItens = (o.itens || []).length > 0
+  const verCond = !montando || montando.condicoes
   return (
     <div className="orc-prev">
       <div className="orc-prev-loja">
@@ -579,13 +584,13 @@ export function Resumo({ o, total, sinal, nomeLoja, logo }: { o: Orcamento; tota
         {Number(o.acrescimo) > 0 && <div><span><b>Acréscimo</b></span><em>{brl(o.acrescimo)}</em></div>}
         {Number(o.desconto) > 0 && <div className="ok"><span><b>Desconto</b></span><em>− {brl(o.desconto)}</em></div>}
       </div>
-      <div className="orc-prev-tot"><span>Total</span><b>{brl(total)}</b></div>
+      {!montando || temItens ? <div className="orc-prev-tot"><span>Total</span><b>{brl(total)}</b></div> : <p className="orc-prev-vz">Os itens e o total aparecem aqui conforme você monta.</p>}
       {/* (6.45) uma informação por linha: como paga, o resto e a validade */}
-      <p className="orc-prev-cond">
+      {verCond && <p className="orc-prev-cond">
         <span>{textoCondicoes({ ...o, validade: null }, total)}</span>
         {sinal > 0 && o.sinal_tipo !== 'total' && <span>Resto {brl(Math.max(0, total - sinal))} na entrega</span>}
         {o.validade && <span>Vale até {dataCurta(o.validade)}</span>}
-      </p>
+      </p>}
     </div>
   )
 }

@@ -411,3 +411,4 @@
 .orc-prev-ev b { font-weight: 600; color: var(--ui-texto); }
 .orc-prev-ev b, .orc-prev-ev span, .orc-prev-cond span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .orc-prev-cond { display: flex; flex-direction: column; gap: 2px; }
+.orc-prev-vz { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--ui-texto-3); }
