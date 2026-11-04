@@ -29,7 +29,7 @@ export type Como = {
   artigo?: string;
 };
 
-export function ConteudoComo({ c, rotulo, className = "", tour }: { c: Como; rotulo: string; className?: string; tour?: { passos: number; fazer: () => void } }) {
+export function ConteudoComo({ c, rotulo, className = "", tour, semArtigo }: { c: Como; rotulo: string; className?: string; tour?: { passos: number; fazer: () => void }; semArtigo?: boolean }) {
   const temExemplo = !!(c.tit || c.linhas?.length || c.total || c.fluxo?.length);
   return (
     <div className={`cf ${className}`} role="group" aria-label={`Como funciona: ${rotulo}`}>
@@ -55,11 +55,12 @@ export function ConteudoComo({ c, rotulo, className = "", tour }: { c: Como; rot
       <ul className={`cf-dicas${c.checks ? " cf-dicas--check" : ""}`}>
         {c.dicas.map(([Ic, t], i) => <li key={i}>{c.checks ? <Check size={16} weight="bold" aria-hidden="true" /> : <Ic size={16} aria-hidden="true" />}<span>{t}</span></li>)}
       </ul>
-      {c.artigo && <Link className="cf-artigo" to={`/ajuda/${c.artigo}`}><BookOpen size={18} weight="bold" aria-hidden="true" />Ver o tutorial completo<ArrowRight size={16} weight="bold" aria-hidden="true" /></Link>}
+      {/* (6.65) no (i) do topo sai o "Ver o tutorial completo": fica só o Fazer o tour */}
+      {c.artigo && !semArtigo && <Link className="cf-artigo" to={`/ajuda/${c.artigo}`}><BookOpen size={18} weight="bold" aria-hidden="true" />Ver o tutorial completo<ArrowRight size={16} weight="bold" aria-hidden="true" /></Link>}
       {tour && (
         <button type="button" className="cf-tour" onClick={tour.fazer}>
           <PlayCircle size={22} aria-hidden="true" />
-          <span><small>Tour da tela · {tour.passos} {tour.passos === 1 ? "passo" : "passos"}</small><b>Fazer o tour · {tour.passos} {tour.passos === 1 ? "passo" : "passos"}</b></span>
+          <span><small>Mostra cada parte desta tela</small><b>Fazer o tour · {tour.passos} {tour.passos === 1 ? "passo" : "passos"}</b></span>
           <ArrowRight size={18} weight="bold" aria-hidden="true" />
         </button>
       )}
@@ -118,7 +119,7 @@ export function BotaoAjuda({ c, rotulo, tipo = "info", className = "", tour }: {
         <div className="cf-pop" ref={caixa} style={{ top: pos.top, left: pos.left }}>
           <span className="cab-pop-seta" style={{ left: pos.seta }} aria-hidden="true" />
           <div className="cf-pop-rolo" style={{ maxHeight: pos.max }}>
-            <ConteudoComo c={c} rotulo={rotulo} tour={tour && nPassos > 0 ? { passos: nPassos, fazer: () => { setAberto(false); window.setTimeout(() => { void fazerTour(tour); }, 150); } } : undefined} />
+            <ConteudoComo c={c} rotulo={rotulo} semArtigo tour={tour && nPassos > 0 ? { passos: nPassos, fazer: () => { setAberto(false); window.setTimeout(() => { void fazerTour(tour); }, 150); } } : undefined} />
           </div>
         </div>
       </>,

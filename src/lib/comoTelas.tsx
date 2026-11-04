@@ -232,7 +232,6 @@ export const TOUR_PRODUTOS: PassoTour[] = [
       { el: ".prod-hero-btn-primary", texto: "Ainda não há produtos. Use Cadastrar produto para criar o primeiro: ele aparece aqui na lista e no seu cardápio." },
     ] },
   { el: ".pl-lin-chave, .pl-ficha-on", titulo: "Mostrar no cardápio", texto: "Ative ou desative para mostrar ou ocultar o produto no cardápio, sem precisar excluí-lo." },
-  { el: ".pl-lin-ficha, .pl-sem-ficha", titulo: "Ficha técnica", texto: "Monte a ficha técnica para descobrir o custo e o lucro de cada produto." },
 ];
 
 export const COMO_FICHA: Como = {
@@ -743,22 +742,24 @@ export const TOUR_ORCAMENTOS: PassoTour[] = [
 export const COMO_ORCAMENTO: Como = {
   tela: { nome: "Montar orçamento", Icone: FileText },
   artigo: "orcamentos",
-  resumo: "Em 3 etapas: os itens e o valor, as condições e o envio do link para o cliente aprovar.",
+  resumo: "Em 5 etapas: o evento, os itens, os valores, as condições e o envio do link para o cliente aprovar.",
   tit: "Exemplo · proposta",
   linhas: [["Bolo 2 andares", "R$ 380,00"], ["100 docinhos", "R$ 150,00"], ["Entrega", "R$ 20,00"]],
   total: ["Total", "R$ 550,00"],
-  fluxo: ["Proposta", "Condições", "Enviar"],
+  fluxo: ["Montar", "Enviar", "Aprovado"],
   dicas: [
-    [Cake, <>Use itens <b>do cardápio</b> ou <b>personalizados</b>, com o valor que quiser.</>],
-    [ChartLineUp, <>Com a ficha técnica dos produtos, aparece o <b>lucro estimado</b>.</>],
+    [Cake, <>Use itens <b>do cardápio</b>, <b>personalizados</b> ou <b>adicionais</b>, com o valor que quiser.</>],
+    [Users, <>Escolha o cliente <b>da sua lista</b> ou cadastre um <b>cliente novo</b>.</>],
     [CalendarCheck, <>Aprovado, vira pedido na <b>Agenda</b> com os itens e o sinal.</>],
   ],
 };
+// (6.65) o editor de 5 etapas: cada passo acende o que está na etapa aberta (o que não está na tela fica de fora)
 export const TOUR_ORCAMENTO: PassoTour[] = [
-  { el: ".orc-etapas", titulo: "Etapas", texto: "Proposta, Condições e Enviar. Dá para voltar a qualquer etapa." },
-  { el: ".orc-so-cel .orc-pediu || .orc-ed-lado .orc-pediu", titulo: "O que ela pediu", texto: "A ideia, a data, quanto quer gastar e as fotos que ela mandou pelo link." },
-  { el: ".orc-item || .orc-add", titulo: "Itens", texto: "Ajuste a quantidade, o valor e escreva um detalhe, como sabor ou tema." },
-  { el: ".orc-ext", titulo: "Desconto, acréscimo e entrega", texto: "Ligue o que precisar e coloque o valor. O total muda na hora." },
-  { el: ".orc-tot", titulo: "Total", texto: "O valor que o cliente vai ver na proposta." },
-  { el: ".orc-pe-in", titulo: "Continuar", texto: "Salva e vai para a próxima etapa. Rascunho guarda para terminar depois." },
+  { el: ".orc-etapas", titulo: "Etapas", texto: "Evento, Itens, Valores, Condições e Enviar. Toque numa etapa já feita para voltar a ela." },
+  { el: ".orc-pediu", titulo: "O que ele pediu", texto: "A ideia, a data, quanto quer gastar e as fotos que o cliente mandou pelo link." },
+  { el: ".orc-add--cli || .orc-cli", titulo: "Cliente", texto: "Escolha da sua lista ou cadastre um cliente novo. Quando ele aprovar, o pedido entra na ficha dele." },
+  { el: ".orc-ev", titulo: "Evento", texto: "A data, o horário, o nome da festa, quantas pessoas e o local. Tudo aparece na proposta." },
+  { el: ".orc-e1-cal", titulo: "Calendário", texto: "Toque no dia da festa. Marque Mais de um dia para eventos de dias seguidos." },
+  { el: ".orc-itens || .orc-add", titulo: "Itens", texto: "Coloque produtos do cardápio, um item personalizado ou um adicional. Ajuste o tamanho, a quantidade e o valor." },
+  { el: ".orc-pe-in || .orc-acoes-pc", titulo: "Continuar", texto: "Salva e vai para a próxima etapa. No fim, você envia o link para o cliente aprovar." },
 ];
