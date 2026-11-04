@@ -14,7 +14,7 @@ export default function CampoData({ valor, onChange, titulo, min, max, placehold
   const [aberto, setAberto] = useState(false)
   return (
     <>
-      <button type="button" id={id} className={`cdata ${className || ''}`} onClick={() => setAberto(true)} aria-label={`${titulo || 'Data'}: ${valor ? dataPorExtenso(valor) : placeholder}`}>
+      <button type="button" id={id} className={`cdata ${className || ''}`} onClick={() => { (document.activeElement as HTMLElement | null)?.blur(); setAberto(true) }} aria-label={`${titulo || 'Data'}: ${valor ? dataPorExtenso(valor) : placeholder}`}>
         <CalendarBlank size={20} weight="bold" aria-hidden="true" />
         <span className={valor ? '' : 'ph'}>{valor ? dataPorExtenso(valor, curto) : placeholder}</span>
       </button>

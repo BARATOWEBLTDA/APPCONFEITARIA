@@ -13,6 +13,8 @@ export type ItemOrcamento = {
   imagem_url?: string | null
   /** (6.62) tamanho escolhido na caixinha do item ("2 kg · serve até 20 pessoas"); também vai no começo do detalhe */
   tamanho?: string | null
+  /** (6.82) adicional que entrou junto com um item (o id do item): some quando ele desmarca */
+  extra_de?: string | null
 }
 
 export type StatusOrcamento = 'novo' | 'rascunho' | 'enviado' | 'aprovado' | 'recusado'
@@ -153,10 +155,47 @@ export const linkPedirOrcamento = (codigo?: string | null, origem?: string) => (
 /** O link da proposta para a cliente aprovar */
 export const linkProposta = (token: string, origem?: string) => `${origem || BASE}/orcamento/${token}`
 
-export const textoPedirOrcamento = (link: string) => `Oi! Para pedir um orçamento, é só contar a sua ideia por aqui:\n${link}`
+/** (6.82) o texto do link de pedir orçamento (Compartilhar) */
+export const textoPedirOrcamento = (link: string, loja?: string) =>
+  `Oi! Quer um orçamento${loja ? ` da *${loja}*` : ''}? Conte a sua ideia por aqui que eu te respondo pelo WhatsApp:\n${link}`
+/** "sábado, 08/11" */
+export function diaSemanaCurto(iso?: string | null): string {
+  if (!iso) return ''
+  const d = new Date(`${iso.slice(0, 10)}T12:00:00`)
+  return isNaN(d.getTime()) ? '' : `${DIAS[d.getDay()].toLowerCase()}, ${dataCurta(iso)}`
+}
+/** (6.82) a mensagem que vai no WhatsApp junto com o link da proposta (a confeiteira pode mudar antes de enviar) */
 export function textoProposta(o: Orcamento, nomeLoja: string, link: string): string {
   const nome = (o.cliente_nome || '').trim().split(' ')[0]
-  return `Oi${nome ? `, ${nome}` : ''}! Aqui está o seu orçamento da ${nomeLoja}. Dá para ver tudo e aprovar por este link:\n${link}`
+  const total = totalOrcamento(o)
+  const evento = (o.nome_evento || o.ocasiao || '').trim()
+  const quando = o.data_evento
+    ? (o.data_evento_fim && o.data_evento_fim > o.data_evento ? `${dataCurta(o.data_evento)} a ${dataCurta(o.data_evento_fim)}` : diaSemanaCurto(o.data_evento)) + (o.horario_evento ? ` às ${horaCurta(o.horario_evento)}` : '')
+    : ''
+  const linhas = [
+    evento ? `*Evento:* ${evento}` : '',
+    quando ? `*Data:* ${quando}` : '',
+    total > 0 ? `*Total:* ${brl(total)}` : '',
+  ].filter(Boolean)
+  return `Oi${nome ? `, ${nome}` : ''}! Tudo bem?\n\nO seu orçamento da *${nomeLoja}* está pronto.${linhas.length ? `\n\n${linhas.join('\n')}` : ''}\n\nVeja os detalhes e aprove por aqui:\n${link}`
+}
+
+/** (6.82) o pedido que chegou pelo link, num texto corrido de poucas linhas (sem IA: na hora, sem custo e sem inventar nada) */
+export function resumoDoPedido(o: Orcamento): string {
+  const nome = (o.cliente_nome || 'O cliente').trim().split(' ')[0]
+  const ocasiao = (o.ocasiao || o.nome_evento || '').trim()
+  const partes: string[] = []
+  const oc = ocasiao ? ocasiao.charAt(0).toLowerCase() + ocasiao.slice(1) : ''
+  let abre = `${nome} pediu um orçamento${oc ? ` para ${/^(o|a|os|as|um|uma|meu|minha|nosso|nossa)\s/i.test(oc) ? oc : `o ${oc}`}` : ''}`
+  if (o.data_evento) abre += `, ${o.data_evento_fim && o.data_evento_fim > o.data_evento ? `de ${dataCurta(o.data_evento)} a ${dataCurta(o.data_evento_fim)}` : `para ${diaSemanaCurto(o.data_evento)}`}${o.horario_evento ? ` às ${horaCurta(o.horario_evento)}` : ''}`
+  if (o.pessoas) abre += `, para ${o.pessoas} pessoas`
+  partes.push(`${abre}.`)
+  const desc = (o.descricao || '').trim().replace(/\s+/g, ' ')
+  if (desc) { const d = desc.charAt(0).toLowerCase() + desc.slice(1); partes.push(`A ideia é ${d.length > 220 ? `${d.slice(0, 217).trim()}…` : d}${/[.!?…]$/.test(d) ? '' : '.'}`) }
+  if (Number(o.orcamento_cliente) > 0) partes.push(`Pretende gastar até ${brl(Number(o.orcamento_cliente))}.`)
+  const nf = (o.fotos || []).length
+  if (nf) partes.push(nf === 1 ? 'Mandou 1 foto de referência.' : `Mandou ${nf} fotos de referência.`)
+  return partes.join(' ')
 }
 
 /** Sem resposta há 3 dias ou mais: a lista avisa para cobrar o retorno */
@@ -165,7 +204,6 @@ export function semResposta(o: Orcamento): boolean {
   return Date.now() - new Date(o.enviado_em).getTime() >= 3 * 86400000
 }
 
-export const OCASIOES = ['Aniversário', 'Casamento', 'Chá', 'Outro']
 
 /** Reduz a foto para mandar junto do pedido de orçamento (vai guardada no próprio orçamento) */
 export function reduzirFotoOrcamento(file: File): Promise<string> {

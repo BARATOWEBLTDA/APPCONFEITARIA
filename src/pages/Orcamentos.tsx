@@ -5,7 +5,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { CTA_PRO } from "@/lib/beneficiosPro";
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CaretRight, Copy, Crown, FileText, LinkSimple, Package, Plus, ShareNetwork, WarningCircle } from '@phosphor-icons/react'
+import { ArrowRight, ArrowSquareOut, CaretRight, Copy, Crown, FileText, LinkSimple, Package, Plus, ShareNetwork, WarningCircle } from '@phosphor-icons/react'
 import mascoteCoroa from '@/assets/mascote-coroa.webp'
 import AppPageHeader from '@/components/AppPageHeader'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
@@ -16,7 +16,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { usePlano } from '@/hooks/usePlano'
 import { linkWhatsApp } from '@/lib/telefone'
 import { compartilharTexto } from '@/lib/compartilharCardapio'
-import { brl, dataCurta, dataCurtaEvento, linkPedirOrcamento, semResposta, textoPedirOrcamento, totalOrcamento, type Orcamento } from '@/lib/orcamentos'
+import { brl, dataCurtaEvento, diaSemanaCurto, horaCurta, linkPedirOrcamento, linkProposta, semResposta, textoPedirOrcamento, totalOrcamento, type Orcamento } from '@/lib/orcamentos'
 import { COMO_ORCAMENTOS, TOUR_ORCAMENTOS } from '@/lib/comoTelas'
 import { chegouHa } from '@/components/pedidos/pedidoTexto'
 import './orcamentos.css'
@@ -88,7 +88,7 @@ export default function Orcamentos() {
     return o.origem === 'link' ? chegouHa(o.created_at) : chegouHa(o.created_at).replace(/^Chegou/, 'Criado')
   }
   const cobrar = (o: Orcamento) => o.cliente_telefone ? (
-    <a className="orc-cobrar" href={linkWhatsApp(o.cliente_telefone, `Oi${o.cliente_nome ? `, ${o.cliente_nome.split(' ')[0]}` : ''}! Conseguiu ver o orçamento que te mandei?`)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+    <a className="orc-cobrar" href={linkWhatsApp(o.cliente_telefone, `Oi${o.cliente_nome ? `, ${o.cliente_nome.split(' ')[0]}` : ''}! Tudo bem? Conseguiu ver o orçamento que te mandei? Qualquer dúvida, é só me chamar.\n${linkProposta(o.token, window.location.origin)}`)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
       <IconeWhatsApp size={16} />Sem resposta há 3 dias. Pedir retorno
     </a>
   ) : null
@@ -158,7 +158,8 @@ export default function Orcamentos() {
           <div className="orc-link-tx"><b>Seu link de orçamento</b><small>{link || 'Publique o cardápio para ter o link'}</small></div>
           {link && <div className="orc-link-bts">
             <Botao variante="secundario" tamanho="m" icone={<Copy size={18} weight="bold" />} onClick={copiar}>Copiar</Botao>
-            <Botao variante="suave" tamanho="m" icone={<ShareNetwork size={18} weight="bold" />} onClick={() => void compartilharTexto(textoPedirOrcamento(link), nomeLoja)}>Compartilhar</Botao>
+            <Botao variante="suave" tamanho="m" icone={<ShareNetwork size={18} weight="bold" />} onClick={() => void compartilharTexto(textoPedirOrcamento(link, nomeLoja), nomeLoja)}>Compartilhar</Botao>
+            <Botao variante="secundario" tamanho="m" icone={<ArrowSquareOut size={18} weight="bold" />} onClick={() => window.open(link, '_blank', 'noopener')}>Ver</Botao>
           </div>}
         </section>
         <Botao className="orc-novo" icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/orcamentos/novo')}>Novo orçamento</Botao>
@@ -202,7 +203,7 @@ export default function Orcamentos() {
       ) : <>
       <div className="orc-abas" role="tablist" aria-label="Situação dos orçamentos">
         {ABAS.map(([k, t]) => (
-          <button key={k} type="button" role="tab" aria-selected={aba === k} onClick={() => setAba(k)}>{t}{contagem[k] > 0 && <i>{contagem[k]}</i>}</button>
+          <button key={k} type="button" role="tab" aria-selected={aba === k} onClick={() => setAba(k)}>{t}{k === 'novos' && contagem.novos > 0 && <i className="orc-aba-pt" aria-label={`${contagem.novos} novos`} />}</button>
         ))}
       </div>
 
@@ -216,27 +217,23 @@ export default function Orcamentos() {
           texto={aba === 'novos' ? 'Compartilhe o seu link: os pedidos chegam aqui e você recebe o aviso no celular.' : undefined} />
       ) : (
         <section className="orc-lista">
+          {/* (6.82) cada orçamento: a inicial do cliente, o número, a data e a hora do evento (o "Novo" só na aba Novos) */}
           {visiveis.map(o => {
-            const total = totalOrcamento(o)
             const atrasado = semResposta(o)
-            const linha = [o.ocasiao || o.nome_evento, o.pessoas ? `${o.pessoas} pessoas` : '', o.data_evento ? dataCurtaEvento(o) : ''].filter(Boolean).join(' · ')
-            const sit = o.status === 'novo' ? ['Novo', 'n'] : o.status === 'rascunho' ? ['Rascunho', 'r'] : o.status === 'enviado' ? [atrasado ? 'Sem resposta' : 'Aguardando', 'e'] : o.status === 'aprovado' ? ['Aprovado', 'a'] : ['Recusado', 'x']
+            const st = aba === 'novos' ? (o.status === 'novo' ? ['Novo', 'n'] : ['Rascunho', 'r']) : atrasado ? ['Sem resposta', 'e'] : null
             return (
               <div key={o.id} className="orc-it">
                 <button type="button" className="orc-it-b" onClick={() => navigate(`/orcamentos/${o.id}`)}>
                   <span className="orc-av" aria-hidden="true">{(o.cliente_nome || '?').trim().charAt(0).toUpperCase()}</span>
                   <span className="orc-it-tx">
-                    <b className="nm-num"><span>{o.cliente_nome || 'Sem nome'}</span><small>#{o.numero}</small></b>
-                    <small>{linha || (o.origem === 'link' ? 'Pediu pelo link' : 'Criado por você')}</small>
-                  </span>
-                  <span className="orc-it-dir">
-                    <em className={`orc-st orc-st--${sit[1]}`}>{sit[0]}</em>
-                    {total > 0 && <small>{brl(total)}</small>}
+                    <b className="orc-it-t"><span>Orçamento #{o.numero}</span>{st && <em className={`orc-st orc-st--${st[1]}`}>{st[0]}</em>}</b>
+                    <small>Data do evento: {o.data_evento ? (o.data_evento_fim && o.data_evento_fim > o.data_evento ? dataCurtaEvento(o) : diaSemanaCurto(o.data_evento)) : 'a combinar'}</small>
+                    <small>Hora do evento: {o.horario_evento ? horaCurta(o.horario_evento) : 'a combinar'}</small>
                   </span>
                   <CaretRight size={18} weight="bold" aria-hidden="true" />
                 </button>
                 {atrasado && o.cliente_telefone && (
-                  <a className="orc-cobrar" href={linkWhatsApp(o.cliente_telefone, `Oi${o.cliente_nome ? `, ${o.cliente_nome.split(' ')[0]}` : ''}! Conseguiu ver o orçamento que te mandei?`)} target="_blank" rel="noopener noreferrer">
+                  <a className="orc-cobrar" href={linkWhatsApp(o.cliente_telefone, `Oi${o.cliente_nome ? `, ${o.cliente_nome.split(' ')[0]}` : ''}! Tudo bem? Conseguiu ver o orçamento que te mandei? Qualquer dúvida, é só me chamar.\n${linkProposta(o.token, window.location.origin)}`)} target="_blank" rel="noopener noreferrer">
                     <IconeWhatsApp size={16} />Enviado há mais de 3 dias. Pedir retorno
                   </a>
                 )}

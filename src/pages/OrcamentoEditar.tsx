@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowsClockwise, CalendarBlank, CaretDown, Check, Clock, Copy, Stack, UserPlus, UsersThree, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, PencilSimpleLine, Phone, Plus, Storefront, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, CalendarBlank, CaretDown, Check, CheckCircle, Clock, Copy, UserPlus, UsersThree, FilePdf, MagnifyingGlass, MapPin, Minus, Package, PencilSimpleLine, Phone, Plus, Storefront, Trash, WarningCircle } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import CampoData from '@/components/CampoData'
 import CalendarioMes from '@/components/CalendarioMes'
@@ -33,15 +33,15 @@ import { detalhesItem } from '@/lib/itemSacola'
 import { textoSaboresKit } from '@/lib/kitTexto'
 import type { ItemDoCarrinho } from '@/lib/itemDoCarrinho'
 import {
-  FORMA_ORC, brl, hojeISO, textoEntrega, dataLonga, dataDoEvento, linkProposta, maisDias, somarItens, textoCondicoes, dataCurta, textoProposta, totalOrcamento, valorSinal,
+  FORMA_ORC, brl, hojeISO, dataLonga, diaSemanaCurto, horaCurta, linkProposta, maisDias, resumoDoPedido, somarItens, textoProposta, totalOrcamento, valorSinal,
   type ItemOrcamento, type Orcamento,
 } from '@/lib/orcamentos'
 import { COMO_ORCAMENTO, TOUR_ORCAMENTO } from '@/lib/comoTelas'
+import PropostaOrcamento from '@/components/PropostaOrcamento'
+import { chegouHa } from '@/components/pedidos/pedidoTexto'
 import './orcamentos.css'
 
 type Prod = ProdutoPrecoJson & { id: string; nome: string; categoria?: string | null; imagem_url?: string | null }
-/** O perfil com a logo da loja (vem do banco junto com o resto) */
-type PerfilComLogo = (Profile & { logo_url?: string | null }) | null
 const novoId = () => Math.random().toString(36).slice(2, 10)
 const foto1 = (f?: string | null) => (f ? String(f).split(/,(?=\s*(?:https?:|\/))/)[0].trim() : '')
 const lerReais = (s: string) => { const d = s.replace(/\D/g, ''); return d ? parseInt(d, 10) / 100 : 0 }
@@ -84,8 +84,13 @@ export default function OrcamentoEditar() {
   const [novoCli, setNovoCli] = useState({ nome: '', tel: '' })
   const [salvandoCli, setSalvandoCli] = useState(false)
   const [adicionais, setAdicionais] = useState<Extra[]>([])
-  const [escolherExtra, setEscolherExtra] = useState(false)
   const [tamanhoDe, setTamanhoDe] = useState<string | null>(null)
+  // (6.82) janela de opções do item: tamanho (ou outro, digitado) e os adicionais cadastrados
+  const [opTam, setOpTam] = useState<{ texto: string; preco: number } | 'outro' | null>(null)
+  const [outroTam, setOutroTam] = useState({ nome: '', valor: 0 })
+  const [opExtras, setOpExtras] = useState<string[]>([])
+  const [msgZap, setMsgZap] = useState<string | null>(null)
+  const [aprovando, setAprovando] = useState(false)
   const nomeLoja = profile?.nome_loja || 'Minha confeitaria'
 
   // carrega o orçamento (ou começa um novo) e os produtos do cardápio
@@ -249,7 +254,8 @@ export default function OrcamentoEditar() {
     if (!salvo) return
     const link = linkProposta(salvo.token, window.location.origin)
     const tel = salvo.cliente_telefone || ''
-    window.open(linkWhatsApp(tel, textoProposta(salvo, nomeLoja, link)) || `https://wa.me/?text=${encodeURIComponent(textoProposta(salvo, nomeLoja, link))}`, '_blank', 'noopener')
+    const texto = msgZap != null && msgZap.trim() ? `${msgZap.trim()}\n${link}` : textoProposta(salvo, nomeLoja, link)
+    window.open(linkWhatsApp(tel, texto) || `https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank', 'noopener')
     avisar('Orçamento enviado. Você recebe o aviso quando ele responder.', { tipo: 'ok' })
   }
   const copiarLink = async () => {
@@ -264,6 +270,33 @@ export default function OrcamentoEditar() {
   const baixarPdf = () => {
     if (!ov) return
     void gerarOrcamentoPDF(ov)
+  }
+
+  // (6.82) o cliente aprovou pelo WhatsApp (sem tocar no link): ela aprova aqui e o orçamento vira pedido na Agenda
+  const aprovarPeloPainel = async () => {
+    if (!o) return
+    const ok = await confirmar({ titulo: 'O cliente aprovou?', texto: 'O orçamento vira um pedido na sua Agenda, com os itens, a data e o sinal combinado.', rotulo: 'Aprovar e criar o pedido' })
+    if (!ok) return
+    setAprovando(true)
+    try {
+      let tok = o.token
+      // ainda não enviado (ou vencido): grava como enviado, sem prazo vencido, para poder aprovar
+      if (o.status !== 'enviado' || mudou || (o.validade && o.validade < hojeISO())) {
+        const env = dadosEnvio(); if (!env) return
+        const salvo = await salvar({ ...env, ...(o.validade && o.validade < hojeISO() ? { validade: null } : {}) })
+        if (!salvo) return
+        tok = salvo.token
+      }
+      const { data, error } = await supabase.rpc('orcamento_responder', { p_token: tok, p_aprovar: true, p_motivo: null })
+      if (error) throw error
+      const r = data as { ok?: boolean; erro?: string; pedido_numero?: number } | null
+      if (!r?.ok) { avisar(r?.erro || 'Não deu para aprovar agora.', { tipo: 'erro' }); return }
+      const { data: atual } = await supabase.from('orcamentos').select('*').eq('id', o.id).maybeSingle()
+      if (atual) setO({ ...(atual as Orcamento), itens: ((atual as Orcamento).itens || []).map((i: ItemOrcamento) => ({ ...i, id: i.id || novoId() })) })
+      if (r.pedido_numero) setPedidoNumero(r.pedido_numero)
+      avisar(`Aprovado! Virou o pedido #${r.pedido_numero ?? ''}`.trim(), { tipo: 'ok' })
+    } catch (e) { avisar(explicarErro(e, 'Não deu para aprovar. Confira a internet e tente de novo.'), { tipo: 'erro' }) }
+    finally { setAprovando(false) }
   }
 
   const excluir = async () => {
@@ -281,21 +314,34 @@ export default function OrcamentoEditar() {
     muda({ mensagem: `Oi${nome ? `, ${nome}` : ''}! Que alegria fazer parte ${evento ? `do ${evento.toLowerCase().startsWith('anivers') || evento.toLowerCase().startsWith('casa') || evento.toLowerCase().startsWith('chá') ? evento.charAt(0).toLowerCase() + evento.slice(1) : evento}` : 'da sua festa'}. Preparei este orçamento com carinho. Qualquer dúvida, é só me chamar.` })
   }
 
-  const titulo = o?.id ? `Orçamento de ${(o.cliente_nome || 'cliente').split(' ')[0]}` : 'Novo orçamento'
+  // (6.82) o topo: o número do orçamento e, embaixo, o cliente e quando chegou
+  const titulo = o?.id && o.numero ? `Orçamento #${o.numero}` : 'Novo orçamento'
+  const subtitulo = o?.id ? [o.cliente_nome, o.origem === 'link' ? chegouHa(o.created_at).replace(/^Chegou/, 'pediu pelo link') : ''].filter(Boolean).join(' · ') || 'Monte a proposta e envie o link' : 'Monte a proposta e envie o link'
   if (erro) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para abrir o orçamento" texto={erro} acao={<Botao onClick={() => navigate('/orcamentos')}>Voltar para a lista</Botao>} /></div></>)
   if (!o) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><div className="orc-carregando"><span className="ui-gira" aria-label="Carregando" /></div></div></>)
   if (!isPro) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Orçamentos é um recurso do PRO" texto={`Teste o PRO grátis por 7 dias para montar e enviar orçamentos.`} acao={<Botao onClick={() => navigate('/orcamentos')}>Voltar</Botao>} /></div></>)
 
+  // (6.82) o que o cliente pediu pelo link: um resumo em texto corrido e, embaixo, os dados um por linha (com o mapa do local)
+  const localMapa = (o.local_evento || '').trim()
+  const temEndereco = /\d/.test(localMapa) || /\b(rua|r\.|av\.?|avenida|alameda|travessa|estrada|rodovia|pra[çc]a)\b/i.test(localMapa)
   const pediu = o.origem === 'link' ? (
     <section className="orc-card orc-pediu">
       <h2>O que ele pediu</h2>
-      <dl className="orc-kv">
-        {o.ocasiao && <><dt>Para</dt><dd>{o.ocasiao}{o.pessoas ? ` · ${o.pessoas} pessoas` : ''}</dd></>}
-        {o.data_evento && <><dt>Data</dt><dd>{dataLonga(o.data_evento)}</dd></>}
-        {Number(o.orcamento_cliente) > 0 && <><dt>Quer gastar</dt><dd>até {brl(Number(o.orcamento_cliente))}</dd></>}
-        {o.cliente_telefone && <><dt>WhatsApp</dt><dd><a href={linkWhatsApp(o.cliente_telefone)} target="_blank" rel="noopener noreferrer">{mascaraTelefone(o.cliente_telefone)}</a></dd></>}
-      </dl>
-      {o.descricao && <p className="orc-desc">“{o.descricao}”</p>}
+      <p className="orc-pediu-res">{resumoDoPedido(o)}</p>
+      <div className="orc-pediu-l">
+        <p><span>Cliente:</span> {o.cliente_nome || 'Sem nome'}{o.cliente_telefone && <> · <a href={linkWhatsApp(o.cliente_telefone)} target="_blank" rel="noopener noreferrer">{mascaraTelefone(o.cliente_telefone)}</a></>}</p>
+        {o.pessoas ? <p><span>Evento:</span> para {o.pessoas} pessoas</p> : null}
+        {o.data_evento && <p><span>Dia:</span> {o.data_evento_fim && o.data_evento_fim > o.data_evento ? `${diaSemanaCurto(o.data_evento)} a ${diaSemanaCurto(o.data_evento_fim)}` : diaSemanaCurto(o.data_evento)}</p>}
+        {o.horario_evento && <p><span>Hora:</span> {horaCurta(o.horario_evento)}</p>}
+        {localMapa && <p><span>Local:</span> {localMapa}</p>}
+        {Number(o.orcamento_cliente) > 0 && <p><span>Quer gastar:</span> até {brl(Number(o.orcamento_cliente))}</p>}
+      </div>
+      {localMapa && temEndereco && (
+        <div className="orc-pediu-mapa">
+          <iframe title={`Mapa: ${localMapa}`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={`https://www.google.com/maps?q=${encodeURIComponent(localMapa)}&output=embed`} />
+          <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(localMapa)}`} target="_blank" rel="noopener noreferrer"><MapPin size={16} weight="bold" />Abrir no mapa</a>
+        </div>
+      )}
       {(o.fotos || []).length > 0 && <div className="orc-fotos">{(o.fotos || []).map((f, k) => <button key={k} type="button" onClick={() => setFoto(f)} aria-label={`Ver a foto ${k + 1}`}><img src={f} alt="" /></button>)}</div>}
     </section>
   ) : null
@@ -303,7 +349,7 @@ export default function OrcamentoEditar() {
   // ── respondido: só o resumo ──
   if (respondido) {
     return (<>
-      <AppPageHeader title={titulo} subtitle={o.numero ? `Orçamento #${o.numero}` : 'Monte a proposta e envie o link'} voltar="/orcamentos" infoComo={COMO_ORCAMENTO} />
+      <AppPageHeader title={titulo} subtitle={subtitulo} voltar="/orcamentos" infoComo={COMO_ORCAMENTO} />
       <div className="orc orc-ed">
         <div className="orc-ed-main">
           <section className={`orc-res orc-res--${o.status}`}>
@@ -311,7 +357,7 @@ export default function OrcamentoEditar() {
             <small>{o.respondido_em ? `Respondido em ${new Date(o.respondido_em).toLocaleDateString('pt-BR')}` : ''}{o.motivo_recusa ? ` · “${o.motivo_recusa}”` : ''}</small>
             {o.pedido_id && <Botao tamanho="m" onClick={() => navigate(`/pedidos/${o.pedido_id}/editar`)}>Abrir o pedido</Botao>}
           </section>
-          <Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url} />
+          <section className="orc-card"><PropostaOrcamento o={ov!} /></section>
           <div className="orc-acoes-fim"><Botao variante="secundario" icone={<FilePdf size={18} weight="bold" />} onClick={baixarPdf}>Baixar PDF</Botao></div>
         </div>
         {pediu && <aside className="orc-ed-lado" aria-label="Resumo do orçamento">{pediu}</aside>}
@@ -358,10 +404,37 @@ export default function OrcamentoEditar() {
       return { nome: String(op.nome), texto: [String(op.nome), serve].filter(Boolean).join(' · '), preco: comDesconto(precoDoTamanho(op, porPeso, Number(p.preco_normal) || 0), desc), esgotado: !!(op as { esgotado?: boolean }).esgotado }
     })
   }
-  const usarTamanho = (iid: string, t: { texto: string; preco: number }) => {
-    const it = (o.itens || []).find(x => x.id === iid); if (!it) return
-    const resto = (it.detalhe || '').startsWith(it.tamanho || '\u0000') ? (it.detalhe || '').slice((it.tamanho || '').length).replace(/^ · /, '') : (it.detalhe || '')
-    mudaItem(iid, { tamanho: t.texto, detalhe: [t.texto, resto].filter(Boolean).join(' · '), ...(t.preco > 0 ? { valor_unitario: t.preco } : {}) })
+  // (6.82) abre as opções do item com o que ele já tem marcado
+  const abrirOpcoes = (iid: string) => {
+    const lista = (o?.itens || [])
+    const it = lista.find(x => x.id === iid)
+    const tams = tamanhosDo(it?.produto_id)
+    const atual = tams.find(t => t.texto === it?.tamanho)
+    setOpTam(atual || (it?.tamanho ? 'outro' : null))
+    setOutroTam(atual || !it?.tamanho ? { nome: '', valor: 0 } : { nome: it.tamanho, valor: Number(it.valor_unitario) || 0 })
+    setOpExtras(lista.filter(x => x.extra_de === iid).map(x => adicionais.find(a => a.nome === x.nome)?.id || '').filter(Boolean))
+    setTamanhoDe(iid)
+  }
+  const confirmarOpcoes = () => {
+    if (!tamanhoDe || !o) return
+    const iid = tamanhoDe
+    if (opTam === 'outro' && !outroTam.nome.trim()) { avisar('Escreva o tamanho', { tipo: 'erro' }); return }
+    let itens = (o.itens || []).map(it => {
+      if (it.id !== iid) return it
+      const tam = opTam === 'outro' ? { texto: outroTam.nome.trim(), preco: outroTam.valor } : opTam
+      if (!tam) return it
+      const resto = (it.detalhe || '').startsWith(it.tamanho || '\u0000') ? (it.detalhe || '').slice((it.tamanho || '').length).replace(/^ · /, '') : (it.detalhe || '')
+      return { ...it, tamanho: tam.texto, detalhe: [tam.texto, resto].filter(Boolean).join(' · '), ...(tam.preco > 0 ? { valor_unitario: tam.preco } : {}) }
+    })
+    // os adicionais deste item: tira os desmarcados e põe os novos logo depois dele
+    const ja = itens.filter(x => x.extra_de === iid)
+    itens = itens.filter(x => x.extra_de !== iid || opExtras.some(eid => adicionais.find(a => a.id === eid)?.nome === x.nome))
+    const novos = opExtras.map(eid => adicionais.find(a => a.id === eid)).filter((a): a is Extra => !!a && !ja.some(x => x.nome === a.nome))
+      .map(a => ({ id: novoId(), nome: a.nome, quantidade: 1, valor_unitario: a.valor, imagem_url: a.imagem_url || null, extra_de: iid }))
+    const pos = itens.findIndex(x => x.id === iid)
+    let fim = pos; while (fim + 1 < itens.length && itens[fim + 1].extra_de === iid) fim++
+    itens = [...itens.slice(0, fim + 1), ...novos, ...itens.slice(fim + 1)]
+    muda({ itens })
     setTamanhoDe(null)
   }
   const botoesEtapa = etapa < 5 ? (<>
@@ -373,8 +446,8 @@ export default function OrcamentoEditar() {
   const prodsFiltrados = produtos.filter(p => !busca.trim() || p.nome.toLowerCase().includes(busca.trim().toLowerCase()))
 
   return (<>
-    <AppPageHeader title={titulo} subtitle={o.numero ? `Orçamento #${o.numero}` : 'Monte a proposta e envie o link'} voltar="/orcamentos" infoComo={COMO_ORCAMENTO} infoTour={TOUR_ORCAMENTO}
-      rightActions={<MenuMais rotulo="Mais ações do orçamento" itens={[{ Ic: Trash, t: "Excluir orçamento", sub: "Apaga de vez", perigo: true, aoTocar: () => { void excluir() } }]} />} />
+    <AppPageHeader title={titulo} subtitle={subtitulo} voltar="/orcamentos" infoComo={COMO_ORCAMENTO} infoTour={TOUR_ORCAMENTO}
+      rightActions={<MenuMais rotulo="Mais ações do orçamento" itens={[...(o.id && (o.itens || []).length ? [{ Ic: CheckCircle, t: "Marcar como aprovado", sub: "O cliente aprovou pelo WhatsApp", aoTocar: () => { void aprovarPeloPainel() } }] : []), { Ic: Trash, t: "Excluir orçamento", sub: "Apaga de vez", perigo: true, aoTocar: () => { void excluir() } }]} />} />
     <div className={`orc orc-ed${etapa === 1 ? " orc-ed--largo" : ""}`}>
       <div className="orc-ed-main">
         {/* (6.43) etapas numeradas: a bolinha rosa é a atual; com ✓ as feitas; toca numa pra ir (as da frente só sem nada faltando) */}
@@ -400,7 +473,7 @@ export default function OrcamentoEditar() {
             {temCli ? (
               <div className="orc-cli">
                 <span className="orc-av" aria-hidden="true">{(o.cliente_nome || '?').trim().charAt(0).toUpperCase()}</span>
-                <span className="orc-cli-tx"><b>{o.cliente_nome}</b><small>{o.cliente_telefone ? mascaraTelefone(o.cliente_telefone) : 'Sem WhatsApp'}{o.origem === 'link' ? ' · pediu pelo link' : ''}</small></span>
+                <span className="orc-cli-tx"><b>{o.cliente_nome}</b><small>{o.cliente_telefone ? mascaraTelefone(o.cliente_telefone) : 'Sem WhatsApp'}</small></span>
                 {digitos(o.cliente_telefone).length >= 10 && <>
                   <a className="orc-cli-ic" href={linkWhatsApp(o.cliente_telefone || '') || '#'} target="_blank" rel="noreferrer" aria-label="Chamar no WhatsApp" title="WhatsApp"><IconeWhatsApp size={20} /></a>
                   <a className="orc-cli-ic" href={`tel:+55${digitos(o.cliente_telefone)}`} aria-label="Ligar" title="Ligar"><Phone size={20} weight="bold" /></a>
@@ -477,11 +550,16 @@ export default function OrcamentoEditar() {
                     : <input className="orc-item-in" value={i.nome} placeholder="Nome do item" onChange={e => mudaItem(i.id, { nome: e.target.value })} aria-label="Nome do item" />}
                   <button type="button" className="orc-tira" aria-label={`Tirar ${i.nome || 'o item'}`} title="Tirar" onClick={() => tiraItem(i.id)}><Trash size={18} weight="bold" /></button>
                 </div>
-                {i.produto_id && tamanhosDo(i.produto_id).length > 0 && (
-                  <button type="button" className={`orc-item-tam${i.tamanho ? '' : ' vazio'}`} onClick={() => setTamanhoDe(i.id)}>
-                    <span>{i.tamanho || 'Escolher o tamanho'}</span><CaretDown size={14} weight="bold" aria-hidden="true" />
-                  </button>
-                )}
+                {!i.extra_de && !!i.produto_id && (tamanhosDo(i.produto_id).length > 0 || adicionais.length > 0) && (() => {
+                  const temTam = !!i.produto_id && tamanhosDo(i.produto_id).length > 0
+                  const nx = (o.itens || []).filter(x => x.extra_de === i.id).length
+                  const rot = temTam ? (i.tamanho || 'Escolher o tamanho') : 'Adicionais'
+                  return (
+                    <button type="button" className={`orc-item-tam${temTam && !i.tamanho ? ' vazio' : ''}`} onClick={() => abrirOpcoes(i.id)}>
+                      <span>{rot}{nx > 0 ? ` · ${nx} ${nx === 1 ? 'adicional' : 'adicionais'}` : ''}</span><CaretDown size={14} weight="bold" aria-hidden="true" />
+                    </button>
+                  )
+                })()}
                 <input className="orc-item-det" value={i.detalhe || ''} placeholder={i.produto_id ? 'Detalhe: sabor, tamanho, tema' : 'Ex.: 2 andares, tema jardim'} onChange={e => mudaItem(i.id, { detalhe: e.target.value })} aria-label="Detalhe do item" />
                 <div className="orc-item-l">
                   <span className="orc-qtd">
@@ -504,10 +582,6 @@ export default function OrcamentoEditar() {
               <button type="button" className="orc-add-op" onClick={() => muda({ itens: [...(o.itens || []), { id: novoId(), nome: '', quantidade: 1, valor_unitario: 0 }] })}>
                 <span className="orc-add-ic" aria-hidden="true"><PencilSimpleLine size={26} weight="duotone" /></span>
                 <b>Personalizado</b><small>Feito sob medida</small>
-              </button>
-              <button type="button" className="orc-add-op" onClick={() => adicionais.length ? setEscolherExtra(true) : navigate('/complementos')}>
-                <span className="orc-add-ic" aria-hidden="true"><Stack size={26} weight="duotone" /></span>
-                <b>Adicional</b><small>{adicionais.length ? 'Topo, vela e extras' : 'Cadastrar adicionais'}</small>
               </button>
             </div>
             {(o.itens || []).length > 0 && <div className="orc-tot"><span>Subtotal dos itens</span><b>{brl(somarItens(o.itens))}</b></div>}
@@ -584,7 +658,10 @@ export default function OrcamentoEditar() {
               { v: 'valor', t: 'Outro valor', sub: 'Você escreve quanto é o sinal' },
             ]} onMudar={k => muda({ sinal_tipo: k })} />
             {o.sinal_tipo === 'valor' && <div className="orc-mt"><Campo rotulo="Valor do sinal" prefixo="R$" inputMode="numeric" placeholder="0,00" value={mostrarReais(Number(o.sinal_valor) || 0)} onChange={e => muda({ sinal_valor: lerReais(e.target.value) })} /></div>}
-            <p className="orc-nota">{o.sinal_tipo === 'sem' ? 'Sem sinal: ele aceita e paga tudo depois.' : o.sinal_tipo === 'total' ? `Ele paga tudo (${brl(total)}) para reservar a data.` : <>Sinal de <b>{brl(sinal)}</b> · o resto ({brl(Math.max(0, total - sinal))}) na entrega</>}</p>
+            {/* (6.82) o sinal e o resto em duas linhas curtas (antes a frase quebrava no celular) */}
+            {o.sinal_tipo === 'sem' ? <p className="orc-nota">Ele aceita e paga tudo na entrega.</p>
+              : o.sinal_tipo === 'total' ? <p className="orc-nota">Para reservar: <b>{brl(total)}</b></p>
+              : <div className="orc-sinal-res"><p><span>Sinal</span><b>{brl(sinal)}</b></p><p><span>Na entrega</span><b>{brl(Math.max(0, total - sinal))}</b></p></div>}
           </section>
 
           <section className="orc-card">
@@ -608,7 +685,13 @@ export default function OrcamentoEditar() {
         {etapa === 5 && (<>
           <section className="orc-card">
             <h2>Assim o cliente vê</h2>
-            <Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url} />
+            <PropostaOrcamento o={ov!} />
+          </section>
+          {/* (6.82) a mensagem que vai no WhatsApp: ela muda do jeito dela; o link vai junto no final */}
+          <section className="orc-card">
+            <h2 className="orc-h-acao">Mensagem do WhatsApp{msgZap != null && <button type="button" className="orc-link-bt" onClick={() => setMsgZap(null)}><ArrowsClockwise size={14} weight="bold" />Voltar ao texto pronto</button>}</h2>
+            <CampoArea rotulo="" aria-label="Mensagem do WhatsApp" rows={8} value={msgZap ?? textoProposta(ov!, nomeLoja, '').trimEnd()} onChange={e => setMsgZap(e.target.value)} />
+            <p className="orc-nota">O link do orçamento vai junto, no final da mensagem.</p>
           </section>
           <section className="orc-pronta"><Check size={18} weight="bold" aria-hidden="true" /><span><b>Pronto para enviar</b><small>{(o.itens || []).length} {(o.itens || []).length === 1 ? 'item' : 'itens'} · {brl(total)}{o.status === 'enviado' ? ' · já enviado (o link continua o mesmo)' : ''}</small></span></section>
           <div className="orc-envio">
@@ -617,6 +700,8 @@ export default function OrcamentoEditar() {
               <Botao variante="secundario" icone={<Copy size={18} weight="bold" />} onClick={() => void copiarLink()}>Copiar link</Botao>
               <Botao variante="secundario" icone={<FilePdf size={18} weight="bold" />} onClick={baixarPdf}>Baixar PDF</Botao>
             </div>
+            {/* (6.82) o cliente aprovou pelo WhatsApp: ela aprova aqui */}
+            <button type="button" className="orc-aprovar-painel" disabled={aprovando || salvando} onClick={() => void aprovarPeloPainel()}><CheckCircle size={18} weight="bold" />{aprovando ? 'Aprovando…' : 'O cliente aprovou pelo WhatsApp? Aprovar aqui'}</button>
             {o.status !== 'enviado' && !respondido && <button type="button" className="orc-rasc" disabled={salvando} onClick={async () => { const ok = await salvar(); if (ok) { avisar('Rascunho salvo. Você envia quando quiser.', { tipo: 'ok' }); navigate('/orcamentos') } }}>Salvar como rascunho e enviar depois</button>}
           </div>
         </>)}
@@ -651,7 +736,9 @@ export default function OrcamentoEditar() {
                 const temOpcoes = carregarGruposDoBanco(completo as Parameters<typeof carregarGruposDoBanco>[0]).some(g => g.ativo && g.opcoes.length > 0) || kitAtivo(completo.kit_qtd as Parameters<typeof kitAtivo>[0])
                 setEscolher(false)
                 if (temOpcoes) { setProdutoOpcoes(completo); return }
-                muda({ itens: [...(o.itens || []), { id: novoId(), produto_id: p.id, nome: p.nome, quantidade: 1, valor_unitario: pc.final || 0, imagem_url: foto1(p.imagem_url) || null }] })
+                const nid = novoId()
+                muda({ itens: [...(o.itens || []), { id: nid, produto_id: p.id, nome: p.nome, quantidade: 1, valor_unitario: pc.final || 0, imagem_url: foto1(p.imagem_url) || null }] })
+                if (tamanhosDo(p.id).length || adicionais.length) abrirOpcoes(nid)
               }}>
                 <span className="orc-item-ft" aria-hidden="true">{foto1(p.imagem_url) ? <img src={foto1(p.imagem_url)} alt="" /> : <Package size={20} />}</span>
                 <span className="orc-esc-tx"><b>{p.nome}</b>{p.categoria && <small>{p.categoria}</small>}</span>
@@ -670,8 +757,10 @@ export default function OrcamentoEditar() {
             const it = itemDoCarrinhoParaPedido(item)
             const kit = (item.escolhas as { kit?: { sabores?: { nome: string; qtd: number }[] } } | undefined)?.kit
             const detalhe = [...detalhesItem(item as never), kit?.sabores?.length ? textoSaboresKit(kit.sabores) : '', (item.observations || '').trim()].filter(Boolean).join(' · ')
-            muda({ itens: [...(o?.itens || []), { id: novoId(), produto_id: it.produto_id, nome: it.nome_produto, detalhe, quantidade: Number(it.quantidade) || 1, valor_unitario: Number(it.valor_unitario) || 0, imagem_url: foto1(String(produtoOpcoes.imagem_url || '')) || null }] })
+            const nid = novoId()
+            muda({ itens: [...(o?.itens || []), { id: nid, produto_id: it.produto_id, nome: it.nome_produto, detalhe, quantidade: Number(it.quantidade) || 1, valor_unitario: Number(it.valor_unitario) || 0, imagem_url: foto1(String(produtoOpcoes.imagem_url || '')) || null }] })
             setProdutoOpcoes(null)
+            if (tamanhosDo(it.produto_id).length || adicionais.length) abrirOpcoes(nid)
           }} />
       </CartProvider>
     )}
@@ -702,72 +791,47 @@ export default function OrcamentoEditar() {
         <Campo rotulo="WhatsApp" value={mascaraTelefone(novoCli.tel)} inputMode="tel" autoComplete="tel" placeholder="(41) 99999-0000" onChange={e => setNovoCli(n => ({ ...n, tel: digitosAoDigitar(e.target.value) }))} />
       </div>
     </Janela>
-    {/* (6.62) tamanho do item: as opções do produto, uma embaixo da outra, com o preço */}
+    {/* (6.82) opções do item: o tamanho (ou "Outro tamanho", digitado) e os adicionais cadastrados (cada um vira uma linha do orçamento) */}
     {tamanhoDe && (() => {
       const it = (o.itens || []).find(x => x.id === tamanhoDe)
       const tams = tamanhosDo(it?.produto_id)
       return (
-        <Janela aberta aoFechar={() => setTamanhoDe(null)} tipo="conteudo" titulo="Tamanho">
+        <Janela aberta aoFechar={() => setTamanhoDe(null)} tipo="conteudo" titulo={it?.nome || 'Opções do item'} umaAcao
+          acoes={<Botao cheio onClick={confirmarOpcoes}>Pronto</Botao>}>
           <div className="orc-tams">
+            {tams.length > 0 && <p className="orc-op-t">Tamanho</p>}
             {tams.map(t => (
-              <button key={t.texto} type="button" className="orc-tam" aria-pressed={it?.tamanho === t.texto} disabled={t.esgotado} onClick={() => usarTamanho(tamanhoDe, t)}>
+              <button key={t.texto} type="button" className="orc-tam" aria-pressed={opTam !== 'outro' && opTam?.texto === t.texto} disabled={t.esgotado} onClick={() => setOpTam(t)}>
+                <i className="orc-tam-bol" aria-hidden="true" />
                 <span><b>{t.nome}</b>{t.texto !== t.nome && <small>{t.texto.slice(t.nome.length + 3)}</small>}</span>
                 <em>{t.esgotado ? 'Esgotado' : t.preco > 0 ? brl(t.preco) : ''}</em>
-                <i className="orc-tam-bol" aria-hidden="true" />
               </button>
             ))}
+            {tams.length > 0 && <>
+              <button type="button" className="orc-tam" aria-pressed={opTam === 'outro'} onClick={() => setOpTam('outro')}>
+                <i className="orc-tam-bol" aria-hidden="true" />
+                <span><b>Outro tamanho</b><small>Você escreve o tamanho e o valor</small></span>
+              </button>
+              {opTam === 'outro' && <div className="orc-outro-tam">
+                <Campo rotulo="Tamanho" value={outroTam.nome} placeholder="Ex.: 3 kg, 50 fatias" autoFocus onChange={e => setOutroTam(x => ({ ...x, nome: e.target.value }))} />
+                <Campo rotulo="Valor" prefixo="R$" inputMode="numeric" placeholder="0,00" value={mostrarReais(outroTam.valor)} onChange={e => setOutroTam(x => ({ ...x, valor: lerReais(e.target.value) }))} />
+              </div>}
+            </>}
+            {adicionais.length > 0 && <p className="orc-op-t">Adicionais</p>}
+            {adicionais.map(e => {
+              const on = opExtras.includes(e.id)
+              return (
+                <button key={e.id} type="button" className="orc-tam orc-tam--chk" aria-pressed={on} onClick={() => setOpExtras(l => on ? l.filter(x => x !== e.id) : [...l, e.id])}>
+                  <i className="orc-chk" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
+                  <span><b>{e.nome}</b>{e.descricao && <small>{e.descricao}</small>}</span>
+                  <em>{e.valor > 0 ? `+ ${brl(e.valor)}` : 'Grátis'}</em>
+                </button>
+              )
+            })}
           </div>
         </Janela>
       )
     })()}
-    {/* (6.62) adicionais cadastrados: cada um vira uma linha própria no orçamento */}
-    <Janela aberta={escolherExtra} aoFechar={() => setEscolherExtra(false)} tipo="conteudo" titulo="Adicionais" className="orc-esc-janela">
-      <div className="orc-esc">
-        <div className="orc-esc-l">
-          {adicionais.map(e => (
-            <button key={e.id} type="button" className="orc-esc-it" onClick={() => { muda({ itens: [...(o.itens || []), { id: novoId(), nome: e.nome, quantidade: 1, valor_unitario: e.valor, imagem_url: e.imagem_url || null }] }); setEscolherExtra(false) }}>
-              <span className="orc-item-ft" aria-hidden="true">{e.imagem_url ? <img src={e.imagem_url} alt="" /> : <Stack size={20} />}</span>
-              <span className="orc-esc-tx"><b>{e.nome}</b>{e.descricao && <small>{e.descricao}</small>}</span>
-              <em>{e.valor > 0 ? brl(e.valor) : 'Grátis'}</em>
-            </button>
-          ))}
-        </div>
-      </div>
-    </Janela>
     {foto && <Janela aberta aoFechar={() => setFoto('')} tipo="conteudo" titulo="Foto de referência"><img className="orc-foto-g" src={foto} alt="Foto de referência" /></Janela>}
   </>)
-}
-
-/** O orçamento como a cliente vê (prévia na etapa Enviar e o resumo depois de respondido) */
-/** (6.46) montando: na prévia enquanto ela monta, o total só aparece com itens e as condições só a partir da etapa Condições
- *  (antes "Pagamento combinado com a loja · Vale até…" aparecia sem ela ter escolhido nada) */
-export function Resumo({ o, total, sinal, nomeLoja, logo, montando }: { o: Orcamento; total: number; sinal: number; nomeLoja: string; logo?: string | null; montando?: { condicoes: boolean } }) {
-  const temItens = (o.itens || []).length > 0
-  const verCond = !montando || montando.condicoes
-  return (
-    <div className="orc-prev">
-      <div className="orc-prev-loja">
-        {logo ? <img src={logo} alt="" /> : <span>{nomeLoja.charAt(0)}</span>}
-        <span><b>{nomeLoja}</b><small>Orçamento{o.cliente_nome ? ` para ${o.cliente_nome.split(' ')[0]}` : ''}</small></span>
-      </div>
-      {o.mensagem && <p className="orc-prev-msg">{o.mensagem}</p>}
-      {/* (6.45) evento e data em linhas próprias (antes quebravam no meio) */}
-      {(o.data_evento || o.nome_evento) && <p className="orc-prev-ev">{o.nome_evento && <b>{o.nome_evento}</b>}{o.data_evento && <span>{dataDoEvento(o)}</span>}</p>}
-      <div className="orc-prev-itens">
-        {(o.itens || []).map(i => (
-          <div key={i.id}><span><b>{i.quantidade > 1 ? `${i.quantidade} × ` : ''}{i.nome}</b>{i.detalhe && <small>{i.detalhe}</small>}</span><em>{brl(i.quantidade * i.valor_unitario)}</em></div>
-        ))}
-        {o.tipo_entrega === 'entrega' && <div><span><b>Entrega</b></span><em>{textoEntrega(o.taxa_entrega)}</em></div>}
-        {Number(o.acrescimo) > 0 && <div><span><b>Acréscimo</b></span><em>{brl(o.acrescimo)}</em></div>}
-        {Number(o.desconto) > 0 && <div className="ok"><span><b>Desconto</b></span><em>− {brl(o.desconto)}</em></div>}
-      </div>
-      {!montando || temItens ? <div className="orc-prev-tot"><span>Total</span><b>{brl(total)}</b></div> : <p className="orc-prev-vz">Os itens e o total aparecem aqui conforme você monta.</p>}
-      {/* (6.45) uma informação por linha: como paga, o resto e a validade */}
-      {verCond && <p className="orc-prev-cond">
-        <span>{textoCondicoes({ ...o, validade: null }, total)}</span>
-        {sinal > 0 && o.sinal_tipo !== 'total' && <span>Resto {brl(Math.max(0, total - sinal))} na entrega</span>}
-        {o.validade && <span>Vale até {dataCurta(o.validade)}</span>}
-      </p>}
-    </div>
-  )
 }

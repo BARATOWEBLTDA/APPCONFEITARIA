@@ -632,18 +632,18 @@ function CartContent({
         if (detalhes.length) m += `_${detalhes.join(' · ')}_\n`
         // Adicionais cadastrados pela confeiteira (topo de bolo, vela...)
         if (Array.isArray(item.extrasBiblioteca) && item.extrasBiblioteca.length) {
-          m += `Adicionais: ${item.extrasBiblioteca.map((x: ExtraNaSacola) => x.valor > 0 ? `${nomeExtra(x)} (+${formatCurrency(x.valor)})` : nomeExtra(x)).join(', ')}\n`
+          m += `_Adicionais:_ ${item.extrasBiblioteca.map((x: ExtraNaSacola) => x.valor > 0 ? `${nomeExtra(x)} (+${formatCurrency(x.valor)})` : nomeExtra(x)).join(', ')}\n`
         }
-        if (item.observations) m += `Obs.: ${item.observations}\n`
+        if (item.observations) m += `_Obs.:_ ${item.observations}\n`
         // 10/10: a foto vai gravada no pedido; na mensagem só entra se for um link (nunca a imagem em texto)
         if (item.fotoReferencia) m += /^https?:\/\//i.test(String(item.fotoReferencia)) ? `Foto de referência: ${item.fotoReferencia}\n` : `Foto de referência: enviada no pedido\n`
         m += `\n`
       })
 
-      m += `Subtotal: ${formatCurrency(totalPrice)}\n`
-      if (freteMsg > 0) m += `Entrega: ${formatCurrency(freteMsg)}\n`
+      m += `*Subtotal:* ${formatCurrency(totalPrice)}\n`
+      if (freteMsg > 0) m += `*Taxa de entrega:* ${formatCurrency(freteMsg)}\n`
       if (descontoMsg > 0) m += `${cupomAplicado ? `Cupom ${cupomAplicado.codigo}` : 'Desconto'}: − ${formatCurrency(descontoMsg)}\n`
-      m += `*Total: ${formatCurrency(totalCriado)}*\n\n`
+      m += `*Total:* ${formatCurrency(totalCriado)}\n\n`
 
       const pgtoLabel = config.pix && pixOnline
         ? `Pix pelo cardápio (${pixTipo === 'sinal' ? `sinal de ${formatCurrency(valorDoSinal(totalCriado, config.pix.pct))}` : 'tudo'})`
@@ -665,7 +665,7 @@ function CartContent({
       }
 
       if (observacoes.trim()) m += `\n*Observação:* ${observacoes.trim()}\n`
-      m += `\n*Cliente:* ${nome.trim()} · ${telefone.trim()}`
+      m += `\n*Cliente:* ${nome.trim()}\n*WhatsApp:* ${telefone.trim()}`
       return montarMensagemModelo('pedido_cardapio', { pedido: m, loja: storeName, nome: nome.trim().split(' ')[0], numero: numPedido || '' }, config.msg_pedido ?? null)
     }
 

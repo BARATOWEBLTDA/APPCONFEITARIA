@@ -510,3 +510,93 @@
   .orc-add--mais .orc-add-ic { width: 36px; height: 36px; }
 }
 @media (max-width: 600px) { .orc-add--mais .orc-add-op b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; } }
+
+/* (6.82) topo da loja nas páginas públicas de orçamento: toca e abre os dados da loja */
+.orp-topo--bt { width: 100%; margin: 0; border: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+.orp-topo-tx { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.orp-topo-tx b { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.orp-topo-tx small { font-size: 13px; color: var(--ui-texto-2); }
+.orp-topo-seta { flex: none; color: var(--ui-texto-3); }
+/* (6.82) pedido enviado: só o aviso, no meio da tela */
+.orp--fim { padding-bottom: 0; }
+.orp--fim .orp-box { display: flex; flex-direction: column; min-height: 100dvh; }
+.orp-fim--solto { flex: 1; justify-content: center; padding: 24px 20px 96px; }
+.orp-fim--solto h1 { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.25; }
+.orp-fim--solto p { max-width: 360px; }
+
+/* (6.82) link: Copiar, Compartilhar e Ver lado a lado no celular */
+.orc-link-bts { grid-template-columns: 1fr 1.35fr 0.9fr; }
+@media (max-width: 899px) { .orc-link-bts .ui-bt { padding-left: 8px; padding-right: 8px; gap: 6px; } }
+/* (6.82) abas sem número (o número fazia a aba crescer e encolher): 4 do mesmo tamanho, e um pontinho rosa em Novos */
+.orc-abas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; }
+.orc-abas button { position: relative; padding: 0 4px; min-width: 0; font-weight: 500; }
+.orc-abas button[aria-selected="true"] { font-weight: 600; }
+.orc-abas i.orc-aba-pt { position: absolute; top: 8px; right: 6px; min-width: 0; width: 8px; height: 8px; padding: 0; border-radius: 50%; background: var(--ui-rosa); }
+@media (min-width: 380px) { .orc-abas i.orc-aba-pt { right: 10px; } }
+.orc-it-tx b { font-weight: 500; }
+.orc-it-b > .orc-st { flex: none; padding: 3px 8px; border-radius: 6px; background: #FCE4EE; }
+.orc-it-b > .orc-st--r { background: var(--ui-cinza); } .orc-it-b > .orc-st--e { background: #FFF7ED; }
+
+/* ── (6.82) A proposta como o cliente vê (PropostaOrcamento) ── */
+.pp { display: flex; flex-direction: column; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.pp-cab { display: flex; flex-direction: column; gap: 2px; padding-bottom: 14px; }
+.pp-cab small { font-size: 12.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ui-rosa-escuro); }
+.pp-cab h2 { margin: 0; font-size: 21px; font-weight: 600; line-height: 1.25; }
+.pp-cab p { margin: 0; font-size: 14px; color: var(--ui-texto-2); }
+.pp-msg { margin: 0 0 14px; padding: 12px 14px; border-radius: 12px; background: #FFF5F9; font-size: 14.5px; line-height: 1.55; color: var(--ui-texto); white-space: pre-line; }
+.pp-sec { padding: 16px 0; border-top: 1px solid var(--ui-linha); }
+.pp-sec h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ui-texto-3); }
+.pp-dados { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+.pp-d { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+.pp-d--largo { grid-column: 1 / -1; }
+.pp-d-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--ic-fundo, #fff); box-shadow: inset 0 0 0 1px var(--ic-borda, #E8E1E4); color: var(--ic-cor, #3A3135); }
+.pp-d-tx { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.pp-d-tx small { font-size: 12.5px; color: var(--ui-texto-2); }
+.pp-d-tx b { font-size: 15px; font-weight: 500; color: var(--ui-texto); overflow-wrap: anywhere; }
+.pp-itens { display: flex; flex-direction: column; gap: 12px; }
+.pp-it { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.pp-it-ft { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: 12px; background: #F6F1F3; color: var(--ui-texto-3); }
+.pp-it-ft img { width: 100%; height: 100%; object-fit: cover; }
+.pp-it-tx { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pp-it-tx b { font-size: 15px; font-weight: 500; }
+.pp-it-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+.pp-it em { flex: none; font-style: normal; font-size: 15px; font-weight: 500; white-space: nowrap; }
+.pp-contas { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--ui-linha); }
+.pp-contas p { display: flex; justify-content: space-between; gap: 12px; margin: 0; font-size: 14.5px; color: var(--ui-texto-2); }
+.pp-contas p b { font-weight: 500; color: var(--ui-texto); white-space: nowrap; }
+.pp-contas p.ok b { color: var(--ui-verde); }
+.pp-contas .pp-total { margin-top: 4px; font-size: 16px; color: var(--ui-texto); }
+.pp-contas .pp-total b { font-size: 20px; font-weight: 600; }
+.pp-vz { margin: 0; font-size: 14px; color: var(--ui-texto-3); }
+.pp > .pp-sec:last-child { padding-bottom: 0; }
+
+/* (6.82) o que o cliente pediu pelo link: resumo em texto corrido e os dados um por linha */
+.orc-pediu-res { margin: 0 0 12px; font-size: 15px; line-height: 1.6; color: var(--ui-texto); }
+.orc-pediu-l { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid var(--ui-linha); }
+.orc-pediu-l p { margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--ui-texto); overflow-wrap: anywhere; }
+.orc-pediu-l p > span { color: var(--ui-texto-2); }
+.orc-pediu-l a { color: var(--ui-rosa-escuro); font-weight: 500; }
+.orc-pediu-mapa { margin-top: 12px; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: 12px; }
+.orc-pediu-mapa iframe { display: block; width: 100%; height: 180px; border: 0; }
+.orc-pediu-mapa a { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); text-decoration: none; border-top: 1px solid var(--ui-borda); }
+/* (6.82) sinal e o resto em duas linhas curtas */
+.orc-sinal-res { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: var(--ui-cinza); }
+.orc-sinal-res p { display: flex; justify-content: space-between; gap: 12px; margin: 0; font-size: 14.5px; color: var(--ui-texto-2); }
+.orc-sinal-res b { font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
+/* (6.82) aprovar pelo painel */
+.orc-aprovar-painel { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 44px; margin: 4px 0 0; padding: 0 8px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-verde); cursor: pointer; }
+.orc-aprovar-painel:disabled { opacity: .6; cursor: default; }
+/* (6.82) opções do item: bolinha e check à esquerda, "Outro tamanho" e adicionais */
+.orc-op-t { margin: 6px 0 2px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+.orc-op-t:first-child { margin-top: 0; }
+.orc-tam b { font-weight: 500; }
+.orc-tam em { font-weight: 500; }
+.orc-outro-tam { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 10px; padding: 4px 0 6px; }
+.orc-tam--chk[aria-pressed="true"] { border-color: #F3B3CA; background: #FFF8FB; }
+.orc-tam--chk .orc-chk { flex: none; }
+.orc-tam--chk[aria-pressed="true"] .orc-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.orc-it-tx b.orc-it-t { display: flex; align-items: center; gap: 8px; }
+.orc-it-t > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.orc-it-t > .orc-st { flex: none; padding: 2px 8px; border-radius: 6px; background: #FCE4EE; font-size: 12px; }
+.orc-it-t > .orc-st--r { background: var(--ui-cinza); } .orc-it-t > .orc-st--e { background: #FFF7ED; }
+@media (max-width: 899px) { .orc-link-bts { display: flex; } .orc-link-bts .ui-bt { flex: 1 1 auto; min-width: 0; } }
