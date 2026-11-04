@@ -80,6 +80,12 @@ export default function Complementos() {
   const [temCapa, setTemCapa] = useState(false); // (30/10 · 5.42) liga sozinho quando o banco tiver a coluna imagem_url
   const [subindoCapa, setSubindoCapa] = useState(false);
   const [capaMenu, setCapaMenu] = useState(false);
+  useEffect(() => {
+    if (!capaMenu) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopPropagation(); setCapaMenu(false); } };
+    document.addEventListener("keydown", esc, true);
+    return () => document.removeEventListener("keydown", esc, true);
+  }, [capaMenu]);
   const [capasIA, setCapasIA] = useState<string[]>([]);
   const [buscandoCapa, setBuscandoCapa] = useState(false);
   const [busca, setBusca] = useState("");
@@ -465,12 +471,13 @@ export default function Complementos() {
           {temCapa && (
             <div className="pz-capa">
               <span className={`pz-capa-img${form.capa ? " pz-capa-img--foto" : ""}`}><img src={form.capa || capaDesenho(form.nome)} alt="" /></span>
-              <span className="pz-capa-tx"><b>Capa</b><small>{form.capa ? "Foto sua" : "Sem foto, usamos um desenho"}</small></span>
+              <span className="pz-capa-tx"><b>Capa</b><small className="pz-capa-sub">{form.capa ? "Foto sua" : "Sem foto, usamos um desenho"}</small></span>
               {/* (04/11 · 6.24) foto: a IA acha 3 na internet pelo nome (igual aos ingredientes) ou ela escolhe do celular */}
               <span className="pz-capa-menu-w">
                 <button type="button" className="pz-capa-bt" aria-expanded={capaMenu} onClick={() => setCapaMenu(m => !m)}>
                   {subindoCapa ? "Enviando…" : buscandoCapa ? "Buscando…" : form.capa ? "Trocar" : "Adicionar foto"}
                 </button>
+                {capaMenu && <span className="ui-menu-veu" aria-hidden="true" onClick={() => setCapaMenu(false)} />}
                 {capaMenu && (
                   <span className="pz-capa-menu" role="menu">
                     <button type="button" role="menuitem" onClick={() => { setCapaMenu(false); void acharCapa(); }}><Sparkle size={18} weight="bold" />Achar foto com IA</button>

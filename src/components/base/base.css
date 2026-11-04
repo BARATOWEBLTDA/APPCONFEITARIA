@@ -323,3 +323,6 @@ html[data-ui-janela] .ui-aviso--saindo { animation-name: uiAvisoSomeCima; }
 /* (6.26) contador de letras do campo de várias linhas */
 .ui-campo-cont { margin: 4px 0 0; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); text-align: right; }
 .ui-campo-cont.cheio { color: var(--ui-laranja); }
+/* (6.27) menu pequeno aberto (ex.: Adicionar foto): escurece em volta; tocar fora fecha */
+.ui-menu-veu { position: fixed; inset: 0; z-index: 29; background: rgba(30, 12, 20, .22); animation: uiVeuMenu .15s ease-out both; cursor: default; }
+@keyframes uiVeuMenu { from { opacity: 0; } }

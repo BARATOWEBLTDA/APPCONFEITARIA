@@ -148,7 +148,7 @@
 }
 @media (min-width: 768px) { .ui-janela.ig-janela-cheia { max-width: 560px; height: min(88dvh, 820px); } }
 .ig-nome-thw { position: relative; flex: none; display: flex; }
-.ig-foto-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 5; display: flex; flex-direction: column; min-width: 200px; padding: 6px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); box-shadow: 0 12px 30px rgba(20, 10, 7, .16); }
+.ig-foto-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; display: flex; flex-direction: column; min-width: 200px; padding: 6px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); box-shadow: 0 12px 30px rgba(20, 10, 7, .16); }
 .ig-foto-menu button { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer; white-space: nowrap; }
 .ig-foto-menu button:hover { background: var(--ui-fundo); }
 .ig-foto-menu svg { color: var(--ui-rosa-escuro); }

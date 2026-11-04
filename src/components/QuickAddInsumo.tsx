@@ -452,6 +452,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           <button type="button" className="ig-nome-th" aria-label={form.imagem_url ? "Trocar a foto" : "Pôr uma foto"} aria-expanded={fotoMenu} disabled={uploadingImg || buscandoImg} onClick={() => setFotoMenu(v => !v)}>
             {form.imagem_url ? <img src={form.imagem_url} alt="" /> : uploadingImg || buscandoImg ? <span className="ig-gira" aria-hidden="true" /> : <Camera size={24} />}
           </button>
+          {fotoMenu && <span className="ui-menu-veu" aria-hidden="true" onClick={() => setFotoMenu(false)} />}
           {fotoMenu && (
             <span className="ig-foto-menu" role="menu">
               <button type="button" role="menuitem" onClick={() => { setFotoMenu(false); void handleBuscarImagem(); }}><Sparkle size={18} weight="bold" />Achar foto com IA</button>
