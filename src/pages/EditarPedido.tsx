@@ -537,6 +537,9 @@ export default function EditarPedido() {
     const qtd = (q: number) => String(Math.round((Number(q) || 1) * 1000) / 1000).replace('.', ',')
     const obs = (pedido?.observacoes || '').trim()
     const se = (cond: unknown, txt: string) => (cond ? txt : null)
+    // (6.76) a forma combinada no pedido; sem forma definida, fica o genérico
+    const fp = String(formaPagamento || '').toLowerCase()
+    const formaTexto = fp === 'pix' ? 'Pix' : fp === 'dinheiro' ? 'dinheiro' : fp === 'credito' || fp === 'cartao_credito' ? 'cartão de crédito' : fp === 'debito' || fp === 'cartao_debito' ? 'cartão de débito' : fp.includes('cart') ? 'cartão' : 'Pix ou dinheiro'
     return [
       `*Entrega do pedido #${pedido?.numero ?? ''}*`,
       '',
@@ -551,7 +554,7 @@ export default function EditarPedido() {
       se(itens.length, '*Itens:*'),
       ...itens.map(it => `• ${qtd(it.quantidade)}× ${nomeDeProduto(it.nome_produto)}`),
       se(itens.length, ''),
-      falta > 0.009 ? `*Cobrar na entrega:* ${formatMoney(falta)}` : '*Pagamento:* já está pago',
+      falta > 0.009 ? `*Falta receber:* ${formatMoney(falta)} (${formaTexto}, confira com a loja antes de cobrar)` : '*Pagamento:* já está pago',
       se(obs, ''), se(obs, `*Observação:* ${obs}`),
     ].filter((l): l is string => l !== null).join('\n').replace(/\n{3,}/g, '\n\n').trim()
   }
