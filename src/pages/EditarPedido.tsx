@@ -223,12 +223,13 @@ const PASSOS_ENTREGA  = ['criado', 'aguardando_aceite', 'agendado', 'em_producao
 
 // Retorna a posição do status atual na sequência (pra saber o que já passou)
 function posicaoStatus(status: string, sequencia: string[]): number {
+  // (6.78) as situações antigas passam pelo grupo antes (pendente, em_preparo, a_caminho, concluido…): antes ficavam fora da linha do tempo
+  const g = grupoDoStatus(status)
   const map: Record<string, string> = {
     aguardando_pagamento: 'aguardando_aceite', // colapsa se não tem aguardando_pagamento na sequência
-    novo: 'criado',
-    confirmado: 'agendado',
   }
-  const chave = map[status] || status
+  let chave = map[g] || g
+  if (chave === 'aguardando_retirada' && !sequencia.includes('aguardando_retirada')) chave = 'finalizado'
   // pedido de retirada que ficou em "Pronto" (caminho antigo) conta como pronto pra retirar
   if ((chave === 'finalizado' || chave === 'pronto') && !sequencia.includes('finalizado')) return sequencia.indexOf('aguardando_retirada')
   return sequencia.indexOf(chave)
@@ -1286,7 +1287,7 @@ export default function EditarPedido() {
     const g = grupoDoStatus(statusPedido)
     if (['aguardando_aceite', 'aguardando_pagamento'].includes(g)) return 0
     if (g === 'em_producao') return 2
-    if (tipoEntrega === 'retirada') return ['finalizado', 'aguardando_retirada'].includes(g) ? 3 : g === 'entregue' ? 4 : 1
+    if (tipoEntrega === 'retirada') return ['finalizado', 'aguardando_retirada', 'em_entrega'].includes(g) ? 3 : g === 'entregue' ? 4 : 1 // (6.78) retirada não tem "a caminho"
     return g === 'finalizado' || g === 'aguardando_retirada' ? 3 : g === 'em_entrega' ? 4 : g === 'entregue' ? 5 : 1
   })()
   // (22/10) celular: sempre 5 etapas de nome curto, começando no "Novo" (o pedido não aceito acende o Novo, em laranja).
@@ -1294,13 +1295,12 @@ export default function EditarPedido() {
   const gEtapa = grupoDoStatus(statusPedido)
   const ehNovoPedido = ['aguardando_aceite', 'aguardando_pagamento'].includes(gEtapa)
   const ETAPAS_CEL: string[] = ['Novo', 'Agendado', 'Produção', 'Pronto', tipoEntrega === 'retirada' ? 'Retirado' : gEtapa === 'em_entrega' ? 'A caminho' : 'Entregue']
-  const posEtapaCel = ehNovoPedido ? 0 : gEtapa === 'em_producao' ? 2 : ['finalizado', 'aguardando_retirada'].includes(gEtapa) ? 3 : gEtapa === 'em_entrega' ? 4 : gEtapa === 'entregue' ? 5 : 1
+  const posEtapaCel = ehNovoPedido ? 0 : gEtapa === 'em_producao' ? 2 : ['finalizado', 'aguardando_retirada'].includes(gEtapa) || (gEtapa === 'em_entrega' && tipoEntrega === 'retirada') ? 3 : gEtapa === 'em_entrega' ? 4 : gEtapa === 'entregue' ? 5 : 1
   const ETAPAS = cel ? ETAPAS_CEL : ETAPAS_PC
   const posEtapa = cel ? posEtapaCel : posEtapaPc
   // O botão do próximo passo usa os mesmos verbos da lista (VERBOS). Aqui "Aguardando pagamento" só aceita:
   // o recebimento é registrado na parte de Pagamentos, logo abaixo.
   const proximaEtapa: { s: string; l: string } | null = (() => {
-    if (grupoDoStatus(statusPedido) === 'aguardando_pagamento') return { s: 'agendado', l: VERBOS.aceitar }
     const a = proximoPasso(statusPedido, tipoEntrega, pedido?.origem)
     return a ? { s: a.proximo, l: a.rotulo } : null
   })()
@@ -1358,12 +1358,25 @@ export default function EditarPedido() {
   const irParaEtapa = async (novo: string, pularRetirada = false) => {
     if (!pedido || novo === statusPedido || mudandoEtapaRef.current) return
     if (alteracoes > 0) { avisarJanela('Salve antes de mudar a etapa', 'Você tem alterações não salvas. Salve ou descarte antes de mudar a etapa do pedido.', 'info'); return }
+    // (6.78) "Recebi" (aguardando pagamento): igual à lista, confirma e registra o que falta antes de seguir
+    if (grupoDoStatus(statusPedido) === 'aguardando_pagamento' && faltaReceber > 0.009) {
+      const ok = await confirmar({ titulo: `Recebeu ${formatMoney(faltaReceber)}?`, texto: `${toTitleCase(clienteNome.trim()) || 'Cliente'} · pedido #${pedido.numero || ''}. O valor entra no caixa.`, rotulo: 'Recebi', rotuloVoltar: 'Voltar' })
+      if (!ok) return
+      const r = await registrarPagamento({ pedidoId: pedido.id, valor: faltaReceber, forma: formaPagamento, tipo: recebidoAtual > 0 ? 'restante' : 'total' })
+      await recarregarDinheiro(); await carregarPagamentos(pedido.id)
+      if (!r.ok) { avisarJanela('Não deu para registrar o recebimento', r.erro || 'Confira a internet e tente de novo.', 'erro'); return }
+    }
     if (novo === 'entregue' && faltaReceber > 0.009) { setFinalizarAberto(true); return }
     if (novo === 'entregue' && tipoEntrega === 'retirada' && !pularRetirada) { setQuemRetirou(pedido.retirado_por || ''); setDepoisRetirada('etapa'); setRetiradaAberta(true); return }
     mudandoEtapaRef.current = true; setMudandoEtapa(true)
     try {
-      const { error } = await supabase.from('pedidos').update({ status: novo }).eq('id', pedido.id)
+      // (6.78) aceitar só vale se o pedido ainda está esperando (cancelado em outro aparelho não volta como agendado)
+      const aceitando = grupoDoStatus(statusPedido) === 'aguardando_aceite' && novo === 'agendado'
+      let q = supabase.from('pedidos').update({ status: novo }).eq('id', pedido.id)
+      if (aceitando) q = q.in('status', ['aguardando_aceite', 'novo', 'pendente'])
+      const { data: mudou, error } = await q.select('id')
       if (error) { avisarJanela('Não foi possível mudar a etapa', explicarErro(error, 'Tente de novo em instantes.'), 'erro'); return }
+      if (aceitando && !mudou?.length) { avisarJanela('Este pedido já mudou', 'Ele foi atualizado em outro aparelho. Abra de novo para ver a situação atual.', 'info'); return }
       const label = (STATUS_CONFIG[novo] || {}).label || novo
       supabase.from('pedido_historico').insert({ pedido_id: pedido.id, evento: label, descricao: `Status alterado para "${label}"` }).then(() => {}, () => {})
       const anterior = statusPedido
@@ -1491,7 +1504,7 @@ export default function EditarPedido() {
               <Linha rotulo="Situação" tom={situacao.tom}>{situacao.nome}</Linha>
               <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{cel ? dataCurta(dataEntrega, horarioEntrega) : dataLonga(dataEntrega, horarioEntrega)}</Linha>
             </div>
-            {tipoEntrega === 'retirada' && statusPedido === 'entregue' && (
+            {tipoEntrega === 'retirada' && grupoAtual === 'entregue' && (
               <Linha rotulo="Retirado por">
                 {pedido.retirado_por ? <>{pedido.retirado_por}{' '}</> : null}
                 <button type="button" className="tpd-ret-bt" onClick={() => { setQuemRetirou(pedido.retirado_por || ''); setDepoisRetirada('editar'); setRetiradaAberta(true) }}>{pedido.retirado_por ? 'Mudar' : 'Informar'}</button>
@@ -1505,7 +1518,7 @@ export default function EditarPedido() {
         {statusPedido !== 'cancelado' && (
           <ol className="tpd-passos" aria-label="Etapas do pedido">
             {ETAPAS.map((n, i) => {
-              const feita = i < posEtapa || statusPedido === 'entregue'
+              const feita = i < posEtapa || grupoAtual === 'entregue'
               const atual = !feita && i === posEtapa
               const novo = atual && i === 0
               return <li key={i} className={feita ? 'feita' : atual ? `atual${novo ? ' novo' : ''}` : ''} aria-current={atual ? 'step' : undefined}><i>{feita ? <Check size={14} weight="bold" /> : i + 1}</i><span>{n}</span></li>
@@ -1515,7 +1528,7 @@ export default function EditarPedido() {
         {/* (28/10) no computador os três pontinhos ficam no canto, ao lado do botão da etapa (no celular continuam junto do texto) */}
         <div className="tpd-sit-acao">
           {proximaEtapa ? <Botao className="tpd-acao" cheio carregando={mudandoEtapa} onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l}</Botao>
-            : statusPedido === 'entregue' ? <p className="tpd-fim"><Check size={16} weight="bold" /> {tipoEntrega === 'retirada' ? 'Pedido retirado' : 'Pedido entregue'}</p> : null}
+            : grupoAtual === 'entregue' ? <p className="tpd-fim"><Check size={16} weight="bold" /> {tipoEntrega === 'retirada' ? 'Pedido retirado' : 'Pedido entregue'}</p> : null}
           <MenuMais rotulo="Mais ações" className="tpd-mais-pc" itens={itensMenu} />
         </div>
       </section>
@@ -1848,9 +1861,10 @@ export default function EditarPedido() {
       {/* ── mudar a etapa (qualquer uma, inclusive voltar) ── */}
       <Janela aberta={etapasAberto} aoFechar={() => setEtapasAberto(false)} tipo="conteudo" titulo="Mudar a etapa">
         <div className="tpd-menu">
-          {SITUACOES.filter(x => x.chave !== 'cancelado').map(x => (
+          {/* (6.78) só as etapas que existem para este tipo: retirada não tem "Saiu para entrega"; entrega não tem "Pronto para retirar" */}
+          {SITUACOES.filter(x => x.chave !== 'cancelado' && !(tipoEntrega === 'retirada' && x.chave === 'em_entrega') && !(tipoEntrega !== 'retirada' && x.chave === 'aguardando_retirada') && !(tipoEntrega === 'retirada' && x.chave === 'finalizado')).map(x => (
             <button key={x.chave} type="button" className={`tpd-mi${x.chave === grupoAtual ? ' sel' : ''}`} aria-current={x.chave === grupoAtual ? 'true' : undefined} onClick={() => { setEtapasAberto(false); irParaEtapa(x.chave) }}>
-              <span className={`tpd-pt t-${x.tom || 'cinza'}`} aria-hidden="true" />{x.nome}{x.chave === grupoAtual && <em>atual</em>}
+              <span className={`tpd-pt t-${x.tom || 'cinza'}`} aria-hidden="true" />{nomeDaSituacao(x.chave, tipoEntrega)}{x.chave === grupoAtual && <em>atual</em>}
             </button>
           ))}
         </div>
@@ -1883,7 +1897,7 @@ export default function EditarPedido() {
       {finalizarAberto && pedido && <FinalizarPedidoSheet
         pedido={{ id: pedido.id, numero: pedido.numero ?? null, cliente_nome: clienteNome, status: statusPedido, valor_total: total, valor_recebido: recebidoAtual,
           status_pagamento: pedido.status_pagamento ?? null, forma_pagamento: pedido.forma_pagamento }}
-        novoStatus="entregue" novoStatusLabel="Entregue"
+        novoStatus="entregue" novoStatusLabel={tipoEntrega === 'retirada' ? 'Retirado' : 'Entregue'}
         onCancelar={() => setFinalizarAberto(false)}
         onParcial={() => { recarregarDinheiro() }}
         onConcluido={async () => { setFinalizarAberto(false); await recarregarDinheiro(); avisarMudanca({ numero: pedido.numero, tipo_entrega: tipoEntrega, cliente_nome: pedido.cliente_nome }, 'entregue'); tocarSom('sucesso'); if (tipoEntrega === 'retirada') { setQuemRetirou(''); setDepoisRetirada('editar'); setRetiradaAberta(true) } }} />}

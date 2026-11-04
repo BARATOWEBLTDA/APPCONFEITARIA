@@ -67,9 +67,9 @@ type AcaoAtencao = { t: string; fn: () => void; principal?: boolean };
 /* ── Situações: o grupo decide a cor da bolinha no calendário ── */
 type Grupo = "agendado" | "producao" | "concluido" | "cancelado";
 const GRUPO_DO_STATUS: Record<string, Grupo> = {
-  aguardando_pagamento: "agendado", aguardando_aceite: "agendado", novo: "agendado", agendado: "agendado", confirmado: "agendado",
-  em_producao: "producao",
-  finalizado: "concluido", aguardando_retirada: "concluido", em_entrega: "concluido", entregue: "concluido", pronto: "concluido", a_caminho: "concluido", concluido: "concluido",
+  aguardando_pagamento: "agendado", aguardando_aceite: "agendado", novo: "agendado", pendente: "agendado", agendado: "agendado", confirmado: "agendado",
+  em_producao: "producao", em_preparo: "producao",
+  finalizado: "concluido", aguardando_entrega: "concluido", aguardando_retirada: "concluido", em_entrega: "concluido", entregue: "concluido", pronto: "concluido", a_caminho: "concluido", concluido: "concluido",
   cancelado: "cancelado",
 };
 const grupoDe = (s: string): Grupo => GRUPO_DO_STATUS[s] || "agendado";
@@ -486,7 +486,9 @@ export default function Agenda() {
   // (31/10 · 5.84) ⋮ do pedido no padrão MenuMais (antes abria uma janela de baixo)
   const itensDoPedido = (p: PedidoAgenda): ItemMenuMais[] => [
     { Ic: PencilSimple, t: "Editar pedido", sub: "Itens, data e pagamento", aoTocar: () => abrirEditar(p.id) },
-    ...(STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado") ? [{ Ic: Check, t: "Finalizar", sub: "O pedido está pronto", aoTocar: () => marcarComoPronto(p) }] : []),
+    // (6.78) a mesma ordem da lista: agendado → Produzir; em produção → Finalizar (antes o Finalizar pulava a produção)
+    ...(grupoDoStatus(p.status || "agendado") === "agendado" && p.status !== "aguardando_pagamento" ? [{ Ic: Check, t: "Produzir", sub: "Começar a fazer o pedido", aoTocar: () => mudarSituacao(p, "em_producao") }] : []),
+    ...(grupoDoStatus(p.status || "agendado") === "em_producao" ? [{ Ic: Check, t: "Finalizar", sub: "O pedido está pronto", aoTocar: () => marcarComoPronto(p) }] : []),
     { Ic: CalendarBlank, t: "Mudar a data da entrega", sub: "Escolha o novo dia", aoTocar: () => setReagendando(p) },
     { Ic: Copy, t: "Duplicar pedido", sub: "Um igual, para outra data", aoTocar: () => duplicarPedido(p) },
     { Ic: FilePdf, t: "Baixar PDF", sub: "Para imprimir ou mandar", aoTocar: () => baixarPdf(p) },
@@ -529,8 +531,8 @@ export default function Agenda() {
   const acaoAtencao = (p: PedidoResumo, atr: boolean): AcaoAtencao | null => {
     // (27/10) primeiro aceitar: "Pronto" só em pedido já aceito
     if (precisaAceitar(p as PedidoTexto)) return { t: "Aceitar", fn: () => mudarSituacao(p, "agendado"), principal: true };
-    if ((atr || p.status === "em_producao") && STATUS_PODE_FICAR_PRONTO.includes(p.status || "agendado")) return { t: "Finalizar", fn: () => marcarComoPronto(p) };
-    if (grupoDe(p.status) === "agendado" && p.status !== "aguardando_pagamento") return { t: "Produzir", fn: () => mudarSituacao(p, "em_producao") };
+    if (grupoDoStatus(p.status || "agendado") === "em_producao") return { t: "Finalizar", fn: () => marcarComoPronto(p) };
+    if (grupoDoStatus(p.status || "agendado") === "agendado" && p.status !== "aguardando_pagamento") return { t: "Produzir", fn: () => mudarSituacao(p, "em_producao") };
     return null;
   };
 
@@ -606,7 +608,7 @@ export default function Agenda() {
               }>Pedidos do dia</Titulo>
               <div className="ag3-lista">
                 {pedidosDiaFiltrados.map((p: PedidoAgenda) => (
-                  <CartaoAgenda key={p.id} p={p} ocupado={ocupados.has(p.id)} aoAbrir={() => abrirEditar(p.id)} itensMenu={itensDoPedido(p)} aoPronto={() => marcarComoPronto(p)} aoWhats={() => abrirWhatsApp(p)} />
+                  <CartaoAgenda key={p.id} p={p} ocupado={ocupados.has(p.id)} aoAbrir={() => abrirEditar(p.id)} itensMenu={itensDoPedido(p)} aoPronto={() => grupoDoStatus(p.status || "agendado") === "agendado" ? mudarSituacao(p, "em_producao") : marcarComoPronto(p)} aoWhats={() => abrirWhatsApp(p)} />
                 ))}
               </div>
             </>
@@ -813,7 +815,7 @@ function CartaoAgenda({ p, ocupado, aoAbrir, itensMenu, aoPronto, aoWhats }: { p
 
       {(podePronto || temTel) && (
         <div className={"ag3-pc-bts" + (podePronto && temTel ? "" : " um")}>
-          {podePronto && <Botao variante="secundario" tamanho="m" carregando={!!ocupado} onClick={aoPronto}>Finalizar</Botao>}
+          {podePronto && <Botao variante="secundario" tamanho="m" carregando={!!ocupado} onClick={aoPronto}>{grupoDoStatus(p.status || "agendado") === "agendado" ? "Produzir" : "Finalizar"}</Botao>}
           {temTel && <Botao variante="secundario" tamanho="m" className="ag3-whats" icone={<IconeWhatsApp size={20} />} onClick={aoWhats}>WhatsApp</Botao>}
         </div>
       )}

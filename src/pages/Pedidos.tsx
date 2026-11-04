@@ -299,8 +299,13 @@ export default function Pedidos() {
     }
 
     // Padrão: só muda a situação
-    const { error } = await supabase.from('pedidos').update({ status }).eq('id', id)
+    // (6.78) aceitar só vale se o pedido ainda está esperando (cancelado em outro aparelho não volta como agendado)
+    const aceitando = statusAtual === 'aguardando_aceite' && status === 'agendado'
+    let q = supabase.from('pedidos').update({ status }).eq('id', id)
+    if (aceitando) q = q.in('status', ['aguardando_aceite', 'novo', 'pendente'])
+    const { data: mudou, error } = await q.select('id')
     if (error) { falhou(); return }
+    if (aceitando && !mudou?.length) { avisar(`O pedido #${pedido.numero || ''} já tinha sido atualizado em outro lugar.`, { tipo: 'info' }); return }
     mudarPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
     confirmarMudanca(pedido, status)
   }
@@ -740,7 +745,7 @@ export default function Pedidos() {
         <FinalizarPedidoSheet
           pedido={pendingPag.pedido}
           novoStatus={pendingPag.novoStatus}
-          novoStatusLabel={nomeDaSituacao(pendingPag.novoStatus)}
+          novoStatusLabel={nomeDaSituacao(pendingPag.novoStatus, pendingPag.pedido.tipo_entrega || "retirada")}
           aguardandoPagamento={grupoDoStatus(pendingPag.pedido.status) === 'aguardando_pagamento'}
           onCancelar={() => setPendingPag(null)}
           onParcial={(r) => mudarPedidos(prev => prev.map(p => p.id === pendingPag.pedido.id ? { ...p, ...r } : p))}
