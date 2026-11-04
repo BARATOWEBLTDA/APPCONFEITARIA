@@ -42,3 +42,20 @@
   html body .ini-root > .ini-dkg { order: 2; }
   html body .ini-root > .ini-dk { order: 3; margin-top: var(--space-6); }
 }
+
+/* (6.66) computador: Acesso rápido (3 × 2) à esquerda e o link do cardápio à direita, com espaço entre os dois */
+.ini-topo-pc { order: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap-section); align-items: stretch; margin-top: var(--space-6); }
+.ini-topo-pc:not(:has(.ini-link-topo > *)) { grid-template-columns: minmax(0, 1fr); }
+.ini-topo-pc .ini-at-pc { order: 0; margin: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ini-topo-pc:not(:has(.ini-link-topo > *)) .ini-at-pc { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.ini-topo-pc .ini-at-pc-it { min-height: 60px; padding: 10px 12px; }
+.ini-topo-pc .ini-at-pc-ic { width: 40px; height: 40px; border-radius: 12px; }
+.ini-topo-pc .ini-link-topo { margin: 0 !important; display: flex; }
+.ini-topo-pc .lj-link { flex: 1; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; align-content: center; gap: var(--gap-stack) 14px; padding: 18px 20px; }
+.ini-topo-pc .lj-link > .lj-link-bts { grid-column: 1 / -1; }
+.ini-topo-pc .lj-link-tx b { font-size: 18px; }
+.ini-topo-pc .lj-link-bts { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: var(--gap-tight); }
+.ini-topo-pc .lj-bt { white-space: nowrap; }
+@media (min-width: 901px) {
+  html body .ini-root > .ini-news-pc { order: 4; margin-top: var(--space-6); }
+}

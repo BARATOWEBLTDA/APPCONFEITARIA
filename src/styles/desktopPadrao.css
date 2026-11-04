@@ -3,7 +3,7 @@
 
   /* ── 1. Fundo cinza (igual ao celular) e o conteúdo começando na mesma linha do título ── */
   /* (29/10 · 4.91) cores da marca no computador: página num cinza quente (antes #F1F2F2, frio) e o menu da esquerda em chocolate escuro (antes grafite) */
-  html body, html body .layout-root, html body .layout-main { background-color: #F5F3F2 !important; }
+  html body, html body .layout-root, html body .layout-main { background-color: #F1F2F2 !important; /* (6.66) o mesmo cinza do celular */ }
   html body .layout-root { --sidebar-bg: #1C1719; } /* (30/10 · 5.44) escuro neutro (antes marrom chocolate #24150F, deixava o texto bege) */
   html body .sidebar .nav-item.active { background: rgba(255, 157, 196, .14); }
   html body .sidebar .nav-item:hover:not(.active), html body .sidebar .nav-item--group:hover { background: rgba(255, 255, 255, .07); }

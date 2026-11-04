@@ -901,19 +901,20 @@ export default function Inicio() {
 
       {/* (29/10 · 4.93) computador: os Primeiros passos vêm antes dos números (pra loja nova os números estão zerados) */}
       {computador && <section className="ini-section ini-pp ini-pp--topo"><PrimeirosPassos /></section>}
-      {/* (6.59) computador: o Acesso rápido também, numa faixa só, logo depois dos Primeiros passos */}
+      {/* (6.66) computador: Acesso rápido à esquerda (3 × 2) e o link do cardápio à direita, lado a lado */}
       {computador && (
-        <section className="ini-at-pc" aria-label="Acesso rápido">
-          {ATALHOS.map(item => (
-            <button key={item.path} type="button" className="ini-at-pc-it" onClick={() => navigate(item.path)}>
-              <span className="ini-at-pc-ic" aria-hidden="true"><item.Icone size={22} weight="bold" /></span>
-              <span className="ini-at-pc-tx"><b>{item.label}</b><small>{item.sub}</small></span>
-            </button>
-          ))}
-        </section>
+        <div className="ini-topo-pc">
+          <section className="ini-at-pc" aria-label="Acesso rápido">
+            {ATALHOS.map(item => (
+              <button key={item.path} type="button" className="ini-at-pc-it" onClick={() => navigate(item.path)}>
+                <span className="ini-at-pc-ic" aria-hidden="true"><item.Icone size={22} weight="bold" /></span>
+                <span className="ini-at-pc-tx"><b>{item.label}</b></span>
+              </button>
+            ))}
+          </section>
+          <div className="ini-link-topo"><LinkDeVendas /></div>
+        </div>
       )}
-      {/* (30/10 · 5.46) o link de vendas sobe para o topo (some sozinho enquanto a loja não está pronta) */}
-      {computador && <div className="ini-link-topo"><LinkDeVendas /></div>}
       {/* ══ Computador (≥1100px): topo rosa com o resumo do dia + números (30/09) ══ */}
       {(() => {
         const aReceberHoje = counts.valorEntregasHoje; // todas as entregas de hoje (não só as 5 da lista)
@@ -1169,9 +1170,10 @@ export default function Inicio() {
             <PraFazer />
           </section>
           <div className="dkg-cheio dkg-banner"><AdminBannerMobile /></div>
-          <div className="dkg-cheio dkg-news"><UpdatesFeed linha /></div>
         </div>
       )}
+      {/* (6.66) computador: as Novidades vão por último, depois dos números */}
+      {computador && <div className="ini-news-pc"><UpdatesFeed linha /></div>}
 
 
       <style>{`
@@ -2139,7 +2141,7 @@ export default function Inicio() {
         .ini-pp--topo:empty { display: none; }
         .ini-link-topo { margin: 0 0 18px; }
         .ini-link-topo:empty { display: none; }
-        .ini-dkg { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; margin-top: 18px; align-items: stretch; }
+        .ini-dkg { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; margin-top: 24px; align-items: stretch; }
         .ini-dkg > * { min-width: 0; margin: 0 !important; }
         .ini-dkg > .dkg-cheio { grid-column: 1 / -1; }
         .ini-dkg > .dkg-graf { grid-column: span 4; }

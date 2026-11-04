@@ -5,13 +5,13 @@ import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
 import { useAoVoltar } from "@/hooks/useAoVoltar";
-import { precisaInstalarNoIphone } from "@/lib/notifications";
+import { precisaInstalarNoIphone, ehIphone } from "@/lib/notifications";
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
 import { avisoDoPro } from "@/lib/notificacoesUsuario";
 import { supabase } from "@/lib/supabase";
 import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
-import { Botao, Janela, avisar } from "@/components/base";
+import { Botao, Janela, avisar, informar } from "@/components/base";
 import { ConteudoComo, type Como } from "@/components/como/ComoFunciona";
 
 /**
@@ -148,17 +148,19 @@ export default function PraFazer() {
 
   // (18/10) notificações: enquanto não estiverem ligadas neste aparelho, é o primeiro passo (toque já pede a permissão)
   const push = usePushSubscription();
+  // (6.66) ativa ali mesmo, sem abrir a tela de Notificações: ligou → aviso de teste; bloqueado → explica como liberar
+  const comoLiberar = () => informar({ titulo: "Notificações bloqueadas", icone: "alerta", texto: ehIphone()
+    ? "Para ligar: abra Ajustes, depois Notificações, Doonly e Permitir Notificações."
+    : "Para ativar: toque no cadeado ao lado do endereço do site, vá em Notificações e escolha “Permitir”. Depois toque em Ativar de novo." });
   const ativarNotif = async () => {
-    if (push.permission === "denied") { navigate("/configuracoes/notificacoes"); return; }
+    if (push.permission === "denied") { comoLiberar(); return; }
     const ok = await push.subscribe();
-    // (31/10 · 5.82) ligou: já manda um aviso de teste de verdade (antes só prometia) e abre Notificações e sons
     if (ok) {
       setMexeu(n => n + 1);
       void supabase.functions.invoke("push-pessoal", { body: { teste: true } }).catch(() => {});
       avisar("Notificações ligadas. Um aviso de teste chega em alguns segundos.", { tipo: "ok", duracao: 6000 });
-      navigate("/configuracoes/notificacoes");
     }
-    else if (Notification.permission === "denied") navigate("/configuracoes/notificacoes");
+    else if (Notification.permission === "denied") comoLiberar();
   };
   // (23/10) sem "Agora não": enquanto os avisos não estiverem ligados, o pedido continua aqui (é o que garante que a novidade chega)
   const itemNotif: Item[] = uid && precisaInstalarNoIphone() ? [{
