@@ -74,14 +74,15 @@ export default function AdminNoticias() {
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase.from("admin_noticias").select("*").order("fixada", { ascending: false }).order("ordem", { ascending: false }).order("publicado_em", { ascending: false });
-    if (error) avisar("Erro: " + error.message, { tipo: "erro" });
+    if (error) avisar(explicarErro(error, "Não deu para carregar as novidades. Atualize a página."), { tipo: "erro" });
     else setRows(data as Noticia[]);
     setLoading(false);
   };
 
   const loadAutores = async () => {
-    const { data } = await supabase.from("admin_autores").select("id, nome, foto_url").eq("ativo", true).order("ordem", { ascending: true });
-    setAutoresList((data as AutorOpt[]) || []);
+    const { data, error } = await supabase.from("admin_autores").select("id, nome, foto_url").eq("ativo", true).order("ordem", { ascending: true });
+    if (error) avisar(explicarErro(error, "Não deu para carregar a lista de autores. Atualize a página."), { tipo: "erro" });
+    else setAutoresList((data as AutorOpt[]) || []);
   };
 
   const showMsg = (text: string, kind: "ok" | "err") => { avisar(text, { tipo: kind === "err" ? "erro" : "ok" }); };

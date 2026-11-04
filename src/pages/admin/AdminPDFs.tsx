@@ -31,8 +31,10 @@ export default function AdminPDFs() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase.from("biblioteca_pdf").select("*").order("created_at", { ascending: false });
-    setPdfs(data || []);
+    const { data, error } = await supabase.from("biblioteca_pdf").select("*").order("created_at", { ascending: false });
+    // (03/11) se falhar, avisa e mantém a lista (antes aparecia vazia, como se não houvesse PDFs)
+    if (error) avisar(explicarErro(error, "Não deu para carregar os PDFs. Atualize a página."), { tipo: "erro" });
+    else setPdfs(data || []);
     setLoading(false);
   };
 

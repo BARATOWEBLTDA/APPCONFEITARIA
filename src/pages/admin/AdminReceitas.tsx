@@ -35,8 +35,9 @@ export default function AdminReceitas() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase.from("receitas_comunidade").select("*, profiles(nome, foto_url)").order("created_at", { ascending: false });
-    setReceitas(data || []);
+    const { data, error } = await supabase.from("receitas_comunidade").select("*, profiles(nome, foto_url)").order("created_at", { ascending: false });
+    if (error) avisar(explicarErro(error, "Não deu para carregar as receitas. Atualize a página."), { tipo: "erro" });
+    else setReceitas(data || []);
     setLoading(false);
   };
 

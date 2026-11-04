@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Plus, PencilSimple, Trash, User, Image as ImageIcon, Eye, EyeSlash, DotsThree } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { explicarErro } from "@/lib/erros";
 import "./admin-autores.css";
 
 interface Autor {
@@ -29,8 +30,9 @@ export default function AdminAutores() {
 
   const carregar = async () => {
     setLoading(true);
-    const { data } = await supabase.from("admin_autores").select("*").order("ordem", { ascending: true }).order("created_at", { ascending: false });
-    setAutores((data as Autor[]) || []);
+    const { data, error } = await supabase.from("admin_autores").select("*").order("ordem", { ascending: true }).order("created_at", { ascending: false });
+    if (error) avisar(explicarErro(error, "Não deu para carregar os autores. Atualize a página."), { tipo: "erro" });
+    else setAutores((data as Autor[]) || []);
     setLoading(false);
   };
 

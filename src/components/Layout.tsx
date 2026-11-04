@@ -21,6 +21,7 @@ import { ClipboardText, ChartBar, Stack, Palette, Storefront, ArrowSquareOut, Ar
   Receipt, Sparkle, Crown, Bell, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
+import { ligarAcessoOnline } from "@/lib/acessoOnline";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import AlertaPedidoNovo from "@/components/AlertaPedidoNovo";
 import { reativarPushSeSaiu } from "@/hooks/usePushSubscription";
@@ -125,6 +126,8 @@ export default function Layout() {
   const [grupoAberto, setGrupoAberto] = useState<string | null>(null);
   // (11/10) saiu e entrou de novo neste aparelho: os avisos de pedido voltam a ligar sozinhos
   useEffect(() => { void reativarPushSeSaiu(); }, []);
+  // (03/11) o painel admin vê quem está com o app aberto agora (só a hora do último acesso)
+  useEffect(() => { if (profile?.id) ligarAcessoOnline(); }, [profile?.id]);
   const {
     cropSrc,
     handleCropDone, cancelCrop,
