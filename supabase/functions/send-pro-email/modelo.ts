@@ -16,7 +16,7 @@ const GANHOU: string[] = [
   "Todos os produtos no cardápio, sem limite",
   "Lucratividade de cada produto e do mês",
   "Doo IA com 150 mensagens por dia e imagens",
-  "Cupons e complementos sem limite",
+  "Cupons sem limite e adicionais",
   "Cardápio com a sua cor e o nome da loja no link",
   "Sem o “Feito com Doonly” no cardápio e nos PDFs",
 ];
