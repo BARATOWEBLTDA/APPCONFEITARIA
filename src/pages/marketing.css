@@ -28,3 +28,9 @@
 .mk-passos li::marker { font-weight: 600; color: var(--ui-rosa-escuro); }
 .mk-cupons .ep--embutido { padding: 0; max-width: none; }
 @media (max-width: 640px) { .mk-aba-breve { display: none; } }
+
+/* (04/11 · 6.41) tela Cupons: sem o cartão grande em volta (moldura dentro de moldura); os cupons direto na página */
+.mk-cupons .ep-cupons-tela { padding: 0; border: 0; background: none; box-shadow: none; }
+.mk-cupons .ep-cupons-tela > .ui-tit { margin-bottom: var(--space-4); }
+.ep-g { display: none; }
+@media (min-width: 768px) { .ep-g { display: inline; } .ep-c { display: none; } }

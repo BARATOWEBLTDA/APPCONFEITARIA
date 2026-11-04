@@ -855,9 +855,12 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         </>}
 
         {/* Cupons */}
-        {verCupons && <section className="ep-card ep-largo">
-          <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio={isPro ? 'Quantos quiser. Os 2 mais novos aparecem no topo do cardápio, e o cliente usa 1 por pedido.' : '1 ativo por vez. Ele aparece no topo do cardápio, e o cliente usa 1 por pedido.'}
- />
+        {verCupons && <section className={`ep-card ep-largo${parte === "cupons" ? " ep-cupons-tela" : ""}`}>
+          {/* (04/11 · 6.41) tela Cupons: título "Seus cupons" com o "+ Novo cupom" rosa na mesma linha, sem o cartão grande em volta */}
+          {parte === "cupons" && cupomDisponivel(isPro) && cupons.length > 0
+            ? <Titulo contagem={cupons.length} apoio={isPro ? 'Os 2 mais novos aparecem no topo do cardápio. O cliente usa 1 por pedido.' : '1 ativo por vez, no topo do cardápio. O cliente usa 1 por pedido.'}
+                acao={<Botao tamanho="m" className="guia-novo-cupom" icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}><span className="ep-g">Novo cupom</span><span className="ep-c">Novo</span></Botao>}>Seus cupons</Titulo>
+            : <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio={isPro ? 'Quantos quiser. Os 2 mais novos aparecem no topo do cardápio, e o cliente usa 1 por pedido.' : '1 ativo por vez. Ele aparece no topo do cardápio, e o cliente usa 1 por pedido.'} />}
           {!cupomDisponivel(isPro) ? (
             <div className="ep-pro">
               <p>Crie cupons para atrair clientes novos e trazer de volta quem já comprou.</p>
@@ -888,10 +891,10 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                   )
                 })}
               </div>
-              <div className="ep-cupons-pe">
+              {parte !== "cupons" && <div className="ep-cupons-pe">
                 <Botao variante="suave" className="guia-novo-cupom" icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}>Novo cupom</Botao>
                 {/* (27/10) o "Salvar cupons" saiu: a tela já salva sozinha (o botão confundia depois de criar o cupom) */}
-              </div>
+              </div>}
             </>
           )}
         </section>}
