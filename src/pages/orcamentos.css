@@ -296,7 +296,7 @@
 .orc-pro h2 { font-weight: 600; }
 .orc-pro-ex { display: none; margin: 0; }
 @media (min-width: 900px) {
-  .orc:has(> .orc-pro) { display: flex; flex-direction: column; justify-content: center; min-height: calc(100dvh - 61px - 2rem); box-sizing: border-box; padding-top: 16px; padding-bottom: 16px; }
+  .orc:has(> .orc-pro) { display: flex; flex-direction: column; justify-content: center; min-height: calc(100dvh - 160px); box-sizing: border-box; padding-top: 8px; padding-bottom: 8px; } /* (6.25) folga: centraliza sem criar rolagem */
   .orc-pro { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); width: 100%; max-width: 1200px; margin: 0 auto; }
   .orc-pro-tx { justify-content: center; padding: 40px 48px; }
   .orc-pro h2 { font-size: 26px; line-height: 1.25; }
