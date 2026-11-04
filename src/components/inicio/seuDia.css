@@ -113,3 +113,7 @@
 .sd-pg + .sd-pg .sd-pg-t { margin-top: 8px; }
 .sd-pg .sd-pl { margin-top: 0; }
 .sd-pi-l1 b { font-weight: 600; }
+/* (6.60) hoje sempre marcado (borda e número rosa), mesmo sem dia escolhido; escolhido continua rosa cheio */
+.sd-sd--hoje:not(.on) { border: 1.5px solid var(--ui-rosa); background: #FFF8FB; }
+.sd-sd--hoje:not(.on) b, .sd-sd--hoje:not(.on) small { color: var(--ui-rosa-escuro); }
+.sd-sd--hoje:not(.on) small { font-weight: 600; }
