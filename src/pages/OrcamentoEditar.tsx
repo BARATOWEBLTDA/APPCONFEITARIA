@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { CalendarBlank, Check, Clock, Copy, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, Phone, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import { CalendarBlank, Check, Clock, Copy, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, PencilSimpleLine, Phone, Plus, Storefront, Trash, WarningCircle, X } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import CampoData from '@/components/CampoData'
 import CalendarioMes from '@/components/CalendarioMes'
@@ -399,7 +399,7 @@ export default function OrcamentoEditar() {
         {etapa === 2 && (<>
           <section className="orc-card">
             <h2>Itens</h2>
-            {(o.itens || []).length === 0 && <p className="orc-vz">Coloque os produtos do seu cardápio ou um item personalizado (ex.: bolo de 2 andares com tema).</p>}
+            {(o.itens || []).length === 0 && <p className="orc-vz orc-vz--c">Como você quer colocar o primeiro item?</p>}
             {(o.itens || []).map(i => (
               <div key={i.id} className="orc-item">
                 <span className="orc-item-ft" aria-hidden="true">{i.imagem_url ? <img src={i.imagem_url} alt="" /> : <Package size={20} />}</span>
@@ -420,11 +420,18 @@ export default function OrcamentoEditar() {
                 </div>
               </div>
             ))}
-            <div className="orc-add">
-              <Botao variante="secundario" tamanho="m" icone={<Plus size={18} weight="bold" />} onClick={() => { setBusca(''); setEscolher(true) }}>Do cardápio</Botao>
-              <Botao variante="secundario" tamanho="m" icone={<Plus size={18} weight="bold" />} onClick={() => muda({ itens: [...(o.itens || []), { id: novoId(), nome: '', quantidade: 1, valor_unitario: 0 }] })}>Personalizado</Botao>
+            {/* (6.53) as duas formas de pôr item: dois cartões quadrados no meio da tela */}
+            <div className={`orc-add${(o.itens || []).length ? ' orc-add--mais' : ''}`}>
+              <button type="button" className="orc-add-op" onClick={() => { setBusca(''); setEscolher(true) }}>
+                <span className="orc-add-ic" aria-hidden="true"><Storefront size={26} weight="duotone" /></span>
+                <b>Do cardápio</b><small>Já está no seu cardápio</small>
+              </button>
+              <button type="button" className="orc-add-op" onClick={() => muda({ itens: [...(o.itens || []), { id: novoId(), nome: '', quantidade: 1, valor_unitario: 0 }] })}>
+                <span className="orc-add-ic" aria-hidden="true"><PencilSimpleLine size={26} weight="duotone" /></span>
+                <b>Personalizado</b><small>Feito sob medida</small>
+              </button>
             </div>
-            <div className="orc-tot"><span>Subtotal dos itens</span><b>{brl(somarItens(o.itens))}</b></div>
+            {(o.itens || []).length > 0 && <div className="orc-tot"><span>Subtotal dos itens</span><b>{brl(somarItens(o.itens))}</b></div>}
           </section>
         </>)}
 

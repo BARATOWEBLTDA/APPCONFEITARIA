@@ -110,7 +110,17 @@
 .orc-valor span { font-size: 14px; color: var(--ui-texto-3); }
 .orc-valor input { flex: 1; min-width: 0; height: 38px; margin: 0; padding: 0; border: 0; outline: 0; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); background: none; }
 .orc-tira { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: 0; padding: 0; border: 0; border-radius: 10px; background: none; color: var(--ui-vermelho); cursor: pointer; }
-.orc-add { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.orc-add { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); justify-content: center; gap: var(--gap-stack); margin: var(--space-4) 0 var(--space-2); }
+.orc-add-op { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; aspect-ratio: 1 / .85; padding: var(--space-3); border: 1.5px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); font-family: inherit; text-align: center; color: var(--ui-texto); cursor: pointer; transition: border-color .15s, background .15s; }
+.orc-add-op:hover { border-color: #F3B3CA; background: #FFF8FB; }
+.orc-add-ic { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; margin-bottom: 6px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.orc-add-op b { font-size: 15px; font-weight: 600; }
+.orc-add-op small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; line-height: 1.35; color: var(--ui-texto-2); }
+/* com itens na lista: os mesmos dois cartões, mais baixinhos */
+.orc-add--mais .orc-add-op { aspect-ratio: auto; flex-direction: row; justify-content: flex-start; gap: 10px; min-height: 64px; padding: 10px 12px; text-align: left; }
+.orc-add--mais .orc-add-ic { width: 40px; height: 40px; margin: 0; flex: none; }
+.orc-add--mais .orc-add-op small { display: none; }
+.orc-vz--c { margin-top: var(--space-2); text-align: center; font-size: 14.5px; }
 .orc-ext button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; margin: 0; padding: 0 8px; border: 1.5px dashed #E7C2D2; border-radius: 12px; background: #FFFAFC; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; white-space: nowrap; }
 .orc-ext { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px 0 12px; }
 .orc-ext button { min-height: 36px; border-style: solid; border-color: var(--ui-borda); background: var(--ui-branco); font-size: 13px; }
@@ -266,7 +276,6 @@
 .orq-col--recusados .orq-c { opacity: .7; }
 
 /* (28/10) botões de itens normais (sem tracejado rosa) e os ajustes como links discretos */
-.orc-add .ui-bt { width: 100%; }
 .orc-ext { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 10px 0 12px; }
 .orc-ext button, .orc-ext button[aria-pressed="true"] { min-height: 32px; padding: 0; border: 0; border-radius: 0; background: none; font-size: 13.5px; font-weight: 500; color: var(--ui-rosa-escuro); }
 .orc-ext button[aria-pressed="true"] { color: var(--ui-texto-2); }
@@ -387,7 +396,7 @@
 /* (31/10 · 5.79) celular: o "Conhecer o PRO" no meio */
 @media (max-width: 900px) { .orc-pro-tx > .ui-bt { align-self: center; } }
 /* (31/10 · 5.84) celular: "Do cardápio" e "Personalizado" inteiros (antes "Do cardá…") */
-@media (max-width: 420px) { .orc-add .ui-bt { padding: 0 8px; gap: 6px; font-size: 14px; } .orc-add .ui-bt svg { width: 16px; height: 16px; } }
+
 
 /* (01/11 · 5.98) computador: a lista começa na linha do título, como as outras telas (antes 12 px para dentro) */
 @media (min-width: 901px) { .orc:not(.orc-ed) { padding-left: 0; padding-right: 0; } }
