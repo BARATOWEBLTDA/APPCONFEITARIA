@@ -70,12 +70,13 @@ export default function Complementos() {
   const [subindoCapa, setSubindoCapa] = useState(false);
   const [busca, setBusca] = useState("");
   const [verExemplo, setVerExemplo] = useState(false); // (5.79) celular: o exemplo do cardápio abre no "Ver como fica"
+  const [verReal, setVerReal] = useState(false); // (6.22) prévia com os complementos dela
   useEffect(() => {
-    if (!verExemplo) return;
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setVerExemplo(false); };
+    if (!verExemplo && !verReal) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { setVerExemplo(false); setVerReal(false); } };
     document.addEventListener("keydown", esc);
     return () => document.removeEventListener("keydown", esc);
-  }, [verExemplo]);
+  }, [verExemplo, verReal]);
   const [buscaProd, setBuscaProd] = useState("");
   const [aberta, setAberta] = useState(false);
   const [editando, setEditando] = useState<Complemento | null>(null);
@@ -331,10 +332,14 @@ export default function Complementos() {
           vazio(false)
         ) : (
           /* (24/10) com complementos: a lista à esquerda e, ao lado, o celular com os complementos dela num produto de verdade */
-          <div className="pz-cheio">
+          <div className="pz-cheio pz-cheio--so">
             <div className="pz-cheio-l">
               <Titulo contagem={items.length} apoio="Toque em um para editar."
-                acao={<Botao tamanho="m" className="guia-novo-complemento" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>}>Seus complementos</Titulo>
+                acao={<span className="pz-tit-acoes">
+                  {/* (04/11 · 6.22) com complementos, a prévia do celular saiu da tela: abre no "Ver como fica" */}
+                  <Botao tamanho="m" variante="secundario" className="pz-ver-bt" aria-label="Ver como fica" icone={<Eye size={20} weight="bold" />} onClick={() => setVerReal(true)}><span className="ct-g">Ver como fica</span></Botao>
+                  <Botao tamanho="m" className="guia-novo-complemento" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>
+                </span>}>Seus complementos</Titulo>
               {items.length > 8 && (
                 <label className="pz-busca">
                   <MagnifyingGlass size={20} weight="bold" />
@@ -394,7 +399,6 @@ export default function Complementos() {
                 </>
               )}
             </div>
-            <PreviaReal itens={items} produtos={produtos} />
           </div>
         )}
       </div>
@@ -544,6 +548,11 @@ export default function Complementos() {
         )}
       </Janela>
       {recorteCapa.janela}
+      {verReal && createPortal(
+        <div className="pz-ver-veu" role="dialog" aria-modal="true" aria-label="Assim o cliente vê no cardápio" onClick={() => setVerReal(false)}>
+          <div className="pz-ver-ex" onClick={e => e.stopPropagation()}><PreviaReal itens={items} produtos={produtos} /></div>
+          <span className="pz-ver-fechar">Toque fora para fechar</span>
+        </div>, document.body)}
       {verExemplo && createPortal(
         <div className="pz-ver-veu" role="dialog" aria-modal="true" aria-label="Assim o cliente vê no cardápio" onClick={() => setVerExemplo(false)}>
           <div className="pz-ver-ex"><ExemploCardapio /></div>
