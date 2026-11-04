@@ -162,3 +162,12 @@ i.atr { background: var(--ui-vermelho); }
 .ag3-leg { display: grid; grid-template-columns: repeat(2, max-content); justify-content: center; gap: 8px; margin-top: 12px; padding-top: 0; border-top: 0; }
 .ag3-leg span { gap: 6px; padding: 5px 10px; border-radius: 999px; background: #F6F3F4; font-size: 12.5px; white-space: nowrap; }
 @media (min-width: 560px) { .ag3-leg { grid-template-columns: repeat(4, max-content); gap: 8px; } }
+/* (04/11 · 6.39) PC: o calendário fica parado, inteiro, logo abaixo do cabeçalho; só a lista de pedidos rola.
+   (antes ele subia junto e ficava cortado embaixo do cabeçalho) */
+@media (min-width: 901px) {
+  .ag3-grade { align-items: start; }
+  .ag3-cal { position: sticky; top: calc(61px + var(--space-4)); align-self: start; }
+}
+/* tela baixa: os dias encolhem um pouco pra o calendário caber inteiro, sem cortar */
+@media (min-width: 901px) and (max-height: 760px) { .ag3-d { min-height: 44px; } .ag3-cal { padding: var(--space-3); } }
+@media (min-width: 901px) and (max-height: 640px) { .ag3-d { min-height: 38px; } .ag3-leg { margin-top: var(--space-2); } }
