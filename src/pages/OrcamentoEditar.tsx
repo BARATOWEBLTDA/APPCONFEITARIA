@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { CalendarBlank, Check, Copy, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, Phone, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import { CalendarBlank, Check, Copy, Eye, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, Phone, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import CampoData from '@/components/CampoData'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
@@ -66,6 +66,7 @@ export default function OrcamentoEditar() {
   const [mudou, setMudou] = useState(false)
   const [produtos, setProdutos] = useState<Prod[]>([])
   const [escolher, setEscolher] = useState(false)
+  const [verPrevia, setVerPrevia] = useState(false)
   const [produtoOpcoes, setProdutoOpcoes] = useState<Record<string, any> | null>(null) // eslint-disable-line @typescript-eslint/no-explicit-any
   const [busca, setBusca] = useState('')
   const [extras, setExtras] = useState({ desconto: false, acrescimo: false, entrega: false })
@@ -327,7 +328,7 @@ export default function OrcamentoEditar() {
         </ol>
 
         {etapa === 1 && (<>
-          <div className="orc-so-cel">{pediu}</div>
+          {pediu}
           <section className="orc-card">
             <h2 className="orc-h-acao">Cliente{!verCampos && <button type="button" className="orc-link-bt" onClick={() => setEditarCli(true)}><PencilSimple size={14} weight="bold" />Editar</button>}</h2>
             {verCampos ? (
@@ -500,18 +501,19 @@ export default function OrcamentoEditar() {
           </div>
         </>)}
 
+        {/* (04/11 · 6.47) a prévia do lado saiu: a tela fica numa coluna só, no meio. A prévia abre no "Ver como fica";
+            no computador os botões ficam aqui embaixo, no canto e do tamanho do texto */}
+        {etapa < 5 && <div className="orc-acoes-pc">
+          <Botao variante="link" icone={<Eye size={18} weight="bold" />} onClick={() => setVerPrevia(true)}>Ver como fica</Botao>
+          <span>{botoesEtapa}</span>
+        </div>}
       </div>
-
-      <aside className="orc-ed-lado" aria-label="Resumo do orçamento">
-        {pediu}
-        {/* no computador, a prévia ao vivo fica do lado enquanto ela monta (na etapa Enviar ela já está no meio) */}
-        {etapa < 5 && <section className="orc-card"><h2>Assim o cliente vê</h2><Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url}
-          montando={{ condicoes: etapa >= 4 || (o.status !== 'rascunho' && o.status !== 'novo') }} />
-          {/* (28/10) no computador os botões ficam aqui, embaixo do total (como o Resumo da Nova venda) */}
-          <div className="orc-lado-bts">{botoesEtapa}</div>
-        </section>}
-      </aside>
     </div>
+
+    <Janela aberta={verPrevia} aoFechar={() => setVerPrevia(false)} tipo="conteudo" titulo="Assim o cliente vê">
+      <Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url}
+        montando={{ condicoes: etapa >= 4 || (o.status !== 'rascunho' && o.status !== 'novo') }} />
+    </Janela>
 
     {etapa < 5 && (
       <div className="orc-pe">

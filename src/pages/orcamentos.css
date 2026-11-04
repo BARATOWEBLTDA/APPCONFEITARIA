@@ -412,3 +412,17 @@
 .orc-prev-ev b, .orc-prev-ev span, .orc-prev-cond span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .orc-prev-cond { display: flex; flex-direction: column; gap: 2px; }
 .orc-prev-vz { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--ui-texto-3); }
+
+/* (04/11 · 6.47) montar o orçamento numa coluna só, no meio (a prévia saiu do lado e abre no "Ver como fica") */
+.orc-ed { grid-template-columns: minmax(0, 1fr) !important; max-width: 820px; margin-left: auto; margin-right: auto; }
+.orc-ed-lado { display: none !important; }
+.orc-acoes-pc { display: none; }
+@media (min-width: 1024px) {
+  .orc-acoes-pc { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-2); }
+  .orc-acoes-pc > span { display: flex; gap: var(--space-2); }
+  .orc-acoes-pc .ui-bt { flex: none; width: auto; padding-left: 28px; padding-right: 28px; }
+  .orc-acoes-pc .ui-bt--link { padding-left: 0; padding-right: 0; }
+  .orc-pe { display: none !important; }
+}
+/* celular e tablet: o "Ver como fica" fica na faixa de baixo, junto dos botões */
+@media (max-width: 1023px) { .orc-pe-in { padding-right: 0 !important; } }
