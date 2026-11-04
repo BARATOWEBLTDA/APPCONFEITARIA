@@ -66,9 +66,7 @@ const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
 const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminUsuarios = lazy(() => import("@/pages/admin/AdminUsuarios"));
-const AdminReceitas = lazy(() => import("@/pages/admin/AdminReceitas"));
-const AdminReceitasDoonly = lazy(() => import("@/pages/admin/AdminReceitasDoonly"));
-const AdminPDFs = lazy(() => import("@/pages/admin/AdminPDFs"));
+const AdminRegistro = lazy(() => import("@/pages/admin/AdminRegistro"));
 const AdminNotifTemplates = lazy(() => import("@/pages/admin/AdminNotifTemplates"));
 const AdminBanner = lazy(() => import("@/pages/admin/AdminBanner"));
 const AdminBannersProntos = lazy(() => import("@/pages/admin/AdminBannersProntos"));
@@ -595,9 +593,7 @@ export default function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
-          <Route path="receitas" element={<AdminReceitas />} />
-          <Route path="receitas-doonly" element={<AdminReceitasDoonly />} />
-          <Route path="pdfs" element={<AdminPDFs />} />
+          <Route path="registro" element={<AdminRegistro />} />
           <Route path="notificacoes" element={<Navigate to="/admin/noticias" replace />} />
           <Route path="notif-templates" element={<AdminNotifTemplates />} />
           <Route path="banner" element={<AdminBanner />} />

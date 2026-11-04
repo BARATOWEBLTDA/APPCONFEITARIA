@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { registrar } from "@/lib/adminPerfil";
 import { ArrowDown, ArrowUp, Crown, Images, Trash, UploadSimple, WarningCircle } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Titulo, avisar, confirmar } from "@/components/base";
 import { CATEGORIAS_BANNER, TAMANHO_BANNER, type BannerPronto } from "@/lib/bannersProntos";
@@ -29,7 +30,12 @@ export default function AdminBannersProntos() {
   const salvar = async (id: string, patch: Partial<BannerPronto>) => {
     setLista(l => l.map(b => (b.id === id ? { ...b, ...patch } : b)));
     const { error } = await supabase.from("banners_prontos").update(patch).eq("id", id);
-    if (error) { avisar("Não deu para salvar. Tente de novo.", { tipo: "erro" }); void carregar(); }
+    if (error) { avisar("Não deu para salvar. Tente de novo.", { tipo: "erro" }); void carregar(); return; }
+    // (04/11) no registro só o que muda pras confeiteiras (sair/voltar pra galeria, só PRO); o nome e a categoria não
+    const b = lista.find(x => x.id === id);
+    const nome = b?.titulo ? `"${b.titulo}"` : "da galeria";
+    if (patch.ativo !== undefined) void registrar(`${patch.ativo ? "colocou na galeria" : "tirou da galeria"} o banner pronto ${nome}`, { tipo: "banner", alvo_id: id });
+    if (patch.so_pro !== undefined) void registrar(`${patch.so_pro ? "deixou só pro PRO" : "liberou pra todas"} o banner pronto ${nome}`, { tipo: "banner", alvo_id: id });
   };
 
   const enviar = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,6 +59,8 @@ export default function AdminBannersProntos() {
       if (error) falhas++;
     }
     setEnviando(false);
+    const ok = arquivos.length - falhas;
+    if (ok > 0) void registrar(ok === 1 ? "adicionou um novo banner pronto" : `adicionou ${ok} banners prontos`, { tipo: "banner" });
     if (falhas) avisar(`${falhas} ${falhas === 1 ? "imagem não foi enviada" : "imagens não foram enviadas"} (só imagens de até 5 MB).`, { tipo: "erro" });
     else avisar(arquivos.length === 1 ? "Banner adicionado" : "Banners adicionados", { tipo: "ok" });
     void carregar();
@@ -102,6 +110,7 @@ export default function AdminBannersProntos() {
     if (!ok) return;
     const { error } = await supabase.from("banners_prontos").delete().eq("id", b.id);
     if (error) { avisar("Não deu para excluir. Tente de novo.", { tipo: "erro" }); return; }
+    void registrar(`excluiu o banner pronto${b.titulo ? ` "${b.titulo}"` : ""}`, { tipo: "banner", alvo_id: b.id });
     setLista(l => l.filter(x => x.id !== b.id));
   };
 

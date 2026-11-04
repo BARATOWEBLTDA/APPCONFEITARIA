@@ -8,12 +8,13 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import {
-  Receipt, Storefront, UserPlus, Crown, UsersThree, Lightbulb, Cake, Newspaper, Image as ImageIcon, FilePdf, Play, ArrowRight, CaretRight,
+  Receipt, Storefront, UserPlus, Crown, UsersThree, Lightbulb, Newspaper, Image as ImageIcon, Images, PenNib, ArrowRight, CaretRight,
 } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
 import { Mascote } from "@/components/marca/Mascote";
-import BoasVindas, { depoisDoVoltar } from "@/components/boasVindas/BoasVindas";
 import PainelLoja from "./PainelLoja";
+import { LinhaRegistro, usePerfisAdmin, CSS_REGISTRO, type Registro } from "./AdminRegistro";
+import { perfilAtual, EVENTO_PERFIL, EVENTO_REGISTRO } from "@/lib/adminPerfil";
 
 type Online = { id: string; nome: string; foto: string | null; visto: string; pro: boolean };
 type Dia = { dia: string; pedidos: number; contas: number };
@@ -21,7 +22,7 @@ type Painel = {
   online_agora: number; ativas_hoje: number; ativas_7d: number; ativas_30d: number;
   contas: number; contas_hoje: number; contas_7d: number; contas_7d_ant: number; pro_ativas: number;
   pedidos_hoje: number; pedidos_ontem: number; pedidos_7d: number; pedidos_30d: number; pedidos_30d_ant: number; pedidos_cardapio_30d: number;
-  por_dia: Dia[]; receitas_pendentes: number; ideias_novas: number; online: Online[]; agora: string;
+  por_dia: Dia[]; ideias_novas: number; online: Online[]; agora: string;
 };
 
 const num = (v: number | undefined) => (v ?? 0).toLocaleString("pt-BR");
@@ -42,20 +43,26 @@ export default function AdminDashboard() {
   const [lojaAberta, setLojaAberta] = useState<string | null>(null);
   const [serie, setSerie] = useState<"pedidos" | "contas">("pedidos");
 
-  // nome de quem está no admin (pra saudação) — o mesmo do perfil
-  const [meuNome, setMeuNome] = useState("");
+  // (04/11) a saudação é de quem escolheu o perfil ao entrar (Anthony, Bruno ou Marcos)
+  const [meuNome, setMeuNome] = useState(() => perfilAtual()?.nome || "");
   useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase.from("profiles").select("nome").eq("id", user.id).maybeSingle();
-      const md: { nome?: string; full_name?: string } = user.user_metadata || {};
-      setMeuNome(String(data?.nome || md.nome || md.full_name || "").trim().split(/\s+/)[0]);
-    })().catch(() => undefined);
+    const mudou = () => setMeuNome(perfilAtual()?.nome || "");
+    window.addEventListener(EVENTO_PERFIL, mudou);
+    return () => window.removeEventListener(EVENTO_PERFIL, mudou);
   }, []);
 
-  // Testar as boas-vindas sem criar conta (09/10 · 3.69): abre a mesma apresentação de quem acabou de se cadastrar
-  const [boasVindas, setBoasVindas] = useState(false);
+  // últimas atividades dos admins (o Registro completo fica em /admin/registro)
+  const { perfis } = usePerfisAdmin();
+  const [ultimos, setUltimos] = useState<Registro[] | null>(null);
+  const carregarUltimos = useCallback(async () => {
+    const { data } = await supabase.from("admin_log").select("id, perfil_id, perfil_nome, acao, tipo, created_at").order("created_at", { ascending: false }).limit(5);
+    setUltimos((data as Registro[]) || []);
+  }, []);
+  useEffect(() => {
+    void carregarUltimos();
+    window.addEventListener(EVENTO_REGISTRO, carregarUltimos);
+    return () => window.removeEventListener(EVENTO_REGISTRO, carregarUltimos);
+  }, [carregarUltimos]);
 
   // ao vivo: atualiza sozinho a cada 20 s e quando volta pra aba
   const [painel, setPainel] = useState<Painel | null>(null);
@@ -67,11 +74,11 @@ export default function AdminDashboard() {
   }, []);
   useEffect(() => {
     void carregarPainel();
-    const t = setInterval(() => { if (document.visibilityState === "visible") void carregarPainel(); }, 20_000);
+    const t = setInterval(() => { if (document.visibilityState === "visible") { void carregarPainel(); void carregarUltimos(); } }, 20_000);
     const voltou = () => { if (document.visibilityState === "visible") void carregarPainel(); };
     document.addEventListener("visibilitychange", voltou);
     return () => { clearInterval(t); document.removeEventListener("visibilitychange", voltou); };
-  }, [carregarPainel]);
+  }, [carregarPainel, carregarUltimos]);
 
   const p = painel;
   const agora = p ? new Date(p.agora) : new Date();
@@ -88,10 +95,10 @@ export default function AdminDashboard() {
   const atalhos = [
     { Icone: UsersThree, t: "Usuários", s: p ? `${num(p.contas)} contas` : "Contas", ir: "/admin/usuarios" },
     { Icone: Lightbulb, t: "Ideias", s: p?.ideias_novas ? `${num(p.ideias_novas)} novas` : "Sugestões", ir: "/admin/ideias", badge: p?.ideias_novas },
-    { Icone: Cake, t: "Receitas", s: p?.receitas_pendentes ? `${num(p.receitas_pendentes)} pra aprovar` : "Da comunidade", ir: "/admin/receitas", badge: p?.receitas_pendentes },
     { Icone: Newspaper, t: "Novidades", s: "Avisos no app", ir: "/admin/noticias" },
-    { Icone: ImageIcon, t: "Banners", s: "Do celular", ir: "/admin/banner" },
-    { Icone: FilePdf, t: "PDFs", s: "Biblioteca", ir: "/admin/pdfs" },
+    { Icone: ImageIcon, t: "Banner", s: "Do celular", ir: "/admin/banner" },
+    { Icone: Images, t: "Banners prontos", s: "Pras confeiteiras", ir: "/admin/banners-prontos" },
+    { Icone: PenNib, t: "Autores", s: "Das novidades", ir: "/admin/autores" },
   ];
 
   return (
@@ -201,20 +208,17 @@ export default function AdminDashboard() {
         </section>
       </div>
 
-      {/* ── Testes ── */}
-      <button type="button" className="ad-teste" onClick={() => setBoasVindas(true)}>
-        <span className="ad-ic ad-ic--rosa" aria-hidden="true"><Play size={18} weight="bold" /></span>
-        <span className="ad-teste-tx"><b>Ver as boas-vindas</b><small>O que uma conta nova vê</small></span>
-        <CaretRight size={18} weight="bold" aria-hidden="true" />
-      </button>
+      {/* ── Últimas atividades dos admins ── */}
+      <section className="ad-box ad-reg" aria-label="Últimas atividades">
+        <div className="ad-box-cab">
+          <h2 className="ad-h2">Últimas atividades</h2>
+          <button type="button" className="ad-link" onClick={() => navigate("/admin/registro")}>Ver o registro <CaretRight size={14} weight="bold" aria-hidden="true" /></button>
+        </div>
+        {!ultimos ? <p className="ad-reg-vazio">Carregando…</p>
+          : ultimos.length === 0 ? <p className="ad-reg-vazio">Nada registrado ainda. Quando alguém der PRO, mexer em banner, novidade ou conta, aparece aqui.</p>
+          : <ul className="rg-lista">{ultimos.map(r => <LinhaRegistro key={r.id} r={r} perfis={perfis} />)}</ul>}
+      </section>
 
-      <BoasVindas isOpen={boasVindas} nome={meuNome} onClose={(_tela, configurar) => {
-        setBoasVindas(false);
-        if (configurar) {
-          try { sessionStorage.setItem("doonly_pp_destacar", "1"); } catch { /* sem storage: só não destaca */ }
-          depoisDoVoltar(() => navigate("/inicio"));
-        }
-      }} />
       <PainelLoja id={lojaAberta} aoFechar={() => setLojaAberta(null)} />
 
       <style>{`
@@ -291,12 +295,13 @@ export default function AdminDashboard() {
         .ad-at b { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
         .ad-at small { max-width: 100%; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .ad-teste { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 16px; padding: 12px 16px; border: 1px dashed var(--ui-borda-campo); border-radius: var(--ui-raio-cartao); background: none; font-family: inherit; color: var(--ui-texto-3); text-align: left; cursor: pointer; }
-        .ad-teste:hover { background: var(--ui-branco); }
-        .ad-teste-tx { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .ad-teste-tx b { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
-        .ad-teste-tx small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-
+        .ad-reg { margin-top: 16px; }
+        .ad-reg .rg-lista { margin-top: 8px; }
+        .ad-reg .ad-box-cab { flex-direction: row !important; align-items: center; }
+        .ad-reg-vazio { margin: 10px 0 0; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); }
+        .ad-link { flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+        .ad-link:hover { text-decoration: underline; }
+        ${CSS_REGISTRO}
         @media (max-width: 1100px) { .ad-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (max-width: 900px) { .ad-dupla { grid-template-columns: minmax(0, 1fr); } }
         @media (max-width: 599px) {

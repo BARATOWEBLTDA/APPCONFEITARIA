@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import PainelLoja from "./PainelLoja";
+import PainelLoja, { type AcaoLoja } from "./PainelLoja";
+import { registrar, nomeConta } from "@/lib/adminPerfil";
 import { supabase } from "@/lib/supabase";
 import { Plus, MagnifyingGlass, X, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, avisar, confirmar, informar } from "@/components/base";
@@ -61,6 +62,17 @@ export default function AdminUsuarios() {
   const [pagina, setPagina] = useState(1);
   useEffect(() => { setPagina(1); }, [search, ordem, ver]);
   const [lojaAberta, setLojaAberta] = useState<string | null>(null);
+  const [rev, setRev] = useState(0);
+  // (04/11) os botões saíram da linha: ficam nos detalhes da conta
+  const acoesDa = (u?: UsuarioAdmin): AcaoLoja[] | undefined => {
+    if (!u) return undefined;
+    const pro = u.plano === "pro" && (!u.pro_expira_em || new Date(u.pro_expira_em) > new Date());
+    return [
+      { rotulo: pro ? "Tirar o PRO" : "Dar o PRO", sub: pro ? "A conta volta a ser grátis" : "Por quantos dias quiser", icone: <Crown size={20} weight={pro ? "fill" : "bold"} />, ativo: pro, aoClicar: () => handleTogglePRO(u) },
+      { rotulo: u.banned_until ? "Desbloquear" : "Bloquear o acesso", sub: u.banned_until ? "Ela volta a entrar no app" : "Ela não consegue mais entrar", icone: u.banned_until ? <LockOpen size={20} weight="bold" /> : <Lock size={20} weight="bold" />, aoClicar: () => setConfirmBlock(u) },
+      { rotulo: "Excluir a conta", sub: "Apaga a conta e tudo dela", icone: <Trash size={20} weight="bold" />, perigo: true, aoClicar: () => setConfirmDelete(u) },
+    ];
+  };
   const irPara = (p: number) => { setPagina(p); document.querySelector(".au-card")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   const [erroMetricas, setErroMetricas] = useState(false);
   // relógio da tela: "online agora" e "há X min" andam sozinhos sem recarregar a lista
@@ -106,6 +118,7 @@ export default function AdminUsuarios() {
     if (erroBloq) setErroMetricas(true);
     else ((bloqueados || []) as { id: string; banned_until: string }[]).forEach(b => bloq.set(b.id, b.banned_until));
     setUsers(data.map(u => ({ ...u, ...(mapa.get(u.id) || {}), ...(met.get(u.id) || {}), banned_until: bloq.get(u.id) || null })));
+    setRev(r => r + 1);
     setLoading(false);
   };
 
@@ -136,6 +149,7 @@ export default function AdminUsuarios() {
       if (error) { informar({ titulo: "Não deu para desativar o PRO", texto: error.message, icone: "erro" }); return; }
       if (!data || data.length === 0) { informar({ titulo: "Nenhuma linha foi atualizada", texto: "Provável causa: a policy RLS está bloqueando (sem permissão de admin em profiles). Rode o SQL de policy admin.", icone: "alerta" }); return; }
       avisar("PRO desativado.");
+      void registrar(`tirou o PRO de ${nomeConta(u)}`, { tipo: "pro", alvo_id: u.id });
       await load();
     } else {
       setProDias("30");
@@ -174,6 +188,7 @@ export default function AdminUsuarios() {
     }
 
     setProAlvo(null);
+    void registrar(`deu o PRO de ${dias} ${dias === 1 ? "dia" : "dias"} para ${nomeConta(u)}`, { tipo: "pro", alvo_id: u.id, detalhe: { dias, vence: expira.toISOString() } });
     avisar(`PRO ativado por ${dias} dias. Vence em ${expira.toLocaleDateString("pt-BR")}.`);
     await load();
   };
@@ -202,7 +217,8 @@ export default function AdminUsuarios() {
     setCreating(true);
     setCreateError("");
     try {
-      await callEdge({ action: "create", ...createForm });
+      const criada = await callEdge({ action: "create", ...createForm });
+      void registrar(`criou a conta de ${createForm.nome.trim()} (${createForm.email.trim()})`, { tipo: "usuario", alvo_id: (criada as { user?: { id?: string } })?.user?.id ?? null });
       setShowCreate(false);
       setCreateForm({ nome: "", email: "", senha: "", telefone: "" });
       await load();
@@ -217,7 +233,8 @@ export default function AdminUsuarios() {
     setActionLoading(true);
     try {
       await callEdge({ action: "delete", userId: confirmDelete.id });
-      setConfirmDelete(null);
+      void registrar(`excluiu a conta ${nomeConta(confirmDelete)}${confirmDelete.email ? ` (${confirmDelete.email})` : ""}`, { tipo: "exclusao", alvo_id: confirmDelete.id });
+      setConfirmDelete(null); setLojaAberta(null);
       await load();
     } catch (err) {
       avisar((err as Error).message, { tipo: "erro" });
@@ -231,6 +248,7 @@ export default function AdminUsuarios() {
     try {
       const action = confirmBlock.banned_until ? "unblock" : "block";
       await callEdge({ action, userId: confirmBlock.id });
+      void registrar(`${action === "block" ? "bloqueou" : "desbloqueou"} a conta ${nomeConta(confirmBlock)}`, { tipo: "bloqueio", alvo_id: confirmBlock.id });
       setConfirmBlock(null);
       await load();
     } catch (err) {
@@ -328,59 +346,45 @@ export default function AdminUsuarios() {
               <span role="columnheader" className="au-num">Produtos</span>
               <span role="columnheader" className="au-num">Clientes</span>
               <span role="columnheader">Último acesso</span>
-              <span role="columnheader" className="au-cab-acoes">Ações</span>
+              <span aria-hidden="true" />
             </div>
             {filtered.slice((pagAtual - 1) * POR_PAGINA, pagAtual * POR_PAGINA).map(u => {
               const isPROAtivo = u.plano === "pro" && (!u.pro_expira_em || new Date(u.pro_expira_em) > new Date());
               const proExpiraTexto = u.pro_expira_em ? new Date(u.pro_expira_em).toLocaleDateString("pt-BR") : "";
               const cadastro = u.created_at ? new Date(u.created_at).toLocaleDateString("pt-BR") : "";
-              const status = u.is_admin ? "Admin" : u.banned_until ? "Bloqueado" : "";
-              const stCls = u.is_admin ? "admin" : "bloq";
               const visto = vistoEm(u);
               const online = !!visto && agora - new Date(visto).getTime() < ONLINE_MS;
+              // (04/11) PRO "pra sempre" (vencimento daqui a décadas) vira Vitalício
+              const vitalicio = !!u.pro_expira_em && new Date(u.pro_expira_em).getFullYear() - new Date().getFullYear() > 50;
+              const abrir = () => setLojaAberta(u.id);
               return (
-                <div key={u.id} className="au-l" role="row">
-                  <div className="au-quem" role="cell" tabIndex={0} title="Ver detalhes da loja"
-                    onClick={() => setLojaAberta(u.id)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLojaAberta(u.id); } }}>
+                <div key={u.id} className="au-l" role="row" tabIndex={0} title="Ver detalhes da conta"
+                  onClick={abrir} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(); } }}>
+                  <div className="au-quem" role="cell">
                     <span className="au-av" aria-hidden="true">
                       {u.logo_url || u.foto_url ? <img src={(u.logo_url || u.foto_url) as string} alt="" /> : (u.nome_loja || u.nome || u.email || "?").charAt(0).toUpperCase()}
                       {online && <i className="au-av-on" />}
                     </span>
                     <span className="au-quem-tx">
                       <b>{u.nome_loja || u.nome || "Sem nome"}</b>
-                      <small>{[u.nome_loja && u.nome && u.nome !== u.nome_loja ? u.nome : "", u.email].filter(Boolean).join(" · ")}</small>
-                      <small className="au-desde">{[u.telefone, cadastro ? `desde ${cadastro}` : ""].filter(Boolean).join(" · ")}</small>
+                      <small className="au-so-pc">{[u.nome_loja && u.nome && u.nome !== u.nome_loja ? u.nome : "", u.email].filter(Boolean).join(" · ")}</small>
+                      <small className="au-desde">{cadastro ? `Entrou em ${cadastro}` : "Sem data de entrada"}</small>
                     </span>
                   </div>
                   <span className="au-c au-c--plano" role="cell">
                     {isPROAtivo
-                      ? <span className="au-tag au-tag--pro" title={proExpiraTexto ? `Vence em ${proExpiraTexto}` : undefined}><Crown size={14} weight="fill" aria-hidden="true" /> PRO{proExpiraTexto ? <em> até {proExpiraTexto}</em> : null}</span>
+                      ? <><span className="au-tag au-tag--pro"><Crown size={13} weight="fill" aria-hidden="true" /> PRO</span><small className="au-ate">{vitalicio ? "Vitalício" : proExpiraTexto ? `até ${proExpiraTexto}` : "Sem vencimento"}</small></>
                       : <span className="au-tag">Grátis</span>}
-                    {status && <span className={`au-tag au-tag--${stCls}`}>{status}</span>}
+                    {u.banned_until && <span className="au-tag au-tag--bloq">Bloqueada</span>}
                   </span>
-                  <i className="au-quebra" aria-hidden="true" />
                   <span className="au-c au-c--n au-num" role="cell" title={`${u.pedidos_30d || 0} nos últimos 30 dias`}>
-                    <b>{(u.pedidos || 0).toLocaleString("pt-BR")}</b><em className="au-so-cel"> pedidos</em>
+                    <b>{(u.pedidos || 0).toLocaleString("pt-BR")}</b>
                     {(u.pedidos_cardapio || 0) > 0 && <small>{u.pedidos_cardapio} pelo cardápio</small>}
                   </span>
-                  <span className="au-c au-c--n au-num" role="cell"><b>{(u.produtos || 0).toLocaleString("pt-BR")}</b><em className="au-so-cel"> produtos</em></span>
-                  <span className="au-c au-c--n au-num" role="cell"><b>{(u.clientes || 0).toLocaleString("pt-BR")}</b><em className="au-so-cel"> clientes</em></span>
+                  <span className="au-c au-c--n au-num" role="cell"><b>{(u.produtos || 0).toLocaleString("pt-BR")}</b></span>
+                  <span className="au-c au-c--n au-num" role="cell"><b>{(u.clientes || 0).toLocaleString("pt-BR")}</b></span>
                   <span className={`au-c au-c--visto${online ? " on" : ""}`} role="cell" title={visto ? new Date(visto).toLocaleString("pt-BR") : undefined}>{textoVisto(visto, agora)}</span>
-                  <div className="au-acoes" role="cell">
-                    <BotaoIcone
-                      rotulo={isPROAtivo ? "Desativar PRO" : "Ativar PRO"}
-                      variante={isPROAtivo ? "suave" : "limpo"}
-                      onClick={() => handleTogglePRO(u)}
-                    >
-                      <Crown size={20} weight={isPROAtivo ? "fill" : "bold"} />
-                    </BotaoIcone>
-                    <BotaoIcone rotulo={u.banned_until ? "Desbloquear" : "Bloquear"} variante="limpo" onClick={() => setConfirmBlock(u)}>
-                      {u.banned_until ? <LockOpen size={20} weight="bold" /> : <Lock size={20} weight="bold" />}
-                    </BotaoIcone>
-                    <BotaoIcone rotulo="Excluir" variante="limpo" className="au-bt-perigo" onClick={() => setConfirmDelete(u)}>
-                      <Trash size={20} weight="bold" />
-                    </BotaoIcone>
-                  </div>
+                  <span className="au-seta" aria-hidden="true"><CaretRight size={18} weight="bold" /></span>
                 </div>
               );
             })}
@@ -497,33 +501,29 @@ export default function AdminUsuarios() {
 
         .au-lista { margin-top: 8px; }
         .au-cab { display: none; }
-        /* celular: nome e botões em cima; plano, status e data em uma linha embaixo */
-        .au-l { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 12px 0; border-top: 1px solid var(--ui-linha); }
+        /* (04/11) celular: só foto, nome, quando entrou e o plano; o resto (números e botões) fica nos detalhes */
+        .au-l { display: flex; align-items: center; gap: 12px; padding: 14px 4px; border-top: 1px solid var(--ui-linha); border-radius: var(--ui-raio); cursor: pointer; }
         .au-cab + .au-l { border-top: 0; }
-        .au-l::after { content: ""; order: 2; flex-basis: 100%; height: 0; }
-        .au-quem { order: 1; flex: 1 1 0; display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 48px; }
-        .au-acoes { order: 2; flex: none; display: flex; align-items: center; gap: 2px; }
-        .au-av { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; overflow: hidden; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 16px; font-weight: 600; }
-        .au-av img { width: 100%; height: 100%; object-fit: cover; }
-        .au-quem-tx { min-width: 0; display: flex; flex-direction: column; }
-        .au-quem-tx b { font-size: 15px; font-weight: 600; color: var(--ui-texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .au-l:hover { background: #FCFAFB; }
+        .au-l:focus-visible { outline: 2px solid var(--ui-rosa); outline-offset: -2px; }
+        .au-l:hover .au-quem-tx b { color: var(--ui-rosa-escuro); }
+        .au-quem { flex: 1 1 0; display: flex; align-items: center; gap: 14px; min-width: 0; min-height: 52px; }
+        .au-av { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 17px; font-weight: 600; }
+        .au-av img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .au-av-on { position: absolute; right: 0; bottom: 0; width: 13px; height: 13px; border: 2px solid var(--ui-branco); border-radius: 50%; background: var(--ui-verde); }
+        .au-quem-tx { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .au-quem-tx b { font-size: 16px; font-weight: 600; color: var(--ui-texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .au-quem-tx small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .au-bt-perigo { color: var(--ui-vermelho); }
-        .au-bt-perigo:hover { background: var(--ui-vermelho-fundo); }
-        .au-c { display: inline-flex; align-items: center; min-width: 0; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-        .au-c--tel { display: none; }
-        .au-c--plano { order: 3; padding-left: 56px; gap: 6px; }
-        .au-c--n { order: 4; gap: 2px; }
+        .au-desde { color: var(--ui-texto-3) !important; }
+        .au-so-pc { display: none !important; }
+        .au-c { display: none; min-width: 0; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); }
+        .au-c--plano { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+        .au-ate { font-size: 12px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
         .au-c--n b { font-weight: 600; color: var(--ui-texto); }
-        .au-c--n small { display: none; }
-        .au-c--visto { order: 4; }
         .au-c--visto.on, .au-on-txt { color: var(--ui-verde); font-weight: 600; }
         .au-on-txt { display: inline-flex; align-items: center; gap: 6px; }
         .au-on-txt i { width: 8px; height: 8px; border-radius: 50%; background: var(--ui-verde); }
-        .au-av { position: relative; overflow: visible !important; }
-        .au-av img { border-radius: 50%; }
-        .au-av-on { position: absolute; right: -1px; bottom: -1px; width: 12px; height: 12px; border: 2px solid var(--ui-branco); border-radius: 50%; background: var(--ui-verde); }
-        .au-desde { font-size: 12px !important; color: var(--ui-texto-3) !important; }
+        .au-seta { flex: none; display: flex; color: var(--ui-texto-3); }
         .au-filtros { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
         .au-filtros .au-busca { flex: 1 1 100%; min-width: 0; max-width: none; box-sizing: border-box; }
         .au-filtros .au-ordem { flex: 1 1 0; min-width: 0; flex-direction: column; align-items: stretch; gap: 4px; }
@@ -538,14 +538,9 @@ export default function AdminUsuarios() {
         .au-quem { cursor: pointer; border-radius: var(--ui-raio); }
         .au-quem:hover .au-quem-tx b { color: var(--ui-rosa-escuro); text-decoration: underline; text-underline-offset: 3px; }
         .au-quem:focus-visible { outline: 2px solid var(--ui-rosa); outline-offset: 2px; }
-        /* celular: plano e último acesso numa linha, os números na de baixo */
-        .au-quebra { order: 5; flex-basis: 100%; height: 0; }
-        .au-l .au-c--n { order: 6; }
         .au-ordem { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); }
         .au-ordem select { height: 48px; padding: 0 12px; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ui-texto); }
         .au-aviso { margin: 10px 0 0; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-size: 14px; font-weight: 500; }
-        .au-nada { font-style: normal; color: var(--ui-texto-3); }
-        .au-so-cel { font-style: normal; white-space: pre; }
         .au-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-weight: 600; white-space: nowrap; }
         .au-tag em { font-style: normal; font-weight: 500; }
         .au-tag--pro { background: var(--ui-vinho); color: var(--ui-branco); }
@@ -553,31 +548,24 @@ export default function AdminUsuarios() {
         .au-tag--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
         .au-tag--bloq { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
         .au-tag--admin { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-        @media (max-width: 420px) { .au-c--plano { padding-left: 0; } }
 
-        /* computador: tabela */
+        /* computador: tabela (os botões ficam nos detalhes, ao clicar na linha) */
         @media (min-width: 900px) {
           .au-card { padding: 16px; }
-          .au-cab, .au-l { display: grid; grid-template-columns: minmax(0, 2.6fr) minmax(0, 1.2fr) 132px 76px 76px 118px 148px; align-items: center; column-gap: 12px; }
+          .au-cab, .au-l { display: grid; grid-template-columns: minmax(0, 2.6fr) minmax(0, 1.2fr) 132px 76px 76px 118px 24px; align-items: center; column-gap: 12px; }
+          .au-cab { margin-top: 12px; padding: 10px 12px; border-radius: var(--ui-raio-p); background: var(--ui-cinza); font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+          .au-l { min-height: 72px; padding: 10px 12px; border-top: 0; border-bottom: 1px solid var(--ui-linha); border-radius: 0; }
+          .au-l:last-of-type { border-bottom: 0; }
+          .au-av { width: 44px; height: 44px; font-size: 15px; }
+          .au-quem-tx b { font-size: 15px; }
+          .au-so-pc { display: block !important; }
+          .au-desde { font-size: 12px !important; }
+          .au-c { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          .au-c--plano { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 4px 6px; }
           .au-num { text-align: right; }
-          .au-c--n { display: flex !important; flex-direction: column; align-items: flex-end; }
+          .au-c--n { display: flex; flex-direction: column; align-items: flex-end; }
           .au-c--n b { font-size: 15px; }
           .au-c--n small { display: block; font-size: 12px; color: var(--ui-texto-3); }
-          .au-c--plano { display: flex !important; flex-wrap: wrap; padding-left: 0; }
-          .au-c--visto { padding-left: 0; flex-basis: auto; }
-          .au-quebra { display: none; }
-          .au-l .au-c--n { order: 0; }
-          .au-cab { margin-top: 12px; padding: 10px 12px; border-radius: var(--ui-raio-p); background: var(--ui-cinza); font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-          .au-cab-acoes { text-align: right; }
-          .au-l { min-height: 68px; padding: 8px 12px; border-top: 0; border-bottom: 1px solid var(--ui-linha); }
-          .au-l:last-child { border-bottom: 0; }
-          .au-l::after { display: none; }
-          .au-l:hover { background: #FCFAFB; }
-          .au-quem, .au-acoes, .au-c { order: 0; }
-          .au-av { width: 40px; height: 40px; font-size: 14px; }
-          .au-c { display: block; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-          .au-so-cel { display: none; }
-          .au-acoes { justify-content: flex-end; }
         }
 
         .au-form { display: flex; flex-direction: column; gap: 16px; }
@@ -587,7 +575,7 @@ export default function AdminUsuarios() {
         .au-atalhos button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 600; cursor: pointer; }
         .au-atalhos button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
       `}</style>
-      <PainelLoja id={lojaAberta} aoFechar={() => setLojaAberta(null)} />
+      <PainelLoja id={lojaAberta} aoFechar={() => setLojaAberta(null)} rev={rev} acoes={acoesDa(users.find(u => u.id === lojaAberta))} />
     </div>
   );
 }

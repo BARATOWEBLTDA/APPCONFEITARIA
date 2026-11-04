@@ -3,7 +3,7 @@
 // ou numa loja do "Com o app aberto" (Painel). Lê tudo da função admin_loja,
 // que só responde para o admin.
 // ─────────────────────────────────────────────────────────────────────────────
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import { Gaveta, Botao } from "@/components/base";
 import { explicarErro } from "@/lib/erros";
@@ -37,7 +37,10 @@ function visto(iso: string | null, agora: number): string {
   return d.toLocaleDateString("pt-BR");
 }
 
-export default function PainelLoja({ id, aoFechar }: { id: string | null; aoFechar: () => void }) {
+/** botões de gerenciar a conta (dar/tirar PRO, bloquear, excluir): só na tela Usuários */
+export type AcaoLoja = { rotulo: string; sub?: string; icone: ReactNode; perigo?: boolean; ativo?: boolean; aoClicar: () => void };
+
+export default function PainelLoja({ id, aoFechar, acoes, rev = 0 }: { id: string | null; aoFechar: () => void; acoes?: AcaoLoja[]; rev?: number }) {
   const [loja, setLoja] = useState<Loja | null>(null);
   const [erro, setErro] = useState("");
   const [agora, setAgora] = useState(() => Date.now());
@@ -45,14 +48,14 @@ export default function PainelLoja({ id, aoFechar }: { id: string | null; aoFech
   useEffect(() => {
     if (!id) return;
     let vivo = true;
-    setLoja(null); setErro(""); setAgora(Date.now());
+    setErro(""); setAgora(Date.now());
     supabase.rpc("admin_loja", { uid: id }).then(({ data: d, error }) => {
       if (!vivo) return;
       if (error || !d) setErro(explicarErro(error, "Não deu para abrir os detalhes dessa loja. Tente de novo."));
       else setLoja(d as Loja);
     });
     return () => { vivo = false; };
-  }, [id]);
+  }, [id, rev]);
 
   const l = loja;
   const proAtivo = !!l && l.plano === "pro" && (!l.pro_expira_em || new Date(l.pro_expira_em).getTime() > agora);
@@ -138,12 +141,24 @@ export default function PainelLoja({ id, aoFechar }: { id: string | null; aoFech
               <div><dt>Cadastro</dt><dd>{data(l.criado_em)}</dd></div>
               <div><dt>Último pedido</dt><dd>{data(l.ultimo_pedido_em)}</dd></div>
               {proAtivo && l.pro_desde && <div><dt>PRO desde</dt><dd>{data(l.pro_desde)}</dd></div>}
-              {proAtivo && <div><dt>PRO vence em</dt><dd>{l.pro_expira_em ? data(l.pro_expira_em) : "Sem vencimento"}</dd></div>}
+              {proAtivo && <div><dt>PRO vence em</dt><dd>{!l.pro_expira_em ? "Sem vencimento" : new Date(l.pro_expira_em).getFullYear() - new Date(agora).getFullYear() > 50 ? "Vitalício" : data(l.pro_expira_em)}</dd></div>}
               {origem && <div><dt>Assinatura</dt><dd>{origem}{l.assinatura_status ? ` · ${l.assinatura_status}` : ""}</dd></div>}
               <div><dt>Pix online</dt><dd>{l.pix_online ? "Ligado" : "Desligado"}</dd></div>
               {l.indicada_por && <div><dt>Indicada por</dt><dd>{l.indicada_por}</dd></div>}
               {l.indicou > 0 && <div><dt>Indicou</dt><dd>{n(l.indicou)} {l.indicou === 1 ? "conta" : "contas"}</dd></div>}
             </dl>
+
+            {acoes && acoes.length > 0 && <>
+              <h3 className="pl-h">Gerenciar conta</h3>
+              <div className="pl-acoes">
+                {acoes.map(a => (
+                  <button key={a.rotulo} type="button" className={`pl-acao${a.perigo ? " pl-acao--perigo" : ""}${a.ativo ? " pl-acao--ativo" : ""}`} onClick={a.aoClicar}>
+                    <span className="pl-acao-ic" aria-hidden="true">{a.icone}</span>
+                    <span className="pl-acao-tx"><b>{a.rotulo}</b>{a.sub && <small>{a.sub}</small>}</span>
+                  </button>
+                ))}
+              </div>
+            </>}
           </div>
         )}
       <style>{`
@@ -195,6 +210,17 @@ export default function PainelLoja({ id, aoFechar }: { id: string | null; aoFech
         .pl-dl div + div { border-top: 1px solid var(--ui-linha); }
         .pl-dl dt { flex: none; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); }
         .pl-dl dd a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+        .pl-acoes { border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); overflow: hidden; }
+        .pl-acao { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 12px; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+        .pl-acao + .pl-acao { border-top: 1px solid var(--ui-linha); }
+        .pl-acao:hover { background: var(--ui-fundo); }
+        .pl-acao-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--ui-cinza); color: var(--ui-texto-2); }
+        .pl-acao--ativo .pl-acao-ic { background: var(--ui-vinho); color: #FFD27A; }
+        .pl-acao--perigo .pl-acao-ic { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
+        .pl-acao-tx { min-width: 0; display: flex; flex-direction: column; }
+        .pl-acao-tx b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+        .pl-acao--perigo .pl-acao-tx b { color: var(--ui-vermelho); }
+        .pl-acao-tx small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
         .pl-dl dd { min-width: 0; margin: 0; font-size: 14px; font-weight: 500; color: var(--ui-texto); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       `}</style>
     </Gaveta>

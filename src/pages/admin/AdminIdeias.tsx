@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { registrar } from "@/lib/adminPerfil";
 import { MagnifyingGlass, EnvelopeSimple, Lightbulb, X } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { BotaoIcone, TelaVazia, avisar } from "@/components/base";
@@ -127,6 +128,8 @@ export default function AdminIdeias() {
     // RLS bloqueando não dá erro, só não atualiza nada
     if (!data || data.length === 0) { mostrarToast("Sem permissão para alterar. Rode o SQL de permissões do admin.", "erro"); return; }
     setIdeias(prev => prev.map(i => (i.id === ideia.id ? { ...i, status: novo } : i)));
+    const rot = STATUS_OPTS.find(o => o.id === novo)?.label || novo;
+    void registrar(`marcou a ideia "${(ideia.titulo || "sem título").slice(0, 60)}" como ${rot.toLowerCase()}`, { tipo: "ideia", alvo_id: ideia.id });
     const quem = (ideia.nome || "A confeiteira").split(" ")[0];
     mostrarToast(novo === "implementada"
       ? `Marcada como implementada. ${quem} vai receber a notificação.`

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { registrar } from "@/lib/adminPerfil";
 import { Image as ImageIcon, Trash, UploadSimple, WarningCircle } from "@phosphor-icons/react";
 import { Botao, Campo, Titulo, avisar, confirmar } from "@/components/base";
 import "./admin-banner.css";
@@ -67,6 +68,7 @@ export default function AdminBanner() {
         .eq("id", row.id);
       if (updErr) throw updErr;
 
+      void registrar(`trocou a imagem do banner do celular (${aud === "pro" ? "PRO" : "grátis"})`, { tipo: "banner", alvo_id: row.id });
       showMsg("Imagem enviada", "ok");
       await load();
     } catch (err) {
@@ -87,6 +89,11 @@ export default function AdminBanner() {
       .eq("id", row.id);
     setSavingId(null);
     if (error) { showMsg("Erro ao salvar: " + error.message, "err"); return; }
+    const qual = `o banner do celular (${aud === "pro" ? "PRO" : "grátis"})`;
+    const frase = patch.imagem_url === null ? `removeu a imagem d${qual.slice(1)}`
+      : patch.ativo === true ? `ligou ${qual}` : patch.ativo === false ? `desligou ${qual}`
+      : patch.link_destino !== undefined ? `mudou o link d${qual.slice(1)}` : `editou ${qual}`;
+    void registrar(frase, { tipo: "banner", alvo_id: row.id });
     showMsg("Salvo", "ok");
     await load();
   };

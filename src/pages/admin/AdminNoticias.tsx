@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { registrar } from "@/lib/adminPerfil";
 import { Plus, PencilSimple, Trash, ArrowUp, ArrowDown, Eye, EyeSlash, Image as ImageIcon, CaretDown, PushPin, Bell, WarningCircle, Newspaper, DotsThree } from "@phosphor-icons/react";
 import RichEditor from "@/components/RichEditor";
 import type { JSONContent } from "@tiptap/react";
@@ -220,6 +221,7 @@ export default function AdminNoticias() {
         salvaSlug = nova?.slug || null;
       }
       const acao = editing ? "Atualizada" : "Criada";
+      void registrar(`${editing ? "editou" : "publicou"} a novidade "${payload.titulo}"${!editing && notif.enviar && podeNotificar ? " e mandou o aviso no celular" : ""}`, { tipo: "noticia", alvo_id: salvaId || null });
 
       if (notif.enviar && podeNotificar && salvaId) {
         // Também vira uma notificação na aba Notificações (uma vez só por notícia)
@@ -260,12 +262,12 @@ export default function AdminNoticias() {
   const excluir = async (n: Noticia) => {
     if (!(await confirmar({ titulo: `Excluir "${n.titulo}"?`, texto: "Ela some do Início e da tela de Notícias.", rotulo: "Excluir", perigo: true }))) return;
     const { error } = await supabase.from("admin_noticias").delete().eq("id", n.id);
-    if (error) showMsg("Erro: " + error.message, "err"); else { showMsg("Excluída!", "ok"); await load(); }
+    if (error) showMsg("Erro: " + error.message, "err"); else { void registrar(`excluiu a novidade "${n.titulo}"`, { tipo: "noticia", alvo_id: n.id }); showMsg("Excluída!", "ok"); await load(); }
   };
 
   const toggleAtivo = async (n: Noticia) => {
     const { error } = await supabase.from("admin_noticias").update({ ativo: !n.ativo }).eq("id", n.id);
-    if (error) showMsg("Erro: " + error.message, "err"); else await load();
+    if (error) showMsg("Erro: " + error.message, "err"); else { void registrar(`${n.ativo ? "escondeu" : "mostrou"} a novidade "${n.titulo}"`, { tipo: "noticia", alvo_id: n.id }); await load(); }
   };
 
   const mover = async (n: Noticia, dir: "up" | "down") => {

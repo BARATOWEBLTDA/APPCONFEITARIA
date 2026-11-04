@@ -2,10 +2,12 @@ import { Suspense, useState, useEffect } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { NomeDoonly } from "@/components/marca/Mascote";
+import { perfilAtual, escolherPerfil, EVENTO_PERFIL, type PerfilAdmin } from "@/lib/adminPerfil";
+import EscolherPerfil, { AvatarAdmin } from "./EscolherPerfil";
 import {
   ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images,
-  Cake, Medal, FilePdf, ChartBar, Lightbulb, Lifebuoy,
-  ArrowLeft, SignOut, DotsThreeOutline, CaretRight, X,
+  ChartBar, Lightbulb, Lifebuoy,
+  ArrowLeft, SignOut, DotsThreeOutline, CaretRight, X, ClockCounterClockwise, ArrowsLeftRight,
 } from "@phosphor-icons/react";
 
 interface MenuItem {
@@ -35,14 +37,7 @@ const menuSections: MenuSection[] = [
       { path: "/admin/banners-prontos", label: "Banners prontos", icon: <Images size={20} weight="bold" /> },
     ],
   },
-  {
-    title: "Biblioteca",
-    items: [
-      { path: "/admin/receitas", label: "Receitas da comunidade", icon: <Cake size={20} weight="bold" /> },
-      { path: "/admin/receitas-doonly", label: "Receitas Doonly", icon: <Medal size={20} weight="bold" /> },
-      { path: "/admin/pdfs", label: "Biblioteca de PDFs", icon: <FilePdf size={20} weight="bold" /> },
-    ],
-  },
+  // (04/11) Biblioteca (receitas da comunidade, receitas Doonly e PDFs) foi descontinuada
   {
     title: "Comunicação",
     items: [
@@ -52,6 +47,7 @@ const menuSections: MenuSection[] = [
   {
     title: "Análise",
     items: [
+      { path: "/admin/registro", label: "Registro", icon: <ClockCounterClockwise size={20} weight="bold" /> },
       { path: "/admin/relatorios", label: "Relatórios", icon: <ChartBar size={20} weight="bold" /> },
       { path: "/admin/ajuda", label: "Central de Ajuda", icon: <Lifebuoy size={20} weight="bold" /> },
     ],
@@ -77,6 +73,14 @@ export default function AdminLayout() {
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("Admin");
   const [ideiasNovas, setIdeiasNovas] = useState(0);
+  // (04/11) quem dos 3 admins está usando (escolhe ao entrar, estilo Netflix)
+  const [perfil, setPerfil] = useState<PerfilAdmin | null>(() => perfilAtual());
+  useEffect(() => {
+    const mudou = () => setPerfil(perfilAtual());
+    window.addEventListener(EVENTO_PERFIL, mudou);
+    return () => window.removeEventListener(EVENTO_PERFIL, mudou);
+  }, []);
+  const trocarPerfil = () => { setMenuOpen(false); escolherPerfil(null); };
 
   // Contador de ideias novas na sidebar (recebida ou sem status)
   useEffect(() => {
@@ -114,12 +118,14 @@ export default function AdminLayout() {
   }, [navigate]);
 
   const handleLogout = async () => {
+    escolherPerfil(null);
     await supabase.auth.signOut();
     navigate("/admin/login");
   };
 
   if (loading) return null;
   if (!authorized) return null;
+  if (!perfil) return <EscolherPerfil aoSair={handleLogout} />;
 
   const isActive = (path: string) => {
     if (path === "/admin") return location.pathname === "/admin";
@@ -151,13 +157,14 @@ export default function AdminLayout() {
 
   const renderBottom = () => (
     <div className="adm-sidebar-bottom">
-      <div className="adm-user">
-        <div className="adm-user-avt">{userName.charAt(0).toUpperCase()}</div>
+      <button type="button" className="adm-user" onClick={trocarPerfil} title={`Entrou como ${perfil.nome} · ${userEmail || userName}`}>
+        <AvatarAdmin perfil={perfil} tamanho={36} />
         <div className="adm-user-info">
-          <div className="adm-user-name">{userName}</div>
-          <div className="adm-user-mail">{userEmail}</div>
+          <div className="adm-user-name">{perfil.nome}</div>
+          <div className="adm-user-mail">Trocar de perfil</div>
         </div>
-      </div>
+        <ArrowsLeftRight size={18} weight="bold" className="adm-user-troca" />
+      </button>
       <button className="adm-side-btn" onClick={() => navigate("/inicio")}>
         <ArrowLeft size={20} weight="bold" />
         <span>Voltar ao app</span>
@@ -186,6 +193,9 @@ export default function AdminLayout() {
       <div className="adm-mobile-header">
         <NomeDoonly cor="branco" className="adm-marca adm-marca--cel" />
         <span className="adm-etq">Admin</span>
+        <button type="button" className="adm-cel-perfil" onClick={trocarPerfil} aria-label={`${perfil.nome}: trocar de perfil`}>
+          <AvatarAdmin perfil={perfil} tamanho={34} />
+        </button>
       </div>
 
       {/* Mobile: barra de navegação inferior */}
@@ -279,7 +289,11 @@ export default function AdminLayout() {
         .adm-nav-label { flex: 1; }
         .adm-nav-badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
         .adm-sidebar-bottom { padding: 12px; border-top: 1px solid rgba(255,255,255,.08); }
-        .adm-user { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; padding: 10px; border-radius: var(--ui-raio); background: rgba(255,255,255,.06); }
+        .adm-user { display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 6px; padding: 10px; border: 0; border-radius: var(--ui-raio); background: rgba(255,255,255,.06); font-family: inherit; text-align: left; cursor: pointer; }
+        .adm-user:hover { background: rgba(255,255,255,.1); }
+        .adm-user-info { flex: 1; min-width: 0; }
+        .adm-user-troca { flex: none; color: rgba(255,255,255,.5); }
+        .adm-cel-perfil { margin-left: auto; display: flex; padding: 0; border: 2px solid rgba(255,255,255,.25); border-radius: 50%; background: none; cursor: pointer; }
         .adm-user-avt { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ui-rosa); color: var(--ui-branco); font-size: 15px; font-weight: 600; }
         .adm-user-info { min-width: 0; flex: 1; }
         .adm-user-name { font-size: 14px; font-weight: 600; color: var(--ui-branco); text-transform: capitalize; }

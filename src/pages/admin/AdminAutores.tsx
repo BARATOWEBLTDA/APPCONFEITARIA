@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { registrar } from "@/lib/adminPerfil";
 import { Plus, PencilSimple, Trash, User, Image as ImageIcon, Eye, EyeSlash, DotsThree } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import { explicarErro } from "@/lib/erros";
@@ -96,6 +97,7 @@ export default function AdminAutores() {
     liberar();
     setModalOpen(false);
     carregar();
+    void registrar(editing ? `editou o autor ${payload.nome}` : `adicionou o autor ${payload.nome}`, { tipo: "autor", alvo_id: editing?.id ?? null });
     showMsg(editing ? "Atualizado!" : "Autor criado!");
   };
 
@@ -104,6 +106,7 @@ export default function AdminAutores() {
     const { error } = await supabase.from("admin_autores").delete().eq("id", a.id);
     if (error) return showMsg("Erro: " + error.message, "err");
     carregar();
+    void registrar(`excluiu o autor ${a.nome}`, { tipo: "autor", alvo_id: a.id });
     showMsg("Autor excluído");
   };
 
