@@ -25,6 +25,7 @@ import { Ticket, Target } from "@phosphor-icons/react";
 import { ligarAcessoOnline } from "@/lib/acessoOnline";
 import { ConviteProGlobal } from "@/components/billing/RecursoPro";
 import DestaqueDaNavegacao from "@/components/guia/DestaqueDaNavegacao";
+import { MarcosDaAssinatura } from "@/components/PixelsDoApp";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import AlertaPedidoNovo from "@/components/AlertaPedidoNovo";
 import { reativarPushSeSaiu } from "@/hooks/usePushSubscription";
@@ -300,6 +301,7 @@ export default function Layout() {
             As notificações continuam na tela "Notificações", pelo menu da foto. */}
         <Suspense fallback={null}><Outlet /></Suspense>
         <ConviteProGlobal />
+        <MarcosDaAssinatura />
         <DestaqueDaNavegacao />
         <AcenderDaAjuda />
       </main>

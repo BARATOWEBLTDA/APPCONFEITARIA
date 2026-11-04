@@ -11,6 +11,7 @@ import { useProfile, type Profile } from "@/hooks/useProfile";
 /** O perfil com os dados da assinatura (Hotmart) */
 type PerfilAssinatura = (Profile & { assinatura_status?: string | null; assinatura_origem?: string | null; email?: string | null }) | null;
 import { voltarOuIr } from "@/lib/voltar";
+import { eventoDoApp, VALOR_PRO } from "@/lib/pixelsApp";
 import { abrirDooIA } from "@/components/MenuContaItens"; // 11/10: seta de voltar que funciona com a tela aberta direto (link de notificação)
 import "./clientes.css";
 import "./assinar.css";
@@ -52,6 +53,7 @@ export default function Assinar() {
   const [emailConta, setEmailConta] = useState("");
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setEmailConta(data.user?.email || "")).catch(() => {}); }, []);
   const assinarNaHotmart = () => {
+    void eventoDoApp("InitiateCheckout", { value: VALOR_PRO, content_name: "Doonly PRO" }); // (6.21) pixels do app
     const u = new URL(CHECKOUT_HOTMART);
     const email = emailConta || (profile as PerfilAssinatura)?.email || "";
     if (email) u.searchParams.set("email", email);

@@ -1,3 +1,4 @@
+import { VisitasDoApp } from "@/components/PixelsDoApp";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
@@ -72,6 +73,7 @@ const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminUsuarios = lazy(() => import("@/pages/admin/AdminUsuarios"));
 const AdminRegistro = lazy(() => import("@/pages/admin/AdminRegistro"));
+const AdminPixels = lazy(() => import("@/pages/admin/AdminPixels")); // (04/11 · 6.21)
 const AdminNotifTemplates = lazy(() => import("@/pages/admin/AdminNotifTemplates"));
 const AdminBanner = lazy(() => import("@/pages/admin/AdminBanner"));
 const AdminBannersProntos = lazy(() => import("@/pages/admin/AdminBannersProntos"));
@@ -512,6 +514,7 @@ export default function App() {
   return (
     <NotificationProvider>
     <BrowserRouter>
+      <VisitasDoApp />{/* (04/11 · 6.21) pixels do Doonly (painel admin › Pixels do app) */}
       <Suspense fallback={null}>
       <Routes>
         <Route path="/login" element={<Auth />} />
@@ -604,6 +607,7 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
           <Route path="registro" element={<AdminRegistro />} />
+          <Route path="pixels" element={<AdminPixels />} />
           <Route path="notificacoes" element={<Navigate to="/admin/noticias" replace />} />
           <Route path="notif-templates" element={<AdminNotifTemplates />} />
           <Route path="banner" element={<AdminBanner />} />

@@ -6,7 +6,7 @@ import { perfilAtual, escolherPerfil, EVENTO_PERFIL, type PerfilAdmin } from "@/
 import EscolherPerfil, { AvatarAdmin } from "./EscolherPerfil";
 import {
   ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images,
-  ChartBar, Lightbulb, Lifebuoy,
+  ChartBar, Lightbulb, Lifebuoy, Target,
   ArrowLeft, SignOut, DotsThreeOutline, CaretRight, X, ClockCounterClockwise, ArrowsLeftRight,
 } from "@phosphor-icons/react";
 
@@ -42,6 +42,7 @@ const menuSections: MenuSection[] = [
     title: "Comunicação",
     items: [
       { path: "/admin/ideias", label: "Ideias", icon: <Lightbulb size={20} weight="bold" /> },
+      { path: "/admin/pixels", label: "Pixels do app", icon: <Target size={20} weight="bold" /> }, // (04/11 · 6.21)
     ],
   },
   {

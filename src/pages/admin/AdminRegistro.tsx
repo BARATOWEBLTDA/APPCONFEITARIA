@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Botao, TelaVazia } from "@/components/base";
-import { ClockCounterClockwise, Crown, Lock, UserPlus, Trash, Image as ImageIcon, Newspaper, PenNib, Lightbulb, Bell, Sparkle } from "@phosphor-icons/react";
+import { ClockCounterClockwise, Crown, Lock, UserPlus, Trash, Image as ImageIcon, Newspaper, PenNib, Lightbulb, Bell, Sparkle, Target } from "@phosphor-icons/react";
 import { EVENTO_REGISTRO, type PerfilAdmin } from "@/lib/adminPerfil";
 import { AvatarAdmin } from "./EscolherPerfil";
 
@@ -33,7 +33,7 @@ export function quando(iso: string): string {
 const ICONE: Record<string, React.ReactNode> = {
   pro: <Crown size={13} weight="fill" />, bloqueio: <Lock size={13} weight="bold" />, usuario: <UserPlus size={13} weight="bold" />,
   exclusao: <Trash size={13} weight="bold" />, banner: <ImageIcon size={13} weight="bold" />, noticia: <Newspaper size={13} weight="bold" />,
-  autor: <PenNib size={13} weight="bold" />, ideia: <Lightbulb size={13} weight="bold" />, aviso: <Bell size={13} weight="bold" />,
+  autor: <PenNib size={13} weight="bold" />, ideia: <Lightbulb size={13} weight="bold" />, aviso: <Bell size={13} weight="bold" />, pixel: <Target size={13} weight="bold" />,
 };
 
 /** uma linha do registro: foto de quem fez, "Bruno deu o PRO…" e quando */
@@ -74,7 +74,7 @@ export const CSS_REGISTRO = `
   .rg-tipo--pro { background: var(--ui-vinho); color: #FFD27A; }
   .rg-tipo--bloqueio, .rg-tipo--exclusao { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
   .rg-tipo--usuario { background: var(--ui-verde-fundo); color: var(--ui-verde); }
-  .rg-tipo--banner, .rg-tipo--noticia, .rg-tipo--autor, .rg-tipo--aviso { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+  .rg-tipo--banner, .rg-tipo--noticia, .rg-tipo--autor, .rg-tipo--aviso, .rg-tipo--pixel { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
   .rg-tipo--ideia { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
   .rg-tx { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--ui-texto-2); }
   .rg-tx b { font-weight: 600; color: var(--ui-texto); }

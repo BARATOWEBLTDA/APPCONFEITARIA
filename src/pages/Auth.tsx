@@ -1,4 +1,5 @@
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote';
+import { eventoDoApp } from "@/lib/pixelsApp";
 import { useState, useEffect, useRef } from "react";
 import type { PostgrestError } from "@supabase/supabase-js";
 import BotaoGoogle from "@/components/BotaoGoogle";
@@ -329,6 +330,7 @@ export default function Auth() {
         }
       });
       if (error) throw error;
+      void eventoDoApp("CompleteRegistration", { content_name: "Cadastro Doonly" }); // (04/11 · 6.21) pixels do app
 
       // ── 2) Garante sessão (login automático) ────────────────
       // Em raros casos o signUp retorna user mas não sessão. Fallback:
