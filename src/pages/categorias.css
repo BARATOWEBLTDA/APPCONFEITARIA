@@ -84,3 +84,9 @@
 .ct-fo-mini button[aria-pressed="true"] { border-color: var(--ui-escolha); }
 .ct-fo-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ct-fo-nota { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
+/* (04/11 · 6.37) o fundo ao passar o mouse pega a linha inteira, de uma borda à outra do cartão (com o ⋮),
+   e o primeiro e o último seguem o arredondado do cartão */
+.ct-card { padding: 0; overflow: hidden; }
+.ct-row { padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3); transition: background .12s; }
+.ct-row-b { padding: var(--space-2) var(--space-1); border-radius: 0; }
+@media (hover: hover) { .ct-row-b:hover { background: none; } .ct-row:hover { background: var(--ui-linha); } }
