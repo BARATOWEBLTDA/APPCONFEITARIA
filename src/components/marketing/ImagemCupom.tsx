@@ -38,7 +38,7 @@ export default function ImagemCupom({ dados, aoFechar }: { dados: DadosImagemCup
     const arquivo = new File([img.blob], nomeArquivo, { type: "image/png" });
     const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
     if (nav.share && nav.canShare?.({ files: [arquivo] })) {
-      try { await nav.share({ files: [arquivo], text: `Use o cupom ${dados.codigo} no nosso cardápio:\n${dados.link}` }); return; }
+      try { await nav.share({ files: [arquivo], text: `Tem desconto pra você! Use o cupom *${dados.codigo}* e ganhe ${dados.desconto} ${dados.regra}`.trim() + `.${dados.validade ? ` ${dados.validade}.` : ""}\n\nPeça pelo cardápio:\n${dados.link}` }); return; }
       catch (e: unknown) { if ((e as Error)?.name === "AbortError") return; } // ela fechou a janela
     }
     baixar();

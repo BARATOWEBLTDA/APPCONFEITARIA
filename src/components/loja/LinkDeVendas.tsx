@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { textoCardapio } from '@/lib/compartilharCardapio'
 import { Copy, Check, Eye, Storefront } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { useProfile, getCardapioUrl, fotoDaLoja } from '@/hooks/useProfile'
@@ -21,7 +22,7 @@ export function LinkDeVendas() {
     catch { avisar('Não deu para copiar. Segure no link para copiar.', { tipo: 'erro' }) }
   }
 
-  const zap = `https://wa.me/?text=${encodeURIComponent(`Faça seu pedido pelo nosso cardápio: ${link}`)}`
+  const zap = `https://wa.me/?text=${encodeURIComponent(textoCardapio(link, profile?.nome_loja))}` // (6.82) o mesmo texto do Compartilhar
   return (
     <section className="lj-link" aria-label="Seu link de vendas">
       {/* (30/10 · 5.46) a logo da loja, "no ar" e o link; Ver (guia nova), Copiar e WhatsApp no canto (o cartão "Seu cardápio está no ar" de cima saiu) */}

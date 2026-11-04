@@ -129,7 +129,7 @@ export function AcompanharPedido({ p, cor, corTopo, aoAtualizar }: { p: Pedido; 
   const itens = p.pedido_itens || []
   const quando = diaCombinado(p)
   const loja = lojaAtualNome()
-  const zap = linkWhatsApp(lojaAtualWhatsApp(), `Oi! Queria saber do meu pedido #${p.numero}`)
+  const zap = linkWhatsApp(lojaAtualWhatsApp(), `Oi! Tudo bem? Queria saber como está o meu pedido *#${p.numero}*.`)
   return (
     <article className="acp" style={{ '--acp-cor': cor } as CSSProperties}>
       <div className="acp-topo" style={{ background: corTopo || '#3D2420' }}>
