@@ -1,7 +1,7 @@
 /* Ingredientes (10.1): lista + cadastro. Usa a base de clientes.css (cl9-*) e só acrescenta o que é daqui. */
 
 /* ── Lista ── */
-.ig-th { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.ig-th { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: var(--ui-raio); background: var(--ic-fundo); color: var(--ic-cor); box-shadow: inset 0 0 0 1px var(--ic-borda); }
 .ig-th img { width: 100%; height: 100%; object-fit: cover; background: var(--ui-branco); }
 .ig-tab-cab { display: none; }
 .ig-l { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "t n c s"; align-items: center; gap: 2px 12px; width: 100%; min-height: 72px; margin: 0; padding: 10px 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; text-align: left; color: var(--ui-texto); cursor: pointer; font-family: inherit; }
@@ -66,7 +66,7 @@
 
 /* 4.29 · foto sempre à mostra, chips quadradinhos e "Como você compra" agrupado */
 .ig-foto2 { display: flex; align-items: center; gap: 14px; }
-.ig-foto2-th { flex: none; display: flex; align-items: center; justify-content: center; width: 76px; height: 76px; overflow: hidden; border-radius: var(--ui-raio-cartao); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.ig-foto2-th { flex: none; display: flex; align-items: center; justify-content: center; width: 76px; height: 76px; overflow: hidden; border-radius: var(--ui-raio-cartao); background: var(--ic-fundo); color: var(--ic-cor); box-shadow: inset 0 0 0 1px var(--ic-borda); }
 .ig-foto2-th img { width: 100%; height: 100%; object-fit: cover; background: var(--ui-branco); }
 .ig-foto2-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .ig-foto2-tx > b { font-size: 15px; font-weight: 600; }
@@ -108,7 +108,7 @@
 /* (24/10) Novo ingrediente curto: nome com a foto ao lado, a compra numa linha e "Mais detalhes" */
 .ig-nome { display: flex; align-items: flex-end; gap: 12px; }
 .ig-nome > .ui-campo { flex: 1; min-width: 0; }
-.ig-nome-th { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0; padding: 0; overflow: hidden; border: 1.5px dashed #E7C2D2; border-radius: 12px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); cursor: pointer; }
+.ig-nome-th { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0; padding: 0; overflow: hidden; border: 1.5px dashed #E7C2D2; border-radius: 12px; background: var(--ic-fundo); color: var(--ic-cor); box-shadow: inset 0 0 0 1px var(--ic-borda); cursor: pointer; }
 .ig-nome-th img { width: 100%; height: 100%; object-fit: cover; background: var(--ui-branco); }
 .ig-nome-th:has(img) { border-style: solid; border-color: var(--ui-borda); }
 .ig-foto-links { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin-top: -8px; color: var(--ui-texto-3); }

@@ -72,7 +72,7 @@ i.atr { background: var(--ui-vermelho); }
 .ag3-pc-topo { display: flex; align-items: center; gap: 4px; }
 .ag3-pc-abre { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 48px; margin: 0; padding: 0; border: 0; background: none; color: inherit; font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ag3-pc-abre:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; border-radius: var(--ui-raio); }
-.ag3-pc-ft { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.ag3-pc-ft { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--ui-raio); background: var(--ic-fundo); color: var(--ic-cor); box-shadow: inset 0 0 0 1px var(--ic-borda); }
 .ag3-pc-ft img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 .ag3-pc-ft em { position: absolute; right: -6px; bottom: -6px; padding: 1px 6px; border-radius: 8px; background: var(--ui-cinza-texto); color: var(--ui-branco); font-size: 12px; font-style: normal; font-weight: 600; box-shadow: 0 0 0 2px var(--ui-branco); }
 .ag3-pc-quem { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -138,7 +138,7 @@ i.atr { background: var(--ui-vermelho); }
 @media (hover: hover) { .ag3-res-i:hover { background: var(--ui-linha); } }
 .ag3-res-i:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
 .ag3-res-i img, .ag3-res-sem { flex: none; width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
-.ag3-res-sem { display: flex; align-items: center; justify-content: center; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); }
+.ag3-res-sem { display: flex; align-items: center; justify-content: center; background: var(--ui-ic-fundo); box-shadow: inset 0 0 0 1px var(--ic-borda); color: var(--ui-ic-cor); }
 .ag3-res-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .ag3-res-tx b { display: flex; min-width: 0; font-size: 15px; font-weight: 600; white-space: nowrap; }
 .ag3-res-tx b > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }

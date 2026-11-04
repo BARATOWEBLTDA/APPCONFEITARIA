@@ -95,7 +95,7 @@
 .orc-itens { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: var(--gap-stack); }
 .orc-item { display: flex; flex-direction: column; gap: var(--gap-tight); padding: var(--space-3); border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); }
 .orc-item-top { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.orc-item-ft { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: 12px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.orc-item-ft { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: 12px; background: var(--ic-fundo); color: var(--ic-cor); box-shadow: inset 0 0 0 1px var(--ic-borda); }
 .orc-item-ft img { width: 100%; height: 100%; object-fit: cover; }
 .orc-item-n { flex: 1; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 15px; font-weight: 600; line-height: 1.3; }
 .orc-item-in, .orc-item-det { width: 100%; min-width: 0; height: 40px; margin: 0; padding: 0 10px; border: 1px solid var(--ui-borda-campo); border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ui-texto); background: var(--ui-branco); box-sizing: border-box; outline: 0; }
@@ -117,7 +117,7 @@
 .orc-add { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); justify-content: center; gap: var(--gap-stack); margin: var(--space-4) 0 var(--space-2); }
 .orc-add-op { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; aspect-ratio: 1 / .85; padding: var(--space-3); border: 1.5px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); font-family: inherit; text-align: center; color: var(--ui-texto); cursor: pointer; transition: border-color .15s, background .15s; }
 .orc-add-op:hover { border-color: #F3B3CA; background: #FFF8FB; }
-.orc-add-ic { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; margin-bottom: 6px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.orc-add-ic { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; margin-bottom: 6px; border-radius: 50%; background: var(--ic-fundo); color: var(--ic-cor); box-shadow: inset 0 0 0 1px var(--ic-borda); }
 .orc-add-op b { font-size: 15px; font-weight: 600; }
 .orc-add-op small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; line-height: 1.35; color: var(--ui-texto-2); }
 /* com itens na lista: os mesmos dois cartões, mais baixinhos */

@@ -7,7 +7,7 @@
 .fl-cab { display: none; }
 .fl-l { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "t n l s"; align-items: center; gap: 2px 12px; width: 100%; min-height: 72px; margin: 0; padding: 10px 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; text-align: left; color: var(--ui-texto); }
 .cl9-chips + .fl-cab + .fl-l, .cl9-barra + .fl-cab + .fl-l { border-top: 0; }
-.fl-th { grid-area: t; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+.fl-th { grid-area: t; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; overflow: hidden; border-radius: var(--ui-raio); background: var(--ic-fundo); color: var(--ic-cor); box-shadow: inset 0 0 0 1px var(--ic-borda); }
 .fl-th img { width: 100%; height: 100%; object-fit: cover; }
 .fl-tx { grid-area: n; min-width: 0; }
 .fl-tx b, .fl-lucro b { display: block; font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
