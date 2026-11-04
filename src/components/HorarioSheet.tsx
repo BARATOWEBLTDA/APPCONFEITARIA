@@ -20,6 +20,8 @@ interface HorarioSheetProps {
   onChange: (v: string) => void
   onClose: () => void
   titulo?: string
+  /** (6.51) horário opcional já escolhido: mostra "Sem horário" para tirar */
+  aoLimpar?: () => void
 }
 
 const ALTURA = 44 // altura de cada linha da rodinha
@@ -69,7 +71,7 @@ function Rodinha({ itens, valor, aoMudar, rotulo }: { itens: string[]; valor: st
  * 13/10: duas rodinhas, hora e minuto (como o relógio do celular). No celular sobe de baixo; no computador fica no meio.
  * Os minutos andam de 5 em 5; um horário salvo fora disso (14:37) aparece na lista do mesmo jeito.
  */
-export default function HorarioSheet({ value, onChange, onClose, titulo = 'Horário' }: HorarioSheetProps) {
+export default function HorarioSheet({ value, onChange, onClose, titulo = 'Horário', aoLimpar }: HorarioSheetProps) {
   const ok = /^\d{2}:\d{2}$/.test(value || '')
   const [h, setH] = useState(ok ? value.slice(0, 2) : '09')
   const [m, setM] = useState(ok ? value.slice(3, 5) : '00')
@@ -79,7 +81,9 @@ export default function HorarioSheet({ value, onChange, onClose, titulo = 'Horá
 
   return (
     <Janela aberta aoFechar={onClose} tipo="conteudo" titulo={titulo}
-      acoes={<Botao cheio onClick={confirmar}>Usar {h}:{m}</Botao>} umaAcao>
+      acoes={aoLimpar
+        ? <><Botao variante="secundario" onClick={() => { aoLimpar(); onClose() }}>Sem horário</Botao><Botao onClick={confirmar}>Usar {h}:{m}</Botao></>
+        : <Botao cheio onClick={confirmar}>Usar {h}:{m}</Botao>} umaAcao={!aoLimpar}>
       <div className="dh-relogio">
         <span className="dh-faixa" aria-hidden="true" />
         <Rodinha itens={HORAS} valor={h} aoMudar={setH} rotulo="Hora" />

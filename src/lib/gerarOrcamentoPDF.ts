@@ -2,8 +2,8 @@
 // Orçamento em PDF no modelo padrão do Doonly (03/11: estilo de sistema, o mesmo do
 // pedido). Usado no Baixar PDF do orçamento (OrcamentoEditar). Recurso do PRO.
 // ─────────────────────────────────────────────────────────────────────────────
-import { gerarDocumento, abrirJanela, esc, brl, dataBR, card, kv, telBR, diaLongo, type Loja } from "@/lib/pdfDoonly";
-import { FORMA_ORC, hojeISO, somarItens, totalOrcamento, valorSinal, type Orcamento } from "@/lib/orcamentos";
+import { gerarDocumento, abrirJanela, esc, brl, dataBR, card, kv, telBR, type Loja } from "@/lib/pdfDoonly";
+import { FORMA_ORC, dataDoEvento, hojeISO, somarItens, totalOrcamento, valorSinal, type Orcamento } from "@/lib/orcamentos";
 
 const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
 const qtdBR = (q: number) => String(Math.round((Number(q) || 0) * 1000) / 1000).replace(".", ",");
@@ -29,7 +29,7 @@ export async function gerarOrcamentoPDF(o: Orcamento, janelaAberta?: Window | nu
     const blocoCli = card("Cliente e evento", kv([
       ["Cliente", cli],
       ["Evento", esc((o.nome_evento || "").trim() || (o.ocasiao || "").trim())],
-      ["Data", esc(diaLongo(o.data_evento))],
+      [o.data_evento_fim ? "Dias" : "Data", esc(dataDoEvento(o))],
       ["Pessoas", pessoas ? `${pessoas} pessoa${pessoas > 1 ? "s" : ""}` : ""],
       ["Local", esc((o.local_evento || "").trim())],
       [entrega ? "Entrega" : "Retirada", entrega ? "Entregar no local" : "Retirar na loja"],

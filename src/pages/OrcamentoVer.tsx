@@ -8,7 +8,7 @@ import { Check, FilePdf, Storefront, X } from '@phosphor-icons/react'
 import { CampoArea, Janela, avisar } from '@/components/base'
 import { supabase } from '@/lib/supabase'
 import { explicarErro } from '@/lib/erros'
-import { brl, hojeISO, textoEntrega, dataLonga, textoCondicoes, totalOrcamento, valorSinal, type ItemOrcamento, type Orcamento } from '@/lib/orcamentos'
+import { brl, hojeISO, textoEntrega, dataLonga, dataDoEvento, textoCondicoes, totalOrcamento, valorSinal, type ItemOrcamento, type Orcamento } from '@/lib/orcamentos'
 import { gerarOrcamentoPDF } from '@/lib/gerarOrcamentoPDF'
 import { lojaPublica } from '@/lib/pdfDoonly'
 import './orcamentos.css'
@@ -75,7 +75,7 @@ export default function OrcamentoVer() {
         <section className="orp-card">
           <dl className="orc-kv">
             {o.nome_evento && <><dt>Evento</dt><dd>{o.nome_evento}</dd></>}
-            {o.data_evento && <><dt>Data</dt><dd>{dataLonga(o.data_evento)}</dd></>}
+            {o.data_evento && <><dt>{o.data_evento_fim ? 'Dias' : 'Data'}</dt><dd>{dataDoEvento(o)}</dd></>}
             {o.pessoas && <><dt>Pessoas</dt><dd>{o.pessoas}</dd></>}
             {o.local_evento && <><dt>Local</dt><dd>{o.local_evento}</dd></>}
             <dt>{o.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'}</dt><dd>{o.tipo_entrega === 'entrega' ? 'No seu endereço' : 'Na loja'}</dd>

@@ -69,9 +69,16 @@
 .orc-2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 @media (min-width: 600px) { .orc-2 { grid-template-columns: 1fr 1fr; } }
 .orc-2 + .orc-2, .orc-ev + .orc-2 { margin-top: 12px; }
-.orc-ev { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; align-items: end; }
-@media (max-width: 400px) { .orc-ev { grid-template-columns: minmax(0, 1fr); } }
-.orc-ev-data .ui-campo-r { display: flex; margin-bottom: 6px; font-size: 13.5px; font-weight: 600; }
+/* (6.51) data, horário, "mais de um dia" e nome; no PC a data fica no calendário ao lado */
+.orc-ev { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "data hora" "varios varios" "nome nome"; gap: 12px; align-items: end; }
+.orc-ev--varios { grid-template-areas: "data fim" "varios varios" "hora hora" "nome nome"; }
+.orc-ev-data { grid-area: data; } .orc-ev-hora { grid-area: hora; } .orc-ev-fim { grid-area: fim; } .orc-ev-varios { grid-area: varios; } .orc-ev-nome { grid-area: nome; }
+.orc-ev-data .ui-campo-r, .orc-ev-hora .ui-campo-r, .orc-ev-fim .ui-campo-r { margin-bottom: 6px; }
+.orc-varios { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-texto); cursor: pointer; white-space: nowrap; }
+.orc-ev-varios { justify-self: start; margin-top: -2px; }
+.orc-chk { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: 2px solid #D6CBD0; border-radius: 6px; box-sizing: border-box; background: var(--ui-branco); color: var(--ui-branco); }
+.orc-varios[aria-checked="true"] .orc-chk { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.orc-h-acao .orc-varios { font-size: 13.5px; color: var(--ui-texto-2); }
 .orc-kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; margin: 0; font-size: 14px; }
 .orc-kv dt { color: var(--ui-texto-2); } .orc-kv dd { margin: 0; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
 .orc-kv a { position: relative; color: var(--ui-rosa-escuro); }
@@ -440,7 +447,7 @@
   .orc-e1-col { gap: var(--space-4); }
   .orc-e1-col > .orc-card:last-child { flex: 1; }
   .orc-e1-cal { display: flex; flex-direction: column; }
-  .orc-e1 .orc-ev-data { display: none; }
-  .orc-e1 .orc-ev { grid-template-columns: minmax(0, 1fr); }
+  .orc-e1 .orc-ev-data, .orc-e1 .orc-ev-fim, .orc-e1 .orc-ev-varios { display: none; }
+  .orc-e1 .orc-ev, .orc-e1 .orc-ev--varios { grid-template-columns: minmax(0, 1fr) 150px; grid-template-areas: "nome hora"; }
 }
 .orc-acoes-pc { justify-content: flex-end !important; }

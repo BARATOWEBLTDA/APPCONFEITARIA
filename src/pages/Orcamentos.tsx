@@ -16,7 +16,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { usePlano } from '@/hooks/usePlano'
 import { linkWhatsApp } from '@/lib/telefone'
 import { compartilharTexto } from '@/lib/compartilharCardapio'
-import { brl, dataCurta, linkPedirOrcamento, semResposta, textoPedirOrcamento, totalOrcamento, type Orcamento } from '@/lib/orcamentos'
+import { brl, dataCurta, dataCurtaEvento, linkPedirOrcamento, semResposta, textoPedirOrcamento, totalOrcamento, type Orcamento } from '@/lib/orcamentos'
 import { COMO_ORCAMENTOS, TOUR_ORCAMENTOS } from '@/lib/comoTelas'
 import { chegouHa } from '@/components/pedidos/pedidoTexto'
 import './orcamentos.css'
@@ -182,7 +182,7 @@ export default function Orcamentos() {
                         {o.descricao && <p className="orq-desc">“{o.descricao}”</p>}
                         {(o.fotos || []).length > 0 && <div className="orq-fotos">{(o.fotos || []).slice(0, 4).map((f, n) => <img key={n} src={f} alt="" loading="lazy" />)}{(o.fotos || []).length > 4 && <span>+{(o.fotos || []).length - 4}</span>}</div>}
                         <div className="orq-ls">
-                          {o.data_evento && (() => { const passou = o.data_evento < hojeISO && (o.status === 'novo' || o.status === 'rascunho' || o.status === 'enviado'); return <p className={passou ? 'orq-passou' : undefined}><span>Festa:</span> {dataCurta(o.data_evento)}{passou ? ' · a data já passou' : ''}</p> })()}
+                          {o.data_evento && (() => { const passou = (o.data_evento_fim || o.data_evento) < hojeISO && (o.status === 'novo' || o.status === 'rascunho' || o.status === 'enviado'); return <p className={passou ? 'orq-passou' : undefined}><span>Festa:</span> {dataCurtaEvento(o)}{passou ? ' · a data já passou' : ''}</p> })()}
                           {Number(o.orcamento_cliente) > 0 && (o.status === 'novo' || o.status === 'rascunho') && <p><span>Quer gastar:</span> até {brl(Number(o.orcamento_cliente))}</p>}
                           {x.total > 0 && <p><span>Valor:</span> {brl(x.total)}</p>}
                           {o.status === 'recusado' && o.motivo_recusa && <p><span>Motivo:</span> {o.motivo_recusa}</p>}
@@ -219,7 +219,7 @@ export default function Orcamentos() {
           {visiveis.map(o => {
             const total = totalOrcamento(o)
             const atrasado = semResposta(o)
-            const linha = [o.ocasiao || o.nome_evento, o.pessoas ? `${o.pessoas} pessoas` : '', o.data_evento ? dataCurta(o.data_evento) : ''].filter(Boolean).join(' · ')
+            const linha = [o.ocasiao || o.nome_evento, o.pessoas ? `${o.pessoas} pessoas` : '', o.data_evento ? dataCurtaEvento(o) : ''].filter(Boolean).join(' · ')
             const sit = o.status === 'novo' ? ['Novo', 'n'] : o.status === 'rascunho' ? ['Rascunho', 'r'] : o.status === 'enviado' ? [atrasado ? 'Sem resposta' : 'Aguardando', 'e'] : o.status === 'aprovado' ? ['Aprovado', 'a'] : ['Recusado', 'x']
             return (
               <div key={o.id} className="orc-it">

@@ -3,7 +3,7 @@
 .cmes-rdp.rdp-root {
   --rdp-accent-color: var(--ui-rosa);
   --rdp-accent-background-color: var(--ui-rosa-claro);
-  --rdp-day-height: 44px;
+  --rdp-day-height: 40px;
   --rdp-day-width: auto;
   --rdp-day_button-height: 40px;
   --rdp-day_button-width: 40px;
@@ -19,7 +19,7 @@
 }
 .cmes-rdp .rdp-months { max-width: none; width: 100%; }
 .cmes-rdp .rdp-month { width: 100%; }
-.cmes-rdp .rdp-month_grid { width: 100%; border-collapse: separate; border-spacing: 0 2px; table-layout: fixed; }
+.cmes-rdp .rdp-month_grid { width: 100%; border-collapse: separate; border-spacing: 0 6px; table-layout: fixed; }
 .cmes-rdp .rdp-month_caption { height: 40px; padding-left: var(--space-2); }
 .cmes-rdp .rdp-caption_label { font-size: 16px; font-weight: 600; color: var(--ui-texto); text-transform: capitalize; }
 .cmes-rdp .rdp-nav { gap: var(--space-1); }
@@ -33,6 +33,17 @@
 .cmes-rdp .rdp-today:not(.rdp-selected) .rdp-day_button { position: relative; color: var(--ui-rosa-escuro); font-weight: 600; }
 .cmes-rdp .rdp-selected { font-size: inherit; }
 .cmes-rdp .rdp-selected .rdp-day_button { border: 0; background: var(--ui-rosa); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(232, 90, 140, .35); }
-.cmes-pe { padding-top: var(--space-3); border-top: 1px solid var(--ui-linha); }
+.cmes-rdp .rdp-day { padding: 0; }
+/* (6.51) vários dias: faixa rosa clarinha ligando o primeiro ao último dia */
+.cmes-rdp .rdp-range_middle { background: #FBE3EC; }
+.cmes-rdp .rdp-range_middle .rdp-day_button { background: transparent; color: var(--ui-rosa-escuro); font-weight: 600; box-shadow: none; }
+.cmes-rdp .rdp-range_start:not(.rdp-range_end) { background: linear-gradient(90deg, transparent 50%, #FBE3EC 50%); }
+.cmes-rdp .rdp-range_end:not(.rdp-range_start) { background: linear-gradient(90deg, #FBE3EC 50%, transparent 50%); }
+.cmes-rdp .rdp-range_start:not(.rdp-range_end) .rdp-day_button, .cmes-rdp .rdp-range_end:not(.rdp-range_start) .rdp-day_button { box-shadow: none; }
+.cmes-pe { display: flex; flex-direction: column; gap: 2px; padding-top: var(--space-3); border-top: 1px solid var(--ui-linha); }
 .cmes-pe b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
 .cmes-pe small { font-size: 13px; color: var(--ui-texto-2); }
+/* a faixa não vaza para fora da semana: arredonda nas pontas da linha */
+.cmes-rdp .rdp-week > .rdp-range_middle:first-child { border-radius: 999px 0 0 999px; }
+.cmes-rdp .rdp-week > .rdp-range_middle:last-child { border-radius: 0 999px 999px 0; }
+.cmes-rdp .rdp-week > .rdp-range_end:first-child, .cmes-rdp .rdp-week > .rdp-range_start:last-child { background: none; }

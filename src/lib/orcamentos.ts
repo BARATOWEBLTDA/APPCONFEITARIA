@@ -29,6 +29,10 @@ export type Orcamento = {
   descricao?: string | null
   pessoas?: number | null
   data_evento?: string | null
+  /** (6.51) último dia, quando o evento dura mais de um dia (null = um dia só) */
+  data_evento_fim?: string | null
+  /** (6.51) horário do evento, opcional ("15:00"; o banco devolve "15:00:00") */
+  horario_evento?: string | null
   nome_evento?: string | null
   local_evento?: string | null
   orcamento_cliente?: number | null
@@ -95,6 +99,36 @@ export function dataCurta(iso?: string | null): string {
 
 const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 /** "14 de dezembro (Domingo)" */
+/** "15:00" → "15h"; "15:30" → "15h30" */
+export function horaCurta(h?: string | null): string {
+  const m = /^(\d{2}):(\d{2})/.exec(h || '')
+  if (!m) return ''
+  return `${Number(m[1])}h${m[2] === '00' ? '' : m[2]}`
+}
+
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+
+/** (6.51) a data do evento por extenso, com os dias seguidos e o horário:
+ *  "21 de novembro (Sábado) · às 15h" ou "1 a 3 de novembro (Domingo a Terça) · às 15h" */
+export function dataDoEvento(o: { data_evento?: string | null; data_evento_fim?: string | null; horario_evento?: string | null }): string {
+  if (!o.data_evento) return ''
+  const hora = horaCurta(o.horario_evento)
+  const fimIso = o.data_evento_fim && o.data_evento_fim > o.data_evento ? o.data_evento_fim : ''
+  let txt = dataLonga(o.data_evento)
+  if (fimIso) {
+    const a = new Date(`${o.data_evento.slice(0, 10)}T12:00:00`), b = new Date(`${fimIso.slice(0, 10)}T12:00:00`)
+    const ini = a.getMonth() === b.getMonth() ? String(a.getDate()) : `${a.getDate()} de ${MESES[a.getMonth()]}`
+    txt = `${ini} a ${b.getDate()} de ${MESES[b.getMonth()]} (${DIAS[a.getDay()]} a ${DIAS[b.getDay()].toLowerCase()})`
+  }
+  return hora ? `${txt} · às ${hora}` : txt
+}
+
+/** (6.51) curtinho, para a lista: "21/11" ou "01/11 a 03/11" */
+export function dataCurtaEvento(o: { data_evento?: string | null; data_evento_fim?: string | null }): string {
+  if (!o.data_evento) return ''
+  return o.data_evento_fim && o.data_evento_fim > o.data_evento ? `${dataCurta(o.data_evento)} a ${dataCurta(o.data_evento_fim)}` : dataCurta(o.data_evento)
+}
+
 export function dataLonga(iso?: string | null): string {
   if (!iso) return ''
   const d = new Date(`${iso.slice(0, 10)}T12:00:00`)

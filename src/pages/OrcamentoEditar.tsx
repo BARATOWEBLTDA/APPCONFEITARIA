@@ -6,10 +6,11 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { CalendarBlank, Check, Copy, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, Phone, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import { CalendarBlank, Check, Clock, Copy, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, Phone, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import CampoData from '@/components/CampoData'
 import CalendarioMes from '@/components/CalendarioMes'
+import HorarioSheet from '@/components/HorarioSheet'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { Botao, CaixasEscolha, Campo, CampoArea, Janela, MenuMais, TelaVazia, avisar, confirmar } from '@/components/base'
 import { supabase } from '@/lib/supabase'
@@ -32,7 +33,7 @@ import { detalhesItem } from '@/lib/itemSacola'
 import { textoSaboresKit } from '@/lib/kitTexto'
 import type { ItemDoCarrinho } from '@/lib/itemDoCarrinho'
 import {
-  FORMA_ORC, brl, hojeISO, textoEntrega, dataLonga, linkProposta, maisDias, somarItens, textoCondicoes, dataCurta, textoProposta, totalOrcamento, valorSinal,
+  FORMA_ORC, brl, hojeISO, textoEntrega, dataLonga, dataDoEvento, linkProposta, maisDias, somarItens, textoCondicoes, dataCurta, textoProposta, totalOrcamento, valorSinal,
   type ItemOrcamento, type Orcamento,
 } from '@/lib/orcamentos'
 import { COMO_ORCAMENTO, TOUR_ORCAMENTO } from '@/lib/comoTelas'
@@ -134,6 +135,12 @@ export default function OrcamentoEditar() {
   }, [o?.itens]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const muda = (p: Partial<Orcamento>) => { setO(x => (x ? { ...x, ...p } : x)); setMudou(true) }
+  // (6.51) evento de mais de um dia e horário (opcional)
+  const [variosDias, setVariosDias] = useState<boolean | null>(null)
+  const [horaAberta, setHoraAberta] = useState(false)
+  const varios = variosDias ?? !!o?.data_evento_fim
+  const ligarVarios = (on: boolean) => { setVariosDias(on); if (!on) muda({ data_evento_fim: null }) }
+  const mudaInicio = (d: string) => muda({ data_evento: d, ...(o?.data_evento_fim && o.data_evento_fim <= d ? { data_evento_fim: null } : {}) })
   const mudaItem = (iid: string, p: Partial<ItemOrcamento>) => muda({ itens: (o?.itens || []).map(i => (i.id === iid ? { ...i, ...p } : i)) })
   const tiraItem = (iid: string) => muda({ itens: (o?.itens || []).filter(i => i.id !== iid) })
 
@@ -162,7 +169,8 @@ export default function OrcamentoEditar() {
     setSalvando(true)
     const dados: Record<string, unknown> = {
       cliente_nome: o.cliente_nome?.trim() || null, cliente_telefone: o.cliente_telefone?.trim() || null,
-      data_evento: o.data_evento || null, nome_evento: o.nome_evento?.trim() || null, local_evento: o.local_evento?.trim() || null,
+      data_evento: o.data_evento || null, data_evento_fim: varios && o.data_evento && o.data_evento_fim && o.data_evento_fim > o.data_evento ? o.data_evento_fim : null,
+      horario_evento: o.horario_evento ? o.horario_evento.slice(0, 5) : null, nome_evento: o.nome_evento?.trim() || null, local_evento: o.local_evento?.trim() || null,
       pessoas: o.pessoas || null, itens: (o.itens || []).map(({ id: iid, ...i }) => ({ id: iid, ...i, quantidade: Number(i.quantidade) || 1, valor_unitario: Number(i.valor_unitario) || 0 })),
       desconto: extras.desconto ? Number(o.desconto) || 0 : 0, acrescimo: extras.acrescimo ? Number(o.acrescimo) || 0 : 0,
       tipo_entrega: extras.entrega ? 'entrega' : 'retirada', taxa_entrega: extras.entrega ? Number(o.taxa_entrega) || 0 : 0,
@@ -348,22 +356,43 @@ export default function OrcamentoEditar() {
 
           <section className="orc-card">
             <h2>Evento</h2>
-            <div className="orc-ev">
+            <div className={`orc-ev${varios ? ' orc-ev--varios' : ''}`}>
               <div className="orc-ev-data">
-                <span className="ui-campo-r"><span>Data</span></span>
-                <CampoData valor={o.data_evento || ''} onChange={d => muda({ data_evento: d })} titulo="Data do evento" placeholder="Escolher" curto />
+                <span className="ui-campo-r"><span>{varios ? 'Primeiro dia' : 'Data'}</span></span>
+                <CampoData valor={o.data_evento || ''} onChange={mudaInicio} titulo={varios ? 'Primeiro dia do evento' : 'Data do evento'} placeholder="Escolher" curto />
               </div>
-              <Campo rotulo="Nome do evento" opcional value={o.nome_evento || ''} placeholder="Ex.: Aniversário da Malu" onChange={e => muda({ nome_evento: e.target.value })} />
+              <div className="orc-ev-hora">
+                <span className="ui-campo-r"><span>Horário</span><small>opcional</small></span>
+                <button type="button" className="cdata" onClick={() => setHoraAberta(true)} aria-label={`Horário: ${o.horario_evento ? o.horario_evento.slice(0, 5) : 'escolher'}`}>
+                  <Clock size={20} weight="bold" aria-hidden="true" />
+                  <span className={o.horario_evento ? '' : 'ph'}>{o.horario_evento ? o.horario_evento.slice(0, 5) : 'Escolher'}</span>
+                </button>
+              </div>
+              <button type="button" role="checkbox" aria-checked={varios} className="orc-varios orc-ev-varios" onClick={() => ligarVarios(!varios)}>
+                <i className="orc-chk" aria-hidden="true">{varios && <Check size={14} weight="bold" />}</i>O evento dura mais de um dia
+              </button>
+              {varios && (
+                <div className="orc-ev-fim">
+                  <span className="ui-campo-r"><span>Último dia</span></span>
+                  <CampoData valor={o.data_evento_fim || ''} min={o.data_evento || undefined} onChange={d => muda({ data_evento_fim: o.data_evento && d > o.data_evento ? d : null })} titulo="Último dia do evento" placeholder="Escolher" curto />
+                </div>
+              )}
+              <Campo className="orc-ev-nome" rotulo="Nome do evento" opcional value={o.nome_evento || ''} placeholder="Ex.: Aniversário da Malu" onChange={e => muda({ nome_evento: e.target.value })} />
             </div>
             <div className="orc-2">
               <Campo rotulo="Pessoas" opcional inputMode="numeric" value={o.pessoas ? String(o.pessoas) : ''} placeholder="Ex.: 40" onChange={e => muda({ pessoas: parseInt(e.target.value.replace(/\D/g, ''), 10) || null })} />
               <Campo rotulo="Local" opcional value={o.local_evento || ''} placeholder="Ex.: Salão do prédio" onChange={e => muda({ local_evento: e.target.value })} />
             </div>
+            {horaAberta && <HorarioSheet titulo="Horário do evento" value={o.horario_evento ? o.horario_evento.slice(0, 5) : ''} onChange={h => muda({ horario_evento: h })} aoLimpar={o.horario_evento ? () => muda({ horario_evento: null }) : undefined} onClose={() => setHoraAberta(false)} />}
           </section>
           </div>
           <section className="orc-card orc-e1-cal">
-            <h2>Data do evento</h2>
-            <CalendarioMes valor={o.data_evento || ''} onChange={d => muda({ data_evento: d })} userId={o.user_id} />
+            <h2 className="orc-h-acao">{varios ? 'Dias do evento' : 'Data do evento'}
+              <button type="button" role="checkbox" aria-checked={varios} className="orc-varios" onClick={() => ligarVarios(!varios)}>
+                <i className="orc-chk" aria-hidden="true">{varios && <Check size={14} weight="bold" />}</i>Mais de um dia
+              </button>
+            </h2>
+            <CalendarioMes valor={o.data_evento || ''} fim={o.data_evento_fim} varios={varios} onChange={(ini, fim) => muda({ data_evento: ini, data_evento_fim: fim })} />
           </section>
         </div>)}
 
@@ -578,7 +607,7 @@ export function Resumo({ o, total, sinal, nomeLoja, logo, montando }: { o: Orcam
       </div>
       {o.mensagem && <p className="orc-prev-msg">{o.mensagem}</p>}
       {/* (6.45) evento e data em linhas próprias (antes quebravam no meio) */}
-      {(o.data_evento || o.nome_evento) && <p className="orc-prev-ev">{o.nome_evento && <b>{o.nome_evento}</b>}{o.data_evento && <span>{dataLonga(o.data_evento)}</span>}</p>}
+      {(o.data_evento || o.nome_evento) && <p className="orc-prev-ev">{o.nome_evento && <b>{o.nome_evento}</b>}{o.data_evento && <span>{dataDoEvento(o)}</span>}</p>}
       <div className="orc-prev-itens">
         {(o.itens || []).map(i => (
           <div key={i.id}><span><b>{i.quantidade > 1 ? `${i.quantidade} × ` : ''}{i.nome}</b>{i.detalhe && <small>{i.detalhe}</small>}</span><em>{brl(i.quantidade * i.valor_unitario)}</em></div>
