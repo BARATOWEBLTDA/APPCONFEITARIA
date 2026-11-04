@@ -33,7 +33,7 @@ const DUVIDAS: [string, string][] = [
 const dataBR = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
 
 /** Checkout do Doonly PRO na Hotmart (com os 7 dias grátis) */
-const CHECKOUT_HOTMART = "https://pay.hotmart.com/M107866310B?checkoutMode=10";
+const CHECKOUT_HOTMART = "https://pay.hotmart.com/M107866310B?off=elyrqwi7&checkoutMode=10"; // (6.80) oferta com 7 dias grátis
 
 export default function Assinar() {
   const navigate = useNavigate();
