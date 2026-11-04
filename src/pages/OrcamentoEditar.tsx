@@ -22,8 +22,16 @@ import { linkWhatsApp, mascaraTelefone, digitosAoDigitar } from '@/lib/telefone'
 import { precoCardapioComPromocao } from '@/lib/precoCardapio'
 import { calcularCustoLucro, lerMaoObraConta } from '@/lib/produto-precificacao'
 import { gerarOrcamentoPDF } from '@/lib/gerarOrcamentoPDF'
+import { CartProvider } from '@/context/CartContext'
+import { ProductModal } from '@/components/cart/ProductModal'
+import { carregarGruposDoBanco } from '@/lib/produto-grupos'
+import { kitAtivo } from '@/lib/kitQuantidade'
+import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
+import { detalhesItem } from '@/lib/itemSacola'
+import { textoSaboresKit } from '@/lib/kitTexto'
+import type { ItemDoCarrinho } from '@/lib/itemDoCarrinho'
 import {
-  FORMA_ORC, brl, hojeISO, textoEntrega, dataLonga, linkProposta, maisDias, somarItens, textoCondicoes, textoProposta, totalOrcamento, valorSinal,
+  FORMA_ORC, brl, hojeISO, textoEntrega, dataLonga, linkProposta, maisDias, somarItens, textoCondicoes, dataCurta, textoProposta, totalOrcamento, valorSinal,
   type ItemOrcamento, type Orcamento,
 } from '@/lib/orcamentos'
 import { COMO_ORCAMENTO, TOUR_ORCAMENTO } from '@/lib/comoTelas'
@@ -58,6 +66,7 @@ export default function OrcamentoEditar() {
   const [mudou, setMudou] = useState(false)
   const [produtos, setProdutos] = useState<Prod[]>([])
   const [escolher, setEscolher] = useState(false)
+  const [produtoOpcoes, setProdutoOpcoes] = useState<Record<string, any> | null>(null) // eslint-disable-line @typescript-eslint/no-explicit-any
   const [busca, setBusca] = useState('')
   const [extras, setExtras] = useState({ desconto: false, acrescimo: false, entrega: false })
   const [validadeTipo, setValidadeTipo] = useState<'3' | '7' | '15' | '30' | 'data' | 'sem'>('7')
@@ -382,9 +391,6 @@ export default function OrcamentoEditar() {
               <Botao variante="secundario" tamanho="m" icone={<Plus size={18} weight="bold" />} onClick={() => muda({ itens: [...(o.itens || []), { id: novoId(), nome: '', quantidade: 1, valor_unitario: 0 }] })}>Personalizado</Botao>
             </div>
             <div className="orc-tot"><span>Subtotal dos itens</span><b>{brl(somarItens(o.itens))}</b></div>
-            {(o.itens || []).length > 0 && somarItens(o.itens) > 0 && (lucro && 'valor' in lucro
-              ? <p className={`orc-lucro${(lucro.valor ?? 0) < 0 ? ' ruim' : ''}`}>Lucro estimado {brl(lucro.valor ?? 0)} ({Math.round(lucro.pct ?? 0)}%) · pela ficha técnica</p>
-              : lucro && 'falta' in lucro ? <p className="orc-lucro sem">Lucro não calculado: {lucro.falta}.</p> : null)}
           </section>
         </>)}
 
@@ -429,7 +435,6 @@ export default function OrcamentoEditar() {
             {acr > 0 && <div className="orc-conta-l"><span>Acréscimo</span><b>+ {brl(acr)}</b></div>}
             {extras.entrega && <div className="orc-conta-l"><span>Entrega</span><b>{ent > 0 ? `+ ${brl(ent)}` : 'Grátis'}</b></div>}
             <div className="orc-tot"><span>Total</span><b>{brl(total)}</b></div>
-            {(o.itens || []).length > 0 && lucro && 'valor' in lucro && <p className={`orc-lucro${(lucro.valor ?? 0) < 0 ? ' ruim' : ''}`}>Lucro estimado {brl(lucro.valor ?? 0)} ({Math.round(lucro.pct ?? 0)}%) · pela ficha técnica</p>}
           </section>
           </>)
         })()}
@@ -520,9 +525,14 @@ export default function OrcamentoEditar() {
           {prodsFiltrados.map(p => {
             const pc = precoCardapioComPromocao(p)
             return (
-              <button key={p.id} type="button" className="orc-esc-it" onClick={() => {
-                muda({ itens: [...(o.itens || []), { id: novoId(), produto_id: p.id, nome: p.nome, quantidade: 1, valor_unitario: pc.final || 0, imagem_url: foto1(p.imagem_url) || null }] })
+              <button key={p.id} type="button" className="orc-esc-it" onClick={async () => {
+                // (6.45) produto com opções (tamanho, sabores do kit, recheios…) abre a mesma janela do cardápio: ela escolhe em vez de escrever
+                const { data } = await supabase.from('produtos').select('*').eq('id', p.id).maybeSingle()
+                const completo = (data || p) as typeof p & { kit_qtd?: unknown }
+                const temOpcoes = carregarGruposDoBanco(completo as Parameters<typeof carregarGruposDoBanco>[0]).some(g => g.ativo && g.opcoes.length > 0) || kitAtivo(completo.kit_qtd as Parameters<typeof kitAtivo>[0])
                 setEscolher(false)
+                if (temOpcoes) { setProdutoOpcoes(completo); return }
+                muda({ itens: [...(o.itens || []), { id: novoId(), produto_id: p.id, nome: p.nome, quantidade: 1, valor_unitario: pc.final || 0, imagem_url: foto1(p.imagem_url) || null }] })
               }}>
                 <span className="orc-item-ft" aria-hidden="true">{foto1(p.imagem_url) ? <img src={foto1(p.imagem_url)} alt="" /> : <Package size={20} />}</span>
                 <span className="orc-esc-tx"><b>{p.nome}</b>{p.categoria && <small>{p.categoria}</small>}</span>
@@ -534,6 +544,18 @@ export default function OrcamentoEditar() {
         </div>
       </div>
     </Janela>
+    {produtoOpcoes && (
+      <CartProvider>
+        <ProductModal isOpen product={produtoOpcoes as never} onClose={() => setProdutoOpcoes(null)} corBotao="#E85A8C" rotuloAdicionar="Colocar no orçamento"
+          onAdicionar={(item: ItemDoCarrinho) => {
+            const it = itemDoCarrinhoParaPedido(item)
+            const kit = (item.escolhas as { kit?: { sabores?: { nome: string; qtd: number }[] } } | undefined)?.kit
+            const detalhe = [...detalhesItem(item as never), kit?.sabores?.length ? textoSaboresKit(kit.sabores) : '', (item.observations || '').trim()].filter(Boolean).join(' · ')
+            muda({ itens: [...(o?.itens || []), { id: novoId(), produto_id: it.produto_id, nome: it.nome_produto, detalhe, quantidade: Number(it.quantidade) || 1, valor_unitario: Number(it.valor_unitario) || 0, imagem_url: foto1(String(produtoOpcoes.imagem_url || '')) || null }] })
+            setProdutoOpcoes(null)
+          }} />
+      </CartProvider>
+    )}
     {foto && <Janela aberta aoFechar={() => setFoto('')} tipo="conteudo" titulo="Foto de referência"><img className="orc-foto-g" src={foto} alt="Foto de referência" /></Janela>}
   </>)
 }
@@ -547,7 +569,8 @@ export function Resumo({ o, total, sinal, nomeLoja, logo }: { o: Orcamento; tota
         <span><b>{nomeLoja}</b><small>Orçamento{o.cliente_nome ? ` para ${o.cliente_nome.split(' ')[0]}` : ''}</small></span>
       </div>
       {o.mensagem && <p className="orc-prev-msg">{o.mensagem}</p>}
-      {(o.data_evento || o.nome_evento) && <p className="orc-prev-ev">{[o.nome_evento, dataLonga(o.data_evento)].filter(Boolean).join(' · ')}</p>}
+      {/* (6.45) evento e data em linhas próprias (antes quebravam no meio) */}
+      {(o.data_evento || o.nome_evento) && <p className="orc-prev-ev">{o.nome_evento && <b>{o.nome_evento}</b>}{o.data_evento && <span>{dataLonga(o.data_evento)}</span>}</p>}
       <div className="orc-prev-itens">
         {(o.itens || []).map(i => (
           <div key={i.id}><span><b>{i.quantidade > 1 ? `${i.quantidade} × ` : ''}{i.nome}</b>{i.detalhe && <small>{i.detalhe}</small>}</span><em>{brl(i.quantidade * i.valor_unitario)}</em></div>
@@ -557,7 +580,12 @@ export function Resumo({ o, total, sinal, nomeLoja, logo }: { o: Orcamento; tota
         {Number(o.desconto) > 0 && <div className="ok"><span><b>Desconto</b></span><em>− {brl(o.desconto)}</em></div>}
       </div>
       <div className="orc-prev-tot"><span>Total</span><b>{brl(total)}</b></div>
-      <p className="orc-prev-cond">{textoCondicoes(o, total)}{sinal > 0 && o.sinal_tipo !== 'total' ? ` · resto ${brl(Math.max(0, total - sinal))} na entrega` : ''}</p>
+      {/* (6.45) uma informação por linha: como paga, o resto e a validade */}
+      <p className="orc-prev-cond">
+        <span>{textoCondicoes({ ...o, validade: null }, total)}</span>
+        {sinal > 0 && o.sinal_tipo !== 'total' && <span>Resto {brl(Math.max(0, total - sinal))} na entrega</span>}
+        {o.validade && <span>Vale até {dataCurta(o.validade)}</span>}
+      </p>
     </div>
   )
 }

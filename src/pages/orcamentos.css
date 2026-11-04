@@ -406,3 +406,8 @@
 .orc-conta .orc-tot { margin-top: var(--space-1); padding-top: var(--space-3); border-top: 1px solid var(--ui-linha); }
 .orc-seg--5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (min-width: 600px) { .orc-seg--5 { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+/* (6.45) prévia: evento e condições uma por linha, sem quebrar no meio */
+.orc-prev-ev { display: flex; flex-direction: column; gap: 2px; font-weight: 500; }
+.orc-prev-ev b { font-weight: 600; color: var(--ui-texto); }
+.orc-prev-ev b, .orc-prev-ev span, .orc-prev-cond span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.orc-prev-cond { display: flex; flex-direction: column; gap: 2px; }
