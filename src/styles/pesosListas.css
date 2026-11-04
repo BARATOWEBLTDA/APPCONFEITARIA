@@ -1,0 +1,7 @@
+/* (6.68) varredura de pesos: nome do cliente / item numa lista fica mais leve que o título do cartão
+   (antes os nomes saíam no mesmo negrito do título e a lista ficava "preta" demais) */
+html body .pdc-nome b,
+html body .fd-lst-nm,
+html body .far-td-p > b,
+html body .cl9-tab-l > b,
+html body .lch-tx > b { font-weight: 500 !important; }
