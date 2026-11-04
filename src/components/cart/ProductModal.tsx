@@ -73,6 +73,8 @@ interface Props {
   rotuloAdicionar?: string
   /** (14/10) Prévia do cadastro: janela menor no centro, sem foto de referência/observação, botão "Entendi" só fecha */
   previa?: boolean
+  /** (6.54) aberto pelo orçamento: só as opções do produto, sem avisos de prazo nem sugestões */
+  orcamento?: boolean
 }
 
 
@@ -169,7 +171,7 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
   )
 }
 
-export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao = '#ec4899', onAdicionar, rotuloAdicionar, previa }: Props) {
+export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao = '#ec4899', onAdicionar, rotuloAdicionar, previa, orcamento }: Props) {
   // (21/10) "Peça também": o cliente troca de produto sem fechar a janela
   const [outro, setOutro] = useState<Produto | null>(null)
   useEffect(() => { setOutro(null) }, [produtoAberto, isOpen])
@@ -601,7 +603,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const cheios = semTamanho && descPct > 0 ? (gTamanho!.opcoes || []).map((o) => precoDoTamanho(o, tamanhoPorPeso, porKg)).filter((v: number) => v > 0) : []
   const pMinCheio = cheios.length ? Math.min(...cheios) : 0
   const temFoto = images.length > 0
-  const aviso = selo?.tipo === 'encomenda' ? (
+  // (6.54) no orçamento a confeiteira só escolhe as opções: sem aviso de prazo/pronta entrega, sem "Peça também" e sem "pedido X vezes"
+  const aviso = orcamento ? null : selo?.tipo === 'encomenda' ? (
     <div className="pm-aviso"><CalendarBlank size={20} weight="bold" aria-hidden="true" /><span><b>Encomende com {selo.prazo} de antecedência</b><small>Você escolhe o dia ao finalizar o pedido.</small></span></div>
   ) : !previa && !tamanhosEsgotados(product) ? (
     // (21/10) sem prazo de encomenda = pronta entrega (computador; o celular segue como estava)
@@ -801,10 +804,10 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
                 ))}
               </div>
             )}
-            {pedidos30 >= 5 && (
+            {!orcamento && pedidos30 >= 5 && (
               <p className="pm-social"><Fire size={18} weight="fill" aria-hidden="true" /><span><b>Pedido {pedidos30} vezes</b> nos últimos 30 dias</span></p>
             )}
-            {sugestoes.length > 0 && (
+            {!orcamento && sugestoes.length > 0 && (
               <section className="pm-tambem" aria-label="Peça também">
                 <h3>Peça também</h3>
                 <div className="pm-tambem-l">

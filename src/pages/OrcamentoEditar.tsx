@@ -400,26 +400,30 @@ export default function OrcamentoEditar() {
           <section className="orc-card">
             <h2>Itens</h2>
             {(o.itens || []).length === 0 && <p className="orc-vz orc-vz--c">Como você quer colocar o primeiro item?</p>}
+            {/* (6.54) os itens em caixinhas, preenchendo da esquerda para a direita */}
+            {(o.itens || []).length > 0 && <div className="orc-itens">
             {(o.itens || []).map(i => (
               <div key={i.id} className="orc-item">
-                <span className="orc-item-ft" aria-hidden="true">{i.imagem_url ? <img src={i.imagem_url} alt="" /> : <Package size={20} />}</span>
-                <div className="orc-item-c">
+                <div className="orc-item-top">
+                  <span className="orc-item-ft" aria-hidden="true">{i.imagem_url ? <img src={i.imagem_url} alt="" /> : <Package size={20} />}</span>
                   {i.produto_id
-                    ? <b className="orc-item-n">{i.nome}</b>
-                    : <input className="orc-item-in" value={i.nome} placeholder="Nome do item (ex.: Bolo 2 andares, tema jardim)" onChange={e => mudaItem(i.id, { nome: e.target.value })} aria-label="Nome do item" />}
-                  <input className="orc-item-det" value={i.detalhe || ''} placeholder="Detalhe: sabor, tamanho, tema" onChange={e => mudaItem(i.id, { detalhe: e.target.value })} aria-label="Detalhe do item" />
-                  <div className="orc-item-l">
-                    <span className="orc-qtd">
-                      <button type="button" aria-label="Diminuir" onClick={() => mudaItem(i.id, { quantidade: Math.max(1, (Number(i.quantidade) || 1) - 1) })}><Minus size={16} weight="bold" /></button>
-                      <b>{i.quantidade}</b>
-                      <button type="button" aria-label="Aumentar" onClick={() => mudaItem(i.id, { quantidade: (Number(i.quantidade) || 1) + 1 })}><Plus size={16} weight="bold" /></button>
-                    </span>
-                    <label className="orc-valor"><span>R$</span><input inputMode="numeric" value={mostrarReais(Number(i.valor_unitario) || 0)} placeholder="0,00" onChange={e => mudaItem(i.id, { valor_unitario: lerReais(e.target.value) })} aria-label="Valor de cada um" /></label>
-                    <button type="button" className="orc-tira" aria-label={`Tirar ${i.nome || 'o item'}`} onClick={() => tiraItem(i.id)}><Trash size={18} weight="bold" /></button>
-                  </div>
+                    ? <b className="orc-item-n" title={i.nome}>{i.nome}</b>
+                    : <input className="orc-item-in" value={i.nome} placeholder="Nome do item" onChange={e => mudaItem(i.id, { nome: e.target.value })} aria-label="Nome do item" />}
+                  <button type="button" className="orc-tira" aria-label={`Tirar ${i.nome || 'o item'}`} title="Tirar" onClick={() => tiraItem(i.id)}><Trash size={18} weight="bold" /></button>
                 </div>
+                <input className="orc-item-det" value={i.detalhe || ''} placeholder={i.produto_id ? 'Detalhe: sabor, tamanho, tema' : 'Ex.: 2 andares, tema jardim'} onChange={e => mudaItem(i.id, { detalhe: e.target.value })} aria-label="Detalhe do item" />
+                <div className="orc-item-l">
+                  <span className="orc-qtd">
+                    <button type="button" aria-label="Diminuir" onClick={() => mudaItem(i.id, { quantidade: Math.max(1, (Number(i.quantidade) || 1) - 1) })}><Minus size={16} weight="bold" /></button>
+                    <b>{i.quantidade}</b>
+                    <button type="button" aria-label="Aumentar" onClick={() => mudaItem(i.id, { quantidade: (Number(i.quantidade) || 1) + 1 })}><Plus size={16} weight="bold" /></button>
+                  </span>
+                  <label className="orc-valor"><span>R$</span><input inputMode="numeric" value={mostrarReais(Number(i.valor_unitario) || 0)} placeholder="0,00" onChange={e => mudaItem(i.id, { valor_unitario: lerReais(e.target.value) })} aria-label="Valor de cada um" /></label>
+                </div>
+                {(Number(i.quantidade) || 1) > 1 && Number(i.valor_unitario) > 0 && <small className="orc-item-tot">{i.quantidade} × {brl(Number(i.valor_unitario))} = <b>{brl((Number(i.quantidade) || 1) * Number(i.valor_unitario))}</b></small>}
               </div>
             ))}
+            </div>}
             {/* (6.53) as duas formas de pôr item: dois cartões quadrados no meio da tela */}
             <div className={`orc-add${(o.itens || []).length ? ' orc-add--mais' : ''}`}>
               <button type="button" className="orc-add-op" onClick={() => { setBusca(''); setEscolher(true) }}>
@@ -558,7 +562,7 @@ export default function OrcamentoEditar() {
       </div>
     )}
 
-    <Janela aberta={escolher} aoFechar={() => setEscolher(false)} tipo="conteudo" titulo="Produtos do cardápio">
+    <Janela aberta={escolher} aoFechar={() => setEscolher(false)} tipo="conteudo" titulo="Produtos do cardápio" className="orc-esc-janela">
       <div className="orc-esc">
         <label className="orc-busca"><MagnifyingGlass size={18} weight="bold" /><input type="search" placeholder="Buscar produto" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar produto" /></label>
         <div className="orc-esc-l">
@@ -586,7 +590,7 @@ export default function OrcamentoEditar() {
     </Janela>
     {produtoOpcoes && (
       <CartProvider>
-        <ProductModal isOpen product={produtoOpcoes as never} onClose={() => setProdutoOpcoes(null)} corBotao="#E85A8C" rotuloAdicionar="Colocar no orçamento"
+        <ProductModal isOpen orcamento product={produtoOpcoes as never} onClose={() => setProdutoOpcoes(null)} corBotao="#E85A8C" rotuloAdicionar="Colocar no orçamento"
           onAdicionar={(item: ItemDoCarrinho) => {
             const it = itemDoCarrinhoParaPedido(item)
             const kit = (item.escolhas as { kit?: { sabores?: { nome: string; qtd: number }[] } } | undefined)?.kit
