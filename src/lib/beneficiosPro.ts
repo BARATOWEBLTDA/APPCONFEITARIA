@@ -12,8 +12,8 @@ export const BENEFICIOS: Beneficio[] = [
   [ChartLineUp, "Seu lucro de verdade", "Relatórios de lucratividade por produto e por mês, para decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
   [Robot, "A Doo IA sem aperto", "No PRO a Doo IA responde até 150 mensagens por dia e cria imagens. No grátis são 10 mensagens por mês.", "Doo IA 150 por dia", "E cria imagens", "doo"],
   [FileText, "Orçamentos que o cliente aprova", "Monte a proposta, mande o link e o cliente aprova pelo celular. Aprovou, vira pedido.", "Orçamentos", "Proposta com link para aprovar", "/orcamentos"],
-  // (6.10) o grátis também tem complementos (até 3) e PDFs (com o "Feito com Doonly"): o texto diz o que o PRO muda de verdade
-  [Stack, "Adicionais sem limite", "Topo de bolo, velas e outros extras que o cliente marca no produto. No grátis, até 3. No PRO, quantos quiser.", "Complementos sem limite", "Extras que o cliente marca", "/complementos"],
+  // (6.29) adicionais são do PRO (a página e o cardápio só mostram no PRO). (6.10) PDFs (com o "Feito com Doonly"): o texto diz o que o PRO muda de verdade
+  [Stack, "Adicionais", "Topo de bolo, velas e outros extras que o cliente marca no produto. Cada pedido vale mais.", "Adicionais", "Extras que o cliente marca", "/complementos"],
   [Tag, "Cupons sem limite", "No grátis, 1 cupom ativo. No PRO, quantos quiser, e os 2 mais novos aparecem no topo do cardápio.", "Cupons sem limite", "E os 2 mais novos no topo", "/cupons"],
   [ChatCircleText, "Mensagens do seu jeito", "Troque os textos prontos do WhatsApp e anuncie com o Pixel do Meta, Google e TikTok.", "Mensagens e Pixel", "Textos do seu jeito e anúncios", "/configuracoes/mensagens"],
   [Palette, "Cardápio com a sua cara", "Qualquer cor no topo da loja, até 4 fotos por produto e um link com o nome da sua loja.", "Cardápio com a sua marca", "Qualquer cor e até 4 fotos", "/cardapio-design"],

@@ -106,9 +106,12 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
   if (temProduto && semCupom) l.push({ chave: "falta_cupom", icone: "cupom", semNotificar: true, titulo: "Crie seu primeiro cupom",
     texto: "Um cupom de desconto traz cliente nova e faz quem já comprou voltar.", link: "/cupons", nivel: "normal", curto: { t: "Seu primeiro cupom", s: "Pra trazer cliente nova" },
     estado: { destacar: { alvo: ".guia-novo-cupom", titulo: "Crie o cupom aqui", texto: "Escolha o código (ex.: BEMVINDA10) e o desconto. A cliente usa no cardápio.", acao: "Criar cupom" } } });
-  if (temProduto && !nComplementos.error && !(nComplementos.count || 0)) l.push({ chave: "falta_complemento", icone: "complemento", semNotificar: true, titulo: "Cadastre adicionais",
-    texto: "Sabores, recheios, tamanhos e extras: a cliente monta o pedido e você vende mais em cada um.", link: "/complementos", nivel: "normal", curto: { t: "Adicionais", s: "Sabores, recheios e extras" },
-    estado: { destacar: { alvo: ".guia-novo-complemento", titulo: "Crie o primeiro adicional", texto: "Por exemplo: Recheio, com Ninho, Morango e Brigadeiro.", acao: "Criar adicional" } } });
+  // (6.29) adicionais são do PRO: no grátis o aviso levaria só pro convite do PRO
+  const pfPlano = (perfil.data || {}) as { plano?: string | null; pro_expira_em?: string | null };
+  const ehPro = pfPlano.plano === "pro" && (!pfPlano.pro_expira_em || new Date(pfPlano.pro_expira_em) > new Date());
+  if (ehPro && temProduto && !nComplementos.error && !(nComplementos.count || 0)) l.push({ chave: "falta_complemento", icone: "complemento", semNotificar: true, titulo: "Cadastre adicionais",
+    texto: "Topo de bolo, velas e escrita: o cliente marca no produto e cada pedido vale mais.", link: "/complementos", nivel: "normal", curto: { t: "Adicionais", s: "Topo, velas e escrita" },
+    estado: { destacar: { alvo: ".guia-novo-complemento", titulo: "Crie o primeiro adicional", texto: "Por exemplo: Topo de bolo, com a foto da ideia que o cliente manda.", acao: "Criar adicional" } } });
   if (temProduto && !nClientes.error && !(nClientes.count || 0)) l.push({ chave: "falta_cliente", icone: "cliente", semNotificar: true, titulo: "Cadastre sua primeira cliente",
     texto: "Com as clientes no app, você manda parabéns no aniversário e vê o que cada uma comprou.", link: "/clientes", nivel: "normal", curto: { t: "Primeira cliente", s: "Aniversário e histórico" },
     estado: { destacar: { alvo: ".guia-novo-cliente", titulo: "Cadastre a cliente aqui", texto: "Nome e WhatsApp já bastam. Quem pede pelo cardápio entra sozinha.", acao: "Cadastrar cliente" } } });

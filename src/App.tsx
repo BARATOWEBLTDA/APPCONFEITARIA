@@ -573,6 +573,7 @@ export default function App() {
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/cadastros" element={<Cadastros />} />
           <Route path="/complementos" element={<Complementos />} />
+          <Route path="/adicionais" element={<Navigate to="/complementos" replace />} />
           <Route path="/clientes/:id" element={<ClientePerfil />} />
           <Route path="/financeiro" element={<Financeiro />} />
           {/* Passo 7: a Visão Geral virou o painel do Financeiro */}

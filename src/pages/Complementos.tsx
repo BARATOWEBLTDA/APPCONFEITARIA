@@ -528,24 +528,6 @@ export default function Complementos() {
             </button>} />
 
           </div>
-          {/* (19/10) complemento que pede foto (ex.: Topo de bolo): no cardápio, ao marcar, o cliente anexa a referência */}
-          {/* (24/10) o que o complemento pede ao cliente: foto e/ou frase, num quadro só */}
-          {/* (30/10 · 5.34) o título fora do quadro, igual aos outros campos */}
-          <div className="ui-campo">
-          <span className="ui-campo-r"><span>O cliente precisa mandar</span><small>opcional</small></span>
-          <small className="pz-sub-tit">Se não marcar nada, vocês combinam pelo WhatsApp.</small>
-          <div className="pz-pede">
-          <button type="button" role="checkbox" aria-checked={form.pedeRef} className="pz-ref pz-ref--l" onClick={() => setForm(f => ({ ...f, pedeRef: !f.pedeRef }))}>
-            <i className="pz-chk" aria-hidden="true">{form.pedeRef && <Check size={14} weight="bold" />}</i>
-            <span><b>Uma foto de referência</b><small>Ex.: topo de bolo, papel de arroz</small></span>
-          </button>
-            {temFrase && <button type="button" role="checkbox" aria-checked={form.pedeFrase} className="pz-ref pz-ref--l" onClick={() => setForm(f => ({ ...f, pedeFrase: !f.pedeFrase }))}>
-              <i className="pz-chk" aria-hidden="true">{form.pedeFrase && <Check size={14} weight="bold" />}</i>
-              <span><b>Uma frase</b><small>Ex.: escrita no bolo, cartão</small></span>
-            </button>}
-          </div>
-          </div>
-
           </div>
           <div className="pz-c2">
           {/* (30/10 · 5.37) a prévia saiu (o Bruno pediu): a coluna da direita é só "Onde aparece" */}
@@ -569,6 +551,25 @@ export default function Complementos() {
             </div>
             {erroOnde && <p className="ui-campo-msg pz-erro" role="alert"><WarningCircle size={14} weight="bold" aria-hidden="true" /><span>{erroOnde}</span></p>}
           </div>
+          {/* (6.29) as regras foram pra coluna da direita: no PC as duas colunas ficam do mesmo tamanho, sem rolar */}
+          {/* (19/10) complemento que pede foto (ex.: Topo de bolo): no cardápio, ao marcar, o cliente anexa a referência */}
+          {/* (24/10) o que o complemento pede ao cliente: foto e/ou frase, num quadro só */}
+          {/* (30/10 · 5.34) o título fora do quadro, igual aos outros campos */}
+          <div className="ui-campo">
+          <span className="ui-campo-r"><span>O cliente precisa mandar</span><small>opcional</small></span>
+          <small className="pz-sub-tit">Se não marcar nada, vocês combinam pelo WhatsApp.</small>
+          <div className="pz-pede">
+          <button type="button" role="checkbox" aria-checked={form.pedeRef} className="pz-ref pz-ref--l" onClick={() => setForm(f => ({ ...f, pedeRef: !f.pedeRef }))}>
+            <i className="pz-chk" aria-hidden="true">{form.pedeRef && <Check size={14} weight="bold" />}</i>
+            <span><b>Uma foto de referência</b><small>Ex.: topo de bolo, papel de arroz</small></span>
+          </button>
+            {temFrase && <button type="button" role="checkbox" aria-checked={form.pedeFrase} className="pz-ref pz-ref--l" onClick={() => setForm(f => ({ ...f, pedeFrase: !f.pedeFrase }))}>
+              <i className="pz-chk" aria-hidden="true">{form.pedeFrase && <Check size={14} weight="bold" />}</i>
+              <span><b>Uma frase</b><small>Ex.: escrita no bolo, cartão</small></span>
+            </button>}
+          </div>
+          </div>
+
           </div>
         </div>
         ) : (

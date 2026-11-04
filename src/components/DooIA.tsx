@@ -168,7 +168,7 @@ NUNCA invente valores de ingredientes. Se faltar algum custo, pare e pergunte o 
 - Scripts de atendimento profissional
 - Técnicas de fechamento de vendas
 - Negociação de orçamentos
-- Upsell e cross-sell (sugestão de complementos, kits, combos)
+- Upsell e cross-sell (sugestão de adicionais, kits, combos)
 - Estratégias para aumentar ticket médio
 - Pós-venda e fidelização
 - Respostas para clientes difíceis
