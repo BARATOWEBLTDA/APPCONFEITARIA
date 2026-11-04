@@ -157,6 +157,7 @@ const CSS = `
   .ags-hrs button { height: 48px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ui-texto); cursor: pointer; }
   .ags-hrs button.sel { border-color: var(--ui-rosa); background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-weight: 600; }
   .ags-hrs .ags-outro { grid-column: 1 / -1; border-style: dashed; color: var(--ui-rosa-escuro); font-size: 15px; font-weight: 600; }
+  .ags-hrs .ags-outro.sel { background: #FFF8FB !important; color: var(--ui-rosa-escuro) !important; border: 1.5px solid #F3B3CA !important; box-shadow: none !important; } /* (6.70) aberto: só marcado, o rosa cheio fica com o Confirmar */
   .ags-outro-box { margin-top: 12px; padding: 14px; border-radius: var(--ui-raio-cartao); background: #FAF7F8; }
   .ags-outro-box p { margin: 0 0 10px; font-size: 13px; color: var(--ui-texto-2); }
   .ags-outro-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; font-size: 20px; font-weight: 600; }

@@ -73,6 +73,15 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
   const sub = status?.msg || '' // (14/10) a cidade vai numa linha só dela
   // (20/10) com a cliente conectada, o topo mostra o nome dela; sem conta, continua "Minha conta"
   const [nomeCliente, setNomeCliente] = useState(() => (lerCliente(confeteiraUserId)?.nome || '').trim().split(/\s+/)[0] || '')
+  // (6.70) com a Minha conta aberta, a página de trás não rola (e o Esc fecha)
+  useEffect(() => {
+    if (aba !== 'conta') return
+    const h = document.documentElement, b = document.body, ph = h.style.overflow, pb = b.style.overflow
+    h.style.overflow = 'hidden'; b.style.overflow = 'hidden'
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setAba('inicio') }
+    window.addEventListener('keydown', esc)
+    return () => { h.style.overflow = ph; b.style.overflow = pb; window.removeEventListener('keydown', esc) }
+  }, [aba])
   useEffect(() => {
     const ler = () => setNomeCliente((lerCliente(confeteiraUserId)?.nome || '').trim().split(/\s+/)[0] || '')
     ler(); window.addEventListener('doonly:cliente', ler); window.addEventListener('storage', ler)

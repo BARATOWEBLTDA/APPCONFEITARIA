@@ -470,11 +470,18 @@ function CartContent({
   }, [formaEntrega, modoEnt, rua, numero, cidade, cep]) // eslint-disable-line react-hooks/exhaustive-deps
   const taxaCidade = modoEnt === 'cidade' ? taxaPorCidade(config.entrega_por_cidade || [], cidade, config.entrega_fora_valor ?? null) : null
   const [outraCidade, setOutraCidade] = useState(false)
-  const areaOk = modoEnt === 'raio' ? taxaArea.estado === 'ok' : modoEnt === 'cidade' ? !!cidade.trim() && !!taxaCidade?.ok : true
+  // (6.70) endereço fora da área (ou que o mapa não acha): em vez de travar a venda, a cliente pode combinar a entrega com a loja pelo WhatsApp
+  const [combinarFora, setCombinarFora] = useState(false)
+  const foraDaArea = formaEntrega === 'entrega_propria' && !!rua.trim() && !!numero.trim() && (
+    (modoEnt === 'raio' && (taxaArea.estado === 'fora' || taxaArea.estado === 'sem_local' || taxaArea.estado === 'erro'))
+    || (modoEnt === 'cidade' && !!cidade.trim() && !taxaCidade?.ok))
+  const aCombinarFora = foraDaArea && combinarFora
+  const areaOk = aCombinarFora || (modoEnt === 'raio' ? taxaArea.estado === 'ok' : modoEnt === 'cidade' ? !!cidade.trim() && !!taxaCidade?.ok : true)
 
   const freteValor = useMemo(() => {
     if (formaEntrega === 'retirada' || formaEntrega === 'combinar') return 0
     if (formaEntrega === 'entrega_propria' && modoEnt === 'combinar') return 0 // (04/11) a taxa é acertada no WhatsApp
+    if (aCombinarFora) return 0
     if (formaEntrega === 'entrega_propria' && modoEnt === 'raio') return taxaArea.estado === 'ok' ? taxaArea.valor : 0
     if (formaEntrega === 'entrega_propria' && modoEnt === 'cidade') return taxaCidade?.ok ? taxaCidade.valor : 0
     if (formaEntrega === 'entrega_propria') {
@@ -485,7 +492,7 @@ function CartContent({
       return config.valor_entrega_propria
     }
     return 0
-  }, [formaEntrega, bairroSelecionado, config, modoEnt, taxaArea, taxaCidade?.ok, (taxaCidade as { valor?: number } | null)?.valor])
+  }, [formaEntrega, bairroSelecionado, config, modoEnt, taxaArea, aCombinarFora, taxaCidade?.ok, (taxaCidade as { valor?: number } | null)?.valor])
 
   // 10/10: o desconto nunca passa do subtotal (percentual vai de 0 a 100) e o total nunca fica negativo
   const desconto = useMemo(() => {
@@ -693,6 +700,7 @@ function CartContent({
       // (04/11 · 6.20) o que a confeiteira precisa saber da entrega vai junto na observação do pedido
       const notasEntrega = [
         formaEntrega === 'entrega_propria' && modoEnt === 'combinar' ? 'Taxa de entrega: a combinar pelo WhatsApp.' : '',
+        aCombinarFora ? 'Endereço fora da área de entrega: combinar a entrega e a taxa com a cliente pelo WhatsApp.' : '',
         formaEntrega === 'entrega_propria' && bairroSelecionado && bairroCep && acharBairro(bairroCep) !== bairroSelecionado ? `Bairro pelo CEP: ${bairroCep} (escolheu ${bairroSelecionado}).` : '',
       ].filter(Boolean)
       const obsComEntrega = [...notasEntrega, (observacoes || '').trim()].filter(Boolean).join('\n')
@@ -730,7 +738,7 @@ function CartContent({
       // (4.22) O banco cria o pedido e os itens de uma vez (função cardapio_criar_pedido): confere a loja e os produtos,
       // refaz a soma, o cupom e o total, e não duplica numa nova tentativa. Sem a função no banco, grava como antes.
       const viaBanco = await supabase.rpc('cardapio_criar_pedido', {
-        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido, forma_entrega: formaEntrega, bairro_taxa: bairroSelecionado || null, cliente_lat: taxaArea.lat ?? null, cliente_lng: taxaArea.lng ?? null, pagar_na_retirada: comPagarDepois && pagaDepois }, p_itens: itensDoPedido,
+        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido, forma_entrega: formaEntrega, entrega_a_combinar: aCombinarFora, bairro_taxa: bairroSelecionado || null, cliente_lat: taxaArea.lat ?? null, cliente_lng: taxaArea.lng ?? null, pagar_na_retirada: comPagarDepois && pagaDepois }, p_itens: itensDoPedido,
       })
       const semFuncao = !!viaBanco.error && (viaBanco.error.code === 'PGRST202' || viaBanco.error.code === '42883' || /could not find the function/i.test(String(viaBanco.error.message || '')))
       if (viaBanco.error && !semFuncao) return falhou(viaBanco.error)
@@ -861,7 +869,7 @@ function CartContent({
   const entregaGratis = entregaTexto === 'Grátis'
   const rotuloTotal = !opsEntrega.ent || entregaGratis ? 'Total' : 'Total sem a entrega'
   const subtotalCupom = somarReais([totalPrice, -desconto])
-  const freteTexto = formaEntrega !== 'entrega_propria' || modoEnt === 'combinar' ? 'A combinar'
+  const freteTexto = formaEntrega !== 'entrega_propria' || modoEnt === 'combinar' || aCombinarFora ? 'A combinar'
     : config.entrega_por_bairro.length > 0 && !bairroSelecionado ? 'Escolha o bairro'
     : modoEnt === 'raio' && taxaArea.estado !== 'ok' ? (taxaArea.estado === 'buscando' ? 'Calculando…' : taxaArea.estado === 'fora' ? 'Fora da área' : 'Falta o endereço')
     : modoEnt === 'cidade' && !areaOk ? (cidade.trim() ? 'Fora da área' : 'Escolha a cidade')
@@ -874,7 +882,7 @@ function CartContent({
   const antTexto = regras.horas >= 48 && regras.horas % 24 === 0 ? `${regras.horas / 24} dias` : `${regras.horas}h`
   const limparEndereco = () => { setRua(''); setNumero(''); setComplemento(''); setBairro(''); setCidade(''); setCep(''); setBairroSelecionado(''); setCepErro(''); setCepAviso('') }
   // O que ainda falta na entrega (o selo diz isso em vez de voltar pra "Obrigatório")
-  const faltaReceber = !formaEntrega || !comEndereco ? ''
+  const faltaReceber = !formaEntrega || !comEndereco || aCombinarFora ? ''
     : !rua.trim() || !numero.trim() ? 'Falta o endereço'
     : config.entrega_por_bairro.length > 0 && !bairroSelecionado ? 'Falta o bairro'
     : formaEntrega === 'entrega_propria' && modoEnt === 'cidade' && !areaOk ? (cidade.trim() ? 'Fora da área' : 'Falta a cidade')
@@ -1174,10 +1182,17 @@ function CartContent({
                 <p className={`sc-area-aviso${taxaArea.estado === 'fora' || taxaArea.estado === 'sem_local' || taxaArea.estado === 'erro' ? ' err' : ''}`} role="status">
                   {taxaArea.estado === 'buscando' ? 'Calculando a taxa pela distância…'
                     : taxaArea.estado === 'ok' ? <>Entrega: <b>{taxaArea.valor > 0 ? formatCurrency(taxaArea.valor) : 'Grátis'}</b>{taxaArea.km != null ? ` (${kmTexto(taxaArea.km)})` : ''}</>
-                    : taxaArea.estado === 'fora' ? 'Esse endereço está fora da área de entrega. Você pode escolher retirar.'
+                    : taxaArea.estado === 'fora' ? 'Esse endereço fica fora da área de entrega da loja.'
                     : taxaArea.estado === 'sem_local' ? 'Não achamos esse endereço no mapa. Confira o CEP, a rua e o número.'
                     : taxaArea.estado === 'erro' ? 'Não deu pra calcular a taxa agora. Confira a internet.' : null}
                 </p>
+              )}
+              {/* (6.70) fora da área (ou endereço que o mapa não acha): a venda não trava, a cliente combina com a loja */}
+              {foraDaArea && (
+                <button type="button" role="checkbox" aria-checked={combinarFora} className="sc-combinar" onClick={() => setCombinarFora(v => !v)} style={combinarFora ? { borderColor: accent } : undefined}>
+                  <i className="sc-combinar-chk" aria-hidden="true" style={combinarFora ? { background: accent, borderColor: accent } : undefined}>{combinarFora && <Check size={14} weight="bold" color="#fff" />}</i>
+                  <span><b>Combinar a entrega pelo WhatsApp</b><small>A loja confirma se entrega aí e o valor da taxa</small></span>
+                </button>
               )}
               {formaEntrega === 'entrega_propria' && config.entrega_por_bairro.length > 0 && (
                 <>
