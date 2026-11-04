@@ -138,7 +138,7 @@
 .ep2.tpd .ep2-taxa > span:first-child { flex: 1; }
 .ep2.tpd .ep2-mini { display: flex; align-items: center; gap: 6px; width: 140px; height: 48px; padding: 0 12px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); }
 .ep2.tpd .ep2-mini em { font-style: normal; font-size: 15px; font-weight: 600; color: var(--ui-texto-3); }
-.ep2.tpd .ep2-mini input { flex: 1; min-width: 0; height: 44px; border: 0; outline: 0; background: none; font-family: var(--font-base); font-size: 16px; font-weight: 500; text-align: right; color: var(--ui-texto); }
+.ep2.tpd .ep2-mini input { flex: 1; min-width: 0; height: 44px; border: 0; outline: 0; background: none; font-family: var(--font-base); font-size: 16px; font-weight: 500; text-align: left; /* (6.77) o valor junto do R$ */ color: var(--ui-texto); }
 .ep2.tpd .ep2-mini:focus-within { border-color: var(--ui-rosa); }
 .ep2.tpd .ep2-usar { min-height: 44px; }
 

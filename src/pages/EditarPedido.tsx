@@ -1695,8 +1695,8 @@ export default function EditarPedido() {
                 {/* (28/10 · 4.49) a taxa que a regra da loja dá pra este endereço, com um toque pra usar */}
                 {taxaSugerida && (
                   <p className={`tpd-taxa-sug${taxaSugerida.valor == null ? ' fora' : ''}`}>
-                    <span>{taxaSugerida.texto}{taxaSugerida.valor != null ? `: ${formatMoney(taxaSugerida.valor)}` : ''}</span>
-                    {taxaSugerida.valor != null && Math.abs(taxaSugerida.valor - (Number(taxaEntrega) || 0)) > 0.009 && <button type="button" onClick={() => setTaxaEntrega(taxaSugerida.valor as number)}>Usar</button>}
+                    <span>{taxaSugerida.texto}{taxaSugerida.valor != null ? `: ${taxaSugerida.valor > 0 ? formatMoney(taxaSugerida.valor) : 'Grátis'}` : ''}</span>
+                    {taxaSugerida.valor != null && Math.abs(taxaSugerida.valor - (Number(taxaEntrega) || 0)) > 0.009 && <button type="button" onClick={() => setTaxaEntrega(taxaSugerida.valor as number)}>{taxaSugerida.valor > 0 ? 'Usar' : 'Usar grátis'}</button>}
                   </p>
                 )}
               </div>
@@ -4030,7 +4030,7 @@ const EP2_CSS = `
   .ep2-ln-in { align-items: center; }
   .ep2-mini { display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--ui-borda-campo); border-radius: 9px; padding: 4px 8px; width: 110px; background: var(--ui-branco); }
   .ep2-mini em { font-style: normal; font-size: 12px; color: var(--ui-texto-3); font-weight: 500; }
-  .ep2-mini input { width: 100%; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 16px; font-weight: 600; color: var(--ui-texto); text-align: right; background: none; }
+  .ep2-mini input { width: 100%; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 16px; font-weight: 600; color: var(--ui-texto); text-align: left; background: none; }
   .ep2-sab { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); padding: 3px 0; } .ep2-sab svg { color: var(--ui-rosa); }
   .ep2-ad { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; background: #FFF6F9; border-radius: var(--ui-raio-p); padding: 8px 10px; font-size: 13px; font-weight: 600; color: var(--ui-texto); }
   .ep2-ad span { display: flex; align-items: center; gap: 6px; } .ep2-ad b { color: var(--ui-rosa-escuro); white-space: nowrap; }
