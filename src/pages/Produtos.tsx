@@ -1991,10 +1991,10 @@ export default function Produtos() {
                           sem a linha "Promoção", o cartão sem promoção não fica com um vão */}
                       {/* (04/11 · 6.34) o preço junto, à esquerda: o novo em destaque e o cheio riscado ao lado (antes um de cada lado do cartão).
                           O tipo (Encomenda / Pronta entrega) virou selo na foto */}
+                      {/* (6.34) "A partir de" / "Preço do kg" numa linha pequena em cima (antes dividia a linha e o riscado saía do cartão) */}
                       <div className="pl-ficha-preco">
-                        {rotulo !== "Preço" && <small>{rotulo}</small>}
-                        <b className={pl.de > 0 ? "promo" : ""}>R$&nbsp;{formatPreco(pl.final)}</b>
-                        {pl.de > 0 && <s>R$&nbsp;{formatPreco(cheio)}</s>}
+                        <small>{rotulo !== "Preço" ? rotulo : pl.de > 0 ? "Promoção" : "Preço"}</small>
+                        <span><b className={pl.de > 0 ? "promo" : ""}>R$&nbsp;{formatPreco(pl.final)}</b>{pl.de > 0 && <s>R$&nbsp;{formatPreco(cheio)}</s>}</span>
                       </div>
                       <div className="pl-ficha-on"><dt>Cardápio</dt><dd>
                         <button type="button" role="switch" aria-checked={p.disponivel !== false} aria-label={`Mostrar ${p.nome} no cardápio`}

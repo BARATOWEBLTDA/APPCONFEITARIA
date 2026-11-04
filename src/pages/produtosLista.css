@@ -150,7 +150,8 @@ body .prod-card-lucro--baixo strong { color: var(--ui-vermelho); }
 body .prod-card-lucro-pct { color: var(--ui-texto-2); font-weight: 500; }
 
 /* (04/11 · 6.34) cartão de Produtos sem lucro: preço junto (novo + cheio riscado) e o tipo como selo na foto */
-.pl-ficha > .pl-ficha-preco { display: flex; align-items: baseline; justify-content: flex-start; flex-wrap: nowrap; gap: var(--space-2); min-width: 0; padding: 4px 0; }
+.pl-ficha > .pl-ficha-preco { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 0; min-width: 0; padding: 2px 0 4px; }
+.pl-ficha-preco > span { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; max-width: 100%; }
 .pl-ficha-preco small { flex: none; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
 .pl-ficha-preco b { flex: none; font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
 .pl-ficha-preco b.promo { color: #2F7D4E; }
