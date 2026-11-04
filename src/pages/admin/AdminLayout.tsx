@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { NomeDoonly } from "@/components/marca/Mascote";
 import { perfilAtual, escolherPerfil, EVENTO_PERFIL, type PerfilAdmin } from "@/lib/adminPerfil";
 import EscolherPerfil, { AvatarAdmin } from "./EscolherPerfil";
+import { guardarDestinoDoLogin } from "@/lib/destinoLogin";
 import {
   ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images,
   ChartBar, Lightbulb, Lifebuoy, Target,
@@ -102,7 +103,8 @@ export default function AdminLayout() {
     const check = async () => {
       const ADMIN_EMAILS = ["gestao@doonly.com.br"];
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/admin/login", { replace: true }); setLoading(false); return; }
+      // (6.55) o admin entra pelo mesmo login das confeiteiras; depois de entrar volta para a tela do admin que abriu
+      if (!session) { guardarDestinoDoLogin(window.location.pathname + window.location.search); navigate("/login", { replace: true }); setLoading(false); return; }
       if (ADMIN_EMAILS.includes(session.user.email || "")) {
         setAuthorized(true);
         setUserEmail(session.user.email || "");
@@ -121,7 +123,7 @@ export default function AdminLayout() {
   const handleLogout = async () => {
     escolherPerfil(null);
     await supabase.auth.signOut();
-    navigate("/admin/login");
+    navigate("/login");
   };
 
   if (loading) return null;

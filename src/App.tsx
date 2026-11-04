@@ -68,7 +68,6 @@ const SolicitarRecurso = lazy(() => import("@/pages/SolicitarRecurso"));
 const RelatarProblema = lazy(() => import("@/pages/RelatarProblema"));
 const AssistenteVirtual = lazy(() => import("@/pages/AssistenteVirtual"));
 const MinhaAssinatura = lazy(() => import("@/pages/MinhaAssinatura"));
-const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
 const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminUsuarios = lazy(() => import("@/pages/admin/AdminUsuarios"));
@@ -603,7 +602,7 @@ export default function App() {
           <Route path="/personalizacao" element={<Navigate to="/complementos" replace />} />
         </Route>
 
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/login" element={<Navigate to="/login" replace />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="usuarios" element={<AdminUsuarios />} />

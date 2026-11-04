@@ -238,7 +238,9 @@ export default function Auth() {
       const userId = signInData.user?.id;
       // (27/10) a mesma regra do painel do admin (o e-mail da gestão): outra conta com is_admin caía num ciclo de telas
       void userId;
-      const dest = (signInData.user?.email || "").toLowerCase() === "gestao@doonly.com.br" ? "/admin" : (destinoDepoisDoLogin() || "/inicio");
+      const guardado = destinoDepoisDoLogin();
+      const ehAdmin = (signInData.user?.email || "").toLowerCase() === "gestao@doonly.com.br";
+      const dest = ehAdmin ? (guardado?.startsWith("/admin") ? guardado : "/admin") : (guardado || "/inicio");
       setFading(true);
       setTimeout(() => navigate(dest), 700);
     } catch (err) {
