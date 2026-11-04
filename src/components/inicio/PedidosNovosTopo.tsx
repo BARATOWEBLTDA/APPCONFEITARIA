@@ -74,9 +74,11 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
             <b>{podeAceitar ? `Pedido novo de ${um.cliente}` : `${um.cliente} · falta pagar`}</b>
             <small>{[um.produto, diaCurto(um.data, agora), real(um.valor)].filter(Boolean).join(" · ")}</small>
           </button>
-          {podeAceitar
-            ? <button type="button" className="pnt-bt" onClick={aceitar} disabled={aceitando}>{aceitando ? "Aceitando…" : "Aceitar"}</button>
-            : <button type="button" className="pnt-bt2" onClick={() => navigate(`/pedidos/${um.id}`)}>Ver</button>}
+          {/* (6.71) "Ver" junto do "Aceitar": ela confere o pedido antes de aceitar */}
+          <span className="pnt-bts">
+            <button type="button" className="pnt-bt2" onClick={() => navigate(`/pedidos/${um.id}`)}>Ver</button>
+            {podeAceitar && <button type="button" className="pnt-bt" onClick={aceitar} disabled={aceitando}>{aceitando ? "Aceitando…" : "Aceitar"}</button>}
+          </span>
         </div>
       )}
       {novos.length > 1 && (
@@ -110,6 +112,8 @@ const CSS = `
   .pnt-abre { margin: 0; padding: 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
   .pnt-tx b { font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pnt-tx small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pnt-bts { flex: none; display: flex; gap: 6px; }
+  @media (max-width: 420px) { .pnt-bts .pnt-bt, .pnt-bts .pnt-bt2 { padding: 0 12px; } }
   .pnt-bt, .pnt-bt2 { flex: none; min-height: 40px; padding: 0 16px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   .pnt-bt { border: 0; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); }
   .pnt-bt:disabled { opacity: .7; }

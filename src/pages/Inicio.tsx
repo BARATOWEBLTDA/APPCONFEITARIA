@@ -413,6 +413,12 @@ export default function Inicio() {
     carregarTudo(contaNaTela.current === profile.id);
   }, [profile?.id, hoje]);
   useAoVoltar(() => { if (profile?.id) carregarTudo(true); });
+  // (6.71) pedido novo chegou com o Início aberto: recarrega sem piscar e ele aparece no topo (antes só saindo e voltando)
+  useEffect(() => {
+    const chegou = () => { if (profile?.id) { cacheInicio = null; void carregarTudo(true); } };
+    window.addEventListener("doonly:pedido-chegou", chegou);
+    return () => window.removeEventListener("doonly:pedido-chegou", chegou);
+  }, [profile?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 11/10: a leitura do perfil falhou (1º acesso sem internet, por exemplo): avisa com "Tentar de novo".
   // Antes ficava em "Olá," com "Seu dia: Carregando…" sem fim, porque a busca do dia nem chegava a começar.

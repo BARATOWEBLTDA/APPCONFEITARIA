@@ -24,6 +24,7 @@ export default function AlertaPedidoNovo({ uid }: { uid?: string | null }) {
   const naTelaPedidos = pathname === "/pedidos" || pathname.startsWith("/pedidos/");
   const [naoVistos, setNaoVistos] = useState(0);
   const vivo = useRef(true);
+  const ultimoNaoVistos = useRef(0);
 
   // abriu Pedidos: tudo o que chegou até agora conta como visto
   useEffect(() => { if (naTelaPedidos) { marcarVisto(); setNaoVistos(0); } }, [naTelaPedidos, pathname]);
@@ -39,7 +40,12 @@ export default function AlertaPedidoNovo({ uid }: { uid?: string | null }) {
       const visto = lerVisto();
       if (visto) q = q.gt("created_at", visto);
       const { count, error } = await q;
-      if (vivo.current && !error) setNaoVistos(count || 0);
+      if (vivo.current && !error) {
+        // (6.71) chegou pedido novo: avisa as telas abertas (o Início recarrega e mostra o pedido no topo)
+        if ((count || 0) > ultimoNaoVistos.current) window.dispatchEvent(new Event("doonly:pedido-chegou"));
+        ultimoNaoVistos.current = count || 0;
+        setNaoVistos(count || 0);
+      }
     };
     let t = 0;
     const ciclo = async () => { await conferir(); if (vivo.current) t = window.setTimeout(ciclo, 15000); };
