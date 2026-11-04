@@ -11,6 +11,7 @@ import { useProfile, isPro, perfilAtual } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_CLIENTES, TOUR_CLIENTES } from "@/lib/comoTelas";
 import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
+import { ConvitePro } from "@/components/billing/RecursoPro";
 import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, Crown, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, X } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
@@ -152,6 +153,7 @@ export default function Clientes() {
   const { profile } = useProfile();
   const [searchParams, setSearchParams] = useSearchParams();
   const [clientes,      setClientes]      = useState<Cliente[]>([]);
+  const [conviteImportar, setConviteImportar] = useState(false); // (04/11) convite do PRO do "Importar dos contatos"
   const [loading,       setLoading]       = useState(true);
   const [erroCarregar,  setErroCarregar]  = useState(""); // não deu pra carregar: mostra o erro com "Tentar de novo"
   const [search,        setSearch]        = useState("");
@@ -564,8 +566,7 @@ export default function Clientes() {
   // Importar (PRO): quem é do grátis vê o convite do PRO em vez de um botão apagado
   const importarContatos = async () => {
     if (!usuarioEhPro) {
-      const ok = await confirmar({ titulo: "Importar contatos é do PRO", texto: "No PRO você traz os clientes direto da agenda do celular, sem digitar um por um. Teste com 7 dias grátis.", rotulo: "Testar grátis", icone: "info" });
-      if (ok) navigate("/assinar");
+      setConviteImportar(true); // (04/11) o convite do PRO com o mascote (o mesmo do app todo)
       return;
     }
     handleAbrirImportarContatos();
@@ -960,6 +961,7 @@ export default function Clientes() {
       `}</style>
       </>
       )}
+    {conviteImportar && <ConvitePro titulo="Traga seus clientes em segundos" texto="Importe os contatos da agenda do celular de uma vez, sem digitar um por um." onClose={() => setConviteImportar(false)} />}
     </div>
     </>
   );

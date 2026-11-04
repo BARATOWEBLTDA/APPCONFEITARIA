@@ -39,7 +39,7 @@ export function AceiteTermos({ userId, aoAceitar }: { userId: string; aoAceitar:
         {/* (15/10) sem a etiqueta "Último passo" (depois ainda vêm a conta ativa e a apresentação); mascote só no celular */}
         <Mascote pose="acenando" className="tm-masc" />
         <h1 id="tm-titulo">Tudo combinado antes de começar</h1>
-        <p className="tm-sub">As regras do Doonly em poucas palavras: sua loja, os pedidos e os seus dados.</p>
+        <p className="tm-sub">Leia e aceite para começar.</p>
         <div className="tm-cards">
           <div className="tm-card"><Storefront size={22} aria-hidden="true" /><span><b>Sua loja, suas regras</b><small>Você define produtos, preços e entregas. O Doonly organiza.</small></span></div>
           <div className="tm-card"><CreditCard size={22} aria-hidden="true" /><span><b>Pedidos e pagamentos</b><small>Os pedidos chegam pelo cardápio. O dinheiro das vendas vai direto para você.</small></span></div>

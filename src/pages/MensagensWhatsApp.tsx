@@ -100,7 +100,7 @@ export default function MensagensWhatsApp() {
       <AppPageHeader title="Mensagens" subtitle="Os textos do WhatsApp que o app escreve por você" infoComo={COMO_MENSAGENS} infoTour={TOUR_MENSAGENS} onBack={() => navigate(voltarPara)} />
       <div className="mz">
         <p className="mz-intro"><Info size={20} weight="bold" aria-hidden="true" />O app abre o WhatsApp com a mensagem pronta.{isPro ? " Aqui você troca o texto do seu jeito." : " No PRO, você troca o texto do seu jeito."}</p>
-        {proAberto && <RecursoPro titulo="Mensagens do seu jeito" texto="No plano PRO, você troca os textos prontos do WhatsApp. No grátis, vale o texto padrão do app." onClose={() => setProAberto(false)} />}
+        {proAberto && <RecursoPro titulo="Mensagens do seu jeito" texto="Troque os textos prontos do WhatsApp pelos seus, com o seu jeito de falar com a cliente." onClose={() => setProAberto(false)} />}
         <section className="mz-lista">
           {MODELOS.map(m => {
             const personalizada = isPro && !!salvas[m.chave]?.trim();

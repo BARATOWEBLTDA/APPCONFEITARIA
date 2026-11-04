@@ -402,7 +402,7 @@ export default function Complementos() {
       {/* menu */}
 
       {/* nova / editar */}
-      {limiteAberto && <RecursoPro titulo={`${LIMITE_COMPLEMENTOS_GRATIS} complementos no plano grátis`} texto={`No plano grátis, a loja tem até ${LIMITE_COMPLEMENTOS_GRATIS} complementos. Apague um para criar outro, ou use o PRO para ter quantos quiser.`} onClose={() => setLimiteAberto(false)} />}
+      {limiteAberto && <RecursoPro titulo="Complementos sem limite" texto={`No grátis são até ${LIMITE_COMPLEMENTOS_GRATIS} complementos. No PRO você cria quantos quiser: sabores, recheios, tamanhos e extras.`} onClose={() => setLimiteAberto(false)} />}
       <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada
         titulo={etapa === 2 ? (form.onde === "produtos" ? "Em quais produtos?" : "Em quais categorias?") : editando ? "Editar complemento" : "Novo complemento"}
         acoes={etapa === 2

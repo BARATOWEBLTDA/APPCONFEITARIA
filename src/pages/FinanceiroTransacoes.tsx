@@ -264,7 +264,7 @@ export default function FinanceiroTransacoes() {
         rodape={<button type="button" className="gf-link" onClick={exportar}><DownloadSimple size={18} weight="bold" />Baixar a planilha</button>}
       />}
 
-      {proAberto && <RecursoPro titulo="Planilha do PRO" texto="No PRO você baixa o extrato do período em planilha, pronto para abrir no Excel ou mandar para o contador." onClose={() => setProAberto(false)} />}
+      {proAberto && <RecursoPro titulo="Seu extrato em planilha" texto="Baixe o extrato do período pronto para abrir no Excel ou mandar para o contador." onClose={() => setProAberto(false)} />}
 
       {aberto && <DetalheSheet m={aberto} semEstorno={semEstorno} onClose={() => setAberto(null)} onAbrirPedido={id => navigate(`/pedidos/${id}/editar`)}
         onEstornado={msg => { setAberto(null); avisar(msg); carregar(); }} />}

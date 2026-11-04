@@ -504,8 +504,10 @@
 /* (29/10 · 4.72) avisos no celular: o mesmo jeito do cardápio — celular grande em cima e só o título embaixo, sobre a
    parte de baixo desfocada e escura. O texto só aparece quando avisa algo (ativado, iPhone ou bloqueado). */
 @media (max-width: 899px) and (min-height: 521px) {
-  .bv-tela-6 .bv-corpo::before { flex: 0 0 0; }
-  .bv-tela-6 .bv-esp { flex: 1 1 0; } /* (4.88) o espaço que sobra fica em cima do botão: ele não sobe quando o texto muda */
+  /* (04/11 · 6.20) o espaço que sobra vai pra cima do celular: o texto fica colado no botão (sem buraco depois de ativar)
+     e o botão continua no mesmo lugar quando o texto muda */
+  .bv-tela-6 .bv-corpo::before { flex: 1 1 0; }
+  .bv-tela-6 .bv-esp { flex: 0 0 0; }
   .bv-tela-6 .bv-demo { order: 2; margin-top: 4px; }
   .bv-tela-6 .bv-texto { order: 3; position: relative; z-index: 3; margin-top: -150px; padding: 94px 0 2px; }
   .bv-tela-6 .bv-texto::before { content: ""; position: absolute; z-index: -1; inset: 0 -20px -24px; background: linear-gradient(to bottom, rgba(34, 19, 14, .15) 0%, rgba(34, 19, 14, .9) 32%, var(--chocolate-escuro) 52%); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 26%); mask-image: linear-gradient(to bottom, transparent 0%, #000 26%); }

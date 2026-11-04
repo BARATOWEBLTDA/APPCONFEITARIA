@@ -61,7 +61,7 @@ export default function Marketing() {
         </div>
 
         {aba === "cupons" && <div className="mk-cupons"><CheckoutConfigPage embutido parte="cupons" /></div>}
-        {proAberto && <RecursoPro titulo="Pixel do Facebook" texto="No plano PRO, o pixel conta para o Facebook e o Instagram quem visitou e quem comprou, e seus anúncios ficam mais certeiros." onClose={() => setProAberto(false)} />}
+        {proAberto && <RecursoPro titulo="Anúncios mais certeiros" texto="Com o pixel do Facebook, o Instagram e o Facebook sabem quem visitou e quem comprou no seu cardápio." onClose={() => setProAberto(false)} />}
 
         {aba === "pixel" && (
           <div className="mk-grid">

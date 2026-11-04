@@ -250,7 +250,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
               <p className="bv-sobre">Não perca nenhum pedido</p>
               <h1 className="bv-h">Ative os <em>avisos</em> no seu celular</h1>
               {/* (29/10 · 4.72) no celular só o título aparece; o texto fica quando avisa algo (ativado, iPhone ou bloqueado) */}
-              <p className={`bv-p${push.isSubscribed || iphoneSemApp || push.permission === 'denied' || resAviso ? ' bv-p--aviso' : ''}${push.isSubscribed ? ' bv-p--ok' : resAviso ? ' bv-p--erro' : ''}`}>{push.isSubscribed ? (resAviso === 'ok' ? 'Pronto! Os avisos estão ativados neste aparelho. Mandamos um aviso de teste.' : 'Pronto: os avisos estão ativados neste aparelho.')
+              <p className={`bv-p${push.isSubscribed || iphoneSemApp || push.permission === 'denied' || resAviso ? ' bv-p--aviso' : ''}${push.isSubscribed ? ' bv-p--ok' : resAviso ? ' bv-p--erro' : ''}`}>{push.isSubscribed ? (resAviso === 'ok' ? '✓ Pronto! Os avisos estão ativados. Mandamos um aviso de teste.' : '✓ Pronto: os avisos estão ativados neste aparelho.')
                 : resAviso === 'naoPermitiu' ? 'Os avisos não foram permitidos. Toque em Ativar avisos e escolha Permitir.'
                 : resAviso === 'erro' ? 'Não deu para ativar agora. Você pode ativar depois em Configurações, Notificações e sons.'
                 : iphoneSemApp ? 'No iPhone, os avisos funcionam com o Doonly instalado na tela de início. No app, mostramos como fazer.'
