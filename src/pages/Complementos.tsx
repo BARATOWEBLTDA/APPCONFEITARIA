@@ -104,6 +104,10 @@ export default function Complementos() {
   const [tentou, setTentou] = useState(false);
   // (30/10 · 5.40) "Em produtos escolhidos" e "Em categorias": a escolha dos itens fica numa segunda tela ("Próximo")
   const [etapa, setEtapa] = useState<1 | 2>(1);
+  // (6.28) ao trocar de etapa, a janela volta pro topo (antes a próxima tela abria rolada lá embaixo)
+  useEffect(() => {
+    requestAnimationFrame(() => document.querySelectorAll<HTMLElement>(".ui-janela-corpo, .pz-e2-grade").forEach(el => { el.scrollTop = 0; }));
+  }, [etapa]);
   const [saving, setSaving] = useState(false);
   // (30/10 · 5.31) "Gerar com IA": 3 opções de explicação a partir do nome
   const [gerandoIa, setGerandoIa] = useState(false);
@@ -482,10 +486,10 @@ export default function Complementos() {
                   <span className="pz-capa-menu" role="menu">
                     <button type="button" role="menuitem" onClick={() => { setCapaMenu(false); void acharCapa(); }}><Sparkle size={18} weight="bold" />Achar foto com IA</button>
                     <label role="menuitem"><input type="file" accept="image/*" onChange={e => { setCapaMenu(false); setCapasIA([]); recorteCapa.escolher(e); }} hidden /><ImagemIc size={18} weight="bold" />Da galeria</label>
+                    {form.capa && <button type="button" role="menuitem" className="pz-capa-tirar" onClick={() => { setCapaMenu(false); setForm(f => ({ ...f, capa: "" })); }}><Trash size={18} weight="bold" />Tirar a foto</button>}
                   </span>
                 )}
               </span>
-              {form.capa && <button type="button" className="pz-capa-x" onClick={() => setForm(f => ({ ...f, capa: "" }))} aria-label="Tirar a foto"><X size={14} weight="bold" /></button>}
             </div>
           )}
           {temCapa && capasIA.length > 0 && (
@@ -582,14 +586,17 @@ export default function Complementos() {
                 ? setForm(f => ({ ...f, produtos: todosOn ? f.produtos.filter(id => !produtosFiltrados.some(p => p.id === id)) : [...new Set([...f.produtos, ...produtosFiltrados.map(p => p.id)])] }))
                 : setForm(f => ({ ...f, cats: todosOn ? [] : catsComProdutos.map(c => c.nome) }));
               return (<>
+                {/* (6.28) o texto numa linha própria; embaixo, "Marcar todos" à esquerda e quantos marcou à direita */}
                 <div className="pz-e2-cab">
                   <p className="pz-etapa2-t">{ehProd ? <>Marque os produtos que oferecem <b>{form.nome.trim() || "este adicional"}</b>.</> : <>Marque as categorias que oferecem <b>{form.nome.trim() || "este adicional"}</b>. Produto novo delas já recebe.</>}</p>
-                  <span className="pz-e2-n">{nOn} de {ehProd ? produtos.length : catsComProdutos.length}</span>
-                  {itens.length > 1 && (
-                    <button type="button" role="checkbox" aria-checked={todosOn} className="pz-e2-todos" onClick={marcarTodos}>
-                      <i className="pz-chk" aria-hidden="true">{todosOn && <Check size={14} weight="bold" />}</i>Marcar todos
-                    </button>
-                  )}
+                  <div className="pz-e2-linha">
+                    {itens.length > 1 ? (
+                      <button type="button" role="checkbox" aria-checked={todosOn} className="pz-e2-todos" onClick={marcarTodos}>
+                        <i className="pz-chk" aria-hidden="true">{todosOn && <Check size={14} weight="bold" />}</i>Marcar todos
+                      </button>
+                    ) : <span />}
+                    <span className="pz-e2-n">{nOn} de {ehProd ? produtos.length : catsComProdutos.length} {ehProd ? (nOn === 1 ? "marcado" : "marcados") : (nOn === 1 ? "marcada" : "marcadas")}</span>
+                  </div>
                 </div>
                 {ehProd && produtos.length > 8 && (
                   <label className="pz-busca pz-busca--p pz-e2-busca">

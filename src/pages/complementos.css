@@ -457,3 +457,9 @@
 .pz-li-valor.g { color: var(--ui-verde); }
 .pz-li-tx small i { font-style: normal; font-weight: 500; color: var(--ui-texto); }
 .pz-li-tx small i.r { color: var(--ui-rosa-escuro); }
+
+/* (6.28) cabeçalho da etapa 2 sem nada acavalado: texto em cima; embaixo "Marcar todos" e a contagem */
+.pz-e2-cab { flex-direction: column; align-items: stretch; gap: var(--space-2); }
+.pz-e2-linha { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-stack); }
+.pz-e2-n { font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); }
+.pz-capa-menu .pz-capa-tirar, .pz-capa-menu .pz-capa-tirar svg { color: var(--ui-vermelho); }
