@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import PainelLoja from "./PainelLoja";
 import { supabase } from "@/lib/supabase";
-import { Plus, MagnifyingGlass, X, Crown, Lock, LockOpen, Trash, Users, UserPlus } from "@phosphor-icons/react";
+import { Plus, MagnifyingGlass, X, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, avisar, confirmar, informar } from "@/components/base";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { explicarErro } from "@/lib/erros";
 
 /** Usuário da lista (função admin_usuarios + plano de profiles) */
 type UsuarioAdmin = {
-  id: string; email?: string | null; nome?: string | null; nome_loja?: string | null; telefone?: string | null; foto_url?: string | null; created_at?: string | null
+  id: string; email?: string | null; nome?: string | null; nome_loja?: string | null; telefone?: string | null; foto_url?: string | null; logo_url?: string | null; created_at?: string | null
   banned_until?: string | null; is_admin?: boolean | null; plano?: string | null; pro_expira_em?: string | null; indicado_por?: string | null
 } & Partial<Metricas>;
 /** (03/11) métricas de cada conta (função admin_metricas_usuarios) */
@@ -16,9 +18,19 @@ type Metricas = {
   ultimo_pedido_em: string | null; produtos: number; clientes: number; orcamentos: number;
 };
 type Ordem = "cadastro" | "acesso" | "pedidos" | "produtos" | "clientes";
+type Ver = "todas" | "online" | "pro" | "gratis" | "bloq";
+/** (03/11) a lista vem em páginas de 50: com centenas de contas a página ficava enorme e pesada */
+const POR_PAGINA = 50;
+/** 1 … 4 5 6 … 10: no máximo 7 botões (cabe no celular) */
+function paginas(atual: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (atual <= 4) return [1, 2, 3, 4, 5, "…", total];
+  if (atual >= total - 3) return [1, "…", total - 4, total - 3, total - 2, total - 1, total];
+  return [1, "…", atual - 1, atual, atual + 1, "…", total];
+}
 const ORDENS: { v: Ordem; t: string }[] = [
   { v: "acesso", t: "Último acesso" }, { v: "pedidos", t: "Mais pedidos" }, { v: "produtos", t: "Mais produtos" },
-  { v: "clientes", t: "Mais clientes" }, { v: "cadastro", t: "Cadastro mais novo" },
+  { v: "clientes", t: "Mais clientes" }, { v: "cadastro", t: "Mais novas" },
 ];
 /** último sinal de vida: o aviso do app aberto ou, antes disso existir, o último login */
 const vistoEm = (u: UsuarioAdmin) => u.ultimo_acesso_em || u.ultimo_login_em || null;
@@ -35,7 +47,7 @@ function textoVisto(iso: string | null, agora: number): string {
   return d.toLocaleDateString("pt-BR");
 }
 /** O plano de cada conta (profiles) */
-type PlanoUsuario = Pick<UsuarioAdmin, "id" | "plano" | "pro_expira_em" | "indicado_por">;
+type PlanoUsuario = Pick<UsuarioAdmin, "id" | "plano" | "pro_expira_em" | "indicado_por" | "logo_url">;
 
 export default function AdminUsuarios() {
   const [users, setUsers] = useState<UsuarioAdmin[]>([]);
@@ -43,6 +55,13 @@ export default function AdminUsuarios() {
   const [erroCarregar, setErroCarregar] = useState("");
   const [search, setSearch] = useState("");
   const [ordem, setOrdem] = useState<Ordem>("acesso");
+  // ?ver=online: o "Ver todas online" do Painel abre a lista já filtrada
+  const [params] = useSearchParams();
+  const [ver, setVer] = useState<Ver>(() => (["online", "pro", "gratis", "bloq"].includes(params.get("ver") || "") ? params.get("ver") as Ver : "todas"));
+  const [pagina, setPagina] = useState(1);
+  useEffect(() => { setPagina(1); }, [search, ordem, ver]);
+  const [lojaAberta, setLojaAberta] = useState<string | null>(null);
+  const irPara = (p: number) => { setPagina(p); document.querySelector(".au-card")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   const [erroMetricas, setErroMetricas] = useState(false);
   // relógio da tela: "online agora" e "há X min" andam sozinhos sem recarregar a lista
   const [agora, setAgora] = useState(() => Date.now());
@@ -71,7 +90,7 @@ export default function AdminUsuarios() {
     const ids = data.map(u => u.id).filter(Boolean);
     const mapa = new Map<string, PlanoUsuario>();
     for (let i = 0; i < ids.length; i += 100) {
-      const { data: planos, error: erroPlanos } = await supabase.from("profiles").select("id, plano, pro_expira_em, indicado_por").in("id", ids.slice(i, i + 100));
+      const { data: planos, error: erroPlanos } = await supabase.from("profiles").select("id, plano, pro_expira_em, indicado_por, logo_url").in("id", ids.slice(i, i + 100));
       if (erroPlanos) { setErroCarregar(explicarErro(erroPlanos, "Tente de novo em instantes.")); setLoading(false); return; }
       (planos || []).forEach(p => mapa.set(p.id, p));
     }
@@ -221,7 +240,16 @@ export default function AdminUsuarios() {
   };
 
   const q = search.trim().toLowerCase();
-  const filtered = users.filter(u => !q || [u.nome, u.nome_loja, u.email, u.telefone].some(x => String(x || "").toLowerCase().includes(q)))
+  const proAtivo = (u: UsuarioAdmin) => u.plano === "pro" && (!u.pro_expira_em || new Date(u.pro_expira_em).getTime() > agora);
+  const estaOnline = (u: UsuarioAdmin) => { const v = vistoEm(u); return !!v && agora - new Date(v).getTime() < ONLINE_MS; };
+  const passa: Record<Ver, (u: UsuarioAdmin) => boolean> = {
+    todas: () => true, online: estaOnline, pro: proAtivo, gratis: u => !proAtivo(u), bloq: u => !!u.banned_until,
+  };
+  const qtd = (v: Ver) => users.filter(passa[v]).length;
+  const VERES: { v: Ver; t: string }[] = [
+    { v: "todas", t: "Todas" }, { v: "online", t: "Online agora" }, { v: "pro", t: "PRO" }, { v: "gratis", t: "Grátis" }, { v: "bloq", t: "Bloqueadas" },
+  ];
+  const filtered = users.filter(passa[ver]).filter(u => !q || [u.nome, u.nome_loja, u.email, u.telefone].some(x => String(x || "").toLowerCase().includes(q)))
     .sort((a, b) => {
       const t = (x: string | null | undefined) => (x ? new Date(x).getTime() : 0);
       if (ordem === "acesso") return t(vistoEm(b)) - t(vistoEm(a));
@@ -230,6 +258,8 @@ export default function AdminUsuarios() {
       if (ordem === "clientes") return (b.clientes || 0) - (a.clientes || 0);
       return t(b.created_at) - t(a.created_at);
     });
+  const totalPaginas = Math.max(1, Math.ceil(filtered.length / POR_PAGINA));
+  const pagAtual = Math.min(pagina, totalPaginas);
   const onlineAgora = users.filter(u => { const v = vistoEm(u); return !!v && agora - new Date(v).getTime() < ONLINE_MS && !u.is_admin; }).length;
 
   const fecharCriar = () => { if (!creating) setShowCreate(false); };
@@ -258,6 +288,12 @@ export default function AdminUsuarios() {
           )}
         </label>
           <label className="au-ordem">
+            <span>Mostrar</span>
+            <select value={ver} onChange={e => setVer(e.target.value as Ver)}>
+              {VERES.map(o => <option key={o.v} value={o.v}>{o.t} ({qtd(o.v).toLocaleString("pt-BR")})</option>)}
+            </select>
+          </label>
+          <label className="au-ordem">
             <span>Ordenar por</span>
             <select value={ordem} onChange={e => setOrdem(e.target.value as Ordem)}>
               {ORDENS.map(o => <option key={o.v} value={o.v}>{o.t}</option>)}
@@ -280,8 +316,8 @@ export default function AdminUsuarios() {
           <TelaVazia
             compacta
             icone={<Users size={30} />}
-            titulo={search ? "Nenhum usuário com essa busca" : "Nenhum usuário ainda"}
-            texto={search ? "Confira o nome ou o e-mail." : undefined}
+            titulo={search ? "Nenhum usuário com essa busca" : ver !== "todas" ? "Nenhuma conta nesse filtro" : "Nenhum usuário ainda"}
+            texto={search ? "Confira o nome, a loja, o e-mail ou o telefone." : ver === "online" ? "Ninguém com o app aberto agora." : undefined}
           />
         ) : (
           <div className="au-lista" role="table" aria-label="Usuários">
@@ -294,7 +330,7 @@ export default function AdminUsuarios() {
               <span role="columnheader">Último acesso</span>
               <span role="columnheader" className="au-cab-acoes">Ações</span>
             </div>
-            {filtered.map(u => {
+            {filtered.slice((pagAtual - 1) * POR_PAGINA, pagAtual * POR_PAGINA).map(u => {
               const isPROAtivo = u.plano === "pro" && (!u.pro_expira_em || new Date(u.pro_expira_em) > new Date());
               const proExpiraTexto = u.pro_expira_em ? new Date(u.pro_expira_em).toLocaleDateString("pt-BR") : "";
               const cadastro = u.created_at ? new Date(u.created_at).toLocaleDateString("pt-BR") : "";
@@ -304,9 +340,10 @@ export default function AdminUsuarios() {
               const online = !!visto && agora - new Date(visto).getTime() < ONLINE_MS;
               return (
                 <div key={u.id} className="au-l" role="row">
-                  <div className="au-quem" role="cell">
+                  <div className="au-quem" role="cell" tabIndex={0} title="Ver detalhes da loja"
+                    onClick={() => setLojaAberta(u.id)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLojaAberta(u.id); } }}>
                     <span className="au-av" aria-hidden="true">
-                      {u.foto_url ? <img src={u.foto_url} alt="" /> : (u.nome_loja || u.nome || u.email || "?").charAt(0).toUpperCase()}
+                      {u.logo_url || u.foto_url ? <img src={(u.logo_url || u.foto_url) as string} alt="" /> : (u.nome_loja || u.nome || u.email || "?").charAt(0).toUpperCase()}
                       {online && <i className="au-av-on" />}
                     </span>
                     <span className="au-quem-tx">
@@ -347,6 +384,16 @@ export default function AdminUsuarios() {
                 </div>
               );
             })}
+            {totalPaginas > 1 && (
+              <nav className="au-pags" aria-label="Páginas">
+                <BotaoIcone rotulo="Página anterior" variante="limpo" disabled={pagAtual === 1} onClick={() => irPara(pagAtual - 1)}><CaretLeft size={18} weight="bold" /></BotaoIcone>
+                {paginas(pagAtual, totalPaginas).map((p, i) => p === "…"
+                  ? <span key={`r${i}`} className="au-pag-r" aria-hidden="true">…</span>
+                  : <button key={p} type="button" className={`au-pag${p === pagAtual ? " on" : ""}`} aria-current={p === pagAtual ? "page" : undefined} aria-label={`Página ${p}`} onClick={() => irPara(p)}>{p}</button>)}
+                <BotaoIcone rotulo="Próxima página" variante="limpo" disabled={pagAtual === totalPaginas} onClick={() => irPara(pagAtual + 1)}><CaretRight size={18} weight="bold" /></BotaoIcone>
+              </nav>
+            )}
+            {filtered.length > POR_PAGINA && <p className="au-pag-info">{((pagAtual - 1) * POR_PAGINA + 1).toLocaleString("pt-BR")}–{Math.min(pagAtual * POR_PAGINA, filtered.length).toLocaleString("pt-BR")} de {filtered.length.toLocaleString("pt-BR")}</p>}
           </div>
         )}
       </div>
@@ -479,9 +526,18 @@ export default function AdminUsuarios() {
         .au-desde { font-size: 12px !important; color: var(--ui-texto-3) !important; }
         .au-filtros { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
         .au-filtros .au-busca { flex: 1 1 100%; min-width: 0; max-width: none; box-sizing: border-box; }
-        .au-filtros .au-ordem { flex: 1 1 100%; min-width: 0; }
-        .au-ordem select { flex: 1; min-width: 0; }
-        @media (min-width: 700px) { .au-filtros .au-busca { flex: 1 1 320px; max-width: 480px; } .au-filtros .au-ordem { flex: none; } .au-ordem select { flex: none; } }
+        .au-filtros .au-ordem { flex: 1 1 0; min-width: 0; flex-direction: column; align-items: stretch; gap: 4px; }
+        .au-ordem select { width: 100%; min-width: 0; }
+        @media (min-width: 700px) { .au-filtros .au-busca { flex: 1 1 280px; max-width: 420px; } .au-filtros .au-ordem { flex: none; flex-direction: row; align-items: center; gap: 8px; } .au-ordem select { width: auto; } }
+        .au-pags { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 16px 0 0; }
+        .au-pag { min-width: 40px; height: 40px; padding: 0 6px; border: 0; border-radius: var(--ui-raio); background: none; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; }
+        .au-pag:hover { background: var(--ui-cinza); }
+        .au-pag.on { background: var(--ui-rosa); color: var(--ui-branco); font-weight: 600; }
+        .au-pag-r { min-width: 20px; text-align: center; color: var(--ui-texto-3); }
+        .au-pag-info { margin: 6px 0 0; text-align: center; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); }
+        .au-quem { cursor: pointer; border-radius: var(--ui-raio); }
+        .au-quem:hover .au-quem-tx b { color: var(--ui-rosa-escuro); text-decoration: underline; text-underline-offset: 3px; }
+        .au-quem:focus-visible { outline: 2px solid var(--ui-rosa); outline-offset: 2px; }
         /* celular: plano e último acesso numa linha, os números na de baixo */
         .au-quebra { order: 5; flex-basis: 100%; height: 0; }
         .au-l .au-c--n { order: 6; }
@@ -502,7 +558,7 @@ export default function AdminUsuarios() {
         /* computador: tabela */
         @media (min-width: 900px) {
           .au-card { padding: 16px; }
-          .au-cab, .au-l { display: grid; grid-template-columns: minmax(0, 2.6fr) minmax(0, 1.3fr) 104px 80px 80px 118px 148px; align-items: center; column-gap: 12px; }
+          .au-cab, .au-l { display: grid; grid-template-columns: minmax(0, 2.6fr) minmax(0, 1.2fr) 132px 76px 76px 118px 148px; align-items: center; column-gap: 12px; }
           .au-num { text-align: right; }
           .au-c--n { display: flex !important; flex-direction: column; align-items: flex-end; }
           .au-c--n b { font-size: 15px; }
@@ -531,6 +587,7 @@ export default function AdminUsuarios() {
         .au-atalhos button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 600; cursor: pointer; }
         .au-atalhos button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
       `}</style>
+      <PainelLoja id={lojaAberta} aoFechar={() => setLojaAberta(null)} />
     </div>
   );
 }

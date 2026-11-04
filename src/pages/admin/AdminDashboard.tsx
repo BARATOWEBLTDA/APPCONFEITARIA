@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Users, Cake, Hourglass, CheckCircle, FilePdf, Medal, Play, Crown, Receipt, Storefront, UserPlus, Pulse } from "@phosphor-icons/react";
 import { Botao } from "@/components/base";
 import BoasVindas, { depoisDoVoltar } from "@/components/boasVindas/BoasVindas";
+import PainelLoja from "./PainelLoja";
 
 type Online = { id: string; nome: string; foto: string | null; visto: string; pro: boolean };
 type Painel = {
@@ -22,6 +23,7 @@ export default function AdminDashboard() {
   const [erroConteudo, setErroConteudo] = useState(false);
   // Testar as boas-vindas sem criar conta (09/10 · 3.69): abre a mesma apresentação de quem acabou de se cadastrar
   const navigate = useNavigate();
+  const [lojaAberta, setLojaAberta] = useState<string | null>(null);
   const [boasVindas, setBoasVindas] = useState(false);
   const [nome, setNome] = useState("");
   const abrirBoasVindas = async () => {
@@ -95,7 +97,7 @@ export default function AdminDashboard() {
       <div className="ad-grid">
         <div className="ad-card ad-card--online">
           <span className="ad-ic ad-ic--verde" aria-hidden="true"><Pulse size={22} weight="bold" /></span>
-          <div className="ad-tx"><b>{painel ? num(painel.online_agora) : "—"}</b><small>{painel?.online_agora === 1 ? "Usando o app agora" : "Usando o app agora"}</small></div>
+          <div className="ad-tx"><b>{painel ? num(painel.online_agora) : "—"}</b><small>Usando o app agora</small></div>
         </div>
         <div className="ad-card"><span className="ad-ic ad-ic--rosa" aria-hidden="true"><Users size={22} weight="bold" /></span>
           <div className="ad-tx"><b>{painel ? num(painel.ativas_hoje) : "—"}</b><small>Entraram hoje</small></div></div>
@@ -107,15 +109,21 @@ export default function AdminDashboard() {
 
       <section className="ad-online" aria-label="Quem está usando o app agora">
         <p className="ad-online-t">Com o app aberto</p>
+        {/* (03/11) só as 6 mais recentes: com dezenas online a lista tomava a tela toda; o resto fica na tela Usuários */}
         {!painel ? <p className="ad-online-vazio">Carregando…</p>
           : painel.online.length === 0 ? <p className="ad-online-vazio">Ninguém com o app aberto agora.</p>
-          : <ul>{painel.online.map(o => (
-              <li key={o.id}>
+          : <><ul>{painel.online.slice(0, 6).map(o => (
+              <li key={o.id}><button type="button" className="ad-online-it" title="Ver detalhes da loja" onClick={() => setLojaAberta(o.id)}>
                 <span className="ad-av" aria-hidden="true">{o.foto ? <img src={o.foto} alt="" /> : o.nome.charAt(0).toUpperCase()}<i /></span>
                 <b>{o.nome}</b>
                 {o.pro && <span className="ad-pro"><Crown size={12} weight="fill" aria-hidden="true" /> PRO</span>}
                 <small>{haQuanto(o.visto, painel.agora)}</small>
-              </li>))}</ul>}
+              </button></li>))}</ul>
+              {painel.online_agora > 6 && (
+                <button type="button" className="ad-online-mais" onClick={() => navigate("/admin/usuarios?ver=online")}>
+                  Ver todas as {num(painel.online_agora)} online <span aria-hidden="true">→</span>
+                </button>
+              )}</>}
       </section>
 
       <h2 className="ad-h2">Negócio</h2>
@@ -181,9 +189,13 @@ export default function AdminDashboard() {
         .ad-erro { margin: 0 0 12px; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-size: 14px; font-weight: 500; }
         .ad-online { margin-top: 12px; padding: 14px 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
         .ad-online-t { margin: 0 0 8px; font-size: 14px; font-weight: 600; color: var(--ui-texto); }
+        .ad-online-mais { display: block; width: 100%; min-height: 48px; margin-top: 4px; padding: 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+        .ad-online-mais:hover { text-decoration: underline; }
         .ad-online-vazio { margin: 0; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); }
         .ad-online ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0 20px; }
-        .ad-online li { display: flex; align-items: center; gap: 10px; min-height: 52px; border-top: 1px solid var(--ui-linha); min-width: 0; }
+        .ad-online li { min-height: 52px; border-top: 1px solid var(--ui-linha); min-width: 0; }
+        .ad-online-it { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 0; border: 0; background: none; font-family: inherit; color: var(--ui-texto); text-align: left; cursor: pointer; }
+        .ad-online-it:hover b { color: var(--ui-rosa-escuro); text-decoration: underline; text-underline-offset: 3px; }
         .ad-online li b { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .ad-online li small { flex: none; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
         .ad-av { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 14px; font-weight: 600; }
@@ -217,6 +229,7 @@ export default function AdminDashboard() {
           .ad-tx b { font-size: 22px; }
         }
       `}</style>
+      <PainelLoja id={lojaAberta} aoFechar={() => setLojaAberta(null)} />
     </div>
   );
 }
