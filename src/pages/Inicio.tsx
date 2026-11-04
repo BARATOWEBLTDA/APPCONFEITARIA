@@ -901,6 +901,13 @@ export default function Inicio() {
 
       {/* (29/10 · 4.93) computador: os Primeiros passos vêm antes dos números (pra loja nova os números estão zerados) */}
       {computador && <section className="ini-section ini-pp ini-pp--topo"><PrimeirosPassos /></section>}
+      {/* (6.71) computador: pedido novo para aceitar (e atrasados) no topo, como no celular: antes só tocava e não aparecia no Início */}
+      {computador && !loading && !erroCarga && (pedidosNovos.length > 0 || counts.pedidosAtrasados > 0) && (
+        <section className="ini-novos-pc">
+          <PedidosNovosTopo novos={pedidosNovos} atrasados={counts.pedidosAtrasados}
+            aoAceitar={(id) => { cacheInicio = null; setPedidosNovos(l => l.filter(p => p.id !== id)); void carregarTudo(true); return false; }} />
+        </section>
+      )}
       {/* (6.66) computador: Acesso rápido à esquerda (3 × 2) e o link do cardápio à direita, lado a lado */}
       {computador && (
         <div className="ini-topo-pc">

@@ -1,0 +1,16 @@
+/* (6.71) pedido novo que ela ainda não viu: bolinha piscando no "Pedidos" do menu (lateral e de baixo) até abrir a tela */
+html[data-pedido-novo] .sidebar .nav-item[href="/pedidos"],
+html[data-pedido-novo] .bottom-nav .bn-item[href="/pedidos"] { position: relative; }
+html[data-pedido-novo] .sidebar .nav-item[href="/pedidos"]::after,
+html[data-pedido-novo] .bottom-nav .bn-item[href="/pedidos"]::after {
+  content: ""; position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #FF4D8D;
+  box-shadow: 0 0 0 0 rgba(255, 77, 141, .6); animation: pedidoNovoPisca 1.4s ease-out infinite; pointer-events: none;
+}
+html[data-pedido-novo] .sidebar .nav-item[href="/pedidos"]::after { top: 50%; right: 14px; margin-top: -5px; }
+html[data-pedido-novo] .bottom-nav .bn-item[href="/pedidos"]::after { top: 6px; left: 50%; margin-left: 8px; border: 2px solid #1E1416; }
+@keyframes pedidoNovoPisca {
+  0% { box-shadow: 0 0 0 0 rgba(255, 77, 141, .6); opacity: 1; }
+  70% { box-shadow: 0 0 0 8px rgba(255, 77, 141, 0); opacity: .75; }
+  100% { box-shadow: 0 0 0 0 rgba(255, 77, 141, 0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { html[data-pedido-novo] .sidebar .nav-item[href="/pedidos"]::after, html[data-pedido-novo] .bottom-nav .bn-item[href="/pedidos"]::after { animation: none; } }

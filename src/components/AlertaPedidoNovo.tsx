@@ -1,29 +1,48 @@
 /**
- * (30/10 · 5.45) Som de pedido novo com o app aberto (como no Dora): enquanto tiver pedido esperando aceitar ou recusar,
- * o toque escolhido em Notificações e sons repete (a cada 2 a 5 s, conforme o toque). Para sozinho quando não tiver mais nenhum.
- * Confere os pedidos a cada 15 s (5 s enquanto toca) e quando a tela volta a aparecer. Só toca com o app na frente (aba visível).
+ * (30/10 · 5.45) Som de pedido novo com o app aberto (como no Dora).
+ * (6.71) Não toca mais sem parar:
+ *  - chegou pedido novo que ela ainda não viu: toca o toque escolhido 4 vezes e para;
+ *  - continua sem ver: um toque de lembrete a cada 5 minutos;
+ *  - abriu a tela Pedidos: para de tocar e some a bolinha.
+ * Enquanto houver pedido novo não visto, o "Pedidos" do menu (lateral e de baixo) ganha uma bolinha piscando
+ * (atributo data-pedido-novo no <html>, o CSS desenha a bolinha).
+ * Confere os pedidos a cada 15 s e quando a tela volta a aparecer. Só toca com o app na frente (aba visível).
  */
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { TOQUES, alertaPedidoHabilitado, toqueEscolhido, tocarToque } from "@/hooks/useSom";
 
+const CHAVE_VISTO = "doonly_pedidos_visto_em";
+const lerVisto = () => { try { return localStorage.getItem(CHAVE_VISTO) || ""; } catch { return ""; } };
+const marcarVisto = () => { try { localStorage.setItem(CHAVE_VISTO, new Date().toISOString()); } catch { /* sem armazenamento */ } };
+const VEZES = 4;
+const LEMBRETE_MS = 5 * 60 * 1000;
+
 export default function AlertaPedidoNovo({ uid }: { uid?: string | null }) {
-  const [pendentes, setPendentes] = useState(0);
+  const { pathname } = useLocation();
+  const naTelaPedidos = pathname === "/pedidos" || pathname.startsWith("/pedidos/");
+  const [naoVistos, setNaoVistos] = useState(0);
   const vivo = useRef(true);
-  const ultimo = useRef(0);
+
+  // abriu Pedidos: tudo o que chegou até agora conta como visto
+  useEffect(() => { if (naTelaPedidos) { marcarVisto(); setNaoVistos(0); } }, [naTelaPedidos, pathname]);
 
   useEffect(() => {
     vivo.current = true;
     if (!uid) return;
     const conferir = async () => {
       if (document.visibilityState !== "visible") return;
-      const { count, error } = await supabase.from("pedidos").select("id", { count: "exact", head: true })
+      if (window.location.pathname.startsWith("/pedidos")) { marcarVisto(); if (vivo.current) setNaoVistos(0); return; }
+      let q = supabase.from("pedidos").select("id", { count: "exact", head: true })
         .eq("user_id", uid).in("status", ["aguardando_aceite", "novo", "pendente"]);
-      if (vivo.current && !error) { ultimo.current = count || 0; setPendentes(count || 0); }
+      const visto = lerVisto();
+      if (visto) q = q.gt("created_at", visto);
+      const { count, error } = await q;
+      if (vivo.current && !error) setNaoVistos(count || 0);
     };
-    // tocando: confere a cada 5 s (para logo depois de aceitar); sem pedido esperando, a cada 15 s
     let t = 0;
-    const ciclo = async () => { await conferir(); if (vivo.current) t = window.setTimeout(ciclo, ultimo.current > 0 ? 5000 : 15000); };
+    const ciclo = async () => { await conferir(); if (vivo.current) t = window.setTimeout(ciclo, 15000); };
     void ciclo();
     const aoVoltar = () => { if (document.visibilityState === "visible") void conferir(); };
     document.addEventListener("visibilitychange", aoVoltar);
@@ -32,19 +51,29 @@ export default function AlertaPedidoNovo({ uid }: { uid?: string | null }) {
     return () => { vivo.current = false; window.clearTimeout(t); document.removeEventListener("visibilitychange", aoVoltar); window.removeEventListener("focus", aoVoltar); window.removeEventListener("doonly:pedidos-mudaram", aoVoltar); };
   }, [uid]);
 
+  // bolinha no "Pedidos" do menu
   useEffect(() => {
-    if (!pendentes) return;
+    const h = document.documentElement;
+    if (naoVistos > 0) h.dataset.pedidoNovo = "1"; else delete h.dataset.pedidoNovo;
+    return () => { delete h.dataset.pedidoNovo; };
+  }, [naoVistos]);
+
+  // som: 4 toques quando chega (ou aumenta), depois um lembrete a cada 5 minutos
+  useEffect(() => {
+    if (!naoVistos) return;
     let parar = false;
     let t = 0;
+    let vez = 0;
     const tocar = () => {
       if (parar) return;
       const id = toqueEscolhido();
       if (alertaPedidoHabilitado() && document.visibilityState === "visible") tocarToque(id);
-      t = window.setTimeout(tocar, (TOQUES.find(x => x.id === id)?.cada || 3) * 1000);
+      vez++;
+      t = window.setTimeout(tocar, vez < VEZES ? (TOQUES.find(x => x.id === id)?.cada || 3) * 1000 : LEMBRETE_MS);
     };
     tocar();
     return () => { parar = true; window.clearTimeout(t); };
-  }, [pendentes]);
+  }, [naoVistos]);
 
   return null;
 }
