@@ -551,7 +551,7 @@ export default function Layout() {
           all: unset; box-sizing: border-box;
           display: flex; align-items: center; gap: 10px;
           min-height: 44px; padding: 0 12px; border-radius: var(--ui-raio);
-          font-family: var(--font-base); font-size: 14.5px; font-weight: 500; line-height: 1.2;
+          font-family: var(--font-base); font-size: 14.5px; font-weight: 400; line-height: 1.2; /* (6.69) normal: 400 como no celular; só a tela aberta fica em 600 */
           color: rgba(255,255,255,0.82); text-decoration: none; cursor: pointer;
           transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear;
           -webkit-tap-highlight-color: transparent;
@@ -615,7 +615,7 @@ export default function Layout() {
         .menu-recolhido .sidebar-nav { margin-right: 0; padding-right: 0; }
         .nav-group-body--fin .nav-subitem { min-height: 34px; font-size: 13px; }
         .nav-group-body { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 6px 21px; padding-left: 9px; }
-        .nav-subitem { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: var(--ui-raio-p); font-size: 13.5px; font-weight: var(--fw-medium); color: rgba(255,255,255,0.78); text-decoration: none; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
+        .nav-subitem { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; border-radius: var(--ui-raio-p); font-size: 13.5px; font-weight: 400; color: rgba(255,255,255,0.78); text-decoration: none; transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear; }
         .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .nav-subitem:hover { color: var(--ui-branco); background: rgba(255,255,255,0.07); }
         .nav-subitem.active { color: var(--ui-branco); background: rgba(255,255,255,0.10); font-weight: var(--fw-bold); }
