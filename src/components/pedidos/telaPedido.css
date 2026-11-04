@@ -220,7 +220,15 @@
 .ep2.tpd .ep2-card, .ep2.tpd .ep2-save-desk, .tpd-sit { border-color: #F2EBEE; box-shadow: 0 1px 3px rgba(44, 18, 25, .04); }
 .tpd-sit.atr { border-color: #F6CFCF; }
 .tpd-sit.aceitar { border: 1px solid #F1C48F; } /* (28/10) o laranja do pedido novo continua, mais fino e mais claro */
-@media (max-width: 767px) { .ep-wrap.ep2.tpd .ep2-sec:not(.ativa) { display: none !important; } }
+/* (6.73) celular: sem abas. Tudo num scroll só: cliente, produtos, recado, retirada/entrega e pagamento */
+@media (max-width: 767px) {
+  .tpd-abas { display: none !important; }
+  .ep-wrap.ep2.tpd .ep2-sec { display: flex !important; }
+  .ep2.tpd .tpd-sec-itens > .tpd-cli-card.tpd-cli-esq { order: 0; }
+  .ep2.tpd .tpd-sec-itens > .tpd-card:not(.tpd-recado-ped):not(.tpd-cli-card) { order: 1; }
+  .ep2.tpd .tpd-sec-itens > .tpd-recado-ped { order: 2; }
+  .ep2.tpd .tpd-quando-card .tpd-so-pc { display: block; }
+}
 
 /* duas colunas quando o conteúdo tem largura pra isso */
 @container (min-width: 760px) {

@@ -266,6 +266,15 @@ export default function EditarPedido() {
   const [recarga, setRecarga] = useState(0) // recarrega o pedido depois de salvar
   // abre na aba pedida pela lista ("Ver endereço" → ?aba=entrega)
   const [tab, setTab] = useState<Tab>(() => { const a = new URLSearchParams(window.location.search).get('aba'); return a === 'entrega' || a === 'pagamento' ? a : 'itens' })
+  // (6.73) celular sem abas: o link com ?aba= rola até a parte (Entrega/Retirada ou Pagamento)
+  useEffect(() => {
+    if (tab === 'itens') return
+    const t = window.setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(tab === 'entrega' ? '.tpd-quando-card' : '.ep2-col-dir > .ep2-card:not(.tpd-cli-card)')
+      if (el && el.getClientRects().length) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' })
+    }, 700)
+    return () => window.clearTimeout(t)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── State editável (populated no load) ────────────────────────────────
   const [clienteId, setClienteId] = useState<string | null>(null)
@@ -1483,7 +1492,7 @@ export default function EditarPedido() {
       <div className="ep2-grid">
         <div className="ep2-col">
           {/* ── ITENS (com o cartão do cliente) ── */}
-          <div className={`ep2-sec ${tab === 'itens' ? 'ativa' : ''}`}>
+          <div className={`ep2-sec tpd-sec-itens ${tab === 'itens' ? 'ativa' : ''}`}>
             {cartaoCliente('tpd-cli-esq')}
 
             {(pedido.observacoes || '').trim() && (
