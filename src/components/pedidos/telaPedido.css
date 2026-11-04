@@ -394,3 +394,17 @@
 .tpd-taxa-sug span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tpd-taxa-sug.fora { color: var(--ui-vermelho); }
 .tpd-taxa-sug button { flex: none; margin: 0; padding: 4px 10px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 12.5px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; }
+
+/* (6.74) recado do cliente no rodapé do cartão dos itens */
+.tpd-recado-pe { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ui-linha); }
+.tpd-recado-pe-t { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.tpd-recado-pe-t small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
+.tpd-recado-pe-bt { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 4px; border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; }
+.tpd-recado-pe p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ui-texto); white-space: pre-line; }
+.tpd-recado-pe p.vz { font-size: 13.5px; color: var(--ui-texto-3); }
+/* (6.74) adicionais do item com a foto do cadastro */
+.tpd-adic { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+.tpd-adic > small { flex-basis: 100%; font-size: 12.5px; color: var(--ui-texto-2); }
+.tpd-adic-it { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 3px 10px 3px 3px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); font-size: 13px; color: var(--ui-texto); }
+.tpd-adic-it img, .tpd-adic-it i { flex: none; width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
+.tpd-adic-it i { display: inline-flex; align-items: center; justify-content: center; background: var(--ic-fundo); color: var(--ic-cor); box-shadow: inset 0 0 0 1px var(--ic-borda); }

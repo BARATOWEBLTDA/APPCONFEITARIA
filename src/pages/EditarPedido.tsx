@@ -14,7 +14,7 @@ import { avisarDesfeito, avisarMudanca } from '@/lib/avisoPedido'
 import { NomeComQtd } from '@/components/pedidos/CartaoPedido'
 import { tocarSom } from '@/hooks/useSom'
 import '@/components/pedidos/telaPedido.css'
-import { MapTrifold, Copy, Storefront, Tag } from '@phosphor-icons/react'
+import { MapTrifold, Copy, Storefront, Tag, Stack } from '@phosphor-icons/react'
 import { CartProvider } from '@/context/CartContext'
 import { ProductModal } from '@/components/cart/ProductModal'
 import { itemDoCarrinhoParaPedido } from '@/lib/itemDoCarrinho'
@@ -505,6 +505,18 @@ export default function EditarPedido() {
   const [editandoEndereco, setEditandoEndereco] = useState(false)
   const [cepAchado, setCepAchado] = useState(false)
   const [dataSheet, setDataSheet] = useState(false)
+  // (6.74) fotos dos adicionais cadastrados (para mostrar junto do nome no item)
+  const [fotosExtras, setFotosExtras] = useState<Record<string, string>>({})
+  useEffect(() => {
+    let vivo = true
+    void supabase.auth.getUser().then(({ data: u }) => { const uid = u.user?.id; if (!uid || !vivo) return; return supabase.from('biblioteca_extras').select('id, nome, imagem_url').eq('user_id', uid).then(({ data }) => {
+      if (!vivo || !data) return
+      const m: Record<string, string> = {}
+      for (const e of data as { id: string; nome: string; imagem_url: string | null }[]) if (e.imagem_url) { m[e.id] = e.imagem_url; m[`n:${(e.nome || '').trim().toLowerCase()}`] = e.imagem_url }
+      setFotosExtras(m)
+    }) })
+    return () => { vivo = false }
+  }, [])
   const [lojaInfo, setLojaInfo] = useState<{ nome: string; endereco: { linha1: string; linha2: string; completo: string } | null } | null>(null)
   const [enderecoDaCliente, setEnderecoDaCliente] = useState<{ rua: string; numero: string; bairro: string; cidade: string; complemento: string; cep: string } | null>(null)
   const enderecoAntes = useRef<EnderecoEditado | null>(null)
@@ -1417,16 +1429,13 @@ export default function EditarPedido() {
             <a className="tpd-cli-ic" href={`tel:+55${telDigitos}`} aria-label="Ligar" title="Ligar"><Phone size={20} weight="bold" /></a>
           </>)}
         </div>
-        {clienteId && clienteInfo && clienteInfo.pedidos > 0 && (
-          <p className="tpd-cli-res">{clienteInfo.pedidos + 1} pedidos · {formatMoney(r2(clienteInfo.gasto + recebidoAtual))} gastos{clienteInfo.ultimo ? ` · último em ${clienteInfo.ultimo.slice(8, 10)}/${clienteInfo.ultimo.slice(5, 7)}` : ''}</p>
-        )}
+        {/* (6.74) os números do cliente e o "Ver perfil" ficam na ficha do cliente */}
         {aniversario && (
           <p className="tpd-aniv"><Cake size={20} weight="bold" aria-hidden="true" /><span><b>Aniversário {aniversario.dias === 0 ? 'hoje' : `dia ${aniversario.data}`}</b>{aniversario.dias === 0 ? '!' : ` · daqui a ${aniversario.dias} ${aniversario.dias === 1 ? 'dia' : 'dias'}.`} Que tal um mimo no pedido?</span></p>
         )}
         {!telDigitos && (
           <Botao className="tpd-mt" variante="suave" tamanho="m" cheio icone={<Plus size={20} weight="bold" />} onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)}>Adicionar telefone</Botao>
         )}
-        {clienteId && <button type="button" className="tpd-cli-perfil" onClick={() => navigate(`/clientes/${clienteId}`)}>Ver perfil do cliente<CaretRight size={16} weight="bold" aria-hidden="true" /></button>}
       </>)}
     </section>
   )
@@ -1495,12 +1504,6 @@ export default function EditarPedido() {
           <div className={`ep2-sec tpd-sec-itens ${tab === 'itens' ? 'ativa' : ''}`}>
             {cartaoCliente('tpd-cli-esq')}
 
-            {(pedido.observacoes || '').trim() && (
-              <section className="ep2-card tpd-card tpd-recado-ped">
-                <Titulo acao={<Botao variante="link" icone={<PencilSimple size={16} weight="bold" />} onClick={() => { setRecadoTexto(pedido.observacoes || ''); setRecadoAberto(true) }}>Editar</Botao>}>Recado do cliente</Titulo>
-                <p>“{(pedido.observacoes || '').trim()}”</p>
-              </section>
-            )}
             <section className="ep2-card tpd-card">
               <Titulo contagem={itens.length} acao={<Botao variante="link" icone={<Plus size={16} weight="bold" />} onClick={() => setModalProduto(true)}><span className="tpd-add-g">Adicionar item</span><span className="tpd-add-c">Adicionar</span></Botao>}>Itens do pedido</Titulo>
               {itens.length === 0 ? <p className="tpd-vz">Nenhum item ainda: use o Adicionar item.</p> : (
@@ -1518,7 +1521,15 @@ export default function EditarPedido() {
                     if (Array.isArray(p.recheios) && p.recheios.length) campos.push([p.recheios.length > 1 ? 'Recheios' : 'Recheio', p.recheios.map((r: { nome: string }) => r.nome).join(', ')])
                     if (p.cobertura?.nome) campos.push(['Cobertura', p.cobertura.nome])
                     if (sabores.length) campos.push(['Sabores', textoSaboresKit(sabores, '\n')]) // (6.03) um sabor por linha (telaPedido.css: pre-line)
-                    if (extras.length) campos.push(['Adicionais', extras.map((e: ExtraEscolhido) => nomeExtra(e)).join(', ')])
+                    // (6.74) adicionais: com a foto do cadastro, quando tiver (antes só o texto)
+                    const adicionais = extras.length > 0 && (
+                      <div className="tpd-adic"><small>Adicionais</small>
+                        {extras.map((e: ExtraEscolhido, k) => {
+                          const f = fotosExtras[String((e as { id?: string }).id || '')] || fotosExtras[`n:${String(e.nome || '').trim().toLowerCase()}`]
+                          return <span key={k} className="tpd-adic-it">{f ? <img src={f} alt="" /> : <i aria-hidden="true"><Stack size={14} weight="bold" /></i>}{nomeExtra(e)}</span>
+                        })}
+                      </div>
+                    )
                     const obs = (it.observacoes || '').trim()
                     const foto = fotoDoItem(it)
                     const fotoRef: string = it.foto_referencia || p.foto_referencia || ''
@@ -1532,10 +1543,12 @@ export default function EditarPedido() {
                             <span className="tpd-it-preco">{formatMoney(valorDaLinha(it))}{q !== 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}` : ''}</span>
                             {/* (28/10) computador: as escolhas (sabores etc.) ficam logo embaixo do nome, no lugar do preço */}
                             {campos.length > 0 && <div className="tpd-it-esc tpd-it-esc--pc">{campos.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>}
+                            {adicionais && <div className="tpd-it-esc--pc">{adicionais}</div>}
                           </div>
                           <BotaoIcone rotulo={`Opções de ${it.nome_produto}`} variante="limpo" tamanho="p" onClick={() => setItemMenu(idx)}><DotsThree size={20} weight="bold" /></BotaoIcone>
                         </div>
                         {campos.length > 0 && <div className="tpd-it-esc tpd-it-esc--cel">{campos.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>}
+                        {adicionais && <div className="tpd-it-esc--cel">{adicionais}</div>}
                         {(fotoRef || obs) && (
                           <div className="tpd-recado">
                             {fotoRef && (
@@ -1556,6 +1569,15 @@ export default function EditarPedido() {
                   })}
                 </ul>
               )}
+              {/* (6.74) o recado do cliente fica no rodapé dos itens (antes um cartão à parte) */}
+              <div className="tpd-recado-pe">
+                <div className="tpd-recado-pe-t"><small>Recado do cliente</small>
+                  <button type="button" className="tpd-recado-pe-bt" onClick={() => { setRecadoTexto(pedido.observacoes || ''); setRecadoAberto(true) }}><PencilSimple size={14} weight="bold" aria-hidden="true" />{(pedido.observacoes || '').trim() ? 'Editar' : 'Escrever'}</button>
+                </div>
+                {(pedido.observacoes || '').trim()
+                  ? <p>“{(pedido.observacoes || '').trim()}”</p>
+                  : <p className="vz">O cliente não deixou nenhum recado.</p>}
+              </div>
             </section>
           </div>
 
@@ -1649,17 +1671,7 @@ export default function EditarPedido() {
                   </p>
                 )}
               </div>
-            ) : (
-              <div className="ep2-card tpd-onde-card">
-                <Titulo>Onde retirar</Titulo>
-                {lojaInfo?.endereco ? (<>
-                  <div className="ep2-addr tpd-end"><div><b>{lojaInfo.nome || 'Sua loja'}</b><small>{lojaInfo.endereco.linha1}</small>{lojaInfo.endereco.linha2 && <small>{lojaInfo.endereco.linha2}</small>}</div></div>
-                  <p className="ep2-nota">O endereço vem dos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button>.</p>
-                </>) : (
-                  <p className="ep2-vazio">Cadastre o endereço da sua loja nos <button className="ep2-lk" onClick={() => navigate('/cardapio-config')}>Dados da loja</button> para ele aparecer aqui e na mensagem para o cliente.</p>
-                )}
-              </div>
-            )}
+            ) : null /* (6.74) retirada: o endereço da própria loja não precisa aparecer aqui */}
           </div>
         </div>
 
