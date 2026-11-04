@@ -1,5 +1,6 @@
 /**
- * (24/10) Montar o orçamento em 3 etapas: Proposta (cliente, evento e itens), Condições (validade, sinal,
+ * (04/11 · 6.43) 5 etapas: Evento, Itens, Valores (entrega, desconto e acréscimo), Condições e Enviar.
+ * (24/10) Antes eram 3 etapas: Proposta (cliente, evento e itens), Condições (validade, sinal,
  * forma de pagamento e recado) e Enviar (prévia, WhatsApp, link e PDF). Salva como rascunho em qualquer etapa.
  * Respondido (aprovado ou recusado), a tela só mostra o resumo.
  */
@@ -49,7 +50,9 @@ export default function OrcamentoEditar() {
   const { isPro } = usePlano()
   const [o, setO] = useState<Orcamento | null>(null)
   const [erro, setErro] = useState('')
-  const [etapa, setEtapa] = useState<1 | 2 | 3>(1)
+  const [etapa, setEtapa] = useState<number>(1)
+  const [descModo, setDescModo] = useState<'sem' | 'pct' | 'valor'>('sem')
+  const [descPct, setDescPct] = useState('')
   const [salvando, setSalvando] = useState(false)
   const [editarCli, setEditarCli] = useState<boolean | null>(null) // (28/10) null = automático (cartão quando já tem nome e WhatsApp)
   const [mudou, setMudou] = useState(false)
@@ -57,7 +60,7 @@ export default function OrcamentoEditar() {
   const [escolher, setEscolher] = useState(false)
   const [busca, setBusca] = useState('')
   const [extras, setExtras] = useState({ desconto: false, acrescimo: false, entrega: false })
-  const [validadeTipo, setValidadeTipo] = useState<'7' | '15' | '30' | 'data'>('7')
+  const [validadeTipo, setValidadeTipo] = useState<'3' | '7' | '15' | '30' | 'data' | 'sem'>('7')
   const [custos, setCustos] = useState<Record<string, number | null>>({})
   const [pedidoNumero, setPedidoNumero] = useState<number | null>(null)
   const [foto, setFoto] = useState('')
@@ -84,10 +87,11 @@ export default function OrcamentoEditar() {
       if (!d.validade && (d.status === 'novo' || d.status === 'rascunho')) d.validade = maisDias(7)
       setO(d)
       setExtras({ desconto: Number(d.desconto) > 0, acrescimo: Number(d.acrescimo) > 0, entrega: d.tipo_entrega === 'entrega' })
+      setDescModo(Number(d.desconto) > 0 ? 'valor' : 'sem')
       if (d.validade) {
         const dias = Math.round((new Date(`${d.validade}T12:00:00`).getTime() - new Date(`${(d.enviado_em || d.created_at).slice(0, 10)}T12:00:00`).getTime()) / 86400000)
-        setValidadeTipo(dias === 15 ? '15' : dias === 30 ? '30' : dias === 7 ? '7' : 'data')
-      }
+        setValidadeTipo(dias === 3 ? '3' : dias === 15 ? '15' : dias === 30 ? '30' : dias === 7 ? '7' : 'data')
+      } else if (d.status !== 'novo' && d.status !== 'rascunho') setValidadeTipo('sem') // (6.43) enviado sem validade = "Sem prazo"
       if (d.pedido_id) {
         const { data: p } = await supabase.from('pedidos').select('numero').eq('id', d.pedido_id).maybeSingle()
         if (vivo && p) setPedidoNumero((p as { numero: number | null }).numero)
@@ -183,19 +187,25 @@ export default function OrcamentoEditar() {
     } finally { setSalvando(false) }
   }
 
-  const faltaEtapa1 = !o ? '' : !(o.cliente_nome || '').trim() ? 'Escreva o nome do cliente' : !(o.itens || []).length ? 'Coloque pelo menos um item' : (o.itens || []).some(i => !i.nome.trim()) ? 'Um item está sem nome' : total <= 0 ? 'Coloque o valor dos itens' : ''
+  // (6.43) o que falta em cada etapa pra seguir: 1 Evento (o cliente) · 2 Itens · 4 Condições (a validade)
+  const faltaNa = (n: number): string => !o ? '' : n === 1 ? (!(o.cliente_nome || '').trim() ? 'Escreva o nome do cliente' : '')
+    : n === 2 ? (!(o.itens || []).length ? 'Coloque pelo menos um item' : (o.itens || []).some(i => !i.nome.trim()) ? 'Um item está sem nome' : somarItens(o.itens) <= 0 ? 'Coloque o valor dos itens' : '')
+    : n === 4 ? (validadeTipo === 'data' && !o.validade ? 'Escolha até quando o orçamento vale' : '') : ''
+  const faltaAte = (n: number) => { for (let k = 1; k < n; k++) { const f = faltaNa(k); if (f) return f } return '' }
+  const ETAPAS = ['Evento', 'Itens', 'Valores', 'Condições', 'Enviar'] as const
 
   const continuar = async () => {
-    if (etapa === 1 && faltaEtapa1) { avisar(faltaEtapa1, { tipo: 'erro' }); return }
+    const f = faltaNa(etapa)
+    if (f) { avisar(f, { tipo: 'erro' }); return }
     if (mudou || !o?.id) { const ok = await salvar(); if (!ok) return }
-    setEtapa(e => (e < 3 ? ((e + 1) as 1 | 2 | 3) : e)); window.scrollTo({ top: 0 })
+    setEtapa(e => Math.min(5, e + 1)); window.scrollTo({ top: 0 })
   }
 
   // (28/10) a validade de 7/15/30 dias conta do dia do envio (antes contava do dia em que o rascunho foi criado)
   const dadosEnvio = (): Partial<Orcamento> | null => {
     if (!o) return null
     if (validadeTipo === 'data' && o.validade && o.validade < hojeISO()) { avisar('A validade já passou. Escolha outra data.', { tipo: 'erro' }); return null }
-    return { status: 'enviado', enviado_em: o.enviado_em || new Date().toISOString(), ...(validadeTipo !== 'data' ? { validade: maisDias(Number(validadeTipo)) } : {}) }
+    return { status: 'enviado', enviado_em: o.enviado_em || new Date().toISOString(), ...(validadeTipo === 'sem' ? { validade: null } : validadeTipo !== 'data' ? { validade: maisDias(Number(validadeTipo)) } : {}) }
   }
   const enviarWhats = async () => {
     if (!o) return
@@ -278,10 +288,10 @@ export default function OrcamentoEditar() {
   // (28/10) cliente em cartão compacto quando já vem preenchido (pedido pelo link); "Editar" abre os campos
   const cliPronto = !!(o.cliente_nome || '').trim() && (o.cliente_telefone || '').replace(/\D/g, '').length >= 10
   const verCampos = editarCli ?? !cliPronto
-  const botoesEtapa = etapa < 3 ? (<>
+  const botoesEtapa = etapa < 5 ? (<>
     {etapa === 1
       ? <Botao variante="secundario" carregando={salvando && etapa === 1} onClick={async () => { const ok = await salvar(); if (ok) avisar('Rascunho salvo', { tipo: 'ok' }) }}>Rascunho</Botao>
-      : <Botao variante="secundario" onClick={() => setEtapa(e => (e > 1 ? ((e - 1) as 1 | 2 | 3) : e))}>Voltar</Botao>}
+      : <Botao variante="secundario" onClick={() => { setEtapa(e => Math.max(1, e - 1)); window.scrollTo({ top: 0 }) }}>Voltar</Botao>}
     <Botao carregando={salvando} onClick={() => void continuar()}>Continuar</Botao>
   </>) : null
 
@@ -292,13 +302,15 @@ export default function OrcamentoEditar() {
       rightActions={<MenuMais rotulo="Mais ações do orçamento" itens={[{ Ic: Trash, t: "Excluir orçamento", sub: "Apaga de vez", perigo: true, aoTocar: () => { void excluir() } }]} />} />
     <div className="orc orc-ed">
       <div className="orc-ed-main">
-        <ol className="orc-etapas" aria-label="Etapas">
-          {(['Proposta', 'Condições', 'Enviar'] as const).map((t, k) => {
-            const n = (k + 1) as 1 | 2 | 3
+        {/* (6.43) etapas numeradas: a bolinha rosa é a atual; com ✓ as feitas; toca numa pra ir (as da frente só sem nada faltando) */}
+        <ol className="orc-etapas orc-etapas--n" aria-label="Etapas">
+          {ETAPAS.map((t, k) => {
+            const n = k + 1
+            const bloqueada = n > etapa && !!faltaAte(n)
             return (
               <li key={t} className={etapa === n ? 'on' : etapa > n ? 'ok' : ''}>
-                <button type="button" disabled={n > etapa && !!faltaEtapa1} onClick={() => { if (n < etapa || !faltaEtapa1) setEtapa(n) }}>
-                  <i aria-hidden="true" /><span>{t}</span>
+                <button type="button" disabled={bloqueada} aria-current={etapa === n ? 'step' : undefined} onClick={() => { if (!bloqueada) { setEtapa(n); window.scrollTo({ top: 0 }) } }}>
+                  <i aria-hidden="true">{etapa > n ? <Check size={13} weight="bold" /> : n}</i><span>{t}</span>
                 </button>
               </li>
             )
@@ -339,6 +351,9 @@ export default function OrcamentoEditar() {
             </div>
           </section>
 
+        </>)}
+
+        {etapa === 2 && (<>
           <section className="orc-card">
             <h2>Itens</h2>
             {(o.itens || []).length === 0 && <p className="orc-vz">Coloque os produtos do seu cardápio ou um item personalizado (ex.: bolo de 2 andares com tema).</p>}
@@ -366,38 +381,72 @@ export default function OrcamentoEditar() {
               <Botao variante="secundario" tamanho="m" icone={<Plus size={18} weight="bold" />} onClick={() => { setBusca(''); setEscolher(true) }}>Do cardápio</Botao>
               <Botao variante="secundario" tamanho="m" icone={<Plus size={18} weight="bold" />} onClick={() => muda({ itens: [...(o.itens || []), { id: novoId(), nome: '', quantidade: 1, valor_unitario: 0 }] })}>Personalizado</Botao>
             </div>
-            <div className="orc-ext">
-              {(['desconto', 'acrescimo', 'entrega'] as const).map(k => (
-                <button key={k} type="button" aria-pressed={extras[k]} onClick={() => { setExtras(x => ({ ...x, [k]: !x[k] })); setMudou(true) }}>
-                  {extras[k] ? <X size={14} weight="bold" /> : <Plus size={14} weight="bold" />}{k === 'desconto' ? 'Desconto' : k === 'acrescimo' ? 'Acréscimo' : 'Entrega'}
-                </button>
-              ))}
-            </div>
-            {(extras.desconto || extras.acrescimo || extras.entrega) && (
-              <div className="orc-2">
-                {extras.desconto && <Campo rotulo="Desconto" prefixo="R$" inputMode="numeric" placeholder="0,00" value={mostrarReais(Number(o.desconto) || 0)} onChange={e => muda({ desconto: lerReais(e.target.value) })} />}
-                {extras.acrescimo && <Campo rotulo="Acréscimo" prefixo="R$" inputMode="numeric" placeholder="0,00" value={mostrarReais(Number(o.acrescimo) || 0)} onChange={e => muda({ acrescimo: lerReais(e.target.value) })} />}
-                {extras.entrega && <Campo rotulo="Taxa de entrega" prefixo="R$" inputMode="numeric" placeholder="0,00" value={mostrarReais(Number(o.taxa_entrega) || 0)} onChange={e => muda({ taxa_entrega: lerReais(e.target.value) })} />}
-              </div>
-            )}
-            <div className="orc-tot"><span>Total</span><b>{brl(total)}</b></div>
+            <div className="orc-tot"><span>Subtotal dos itens</span><b>{brl(somarItens(o.itens))}</b></div>
             {(o.itens || []).length > 0 && somarItens(o.itens) > 0 && (lucro && 'valor' in lucro
               ? <p className={`orc-lucro${(lucro.valor ?? 0) < 0 ? ' ruim' : ''}`}>Lucro estimado {brl(lucro.valor ?? 0)} ({Math.round(lucro.pct ?? 0)}%) · pela ficha técnica</p>
               : lucro && 'falta' in lucro ? <p className="orc-lucro sem">Lucro não calculado: {lucro.falta}.</p> : null)}
           </section>
         </>)}
 
-        {etapa === 2 && (<>
+        {etapa === 3 && (() => {
+          const sub = somarItens(o.itens)
+          const desc = extras.desconto ? Number(o.desconto) || 0 : 0
+          const acr = extras.acrescimo ? Number(o.acrescimo) || 0 : 0
+          const ent = extras.entrega ? Number(o.taxa_entrega) || 0 : 0
+          return (<>
           <section className="orc-card">
-            <h2>Vale até</h2>
-            <div className="orc-seg" role="radiogroup" aria-label="Vale até">
-              {([['7', '7 dias'], ['15', '15 dias'], ['30', '30 dias'], ['data', 'Data']] as const).map(([k, t]) => (
-                <button key={k} type="button" role="radio" aria-checked={validadeTipo === k} onClick={() => { setValidadeTipo(k); if (k !== 'data') muda({ validade: maisDias(Number(k)) }) }}>{t}</button>
+            <h2>Entrega</h2>
+            <CaixasEscolha rotulo="Entrega" valor={extras.entrega ? 'entrega' : 'retirada'} opcoes={[
+              { v: 'retirada', t: 'Retirada', sub: 'O cliente busca na loja' },
+              { v: 'entrega', t: 'Entrega', sub: 'Você leva até o local do evento' },
+            ]} onMudar={k => { setExtras(x => ({ ...x, entrega: k === 'entrega' })); setMudou(true) }} />
+            {extras.entrega && <div className="orc-mt"><Campo rotulo="Taxa de entrega" prefixo="R$" inputMode="numeric" placeholder="0,00" value={mostrarReais(Number(o.taxa_entrega) || 0)} dica="Deixe 0,00 se a entrega for grátis." onChange={e => muda({ taxa_entrega: lerReais(e.target.value) })} /></div>}
+          </section>
+
+          <section className="orc-card">
+            <h2>Desconto</h2>
+            <CaixasEscolha rotulo="Desconto" valor={descModo} opcoes={[
+              { v: 'sem', t: 'Sem desconto', sub: 'O valor dos itens fica como está' },
+              { v: 'pct', t: 'Em porcentagem', sub: 'Ex.: 10% do valor dos itens' },
+              { v: 'valor', t: 'Em reais', sub: 'Ex.: R$ 20,00 a menos' },
+            ]} onMudar={k => { setDescModo(k); setExtras(x => ({ ...x, desconto: k !== 'sem' })); if (k === 'sem') muda({ desconto: 0 }); else setMudou(true) }} />
+            {descModo === 'pct' && <div className="orc-mt"><Campo rotulo="Quanto de desconto" inputMode="decimal" placeholder="10" value={descPct} depois={<span className="orc-pct">%</span>}
+              dica={Number(o.desconto) > 0 ? `${brl(Number(o.desconto))} a menos` : undefined}
+              onChange={e => { const v = e.target.value.replace(/[^\d,]/g, '').slice(0, 5); setDescPct(v); const p = Math.min(100, Number(v.replace(',', '.')) || 0); muda({ desconto: Math.round(sub * p) / 100 }) }} /></div>}
+            {descModo === 'valor' && <div className="orc-mt"><Campo rotulo="Quanto de desconto" prefixo="R$" inputMode="numeric" placeholder="0,00" value={mostrarReais(Number(o.desconto) || 0)} onChange={e => muda({ desconto: lerReais(e.target.value) })} /></div>}
+          </section>
+
+          <section className="orc-card">
+            <h2>Acréscimo <small>opcional</small></h2>
+            <Campo rotulo="Valor a mais" prefixo="R$" inputMode="numeric" placeholder="0,00" value={mostrarReais(Number(o.acrescimo) || 0)} dica="Ex.: topo personalizado, embalagem especial, montagem no local."
+              onChange={e => { const v = lerReais(e.target.value); setExtras(x => ({ ...x, acrescimo: v > 0 })); muda({ acrescimo: v }) }} />
+          </section>
+
+          <section className="orc-card orc-conta">
+            <h2>A conta</h2>
+            <div className="orc-conta-l"><span>Itens</span><b>{brl(sub)}</b></div>
+            {desc > 0 && <div className="orc-conta-l"><span>Desconto</span><b className="menos">− {brl(desc)}</b></div>}
+            {acr > 0 && <div className="orc-conta-l"><span>Acréscimo</span><b>+ {brl(acr)}</b></div>}
+            {extras.entrega && <div className="orc-conta-l"><span>Entrega</span><b>{ent > 0 ? `+ ${brl(ent)}` : 'Grátis'}</b></div>}
+            <div className="orc-tot"><span>Total</span><b>{brl(total)}</b></div>
+            {(o.itens || []).length > 0 && lucro && 'valor' in lucro && <p className={`orc-lucro${(lucro.valor ?? 0) < 0 ? ' ruim' : ''}`}>Lucro estimado {brl(lucro.valor ?? 0)} ({Math.round(lucro.pct ?? 0)}%) · pela ficha técnica</p>}
+          </section>
+          </>)
+        })()}
+
+        {etapa === 4 && (<>
+          <section className="orc-card">
+            <h2>Vale até <small className="obr">obrigatório</small></h2>
+            <div className="orc-seg orc-seg--5" role="radiogroup" aria-label="Vale até">
+              {([['3', '3 dias'], ['7', '7 dias'], ['15', '15 dias'], ['data', 'Outra data'], ['sem', 'Sem prazo']] as const).map(([k, t]) => (
+                <button key={k} type="button" role="radio" aria-checked={validadeTipo === k} onClick={() => { setValidadeTipo(k); if (k === 'sem') muda({ validade: null }); else if (k === 'data') muda({ validade: null }); else muda({ validade: maisDias(Number(k)) }) }}>{t}</button>
               ))}
             </div>
             {validadeTipo === 'data'
               ? <div className="orc-mt"><CampoData valor={o.validade || ''} onChange={d => muda({ validade: d })} titulo="Vale até" placeholder="Escolher a data" /></div>
-              : <p className="orc-nota"><CalendarBlank size={16} weight="bold" aria-hidden="true" />Vale até {dataLonga(o.validade)}</p>}
+              : validadeTipo === 'sem'
+                ? <p className="orc-nota"><CalendarBlank size={16} weight="bold" aria-hidden="true" />Vale sem prazo: o cliente pode aprovar quando quiser.</p>
+                : <p className="orc-nota"><CalendarBlank size={16} weight="bold" aria-hidden="true" />Vale até {dataLonga(o.validade)}</p>}
           </section>
 
           <section className="orc-card">
@@ -431,7 +480,7 @@ export default function OrcamentoEditar() {
           </section>
         </>)}
 
-        {etapa === 3 && (<>
+        {etapa === 5 && (<>
           <section className="orc-card">
             <h2>Assim o cliente vê</h2>
             <Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url} />
@@ -451,14 +500,14 @@ export default function OrcamentoEditar() {
       <aside className="orc-ed-lado" aria-label="Resumo do orçamento">
         {pediu}
         {/* no computador, a prévia ao vivo fica do lado enquanto ela monta (na etapa Enviar ela já está no meio) */}
-        {etapa < 3 && <section className="orc-card"><h2>Assim o cliente vê</h2><Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url} />
+        {etapa < 5 && <section className="orc-card"><h2>Assim o cliente vê</h2><Resumo o={ov!} total={total} sinal={sinal} nomeLoja={nomeLoja} logo={(profile as PerfilComLogo)?.logo_url} />
           {/* (28/10) no computador os botões ficam aqui, embaixo do total (como o Resumo da Nova venda) */}
           <div className="orc-lado-bts">{botoesEtapa}</div>
         </section>}
       </aside>
     </div>
 
-    {etapa < 3 && (
+    {etapa < 5 && (
       <div className="orc-pe">
         <div className="orc-pe-in">{botoesEtapa}</div>
       </div>
