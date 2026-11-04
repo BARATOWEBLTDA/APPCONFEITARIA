@@ -322,7 +322,7 @@ export const TOUR_CARDAPIO: PassoTour[] = [
   { el: ".vgd-qr", titulo: "QR Code", texto: "Baixe e imprima para os clientes abrirem o cardápio pelo celular." },
   { el: ".ml-cliente", titulo: "A loja para o cliente", texto: "Logo, sobre a loja (nome, WhatsApp e descrição), aparência e redes sociais: o que o cliente vê no cardápio. Cada linha mostra como está agora." },
   { el: ".ml-vende", titulo: "Como você vende", texto: "Horário, entrega, pagamento, Pix e endereço. O que ainda falta configurar aparece marcado como Falta." },
-  { el: ".ml-produtos", titulo: "O que você vende", texto: "Produtos, categorias e complementos que aparecem no cardápio." },
+  { el: ".ml-produtos", titulo: "O que você vende", texto: "Produtos, categorias e adicionais que aparecem no cardápio." },
   { el: ".vgd-kp", titulo: "Desempenho", texto: "Visitas, pedidos, valor vendido e conversão do cardápio no período escolhido." },
   { el: ".vgd-gr", titulo: "Visitas por dia", texto: "Quantas pessoas abriram o cardápio em cada dia do período." },
   { el: ".ch-block--vendidos", titulo: "Mais vendidos", texto: "Os produtos mais pedidos pelo cardápio nos últimos 30 dias." },
@@ -346,7 +346,7 @@ export const COMO_CADASTROS: Como = {
 };
 export const TOUR_CADASTROS: PassoTour[] = [
   { el: ".cad-at", titulo: "Precisa de atenção", texto: "Pendências dos cadastros, como produtos sem ficha técnica. Toque para resolver." },
-  { el: ".cad-c--vende", titulo: "O que você vende", texto: "Produtos, categorias, complementos e a sua loja (o cardápio digital)." },
+  { el: ".cad-c--vende", titulo: "O que você vende", texto: "Produtos, categorias, adicionais e a sua loja (o cardápio digital)." },
   { el: ".cad-c--feito", titulo: "Do que é feito", texto: "Ingredientes e fichas técnicas, que calculam o custo e o lucro de cada produto." },
   { el: ".cad-c--compra", titulo: "Quem compra", texto: "Seus clientes e as mensagens prontas do WhatsApp." },
 ];
@@ -372,7 +372,7 @@ export const TOUR_CATEGORIAS: PassoTour[] = [
 ];
 
 export const COMO_COMPLEMENTOS: Como = {
-  tela: { nome: "Complementos", Icone: PuzzlePiece },
+  tela: { nome: "Adicionais", Icone: PuzzlePiece },
   artigo: "complementos",
   resumo: "Opções extras que o cliente escolhe ao pedir, como topo de bolo, escrita e papel de arroz.",
   tit: "Exemplo · bolo com extra",
@@ -380,22 +380,22 @@ export const COMO_COMPLEMENTOS: Como = {
   total: ["Total do pedido", "R$ 135,00"],
   fluxo: ["Cadastrar", "Escolher produtos", "No pedido"],
   dicas: [
-    [PuzzlePiece, <>Cadastre uma vez e escolha em <b>quais produtos</b> o complemento aparece.</>],
+    [PuzzlePiece, <>Cadastre uma vez e escolha em <b>quais produtos</b> o adicional aparece.</>],
     [Coins, <>Pode ser <b>cobrado</b> ou <b>grátis</b>. O valor é somado ao total do pedido.</>],
     [Camera, <>Marque <b>Uma foto de referência</b> para o cliente anexar uma imagem, como no topo de bolo.</>],
     [ArrowsClockwise, <>Ao alterar o preço aqui, ele muda em <b>todos os produtos</b>.</>],
   ],
 };
 export const TOUR_COMPLEMENTOS: PassoTour[] = [
-  { el: ".ct .ui-tit-acao", titulo: "Novo complemento", texto: "Cadastre um extra com nome, preço, onde aparece no cardápio e o que o cliente precisa mandar.",
+  { el: ".ct .ui-tit-acao", titulo: "Novo adicional", texto: "Cadastre um extra com nome, preço, onde aparece no cardápio e o que o cliente precisa mandar.",
     vazio: [
-      { el: ".pz-vazio", titulo: "Complementos", texto: "Ainda não há complementos. Comece pelo topo de bolo: o cliente já manda a foto da ideia junto com o pedido." },
-      { el: ".ct .ui-vazia", titulo: "Primeiro, um produto", texto: "Os complementos aparecem junto dos produtos no cardápio. Cadastre um produto e volte aqui." },
+      { el: ".pz-vazio", titulo: "Adicionais", texto: "Ainda não há adicionais. Comece pelo topo de bolo: o cliente já manda a foto da ideia junto com o pedido." },
+      { el: ".ct .ui-vazia", titulo: "Primeiro, um produto", texto: "Os adicionais aparecem junto dos produtos no cardápio. Cadastre um produto e volte aqui." },
     ] },
-  { el: ".pz-busca", titulo: "Buscar", texto: "Encontre um complemento pelo nome." },
-  { el: ".pz-li-b || .pz-cc-b", titulo: "Complemento", texto: "Mostra em que parte do cardápio aparece e se o cliente precisa mandar foto ou frase. Toque para editar." },
+  { el: ".pz-busca", titulo: "Buscar", texto: "Encontre um adicional pelo nome." },
+  { el: ".pz-li-b || .pz-cc-b", titulo: "Adicional", texto: "Mostra o valor, onde aparece no cardápio e as regras (se o cliente precisa mandar foto ou frase). Toque para editar." },
   { el: ".pz-li .ui-bti || .pz-cc-menu", titulo: "Opções", texto: "Edite, escolha onde aparece no cardápio ou exclua." },
-  { el: ".pz-cheio .pz-cel || .pz-cheio", titulo: "Assim o cliente vê", texto: "A prévia de como os complementos aparecem para o cliente na hora de escolher o produto." },
+  { el: ".pz-cheio .pz-cel || .pz-cheio", titulo: "Assim o cliente vê", texto: "A prévia de como os adicionais aparecem para o cliente na hora de escolher o produto." },
 ];
 
 export const COMO_INGREDIENTES: Como = {

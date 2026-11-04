@@ -432,7 +432,27 @@
 .pz-capa-ia { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .pz-capa-ia small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 .pz-capa-ia > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.pz-capa-ia button { aspect-ratio: 4 / 3; margin: 0; padding: 0; overflow: hidden; border: 2px solid transparent; border-radius: 12px; background: #F3EEF0; cursor: pointer; }
+.pz-capa-ia button { height: 76px; margin: 0; padding: 0; overflow: hidden; border: 2px solid transparent; border-radius: 12px; background: #F3EEF0; cursor: pointer; }
 .pz-capa-ia button[aria-pressed="true"] { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px var(--ui-rosa-claro); }
 .pz-capa-ia img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .pz-sub-tit { display: block; margin: -2px 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+/* (04/11 · 6.26) celular no padrão de Produtos: busca + "Novo" no topo, título, um cartão por adicional */
+.pz-topo-cel { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.pz-topo-cel .pz-busca { flex: 1; min-width: 0; margin: 0; }
+.pz-topo-cel .ui-bt { flex: none; }
+@media (min-width: 768px) { .pz-topo-cel { display: none; } }
+@media (max-width: 767px) {
+  .pz-tit-acoes, .pz-busca--pc { display: none; }
+  .pz-cheio-l > .ui-tit { margin-bottom: 10px; }
+  .pz-lista { display: flex; flex-direction: column; gap: 10px; overflow: visible; border: 0; background: none; box-shadow: none; }
+  .pz-li { padding-right: 6px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
+  .pz-li + .pz-li { border-top: 1px solid var(--ui-borda); }
+  .pz-li-b { align-items: flex-start; gap: 12px; padding: 12px 6px 12px 12px; }
+  .pz-li-ic, .pz-li-ic { display: flex; width: 64px; height: 64px; border-radius: 12px; }
+  .pz-li-tx { gap: 3px; }
+  .pz-li-tx b { font-size: 15.5px; font-weight: 500; }
+}
+.pz-li-valor { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+.pz-li-valor.g { color: var(--ui-verde); }
+.pz-li-tx small i { font-style: normal; font-weight: 500; color: var(--ui-texto); }
+.pz-li-tx small i.r { color: var(--ui-rosa-escuro); }

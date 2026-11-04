@@ -828,7 +828,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
         texto: ['Em **Menu**, toque em **Cadastros**.'],
         imagens: [{ src: '/ajuda/cadastros.webp', alt: 'Cadastros com o aviso e as listas', marcas: [
           '**Precisa de atenção**: o que falta arrumar.',
-          'O que você **vende**: produtos, categorias, complementos.',
+          'O que você **vende**: produtos, categorias, adicionais.',
           'Do que é **feito**: ingredientes e ficha técnica.',
           'Quem **compra**: clientes e mensagens.',
         ] }],
@@ -962,27 +962,27 @@ export const ARTIGOS: ArtigoAjuda[] = [
   {
     slug: 'complementos',
     tema: 'cadastros',
-    titulo: 'Complementos (PRO)',
+    titulo: 'Adicionais (PRO)',
     resumo: 'Topo, velas e outros extras.',
     minutos: 2,
-    abrir: { rota: '/complementos', rotulo: 'Abrir Complementos' },
+    abrir: { rota: '/complementos', rotulo: 'Abrir Adicionais' },
     secoes: [
       {
         id: 'lista',
-        titulo: 'Seus complementos',
+        titulo: 'Seus adicionais',
         exemplo: 'Topo de bolo por R$ 15,00.',
-        texto: ['Em **Cadastros**, toque em **Complementos**. É um recurso do plano **PRO**.'],
-        imagens: [{ src: '/ajuda/complementos-lista.webp', alt: 'Lista de complementos com o valor', marcas: [
-          'Criar um **Novo** complemento.',
+        texto: ['Em **Cadastros**, toque em **Adicionais**. É um recurso do plano **PRO**.'],
+        imagens: [{ src: '/ajuda/complementos-lista.webp', alt: 'Lista de adicionais com o valor', marcas: [
+          'Criar um **Novo** adicional.',
           'Toque para **editar**.',
-          '**Pede foto**: o cliente manda uma referência.',
+          '**Regras**: o cliente manda uma foto de referência ou uma frase.',
         ] }],
         dica: 'No cardápio, aparecem **no produto**, para marcar.',
       },
       {
         id: 'novo',
-        titulo: 'Criar um complemento',
-        imagens: [{ src: '/ajuda/complementos-novo.webp', alt: 'Janela Novo complemento', marcas: [
+        titulo: 'Criar um adicional',
+        imagens: [{ src: '/ajuda/complementos-novo.webp', alt: 'Janela Novo adicional', marcas: [
           'O **nome**, como Topo de bolo.',
           '**Quanto soma** no pedido, ou Grátis.',
           'O cliente manda **uma foto de referência** ou **uma frase**?',

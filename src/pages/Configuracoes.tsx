@@ -58,7 +58,7 @@ const INDICE: Achado[] = [
   { nome: "Taxa da maquininha", onde: "Financeiro › Custos", palavras: "cartão credito debito custos variaveis embalagem", ir: "/custos" },
   { nome: "Custos invisíveis", onde: "Financeiro › Custos", palavras: "gas forno perdas descartaveis porcentagem", ir: "/custos" },
   { nome: "Saldo do caixa", onde: "Financeiro", palavras: "dinheiro gaveta banco quanto tenho", ir: "/financeiro" },
-  { nome: "Velas e topos de bolo", onde: "Cadastros › Complementos", palavras: "adicionais extras complementos escrita papel de arroz", ir: "/complementos" },
+  { nome: "Velas e topos de bolo", onde: "Cadastros › Adicionais", palavras: "adicionais extras complementos escrita papel de arroz", ir: "/complementos" },
   { nome: "Categorias do cardápio", onde: "Cadastros › Categorias", palavras: "grupos ordem secoes", ir: "/categorias" },
   { nome: "Notificações e sons", onde: "App", palavras: "avisos som alerta pedido novo", ir: "notif" },
   { nome: "Instalar o app", onde: "App", palavras: "tela inicial atalho celular", ir: "instalar" },

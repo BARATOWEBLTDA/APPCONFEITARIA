@@ -60,7 +60,7 @@ export default function BuscaRapida() {
       { g: "Cadastros", t: "Produtos", ic: Cake, rota: "/produtos", chaves: "bolo doce salgado preco foto" },
       { g: "Cadastros", t: "Novo produto", ic: Plus, rota: "/produtos", estado: { abrirCadastro: true }, chaves: "cadastrar produto criar" },
       { g: "Cadastros", t: "Categorias", ic: Tag, rota: "/categorias", chaves: "ordem cardapio" },
-      { g: "Cadastros", t: "Complementos", ic: Stack, rota: "/complementos", chaves: "sabores recheios adicionais topo vela" },
+      { g: "Cadastros", t: "Adicionais", ic: Stack, rota: "/complementos", chaves: "complementos sabores recheios extras topo vela" },
       { g: "Cadastros", t: "Ingredientes", ic: Basket, rota: "/insumos", chaves: "insumo insumos ingrediente materia prima compra compras mercado embalagem preco" },
       { g: "Cadastros", t: "Ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", chaves: "receita custo lucro margem" },
       { g: "Cadastros", t: "Clientes", ic: Users, rota: "/clientes", chaves: "aniversario contatos" },

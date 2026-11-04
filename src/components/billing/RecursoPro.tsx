@@ -30,7 +30,7 @@ export const RECURSOS_PRO = {
     beneficios: [[Target, "Anúncios mais certeiros", "Pra quem já se interessou"], [ChartLineUp, "Veja o que dá resultado", "Visitas, carrinhos e compras"], [Storefront, "Meta, Google e TikTok", "É só colar o código"]] },
   planilha: { nome: "Extrato em planilha", texto: "Baixe o extrato do período pronto pra abrir no Excel ou mandar pro contador.", frase: ["Contas", "em dia!"],
     beneficios: [[FileXls, "Planilha pronta", "Abre no Excel e no Google"], [CalendarBlank, "Do período que quiser", "Mês, semana ou dia"], [Briefcase, "Pronto pro contador", "Entradas e saídas separadas"]] },
-  complementos: { nome: "Complementos sem limite", texto: "Crie quantos complementos quiser: sabores, recheios, tamanhos e extras.", frase: ["Mais em cada", "pedido!"],
+  complementos: { nome: "Adicionais sem limite", texto: "Crie quantos adicionais quiser: topo de bolo, velas, escrita e outros extras.", frase: ["Mais em cada", "pedido!"],
     beneficios: [[Stack, "Quantos quiser", "Sabores, recheios e tamanhos"], [CurrencyCircleDollar, "Cada um com seu preço", "O total soma sozinho"], [ShoppingBag, "Pedidos maiores", "A cliente monta do jeito dela"]] },
   produtos: { nome: "Cardápio completo", texto: "Mostre todos os seus produtos no cardápio ao mesmo tempo. Os que estão fora continuam salvos.", frase: ["Vitrine", "completa!"],
     beneficios: [[Storefront, "Todos os produtos", "Sem limite no cardápio"], [Palette, "Cores e banners", "O cardápio com a sua cara"], [Ticket, "Cupons de desconto", "Pra vender mais"]] },

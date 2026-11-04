@@ -89,6 +89,12 @@ export function CampoArea({ rotulo, dica, erro, opcional, obrigatorio, className
           {...resto}
         />
       </div>
+      {/* (6.26) com limite de letras, mostra quanto já usou ("37/60") */}
+      {resto.maxLength && typeof resto.value === 'string' && resto.value.length > 0 && (
+        <p className={`ui-campo-cont${resto.value.length >= resto.maxLength ? ' cheio' : ''}`} aria-live="polite">
+          {resto.value.length >= resto.maxLength ? `Chegou ao limite de ${resto.maxLength} letras` : `${resto.value.length}/${resto.maxLength}`}
+        </p>
+      )}
     </Moldura>
   )
 }

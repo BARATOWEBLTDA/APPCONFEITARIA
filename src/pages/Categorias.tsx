@@ -155,7 +155,7 @@ export default function Categorias() {
           for (const c of ((comps as { id: string; categorias_cardapio?: string[] | null }[]) || []).filter(c => (c.categorias_cardapio || []).includes(antigo))) {
             const { error: eComp } = await supabase.from("biblioteca_extras").update({ categorias_cardapio: (c.categorias_cardapio || []).map(n => (n === antigo ? novo : n)) }).eq("id", c.id);
             // (27/10) antes o erro era ignorado e o complemento sumia da categoria no cardápio sem aviso
-            if (eComp) avisar("A categoria mudou de nome, mas um complemento não acompanhou. Confira em Complementos.", { tipo: "erro" });
+            if (eComp) avisar("A categoria mudou de nome, mas um adicional não acompanhou. Confira em Adicionais.", { tipo: "erro" });
           }
         } catch { /* sem a coluna nova: segue sem */ }
         await loadProdutos(userId);

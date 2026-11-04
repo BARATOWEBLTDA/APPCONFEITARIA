@@ -59,6 +59,16 @@ function capaDesenho(nome: string): string {
 /** (24/10) a primeira foto do produto (o campo guarda várias separadas por vírgula; antes a lista inteira ia no src e a foto quebrava) */
 const primeiraFoto = (f?: string | null) => (f ? String(f).split(/,(?=\s*(?:https?:|\/))/)[0].trim() : "");
 
+/** (6.26) testa as fotos ao mesmo tempo e devolve, na ordem da busca, as primeiras que carregarem (até 4 s cada) */
+function fotosQueAbrem(urls: string[], quantas: number): Promise<string[]> {
+  return Promise.all(urls.slice(0, 8).map(u => new Promise<string | null>(ok => {
+    const img = new Image(); const t = window.setTimeout(() => ok(null), 4000);
+    img.onload = () => { window.clearTimeout(t); ok(img.naturalWidth > 40 ? u : null); };
+    img.onerror = () => { window.clearTimeout(t); ok(null); };
+    img.referrerPolicy = "no-referrer"; img.src = u;
+  }))).then(l => l.filter((u): u is string => !!u).slice(0, quantas));
+}
+
 export default function Complementos() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -130,6 +140,7 @@ export default function Complementos() {
   useEffect(() => { void carregar(); }, []);
 
   const abrir = (c: Complemento | null, escolherProdutos = false) => {
+    setCapasIA([]); setCapaMenu(false); // (6.26) as fotos da IA são só do adicional que estava aberto
     setOpcoesIa([]); setSugNome(null); nomeConferido.current = c ? formatarNomeItem(c.nome) : "";
     if (!c && passouDoLimite()) { setLimiteAberto(true); return; }
     setEditando(c);
@@ -153,12 +164,15 @@ export default function Complementos() {
   /** (04/11 · 6.24) a IA busca fotos pelo nome do complemento e mostra 3 para escolher */
   const acharCapa = async () => {
     const nome = form.nome.trim();
-    if (nome.length < 3) { avisar("Escreva o nome do complemento primeiro. A IA busca a foto por ele.", { tipo: "info" }); return; }
+    if (nome.length < 3) { avisar("Escreva o nome do adicional primeiro. A IA busca a foto por ele.", { tipo: "info" }); return; }
     setBuscandoCapa(true); setCapasIA([]);
     try {
-      const res = await apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(`${nome} confeitaria`)}`);
+      const termo = /bolo|doce|festa/i.test(nome) ? nome : `${nome} para bolo`;
+      const res = await apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(termo)}`);
       const data = await res.json();
-      if (data.images?.length) setCapasIA(data.images.slice(0, 3));
+      // (6.26) só as fotos que abrem de verdade (link quebrado fica de fora): as 3 primeiras que carregarem
+      const boas = await fotosQueAbrem((data.images || []) as string[], 3);
+      if (boas.length) setCapasIA(boas);
       else avisar("Não achamos foto para esse nome. Escolha uma do celular.", { tipo: "info" });
     } catch { avisar("Não deu para buscar agora. Confira a internet e tente de novo.", { tipo: "erro" }); }
     setBuscandoCapa(false);
@@ -172,7 +186,7 @@ export default function Complementos() {
     if (error) { avisar("Não deu para enviar a foto. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
     const url = supabase.storage.from("products").getPublicUrl(caminho).data.publicUrl;
     setForm(f => ({ ...f, capa: url }));
-  }, { aspect: 4 / 3, forma: "rect", titulo: "Capa do complemento" });
+  }, { aspect: 4 / 3, forma: "rect", titulo: "Capa do adicional" });
   const fechar = () => { setAberta(false); setOpcoesIa([]); setSugNome(null); setIaAviso(""); };
   // (30/10 · 5.35) ao sair do nome: arruma maiúsculas e espaços na hora; se parecer frase ou tiver erro, a IA sugere o nome certo
   const arrumarNome = async () => {
@@ -195,7 +209,7 @@ export default function Complementos() {
   const gerarExplicacoes = async () => {
     const nome = form.nome.trim();
     setIaAviso("");
-    if (!nome) { setIaAviso("Escreva o nome do complemento primeiro."); return; }
+    if (!nome) { setIaAviso("Escreva o nome do adicional primeiro."); return; }
     // ainda tem opção guardada da última vez: só troca a da caixa
     const resto = opcoesIa.filter(t => t !== form.descricao);
     if (resto.length) { setForm(f => ({ ...f, descricao: resto[0] })); setOpcoesIa(resto); return; }
@@ -217,7 +231,7 @@ export default function Complementos() {
 
   const erroNome = tentou && !form.nome.trim() ? "Escreva o nome" : undefined;
   const erroValor = tentou && !form.gratis && form.valor <= 0 ? 'Escreva o valor ou marque Grátis' : undefined;
-  const erroOnde = tentou && !form.onde ? "Escolha onde o complemento aparece" : undefined;
+  const erroOnde = tentou && !form.onde ? "Escolha onde o adicional aparece" : undefined;
   const erroProdutos = tentou && form.onde === "produtos" && form.produtos.length === 0 ? "Marque pelo menos um produto"
     : tentou && form.onde === "categorias" && form.cats.length === 0 ? "Marque pelo menos uma categoria" : undefined;
 
@@ -240,7 +254,7 @@ export default function Complementos() {
         if (data) setItems(prev => [...prev, data as Complemento].sort((a, b) => a.nome.localeCompare(b.nome)));
       }
       fechar();
-      avisar(editando ? "Complemento salvo" : "Complemento criado", { tipo: "ok" });
+      avisar(editando ? "Adicional salvo" : "Adicional criado", { tipo: "ok" });
     } catch (err) {
       console.error(err);
       avisar("Não deu para salvar. Confira a internet e tente de novo.", { tipo: "erro" });
@@ -255,7 +269,7 @@ export default function Complementos() {
     const { error } = await supabase.from("biblioteca_extras").delete().eq("id", c.id).eq("user_id", userId);
     if (error) { avisar("Não deu para excluir. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
     setItems(prev => prev.filter(i => i.id !== c.id));
-    avisar("Complemento excluído", { tipo: "ok" });
+    avisar("Adicional excluído", { tipo: "ok" });
   };
 
   const alternarProduto = (id: string) => setForm(f => ({ ...f, produtos: f.produtos.includes(id) ? f.produtos.filter(x => x !== id) : [...f.produtos, id] }));
@@ -269,6 +283,13 @@ export default function Complementos() {
     }).filter(c => c.n > 0);
   })();
   const listaDeNomes = (l: string[]) => (l.length <= 1 ? l.join("") : `${l.slice(0, -1).join(", ")} e ${l[l.length - 1]}`);
+  /** (6.26) o que o cliente precisa mandar: "Enviar foto", "Enviar frase", "Enviar foto e frase" (ou nada) */
+  const regraDe = (c: Complemento) => c.pede_referencia && c.pede_frase ? "Enviar foto e frase" : c.pede_referencia ? "Enviar foto" : c.pede_frase ? "Enviar frase" : "";
+  const menuDe = (c: Complemento) => [
+    { Ic: PencilSimple, t: "Editar", sub: "Nome, valor e regras", aoTocar: () => abrir(c) },
+    { Ic: Package, t: "Onde aparece", sub: "Em quais produtos ou categorias", aoTocar: () => abrir(c, true) },
+    { Ic: Trash, t: "Excluir", sub: "Some de todos os produtos", perigo: true, aoTocar: () => excluir(c) },
+  ];
   const ondeAparece = (c: Complemento) => {
     const cc = c.categorias_cardapio || [];
     if (cc.length) return cc.length <= 2 ? `Em ${listaDeNomes(cc)}` : `Em ${cc.length} categorias`;
@@ -284,10 +305,10 @@ export default function Complementos() {
 
   const cabecalho = (
     <AppPageHeader voltar="/cadastros"
-      title="Complementos" infoComo={COMO_COMPLEMENTOS} infoTour={TOUR_COMPLEMENTOS}
+      title="Adicionais" infoComo={COMO_COMPLEMENTOS} infoTour={TOUR_COMPLEMENTOS}
       subtitle={loading || items.length === 0 ? "Extras que o cliente escolhe no pedido" : `${items.length} ${items.length === 1 ? "cadastrado" : "cadastrados"}`}
       infoContent={<>
-        <p>Complementos são opções que o cliente escolhe ao pedir um produto: topo de bolo, escrita, papel de arroz, tema.</p>
+        <p>Adicionais são opções que o cliente escolhe ao pedir um produto: topo de bolo, escrita, papel de arroz, tema.</p>
         <p>Cadastre uma vez aqui e escolha em quais produtos aparece. Mudou o preço aqui, muda em todos.</p>
       </>}
     />
@@ -307,7 +328,7 @@ export default function Complementos() {
               <span className="pz-frase">Cada pedido<br />vale mais!</span>
             </figure>
             <div className="pz-vazio-tx">
-              {pro ? <h2>Complementos é um recurso do <em>PRO</em></h2> : <h2>Venda mais em cada pedido</h2>}
+              {pro ? <h2>Adicionais é um recurso do <em>PRO</em></h2> : <h2>Venda mais em cada pedido</h2>}
               <p>Topo de bolo, velas, papel de arroz e balões que o cliente escolhe na hora de pedir.</p>
               <ul className="pz-vazio-lista">
                 {([
@@ -321,7 +342,7 @@ export default function Complementos() {
               <div className="pz-vazio-bts">
                 {pro
                   ? <Botao className="pz-vazio-cta" onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao>
-                  : <Botao className="pz-vazio-cta guia-novo-complemento" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>}
+                  : <Botao className="pz-vazio-cta guia-novo-complemento" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar adicional</Botao>}
                 <Botao variante="secundario" className="pz-vazio-ver" icone={<Eye size={20} weight="bold" />} aria-label="Ver como fica" onClick={() => setVerExemplo(true)}><span className="pz-ver-t">Ver</span></Botao>
               </div>
             </div>
@@ -338,11 +359,11 @@ export default function Complementos() {
         ) : !carregandoPlano && !isPro ? (
           vazio(true)
         ) : erroCarga ? (
-          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os complementos" texto={erroCarga}
+          <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os adicionais" texto={erroCarga}
             acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : produtos.length === 0 ? (
           <TelaVazia caixa icone={<Package size={30} />} titulo="Cadastre um produto primeiro"
-            texto="O complemento aparece dentro dos produtos do cardápio. Cadastre pelo menos um produto antes."
+            texto="O adicional aparece dentro dos produtos do cardápio. Cadastre pelo menos um produto antes."
             acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate("/produtos")}>Cadastrar produto</Botao>} />
         ) : items.length === 0 ? (
           /* (24/10) tela vazia com o exemplo de como fica no cardápio do celular, ao lado (as sugestões "Comece por uma destas" saíram) */
@@ -351,44 +372,50 @@ export default function Complementos() {
           /* (24/10) com complementos: a lista à esquerda e, ao lado, o celular com os complementos dela num produto de verdade */
           <div className="pz-cheio pz-cheio--so">
             <div className="pz-cheio-l">
-              <Titulo contagem={items.length} apoio="Toque em um para editar."
-                acao={<span className="pz-tit-acoes">
-                  {/* (04/11 · 6.22) com complementos, a prévia do celular saiu da tela: abre no "Ver como fica" */}
-                  <Botao tamanho="m" variante="secundario" className="pz-ver-bt" aria-label="Ver como fica" icone={<Eye size={20} weight="bold" />} onClick={() => setVerReal(true)}><span className="ct-g">Ver como fica</span></Botao>
-                  <Botao tamanho="m" className="guia-novo-complemento" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>
-                </span>}>Seus complementos</Titulo>
-              {items.length > 8 && (
+              {/* (6.26) celular: busca e "+ Novo" no topo, como em Produtos; depois o título */}
+              <div className="pz-topo-cel">
                 <label className="pz-busca">
                   <MagnifyingGlass size={20} weight="bold" />
-                  <input type="search" placeholder="Buscar complemento" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar complemento" autoComplete="off" />
+                  <input type="search" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar adicional" autoComplete="off" />
+                  {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
+                </label>
+                <Botao className="guia-novo-complemento" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Novo</Botao>
+              </div>
+              <Titulo contagem={items.length} apoio="Toque em um para editar."
+                acao={<span className="pz-tit-acoes">
+                  {/* (04/11 · 6.22) a prévia do celular saiu da tela: abre no "Ver como fica" (só no PC) */}
+                  <Botao tamanho="m" variante="secundario" className="pz-ver-bt" icone={<Eye size={20} weight="bold" />} onClick={() => setVerReal(true)}>Ver como fica</Botao>
+                  <Botao tamanho="m" className="guia-novo-complemento" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Novo adicional</Botao>
+                </span>}>Seus adicionais</Titulo>
+              {items.length > 8 && (
+                <label className="pz-busca pz-busca--pc">
+                  <MagnifyingGlass size={20} weight="bold" />
+                  <input type="search" placeholder="Buscar adicional" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar adicional" autoComplete="off" />
                   {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
                 </label>
               )}
               {filtrados.length === 0 ? (
-                <p className="pz-semres">Nenhum complemento com esse nome.</p>
+                <p className="pz-semres">Nenhum adicional com esse nome.</p>
               ) : (
                 <>
-                {/* (24/10) computador e tablet: cartões em grade, como em Produtos. Celular: a lista */}
+                {/* (04/11 · 6.26) PC: cartões em grade; celular: um cartão por adicional, no padrão de Produtos.
+                    Cada um diz o valor, onde aparece e a regra (o que o cliente precisa mandar) */}
                 <section className="pz-grade">
                   {filtrados.map(c => {
                     const gratis = !(Number(c.valor) > 0);
-                    const pede = [c.pede_referencia ? "Foto" : "", c.pede_frase ? "Frase" : ""].filter(Boolean).join(" e ");
+                    const regra = regraDe(c);
                     return (
                       <div key={c.id} className="pz-cc">
                         <button type="button" className="pz-cc-b" onClick={() => abrir(c)} aria-label={`Editar ${c.nome}`}>
                           <span className={`pz-cc-top${c.imagem_url ? " pz-cc-top--foto" : ""}`} aria-hidden="true"><img src={c.imagem_url || capaDesenho(c.nome)} alt="" loading="lazy" /></span>
                           <span className="pz-cc-in">
                             <b className="pz-cc-nome" title={c.nome}>{c.nome}</b>
-                            <span className="pz-cc-l"><small>Preço</small><em className={gratis ? "g" : ""}>{gratis ? "Grátis" : `+ R$ ${brl(Number(c.valor))}`}</em></span>
-                            <span className="pz-cc-l"><small>Aparece</small><em>{ondeAparece(c).replace(/^Em /, "")}</em></span>
-                            <span className="pz-cc-l"><small>O cliente manda</small><em className={pede ? "r" : "n"}>{pede || "Nada"}</em></span>
+                            <span className="pz-cc-l"><small>Valor</small><em className={gratis ? "g" : ""}>{gratis ? "Grátis" : `+ R$ ${brl(Number(c.valor))}`}</em></span>
+                            <span className="pz-cc-l"><small>Aparece em</small><em>{ondeAparece(c).replace(/^Em /, "").replace("todos os produtos", "todos")}</em></span>
+                            <span className="pz-cc-l"><small>Regras</small><em className={regra ? "r" : "n"}>{regra || "Nenhuma"}</em></span>
                           </span>
                         </button>
-                        <MenuMais className="pz-cc-menu" rotulo={`Opções de ${c.nome}`} itens={[
-                          { Ic: PencilSimple, t: "Editar", sub: "Nome, preço e o que o cliente manda", aoTocar: () => abrir(c) },
-                          { Ic: Package, t: "Onde aparece", sub: "Em quais produtos ou categorias", aoTocar: () => abrir(c, true) },
-                          { Ic: Trash, t: "Excluir", sub: "Some de todos os produtos", perigo: true, aoTocar: () => excluir(c) },
-                        ]} />
+                        <MenuMais className="pz-cc-menu" rotulo={`Opções de ${c.nome}`} itens={menuDe(c)} />
                       </div>
                     );
                   })}
@@ -396,19 +423,19 @@ export default function Complementos() {
                 <section className="pz-lista">
                   {filtrados.map(c => {
                     const gratis = !(Number(c.valor) > 0);
-                    const pede = [c.pede_referencia ? "Pede foto" : "", c.pede_frase ? "Pede frase" : ""].filter(Boolean).join(" · ");
+                    const regra = regraDe(c);
                     return (
                       <div key={c.id} className="pz-li">
                         <button type="button" className="pz-li-b" onClick={() => abrir(c)}>
                           <span className={`pz-li-ic${c.imagem_url ? " pz-li-ic--foto" : ""}`} aria-hidden="true"><img src={c.imagem_url || capaDesenho(c.nome)} alt="" loading="lazy" /></span>
-                          <span className="pz-li-tx"><b>{c.nome}</b><small>{ondeAparece(c)}</small>{pede && <small className="pz-li-pede">{pede}</small>}</span>
-                          <span className={`pz-preco${gratis ? " g" : ""}`}>{gratis ? "Grátis" : `+ R$ ${brl(Number(c.valor))}`}</span>
+                          <span className="pz-li-tx">
+                            <b>{c.nome}</b>
+                            <span className={`pz-li-valor${gratis ? " g" : ""}`}>{gratis ? "Grátis" : `+ R$ ${brl(Number(c.valor))}`}</span>
+                            <small>Aparece em: <i>{ondeAparece(c).replace(/^Em /, "")}</i></small>
+                            <small>Regras: <i className={regra ? "r" : ""}>{regra || "Nenhuma"}</i></small>
+                          </span>
                         </button>
-                        <MenuMais rotulo={`Opções de ${c.nome}`} itens={[
-                          { Ic: PencilSimple, t: "Editar", sub: "Nome, preço e o que o cliente manda", aoTocar: () => abrir(c) },
-                          { Ic: Package, t: "Onde aparece", sub: "Em quais produtos ou categorias", aoTocar: () => abrir(c, true) },
-                          { Ic: Trash, t: "Excluir", sub: "Some de todos os produtos", perigo: true, aoTocar: () => excluir(c) },
-                        ]} />
+                        <MenuMais rotulo={`Opções de ${c.nome}`} itens={menuDe(c)} />
                       </div>
                     );
                   })}
@@ -425,7 +452,7 @@ export default function Complementos() {
       {/* nova / editar */}
       {limiteAberto && <RecursoPro recurso="complementos" onClose={() => setLimiteAberto(false)} />}
       <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada
-        titulo={etapa === 2 ? (form.onde === "produtos" ? "Em quais produtos?" : "Em quais categorias?") : editando ? "Editar complemento" : "Novo complemento"}
+        titulo={etapa === 2 ? (form.onde === "produtos" ? "Em quais produtos?" : "Em quais categorias?") : editando ? "Editar adicional" : "Novo adicional"}
         acoes={etapa === 2
           ? <><Botao variante="secundario" onClick={() => { setTentou(false); setEtapa(1); }}>Voltar</Botao><Botao onClick={salvar} carregando={saving}>{editando ? "Salvar" : "Criar"}</Botao></>
           : <><Botao variante="secundario" onClick={fechar}>Cancelar</Botao>{temEtapa2 ? <Botao onClick={proximo}>Próximo</Botao> : <Botao onClick={salvar} carregando={saving}>{editando ? "Salvar" : "Criar"}</Botao>}</>}>
@@ -456,9 +483,9 @@ export default function Complementos() {
           )}
           {temCapa && capasIA.length > 0 && (
             <div className="pz-capa-ia">
-              <small>Escolha a foto que combina</small>
+              <small>Escolha a foto que combina (toque para usar)</small>
               <div>{capasIA.map((url, i) => (
-                <button key={url} type="button" aria-pressed={form.capa === url} aria-label={`Usar a foto ${i + 1}`} onClick={() => setForm(f => ({ ...f, capa: f.capa === url ? "" : url }))}><img src={url} alt="" /></button>
+                <button key={url} type="button" aria-pressed={form.capa === url} aria-label={`Usar a foto ${i + 1}`} onClick={() => { setForm(f => ({ ...f, capa: url })); setCapasIA([]); }}><img src={url} alt="" referrerPolicy="no-referrer" /></button>
               ))}</div>
             </div>
           )}
@@ -549,7 +576,7 @@ export default function Complementos() {
                 : setForm(f => ({ ...f, cats: todosOn ? [] : catsComProdutos.map(c => c.nome) }));
               return (<>
                 <div className="pz-e2-cab">
-                  <p className="pz-etapa2-t">{ehProd ? <>Marque os produtos que oferecem <b>{form.nome.trim() || "este complemento"}</b>.</> : <>Marque as categorias que oferecem <b>{form.nome.trim() || "este complemento"}</b>. Produto novo delas já recebe.</>}</p>
+                  <p className="pz-etapa2-t">{ehProd ? <>Marque os produtos que oferecem <b>{form.nome.trim() || "este adicional"}</b>.</> : <>Marque as categorias que oferecem <b>{form.nome.trim() || "este adicional"}</b>. Produto novo delas já recebe.</>}</p>
                   <span className="pz-e2-n">{nOn} de {ehProd ? produtos.length : catsComProdutos.length}</span>
                   {itens.length > 1 && (
                     <button type="button" role="checkbox" aria-checked={todosOn} className="pz-e2-todos" onClick={marcarTodos}>
@@ -608,7 +635,7 @@ function ExemploCardapio() {
   const total = 120 + OPS_EXEMPLO.filter(o => marcadas.includes(o.k)).reduce((t, o) => t + o.valor, 0);
   const rs = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
   return (
-    <figure className="pz-cel-wrap" aria-label="Exemplo de como o cliente vê os complementos no cardápio" onClick={e => e.stopPropagation()}>
+    <figure className="pz-cel-wrap" aria-label="Exemplo de como o cliente vê os adicionais no cardápio" onClick={e => e.stopPropagation()}>
       <div className="pz-cel">
         <div className="pz-cel-tela">
           <img className="pz-cel-foto" src="/tutorial/complementos-bolo.webp" alt="" />
@@ -655,7 +682,7 @@ function PreviaReal({ itens, produtos }: { itens: Complemento[]; produtos: Produ
   const total = preco.final + (Number(marcado.valor) || 0);
   const rs = (v: number) => `R$ ${brl(v)}`;
   return (
-    <figure className="pz-cel-wrap pz-cel-wrap--real" aria-label={`Como o cliente vê os complementos em ${prod.nome}`}>
+    <figure className="pz-cel-wrap pz-cel-wrap--real" aria-label={`Como o cliente vê os adicionais em ${prod.nome}`}>
       <figcaption>Assim o cliente vê no cardápio</figcaption>
       <div className="pz-cel" aria-hidden="true">
         <div className="pz-cel-tela">
