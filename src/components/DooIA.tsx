@@ -1,6 +1,6 @@
 import { pegarPedidoDoo } from '@/components/MenuContaItens'
 import { useState, useRef, useEffect } from 'react'
-import { CaretLeft, X, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple } from '@phosphor-icons/react'
+import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple } from '@phosphor-icons/react'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
@@ -489,10 +489,13 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
 
 
-  // Sync com forceOpen externo
+  // Sync com forceOpen externo · (6.42) e fecha junto (o balão do computador minimiza)
   useEffect(() => {
-    if (forceOpen) setOpen(true)
+    setOpen(!!forceOpen)
   }, [forceOpen])
+  // (6.42) computador: janelinha no canto, sem escurecer a tela e sem travar a página de trás
+  const [pc, setPc] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 901px)').matches)
+  useEffect(() => { const mq = window.matchMedia('(min-width: 901px)'); const f = () => setPc(mq.matches); mq.addEventListener('change', f); return () => mq.removeEventListener('change', f) }, [])
 
   const handleClose = () => {
     setOpen(false)
@@ -551,7 +554,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   // (11/10) Antes a Doo travava a rolagem por conta própria e brigava com a trava da <Janela> (o aviso do PRO):
   // ao fechar, a tela ficava sem rolar e deslocada. Agora usa a mesma peça das janelas do app: a tela de trás
   // não rola, o Esc e o "voltar" do Android fecham a Doo (antes o voltar trocava a tela de trás e ela ficava aberta).
-  useSobreposicao(open, handleClose, painelRef)
+  useSobreposicao(open && !pc, handleClose, painelRef)
 
   // Scroll para última mensagem
   useEffect(() => {
@@ -756,7 +759,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
 
       {/* ── Overlay blur ── */}
-      {open && (
+      {open && !pc && (
         <div onClick={handleClose} style={{
           position: 'fixed', inset: 0,
           backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
@@ -781,7 +784,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             {messages.length > 0 && (
               <button type="button" className="dz-hb" onClick={novaConversa} disabled={loading || generatingImage} aria-label="Nova conversa" title="Nova conversa"><NotePencil size={20} weight="bold" /></button>
             )}
-            <button type="button" className="dz-hb dz-fechar" onClick={handleClose} aria-label="Fechar"><X size={20} weight="bold" /></button>
+            <button type="button" className="dz-hb dz-fechar" onClick={handleClose} aria-label={pc ? "Minimizar" : "Fechar"} title={pc ? "Minimizar" : "Fechar"}>{pc ? <Minus size={20} weight="bold" /> : <X size={20} weight="bold" />}</button>
           </div>
 
           {/* Mensagens */}
@@ -917,6 +920,11 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             border-radius: 22px; box-shadow: 0 18px 60px rgba(44,18,25,.28); border: 1px solid rgba(110,53,72,.12);
           }
         }
+        /* (04/11 · 6.42) COMPUTADOR: janelinha de chat no canto direito, em cima do balão (estilo atendimento de site) */
+        @media (min-width: 901px) {
+          .dooia-panel { top: auto; left: auto; right: 24px; bottom: 100px; width: 390px; height: min(620px, calc(100dvh - 124px)); border-radius: 20px; animation: dooPop .2s cubic-bezier(.16,1,.3,1); transform-origin: bottom right; }
+        }
+        @keyframes dooPop { from { opacity: 0; transform: translateY(12px) scale(.96); } }
         .dz-hd { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 14px; background: radial-gradient(130% 160% at 0 0, #5A3626, var(--ui-vinho-escuro) 70%); color: var(--ui-branco); }
         .dz-hb { width: 44px; height: 44px; border-radius: var(--ui-raio); border: none; background: rgba(255,255,255,.12); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .dz-hb:disabled { opacity: .35; cursor: default; }

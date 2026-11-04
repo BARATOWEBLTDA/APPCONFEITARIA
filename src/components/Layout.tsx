@@ -21,7 +21,7 @@ import { ClipboardText, ChartBar, Stack, Palette, Storefront, ArrowSquareOut, Ar
   Receipt, Sparkle, Crown, Bell, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target } from "@phosphor-icons/react";
+import { Ticket, Target, X } from "@phosphor-icons/react";
 import { ligarAcessoOnline } from "@/lib/acessoOnline";
 import { ConviteProGlobal } from "@/components/billing/RecursoPro";
 import DestaqueDaNavegacao from "@/components/guia/DestaqueDaNavegacao";
@@ -269,11 +269,7 @@ export default function Layout() {
           {/* (04/11 · 6.20) Marketing escondido: Cupons e Pixel separados */}
           <ItemMenu to="/cupons" icone={Ticket}>Cupons</ItemMenu>
           <ItemMenu to="/pixel" icone={Target}>Pixel</ItemMenu>
-          {/* (4.27) Doo IA no computador: abre o painel do lado direito */}
-          <button type="button" className={`nav-item${dooOpen ? " active" : ""}`} data-tour="doo-pc" onClick={() => setDooOpen(true)} aria-haspopup="dialog" title="Doo IA">
-            <span className="nav-icon"><Sparkle size={20} weight={dooOpen ? "fill" : "bold"} /></span>
-            <span className="nav-rotulo">Doo IA</span>
-          </button>
+          {/* (04/11 · 6.42) a Doo IA saiu do menu: no computador ela é o balão flutuante no canto (doo-fab) */}
           <GrupoMenu id="conta" aberto={grupoAberto === "conta"} onAbrir={setGrupoAberto} rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar"]} recolhido={recolhido}>
             <SubitemMenu to="/configuracoes" end icone={Gear}>Configurações</SubitemMenu>
             <SubitemMenu to={isPro ? "/minha-assinatura" : "/assinar"} icone={Crown} tambem={["/assinar", "/minha-assinatura"]}>Minha assinatura</SubitemMenu>
@@ -387,6 +383,12 @@ export default function Layout() {
       )}
 
       <DooIA forceOpen={dooOpen} onClose={() => setDooOpen(false)} />
+      {/* (04/11 · 6.42) computador: a Doo num balão no canto direito; abre a conversa em cima dele e minimiza de volta */}
+      <button type="button" className={`doo-fab${dooOpen ? " on" : ""}`} data-tour="doo-pc" onClick={() => setDooOpen(v => !v)}
+        aria-label={dooOpen ? "Minimizar a Doo IA" : "Abrir a Doo IA"} title={dooOpen ? "Minimizar" : "Doo IA"}>
+        {dooOpen ? <X size={26} weight="bold" /> : <img src="/Sistema/doo.webp" alt="" />}
+        {!dooOpen && <span className="doo-fab-tx">Doo IA</span>}
+      </button>
       <ParabensPro />
 
       <style>{`

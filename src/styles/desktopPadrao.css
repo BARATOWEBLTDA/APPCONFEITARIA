@@ -150,3 +150,16 @@
 /* (30/10 · 5.48) celular também: cartões sem sombra (só a borda fininha), igual ao PC */
 html body { --ui-sombra-cartao: none; }
 html body .clc, html body .ep2-card, html body .ep2-cli, html body .ep2-ca, html body .ep2-cv, html body .ep3, html body .dl-zapc { box-shadow: none !important; }
+
+/* (04/11 · 6.42) Doo IA no computador: balão flutuante no canto direito (no celular ela fica no Início e no menu) */
+.doo-fab { display: none; }
+@media (min-width: 901px) {
+  .doo-fab { position: fixed; right: 24px; bottom: 24px; z-index: 1201; display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; margin: 0; padding: 0; overflow: visible; border: 3px solid #fff; border-radius: 50%; background: #FCE7F3; box-shadow: 0 10px 28px rgba(44, 18, 25, .28); cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+  .doo-fab img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: top center; }
+  .doo-fab:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(44, 18, 25, .32); }
+  .doo-fab.on { background: var(--ui-vinho-escuro, #2C1219); color: #fff; }
+  .doo-fab-tx { position: absolute; right: calc(100% + 10px); top: 50%; transform: translateY(-50%); padding: 6px 12px; border-radius: 999px; background: #2C1219; color: #fff; font-family: var(--font-base); font-size: 13px; font-weight: 600; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s; }
+  .doo-fab:hover .doo-fab-tx { opacity: 1; }
+  /* a janela de um pedido aberto, as gavetas e as janelas ficam por cima do balão */
+  html:has(.ui-veu) .doo-fab, html:has(.ui-veu--gaveta) .doo-fab { display: none; }
+}
