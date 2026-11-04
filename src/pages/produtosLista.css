@@ -148,3 +148,14 @@ body .prod-card-lucro-label { color: var(--ui-texto-2); font-weight: 500; }
 body .prod-card-lucro strong { font-size: 13px; font-weight: 600; color: var(--ui-verde); }
 body .prod-card-lucro--baixo strong { color: var(--ui-vermelho); }
 body .prod-card-lucro-pct { color: var(--ui-texto-2); font-weight: 500; }
+
+/* (04/11 · 6.34) cartão de Produtos sem lucro: preço junto (novo + cheio riscado) e o tipo como selo na foto */
+.pl-ficha > .pl-ficha-preco { display: flex; align-items: baseline; justify-content: flex-start; flex-wrap: nowrap; gap: var(--space-2); min-width: 0; padding: 4px 0; }
+.pl-ficha-preco small { flex: none; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
+.pl-ficha-preco b { flex: none; font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
+.pl-ficha-preco b.promo { color: #2F7D4E; }
+.pl-ficha-preco s { min-width: 0; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body .prod-card-img { position: relative; }
+.prod-card-tipo { position: absolute; left: var(--space-2); bottom: var(--space-2); z-index: 2; padding: 3px 8px; border-radius: 999px; background: rgba(44, 18, 25, .78); font-size: 11.5px; font-weight: 600; line-height: 1.3; color: #fff; white-space: nowrap; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.prod-card-tipo.pronta { background: rgba(21, 128, 61, .88); }
+@media (max-width: 767px) { .prod-card-tipo { display: none; } }

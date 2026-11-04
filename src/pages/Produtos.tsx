@@ -1940,6 +1940,8 @@ export default function Produtos() {
                     (15/10) "Fora do cardápio" entra na mesma pilha: no cartão estreito batia na "Encomenda" */}
                 <div className="prod-card-tags prod-card-tags--dir">
                 </div>
+                {/* (6.34) Encomenda / Pronta entrega: selo no canto da foto (mesma regra do cardápio: encomenda = tem antecedência) */}
+                <span className={`prod-card-tipo${p.antecedencia ? "" : " pronta"}`}>{p.antecedencia ? "Encomenda" : "Pronta entrega"}</span>
                 <div className="prod-card-tags prod-card-tags--esq">
                   {catInvalida && <div className="prod-card-semcat">Sem categoria</div>}
                   {(p.tamanhos_disponiveis && p.tamanhos_disponiveis.length > 0) && (
@@ -1956,8 +1958,6 @@ export default function Produtos() {
                   const pl = precoDaLista(p);
                   const unid = pl.aPartir || !pl.unidade || pl.unidade === "a unidade" ? "" : pl.unidade.replace(/^por /, "o ");
                   const promo = pl.de > 0;
-                  const { lucro, margem, temFicha } = calcularLucro(p);
-                  const tier = margem >= 50 ? "alto" : margem >= 25 ? "medio" : "baixo";
                   return (
                     <div className="pl-lin">
                       <div className="pl-lin-preco">
@@ -1975,9 +1975,7 @@ export default function Produtos() {
                           className="pl-chave pl-lin-chave" onClick={e => { e.stopPropagation(); void alternarNoCardapio(p); }}><span /></button>
                       </div>
                       <p className="pl-lin-tipo">{p.antecedencia ? "Encomenda" : "Pronta entrega"}</p>
-                      {temFicha
-                        ? <p className={`pl-lin-lucro pl-lin-lucro--${tier}`}>Lucro estimado R$&nbsp;{formatPreco(lucro)} ({margem.toFixed(0)}%)</p>
-                        : <button type="button" className="pl-lin-ficha" onClick={e => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}>Montar ficha técnica<CaretRight size={13} weight="bold" aria-hidden="true" /></button>}
+                      {/* (04/11 · 6.34) o lucro saiu daqui: fica só na Ficha técnica */}
                     </div>
                   );
                 })()}
@@ -1991,11 +1989,13 @@ export default function Produtos() {
                     <dl className="pl-ficha">
                       {/* (01/11 · 5.98) a promoção entra na linha do preço (o cheio riscado e o novo em verde), como no cardápio:
                           sem a linha "Promoção", o cartão sem promoção não fica com um vão */}
-                      {pl.de > 0
-                        ? <div><dt><s className="pl-ficha-de">R$&nbsp;{formatPreco(cheio)}</s></dt><dd className="pl-ficha-promo">R$&nbsp;{formatPreco(pl.final)}</dd></div>
-                        : <div><dt>{rotulo}</dt><dd>R$&nbsp;{formatPreco(cheio)}</dd></div>}
-                      {/* Mesma regra do cardápio: só é encomenda quando tem antecedência marcada */}
-                      <div><dt>Tipo</dt><dd>{p.antecedencia ? "Encomenda" : "Pronta entrega"}</dd></div>
+                      {/* (04/11 · 6.34) o preço junto, à esquerda: o novo em destaque e o cheio riscado ao lado (antes um de cada lado do cartão).
+                          O tipo (Encomenda / Pronta entrega) virou selo na foto */}
+                      <div className="pl-ficha-preco">
+                        {rotulo !== "Preço" && <small>{rotulo}</small>}
+                        <b className={pl.de > 0 ? "promo" : ""}>R$&nbsp;{formatPreco(pl.final)}</b>
+                        {pl.de > 0 && <s>R$&nbsp;{formatPreco(cheio)}</s>}
+                      </div>
                       <div className="pl-ficha-on"><dt>Cardápio</dt><dd>
                         <button type="button" role="switch" aria-checked={p.disponivel !== false} aria-label={`Mostrar ${p.nome} no cardápio`}
                           className="pl-chave" onClick={e => { e.stopPropagation(); void alternarNoCardapio(p); }}><span /></button>
@@ -2003,27 +2003,6 @@ export default function Produtos() {
                     </dl>
                   );
                 })()}
-                <div className="prod-card-bottom">
-                {(() => {
-                  const { lucro, margem, temFicha } = calcularLucro(p);
-                  if (!temFicha) {
-                    return (
-                      /* (01/11 · 5.98) o mesmo "Montar ficha ›" da Lucratividade (antes um botão laranja tracejado) */
-                      <button type="button" className="pl-sem-ficha"
-                        onClick={e => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}>
-                        Montar ficha técnica<CaretRight size={14} weight="bold" aria-hidden="true" />
-                      </button>
-                    );
-                  }
-                  const tier = margem >= 50 ? "alto" : margem >= 25 ? "medio" : "baixo";
-                  return (
-                    <div className={`prod-card-lucro prod-card-lucro--${tier}`}>
-                      <span className="prod-card-lucro-label">Lucro</span>
-                      <strong>R$ {formatPreco(lucro)} <span className="prod-card-lucro-pct">({margem.toFixed(0)}%)</span></strong>
-                    </div>
-                  );
-                })()}
-                </div>
               </div>
             </div>
             );
