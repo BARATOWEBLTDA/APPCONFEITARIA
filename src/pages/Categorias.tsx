@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_CATEGORIAS, TOUR_CATEGORIAS } from "@/lib/comoTelas";
-import { Botao, Campo, MenuMais, Janela, TelaVazia, Titulo, avisar, confirmar, informar } from "@/components/base";
+import { Botao, CaixasEscolha, Campo, MenuMais, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import "./categorias.css";
 
 /**
@@ -54,6 +54,12 @@ export default function Categorias() {
 
   // (11/10) a lista não carregou: mostra o erro com "Tentar de novo" em vez de "Nenhuma categoria ainda"
   const [erroCarga, setErroCarga] = useState("");
+  // (6.38) excluir categoria com produtos: mover pra outra categoria ou pra "Outros" (sem categoria)
+  const [excluindo, setExcluindo] = useState<{ cat: Categoria; qtd: number } | null>(null);
+  const [destino, setDestino] = useState<"outra" | "outros">("outros");
+  const [catDestino, setCatDestino] = useState("");
+  const [movendo, setMovendo] = useState(false);
+  const [tentouMover, setTentouMover] = useState(false);
   const carregar = async () => {
     setLoading(true); setErroCarga("");
     try {
@@ -169,6 +175,32 @@ export default function Categorias() {
     fecharModal();
   };
 
+  const moverEExcluir = async () => {
+    if (!excluindo) return;
+    setTentouMover(true);
+    if (destino === "outra" && !catDestino) return;
+    const { cat } = excluindo;
+    const novo = destino === "outra" ? catDestino : null;
+    setMovendo(true);
+    const { error: eProd } = await supabase.from("produtos").update({ categoria: novo }).eq("user_id", userId).eq("categoria", cat.nome);
+    if (eProd) { setMovendo(false); avisar(explicarErro(eProd, "Não deu para mover os produtos. Tente de novo."), { tipo: "erro" }); return; }
+    // adicionais que apareciam nessa categoria passam pra nova (ou deixam de citar a que saiu)
+    const { data: comps } = await supabase.from("biblioteca_extras").select("id, categorias_cardapio").eq("user_id", userId);
+    for (const c of (comps as { id: string; categorias_cardapio: string[] | null }[] | null) || []) {
+      const l = c.categorias_cardapio || [];
+      if (!l.includes(cat.nome)) continue;
+      const nova = [...new Set(l.map(n => (n === cat.nome ? novo : n)).filter((n): n is string => !!n))];
+      await supabase.from("biblioteca_extras").update({ categorias_cardapio: nova }).eq("id", c.id);
+    }
+    const { error } = await supabase.from("categorias").delete().eq("id", cat.id!);
+    setMovendo(false);
+    if (error) { avisar("Os produtos foram movidos, mas a categoria não saiu. Tente excluir de novo.", { tipo: "erro" }); void loadProdutos(userId); return; }
+    setCategorias(c => c.filter(x => x.id !== cat.id));
+    setProdutos(p => p.map(x => (x.categoria === cat.nome ? { ...x, categoria: novo || "" } : x)));
+    setExcluindo(null);
+    avisar(`${cat.nome} excluída. ${excluindo.qtd === 1 ? "O produto foi" : "Os produtos foram"} para ${novo || "Outros"}.`, { tipo: "ok" });
+  };
+
   // Excluir: com produtos dentro não deixa (os produtos ficariam sem categoria e sumiriam do cardápio)
   const handleDelete = async (cat: Categoria) => {
     // 11/10: conta os produtos no banco na hora. A contagem da tela vinha de uma leitura que podia ter falhado
@@ -180,7 +212,8 @@ export default function Categorias() {
     }
     const qtd = count;
     if (qtd > 0) {
-      await informar({ titulo: `${cat.nome} tem ${qtd} ${qtd === 1 ? "produto" : "produtos"}`, texto: `Mova ${qtd === 1 ? "o produto" : "os produtos"} para outra categoria antes de excluir. Senão ${qtd === 1 ? "ele some" : "eles somem"} do cardápio.`, icone: "alerta" });
+      // (04/11 · 6.38) com produtos: a janela pergunta pra onde eles vão e faz tudo de uma vez
+      setExcluindo({ cat, qtd }); setDestino("outros"); setCatDestino(""); setTentouMover(false);
       return;
     }
     const ok = await confirmar({ titulo: `Excluir a categoria ${cat.nome}?`, texto: "Ela sai do cardápio. Não dá para desfazer.", rotulo: "Excluir", rotuloVoltar: "Cancelar", perigo: true });
@@ -321,6 +354,26 @@ export default function Categorias() {
           {form.id && <p className="ct-fo-nota">{qtdOriginal === 0 ? "Nenhum produto nesta categoria ainda." : `${qtdOriginal} ${qtdOriginal === 1 ? "produto" : "produtos"} nesta categoria.`} Para mudar a ordem, use os 3 pontinhos na lista.</p>}
         </div>
       </Janela>
+      {excluindo && (
+        <Janela aberta aoFechar={() => !movendo && setExcluindo(null)} tipo="conteudo" titulo={`Excluir ${excluindo.cat.nome}?`}
+          acoes={<><Botao variante="secundario" onClick={() => setExcluindo(null)} disabled={movendo}>Cancelar</Botao><Botao variante="perigo" carregando={movendo} onClick={() => void moverEExcluir()}>Mover e excluir</Botao></>}>
+          <div className="ct-ex">
+            <p className="ct-ex-t">Ela tem {excluindo.qtd} {excluindo.qtd === 1 ? "produto" : "produtos"}. Pra onde {excluindo.qtd === 1 ? "ele vai" : "eles vão"}?</p>
+            <CaixasEscolha rotulo="Pra onde vão os produtos" valor={destino} onMudar={v => { setDestino(v); setTentouMover(false); }} opcoes={[
+              ...(categorias.length > 1 ? [{ v: "outra" as const, t: "Mover para outra categoria", sub: "Escolha uma das que você já criou" }] : []),
+              { v: "outros" as const, t: "Mover para Outros", sub: "Ficam sem categoria. No cardápio, aparecem no fim da lista." },
+            ]} />
+            {destino === "outra" && (
+              <div className="ct-ex-cats">
+                <span className="ui-campo-r"><span>Categoria</span></span>
+                <CaixasEscolha rotulo="Categoria de destino" valor={catDestino} onMudar={setCatDestino}
+                  opcoes={categorias.filter(c => c.id !== excluindo.cat.id).map(c => { const n = contarProdutos(c.nome); return { v: c.nome, t: c.nome, sub: n ? `${n} ${n === 1 ? "produto" : "produtos"}` : "Nenhum produto ainda" }; })} />
+                {tentouMover && !catDestino && <p className="ui-campo-msg" role="alert"><WarningCircle size={14} weight="bold" aria-hidden="true" /><span>Escolha a categoria</span></p>}
+              </div>
+            )}
+          </div>
+        </Janela>
+      )}
     </>
   );
 }

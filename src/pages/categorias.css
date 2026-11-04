@@ -90,3 +90,9 @@
 .ct-row { padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3); transition: background .12s; }
 .ct-row-b { padding: var(--space-2) var(--space-1); border-radius: 0; }
 @media (hover: hover) { .ct-row-b:hover { background: none; } .ct-row:hover { background: var(--ui-linha); } }
+
+/* (6.38) excluir categoria com produtos */
+.ct-ex { display: flex; flex-direction: column; gap: var(--gap-stack); }
+.ct-ex-t { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
+.ct-ex-cats { display: flex; flex-direction: column; gap: var(--space-2); }
+.ct-ex-cats .ui-cx { max-height: min(40dvh, 320px); overflow-y: auto; }

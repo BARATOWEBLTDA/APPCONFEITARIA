@@ -146,7 +146,8 @@ export function montarSecoes(produtos: Produto[], categorias: string[], agrupar:
     if (l.length) secoes.push({ id: `sec-cat-${i}`, nome: c, tipo: 'lista', produtos: l })
   })
   const sem = resto.filter(p => !p.categoria || !categorias.includes(p.categoria))
-  if (sem.length) secoes.push({ id: 'sec-outros', nome: secoes.length ? 'Outros produtos' : 'Cardápio', tipo: 'lista', produtos: sem })
+  // (04/11 · 6.38) sem categoria: no fim da lista, sem título nem aba (só a linha separa) · loja sem nenhuma categoria: "Cardápio"
+  if (sem.length) secoes.push({ id: 'sec-outros', nome: secoes.length ? '' : 'Cardápio', tipo: 'lista', produtos: sem })
   return secoes
 }
 
@@ -154,7 +155,7 @@ export function SecaoCardapio({ secao, cor, pc = false }: { secao: Secao; cor: s
   return (
     <section id={secao.id} className={`ic-sec${pc ? ' ic-sec--pc' : ''}`}>
       {/* (24/10) o título diz quantos produtos tem a categoria; uma linha separa uma categoria da outra (CSS) */}
-      <h2 className="ic-h2">{secao.nome}{secao.tipo === 'destaque' && <Star size={20} weight="fill" className="ic-h2-estrela" aria-hidden="true" />}{secao.tipo === 'lista' && <small>{secao.produtos.length === 1 ? '1 produto' : `${secao.produtos.length} produtos`}</small>}</h2>
+      {secao.nome && <h2 className="ic-h2">{secao.nome}{secao.tipo === 'destaque' && <Star size={20} weight="fill" className="ic-h2-estrela" aria-hidden="true" />}{secao.tipo === 'lista' && <small>{secao.produtos.length === 1 ? '1 produto' : `${secao.produtos.length} produtos`}</small>}</h2>}
       {/* (27/10) celular: Destaques numa fileira que desliza · (6.33) Promoções em cartões quadrados, 2 por linha; computador: grade */}
       {secao.tipo === 'destaque'
         ? <div className="ic-grade ic-fila ic-fila--dq">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc={pc} grande />)}</div>

@@ -1843,7 +1843,7 @@ export default function Produtos() {
             <WarningCircle size={20} weight="bold" aria-hidden="true" />
             {filtroOrfaos
               ? <p>Mostrando só os <b>{orfaos.length} sem categoria.</b> Abra cada um e escolha uma categoria.</p>
-              : <p><b>{orfaos.length} produto{orfaos.length !== 1 ? "s" : ""} sem categoria.</b> No cardápio {orfaos.length !== 1 ? "eles" : "ele"} só aparece{orfaos.length !== 1 ? "m" : ""} em "Todos".</p>}
+              : <p><b>{orfaos.length} produto{orfaos.length !== 1 ? "s" : ""} sem categoria.</b> No cardápio {orfaos.length !== 1 ? "eles aparecem" : "ele aparece"} no fim da lista, em Outros.</p>}
             <Botao variante="link" onClick={() => setFiltroOrfaos(v => !v)}>{filtroOrfaos ? "Ver todos" : "Arrumar"}</Botao>
           </div>
         );

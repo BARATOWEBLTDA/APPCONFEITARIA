@@ -102,14 +102,14 @@ export function ProductList({ produtos, corBotao = '#E85A8C', searchTerm, onSear
               <List size={22} weight="bold" />
             </button>
             <div ref={abasRef} className="ic-abas-lista" role="tablist" aria-label="Seções do cardápio">
-              {secoes.map(s => (
+              {secoes.filter(s => s.nome).map(s => (
                 <button key={s.id} type="button" role="tab" data-sec={s.id} aria-selected={ativa === s.id}
                   className={`ic-aba${ativa === s.id ? ' on' : ''}`} onClick={() => irPara(s.id)}>{s.nome}</button>
               ))}
             </div>
             {menuAberto && (
               <div className="cl-cat-menu" role="menu">
-                {secoes.map(s => (
+                {secoes.filter(s => s.nome).map(s => (
                   <button key={s.id} type="button" role="menuitemradio" aria-checked={ativa === s.id}
                     style={ativa === s.id ? { color: corBotao, background: `${corBotao}12` } : undefined} onClick={() => irPara(s.id)}>
                     <span>{ativa === s.id && <Check size={16} weight="bold" aria-hidden="true" />}{s.nome}</span>
