@@ -243,3 +243,7 @@
 .sc-combinar b { font-size: 14.5px; font-weight: 500; }
 .sc-combinar small { font-size: 12.5px; color: var(--ui-texto-2); }
 .sc-combinar-chk { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 2px solid #D6CBD0; border-radius: 6px; box-sizing: border-box; background: #fff; }
+
+/* (6.82) "Pedido depois das 18:00" colado na data e no horário, com folga antes do Pagamento */
+.sc-quando-dh.com-aviso { padding-bottom: 8px; }
+.sc-quando-dh.com-aviso + .sc-aviso { margin: 0 16px 16px; }

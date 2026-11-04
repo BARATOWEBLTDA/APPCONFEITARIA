@@ -29,7 +29,8 @@ type Props = {
   /** "entrega" ou "retirada" (pro "Falta R$ X na retirada") */
   quando: string
   aoPagar: (info: { tipo: 'sinal' | 'total'; valor: number }) => void
-  aoDepois: () => void
+  /** (6.82) sem ele, a página não mostra o "Pagar depois" (no checkout a cliente já escolheu entre Pix e WhatsApp) */
+  aoDepois?: () => void
   /** (27/10) aberto de novo pelo acompanhamento: troca entre sinal e tudo (loja que deixa escolher) */
   aoTrocarTipo?: (tipo: 'sinal' | 'total') => void
   /** texto do botão de baixo (padrão: "Pagar depois, pelo WhatsApp") */
@@ -133,7 +134,7 @@ export function PixPagamento({ pix, pedidoId, numero, total, tipo, loja, cor, co
         <button type="button" className="sc-bt-pri cheio px-pago" style={{ background: cor }} disabled={enviando} onClick={jaPaguei}>
           <span>{enviando ? 'Avisando a loja…' : 'Já paguei'}</span>
         </button>
-        <button type="button" className="px-depois" onClick={aoDepois}>{textoDepois || 'Pagar depois, pelo WhatsApp'}</button>
+        {aoDepois && <button type="button" className="px-depois" onClick={aoDepois}>{textoDepois || 'Pagar depois, pelo WhatsApp'}</button>}
       </footer>
     </div>
   )

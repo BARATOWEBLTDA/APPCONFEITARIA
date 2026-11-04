@@ -264,6 +264,8 @@ function CartContent({
   // (28/10) a loja aceita pagar na retirada/entrega: a cliente escolhe "Pagar agora" (Pix pelo cardápio) ou "Na retirada"
   const comPagarDepois = !!config.pix?.retirada
   const [pagaDepois, setPagaDepois] = useState(false)
+  // (6.82) Pix: pagar agora pelo cardápio ou combinar pelo WhatsApp (a loja registra o pagamento depois)
+  const [pixZap, setPixZap] = useState(false)
   const pixTipo: 'sinal' | 'total' = config.pix?.modo === 'total' ? 'total' : config.pix?.modo === 'sinal' ? 'sinal' : pixEscolha
   const [trocoParaStr, setTrocoParaStr] = useState('')
   const [cep, setCep] = useState('')
@@ -645,6 +647,7 @@ function CartContent({
 
       const pgtoLabel = config.pix && pixOnline
         ? `Pix pelo cardápio (${pixTipo === 'sinal' ? `sinal de ${formatCurrency(valorDoSinal(totalCriado, config.pix.pct))}` : 'tudo'})`
+        : pixEscolhivel && pixZap ? 'Pix (combinar pelo WhatsApp)'
         : `${LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento}${comPagarDepois ? ` (paga na ${formaEntrega === 'retirada' ? 'retirada' : 'entrega'})` : ''}`
       m += `*Pagamento:* ${pgtoLabel}`
       if (formaPagamento === 'dinheiro' && trocoParaStr) m += ` (troco para R$ ${trocoParaStr})`
@@ -738,7 +741,7 @@ function CartContent({
       // (4.22) O banco cria o pedido e os itens de uma vez (função cardapio_criar_pedido): confere a loja e os produtos,
       // refaz a soma, o cupom e o total, e não duplica numa nova tentativa. Sem a função no banco, grava como antes.
       const viaBanco = await supabase.rpc('cardapio_criar_pedido', {
-        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido, forma_entrega: formaEntrega, entrega_a_combinar: aCombinarFora, bairro_taxa: bairroSelecionado || null, cliente_lat: taxaArea.lat ?? null, cliente_lng: taxaArea.lng ?? null, pagar_na_retirada: comPagarDepois && pagaDepois }, p_itens: itensDoPedido,
+        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido, forma_entrega: formaEntrega, entrega_a_combinar: aCombinarFora, bairro_taxa: bairroSelecionado || null, cliente_lat: taxaArea.lat ?? null, cliente_lng: taxaArea.lng ?? null, pagar_na_retirada: comPagarDepois && pagaDepois, pix_combinar: pixEscolhivel && pixZap }, p_itens: itensDoPedido,
       })
       const semFuncao = !!viaBanco.error && (viaBanco.error.code === 'PGRST202' || viaBanco.error.code === '42883' || /could not find the function/i.test(String(viaBanco.error.message || '')))
       if (viaBanco.error && !semFuncao) return falhou(viaBanco.error)
@@ -834,7 +837,8 @@ function CartContent({
 
   const accent = corBotao || '#E85A8C'
   // (20/10) a loja recebe Pix pelo cardápio e o cliente escolheu Pix: o botão leva pro pagamento
-  const pixOnline = !!config.pix && formaPagamento === 'pix' && !(comPagarDepois && pagaDepois)
+  const pixEscolhivel = !!config.pix && formaPagamento === 'pix' && !(comPagarDepois && pagaDepois)
+  const pixOnline = pixEscolhivel && !pixZap
   const pixSinal = config.pix ? valorDoSinal(totalFinal, config.pix.pct) : 0
   const pixResto = r2(totalFinal - pixSinal)
   const pagarAgora = pixOnline && pixTipo === 'sinal' ? pixSinal : totalFinal
@@ -867,6 +871,7 @@ function CartContent({
     ? (modoEnt === 'combinar' ? 'A combinar' : modoEnt === 'raio' ? 'Depende da distância' : modoEnt === 'cidade' ? 'Depende da cidade' : config.entrega_por_bairro.length > 0 ? 'Depende do bairro' : config.valor_entrega_propria > 0 ? formatCurrency(config.valor_entrega_propria) : 'Grátis')
     : 'A combinar'
   const entregaGratis = entregaTexto === 'Grátis'
+  const entregaResumo = entregaTexto.startsWith('Depende') ? 'Pelo endereço' : entregaTexto === 'A combinar' || entregaGratis ? entregaTexto : `+ ${entregaTexto}`
   const rotuloTotal = !opsEntrega.ent || entregaGratis ? 'Total' : 'Total sem a entrega'
   const subtotalCupom = somarReais([totalPrice, -desconto])
   const freteTexto = formaEntrega !== 'entrega_propria' || modoEnt === 'combinar' || aCombinarFora ? 'A combinar'
@@ -904,7 +909,7 @@ function CartContent({
     <PixPagamento pix={config.pix} pedidoId={pixPara.pedidoId} numero={pedidoConfirmado.numero} total={pixPara.total}
       tipo={pixPara.tipo} corTopo={corTopo} logoUrl={logoUrl} verificada={verificada}
       loja={pedidoConfirmado.storeName} cor={accent} quando={pixPara.retirada ? 'retirada' : 'entrega'}
-      aoPagar={info => setPixFeito(info)} aoDepois={() => setPixFeito('depois')} />
+      aoPagar={info => setPixFeito(info)} />
   )
 
   // A mensagem do WhatsApp leva o que aconteceu com o Pix
@@ -943,7 +948,7 @@ function CartContent({
             {/* (21/10) o que acontece agora, em passos curtos (cada um numa linha) */}
             <ol className="scf-passos">
               <li className="ok"><i><Check size={12} weight="bold" /></i><span>{pixPago ? <>Pix de <b>{formatCurrency(pixPago.valor)}</b> enviado</> : 'Pedido enviado para a loja'}</span></li>
-              <li><i>2</i><span>{pixPago ? 'A loja confere o Pix e confirma' : pixFeito === 'depois' ? 'Combine o Pix com a loja no WhatsApp' : 'A loja confirma pelo WhatsApp'}</span></li>
+              <li><i>2</i><span>{pixPago ? 'A loja confere o Pix e confirma' : pixFeito === 'depois' || (pixZap && formaPagamento === 'pix') ? 'Combine o Pix com a loja no WhatsApp' : 'A loja confirma pelo WhatsApp'}</span></li>
               <li><i>3</i><span>Você acompanha cada etapa por aqui</span></li>
             </ol>
           </section>
@@ -1068,9 +1073,9 @@ function CartContent({
               {economia > 0 && <span className="ok">Promoção<em>− {formatCurrency(economia)}</em></span>}
               {desconto > 0 && <span className="ok">Cupom {cupomAplicado?.codigo}<em>− {formatCurrency(desconto)}</em></span>}
               {/* (27/10) a entrega só entra no total no próximo passo: a linha fica embaixo do total, como aviso (antes somava na vista e o total era outro) */}
-              {opsEntrega.ent && entregaGratis && <span>Entrega<em className="ok">Grátis</em></span>}
+              {/* (6.82) a entrega numa linha só: o valor, "Grátis", "A combinar" ou "Pelo endereço" (calculada no próximo passo) */}
+              {opsEntrega.ent && <span>Entrega<em className={entregaGratis ? 'ok' : ''}>{entregaResumo}</em></span>}
               <span className="t">{rotuloTotal}<em>{formatCurrency(subtotalCupom)}</em></span>
-              {opsEntrega.ent && !entregaGratis && <small className="sc-val-nota">Entrega: {entregaTexto === 'Depende do bairro' || entregaTexto === 'A combinar' ? entregaTexto.toLowerCase() : `+ ${entregaTexto}`}, se for receber em casa</small>}
             </div>
           </>
         )}
@@ -1107,7 +1112,7 @@ function CartContent({
             {opsEntrega.ent && (
               <button type="button" aria-pressed={ehEntrega} style={ehEntrega ? { borderColor: accent } : undefined}
                 onClick={() => { setFormaEntrega(opsEntrega.ent); setFeErro('') }}>
-                <Truck size={22} weight="bold" /><b>Entrega</b><small>{opsEntrega.ent === 'entrega_propria' ? entregaTexto : LABEL_ENTREGA[opsEntrega.ent]?.label || 'A combinar'}</small>
+                <Truck size={22} weight="bold" /><b>Entrega</b>
                 <i className="sc-r" aria-hidden="true" style={ehEntrega ? { borderColor: accent } : undefined} />
               </button>
             )}
@@ -1219,7 +1224,7 @@ function CartContent({
           {/* (20/10) título curto e o prazo numa linha só (antes quebrava em duas) */}
           <Cab t={tipo === 'retirada' ? 'Quando busca?' : 'Quando chega?'} sub={regras.horas > 0 ? `${antTexto} de antecedência` : `Escolha o dia e o horário da ${tipo}`} obr ok={okQuando}
             falta={feErro === 'agenda' ? 'Escolha a data e o horário para continuar' : undefined} />
-          <div className="sc-quando">
+          <div className={`sc-quando sc-quando-dh${regras.cortado && primeiraDisp ? ' com-aviso' : ''}`}>
             <button type="button" className={`sc-campo${feErro === 'agenda' && !dataEntrega ? ' err' : ''}`} onClick={() => { acertarRelogio(); setCalAberto(true) }}>
               <CalendarBlank size={20} weight="bold" /><span><small>Data</small><b className={dataEntrega ? '' : 'ph'}>{dataEntrega ? dataCurta(dataEntrega) : 'Escolher'}</b></span>
             </button>
@@ -1264,12 +1269,12 @@ function CartContent({
 
         {/* Pagamento */}
         <section ref={refPagamento}>
-          <Cab t="Pagamento" sub={pixOnline ? 'Pix: você paga no próximo passo' : `Você paga na ${tipo}`} obr ok={!!formaPagamento} falta={feErro === 'pagamento' ? 'Escolha como vai pagar' : undefined} />
+          <Cab t="Pagamento" sub={pixOnline ? 'Pix: você paga no próximo passo' : pixEscolhivel && pixZap ? 'Pix: combine com a loja no WhatsApp' : `Você paga na ${tipo}`} obr ok={!!formaPagamento} falta={feErro === 'pagamento' ? 'Escolha como vai pagar' : undefined} />
           {comPagarDepois && (
             <div className="sc-pixq-ops sc-quando" role="radiogroup" aria-label="Quando você paga">
               <button type="button" role="radio" aria-checked={!pagaDepois} style={!pagaDepois ? { borderColor: accent } : undefined}
                 onClick={() => { setPagaDepois(false); setFormaPagamento('pix'); setFeErro('') }}>
-                <small>Pix pelo cardápio</small><b>Pagar agora</b>
+                <small>Pelo Pix</small><b>Antes da {tipo}</b>
               </button>
               <button type="button" role="radio" aria-checked={pagaDepois} style={pagaDepois ? { borderColor: accent } : undefined}
                 onClick={() => { if (!pagaDepois) { setPagaDepois(true); setFormaPagamento(metodosPag.length === 1 ? metodosPag[0] : '') } }}>
@@ -1289,9 +1294,21 @@ function CartContent({
               )
             })}
           </div>}
-          {pixOnline && config.pix && (
+          {pixEscolhivel && config.pix && (
             <div className="sc-pixq">
-              {config.pix.modo === 'escolha' ? (<>
+              <span className="sc-pixq-tit" id="sc-pixmodo">Como prefere pagar o Pix?</span>
+              <div className="sc-pixmodo" role="radiogroup" aria-labelledby="sc-pixmodo">
+                {([[false, 'Pagar agora no Pix', 'Pelo cardápio, com QR Code ou copia e cola'], [true, 'Combinar pelo WhatsApp', 'A loja te passa o Pix na conversa']] as const).map(([zap, t, d]) => {
+                  const on = pixZap === zap
+                  return (
+                    <button key={t} type="button" role="radio" aria-checked={on} style={on ? { borderColor: accent } : undefined} onClick={() => setPixZap(zap)}>
+                      <span className="sc-ctl" style={on ? { borderColor: accent } : undefined}>{on && <i style={{ background: accent }} />}</span>
+                      <span><b>{t}</b><small>{d}</small></span>
+                    </button>
+                  )
+                })}
+              </div>
+              {!pixZap && config.pix.modo === 'escolha' ? (<>
                 <span className="sc-pixq-tit" id="sc-pixq">Quanto você paga agora?</span>
                 <div className="sc-pixq-ops" role="radiogroup" aria-labelledby="sc-pixq">
                   <button type="button" role="radio" aria-checked={pixTipo === 'sinal'} style={pixTipo === 'sinal' ? { borderColor: accent } : undefined} onClick={() => setPixEscolha('sinal')}>
@@ -1302,7 +1319,7 @@ function CartContent({
                   </button>
                 </div>
               </>) : null}
-              <p className="sc-pixq-info">{pixTipo === 'sinal' ? <>Sinal agora no Pix, <b>{formatCurrency(pixResto)}</b> na {tipo}</> : <>Você paga <b>tudo agora</b> no Pix</>}</p>
+              {!pixZap && <p className="sc-pixq-info">{pixTipo === 'sinal' ? <>Sinal agora no Pix, <b>{formatCurrency(pixResto)}</b> na {tipo}</> : <>Você paga <b>tudo agora</b> no Pix</>}</p>}
             </div>
           )}
           {formaPagamento === 'dinheiro' && config.exibir_campo_troco && (
