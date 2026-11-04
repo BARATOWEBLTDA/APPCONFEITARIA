@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { abrirConvitePro } from "@/components/billing/RecursoPro";
 import { COMO_AGENDA, TOUR_AGENDA } from "@/lib/comoTelas";
 import { montarMensagem, dadosDoPedido } from "@/lib/mensagens";
 import { useNavigate, useNavigationType } from "react-router-dom";
@@ -476,7 +477,7 @@ export default function Agenda() {
   // ── Agenda do dia em PDF (modelo padrão · recurso PRO) ──
   // (03/11) folha de trabalho do dia no padrão novo de PDF: lê os pedidos completos (com o recado de cada item)
   const imprimirAgendaDoDia = () => {
-    if (!isPro) { avisar("Imprimir a agenda do dia é do plano PRO.", { tipo: "info", acao: { rotulo: "Testar grátis", aoTocar: () => navigate("/assinar") } }); return; }
+    if (!isPro) { abrirConvitePro("agenda"); return; }
     const ids = (pedidosDoDia as PedidoAgenda[]).filter(p => p.status !== "cancelado").map(p => p.id);
     void gerarAgendaPDF(diaSel, ids);
   };

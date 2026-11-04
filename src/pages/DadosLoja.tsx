@@ -209,7 +209,10 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   }); // (6.10) a cada desenho: na janela "Sobre a loja" o campo aparece depois e ficava com a altura de 3 linhas, cortando o texto
 
   // (17/10) veio do antigo "Entrega e pagamento": desce direto pra essa parte
-  const irEntrega = (useLocation().state as EstadoNavegacao)?.secao === "entrega";
+  const estadoNav = useLocation().state as (EstadoNavegacao & { abrir?: string }) | null;
+  const irEntrega = estadoNav?.secao === "entrega";
+  // (04/11 · 6.20) veio do "Corrigir" do WhatsApp (Seus próximos passos): abre "Sua loja" com o campo do WhatsApp
+  const abrirLoja = estadoNav?.abrir === "loja";
   useEffect(() => {
     if (loading || !irEntrega) return;
     const t = window.setTimeout(() => document.getElementById("entrega-pagamento")?.scrollIntoView({ block: "start" }), 400);
@@ -369,16 +372,21 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   const [ep, setEp] = useState<EstadoEntregaPagamento | null>(null);
   useEffect(() => {
     if (!userId) return;
-    supabase.from("profiles").select("formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, pix_online, pix_chave, pix_modo, pix_sinal_pct").eq("id", userId).maybeSingle().then(({ data }) => {
+    supabase.from("profiles").select("formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, pix_online, pix_chave, pix_modo, pix_sinal_pct, entrega_modo").eq("id", userId).maybeSingle().then(({ data }) => {
       if (!data) return;
       const d: PagamentoSalvo = data;
+      const modo = String((d as { entrega_modo?: string | null }).entrega_modo || "fixa");
+      const nBairros = Array.isArray(d.entrega_por_bairro) ? d.entrega_por_bairro.length : 0;
       setEp(e => e || { formasPagamento: d.formas_pagamento || [], formasEntrega: d.formas_entrega || [], taxa: Number(d.valor_entrega_propria) || 0,
-        porBairro: Array.isArray(d.entrega_por_bairro) ? d.entrega_por_bairro.length : 0, pixOnline: !!d.pix_online, pixPronto: !!d.pix_chave,
+        porBairro: nBairros, modo,
+        // (04/11 · 6.20) taxa vazia não é grátis: definida = tem valor (ou Grátis = 0), bairros, a combinar ou raio/cidade
+        taxaOk: !(d.formas_entrega || []).includes("entrega_propria") || modo !== "fixa" || nBairros > 0 || d.valor_entrega_propria != null, pixOnline: !!d.pix_online, pixPronto: !!d.pix_chave,
         pixTipo: "", pixModo: d.pix_modo || "escolha", pixPct: String(d.pix_sinal_pct || 50) });
     });
   }, [userId]);
   // veio do "Definir taxa de entrega" (ou do antigo Entrega e pagamento): abre direto a Entrega
   useEffect(() => { if (!loading && irEntrega) setParte("ent"); }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!loading && abrirLoja && cel) setParte("loja"); }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
   // (22/10) computador: salva sozinho quando ela para de digitar (sem botão Salvar)
   const salvoPc = useRef("");
   const fotoAgora = fotoDados();
@@ -599,7 +607,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   const pagTxt = ep ? listaBR((ep.formasPagamento || []).map(k => NOME_PAG[k] || k)) : "";
   const temPix = !!ep?.formasPagamento?.includes("pix");
   const temEntregaPropria = !!ep?.formasEntrega?.includes("entrega_propria");
-  const faltaTaxa = temEntregaPropria && (ep?.taxa || 0) <= 0 && !(ep?.porBairro);
+  const faltaTaxa = temEntregaPropria && !!ep && !ep.taxaOk;
   const redesTxt = [instaOn && instagram.trim() ? "Instagram" : "", faceOn && facebook.trim() ? "Facebook" : ""].filter(Boolean);
   type Linha = { k: Parte; Ic: typeof Storefront; t: string; sub: string; st: "ok" | "falta" | "op" };
   const linhas: Linha[] = [
@@ -609,7 +617,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorarioCurto() : "Falta o horário de funcionamento", st: itens[4].ok ? "ok" : "falta" },
     { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : pagTxt ? pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1) : "Falta escolher como o cliente paga", st: !ep || pagTxt ? "ok" : "falta" },
     ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : "Ligado · sinal ou total") : "Desligado · paga pelo WhatsApp", st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
-    { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta a taxa de entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.porBairro ? "entrega por bairro" : `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa ? "falta" : "ok" },
+    { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta a taxa de entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.modo === "combinar" ? "entrega a combinar" : ep.modo === "raio" ? "entrega por raio" : ep.modo === "cidade" ? "entrega por cidade" : ep.porBairro ? "entrega por bairro" : ep.taxa > 0 ? `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "entrega grátis") : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa ? "falta" : "ok" },
   ];
   const TITULO: Record<Parte, string> = { loja: embutido ? "Sobre a loja" : "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
   const gaveta = (

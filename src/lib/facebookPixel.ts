@@ -27,8 +27,63 @@ export function iniciarPixel(id: unknown) {
   iniciado = pid;
 }
 
-/** Evento padrão do pixel; não faz nada se a loja não tem pixel. */
+// ── (04/11 · 6.20) Google (tag G-… do Analytics ou AW-… do Ads) e TikTok, além do Meta ──
+type Gtag = (...args: unknown[]) => void;
+type Ttq = { page: () => void; track: (e: string, d?: Record<string, unknown>) => void; load: (id: string) => void } & Record<string, unknown>;
+declare global { interface Window { dataLayer?: unknown[]; gtag?: Gtag; ttq?: Ttq; TiktokAnalyticsObject?: string } }
+
+export const googleValido = (id: unknown): id is string => typeof id === "string" && /^(G|AW)-[A-Z0-9]{4,20}$/i.test(id.trim());
+export const tiktokValido = (id: unknown): id is string => typeof id === "string" && /^[A-Z0-9]{15,30}$/i.test(id.trim());
+
+let googleIniciado: string | null = null;
+export function iniciarGoogle(id: unknown) {
+  if (typeof window === "undefined" || !googleValido(id) || googleIniciado === id.trim()) return;
+  const gid = id.trim().toUpperCase();
+  if (!window.gtag) {
+    window.dataLayer = window.dataLayer || [];
+    // o gtag.js espera "arguments" (não um array): o jeito oficial
+    window.gtag = function () { // eslint-disable-next-line prefer-rest-params
+      window.dataLayer!.push(arguments); } as Gtag;
+    window.gtag("js", new Date());
+    const s = document.createElement("script");
+    s.async = true; s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gid)}`;
+    document.head.appendChild(s);
+  }
+  window.gtag("config", gid);
+  googleIniciado = gid;
+}
+
+let tiktokIniciado: string | null = null;
+export function iniciarTikTok(id: unknown) {
+  if (typeof window === "undefined" || !tiktokValido(id) || tiktokIniciado === id.trim()) return;
+  const tid = id.trim().toUpperCase();
+  if (!window.ttq) {
+    // snippet oficial do TikTok (resumido): fila de chamadas até o script chegar
+    const fila: unknown[][] = [];
+    const ttq = { _fila: fila } as unknown as Ttq;
+    for (const m of ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie"])
+      (ttq as Record<string, unknown>)[m] = (...a: unknown[]) => { fila.push([m, ...a]); };
+    window.TiktokAnalyticsObject = "ttq";
+    window.ttq = ttq;
+    const s = document.createElement("script");
+    s.async = true; s.src = `https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=${encodeURIComponent(tid)}&lib=ttq`;
+    document.head.appendChild(s);
+  }
+  try { window.ttq!.page(); } catch { /* bloqueador */ }
+  tiktokIniciado = tid;
+}
+
+/** Evento padrão (manda pro Meta, Google e TikTok que estiverem ligados); não faz nada sem pixel. */
 export function pixelEvento(nome: "ViewContent" | "AddToCart" | "InitiateCheckout" | "Purchase" | "Lead", dados?: Record<string, unknown>) {
-  if (!iniciado || typeof window === "undefined" || !window.fbq) return;
-  try { window.fbq("track", nome, { currency: "BRL", ...(dados || {}) }); } catch { /* bloqueador de anúncio: segue sem */ }
+  if (typeof window === "undefined") return;
+  const d = { currency: "BRL", ...(dados || {}) };
+  if (iniciado && window.fbq) { try { window.fbq("track", nome, d); } catch { /* bloqueador de anúncio: segue sem */ } }
+  if (googleIniciado && window.gtag) {
+    const g: Record<string, string> = { ViewContent: "view_item", AddToCart: "add_to_cart", InitiateCheckout: "begin_checkout", Purchase: "purchase", Lead: "generate_lead" };
+    try { window.gtag("event", g[nome], d); } catch { /* bloqueador */ }
+  }
+  if (tiktokIniciado && window.ttq) {
+    const t: Record<string, string> = { ViewContent: "ViewContent", AddToCart: "AddToCart", InitiateCheckout: "InitiateCheckout", Purchase: "CompletePayment", Lead: "SubmitForm" };
+    try { window.ttq.track(t[nome], d); } catch { /* bloqueador */ }
+  }
 }

@@ -14,14 +14,17 @@ import AcenderDaAjuda from "@/components/como/AcenderDaAjuda";
 import { Suspense, useState, useEffect, useRef, type ReactNode } from "react";
 import "@/styles/mobileClaro.css";
 import "@/styles/desktopPadrao.css";
-import { ClipboardText, ChartBar, Stack, Palette, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, Megaphone, HandCoins, CaretDoubleLeft, CaretDoubleRight,
+import { ClipboardText, ChartBar, Stack, Palette, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, HandCoins, CaretDoubleLeft, CaretDoubleRight,
   House, CalendarDots, ShoppingBag, Users,
   Package, CurrencyDollar, Gear, CaretDown, Cake,
   SquaresFour, Plus,
   Receipt, Sparkle, Crown, Bell, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
+import { Ticket, Target } from "@phosphor-icons/react";
 import { ligarAcessoOnline } from "@/lib/acessoOnline";
+import { ConviteProGlobal } from "@/components/billing/RecursoPro";
+import DestaqueDaNavegacao from "@/components/guia/DestaqueDaNavegacao";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import AlertaPedidoNovo from "@/components/AlertaPedidoNovo";
 import { reativarPushSeSaiu } from "@/hooks/usePushSubscription";
@@ -262,7 +265,9 @@ export default function Layout() {
             <SubitemMenu to="/custos" icone={Tag}>Custos</SubitemMenu>
             <SubitemMenu to="/lucratividade" icone={ChartLineUp}>Lucratividade</SubitemMenu>
           </GrupoMenu>
-          <ItemMenu to="/marketing" icone={Megaphone}>Marketing</ItemMenu>
+          {/* (04/11 · 6.20) Marketing escondido: Cupons e Pixel separados */}
+          <ItemMenu to="/cupons" icone={Ticket}>Cupons</ItemMenu>
+          <ItemMenu to="/pixel" icone={Target}>Pixel</ItemMenu>
           {/* (4.27) Doo IA no computador: abre o painel do lado direito */}
           <button type="button" className={`nav-item${dooOpen ? " active" : ""}`} data-tour="doo-pc" onClick={() => setDooOpen(true)} aria-haspopup="dialog" title="Doo IA">
             <span className="nav-icon"><Sparkle size={20} weight={dooOpen ? "fill" : "bold"} /></span>
@@ -294,6 +299,8 @@ export default function Layout() {
         {/* (07/10 · 2.99) O sininho e a janelinha de avisos saíram: o botão ficava escondido em todos os tamanhos de tela.
             As notificações continuam na tela "Notificações", pelo menu da foto. */}
         <Suspense fallback={null}><Outlet /></Suspense>
+        <ConviteProGlobal />
+        <DestaqueDaNavegacao />
         <AcenderDaAjuda />
       </main>
 

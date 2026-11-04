@@ -100,7 +100,7 @@ export default function MensagensWhatsApp() {
       <AppPageHeader title="Mensagens" subtitle="Os textos do WhatsApp que o app escreve por você" infoComo={COMO_MENSAGENS} infoTour={TOUR_MENSAGENS} onBack={() => navigate(voltarPara)} />
       <div className="mz">
         <p className="mz-intro"><Info size={20} weight="bold" aria-hidden="true" />O app abre o WhatsApp com a mensagem pronta.{isPro ? " Aqui você troca o texto do seu jeito." : " No PRO, você troca o texto do seu jeito."}</p>
-        {proAberto && <RecursoPro titulo="Mensagens do seu jeito" texto="Troque os textos prontos do WhatsApp pelos seus, com o seu jeito de falar com a cliente." onClose={() => setProAberto(false)} />}
+        {proAberto && <RecursoPro recurso="mensagens" onClose={() => setProAberto(false)} />}
         <section className="mz-lista">
           {MODELOS.map(m => {
             const personalizada = isPro && !!salvas[m.chave]?.trim();
@@ -110,8 +110,11 @@ export default function MensagensWhatsApp() {
                 <span className="mz-tx">
                   <b>{m.curto}</b>
                   <small>{m.resumo}</small>
-                  {/* (23/10) texto com rótulo no lugar da etiqueta em pílula */}
-                  <em className={personalizada ? "on" : ""}>{personalizada ? "Texto: personalizado" : "Texto: padrão do app"}</em>
+                  {/* (04/11 · 6.20) como a mensagem chega: o balão do WhatsApp com um exemplo preenchido */}
+                  <span className="mz-zap" aria-label="Como fica no WhatsApp">
+                    <span className="mz-zap-tx">{textoZap(montarMensagem(m.chave, exemplo(m), personalizada ? salvas[m.chave] : m.padrao))}</span>
+                    <i aria-hidden="true">{personalizada ? "Seu texto" : "Texto do app"} · 10:42 ✓✓</i>
+                  </span>
                 </span>
                 <CaretRight size={18} weight="bold" className="mz-seta" aria-hidden="true" />
               </button>

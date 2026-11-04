@@ -82,7 +82,7 @@ export default function Custos() {
   useEffect(() => { carregar(); }, [carregar]);
 
   // (16/10) veio do "Ver" do Seus próximos passos: abre direto a janela que resolve
-  useAbrirPedido(!carregando && !!uid, p => { if (p === "maquininha") setEditMaq(true); else if (p === "fixo") setEditFixo("novo"); });
+  useAbrirPedido(!carregando && !!uid, p => { if (p === "maquininha") setEditMaq(true); else if (p === "fixo") setEditFixo("novo"); else if (p === "mao") setEditMo(true); else if (p === "invisiveis") setEditCv(true); });
   const totalFixos = useMemo(() => fixos.filter(f => f.ativo).reduce((s, f) => s + f.valor, 0), [fixos]);
   const horasMes = mo.horas_dia * mo.dias_semana_array.length * 4.345;
   const custoHora = horasMes > 0 ? (totalFixos + mo.salario_mensal) / horasMes : 0;

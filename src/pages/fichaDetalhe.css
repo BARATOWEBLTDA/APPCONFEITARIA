@@ -121,3 +121,11 @@
 /* (13/10) quanto sobra a mais quando o cliente paga no Pix ou em dinheiro (sem taxa da maquininha) */
 .fd-conta .fd-pix { justify-content: flex-start; padding-top: 6px; }
 .fd-conta > .fd-pix span:last-child { font-size: 13px; font-weight: 600; color: var(--ui-verde); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* (04/11 · 6.20) aviso: falta a mão de obra ou os custos invisíveis (saíram da ficha, ficam em Custos) */
+.fd-aviso-custos { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; padding: 12px 14px; border: 1px solid #F5D9A8; border-radius: var(--ui-raio-cartao); background: #FFF8EC; color: #9A5B07; }
+.fd-aviso-custos > svg { flex: none; }
+.fd-aviso-custos > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.fd-aviso-custos b { font-size: 14px; font-weight: 600; color: #7A4706; }
+.fd-aviso-custos small { font-size: 13px; line-height: 1.4; color: #8A5A16; }
+@media (max-width: 599px) { .fd-aviso-custos { flex-wrap: wrap; } .fd-aviso-custos .ui-bt { width: 100%; } }

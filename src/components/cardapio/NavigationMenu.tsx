@@ -119,7 +119,7 @@ interface CheckoutConfig {
   valor_entrega_propria: number
   entrega_por_bairro: { bairro: string; valor: number }[]
   /** (28/10 · 4.49) jeito de cobrar a entrega: única, por bairro, por raio (km) ou por cidade */
-  entrega_modo?: 'fixa' | 'bairro' | 'raio' | 'cidade'
+  entrega_modo?: 'fixa' | 'bairro' | 'raio' | 'cidade' | 'combinar'
   entrega_por_raio?: { km: number; valor: number }[]
   entrega_por_cidade?: { cidade: string; valor: number }[]
   /** fora do último raio / outras cidades; null = não entrega */
@@ -401,13 +401,25 @@ function CartContent({
   }, [telefone])
   const usarEndereco = (e: EnderecoSalvo) => {
     setRua(e.rua || ''); setNumero(e.numero || ''); setComplemento(e.complemento || ''); setBairro(e.bairro || ''); setCidade(e.cidade || ''); setCep(e.cep || '')
-    setBairroSelecionado(config.entrega_por_bairro.some((b) => b.bairro === e.bairro) ? e.bairro : '')
+    setBairroSelecionado(acharBairro(e.bairro || '')); setBairroCep('')
     setEndNovo(false); setFeErro('')
   }
   useEffect(() => {
     if (formaEntrega === 'entrega_propria' && !rua && !endNovo && enderecosSalvos.length) usarEndereco(enderecosSalvos[0])
   }, [formaEntrega]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // (04/11 · 6.20) o bairro do CEP (pra conferir com o que a cliente escolheu)
+  const [bairroCep, setBairroCep] = useState('')
+  const semAc = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim()
+  const raizBairro = (x: string) => semAc(x).replace(/\b(jardim|jd|vila|vl|parque|pq|bairro|conjunto|residencial)\b/g, '').replace(/s\b/g, '').replace(/\s+/g, ' ').trim()
+  const acharBairro = (nomeB: string): string => {
+    if (!nomeB.trim() || !config.entrega_por_bairro.length) return ''
+    const exato = config.entrega_por_bairro.find(b => semAc(b.bairro) === semAc(nomeB))
+    if (exato) return exato.bairro
+    const r = raizBairro(nomeB)
+    const parecido = r ? config.entrega_por_bairro.find(b => raizBairro(b.bairro) === r) : undefined
+    return parecido ? parecido.bairro : ''
+  }
   const buscarCep = async (v: string) => {
     const c = v.replace(/\D/g,'')
     if (c.length !== 8) return
@@ -423,6 +435,11 @@ function CartContent({
         setRua(d.logradouro || '')
         setBairro(d.bairro || '')
         setCidade(d.localidade || '')
+        // (04/11 · 6.20) taxa por bairro: o CEP já marca o bairro da lista da loja (sem acento, maiúscula ou "s" do fim)
+        setBairroCep(String(d.bairro || '').trim())
+        const achado = acharBairro(String(d.bairro || ''))
+        if (achado) setBairroSelecionado(achado)
+        else if (config.entrega_por_bairro.length > 0 && d.bairro) setCepAviso(`A loja não tem taxa para o bairro ${d.bairro}. Escolha o bairro mais perto abaixo ou combine pelo WhatsApp.`)
       }
     } catch { setCepAviso(naoAchou) }
     setCepLoading(false)
@@ -457,6 +474,7 @@ function CartContent({
 
   const freteValor = useMemo(() => {
     if (formaEntrega === 'retirada' || formaEntrega === 'combinar') return 0
+    if (formaEntrega === 'entrega_propria' && modoEnt === 'combinar') return 0 // (04/11) a taxa é acertada no WhatsApp
     if (formaEntrega === 'entrega_propria' && modoEnt === 'raio') return taxaArea.estado === 'ok' ? taxaArea.valor : 0
     if (formaEntrega === 'entrega_propria' && modoEnt === 'cidade') return taxaCidade?.ok ? taxaCidade.valor : 0
     if (formaEntrega === 'entrega_propria') {
@@ -672,6 +690,12 @@ function CartContent({
       // (27/10) o banco acha ou cria a cliente pelo telefone ao gravar o pedido (devolve o id)
       let clienteId: string | null = null
 
+      // (04/11 · 6.20) o que a confeiteira precisa saber da entrega vai junto na observação do pedido
+      const notasEntrega = [
+        formaEntrega === 'entrega_propria' && modoEnt === 'combinar' ? 'Taxa de entrega: a combinar pelo WhatsApp.' : '',
+        formaEntrega === 'entrega_propria' && bairroSelecionado && bairroCep && acharBairro(bairroCep) !== bairroSelecionado ? `Bairro pelo CEP: ${bairroCep} (escolheu ${bairroSelecionado}).` : '',
+      ].filter(Boolean)
+      const obsComEntrega = [...notasEntrega, (observacoes || '').trim()].filter(Boolean).join('\n')
       const dadosPedido = {
         user_id: confeteiraUserId,
         cliente_nome: nome.trim(), cliente_telefone: telefone.trim(), cliente_whatsapp: telefone.trim(),
@@ -688,7 +712,7 @@ function CartContent({
         forma_pagamento: formaPagamento, status_pagamento: 'pendente',
         valor_produtos: totalPrice, cupom_codigo: cupomAplicado?.codigo || null,
         cupom_desconto: desconto || 0, desconto: desconto || 0,
-        valor_total: totalFinal, observacoes: observacoes || null,
+        valor_total: totalFinal, observacoes: obsComEntrega || null,
       }
 
       // O id é gerado aqui, então o pedido é gravado sem precisar ler a tabela de volta.
@@ -832,12 +856,12 @@ function CartContent({
   // Entrega na sacola (08/10): segue o que a loja configurou
   //   só retirada → nem aparece · fixa → o valor · grátis → "Grátis" · por bairro → "Depende do bairro" · motoboy/combinar → "A combinar"
   const entregaTexto = !opsEntrega.ent ? '' : opsEntrega.ent === 'entrega_propria'
-    ? (modoEnt === 'raio' ? 'Depende da distância' : modoEnt === 'cidade' ? 'Depende da cidade' : config.entrega_por_bairro.length > 0 ? 'Depende do bairro' : config.valor_entrega_propria > 0 ? formatCurrency(config.valor_entrega_propria) : 'Grátis')
+    ? (modoEnt === 'combinar' ? 'A combinar' : modoEnt === 'raio' ? 'Depende da distância' : modoEnt === 'cidade' ? 'Depende da cidade' : config.entrega_por_bairro.length > 0 ? 'Depende do bairro' : config.valor_entrega_propria > 0 ? formatCurrency(config.valor_entrega_propria) : 'Grátis')
     : 'A combinar'
   const entregaGratis = entregaTexto === 'Grátis'
   const rotuloTotal = !opsEntrega.ent || entregaGratis ? 'Total' : 'Total sem a entrega'
   const subtotalCupom = somarReais([totalPrice, -desconto])
-  const freteTexto = formaEntrega !== 'entrega_propria' ? 'A combinar'
+  const freteTexto = formaEntrega !== 'entrega_propria' || modoEnt === 'combinar' ? 'A combinar'
     : config.entrega_por_bairro.length > 0 && !bairroSelecionado ? 'Escolha o bairro'
     : modoEnt === 'raio' && taxaArea.estado !== 'ok' ? (taxaArea.estado === 'buscando' ? 'Calculando…' : taxaArea.estado === 'fora' ? 'Fora da área' : 'Falta o endereço')
     : modoEnt === 'cidade' && !areaOk ? (cidade.trim() ? 'Fora da área' : 'Escolha a cidade')

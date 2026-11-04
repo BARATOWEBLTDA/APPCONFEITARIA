@@ -245,3 +245,17 @@
 .dl-painel .ep-card:has(.ep-mapa-topo) .ep-modo { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 /* (6.10) chave com 11 números: dá pra trocar entre CPF e celular */
 .ep-pix-troca { align-self: flex-start; margin: -10px 0 0; padding: 4px 0; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+/* (04/11 · 6.20) bairro: no celular o nome ganha a linha inteira; embaixo o valor e a lixeira. Avisos do que falta. */
+.ep-bairro-bl { display: flex; flex-direction: column; gap: 6px; }
+.ep-bairro-bl + .ep-bairro-bl { margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--ui-linha); }
+@media (max-width: 599px) {
+  .ep-bairro { grid-template-columns: minmax(0, 1fr) 44px; grid-template-areas: "nome nome" "taxa x"; row-gap: 8px; }
+  .ep-bairro > .ui-sug { grid-area: nome; }
+  .ep-bairro > .ep-tx { grid-area: taxa; }
+  .ep-bairro > .ep-bairro-x { grid-area: x; }
+}
+.ep-falta { display: flex; align-items: flex-start; gap: 6px; margin: 2px 0 0; font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--ui-laranja); }
+.ep-falta svg { flex: none; margin-top: 1px; }
+.ep-falta--leve { color: var(--ui-texto-2); }
+.ep-fixa-prev--comb { margin-top: 4px; }

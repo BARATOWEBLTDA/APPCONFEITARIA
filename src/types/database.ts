@@ -44,11 +44,13 @@ export interface DesignSettings {
   hide_stars?: boolean
   category_icons?: { [key: string]: string }
   facebook_pixel_id?: string
+  google_tag_id?: string
+  tiktok_pixel_id?: string
 }
 
 export interface Configuracoes {
   /** (28/10 · 4.49) jeito de cobrar a entrega: única, por bairro, por raio (km) ou por cidade */
-  entrega_modo?: 'fixa' | 'bairro' | 'raio' | 'cidade'
+  entrega_modo?: 'fixa' | 'bairro' | 'raio' | 'cidade' | 'combinar'
   entrega_por_raio?: { km: number; valor: number }[]
   entrega_por_cidade?: { cidade: string; valor: number }[]
   /** fora do último raio / outras cidades; null = não entrega */

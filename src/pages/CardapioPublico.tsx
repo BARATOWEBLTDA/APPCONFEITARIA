@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { trocarFaviconPelaLoja, voltarFaviconDoApp } from '@/lib/faviconLoja'
-import { iniciarPixel } from '@/lib/facebookPixel'
+import { iniciarPixel, iniciarGoogle, iniciarTikTok } from '@/lib/facebookPixel'
 import { explicarErro } from '@/lib/erros'
 import { SeloVerificado } from '@/components/cardapio/SeloVerificado'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
@@ -302,6 +302,8 @@ function CardapioContent() {
       if (!design) { setError('Verifique o link e tente novamente.'); setLoading(false); return }
       // (19/10) Pixel do Facebook da loja (Marketing)
       iniciarPixel(design.facebook_pixel_id)
+      iniciarGoogle((design as { google_tag_id?: string }).google_tag_id)
+      iniciarTikTok((design as { tiktok_pixel_id?: string }).tiktok_pixel_id)
 
       // ── Redirect canônico ──
       // Rota antiga /cardapio/:uuid → redireciona pra nova /c/:codigo/:slug

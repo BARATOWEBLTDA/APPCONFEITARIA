@@ -23,7 +23,8 @@ export type TomJanela = 'rosa' | 'verde' | 'laranja' | 'vermelho'
 type PropsJanela = {
   aberta: boolean
   aoFechar: () => void
-  titulo: string
+  /** (04/11) pode ter destaque (ex.: "… é um recurso do <em>PRO</em>") */
+  titulo: ReactNode
   tipo?: 'aviso' | 'conteudo'
   /** aviso: a frase embaixo do título (a consequência) */
   texto?: ReactNode

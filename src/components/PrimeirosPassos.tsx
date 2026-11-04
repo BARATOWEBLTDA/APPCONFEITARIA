@@ -419,7 +419,7 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   if (largo) {
     const okPc = !!ep && ep.formasPagamento.length > 0;
     return (
-      <Janelinha foco titulo="Pagamento" onClose={onClose}
+      <Janelinha foco cheia titulo="Pagamento" onClose={onClose}
         acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!okPc} carregando={salvando} onClick={async () => {
           // (30/10 · 5.21) grava as formas escolhidas (as que vêm marcadas na primeira vez não são salvas sozinhas)
           setSalvando(true);
@@ -442,7 +442,7 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const ICONE_PAGA: Record<string, typeof PixLogo> = { pix: PixLogo, dinheiro: Money, credito: CreditCard, debito: CreditCard };
   const SUB_PAGA: Record<string, string> = { pix: "Na hora, sem taxa", dinheiro: "Na entrega ou na retirada", credito: "Na maquininha", debito: "Na maquininha" };
   return (
-    <Janelinha foco titulo="Pagamento" onClose={onClose}
+    <Janelinha foco cheia titulo="Pagamento" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!paga.length || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
       <PassoTopo k="pagamento" />
       <ListaChaves titulo="Como o cliente paga" id="pp-paga" itens={PAGA.map(([k, n]) => ({ chave: k, Ic: ICONE_PAGA[k], rotulo: n, sub: SUB_PAGA[k], on: paga.includes(k), aoTocar: () => trocarPaga(k) }))} />
@@ -455,17 +455,19 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
    (30/10 · 5.23) no celular e no computador é o mesmo editor de Minha loja (salva sozinho); o "Salvar" confere e fecha */
 function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const largo = useLargo();
-  const [ep, setEp] = useState<{ formasEntrega: string[] } | null>(null);
-  const ok = !!ep && ep.formasEntrega.length > 0;
+  const [ep, setEp] = useState<{ formasEntrega: string[]; taxaOk: boolean } | null>(null);
+  // (04/11 · 6.20) só segue com a taxa definida (valor, Grátis marcado, a combinar, bairros, raio ou cidade)
+  const ok = !!ep && ep.formasEntrega.length > 0 && ep.taxaOk;
   return (
-    <Janelinha foco titulo="Entrega" onClose={onClose}
+    <Janelinha foco cheia titulo="Entrega" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!ok} onClick={() => { marcarEntregaConferida(uid); onSalvo(); }}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
       <div className="ppf-pe ppf-pe--ent">
         <PassoTopo k="entrega" />
         <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
-          <EntregaPagamento embutido parte="entrega" so="entCol" onEstado={setEp} />
+          {/* (04/11 · 6.20) a mesma tela da Minha loja: o mapa em cima, como cobrar e as formas de entrega */}
+          <EntregaPagamento embutido parte="entrega" so="ent" onEstado={setEp} />
         </Suspense>
-        {ep && !ok && <p className="ppf-p-dica">Marque pelo menos uma forma de entrega.</p>}
+        {ep && !ok && <p className="ppf-p-dica">{!ep.formasEntrega.length ? "Marque pelo menos uma forma de entrega." : "Defina a taxa da entrega própria: o valor, Grátis ou Combinar pelo WhatsApp."}</p>}
       </div>
     </Janelinha>
   );
@@ -502,7 +504,7 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   );
   const dicaSinal = <p className="ppf-cx-av2"><Info size={16} weight="bold" aria-hidden="true" /><span><b>Já recebeu sinal de alguma encomenda?</b> Ao cadastrar o pedido, coloque a data em que recebeu. Assim o app não conta duas vezes.</span></p>;
   return (
-    <Janelinha foco titulo="Saldo do caixa" onClose={onClose}
+    <Janelinha foco cheia titulo="Saldo do caixa" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio carregando={salvando} onClick={() => salvar()}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
       {largo ? (
         <div className="ppf-d ppf-d--2col ppf-d--cx">
@@ -597,7 +599,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
     onSalvo();
   };
   return (
-    <Janelinha foco titulo="Sobre a sua confeitaria" onClose={onClose}
+    <Janelinha foco cheia titulo="Sobre a sua confeitaria" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim()} carregando={salvando} onClick={salvar}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
       <div className={`ppf-d${largo ? " ppf-d--2col" : ""}`}>
         {largo && (
@@ -791,7 +793,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
       <input id={`pp-${k}`} className="ppf-in" autoComplete="off" value={end[k]} placeholder={ph} onChange={e => setEnd(x => ({ ...x, [k]: e.target.value }))} {...extra} /></div>
   );
   return (
-    <Janelinha foco titulo="Endereço da loja" onClose={onClose}
+    <Janelinha foco cheia titulo="Endereço da loja" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
       <div className={largo ? "ppf-d ppf-d--2col ppf-d--end" : undefined}>
       {largo && (
@@ -868,7 +870,7 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   };
   // (15/10) o editor é o mesmo da tela Dados da loja (components/loja/EditoresLoja)
   return (
-    <Janelinha foco titulo="Horário de funcionamento" onClose={onClose}
+    <Janelinha foco cheia titulo="Horário de funcionamento" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
       <div className={largo ? "ppf-d ppf-d--2col ppf-d--hor" : undefined}>
         {largo && (

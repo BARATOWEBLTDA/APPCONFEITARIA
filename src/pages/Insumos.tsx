@@ -7,6 +7,8 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_INGREDIENTES, TOUR_INGREDIENTES } from "@/lib/comoTelas";
 import { Botao, TelaVazia, avisar, confirmar } from "@/components/base";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
+import AbasFicha from "@/components/ficha/AbasFicha";
+import { Mascote } from "@/components/marca/Mascote";
 import "./clientes.css";
 import "@/components/ingredientes.css";
 
@@ -21,7 +23,17 @@ interface Insumo {
   qtd_embalagem: number;
   custo_unitario: number;
   imagem_url: string;
+  updated_at?: string | null;
+  created_at?: string | null;
 }
+const DIAS90 = 90 * 86400000;
+/** (04/11 · 6.20) há quanto tempo o preço não muda: "3 meses atrás" */
+const precoAntigo = (i: Insumo): string => {
+  const quando = new Date(i.updated_at || i.created_at || "").getTime();
+  if (!quando || Date.now() - quando < DIAS90) return "";
+  const meses = Math.floor((Date.now() - quando) / (30 * 86400000));
+  return meses >= 12 ? "Preço de mais de 1 ano" : `Preço de ${meses} meses atrás`;
+};
 
 /** Ícone de cada categoria (quando o ingrediente não tem foto). 10/10: um por tipo — antes quase tudo saía com o ovo */
 const sem = (t: string) => (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -80,7 +92,15 @@ export default function Insumos() {
       else console.error("[Doonly]", error);
     } else setInsumos(data as Insumo[]);
     setLoading(false);
+    // (04/11) em quantas receitas cada ingrediente está (só pra mostrar; se falhar, a linha fica sem)
+    supabase.from("produto_insumos").select("insumo_id, produto_id").eq("user_id", uid).limit(5000).then(({ data: u }) => {
+      if (!Array.isArray(u)) return;
+      const m: Record<string, Set<string>> = {};
+      (u as { insumo_id: string; produto_id: string }[]).forEach(r => { (m[r.insumo_id] ||= new Set()).add(r.produto_id); });
+      setUsos(Object.fromEntries(Object.entries(m).map(([k, v]) => [k, v.size])));
+    }, () => {});
   };
+  const [usos, setUsos] = useState<Record<string, number>>({});
 
   // ── Filtros ──
   const termo = busca.trim().toLowerCase();
@@ -154,15 +174,16 @@ export default function Insumos() {
     <>
       {cabecalho}
       <div className="cl9">
+        <AbasFicha ativa="ingredientes" />
         {loading ? (
           <div className="cl9-esq" aria-label="Carregando ingredientes">{[0, 1, 2, 3, 4].map(k => <span key={k} />)}</div>
         ) : erroCarga ? (
           <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os ingredientes" texto={erroCarga}
             acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
         ) : insumos.length === 0 ? (
-          <TelaVazia caixa icone={<Egg size={30} />} titulo="Nenhum ingrediente ainda"
+          <TelaVazia caixa icone={<Mascote pose="acenando" className="ig-vazio-masc" />} titulo="Nenhum ingrediente ainda"
             texto="Cadastre o que você compra (leite condensado, chocolate, caixas…) com o preço pago. A ficha técnica usa isso para calcular o custo de cada produto."
-            acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrirForm(null)}>Cadastrar ingrediente</Botao>} />
+            acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrirForm(null)}>Cadastrar o primeiro ingrediente</Botao>} />
         ) : (
           <section className="cl9-card">
             <div className="cl9-barra">
@@ -196,8 +217,9 @@ export default function Insumos() {
                     <Miniatura i={i} />
                     <span className="ig-l-tx">
                       <b>{i.nome}</b>
-                      <small className="ig-pc">{[i.marca, rotuloCategoria(i.categoria)].filter(Boolean).join(" · ")}</small>
-                      <small className="ig-cel">{preco} · {compra.replace(/^.*?\b(de|com)\s+/, "")}</small>{/* (24/10) celular: só a quantidade (cabe numa linha) */}
+                      <small className="ig-pc">{[i.marca, rotuloCategoria(i.categoria), usos[i.id] ? `em ${usos[i.id]} ${usos[i.id] === 1 ? "receita" : "receitas"}` : ""].filter(Boolean).join(" · ")}</small>
+                      <small className="ig-cel">{compra.replace(/^.*?\b(de|com)\s+/, "")} por {preco}{usos[i.id] ? ` · ${usos[i.id]} ${usos[i.id] === 1 ? "receita" : "receitas"}` : ""}</small>
+                      {precoAntigo(i) && <em className="ig-velho">{precoAntigo(i)}</em>}
                     </span>
                     <span className="ig-l-compra"><b>{preco}</b><small>{compra}</small></span>
                     <span className="ig-l-custo"><b>{formatarCusto(c.valor)}</b><small><span className="ig-por-l">{c.por.replace(/ (?=\S+$)/, "\u00a0")}</span><span className="ig-por-c">{/^a cada /i.test(c.por) ? c.por.replace(/^a cada /i, "/").replace(/ (?=\S+$)/, "\u00a0") : c.por === "cada" ? "/un." : c.por}</span></small></span>
@@ -205,6 +227,13 @@ export default function Insumos() {
                   </button>
                 );
               })}
+              {insumos.length <= 3 && !termo && (
+                <div className="ig-dica">
+                  <Mascote pose="acenando" className="ig-dica-masc" />
+                  <span><b>Cadastre também as embalagens</b><small>Caixa, fita e forminha entram no custo de cada produto.</small></span>
+                  <Botao variante="secundario" tamanho="m" onClick={() => abrirForm(null)}>Cadastrar</Botao>
+                </div>
+              )}
             </>)}
           </section>
         )}

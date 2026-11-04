@@ -13,7 +13,8 @@ import "./folha.css";
  *   titulo / sub: em cima · children: os campos (classes fo-*) · acoes: os botões fixos embaixo (opcional; umaAcao = um botão na largura toda)
  */
 /** foco: fundo escuro e desfocado (o app por trás não aparece), usado no passo a passo da conta nova */
-export default function Folha({ titulo, sub, onClose, children, acoes, umaAcao = false, foco = false }: { titulo: string; sub?: ReactNode; onClose: () => void; children: ReactNode; acoes?: ReactNode; umaAcao?: boolean; foco?: boolean }) {
+/** cheia (04/11 · 6.20): tela cheia no celular (e janela grande no computador), igual à Minha loja — o passo a passo usa assim */
+export default function Folha({ titulo, sub, onClose, children, acoes, umaAcao = false, foco = false, cheia = false }: { titulo: string; sub?: ReactNode; onClose: () => void; children: ReactNode; acoes?: ReactNode; umaAcao?: boolean; foco?: boolean; cheia?: boolean }) {
   const caixa = useRef<HTMLDivElement>(null);
   const id = useId();
   // 11/10: tocar fora, Esc e o "voltar" do Android perguntam antes de jogar fora o que foi digitado (o X fecha direto).
@@ -48,7 +49,7 @@ export default function Folha({ titulo, sub, onClose, children, acoes, umaAcao =
   };
   return createPortal(
     <div className={`ui-veu ui-veu--centro${foco ? " ui-veu--foco" : ""}`} onPointerDown={aoTocarFundo} onClick={aoClicarFundo}>
-      <div ref={caixa} tabIndex={-1} className="ui-janela ui-janela--conteudo fo" role="dialog" aria-modal="true" aria-labelledby={id} onClick={e => e.stopPropagation()}
+      <div ref={caixa} tabIndex={-1} className={`ui-janela ui-janela--conteudo fo${cheia ? " fo--cheia" : ""}`} role="dialog" aria-modal="true" aria-labelledby={id} onClick={e => e.stopPropagation()}
         onInput={() => { mexeu.current = true; }} onChange={() => { mexeu.current = true; }}>
         <span className="ui-janela-alca" aria-hidden="true" />
         <div className="ui-janela-cab">

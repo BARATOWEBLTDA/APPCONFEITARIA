@@ -53,3 +53,13 @@ textarea.fo-txt { min-height: 88px; padding: 12px; resize: vertical; line-height
 .fo-bt-curto .ui-bt-t { white-space: nowrap; }
 @media (max-width: 360px) { .fo-grade button { font-size: 12.5px; } }
 .fo-cx { margin-top: 12px; } /* (29/10 · 5.04) Já paguei / Vou pagar em caixinhas */
+
+/* (04/11 · 6.20) passo a passo em tela cheia (igual à Minha loja): no celular ocupa a tela toda, no computador uma janela grande */
+.ui-janela.fo--cheia { max-width: 720px; }
+@media (max-width: 767px) {
+  .ui-veu:has(> .fo--cheia) { align-items: stretch; padding: 0; }
+  .ui-janela.fo--cheia { max-width: none; width: 100%; height: 100dvh; max-height: none; border-radius: 0; }
+  .fo--cheia .ui-janela-alca { display: none; }
+  .fo--cheia .ui-janela-cab { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+}
+@media (min-width: 768px) { .ui-janela.fo--cheia { height: min(88dvh, 860px); } }

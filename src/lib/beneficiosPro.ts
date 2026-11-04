@@ -9,14 +9,14 @@ import {
  *  (21/10) quem já é PRO vê a lista compacta (título curto + uma linha); com tela própria ganha a seta, sem ela o visto verde. */
 export type Beneficio = [Icon, string, string, string, string, string | null];
 export const BENEFICIOS: Beneficio[] = [
-  [ChartLineUp, "Saiba quanto você lucra de verdade", "Relatórios de lucratividade por produto e por mês, para decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
+  [ChartLineUp, "Seu lucro de verdade", "Relatórios de lucratividade por produto e por mês, para decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
   [Robot, "A Doo IA sem aperto", "No PRO a Doo IA responde até 150 mensagens por dia e cria imagens. No grátis são 10 mensagens por mês.", "Doo IA 150 por dia", "E cria imagens", "doo"],
   [FileText, "Orçamentos que o cliente aprova", "Monte a proposta, mande o link e o cliente aprova pelo celular. Aprovou, vira pedido.", "Orçamentos", "Proposta com link para aprovar", "/orcamentos"],
   // (6.10) o grátis também tem complementos (até 3) e PDFs (com o "Feito com Doonly"): o texto diz o que o PRO muda de verdade
   [Stack, "Complementos sem limite", "Topo de bolo, velas e outros extras que o cliente marca no produto. No grátis, até 3. No PRO, quantos quiser.", "Complementos sem limite", "Extras que o cliente marca", "/complementos"],
-  [Tag, "Cupons sem limite", "No grátis, 1 cupom ativo. No PRO, quantos quiser, e os 2 mais novos aparecem no topo do cardápio.", "Cupons sem limite", "E os 2 mais novos no topo", "/marketing"],
-  [ChatCircleText, "Mensagens do seu jeito", "Troque os textos prontos do WhatsApp e anuncie com o Pixel do Facebook.", "Mensagens e Pixel", "Textos do seu jeito e anúncios", "/configuracoes/mensagens"],
-  [Palette, "Cardápio com a cara da sua marca", "Qualquer cor no topo da loja, até 4 fotos por produto e um link com o nome da sua loja.", "Cardápio com a sua marca", "Qualquer cor e até 4 fotos", "/cardapio-design"],
+  [Tag, "Cupons sem limite", "No grátis, 1 cupom ativo. No PRO, quantos quiser, e os 2 mais novos aparecem no topo do cardápio.", "Cupons sem limite", "E os 2 mais novos no topo", "/cupons"],
+  [ChatCircleText, "Mensagens do seu jeito", "Troque os textos prontos do WhatsApp e anuncie com o Pixel do Meta, Google e TikTok.", "Mensagens e Pixel", "Textos do seu jeito e anúncios", "/configuracoes/mensagens"],
+  [Palette, "Cardápio com a sua cara", "Qualquer cor no topo da loja, até 4 fotos por produto e um link com o nome da sua loja.", "Cardápio com a sua marca", "Qualquer cor e até 4 fotos", "/cardapio-design"],
   [ImageSquare, "Banners que vendem", "Até 4 banners em carrossel para destacar promoções e lançamentos.", "Banners que vendem", "Até 4 em carrossel", "/cardapio-design"],
   [SealCheck, "Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar.", "Selo de loja verificada", "Mais confiança para o cliente", null],
   [Crown, "Sem marca d'água", "O cardápio só com a sua marca, sem o \"Feito com Doonly\".", "Sem marca d'água", "Só a sua marca no cardápio", null],

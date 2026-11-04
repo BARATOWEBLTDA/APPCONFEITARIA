@@ -15,6 +15,11 @@ import { TERMOS_VERSAO } from "@/lib/termos";
 import { useParams } from "react-router-dom";
 function PedidoVerRedirect() { const { id } = useParams(); return <Navigate to={`/pedidos/${id}/editar`} replace />; }
 /** (17/10) "Entrega e pagamento" agora fica dentro de Dados da loja: o link antigo abre lá, já nessa parte */
+/** (04/11 · 6.20) o antigo Marketing: ?aba=pixel vai pro Pixel, o resto pros Cupons */
+function IrDoMarketing() {
+  const pixel = new URLSearchParams(useLocation().search).get("aba") === "pixel";
+  return <Navigate to={pixel ? "/pixel" : "/cupons"} replace />;
+}
 function IrParaEntrega() {
   const de = (useLocation().state as { de?: string } | null)?.de;
   return <Navigate to="/cardapio-config" replace state={{ secao: "entrega", ...(de ? { de } : {}) }} />;
@@ -90,7 +95,8 @@ const AjudaArtigo = lazy(() => import("@/pages/AjudaArtigo"));
 const OrcamentoEditar = lazy(() => import("@/pages/OrcamentoEditar"));
 const OrcamentoPedir = lazy(() => import("@/pages/OrcamentoPedir"));
 const OrcamentoVer = lazy(() => import("@/pages/OrcamentoVer"));
-const Marketing = lazy(() => import("@/pages/Marketing"));
+const Cupons = lazy(() => import("@/pages/Cupons"));
+const Pixel = lazy(() => import("@/pages/Pixel"));
 const ClientePerfil = lazy(() => import("@/pages/ClientePerfil"));
 const CardapioDesign = lazy(() => import("@/pages/CardapioDesign"));
 const DadosLoja = lazy(() => import("@/pages/DadosLoja"));
@@ -139,7 +145,8 @@ const PRE_CARREGAR: (() => Promise<unknown>)[] = [
   () => import("@/pages/OrcamentoEditar"),
   () => import("@/pages/OrcamentoPedir"),
   () => import("@/pages/OrcamentoVer"),
-  () => import("@/pages/Marketing"),
+  () => import("@/pages/Cupons"),
+  () => import("@/pages/Pixel"),
   () => import("@/pages/ClientePerfil"),
   () => import("@/pages/CardapioDesign"),
   () => import("@/pages/DadosLoja"),
@@ -580,7 +587,10 @@ export default function App() {
           <Route path="/cardapio-design" element={<CardapioDesign />} />
           <Route path="/checkout-config" element={<IrParaEntrega />} />
           <Route path="/estoque" element={<Navigate to="/inicio" replace />} />{/* (24/10) Estoque saiu dos planos */}
-          <Route path="/marketing" element={<Marketing />} />
+          {/* (04/11 · 6.20) Marketing foi escondido: Cupons e Pixel viraram telas próprias */}
+          <Route path="/marketing" element={<IrDoMarketing />} />
+          <Route path="/cupons" element={<Cupons />} />
+          <Route path="/pixel" element={<Pixel />} />
           <Route path="/arquivos" element={<Navigate to="/" replace />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />

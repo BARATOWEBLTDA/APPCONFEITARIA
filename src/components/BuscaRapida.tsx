@@ -3,9 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   MagnifyingGlass, X, House, ClipboardText, Plus, CalendarBlank, Sparkle, SquaresFour, Cake, Tag, Stack, Basket, ListChecks, Users,
   ShoppingBag, Palette, Storefront, ArrowSquareOut, CurrencyDollar, ArrowsDownUp, HandCoins, CalendarCheck, Receipt, ChartLineUp,
-  Coins, CreditCard, Buildings, Megaphone, Newspaper, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb,
+  Coins, CreditCard, Buildings, Newspaper, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
+import { Ticket, Target } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { useSobreposicao } from "@/components/base/useSobreposicao";
@@ -60,7 +61,7 @@ export default function BuscaRapida() {
       { g: "Cadastros", t: "Novo produto", ic: Plus, rota: "/produtos", estado: { abrirCadastro: true }, chaves: "cadastrar produto criar" },
       { g: "Cadastros", t: "Categorias", ic: Tag, rota: "/categorias", chaves: "ordem cardapio" },
       { g: "Cadastros", t: "Complementos", ic: Stack, rota: "/complementos", chaves: "sabores recheios adicionais topo vela" },
-      { g: "Cadastros", t: "Ingredientes", ic: Basket, rota: "/insumos", chaves: "insumos compras mercado" },
+      { g: "Cadastros", t: "Ingredientes", ic: Basket, rota: "/insumos", chaves: "insumo insumos ingrediente materia prima compra compras mercado embalagem preco" },
       { g: "Cadastros", t: "Ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", chaves: "receita custo lucro margem" },
       { g: "Cadastros", t: "Clientes", ic: Users, rota: "/clientes", chaves: "aniversario contatos" },
       { g: "Cardápio digital", t: "Cardápio digital", ic: ShoppingBag, rota: "/cardapio", chaves: "minha loja link qr code visitas compartilhar" },
@@ -76,7 +77,9 @@ export default function BuscaRapida() {
       { g: "Financeiro", t: "Informar o saldo do caixa", ic: Coins, rota: "/financeiro", estado: { abrir: "saldo" }, chaves: "dinheiro gaveta" },
       { g: "Financeiro", t: "Cadastrar custo fixo", ic: Buildings, rota: "/custos", estado: { abrir: "fixo" }, chaves: "aluguel luz internet" },
       { g: "Financeiro", t: "Taxa da maquininha", ic: CreditCard, rota: "/custos", estado: { abrir: "maquininha" }, chaves: "cartao credito debito" },
-      { g: "Mais", t: "Marketing", ic: Megaphone, rota: "/marketing", chaves: "cupom desconto pixel facebook" },
+      { g: "Mais", t: "Cupons", ic: Ticket, rota: "/cupons", chaves: "cupom desconto promocao codigo marketing" },
+      { g: "Mais", t: "Pixel", ic: Target, rota: "/pixel", chaves: "pixel facebook instagram meta google tiktok anuncio marketing" },
+      { g: "Mais", t: "Mensagens do WhatsApp", ic: ChatCircleText, rota: "/configuracoes/mensagens", chaves: "mensagem texto pronto zap whats recado" },
       { g: "Mais", t: "Novidades", ic: Newspaper, rota: "/noticias", chaves: "dicas tutoriais avisos notificacoes" },
       { g: "Conta e ajuda", t: "Configurações", ic: Gear, rota: "/configuracoes", chaves: "conta senha email sair instalar atualizar excluir termos privacidade" },
       { g: "Conta e ajuda", t: "Minha assinatura", ic: Crown, rota: isPro ? "/minha-assinatura" : "/assinar", chaves: "plano pro pagamento" },

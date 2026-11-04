@@ -748,7 +748,7 @@ export default function Clientes() {
           <TelaVazia caixa icone={<UsersThree size={30} />} titulo="Nenhum cliente ainda"
             texto="Quem pede pelo cardápio entra aqui sozinho. Você também pode cadastrar quem compra pelo WhatsApp ou no balcão."
             acao={<div className="cl9-vz-acoes">
-              <Botao icone={<Plus size={20} weight="bold" />} onClick={() => openNew()}>Cadastrar cliente</Botao>
+              <Botao className="guia-novo-cliente" icone={<Plus size={20} weight="bold" />} onClick={() => openNew()}>Cadastrar cliente</Botao>
               {suportaContatos && <Botao variante="secundario" icone={<AddressBook size={20} weight="bold" />} onClick={importarContatos}>Importar dos contatos<i className="cl9-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</i></Botao>}
             </div>} />
         </div>
@@ -961,7 +961,7 @@ export default function Clientes() {
       `}</style>
       </>
       )}
-    {conviteImportar && <ConvitePro titulo="Traga seus clientes em segundos" texto="Importe os contatos da agenda do celular de uma vez, sem digitar um por um." onClose={() => setConviteImportar(false)} />}
+    {conviteImportar && <ConvitePro recurso="importarContatos" onClose={() => setConviteImportar(false)} />}
     </div>
     </>
   );

@@ -127,3 +127,40 @@
 /* (26/10) Poppins: "unidade" cabe no seletor de medida (as opções ganham a largura do texto) */
 .ig-seg button { flex: 1 1 auto; padding: 0 6px; font-size: 14.5px; white-space: nowrap; }
 .ig-foto-links { flex-wrap: nowrap; white-space: nowrap; }
+
+/* (04/11 · 6.20) lista de ingredientes: preço antigo, dica das embalagens e o mascote na tela vazia */
+.ig-velho { display: inline-flex; align-self: flex-start; margin-top: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-size: 12px; font-style: normal; font-weight: 600; white-space: nowrap; }
+.ig-l-tx { display: flex; flex-direction: column; }
+.ig-dica { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: var(--ui-raio-cartao); background: #FFF4F8; }
+.ig-dica-masc { flex: none; width: 52px; height: auto; }
+.ig-dica > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.ig-dica b { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
+.ig-dica small { font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+@media (max-width: 599px) { .ig-dica { flex-wrap: wrap; } .ig-dica .ui-bt { width: 100%; } }
+.ig-vazio-masc { width: 72px; height: auto; }
+
+/* (04/11 · 6.20) novo ingrediente: tela cheia no celular, foto com menu, sugestões e a medida dentro do campo */
+@media (max-width: 767px) {
+  .ui-veu:has(> .ig-janela-cheia) { align-items: stretch; padding: 0; }
+  .ui-janela.ig-janela-cheia { max-width: none; width: 100%; height: 100dvh; max-height: none; border-radius: 0; }
+  .ig-janela-cheia .ui-janela-alca { display: none; }
+  .ig-janela-cheia .ui-janela-cab { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+}
+@media (min-width: 768px) { .ui-janela.ig-janela-cheia { max-width: 560px; height: min(88dvh, 820px); } }
+.ig-nome-thw { position: relative; flex: none; display: flex; }
+.ig-foto-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 5; display: flex; flex-direction: column; min-width: 200px; padding: 6px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); box-shadow: 0 12px 30px rgba(20, 10, 7, .16); }
+.ig-foto-menu button { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: none; font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer; white-space: nowrap; }
+.ig-foto-menu button:hover { background: var(--ui-fundo); }
+.ig-foto-menu svg { color: var(--ui-rosa-escuro); }
+.ig-comuns { display: flex; gap: 8px; margin-top: -4px; overflow-x: auto; scrollbar-width: none; }
+.ig-comuns::-webkit-scrollbar { display: none; }
+.ig-comuns button { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 6px 12px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; }
+.ig-comuns button:hover { border-color: var(--ui-rosa); }
+.ig-comuns b { font-size: 13.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; }
+.ig-comuns small { font-size: 12px; color: var(--ui-texto-2); white-space: nowrap; }
+.ig-med { position: relative; flex: none; display: inline-flex; align-items: center; gap: 0; height: 100%; padding: 0 6px 0 8px; border-left: 1px solid var(--ui-borda); background: #F4F1F2; color: var(--ui-texto); cursor: pointer; }
+.ig-med select { appearance: none; -webkit-appearance: none; width: auto; max-width: 76px; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); padding: 0 2px 0 0; cursor: pointer; outline: none; field-sizing: content; }
+.ig-f .cl9-f-2 { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+.ig-med select:focus-visible { outline: 2px solid var(--ui-rosa); border-radius: 4px; }
+.ig-outro { display: block; width: 100%; min-height: 44px; margin-top: 8px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

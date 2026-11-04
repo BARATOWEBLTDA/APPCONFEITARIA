@@ -263,3 +263,8 @@
   .cl9-faixa-bt:active { background: #FBF3F6; }
   .cl9-faixa-bt:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
 }
+
+/* (04/11 · 6.20) respiro padrão entre a barra (busca, + Novo, filtro) e o primeiro item da lista (antes ficava grudado) */
+.cl9-card > .cl9-barra { margin-bottom: 8px; }
+.cl9-barra + .cl9-lista, .cl9-barra ~ .cl9-lista { margin-top: 0; }
+.cl9-barra + .ig-tab-cab + .ig-l, .cl9-barra + .ig-l, .cl9-barra ~ .ig-tab-cab + .ig-l { border-top: 0; }

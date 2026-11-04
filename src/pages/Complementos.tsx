@@ -303,7 +303,7 @@ export default function Complementos() {
               <div className="pz-vazio-bts">
                 {pro
                   ? <Botao className="pz-vazio-cta" onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao>
-                  : <Botao className="pz-vazio-cta" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>}
+                  : <Botao className="pz-vazio-cta guia-novo-complemento" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Criar complemento</Botao>}
                 <Botao variante="secundario" className="pz-vazio-ver" icone={<Eye size={20} weight="bold" />} aria-label="Ver como fica" onClick={() => setVerExemplo(true)}><span className="pz-ver-t">Ver</span></Botao>
               </div>
             </div>
@@ -334,7 +334,7 @@ export default function Complementos() {
           <div className="pz-cheio">
             <div className="pz-cheio-l">
               <Titulo contagem={items.length} apoio="Toque em um para editar."
-                acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>}>Seus complementos</Titulo>
+                acao={<Botao tamanho="m" className="guia-novo-complemento" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}><span className="ct-g">Novo complemento</span><span className="ct-c">Novo</span></Botao>}>Seus complementos</Titulo>
               {items.length > 8 && (
                 <label className="pz-busca">
                   <MagnifyingGlass size={20} weight="bold" />
@@ -402,7 +402,7 @@ export default function Complementos() {
       {/* menu */}
 
       {/* nova / editar */}
-      {limiteAberto && <RecursoPro titulo="Complementos sem limite" texto={`No grátis são até ${LIMITE_COMPLEMENTOS_GRATIS} complementos. No PRO você cria quantos quiser: sabores, recheios, tamanhos e extras.`} onClose={() => setLimiteAberto(false)} />}
+      {limiteAberto && <RecursoPro recurso="complementos" onClose={() => setLimiteAberto(false)} />}
       <Janela aberta={aberta} aoFechar={fechar} tipo="conteudo" travada
         titulo={etapa === 2 ? (form.onde === "produtos" ? "Em quais produtos?" : "Em quais categorias?") : editando ? "Editar complemento" : "Novo complemento"}
         acoes={etapa === 2

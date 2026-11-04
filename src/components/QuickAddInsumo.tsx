@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { Camera, CaretDown, Image as ImagemIc, MagnifyingGlass, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Camera, CaretDown, Image as ImagemIc, MagnifyingGlass, Sparkle, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { parseNumBR } from "@/lib/numeroBR";
 
 // 13/10: "Quanto pagou" igual aos outros campos de dinheiro: digita 749 e aparece 7,49
@@ -53,6 +53,24 @@ type Form = {
 };
 
 const CATEGORIAS_DEFAULT = ["Ingredientes", "Embalagens", "Decorações", "Bebidas", "Descartáveis", "Outros"];
+
+/** (04/11 · 6.20) os ingredientes mais comuns, já com a embalagem: escolher preenche a medida e quanto vem */
+const COMUNS: { nome: string; unidade: string; qtd: string; cat?: string }[] = [
+  { nome: "Leite condensado", unidade: "g", qtd: "395" }, { nome: "Creme de leite", unidade: "g", qtd: "200" },
+  { nome: "Farinha de trigo", unidade: "kg", qtd: "1" }, { nome: "Açúcar refinado", unidade: "kg", qtd: "1" },
+  { nome: "Açúcar de confeiteiro", unidade: "g", qtd: "500" }, { nome: "Chocolate em pó", unidade: "g", qtd: "200" },
+  { nome: "Cacau em pó", unidade: "g", qtd: "200" }, { nome: "Chocolate nobre ao leite", unidade: "kg", qtd: "1" },
+  { nome: "Chocolate meio amargo", unidade: "kg", qtd: "1" }, { nome: "Granulado", unidade: "g", qtd: "500" },
+  { nome: "Manteiga", unidade: "g", qtd: "200" }, { nome: "Margarina", unidade: "g", qtd: "500" },
+  { nome: "Ovos", unidade: "un", qtd: "12" }, { nome: "Leite integral", unidade: "L", qtd: "1" },
+  { nome: "Leite em pó", unidade: "g", qtd: "400" }, { nome: "Fermento em pó", unidade: "g", qtd: "100" },
+  { nome: "Óleo", unidade: "ml", qtd: "900" }, { nome: "Coco ralado", unidade: "g", qtd: "100" },
+  { nome: "Morango", unidade: "g", qtd: "250" }, { nome: "Doce de leite", unidade: "g", qtd: "400" },
+  { nome: "Nutella", unidade: "g", qtd: "350" }, { nome: "Chantilly", unidade: "L", qtd: "1" },
+  { nome: "Caixa para bolo", unidade: "un", qtd: "1", cat: "Embalagens" }, { nome: "Forminha de papel", unidade: "un", qtd: "100", cat: "Embalagens" },
+  { nome: "Fita de cetim", unidade: "un", qtd: "1", cat: "Embalagens" }, { nome: "Pote de plástico", unidade: "un", qtd: "1", cat: "Embalagens" },
+];
+const semAc = (t: string) => (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
 /** Medidas (mesmos valores de antes: un, kg, g, L, ml) */
 const MEDIDAS = [
@@ -197,7 +215,7 @@ export function descreverCompra(embalagem: string, qtd: number, unidade: string)
  * Cadastro e edição de ingrediente.
  * Reutilizado em /insumos (numa Janela) e dentro da ficha técnica e do cadastro de produto.
  */
-export default function QuickAddInsumo({ userId, initialName, editing, onSaved, onCancel, onDelete, janela = false, aberta = true }: Props) {
+export default function QuickAddInsumo({ userId, initialName, editing, onSaved, onCancel, onDelete, janela = false, aberta = true, onSalvoOutro }: Props & { onSalvoOutro?: () => void }) {
   const isEditing = !!editing;
 
   const [form, setForm] = useState<Form>(() => {
@@ -258,6 +276,9 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const [verOutras, setVerOutras] = useState(() => EMB_OUTRAS.includes(form.embalagem_tipo));
   // (24/10) categoria e embalagem ficam em "Mais detalhes" (não mudam o custo); a marca fica embaixo do nome (26/10)
   const [verDetalhes, setVerDetalhes] = useState(false);
+  const [fotoMenu, setFotoMenu] = useState(false); // (04/11) tocar na foto abre: IA, câmera ou galeria
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const outroRef = useRef(false); // (04/11) "Cadastrar e adicionar outro" (ref: o salvar lê na hora)
   const [usadoEm, setUsadoEm] = useState(0);
 
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -376,6 +397,15 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     setSaving(false);
 
     if (error || !data) { avisar("Não deu para salvar. Confira a internet e tente de novo.", { tipo: "erro" }); console.error(error); return; }
+    if (outroRef.current && !isEditing) {
+      // (04/11 · 6.20) continua aberto e limpo pra cadastrar o próximo
+      outroRef.current = false; setTentouSalvar(false); setImagens([]); setUnidadeTocadaManualmente(false);
+      setForm(f => ({ ...f, nome: "", marca: "", valor_compra: "", qtd_embalagem: "1", imagem_url: "" }));
+      avisar(`${data.nome} cadastrado. Agora o próximo.`, { tipo: "ok" });
+      window.setTimeout(() => nomeRef.current?.focus(), 50);
+      onSalvoOutro?.();
+      return;
+    }
     onSaved({
       id: data.id,
       nome: data.nome,
@@ -409,31 +439,46 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const emb = form.embalagem_tipo;
   const rotuloQtd = emb === "Avulso" ? "Quanto vem" : `Quanto vem ${EMB_FEMININAS.some(f => f.toLowerCase() === String(emb || "").toLowerCase()) ? "na" : "no"} ${String(emb || "").toLowerCase()}`;
   const mostraAlerta = alertaIncoerencia && alertaDispensado !== alertaIncoerencia;
-  const sugerida = !unidadeTocadaManualmente && form.nome.trim().length >= 3;
 
   const corpo = (
     <div className="cl9-f ig-f">
       {/* Foto (opcional) */}
       <input ref={galleryRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
+      <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={recorte.escolher} />
       {recorte.janela}
       {/* (24/10) o nome primeiro, com a foto ao lado (antes a foto vinha em cima, marcada "essencial") */}
       <div className="ig-nome">
-        <button type="button" className="ig-nome-th" aria-label={form.imagem_url ? "Trocar a foto" : "Escolher uma foto do aparelho"} disabled={uploadingImg} onClick={() => galleryRef.current?.click()}>
-          {form.imagem_url ? <img src={form.imagem_url} alt="" /> : uploadingImg ? <span className="ig-gira" aria-hidden="true" /> : <Camera size={24} />}
-        </button>
+        <span className="ig-nome-thw">
+          <button type="button" className="ig-nome-th" aria-label={form.imagem_url ? "Trocar a foto" : "Pôr uma foto"} aria-expanded={fotoMenu} disabled={uploadingImg || buscandoImg} onClick={() => setFotoMenu(v => !v)}>
+            {form.imagem_url ? <img src={form.imagem_url} alt="" /> : uploadingImg || buscandoImg ? <span className="ig-gira" aria-hidden="true" /> : <Camera size={24} />}
+          </button>
+          {fotoMenu && (
+            <span className="ig-foto-menu" role="menu">
+              <button type="button" role="menuitem" onClick={() => { setFotoMenu(false); void handleBuscarImagem(); }}><Sparkle size={18} weight="bold" />Achar foto com IA</button>
+              <button type="button" role="menuitem" onClick={() => { setFotoMenu(false); cameraRef.current?.click(); }}><Camera size={18} weight="bold" />Tirar foto</button>
+              <button type="button" role="menuitem" onClick={() => { setFotoMenu(false); galleryRef.current?.click(); }}><ImagemIc size={18} weight="bold" />Da galeria</button>
+            </span>
+          )}
+        </span>
         <Campo ref={nomeRef} rotulo="Nome" obrigatorio placeholder="Ex.: leite condensado" value={form.nome} erro={erroNome}
           onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
       </div>
+      {!isEditing && (() => {
+        const q = semAc(form.nome);
+        const lista = q.length >= 2 ? COMUNS.filter(c => semAc(c.nome).includes(q) && semAc(c.nome) !== q).slice(0, 4) : [];
+        return lista.length ? (
+          <div className="ig-comuns" aria-label="Sugestões">
+            {lista.map(c => (
+              <button key={c.nome} type="button" onClick={() => { setUnidadeTocadaManualmente(true); setForm(f => ({ ...f, nome: c.nome, unidade: c.unidade, qtd_embalagem: c.qtd, ...(c.cat ? { categoria: c.cat } : {}) })); }}>
+                <b>{c.nome}</b><small>{c.qtd} {c.unidade === "un" ? (c.qtd === "1" ? "unidade" : "unidades") : c.unidade}</small>
+              </button>
+            ))}
+          </div>
+        ) : null;
+      })()}
       {/* (26/10) a marca logo abaixo do nome: a Doo IA busca a foto pelos dois (antes ficava escondida em "Mais detalhes") */}
       <Campo rotulo="Marca" opcional placeholder="Ex.: Moça" value={form.marca}
         onChange={e => setForm(f => ({ ...f, marca: e.target.value }))} />
-      <div className="ig-foto-links">
-        <button type="button" disabled={buscandoImg || uploadingImg} onClick={() => handleBuscarImagem()}>
-          {buscandoImg ? <span className="ig-gira" aria-hidden="true" /> : <MagnifyingGlass size={16} weight="bold" />}{buscandoImg ? "Buscando..." : "Achar foto com IA"}
-        </button>
-        <span aria-hidden="true">·</span>
-        <button type="button" disabled={buscandoImg || uploadingImg} onClick={() => galleryRef.current?.click()}><ImagemIc size={16} weight="bold" />Do aparelho</button>
-      </div>
       {(imagens.length > 0 || form.imagem_url) && (
         <div className="ig-foto">
           {imagens.length > 0 && (<>
@@ -462,21 +507,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         </div>, document.body)}
 
       <section className="ig-compra ig-compra--simples">
-      <div>
-        <p className="ig-rot">Medida</p>
-        <div className="ig-seg" role="radiogroup" aria-label="Medida">
-          {MEDIDAS.map(u => {
-            // (27/10) ingrediente usado em ficha técnica não troca de família (de g para unidade, o custo ficava 1000 vezes diferente)
-            const travada = isEditing && usadoEm > 0 && familiaDaMedida(u.sigla) !== familiaDaMedida(inicial.current.unidade);
-            return (
-              <button key={u.sigla} type="button" role="radio" aria-checked={form.unidade === u.sigla} disabled={travada}
-                onClick={() => { setUnidadeTocadaManualmente(true); setForm(f => ({ ...f, unidade: u.sigla })); }}>{u.nome}</button>
-            );
-          })}
-        </div>
-        {isEditing && usadoEm > 0 && <p className="ig-sug">Está em fichas técnicas: {({ peso: "só g ou kg", volume: "só ml ou L", un: "só unidade" } as Record<string, string>)[familiaDaMedida(inicial.current.unidade)]}</p>}
-        {sugerida && <p className="ig-sug">Escolhida pelo nome. Escolha outra se for diferente.</p>}
-      </div>
+      {isEditing && usadoEm > 0 && <p className="ig-sug">Está em fichas técnicas: a medida fica {({ peso: "em g ou kg", volume: "em ml ou L", un: "em unidade" } as Record<string, string>)[familiaDaMedida(inicial.current.unidade)]}.</p>}
 
       {mostraAlerta && (
         <div className="ig-alerta" role="status">
@@ -496,9 +527,19 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       )}
 
       <div className="cl9-f-2">
-        <Campo rotulo={rotuloQtd} inputMode="decimal" placeholder={precisaQtd ? "Ex.: 395" : "1"} value={form.qtd_embalagem} erro={erroQtd}
+        <Campo rotulo={rotuloQtd} inputMode="decimal" placeholder={precisaQtd ? "395" : "1"} value={form.qtd_embalagem} erro={erroQtd}
           onChange={e => setForm(f => ({ ...f, qtd_embalagem: e.target.value }))}
-          depois={<span className="cl9-f-uf">{medidaTxt}</span>} />
+          depois={
+            <label className="ig-med">
+              <span className="sr-only">Medida</span>
+              <select value={form.unidade} aria-label="Medida" onChange={e => { setUnidadeTocadaManualmente(true); setForm(f => ({ ...f, unidade: e.target.value })); }}>
+                {MEDIDAS.map(u => {
+                  const travada = isEditing && usadoEm > 0 && familiaDaMedida(u.sigla) !== familiaDaMedida(inicial.current.unidade);
+                  return <option key={u.sigla} value={u.sigla} disabled={travada}>{u.nome}</option>;
+                })}
+              </select>
+              <CaretDown size={14} weight="bold" aria-hidden="true" />
+            </label>} />
         <Campo rotulo="Quanto pagou" inputMode="numeric" prefixo="R$" placeholder="0,00" value={form.valor_compra} erro={erroValor}
           onChange={e => { const d = e.target.value.replace(/\D/g, ""); setForm(f => ({ ...f, valor_compra: d ? reais(parseInt(d, 10) / 100) : "" })) }} />
       </div>
@@ -513,7 +554,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           </small>
         </div>
       ) : (
-        <p className="ig-dica">O Doonly calcula o custo por {form.unidade === "un" ? "unidade" : "grama"}.</p>
+        <p className="ig-dica">Coloque quanto vem e quanto pagou: o custo de cada {form.unidade === "un" ? "unidade" : form.unidade === "ml" || form.unidade === "L" ? "ml" : "grama"} aparece aqui.</p>
       )}
       </section>
 
@@ -564,9 +605,10 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
   if (janela) {
     return (
-      <Janela aberta={aberta} aoFechar={pedirFechar} tipo="conteudo" titulo={isEditing ? "Editar ingrediente" : "Novo ingrediente"} travada={mudou}
-        acoes={<><Botao variante="secundario" onClick={pedirFechar}>Cancelar</Botao><Botao carregando={saving} onClick={handleSalvar}>{rotuloSalvar}</Botao></>}>
+      <Janela aberta={aberta} aoFechar={pedirFechar} tipo="conteudo" titulo={isEditing ? "Editar ingrediente" : "Novo ingrediente"} travada={mudou} className="ig-janela-cheia"
+        acoes={<><Botao variante="secundario" onClick={pedirFechar}>Cancelar</Botao><Botao carregando={saving} onClick={() => { outroRef.current = false; void handleSalvar(); }}>{rotuloSalvar}</Botao></>}>
         {corpo}
+        {!isEditing && <button type="button" className="ig-outro" disabled={saving} onClick={() => { outroRef.current = true; void handleSalvar(); }}>Cadastrar e adicionar outro</button>}
       </Janela>
     );
   }

@@ -96,6 +96,8 @@ export async function fazerTour(passos: PassoTour[], sozinho = false) {
     onHighlighted: () => { document.documentElement.classList.toggle("tour-rola", naoCabe()); },
     onPopoverRender: (pop) => {
       const dr = d;
+      // (04/11 · 6.20) no primeiro passo não tem pra onde voltar: sem o "Voltar"
+      if (dr.isFirstStep()) pop.previousButton.style.display = "none";
       if (!dr.isLastStep()) {
         const b = document.createElement("button");
         b.type = "button"; b.className = "tour-pular"; b.textContent = "Pular";

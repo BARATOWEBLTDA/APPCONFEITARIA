@@ -19,6 +19,7 @@ import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, WarningCircle, X } from "@phosphor-icons/react";
 import "./clientes.css";
 import "./fichaLista.css";
+import AbasFicha from "@/components/ficha/AbasFicha";
 import "./fichaDetalhe.css";
 
 // ── Famílias de unidades e conversão ──
@@ -220,6 +221,7 @@ export default function FichaTecnica() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState("");
   const [moAtivo, setMoAtivo] = useState(false);
+  const [recemSalva, setRecemSalva] = useState<string | null>(null); // (04/11) a ficha que acabou de salvar, destacada na lista
   const [infoAtivo, setInfoAtivo] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerBusca, setPickerBusca] = useState("");
@@ -506,6 +508,13 @@ export default function FichaTecnica() {
     retrato.current = { ficha: assinarFicha(ficha), extras: { ...extras }, mo: moAtivo, info: infoAtivo };
     setSaving(false);
     avisar("Ficha técnica salva", { tipo: "ok" });
+    // (04/11 · 6.20) salvou: volta pra lista da Ficha técnica, com a ficha salva destacada
+    const salvaId = selected.id;
+    retrato.current = null;
+    setSelected(null); setFicha([]); setBuscaInsumo(""); setShowQuickAdd(false);
+    setRecemSalva(salvaId);
+    window.setTimeout(() => document.querySelector(`[data-ficha="${salvaId}"]`)?.scrollIntoView({ block: "center" }), 120);
+    window.setTimeout(() => setRecemSalva(r => (r === salvaId ? null : r)), 3200);
   };
 
   const filtrados = produtos.filter(p => {
@@ -596,6 +605,13 @@ export default function FichaTecnica() {
       <>
       <AppPageHeader title={selected.nome} subtitle="Ficha técnica" onBack={fecharFicha} />
       <div className="cl9 fd">
+        {(!maoConta || cvConta == null) && (
+          <div className="fd-aviso-custos" role="note">
+            <WarningCircle size={20} weight="bold" aria-hidden="true" />
+            <span><b>Para o custo sair certo</b><small>Cadastre {!maoConta && cvConta == null ? "sua mão de obra e os custos invisíveis (gás, luz e perdas)" : !maoConta ? "sua mão de obra" : "os custos invisíveis (gás, luz e perdas)"} em Custos.</small></span>
+            <Botao variante="secundario" tamanho="m" onClick={() => navigate("/custos", { state: { abrir: !maoConta ? "mao" : "invisiveis" } })}>Cadastrar</Botao>
+          </div>
+        )}
         <div className="fd-grade">
         <div className="fd-principal">
 
@@ -661,38 +677,15 @@ export default function FichaTecnica() {
             </>)}
           </section>
 
-          <div className="fd-par">
-            {/* Custos invisíveis. (16/10) definidos em Custos: aqui só mostra quanto entra nesta receita */}
-            <section className="cl9-card fd-sec">
-              <Titulo>Custos invisíveis</Titulo>
-              <div className="fd-mo-conta">
-                <span><small>{cvConta != null ? "Definido em Custos" : "Padrão do app"}</small><b>{String(Math.round(cvPct * 10) / 10).replace(".", ",")}% dos ingredientes</b></span>
-                <Botao variante="link" tamanho="m" onClick={() => navigate("/custos")}>Alterar</Botao>
-              </div>
-              <p className="fd-mo">Nesta receita: <b>R$ {fmt(cvLive)}</b></p>
-            </section>
-
-            {/* Mão de obra. (16/10) salário, jornada e custos fixos ficam em Custos; aqui só o tempo desta receita */}
-            <section className="cl9-card fd-sec">
-              <div className="fd-sec-cab">
-                <Titulo>Mão de obra</Titulo>
-                <Chave ligado={moAtivo} aoMudar={setMoAtivo} rotulo="Somar a mão de obra" />
-              </div>
-              {!moAtivo ? (
-                <p className="fd-dica">Ligue para colocar o valor do seu tempo no custo do produto.</p>
-              ) : (<>
-                <div className="fd-mo-conta">
-                  {maoConta
-                    ? <span><small>Sua hora, de Custos</small><b>R$ {fmt(custoHora)} por hora</b></span>
-                    : <span><small>Sem salário em Custos</small><b>Cadastre lá</b></span>}
-                  <Botao variante="link" tamanho="m" onClick={() => navigate("/custos")}>{maoConta ? "Alterar" : "Ir para Custos"}</Botao>
-                </div>
-                <Campo rotulo="Tempo para fazer esta receita" inputMode="numeric" placeholder="0" value={extras.tempo_preparo_min}
-                  onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} depois={<span className="cl9-f-uf">min</span>} />
-                <p className="fd-mo">Nesta receita: <b>R$ {fmt(moLive)}</b></p>
-              </>)}
-            </section>
-          </div>
+          {/* (04/11 · 6.20) mão de obra e custos invisíveis saíram da ficha (ficam em Custos e entram sozinhos no custo).
+              Aqui fica só o tempo da receita, que é o que a mão de obra precisa. */}
+          <section className="cl9-card fd-sec">
+            <Titulo>Tempo de preparo</Titulo>
+            <Campo rotulo="Quanto tempo leva esta receita" inputMode="numeric" placeholder="0" value={extras.tempo_preparo_min}
+              onChange={e => { const v = e.target.value.replace(/\D/g, "").slice(0, 4); setExtras(s => ({ ...s, tempo_preparo_min: v })); setMoAtivo(Number(v) > 0); }}
+              depois={<span className="cl9-f-uf">min</span>}
+              dica={!maoConta ? "Entra no custo quando você cadastrar a sua mão de obra em Custos." : Number(extras.tempo_preparo_min) > 0 ? `Sua mão de obra nesta receita: R$ ${fmt(moLive)}` : "Com o tempo, o valor do seu trabalho entra no custo."} />
+          </section>
 
           {/* Informações do produto */}
           <section className="cl9-card fd-sec">
@@ -981,6 +974,7 @@ export default function FichaTecnica() {
       infoTip={<>Escolha um produto para montar ou ajustar a ficha.</>}
     />
     <div className="cl9 fl">
+      <AbasFicha ativa="receitas" />
       {erroCarga ? (
         <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar as fichas técnicas" texto={erroCarga}
           acao={<Botao onClick={() => void carregar()}>Tentar de novo</Botao>} />
@@ -1033,7 +1027,7 @@ export default function FichaTecnica() {
               const c = calcular(p, maoConta, cvConta);
               const foto = (p.imagem_url || "").split(",")[0];
               return (
-                <button key={p.id} type="button" className={`fl-l${c.temFicha ? "" : " fl-l--sem"}`} onClick={() => abrirFicha(p)}>
+                <button key={p.id} type="button" data-ficha={p.id} className={`fl-l${c.temFicha ? "" : " fl-l--sem"}${recemSalva === p.id ? " fl-l--salva" : ""}`} onClick={() => abrirFicha(p)}>
                   <span className="fl-th">{foto ? <img src={foto} alt="" /> : <Camera size={20} weight="bold" aria-label="Sem foto" />}</span>
                   <span className="fl-tx">
                     <b>{p.nome}</b>

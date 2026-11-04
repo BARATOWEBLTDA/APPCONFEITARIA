@@ -88,7 +88,7 @@ const pixParaSalvar = (x: PixTela) => ({
 /** (17/10) embutido: aparece dentro de Dados da loja (mesma tela), sem o cabeçalho próprio */
 /** (19/10) parte: "entrega" (Dados da loja, sem cupons) ou "cupons" (Marketing › Cupons, só os cupons) */
 /** (22/10) celular, Dados da loja: o que está na tela, pra lista mostrar o resumo de cada parte */
-export type EstadoEntregaPagamento = { formasPagamento: string[]; formasEntrega: string[]; taxa: number; porBairro: number; pixOnline: boolean; pixPronto: boolean; pixTipo: string; pixModo: string; pixPct: string }
+export type EstadoEntregaPagamento = { formasPagamento: string[]; formasEntrega: string[]; taxa: number; porBairro: number; /** (04/11) a taxa está definida (valor, Grátis marcado ou a combinar) */ taxaOk: boolean; modo: string; pixOnline: boolean; pixPronto: boolean; pixTipo: string; pixModo: string; pixPct: string }
 /** (27/10) Gravação da tela de Entrega e pagamento em andamento (Pagamento, Pix e Entrega abrem a mesma tela) */
 let gravacaoEmAndamento: Promise<unknown> | null = null
 
@@ -111,6 +111,8 @@ function CampoTaxa({ valor, aoMudar, rotulo, className = '' }: { valor: string; 
     </div>
   )
 }
+
+const semAcento = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
 
 // (31/10 · 5.84) fora do componente: criados dentro dele, eram refeitos a cada desenho da tela
 function Cabeca({ Ic, titulo, apoio, acao }: { Ic: typeof Wallet; titulo: string; apoio?: string; acao?: React.ReactNode }) {
@@ -206,7 +208,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
           const x: PerfilEntrega = ex || {}
           setNovasColunas(!erroEx)
           const m = x.entrega_modo
-          setModoEntrega(m === 'fixa' || m === 'bairro' || m === 'raio' || m === 'cidade' ? m : temBairros ? 'bairro' : 'fixa')
+          setModoEntrega(m === 'fixa' || m === 'bairro' || m === 'raio' || m === 'cidade' || m === 'combinar' ? m : temBairros ? 'bairro' : 'fixa')
           setRaios((Array.isArray(x.entrega_por_raio) ? x.entrega_por_raio : []).map((f: FaixaSalva) => ({ km: String(f.km ?? '').replace('.', ','), valor: reaisParaCampo(f.valor) || '0,00', ativo: f.ativo !== false })))
           setCidades((Array.isArray(x.entrega_por_cidade) ? x.entrega_por_cidade : []).map((c: FaixaSalva) => ({ cidade: c.cidade || '', valor: reaisParaCampo(c.valor) || '0,00', ativo: c.ativo !== false })))
           setForaEntrega(x.entrega_fora_valor != null)
@@ -288,8 +290,10 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       const { error: erroPerfil } = await supabase.from('profiles').update({
         formas_pagamento: t.formasPagamento,
         formas_entrega: t.formasEntrega,
-        valor_entrega_propria: t.valorEntregaPropria ? numBR(t.valorEntregaPropria) : 0,
-        entrega_por_bairro: t.entregaPorBairro.map(b => ({ bairro: b.bairro.trim(), valor: Math.max(0, numBR(b.valor) || 0) }))
+        // (04/11 · 6.20) taxa vazia NÃO é grátis: fica sem valor (null) e o cardápio mostra "a combinar". Grátis só com o Grátis marcado (0,00).
+        valor_entrega_propria: t.valorEntregaPropria.trim() ? numBR(t.valorEntregaPropria) : null,
+        // bairro sem valor não vai pro cardápio (antes entrava como grátis)
+        entrega_por_bairro: t.entregaPorBairro.filter(b => b.valor.trim()).map(b => ({ bairro: b.bairro.trim(), valor: Math.max(0, numBR(b.valor) || 0) }))
           .filter((b, i, l) => b.bairro && l.findIndex(x => x.bairro.toLowerCase() === b.bairro.toLowerCase()) === i),
         exibir_campo_troco: t.exibirCampoTroco,
         // (20/10) Pix pelo cardápio: só fica ligado com a chave, o nome e a cidade certos (senão o cardápio paga como antes)
@@ -301,10 +305,10 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       if (a.novasColunas) {
         const { error: erroArea } = await supabase.from('profiles').update({
           entrega_modo: a.modoEntrega,
-          entrega_por_raio: a.raios.map(f => ({ km: Number(String(f.km).replace(',', '.')), valor: Math.max(0, numBR(f.valor) || 0), ativo: f.ativo }))
+          entrega_por_raio: a.raios.filter(f => f.valor.trim()).map(f => ({ km: Number(String(f.km).replace(',', '.')), valor: Math.max(0, numBR(f.valor) || 0), ativo: f.ativo }))
             .filter(f => Number.isFinite(f.km) && f.km > 0).sort((x, y) => x.km - y.km)
             .filter((f, i, l) => l.findIndex(y => y.km === f.km) === i),
-          entrega_por_cidade: a.cidades.map(c => ({ cidade: c.cidade.trim(), valor: Math.max(0, numBR(c.valor) || 0), ativo: c.ativo }))
+          entrega_por_cidade: a.cidades.filter(c => c.valor.trim()).map(c => ({ cidade: c.cidade.trim(), valor: Math.max(0, numBR(c.valor) || 0), ativo: c.ativo }))
             .filter((c, i, l) => c.cidade && l.findIndex(y => y.cidade.toLowerCase() === c.cidade.toLowerCase()) === i),
           entrega_fora_valor: a.foraEntrega ? Math.max(0, numBR(a.foraValor) || 0) : null,
           ...(a.lojaPonto ? { loja_lat: a.lojaPonto.lat, loja_lng: a.lojaPonto.lng } : {}),
@@ -349,13 +353,19 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     }
   }
   const salvarTudoRef = useRef(salvarTudo)
+  // (04/11 · 6.20) a taxa da entrega própria está definida? (valor, Grátis marcado ou "a combinar"; vazio não conta)
+  const taxaOk = !formasEntrega.includes('entrega_propria') || modoEntrega === 'combinar'
+    || (modoEntrega === 'fixa' && !!valorEntregaPropria.trim())
+    || (modoEntrega === 'bairro' && entregaPorBairro.some(b => b.bairro.trim() && b.valor.trim()))
+    || (modoEntrega === 'raio' && raios.some(f => f.ativo && f.valor.trim()))
+    || (modoEntrega === 'cidade' && cidades.some(c => c.ativo && c.cidade.trim() && c.valor.trim()))
   // Roda a cada mudança, antes dos efeitos de baixo: deixa nas refs o que está na tela agora
   const estadoRef = useRef('')
   useEffect(() => {
     telaRef.current = { userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela, area: { modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, novasColunas } }
     salvarTudoRef.current = salvarTudo
     if (onEstado && !loading) {
-      const e: EstadoEntregaPagamento = { formasPagamento, formasEntrega, taxa: numBR(valorEntregaPropria), porBairro: entregaPorBairro.filter(b => b.bairro.trim()).length,
+      const e: EstadoEntregaPagamento = { formasPagamento, formasEntrega, taxa: numBR(valorEntregaPropria), porBairro: entregaPorBairro.filter(b => b.bairro.trim()).length, taxaOk, modo: modoEntrega,
         pixOnline, pixPronto: !faltaNoPix(pixTela), pixTipo, pixModo, pixPct }
       const k = JSON.stringify(e)
       if (k !== estadoRef.current) { estadoRef.current = k; onEstado(e) }
@@ -457,6 +467,14 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         if (!mapa.has(sem(b))) mapa.set(sem(b), b)
       })
       setBairrosSug(l => juntar(l, [...mapa.values()]))
+    }, () => {})
+    // + os bairros dos pedidos com entrega (04/11)
+    supabase.from('pedidos').select('endereco_bairro, endereco_cidade').eq('user_id', userId).not('endereco_bairro', 'is', null).limit(2000).then(({ data }) => {
+      if (!vivo || !Array.isArray(data)) return
+      const l = (data as { endereco_bairro?: string | null; endereco_cidade?: string | null }[])
+        .filter(p => p.endereco_bairro && (!cidadeLoja || !p.endereco_cidade || semAcento(String(p.endereco_cidade)) === semAcento(cidadeLoja)))
+        .map(p => String(p.endereco_bairro).trim())
+      setBairrosSug(x => juntar(x, l))
     }, () => {})
     // + os bairros da cidade no mapa aberto (OpenStreetMap)
     if (cidadeLoja) bairrosDaCidade(cidadeLoja, ufLoja).then(l => { if (vivo) setBairrosSug(x => juntar(x, l)) })
@@ -617,14 +635,15 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const blocoTaxa = (
             <div className="ep-taxa">
               {/* (28/10 · 4.49) os quatro jeitos de cobrar, nos cartões com bolinha (igual ao Entrega/Retirada do pedido) */}
-              <p className="ep-modo-t">Como cobrar a entrega</p>
-              <div className="ep-modo" role="radiogroup" aria-label="Como cobrar a entrega">
-                {([['fixa', 'Taxa única', 'Mesmo valor'], ['bairro', 'Por bairro', 'Um por bairro'], ['raio', 'Por raio', 'Pela distância'], ['cidade', 'Por cidade', 'Um por cidade']] as [ModoEntrega, string, string][]).map(([k, n, sub]) => (
-                  <button key={k} type="button" role="radio" aria-checked={modoEntrega === k} className={modoEntrega === k ? 'on' : undefined} onClick={() => { void escolherModo(k) }}>
-                    <i className="ep-modo-bola" aria-hidden="true" /><b>{n}</b><small>{sub}</small>
-                  </button>
-                ))}
-              </div>
+              <p className="ep-modo-t" id="ep-modo-t">Como cobrar a entrega</p>
+              {/* (04/11 · 6.20) as cinco opções em caixinhas, uma embaixo da outra (com "Combinar pelo WhatsApp") */}
+              <CaixasEscolha<ModoEntrega> rotuloId="ep-modo-t" valor={modoEntrega} onMudar={m => { void escolherModo(m) }} opcoes={[
+                { v: 'fixa', t: 'Taxa única', sub: 'O mesmo valor para qualquer endereço' },
+                { v: 'bairro', t: 'Por bairro', sub: 'Um valor para cada bairro' },
+                { v: 'raio', t: 'Por distância', sub: 'Pelos km até a casa do cliente' },
+                { v: 'cidade', t: 'Por cidade', sub: 'Um valor para cada cidade' },
+                { v: 'combinar', t: 'Combinar pelo WhatsApp', sub: 'Você acerta o valor em cada pedido' },
+              ]} />
               {modoEntrega === 'raio' ? (
                 <div className="ep-raio">
                   {!enderecoLoja?.rua || !enderecoLoja?.cidade ? (
@@ -666,6 +685,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                   })}
                   <Botao variante="link" className="ep-add ep-add--lista" icone={<Plus size={16} weight="bold" />} onClick={() => setRaios(prev => [...prev, { km: maiorKm ? kmCurto(maiorKm + 3) : '3', valor: '', ativo: true }])}>Adicionar faixa</Botao>
                   </div>
+                  {raios.some(f => f.ativo && !f.valor.trim()) && <p className="ep-falta"><WarningCircle size={16} weight="bold" aria-hidden="true" />Faixa sem valor não vale no cardápio. Coloque o valor ou marque Grátis.</p>}
                   <Chave on={foraEntrega} rotulo={maiorKm ? `Entregar mais longe que ${kmCurto(maiorKm)} km` : 'Entregar mais longe'} apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: fica fora da área'} aoMudar={setForaEntrega} />
                   {foraEntrega && <div className="ui-campo"><span className="ui-campo-r"><span>Taxa para mais longe</span></span><CampoTaxa rotulo="Taxa para mais longe" valor={foraValor} aoMudar={setForaValor} /></div>}
                 </div>
@@ -679,12 +699,15 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                     </div>
                   ))}
                   {cidadeRepetida && <p className="ep-bairro-erro" role="alert">Cidade repetida. Deixe só uma.</p>}
+                  {cidades.some(c => c.ativo && c.cidade.trim() && !c.valor.trim()) && <p className="ep-falta"><WarningCircle size={16} weight="bold" aria-hidden="true" />Cidade sem valor não aparece no cardápio. Coloque o valor ou marque Grátis.</p>}
                   <Botao variante="link" className="ep-add" icone={<Plus size={16} weight="bold" />} onClick={() => setCidades(prev => [...prev, { cidade: '', valor: '', ativo: true }])}>Adicionar cidade</Botao>
                   <Chave on={foraEntrega} rotulo="Entregar em outras cidades" apoio={foraEntrega ? 'Com a taxa abaixo' : 'Desligado: só nas cidades da lista'} aoMudar={setForaEntrega} />
                   {foraEntrega && <div className="ui-campo"><span className="ui-campo-r"><span>Taxa para outras cidades</span></span><CampoTaxa rotulo="Taxa para outras cidades" valor={foraValor} aoMudar={setForaValor} /></div>}
                 </div>
               ) : null}
-              {modoEntrega === 'raio' || modoEntrega === 'cidade' ? null : !porBairro ? (
+              {modoEntrega === 'combinar' ? (
+                <p className="ep-fixa-prev ep-fixa-prev--comb"><span>No cardápio</span><b>Entrega: a combinar</b></p>
+              ) : modoEntrega === 'raio' || modoEntrega === 'cidade' ? null : !porBairro ? (
                 <div className="ep-fixa">
                   <div className="ui-campo">
                     <span className="ui-campo-r"><span>Valor da taxa</span></span>
@@ -692,17 +715,28 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                     <small className="ep-dica">Cobrada em todo pedido com entrega própria</small>
                   </div>
                   {/* (29/10 · 5.10) o que a cliente vê ao escolher entrega no cardápio */}
-                  <p className="ep-fixa-prev"><span>No cardápio, para o cliente</span><b>Entrega: {(numBR(valorEntregaPropria) || 0) > 0 ? `R$ ${valorEntregaPropria}` : 'Grátis'}</b></p>
+                  {/* (04/11 · 6.20) vazio não é grátis: só o Grátis marcado (0,00) mostra Grátis */}
+                  {!valorEntregaPropria.trim() && <p className="ep-falta" role="status"><WarningCircle size={16} weight="bold" aria-hidden="true" />Coloque o valor ou marque Grátis.</p>}
+                  <p className="ep-fixa-prev"><span>No cardápio</span><b>Entrega: {!valorEntregaPropria.trim() ? 'a combinar' : (numBR(valorEntregaPropria) || 0) > 0 ? `R$ ${valorEntregaPropria}` : 'Grátis'}</b></p>
                 </div>
               ) : (
                 <div className="ep-bairros">
-                  {entregaPorBairro.map((b, i) => (
-                    <div key={i} className="ep-bairro">
-                      <CampoSugestao ariaLabel="Bairro" placeholder={cidadeLoja ? `Bairro de ${cidadeLoja}` : 'Bairro'} valor={b.bairro} opcoes={bairrosSug} aoMudar={v => mudarBairro(i, 'bairro', v)} />
-                      <CampoTaxa rotulo={`Taxa de ${b.bairro || "este bairro"}`} valor={b.valor} aoMudar={v => mudarBairro(i, 'valor', v)} />
-                      <button type="button" className="ep-bairro-x" aria-label={`Tirar ${b.bairro || 'este bairro'}`} onClick={() => setEntregaPorBairro(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
+                  {entregaPorBairro.map((b, i) => {
+                    // (04/11 · 6.20) confere o nome com os bairros da cidade (mapa aberto) e avisa o que falta
+                    const nomeB = b.bairro.trim()
+                    const foraDoMapa = nomeB.length >= 3 && bairrosSug.length > 10 && !bairrosSug.some(x => semAcento(x) === semAcento(nomeB))
+                    return (
+                    <div key={i} className="ep-bairro-bl">
+                      <div className="ep-bairro">
+                        <CampoSugestao ariaLabel="Bairro" placeholder={cidadeLoja ? `Bairro de ${cidadeLoja}` : 'Nome do bairro'} valor={b.bairro} opcoes={bairrosSug} minimo={1} aoMudar={v => mudarBairro(i, 'bairro', v)} />
+                        <CampoTaxa rotulo={`Taxa de ${b.bairro || "este bairro"}`} valor={b.valor} aoMudar={v => mudarBairro(i, 'valor', v)} />
+                        <button type="button" className="ep-bairro-x" aria-label={`Tirar ${b.bairro || 'este bairro'}`} onClick={() => setEntregaPorBairro(prev => prev.filter((_, k) => k !== i))}><Trash size={20} weight="bold" /></button>
+                      </div>
+                      {nomeB && !b.valor.trim() && <p className="ep-falta"><WarningCircle size={16} weight="bold" aria-hidden="true" />Falta o valor de {nomeB}. Sem ele, o bairro não aparece no cardápio.</p>}
+                      {foraDoMapa && <p className="ep-falta ep-falta--leve">Não achamos "{nomeB}" no mapa de {cidadeLoja}. Confira o nome: a cliente escolhe o bairro por ele.</p>}
                     </div>
-                  ))}
+                    )
+                  })}
                   {bairroRepetido && <p className="ep-bairro-erro" role="alert">Bairro repetido. Deixe só um.</p>}
                   <Botao variante="link" className="ep-add" icone={<Plus size={16} weight="bold" />} onClick={() => setEntregaPorBairro(prev => [...prev, { bairro: '', valor: '' }])}>Adicionar bairro</Botao>
                 </div>
@@ -832,7 +866,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
           ) : cupons.length === 0 ? (
             <div className="ep-vazio">
               <p>Nenhum cupom ainda.</p>
-              <Botao icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}>Criar cupom</Botao>
+              <Botao className="guia-novo-cupom" icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}>Criar cupom</Botao>
             </div>
           ) : (
             <>
@@ -855,7 +889,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                 })}
               </div>
               <div className="ep-cupons-pe">
-                <Botao variante="suave" icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}>Novo cupom</Botao>
+                <Botao variante="suave" className="guia-novo-cupom" icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}>Novo cupom</Botao>
                 {/* (27/10) o "Salvar cupons" saiu: a tela já salva sozinha (o botão confundia depois de criar o cupom) */}
               </div>
             </>

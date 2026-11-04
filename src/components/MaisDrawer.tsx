@@ -3,10 +3,11 @@ import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Gear, Crown, CaretRight,
-  Megaphone, CalendarDots, CurrencyDollar,
+  CalendarDots, CurrencyDollar,
   Newspaper, Notebook, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
+import { Ticket, Target } from "@phosphor-icons/react";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { usePlano } from "@/hooks/usePlano";
 import "./maisDrawer.css";
@@ -46,7 +47,8 @@ const GRUPOS: Grupo[] = [
   {
     label: "Outros",
     items: [
-      { label: "Marketing", desc: "Divulgue e venda mais", path: "/marketing", Icone: Megaphone },
+      { label: "Cupons", desc: "Descontos que trazem cliente", path: "/cupons", Icone: Ticket },
+      { label: "Pixel", desc: "Meta, Google e TikTok", path: "/pixel", Icone: Target },
       // (30/10 · 5.67) Novidades e Assinatura saíram do destaque do topo e entraram na lista, como as outras
       { label: "Novidades", desc: "O que mudou no app", path: "/noticias", Icone: Newspaper },
       { label: "Configurações", desc: "Conta, loja e app", path: "/configuracoes", Icone: Gear },

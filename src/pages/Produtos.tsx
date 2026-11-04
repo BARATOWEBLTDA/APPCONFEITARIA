@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { abrirConvitePro } from "@/components/billing/RecursoPro";
 import { horasAntecedencia } from "@/lib/entregaProduto";
 import { explicarErro } from "@/lib/erros";
 import LimitePlano from "@/components/billing/LimitePlano";
 import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
 import { useLocation, useNavigate } from "react-router-dom";
+import Destaque from "@/components/Destaque";
 import { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { Sparkle as SparkleIA } from "@phosphor-icons/react";
 import { selecionarValorAoFocar } from "@/lib/moeda";
@@ -865,6 +867,21 @@ export default function Produtos() {
   const img4Ref = useRef<HTMLInputElement>(null); // (21/10) PRO: até 4 fotos por produto
   const { isPro } = usePlano();
   const { profile } = useProfile();
+
+  // (04/11 · 6.20) veio do "Escrever" do Seus próximos passos: abre o produto já na descrição, com o balão da IA
+  const [destaqueDesc, setDestaqueDesc] = useState(false);
+  useEffect(() => {
+    const abrir = (location.state as { abrir?: string } | null)?.abrir || "";
+    if (loading || !abrir.startsWith("descricao:")) return;
+    window.history.replaceState({ ...(window.history.state || {}), usr: null }, "");
+    const p = produtos.find(x => x.id === abrir.slice(10)) || produtos.find(x => x.disponivel !== false && !String(x.descricao || "").trim());
+    if (!p) return;
+    void openEditar(p).then(() => window.setTimeout(() => {
+      const el = document.getElementById("prod-desc-input");
+      el?.scrollIntoView({ block: "center" });
+      setDestaqueDesc(true);
+    }, 450));
+  }, [loading, location.state]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-abre cadastro quando vem de Pedidos
   useEffect(() => {
@@ -3104,7 +3121,7 @@ export default function Produtos() {
                         onClick={async () => {
                           setPreviewMenu(false);
                           // Ficha técnica em PDF é recurso PRO (relatórios em PDF)
-                          if (!isPro) { avisar("A ficha técnica em PDF é do plano PRO.", { tipo: "info", acao: { rotulo: "Testar grátis", aoTocar: () => irFechandoJanela(() => navigate("/assinar")) } }); return; }
+                          if (!isPro) { abrirConvitePro("fichaPdf"); return; }
                           try {
                             await gerarFichaProduto(previewProduto, userId);
                           } catch (err) {
@@ -4905,6 +4922,9 @@ export default function Produtos() {
       )}
 
     </div>
+      {destaqueDesc && <Destaque alvo=".prod-desc-caixa" sobreJanela mascote titulo="Conte como é o produto" texto="Escreva o sabor, o tamanho e quantas pessoas serve. Ou toque em Gerar com IA e a Doo escreve pra você."
+        acao="Gerar com IA" aoAcao={() => { setDestaqueDesc(false); (document.querySelector(".prod-btn-ia-dentro") as HTMLButtonElement | null)?.click(); }}
+        naoTexto="Eu escrevo" aoFechar={() => { setDestaqueDesc(false); document.getElementById("prod-desc-input")?.focus(); }} />}
     </>
   );
 }

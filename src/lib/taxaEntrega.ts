@@ -5,7 +5,8 @@
  * quando a rota não vem. No cardápio, quem decide a taxa é o banco (função cardapio_taxa_entrega),
  * que não mostra o ponto da loja pra ninguém.
  */
-export type ModoEntrega = 'fixa' | 'bairro' | 'raio' | 'cidade'
+/** (04/11 · 6.20) 'combinar': a taxa é acertada no WhatsApp (o pedido entra sem taxa) */
+export type ModoEntrega = 'fixa' | 'bairro' | 'raio' | 'cidade' | 'combinar'
 export type FaixaRaio = { km: number; valor: number }
 export type TaxaCidade = { cidade: string; valor: number }
 export type Ponto = { lat: number; lng: number }
@@ -13,7 +14,7 @@ export type Ponto = { lat: number; lng: number }
 /** O modo gravado; sem ele (lojas antigas), a lista de bairros decide */
 export function modoDaLoja(cfg: { entrega_modo?: string | null; entrega_por_bairro?: unknown[] | null }): ModoEntrega {
   const m = cfg.entrega_modo
-  if (m === 'fixa' || m === 'bairro' || m === 'raio' || m === 'cidade') return m
+  if (m === 'fixa' || m === 'bairro' || m === 'raio' || m === 'cidade' || m === 'combinar') return m
   return Array.isArray(cfg.entrega_por_bairro) && cfg.entrega_por_bairro.length > 0 ? 'bairro' : 'fixa'
 }
 

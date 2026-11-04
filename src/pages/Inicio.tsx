@@ -118,19 +118,7 @@ export default function Inicio() {
   // e atualiza por trás, sem "Carregando…". Vale só pra mesma conta e o mesmo dia.
   const [c0] = useState(() => { const c = cacheInicio; const uid = perfilAtual()?.id; return c && uid && c.uid === uid && c.dia === dataISO(new Date()) ? c : null; });
   const [loading, setLoading] = useState(!c0);
-  // (22/10) celular, primeira vez no Início: o tour aparece sozinho uma vez (depois fica no "?" do Olá)
-  useEffect(() => {
-    if (computador || loading || !profile?.id) return;
-    const k = `doonly_tour_inicio_${profile.id}`;
-    try { if (localStorage.getItem(k)) return; } catch { return; }
-    const t = window.setTimeout(() => {
-      if (document.querySelector('.ui-veu, [role="dialog"], [role="alertdialog"]')) return; // tem janela aberta: tenta na próxima visita
-      if (contarPassos(TOUR_INICIO_CEL) < 2) return;
-      try { localStorage.setItem(k, "1"); } catch { /* sem armazenamento */ }
-      void fazerTour(TOUR_INICIO_CEL);
-    }, 1800);
-    return () => window.clearTimeout(t);
-  }, [computador, loading, profile?.id]);
+  // (04/11 · 6.20) o tour do Início não abre mais sozinho (abria logo depois dos Primeiros passos): fica só no "?" do Olá
   const [erroCarga, setErroCarga] = useState(false); // a busca do dia falhou (sem internet, por exemplo)
   const [counts, setCounts] = useState(c0?.dados.counts ?? {
     pedidosPendentes: 0,

@@ -26,9 +26,15 @@ export async function bairrosDaCidade(cidade: string, uf: string): Promise<strin
     : `rel["boundary"="administrative"]["admin_level"="8"]["name"="${esc(c)}"];`
   const q = `[out:json][timeout:20];${cidadeSel}map_to_area->.a;(rel["boundary"="administrative"]["admin_level"~"^(9|10)$"](area.a);node["place"~"^(suburb|neighbourhood|quarter)$"](area.a););out tags;`
   try {
-    const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: new URLSearchParams({ data: q }) })
-    if (!r.ok) return []
-    const j = await r.json()
+    // (04/11 · 6.20) se o servidor principal do mapa estiver cheio, tenta o espelho
+    let j: { elements?: { tags?: { name?: string } }[] } | null = null
+    for (const url of ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter']) {
+      try {
+        const r = await fetch(url, { method: 'POST', body: new URLSearchParams({ data: q }) })
+        if (r.ok) { j = await r.json(); if (j?.elements?.length) break }
+      } catch { /* tenta o próximo */ }
+    }
+    if (!j) return []
     const nomes = new Map<string, string>()
     for (const e of j?.elements || []) {
       const n = String(e?.tags?.name || '').trim()

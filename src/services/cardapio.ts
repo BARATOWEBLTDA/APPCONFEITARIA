@@ -31,6 +31,8 @@ type PerfilLoja = {
   banner_gradient?: string | null
   ocultar_categorias?: boolean | null
   facebook_pixel_id?: string | null
+  google_tag_id?: string | null
+  tiktok_pixel_id?: string | null
   telefone?: string | null
   avaliacao_media?: number | null
   endereco?: string | null
@@ -205,6 +207,9 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
     cor_rodape: COR_BOTOES,
     ocultar_categorias: profile.ocultar_categorias || false,
     facebook_pixel_id: isPro ? profile.facebook_pixel_id || '' : '', // (19/10) Marketing › Pixel do Facebook · (31/10 · 5.84) só no PRO
+    // (04/11 · 6.20) Pixel do Google e do TikTok (também só no PRO)
+    google_tag_id: isPro ? (profile as { google_tag_id?: string | null }).google_tag_id || '' : '',
+    tiktok_pixel_id: isPro ? (profile as { tiktok_pixel_id?: string | null }).tiktok_pixel_id || '' : '',
   }
 
   const config: Configuracoes = {
@@ -219,9 +224,10 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
     formas_pagamento: profile.formas_pagamento || ['pix'],
     formas_entrega: profile.formas_entrega || ['retirada'],
     valor_entrega_propria: profile.valor_entrega_propria || 0,
+    // (04/11 · 6.20) taxa única sem valor (nunca definida) = a combinar, não grátis
     entrega_por_bairro: modoDaLoja(profile) === 'bairro' ? (profile.entrega_por_bairro || []) : [],
     // (28/10 · 4.49) raio e cidade. Nesses modos a lista de bairros não vale (o cardápio olha a lista pra pedir o bairro)
-    entrega_modo: modoDaLoja(profile),
+    entrega_modo: modoDaLoja(profile) === 'fixa' && profile.valor_entrega_propria == null ? 'combinar' : modoDaLoja(profile),
     entrega_por_raio: Array.isArray(profile.entrega_por_raio) ? profile.entrega_por_raio : [],
     entrega_por_cidade: Array.isArray(profile.entrega_por_cidade) ? profile.entrega_por_cidade.filter((c) => c?.ativo !== false) : [],
     entrega_fora_valor: profile.entrega_fora_valor ?? null,

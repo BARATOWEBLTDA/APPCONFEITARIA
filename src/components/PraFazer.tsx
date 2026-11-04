@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Basket, Bell, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle } from "@phosphor-icons/react";
+import { Basket, Bell, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
@@ -26,14 +26,14 @@ import { ConteudoComo, type Como } from "@/components/como/ComoFunciona";
  * (21/10) Voltou a se chamar "Pra fazer" (era quase igual a "Primeiros passos"). Cada linha tem um botão curto que
  * já diz a ação (Pagar, Liberar, Definir…) no lugar da seta e do ×; a conta mostra o valor ("Vence hoje · R$ 380,00").
  */
-type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; t: string; s: string; acao: string; link: string; estado?: { abrir: string }; fechar?: boolean; ordem: number; aoTocar?: () => void;
+type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; t: string; s: string; acao: string; link: string; estado?: AvisoCadastro["estado"]; fechar?: boolean; ordem: number; aoTocar?: () => void;
   /** (22/10) frase do porquê (até 2 linhas) e, na conta, o vencimento em vermelho em cima dela */
-  txt?: string; alerta?: string; comoFunciona?: Como; revisar?: { abrir: string } };
+  txt?: string; alerta?: string; comoFunciona?: Como; revisar?: AvisoCadastro["estado"]; rotuloRevisar?: string };
 
 /** (21/10) o botão de cada linha diz o que fazer */
-const ACAO: Record<AvisoCadastro["icone"], string> = { custos: "Definir", maquininha: "Definir", ficha: "Fazer", caixa: "Informar", conta: "Pagar", entrega: "Definir", descricao: "Escrever", banner: "Colocar" };
+const ACAO: Record<AvisoCadastro["icone"], string> = { custos: "Definir", maquininha: "Definir", ficha: "Fazer", caixa: "Informar", conta: "Pagar", entrega: "Definir", descricao: "Escrever", banner: "Colocar", cupom: "Criar", complemento: "Criar", cliente: "Cadastrar", whatsapp: "Está certo" };
 const ACAO_NOVIDADE: Record<string, string> = { "aniversarios": "Ver", "produtos-sem-foto": "Pôr foto", "clientes-sumidos": "Chamar" };
-const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquininha: CreditCard, ficha: ClipboardText, caixa: Coins, conta: CalendarCheck, entrega: Truck, descricao: TextAlignLeft, banner: ImageSquare };
+const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquininha: CreditCard, ficha: ClipboardText, caixa: Coins, conta: CalendarCheck, entrega: Truck, descricao: TextAlignLeft, banner: ImageSquare, cupom: Ticket, complemento: Stack, cliente: UserPlus, whatsapp: WhatsappLogo };
 const DIA = 86400000;
 const PESO = { urgente: 0, atencao: 1, normal: 2 };
 const VISIVEIS = 3;
@@ -49,7 +49,7 @@ const COMO: Record<string, Como> = {
       [Truck, <><b>Taxa fixa:</b> um valor só para toda entrega.</>],
       [MapPin, <><b>Por bairro:</b> um valor para cada bairro.</>],
       [Storefront, <>Retirada no local continua <b>sem taxa</b>.</>],
-      [WarningCircle, <>Sem taxa, o cardápio mostra <b>entrega grátis</b> e os R$ 12,00 saem do seu lucro.</>],
+      [WarningCircle, <>Sem taxa, o cardápio mostra <b>a combinar</b> e você acerta o valor em cada pedido.</>],
     ],
   },
   ficha: {
@@ -187,12 +187,15 @@ export default function PraFazer() {
     ...itemPro,
     ...avisos.map((a, i): Item => ({
       chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, estado: a.estado, ordem: i,
-      acao: ACAO[a.icone] || "Ver", fechar: a.icone !== "conta",
+      acao: ACAO[a.icone] || "Ver", fechar: a.icone !== "conta" && a.icone !== "whatsapp",
+      // (04/11 · 6.20) WhatsApp: "Está certo" confirma aqui mesmo; "Corrigir" leva pro campo com o balão
+      aoTocar: a.confirmarWhats ? () => { const tel = a.confirmarWhats!; supabase.auth.updateUser({ data: { whatsapp_ok: tel } }).then(() => { setAvisos(l => l.filter(x => x.chave !== a.chave)); avisar("Pronto, número confirmado.", { tipo: "ok" }); }, () => avisar("Não deu para confirmar agora. Tente de novo.", { tipo: "erro" })); } : undefined,
+      rotuloRevisar: a.icone === "whatsapp" ? "Corrigir" : undefined,
       // conta: o vencimento em vermelho e, no lugar do "Agora não", o "Revisar" (digitou errado ou a conta não existe)
       txt: a.icone === "conta" ? "Pague ou marque como paga." : a.texto,
       alerta: a.icone === "conta" ? a.curto.s : undefined,
       comoFunciona: COMO[a.icone],
-      revisar: a.icone === "conta" && a.estado?.abrir?.startsWith("pagar:") ? { abrir: `revisar:${a.estado.abrir.slice(6)}` } : undefined,
+      revisar: a.icone === "conta" && a.estado?.abrir?.startsWith("pagar:") ? { abrir: `revisar:${a.estado.abrir.slice(6)}` } : a.icone === "whatsapp" ? a.estado : undefined,
     })),
     ...updates.map((u): Item => ({
       chave: u.key, nivel: u.key === "faturamento-down" || u.key === "aniversarios" ? "atencao" : "normal",
@@ -231,7 +234,7 @@ export default function PraFazer() {
               {!cel && como === x.chave && x.comoFunciona && <ConteudoComo c={x.comoFunciona} rotulo={x.t} className="pf-cf" />}
               <div className="pf-bts">
                 {x.revisar ? (
-                  <button type="button" className="pf-nao" onClick={() => navigate(x.link, { state: x.revisar })}>Revisar</button>
+                  <button type="button" className="pf-nao" onClick={() => navigate(x.link, { state: x.revisar })}>{x.rotuloRevisar || "Revisar"}</button>
                 ) : x.fechar ? (
                   <div className="pf-nao-w">
                     <button type="button" className="pf-nao" aria-haspopup="menu" aria-expanded={menu === x.chave} onClick={() => setMenu(m => m === x.chave ? null : x.chave)}>Agora não <CaretDown size={14} weight="bold" aria-hidden="true" /></button>
@@ -244,7 +247,7 @@ export default function PraFazer() {
                     )}
                   </div>
                 ) : null}
-                <button type="button" className="pf-bt" disabled={x.aoTocar ? push.loading : false} onClick={() => ir(x)}>{x.acao}</button>
+                <button type="button" className="pf-bt" disabled={x.aoTocar && x.chave === "ativar_notificacoes" ? push.loading : false} onClick={() => ir(x)}>{x.acao}</button>
               </div>
             </div>
           </li>

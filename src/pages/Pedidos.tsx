@@ -403,6 +403,8 @@ export default function Pedidos() {
       const link = linkWhatsApp(p.cliente_telefone, montarMensagem('sobre_pedido', dadosDoPedido(p, nome)))
       if (!link) { avisar('O telefone deste cliente está incompleto.', { tipo: 'info' }); return }
       window.open(link, '_blank')
+      // (04/11 · 6.20) o atalho pra mudar o texto dessa mensagem fica aqui, onde ela manda
+      avisar('Mensagem aberta no WhatsApp', { tipo: 'ok', acao: { rotulo: 'Editar o texto', aoTocar: () => navigate('/configuracoes/mensagens') } })
       fechar(); return
     }
     if (acao === 'compartilhar') {
