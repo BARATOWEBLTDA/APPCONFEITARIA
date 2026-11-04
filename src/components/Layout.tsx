@@ -241,22 +241,23 @@ export default function Layout() {
           <ItemMenu to="/pedidos" icone={Receipt}>Pedidos</ItemMenu>
           <ItemMenu to="/agenda" icone={CalendarDots}>Agenda</ItemMenu>
           <ItemMenu to="/orcamentos" icone={FileText}>Orçamentos</ItemMenu>
-          {/* (13/10) as telas do Cardápio digital viraram um grupo do menu (antes eram abas na faixa rosa) */}
-          {/* (14/10) Produtos, Categorias e Personalização foram pra Cadastros: aqui fica só o que é da loja online */}
-          <GrupoMenu id="cardapio" aberto={grupoAberto === "cardapio"} onAbrir={setGrupoAberto} rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO.filter(r => !ROTAS_CATALOGO.includes(r)), "/cardapio-preview"]} recolhido={recolhido}>
-            <SubitemMenu to="/cardapio" end icone={ChartBar}>Visão geral</SubitemMenu>
-            <SubitemMenu to="/cardapio-design" icone={Palette}>Aparência</SubitemMenu>
-            <SubitemMenu to="/cardapio-config" icone={Storefront}>Dados da loja</SubitemMenu>
-            {linkCardapio && <a className="nav-subitem" href={linkCardapio} target="_blank" rel="noopener noreferrer"><span className="nav-subicon" aria-hidden="true"><ArrowSquareOut size={16} weight="bold" /></span>Ver meu cardápio</a>}
-          </GrupoMenu>
-          {/* (13/10) grupos que abrem e fecham (ficam abertos quando a tela é deles; o que ela abrir ou fechar fica lembrado) */}
-          <GrupoMenu id="cadastros" aberto={grupoAberto === "cadastros"} onAbrir={setGrupoAberto} rotulo="Cadastros" icone={Users} rotas={[...ROTAS_CATALOGO, "/clientes", "/insumos", "/ficha-tecnica"]} recolhido={recolhido}>
+          {/* (6.59) o que se usa todo dia fica solto no topo; o que se configura uma vez fica dentro dos grupos */}
+          <ItemMenu to="/clientes" icone={Users}>Clientes</ItemMenu>
+          <GrupoMenu id="cadastros" aberto={grupoAberto === "cadastros"} onAbrir={setGrupoAberto} rotulo="Produtos" icone={Cake} rotas={[...ROTAS_CATALOGO, "/insumos", "/ficha-tecnica"]} recolhido={recolhido}>
             <SubitemMenu to="/produtos" end icone={Cake}>Produtos</SubitemMenu>
             <SubitemMenu to="/categorias" icone={SquaresFour} tambem={["/produtos/categorias"]}>Categorias</SubitemMenu>
             <SubitemMenu to="/complementos" icone={Stack}>Adicionais</SubitemMenu>
-            <SubitemMenu to="/clientes" icone={Users}>Clientes</SubitemMenu>
             <SubitemMenu to="/insumos" icone={Package}>Ingredientes</SubitemMenu>
             <SubitemMenu to="/ficha-tecnica" icone={ClipboardText}>Ficha técnica</SubitemMenu>
+          </GrupoMenu>
+          {/* (13/10) as telas do Cardápio digital viraram um grupo do menu · (6.59) Cupons e Pixel entraram aqui: divulgam o cardápio */}
+          <GrupoMenu id="cardapio" aberto={grupoAberto === "cardapio"} onAbrir={setGrupoAberto} rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO.filter(r => !ROTAS_CATALOGO.includes(r)), "/cardapio-preview", "/cupons", "/pixel"]} recolhido={recolhido}>
+            <SubitemMenu to="/cardapio" end icone={ChartBar}>Visão geral</SubitemMenu>
+            <SubitemMenu to="/cardapio-design" icone={Palette}>Aparência</SubitemMenu>
+            <SubitemMenu to="/cardapio-config" icone={Storefront}>Dados da loja</SubitemMenu>
+            <SubitemMenu to="/cupons" icone={Ticket}>Cupons</SubitemMenu>
+            <SubitemMenu to="/pixel" icone={Target}>Pixel</SubitemMenu>
+            {linkCardapio && <a className="nav-subitem" href={linkCardapio} target="_blank" rel="noopener noreferrer"><span className="nav-subicon" aria-hidden="true"><ArrowSquareOut size={16} weight="bold" /></span>Ver meu cardápio</a>}
           </GrupoMenu>
           <GrupoMenu id="financeiro" aberto={grupoAberto === "financeiro"} onAbrir={setGrupoAberto} rotulo="Financeiro" icone={CurrencyDollar} rotas={["/financeiro", "/custos", "/lucratividade"]} recolhido={recolhido}>
             <SubitemMenu to="/financeiro" end icone={SquaresFour}>Visão geral</SubitemMenu>
@@ -266,9 +267,6 @@ export default function Layout() {
             <SubitemMenu to="/custos" icone={Tag}>Custos</SubitemMenu>
             <SubitemMenu to="/lucratividade" icone={ChartLineUp}>Lucratividade</SubitemMenu>
           </GrupoMenu>
-          {/* (04/11 · 6.20) Marketing escondido: Cupons e Pixel separados */}
-          <ItemMenu to="/cupons" icone={Ticket}>Cupons</ItemMenu>
-          <ItemMenu to="/pixel" icone={Target}>Pixel</ItemMenu>
           {/* (04/11 · 6.42) a Doo IA saiu do menu: no computador ela é o balão flutuante no canto (doo-fab) */}
           <GrupoMenu id="conta" aberto={grupoAberto === "conta"} onAbrir={setGrupoAberto} rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar"]} recolhido={recolhido}>
             <SubitemMenu to="/configuracoes" end icone={Gear}>Configurações</SubitemMenu>

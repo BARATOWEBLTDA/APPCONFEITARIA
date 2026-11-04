@@ -25,3 +25,20 @@
 @media (min-width: 600px) and (max-width: 900px) {
   html body .ini-root .ini-section--nav .ini-nav-grid { max-width: 480px; }
 }
+
+/* (6.59) computador: o Acesso rápido numa faixa logo depois dos Primeiros passos, e as Próximas entregas antes dos números */
+.ini-at-pc { order: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-stack); margin-top: var(--space-4); }
+@media (min-width: 1600px) { .ini-at-pc { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.ini-at-pc-it { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 68px; margin: 0; padding: 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; transition: border-color .15s, transform .12s; }
+.ini-at-pc-it:hover { border-color: #F3B3CA; }
+.ini-at-pc-it:active { transform: scale(.98); }
+.ini-at-pc-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 13px; background: var(--ui-rosa); color: var(--ui-branco); }
+.ini-at-pc-tx { display: flex; flex-direction: column; min-width: 0; }
+.ini-at-pc-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14.5px; font-weight: 600; }
+.ini-at-pc-tx small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; color: var(--ui-texto-2); }
+@media (min-width: 901px) {
+  html body .ini-root > .ini-pp--topo { order: 0; }
+  html body .ini-root > .ini-link-topo { order: 1; }
+  html body .ini-root > .ini-dkg { order: 2; }
+  html body .ini-root > .ini-dk { order: 3; margin-top: var(--space-6); }
+}

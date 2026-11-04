@@ -27,7 +27,7 @@ import { useNavigate } from "react-router-dom";
 // (15/10) o gráfico (recharts) só é baixado quando aparece
 const GraficoRecebido = lazy(() => import("@/components/inicio/GraficoRecebido"));
 import {
-  HandCoins, MagnifyingGlass, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
+  FileText, MagnifyingGlass, Bell, CalendarDots, CurrencyDollar, Camera, Users, ChartLineUp,
   CaretRight, Cake, Receipt, ClipboardText, ArrowUp, ArrowDown, Minus,
   WarningCircle, Clock, Package, TrendUp, Confetti, RocketLaunch, Sparkle,
 } from "@phosphor-icons/react";
@@ -722,6 +722,17 @@ export default function Inicio() {
     </>);
   })();
 
+  // (6.59) Acesso rápido: o mesmo no celular (grade) e no computador (faixa embaixo dos Primeiros passos)
+  const ATALHOS = [
+    /* (6.59) o que ela usa todo dia: Lucratividade e A receber continuam dentro do Financeiro */
+    { Icone: CalendarDots,   label: "Agenda",        sub: "Entregas por dia",      path: "/agenda",        key: "agenda" },
+    { Icone: Cake,           label: "Produtos",      sub: "Preço, foto, esgotado", path: "/produtos",      key: "produtos" },
+    { Icone: Users,          label: "Clientes",      sub: "Quem compra",           path: "/clientes",      key: "clientes" },
+    { Icone: FileText,       label: "Orçamentos",    sub: "Propostas para festas", path: "/orcamentos",    key: "orcamentos" },
+    { Icone: CurrencyDollar, label: "Financeiro",    sub: "Entradas e saídas",     path: "/financeiro",    key: "financeiro" },
+    { Icone: ClipboardText,  label: "Ficha técnica", sub: "Custo e lucro",         path: "/ficha-tecnica", key: "ficha" },
+  ];
+
   return (
     <>
     {/* (19/10) computador: a mesma barra de cima das outras telas (no celular fica o hero rosa) */}
@@ -890,6 +901,17 @@ export default function Inicio() {
 
       {/* (29/10 · 4.93) computador: os Primeiros passos vêm antes dos números (pra loja nova os números estão zerados) */}
       {computador && <section className="ini-section ini-pp ini-pp--topo"><PrimeirosPassos /></section>}
+      {/* (6.59) computador: o Acesso rápido também, numa faixa só, logo depois dos Primeiros passos */}
+      {computador && (
+        <section className="ini-at-pc" aria-label="Acesso rápido">
+          {ATALHOS.map(item => (
+            <button key={item.path} type="button" className="ini-at-pc-it" onClick={() => navigate(item.path)}>
+              <span className="ini-at-pc-ic" aria-hidden="true"><item.Icone size={22} weight="bold" /></span>
+              <span className="ini-at-pc-tx"><b>{item.label}</b><small>{item.sub}</small></span>
+            </button>
+          ))}
+        </section>
+      )}
       {/* (30/10 · 5.46) o link de vendas sobe para o topo (some sozinho enquanto a loja não está pronta) */}
       {computador && <div className="ini-link-topo"><LinkDeVendas /></div>}
       {/* ══ Computador (≥1100px): topo rosa com o resumo do dia + números (30/09) ══ */}
@@ -1027,17 +1049,7 @@ export default function Inicio() {
         </h2>
 
         <div className="ini-nav-grid">
-          {[
-            /* (22/10) só o que não está à mão em outro lugar: Nova venda é o "+", Configurações no Menu,
-               Ingredientes em Cadastros e Minhas receitas ainda não existe.
-               (23/10) Minha loja foi para o menu de baixo (com os produtos dentro) e o Financeiro voltou para cá */
-            { Icone: CalendarDots,   label: "Agenda",        sub: "Entregas por dia",      path: "/agenda",        key: "agenda" },
-            { Icone: HandCoins,      label: "A receber",     sub: "Quem ainda deve",       path: "/financeiro/a-receber", key: "areceber" },
-            { Icone: Users,          label: "Clientes",      sub: "Quem compra",   path: "/clientes",      key: "clientes" },
-            { Icone: CurrencyDollar, label: "Financeiro",    sub: "Entradas e saídas", path: "/financeiro", key: "financeiro" },
-            { Icone: ClipboardText,  label: "Ficha técnica", sub: "Custo e lucro",         path: "/ficha-tecnica", key: "ficha" },
-            { Icone: TrendUp,        label: "Lucratividade", sub: "Seu lucro real",     path: "/lucratividade", key: "lucro" },
-          ].map((item) => (
+          {ATALHOS.map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon"><item.Icone size={isMobile ? 24 : 20} weight="bold" /></div>
               <div className="ini-nav-meta">
@@ -1578,7 +1590,8 @@ export default function Inicio() {
 
         /* Nível 2: seções dentro de .ini-main */
         /* (4.29) ordem do celular: topo · Acesso rápido · Próximas entregas · abrir/pausar a loja · banner */
-        .ini-section--dia { order: 3; }
+        /* (6.59) celular: pedidos novos · primeiros passos · Próximas entregas · Acesso rápido · busca · o resto */
+        .ini-section--dia { order: 1; }
         .ini-root .ini-section.ini-section--dia { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--dia { display: none; } }
         .ini-section--pausa { order: 4; margin-top: var(--space-3); }
@@ -1587,11 +1600,11 @@ export default function Inicio() {
         .ini-pp:empty { display: none; }
 
         .ini-section--nav     { order: 2; }
-        .ini-section--busca   { order: 1; }
+        .ini-section--busca   { order: 3; }
         .ini-root .ini-section.ini-section--busca { margin-top: var(--space-3) !important; }
         /* (22/10) celular: o Para fazer vem logo depois do Acesso rápido (antes ficava em cima dele) */
-        @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 3; } } /* (22/10) e depois das Próximas entregas (o dia vem antes das tarefas) */
-        .ini-main > .ini-mobile-banner { order: 3; margin-top: var(--space-3); } /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
+        @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 4; } } /* (22/10) e depois das Próximas entregas (o dia vem antes das tarefas) */
+        .ini-main > .ini-mobile-banner { order: 4; margin-top: var(--space-3); } /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
         .ini-section--novos { order: -1; }
         .ini-root .ini-section.ini-section--novos { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--novos { display: none; } }

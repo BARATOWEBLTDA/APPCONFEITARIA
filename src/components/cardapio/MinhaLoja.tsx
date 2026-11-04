@@ -101,7 +101,7 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
   return (
     <>
       {recorte.janela}
-      <DadosLoja embutido extras={{ antes: linhaLogo, depois: linhaAparencia }} />
+      {/* (6.59) o que o cliente vê vem primeiro: produtos logo abaixo do cartão de compartilhar */}
       <section className="dl-emb ml-produtos" aria-label="O que você vende">
         <h2 className="dl-emb-t">O que você vende</h2>
         <div className="dl-lista-c">
@@ -110,6 +110,7 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
           {linha(Stack, "Adicionais", qtd(n?.complementos, "adicional", "adicionais", "Topo, velas e outros extras"), "/complementos")}
         </div>
       </section>
+      <DadosLoja embutido extras={{ antes: linhaLogo, depois: linhaAparencia }} />
       {!pro && (
         <section className="dl-emb" aria-label="Mais vendidos">
           <h2 className="dl-emb-t">Desempenho</h2>

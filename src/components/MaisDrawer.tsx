@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   Gear, Crown, CaretRight,
   CalendarDots, CurrencyDollar,
-  Newspaper, Notebook, FileText,
+  Newspaper, FileText, Users, ChatCircleText, Cake, Package, ClipboardText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { Ticket, Target } from "@phosphor-icons/react";
@@ -31,29 +31,44 @@ interface Grupo { label: string; items: Item[] }
 // (13/10) TODAS as telas da confeiteira (as mesmas do menu do computador, na mesma ordem),
 // inclusive as que também abrem pelo Início. Só ficam fora as que já estão no menu de baixo (Início, Pedidos, Cardápio, Doo IA).
 // (18/10) reorganizado pela prioridade do dia a dia: o que ela usa todo dia primeiro, o que mexe pouco no fim
+// (6.59) sem o "Cadastros" no meio do caminho: cada tela aparece direto, em grupos pelo uso do dia a dia
 const GRUPOS: Grupo[] = [
-  // (21/10) os cadastros (produtos, clientes, mensagens) moram em Cadastros; (23/10) a Minha loja está no menu de baixo:
-  // aqui fica só o que não está em outro lugar, sem repetir
   {
     label: "Dia a dia",
     items: [
-      // (23/10) a Minha loja foi para o menu de baixo e o Financeiro veio para cá, em primeiro
-      { label: "Financeiro",   desc: "Entradas, saídas e lucro",          path: "/financeiro", Icone: CurrencyDollar },
-      { label: "Agenda",       desc: "Entregas por dia",                  path: "/agenda",    Icone: CalendarDots },
-      { label: "Orçamentos",   desc: "Propostas que o cliente aprova",    path: "/orcamentos", Icone: FileText },
-      { label: "Cadastros",    desc: "Clientes, ingredientes e produtos", path: "/cadastros", Icone: Notebook },
+      { label: "Agenda",       desc: "Entregas por dia",               path: "/agenda",     Icone: CalendarDots },
+      { label: "Orçamentos",   desc: "Propostas que o cliente aprova", path: "/orcamentos", Icone: FileText },
+      { label: "Clientes",     desc: "Quem já comprou com você",       path: "/clientes",   Icone: Users },
+      { label: "Mensagens do WhatsApp", desc: "Textos prontos para o cliente", path: "/configuracoes/mensagens", Icone: ChatCircleText },
     ],
   },
   {
-    label: "Outros",
+    label: "Produção",
+    items: [
+      { label: "Produtos",      desc: "Preço, foto e esgotado",  path: "/produtos",      Icone: Cake },
+      { label: "Ingredientes",  desc: "O que você compra",       path: "/insumos",       Icone: Package },
+      { label: "Ficha técnica", desc: "Custo e lucro de cada produto", path: "/ficha-tecnica", Icone: ClipboardText },
+    ],
+  },
+  {
+    label: "Dinheiro",
+    items: [
+      { label: "Financeiro", desc: "Entradas, saídas, a receber e lucro", path: "/financeiro", Icone: CurrencyDollar },
+    ],
+  },
+  {
+    label: "Divulgar",
     items: [
       { label: "Cupons", desc: "Descontos que trazem cliente", path: "/cupons", Icone: Ticket },
-      { label: "Pixel", desc: "Meta, Google e TikTok", path: "/pixel", Icone: Target },
-      // (30/10 · 5.67) Novidades e Assinatura saíram do destaque do topo e entraram na lista, como as outras
-      { label: "Novidades", desc: "O que mudou no app", path: "/noticias", Icone: Newspaper },
-      { label: "Configurações", desc: "Conta, loja e app", path: "/configuracoes", Icone: Gear },
-      // (31/10 · 5.72) por último e em destaque: a coroa dourada, igual à do PRO
-      { label: "Assinatura", desc: "Seu plano", path: "/assinar", Icone: Crown },
+      { label: "Pixel",  desc: "Meta, Google e TikTok",        path: "/pixel",  Icone: Target },
+    ],
+  },
+  {
+    label: "Conta",
+    items: [
+      { label: "Novidades",     desc: "O que mudou no app", path: "/noticias",      Icone: Newspaper },
+      { label: "Configurações", desc: "Conta, loja e app",  path: "/configuracoes", Icone: Gear },
+      { label: "Assinatura",    desc: "Seu plano",          path: "/assinar",       Icone: Crown },
     ],
   },
 ];
@@ -94,9 +109,9 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
 
         <div className="mais-corpo">
           {/* (30/10 · 5.70) o atalho da Doo IA saiu do Menu */}
-          {/* (21/10) uma lista só, sem título de grupo (sobraram poucos itens) */}
-          {[{ label: "Telas", items: GRUPOS.flatMap(g => g.items) }].map(grupo => (
-            <section key={grupo.label} className="mais-grupo" aria-label="Telas do app">
+          {GRUPOS.map(grupo => (
+            <section key={grupo.label} className="mais-grupo" aria-label={grupo.label}>
+              <h3 className="mais-grupo-t">{grupo.label}</h3>
               <div className="mais-lista">
                 {grupo.items.map(item => {
                   const destino = item.path === "/assinar" && isPro ? "/minha-assinatura" : item.path;
