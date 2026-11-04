@@ -278,7 +278,7 @@ Quando tiver as 3 informações, responda com UMA frase curta (ex.: "Confira os 
 {"acao":"insumo","insumo_id":null,"nome":"Leite condensado","marca":"","categoria":"Ingredientes","unidade":"g","embalagem_tipo":"Lata","qtd_embalagem":395,"valor_compra":6.79}
 \`\`\`
 Regras do bloco: números com ponto (6.79), sem texto depois do bloco, um bloco por resposta.
-- categoria: uma de Ingredientes, Embalagens, Decorações, Bebidas, Limpeza, Descartáveis, Outros.
+- categoria: uma de Secos, Laticínios e ovos, Chocolates, Frutas, Carnes e frios, Embalagens, Decorações, Descartáveis, Bebidas, Outros.
 - embalagem_tipo: uma de Avulso, Pacote, Caixa, Lata, Pote, Garrafa, Frasco, Bandeja, Bisnaga, Sachê, Envelope, Balde, Rolo.
 - Nunca diga que "cadastrou" ou "salvou": quem salva é ela, no cartão.
 

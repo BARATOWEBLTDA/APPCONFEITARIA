@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Broom, CaretRight, Drop, Egg, ForkKnife, Grains, MagnifyingGlass, Package, Plus, Sparkle, Tag, WarningCircle, X } from "@phosphor-icons/react";
+import { Broom, CaretRight, Cherries, Cookie, CookingPot, Drop, Egg, ForkKnife, Grains, MagnifyingGlass, Package, Plus, Sparkle, Tag, WarningCircle, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import QuickAddInsumo, { InsumoQuick, custoNaReceita, descreverCompra, formatarCusto, rotuloCategoria } from "@/components/QuickAddInsumo";
@@ -37,7 +37,7 @@ const precoAntigo = (i: Insumo): string => {
 
 /** Ícone de cada categoria (quando o ingrediente não tem foto). 10/10: um por tipo — antes quase tudo saía com o ovo */
 const sem = (t: string) => (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-const ICONE_CAT: Record<string, typeof Egg> = { ingredientes: Grains, alimentos: Grains, embalagens: Package, decoracoes: Sparkle, bebidas: Drop, descartaveis: ForkKnife, limpeza: Broom };
+const ICONE_CAT: Record<string, typeof Egg> = { ingredientes: Grains, alimentos: Grains, secos: Grains, "laticinios e ovos": Egg, chocolates: Cookie, frutas: Cherries, "carnes e frios": CookingPot, embalagens: Package, decoracoes: Sparkle, bebidas: Drop, descartaveis: ForkKnife, limpeza: Broom };
 // Item salvo como "Ingredientes" mas que pelo nome é embalagem ou decoração
 const PARECE_EMBALAGEM = /^(caixa|embalage|saco|saquinho|sacola|forminha|forma de papel|fita|pote|tampa|etiqueta|tag|papel|bandeja|cake ?board|base |filme|celofane|copo|colher|garfo|guardanapo|tubete|blister)/;
 const PARECE_DECORACAO = /^(topo|topper|vela|granulado|confeito|glitter|brilho|perol|po para decorar|corante|flor|confete|sprinkle)/;
@@ -210,7 +210,7 @@ export default function Insumos() {
               <div className="ig-tab-cab" aria-hidden="true"><span>Item</span><span>Compra</span><span>Custo na receita</span><span /></div>
               {filtrados.map(i => {
                 const preco = `R$\u00a0${(i.valor_compra || 0).toFixed(2).replace(".", ",")}`;
-                const compra = descreverCompra(i.embalagem_tipo, i.qtd_embalagem || 1, i.unidade);
+                const compra = descreverCompra(i.embalagem_tipo, i.qtd_embalagem || 1, i.unidade, (i as { itens_embalagem?: number | null }).itens_embalagem);
                 const c = custoNaReceita(i.custo_unitario || 0, i.unidade, i.qtd_embalagem || 1);
                 return (
                   <button key={i.id} type="button" className="ig-l" onClick={() => abrirForm(i)} aria-label={`${i.nome}, ${formatarCusto(c.valor)} ${c.por}. Editar`}>
@@ -256,6 +256,7 @@ export default function Insumos() {
             imagem_url: form.editando.imagem_url,
             valor_compra: form.editando.valor_compra,
             qtd_embalagem: form.editando.qtd_embalagem,
+            itens_embalagem: (form.editando as { itens_embalagem?: number | null }).itens_embalagem,
           } : undefined}
           onSaved={onInsumoSalvo}
           onCancel={fecharForm}

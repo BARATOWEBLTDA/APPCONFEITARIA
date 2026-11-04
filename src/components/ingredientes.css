@@ -164,3 +164,64 @@
 .ig-med select:focus-visible { outline: 2px solid var(--ui-rosa); border-radius: 4px; }
 .ig-outro { display: block; width: 100%; min-height: 44px; margin-top: 8px; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ═════ (04/11 · 6.31) janela do ingrediente nova: foto grande, categoria e "Vem em" à vista, medida num menu do app ═════ */
+.ig-col1, .ig-col2 { display: flex; flex-direction: column; gap: var(--gap-stack); min-width: 0; }
+.ig-f { gap: var(--gap-stack); }
+.ig-col2 { gap: var(--space-5); }
+.ig-topo { display: flex; align-items: flex-start; gap: var(--space-4); }
+.ig-topo-campos { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--gap-stack); }
+.ig-foto-w { position: relative; flex: none; display: flex; }
+.ig-foto-cx { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); width: 120px; height: 120px; margin: 0; padding: var(--space-2); overflow: hidden; border: 1.5px dashed #E7C2D2; border-radius: 16px; background: #FFF7FA; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13px; font-weight: 500; line-height: 1.2; text-align: center; cursor: pointer; }
+.ig-foto-cx:hover { background: #FFEFF5; }
+.ig-foto-cx.tem { padding: 0; border-style: solid; border-color: var(--ui-borda); background: var(--ui-branco); }
+.ig-foto-cx img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 599px) { .ig-foto-cx { width: 96px; height: 96px; font-size: 12px; } .ig-topo { gap: var(--space-3); } }
+.ig-foto-menu .ig-foto-menu-tirar, .ig-foto-menu .ig-foto-menu-tirar svg { color: var(--ui-vermelho); }
+.ig-foto-menu { top: calc(100% + var(--space-2)); }
+.ig-comuns { margin-top: 0; }
+
+/* medida: o cinza vai até a borda do campo (antes sobrava uma faixa branca depois do "g ▾") */
+.ui-campo-c:has(> .ig-med-w) { padding-right: 0; }
+.ig-med-w { position: relative; flex: none; align-self: stretch; display: flex; }
+.ig-med { display: inline-flex; align-items: center; gap: var(--space-1); height: auto; min-width: 72px; justify-content: center; margin: 0; padding: 0 var(--space-3); border: 0; border-left: 1px solid var(--ui-borda); border-radius: 0 calc(var(--ui-raio) - 2px) calc(var(--ui-raio) - 2px) 0; background: #F4F1F2; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
+.ig-med:hover { background: #ECE7E9; }
+.ig-med-menu { position: fixed; z-index: 10201; display: flex; flex-direction: column; width: 260px; padding: var(--space-1); border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); box-shadow: 0 12px 30px rgba(40, 15, 25, .16); }
+.ig-med-menu button { display: flex; align-items: center; gap: var(--space-2); min-height: 48px; margin: 0; padding: var(--space-1) var(--space-3); border: 0; border-radius: 10px; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.ig-med-menu button:hover:not(:disabled) { background: #F7F4F5; }
+.ig-med-menu button:disabled { opacity: .45; cursor: not-allowed; }
+.ig-med-menu button > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ig-med-menu b { font-size: 15px; font-weight: 500; }
+.ig-med-menu small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ig-med-menu svg { flex: none; color: var(--ui-rosa-escuro); }
+
+/* vem várias dentro (caixa com 27 latas) */
+.ig-varias-ab { align-self: flex-start; display: inline-flex; align-items: center; gap: var(--space-2); min-height: 36px; margin: calc(-1 * var(--space-1)) 0 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; }
+.ig-varias-ab small { font-size: 13px; font-weight: 400; color: var(--ui-texto-3); }
+.ig-varias { display: flex; flex-direction: column; gap: var(--gap-stack); padding: var(--space-3); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: #FCFAFB; }
+.ig-varias-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.ig-varias-t { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 14px; font-weight: 600; color: var(--ui-texto); }
+.ig-varias-t svg { color: var(--ui-rosa-escuro); }
+.ig-varias-x { margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; }
+
+.ig-grupo { display: flex; flex-direction: column; gap: var(--space-2); }
+.ig-grupo .ui-campo-msg { margin: 0; }
+.ig-chips { gap: var(--space-2); }
+.ig-chips button { font-weight: 500; }
+.ig-chips button[aria-pressed="true"] { font-weight: 600; }
+.ig-chips-cat { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+.ig-excluir { align-self: flex-start; display: inline-flex; align-items: center; gap: var(--space-2); min-height: 40px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-vermelho); cursor: pointer; }
+
+/* tamanho da janela: tablet 640, PC 920 em duas colunas (o ingrediente à esquerda; categoria e embalagem à direita), sem rolar */
+@media (min-width: 768px) {
+  .ui-janela.ig-janela-cheia { width: min(640px, calc(100vw - 48px)); max-width: none; height: auto; max-height: min(92dvh, 960px); }
+}
+@media (min-width: 1024px) {
+  .ui-janela.ig-janela-cheia { width: min(920px, calc(100vw - 48px)); }
+  .ig-f--janela { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: var(--gap-section); align-items: start; }
+  .ig-f--janela .ig-col2 { align-self: stretch; padding-left: var(--gap-section); border-left: 1px solid var(--ui-linha); }
+  .ig-janela-cheia .ui-janela-pe { display: flex; justify-content: flex-end; }
+  .ig-janela-cheia .ui-janela-pe .ui-bt { flex: none; width: auto; padding-left: 28px; padding-right: 28px; }
+}
+.ig-med-veu { position: fixed; z-index: 10200; background: rgba(30, 12, 20, .14); }
+.ig-f .ig-varias-2 { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }

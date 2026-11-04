@@ -25,7 +25,7 @@ import "./fichaDetalhe.css";
 
 // ── Famílias de unidades e conversão ──
 
-type UnitFamily = "massa" | "volume" | "unidade";
+type UnitFamily = "massa" | "volume" | "unidade" | "comprimento";
 
 const UNIT_FAMILIES: Record<string, { family: UnitFamily; toBase: number }> = {
   kg:  { family: "massa",   toBase: 1     },
@@ -33,6 +33,8 @@ const UNIT_FAMILIES: Record<string, { family: UnitFamily; toBase: number }> = {
   L:   { family: "volume",  toBase: 1     },
   ml:  { family: "volume",  toBase: 0.001 },
   un:  { family: "unidade", toBase: 1     },
+  m:   { family: "comprimento", toBase: 1 },    // (6.31) fita, renda: comprado em metro
+  cm:  { family: "comprimento", toBase: 0.01 }, // e usado em cm na receita
 };
 
 /** Retorna as unidades disponíveis para seleção na ficha técnica.
@@ -52,6 +54,7 @@ function getDefaultRecipeUnit(insumo: Insumo): string {
   if (!info) return insumo.unidade;
   if (info.family === "massa")  return "g";
   if (info.family === "volume") return "ml";
+  if (info.family === "comprimento") return "cm";
   return "un";
 }
 
@@ -156,7 +159,7 @@ const fmtUnidade = (unidade: string, qtd: number): string => {
   if (!unidade) return "";
   if (unidade === "un") return Math.abs(qtd) === 1 ? "unidade" : "unidades";
   // Unidades de medida ficam como cadastradas (case-sensitive: "kg", "g", "ml", "L")
-  if (["kg", "g", "ml", "L"].includes(unidade)) return unidade;
+  if (["kg", "g", "ml", "L", "m", "cm"].includes(unidade)) return unidade;
   // Embalagens (Lata, Pacote, Caixa...) — lowercase + plural quando aplicável
   const lower = unidade.toLowerCase();
   return Math.abs(qtd) !== 1 ? lower + "s" : lower;

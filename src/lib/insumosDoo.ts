@@ -7,9 +7,10 @@ import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import type { PostgrestError } from "@supabase/supabase-js";
 
-export const UNIDADES_INSUMO = ["g", "kg", "ml", "L", "un"] as const;
+export const UNIDADES_INSUMO = ["g", "kg", "ml", "L", "un", "m"] as const;
 export const EMBALAGENS_INSUMO = ["Avulso", "Pacote", "Caixa", "Lata", "Pote", "Garrafa", "Frasco", "Bandeja", "Bisnaga", "Sachê", "Envelope", "Balde", "Rolo"];
-export const CATEGORIAS_INSUMO = ["Ingredientes", "Embalagens", "Decorações", "Bebidas", "Limpeza", "Descartáveis", "Outros"];
+import { CATEGORIAS_INSUMO as CATS_UNICAS, categoriaPeloNome } from "@/lib/categoriasInsumo";
+export const CATEGORIAS_INSUMO: string[] = [...CATS_UNICAS]; // (6.31) a lista única das categorias
 
 export type RascunhoInsumo = {
   acao: "insumo";
@@ -83,7 +84,7 @@ export function normalizarRascunho(r: RascunhoInsumoBruto | null | undefined): R
     insumo_id: r.insumo_id || null,
     nome: String(r.nome).trim(),
     marca: String(r.marca || "").trim(),
-    categoria: CATEGORIAS_INSUMO.includes(r.categoria) ? r.categoria : "Ingredientes",
+    categoria: r.categoria && CATEGORIAS_INSUMO.includes(r.categoria) ? r.categoria : (categoriaPeloNome(String(r.nome)) || "Outros"),
     unidade,
     embalagem_tipo: EMBALAGENS_INSUMO.includes(r.embalagem_tipo) ? r.embalagem_tipo : "Avulso",
     qtd_embalagem: Math.max(0, Number(r.qtd_embalagem) || 0),
@@ -113,7 +114,7 @@ export async function salvarInsumoDoo(uid: string, r: RascunhoInsumo, soPrecoDe?
     return { ok: false, erro: "Esse ingrediente não está mais no cadastro. Feche e peça de novo para a Doo." };
   }
   const payload: Record<string, unknown> = {
-    nome: r.nome.trim(), marca: (r.marca || "").trim(), categoria: r.categoria || "Ingredientes",
+    nome: r.nome.trim(), marca: (r.marca || "").trim(), categoria: r.categoria || categoriaPeloNome(r.nome) || "Outros",
     unidade: r.unidade, embalagem_tipo: r.embalagem_tipo || "Avulso",
     valor_compra: r.valor_compra, qtd_embalagem: r.qtd_embalagem,
     custo_unitario: r.valor_compra / r.qtd_embalagem,

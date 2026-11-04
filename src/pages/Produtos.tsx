@@ -82,6 +82,8 @@ const UNIT_FAMILIES_MAP: Record<string, { family: string; base: string; toBase: 
   L:  { family: "volume", base: "L", toBase: 1 },
   ml: { family: "volume", base: "L", toBase: 0.001 },
   un: { family: "unidade", base: "un", toBase: 1 },
+  m: { family: "comprimento", base: "m", toBase: 1 },
+  cm: { family: "comprimento", base: "m", toBase: 0.01 },
 };
 
 function toBaseProd(qtd: number, unidade: string): number {

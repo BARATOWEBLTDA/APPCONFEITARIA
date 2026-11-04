@@ -118,7 +118,7 @@ export async function custoPorProduto(produtoIds: string[]): Promise<Record<stri
   const falha = partes.find(p => p.error);
   if (falha) throw falha.error;
   const linhas = partes.flatMap(p => p.data);
-  const fator: Record<string, number> = { kg: 1, g: 0.001, L: 1, l: 1, ml: 0.001, un: 1 };
+  const fator: Record<string, number> = { kg: 1, g: 0.001, L: 1, l: 1, ml: 0.001, un: 1, m: 1, cm: 0.01 };
   for (const f of linhas) {
     const qtd = Number(f.quantidade) || 0, custo = Number(f.insumos?.custo_unitario) || 0;
     const uUsada = f.unidade_utilizada || f.insumos?.unidade || "", uInsumo = f.insumos?.unidade || "";

@@ -295,6 +295,7 @@ const FAMILIA_UNIDADE: Record<string, { familia: string; base: number }> = {
   kg: { familia: "massa", base: 1 }, g: { familia: "massa", base: 0.001 },
   L: { familia: "volume", base: 1 }, ml: { familia: "volume", base: 0.001 },
   un: { familia: "unidade", base: 1 },
+  m: { familia: "comprimento", base: 1 }, cm: { familia: "comprimento", base: 0.01 }, // (6.31) fita, renda: comprado em metro, usado em cm
 };
 
 /** Custo de um ingrediente na receita, convertendo a unidade usada pra unidade em que ele foi comprado. */
