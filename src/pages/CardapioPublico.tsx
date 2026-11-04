@@ -475,7 +475,7 @@ function CardapioContent() {
           <>
             <CardapioModelo1 design={design} config={config} verificada={isPro} produtos={produtos} aoAbrirSobre={() => setSobreAberta(true)} />
             <div className="cp-banner-wrap">
-              <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
+              <BannerAd bannerUrl={design.banner_url || design.banner1_url || design.banner2_url || design.banner3_url} isPro={isPro} /* (6.79) um banner só, sem carrossel */ />
             </div>
           </>
         ) : (
@@ -487,7 +487,7 @@ function CardapioContent() {
               backgroundColor: corDoTopo(design) }} />
             <Logo verificada={isPro} logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={corNomeCelular(design.cor_nome)} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars}  aoAbrirSobre={() => setSobreAberta(true)} />
             <div className="cp-banner-wrap">
-              <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
+              <BannerAd bannerUrl={design.banner_url || design.banner1_url || design.banner2_url || design.banner3_url} isPro={isPro} /* (6.79) um banner só, sem carrossel */ />
             </div>
           </>
         )}
@@ -521,7 +521,7 @@ function CardapioContent() {
   }
 
   /* ═══ COMPUTADOR ═══ */
-  const temBanner = !!(design.banner_url || (isPro && (design.banner1_url || design.banner2_url || design.banner3_url)))
+  const temBanner = !!(design.banner_url || design.banner1_url || design.banner2_url || design.banner3_url)
   const cor = design.cor_botao || design.cor_borda || '#E85A8C'
   return (
     <div className="cp-pc">
@@ -578,7 +578,7 @@ function CardapioContent() {
           {/* (14/10) no computador o banner fica aqui, em cima de "Seu pedido" (no meio ele ocupava a tela toda) */}
           {temBanner && (
             <div className="desk-banner cp-banner cp-banner--lado">
-              <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
+              <BannerAd bannerUrl={design.banner_url || design.banner1_url || design.banner2_url || design.banner3_url} isPro={isPro} /* (6.79) um banner só, sem carrossel */ />
             </div>
           )}
           {/* (20/10) cupons da loja (até 2), entre o banner e a sacola */}

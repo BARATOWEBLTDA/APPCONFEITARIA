@@ -439,3 +439,7 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .ap-gal-uso { position: absolute; top: 8px; right: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; background: var(--ui-verde); color: var(--ui-branco); font-size: 12px; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .ap-gal-it { animation: none; } }
 .ap-gal-slots { flex-wrap: nowrap; } .ap-gal-slots button { min-width: 44px; padding: 0; justify-content: center; }
+/* (6.79) link travado: o link atual e a canetinha "Editar" na mesma linha; editando, Cancelar e Salvar lado a lado */
+.nnl--fixo { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.nnl--fixo .nnl-assim { width: auto; flex: 1; min-width: 0; }
+.nnl-bts { display: flex; gap: 8px; }

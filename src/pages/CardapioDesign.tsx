@@ -237,8 +237,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
     return () => { vivo = false; window.clearTimeout(t); };
   }, []);
   const abrirGaleria = async () => {
-    const vazio = (isPro ? [0, 1, 2, 3] : [0]).find(i => !bannerValues[i]);
-    setGaleria(g => ({ ...g, aberta: true, slot: vazio ?? 0, cat: "" }));
+    setGaleria(g => ({ ...g, aberta: true, slot: 0, cat: "" }));
     if (galeria.lista) return;
     const r = await lerBannersProntos();
     setGaleria(g => ({ ...g, lista: r.ok ? r.lista.filter(b => b.categoria !== CATEGORIA_CAPA_NATAL) : [], erro: !r.ok }));
@@ -257,7 +256,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
     marcarDesignEscolhido(userId);
     showSuccess();
     setGaleria(g => ({ ...g, aberta: false }));
-    avisar(`Banner colocado no Banner ${i + 1}`, { tipo: "ok" });
+    avisar("Banner colocado no cardápio", { tipo: "ok" });
   };
 
   const handleRemoveBanner = async (index: number) => {
@@ -429,12 +428,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
 
       {/* Banners de promoção */}
       <section className="ap-card ap-largo ap-sec-banners">
-        <Cabeca Ic={Images} titulo="Banners de promoção" apoio={isPro ? "Até 4, passando sozinhos" : "1 banner no plano grátis"} />
+        <Cabeca Ic={Images} titulo="Banner de promoção" apoio="1 banner no topo do cardápio" />
         <p className="ap-exp">Aparecem logo abaixo do topo do cardápio. Use para <b>promoções e datas especiais</b>. Imagem deitada, <b>1200 × 675</b>, com o texto no meio. <button type="button" className="ap-exp-lk" onClick={() => setVerExemplo(true)}>Ver um exemplo</button></p>
         <div className="ap-banners">
-          {(isPro ? [0, 1, 2, 3] : [0]).map(i => (
+          {/* (6.79) um banner só (sem carrossel), para todos os planos */}
+          {[0].map(i => (
             <div key={i} className="ap-banner">
-              <span className="ap-banner-r">Banner {i + 1}</span>
               {bannerValues[i] ? (
                 <div className="ap-img ap-img--banner" style={{ "--ap-fundo": `url("${bannerValues[i]}")` } as React.CSSProperties}>
                   <img src={bannerValues[i]} alt={`Banner ${i + 1}`} />
@@ -451,7 +450,6 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
               <input ref={bannerRefs[i]} type="file" accept="image/*" hidden onChange={e => { bannerIdx.current = i; recorteBanner.escolher(e); }} />
             </div>
           ))}
-          {!isPro && <div className="ap-banner"><span className="ap-banner-r">Banners 2 a 4</span><ProSlot n={2} /></div>}
         </div>
         <Botao variante="secundario" cheio icone={<Sparkle size={18} weight="bold" />} onClick={abrirGaleria}>Usar um banner pronto</Botao>
       </section>
@@ -465,7 +463,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
         <Cabeca Ic={LinkSimple} titulo="Link personalizado" apoio={isPro ? "O nome da loja no fim do link" : "Recurso do plano PRO"} />
         {/* (31/10 · 5.91) aqui é para personalizar (PRO); no grátis, o cartão mostra o que muda no link */}
         <p className="ap-exp">{isPro
-          ? <>Escolha o nome que aparece no fim do link. Ao mudar, o link antigo <b>continua funcionando</b>.</>
+          ? <>O nome da sua loja no fim do link. Mude só se precisar: o novo passa a aparecer no QR Code e nas mensagens (o antigo continua abrindo o cardápio).</>
           : <>No PRO, o link do cardápio leva o <b>nome da sua loja</b>: fica mais fácil de lembrar e passa mais confiança no Instagram e no WhatsApp.</>}</p>
         <NomeNoLink />
       </section>
