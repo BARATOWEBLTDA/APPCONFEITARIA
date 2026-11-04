@@ -473,3 +473,40 @@
   .orc-e1 .orc-ev, .orc-e1 .orc-ev--varios { grid-template-columns: minmax(0, 1fr) 150px; grid-template-areas: "nome hora"; }
 }
 .orc-acoes-pc { justify-content: flex-end !important; }
+
+/* (6.62) três formas de pôr item e dois caminhos para o cliente: os mesmos cartões quadrados com a bolinha */
+.orc-add { grid-template-columns: repeat(3, minmax(0, 200px)); }
+.orc-add--cli { grid-template-columns: repeat(2, minmax(0, 200px)); margin: var(--space-2) 0 0; }
+.orc-add-op:disabled { opacity: .55; cursor: default; }
+.orc-add-op:disabled:hover { border-color: var(--ui-borda); background: var(--ui-branco); }
+@media (max-width: 480px) {
+  .orc-add { gap: var(--gap-tight); }
+  .orc-add .orc-add-op { padding: var(--space-2); }
+  .orc-add .orc-add-ic { width: 44px; height: 44px; }
+  .orc-add-op b { font-size: 14px; }
+  .orc-add-op small { font-size: 11.5px; }
+}
+/* lista de clientes: inicial no lugar da foto */
+.orc-esc-it .orc-av { flex: none; }
+.orc-esc-nada { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: var(--space-2) 4px; }
+.orc-novo-cli { display: flex; flex-direction: column; gap: var(--gap-stack); padding-bottom: var(--space-2); }
+/* tamanho na caixinha do item */
+.orc-item-tam { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-width: 0; height: 36px; margin: 0; padding: 0 10px; border: 1px solid var(--ui-borda-campo); border-radius: 10px; background: var(--ui-branco); font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); text-align: left; cursor: pointer; }
+.orc-item-tam span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.orc-item-tam svg { flex: none; color: var(--ui-texto-3); }
+.orc-item-tam.vazio { border-color: #F3B3CA; background: #FFF8FB; color: var(--ui-rosa-escuro); }
+.orc-tams { display: flex; flex-direction: column; gap: var(--gap-tight); padding-bottom: var(--space-2); }
+.orc-tam { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; margin: 0; padding: 8px 14px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.orc-tam > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.orc-tam b { font-size: 15px; font-weight: 600; }
+.orc-tam small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.orc-tam em { flex: none; font-style: normal; font-size: 14.5px; font-weight: 600; }
+.orc-tam-bol { flex: none; width: 22px; height: 22px; border: 2px solid #D6CBD0; border-radius: 50%; box-sizing: border-box; }
+.orc-tam[aria-pressed="true"] { border-color: #F3B3CA; background: #FFF8FB; }
+.orc-tam[aria-pressed="true"] .orc-tam-bol { border: 6px solid var(--ui-rosa); }
+.orc-tam:disabled { opacity: .5; cursor: default; }
+@media (max-width: 600px) {
+  .orc-add--mais .orc-add-op { flex-direction: column; justify-content: center; gap: 4px; min-height: 76px; padding: 8px 4px; text-align: center; }
+  .orc-add--mais .orc-add-ic { width: 36px; height: 36px; }
+}
+@media (max-width: 600px) { .orc-add--mais .orc-add-op b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; } }

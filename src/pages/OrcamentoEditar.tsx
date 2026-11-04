@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { CalendarBlank, Check, Clock, Copy, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, PencilSimpleLine, Phone, Plus, Storefront, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, CalendarBlank, CaretDown, Check, Clock, Copy, Stack, UserPlus, UsersThree, FilePdf, MagnifyingGlass, Minus, Package, PencilSimple, PencilSimpleLine, Phone, Plus, Storefront, Trash, WarningCircle, X } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import CampoData from '@/components/CampoData'
 import CalendarioMes from '@/components/CalendarioMes'
@@ -21,7 +21,7 @@ import type { ProdutoPrecoJson } from '@/lib/precoCardapio'
 import type { ProdutoCustoJson } from '@/lib/produto-precificacao'
 import { usePlano } from '@/hooks/usePlano'
 import { linkWhatsApp, mascaraTelefone, digitosAoDigitar } from '@/lib/telefone'
-import { precoCardapioComPromocao } from '@/lib/precoCardapio'
+import { precoCardapioComPromocao, precoDoTamanho, descontoCardapio, comDesconto, type OpcaoGrupoJson } from '@/lib/precoCardapio'
 import { calcularCustoLucro, lerMaoObraConta } from '@/lib/produto-precificacao'
 import { gerarOrcamentoPDF } from '@/lib/gerarOrcamentoPDF'
 import { CartProvider } from '@/context/CartContext'
@@ -64,7 +64,6 @@ export default function OrcamentoEditar() {
   const [descModo, setDescModo] = useState<'sem' | 'pct' | 'valor'>('sem')
   const [descPct, setDescPct] = useState('')
   const [salvando, setSalvando] = useState(false)
-  const [editarCli, setEditarCli] = useState<boolean | null>(null) // (28/10) null = automático (cartão quando já tem nome e WhatsApp)
   const [mudou, setMudou] = useState(false)
   const [produtos, setProdutos] = useState<Prod[]>([])
   const [escolher, setEscolher] = useState(false)
@@ -75,6 +74,18 @@ export default function OrcamentoEditar() {
   const [custos, setCustos] = useState<Record<string, number | null>>({})
   const [pedidoNumero, setPedidoNumero] = useState<number | null>(null)
   const [foto, setFoto] = useState('')
+  // (6.62) cliente da lista ou novo, tamanho na caixinha do item e adicionais
+  type Cli = { id: string; nome: string; telefone: string | null; whatsapp: string | null }
+  type Extra = { id: string; nome: string; valor: number; descricao: string | null; imagem_url: string | null }
+  const [clientes, setClientes] = useState<Cli[]>([])
+  const [recentes, setRecentes] = useState<string[]>([])
+  const [cliJanela, setCliJanela] = useState<null | 'lista' | 'novo'>(null)
+  const [buscaCli, setBuscaCli] = useState('')
+  const [novoCli, setNovoCli] = useState({ nome: '', tel: '' })
+  const [salvandoCli, setSalvandoCli] = useState(false)
+  const [adicionais, setAdicionais] = useState<Extra[]>([])
+  const [escolherExtra, setEscolherExtra] = useState(false)
+  const [tamanhoDe, setTamanhoDe] = useState<string | null>(null)
   const nomeLoja = profile?.nome_loja || 'Minha confeitaria'
 
   // carrega o orçamento (ou começa um novo) e os produtos do cardápio
@@ -83,12 +94,18 @@ export default function OrcamentoEditar() {
     ;(async () => {
       const { data: u } = await supabase.auth.getUser()
       const uid = u.user?.id || ''
-      const [{ data: prods }, orc] = await Promise.all([
+      const [{ data: prods }, orc, { data: clis }, { data: ult }, { data: ext }] = await Promise.all([
         supabase.from('produtos').select('*').eq('user_id', uid).order('nome'),
         id && id !== 'novo' ? supabase.from('orcamentos').select('*').eq('id', id).maybeSingle() : Promise.resolve({ data: VAZIO(uid), error: null } as { data: Orcamento | null; error: PostgrestError | null }),
+        supabase.from('clientes').select('id, nome, telefone, whatsapp').eq('user_id', uid).order('nome').limit(2000),
+        supabase.from('pedidos').select('cliente_id').eq('user_id', uid).not('cliente_id', 'is', null).order('created_at', { ascending: false }).limit(40),
+        supabase.from('biblioteca_extras').select('id, nome, valor, descricao, imagem_url').eq('user_id', uid).order('nome'),
       ])
       if (!vivo) return
       setProdutos((prods as Prod[]) || [])
+      setClientes((clis as Cli[]) || [])
+      setRecentes([...new Set(((ult as { cliente_id: string }[]) || []).map(x => x.cliente_id))])
+      setAdicionais(((ext as Extra[]) || []).map(e => ({ ...e, valor: Number(e.valor) || 0 })))
       if (orc.error || !orc.data) { setErro(orc.error ? explicarErro(orc.error, 'Tente de novo em instantes.') : 'Este orçamento não existe mais.'); return }
       const d = orc.data as Orcamento
       d.itens = Array.isArray(d.itens) ? d.itens.map(i => ({ ...i, id: i.id || novoId() })) : []
@@ -168,7 +185,7 @@ export default function OrcamentoEditar() {
     if (!o) return null
     setSalvando(true)
     const dados: Record<string, unknown> = {
-      cliente_nome: o.cliente_nome?.trim() || null, cliente_telefone: o.cliente_telefone?.trim() || null,
+      cliente_id: o.cliente_id || null, cliente_nome: o.cliente_nome?.trim() || null, cliente_telefone: o.cliente_telefone?.trim() || null,
       data_evento: o.data_evento || null, data_evento_fim: varios && o.data_evento && o.data_evento_fim && o.data_evento_fim > o.data_evento ? o.data_evento_fim : null,
       horario_evento: o.horario_evento ? o.horario_evento.slice(0, 5) : null, nome_evento: o.nome_evento?.trim() || null, local_evento: o.local_evento?.trim() || null,
       pessoas: o.pessoas || null, itens: (o.itens || []).map(({ id: iid, ...i }) => ({ id: iid, ...i, quantidade: Number(i.quantidade) || 1, valor_unitario: Number(i.valor_unitario) || 0 })),
@@ -304,8 +321,49 @@ export default function OrcamentoEditar() {
   }
 
   // (28/10) cliente em cartão compacto quando já vem preenchido (pedido pelo link); "Editar" abre os campos
-  const cliPronto = !!(o.cliente_nome || '').trim() && (o.cliente_telefone || '').replace(/\D/g, '').length >= 10
-  const verCampos = editarCli ?? !cliPronto
+  // (6.62) cliente: dois cartões (da lista ou novo); escolhido, vira o cartão compacto com "Trocar"
+  const temCli = !!(o.cliente_nome || '').trim()
+  const digitos = (t?: string | null) => (t || '').replace(/\D/g, '')
+  const usarCliente = (c: Cli) => { muda({ cliente_id: c.id, cliente_nome: c.nome, cliente_telefone: c.whatsapp || c.telefone || null }); setCliJanela(null) }
+  const trocarCliente = () => muda({ cliente_id: null, cliente_nome: null, cliente_telefone: null })
+  const abrirNovoCli = (nome = '') => { setNovoCli({ nome, tel: '' }); setCliJanela('novo') }
+  const salvarNovoCli = async () => {
+    const nome = novoCli.nome.trim(); const tel = digitos(novoCli.tel)
+    if (!nome) { avisar('Escreva o nome do cliente', { tipo: 'erro' }); return }
+    // o mesmo WhatsApp já está na lista: usa o cadastro que existe (não cria cliente repetido)
+    const ja = tel.length >= 10 ? clientes.find(c => digitos(c.whatsapp) === tel || digitos(c.telefone) === tel) : undefined
+    if (ja) { usarCliente(ja); avisar(`Esse WhatsApp já é de ${ja.nome}: usamos o cadastro dela`); return }
+    setSalvandoCli(true)
+    const { data, error } = await supabase.from('clientes').insert({ user_id: o.user_id, nome, telefone: tel || null, whatsapp: tel || null }).select('id, nome, telefone, whatsapp').single()
+    setSalvandoCli(false)
+    if (error || !data) { muda({ cliente_id: null, cliente_nome: nome, cliente_telefone: tel || null }); setCliJanela(null); return }
+    setClientes(l => [...l, data as Cli].sort((a, b) => a.nome.localeCompare(b.nome)))
+    usarCliente(data as Cli)
+  }
+  const listaClientes = (() => {
+    const q = buscaCli.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); const qd = digitos(buscaCli)
+    if (q) return clientes.filter(c => c.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(q) || (qd.length >= 3 && (digitos(c.whatsapp).includes(qd) || digitos(c.telefone).includes(qd))))
+    const pos = new Map(recentes.map((rid, k) => [rid, k]))
+    return [...clientes].sort((a, b) => (pos.get(a.id) ?? 9999) - (pos.get(b.id) ?? 9999) || a.nome.localeCompare(b.nome))
+  })()
+  // (6.62) tamanhos do produto do cardápio (com a promoção), para escolher na caixinha do item
+  const tamanhosDo = (pid?: string | null) => {
+    const p = produtos.find(x => x.id === pid) as (Prod & { grupo_tamanhos?: { ativo?: boolean; modo_preco_tamanho?: string; opcoes?: (OpcaoGrupoJson & { serve?: string | number | null })[]; rendimento_unidade?: string } ; preco_normal?: number }) | undefined
+    const gt = p?.grupo_tamanhos
+    if (!p || !gt?.ativo || !(gt.opcoes || []).length) return []
+    const porPeso = gt.modo_preco_tamanho === 'por_peso'; const desc = descontoCardapio(p as never)
+    return (gt.opcoes || []).filter(op => op && op.nome).map(op0 => {
+      const op = op0 as OpcaoGrupoJson & { serve?: string | number | null }
+      const serve = op.serve ? (/^\d+$/.test(String(op.serve).trim()) ? `serve até ${String(op.serve).trim()} ${String(gt.rendimento_unidade || '').trim() || 'pessoas'}` : `serve ${op.serve}`) : ''
+      return { nome: String(op.nome), texto: [String(op.nome), serve].filter(Boolean).join(' · '), preco: comDesconto(precoDoTamanho(op, porPeso, Number(p.preco_normal) || 0), desc), esgotado: !!(op as { esgotado?: boolean }).esgotado }
+    })
+  }
+  const usarTamanho = (iid: string, t: { texto: string; preco: number }) => {
+    const it = (o.itens || []).find(x => x.id === iid); if (!it) return
+    const resto = (it.detalhe || '').startsWith(it.tamanho || '\u0000') ? (it.detalhe || '').slice((it.tamanho || '').length).replace(/^ · /, '') : (it.detalhe || '')
+    mudaItem(iid, { tamanho: t.texto, detalhe: [t.texto, resto].filter(Boolean).join(' · '), ...(t.preco > 0 ? { valor_unitario: t.preco } : {}) })
+    setTamanhoDe(null)
+  }
   const botoesEtapa = etapa < 5 ? (<>
     {/* (6.49) o "Rascunho" foi pro fim (etapa Enviar); a etapa 1 tem só o Continuar */}
     {etapa > 1 && <Botao variante="secundario" onClick={() => { setEtapa(e => Math.max(1, e - 1)); window.scrollTo({ top: 0 }) }}>Voltar</Botao>}
@@ -338,18 +396,26 @@ export default function OrcamentoEditar() {
         {etapa === 1 && (<div className="orc-e1"><div className="orc-e1-col">
           {pediu}
           <section className="orc-card">
-            <h2 className="orc-h-acao">Cliente{!verCampos && <button type="button" className="orc-link-bt" onClick={() => setEditarCli(true)}><PencilSimple size={14} weight="bold" />Editar</button>}</h2>
-            {verCampos ? (
-              <div className="orc-2">
-                <Campo rotulo="Nome" value={o.cliente_nome || ''} placeholder="Nome do cliente" onChange={e => muda({ cliente_nome: e.target.value })} />
-                <Campo rotulo="WhatsApp" value={mascaraTelefone(o.cliente_telefone || '')} inputMode="tel" autoComplete="tel" placeholder="(41) 99999-0000" onChange={e => muda({ cliente_telefone: digitosAoDigitar(e.target.value) })} />
-              </div>
-            ) : (
+            <h2 className="orc-h-acao">Cliente{temCli && <button type="button" className="orc-link-bt" onClick={trocarCliente}><ArrowsClockwise size={14} weight="bold" />Trocar</button>}</h2>
+            {temCli ? (
               <div className="orc-cli">
                 <span className="orc-av" aria-hidden="true">{(o.cliente_nome || '?').trim().charAt(0).toUpperCase()}</span>
-                <span className="orc-cli-tx"><b>{o.cliente_nome}</b><small>{mascaraTelefone(o.cliente_telefone || '')}{o.origem === 'link' ? ' · pediu pelo link' : ''}</small></span>
-                <a className="orc-cli-ic" href={linkWhatsApp(o.cliente_telefone || '') || '#'} target="_blank" rel="noreferrer" aria-label="Chamar no WhatsApp" title="WhatsApp"><IconeWhatsApp size={20} /></a>
-                <a className="orc-cli-ic" href={`tel:+55${(o.cliente_telefone || '').replace(/\D/g, '')}`} aria-label="Ligar" title="Ligar"><Phone size={20} weight="bold" /></a>
+                <span className="orc-cli-tx"><b>{o.cliente_nome}</b><small>{o.cliente_telefone ? mascaraTelefone(o.cliente_telefone) : 'Sem WhatsApp'}{o.origem === 'link' ? ' · pediu pelo link' : ''}</small></span>
+                {digitos(o.cliente_telefone).length >= 10 && <>
+                  <a className="orc-cli-ic" href={linkWhatsApp(o.cliente_telefone || '') || '#'} target="_blank" rel="noreferrer" aria-label="Chamar no WhatsApp" title="WhatsApp"><IconeWhatsApp size={20} /></a>
+                  <a className="orc-cli-ic" href={`tel:+55${digitos(o.cliente_telefone)}`} aria-label="Ligar" title="Ligar"><Phone size={20} weight="bold" /></a>
+                </>}
+              </div>
+            ) : (
+              <div className="orc-add orc-add--cli">
+                <button type="button" className="orc-add-op" onClick={() => { setBuscaCli(''); setCliJanela('lista') }} disabled={!clientes.length}>
+                  <span className="orc-add-ic" aria-hidden="true"><UsersThree size={26} weight="duotone" /></span>
+                  <b>Já é cliente</b><small>{clientes.length ? 'Escolher da sua lista' : 'Nenhum cliente ainda'}</small>
+                </button>
+                <button type="button" className="orc-add-op" onClick={() => abrirNovoCli()}>
+                  <span className="orc-add-ic" aria-hidden="true"><UserPlus size={26} weight="duotone" /></span>
+                  <b>Cliente novo</b><small>Nome e WhatsApp</small>
+                </button>
               </div>
             )}
           </section>
@@ -411,6 +477,11 @@ export default function OrcamentoEditar() {
                     : <input className="orc-item-in" value={i.nome} placeholder="Nome do item" onChange={e => mudaItem(i.id, { nome: e.target.value })} aria-label="Nome do item" />}
                   <button type="button" className="orc-tira" aria-label={`Tirar ${i.nome || 'o item'}`} title="Tirar" onClick={() => tiraItem(i.id)}><Trash size={18} weight="bold" /></button>
                 </div>
+                {i.produto_id && tamanhosDo(i.produto_id).length > 0 && (
+                  <button type="button" className={`orc-item-tam${i.tamanho ? '' : ' vazio'}`} onClick={() => setTamanhoDe(i.id)}>
+                    <span>{i.tamanho || 'Escolher o tamanho'}</span><CaretDown size={14} weight="bold" aria-hidden="true" />
+                  </button>
+                )}
                 <input className="orc-item-det" value={i.detalhe || ''} placeholder={i.produto_id ? 'Detalhe: sabor, tamanho, tema' : 'Ex.: 2 andares, tema jardim'} onChange={e => mudaItem(i.id, { detalhe: e.target.value })} aria-label="Detalhe do item" />
                 <div className="orc-item-l">
                   <span className="orc-qtd">
@@ -428,11 +499,15 @@ export default function OrcamentoEditar() {
             <div className={`orc-add${(o.itens || []).length ? ' orc-add--mais' : ''}`}>
               <button type="button" className="orc-add-op" onClick={() => { setBusca(''); setEscolher(true) }}>
                 <span className="orc-add-ic" aria-hidden="true"><Storefront size={26} weight="duotone" /></span>
-                <b>Do cardápio</b><small>Já está no seu cardápio</small>
+                <b>Do cardápio</b><small>Seus produtos</small>
               </button>
               <button type="button" className="orc-add-op" onClick={() => muda({ itens: [...(o.itens || []), { id: novoId(), nome: '', quantidade: 1, valor_unitario: 0 }] })}>
                 <span className="orc-add-ic" aria-hidden="true"><PencilSimpleLine size={26} weight="duotone" /></span>
                 <b>Personalizado</b><small>Feito sob medida</small>
+              </button>
+              <button type="button" className="orc-add-op" onClick={() => adicionais.length ? setEscolherExtra(true) : navigate('/complementos')}>
+                <span className="orc-add-ic" aria-hidden="true"><Stack size={26} weight="duotone" /></span>
+                <b>Adicional</b><small>{adicionais.length ? 'Topo, vela e extras' : 'Cadastrar adicionais'}</small>
               </button>
             </div>
             {(o.itens || []).length > 0 && <div className="orc-tot"><span>Subtotal dos itens</span><b>{brl(somarItens(o.itens))}</b></div>}
@@ -600,6 +675,65 @@ export default function OrcamentoEditar() {
           }} />
       </CartProvider>
     )}
+    {/* (6.62) cliente da lista: busca parada em cima e só a lista rola */}
+    <Janela aberta={cliJanela === 'lista'} aoFechar={() => setCliJanela(null)} tipo="conteudo" titulo="Seus clientes" className="orc-esc-janela">
+      <div className="orc-esc">
+        <label className="orc-busca"><MagnifyingGlass size={18} weight="bold" /><input type="search" placeholder="Buscar pelo nome ou telefone" value={buscaCli} onChange={e => setBuscaCli(e.target.value)} aria-label="Buscar cliente" /></label>
+        <div className="orc-esc-l">
+          {listaClientes.map(c => (
+            <button key={c.id} type="button" className="orc-esc-it" onClick={() => usarCliente(c)}>
+              <span className="orc-av" aria-hidden="true">{c.nome.trim().charAt(0).toUpperCase()}</span>
+              <span className="orc-esc-tx"><b>{c.nome}</b><small>{c.whatsapp || c.telefone ? mascaraTelefone(c.whatsapp || c.telefone || '') : 'Sem telefone'}</small></span>
+            </button>
+          ))}
+          {listaClientes.length === 0 && (
+            <div className="orc-vz orc-esc-nada">Nenhum cliente com “{buscaCli.trim()}”.
+              <button type="button" className="orc-link-bt" onClick={() => abrirNovoCli(/\d/.test(buscaCli) ? '' : buscaCli.trim())}><UserPlus size={14} weight="bold" />Cadastrar como cliente novo</button>
+            </div>
+          )}
+        </div>
+      </div>
+    </Janela>
+    {/* (6.62) cliente novo: já entra na lista dela (no próximo orçamento é só escolher) */}
+    <Janela aberta={cliJanela === 'novo'} aoFechar={() => setCliJanela(null)} tipo="conteudo" titulo="Cliente novo"
+      acoes={<Botao cheio carregando={salvandoCli} onClick={() => void salvarNovoCli()}>Usar este cliente</Botao>} umaAcao>
+      <div className="orc-novo-cli">
+        <Campo rotulo="Nome" value={novoCli.nome} placeholder="Nome do cliente" autoFocus onChange={e => setNovoCli(n => ({ ...n, nome: e.target.value }))} />
+        <Campo rotulo="WhatsApp" value={mascaraTelefone(novoCli.tel)} inputMode="tel" autoComplete="tel" placeholder="(41) 99999-0000" onChange={e => setNovoCli(n => ({ ...n, tel: digitosAoDigitar(e.target.value) }))} />
+      </div>
+    </Janela>
+    {/* (6.62) tamanho do item: as opções do produto, uma embaixo da outra, com o preço */}
+    {tamanhoDe && (() => {
+      const it = (o.itens || []).find(x => x.id === tamanhoDe)
+      const tams = tamanhosDo(it?.produto_id)
+      return (
+        <Janela aberta aoFechar={() => setTamanhoDe(null)} tipo="conteudo" titulo="Tamanho">
+          <div className="orc-tams">
+            {tams.map(t => (
+              <button key={t.texto} type="button" className="orc-tam" aria-pressed={it?.tamanho === t.texto} disabled={t.esgotado} onClick={() => usarTamanho(tamanhoDe, t)}>
+                <span><b>{t.nome}</b>{t.texto !== t.nome && <small>{t.texto.slice(t.nome.length + 3)}</small>}</span>
+                <em>{t.esgotado ? 'Esgotado' : t.preco > 0 ? brl(t.preco) : ''}</em>
+                <i className="orc-tam-bol" aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+        </Janela>
+      )
+    })()}
+    {/* (6.62) adicionais cadastrados: cada um vira uma linha própria no orçamento */}
+    <Janela aberta={escolherExtra} aoFechar={() => setEscolherExtra(false)} tipo="conteudo" titulo="Adicionais" className="orc-esc-janela">
+      <div className="orc-esc">
+        <div className="orc-esc-l">
+          {adicionais.map(e => (
+            <button key={e.id} type="button" className="orc-esc-it" onClick={() => { muda({ itens: [...(o.itens || []), { id: novoId(), nome: e.nome, quantidade: 1, valor_unitario: e.valor, imagem_url: e.imagem_url || null }] }); setEscolherExtra(false) }}>
+              <span className="orc-item-ft" aria-hidden="true">{e.imagem_url ? <img src={e.imagem_url} alt="" /> : <Stack size={20} />}</span>
+              <span className="orc-esc-tx"><b>{e.nome}</b>{e.descricao && <small>{e.descricao}</small>}</span>
+              <em>{e.valor > 0 ? brl(e.valor) : 'Grátis'}</em>
+            </button>
+          ))}
+        </div>
+      </div>
+    </Janela>
     {foto && <Janela aberta aoFechar={() => setFoto('')} tipo="conteudo" titulo="Foto de referência"><img className="orc-foto-g" src={foto} alt="Foto de referência" /></Janela>}
   </>)
 }

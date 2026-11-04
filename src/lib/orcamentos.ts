@@ -11,6 +11,8 @@ export type ItemOrcamento = {
   quantidade: number
   valor_unitario: number
   imagem_url?: string | null
+  /** (6.62) tamanho escolhido na caixinha do item ("2 kg · serve até 20 pessoas"); também vai no começo do detalhe */
+  tamanho?: string | null
 }
 
 export type StatusOrcamento = 'novo' | 'rascunho' | 'enviado' | 'aprovado' | 'recusado'
