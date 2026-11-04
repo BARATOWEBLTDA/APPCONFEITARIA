@@ -14,6 +14,7 @@ import { situacaoLoja } from "@/lib/agendaCardapio";
 /** Campos do perfil lidos aqui que não estão no tipo do Supabase */
 type PerfilDesign = { foto_url?: string | null; hide_stars?: boolean | null; avaliacao_media?: number | string | null; endereco?: string | { cidade?: string } | null; horario?: unknown };
 import AppPageHeader from "@/components/AppPageHeader";
+import EquipeMonta from "@/components/billing/EquipeMonta";
 import bannerAparencia from "@/assets/banner-aparencia.webp";
 import { COMO_APARENCIA, TOUR_APARENCIA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar } from "@/components/base";
@@ -383,6 +384,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
     <div className="ap ap--2col">
       {/* (30/10 · 5.56) banner de abertura da tela, no topo, antes de tudo */}
       {!identityCard && <div className="ap-banner-topo"><img src={bannerAparencia} alt="Personalize sua loja e encante seus clientes! Uma loja com a sua cara vende mais." width={2172} height={724} /></div>}
+      {/* (6.81) recurso do PRO: a equipe Doonly monta o cardápio (logo, banners e produtos) */}
+      {!identityCard && <EquipeMonta />}
       {/* (30/10 · 5.57) logo e foto do topo numa faixa da largura do banner, metade cada. (5.52) a logo e a foto do topo em cartões separados, com campos grandes de escolher a imagem (igual aos banners) */}
         <input ref={logoRef} type="file" accept="image/*" hidden onChange={handleLogoUpload} />
         <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />

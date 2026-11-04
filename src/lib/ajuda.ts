@@ -1523,7 +1523,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
           '**Novo pedido** pela conversa.',
           '**Criar receita** com as quantidades.',
         ] }],
-        dica: 'No grátis: **10 mensagens por mês**. No PRO: 150 por dia.',
+        dica: 'A Doo IA é do **PRO**: até 150 mensagens por dia, com imagens.',
       },
     ],
     relacionadas: [

@@ -47,7 +47,7 @@ export default function AssistenteVirtual() {
         </div>
         <button type="button" className="av-cta" onClick={() => abrirDooIA()}>Conversar com a Doo IA</button>
         {!isPro && (
-          <p className="av-sub">No grátis: 10 mensagens por mês. <button type="button" className="av-link" onClick={() => navigate("/assinar")}>No PRO: 150 por dia e imagens.</button></p>
+          <p className="av-sub">A Doo IA é do PRO. <button type="button" className="av-link" onClick={() => navigate("/assinar")}>Testar grátis por 7 dias</button></p>
         )}
         <p className="av-aviso">A Doo pode errar: confira os valores.</p>
       </div>

@@ -520,7 +520,7 @@ export const COMO_MARKETING: Como = {
   total: ["Cliente paga", "R$ 90,00"],
   fluxo: ["Criar cupom", "Divulgar", "Cliente usa"],
   dicas: [
-    [Ticket, <>No PRO, <b>quantos cupons quiser</b>; os 2 mais novos aparecem no topo do cardápio. No grátis, 1 ativo por vez.</>],
+    [Ticket, <>Cupons são do <b>PRO</b>: crie quantos quiser; os 2 mais novos aparecem no topo do cardápio.</>],
     [Users, <>O cliente usa <b>um cupom por pedido</b>. Dá para limitar ao primeiro pedido.</>],
     [FacebookLogo, <>O <b>Pixel do Facebook</b> informa ao Facebook e ao Instagram quem visitou o cardápio e quem fez pedido.</>],
     [Megaphone, <>Com o Pixel, os <b>anúncios</b> chegam a quem tem mais chance de comprar.</>],
@@ -714,7 +714,7 @@ export const COMO_DOO: Como = {
 };
 export const TOUR_DOO: PassoTour[] = [
   { el: ".av-hero", titulo: "Doo IA", texto: "A sua assistente. Escolha uma das opções abaixo ou abra a conversa e pergunte o que quiser." },
-  { el: ".av-grid", titulo: "O que pedir", texto: "8 atalhos: preço, pedido, receita, ingrediente, legenda, resposta, topo de bolo e a sua semana. No grátis, são 10 mensagens por mês." },
+  { el: ".av-grid", titulo: "O que pedir", texto: "8 atalhos: preço, pedido, receita, ingrediente, legenda, resposta, topo de bolo e a sua semana. A Doo IA é do PRO." },
 ];
 
 /** (25/10) Orçamentos: a lista (pedidos que chegaram pelo link, enviados e respondidos) */

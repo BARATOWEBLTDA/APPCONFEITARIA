@@ -4,7 +4,7 @@
  */
 
 /** Liberado pra loja grátis enquanto testa. Pra voltar a ser só PRO: false (e o bloco do PRO em cardapio_validar_cupom, supabase/sql/cupons_vitrine.sql). */
-export const CUPOM_LIBERADO_FREE = true
+export const CUPOM_LIBERADO_FREE = false // (6.81) cupons são só do PRO
 export const cupomDisponivel = (isPro: boolean) => isPro || CUPOM_LIBERADO_FREE
 
 /** (27/10) PRO: cupons ativos sem limite, como promete a página do PRO (o cliente usa 1 por pedido; o topo do cardápio mostra os 2 mais novos) */

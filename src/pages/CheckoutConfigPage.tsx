@@ -22,6 +22,7 @@ import { marcarPagamentoConferido, pagamentoConferido } from "@/lib/primeirosPas
 import { useNavigate, useLocation } from "react-router-dom"
 import AppPageHeader from "@/components/AppPageHeader"
 import { usePlano } from "@/hooks/usePlano"
+import { CartaoPro } from "@/components/billing/RecursoPro"
 import MapaRaios, { CORES_RAIO } from "@/components/MapaRaios"
 import MapaEndereco from "@/components/MapaEndereco"
 import { bairrosDaCidade } from "@/lib/bairros"
@@ -131,7 +132,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const navigate = useNavigate()
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
   const voltarPara = (useLocation().state as { de?: string } | null)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio"
-  const { isPro } = usePlano()
+  const { isPro, loading: carregandoPlano } = usePlano()
   const { profile } = useProfile()
   const [imagemCupom, setImagemCupom] = useState<DadosImagemCupom | null>(null)
   const [loading, setLoading] = useState(true)
@@ -559,7 +560,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
     // (20/10) cupons ativos por vez (o cliente usa 1 por pedido) · (27/10) grátis: 1; vencido ou esgotado não conta
     const maxAtivos = isPro ? MAX_CUPONS_ATIVOS : LIMITE_CUPONS_ATIVOS_GRATIS
     const outrosAtivos = cupons.filter((c, idx) => idx !== editandoIndex && situacaoCupom(c) === 'Ativo').length
-    if (cupomForm.ativo && outrosAtivos >= maxAtivos) return avisar(maxAtivos === 1 ? 'No grátis, 1 cupom ativo por vez. Pause o outro ou salve este pausado.' : `Você já tem ${maxAtivos} cupons ativos. Pause um deles ou salve este pausado.`, { tipo: 'erro' })
+    if (cupomForm.ativo && outrosAtivos >= maxAtivos) return avisar(`Você já tem ${maxAtivos} cupons ativos. Pause um deles ou salve este pausado.`, { tipo: 'erro' })
     setCupons(prev => {
       if (editandoIndex === -1) return [...prev, { ...cupomForm, usos: 0 }]
       return prev.map((c, idx) => idx === editandoIndex ? { ...cupomForm, usos: c.usos || 0 } : c)
@@ -855,12 +856,14 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         </>}
 
         {/* Cupons */}
-        {verCupons && <section className={`ep-card ep-largo${parte === "cupons" ? " ep-cupons-tela" : ""}`}>
+        {/* (6.81) cupons são só do PRO: a conta grátis vê o convite no padrão de Orçamentos */}
+        {verCupons && !cupomDisponivel(isPro) && !carregandoPlano && <CartaoPro recurso="cupons" />}
+        {verCupons && cupomDisponivel(isPro) && <section className={`ep-card ep-largo${parte === "cupons" ? " ep-cupons-tela" : ""}`}>
           {/* (04/11 · 6.41) tela Cupons: título "Seus cupons" com o "+ Novo cupom" rosa na mesma linha, sem o cartão grande em volta */}
           {parte === "cupons" && cupomDisponivel(isPro) && cupons.length > 0
-            ? <Titulo contagem={cupons.length} apoio={isPro ? 'Os 2 mais novos aparecem no topo do cardápio. O cliente usa 1 por pedido.' : '1 ativo por vez, no topo do cardápio. O cliente usa 1 por pedido.'}
+            ? <Titulo contagem={cupons.length} apoio="Os 2 mais novos aparecem no topo do cardápio. O cliente usa 1 por pedido."
                 acao={<Botao tamanho="m" className="guia-novo-cupom" icone={<Plus size={20} weight="bold" />} onClick={abrirNovoCupom}><span className="ep-g">Novo cupom</span><span className="ep-c">Novo</span></Botao>}>Seus cupons</Titulo>
-            : <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio={isPro ? 'Quantos quiser. Os 2 mais novos aparecem no topo do cardápio, e o cliente usa 1 por pedido.' : '1 ativo por vez. Ele aparece no topo do cardápio, e o cliente usa 1 por pedido.'} />}
+            : <Cabeca Ic={Ticket} titulo="Cupons de desconto" apoio="Quantos quiser. Os 2 mais novos aparecem no topo do cardápio, e o cliente usa 1 por pedido." />}
           {!cupomDisponivel(isPro) ? (
             <div className="ep-pro">
               <p>Crie cupons para atrair clientes novos e trazer de volta quem já comprou.</p>

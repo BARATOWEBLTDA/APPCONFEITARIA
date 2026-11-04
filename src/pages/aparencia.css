@@ -443,3 +443,6 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 .nnl--fixo { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .nnl--fixo .nnl-assim { width: auto; flex: 1; min-width: 0; }
 .nnl-bts { display: flex; gap: 8px; }
+
+/* (6.81) a equipe Doonly monta o cardápio: logo depois do banner de abertura, na largura toda */
+.ap > .eqm { order: -1; grid-column: 1 / -1; width: 100%; max-width: 1100px; margin: 0 auto; }

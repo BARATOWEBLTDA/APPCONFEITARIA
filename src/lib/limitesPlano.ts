@@ -1,7 +1,7 @@
 /**
  * Limites do plano grátis (27/10, decisão de 25/10).
  * Produtos: até 10 NO CARDÁPIO ao mesmo tempo; guardados fora do cardápio não contam. Clientes: sem limite.
- * Adicionais (antigo Complementos): recurso do PRO (a página e o cardápio só mostram no PRO). Cupons: 1 ativo por vez.
+ * Adicionais (antigo Complementos): recurso do PRO (a página e o cardápio só mostram no PRO). Cupons: só no PRO (6.81).
  * No PRO não tem limite.
  */
 export const LIMITE_PRODUTOS_GRATIS = 10;

@@ -1,6 +1,6 @@
 import {
   AddressBook, ChartLineUp, ChatCircleText, Crown, FilePdf, FileText, ImageSquare, Infinity as Infinito, Palette,
-  Robot, SealCheck, Stack, Tag, type Icon,
+  HandHeart, Robot, SealCheck, Stack, Tag, type Icon,
 } from "@phosphor-icons/react";
 
 /** (31/10 · 5.84) A lista do PRO saiu da página Assinar: a Minha assinatura conta os recursos por ela
@@ -10,11 +10,13 @@ import {
 export type Beneficio = [Icon, string, string, string, string, string | null];
 export const BENEFICIOS: Beneficio[] = [
   [ChartLineUp, "Seu lucro de verdade", "Relatórios de lucratividade por produto e por mês, para decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
-  [Robot, "A Doo IA sem aperto", "No PRO a Doo IA responde até 150 mensagens por dia e cria imagens. No grátis são 10 mensagens por mês.", "Doo IA 150 por dia", "E cria imagens", "doo"],
+  // (6.81) a equipe Doonly monta o cardápio (produtos, logo e banners)
+  [HandHeart, "A equipe Doonly monta seu cardápio", "A gente cadastra seus produtos, cria a logo e os banners da sua loja. Você só manda as fotos e os preços.", "Cardápio montado pela equipe", "Produtos, logo e banners", "equipe"],
+  [Robot, "A Doo IA, sua assistente", "A sua assistente no PRO: calcula preço, monta pedido, cria legenda e imagens. Até 150 mensagens por dia.", "Doo IA 150 por dia", "E cria imagens", "doo"],
   [FileText, "Orçamentos que o cliente aprova", "Monte a proposta, mande o link e o cliente aprova pelo celular. Aprovou, vira pedido.", "Orçamentos", "Proposta com link para aprovar", "/orcamentos"],
   // (6.29) adicionais são do PRO (a página e o cardápio só mostram no PRO). (6.10) PDFs (com o "Feito com Doonly"): o texto diz o que o PRO muda de verdade
   [Stack, "Adicionais", "Topo de bolo, velas e outros extras que o cliente marca no produto. Cada pedido vale mais.", "Adicionais", "Extras que o cliente marca", "/complementos"],
-  [Tag, "Cupons sem limite", "No grátis, 1 cupom ativo. No PRO, quantos quiser, e os 2 mais novos aparecem no topo do cardápio.", "Cupons sem limite", "E os 2 mais novos no topo", "/cupons"],
+  [Tag, "Cupons de desconto", "Crie quantos cupons quiser para trazer cliente nova. Os 2 mais novos aparecem no topo do cardápio.", "Cupons de desconto", "E os 2 mais novos no topo", "/cupons"],
   [ChatCircleText, "Mensagens do seu jeito", "Troque os textos prontos do WhatsApp e anuncie com o Pixel do Meta, Google e TikTok.", "Mensagens e Pixel", "Textos do seu jeito e anúncios", "/configuracoes/mensagens"],
   [Palette, "Cardápio com a sua cara", "Qualquer cor no topo da loja, até 4 fotos por produto e um link com o nome da sua loja.", "Cardápio com a sua marca", "Qualquer cor e até 4 fotos", "/cardapio-design"],
   [SealCheck, "Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar.", "Selo de loja verificada", "Mais confiança para o cliente", null],

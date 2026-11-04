@@ -12,7 +12,8 @@ import { useProfile, type Profile } from "@/hooks/useProfile";
 type PerfilAssinatura = (Profile & { assinatura_status?: string | null; assinatura_origem?: string | null; email?: string | null }) | null;
 import { voltarOuIr } from "@/lib/voltar";
 import { eventoDoApp, VALOR_PRO } from "@/lib/pixelsApp";
-import { abrirDooIA } from "@/components/MenuContaItens"; // 11/10: seta de voltar que funciona com a tela aberta direto (link de notificação)
+import { abrirDooIA } from "@/components/MenuContaItens";
+import EquipeMonta, { pedirMontagem } from "@/components/billing/EquipeMonta"; // 11/10: seta de voltar que funciona com a tela aberta direto (link de notificação)
 import "./clientes.css";
 import "./assinar.css";
 
@@ -46,7 +47,7 @@ export default function Assinar() {
   const folga = (profile as PerfilAssinatura)?.assinatura_origem === "hotmart" ? (emTeste ? 1 : 3) : 0;
   const cobranca = proExpiraEm ? new Date(proExpiraEm.getTime() - folga * 86400000) : null;
   const [aberta, setAberta] = useState<number | null>(null);
-  const ir = (destino: string | null) => { if (!destino) return; if (destino === "doo") abrirDooIA(); else navigate(destino); };
+  const ir = (destino: string | null) => { if (!destino) return; if (destino === "doo") abrirDooIA(); else if (destino === "equipe") pedirMontagem(profile?.nome as string | undefined, profile?.nome_loja as string | undefined); else navigate(destino); };
 
   // Checkout da Hotmart (02/10). O e-mail e o nome da conta já vão preenchidos: o e-mail da compra
   // precisa ser o mesmo da conta, porque é por ele que o webhook liga o PRO sozinho.
@@ -92,6 +93,7 @@ export default function Assinar() {
             <button type="button" className="pro9-st-bt" onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</button>
           </section>
           <button type="button" className="pro9-st-bt2" onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</button>
+          <EquipeMonta />
 
           <section className="cl9-card pro9-lista2">
             <Titulo>O que o PRO te dá</Titulo>
@@ -121,6 +123,7 @@ export default function Assinar() {
           </div>
         </section>
 
+        <EquipeMonta className="pro9-eqm" semBotao />
         <div className="pro9-grade">
           {/* (21/10) celular: a oferta (preço) sobe pra logo depois do topo, antes da lista */}
           <aside className="pro9-lado">

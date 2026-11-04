@@ -2,7 +2,8 @@ import { COMO_ASSINATURA, TOUR_ASSINATURA } from "@/lib/comoTelas";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
-import { CaretRight, Check, Crown, Receipt } from "@phosphor-icons/react";
+import { CaretRight, Check, Crown, HandHeart, Receipt } from "@phosphor-icons/react";
+import { pedirMontagem } from "@/components/billing/EquipeMonta";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
@@ -22,7 +23,7 @@ const WHATSAPP_EQUIPE = "5511978414991";
 const VALOR = "R$ 29,90";
 /** Área do comprador da Hotmart: compras, assinaturas e recibos */
 const HOTMART_COMPRAS = "https://consumer.hotmart.com/purchase";
-const LIBERADO = ["Doo IA, sua assistente", "Lucro de cada produto", "Cupons e banners no cardápio"];
+const LIBERADO = ["Doo IA, sua assistente", "Lucro de cada produto", "Cupons e banners no cardápio", "A equipe Doonly monta seu cardápio"];
 const dataBR = (d: Date) => d.toLocaleDateString("pt-BR");
 // (31/10 · 5.84) com o ano quando não é o deste ano (antes "27/09" podia ser de qualquer ano)
 const diaMes = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}${d.getFullYear() !== new Date().getFullYear() ? "/" + d.getFullYear() : ""}`;
@@ -91,6 +92,12 @@ export default function MinhaAssinatura() {
 
         <section className="mas-c">
           <p className="mas-h">Precisa de algo?</p>
+          {/* (6.81) a equipe Doonly monta o cardápio (produtos, logo e banners) */}
+          <button type="button" className="mas-op" onClick={() => pedirMontagem(profile?.nome as string | undefined, profile?.nome_loja as string | undefined)}>
+            <span className="mas-op-ic"><HandHeart size={20} weight="fill" /></span>
+            <span className="mas-op-tx"><b>Montar meu cardápio</b><small>A equipe cadastra produtos, logo e banners</small></span>
+            <CaretRight size={18} weight="bold" className="mas-op-s" aria-hidden="true" />
+          </button>
           <button type="button" className="mas-op" onClick={whats}>
             <span className="mas-op-ic"><IconeWhatsApp size={20} /></span>
             <span className="mas-op-tx"><b>Dúvidas ou cancelamento</b><small>WhatsApp da equipe Doonly</small></span>

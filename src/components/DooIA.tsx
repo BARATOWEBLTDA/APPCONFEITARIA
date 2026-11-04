@@ -8,6 +8,7 @@ import CartaoInsumoDoo from '@/components/doo/CartaoInsumoDoo'
 import { listarInsumosResumo, normalizarRascunho, type InsumoResumo, type RascunhoInsumo } from '@/lib/insumosDoo'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
+import { ConvitePro } from '@/components/billing/RecursoPro'
 import { apiFetch } from "@/lib/apiFetch";
 import { resumoDoNegocio } from "@/lib/resumoDoo";
 import { avisar, confirmar } from '@/components/base'
@@ -419,7 +420,7 @@ const PEDE_NOVA_CONVERSA = 'Comece uma nova conversa e tente de novo.'
 function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'imagem' | 'texto' = 'texto'): string {
   // (4.23) limite diário de uso da Doo
   // (27/10) grátis: 10 mensagens por mês
-  if (errorType === 'limite_mensal') return 'Você usou as 10 mensagens do mês do plano grátis. No PRO são 150 por dia. No começo do mês que vem libera de novo.'
+  if (errorType === 'limite_mensal') return 'A Doo IA é do plano PRO. Teste grátis por 7 dias.'
   if (errorType === 'limite_diario') return caso === 'imagem' ? 'Você chegou ao limite de imagens de hoje. Amanhã libera de novo.' : 'Você chegou ao limite de mensagens de hoje. Amanhã libera de novo.'
   if (status === 429 || errorType === 'rate_limit_error') return 'Muitas mensagens em seguida. Aguarde um momento e tente novamente.'
   // (11/10) só o erro de plano mostra o "Assine o PRO" (outro 403 cai no aviso genérico)
@@ -469,7 +470,7 @@ function formatText(text: string): string {
 }
 
 export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
-  const { isPro } = usePlano()
+  const { isPro, loading: carregandoPlano } = usePlano()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -751,6 +752,9 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   }
 
   const showSuggestions = messages.length === 0 && !loading
+
+  // (6.81) a Doo IA é só do PRO: no grátis, abrir mostra o convite do PRO
+  if (open && !isPro && !carregandoPlano) return <ConvitePro recurso="doo" onClose={handleClose} />
 
   return (
     <>

@@ -1,0 +1,14 @@
+/* (6.81) cartão "A equipe Doonly monta seu cardápio" */
+.eqm { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px 14px; padding: 16px; border: 1px solid #F6D3E2; border-radius: var(--ui-raio-cartao); background: #FFF5F9; font-family: var(--font-base); box-sizing: border-box; }
+.eqm-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: var(--ic-fundo, #FFF); box-shadow: inset 0 0 0 1px var(--ic-borda, #E8E1E4); color: var(--ic-cor, #3A3135); }
+.eqm-tx { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.eqm-tx b { display: flex; align-items: center; gap: 8px; font-size: 15.5px; font-weight: 600; color: var(--ui-texto); }
+.eqm-tx small { font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
+.eqm-pro { flex: none; padding: 2px 7px; border-radius: 6px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 11.5px; font-style: normal; font-weight: 700; letter-spacing: .02em; }
+.eqm-bt { grid-column: 1 / -1; width: 100%; }
+.eqm-g { display: none; } .eqm-c { white-space: nowrap; }
+@media (min-width: 901px) {
+  .eqm { grid-template-columns: auto minmax(0, 1fr) auto; padding: 18px 20px; }
+  .eqm-bt { grid-column: auto; width: auto; white-space: nowrap; }
+  .eqm-g { display: inline; } .eqm-c { display: none; }
+}

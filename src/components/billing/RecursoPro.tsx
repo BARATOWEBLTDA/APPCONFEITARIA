@@ -8,7 +8,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  AddressBook, Lightning, Users, ChatCircleText, Receipt, Cake, Target, ChartLineUp, Storefront, FileXls, CalendarBlank, Briefcase,
+  AddressBook, Robot, Lightning, Users, ChatCircleText, Receipt, Cake, Target, ChartLineUp, Storefront, FileXls, CalendarBlank, Briefcase,
   Stack, CurrencyCircleDollar, ShoppingBag, Palette, Ticket, ClockCounterClockwise, Gift, Images, Megaphone, Sparkle, Printer,
   ListChecks, Truck, FilePdf, Crown, ArrowRight, Percent, ShareNetwork,
 } from "@phosphor-icons/react";
@@ -44,6 +44,8 @@ export const RECURSOS_PRO = {
     beneficios: [[Printer, "Folha do dia", "Pedidos em ordem de hora"], [ListChecks, "O que produzir", "Somado por produto"], [Truck, "Entregas e retiradas", "Endereço e quanto receber"]] },
   fichaPdf: { nome: "Ficha técnica em PDF", texto: "Baixe a ficha do produto com ingredientes, custo e preço pra imprimir ou guardar.", frase: ["Receita", "no papel!"],
     beneficios: [[FilePdf, "PDF pronto", "Pra imprimir ou mandar"], [Receipt, "Custo detalhado", "Ingrediente por ingrediente"], [CurrencyCircleDollar, "Preço sugerido", "Com o seu lucro"]] },
+  doo: { nome: "A Doo IA", texto: "A sua assistente: calcula preço, monta pedido, cria legenda e responde dúvidas da confeitaria.", frase: ["Ajuda", "na hora!"],
+    beneficios: [[Robot, "150 mensagens por dia", "Pergunte o que precisar"], [CurrencyCircleDollar, "Preço e pedido", "Ela calcula e monta pra você"], [Sparkle, "Cria imagens", "Legendas e artes pra divulgar"]] },
   cupons: { nome: "Cupom de desconto", texto: "Crie cupons pra trazer cliente nova e fazer quem já comprou voltar.", frase: ["Desconto", "que vende!"],
     beneficios: [[Ticket, "Cupom com seu código", "Ex.: NATAL10"], [Percent, "Em % ou em reais", "Com validade e mínimo"], [ShareNetwork, "Divulgue no WhatsApp", "A cliente usa no cardápio"]] },
 } satisfies Record<string, RecursoInfo>;
@@ -91,6 +93,23 @@ export function ConvitePro({ recurso, aberto = true, onClose, texto }: { recurso
       </div>}>
       <BeneficiosPro itens={r.beneficios} />
     </Janela>
+  );
+}
+
+/** (6.81) O mesmo convite, dentro da tela (como em Orçamentos): no PC o texto à esquerda e a faixa rosa à direita */
+export function CartaoPro({ recurso }: { recurso: RecursoPro }) {
+  const navigate = useNavigate();
+  const r: RecursoInfo = RECURSOS_PRO[recurso];
+  return (
+    <section className="rp-cartao">
+      <FaixaPro frase={r.frase} />
+      <div className="rp-cartao-tx">
+        <h2>{tituloPro(r.nome)}</h2>
+        <p>{r.texto}</p>
+        <BeneficiosPro itens={r.beneficios} />
+        <Botao icone={<Crown size={20} weight="fill" />} iconeDepois={<ArrowRight size={18} weight="bold" />} onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao>
+      </div>
+    </section>
   );
 }
 

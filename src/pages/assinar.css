@@ -88,3 +88,8 @@ button.pro9-l2-i { cursor: pointer; }
   .pro9--pro .pro9-q button svg { display: none; }
   .pro9--pro .pro9-q p { display: block; margin: 6px 0 0; }
 }
+
+/* (6.81) cartão "A equipe Doonly monta seu cardápio" */
+.pro9 > .eqm { margin: 0 0 12px; }
+.pro9--pro > .eqm { margin: 12px 0; }
+@media (min-width: 901px) { .pro9--pro > .eqm { margin: 16px 0; } }
