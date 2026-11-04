@@ -362,7 +362,7 @@ export default function OrcamentoEditar() {
                 <CampoData valor={o.data_evento || ''} onChange={mudaInicio} titulo={varios ? 'Primeiro dia do evento' : 'Data do evento'} placeholder="Escolher" curto />
               </div>
               <div className="orc-ev-hora">
-                <span className="ui-campo-r"><span>Horário</span><small>opcional</small></span>
+                <span className="ui-campo-r"><span>Horário</span></span>
                 <button type="button" className="cdata" onClick={() => setHoraAberta(true)} aria-label={`Horário: ${o.horario_evento ? o.horario_evento.slice(0, 5) : 'escolher'}`}>
                   <Clock size={20} weight="bold" aria-hidden="true" />
                   <span className={o.horario_evento ? '' : 'ph'}>{o.horario_evento ? o.horario_evento.slice(0, 5) : 'Escolher'}</span>
@@ -377,11 +377,11 @@ export default function OrcamentoEditar() {
                   <CampoData valor={o.data_evento_fim || ''} min={o.data_evento || undefined} onChange={d => muda({ data_evento_fim: o.data_evento && d > o.data_evento ? d : null })} titulo="Último dia do evento" placeholder="Escolher" curto />
                 </div>
               )}
-              <Campo className="orc-ev-nome" rotulo="Nome do evento" opcional value={o.nome_evento || ''} placeholder="Ex.: Aniversário da Malu" onChange={e => muda({ nome_evento: e.target.value })} />
+              <Campo className="orc-ev-nome" rotulo="Nome do evento" value={o.nome_evento || ''} placeholder="Ex.: Aniversário da Malu" onChange={e => muda({ nome_evento: e.target.value })} />
             </div>
             <div className="orc-2">
-              <Campo rotulo="Pessoas" opcional inputMode="numeric" value={o.pessoas ? String(o.pessoas) : ''} placeholder="Ex.: 40" onChange={e => muda({ pessoas: parseInt(e.target.value.replace(/\D/g, ''), 10) || null })} />
-              <Campo rotulo="Local" opcional value={o.local_evento || ''} placeholder="Ex.: Salão do prédio" onChange={e => muda({ local_evento: e.target.value })} />
+              <Campo rotulo="Pessoas" inputMode="numeric" value={o.pessoas ? String(o.pessoas) : ''} placeholder="Ex.: 40" onChange={e => muda({ pessoas: parseInt(e.target.value.replace(/\D/g, ''), 10) || null })} />
+              <Campo rotulo="Local" value={o.local_evento || ''} placeholder="Ex.: Salão do prédio" onChange={e => muda({ local_evento: e.target.value })} />
             </div>
             {horaAberta && <HorarioSheet titulo="Horário do evento" value={o.horario_evento ? o.horario_evento.slice(0, 5) : ''} onChange={h => muda({ horario_evento: h })} aoLimpar={o.horario_evento ? () => muda({ horario_evento: null }) : undefined} onClose={() => setHoraAberta(false)} />}
           </section>
@@ -407,7 +407,7 @@ export default function OrcamentoEditar() {
                   {i.produto_id
                     ? <b className="orc-item-n">{i.nome}</b>
                     : <input className="orc-item-in" value={i.nome} placeholder="Nome do item (ex.: Bolo 2 andares, tema jardim)" onChange={e => mudaItem(i.id, { nome: e.target.value })} aria-label="Nome do item" />}
-                  <input className="orc-item-det" value={i.detalhe || ''} placeholder="Detalhe (opcional): sabor, tamanho, tema" onChange={e => mudaItem(i.id, { detalhe: e.target.value })} aria-label="Detalhe do item" />
+                  <input className="orc-item-det" value={i.detalhe || ''} placeholder="Detalhe: sabor, tamanho, tema" onChange={e => mudaItem(i.id, { detalhe: e.target.value })} aria-label="Detalhe do item" />
                   <div className="orc-item-l">
                     <span className="orc-qtd">
                       <button type="button" aria-label="Diminuir" onClick={() => mudaItem(i.id, { quantidade: Math.max(1, (Number(i.quantidade) || 1) - 1) })}><Minus size={16} weight="bold" /></button>
@@ -457,7 +457,7 @@ export default function OrcamentoEditar() {
           </section>
 
           <section className="orc-card">
-            <h2>Acréscimo <small>opcional</small></h2>
+            <h2>Acréscimo</h2>
             <Campo rotulo="Valor a mais" prefixo="R$" inputMode="numeric" placeholder="0,00" value={mostrarReais(Number(o.acrescimo) || 0)} dica="Ex.: topo personalizado, embalagem especial, montagem no local."
               onChange={e => { const v = lerReais(e.target.value); setExtras(x => ({ ...x, acrescimo: v > 0 })); muda({ acrescimo: v }) }} />
           </section>
@@ -512,7 +512,7 @@ export default function OrcamentoEditar() {
           </section>
 
           <section className="orc-card">
-            <h2>Recado para ele <small>opcional</small></h2>
+            <h2>Recado para ele</h2>
             <CampoArea rotulo="" aria-label="Recado para o cliente" rows={3} value={o.mensagem || ''} placeholder="Ex.: Oi, Ana! Que alegria fazer parte do aniversário da Malu." onChange={e => muda({ mensagem: e.target.value })} />
             {!(o.mensagem || '').trim() && <button type="button" className="orc-link-bt" onClick={recadoPronto}><Plus size={14} weight="bold" />Usar um recado pronto</button>}
             <p className="orc-nota">Se ele não responder em 3 dias, o orçamento fica em destaque na lista para você pedir o retorno.</p>

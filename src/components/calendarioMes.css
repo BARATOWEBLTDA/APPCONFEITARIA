@@ -29,7 +29,8 @@
 .cmes-rdp .rdp-weekday { padding-bottom: var(--space-1); font-size: 12px; font-weight: 500; color: var(--ui-texto-3); text-transform: capitalize; opacity: 1; }
 .cmes-rdp .rdp-day { text-align: center; }
 .cmes-rdp .rdp-day_button { margin: 0 auto; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ui-texto); transition: background .12s; }
-.cmes-rdp .rdp-day_button:hover:not(:disabled) { background: #F7F4F5; }
+.cmes-rdp .rdp-day:not(.rdp-selected) .rdp-day_button:hover:not(:disabled) { background: #F7F4F5; }
+.cmes-rdp .rdp-selected:not(.rdp-range_middle) .rdp-day_button:hover { background: var(--ui-rosa-escuro); }
 .cmes-rdp .rdp-today:not(.rdp-selected) .rdp-day_button { position: relative; color: var(--ui-rosa-escuro); font-weight: 600; }
 .cmes-rdp .rdp-selected { font-size: inherit; }
 .cmes-rdp .rdp-selected .rdp-day_button { border: 0; background: var(--ui-rosa); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(232, 90, 140, .35); }
