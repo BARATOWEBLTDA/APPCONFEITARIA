@@ -2107,7 +2107,7 @@ export default function Inicio() {
           .ini-dk-dt { width: 48px; height: 48px; border-radius: var(--ui-raio-p); background: #FAF7F8; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
           .ini-dk-dt b { font-size: 16px; line-height: 1; color: var(--ui-texto); } .ini-dk-dt small { font-size: 12.5px; font-weight: 600; color: var(--ui-rosa-escuro); }
           .ini-dk-ei { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-          .ini-dk-ei b { font-size: 15px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ini-dk-ei small { font-size: 12.5px; color: var(--ui-texto-3); }
+          .ini-dk-ei b { font-size: 15px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ini-dk-ei small { font-size: 12.5px; color: var(--ui-texto-3); }
           .ini-dk-ev { font-weight: 600; font-size: 13.5px; color: var(--ui-texto); white-space: nowrap; } /* (22/10) sem verde: é dinheiro que ainda não entrou */
           .ini-dk-side .mu-root { margin: 0; }
           /* acesso rápido no estilo do celular: cartão branco, ícone rosa, nome + descrição, 4 por linha */
@@ -2159,10 +2159,10 @@ export default function Inicio() {
         .ini-dkg .dkg-entregas .ini-dk-ct { font-size: 17px; }
         .ini-dkg .dkg-entregas .ini-dk-en { padding: 12px 0; gap: 14px; }
         .ini-dkg .dkg-entregas .ini-dk-dt { width: 56px; height: 56px; }
-        .ini-dkg .dkg-entregas .ini-dk-dt b { font-size: 19px; }
-        .ini-dkg .dkg-entregas .ini-dk-ei b { font-size: 16px; }
+        .ini-dkg .dkg-entregas .ini-dk-dt b { font-size: 19px; font-weight: 600; }
+        .ini-dkg .dkg-entregas .ini-dk-ei b { font-size: 16px; font-weight: 500; } /* (6.67) nome do cliente mais leve que o título do cartão */
         .ini-dkg .dkg-entregas .ini-dk-ei small { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .ini-dkg .dkg-entregas .ini-dk-ev { font-size: 15px; }
+        .ini-dkg .dkg-entregas .ini-dk-ev { font-size: 15px; font-weight: 500; }
         @media (min-width: 1280px) { .ini-root { padding-left: 0; padding-right: 0; } }
         /* de 901 a 1279px: uma coluna só */
         @media (max-width: 1279px) { .ini-dkg { grid-template-columns: minmax(0, 1fr); } .ini-dkg > * { grid-column: 1 / -1 !important; } }
