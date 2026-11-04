@@ -182,12 +182,16 @@
 .orc-esc { display: flex; flex-direction: column; gap: 10px; }
 .orc-busca { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); color: var(--ui-texto-3); }
 .orc-busca input { flex: 1; min-width: 0; border: 0; outline: 0; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: none; }
-.orc-esc-l { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap-tight); max-height: 60vh; overflow-y: auto; padding: 2px; align-content: start; }
+/* (6.57) uma rolagem só: a busca fica parada em cima e só a lista rola */
+.ui-janela.orc-esc-janela { height: min(86dvh, 760px); }
+.orc-esc-janela .ui-janela-corpo { display: flex; flex-direction: column; overflow: hidden; }
+.orc-esc { flex: 1 1 auto; min-height: 0; }
+.orc-esc-l { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap-tight); overflow-y: auto; overscroll-behavior: contain; padding: 2px 2px 12px; align-content: start; }
 @media (min-width: 760px) {
   .ui-veu--centro .ui-janela.orc-esc-janela { width: min(860px, calc(100vw - 48px)); max-width: none; }
-  .orc-esc-l { grid-template-columns: 1fr 1fr; max-height: min(64vh, 640px); }
+  .orc-esc-l { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-.orc-esc-it { display: flex; align-items: center; gap: 12px; min-height: 72px; margin: 0; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); transition: border-color .15s, background .15s; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.orc-esc-it { min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 72px; margin: 0; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); transition: border-color .15s, background .15s; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
 .orc-esc-it:hover { border-color: #F3B3CA; background: #FFF8FB; }
 .orc-esc-l > .orc-vz { grid-column: 1 / -1; }
 .orc-esc-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -410,7 +414,8 @@
 @media (min-width: 901px) { .orc:not(.orc-ed) { padding-left: 0; padding-right: 0; } }
 
 /* (04/11 · 6.43) etapas numeradas: 1 Evento · 2 Itens · 3 Valores · 4 Condições · 5 Enviar */
-.orc-etapas--n { position: relative; gap: 0; margin-bottom: var(--space-5); }
+.orc-etapas--n { position: relative; gap: 0; margin-top: var(--space-4); margin-bottom: var(--space-5); }
+@media (min-width: 1024px) { .orc-etapas--n { margin-top: var(--space-6); } }
 .orc-etapas--n li { position: relative; }
 .orc-etapas--n li + li::before { content: ""; position: absolute; top: 14px; right: calc(50% + 18px); left: calc(-50% + 18px); height: 2px; background: var(--ui-borda); }
 .orc-etapas--n li.on::before, .orc-etapas--n li.ok::before { background: var(--ui-rosa); }
