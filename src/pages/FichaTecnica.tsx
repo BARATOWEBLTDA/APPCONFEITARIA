@@ -16,7 +16,8 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_FICHA, TOUR_FICHA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
-import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, WarningCircle, X } from "@phosphor-icons/react";
+import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, WarningCircle, X, ListBullets, SquaresFour } from "@phosphor-icons/react";
+import { Mascote } from "@/components/marca/Mascote";
 import "./clientes.css";
 import "./fichaLista.css";
 import AbasFicha from "@/components/ficha/AbasFicha";
@@ -221,6 +222,12 @@ export default function FichaTecnica() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState("");
   const [moAtivo, setMoAtivo] = useState(false);
+  // (04/11 · 6.23) modo quadro (cartões com foto) ou lista; no PC abre em quadro; o app lembra a escolha
+  const [modo, setModoBruto] = useState<"lista" | "quadro">(() => {
+    try { const v = localStorage.getItem("doonly_ficha_modo"); if (v === "lista" || v === "quadro") return v; } catch { /* sem storage */ }
+    return window.matchMedia("(min-width: 900px)").matches ? "quadro" : "lista";
+  });
+  const setModo = (m: "lista" | "quadro") => { setModoBruto(m); try { localStorage.setItem("doonly_ficha_modo", m); } catch { /* sem storage */ } };
   const [recemSalva, setRecemSalva] = useState<string | null>(null); // (04/11) a ficha que acabou de salvar, destacada na lista
   const [infoAtivo, setInfoAtivo] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
@@ -1013,6 +1020,10 @@ export default function FichaTecnica() {
             </label>
             {/* (24/10) filtro padrão do app: abre na lateral */}
             <BotaoFiltro className="fl-filtro" ativos={filtro === "todos" ? 0 : 1} onClick={() => setFiltroAberto(true)} />
+            <div className="fq-modo" role="radiogroup" aria-label="Ver como">
+              <button type="button" role="radio" aria-checked={modo === "lista"} aria-label="Lista" title="Lista" onClick={() => setModo("lista")}><ListBullets size={20} weight="bold" /></button>
+              <button type="button" role="radio" aria-checked={modo === "quadro"} aria-label="Quadro" title="Quadro" onClick={() => setModo("quadro")}><SquaresFour size={20} weight="bold" /></button>
+            </div>
           </div>
           {filtroAberto && <GavetaFiltro valor={{ mostrar: filtro }} padrao={{ mostrar: "todos" }}
             grupos={[{ id: "mostrar", titulo: "Mostrar", tipo: "radio", opcoes: chipsFiltro.map(([k, t, n]) => ({ k, label: k === "todos" ? "Todos os produtos" : t, n })) }]}
@@ -1021,6 +1032,26 @@ export default function FichaTecnica() {
             aoAplicar={v => setFiltro(v.mostrar)} aoFechar={() => setFiltroAberto(false)} />}
           {filtrados.length === 0 ? (
             <p className="cl9-semres">{busca.trim() ? "Nenhum produto com esse nome. Confira a busca." : "Nenhum produto nesse filtro."}</p>
+          ) : modo === "quadro" ? (
+            <div className={`fq-grade${recemSalva ? " fq-grade--salva" : ""}`}>
+              {filtrados.map(p => {
+                const c = calcular(p, maoConta, cvConta);
+                const foto = (p.imagem_url || "").split(",")[0];
+                return (
+                  <button key={p.id} type="button" data-ficha={p.id} className={`fq-c${recemSalva === p.id ? " fl-l--salva" : ""}`} onClick={() => abrirFicha(p)}>
+                    <span className={`fq-foto${foto ? "" : " fq-foto--sem"}`}>{foto ? <img src={foto} alt="" loading="lazy" /> : <Mascote pose="acenando" className="fq-masc" />}</span>
+                    <span className="fq-in">
+                      <b className="fq-n" title={p.nome}>{p.nome}</b>
+                      {c.temFicha ? (<>
+                        <span className="fq-l"><small>Custo</small><em>{reais(c.custoTotal)}</em></span>
+                        <span className="fq-l"><small>Lucro</small><em className={`fq-lucro fl-lucro--${tomMargem(c.margemLucro)}`}>{reais(c.lucro)}</em></span>
+                        <span className="fq-l"><small>Margem</small><i className={`fl-pill fl-pill--${tomMargem(c.margemLucro)}`}>{fmtPct(c.margemLucro)}%</i></span>
+                      </>) : <span className="fq-montar"><Plus size={16} weight="bold" aria-hidden="true" />Montar ficha</span>}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           ) : (<>
             <div className="fl-cab" aria-hidden="true"><span>Produto</span><span>Custo</span><span>Lucro</span><span>Margem</span><span /></div>
             {filtrados.map(p => {

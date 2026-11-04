@@ -62,3 +62,27 @@
 .fl-l--salva { animation: flSalva 3s ease-out both; }
 @keyframes flSalva { 0%, 40% { background: #FDEAF1; box-shadow: inset 3px 0 0 var(--ui-rosa); } 100% { background: transparent; box-shadow: inset 3px 0 0 transparent; } }
 @media (prefers-reduced-motion: reduce) { .fl-l--salva { animation: none; background: #FDEAF1; } }
+
+/* (04/11 · 6.23) Lista | Quadro e os cartões do quadro (no jeito dos cartões de Produtos) */
+.fq-modo { flex: none; display: flex; padding: 3px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); }
+.fq-modo button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 9px; background: none; color: var(--ui-texto-3); cursor: pointer; }
+.fq-modo button[aria-checked="true"] { background: #F4F1F2; color: var(--ui-texto); }
+@media (max-width: 599px) { .fq-modo button { width: 36px; height: 38px; } }
+.fq-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; padding-top: 4px; }
+@media (max-width: 599px) { .fq-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } }
+.fq-c { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); text-align: left; color: var(--ui-texto); font-family: inherit; cursor: pointer; transition: box-shadow .15s, border-color .15s; }
+.fq-c:hover { border-color: #E4D9DE; box-shadow: 0 6px 18px rgba(60, 20, 35, .08); }
+.fq-foto { display: block; aspect-ratio: 1; background: #F7F4F5; }
+.fq-foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.fq-foto--sem { display: flex; align-items: center; justify-content: center; background: var(--ui-rosa-claro); }
+.fq-foto--sem .fq-masc { width: 58%; height: auto; opacity: .9; }
+.fq-in { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; }
+.fq-n { margin-bottom: 2px; font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fq-l { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; font-size: 13.5px; }
+.fq-l small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+.fq-l em { font-style: normal; font-weight: 600; white-space: nowrap; }
+.fq-l .fl-pill { font-style: normal; }
+.fq-montar { display: flex; align-items: center; gap: 6px; min-height: 76px; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); }
+.fq-lucro.fl-lucro--ok { color: var(--ui-verde); }
+.fq-lucro.fl-lucro--atencao { color: var(--ui-laranja); }
+.fq-lucro.fl-lucro--neg { color: var(--ui-vermelho-escuro); }
