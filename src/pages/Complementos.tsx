@@ -168,7 +168,7 @@ export default function Complementos() {
   const temEtapa2 = form.onde === "produtos" || form.onde === "categorias";
   const proximo = () => {
     setTentou(true);
-    if (!form.nome.trim() || !form.onde || (!form.gratis && form.valor <= 0)) return;
+    if (!form.nome.trim() || repetido || !form.onde || (!form.gratis && form.valor <= 0)) return;
     setTentou(false); setEtapa(2);
   };
   /** (04/11 · 6.24) a IA busca fotos pelo nome do complemento e mostra 3 para escolher */
@@ -239,7 +239,11 @@ export default function Complementos() {
     finally { setGerandoIa(false); }
   };
 
-  const erroNome = tentou && !form.nome.trim() ? "Escreva o nome" : undefined;
+  // (6.29) nome repetido (sem ligar pra acento, maiúscula ou plural: "Topos de Bolos" = "Topo de Bolo")
+  const chaveNome = (t: string) => (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(Boolean).map(w => w.length > 3 ? w.replace(/(es|s)$/, "") : w).join(" ");
+  const repetido = form.nome.trim().length >= 3 ? items.find(i => i.id !== editando?.id && chaveNome(i.nome) === chaveNome(form.nome)) : undefined;
+  const erroNome = tentou && !form.nome.trim() ? "Escreva o nome"
+    : repetido ? `Você já tem "${repetido.nome}". Use outro nome ou edite o que já existe.` : undefined;
   const erroValor = tentou && !form.gratis && form.valor <= 0 ? 'Escreva o valor ou marque Grátis' : undefined;
   const erroOnde = tentou && !form.onde ? "Escolha onde o adicional aparece" : undefined;
   const erroProdutos = tentou && form.onde === "produtos" && form.produtos.length === 0 ? "Marque pelo menos um produto"
@@ -248,7 +252,7 @@ export default function Complementos() {
   const salvar = async () => {
     setTentou(true);
     const nome = form.nome.trim();
-    if (!nome || !form.onde || (!form.gratis && form.valor <= 0) || (form.onde === "produtos" && form.produtos.length === 0) || (form.onde === "categorias" && form.cats.length === 0)) return;
+    if (!nome || repetido || !form.onde || (!form.gratis && form.valor <= 0) || (form.onde === "produtos" && form.produtos.length === 0) || (form.onde === "categorias" && form.cats.length === 0)) return;
     const dados = { nome, descricao: form.descricao.trim() || null, valor: form.gratis ? 0 : form.valor, pede_referencia: form.pedeRef, ...(temFrase ? { pede_frase: form.pedeFrase } : {}), ...(temCapa ? { imagem_url: form.capa || null } : {}),
       categorias: form.onde === "produtos" ? form.produtos : [], categorias_cardapio: form.onde === "categorias" ? form.cats : [] };
     setSaving(true);

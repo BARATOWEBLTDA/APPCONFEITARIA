@@ -416,7 +416,7 @@
 /* (04/11 · 6.22) com complementos: lista na largura toda (a prévia abre no "Ver como fica") */
 @media (min-width: 900px) { .pz-cheio.pz-cheio--so { display: block; } }
 .pz-tit-acoes { display: inline-flex; align-items: center; gap: 8px; }
-.pz-ver-ex .pz-cel-wrap--real { display: flex !important; margin: 0; padding: 0; position: static; background: none; }
+.pz-ver-ex .pz-cel-wrap--real { display: flex !important; margin: 0; padding: 0; position: static; background: none; overflow: visible; border-radius: 0; }
 .pz-ver-ex .pz-cel-wrap--real figcaption { display: none; }
 @media (max-width: 767px) { .pz-ver-bt { width: 44px; padding: 0 !important; justify-content: center; gap: 0 !important; } }
 
