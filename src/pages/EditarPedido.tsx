@@ -528,7 +528,33 @@ export default function EditarPedido() {
   const horaCurta = (h: string) => { const [hh, mm] = h.slice(0, 5).split(':'); return `${Number(hh)}h${mm && mm !== '00' ? mm : ''}` }
   const quandoTexto = `${dataEntrega ? diaPorExtenso(dataEntrega) : 'data a combinar'}${horarioEntrega ? ` às ${horaCurta(horarioEntrega)}` : ''}`
   const primeiroNome = clienteNome.trim() ? toTitleCase(clienteNome.trim().split(/\s+/)[0]) : ''
-  const textoEntregador = `Entrega do pedido #${pedido?.numero ?? ''}${primeiroNome ? ` · ${toTitleCase(clienteNome.trim())}` : ''}\n${quandoTexto}\n${enderecoCompleto}${clienteTelefone ? `\nTelefone: ${clienteTelefone}` : ''}`
+  // (6.75) mensagem para o entregador no formato do WhatsApp: uma informação por linha, rótulos em negrito,
+  // o link do mapa e quanto cobrar na entrega (antes vinha tudo junto, separado por " - ")
+  const montarTextoEntregador = (falta: number) => {
+    const linhaRua = [enderecoRua, enderecoNumero].filter(Boolean).join(', ')
+    const linhaBairro = [enderecoBairro, enderecoCidade].filter(Boolean).join(' · ')
+    const busca = [linhaRua, enderecoBairro, enderecoCidade].filter(Boolean).join(', ')
+    const qtd = (q: number) => String(Math.round((Number(q) || 1) * 1000) / 1000).replace('.', ',')
+    const obs = (pedido?.observacoes || '').trim()
+    const se = (cond: unknown, txt: string) => (cond ? txt : null)
+    return [
+      `*Entrega do pedido #${pedido?.numero ?? ''}*`,
+      '',
+      `*Quando:* ${quandoTexto}`,
+      se(clienteNome.trim(), `*Cliente:* ${toTitleCase(clienteNome.trim())}`),
+      se(clienteTelefone, `*Telefone:* ${formatTelefone(clienteTelefone)}`),
+      '',
+      '*Endereço:*',
+      se(linhaRua, linhaRua), se(enderecoComplemento, enderecoComplemento), se(linhaBairro, linhaBairro), se(enderecoCep, `CEP ${enderecoCep}`),
+      se(busca, `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(busca)}`),
+      '',
+      se(itens.length, '*Itens:*'),
+      ...itens.map(it => `• ${qtd(it.quantidade)}× ${nomeDeProduto(it.nome_produto)}`),
+      se(itens.length, ''),
+      falta > 0.009 ? `*Cobrar na entrega:* ${formatMoney(falta)}` : '*Pagamento:* já está pago',
+      se(obs, ''), se(obs, `*Observação:* ${obs}`),
+    ].filter((l): l is string => l !== null).join('\n').replace(/\n{3,}/g, '\n\n').trim()
+  }
   const copiarEndereco = async () => { try { await navigator.clipboard.writeText(enderecoCompleto); avisar('Endereço copiado.') } catch { avisar('Não foi possível copiar.') } }
   const abrirEdicaoEndereco = () => { enderecoAntes.current = { enderecoCep, enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade, enderecoComplemento }; setCepAchado(false); setEditandoEndereco(true) }
   // (28/10) bug: com o endereço vazio, digitar o CEP preenchia a rua e a tela já mostrava o endereço como pronto (sem o número).
@@ -1630,7 +1656,7 @@ export default function EditarPedido() {
                     <a className="ui-bt ui-bt--secundario ui-bt--m" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><MapTrifold size={20} weight="bold" /></span><span className="ui-bt-t">Ver no mapa</span></a>
                     <Botao variante="secundario" tamanho="m" icone={<Copy size={20} weight="bold" />} onClick={copiarEndereco}>Copiar</Botao>
                   </div>
-                  <a className="ui-bt ui-bt--secundario ui-bt--m ui-bt--cheio tpd-entregador" href={`https://wa.me/?text=${encodeURIComponent(textoEntregador)}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><IconeWhatsApp size={20} className="tpd-zap" /></span><span className="ui-bt-t">Mandar para o entregador</span></a>
+                  <a className="ui-bt ui-bt--secundario ui-bt--m ui-bt--cheio tpd-entregador" href={`https://wa.me/?text=${encodeURIComponent(montarTextoEntregador(faltaReceber))}`} target="_blank" rel="noreferrer"><span className="ui-bt-ic" aria-hidden="true"><IconeWhatsApp size={20} className="tpd-zap" /></span><span className="ui-bt-t">Mandar para o entregador</span></a>
                 </>) : (<>
                   {enderecoDaCliente && (
                     <button className="ep2-usar" onClick={usarEnderecoDaCliente}>Usar o endereço {clienteNome.trim() ? `de ${toTitleCase(clienteNome.trim().split(/\s+/)[0])}` : 'do cliente'}
