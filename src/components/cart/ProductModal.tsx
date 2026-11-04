@@ -211,7 +211,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     // (11/10) trocou de produto: a lista de adicionais do produto anterior sai da tela na hora
     if (extrasDoProduto.current !== product.id) { extrasDoProduto.current = product.id; setExtrasBiblioteca([]) }
     const uid = product.user_id
-    if (!uid) return
+    // (6.56) no orçamento os adicionais não aparecem: a confeiteira coloca à parte se quiser
+    if (!uid || orcamento) return
     // 02/10: pelo cardápio (cliente sem login) a tabela não pode ser lida direto — usa a função segura.
     // Se a função ainda não existir no banco (SQL não rodado), tenta a leitura direta.
     // (11/10) resposta atrasada de outro produto (ou depois de fechar) não entra na tela
@@ -240,7 +241,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
         setExtrasBiblioteca(filtrados)
       }).catch(() => { /* sem internet: fica sem os adicionais */ })
     return () => { valendo = false }
-  }, [isOpen, product?.id])
+  }, [isOpen, product?.id, orcamento])
   // (19/10) complemento marcado que pede foto de referência (ex.: Topo de bolo)
   const refDoExtra = extrasBiblioteca.find(e => e.pede_referencia && extrasMarcados.has(e.id)) || null
 
