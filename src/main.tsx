@@ -44,3 +44,13 @@ iniciarMedidaDoTeclado()
 
 // App instalado: atualiza sozinho quando sai versão nova (num momento seguro)
 iniciarAutoAtualizacao()
+// (6.91) arquivo de uma tela que sumiu com a atualização (o Vite avisa antes de quebrar): recarrega uma vez e pega a versão nova
+window.addEventListener('vite:preloadError', (e) => {
+  try {
+    const ult = Number(sessionStorage.getItem('doonly_recarga_arquivo') || 0)
+    if (Date.now() - ult < 30000) return
+    sessionStorage.setItem('doonly_recarga_arquivo', String(Date.now()))
+  } catch { /* sem sessionStorage: recarrega mesmo assim */ }
+  e.preventDefault()
+  window.location.reload()
+})

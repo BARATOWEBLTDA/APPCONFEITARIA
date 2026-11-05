@@ -13,6 +13,8 @@ const TELAS_DE_PREENCHER = [/^\/vendas\/novo/, /^\/pedidos\/[^/]+\/editar/, /^\/
   /^\/esqueci-senha/, /^\/verificar-email/, /^\/(redefinir|nova|alterar)-senha/, /^\/admin(\/|$)/];
 
 let temVersaoNova = false;
+/** (6.91) já se sabe que tem versão nova publicada (a tela de erro vira o aviso de atualização) */
+export const haVersaoNova = () => temVersaoNova;
 /** (11/10) hora do último toque, tecla ou "voltar": logo depois deles pode ter um salvar ou excluir em andamento */
 let ultimaAcao = 0;
 const CALMA = 3000;

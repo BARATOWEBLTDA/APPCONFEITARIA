@@ -21,6 +21,8 @@ import { minutosDoDia, separarEntregasDeHoje } from "@/components/inicio/entrega
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { TelaVazia, informar } from "@/components/base";
 import MenuConta from "@/components/MenuConta";
+import { abrirDooIA } from "@/components/MenuContaItens";
+import { ArrowRight as SetaDoo } from "@phosphor-icons/react";
 import { useNotifications } from "@/context/NotificationContext";
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
@@ -151,6 +153,7 @@ export default function Inicio() {
     cardapioPublicado: false,
     loading: true,
   });
+  const [perguntaDoo, setPerguntaDoo] = useState("") // (6.91) o campo da Doo no topo do Início
   const [menuOpen, setMenuOpen] = useState(false);
   const fotoRef = useRef<HTMLButtonElement>(null); // o menu da conta abre embaixo da foto
   // (16/10) sino com as não lidas no topo do celular (antes só pela foto › Notificações, sem aviso nenhum)
@@ -816,10 +819,6 @@ export default function Inicio() {
 
         {/* (16/10) celular: o sino com as não lidas (antes só pela foto › Notificações, sem aviso nenhum) */}
         <div className="ini-hero-acoes">
-          {/* (6.87) celular: a Doo IA no topo do Início, ao lado da coroa e do sino */}
-          <button type="button" className="ini-hero-ac ini-hero-ac--doo" onClick={() => window.dispatchEvent(new Event("doonly:abrir-doo"))} aria-label="Abrir a Doo IA" title="Doo IA">
-            <img src="/Sistema/doo.webp" alt="" aria-hidden="true" />
-          </button>
           {/* (22/10) a coroa do PRO do lado do sino (como o Clube do iFood): leva pra assinatura */}
           {profile && (
             <button type="button" className="ini-hero-ac ini-hero-ac--pro" onClick={() => navigate(isPro ? "/minha-assinatura" : "/assinar")}
@@ -1009,6 +1008,15 @@ export default function Inicio() {
           <MagnifyingGlass size={20} aria-hidden="true" /><span>Buscar no app</span>
         </button>
       </section>
+
+      {/* (6.91) celular: a Doo IA logo no topo do Início, num campo de perguntar (escreveu e enviou, a conversa abre com a pergunta) */}
+      {!computador && (
+        <form className="ini-section ini-section--doo" onSubmit={e => { e.preventDefault(); const t = perguntaDoo.trim(); setPerguntaDoo(""); (document.activeElement as HTMLElement | null)?.blur(); abrirDooIA(t); }}>
+          <img src="/Sistema/doo.webp" alt="" aria-hidden="true" />
+          <input value={perguntaDoo} onChange={e => setPerguntaDoo(e.target.value)} placeholder="Pergunte algo à Doo" aria-label="Pergunte qualquer coisa à Doo IA" enterKeyHint="send" autoComplete="off" />
+          <button type="submit" aria-label="Enviar para a Doo"><SetaDoo size={18} weight="bold" /></button>
+        </form>
+      )}
 
       {/* (16/10) celular: pedido novo pra aceitar e atrasados no topo, logo embaixo do "Olá" (antes uma faixa embaixo do Acesso rápido) */}
       {!loading && !erroCarga && (pedidosNovos.length > 0 || counts.pedidosAtrasados > 0) && (
@@ -1625,6 +1633,12 @@ export default function Inicio() {
         @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 4; } } /* (22/10) e depois das Próximas entregas (o dia vem antes das tarefas) */
         .ini-main > .ini-mobile-banner { order: 9; margin-top: var(--space-3); } /* (6.83) o banner é a última coisa do Início no celular */ /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
         .ini-section--novos { order: -1; }
+        .ini-root form.ini-section.ini-section--doo { order: -2; display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px; margin-top: var(--space-3) !important; padding: 6px 6px 6px 8px !important; min-height: 0 !important; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
+        .ini-root form.ini-section--doo:focus-within { border-color: #F3B3CA; }
+        .ini-section--doo img { flex: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; object-position: top center; background: #FCE7F3; }
+        .ini-section--doo input { flex: 1; min-width: 0; height: 40px; border: 0; outline: 0; background: none; font-family: var(--font-base); font-size: 16px; color: var(--ui-texto); }
+        .ini-section--doo input::placeholder { color: var(--ui-texto-3); }
+        .ini-section--doo button { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; cursor: pointer; }
         .ini-root .ini-section.ini-section--novos { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--novos { display: none; } }
 

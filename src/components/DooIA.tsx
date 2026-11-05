@@ -333,6 +333,18 @@ ${catTxt}
 `
 }
 
+/** (6.91) a frase da Doo depois que a ação foi salva, com o próximo passo que faz sentido */
+function respostaFeito(a: AcaoDoo, feito: string): string {
+  const brl = (v: number) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  switch (a.acao) {
+    case 'cliente': return a.cliente_id ? `Prontinho! Atualizei o cadastro de ${a.nome}.` : `Prontinho! ${a.nome} já está nos seus clientes. Quer registrar um pedido ou montar um orçamento para ${a.nome.split(' ')[0]}?`
+    case 'produto': return `Prontinho! ${a.nome} já está no seu cardápio por ${brl(a.preco)}. Para colocar a foto e os tamanhos, toque em Abrir no cartão.`
+    case 'orcamento': return `Pronto! ${feito.replace(' criado', '')} está salvo como rascunho. Toque em Abrir para revisar e enviar ao cliente pelo WhatsApp.`
+    case 'loja': return 'Prontinho! Os dados da loja foram atualizados e o cardápio já mostra a mudança.'
+    case 'cupom': return `Prontinho! O cupom ${a.codigo} já está valendo no cardápio. Quer que eu escreva uma mensagem para divulgar no WhatsApp?`
+  }
+}
+
 /** Separa o bloco acao-doonly da resposta. */
 function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | null } {
   const m = reply.match(/```acao-doonly\s*([\s\S]*?)```/)
@@ -693,6 +705,9 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     setTimeout(() => URL.revokeObjectURL(endereco), 10000)
   }
 
+  // (6.91) depois que ela confirma o cartão, a Doo responde (antes salvava e ficava calada)
+  const dooResponde = (texto: string) => setMessages(prev => [...prev, { role: 'assistant', content: texto }])
+
   // (6.89) o topo numa folha A4 em PDF, pronto para imprimir (no celular abre o compartilhar, pra mandar no WhatsApp ou salvar)
   const [gerandoPdf, setGerandoPdf] = useState(false)
   const baixarPdfTopo = async (url: string) => {
@@ -938,7 +953,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                 <div className="dz-hero">
                   <div className="dz-hav2"><img src="/Sistema/doo.webp" alt="" /></div>
                   <b>{nomeConfeiteira ? `Oi, ${nomeConfeiteira}! Eu sou a Doo` : 'Oi! Eu sou a Doo'}</b>
-                  <p>Sua assistente de confeitaria: calculo preços, crio receitas, registro pedidos e cadastro ingredientes.</p>
+                  <p>Sua assistente de confeitaria: calculo preços, crio receitas e topos de bolo, e cadastro clientes, produtos, pedidos e cupons para você.</p>
                 </div>
                 <p className="dz-sl">Comece por aqui</p>
                 {/* (6.85) topo de bolo: a Doo desenha pronto para imprimir */}
@@ -985,6 +1000,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                       onFeito={(estado, info) => {
                         const nota = estado === 'salvo' ? `\n\n[O app confirmou: pedido${info?.numero ? ' #' + info.numero : ''} registrado (${info?.resumo}).]` : '\n\n[A confeiteira cancelou esse pedido.]'
                         setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: estado, acaoNumero: info?.numero, content: m.content + nota } : m))
+                        if (estado === 'salvo') dooResponde(`Prontinho! O pedido${info?.numero ? ` #${info.numero}` : ''} já está na sua agenda. Quer que eu escreva a mensagem de confirmação para o cliente?`)
                         if (estado === 'salvo') listarCatalogo(uid).then(c => setCatalogo({ produtos: c.produtos, clientes: c.clientes })).catch(() => {})
                       }} />
                   )}
@@ -995,6 +1011,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                         // O histórico enviado pra Doo fica sabendo do resultado (pra ela não oferecer de novo)
                         const nota = estado === 'salvo' ? `\n\n[O app confirmou: ${final?.nome} foi ${(msg.acao as RascunhoInsumo).insumo_id ? 'atualizado' : 'cadastrado'}.]` : '\n\n[A confeiteira cancelou esse cadastro.]'
                         setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: estado, content: m.content + nota } : m))
+                        if (estado === 'salvo') dooResponde(`Prontinho! ${final?.nome || 'O ingrediente'} já está ${(msg.acao as RascunhoInsumo).insumo_id ? 'com o preço novo' : 'nos seus ingredientes'}. As fichas técnicas que usam ele já recalculam o custo.`)
                         if (estado === 'salvo') listarInsumosResumo(uid).then(setInsumos).catch(() => {})
                       }} />
                   )}
@@ -1004,6 +1021,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                       onFeito={(estado, info) => {
                         const nota = estado === 'salvo' ? `\n\n[O app confirmou: ${info?.feito}.]` : '\n\n[A confeiteira cancelou.]'
                         setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: estado, acaoFeito: info?.feito, acaoAbrir: info?.abrir, content: m.content + nota } : m))
+                        if (estado === 'salvo') dooResponde(respostaFeito(msg.acao as AcaoDoo, info?.feito || ''))
                         if (estado === 'salvo') {
                           listarCatalogo(uid).then(c => { const v = { produtos: c.produtos, clientes: c.clientes }; catRef.current = v; setCatalogo(v) }).catch(() => {})
                           if ((msg.acao as AcaoDoo).acao === 'loja') { const a = msg.acao as Extract<AcaoDoo, { acao: 'loja' }>; lojaRef.current = { ...lojaRef.current, ...(a.nome_loja ? { nome_loja: a.nome_loja } : {}), ...(a.horario ? { horario: a.horario } : {}) } }
@@ -1195,8 +1213,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-pend-img img { width: 48px; height: 48px; border-radius: var(--ui-raio-p); object-fit: cover; border: 1.5px solid var(--ui-rosa); display: block; }
         .dz-pend-img button { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--ui-branco); background: var(--ui-vinho-escuro); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
         .dz-pend p { margin: 0; font-size: 12.5px; color: var(--ui-texto-2); }
-        .dz-inb { display: flex; align-items: center; gap: 8px; background: var(--ui-branco); border: 1.5px solid var(--ui-borda-campo); border-radius: 999px; padding: 4px; box-shadow: 0 4px 14px rgba(44,18,25,.06); transition: border-color .15s; }
-        .dz-inb:focus-within { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
+        .dz-inb { display: flex; align-items: center; gap: 8px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 999px; padding: 4px; box-shadow: 0 4px 14px rgba(44,18,25,.06); transition: border-color .15s; }
+        .dz-inb:focus-within { border-color: #F3B3CA; } /* (6.91) borda fina, sem o anel grosso */
         .dz-ib { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .dz-txt { flex: 1; min-width: 0; height: 44px; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); padding: 0 2px; }
         .dz-txt::placeholder { color: #B5AAB0; }
