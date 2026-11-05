@@ -324,7 +324,6 @@ export const TOUR_CARDAPIO: PassoTour[] = [
   { el: ".ml-produtos", titulo: "O que você vende", texto: "Produtos, categorias e adicionais que aparecem no cardápio." },
   { el: ".vgd-kp", titulo: "Desempenho", texto: "Visitas, pedidos, valor vendido e conversão do cardápio no período escolhido." },
   { el: ".vgd-gr", titulo: "Visitas por dia", texto: "Quantas pessoas abriram o cardápio em cada dia do período." },
-  { el: ".ch-block--vendidos", titulo: "Mais vendidos", texto: "Os produtos mais pedidos pelo cardápio nos últimos 30 dias." },
   { el: ".vgd-g2", titulo: "Últimos pedidos", texto: "Os pedidos mais recentes que chegaram pelo link do cardápio." },
 ];
 

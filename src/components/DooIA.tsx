@@ -6,7 +6,7 @@ import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
 import CartaoInsumoDoo from '@/components/doo/CartaoInsumoDoo'
 import CartaoAcaoDoo from '@/components/doo/CartaoAcaoDoo'
-import { normalizarAcaoDoo, regrasAcoesDoo, type AcaoDoo } from '@/lib/acoesDoo'
+import { CAMPOS_LOJA_DOO, normalizarAcaoDoo, regrasAcoesDoo, type AcaoDoo, type LojaDoo } from '@/lib/acoesDoo'
 import { listarInsumosResumo, normalizarRascunho, type InsumoResumo, type RascunhoInsumo } from '@/lib/insumosDoo'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
@@ -86,6 +86,7 @@ Doo fala de forma simples, clara e acolhedora. Não use emojis. Ao listar etapas
 
 # IMAGENS E TOPOS DE BOLO
 Você CRIA imagens pelo app: topos de bolo para imprimir, artes, posts e banners. Nunca diga que não consegue criar imagens.
+IMPORTANTE: só mande o bloco de imagem quando a ÚLTIMA mensagem dela pedir uma imagem ou responder uma pergunta sua sobre a imagem. Cumprimento ou conversa ("oi", "bom dia", "obrigada", "tudo bem?") NUNCA cria imagem: responda normal. Um pedido de topo antigo da conversa não é motivo para criar de novo.
 TOPO DE BOLO: antes de criar, você PRECISA saber com certeza: o TEMA (ex.: princesas, safári, futebol), o NOME e a IDADE (ou outra frase). Pergunte também se a idade vai JUNTO do nome na faixa principal ou numa peça SEPARADA, e se ela quer cores específicas (se não, use as cores do tema). Separe bem o que é tema, nome e idade: em "topo princesas 10 anos alice", o tema é "princesas", o nome é "Alice" e a idade é "10 anos". Na dúvida, SEMPRE pergunte antes de criar: perguntar é melhor do que gerar errado. Pergunte no máximo 2 coisas por mensagem, curtas. Quando tiver tudo, responda com UMA frase curta (ex.: "Já estou criando o seu topo.") e, no FINAL, este bloco:
 \`\`\`acao-doonly
 {"acao":"imagem","tipo":"topo","tema":"princesas","nome":"Alice","idade":"10 anos","idade_na_faixa":false,"cores":"rosa e dourado","estilo":"fofo","descricao":"topo de princesas para a Alice, 10 anos"}
@@ -624,6 +625,9 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   useEffect(() => {
     setOpen(!!forceOpen)
   }, [forceOpen])
+  // (6.107) ao abrir, a conversa de antes continua e os atalhos aparecem em cima do campo, até ela mandar algo
+  const [atalhos, setAtalhos] = useState(true)
+  useEffect(() => { if (open) setAtalhos(true) }, [open])
   // (6.42) computador: janelinha no canto, sem escurecer a tela e sem travar a página de trás
   const [pc, setPc] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 901px)').matches)
   useEffect(() => { const mq = window.matchMedia('(min-width: 901px)'); const f = () => setPc(mq.matches); mq.addEventListener('change', f); return () => mq.removeEventListener('change', f) }, [])
@@ -645,7 +649,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     if (!uid || conversaCarregada) return
     try {
       const salvo = JSON.parse(localStorage.getItem(`doonly_doo_conversa_${uid}`) || '[]')
-      if (Array.isArray(salvo) && salvo.length) setMessages(prev => prev.length ? prev : salvo)
+      // (6.107) aberta já com um pedido (campo do Início, atalhos): a conversa de antes continua e o pedido entra depois dela
+      if (Array.isArray(salvo) && salvo.length) setMessages(prev => [...salvo, ...prev].slice(-60))
     } catch { /* conversa salva estragada: começa do zero */ }
     setConversaCarregada(true)
   }, [uid, conversaCarregada])
@@ -663,14 +668,16 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   const catRef = useRef(catalogo); catRef.current = catalogo
   const insRef = useRef(insumos); insRef.current = insumos
   const carregandoCat = useRef<Promise<unknown> | null>(null)
-  const lojaRef = useRef<{ nome_loja?: string | null; horario?: unknown }>({})
+  const lojaRef = useRef<LojaDoo>({})
+  // (6.107) a Doo lê a loja e o cardápio inteiros (sabe o que falta configurar)
+  const lerLoja = (id: string) => Promise.resolve(supabase.from('profiles').select(CAMPOS_LOJA_DOO).eq('id', id).maybeSingle()).then(({ data }) => { lojaRef.current = (data as LojaDoo | null) || {} }).catch(() => {})
   useEffect(() => {
     if (!open || !uid) return
     carregandoCat.current = Promise.all([
       listarInsumosResumo(uid).then(l => { insRef.current = l; setInsumos(l) }).catch(() => {}),
       listarCatalogo(uid).then(c => { const v = { produtos: c.produtos, clientes: c.clientes }; catRef.current = v; setCatalogo(v) }).catch(() => {}),
       // (6.86) o nome e o horário da loja (a Doo muda pela conversa)
-      Promise.resolve(supabase.from('profiles').select('nome_loja, horario').eq('id', uid).maybeSingle()).then(({ data }) => { lojaRef.current = (data as { nome_loja?: string | null; horario?: unknown } | null) || {} }).catch(() => {}),
+      lerLoja(uid),
     ])
   }, [open, uid])
 
@@ -894,6 +901,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   const sendMessage = async (overrideText?: string) => {
     const text = (overrideText ?? input).trim()
     if ((!text && !pendingImage) || loading || generatingImage) return
+    setAtalhos(false)
 
     const userMsg: Message = {
       role: 'user',
@@ -958,6 +966,17 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           const cortada = data?.stop_reason === 'max_tokens'
           const { texto, acao: acaoBruta } = extrairAcao(reply)
           // (6.94) a Doo entendeu que é pedido de imagem: o app cria (antes ela respondia que não conseguia)
+          // (6.105) trava: imagem só quando a mensagem dela (ou a pergunta da Doo logo antes) é sobre imagem.
+          //         "oi" ou "obrigada" nunca criam (a Doo às vezes repetia um topo antigo da conversa)
+          const anterior = [...messages].reverse().find(m => m.role === 'assistant' && !m.isImage)?.content || ''
+          const cumprimento = /^\s*(oi+|ol[aá]|e a[ií]|bom dia|boa tarde|boa noite|tudo bem\??|obrigad[ao]|valeu|ok+|blz|beleza|tchau)[\s!.?,]*$/i.test(text)
+          const sobreImagem = /topo|topper|imagem|foto|logo|banner|arte|post|convite|faixa|idade|anos|cor|tema|estilo|nome|desenh|cria|gera|fa[zç]|refa[zç]|troca|muda|sim|pode|isso|separad|junt/i.test(text)
+            || (/\?\s*$/.test(anterior.replace(/\n\n\[[^\]]*\]$/, '')) && /topo|imagem|logo|banner|arte|faixa|idade|cor|tema|estilo/i.test(anterior))
+          if (acaoBruta && acaoBruta.acao === 'imagem' && (cumprimento || !sobreImagem)) {
+            setMessages(prev => [...prev, { role: 'assistant', content: texto || 'Oi! Em que posso ajudar?' }])
+            setLoading(false)
+            return
+          }
           if (acaoBruta && acaoBruta.acao === 'imagem') {
             const ai = acaoBruta as AcaoImagem
             setMessages(prev => [...prev, { role: 'assistant', content: texto }])
@@ -1127,7 +1146,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                         if (estado === 'salvo') dooResponde(respostaFeito(msg.acao as AcaoDoo, info?.feito || ''))
                         if (estado === 'salvo') {
                           listarCatalogo(uid).then(c => { const v = { produtos: c.produtos, clientes: c.clientes }; catRef.current = v; setCatalogo(v) }).catch(() => {})
-                          if ((msg.acao as AcaoDoo).acao === 'loja') { const a = msg.acao as Extract<AcaoDoo, { acao: 'loja' }>; lojaRef.current = { ...lojaRef.current, ...(a.nome_loja ? { nome_loja: a.nome_loja } : {}), ...(a.horario ? { horario: a.horario } : {}) } }
+                          if ((msg.acao as AcaoDoo).acao === 'loja') void lerLoja(uid)
                         }
                       }} />
                   )}
@@ -1171,6 +1190,14 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               <div className="dz-pend">
                 <div className="dz-pend-img"><img src={pendingImage.preview} alt="Anexo" /><button type="button" onClick={removePendingImage} aria-label="Tirar a imagem"><X size={14} weight="bold" /></button></div>
                 <p>Imagem anexada. Escreva uma mensagem ou envie assim mesmo.</p>
+              </div>
+            )}
+            {atalhos && messages.length > 0 && !loading && !generatingImage && !pendingImage && (
+              <div className="dz-atl" aria-label="Atalhos">
+                {isPro && <button type="button" onClick={() => { setAtalhos(false); setTopoAberto(true) }}><Cake size={16} />Criar topo de bolo</button>}
+                {SUGESTOES_CARTOES.map(({ Ic, t, p }) => (
+                  <button type="button" key={t} onClick={() => void sendMessage(p)}><Ic size={16} />{t}</button>
+                ))}
               </div>
             )}
             <div className="dz-inb">
@@ -1322,6 +1349,12 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-pend-img img { width: 48px; height: 48px; border-radius: var(--ui-raio-p); object-fit: cover; border: 1.5px solid var(--ui-rosa); display: block; }
         .dz-pend-img button { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--ui-branco); background: var(--ui-vinho-escuro); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
         .dz-pend p { margin: 0; font-size: 12.5px; color: var(--ui-texto-2); }
+        /* (6.107) atalhos com a conversa aberta: uma fileira que rola para o lado, sem quebrar linha */
+        .dz-atl { display: flex; gap: 8px; overflow-x: auto; margin: 0 -12px 8px; padding: 2px 12px; scrollbar-width: none; }
+        .dz-atl::-webkit-scrollbar { display: none; }
+        .dz-atl button { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border: 1px solid #F0EBED; border-radius: 999px; background: var(--ui-branco); font: 500 13px/1 inherit; font-family: inherit; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
+        .dz-atl button svg { color: var(--ic-cor, #993556); }
+        .dz-atl button:hover { border-color: #F7C6D9; }
         .dz-inb { display: flex; align-items: center; gap: 8px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 999px; padding: 4px; box-shadow: 0 4px 14px rgba(44,18,25,.06); transition: border-color .15s; }
         .dz-inb:focus-within { border-color: #F3B3CA; } /* (6.91) borda fina, sem o anel grosso */
         .dz-ib { width: 44px; height: 44px; border-radius: 50%; border: none; background: #F2EFF0; color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }

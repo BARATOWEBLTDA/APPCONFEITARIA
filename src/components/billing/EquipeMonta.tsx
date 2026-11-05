@@ -30,8 +30,9 @@ export default function EquipeMonta({ className = "", semBotao = false }: { clas
     <section className={`eqm ${className}`}>
       <span className="eqm-ic" aria-hidden="true"><HandHeart size={26} weight="duotone" /></span>
       <span className="eqm-tx">
-        <b><span className="eqm-g">A equipe Doonly monta seu cardápio</span><span className="eqm-c">A gente monta seu cardápio</span>{!isPro && <em className="eqm-pro">PRO</em>}</b>
-        <small>Cadastramos seus produtos e criamos a logo e os banners da sua loja. Você só manda as fotos e os preços.</small>
+        <b><span className="eqm-g">A equipe Doonly monta seu cardápio</span><span className="eqm-c">Montamos seu cardápio</span>{!isPro && <em className="eqm-pro">PRO</em>}</b>
+        {/* (6.106) no celular, título e frase curtos, cada um numa linha */}
+        <small><span className="eqm-g">Cadastramos seus produtos e criamos a logo e os banners da sua loja. Você só manda as fotos e os preços.</span><span className="eqm-c">Produtos, logo e banners prontos</span></small>
       </span>
       {semBotao ? null : isPro
         ? <Botao className="eqm-bt" icone={<IconeWhatsApp size={20} />} onClick={() => pedirMontagem(profile?.nome as string | undefined, profile?.nome_loja as string | undefined)}>Pedir para a equipe</Botao>

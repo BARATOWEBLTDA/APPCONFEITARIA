@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ImageSquare, Cake, CaretRight, ChartBar, Crown, PaintBrush, SquaresFour, Stack } from "@phosphor-icons/react";
+import { ImageSquare, Cake, CaretRight, PaintBrush, SquaresFour, Stack } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { useRecorte } from "@/components/ui/useRecorte";
@@ -16,7 +16,7 @@ type Contas = { produtos: number; categorias: number; complementos: number };
 
 const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
 
-export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) {
+export default function MinhaLoja({ uid }: { uid?: string; pro?: boolean }) {
   const navigate = useNavigate();
   const [vis, setVis] = useState<Visual | null>(null);
   const [n, setN] = useState<Contas | null>(null);
@@ -111,19 +111,6 @@ export default function MinhaLoja({ uid, pro }: { uid?: string; pro: boolean }) 
         </div>
       </section>
       <DadosLoja embutido extras={{ antes: linhaLogo, depois: linhaAparencia }} />
-      {!pro && (
-        <section className="dl-emb" aria-label="Mais vendidos">
-          <h2 className="dl-emb-t">Desempenho</h2>
-          <div className="dl-lista-c">
-            <button type="button" className="dl-li" onClick={() => navigate("/assinar")}>
-              <span className="dl-li-ic" aria-hidden="true"><ChartBar size={20} weight="bold" /></span>
-              <span className="dl-li-tx"><b>Mais vendidos</b><small>Os produtos mais pedidos pelo link</small></span>
-              <em className="dl-li-st dl-li-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</em>
-              <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
-            </button>
-          </div>
-        </section>
-      )}
     </>
   );
 }

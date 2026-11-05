@@ -6,9 +6,11 @@
 .eqm-tx small { font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
 .eqm-pro { flex: none; padding: 2px 7px; border-radius: 6px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 11.5px; font-style: normal; font-weight: 700; letter-spacing: .02em; }
 .eqm-bt { grid-column: 1 / -1; width: 100%; }
-.eqm-g { display: none; } .eqm-c { white-space: nowrap; }
+.eqm-g { display: none; } .eqm-c { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.eqm-tx small { display: flex; min-width: 0; }
 @media (min-width: 901px) {
   .eqm { grid-template-columns: auto minmax(0, 1fr) auto; padding: 18px 20px; }
   .eqm-bt { grid-column: auto; width: auto; white-space: nowrap; }
   .eqm-g { display: inline; } .eqm-c { display: none; }
+  .eqm-tx small { display: block; }
 }
