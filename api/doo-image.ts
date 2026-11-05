@@ -57,7 +57,13 @@ export default async function handler(req: Request) {
       body: JSON.stringify({ model: "dall-e-3", prompt, n: 1, size: topo ? "1024x1792" : "1024x1024", quality: "standard" }),
     });
     const d2 = await r2.json().catch(() => null);
-    if (!r2.ok) return { status: r2.status, corpo: { error: d2?.error?.type ?? "api_error", status: r2.status } };
+    if (!r2.ok) {
+      // (6.94) o motivo de verdade (sem crédito, bloqueio de conteúdo, conta sem verificação) vai para a tela, para dar o aviso certo
+      const codigos = [d1?.error?.code, d2?.error?.code, d1?.error?.type, d2?.error?.type].filter(Boolean).map(String);
+      const motivo = codigos.find(c => /billing|quota/i.test(c)) || codigos.find(c => /content_policy|moderation|safety/i.test(c)) || codigos[0] || "api_error";
+      console.error("[doo-image]", r1.status, JSON.stringify(d1?.error || {}), r2.status, JSON.stringify(d2?.error || {}));
+      return { status: r2.status, corpo: { error: d2?.error?.type ?? "api_error", codigo: motivo, status: r2.status } };
+    }
     return { status: 200, corpo: { ...d2, modelo: "dall-e-3" } };
   };
 
