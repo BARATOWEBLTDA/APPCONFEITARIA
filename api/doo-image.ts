@@ -54,24 +54,36 @@ export default async function handler(req: Request) {
     const d = await r.json().catch(() => null);
     return { ok: r.ok, status: r.status, d, erro: (d?.error || null) as ErroOpenAI | null };
   };
+  // (6.98) a OpenAI aposentou o dall-e-3 (maio/2026) e troca os nomes dos modelos de imagem com frequência.
+  // O app tenta a lista abaixo, do mais novo para o mais antigo, e pula os que a conta não tem.
+  // Para fixar um modelo sem mexer no código: variável OPENAI_IMAGE_MODEL no Vercel.
+  const fixo = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.OPENAI_IMAGE_MODEL;
+  const MODELOS = [...(fixo ? [fixo] : []), "gpt-image-2.5-flare", "gpt-image-2", "gpt-image-1.5", "gpt-image-1", "gpt-image-1-mini"];
+  const naoExiste = (e: ErroOpenAI | null) => !!e && (/model_not_found|not_found/i.test(String(e.code || "")) || /does not exist|not found|do not have access|deprecated|retired/i.test(String(e.message || "")));
+  const imagemDe = (d: { data?: { b64_json?: string; url?: string }[] } | null) => d?.data?.[0]?.b64_json ? { b64: d.data[0].b64_json } : d?.data?.[0]?.url ? { url: d.data[0].url } : null;
   const gerar = async (): Promise<{ status: number; corpo: unknown }> => {
-    const erros: ErroOpenAI[] = [];
-    const t1 = await pedir({ model: "gpt-image-1", prompt, n: 1, size: topo ? "1024x1536" : "1024x1024", quality: "medium", ...(topo ? { background: "transparent", output_format: "png" } : { output_format: "jpeg" }) });
-    if (t1.ok && t1.d?.data?.[0]?.b64_json) return { status: 200, corpo: { data: [{ b64: t1.d.data[0].b64_json, formato: topo ? "png" : "jpeg" }], modelo: "gpt-image-1" } };
-    if (t1.erro) erros.push(t1.erro);
-    if (t1.status === 400) {
-      const t2 = await pedir({ model: "gpt-image-1", prompt, n: 1, size: "1024x1024" });
-      if (t2.ok && t2.d?.data?.[0]?.b64_json) return { status: 200, corpo: { data: [{ b64: t2.d.data[0].b64_json, formato: "png" }], modelo: "gpt-image-1" } };
-      if (t2.erro) erros.push(t2.erro);
+    const erros: (ErroOpenAI & { modelo?: string })[] = [];
+    let ultimoStatus = 500;
+    for (const model of [...new Set(MODELOS)]) {
+      const t1 = await pedir({ model, prompt, n: 1, size: topo ? "1024x1536" : "1024x1024", quality: "medium", ...(topo ? { background: "transparent", output_format: "png" } : { output_format: "jpeg" }) });
+      const i1 = t1.ok ? imagemDe(t1.d) : null;
+      if (i1) return { status: 200, corpo: { data: [{ ...i1, formato: topo ? "png" : "jpeg" }], modelo: model } };
+      ultimoStatus = t1.status;
+      if (t1.erro) erros.push({ ...t1.erro, modelo: model });
+      if (naoExiste(t1.erro)) continue; // a conta não tem esse modelo: tenta o próximo
+      // recusou algum parâmetro: o mesmo modelo só com o básico
+      const t2 = await pedir({ model, prompt, n: 1 });
+      const i2 = t2.ok ? imagemDe(t2.d) : null;
+      if (i2) return { status: 200, corpo: { data: [{ ...i2, formato: "png" }], modelo: model } };
+      ultimoStatus = t2.status;
+      if (t2.erro) erros.push({ ...t2.erro, modelo: model });
+      if (!naoExiste(t2.erro)) break; // erro de verdade (crédito, bloqueio de conteúdo…): não adianta trocar de modelo
     }
-    const t3 = await pedir({ model: "dall-e-3", prompt: (prompt as string).slice(0, 3900), n: 1, size: "1024x1024", quality: "standard" });
-    if (t3.ok && t3.d?.data?.[0]) return { status: 200, corpo: { ...t3.d, modelo: "dall-e-3" } };
-    if (t3.erro) erros.push(t3.erro);
     console.error("[doo-image]", JSON.stringify(erros));
     const codigos = erros.flatMap(e => [e.code, e.type]).filter(Boolean).map(String);
-    const motivo = codigos.find(c => /billing|quota/i.test(c)) || codigos.find(c => /content_policy|moderation|safety/i.test(c)) || codigos[0] || "api_error";
-    const detalhe = erros.map(e => [e.param, (e.message || "").slice(0, 90)].filter(Boolean).join(": ")).filter(Boolean).join(" | ").slice(0, 300);
-    return { status: t3.status || 500, corpo: { error: erros[erros.length - 1]?.type ?? "api_error", codigo: motivo, detalhe, status: t3.status || 500 } };
+    const motivo = codigos.find(c => /billing|quota/i.test(c)) || codigos.find(c => /content_policy|moderation|safety/i.test(c)) || codigos[codigos.length - 1] || "api_error";
+    const detalhe = erros.slice(-3).map(e => [e.modelo, e.param, (e.message || "").slice(0, 80)].filter(Boolean).join(": ")).join(" | ").slice(0, 300);
+    return { status: ultimoStatus || 500, corpo: { error: erros[erros.length - 1]?.type ?? "api_error", codigo: motivo, detalhe, status: ultimoStatus || 500 } };
   };
 
   // A imagem pode levar mais de 25 s: a resposta começa na hora e manda espaços até a imagem ficar pronta
