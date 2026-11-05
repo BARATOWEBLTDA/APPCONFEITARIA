@@ -1,6 +1,6 @@
 import { pegarPedidoDoo } from '@/components/MenuContaItens'
 import { useState, useRef, useEffect } from 'react'
-import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf, Storefront } from '@phosphor-icons/react'
+import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf, Storefront } from '@phosphor-icons/react'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
@@ -86,10 +86,11 @@ Doo fala de forma simples, clara e acolhedora. Não use emojis. Ao listar etapas
 
 # IMAGENS E TOPOS DE BOLO
 Você CRIA imagens pelo app: topos de bolo para imprimir, artes, posts e banners. Nunca diga que não consegue criar imagens.
-Quando ela pedir uma imagem ou um topo (do jeito que escrever), confira se tem o tema. Para topo, pergunte também o nome e a idade se ela não disse (em uma pergunta só). Quando tiver, responda com UMA frase curta (ex.: "Já estou criando o seu topo.") e, no FINAL, este bloco:
+TOPO DE BOLO: antes de criar, você PRECISA saber com certeza: o TEMA (ex.: princesas, safári, futebol), o NOME e a IDADE (ou outra frase). Pergunte também se a idade vai JUNTO do nome na faixa principal ou numa peça SEPARADA, e se ela quer cores específicas (se não, use as cores do tema). Separe bem o que é tema, nome e idade: em "topo princesas 10 anos alice", o tema é "princesas", o nome é "Alice" e a idade é "10 anos". Na dúvida, SEMPRE pergunte antes de criar: perguntar é melhor do que gerar errado. Pergunte no máximo 2 coisas por mensagem, curtas. Quando tiver tudo, responda com UMA frase curta (ex.: "Já estou criando o seu topo.") e, no FINAL, este bloco:
 \`\`\`acao-doonly
-{"acao":"imagem","tipo":"topo","descricao":"tema jardim encantado, nome Alice, 5 anos, cores rosa e lilás, estilo fofo"}
+{"acao":"imagem","tipo":"topo","tema":"princesas","nome":"Alice","idade":"10 anos","idade_na_faixa":false,"cores":"rosa e dourado","estilo":"fofo","descricao":"topo de princesas para a Alice, 10 anos"}
 \`\`\`
+"estilo": "fofo", "elegante" ou "divertido". Para LOGO, BANNER e ARTE, use "descricao" com tudo o que ela pediu, bem explicado.
 Se ela pedir personagem ou marca famosa, diga em uma frase "O Doonly não cria personagens nem marcas famosas" (nunca cite OpenAI, Anthropic ou outra empresa) e já ofereça o mesmo topo com um tema próprio parecido, com o nome e as cores. Se ela mandar uma foto e pedir "uma parecida", mande o bloco descrevendo o que ela quer: o app usa a foto como referência.
 "tipo": "topo" (topo de bolo), "logo" (logo da loja: pergunte o nome da loja como deve aparecer, as cores e o estilo; ela pode mandar fotos de referência), "banner" (banner do cardápio: pergunte o que divulgar, ex.: promoção, produto, data) ou "arte" (post, convite, outros). Logo e banner vêm com um botão para ela colocar direto no cardápio. Para mudar uma imagem que acabou de sair, mande o bloco de novo com a descrição completa já com a mudança.
 
@@ -346,7 +347,7 @@ ${catTxt}
 }
 
 /** (6.94) a Doo pede uma imagem pela conversa (qualquer jeito de pedir): o app cria */
-type AcaoImagem = { acao: 'imagem'; topo: boolean; descricao: string; tipo?: 'topo' | 'arte' | 'logo' | 'banner' }
+type AcaoImagem = { acao: 'imagem'; topo: boolean; descricao: string; tipo?: 'topo' | 'arte' | 'logo' | 'banner'; campos?: TopoForm & { idadeNaFaixa?: boolean } }
 type TipoImagem = 'topo' | 'arte' | 'logo' | 'banner'
 
 /** (6.91) a frase da Doo depois que a ação foi salva, com o próximo passo que faz sentido */
@@ -384,7 +385,12 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
     const j = JSON.parse(m[1].trim())
     if (j?.acao === 'pedido' && Array.isArray(j.itens) && j.itens.length) acao = j as RascunhoPedido
     else if (['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos'].includes(j?.acao)) acao = normalizarAcaoDoo(j)
-    else if (j?.acao === 'imagem' && typeof j.descricao === 'string' && j.descricao.trim()) acao = { acao: 'imagem', topo: j.tipo ? j.tipo === 'topo' : j.topo !== false, tipo: ['topo', 'arte', 'logo', 'banner'].includes(j.tipo) ? j.tipo : (j.topo !== false ? 'topo' : 'arte'), descricao: j.descricao.trim().slice(0, 1200) }
+    else if (j?.acao === 'imagem' && ((typeof j.descricao === 'string' && j.descricao.trim()) || (typeof j.tema === 'string' && j.tema.trim()))) {
+      const tipoJ = ['topo', 'arte', 'logo', 'banner'].includes(j.tipo) ? j.tipo : (j.topo !== false ? 'topo' : 'arte')
+      const txt = (v: unknown) => (typeof v === 'string' ? v.trim().slice(0, 120) : '')
+      acao = { acao: 'imagem', topo: tipoJ === 'topo', tipo: tipoJ, descricao: String(j.descricao || j.tema || '').trim().slice(0, 1200),
+        ...(tipoJ === 'topo' && txt(j.tema) ? { campos: { tema: txt(j.tema), nome: txt(j.nome), texto: txt(j.idade) || txt(j.frase), cores: txt(j.cores), estilo: (['fofo', 'elegante', 'divertido'].includes(j.estilo) ? j.estilo : 'fofo') as TopoForm['estilo'], idadeNaFaixa: j.idade_na_faixa === true } } : {}) }
+    }
     else acao = normalizarRascunho(j)
   } catch { acao = null }
   const texto = reply.replace(m[0], '').trim() || 'Confira e confirme no cartão abaixo.'
@@ -421,8 +427,9 @@ const FOLHA_TOPO = 'Layout: a portrait printable sheet of cake topper pieces (Br
   + 'Flat glossy vector illustration, vibrant colors, crisp clean edges, transparent background, no scenery, no cake, no table, no photo, no mockup, no website or watermark text. '
   + 'Only original generic illustrations: no known cartoon characters, mascots or brands.'
 
-function promptTopo(f: TopoForm): string {
-  const nome = f.nome.trim(), texto = f.texto.trim()
+function promptTopo(f: TopoForm & { idadeNaFaixa?: boolean }): string {
+  const naFaixa = !!f.idadeNaFaixa && !!f.texto.trim()
+  const nome = naFaixa ? `${f.nome.trim()} ${f.texto.trim()}`.trim() : f.nome.trim(), texto = naFaixa ? '' : f.texto.trim()
   return `Printable cake topper sheet for a Brazilian confectionery. Theme: ${f.tema.trim()}. `
     + (nome ? `The main banner shows the name written exactly as "${nome}" in bold script lettering with a white outline. ` : 'The main banner shows "Parabéns" in bold script lettering with a white outline. ')
     + (texto ? `One of the smaller pieces shows, written exactly, "${texto}". ` : '')
@@ -916,17 +923,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         // (27/10) no grátis a Doo conversa, mas criar imagem é do PRO (não chama a API nem gasta mensagem)
         setLoading(false)
         setMessages(prev => [...prev, { role: 'assistant', content: 'Criar imagens é do plano PRO. No grátis eu ajudo com receitas, preços, legendas e pedidos. Quer que eu escreva uma legenda para esse post?' }])
-      } else if ((imgPayload && (isImageRequest(text) || pedeParecida)) || (!imgPayload && pedeParecida && ultimaReferencia.current)) {
-        // (6.100) "faz uma parecida com essa" (com a foto agora ou a última que ela mandou): a foto vai junto como referência
-        setLoading(false)
-        await criarImagem(buildImagePrompt(text), ehTopo(text) || true, imgPayload?.base64 || ultimaReferencia.current)
-      } else if (!imgPayload && isImageRequest(text)) {
-        setLoading(false)
-        await criarImagem(buildImagePrompt(text), ehTopo(text))
-      } else if (!imgPayload && messages[messages.length - 1]?.promptTopo && !/^(como|qual|quais|onde|porque|por que|quanto|quantos|quantas)\b/i.test(text.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) {
-        // (6.85) logo depois do topo de bolo, "troca para azul", "aumenta o nome": a Doo refaz o topo com a mudança
-        setLoading(false)
-        await criarImagem(`${messages[messages.length - 1].promptTopo} Changes requested by the client (in Portuguese), apply them: "${text}".`, true)
+      // (6.104) pedido de imagem vai sempre pela conversa: a Doo entende o tema, o nome e a idade e pergunta o que faltar
+      //         (antes ia direto para o gerador e o texto do pedido inteiro virava o nome no topo)
       } else {
         const buildContent = (msg: Message) => {
           if (msg.role === 'user' && msg === userMsg && imgPayload) {
@@ -965,7 +963,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             setMessages(prev => [...prev, { role: 'assistant', content: texto }])
             setLoading(false)
             const tipoAi: TipoImagem = ai.tipo || (ai.topo ? 'topo' : 'arte')
-            await criarImagem(tipoAi === 'topo'
+            // (6.104) a Doo fica sabendo do que foi criado (para mudar depois sem perder o tema, o nome e a idade)
+            const nota = ai.campos ? `\n\n[O app confirmou: topo criado com tema "${ai.campos.tema}", nome "${ai.campos.nome}", idade/frase "${ai.campos.texto}"${ai.campos.idadeNaFaixa ? ' na faixa' : ' em peça separada'}, cores "${ai.campos.cores || 'do tema'}", estilo ${ai.campos.estilo}.]` : `\n\n[O app confirmou: imagem (${tipoAi}) criada: ${ai.descricao.slice(0, 300)}.]`
+            setMessages(prev => prev.map((m, k) => k === prev.length - 1 && m.role === 'assistant' ? { ...m, content: m.content + nota } : m))
+            await criarImagem(tipoAi === 'topo' && ai.campos ? promptTopo(ai.campos) : tipoAi === 'topo'
               ? `Printable cake topper sheet for a Brazilian confectionery. Request in Portuguese: "${ai.descricao}". Any name or text must be written exactly as asked, with perfect Portuguese spelling, in bold script lettering with a white outline. ${FOLHA_TOPO}`
               : tipoAi === 'logo'
                 ? `Professional logo for a Brazilian confectionery (cake and sweets shop). Request in Portuguese: "${ai.descricao}". The store name must be written exactly as asked, perfect spelling, highly readable. Centered round badge composition that works inside a circle, simple shapes, flat vector style, crisp edges, solid background filling the whole square, no mockup, no extra words.`
