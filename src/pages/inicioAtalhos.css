@@ -77,9 +77,13 @@
 .ini-topo-pc .ini-at-pc-tx b { font-size: 14px; }
 /* (6.122) Novidades em 70% e o banner do Início ao lado (sem banner, as Novidades ocupam a linha) */
 .ini-news-pc { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 3fr); gap: var(--gap-section); align-items: stretch; }
-.ini-news-banner { min-height: 0; }
+.ini-news-banner { position: relative; min-height: 0; }
+/* a arte não dita a altura: acompanha a das Novidades */
+html body .ini-news-banner .admin-banner-mobile--pc { position: absolute; inset: 0; height: auto; min-height: 0; }
 .ini-news-pc:not(:has(.ini-news-banner > *)) { grid-template-columns: minmax(0, 1fr); }
 .ini-news-col { min-width: 0; }
 .ini-news-banner:empty { display: none; }
 html body .ini-news-banner .admin-banner-mobile { display: block; border-radius: var(--ui-raio-cartao, 18px); overflow: hidden; }
-@media (max-width: 1279px) { .ini-news-pc { grid-template-columns: minmax(0, 1fr); } .ini-news-banner { max-width: 480px; } .ini-news-banner .admin-banner-mobile--cheio { height: auto; } .ini-news-banner .abm-fundo { display: none; } }
+@media (max-width: 1279px) { .ini-news-pc { grid-template-columns: minmax(0, 1fr); } .ini-news-banner { max-width: 480px; } html body .ini-news-banner .admin-banner-mobile--pc { position: static; aspect-ratio: 1; } }
+/* (6.125) celular: as Novidades logo depois do banner, por último */
+html body .ini-main > .ini-news-cel { order: 10; margin-top: var(--space-3); }

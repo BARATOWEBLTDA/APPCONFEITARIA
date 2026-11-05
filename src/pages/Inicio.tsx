@@ -1090,6 +1090,8 @@ export default function Inicio() {
 
       {/* ── Banner promocional (admin configura). (16/10) no celular, logo depois do Acesso rápido: quebra a parte só de texto ── */}
       {!computador && <div className="ini-mobile-banner"><AdminBannerMobile /></div>}
+      {/* (6.125) celular: as Novidades logo depois do banner (a fixada e mais 3, passando de lado) */}
+      {!computador && <section className="ini-section ini-news-cel"><UpdatesFeed carrossel /></section>}
 
       {/* ── Recebido nos últimos 30 dias (o que entrou no caixa, igual ao Financeiro) ── */}
       {!computador && (
@@ -1219,7 +1221,7 @@ export default function Inicio() {
         <div className="ini-news-pc">
           <div className="ini-news-col"><UpdatesFeed linha /></div>
           {/* (6.122) do lado das Novidades, o mesmo banner do Início do celular (some sozinho quando não há banner) */}
-          <div className="ini-news-banner"><AdminBannerMobile preencher /></div>
+          <div className="ini-news-banner"><AdminBannerMobile computador /></div>
         </div>
       )}
 

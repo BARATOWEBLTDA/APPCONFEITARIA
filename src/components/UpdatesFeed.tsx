@@ -35,7 +35,7 @@ interface Noticia {
  *  (cartão de 240px pra cima); a fixada fica sempre na frente e as outras entram ou saem conforme o espaço. */
 const CARTAO_MIN = 240, VAO = 16;
 
-export default function UpdatesFeed({ linha = false }: { linha?: boolean }) {
+export default function UpdatesFeed({ linha = false, carrossel = false }: { linha?: boolean; carrossel?: boolean }) {
   const navigate = useNavigate();
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +51,7 @@ export default function UpdatesFeed({ linha = false }: { linha?: boolean }) {
       .order("fixada", { ascending: false })
       .order("ordem", { ascending: false })
       .order("publicado_em", { ascending: false })
-      .limit(linha ? 8 : 3);
+      .limit(linha ? 8 : carrossel ? 4 : 3);
     if (error) { setErro(true); setLoading(false); return; }
     const todas = (data || []) as Noticia[];
     // só 1 fixada no topo (igual antes)
@@ -59,7 +59,7 @@ export default function UpdatesFeed({ linha = false }: { linha?: boolean }) {
     setNoticias(fixada ? [fixada, ...todas.filter(n => !n.fixada)] : todas);
     setErro(false);
     setLoading(false);
-  }, [linha]);
+  }, [linha, carrossel]);
   useEffect(() => { void carregar(); }, [carregar]);
   // (21/10) quantas notícias cabem na linha
   const grade = useRef<HTMLDivElement>(null);
@@ -83,6 +83,36 @@ export default function UpdatesFeed({ linha = false }: { linha?: boolean }) {
   const vazio = noticias.length === 0;
   // (21/10) sem notícia, o cartão some (no celular e no computador)
   if (vazio) return null;
+
+  // (6.125) Início do celular: a fixada e mais 3, passando de lado (como as Novidades do computador)
+  if (carrossel) return (
+    <section className="ufl ufc" aria-label="Novidades">
+      <div className="ufl-cab">
+        <h2>Novidades</h2>
+        <button type="button" className="uf-ver-todas" onClick={() => navigate("/noticias")}>
+          Ver todas <CaretRight size={16} weight="bold" aria-hidden="true" />
+        </button>
+      </div>
+      <div className="ufc-trilho">
+        {noticias.slice(0, 4).map((n) => {
+          const capa = n.imagem_capa || n.icone_url;
+          return (
+            <button key={n.id} type="button" className="ufl-card ufc-card" onClick={() => navigate(`/noticias/${n.slug}`)}>
+              <span className="ufl-capa" style={capa ? { backgroundImage: `url(${capa})` } : undefined} aria-hidden="true">
+                {!capa && <Newspaper size={32} weight="bold" />}
+              </span>
+              <span className="ufl-corpo">
+                {n.categoria && <span className="uf-cat">{n.categoria}</span>}
+                <b>{tituloSemCategoria(n.titulo, n.categoria)}</b>
+                {n.descricao && <small>{n.descricao}</small>}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <style>{CSS_LINHA + CSS_CARROSSEL}</style>
+    </section>
+  );
 
   if (linha) return (
     <section className="ufl" aria-label="Novidades">
@@ -182,4 +212,15 @@ const CSS_LINHA = `
   .ufl-corpo { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px 14px; }
   .ufl-corpo b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); }
   .ufl-corpo small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+`;
+
+const CSS_CARROSSEL = `
+  .ufc { padding: 14px 0 16px; overflow: hidden; }
+  .ufc .ufl-cab { padding: 0 8px 0 16px; margin: 0 0 8px; }
+  .ufc-trilho { display: flex; gap: 12px; overflow-x: auto; padding: 2px 16px 4px; scroll-snap-type: x mandatory; scroll-padding: 0 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .ufc-trilho::-webkit-scrollbar { display: none; }
+  .ufc-card { flex: none; width: 78%; max-width: 300px; scroll-snap-align: start; }
+  .ufc-card:hover { transform: none; }
+  .ufc .ufl-capa { height: 128px; }
+  .ufc .ufl-corpo b { font-size: 14.5px; }
 `;

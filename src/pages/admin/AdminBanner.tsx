@@ -5,7 +5,9 @@ import { Image as ImageIcon, Trash, UploadSimple, WarningCircle } from "@phospho
 import { Botao, Campo, Titulo, avisar, confirmar } from "@/components/base";
 import "./admin-banner.css";
 
-type Audiencia = "free" | "pro";
+type Audiencia = "free" | "pro" | "free_desktop" | "pro_desktop";
+// (6.125) nome do banner nos registros da equipe
+const nomeBanner = (a: Audiencia) => `banner do ${a.endsWith("_desktop") ? "computador" : "celular"} (${a.startsWith("pro") ? "PRO" : "grátis"})`;
 
 interface BannerRow {
   id: string;
@@ -16,13 +18,15 @@ interface BannerRow {
 }
 
 export default function AdminBanner() {
-  const [rows, setRows] = useState<Record<Audiencia, BannerRow | null>>({ free: null, pro: null });
+  const [rows, setRows] = useState<Record<Audiencia, BannerRow | null>>({ free: null, pro: null, free_desktop: null, pro_desktop: null });
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<Audiencia | null>(null);
   const [uploadingId, setUploadingId] = useState<Audiencia | null>(null);
   const [criandoId, setCriandoId] = useState<Audiencia | null>(null);
   const freeRef = useRef<HTMLInputElement>(null);
   const proRef = useRef<HTMLInputElement>(null);
+  const freePcRef = useRef<HTMLInputElement>(null);
+  const proPcRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { load(); }, []);
 
@@ -34,7 +38,7 @@ export default function AdminBanner() {
       setLoading(false);
       return;
     }
-    const byAud: Record<Audiencia, BannerRow | null> = { free: null, pro: null };
+    const byAud: Record<Audiencia, BannerRow | null> = { free: null, pro: null, free_desktop: null, pro_desktop: null };
     (data || []).forEach((r: BannerRow) => { byAud[r.audiencia] = r; });
     setRows(byAud);
     setLoading(false);
@@ -68,7 +72,7 @@ export default function AdminBanner() {
         .eq("id", row.id);
       if (updErr) throw updErr;
 
-      void registrar(`trocou a imagem do banner do celular (${aud === "pro" ? "PRO" : "grátis"})`, { tipo: "banner", alvo_id: row.id });
+      void registrar(`trocou a imagem do ${nomeBanner(aud)}`, { tipo: "banner", alvo_id: row.id });
       showMsg("Imagem enviada", "ok");
       await load();
     } catch (err) {
@@ -89,7 +93,7 @@ export default function AdminBanner() {
       .eq("id", row.id);
     setSavingId(null);
     if (error) { showMsg("Erro ao salvar: " + error.message, "err"); return; }
-    const qual = `o banner do celular (${aud === "pro" ? "PRO" : "grátis"})`;
+    const qual = `o ${nomeBanner(aud)}`;
     const frase = patch.imagem_url === null ? `removeu a imagem d${qual.slice(1)}`
       : patch.ativo === true ? `ligou ${qual}` : patch.ativo === false ? `desligou ${qual}`
       : patch.link_destino !== undefined ? `mudou o link d${qual.slice(1)}` : `editou ${qual}`;
@@ -186,7 +190,9 @@ export default function AdminBanner() {
           )}
         </div>
 
-        <p className="ab-tip">Tamanho ideal: 1200×400 (3:1). Aceita JPG, PNG e WebP.</p>
+        <p className="ab-tip">{aud.endsWith("_desktop")
+          ? "Tamanho ideal: 1080×1080 (quadrado). Deixe textos e o principal no centro: as bordas podem ser cortadas um pouco para a arte ficar da altura das Novidades. Aceita JPG, PNG e WebP."
+          : "Tamanho ideal: 1200×400 (3:1). Aceita JPG, PNG e WebP."}</p>
       </div>
     );
   };
@@ -198,6 +204,13 @@ export default function AdminBanner() {
       <div className="ab-grid">
         {renderCard("free", "Banner do plano grátis", "Aparece para quem está no plano grátis (ex.: promoção do PRO).", freeRef)}
         {renderCard("pro", "Banner do plano PRO", "Opcional. Aparece para quem já é PRO. Inativo ou sem imagem, quem é PRO não vê banner.", proRef)}
+      </div>
+
+      {/* (6.125) o computador tem o próprio banner (o do celular é comprido demais para o espaço ao lado das Novidades) */}
+      <Titulo nivel="secao" apoio="Aparece no Início do computador, ao lado das Novidades. Sem banner ativo, as Novidades ocupam a linha toda.">Banner do computador</Titulo>
+      <div className="ab-grid">
+        {renderCard("free_desktop", "Banner do plano grátis", "Aparece para quem está no plano grátis.", freePcRef)}
+        {renderCard("pro_desktop", "Banner do plano PRO", "Opcional. Aparece para quem já é PRO.", proPcRef)}
       </div>
     </div>
   );

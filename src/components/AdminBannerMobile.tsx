@@ -15,7 +15,7 @@ interface BannerRow {
  * dois registros: 'free' e 'pro'. Se o registro correspondente ao plano do
  * usuário não estiver ativo ou não tiver imagem, o banner não renderiza.
  */
-export default function AdminBannerMobile({ preencher = false }: { preencher?: boolean }) {
+export default function AdminBannerMobile({ computador = false }: { computador?: boolean }) {
   const { isPro, loading: planoLoading } = usePlano();
   const [row, setRow] = useState<BannerRow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,8 @@ export default function AdminBannerMobile({ preencher = false }: { preencher?: b
     if (planoLoading) return;
     let cancelled = false;
     (async () => {
-      const audiencia = isPro ? "pro" : "free";
+      // (6.125) o computador tem o próprio banner (quadrado), cadastrado à parte no painel
+      const audiencia = `${isPro ? "pro" : "free"}${computador ? "_desktop" : ""}`;
       const { data } = await supabase
         .from("admin_banner")
         .select("imagem_url, link_destino, ativo")
@@ -37,7 +38,7 @@ export default function AdminBannerMobile({ preencher = false }: { preencher?: b
       }
     })();
     return () => { cancelled = true; };
-  }, [isPro, planoLoading]);
+  }, [isPro, planoLoading, computador]);
 
   if (loading || !row || !row.ativo || !row.imagem_url) return null;
 
@@ -53,9 +54,7 @@ export default function AdminBannerMobile({ preencher = false }: { preencher?: b
   };
 
   return (
-    <div className={`admin-banner-mobile${preencher ? " admin-banner-mobile--cheio" : ""}`} onClick={handleClick}>
-      {/* (6.123) computador, ao lado das Novidades: a mesma altura delas; a arte inteira no meio e ela mesma, desfocada, preenche o fundo */}
-      {preencher && <span className="abm-fundo" style={{ backgroundImage: `url(${row.imagem_url})` }} aria-hidden="true" />}
+    <div className={`admin-banner-mobile${computador ? " admin-banner-mobile--pc" : ""}`} onClick={handleClick}>
       <img src={row.imagem_url} alt="Banner promocional" />
       <style>{`
         /* Sem fundo, sem corte e sem proporção fixa: a arte manda.
@@ -73,9 +72,9 @@ export default function AdminBannerMobile({ preencher = false }: { preencher?: b
           width: 100%;
           height: auto;
         }
-        .admin-banner-mobile--cheio { position: relative; display: flex !important; align-items: center; height: 100%; overflow: hidden; border-radius: var(--ui-raio-cartao, 18px); background: #2C1219; }
-        .admin-banner-mobile--cheio .abm-fundo { position: absolute; inset: -40px; background: center / cover no-repeat; filter: blur(28px) saturate(1.2); transform: scale(1.1); opacity: .9; }
-        .admin-banner-mobile--cheio img { position: relative; -webkit-mask-image: linear-gradient(transparent, #000 14px, #000 calc(100% - 14px), transparent); mask-image: linear-gradient(transparent, #000 14px, #000 calc(100% - 14px), transparent); }
+        /* (6.125) computador: a arte preenche o espaço ao lado das Novidades (mesma altura), cortando um pouco as bordas se precisar */
+        .admin-banner-mobile--pc { display: block !important; height: 100%; min-height: 220px; overflow: hidden; border-radius: var(--ui-raio-cartao, 18px); }
+        .admin-banner-mobile--pc img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
         /* Desktop esconde por enquanto — banner é só mobile */
         @media (min-width: 1100px) {
           .admin-banner-mobile { display: none; }
