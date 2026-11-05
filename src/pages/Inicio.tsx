@@ -1013,7 +1013,7 @@ export default function Inicio() {
       {!computador && (
         <form className="ini-section ini-section--doo" onSubmit={e => { e.preventDefault(); const t = perguntaDoo.trim(); setPerguntaDoo(""); (document.activeElement as HTMLElement | null)?.blur(); abrirDooIA(t); }}>
           <img src="/Sistema/doo.webp" alt="" aria-hidden="true" />
-          <input value={perguntaDoo} onChange={e => setPerguntaDoo(e.target.value)} placeholder="Pergunte algo à Doo" aria-label="Pergunte qualquer coisa à Doo IA" enterKeyHint="send" autoComplete="off" />
+          <input type="search" name="pergunta-doo" value={perguntaDoo} onChange={e => setPerguntaDoo(e.target.value)} placeholder="Pergunte algo à Doo" aria-label="Pergunte qualquer coisa à Doo IA" enterKeyHint="send" autoComplete="off" />
           <button type="submit" aria-label="Enviar para a Doo"><SetaDoo size={18} weight="bold" /></button>
         </form>
       )}
@@ -1638,6 +1638,8 @@ export default function Inicio() {
         .ini-section--doo img { flex: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; object-position: top center; background: #FCE7F3; }
         .ini-section--doo input { flex: 1; min-width: 0; height: 40px; border: 0; outline: 0; background: none; font-family: var(--font-base); font-size: 16px; color: var(--ui-texto); }
         .ini-section--doo input::placeholder { color: var(--ui-texto-3); }
+        .ini-section--doo input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+        .ini-section--doo input { -webkit-appearance: none; appearance: none; }
         .ini-section--doo button { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; cursor: pointer; }
         .ini-root .ini-section.ini-section--novos { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--novos { display: none; } }

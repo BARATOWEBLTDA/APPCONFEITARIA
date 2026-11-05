@@ -56,7 +56,7 @@ const SUGESTOES_CARTOES = [
 ]
 
 const PLACEHOLDERS = [
-  'Pergunte qualquer coisa para a Doo…',
+  'Pergunte algo à Doo…',
   'Calcular preço de bolo...',
   'Criar legenda para Instagram...',
   'Planejar produção da semana...',
@@ -560,7 +560,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   const [copiedId, setCopiedId] = useState<number | null>(null)
   const [placeholderIdx, setPlaceholderIdx] = useState(0)
   const bottomRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const painelRef = useRef<HTMLDivElement>(null)
   // (11/10) imagens geradas já baixadas no aparelho (quando o endereço deixa), pro botão "Baixar imagem"
@@ -816,7 +816,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
     const newMessages = [...messages, userMsg]
     setMessages(newMessages)
-    setInput('')
+    setInput(''); if (inputRef.current) inputRef.current.style.height = ''
     const imgPayload = pendingImage
     setPendingImage(null)
     setLoading(true)
@@ -1070,10 +1070,13 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             )}
             <div className="dz-inb">
               <button type="button" className="dz-ib" onClick={() => fileRef.current?.click()} aria-label="Enviar uma foto" title="Enviar uma foto"><ImageSquare size={20} weight="bold" /></button>
-              <input
+              {/* (6.93) campo de texto de várias linhas (textarea): o navegador nunca oferece "senhas salvas" nele, como fazia no <input> */}
+              <textarea
                 ref={inputRef}
+                rows={1}
+                name="mensagem-doo"
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={e => { setInput(e.target.value); const t = e.currentTarget; t.style.height = 'auto'; t.style.height = `${Math.min(t.scrollHeight, 104)}px` }}
                 onKeyDown={handleKey}
                 placeholder={PLACEHOLDERS[placeholderIdx]}
                 disabled={loading || generatingImage}
@@ -1215,9 +1218,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-pend p { margin: 0; font-size: 12.5px; color: var(--ui-texto-2); }
         .dz-inb { display: flex; align-items: center; gap: 8px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: 999px; padding: 4px; box-shadow: 0 4px 14px rgba(44,18,25,.06); transition: border-color .15s; }
         .dz-inb:focus-within { border-color: #F3B3CA; } /* (6.91) borda fina, sem o anel grosso */
-        .dz-ib { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-        .dz-txt { flex: 1; min-width: 0; height: 44px; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); padding: 0 2px; }
-        .dz-txt::placeholder { color: #B5AAB0; }
+        .dz-ib { width: 44px; height: 44px; border-radius: 50%; border: none; background: #F2EFF0; color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .dz-txt { flex: 1; min-width: 0; height: 44px; max-height: 104px; border: none; outline: none; background: none; font-family: inherit; font-size: 16px; line-height: 22px; color: var(--ui-texto); padding: 11px 2px; box-sizing: border-box; resize: none; overflow-y: auto; scrollbar-width: none; }
+        .dz-txt::-webkit-scrollbar { display: none; }
+        .dz-txt::placeholder { color: #B5AAB0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dz-snd { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 12px rgba(232,90,140,.35); transition: background .15s; }
         .dz-snd:disabled { background: #F3D2DE; box-shadow: none; cursor: default; }
 
