@@ -27,6 +27,7 @@ interface Ideia {
   area: string | null;
   impacto: string | null;
   status: string | null;
+  resposta?: string | null;
   tela_origem: string | null;
   created_at: string;
 }
@@ -93,7 +94,7 @@ export default function AdminIdeias() {
     setErro(null);
     const { data, error } = await supabase
       .from("sugestoes")
-      .select("id, user_id, nome, telefone, email, titulo, descricao, area, impacto, status, tela_origem, created_at")
+      .select("id, user_id, nome, telefone, email, titulo, descricao, area, impacto, status, resposta, tela_origem, created_at")
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) {
@@ -133,8 +134,22 @@ export default function AdminIdeias() {
     const quem = (ideia.nome || "A confeiteira").split(" ")[0];
     mostrarToast(novo === "implementada"
       ? `Marcada como implementada. ${quem} vai receber a notificação.`
-      : "Status atualizado.");
+      : `Status atualizado. ${quem} vai receber a notificação.`);
     window.dispatchEvent(new Event("admin-ideias-changed")); // atualiza o contador da sidebar
+  };
+
+  // (6.95) recado para a confeiteira: salvo na ideia, ela recebe a notificação (e vê na lista dela)
+  const [recado, setRecado] = useState<Record<string, string>>({});
+  const enviarRecado = async (ideia: Ideia) => {
+    const txt = (recado[ideia.id] ?? "").trim();
+    if (!txt) return;
+    setSalvando(ideia.id);
+    const { data, error } = await supabase.from("sugestoes").update({ resposta: txt }).eq("id", ideia.id).select("id");
+    setSalvando(null);
+    if (error || !data?.length) { mostrarToast("Não deu para enviar o recado.", "erro"); return; }
+    setIdeias(prev => prev.map(i => (i.id === ideia.id ? { ...i, resposta: txt } : i)));
+    setRecado(r => { const n = { ...r }; delete n[ideia.id]; return n; });
+    mostrarToast(`Recado enviado. ${(ideia.nome || "A confeiteira").split(" ")[0]} recebe a notificação.`);
   };
 
   const contagem = useMemo(() => {
@@ -225,6 +240,16 @@ export default function AdminIdeias() {
                     <p className="ai-meta">
                       <b>{i.nome || "Sem nome"}{loja ? ` · ${loja}` : ""}</b> · {quando(i.created_at)} · via {origem}
                     </p>
+                    {i.resposta?.trim() && recado[i.id] === undefined && (
+                      <p className="ai-resp"><b>Seu recado:</b> {i.resposta} <button type="button" onClick={() => setRecado(r => ({ ...r, [i.id]: i.resposta || "" }))}>Editar</button></p>
+                    )}
+                    {i.user_id && (!i.resposta?.trim() || recado[i.id] !== undefined) && (
+                      <div className="ai-recado">
+                        <textarea rows={2} value={recado[i.id] ?? ""} placeholder="Recado para a confeiteira (ela recebe a notificação)" maxLength={300}
+                          onChange={e => setRecado(r => ({ ...r, [i.id]: e.target.value }))} />
+                        <button type="button" disabled={salvando === i.id || !(recado[i.id] ?? "").trim()} onClick={() => void enviarRecado(i)}>Enviar recado</button>
+                      </div>
+                    )}
                   </div>
                   <div className="ai-side">
                     <select
@@ -308,6 +333,13 @@ export default function AdminIdeias() {
         .ai-d { font-size: 14px; font-weight: 500; color: var(--ui-texto-2); line-height: 1.5; margin: 4px 0 0; overflow-wrap: anywhere; }
         .ai-meta { font-size: 13px; font-weight: 500; color: var(--ui-texto-3); margin: 8px 0 0; overflow-wrap: anywhere; }
         .ai-meta b { color: var(--ui-cinza-texto); font-weight: 600; }
+        /* (6.95) recado para a confeiteira */
+        .ai-recado { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
+        .ai-recado textarea { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--ui-borda); border-radius: 10px; font-family: inherit; font-size: 14px; resize: vertical; }
+        .ai-recado button { flex: none; min-height: 38px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+        .ai-recado button:disabled { opacity: .5; cursor: default; }
+        .ai-resp { margin: 10px 0 0; padding: 8px 10px; border-radius: 10px; background: #FFF5F9; font-size: 13.5px; }
+        .ai-resp button { margin-left: 6px; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-weight: 600; cursor: pointer; }
         .ai-card--implementada .ai-t, .ai-card--recusada .ai-t { color: var(--ui-texto-2); }
 
         .ai-side { display: flex; flex-direction: column; gap: 8px; width: 176px; flex-shrink: 0; }

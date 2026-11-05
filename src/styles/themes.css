@@ -596,7 +596,7 @@ h1, h2, h3, h4, h5, h6, .balance-text {
   /* (6.58) ícone em caixinha: branca, borda fina e ícone grafite (a cor fica só para o que está ativo) */
   --ic-fundo:           #FFFFFF;
   --ic-borda:           #E8E1E4;
-  --ic-cor:             #3A3135;
+  --ic-cor:             var(--ui-rosa); /* (6.95) o rosa do botão + (antes grafite #3A3135) */
   /* (01/11 · 5.99) fundo dos botões com letra branca: um rosa mais fechado, para o texto branco ler bem (contraste 5:1, o mínimo é 4,5:1) */
   --ui-rosa-botao:      #CC2E66;
   --ui-rosa-botao-sombra: #A51E50;

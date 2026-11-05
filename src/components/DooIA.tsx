@@ -644,6 +644,25 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     ])
   }, [open, uid])
 
+  // (6.95) novidade sobre a ideia que ela mandou (recebida, em análise, implementada, recado da equipe): a Doo conta ao abrir
+  useEffect(() => {
+    if (!open || !uid || !conversaCarregada) return
+    let vivo = true
+    const chave = `doonly_doo_ideias_visto_${uid}`
+    let visto = ''
+    try { visto = localStorage.getItem(chave) || '' } catch { /* sem armazenamento */ }
+    let q = supabase.from('notificacoes').select('titulo, mensagem, created_at').eq('user_id', uid).eq('tipo', 'sugestao').order('created_at', { ascending: true }).limit(5)
+    if (visto) q = q.gt('created_at', visto)
+    else q = q.gt('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
+    void Promise.resolve(q).then(({ data }) => {
+      const l = (data as { titulo: string; mensagem: string; created_at: string }[] | null) || []
+      if (!vivo || !l.length) return
+      try { localStorage.setItem(chave, l[l.length - 1].created_at) } catch { /* sem armazenamento */ }
+      setMessages(prev => [...prev, ...l.map(n => ({ role: 'assistant' as const, content: `**${n.titulo}**\n${n.mensagem}` }))])
+    })
+    return () => { vivo = false }
+  }, [open, uid, conversaCarregada])
+
   // Busca nome da confeiteira
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {

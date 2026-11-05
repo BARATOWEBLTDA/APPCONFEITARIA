@@ -21,6 +21,7 @@ interface Sugestao {
   area: string | null;
   impacto: string | null;
   status: string | null;
+  resposta?: string | null;
   created_at: string;
 }
 
@@ -84,7 +85,7 @@ export default function SolicitarRecurso() {
     if (!user) { setLoadingHist(false); return; }
     const { data } = await supabase
       .from("sugestoes")
-      .select("id, titulo, descricao, area, impacto, status, created_at")
+      .select("id, titulo, descricao, area, impacto, status, resposta, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(20);
@@ -213,6 +214,8 @@ export default function SolicitarRecurso() {
                     <b>{tituloDe(s)}</b>
                     {mostrarDesc && <p>{s.descricao}</p>}
                     {al && <em>{al}</em>}
+                    {/* (6.95) o recado da equipe Doonly sobre a ideia */}
+                    {s.resposta?.trim() && <p className="aj-resp"><b>Equipe Doonly:</b> {s.resposta}</p>}
                   </article>
                 );
               })}
