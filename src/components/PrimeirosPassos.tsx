@@ -9,7 +9,7 @@ import type { Icon } from "@phosphor-icons/react";
 import ListaChaves from "@/components/loja/ListaChaves";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { useProfile, refreshProfile } from "@/hooks/useProfile";
+import { useProfile, refreshProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import Janelinha from "@/components/financeiro/Folha";
 import Destaque from "@/components/Destaque";
@@ -205,6 +205,15 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     if (uid && estado && !completo && !jaViuIncompleto) { try { localStorage.setItem(kIncompleto, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } setJaViuIncompleto(true); }
   }, [uid, estado, completo, jaViuIncompleto, kIncompleto]);
 
+  // (6.137) computador: terminou o último passo agora (nesta visita) → comemora com o Doo, uma vez
+  const [festa, setFesta] = useState(false);
+  const antes = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (!estado) return;
+    if (antes.current === false && completo && largo && local === "inicio") setFesta(true);
+    antes.current = completo;
+  }, [estado, completo, largo, local]);
+
   if (!uid || !estado) return null;
 
   // No Cardápio digital o cartão some quando está tudo pronto (a tela mostra o cartão do link)
@@ -251,6 +260,16 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       <>
         {/* (16/10) cartão pequeno: antes ocupava quase a tela toda · (30/10 · 5.46) no computador não aparece: o "Seu link de vendas" fica no topo do Início (antes os dois apareciam) */}
         {largo ? null : <LojaProntaCartao profile={profile} onFechar={fechar} />}
+        {festa && (
+          <Janelinha titulo="Tudo pronto!" onClose={() => setFesta(false)}
+            acoes={<><Botao variante="secundario" onClick={() => setFesta(false)}>Fechar</Botao><Botao cheio onClick={() => { setFesta(false); window.open(getCardapioUrl(profile), "_blank", "noopener"); }}>Ver meu cardápio</Botao></>}>
+            <div className="pp-festa">
+              <img src="/marca/leve/doo-pronto.webp" alt="" aria-hidden="true" />
+              <b>Seu cardápio está no ar!</b>
+              <p>Agora é só mandar o link para os seus clientes. Ele fica sempre à mão no cartão do Início.</p>
+            </div>
+          </Janelinha>
+        )}
         <style>{CSS}</style>
       </>
     );
@@ -1263,6 +1282,11 @@ const CSS = `
   .ppf-topo { display: flex; align-items: center; gap: 12px; margin: 2px 0 0; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
   .ppf-topo b { font-weight: 600; color: var(--ui-rosa-escuro); }
   .ppf-barra { display: flex; gap: 4px; flex: 1; }
+  /* (6.137) comemoração ao terminar os passos (computador) */
+  .pp-festa { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 4px 8px 8px; }
+  .pp-festa img { width: 170px; height: auto; margin-bottom: 8px; }
+  .pp-festa b { font-size: 20px; font-weight: 600; color: var(--ui-texto); }
+  .pp-festa p { max-width: 340px; margin: 6px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
   /* (6.132) faixa do passo com o Doo */
   .ppf-topo--doo { align-items: flex-end; gap: 10px; padding: 12px 8px 0 14px; border-radius: 16px; background: linear-gradient(120deg, #FFF0F6, #FFE3EE); white-space: normal; overflow: hidden; }
   .ppf-topo--doo .ppf-topo-tx { flex: 1; min-width: 0; align-self: center; display: flex; flex-direction: column; gap: 6px; padding-bottom: 12px; }

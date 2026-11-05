@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
-import { Check, Eye, ShareNetwork, X } from '@phosphor-icons/react'
+import { Eye, ShareNetwork, X } from '@phosphor-icons/react'
 import { getCardapioUrl, type Profile } from '@/hooks/useProfile'
 import './loja.css'
 
@@ -16,12 +16,14 @@ export function LojaProntaCartao({ profile, onFechar }: { profile: Profile | nul
   const compartilhar = () => { void compartilharCardapio(link, profile?.nome_loja) } // (16/10) nativo; no computador copia
 
   return (
-    <div className="lpc">
-      <button type="button" className="lpc-x" onClick={onFechar} aria-label="Fechar"><X size={14} weight="bold" /></button>
-      <div className="lpc-top">
-        <span className="lpc-ic" aria-hidden="true"><Check size={22} weight="bold" /></span>
-        <span className="lpc-tx"><b>Seu cardápio está no ar!</b><small>Mande o link para os seus clientes</small></span>
+    <div className="lpc lpc--doo">
+      {/* (6.137) o Doo comemorando, no mesmo banner dos passos */}
+      <div className="lpc-topo">
+        <img src="/Sistema/banner-passos-pronto.webp" alt="" aria-hidden="true" className="lpc-img" />
+        <b>Cardápio no ar!</b>
+        <small>Mande o link para os clientes</small>
       </div>
+      <button type="button" className="lpc-x" onClick={onFechar} aria-label="Fechar"><X size={14} weight="bold" /></button>
       <div className="lpc-bts">
         <button type="button" className="lpc-b lpc-b--pri" onClick={compartilhar}><ShareNetwork size={18} weight="bold" aria-hidden="true" />Compartilhar</button>
         <button type="button" className="lpc-b" onClick={() => navigate('/cardapio-preview')}><Eye size={18} weight="bold" aria-hidden="true" />Ver cardápio</button>
