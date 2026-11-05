@@ -50,9 +50,11 @@ export const TOUR_INICIO_CEL: PassoTour[] = [
 
 /** tour do Início no computador */
 export const TOUR_INICIO_PC: PassoTour[] = [
-  { el: ".ini-dk-kpis", titulo: "Seus números", texto: "Recebido no mês, pedidos dos últimos 7 dias, entregas de hoje e ticket médio." },
+  { el: ".ini-at-pc", titulo: "Ações rápidas", texto: "O que você faz toda hora, a um clique: nova venda, orçamento, produto e lançamentos no financeiro." },
+  { el: ".ini-link-topo .lj-link", titulo: "Seu cardápio", texto: "O link da sua loja. Mande no WhatsApp, copie ou mostre o QR Code para o cliente pedir." },
   { el: ".dkg-entregas", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Clique em um pedido para ver os detalhes." },
   { el: ".dkg-fazer .pf", titulo: "Seus próximos passos", texto: "Pendências da sua loja, com o botão para resolver na hora." },
+  { el: ".dkg-kpis .ini-dk-kpis", titulo: "Seus números", texto: "Recebido no mês, pedidos dos últimos 7 dias, entregas de hoje e ticket médio." },
   { el: ".cab-busca", titulo: "Buscar", texto: "Encontre qualquer tela ou ação do sistema. Atalho: Ctrl + K." },
   { el: ".sb-pausar", titulo: "Sua loja", texto: "Mostra se a loja está aberta e permite pausar ou retomar os pedidos pelo cardápio." },
 ];

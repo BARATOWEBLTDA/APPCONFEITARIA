@@ -23,7 +23,7 @@ import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { TelaVazia, informar } from "@/components/base";
 import MenuConta from "@/components/MenuConta";
 import { abrirDooIA } from "@/components/MenuContaItens";
-import { ArrowRight as SetaDoo } from "@phosphor-icons/react";
+import { ArrowRight as SetaDoo, Plus as MaisIc, ArrowCircleDown, ArrowCircleUp } from "@phosphor-icons/react";
 import { useNotifications } from "@/context/NotificationContext";
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
@@ -748,6 +748,15 @@ export default function Inicio() {
     { Icone: CurrencyDollar, label: "Financeiro",    sub: "Entradas e saídas",     path: "/financeiro",    key: "financeiro" },
     { Icone: ClipboardText,  label: "Ficha técnica", sub: "Custo e lucro",         path: "/ficha-tecnica", key: "ficha" },
   ];
+  // (6.120) computador: o menu da esquerda já leva às telas; aqui ficam as ações que ela faz toda hora (um clique a menos)
+  const ACOES_PC: Array<{ Icone: Icon; label: string; ir: () => void }> = [
+    { Icone: MaisIc,          label: "Nova venda",      ir: () => navigate("/vendas/novo") },
+    { Icone: FileText,        label: "Novo orçamento",  ir: () => navigate(isPro ? "/orcamentos/novo" : "/orcamentos") },
+    { Icone: Cake,            label: "Novo produto",    ir: () => navigate("/produtos", { state: { abrirCadastro: true } }) },
+    { Icone: ArrowCircleDown, label: "Lançar saída",    ir: () => navigate("/financeiro", { state: { abrir: "saida" } }) },
+    { Icone: ArrowCircleUp,   label: "Lançar entrada",  ir: () => navigate("/financeiro", { state: { abrir: "entrada" } }) },
+    { Icone: ClipboardText,   label: "Ficha técnica",   ir: () => navigate("/ficha-tecnica") },
+  ];
 
   return (
     <>
@@ -927,9 +936,9 @@ export default function Inicio() {
       {/* (6.66) computador: Acesso rápido à esquerda (3 × 2) e o link do cardápio à direita, lado a lado */}
       {computador && (
         <div className="ini-topo-pc">
-          <section className="ini-at-pc" aria-label="Acesso rápido">
-            {ATALHOS.map(item => (
-              <button key={item.path} type="button" className="ini-at-pc-it" onClick={() => navigate(item.path)}>
+          <section className="ini-at-pc" aria-label="Ações rápidas">
+            {ACOES_PC.map(item => (
+              <button key={item.label} type="button" className="ini-at-pc-it" onClick={item.ir}>
                 <span className="ini-at-pc-ic" aria-hidden="true"><item.Icone size={22} weight="bold" /></span>
                 <span className="ini-at-pc-tx"><b>{item.label}</b></span>
               </button>
@@ -941,8 +950,7 @@ export default function Inicio() {
       {/* ══ Computador (≥1100px): topo rosa com o resumo do dia + números (30/09) ══ */}
       {(() => {
         const aReceberHoje = counts.valorEntregasHoje; // todas as entregas de hoje (não só as 5 da lista)
-        const proxHora = proximaEntregaHoje?.hora; // 11/10: a próxima de agora em diante (antes a mais cedo do dia, mesmo já passada)
-        const partes: string[] = [];
+                const partes: string[] = [];
         if (counts.entregasHoje > 0) partes.push(`${counts.entregasHoje} ${counts.entregasHoje === 1 ? "entrega" : "entregas"} hoje`);
         const txtAtrasados = counts.pedidosAtrasados > 0 ? `${counts.pedidosAtrasados} ${counts.pedidosAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}` : "";
         // (21/10) o atraso saiu da frase: virou um selo vermelho ao lado do "Bom dia"
@@ -967,29 +975,6 @@ export default function Inicio() {
               </div>
               <div className="ini-dk-bts">
                 {/* (22/10) o "Nova venda" saiu daqui: já é o 2º item do menu da esquerda */}
-              </div>
-            </div>
-            <div className="ini-dk-kpis">
-              <div className="ini-dk-kpi">
-                <div className="ini-dk-kh"><span><CurrencyDollar size={20} weight="bold" /></span>Recebido no mês</div>
-                {/* sem centavos, igual ao Financeiro mostra: os dois lugares têm que exibir o mesmo número */}
-                <b>{loading ? "—" : counts.recebidoMes.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</b><small>dinheiro que entrou</small>
-                {!loading && <Variacao atual={counts.recebidoMes} anterior={compara.recebidoMesAnt} quando="vs. mês passado" />}
-              </div>
-              <div className="ini-dk-kpi">
-                <div className="ini-dk-kh"><span><Receipt size={20} weight="bold" /></span>Pedidos na semana</div>
-                <b>{loading ? "—" : resumoSemana.pedidos}</b><small>últimos 7 dias</small>
-                {!loading && <Variacao atual={resumoSemana.pedidos} anterior={resumoAnterior.pedidos} quando="vs. 7 dias antes" />}
-              </div>
-              <div className="ini-dk-kpi">
-                <div className="ini-dk-kh"><span><CalendarDots size={20} weight="bold" /></span>Entregas hoje</div>
-                <b>{loading ? "—" : counts.entregasHoje}</b><small>{proxHora ? `próxima às ${String(proxHora).slice(0, 5)}` : "para entregar"}</small>
-                {!loading && <Variacao atual={counts.entregasHoje} anterior={compara.entregasSemanaPassada} quando="vs. semana passada" />}
-              </div>
-              <div className="ini-dk-kpi">
-                <div className="ini-dk-kh"><span><ChartLineUp size={20} weight="bold" /></span>Ticket médio</div>
-                <b>{loading ? "—" : formatCurrency(resumoSemana.pedidos ? resumoSemana.vendas / resumoSemana.pedidos : 0)}</b><small>por pedido na semana</small>
-                {!loading && <Variacao atual={resumoSemana.pedidos ? resumoSemana.vendas / resumoSemana.pedidos : 0} anterior={resumoAnterior.pedidos ? resumoAnterior.vendas / resumoAnterior.pedidos : 0} quando="vs. 7 dias antes" />}
               </div>
             </div>
           </div>
@@ -1170,7 +1155,7 @@ export default function Inicio() {
           </section>
           {!erroCarga && (
             <section className="dkg-custos">
-              {loading ? <div className="cdm dkg-carregando" /> : <CustosDoMes recebido={counts.recebidoMes} fixos={totalFixos} mostrarVazio />}
+              {loading ? <div className="cdm dkg-carregando" /> : <CustosDoMes recebido={counts.recebidoMes} fixos={totalFixos} mostrarVazio comContas />}
             </section>
           )}
           <div className="ini-dk-card dkg-entregas">
@@ -1201,6 +1186,32 @@ export default function Inicio() {
           <section className="ini-section ini-falta dkg-fazer">
             <PraFazer />
           </section>
+          {/* (6.120) os 4 números logo depois das entregas e do Pra fazer: o resumo antes do gráfico */}
+          <div className="dkg-cheio dkg-kpis">
+          <div className="ini-dk-kpis">
+            <div className="ini-dk-kpi">
+              <div className="ini-dk-kh"><span><CurrencyDollar size={20} weight="bold" /></span>Recebido no mês</div>
+              {/* sem centavos, igual ao Financeiro mostra: os dois lugares têm que exibir o mesmo número */}
+              <b>{loading ? "—" : counts.recebidoMes.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</b><small>dinheiro que entrou</small>
+              {!loading && <Variacao atual={counts.recebidoMes} anterior={compara.recebidoMesAnt} quando="vs. mês passado" />}
+            </div>
+            <div className="ini-dk-kpi">
+              <div className="ini-dk-kh"><span><Receipt size={20} weight="bold" /></span>Pedidos na semana</div>
+              <b>{loading ? "—" : resumoSemana.pedidos}</b><small>últimos 7 dias</small>
+              {!loading && <Variacao atual={resumoSemana.pedidos} anterior={resumoAnterior.pedidos} quando="vs. 7 dias antes" />}
+            </div>
+            <div className="ini-dk-kpi">
+              <div className="ini-dk-kh"><span><CalendarDots size={20} weight="bold" /></span>Entregas hoje</div>
+              <b>{loading ? "—" : counts.entregasHoje}</b><small>{proximaEntregaHoje?.hora ? `próxima às ${String(proximaEntregaHoje.hora).slice(0, 5)}` : "para entregar"}</small>
+              {!loading && <Variacao atual={counts.entregasHoje} anterior={compara.entregasSemanaPassada} quando="vs. semana passada" />}
+            </div>
+            <div className="ini-dk-kpi">
+              <div className="ini-dk-kh"><span><ChartLineUp size={20} weight="bold" /></span>Ticket médio</div>
+              <b>{loading ? "—" : formatCurrency(resumoSemana.pedidos ? resumoSemana.vendas / resumoSemana.pedidos : 0)}</b><small>por pedido na semana</small>
+              {!loading && <Variacao atual={resumoSemana.pedidos ? resumoSemana.vendas / resumoSemana.pedidos : 0} anterior={resumoAnterior.pedidos ? resumoAnterior.vendas / resumoAnterior.pedidos : 0} quando="vs. 7 dias antes" />}
+            </div>
+          </div>
+          </div>
           <div className="dkg-cheio dkg-banner"><AdminBannerMobile /></div>
         </div>
       )}

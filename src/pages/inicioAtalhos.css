@@ -62,3 +62,16 @@
 @media (min-width: 901px) {
   html body .ini-root > .ini-novos-pc { order: 0; margin-top: var(--space-6); }
 }
+
+/* (6.120) computador: os números logo depois das entregas e do Pra fazer (antes do gráfico); o cartão do link novo ocupa a altura toda */
+@media (min-width: 901px) {
+  html body .ini-root > .ini-dk { display: none; }
+  html body .ini-dkg > .dkg-kpis { order: 3; }
+  html body .ini-dkg .dkg-kpis .ini-dk-kpis { margin: 0 !important; }
+}
+.ini-topo-pc .ini-at-pc { grid-auto-rows: 1fr; }
+.ini-topo-pc .ldv { flex: 1; }
+/* (6.120) ações rápidas: ícone em cima e o nome inteiro embaixo (no computador não abrevia: "Novo orçamento", "Lançar entrada") */
+.ini-topo-pc .ini-at-pc-it { flex-direction: column; justify-content: center; align-items: center; gap: 10px; padding: 12px 8px; text-align: center; }
+.ini-topo-pc .ini-at-pc-tx { align-items: center; max-width: 100%; }
+.ini-topo-pc .ini-at-pc-tx b { font-size: 14px; }

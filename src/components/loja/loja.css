@@ -113,3 +113,46 @@
 .lj-link-tx b { font-size: 17px; font-weight: 600; color: var(--ui-texto); }
 .lj-link-tx em { font-size: 13px; }
 .lj-bt { font-weight: 500; }
+
+/* (6.120) Seu cardápio no Início do computador: o mesmo cartão marrom do celular, com o celular mostrando o cardápio */
+.ldv { position: relative; overflow: hidden; display: flex; align-items: stretch; gap: 20px; width: 100%; padding: 20px 0 0 22px; border-radius: var(--ui-raio-cartao, 18px); color: var(--ui-branco);
+  background: radial-gradient(120% 90% at 100% 0%, rgba(122, 38, 64, .75), rgba(122, 38, 64, 0) 60%), linear-gradient(160deg, #3A2219, var(--ui-vinho-escuro, #22130E));
+  box-shadow: 0 12px 26px -14px rgba(34, 19, 14, .8); font-family: var(--font-base); text-align: left; }
+.ldv-esq { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding-bottom: 20px; }
+.ldv-loja { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ldv-logo { flex: none; width: 52px; height: 52px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #fff; box-shadow: 0 0 0 2px #F7C6D9; color: #8A3A2E; font-size: 17px; font-weight: 600; }
+.ldv-logo img { width: 100%; height: 100%; object-fit: cover; }
+.ldv-nome { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ldv-nome b { font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ldv-nome small { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: rgba(255, 255, 255, .75); white-space: nowrap; }
+.ldv-nome small span { overflow: hidden; text-overflow: ellipsis; }
+.ldv-nome small i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #4ADE80; animation: clcPisca 1.6s ease-in-out infinite; }
+.ldv-zap { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 14px; background: var(--ui-branco); color: var(--ui-texto); font-size: 15px; font-weight: 600; white-space: nowrap; text-decoration: none; cursor: pointer; transition: background-color .15s linear; }
+.ldv-zap svg { color: #25D366; }
+.ldv-zap:hover { background: #F6F1F3; }
+.ldv-bts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ldv-b { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 40px; padding: 0 8px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, .1); color: var(--ui-branco); font: 500 13.5px var(--font-base); white-space: nowrap; text-decoration: none; cursor: pointer; transition: background-color .15s linear; }
+.ldv-b:hover { background: rgba(255, 255, 255, .18); }
+.ldv-b:disabled { opacity: .5; }
+.ldv-zap:focus-visible, .ldv-b:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 2px; }
+@keyframes clcPisca { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+/* o celular sai de baixo do cartão, levemente inclinado */
+.ldv-cel { flex: none; align-self: flex-end; width: 148px; height: 196px; margin-right: 22px; padding: 7px 7px 0; border-radius: 26px 26px 0 0; background: #120A07; box-shadow: 0 -2px 0 1px rgba(255, 255, 255, .12), -10px 0 30px rgba(0, 0, 0, .35); transform: rotate(4deg) translateY(12px); transform-origin: bottom center; transition: transform .2s ease; text-decoration: none; }
+.ldv-cel:hover { transform: rotate(2deg) translateY(4px); }
+.ldv-tela { position: relative; display: flex; flex-direction: column; align-items: center; height: 100%; overflow: hidden; border-radius: 20px 20px 0 0; background: #fff; color: #2C1219; }
+.ldv-capa { display: block; width: 100%; height: 58px; flex: none; background-size: cover; background-position: center; }
+.ldv-cel-logo { flex: none; width: 38px; height: 38px; margin-top: -19px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #fff; box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(0, 0, 0, .15); color: #8A3A2E; font-size: 12px; font-weight: 600; }
+.ldv-cel-logo img { width: 100%; height: 100%; object-fit: cover; }
+.ldv-cel-nome { max-width: 90%; margin: 4px 0 6px; font-size: 10.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ldv-pr { display: flex; align-items: center; gap: 6px; width: calc(100% - 12px); margin-bottom: 5px; padding: 4px; border-radius: 8px; box-shadow: 0 0 0 1px #F3ECEF; }
+.ldv-pr--vz { height: 34px; background: #FAF5F7; box-shadow: none; }
+.ldv-pr-f { flex: none; width: 26px; height: 26px; border-radius: 6px; background: #F7E8EE center / cover; }
+.ldv-pr-t { min-width: 0; display: flex; flex-direction: column; }
+.ldv-pr-t b { font-size: 9px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ldv-pr-t em { font-style: normal; font-size: 9px; font-weight: 600; }
+.ldv-b svg { flex: none; }
+.ldv-curto { display: none; }
+@media (max-width: 1360px) { .ldv-cel { width: 128px; margin-right: 14px; } .ldv-longo { display: none; } .ldv-curto { display: inline; } }
+@media (prefers-reduced-motion: reduce) { .ldv-nome small i { animation: none; } .ldv-cel, .ldv-cel:hover { transition: none; } }
+/* tela estreita: sem o celular (os botões precisam do espaço) */
+@media (max-width: 1180px) { .ldv { padding-right: 22px; } .ldv-cel { display: none; } .ldv-longo { display: inline; } .ldv-curto { display: none; } }
