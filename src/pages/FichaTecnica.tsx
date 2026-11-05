@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useAbrirPedido } from "@/hooks/useAbrirPedido";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
@@ -16,7 +17,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_FICHA, TOUR_FICHA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
-import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, X, ListBullets, SquaresFour } from "@phosphor-icons/react";
+import { Camera, CaretDown, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, X, ListBullets, SquaresFour } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
 import "./clientes.css";
 import "./fichaLista.css";
@@ -88,6 +89,45 @@ function precoCheio(insumo: Insumo): { valor: number; un: string } {
   const fam = UNIT_FAMILIES[insumo.unidade]?.family;
   const un = fam === "massa" ? "kg" : fam === "volume" ? "L" : fam === "comprimento" ? "m" : insumo.unidade || "un";
   return { valor: calcCusto(1, un, insumo), un };
+}
+
+const NOME_MEDIDA: Record<string, string> = { g: "gramas", kg: "quilos", ml: "mililitros", L: "litros", cm: "centímetros", m: "metros", un: "unidades" };
+
+/** (6.166) medida do ingrediente: menu do app (antes a lista do sistema, azul e quadrada) */
+function MenuMedida({ valor, opcoes, rotulo, aoMudar }: { valor: string; opcoes: string[]; rotulo: string; aoMudar: (u: string) => void }) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const btn = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!pos) return;
+    const fechar = (e: Event) => { if (!menu.current?.contains(e.target as Node) && !btn.current?.contains(e.target as Node)) setPos(null); };
+    const rolou = (e: Event) => { if (!menu.current?.contains(e.target as Node)) setPos(null); };
+    const tecla = (e: KeyboardEvent) => { if (e.key === "Escape") setPos(null); };
+    document.addEventListener("pointerdown", fechar); window.addEventListener("scroll", rolou, true); window.addEventListener("resize", rolou); document.addEventListener("keydown", tecla);
+    return () => { document.removeEventListener("pointerdown", fechar); window.removeEventListener("scroll", rolou, true); window.removeEventListener("resize", rolou); document.removeEventListener("keydown", tecla); };
+  }, [pos]);
+  const abrir = () => {
+    if (pos) { setPos(null); return; }
+    const r = btn.current?.getBoundingClientRect(); if (!r) return;
+    const largura = 180, altura = opcoes.length * 48 + 10;
+    const top = r.bottom + 6 + altura > window.innerHeight - 8 ? r.top - 6 - altura : r.bottom + 6;
+    setPos({ top, left: Math.max(8, Math.min(r.right - largura, window.innerWidth - largura - 8)) });
+  };
+  return (
+    <>
+      <button ref={btn} type="button" className="fd-med" aria-haspopup="menu" aria-expanded={!!pos} aria-label={rotulo} onClick={abrir}>
+        {valor}<CaretDown size={12} weight="bold" aria-hidden="true" />
+      </button>
+      {pos && createPortal(
+        <div ref={menu} className="fd-med-menu" role="menu" style={{ top: pos.top, left: pos.left }}>
+          {opcoes.map(u => (
+            <button key={u} type="button" role="menuitemradio" aria-checked={u === valor} onClick={() => { aoMudar(u); setPos(null); }}>
+              <span><b>{u}</b><small>{NOME_MEDIDA[u] || u}</small></span>{u === valor && <Check size={16} weight="bold" />}
+            </button>
+          ))}
+        </div>, document.body)}
+    </>
+  );
 }
 
 // ── Types ──
@@ -683,7 +723,7 @@ export default function FichaTecnica() {
                   : <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirPicker}>Adicionar ingrediente</Botao>} />
             ) : (<>
               <div className="fd-tab">
-              <div className="fd-ing-cab" aria-hidden="true"><span>Ingrediente</span><span>Quanto vai</span><span className="fd-dir fd-so-pc">Preço</span><span className="fd-dir">Custo</span><span className="fd-so-pc" /></div>
+              <div className="fd-ing-cab" aria-hidden="true"><span>Ingrediente</span><span><em className="fd-so-pc-t">Quanto vai</em><em className="fd-so-cel-t">Qtd.</em></span><span className="fd-dir fd-so-pc">Preço</span><span className="fd-dir">Custo</span><span className="fd-so-pc" /></div>
               {ficha.map(f => {
                 const ins = f.insumo;
                 const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
@@ -699,9 +739,7 @@ export default function FichaTecnica() {
                     <span className="fd-ing-qtd">
                       <CampoNumero value={f.quantidade} placeholder="0" onValor={n => setQtd(f.insumo_id, n)} aria-label={`Quanto vai de ${ins.nome}`} />
                       {unidades.length > 1 ? (
-                        <select value={f.unidade_utilizada} onChange={e => setUnidade(f.insumo_id, e.target.value)} aria-label={`Medida de ${ins.nome}`}>
-                          {unidades.map(u => <option key={u} value={u}>{u}</option>)}
-                        </select>
+                        <MenuMedida valor={f.unidade_utilizada} opcoes={unidades} rotulo={`Medida de ${ins.nome}: ${f.unidade_utilizada}`} aoMudar={u => setUnidade(f.insumo_id, u)} />
                       ) : <i>{f.unidade_utilizada}</i>}
                     </span>
                     </span>
