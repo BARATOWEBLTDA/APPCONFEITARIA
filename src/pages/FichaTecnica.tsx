@@ -16,7 +16,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_FICHA, TOUR_FICHA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
-import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, WarningCircle, X, ListBullets, SquaresFour } from "@phosphor-icons/react";
+import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, X, ListBullets, SquaresFour } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
 import "./clientes.css";
 import "./fichaLista.css";
@@ -591,9 +591,11 @@ export default function FichaTecnica() {
     const foto = (selected.imagem_url || "").split(",")[0];
         const tom = margemLucroLive >= 30 ? "ok" : margemLucroLive >= 0 ? "atencao" : "neg";
     const rendeUn = parseNumBR(extras.rendimento_qtd) || 0;
-    const disponiveis = insumosCadastrados.filter(i => !ficha.some(f => f.insumo_id === i.id));
-    const pickerLista = disponiveis.filter(i => i.nome.toLowerCase().includes(pickerBusca.trim().toLowerCase()));
-    const abrirCadastro = () => { setQuickAddName(""); setShowQuickAdd(true); };
+    // (6.165) a lista mostra todos (os que já estão na ficha aparecem marcados, sem dar pra escolher de novo)
+    const pickerLista = insumosCadastrados.filter(i => i.nome.toLowerCase().includes(pickerBusca.trim().toLowerCase()));
+    const buscaPicker = pickerBusca.trim();
+    const temExato = insumosCadastrados.some(i => i.nome.trim().toLowerCase() === buscaPicker.toLowerCase());
+    const abrirCadastro = (nome = "") => { setQuickAddName(nome); setShowQuickAdd(true); };
 
     // Conta do lucro (a mesma no resumo do celular e na coluna do computador)
     // (31/10 · 5.84) pedaços prontos (não componentes criados a cada desenho)
@@ -677,11 +679,11 @@ export default function FichaTecnica() {
                   ? "A ficha soma o custo de cada ingrediente que vai no produto. Comece pelo que você mais usa: leite condensado, farinha, ovos…"
                   : `Adicione o que vai no ${selected.nome} para saber quanto ele custa.`}
                 acao={insumosCadastrados.length === 0
-                  ? <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirCadastro}>Cadastrar ingrediente</Botao>
+                  ? <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={() => abrirCadastro()}>Cadastrar ingrediente</Botao>
                   : <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirPicker}>Adicionar ingrediente</Botao>} />
             ) : (<>
               <div className="fd-tab">
-              <div className="fd-ing-cab" aria-hidden="true"><span>Ingrediente</span><span>Quanto vai</span><span>Preço</span><span>Custo</span><span /></div>
+              <div className="fd-ing-cab" aria-hidden="true"><span>Ingrediente</span><span>Quanto vai</span><span className="fd-dir fd-so-pc">Preço</span><span className="fd-dir">Custo</span><span className="fd-so-pc" /></div>
               {ficha.map(f => {
                 const ins = f.insumo;
                 const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
@@ -689,10 +691,10 @@ export default function FichaTecnica() {
                 const semQtd = !(f.quantidade > 0);
                 return (
                   <div key={f.insumo_id} className="fd-ing">
-                    <span className="fd-c fd-c-nome">
+                    <button type="button" className="fd-c fd-c-nome" onClick={() => setInfoCustoAberto(f.insumo_id)} aria-label={`${ins.nome}: ver a conta do custo`}>
                     <span className="fd-ing-th">{ins.imagem_url ? <img src={ins.imagem_url} alt="" /> : ins.nome.charAt(0).toUpperCase()}</span>
-                    <span className="fd-ing-nome"><b>{ins.nome}</b>{semQtd && <small>Falta a quantidade</small>}</span>
-                    </span>
+                    <span className="fd-ing-nome"><b>{ins.nome}</b>{semQtd ? <small className="falta">Falta a quantidade</small> : <small>R$ {fmt(precoCheio(ins).valor)}/{precoCheio(ins).un}</small>}</span>
+                    </button>
                     <span className="fd-c fd-c-qtd">
                     <span className="fd-ing-qtd">
                       <CampoNumero value={f.quantidade} placeholder="0" onValor={n => setQtd(f.insumo_id, n)} aria-label={`Quanto vai de ${ins.nome}`} />
@@ -715,12 +717,9 @@ export default function FichaTecnica() {
                   </div>
                 );
               })}
-              {/* (6.163) no PC a lista é uma tabela, com o total no pé */}
-              <div className="fd-ing-tot" aria-hidden="true"><span>Total</span><b>R$ {fmt(cmvLive)}</b><span /></div>
-              </div>
-              <div className="fd-ing-acoes">
-                {insumosCadastrados.length > 0 && <Botao variante="secundario" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirPicker}>Adicionar ingrediente</Botao>}
-                <Botao variante="link" tamanho="m" onClick={abrirCadastro}>Cadastrar novo</Botao>
+              {/* (6.165) adicionar é a última linha da tabela (cadastrar um novo fica dentro da lista) */}
+              <button type="button" className="fd-ing-mais" onClick={abrirPicker}><Plus size={18} weight="bold" />Adicionar ingrediente</button>
+              <div className="fd-ing-tot" aria-hidden="true"><span>Total</span><b>R$ {fmt(cmvLive)}</b><span className="fd-so-pc" /></div>
               </div>
             </>)}
           </section>
@@ -781,18 +780,19 @@ export default function FichaTecnica() {
             <input type="search" placeholder="Buscar ingrediente" value={pickerBusca} onChange={e => setPickerBusca(e.target.value)} aria-label="Buscar ingrediente" autoComplete="off" />
           </label>
           {pickerLista.length === 0 ? (
-            <p className="cl9-semres">{disponiveis.length === 0 ? "Todos os seus ingredientes já estão nesta ficha." : "Nenhum ingrediente com esse nome."}</p>
+            <p className="cl9-semres">{insumosCadastrados.length === 0 ? "Você ainda não tem ingredientes cadastrados." : "Nenhum ingrediente com esse nome."}</p>
           ) : pickerLista.map(i => {
-            const sel = pickerSel.includes(i.id);
+            const naFicha = ficha.some(f => f.insumo_id === i.id);
+            const sel = naFicha || pickerSel.includes(i.id);
             return (
-              <button key={i.id} type="button" className="fd-pick-l" aria-pressed={sel} onClick={() => togglePickerSel(i.id)}>
-                <span className="fd-ing-th">{i.imagem_url ? <img src={i.imagem_url} alt="" /> : i.nome.charAt(0).toUpperCase()}</span>
-                <b>{i.nome}</b>
+              <button key={i.id} type="button" className="fd-pick-l" aria-pressed={sel} disabled={naFicha} onClick={() => togglePickerSel(i.id)}>
                 <span className="fd-pick-v">{sel && <Check size={16} weight="bold" />}</span>
+                <span className="fd-ing-th">{i.imagem_url ? <img src={i.imagem_url} alt="" /> : i.nome.charAt(0).toUpperCase()}</span>
+                <span><b>{i.nome}</b>{naFicha && <small>Já está na ficha</small>}</span>
               </button>
             );
           })}
-          <button type="button" className="fd-pick-novo" onClick={() => { fecharPicker(); abrirCadastro(); }}><Plus size={18} weight="bold" />Cadastrar ingrediente novo</button>
+          <button type="button" className="fd-pick-novo" onClick={() => { fecharPicker(); abrirCadastro(buscaPicker && !temExato ? buscaPicker : ""); }}><Plus size={18} weight="bold" />{buscaPicker && !temExato ? `Cadastrar "${buscaPicker}"` : "Cadastrar ingrediente novo"}</button>
         </div>
       </Janela>
 
@@ -972,6 +972,8 @@ export default function FichaTecnica() {
                   </p>
                 </>
               )}
+              {/* (6.165) no celular o "x" saiu da tabela: tirar da ficha fica aqui */}
+              <button type="button" className="fd-info-tirar" onClick={() => { removeInsumo(f.insumo_id); setInfoCustoAberto(null); }}><Trash size={18} weight="bold" />Tirar {ins.nome} da ficha</button>
             </DooInfoModal>
           );
         })()}
