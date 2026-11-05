@@ -1619,7 +1619,7 @@ export default function Inicio() {
         .ini-root .ini-section.ini-section--busca { margin-top: var(--space-3) !important; }
         /* (22/10) celular: o Para fazer vem logo depois do Acesso rápido (antes ficava em cima dele) */
         @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 4; } } /* (22/10) e depois das Próximas entregas (o dia vem antes das tarefas) */
-        .ini-main > .ini-mobile-banner { order: 4; margin-top: var(--space-3); } /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
+        .ini-main > .ini-mobile-banner { order: 9; margin-top: var(--space-3); } /* (6.83) o banner é a última coisa do Início no celular */ /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
         .ini-section--novos { order: -1; }
         .ini-root .ini-section.ini-section--novos { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--novos { display: none; } }
