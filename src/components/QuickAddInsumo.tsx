@@ -4,6 +4,7 @@ import { useRecorte } from "@/components/ui/useRecorte";
 import { Camera, CaretDown, Check, Image as ImagemIc, MagnifyingGlass, Package, Sparkle, Trash, WarningCircle, X } from "@phosphor-icons/react";
 import { parseNumBR } from "@/lib/numeroBR";
 import { CATEGORIAS_INSUMO, categoriaPeloNome, normalizarCategoria } from "@/lib/categoriasInsumo";
+import SelectDoonly from "@/components/base/SelectDoonly";
 
 // 13/10: "Quanto pagou" igual aos outros campos de dinheiro: digita 749 e aparece 7,49
 const reais = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -469,7 +470,8 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const custo = valorNum > 0 && qtdNum > 0 ? custoNaReceita(valorNum / qtdNum, unEfetiva, qtdNum) : null;
   const medidaTxt = unEfetiva === "un" ? "un" : unEfetiva;
   const emb = form.embalagem_tipo;
-  const rotuloQtd = emb === "Avulso" ? "Quanto vem" : `Quanto vem ${EMB_FEMININAS.some(f => f.toLowerCase() === String(emb || "").toLowerCase()) ? "na" : "no"} ${String(emb || "").toLowerCase()}`;
+  // (6.161) deixa claro que é a COMPRA (a quantidade da receita vai na ficha técnica)
+  const rotuloQtd = emb === "Avulso" ? "Quanto vem na embalagem" : `Quanto vem ${EMB_FEMININAS.some(f => f.toLowerCase() === String(emb || "").toLowerCase()) ? "na" : "no"} ${String(emb || "").toLowerCase()}`;
   const mostraAlerta = alertaIncoerencia && alertaDispensado !== alertaIncoerencia;
   const travaFamilia = isEditing && usadoEm > 0;
   const nomeEmb = emb && emb !== "Avulso" ? emb.toLowerCase() : "embalagem";
@@ -479,9 +481,10 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const Medida = ({ valor, qual, aoEscolher }: { valor: string; qual: "qtd" | "cada"; aoEscolher: (u: string) => void }) => {
     const aberto = medMenu === qual;
     const opcoes = MEDIDAS.filter(u => qual === "qtd" || u.sigla !== "un");
+    const comPack = qual === "qtd"; // (6.161) "Caixa ou pack" abre o "vem várias dentro"
     const pos = (() => {
       if (!aberto || !medRef.current) return null;
-      const r = medRef.current.getBoundingClientRect(), alt = opcoes.length * 50 + 10, larg = 260;
+      const r = medRef.current.getBoundingClientRect(), alt = (opcoes.length + (comPack ? 1 : 0)) * 50 + 10, larg = 260;
       const left = Math.max(8, Math.min(window.innerWidth - larg - 8, r.right - larg));
       return window.innerHeight - r.bottom > alt + 16 ? { top: r.bottom + 8, left } : { top: Math.max(8, r.top - alt - 8), left };
     })();
@@ -504,6 +507,11 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
                 </button>
               );
             })}
+            {comPack && (
+              <button type="button" role="menuitem" onClick={() => { setMedMenu(""); setForm(f => ({ ...f, varias: true, cada_un: f.unidade === "un" ? "g" : f.unidade })); }}>
+                <span><b>Caixa ou pack</b><small>Vem várias dentro (ex.: 27 latas)</small></span>
+              </button>
+            )}
           </span>
         </>, document.body)}
       </span>
@@ -616,12 +624,9 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           <Campo rotulo={rotuloQtd} inputMode="decimal" placeholder={precisaQtd ? "395" : "1"} value={form.qtd_embalagem} erro={erroQtd}
             onChange={e => setForm(f => ({ ...f, qtd_embalagem: e.target.value }))}
             depois={<Medida valor={form.unidade} qual="qtd" aoEscolher={u => setForm(f => ({ ...f, unidade: u }))} />} />
-          <Campo rotulo="Quanto pagou" inputMode="numeric" prefixo="R$" placeholder="0,00" value={form.valor_compra} erro={erroValor}
+          <Campo rotulo={emb === "Avulso" ? "Quanto pagou na embalagem" : `Quanto pagou ${EMB_FEMININAS.some(f => f.toLowerCase() === String(emb || "").toLowerCase()) ? "na" : "no"} ${String(emb || "").toLowerCase()}`} inputMode="numeric" prefixo="R$" placeholder="0,00" value={form.valor_compra} erro={erroValor}
             onChange={e => { const d = e.target.value.replace(/\D/g, ""); setForm(f => ({ ...f, valor_compra: d ? reais(parseInt(d, 10) / 100) : "" })) }} />
         </div>
-        <button type="button" className="ig-varias-ab" onClick={() => setForm(f => ({ ...f, varias: true, cada_un: f.unidade === "un" ? "g" : f.unidade }))}>
-          <Package size={18} weight="bold" aria-hidden="true" />Vem várias dentro? <small>Ex.: caixa com 27 latas</small>
-        </button>
       </>)}
 
       {custo ? (
@@ -631,7 +636,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           <small>
             {form.varias && nItens > 1
               ? <>{formatarCusto(valorNum / nItens)} cada · {nItens} × {cadaNum > 0 ? `${numBR(cadaNum)} ${form.cada_un}` : "unidade"}</>
-              : <>R$ {valorNum.toFixed(2).replace(".", ",")} ÷ {numBR(qtdNum)} {medidaTxt}</>}
+              : <>Você pagou R$ {valorNum.toFixed(2).replace(".", ",")} por {numBR(qtdNum)} {medidaTxt}</>}
             {usadoEm > 0 ? ` · usado em ${usadoEm} ${usadoEm === 1 ? "ficha técnica" : "fichas técnicas"}` : ""}
           </small>
         </div>
@@ -645,29 +650,18 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       <div className="ig-col2">
       <div className="ig-grupo">
         <span className="ui-campo-r"><span>Categoria</span><small className="obr">obrigatório</small></span>
-        <div className="ig-chips ig-chips-cat" role="radiogroup" aria-label="Categoria">
-          {categorias.map(c => (
-            <button key={c} type="button" role="radio" aria-checked={form.categoria === c} aria-pressed={form.categoria === c} onClick={() => { setCatTocada(true); setForm(f => ({ ...f, categoria: c })); }}>{c}</button>
-          ))}
-        </div>
+        {/* (6.161) um seletor, igual ao da categoria no cadastro de produto (antes um monte de botões) */}
+        <SelectDoonly value={form.categoria || ""} title="Escolha a categoria" placeholder="Escolha a categoria…"
+          options={categorias.map(c => ({ value: c, label: c }))}
+          onChange={c => { setCatTocada(true); setForm(f => ({ ...f, categoria: c })); }} />
         {erroCat && <p className="ui-campo-msg" role="alert"><WarningCircle size={14} weight="bold" aria-hidden="true" /><span>{erroCat}</span></p>}
       </div>
 
       <div className="ig-grupo">
         <span className="ui-campo-r"><span>Vem em</span><small>opcional</small></span>
-        <div className="ig-chips">
-          {EMB_PRINCIPAIS.map(o => (
-            <button key={o} type="button" aria-pressed={emb === o} onClick={() => { setVerOutras(false); setForm(f => ({ ...f, embalagem_tipo: o })); }}>{o}</button>
-          ))}
-          <button type="button" aria-pressed={EMB_OUTRAS.includes(emb)} aria-expanded={verOutras || EMB_OUTRAS.includes(emb)} onClick={() => setVerOutras(v => !v)}>Outra</button>
-        </div>
-        {(verOutras || EMB_OUTRAS.includes(emb)) && (
-          <div className="ig-chips ig-outras">
-            {EMB_OUTRAS.map(o => (
-              <button key={o} type="button" aria-pressed={emb === o} onClick={() => setForm(f => ({ ...f, embalagem_tipo: o }))}>{o}</button>
-            ))}
-          </div>
-        )}
+        <SelectDoonly value={emb || "Avulso"} title="Como vem" placeholder="Avulso"
+          options={[...EMB_PRINCIPAIS, ...EMB_OUTRAS].map(o => ({ value: o, label: o }))}
+          onChange={o => { setVerOutras(false); setForm(f => ({ ...f, embalagem_tipo: o })); }} />
       </div>
 
       {isEditing && onDelete && (

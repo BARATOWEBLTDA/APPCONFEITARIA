@@ -10,7 +10,9 @@ import { CartProvider } from "@/context/CartContext";
  * O cartão do produto (com promoção mostra o preço riscado e o selo) e, ao lado, "Ver por dentro",
  * que abre o produto em modo prévia. O cartão é só pra ver (tocar nele não abre nada).
  */
-export default function PreviaCardapio({ form, cor = "#E85A8C" }: { form: Record<string, unknown> & { id?: string }; cor?: string }) {
+export default function PreviaCardapio({ form, cor = "#E85A8C", fotosExtras = false }: { form: Record<string, unknown> & { id?: string }; cor?: string; fotosExtras?: boolean }) {
+  // (6.161) Revisão no computador: as outras fotos (2 a 4) embaixo do cartão
+  const extras = fotosExtras ? String(form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean).slice(1, 4) : [];
   const [aberto, setAberto] = useState(false);
   const produto = { ...form, id: form.id || "previa", disponivel: true } as unknown as Produto;
   const travar = { onClickCapture: (e: React.SyntheticEvent) => { e.preventDefault(); e.stopPropagation(); }, onKeyDownCapture: (e: React.SyntheticEvent) => { e.preventDefault(); e.stopPropagation(); } };
@@ -27,6 +29,7 @@ export default function PreviaCardapio({ form, cor = "#E85A8C" }: { form: Record
               <b>Ver por dentro</b><small>Como o cliente vê</small>
             </button>
           </div>
+          {extras.length > 0 && <div className="prev-fotos" aria-label="Outras fotos">{extras.map(u => <img key={u} src={u} alt="" />)}</div>}
         </div>
         <ProductModal isOpen={aberto} previa onClose={() => setAberto(false)} onAdicionar={() => setAberto(false)} product={produto} corBotao={cor} />
       </CartProvider>

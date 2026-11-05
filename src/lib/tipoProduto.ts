@@ -15,13 +15,19 @@ const REGRAS: [TipoProduto, RegExp][] = [
   ["doces", /brigadeir|docinho|\bdoce|bombo|trufa|beijinho|cajuzinho|brownie|cookie|macar|marrac|bem casado|pao de mel|alfajor/],
 ];
 
-/** Tipo pelo nome (e categoria). Nome que não diz nada vira "doces". Vazio: null. */
-export function tipoPeloNome(nome: string, categoria = ""): TipoProduto | null {
+/** Tipo pelo nome (e categoria, e a descrição). Nome que não diz nada vira "doces". Vazio: null.
+ *  (6.161) a descrição entra quando o nome não diz o tipo: "Linha Caseira Kinder" + "Bolo caseiro Kinder…" é bolo (antes "Doces") */
+export function tipoPeloNome(nome: string, categoria = "", descricao = ""): TipoProduto | null {
   const n = norm(nome);
   if (!n.trim()) return null;
   for (const [t, re] of REGRAS) if (re.test(n)) return t;
   const c = norm(categoria);
   for (const [t, re] of REGRAS) if (re.test(c)) return t;
+  // na descrição vale o tipo que aparece PRIMEIRO no texto ("Bolo … recheado com brigadeiro" é bolo)
+  const d = norm(descricao);
+  let melhor: { t: TipoProduto; i: number } | null = null;
+  for (const [t, re] of REGRAS) { const m = re.exec(d); if (m && (!melhor || m.index < melhor.i)) melhor = { t, i: m.index }; }
+  if (melhor) return melhor.t;
   return "doces";
 }
 
@@ -38,8 +44,8 @@ export const CATEGORIA_PADRAO: Record<TipoProduto, { nome: string; icone: number
 };
 
 /** A categoria a sugerir: uma da confeiteira que combine, ou a padrão do tipo */
-export function categoriaSugerida(nome: string, categorias: string[]): { nome: string; existe: boolean; icone: number } | null {
-  const t = tipoPeloNome(nome);
+export function categoriaSugerida(nome: string, categorias: string[], descricao = ""): { nome: string; existe: boolean; icone: number } | null {
+  const t = tipoPeloNome(nome, "", descricao);
   if (!t) return null;
   const dela = categorias.find(c => PALAVRAS_CATEGORIA[t].test(norm(c)));
   if (dela) return { nome: dela, existe: true, icone: 0 };

@@ -169,7 +169,9 @@
 .ig-col1, .ig-col2 { display: flex; flex-direction: column; gap: var(--gap-stack); min-width: 0; }
 .ig-f { gap: var(--gap-stack); }
 .ig-col2 { gap: var(--space-5); }
-.ig-topo { display: flex; align-items: flex-start; gap: var(--space-4); }
+.ig-topo { display: flex; align-items: stretch; gap: var(--space-4); }
+/* (6.161) a foto na altura do Nome + Marca (quadrada, alinhada com os dois campos) */
+@media (min-width: 600px) { .ig-topo .ig-foto-w .ig-foto-cx { width: auto; height: 100%; aspect-ratio: 1; min-height: 120px; } }
 .ig-topo-campos { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--gap-stack); }
 .ig-foto-w { position: relative; flex: none; display: flex; }
 .ig-foto-cx { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); width: 120px; height: 120px; margin: 0; padding: var(--space-2); overflow: hidden; border: 1.5px dashed #E7C2D2; border-radius: 16px; background: #FFF7FA; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13px; font-weight: 500; line-height: 1.2; text-align: center; cursor: pointer; }
