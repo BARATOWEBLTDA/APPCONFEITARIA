@@ -225,7 +225,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
   if (completo && (local === "cardapio" || fechado || !jaViuIncompleto)) return null;
 
   const fechar = () => { try { localStorage.setItem(kFechado, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } setFechado(true); };
-  // "Salvar e continuar": fecha e abre o próximo passo que falta.
+  // "Salvar": fecha e volta para o Início (6.142: no celular também; antes abria o próximo passo sozinho).
   // "Fazer depois": pula este (fica pendente) e segue pro próximo, sem voltar nele nesta sequência.
   const seguir = (pular: boolean, patch?: Record<string, unknown>) => {
     if (patch) setPerfilNovo(p => ({ ...p, ...patch }));
@@ -233,10 +233,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     if (pular && agora) pulados.current.add(agora);
     setFolha(null); if (!pular) avisarPassos();
     // (29/10 · 4.99) no computador não abre o próximo sozinho: o cartão marca o passo e a pessoa escolhe o próximo
-    if (largo) { if (!pular && agora) avisar(passosFaltando(agora) ? "Salvo!" : "Tudo configurado!", { tipo: "ok" }); return; }
-    const prox = agora ? proximoPasso(estado, agora, pulados.current) : null;
-    if (prox) window.setTimeout(() => abrirPasso(prox), 250);
-    else if (agora) avisar(pulados.current.size ? "Pronto por agora!" : "Tudo configurado!", { tipo: "ok" });
+    // (6.142) no celular também: volta para o Início, que já mostra o próximo passo com o Doo dele
+    if (!pular && agora) avisar(passosFaltando(agora) ? "Salvo!" : "Tudo configurado!", { tipo: "ok" });
   };
   // quantos passos ainda faltam além deste que acabou de ser feito
   const passosFaltando = (feito: Passo) => ORDEM.some(k => k !== feito && !estado[k]);
@@ -314,7 +312,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         </div>
         <div className="ppb-at" ref={atRef}>
           <span className="ppb-n" aria-hidden="true">{atual + 1}</span>
-          <span className="ppb-tx"><b>{p.t}</b><small>{p.s}</small></span>
+          <span className="ppb-tx"><b>{p.t}</b></span>
           <button type="button" className="ppb-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}</button>
           {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
         </div>
@@ -501,7 +499,7 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const SUB_PAGA: Record<string, string> = { pix: "Na hora, sem taxa", dinheiro: "Na entrega ou na retirada", credito: "Na maquininha", debito: "Na maquininha" };
   return (
     <Janelinha foco cheia titulo="Pagamento" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!paga.length || !carregou} carregando={salvando} onClick={salvar}>Salvar e continuar</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!paga.length || !carregou} carregando={salvando} onClick={salvar}>Salvar</Botao></>}>
       <PassoTopo k="pagamento" />
       <ListaChaves titulo="Como o cliente paga" id="pp-paga" itens={PAGA.map(([k, n]) => ({ chave: k, Ic: ICONE_PAGA[k], rotulo: n, sub: SUB_PAGA[k], on: paga.includes(k), aoTocar: () => trocarPaga(k) }))} />
       {erro && <p className="ppf-erro">{erro}</p>}
@@ -518,7 +516,7 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const ok = !!ep && ep.formasEntrega.length > 0 && ep.taxaOk;
   return (
     <Janelinha foco cheia titulo="Entrega" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!ok} onClick={() => { marcarEntregaConferida(uid); onSalvo(); }}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!ok} onClick={() => { marcarEntregaConferida(uid); onSalvo(); }}>Salvar</Botao></>}>
       <div className="ppf-pe ppf-pe--ent">
         <PassoTopo k="entrega" />
         <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
@@ -563,7 +561,7 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const dicaSinal = <p className="ppf-cx-av2"><Info size={16} weight="bold" aria-hidden="true" /><span><b>Já recebeu sinal de alguma encomenda?</b> Ao cadastrar o pedido, coloque a data em que recebeu. Assim o app não conta duas vezes.</span></p>;
   return (
     <Janelinha foco cheia titulo="Saldo do caixa" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio carregando={salvando} onClick={() => salvar()}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio carregando={salvando} onClick={() => salvar()}>Salvar</Botao></>}>
       {largo ? (
         <div className="ppf-d ppf-d--2col ppf-d--cx">
           {/* (29/10 · 5.19) à direita, o que ela vai ver no Financeiro (muda enquanto digita) e o porquê */}
@@ -658,7 +656,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   };
   return (
     <Janelinha foco cheia titulo="Sobre a sua confeitaria" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim()} carregando={salvando} onClick={salvar}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim()} carregando={salvando} onClick={salvar}>Salvar</Botao></>}>
       <div className={`ppf-d${largo ? " ppf-d--2col" : ""}`}>
         {largo && (
           <div className="ppf-d-prev">
@@ -852,7 +850,7 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
   );
   return (
     <Janelinha foco cheia titulo="Endereço da loja" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!pronto} carregando={salvando} onClick={salvar}>Salvar</Botao></>}>
       <div className={largo ? "ppf-d ppf-d--2col ppf-d--end" : undefined}>
       {largo && (
         <div className="ppf-d-prev">
@@ -929,7 +927,7 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   // (15/10) o editor é o mesmo da tela Dados da loja (components/loja/EditoresLoja)
   return (
     <Janelinha foco cheia titulo="Horário de funcionamento" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>{largo ? "Salvar" : "Salvar e continuar"}</Botao></>}>
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!temDia} carregando={salvando} onClick={salvar}>Salvar</Botao></>}>
       <div className={largo ? "ppf-d ppf-d--2col ppf-d--hor" : undefined}>
         {largo && (
           <div className="ppf-d-prev">
