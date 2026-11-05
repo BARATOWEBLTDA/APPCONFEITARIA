@@ -38,7 +38,7 @@ export default async function handler(req: Request) {
   if (cru === null || (prompt as string).length > MAX_PROMPT) {
     return respostaJson({ error: "too_large", message: "O pedido da imagem ficou grande demais." }, 413, CORS);
   }
-  const topo = tipo === "topo";
+  const topo = tipo === "topo"; // (6.89) topo: folha em pé, como as de imprimir
 
   // (6.85) gpt-image-1 escreve o nome certinho e faz o fundo transparente (bom pra imprimir o topo de bolo).
   // Se a conta da OpenAI não tiver acesso a ele, cai no dall-e-3 como antes.
@@ -46,7 +46,7 @@ export default async function handler(req: Request) {
     const r1 = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: "gpt-image-1", prompt, n: 1, size: "1024x1024", quality: "medium", ...(topo ? { background: "transparent", output_format: "png" } : { output_format: "jpeg" }) }),
+      body: JSON.stringify({ model: "gpt-image-1", prompt, n: 1, size: topo ? "1024x1536" : "1024x1024", quality: "medium", ...(topo ? { background: "transparent", output_format: "png" } : { output_format: "jpeg" }) }),
     });
     const d1 = await r1.json().catch(() => null);
     const b64 = d1?.data?.[0]?.b64_json;
@@ -54,7 +54,7 @@ export default async function handler(req: Request) {
     const r2 = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: "dall-e-3", prompt, n: 1, size: "1024x1024", quality: "standard" }),
+      body: JSON.stringify({ model: "dall-e-3", prompt, n: 1, size: topo ? "1024x1792" : "1024x1024", quality: "standard" }),
     });
     const d2 = await r2.json().catch(() => null);
     if (!r2.ok) return { status: r2.status, corpo: { error: d2?.error?.type ?? "api_error", status: r2.status } };
