@@ -39,6 +39,9 @@ export default async function handler(req: Request) {
     return respostaJson({ error: "too_large", message: "O pedido da imagem ficou grande demais." }, 413, CORS);
   }
   const topo = tipo === "topo"; // (6.89) topo: folha em pé, como as de imprimir
+  // (6.101) logo: quadrada, PNG com fundo · banner: deitado (o app corta em 16:9) · arte: quadrada
+  const tamanho = topo ? "1024x1536" : tipo === "banner" ? "1536x1024" : "1024x1024";
+  const formato = topo || tipo === "logo" ? "png" : "jpeg";
 
   // (6.85) gpt-image-1 escreve o nome certinho e faz o fundo transparente (bom pra imprimir o topo de bolo).
   // Se a conta da OpenAI não tiver acesso a ele, cai no dall-e-3 como antes.
@@ -76,9 +79,9 @@ export default async function handler(req: Request) {
     const erros: (ErroOpenAI & { modelo?: string })[] = [];
     let ultimoStatus = 500;
     for (const model of [...new Set(MODELOS)]) {
-      const t1 = await pedir({ model, prompt, n: 1, size: topo ? "1024x1536" : "1024x1024", quality: "medium", ...(topo ? { background: "transparent", output_format: "png" } : { output_format: "jpeg" }) });
+      const t1 = await pedir({ model, prompt, n: 1, size: tamanho, quality: "medium", ...(topo ? { background: "transparent" } : {}), output_format: formato });
       const i1 = t1.ok ? imagemDe(t1.d) : null;
-      if (i1) return { status: 200, corpo: { data: [{ ...i1, formato: topo ? "png" : "jpeg" }], modelo: model } };
+      if (i1) return { status: 200, corpo: { data: [{ ...i1, formato }], modelo: model } };
       ultimoStatus = t1.status;
       if (t1.erro) erros.push({ ...t1.erro, modelo: model });
       if (naoExiste(t1.erro)) continue; // a conta não tem esse modelo: tenta o próximo
