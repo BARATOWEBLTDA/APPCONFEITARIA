@@ -18,6 +18,8 @@
 .mais-lista { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
 .mais-it { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px; color: var(--ui-texto); text-decoration: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background-color var(--dur-fast) linear; }
 .mais-it + .mais-it { border-top: 1px solid var(--ui-linha); }
+button.mais-it { width: 100%; background: none; border: 0; border-radius: 0; font: inherit; text-align: left; cursor: pointer; }
+button.mais-it + .mais-it, .mais-it + button.mais-it { border-top: 1px solid var(--ui-linha); }
 @media (hover: hover) { .mais-it:hover { background: var(--ui-linha); } }
 .mais-it:active { background: var(--ui-cinza); }
 .mais-it:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; border-radius: var(--ui-raio-cartao); }

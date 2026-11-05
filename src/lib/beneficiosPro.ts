@@ -25,7 +25,7 @@ export const BENEFICIOS: Beneficio[] = [
   [ChatCircleText, "Mensagens do seu jeito", "Troque os textos prontos do WhatsApp e anuncie com o Pixel do Meta, Google e TikTok.", "Mensagens e Pixel", "Textos do seu jeito e anúncios", "/configuracoes/mensagens"],
   [SealCheck, "Selo de loja verificada", "Mais confiança na hora em que o cliente decide comprar.", "Selo de loja verificada", "Mais confiança para o cliente", null],
   [Crown, "Sem marca d'água", "O cardápio só com a sua marca, sem o \"Feito com Doonly\".", "Sem marca d'água", "Só a sua marca no cardápio", null],
-  [FilePdf, "PDFs só com a sua marca", "Pedidos, agenda do dia e fichas técnicas sem o \"Feito com Doonly\" no rodapé.", "PDFs com a sua marca", "Sem o \"Feito com Doonly\"", null],
+  [FilePdf, "PDFs só com a sua marca", "Pedidos, orçamentos, agenda do dia e fichas técnicas sem o \"Feito com Doonly\" no rodapé.", "PDFs com a sua marca", "Sem o \"Feito com Doonly\"", null],
   [AddressBook, "Importe clientes dos contatos", "Traga os contatos direto da agenda do celular (Android).", "Importar contatos", "Traga da agenda do celular", "/clientes"],
 ];
 

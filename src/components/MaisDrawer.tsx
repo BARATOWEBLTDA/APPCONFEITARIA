@@ -9,7 +9,8 @@ import {
 } from "@phosphor-icons/react";
 import { abrirBuscaRapida } from "@/components/BuscaRapida";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target } from "@phosphor-icons/react";
+import { Ticket, Target, ShareNetwork } from "@phosphor-icons/react";
+import { indicarDoonly } from "@/lib/indicarDoonly";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { usePlano } from "@/hooks/usePlano";
 import { abrirDooIA } from "@/components/MenuContaItens";
@@ -77,6 +78,7 @@ const GRUPOS: Grupo[] = [
       { label: "Assinatura",      desc: "Seu plano",                      path: "/assinar",       Icone: Crown },
       { label: "Ajuda e suporte", desc: "Tutoriais e WhatsApp do suporte", path: "/ajuda",        Icone: Lifebuoy },
       { label: "Novidades",       desc: "O que mudou no app",             path: "/noticias",      Icone: Newspaper },
+      { label: "Indique o Doonly", desc: "Mande para outra confeiteira", path: "#indicar",   Icone: ShareNetwork },
       { label: "Configurações",   desc: "Conta, notificações e app",      path: "/configuracoes", Icone: Gear },
     ],
   },
@@ -134,6 +136,14 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
               <div className="mais-lista">
                 {grupo.items.map(item => {
                   const destino = item.path === "/assinar" && isPro ? "/minha-assinatura" : item.path;
+                  // (6.119) Indique o Doonly: não abre tela, abre o compartilhar
+                  if (item.path === "#indicar") return (
+                    <button key={item.path} type="button" className="mais-it" onClick={() => { onClose(); void indicarDoonly(); }}>
+                      <span className="mais-it-ic" aria-hidden="true"><item.Icone size={20} weight="bold" /></span>
+                      <span className="mais-it-txt"><b>{item.label}</b><small>{item.desc}</small></span>
+                      <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
+                    </button>
+                  );
                   return (
                     <NavLink
                       key={item.path} to={destino} end

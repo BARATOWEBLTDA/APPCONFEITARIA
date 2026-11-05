@@ -101,7 +101,7 @@ function Variacao({ atual, anterior, quando }: { atual: number; anterior: number
 }
 
 /** (6.116) exemplos curtos (cabem no campo do celular) do que a Doo faz de verdade */
-const EXEMPLOS_DOO = ["Me passa uma receita", "Quanto cobrar num bolo?", "Quanto vendi esse mês?", "O pedido #12 ficou pronto", "Monta minha ficha técnica", "Cria a logo da minha loja"];
+const EXEMPLOS_DOO = ["Me passa uma receita", "Quanto cobrar num bolo?", "Quanto lucrei esse mês?", "O pedido #12 ficou pronto", "Monta minha ficha técnica", "Cria a logo da minha loja"];
 
 export default function Inicio() {
   const navigate = useNavigate();

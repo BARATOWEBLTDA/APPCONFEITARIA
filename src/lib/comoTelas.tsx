@@ -521,16 +521,16 @@ export const COMO_MARKETING: Como = {
   dicas: [
     [Ticket, <>Cupons são do <b>PRO</b>: crie quantos quiser; os 2 mais novos aparecem no topo do cardápio.</>],
     [Users, <>O cliente usa <b>um cupom por pedido</b>. Dá para limitar ao primeiro pedido.</>],
-    [FacebookLogo, <>O <b>Pixel do Facebook</b> informa ao Facebook e ao Instagram quem visitou o cardápio e quem fez pedido.</>],
+    [FacebookLogo, <>O <b>Pixel</b> (Meta, Google e TikTok) informa a quem anuncia quem visitou o cardápio e quem fez pedido.</>],
     [Megaphone, <>Com o Pixel, os <b>anúncios</b> chegam a quem tem mais chance de comprar.</>],
   ],
 };
 export const TOUR_MARKETING: PassoTour[] = [
-  { el: ".mk-abas", titulo: "Ferramentas", texto: "Alterne entre os cupons de desconto e o Pixel do Facebook." },
+  { el: ".mk-abas", titulo: "Ferramentas", texto: "Alterne entre os cupons de desconto e o Pixel (Meta, Google e TikTok)." },
   { el: ".ep-cupons", titulo: "Seus cupons", texto: "Cada cupom mostra o código, o desconto e se está ativo. Toque em um cupom para editar.",
     vazio: { el: ".mk-cupons .ep-vazio, .mk-cupons .ep-pro", texto: "Ainda não há cupons para mostrar. Siga a orientação deste aviso para criar o primeiro." } },
   { el: ".ep-cupons-pe", titulo: "Novo cupom", texto: "Crie um cupom. Ele já vale no cardápio assim que você cria." },
-  { el: ".mk-card", titulo: "Pixel do Facebook", texto: "Informe o código do Pixel para os anúncios do Facebook e do Instagram chegarem a quem visitou o cardápio." },
+  { el: ".mk-card", titulo: "Pixel", texto: "Informe o código do Pixel da Meta, do Google ou do TikTok para os anúncios chegarem a quem visitou o cardápio." },
 ];
 
 export const COMO_NOVIDADES: Como = {

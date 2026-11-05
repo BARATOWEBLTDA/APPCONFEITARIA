@@ -97,7 +97,6 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
     window.addEventListener('doonly:sobre-loja', sobre)
     return () => { window.removeEventListener('doonly:ver-pedidos', ver); window.removeEventListener('doonly:sobre-loja', sobre) }
   }, [])
-
   return (
     <>
       <header className={`cp-topo${corClara(navBg) ? ' cp-topo--clara' : ''}`} style={{ background: navBg }}>
@@ -280,6 +279,16 @@ function CardapioContent() {
   const [, setCategoryImages] = useState<{[key:string]:string}>({})
   const [categoriasList, setCategoriasList] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  // (6.119) o toque no aviso do pedido (no celular do cliente) abre o cardápio com ?pedidos=1: depois de carregar, vai direto para os pedidos
+  useEffect(() => {
+    if (loading) return
+    const q = new URLSearchParams(window.location.search)
+    if (q.get('pedidos') !== '1') return
+    q.delete('pedidos')
+    window.history.replaceState(window.history.state, '', window.location.pathname + (q.toString() ? `?${q}` : ''))
+    const t = window.setTimeout(() => window.dispatchEvent(new Event('doonly:ver-pedidos')), 400)
+    return () => window.clearTimeout(t)
+  }, [loading])
   const [error, setError] = useState<string | null>(null)
   const [falhaCarga, setFalhaCarga] = useState(false) // (27/10) erro de internet/banco: mostra "Tentar de novo"
   const [searchTerm, setSearchTerm] = useState('')
@@ -317,12 +326,12 @@ function CardapioContent() {
       // ── Redirect canônico ──
       // Rota antiga /cardapio/:uuid → redireciona pra nova /c/:codigo/:slug
       if (!isRotaNova && codigoPublico) {
-        navigate(`/c/${codigoPublico}/${slugCanonico}`, { replace: true })
+        navigate(`/c/${codigoPublico}/${slugCanonico}${window.location.search}`, { replace: true }) // (6.119) mantém o ?pedidos=1 do aviso
         return
       }
       // Rota nova sem slug ou com slug errado → redireciona pra canônica
       if (isRotaNova && slugAtual !== slugCanonico) {
-        navigate(`/c/${codigo}/${slugCanonico}`, { replace: true })
+        navigate(`/c/${codigo}/${slugCanonico}${window.location.search}`, { replace: true })
         return
       }
 

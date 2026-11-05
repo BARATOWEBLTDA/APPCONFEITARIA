@@ -15,6 +15,8 @@ import { registrarEtapa } from '@/lib/historicoPedido'
 import { grupoDoStatus, saldoPedido, nomeDaSituacao } from '@/components/pedidos/pedidoTexto'
 import { lerProdutosDeVenda, opcoesDoProduto } from '@/lib/pedidosDoo'
 import { CATEGORIAS_ENTRADA, CATEGORIAS_SAIDA } from '@/lib/categoriasFinanceiro'
+import { linkWhatsApp } from '@/lib/telefone'
+import { linkProposta, textoProposta, type Orcamento } from '@/lib/orcamentos'
 
 export type HorarioDoo = {
   dias?: string[]; abertura?: string; fechamento?: string
@@ -67,8 +69,17 @@ export type AcaoLancamento = { acao: 'lancamento'; tipo: 'entrada' | 'saida'; va
 export type AcaoProdutoEditar = { acao: 'produto_editar'; produto_id?: string | null; produto_nome: string; nome?: string | null; preco?: number | null
   preco_promocional?: number | null; desconto_percentual?: number | null; sem_promocao?: boolean; disponivel?: boolean | null; destaque?: boolean | null
   pronta_entrega?: boolean | null; descricao?: string | null; categoria?: string | null }
+/** (6.119) mudar data, horário, entrega ou observação de um pedido */
+export type AcaoPedidoEditar = { acao: 'pedido_editar'; numero: number; cliente?: string | null; data_entrega?: string | null; horario?: string | null; tipo_entrega?: 'retirada' | 'entrega' | null; observacoes?: string | null }
+/** (6.119) mensagem pronta para o cliente: o cartão abre o WhatsApp dele com o texto */
+export type AcaoMensagem = { acao: 'mensagem'; numero?: number | null; cliente?: string | null; telefone?: string | null; texto: string }
+/** (6.119) enviar um orçamento pronto pelo WhatsApp do cliente */
+export type AcaoOrcamentoEnviar = { acao: 'orcamento_enviar'; numero: number; cliente?: string | null }
+/** (6.119) criar ou renomear categoria do cardápio */
+export type AcaoCategoria = { acao: 'categoria'; nome: string; novo_nome?: string | null }
 export type AcaoDoo = AcaoCliente | AcaoProduto | AcaoOrcamento | AcaoLoja | AcaoCupom | AcaoCustos | AcaoFicha | AcaoPedidoStatus | AcaoLancamento | AcaoProdutoEditar
-export const ACOES_DOO = ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos', 'ficha', 'pedido_status', 'lancamento', 'produto_editar'] as const
+  | AcaoPedidoEditar | AcaoMensagem | AcaoOrcamentoEnviar | AcaoCategoria
+export const ACOES_DOO = ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos', 'ficha', 'pedido_status', 'lancamento', 'produto_editar', 'pedido_editar', 'mensagem', 'orcamento_enviar', 'categoria'] as const
 const ETAPAS: Record<EtapaDoo, string> = { aceito: 'Aceito (agendado)', produzindo: 'Em produção', pronto: 'Pronto', saiu: 'Saiu para entrega', entregue: 'Entregue' }
 const FORMAS_FIN: Record<string, string> = { pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Crédito', debito: 'Débito' }
 const formaOk = (v: unknown) => { const x = String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); return x.includes('pix') ? 'pix' : x.includes('dinheiro') ? 'dinheiro' : x.includes('debito') ? 'debito' : x.includes('credito') || x.includes('cartao') ? 'credito' : null }
@@ -200,6 +211,21 @@ export function normalizarAcaoDoo(j: unknown): AcaoDoo | null {
       const muda = ['nome', 'preco', 'preco_promocional', 'desconto_percentual', 'disponivel', 'destaque', 'pronta_entrega', 'descricao', 'categoria'].some(k => (r as Record<string, unknown>)[k] != null) || r.sem_promocao
       return muda ? r : null
     }
+    case 'pedido_editar': {
+      const num = n(o.numero)
+      const h = typeof o.horario === 'string' && /^\d{1,2}:\d{2}$/.test(o.horario.trim()) ? o.horario.trim().padStart(5, '0') : null
+      const r: AcaoPedidoEditar = { acao: 'pedido_editar', numero: num ? Math.round(num) : 0, cliente: s(o.cliente), data_entrega: dataOk(o.data_entrega), horario: h,
+        tipo_entrega: o.tipo_entrega === 'entrega' ? 'entrega' : o.tipo_entrega === 'retirada' ? 'retirada' : null, observacoes: typeof o.observacoes === 'string' ? o.observacoes.trim().slice(0, 500) : null }
+      return r.numero > 0 && (r.data_entrega || r.horario || r.tipo_entrega || r.observacoes != null) ? r : null
+    }
+    case 'mensagem': {
+      const t = s(o.texto)
+      if (!t) return null
+      const num = n(o.numero)
+      return { acao: 'mensagem', numero: num ? Math.round(num) : null, cliente: s(o.cliente), telefone: s(o.telefone), texto: t.slice(0, 1500) }
+    }
+    case 'orcamento_enviar': { const num = n(o.numero); return num ? { acao: 'orcamento_enviar', numero: Math.round(num), cliente: s(o.cliente) } : null }
+    case 'categoria': { const nome = s(o.nome)?.slice(0, 40); return nome ? { acao: 'categoria', nome, novo_nome: s(o.novo_nome)?.slice(0, 40) || null } : null }
     case 'custos': {
       const sal = n(o.salario_mensal), hd = n(o.horas_dia), pct = n(o.custos_invisiveis_pct)
       const dias = Array.isArray(o.dias) ? (o.dias as unknown[]).map(d => String(d).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 3)).filter(d => DIA_NUM[d]) : null
@@ -273,6 +299,13 @@ export function resumoAcaoDoo(a: AcaoDoo): { titulo: string; linhas: [string, st
       ['Venda', a.pronta_entrega === true ? 'Pronta entrega' : a.pronta_entrega === false ? 'Sob encomenda' : ''],
       ['Categoria', a.categoria || ''], ['Descrição', a.descricao == null ? '' : a.descricao || '(sem descrição)'],
     ] as [string, string][]).filter(l => l[1]) }
+    case 'pedido_editar': return { titulo: `Mudar pedido #${a.numero}${a.cliente ? ` · ${a.cliente}` : ''}`, linhas: ([
+      ['Data', dataBR(a.data_entrega)], ['Horário', a.horario || ''], ['Como recebe', a.tipo_entrega === 'entrega' ? 'Entrega' : a.tipo_entrega === 'retirada' ? 'Retirada' : ''],
+      ['Observação', a.observacoes == null ? '' : a.observacoes || '(sem observação)'],
+    ] as [string, string][]).filter(l => l[1]) }
+    case 'mensagem': return { titulo: `Mensagem para ${a.cliente || (a.numero ? `o cliente do pedido #${a.numero}` : 'o cliente')}`, linhas: [['Texto', a.texto]] }
+    case 'orcamento_enviar': return { titulo: `Enviar orçamento #${a.numero}`, linhas: ([['Para', a.cliente || ''], ['Como', 'Pelo WhatsApp do cliente, com o link para aprovar']] as [string, string][]).filter(l => l[1]) }
+    case 'categoria': return { titulo: a.novo_nome ? 'Renomear categoria' : 'Nova categoria', linhas: (a.novo_nome ? [['De', a.nome], ['Para', a.novo_nome]] : [['Nome', a.nome]]) as [string, string][] }
     case 'cupom': return { titulo: 'Novo cupom', linhas: ([
       ['Código', a.codigo], ['Desconto', a.tipo === 'percentual' ? `${a.valor}%` : brl(a.valor)], ['Para', a.publico === 'primeiro_pedido' ? '1º pedido do cliente' : 'Todos os pedidos'],
       ['Pedido mínimo', a.valor_minimo ? brl(a.valor_minimo) : ''], ['Vale até', dataBR(a.data_fim)], ['Limite de usos', a.limite_uso ? String(a.limite_uso) : ''],
@@ -575,6 +608,77 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
         }
         return { ok: true, feito: `${a.nome || p.nome} atualizado`, abrir: '/produtos' }
       }
+      case 'pedido_editar': {
+        const { data: lp } = await supabase.from('pedidos').select('id, numero, status').eq('user_id', uid).eq('numero', a.numero).limit(1)
+        const p = (lp || [])[0] as { id: string; numero: number; status: string } | undefined
+        if (!p) return { ok: false, erro: `Não achei o pedido #${a.numero}.` }
+        if (['entregue', 'concluido', 'cancelado', 'recusado'].includes(p.status)) return { ok: false, erro: `O pedido #${p.numero} já terminou. Mude na tela do pedido, se precisar.` }
+        const up: Record<string, unknown> = {}
+        if (a.data_entrega) up.data_entrega = a.data_entrega
+        if (a.horario) up.horario_entrega = a.horario
+        if (a.tipo_entrega) up.tipo_entrega = a.tipo_entrega
+        if (a.observacoes != null) up.observacoes = a.observacoes || null
+        const { error } = await supabase.from('pedidos').update(up).eq('id', p.id).eq('user_id', uid)
+        if (error) throw error
+        return { ok: true, feito: `Pedido #${p.numero} atualizado`, abrir: `/pedidos/${p.id}/editar` }
+      }
+      case 'mensagem': {
+        let tel = digitos(a.telefone)
+        if (!tel && a.numero) {
+          const { data: lp } = await supabase.from('pedidos').select('cliente_whatsapp, cliente_telefone').eq('user_id', uid).eq('numero', a.numero).limit(1)
+          const p = (lp || [])[0] as { cliente_whatsapp?: string | null; cliente_telefone?: string | null } | undefined
+          tel = digitos(p?.cliente_whatsapp || p?.cliente_telefone)
+        }
+        if (!tel && a.cliente) {
+          const { data: lc } = await supabase.from('clientes').select('nome, whatsapp, telefone').eq('user_id', uid).ilike('nome', `%${a.cliente}%`).limit(3)
+          const l = (lc || []) as { whatsapp?: string | null; telefone?: string | null }[]
+          if (l.length > 1) return { ok: false, erro: `Tem mais de uma cliente com "${a.cliente}". Diga o nome completo ou o número do pedido.` }
+          tel = digitos(l[0]?.whatsapp || l[0]?.telefone)
+        }
+        const link = linkWhatsApp(tel, a.texto)
+        if (!link) return { ok: false, erro: 'Não achei o WhatsApp desse cliente. Me diga o número.' }
+        return { ok: true, feito: 'Mensagem pronta', abrir: link }
+      }
+      case 'orcamento_enviar': {
+        const { data: lo } = await supabase.from('orcamentos').select('*').eq('user_id', uid).eq('numero', a.numero).limit(1)
+        const o = (lo || [])[0] as Orcamento | undefined
+        if (!o) return { ok: false, erro: `Não achei o orçamento #${a.numero}.` }
+        if (!(o.itens || []).length) return { ok: false, erro: `O orçamento #${o.numero} ainda não tem itens. Complete na tela de Orçamentos.` }
+        if (!digitos(o.cliente_telefone)) return { ok: false, erro: `O orçamento #${o.numero} está sem o WhatsApp do cliente. Complete na tela de Orçamentos.` }
+        if (!['rascunho', 'novo', 'enviado'].includes(String(o.status))) return { ok: false, erro: `O orçamento #${o.numero} já foi ${o.status === 'aprovado' ? 'aprovado' : 'respondido'}.` }
+        const { data: salvo, error } = await supabase.from('orcamentos').update({ status: 'enviado', enviado_em: o.enviado_em || new Date().toISOString() }).eq('id', o.id).select('*').single()
+        if (error) throw error
+        const { data: pf } = await supabase.from('profiles').select('nome_loja').eq('id', uid).maybeSingle()
+        const link = linkProposta((salvo as Orcamento).token, window.location.origin)
+        const zap = linkWhatsApp(o.cliente_telefone, textoProposta(salvo as Orcamento, (pf as { nome_loja?: string } | null)?.nome_loja || '', link))
+        return { ok: true, feito: `Orçamento #${o.numero} marcado como enviado`, abrir: zap || `/orcamentos/${o.id}` }
+      }
+      case 'categoria': {
+        const { data: cats } = await supabase.from('categorias').select('id, nome').eq('user_id', uid)
+        const lista = (cats || []) as { id: string; nome: string }[]
+        const igual = (x: string, y: string) => x.trim().toLowerCase() === y.trim().toLowerCase()
+        if (!a.novo_nome) {
+          if (lista.some(c => igual(c.nome, a.nome))) return { ok: false, erro: `Já existe a categoria ${a.nome}.` }
+          const { error } = await supabase.from('categorias').insert({ user_id: uid, nome: a.nome, ordem: lista.length })
+          if (error) throw error
+          return { ok: true, feito: `Categoria ${a.nome} criada`, abrir: '/categorias' }
+        }
+        const c = lista.find(x => igual(x.nome, a.nome))
+        if (!c) return { ok: false, erro: `Não achei a categoria ${a.nome}.` }
+        if (lista.some(x => x.id !== c.id && igual(x.nome, a.novo_nome!))) return { ok: false, erro: `Já existe a categoria ${a.novo_nome}.` }
+        const { error } = await supabase.from('categorias').update({ nome: a.novo_nome }).eq('id', c.id)
+        if (error) throw error
+        // os produtos guardam o nome da categoria: acompanham (igual a tela de Categorias); se não der, desfaz
+        const { error: ep } = await supabase.from('produtos').update({ categoria: a.novo_nome }).eq('user_id', uid).eq('categoria', c.nome)
+        if (ep) { await supabase.from('categorias').update({ nome: c.nome }).eq('id', c.id); throw ep }
+        // os adicionais que aparecem nessa categoria também acompanham
+        const { data: comps } = await supabase.from('biblioteca_extras').select('id, categorias_cardapio').eq('user_id', uid)
+        for (const x of (comps || []) as { id: string; categorias_cardapio?: string[] | null }[]) {
+          if (Array.isArray(x.categorias_cardapio) && x.categorias_cardapio.includes(c.nome))
+            await supabase.from('biblioteca_extras').update({ categorias_cardapio: x.categorias_cardapio.map(k => (k === c.nome ? a.novo_nome : k)) }).eq('id', x.id)
+        }
+        return { ok: true, feito: `Categoria agora é ${a.novo_nome}`, abrir: '/categorias' }
+      }
       case 'cupom': {
         const { data: lc } = await supabase.from('loja_cupons').select('cupons').eq('user_id', uid).maybeSingle()
         const lista = Array.isArray((lc as { cupons?: unknown } | null)?.cupons) ? ((lc as { cupons: Record<string, unknown>[] }).cupons) : []
@@ -696,6 +800,17 @@ MUDAR PRODUTO QUE JÁ EXISTE (preço, promoção, pausar ou voltar ao cardápio,
 - Produto com tamanhos ou opções de preço: o preço muda na tela do produto (diga isso).
 {"acao":"produto_editar","produto_id":"ID","produto_nome":"Bolo de pote Ninho","preco":16,"disponivel":null,"destaque":null}
 
-O QUE VOCÊ NÃO FAZ PELA CONVERSA (diga com honestidade, em uma frase, e diga onde ela faz): excluir qualquer coisa, cancelar pedido, mudar foto, tamanhos ou sabores de produto, trocar o link (endereço) do cardápio, apagar ou corrigir lançamento do financeiro. Ex.: "Isso eu ainda não faço por aqui: é em Produtos, no produto."
+MUDAR UM PEDIDO (data, horário, retirada ou entrega, observação). Use o número do pedido; mande só o que muda. Itens e valores do pedido ela muda na tela do pedido.
+{"acao":"pedido_editar","numero":12,"cliente":"Maria","data_entrega":"2026-11-20","horario":"15:00","tipo_entrega":null,"observacoes":null}
+
+MENSAGEM PARA O CLIENTE (lembrete de retirada, cobrança do que falta, "seu pedido está pronto", parabéns, convite). Escreva o texto curto, gentil e no tom dela, com o nome do cliente e o número do pedido quando houver. O cartão abre o WhatsApp do cliente com o texto pronto. Use o número do pedido (o app acha o WhatsApp) ou o nome do cliente.
+{"acao":"mensagem","numero":12,"cliente":"Maria","telefone":null,"texto":"Oi, Maria! Seu bolo já está pronto para retirar. Te espero!"}
+
+ENVIAR ORÇAMENTO (um orçamento já montado, com itens e o WhatsApp do cliente). O app marca como enviado e abre o WhatsApp do cliente com o link para aprovar.
+{"acao":"orcamento_enviar","numero":27,"cliente":"Beatriz"}
+
+CATEGORIA DO CARDÁPIO: criar ({"acao":"categoria","nome":"Tortas"}) ou renomear ({"acao":"categoria","nome":"Doces","novo_nome":"Docinhos"}). Ao renomear, os produtos acompanham.
+
+O QUE VOCÊ NÃO FAZ PELA CONVERSA (diga com honestidade, em uma frase, e diga onde ela faz): excluir qualquer coisa, cancelar pedido, mudar itens ou valores de um pedido, mudar foto, tamanhos ou sabores de produto, trocar o link (endereço) do cardápio, apagar ou corrigir lançamento do financeiro. Ex.: "Isso eu ainda não faço por aqui: é em Produtos, no produto."
 `
 }

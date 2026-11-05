@@ -381,6 +381,10 @@ function respostaFeito(a: AcaoDoo, feito: string): string {
     // (6.115) pedido, financeiro e produto que já existe
     case 'pedido_status': return `Prontinho! Pedido ${feito}.${a.etapa === 'pronto' ? ' Quer que eu escreva a mensagem avisando a cliente?' : ''}`
     case 'lancamento': return `Prontinho! ${feito}.`
+    case 'pedido_editar': return `Prontinho! ${feito}.`
+    case 'mensagem': return 'Pronto! Toque em WhatsApp no cartão para mandar a mensagem.'
+    case 'orcamento_enviar': return `${feito}. Toque em WhatsApp no cartão para mandar o link ao cliente. Você recebe o aviso quando ele responder.`
+    case 'categoria': return `Prontinho! ${feito}.`
     case 'produto_editar': return a.disponivel === false ? `Prontinho! ${a.produto_nome} saiu do cardápio. Quando voltar a ter, é só me falar.` : `Prontinho! ${feito} e o cardápio já mostra a mudança.`
   }
 }
@@ -1354,6 +1358,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-ac-erro { margin: 10px 0 0; font-size: 13px; font-weight: 600; color: #B91C1C; }
         .dz-ac-ok { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--ui-linha); }
         .dz-ac-ok > span { display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--ui-verde); }
+        .dz-ac-zap { flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border-radius: 10px; background: #15803D; font-size: 13.5px; font-weight: 600; color: #fff; text-decoration: none; }
         .dz-ac-ok button { flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--ui-cinza); font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); cursor: pointer; }
         .dz-ac-can { margin: 10px 0 0; font-size: 13px; color: var(--ui-texto-3); }
         .dz-ac--cancelado { opacity: .7; }

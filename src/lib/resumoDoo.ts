@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { grupoDoStatus, recebidoPedido, saldoPedido } from "@/components/pedidos/pedidoTexto";
 import { pedidoAtrasado } from "@/lib/pedidoStatus";
+import { carregarMes, custoPorProduto } from "@/lib/painelFinanceiro";
 
 /**
  * (21/10) Resumo do negócio que vai junto com cada pergunta pra Doo IA.
@@ -16,12 +17,41 @@ type PedidoResumo = {
   valor_recebido: number | null; data_entrega: string | null; horario_entrega: string | null; created_at: string; origem: string | null;
 };
 
+/**
+ * (6.119) Lucro para a Doo: o do mês (a mesma conta da Lucratividade) e quanto sobra de cada produto depois dos ingredientes
+ * (pela ficha técnica). Guardado por 5 minutos: a conta pesa e vai em toda pergunta. Se falhar, a Doo segue sem.
+ */
+let lucroGuardado: { uid: string; em: number; txt: string } | null = null;
+async function lucroParaDoo(uid: string): Promise<string> {
+  if (lucroGuardado && lucroGuardado.uid === uid && Date.now() - lucroGuardado.em < 5 * 60 * 1000) return lucroGuardado.txt;
+  try {
+    const agora = new Date();
+    const [mes, prods] = await Promise.all([
+      carregarMes(uid, agora.getFullYear(), agora.getMonth()),
+      supabase.from("produtos").select("id, nome, preco_normal").eq("user_id", uid).eq("disponivel", true).limit(300),
+    ]);
+    const lista = ((prods.data || []) as { id: string; nome: string; preco_normal: number | null }[]).filter(p => Number(p.preco_normal) > 0);
+    const custos = lista.length ? await custoPorProduto(lista.map(p => p.id)) : {};
+    const comFicha = lista.filter(p => (custos[p.id] || 0) > 0).map(p => ({ nome: p.nome, preco: Number(p.preco_normal), sobra: Number(p.preco_normal) - custos[p.id] }));
+    const ord = [...comFicha].sort((a, b) => b.sobra - a.sobra);
+    const linhaP = (p: { nome: string; preco: number; sobra: number }) => `- ${p.nome}: vende por ${real(p.preco)}, sobra ${real(p.sobra)} depois dos ingredientes (${Math.round((p.sobra / p.preco) * 100)}%)`;
+    const txt = `
+- LUCRO DO MÊS (a mesma conta da tela Lucratividade): ${mes.erro ? "não deu para calcular agora" : `vendido ${real(mes.vendido)} em ${mes.qtdVendidos} pedido(s) entregues; ingredientes ${real(mes.cmv)}; taxas e custos por pedido ${real(mes.custosVariaveis)}; despesas pagas ${real(mes.despesasPagas)}; lucro ${real(mes.lucro)} (margem ${Math.round(mes.margem)}%)${mes.semFicha > 0 ? `; ATENÇÃO: ${mes.semFicha} produto(s) vendido(s) sem ficha técnica, então o lucro real é menor` : ""}`}.
+- Produtos que mais sobram depois dos ingredientes (pela ficha técnica; não conta mão de obra nem custos fixos):${ord.length ? "\n" + ord.slice(0, 5).map(linhaP).join("\n") : " nenhum produto tem ficha técnica ainda"}
+${ord.some(p => p.sobra < 0) ? `- Produtos dando PREJUÍZO (o preço não cobre os ingredientes):\n${ord.filter(p => p.sobra < 0).slice(0, 8).map(linhaP).join("\n")}` : ""}
+- ${lista.length - comFicha.length} produto(s) do cardápio ainda sem ficha técnica.`;
+    lucroGuardado = { uid, em: Date.now(), txt };
+    return txt;
+  } catch { return ""; }
+}
+
 export async function resumoDoNegocio(uid: string): Promise<string> {
   const agora = new Date();
   const hoje = iso(agora);
   const iniMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
   const em7 = new Date(agora); em7.setDate(em7.getDate() + 7);
   const CAMPOS = "numero, cliente_nome, valor_total, status, status_pagamento, valor_recebido, data_entrega, horario_entrega, created_at, origem";
+  const lucroP = lucroParaDoo(uid);
   const [mes, prox, abertos, contas, orcs, clis, avisos] = await Promise.all([
     // (27/10) "Quanto vendi" não conta pedido ainda não aceito
     supabase.from("pedidos").select(CAMPOS).eq("user_id", uid).gte("created_at", iniMes.toISOString()).not("status", "in", "(cancelado,recusado,aguardando_aceite,novo,pendente)").limit(2000),
@@ -56,10 +86,11 @@ export async function resumoDoNegocio(uid: string): Promise<string> {
   const entregas = ((prox.data || []) as PedidoResumo[]);
   const entregasHoje = entregas.filter(p => String(p.data_entrega).slice(0, 10) === hoje);
   const linha = (p: PedidoResumo) => `- #${p.numero ?? "?"} · ${p.cliente_nome || "Venda avulsa"} · ${dm(String(p.data_entrega).slice(0, 10))}${p.horario_entrega ? ` ${String(p.horario_entrega).slice(0, 5)}` : ""} · ${real(total(p))} · ${p.status}`;
+  const lucro = await Promise.race([lucroP, new Promise<string>(r => setTimeout(() => r(''), 2500))]); // demorou: vai sem (fica guardado para a próxima pergunta)
   return `
 
 # DADOS DO NEGÓCIO DELA (do app, agora)
-Use estes números quando ela perguntar das vendas, do faturamento, do que falta receber ou das entregas. Valores sempre com centavos. Não invente números que não estão aqui; se perguntar algo que não está aqui, diga em que tela do app ela encontra (Financeiro, Pedidos ou Agenda).
+Use estes números quando ela perguntar das vendas, do faturamento, do lucro, do que falta receber ou das entregas. Valores sempre com centavos. Não invente números que não estão aqui; se perguntar algo que não está aqui, diga em que tela do app ela encontra (Financeiro, Lucratividade, Pedidos ou Agenda).
 "Vendas" = pedidos registrados no app (sem os cancelados), pela data em que o pedido foi feito.
 - Vendas de hoje (${dm(hoje)}): ${deHoje.length} pedido(s), ${real(soma(deHoje, total))}; já recebido ${real(soma(deHoje, recebidoPedido))}.
 - Vendas do mês (desde ${dm(iso(iniMes))}): ${doMes.length} pedido(s), ${real(soma(doMes, total))}; já recebido ${real(soma(doMes, recebidoPedido))}; falta receber ${real(soma(doMes, saldoPedido))}.
@@ -72,6 +103,7 @@ Use estes números quando ela perguntar das vendas, do faturamento, do que falta
 - Orçamentos em aberto (novos, rascunho ou enviados esperando o cliente): ${lOrcs.length}${lOrcs.length ? "\n" + lOrcs.map(o => `- Orçamento #${o.numero} · ${o.cliente_nome || "sem nome"} · ${o.status}${o.data_evento ? ` · evento ${dm(o.data_evento)}` : ""}`).join("\n") : ""}
 - Clientes que fazem aniversário nos próximos 7 dias: ${nivers.length}${nivers.length ? "\n" + nivers.map(c => `- ${c.nome} · ${String(c.data_nascimento).slice(8, 10)}/${String(c.data_nascimento).slice(5, 7)}`).join("\n") : ""}
 - Avisos e novidades da equipe Doonly para ela (últimos 15 dias): ${((avisos.data || []) as { titulo: string; mensagem: string; created_at: string }[]).length}${((avisos.data || []) as { titulo: string; mensagem: string; created_at: string }[]).map(a => `\n- ${dm(a.created_at.slice(0, 10))} · ${a.titulo}: ${(a.mensagem || '').slice(0, 160)}`).join('')}
+${lucro}
 Status: aguardando_aceite = novo, agendado = aceito, em_producao = produzindo, finalizado/aguardando_retirada = pronto, em_entrega = saiu, entregue = concluído.
 `;
 }

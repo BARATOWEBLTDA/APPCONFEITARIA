@@ -1,7 +1,8 @@
 import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
 import { useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
-import { Cake, Check, ImageSquare, PixLogo } from '@phosphor-icons/react'
+import { BellRinging, Cake, Check, ImageSquare, PixLogo } from '@phosphor-icons/react'
+import { estadoAvisos, ligarAvisos, type EstadoAvisos } from '@/lib/avisosPedidoCliente'
 import type { PixLoja } from '@/lib/pix'
 import { PixPagamento } from './PixPagamento'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
@@ -130,12 +131,37 @@ export function AcompanharPedido({ p, cor, corTopo, aoAtualizar }: { p: Pedido; 
   const quando = diaCombinado(p)
   const loja = lojaAtualNome()
   const zap = linkWhatsApp(lojaAtualWhatsApp(), `Oi! Tudo bem? Queria saber como está o meu pedido *#${p.numero}*.`)
+  // (6.119) avisos do pedido no celular do cliente (só enquanto o pedido anda)
+  const [avisos, setAvisos] = useState<EstadoAvisos>(() => estadoAvisos(p.id))
+  const [ligando, setLigando] = useState(false)
+  const andando = ordem(p.status) < 5 && !['cancelado', 'recusado'].includes(p.status)
+  const logo = lojaAtualLogo()
+  const iniciais = (loja || 'Loja').trim().split(/\s+/).slice(0, 2).map(x => x.charAt(0).toUpperCase()).join('')
+  const ligar = async () => { if (ligando) return; setLigando(true); setAvisos(await ligarAvisos(p.id)); setLigando(false) }
+  void corTopo
   return (
     <article className="acp" style={{ '--acp-cor': cor } as CSSProperties}>
-      <div className="acp-topo" style={{ background: corTopo || '#3D2420' }}>
-        <small>Pedido #{p.numero}{loja ? ` · ${loja}` : ''}</small>
-        <h3>{frase(p)}</h3>
-        {quando && <span>{ret ? 'Retirada' : 'Entrega'} {quando}</span>}
+      {/* (6.119) sem a faixa escura: cartão branco com a logo, a situação num selo e o dia logo embaixo */}
+      <div className="acp-cab">
+        <div className="acp-loja">
+          <span className="acp-logo" aria-hidden="true">{logo ? <img src={logo} alt="" /> : iniciais}</span>
+          <span className="acp-loja-tx"><small>Pedido #{p.numero}</small><b>{loja || 'Seu pedido'}</b></span>
+        </div>
+        <span className="acp-st"><i aria-hidden="true" />{frase(p)}</span>
+        {quando && <p className="acp-quando">{ret ? 'Retirada' : 'Entrega'} {quando}</p>}
+        {andando && avisos !== 'indisponivel' && (
+          <div className={`acp-av${avisos === 'ligado' ? ' acp-av--on' : ''}`}>
+            <span className="acp-av-ic" aria-hidden="true">{avisos === 'ligado' ? <Check size={20} weight="bold" /> : <BellRinging size={20} weight="bold" />}</span>
+            <span className="acp-av-tx">
+              <b>{avisos === 'ligado' ? 'Avisos ligados' : 'Avisos do pedido'}</b>
+              <small>{avisos === 'ligado' ? 'Você recebe no celular quando o pedido andar'
+                : avisos === 'iphone' ? 'No iPhone: Compartilhar > Adicionar à Tela de Início'
+                : avisos === 'bloqueado' ? 'Os avisos estão bloqueados neste navegador'
+                : ordem(p.status) === 0 ? 'No celular, quando a loja aceitar e quando ficar pronto' : 'No celular, quando ficar pronto e quando sair'}</small>
+            </span>
+            {avisos === 'desligado' && <button type="button" className="acp-av-bt" style={{ background: cor }} onClick={() => void ligar()} disabled={ligando}>{ligando ? '…' : 'Ativar'}</button>}
+          </div>
+        )}
       </div>
 
       <ol className="acp-linha">

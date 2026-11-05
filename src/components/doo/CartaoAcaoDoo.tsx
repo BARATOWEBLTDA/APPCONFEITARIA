@@ -41,7 +41,9 @@ export default function CartaoAcaoDoo({ uid, acao, estado, feito, abrir, onFeito
       {estado === 'salvo' && (
         <div className="dz-ac-ok">
           <span><Check size={16} weight="bold" />{feito || 'Feito'}</span>
-          {abrir && <button type="button" onClick={() => { aoAbrir?.(); navigate(abrir) }}>Abrir<ArrowRight size={14} weight="bold" /></button>}
+          {/* (6.119) mensagem e orçamento: o botão abre o WhatsApp do cliente (link de fora, num toque dela) */}
+          {abrir && /^https?:/.test(abrir) ? <a href={abrir} target="_blank" rel="noopener noreferrer" className="dz-ac-zap">WhatsApp<ArrowRight size={14} weight="bold" /></a>
+            : abrir && <button type="button" onClick={() => { aoAbrir?.(); navigate(abrir) }}>Abrir<ArrowRight size={14} weight="bold" /></button>}
         </div>
       )}
       {estado === 'cancelado' && <p className="dz-ac-can">Cancelado</p>}

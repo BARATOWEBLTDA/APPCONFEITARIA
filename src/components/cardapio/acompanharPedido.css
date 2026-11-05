@@ -57,3 +57,24 @@
 .acp-itens li.acp-sub + li.acp-sub { padding-top: 0; }
 .acp-itens li.acp-sub em { font-size: 14px; font-weight: 500; color: inherit; }
 .acp-itens li.acp-sub--ok em { color: #16803C; }
+
+/* (6.119) topo novo: cartão branco com a logo, selo da situação e os avisos do pedido */
+.acp-cab { margin: 12px 12px 0; padding: 16px; border: 1px solid #EFE6EA; border-radius: 14px; background: var(--ui-branco); }
+.acp-loja { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.acp-logo { flex: none; width: 48px; height: 48px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #FDF2F6; box-shadow: 0 0 0 2px #F7C6D9; color: var(--ui-rosa-escuro); font-size: 16px; font-weight: 600; }
+.acp-logo img { width: 100%; height: 100%; object-fit: cover; }
+.acp-loja-tx { min-width: 0; display: flex; flex-direction: column; }
+.acp-loja-tx small { font-size: 13px; color: var(--ui-texto-2); }
+.acp-loja-tx b { font-size: 17px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acp-st { display: inline-flex; align-items: center; gap: 7px; max-width: 100%; margin-top: 14px; padding: 6px 12px; border-radius: 999px; background: #FDF2F6; color: var(--ui-rosa-escuro); font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acp-st i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ui-rosa, #E85A8C); }
+.acp-quando { margin: 8px 0 0; font-size: 14.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acp-av { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 12px; border: 1.5px dashed #F2B8CD; border-radius: 14px; background: #FFFBFC; }
+.acp-av--on { border-style: solid; border-color: #BBE5C8; background: #F3FBF5; }
+.acp-av-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #fff; box-shadow: inset 0 0 0 1px #EADFE4; color: var(--ui-rosa, #E85A8C); }
+.acp-av--on .acp-av-ic { color: #15803D; }
+.acp-av-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.acp-av-tx b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+.acp-av-tx small { font-size: 12.5px; line-height: 1.35; color: var(--ui-texto-2); }
+.acp-av-bt { flex: none; min-height: 40px; padding: 0 16px; border: 0; border-radius: 12px; color: #fff; font: 600 14px var(--font-base); cursor: pointer; }
+.acp-av-bt:disabled { opacity: .6; }
