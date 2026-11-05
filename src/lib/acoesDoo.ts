@@ -8,6 +8,8 @@ import { MAX_CUPONS_ATIVOS } from '@/lib/cupons'
 import { limparFacebook, limparInstagram } from '@/lib/redesSociais'
 import { adivinharTipo, normalizarChave, problemaNaChave } from '@/lib/pix'
 import { atualizarPontoDaLoja } from '@/lib/taxaEntrega'
+import { categoriaPeloNome } from '@/lib/categoriasInsumo'
+import { gravarInsumosDoProduto, procurarInsumoPorNome, salvarInsumoDoo } from '@/lib/insumosDoo'
 
 export type HorarioDoo = {
   dias?: string[]; abertura?: string; fechamento?: string
@@ -46,8 +48,15 @@ const fone = (v: string) => { const d = v.replace(/\D/g, '').replace(/^55(?=\d{1
 export type AcaoCupom = { acao: 'cupom'; codigo: string; tipo: 'percentual' | 'fixo'; valor: number; valor_minimo?: number | null; data_fim?: string | null; limite_uso?: number | null; publico?: 'todos' | 'primeiro_pedido' | null }
 /** (6.102) mão de obra e custos invisíveis (o que a ficha técnica usa para o custo) */
 export type AcaoCustos = { acao: 'custos'; salario_mensal?: number | null; horas_dia?: number | null; dias?: string[] | null; custos_invisiveis_pct?: number | null }
-export type AcaoDoo = AcaoCliente | AcaoProduto | AcaoOrcamento | AcaoLoja | AcaoCupom | AcaoCustos
-export const ACOES_DOO = ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos'] as const
+/** (6.114) ficha técnica pela conversa: o produto, os ingredientes com a quantidade da receita e, para os que ainda não existem, a embalagem e o preço */
+export type ItemFichaDoo = { insumo_id?: string | null; nome: string; quantidade: number; unidade: string
+  novo?: { unidade: string; qtd_embalagem: number; valor_compra: number; embalagem_tipo?: string | null; marca?: string | null } | null }
+export type AcaoFicha = { acao: 'ficha'; produto_id?: string | null; produto_nome: string; rendimento?: string | null; itens: ItemFichaDoo[] }
+export type AcaoDoo = AcaoCliente | AcaoProduto | AcaoOrcamento | AcaoLoja | AcaoCupom | AcaoCustos | AcaoFicha
+export const ACOES_DOO = ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos', 'ficha'] as const
+/** unidades da receita e a família (para conferir com a unidade do ingrediente) */
+const UNID: Record<string, { fam: string; base: number }> = { g: { fam: 'massa', base: 0.001 }, kg: { fam: 'massa', base: 1 }, ml: { fam: 'volume', base: 0.001 }, L: { fam: 'volume', base: 1 }, un: { fam: 'unidade', base: 1 }, m: { fam: 'comp', base: 1 }, cm: { fam: 'comp', base: 0.01 } }
+const unidadeOk = (u: unknown) => { const x = String(u || '').trim(); const y = x.toLowerCase() === 'l' ? 'L' : x.toLowerCase(); return UNID[y] ? y : null }
 const DIA_NUM: Record<string, number> = { seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6, dom: 7 }
 
 const brl = (v: number) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -130,6 +139,17 @@ export function normalizarAcaoDoo(j: unknown): AcaoDoo | null {
       if (!cod || !v || v <= 0) return null
       return { acao: 'cupom', codigo: cod.slice(0, 20), tipo: o.tipo === 'fixo' ? 'fixo' : 'percentual', valor: v, valor_minimo: n(o.valor_minimo), data_fim: s(o.data_fim), limite_uso: n(o.limite_uso), publico: o.publico === 'primeiro_pedido' ? 'primeiro_pedido' : 'todos' }
     }
+    case 'ficha': {
+      const itens = Array.isArray(o.itens) ? (o.itens as Record<string, unknown>[]).map(i => {
+        const nv = i?.novo && typeof i.novo === 'object' ? i.novo as Record<string, unknown> : null
+        const novo = nv && unidadeOk(nv.unidade) && (n(nv.qtd_embalagem) ?? 0) > 0 && (n(nv.valor_compra) ?? 0) > 0
+          ? { unidade: unidadeOk(nv.unidade)!, qtd_embalagem: n(nv.qtd_embalagem)!, valor_compra: n(nv.valor_compra)!, embalagem_tipo: s(nv.embalagem_tipo), marca: s(nv.marca) } : null
+        return { insumo_id: s(i?.insumo_id), nome: s(i?.nome) || '', quantidade: n(i?.quantidade) ?? 0, unidade: unidadeOk(i?.unidade) || '', novo }
+      }).filter(i => i.nome && i.quantidade > 0 && i.unidade) : []
+      if (!s(o.produto_nome) && !s(o.produto_id)) return null
+      if (!itens.length) return null
+      return { acao: 'ficha', produto_id: s(o.produto_id), produto_nome: s(o.produto_nome) || '', rendimento: s(o.rendimento)?.slice(0, 60) || null, itens }
+    }
     case 'custos': {
       const sal = n(o.salario_mensal), hd = n(o.horas_dia), pct = n(o.custos_invisiveis_pct)
       const dias = Array.isArray(o.dias) ? (o.dias as unknown[]).map(d => String(d).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 3)).filter(d => DIA_NUM[d]) : null
@@ -173,6 +193,13 @@ export function resumoAcaoDoo(a: AcaoDoo): { titulo: string; linhas: [string, st
         ['Pagamento', (a.pagamentos || []).map(k => NOME_PAG[k]).join(', ')], ['Troco', a.troco == null ? '' : a.troco ? 'Pergunta se precisa de troco' : 'Não pergunta'],
         ['Entrega', (a.entregas || []).map(k => NOME_ENT[k]).join(', ')], ['Horário de retirada', a.horario_retirada || ''], ['Taxa de entrega', tx],
         ['Pix', px], ['Cores', co], ['Loja', a.pausada == null ? '' : a.pausada ? 'Pausada (não recebe pedidos)' : 'Aberta para pedidos'],
+      ] as [string, string][]).filter(l => l[1]) }
+    }
+    case 'ficha': {
+      const q = (v: number) => String(Math.round(v * 1000) / 1000).replace('.', ',')
+      return { titulo: `Ficha técnica · ${a.produto_nome}`, linhas: ([
+        ...a.itens.map(i => [i.nome, `${q(i.quantidade)} ${i.unidade}${i.novo ? ` · novo: ${q(i.novo.qtd_embalagem)} ${i.novo.unidade} por ${brl(i.novo.valor_compra)}` : ''}`] as [string, string]),
+        ['Rendimento', a.rendimento || ''],
       ] as [string, string][]).filter(l => l[1]) }
     }
     case 'custos': return { titulo: 'Mão de obra e custos', linhas: ([
@@ -320,6 +347,50 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
         const entregaPag = a.pagamentos || a.entregas || a.taxa || a.pix || a.troco != null || a.horario_retirada
         return { ok: true, feito: 'Loja atualizada', abrir: soCores ? '/cardapio-design' : entregaPag ? '/checkout-config' : '/cardapio-config' }
       }
+      case 'ficha': {
+        // 1) o produto: pelo id ou pelo nome
+        let prodId = a.produto_id || null
+        if (prodId) {
+          const { data } = await supabase.from('produtos').select('id').eq('id', prodId).eq('user_id', uid).maybeSingle()
+          if (!data) prodId = null
+        }
+        if (!prodId) {
+          const { data } = await supabase.from('produtos').select('id, nome').eq('user_id', uid).ilike('nome', a.produto_nome.trim()).limit(1)
+          prodId = (data as { id: string }[] | null)?.[0]?.id || null
+        }
+        if (!prodId) return { ok: false, erro: `Não achei o produto "${a.produto_nome}" no cardápio. Cadastre o produto primeiro.` }
+        // 2) cada ingrediente: o que já existe (pelo id ou pelo nome) ou cadastra o novo
+        const linhas: { insumo_id: string; quantidade: number; unidade_utilizada: string; quantidade_base: number; custo: number }[] = []
+        const novos: string[] = []
+        for (const i of a.itens) {
+          let ins: { id: string; nome: string; unidade: string; custo_unitario: number } | null = null
+          if (i.insumo_id) {
+            const { data } = await supabase.from('insumos').select('id, nome, unidade, custo_unitario').eq('id', i.insumo_id).eq('user_id', uid).maybeSingle()
+            ins = data as typeof ins
+          }
+          if (!ins) {
+            const achado = await procurarInsumoPorNome(uid, i.nome).catch(() => null)
+            if (achado) ins = { id: achado.id, nome: achado.nome, unidade: achado.unidade, custo_unitario: achado.custo_unitario }
+          }
+          if (!ins && i.novo) {
+            const r = await salvarInsumoDoo(uid, { acao: 'insumo', nome: i.nome, marca: i.novo.marca || '', categoria: categoriaPeloNome(i.nome) || 'Outros', unidade: i.novo.unidade, embalagem_tipo: i.novo.embalagem_tipo || 'Avulso', qtd_embalagem: i.novo.qtd_embalagem, valor_compra: i.novo.valor_compra })
+            if (r.ok === false) return { ok: false, erro: `${i.nome}: ${r.erro}` }
+            ins = { id: r.id, nome: i.nome, unidade: i.novo.unidade, custo_unitario: i.novo.valor_compra / i.novo.qtd_embalagem }
+            novos.push(i.nome)
+          }
+          if (!ins) return { ok: false, erro: `Falta o preço de ${i.nome}: diga quanto vem na embalagem e quanto pagou.` }
+          const uIns = UNID[ins.unidade === 'l' ? 'L' : ins.unidade], uRec = UNID[i.unidade]
+          if (!uIns || !uRec || uIns.fam !== uRec.fam) return { ok: false, erro: `${ins.nome} está cadastrado em ${ins.unidade} e a receita usa ${i.unidade}. Ajuste a unidade e tente de novo.` }
+          const naUnidadeDoInsumo = (i.quantidade * uRec.base) / uIns.base
+          linhas.push({ insumo_id: ins.id, quantidade: i.quantidade, unidade_utilizada: i.unidade, quantidade_base: i.quantidade * uRec.base, custo: naUnidadeDoInsumo * (Number(ins.custo_unitario) || 0) })
+        }
+        // 3) grava a ficha (substitui a anterior) e o rendimento
+        const { error } = await gravarInsumosDoProduto(prodId, linhas.map(l => ({ user_id: uid, produto_id: prodId, insumo_id: l.insumo_id, quantidade: l.quantidade, unidade_utilizada: l.unidade_utilizada, quantidade_base: l.quantidade_base })))
+        if (error) throw error
+        if (a.rendimento) await supabase.from('produtos').update({ rendimento_qtd: a.rendimento, updated_at: new Date().toISOString() }).eq('id', prodId)
+        const custo = linhas.reduce((t, l) => t + l.custo, 0)
+        return { ok: true, feito: `Ficha salva · ingredientes ${brl(custo)}${novos.length ? ` · ${novos.length} ingrediente${novos.length > 1 ? 's' : ''} novo${novos.length > 1 ? 's' : ''}` : ''}`, abrir: '/ficha-tecnica' }
+      }
       case 'custos': {
         if (a.salario_mensal != null || a.horas_dia != null || a.dias?.length) {
           const { data: atual } = await supabase.from('config_mao_obra').select('salario_mensal, horas_dia, dias_semana_array').eq('user_id', uid).maybeSingle()
@@ -425,6 +496,13 @@ ${estadoLoja(loja, h)}
 
 CUPOM (precisa do código e do desconto; tipo "percentual" ou "fixo" em reais; publico "primeiro_pedido" se for só para cliente novo; mínimo, validade AAAA-MM-DD e limite de usos só se ela falar).
 {"acao":"cupom","codigo":"NATAL10","tipo":"percentual","valor":10,"valor_minimo":null,"data_fim":null,"limite_uso":null,"publico":"todos"}
+
+FICHA TÉCNICA (ingredientes de um produto do cardápio, com a quantidade da receita). Você MONTA a ficha inteira num bloco só: não cadastre ingrediente por ingrediente.
+- produto_id: o id do produto na lista do cardápio (e produto_nome igual ao do cardápio). Se o produto não existe, ofereça cadastrar o produto antes.
+- Para cada ingrediente: nome, quantidade e unidade USADAS NA RECEITA (g, kg, ml, L, un). Se ele já está na lista de insumos dela, mande o insumo_id. Se não está, mande "novo" com a embalagem e o preço que ela informou (unidade, qtd_embalagem, valor_compra). Ingrediente novo sem preço: pergunte numa mensagem só, em lista, o preço e a embalagem de TODOS que faltam.
+- Use a unidade da receita na mesma família do cadastro (g ou kg para o que é pesado, ml ou L para líquido, un para ovos e embalagens).
+- "rendimento" se ela disser (ex.: "1 kg, 10 fatias"). A ficha nova substitui a anterior do produto.
+{"acao":"ficha","produto_id":"ID","produto_nome":"Bolo Mousse de Chocolate","rendimento":"1 kg","itens":[{"insumo_id":"ID","nome":"Leite condensado","quantidade":395,"unidade":"g"},{"insumo_id":null,"nome":"Gelatina incolor","quantidade":6,"unidade":"g","novo":{"unidade":"g","qtd_embalagem":24,"valor_compra":4.9,"embalagem_tipo":"Caixa"}}]}
 
 MÃO DE OBRA E CUSTOS INVISÍVEIS (o que a ficha técnica usa para o custo de cada produto). Pergunte uma coisa de cada vez: quanto ela quer tirar de salário por mês, quantas horas trabalha por dia e em quais dias produz. Custos invisíveis são gás, luz, água e perdas, em % sobre os ingredientes: se ela não souber, sugira 25% e explique em uma frase. Mande só o que ela disse.
 {"acao":"custos","salario_mensal":3000,"horas_dia":8,"dias":["seg","ter","qua","qui","sex","sab"],"custos_invisiveis_pct":25}

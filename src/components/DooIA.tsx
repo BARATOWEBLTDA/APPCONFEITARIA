@@ -1,6 +1,7 @@
 import { pegarPedidoDoo } from '@/components/MenuContaItens'
 import { useState, useRef, useEffect } from 'react'
-import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf, Storefront } from '@phosphor-icons/react'
+import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf, Storefront, WhatsappLogo } from '@phosphor-icons/react'
+import { card, gerarDocumento } from '@/lib/pdfDoonly'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
@@ -386,7 +387,7 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
   try {
     const j = JSON.parse(m[1].trim())
     if (j?.acao === 'pedido' && Array.isArray(j.itens) && j.itens.length) acao = j as RascunhoPedido
-    else if (['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos'].includes(j?.acao)) acao = normalizarAcaoDoo(j)
+    else if (['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos', 'ficha'].includes(j?.acao)) acao = normalizarAcaoDoo(j)
     else if (j?.acao === 'imagem' && ((typeof j.descricao === 'string' && j.descricao.trim()) || (typeof j.tema === 'string' && j.tema.trim()))) {
       const tipoJ = ['topo', 'arte', 'logo', 'banner'].includes(j.tipo) ? j.tipo : (j.topo !== false ? 'topo' : 'arte')
       const txt = (v: unknown) => (typeof v === 'string' ? v.trim().slice(0, 120) : '')
@@ -582,9 +583,26 @@ async function lerResposta(res: Response): Promise<RespostaDoo> {
   return data
 }
 
+/** (6.114) resposta que é receita: tem ingredientes e o modo de preparo */
+const ehReceita = (t: string) => /ingredientes/i.test(t) && /(modo de preparo|preparo|como fazer)/i.test(t) && t.length > 200
+/** o texto da receita sem as marcas do markdown, pronto para o WhatsApp */
+const receitaEmTexto = (t: string) => t.replace(NOTA_DO_APP, '').replace(/^[ \t]*#{1,4}[ \t]+(.+?)[ \t#]*$/gm, '*$1*').replace(/\*\*(.+?)\*\*/g, '*$1*').replace(/^\s*[-•]\s+/gm, '• ').trim()
+const tituloDaReceita = (t: string) => (t.match(/^[ \t]*#{1,4}[ \t]+(.+)$/m)?.[1] || t.match(/\*\*(.+?)\*\*/)?.[1] || 'Receita').replace(/[*#]/g, '').trim().slice(0, 60)
+const ASSINATURA_RECEITA = 'Receita feita com a Doo, a assistente do Doonly · doonly.com.br'
+
 function formatText(text: string): string {
   // Escapa o texto (a resposta vem da IA) e só então aplica negrito, itálico e listas.
   let h = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  // (6.114) tabela em markdown ("| Ingrediente | Quantidade |") vira tabela de verdade (antes aparecia com os "|---|")
+  h = h.replace(/(?:^[ \t]*\|.*\|[ \t]*(?:\n|$))+/gm, bloco => {
+    const linhas = bloco.trim().split('\n').map(l => l.trim()).filter(l => l && !/^\|[\s:|-]+\|$/.test(l))
+    if (!linhas.length) return bloco
+    const celulas = (l: string) => l.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim())
+    const [cab, ...corpo] = linhas
+    return `<div class="dz-tbw"><table class="dz-tb"><thead><tr>${celulas(cab).map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>${corpo.map(l => `<tr>${celulas(l).map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>\n`
+  })
+  // (6.114) "# Título" e "## Seção" viram títulos (antes os # apareciam na tela)
+  h = h.replace(/^[ \t]*#{1,4}[ \t]+(.+?)[ \t#]*$/gm, (_m, t: string) => `<b class="dz-h">${t.replace(/\*\*/g, '')}</b>`)
   h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
        .replace(/(^|[^*])\*(?!\s)([^*\n]+?)\*/g, '$1<em>$2</em>')
   h = h.replace(/^\s*[-•] (.+)$/gm, '<li>$1</li>')
@@ -593,6 +611,7 @@ function formatText(text: string): string {
   h = h.replace(/(?:<li>.*<\/li>\n?)+/g, m => `<ul>${m.replace(/\n/g, '')}</ul>`)
        .replace(/(?:<li data-n>.*<\/li>\n?)+/g, m => `<ol>${m.replace(/\n/g, '').replace(/ data-n/g, '')}</ol>`)
   h = h.replace(/<\/(ul|ol)>\n+/g, '</$1>').replace(/\n+(<ul>|<ol>)/g, '$1').replace(/\n{3,}/g, '\n\n')
+  h = h.replace(/<\/div>\n+/g, '</div>').replace(/\n+(<div class="dz-tbw">)/g, '$1')
   return h.replace(/\n/g, '<br/>')
 }
 
@@ -822,6 +841,16 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     setPendingImage(null)
   }
 
+  // (6.114) receita: manda no WhatsApp ou gera o PDF (com o Doonly e o site no fim)
+  const enviarReceita = (t: string) => {
+    const msg = `${receitaEmTexto(t)}\n\n_${ASSINATURA_RECEITA}_`
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank', 'noopener')
+  }
+  const pdfReceita = (t: string) => {
+    const titulo = tituloDaReceita(t)
+    void gerarDocumento(() => ({ titulo, tipo: 'Receita', numero: titulo,
+      corpo: card('', `<div class="rc">${formatText(t.replace(NOTA_DO_APP, ''))}</div>`) + `<p style="margin-top:14px;text-align:center;color:#C33A6E;font-weight:500">${ASSINATURA_RECEITA}</p>` }))
+  }
   const copyMessage = (text: string, index: number) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedId(index)
@@ -1145,7 +1174,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                         if (estado === 'salvo') listarInsumosResumo(uid).then(setInsumos).catch(() => {})
                       }} />
                   )}
-                  {msg.acao && uid && ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos'].includes(msg.acao.acao) && (
+                  {msg.acao && uid && ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos', 'ficha'].includes(msg.acao.acao) && (
                     <CartaoAcaoDoo uid={uid} acao={msg.acao as AcaoDoo} estado={!msg.acaoEstado || msg.acaoEstado === 'editando' ? 'pendente' : msg.acaoEstado}
                       feito={msg.acaoFeito} abrir={msg.acaoAbrir} aoAbrir={handleClose}
                       onFeito={(estado, info) => {
@@ -1154,6 +1183,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                         if (estado === 'salvo') dooResponde(respostaFeito(msg.acao as AcaoDoo, info?.feito || ''))
                         if (estado === 'salvo') {
                           listarCatalogo(uid).then(c => { const v = { produtos: c.produtos, clientes: c.clientes }; catRef.current = v; setCatalogo(v) }).catch(() => {})
+                          if ((msg.acao as AcaoDoo).acao === 'ficha') listarInsumosResumo(uid).then(l => { insRef.current = l; setInsumos(l) }).catch(() => {}) // (6.114) os ingredientes novos da ficha
                           if ((msg.acao as AcaoDoo).acao === 'loja') void lerLoja(uid)
                         }
                       }} />
@@ -1163,6 +1193,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                       <button type="button" onClick={() => copyMessage(msg.content.replace(NOTA_DO_APP, ''), i)} className={copiedId === i ? 'ok' : ''}>
                         {copiedId === i ? <><Check size={16} weight="bold" />Copiado</> : <><Copy size={16} weight="bold" />Copiar</>}
                       </button>
+                      {ehReceita(msg.content) && <>
+                        <button type="button" onClick={() => enviarReceita(msg.content)}><WhatsappLogo size={16} weight="bold" />Enviar</button>
+                        <button type="button" onClick={() => pdfReceita(msg.content)}><FilePdf size={16} weight="bold" />PDF</button>
+                      </>}
                       {msg.oferecerNova && i === messages.length - 1 && (
                         <button type="button" onClick={novaConversa}><NotePencil size={16} weight="bold" />Nova conversa</button>
                       )}
@@ -1301,6 +1335,13 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-hav img { width: 100%; height: 100%; object-fit: cover; object-position: top center; border-radius: var(--ui-raio); display: block; }
         .dz-hav i { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%; background: #22C55E; border: 2.5px solid var(--ui-texto); }
         .dz-ht { flex: 1; min-width: 0; }
+        .dz-h { display: block; margin: 6px 0 2px; font-size: 15.5px; font-weight: 600; color: var(--ui-texto); }
+        /* (6.114) tabela nas respostas da Doo */
+        .dz-tbw { overflow-x: auto; margin: 8px 0; }
+        .dz-tb { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        .dz-tb th { text-align: left; font-weight: 600; color: var(--ui-texto-2); font-size: 12.5px; padding: 6px 8px; border-bottom: 1px solid var(--ui-borda); white-space: nowrap; }
+        .dz-tb td { padding: 6px 8px; border-bottom: 1px solid var(--ui-linha); vertical-align: top; }
+        .dz-tb td:not(:first-child), .dz-tb th:not(:first-child) { text-align: right; white-space: nowrap; }
         .dz-ht b { display: flex; align-items: center; gap: 7px; font-size: 17px; font-weight: 600; }
         .dz-ht em { font-style: normal; font-size: 12px; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: linear-gradient(90deg, #F9A8D4, #C4B5FD); color: var(--ui-texto); }
         .dz-ht small { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #BBF7D0; margin-top: 2px; white-space: nowrap; }
