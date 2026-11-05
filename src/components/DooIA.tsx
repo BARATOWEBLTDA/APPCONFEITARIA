@@ -1,6 +1,6 @@
 import { pegarPedidoDoo } from '@/components/MenuContaItens'
 import { useState, useRef, useEffect } from 'react'
-import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple } from '@phosphor-icons/react'
+import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle } from '@phosphor-icons/react'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
@@ -11,7 +11,7 @@ import { usePlano } from '@/hooks/usePlano'
 import { ConvitePro } from '@/components/billing/RecursoPro'
 import { apiFetch } from "@/lib/apiFetch";
 import { resumoDoNegocio } from "@/lib/resumoDoo";
-import { avisar, confirmar } from '@/components/base'
+import { avisar, confirmar, Botao, Campo, CaixasEscolha, Janela } from '@/components/base'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 
 interface Message {
@@ -28,6 +28,8 @@ interface Message {
   acaoNumero?: string | number
   /** (11/10) aviso de erro do próprio app: aparece na conversa, mas NÃO vai pra IA */
   erro?: boolean
+  /** (6.85) o pedido do topo de bolo (para refazer com as mudanças que ela pedir) */
+  promptTopo?: string
   /** (11/10) o erro se resolve começando outra conversa: mostra o botão embaixo */
   oferecerNova?: boolean
   /** (11/10) a resposta bateu no limite de tamanho e veio cortada */
@@ -352,10 +354,33 @@ function isImageRequest(text: string): boolean {
   const t = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
   if (/^(como|qual|quais|onde|porque|por que|quanto)\b/.test(t)) return false
   if (/^(desenha|desenhe|desenhar)\s+(um|uma|o|a)\s+\w+/.test(t)) return true // "desenha um bolo"
+  // (6.85) "quero um topo de bolo da Alice", "preciso de um topper": também é pedido de imagem
+  if (/\b(topo|topos|topper|toppers)\b/.test(t) && /\b(quero|queria|preciso|precisava|gera|gerar|gere|cria|criar|crie|faz|fazer|faca|desenha|desenhar|desenhe|monta|montar|monte|me da|manda)\b/.test(t)) return true
   return /\b(gera|gerar|gere|cria|criar|crie|faz|fazer|faca|desenha|desenhar|desenhe|monta|montar|monte)\s+(um|uma|o|a|meu|minha)?\s*(imagem|foto|topo|arte|ilustracao|desenho|logo|banner)\b/.test(t)
 }
 
+/** (6.85) o pedido fala de topo de bolo / topper */
+const ehTopo = (text: string) => /\b(topo|topos|topper|toppers)\b/i.test(text.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
+
+/** (6.85) o topo de bolo pronto pra imprimir: o nome escrito certinho, recortável e com fundo transparente */
+type TopoForm = { tema: string; nome: string; texto: string; cores: string; estilo: 'fofo' | 'elegante' | 'divertido' }
+const ESTILO_TOPO: Record<TopoForm['estilo'], string> = {
+  fofo: 'cute and delicate children illustration, soft rounded shapes, kawaii details',
+  elegante: 'elegant and sophisticated, fine lines, refined typography, minimal ornaments, gold accents',
+  divertido: 'fun and colorful cartoon, bold playful lettering, lively elements',
+}
+function promptTopo(f: TopoForm): string {
+  const textos = [f.nome.trim() && `the main name, written exactly as "${f.nome.trim()}"`, f.texto.trim() && `a smaller second line, written exactly as "${f.texto.trim()}"`].filter(Boolean).join(' and ')
+  return `Printable cake topper design (Brazilian "topo de bolo") for a confectionery. Theme: ${f.tema.trim()}.`
+    + (textos ? ` It shows ${textos}, in Portuguese, with perfect spelling and no other words.` : ' No text.')
+    + (f.cores.trim() ? ` Color palette: ${f.cores.trim()}.` : '')
+    + ` Style: ${ESTILO_TOPO[f.estilo]}. Centered composition with the name as the hero and themed decorative elements around it,`
+    + ' die-cut sticker look with a clean thick white outline around the whole piece so it can be cut out,'
+    + ' flat high-quality illustration, crisp edges, no cake, no table, no photo, no mockup, transparent background.'
+}
+
 function buildImagePrompt(userMessage: string): string {
+  if (ehTopo(userMessage)) return `Printable cake topper design (Brazilian "topo de bolo") for a confectionery, based on this request in Portuguese: "${userMessage}". Any name or text must be written exactly as the client asked, with perfect Portuguese spelling. Centered composition, die-cut sticker look with a clean thick white outline so it can be cut out, flat high-quality illustration, crisp edges, no cake, no table, no photo, no mockup, transparent background.`
   return `High quality digital art for a Brazilian confectionery business. ${userMessage}. Style: elegant, pastel colors, professional cake topper design, clean white background, suitable for printing. Detailed and beautiful.`
 }
 
@@ -440,7 +465,7 @@ function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'ima
 }
 
 /** O que as rotas da Doo devolvem (chat e imagem) */
-type RespostaDoo = { error?: string | { type?: string } | null; status?: number | string; data?: { url?: string }[]; content?: { text?: string }[]; stop_reason?: string }
+type RespostaDoo = { error?: string | { type?: string } | null; status?: number | string; data?: { url?: string; b64?: string; formato?: string }[]; content?: { text?: string }[]; stop_reason?: string }
 /** Erro lançado por lerResposta */
 type ErroDoo = { type?: string; status?: number }
 
@@ -486,6 +511,9 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   const painelRef = useRef<HTMLDivElement>(null)
   // (11/10) imagens geradas já baixadas no aparelho (quando o endereço deixa), pro botão "Baixar imagem"
   const blobsImagem = useRef<Record<string, Blob>>({})
+  // (6.85) o formulário do topo de bolo
+  const [topoAberto, setTopoAberto] = useState(false)
+  const [topo, setTopo] = useState<TopoForm>({ tema: '', nome: '', texto: '', cores: '', estilo: 'fofo' })
 
 
 
@@ -522,7 +550,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   useEffect(() => {
     if (!chaveConversa || !conversaCarregada) return
     try {
-      const guardar = messages.slice(-60).map(m => ({ ...m, attachmentPreview: undefined }))
+      const guardar = messages.slice(-60).map(m => ({ ...m, attachmentPreview: undefined, imageUrl: m.imageUrl?.startsWith('blob:') ? undefined : m.imageUrl }))
       localStorage.setItem(chaveConversa, JSON.stringify(guardar))
     } catch { /* aparelho sem espaço: segue sem guardar */ }
   }, [messages, chaveConversa, conversaCarregada])
@@ -613,7 +641,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     const endereco = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = endereco
-    link.download = `imagem-doo-${Date.now()}.png`
+    link.download = `${blob.type.includes('jpeg') ? 'imagem' : 'topo-de-bolo'}-doo-${Date.now()}.${blob.type.includes('jpeg') ? 'jpg' : 'png'}`
     document.body.appendChild(link)
     link.click()
     link.remove()
@@ -630,6 +658,55 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
       setCopiedId(index)
       setTimeout(() => setCopiedId(null), 2000)
     })
+  }
+
+  // (6.85) cria a imagem (topo de bolo ou arte). A imagem fica guardada no Doonly: o link não vence e a conversa lembra dela.
+  const criarImagem = async (prompt: string, ehTopoDeBolo: boolean) => {
+    setGeneratingImage(true)
+    try {
+      const res = await apiFetch('/api/doo-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, tipo: ehTopoDeBolo ? 'topo' : 'arte' }) })
+      const data = await lerResposta(res)
+      const d0 = data?.data?.[0]
+      let imageUrl = ''
+      if (d0?.b64) {
+        const tipoArq = d0.formato === 'jpeg' ? 'image/jpeg' : 'image/png'
+        const bin = atob(d0.b64); const bytes = new Uint8Array(bin.length)
+        for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k)
+        const blob = new Blob([bytes], { type: tipoArq })
+        try {
+          const caminho = `doo/${uid || 'sem-conta'}/${Date.now()}.${tipoArq === 'image/jpeg' ? 'jpg' : 'png'}`
+          const { error } = await supabase.storage.from('products').upload(caminho, blob, { contentType: tipoArq, upsert: false })
+          if (error) throw error
+          imageUrl = supabase.storage.from('products').getPublicUrl(caminho).data.publicUrl
+        } catch { imageUrl = URL.createObjectURL(blob) }
+        blobsImagem.current[imageUrl] = blob
+      } else if (d0?.url) {
+        imageUrl = d0.url
+        fetch(imageUrl).then(r => (r.ok ? r.blob() : null)).then(b => { if (b) blobsImagem.current[imageUrl] = b }).catch(() => {})
+      }
+      if (!imageUrl) throw { type: 'api_error' }
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: ehTopoDeBolo
+          ? 'Seu topo de bolo está pronto! Toque em "Baixar imagem" para guardar.\n\n**Para imprimir:** papel fotográfico ou adesivo, em boa qualidade. Recorte pela borda branca e cole num palito ou num papel firme. Quer mudar algo? É só me dizer o que trocar.'
+          : 'Aqui está a imagem. Toque em "Baixar imagem" para guardar.',
+        imageUrl,
+        isImage: true,
+        ...(ehTopoDeBolo && prompt.length < 3400 ? { promptTopo: prompt } : {}),
+      }])
+    } catch (err: unknown) {
+      setMessages(prev => [...prev, { role: 'assistant', content: getErrorMessage((err as ErroDoo)?.type ?? '', (err as ErroDoo)?.status, 'imagem'), erro: true }])
+    } finally {
+      setGeneratingImage(false)
+    }
+  }
+
+  const criarTopo = () => {
+    if (!topo.tema.trim()) { avisar('Conte o tema do topo', { tipo: 'erro' }); return }
+    setTopoAberto(false)
+    const resumo = ['Criar topo de bolo', `tema ${topo.tema.trim()}`, topo.nome.trim() && `nome "${topo.nome.trim()}"`, topo.texto.trim() && `"${topo.texto.trim()}"`, topo.cores.trim() && `cores ${topo.cores.trim()}`].filter(Boolean).join(' · ')
+    setMessages(prev => [...prev, { role: 'user', content: resumo }])
+    void criarImagem(promptTopo(topo), true)
   }
 
   const sendMessage = async (overrideText?: string) => {
@@ -664,28 +741,11 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         setMessages(prev => [...prev, { role: 'assistant', content: 'Criar imagens é do plano PRO. No grátis eu ajudo com receitas, preços, legendas e pedidos. Quer que eu escreva uma legenda para esse post?' }])
       } else if (!imgPayload && isImageRequest(text)) {
         setLoading(false)
-        setGeneratingImage(true)
-
-        const res = await apiFetch('/api/doo-image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: buildImagePrompt(text) })
-        })
-        const data = await lerResposta(res)
-
-        const imageUrl = data?.data?.[0]?.url
-        if (imageUrl) {
-          // já tenta guardar a imagem no aparelho, pro "Baixar imagem" funcionar num toque (se o endereço não deixar, o botão abre em outra aba)
-          fetch(imageUrl).then(r => (r.ok ? r.blob() : null)).then(b => { if (b) blobsImagem.current[imageUrl] = b }).catch(() => {})
-          setMessages(prev => [...prev, {
-            role: 'assistant',
-            content: 'Aqui está a imagem. Use "Baixar imagem" para guardar; se ela abrir em outra aba, salve por lá. Baixe logo: o endereço dela vale por pouco tempo. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
-            imageUrl,
-            isImage: true
-          }])
-        } else {
-          throw { type: 'api_error' }
-        }
+        await criarImagem(buildImagePrompt(text), ehTopo(text))
+      } else if (!imgPayload && messages[messages.length - 1]?.promptTopo && !/^(como|qual|quais|onde|porque|por que|quanto|quantos|quantas)\b/i.test(text.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) {
+        // (6.85) logo depois do topo de bolo, "troca para azul", "aumenta o nome": a Doo refaz o topo com a mudança
+        setLoading(false)
+        await criarImagem(`${messages[messages.length - 1].promptTopo} Changes requested by the client (in Portuguese), apply them: "${text}".`, true)
       } else {
         const buildContent = (msg: Message) => {
           if (msg.role === 'user' && msg === userMsg && imgPayload) {
@@ -801,6 +861,12 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                   <p>Sua assistente de confeitaria: calculo preços, crio receitas, registro pedidos e cadastro ingredientes.</p>
                 </div>
                 <p className="dz-sl">Comece por aqui</p>
+                {/* (6.85) topo de bolo: a Doo desenha pronto para imprimir */}
+                {isPro && <button type="button" className="dz-topo" onClick={() => setTopoAberto(true)}>
+                  <span className="dz-si"><Cake size={22} /></span>
+                  <span className="dz-topo-tx"><b>Criar topo de bolo</b><small>Com o nome, o tema e as cores, pronto para imprimir</small></span>
+                  <Sparkle size={18} weight="fill" className="dz-topo-br" aria-hidden="true" />
+                </button>}
                 <div className="dz-sg">
                   {SUGESTOES_CARTOES.map(({ Ic, t, s, p }) => (
                     <button type="button" key={t} className="dz-sc" onClick={() => sendMessage(p)}>
@@ -909,7 +975,31 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         </div>
       )}
 
+      <Janela aberta={topoAberto} aoFechar={() => setTopoAberto(false)} tipo="conteudo" titulo="Topo de bolo" umaAcao
+        acoes={<Botao cheio icone={<Sparkle size={18} weight="fill" />} onClick={criarTopo}>Criar o topo</Botao>}>
+        <div className="dz-topo-f">
+          <Campo rotulo="Tema" value={topo.tema} autoFocus maxLength={120} placeholder="Ex.: Jardim encantado com borboletas" onChange={e => setTopo(t => ({ ...t, tema: e.target.value }))} />
+          <Campo rotulo="Nome" value={topo.nome} maxLength={40} placeholder="Ex.: Alice" onChange={e => setTopo(t => ({ ...t, nome: e.target.value }))} />
+          <Campo rotulo="Idade ou frase" value={topo.texto} maxLength={40} placeholder="Ex.: 5 anos" onChange={e => setTopo(t => ({ ...t, texto: e.target.value }))} />
+          <Campo rotulo="Cores" value={topo.cores} maxLength={80} placeholder="Ex.: rosa claro e lilás" onChange={e => setTopo(t => ({ ...t, cores: e.target.value }))} />
+          <CaixasEscolha rotulo="Estilo" valor={topo.estilo} opcoes={[
+            { v: 'fofo', t: 'Fofo', sub: 'Desenho delicado, para festa infantil' },
+            { v: 'elegante', t: 'Elegante', sub: 'Traço fino e detalhes dourados' },
+            { v: 'divertido', t: 'Divertido', sub: 'Colorido, com letras animadas' },
+          ]} onMudar={v => setTopo(t => ({ ...t, estilo: v }))} />
+        </div>
+      </Janela>
+
       <style>{`
+        /* (6.85) topo de bolo */
+        .dz-topo { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 10px; padding: 12px 14px; border: 1px solid #F3C6D8; border-radius: 16px; background: #FFF5F9; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+        .dz-topo .dz-si { flex: none; }
+        .dz-topo-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .dz-topo-tx b { font-size: 14.5px; font-weight: 600; }
+        .dz-topo-tx small { font-size: 12.5px; line-height: 1.35; color: var(--ui-texto-2); }
+        .dz-topo-br { flex: none; color: var(--ui-rosa); }
+        .dz-topo-f { display: flex; flex-direction: column; gap: 14px; }
+        .dz-gerada { background: repeating-conic-gradient(#F3EEF0 0% 25%, #fff 0% 50%) 50% / 16px 16px; }
         /* Painel do chat (02/10) — CELULAR: tela cheia (cobre o menu de baixo) */
         .dooia-panel {
           position: fixed; left: 0; right: 0; top: 0; bottom: var(--teclado, 0px);
