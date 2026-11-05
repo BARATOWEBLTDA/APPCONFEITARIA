@@ -110,6 +110,7 @@ const FinanceiroAPagar = lazy(() => import("@/pages/FinanceiroAPagar"));
 const Custos = lazy(() => import("@/pages/Custos"));
 const Lucratividade = lazy(() => import("@/pages/Lucratividade"));
 const FichaTecnica = lazy(() => import("@/pages/FichaTecnica"));
+const ConversorMedidas = lazy(() => import("@/pages/ferramentas/ConversorMedidas"));
 const NaoEncontrada = lazy(() => import("@/pages/NaoEncontrada"));
 const PRE_CARREGAR: (() => Promise<unknown>)[] = [
   carregarLayout,
@@ -572,6 +573,7 @@ export default function App() {
           <Route path="/orcamentos/:id" element={<OrcamentoEditar />} />
           <Route path="/insumos" element={<Insumos />} />
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />
+          <Route path="/ferramentas/medidas" element={<ConversorMedidas />} />
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/cadastros" element={<Cadastros />} />
           <Route path="/complementos" element={<Complementos />} />

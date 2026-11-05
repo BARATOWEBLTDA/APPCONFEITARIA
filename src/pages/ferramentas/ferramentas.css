@@ -1,0 +1,88 @@
+/* (6.150) Ferramentas: conversor de medidas */
+.fm { max-width: 1040px; margin: 0 auto; padding: 16px 8px 112px; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.fm-grade { display: flex; flex-direction: column; gap: 12px; }
+.fm-card { padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
+.fm-rot { display: block; margin: 0 2px 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+.fm-tit { margin: 0 2px 6px; font-size: 16px; font-weight: 600; }
+
+.fm-ing { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 8px 14px 8px 10px; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
+.fm-ing svg { flex: none; color: var(--ui-texto-2); }
+.fm-ing-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fm-ing-tx b { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fm-ing-tx small { font-size: 13px; color: var(--ui-texto-2); }
+
+.fm-dois { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+.fm-campo { display: block; min-width: 0; margin: 0; }
+.fm-campo input, .fm-sel select { width: 100%; height: 50px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 16px; font-weight: 500; outline: none; }
+.fm-campo input:focus, .fm-sel select:focus, .fm-ing:focus-visible { border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(var(--ui-rosa-rgb), .15); }
+.fm-sel { position: relative; display: block; }
+.fm-sel select { appearance: none; -webkit-appearance: none; padding-right: 36px; cursor: pointer; }
+.fm-sel svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--ui-texto-2); pointer-events: none; }
+
+.fm-rap { display: flex; gap: 6px; margin-top: 12px; }
+.fm-rap button { flex: 1; min-width: 0; height: 40px; margin: 0; padding: 0; border: 0; border-radius: var(--ui-raio-p); background: var(--ui-cinza); color: var(--ui-cinza-texto); font-family: inherit; font-size: 15px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.fm-rap button.on { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); box-shadow: inset 0 0 0 1.5px var(--ui-rosa); }
+
+/* resultado */
+.fm-res { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 20px 16px 16px; border-radius: var(--ui-raio-cartao); text-align: center;
+  background: linear-gradient(160deg, #FFF5F9 0%, #FDE3EE 100%); border: 1px solid #F7D3E2; }
+.fm-res-de { max-width: 100%; font-size: 14px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fm-res-g { font-size: 44px; font-weight: 600; line-height: 1.1; letter-spacing: -.02em; color: var(--ui-rosa-escuro); font-variant-numeric: tabular-nums; }
+.fm-res-g--txt { font-size: 34px; }
+.fm-res-tb { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin: 10px 0 0; font-size: 13px; color: var(--ui-texto-2); }
+.fm-res-tb > span { width: 100%; }
+.fm-res-tb b { padding: 5px 10px; border-radius: 999px; background: rgba(255,255,255,.75); font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
+.fm-copiar { display: inline-flex; align-items: center; gap: 6px; height: 36px; margin: 10px 0 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+/* fotos dos ingredientes */
+.fm-foto { flex: none; width: 44px; height: 38px; object-fit: contain; }
+.fm-foto.g { width: 84px; height: 72px; margin-bottom: 4px; filter: drop-shadow(0 6px 10px rgba(120,30,70,.12)); }
+.fm-li .fm-foto { width: 36px; height: 31px; }
+
+/* usados por último: um toque troca o ingrediente */
+.fm-rec { display: flex; gap: 6px; margin: 8px -16px 14px; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+.fm-rec::-webkit-scrollbar { display: none; }
+.fm-rec button { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 38px; margin: 0; padding: 0 12px 0 4px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; }
+.fm-rec .fm-foto { width: 32px; height: 28px; }
+@media (hover: hover) { .fm-rec button:hover { background: var(--ui-linha); } }
+
+/* tabela */
+.fm-tab { padding: 14px 12px 8px; }
+.fm-li { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 46px; margin: 0; padding: 0 6px; border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto); font-family: inherit; font-size: 15px; text-align: left; cursor: pointer; }
+.fm-li + .fm-li { border-top: 1px solid var(--ui-linha); border-radius: 0; }
+.fm-li { justify-content: flex-start; padding: 0 6px 0 2px; }
+.fm-li span { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.fm-seu { flex: none; padding: 2px 7px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 11.5px; font-style: normal; font-weight: 600; }
+.fm-li b { flex: none; font-weight: 600; font-variant-numeric: tabular-nums; }
+.fm-li.on span, .fm-li.on b { color: var(--ui-rosa-escuro); }
+@media (hover: hover) { .fm-li:hover { background: var(--ui-linha); } }
+.fm-todos { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 44px; margin: 4px 0 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.fm-nota { display: flex; align-items: flex-start; gap: 8px; margin: 0 4px; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); }
+.fm-nota svg { flex: none; margin-top: 1px; color: var(--ui-texto-3); }
+
+/* gaveta de ingredientes */
+.fm-busca { display: flex; align-items: center; gap: 8px; height: 48px; margin: 0 0 8px; padding: 0 14px; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); color: var(--ui-texto-2); }
+.fm-busca input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; color: var(--ui-texto); }
+.fm-lista { display: flex; flex-direction: column; }
+.fm-vazio { margin: 16px 0; text-align: center; font-size: 14px; color: var(--ui-texto-2); }
+
+.fm-add { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 50px; margin: 0 0 6px; padding: 0 8px; border: 0; border-radius: var(--ui-raio); background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
+.fm-add span:last-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fm-add-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 10px; background: var(--ui-branco); }
+.fm-novo { display: flex; flex-direction: column; gap: 14px; }
+.fm-un { padding: 0 14px; font-weight: 600; color: var(--ui-texto-2); }
+
+/* computador: escolhas numa coluna, resultado e tabela na outra */
+@media (min-width: 900px) {
+  .fm { padding: 24px 24px 48px; }
+  .fm-grade { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-areas: "conv res" "tab tab" "nota nota"; align-items: stretch; gap: 16px 20px; }
+  .fm-conv { grid-area: conv; padding: 20px; }
+  .fm-res { grid-area: res; justify-content: center; }
+  /* a tabela ocupa a largura toda, em duas colunas */
+  .fm-tab { grid-area: tab; display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; padding: 16px 20px 8px; }
+  .fm-tab .fm-tit, .fm-tab .fm-todos { grid-column: 1 / -1; }
+  .fm-tab .fm-li:nth-of-type(2) { border-top: 0; }
+  .fm-nota { grid-area: nota; }
+  .fm-rec { flex-wrap: wrap; margin: 8px 0 14px; padding: 0; overflow: visible; }
+  .fm-res-g { font-size: 52px; }
+}
