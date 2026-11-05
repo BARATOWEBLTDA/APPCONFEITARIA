@@ -1177,7 +1177,7 @@ export default function Inicio() {
               return (
                 <button type="button" key={e.id} className="ini-dk-en" onClick={() => navigate(`/pedidos/${e.id}`)}>
                   <span className="ini-dk-dt"><b>{String(d.getDate()).padStart(2, "0")}</b><small>{mes}</small></span>
-                  <span className="ini-dk-ei"><b>{e.cliente}</b><small>{e.produto ? `${e.produto} · ` : ""}{quando}{e.hora ? ` às ${String(e.hora).slice(0, 5)}` : ""}</small></span>
+                  <span className="ini-dk-ei"><b>{e.cliente}</b>{e.produto && <small>{e.produto}</small>}<small className="ini-dk-qd"><Clock size={14} weight="bold" aria-hidden="true" />{quando}{e.hora ? ` às ${String(e.hora).slice(0, 5)}` : ""}</small></span>
                   <span className="ini-dk-ev">{formatCurrency(e.valor)}</span>
                 </button>
               );
@@ -2214,6 +2214,9 @@ export default function Inicio() {
         .ini-dkg .dkg-entregas .ini-dk-ei b { font-size: 16px; font-weight: 500; } /* (6.67) nome do cliente mais leve que o título do cartão */
         .ini-dkg .dkg-entregas .ini-dk-ei small { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ini-dkg .dkg-entregas .ini-dk-ev { font-size: 15px; font-weight: 500; }
+        /* (6.121) o produto numa linha e o dia com a hora em outra */
+        .ini-dkg .dkg-entregas .ini-dk-qd { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+        .ini-dkg .dkg-entregas .ini-dk-qd svg { flex: none; color: var(--ui-rosa-escuro); }
         @media (min-width: 1280px) { .ini-root { padding-left: 0; padding-right: 0; } }
         /* de 901 a 1279px: uma coluna só */
         @media (max-width: 1279px) { .ini-dkg { grid-template-columns: minmax(0, 1fr); } .ini-dkg > * { grid-column: 1 / -1 !important; } }
