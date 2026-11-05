@@ -304,7 +304,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         <div className="ppb-topo">
           {/* (6.126) cada passo pode ter o seu Doo; o da logo pinta a fachada da loja */}
           <img src={DOO_PASSO[p.t]?.banner || "/Sistema/banner-passos.webp"} alt="" aria-hidden="true" className="ppb-img" />
-          <b className="ppb-t">{faltam === 1 ? "Falta só 1 passo" : "Cardápio quase no ar"}</b>
+          <b className="ppb-t">{faltam === 1 ? "Falta só 1 passo" : TITULO_PASSO[p.t] || "Cardápio quase no ar"}</b>
           <small className="ppb-sub">{feitos === 0 ? `${passos.length} passos rápidos, uns 5 minutos` : `${feitos} de ${passos.length} prontos`}</small>
           <div className="ppb-bar" role="progressbar" aria-valuemin={0} aria-valuemax={passos.length} aria-valuenow={feitos} aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
         </div>
@@ -939,6 +939,18 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
     </Janelinha>
   );
 }
+
+/** (6.139) o título do banner do celular muda com o passo da vez (curto: cabe numa linha ao lado do Doo) */
+const TITULO_PASSO: Record<string, string> = {
+  "Logo da loja": "Comece pela logo",
+  "Sobre a confeitaria": "Conte quem você é",
+  "Endereço": "Onde fica a loja?",
+  "Horário": "Quando você atende?",
+  "Pagamento": "Como o cliente paga?",
+  "Entrega": "Busca ou entrega?",
+  "Saldo do caixa": "Quanto tem no caixa?",
+  "Primeiro produto": "Seu primeiro doce",
+};
 
 /** (6.126) o Doo de cada passo: no computador ao lado do passo da vez; no celular, já montado no banner do topo */
 const DOO_PASSO: Record<string, { pc: string; banner: string; largo?: boolean }> = {
