@@ -331,6 +331,9 @@ export default function NovaVenda() {
   useEffect(() => { if (jaLevou) { setStatusPedido('entregue'); statusAuto.current = true } }, [jaLevou])
   useEffect(() => { if (!jaLevou && !buscaDepois && statusAuto.current) { statusAuto.current = false; setStatusPedido('agendado') } }, [jaLevou, buscaDepois])
   // vem buscar: entra como "Pronto pra retirar", com a data de hoje já marcada
+  // (6.169) encomenda pra outro dia não pode entrar como "Entregue" (o cliente ainda não levou)
+  const encomendaFutura = tipo === 'encomenda' && !!dataEntrega && dataEntrega > hojeISO()
+  useEffect(() => { if (encomendaFutura) setStatusPedido(s => s === 'entregue' ? 'agendado' : s) }, [encomendaFutura])
   useEffect(() => { if (buscaDepois) { setStatusPedido('finalizado'); statusAuto.current = true; setDataEntrega(d => d && d >= hojeISO() ? d : hojeISO()) } }, [buscaDepois])
   useEffect(() => { if (tipo === 'pronta_entrega') setSituacaoPag(s => s ?? 'total') }, [tipo])
 
@@ -1140,7 +1143,7 @@ export default function NovaVenda() {
           <section className="nv3-card">
             <Titulo>Em que situação o pedido entra?</Titulo>
             <div className="nv3-sit" role="group" aria-label="Em que situação o pedido entra">
-              {COMECOS.map(c => <button key={c.chave} type="button" aria-pressed={statusPedido === c.chave} disabled={jaLevou && c.chave !== 'entregue'} onClick={() => { statusAuto.current = false; setStatusPedido(c.chave) }}>{c.nome}</button>)}
+              {COMECOS.map(c => <button key={c.chave} type="button" aria-pressed={statusPedido === c.chave} disabled={(jaLevou && c.chave !== 'entregue') || (c.chave === 'entregue' && encomendaFutura)} onClick={() => { statusAuto.current = false; setStatusPedido(c.chave) }}>{c.nome}</button>)}
             </div>
             <p className="nv3-dica"><b>{comeco.nome}:</b> {comeco.dica}</p>
           </section>

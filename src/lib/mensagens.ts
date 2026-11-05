@@ -33,7 +33,7 @@ export const MODELOS: Modelo[] = [
     curto: "Pedido pelo cardápio",
     resumo: "Quando o cliente pede",
     quando: "O cliente manda para o seu WhatsApp quando termina o pedido no cardápio",
-    padrao: "Olá, *{loja}*! Acabei de fazer o meu pedido pelo cardápio.\n\n{pedido}", // (6.82) texto revisto
+    padrao: "Oi, *{loja}*! 😊 Acabei de fazer o meu pedido pelo cardápio:\n\n{pedido}", // (6.169) mais leve, com os dois-pontos antes dos itens
     etiquetas: [
       { k: "pedido", rotulo: "Itens do pedido", exemplo: PEDIDO_EXEMPLO },
       { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
@@ -70,7 +70,7 @@ export const MODELOS: Modelo[] = [
     resumo: "No dia do aniversário",
     quando: "Você manda pelo botão Parabéns em Clientes, no dia do aniversário",
     // (6.101) com o link do cardápio: o parabéns já leva para a encomenda do bolo
-    padrao: "Feliz aniversário, {nome}! 🎂\n\nQue o seu dia seja tão doce quanto você. Um abraço da *{loja}*!\n\nSe quiser comemorar com um docinho, é só pedir por aqui:\n{link}",
+    padrao: "Feliz aniversário, {nome}! 🎂🎉\n\nQue o seu dia seja tão doce quanto você. Um abraço carinhoso da *{loja}*! 💖\n\nSe quiser comemorar com um docinho, é só pedir por aqui:\n{link}",
     etiquetas: [
       { k: "nome", rotulo: "Nome do cliente", exemplo: "Ana" },
       { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
@@ -84,7 +84,7 @@ export const MODELOS: Modelo[] = [
     curto: "Aniversário chegando",
     resumo: "Antes do aniversário",
     quando: "Você manda pelo botão Oferecer bolo em Clientes, nos dias antes do aniversário",
-    padrao: "Oi, {nome}! 🎂\n\nSeu aniversário está chegando: {quando}! Que tal comemorar com um bolo feito do seu jeitinho?\n\nA *{loja}* já está separando as encomendas para essa data. É só escolher por aqui:\n{link}",
+    padrao: "Oi, {nome}! 🎂\n\nSeu aniversário está chegando ({quando})! Que tal comemorar com um bolo feito do seu jeitinho? 🥳\n\nA agenda da *{loja}* para essa data já está aberta. É só escolher por aqui:\n{link}",
     etiquetas: [
       { k: "nome", rotulo: "Nome do cliente", exemplo: "Ana" },
       { k: "quando", rotulo: "Dia do aniversário", exemplo: "sábado, 11/11" },
@@ -127,6 +127,8 @@ export function preencher(texto: string, dados: Record<string, string | number |
   });
   // 2) limpa o que sobrou em volta das etiquetas vazias
   if (t.includes("\uE000") || t.includes("\uE002")) {
+    // (6.169) frase que só apresenta uma etiqueta vazia na linha de baixo ("é só pedir por aqui:\n{link}" sem link) some junto
+    t = t.replace(/(^|\n)[^\n]*:[ \t]*\n[ \t]*[\uE000\uE002][ \t]*(?=\n|$)/g, "$1");
     // (6.82) linha que é só um rótulo e etiquetas vazias ("*Falta pagar:* {falta}") some inteira
     t = t.replace(/(^|\n)[ \t]*(?:\*[^*\n]{1,30}:\*|[^\n:*]{1,30}:)?[ \t]*[\uE000\uE002](?:[ \t]*[\uE000\uE002])*[ \t]*(?=\n|$)/g, "$1\uE003")
       .replace(/\n?\uE003/g, "").replace(/\n{3,}/g, "\n\n");
@@ -173,7 +175,16 @@ export function montarMensagem(chave: ChaveMensagem, dados: Record<string, strin
   if (m.obrigatoria && !texto.toLowerCase().includes(`{${m.obrigatoria}}`)) texto = `${texto.trim()}\n\n{${m.obrigatoria}}`;
   // (6.101) {link}: o link do cardápio da loja logada (no pedido do cardápio quem manda é o cliente: lá não entra)
   const comLink = chave !== "pedido_cardapio" && dados.link === undefined ? { ...dados, link: getCardapioUrl(perfil) || "" } : dados;
-  return preencher(texto, comLink);
+  // (6.169) sem o nome da loja salvo, usa o nome da conta (antes saía "Aqui é, sobre o seu pedido")
+  const lojaConta = (perfil?.nome_loja || perfil?.nome || "").trim();
+  const final = chave !== "pedido_cardapio" && !String(comLink.loja ?? "").trim() && lojaConta ? { ...comLink, loja: lojaConta } : comLink;
+  return preencher(texto, final);
+}
+
+/** (6.169) etiquetas escritas à mão que o app não conhece ({cliente}): iriam assim, com as chaves, pro cliente */
+export function etiquetasDesconhecidas(texto: string, m: Modelo): string[] {
+  const conhecidas = new Set(m.etiquetas.map(e => e.k.toLowerCase()));
+  return [...new Set([...texto.matchAll(/\{(\w+)\}/g)].map(x => x[1]).filter(k => !conhecidas.has(k.toLowerCase())))];
 }
 
 /** Dados de exemplo pra prévia */

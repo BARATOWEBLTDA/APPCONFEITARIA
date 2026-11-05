@@ -1,11 +1,11 @@
 /* Mensagens do WhatsApp (09/10 · 3.59) */
 .mz { display: flex; flex-direction: column; gap: 12px; max-width: 720px; margin: 0 auto; padding: 16px 8px 112px; font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
-.mz-intro { display: flex; align-items: flex-start; gap: 8px; margin: 0 4px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+.mz-intro { display: flex; align-items: center; gap: 8px; margin: 0 4px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+.mz-intro .mz-so-cel { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mz-intro svg { flex: none; margin-top: 1px; color: var(--ui-texto-3); }
 .mz-lista { padding: 4px 8px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
-.mz-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; margin: 0; padding: 12px 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
+.mz-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; margin: 0; padding: 12px 8px; color: var(--ui-texto); text-align: left; }
 .mz-item + .mz-item { box-shadow: 0 -1px 0 var(--ui-linha); }
-@media (hover: hover) { .mz-item:hover { background: var(--ui-linha); } }
 .mz-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-verde-fundo); color: var(--ui-verde); }
 .mz-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .mz-tx b { max-width: 100%; font-size: 15px; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -24,9 +24,46 @@
 .mz-bolha { max-width: 92%; margin-left: auto; padding: 8px 10px; border-radius: 10px 2px 10px 10px; background: #D9FDD3; font-size: 14px; line-height: 1.45; color: #111B21; word-break: break-word; }
 .mz-bolha b { font-weight: 600; }
 
-/* (04/11 · 6.20) a mensagem como chega no WhatsApp (balão verde com um exemplo; mensagem longa aparece até 5 linhas) */
-.mz-zap { align-self: stretch; display: block; margin-top: 8px; padding: 8px 10px 4px; border-radius: 4px 12px 12px 12px; background: #DCF8C6; color: #111B21; font-size: 13.5px; font-weight: 400; line-height: 1.45; white-space: normal; text-align: left; box-shadow: 0 1px 1px rgba(0,0,0,.08); }
-.mz-zap-tx { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; line-clamp: 5; overflow: hidden; }
-.mz-zap i { display: block; margin-top: 2px; font-size: 11px; font-style: normal; color: #667781; text-align: right; }
-.mz-item { align-items: flex-start; }
-.mz-item .mz-ic, .mz-item .mz-seta { margin-top: 4px; }
+/* (6.169) cada mensagem: nome, quando sai e se é o texto do app; "Ver como fica" abre a conversa de exemplo */
+.mz-so-pc { display: none; }
+.mz-tx small em { font-style: normal; font-weight: 500; color: var(--ui-texto-3); }
+.mz-tx small em.on { color: var(--ui-rosa-escuro); font-weight: 600; }
+.mz-acoes { flex: none; display: flex; gap: 8px; }
+@media (max-width: 599px) {
+  .mz-item { flex-wrap: wrap; row-gap: 10px; }
+  .mz-tx { width: calc(100% - 52px); flex: none; }
+  .mz-acoes { width: 100%; }
+  .mz-acoes .ui-bt { flex: 1; min-width: 0; padding-left: 8px; padding-right: 8px; white-space: nowrap; }
+}
+@media (min-width: 600px) { .mz-so-cel { display: none; } .mz-so-pc { display: inline; } .mz-intro .mz-so-pc { display: block; } }
+.mz-alerta { display: flex; align-items: flex-start; gap: 8px; margin: -6px 0 0; padding: 10px 12px; border-radius: var(--ui-raio); background: #FFF8EC; color: #8A5A16; font-size: 13px; line-height: 1.45; }
+.mz-alerta svg { flex: none; margin-top: 1px; }
+
+/* a conversa de exemplo, com a cara do WhatsApp */
+.mz-ver { display: flex; flex-direction: column; gap: 12px; }
+.mz-ver-nota { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ui-texto-2); text-align: center; }
+.mz-tel { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: 16px; background: #EFE7DD; font-family: var(--font-base); }
+.mz-tel-topo { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #008069; color: #fff; }
+.mz-tel-av { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex: none; border-radius: 50%; background: #DFE5E7; color: #54656F; font-size: 14px; font-weight: 600; }
+.mz-tel-nome { min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.mz-tel-nome b { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mz-tel-nome small { font-size: 12px; opacity: .85; white-space: nowrap; }
+.mz-tel-conversa { display: flex; flex-direction: column; gap: 6px; padding: 12px 10px 14px; max-height: 52dvh; overflow-y: auto; }
+.mz-tel--compacta .mz-tel-conversa { max-height: 280px; }
+.mz-tel-dia { align-self: center; padding: 3px 10px; border-radius: 8px; background: #fff; color: #54656F; font-size: 12px; font-weight: 500; box-shadow: 0 1px 1px rgba(0,0,0,.06); }
+.mz-tel-bolha { max-width: 88%; padding: 7px 9px 4px; font-size: 14px; line-height: 1.45; color: #111B21; overflow-wrap: anywhere; box-shadow: 0 1px 1px rgba(0,0,0,.08); }
+.mz-tel-bolha b { font-weight: 600; }
+.mz-tel-bolha--vai { align-self: flex-end; border-radius: 10px 2px 10px 10px; background: #D9FDD3; }
+.mz-tel-bolha--chega { align-self: flex-start; border-radius: 2px 10px 10px 10px; background: #fff; }
+.mz-tel-bolha em { font-style: italic; }
+.mz-tel-hora { display: flex; align-items: center; justify-content: flex-end; gap: 3px; margin-top: 2px; font-size: 11px; color: #667781; }
+.mz-tel-hora svg { color: #53BDEB; }
+.mz-tel-pe { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #F0F2F5; color: #54656F; }
+.mz-tel-pe span { flex: 1; padding: 8px 14px; border-radius: 20px; background: #fff; font-size: 14px; color: #8696A0; }
+/* editar no PC: o texto e as informações à esquerda, a conversa à direita (no topo) */
+@media (min-width: 900px) {
+  .ui-janela.mz-janela-ed { max-width: 860px; }
+  .mz-janela-ed .mz-ed { display: grid; grid-template-columns: minmax(0, 1fr) 340px; column-gap: 24px; align-items: start; }
+  .mz-janela-ed .mz-ed > * { grid-column: 1; }
+  .mz-janela-ed .mz-ed > .mz-ed-previa { grid-column: 2; grid-row: 1 / span 6; position: sticky; top: 0; }
+}

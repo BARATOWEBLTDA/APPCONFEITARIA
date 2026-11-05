@@ -30,7 +30,9 @@ export function numeroWhatsApp(t: string | null | undefined): string {
 export function linkWhatsApp(t: string | null | undefined, texto?: string): string {
   const n = numeroWhatsApp(t);
   if (!n) return "";
-  return `https://wa.me/${n}${texto ? `?text=${encodeURIComponent(texto)}` : ""}`;
+  // (6.169) metade de emoji solta (nome ou recado cortado) fazia o encodeURIComponent dar erro e o botão não abria nada
+  const limpo = texto ? String(texto).replace(/[\uD800-\uDFFF]/gu, "") : "";
+  return `https://wa.me/${n}${limpo ? `?text=${encodeURIComponent(limpo)}` : ""}`;
 }
 
 /**

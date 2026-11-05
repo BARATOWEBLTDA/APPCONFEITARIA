@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
-import { supabase } from "@/lib/supabase";
+import { useDadosCardapio, useMetricasCardapio, variacaoCardapio, quandoCardapio, type Periodo, type Variacao } from "@/components/cardapio/desempenhoCardapio";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { ArrowSquareOut, CaretRight, ChartLineUp, Check, Copy, CurrencyCircleDollar, DownloadSimple, Eye, LinkSimple, Receipt } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
@@ -9,14 +9,6 @@ const GraficoVisitas = lazy(() => import("@/components/cardapio/GraficoVisitas")
 import { Botao } from "@/components/base";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import type { Profile } from "@/hooks/useProfile";
-
-/** Pedido do cardápio como vem da busca desta tela */
-type PedidoResumo = {
-  id: string; numero?: number | null; cliente_nome?: string | null; valor_total?: number | string | null; status: string;
-  tipo_entrega?: string | null; created_at: string; pedido_itens?: { nome_produto?: string | null; quantidade?: number | string | null }[] | null;
-};
-type ProdutoResumo = { id: string; imagem_url?: string | null; descricao?: string | null; disponivel?: boolean | null };
-type Variacao = { txt: string; up: boolean; neutro?: boolean } | null;
 
 /**
  * Visão geral do Cardápio digital — COMPUTADOR (aprovada 02/10).
@@ -26,18 +18,9 @@ type Variacao = { txt: string; up: boolean; neutro?: boolean } | null;
  * (08/10 · 3.21) Ícones do app no lugar dos emojis, situação com as cores da lista de Pedidos,
  * número do pedido aparecendo, botões de 44px e o PRO no cartão vinho.
  */
-type Periodo = "hoje" | "7d" | "30d" | "tudo";
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 // (11/10) a situação vem de UMA conta só (lib/agendaCardapio), a mesma do topo do cardápio
-
-function inicioPeriodo(p: Periodo): Date | null {
-  const d = new Date(); d.setHours(0, 0, 0, 0);
-  if (p === "hoje") return d;
-  if (p === "7d") { d.setDate(d.getDate() - 6); return d; }
-  if (p === "30d") { d.setDate(d.getDate() - 29); return d; }
-  return null;
-}
 
 const STATUS: Record<string, [string, string]> = {
   novo: ["Novo pedido", "am"], aguardando_aceite: ["Novo pedido", "am"], aguardando_pagamento: ["Aguardando pagamento", "am"],
@@ -49,40 +32,13 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
   const navigate = useNavigate();
   const [completo, setCompleto] = useState<boolean | null>(null);
   const [periodo, setPeriodo] = useState<Periodo>("7d");
-  const [dados, setDados] = useState<{ visitas: string[]; pedidos: PedidoResumo[]; produtos: ProdutoResumo[]; temCupom: boolean } | null>(null);
+  const { dados, falhou, tentar } = useDadosCardapio(profile?.id); // (6.169) a mesma busca do celular
   const [qr, setQr] = useState("");
-  // (01/11 · 5.99) a busca falhou (sem internet): mostra o aviso com "Tentar de novo" em vez de "Carregando…" para sempre
-  const [falhou, setFalhou] = useState(false);
-  const [tentativa, setTentativa] = useState(0);
   const [copiado, setCopiado] = useState(false);
   const situacao = useMemo(() => situacaoLoja(profile?.horario), [profile?.horario]);
 
-  // Busca 60 dias de visitas/pedidos (dá pra comparar até "30 dias" com o período anterior)
-  useEffect(() => {
-    if (!profile?.id) return;
-    let vivo = true;
-    setFalhou(false);
-    const desde = new Date(); desde.setDate(desde.getDate() - 60);
-    Promise.all([
-      supabase.from("cardapio_visitas").select("created_at").eq("user_id", profile.id).gte("created_at", desde.toISOString()),
-      supabase.from("pedidos").select("id, numero, cliente_nome, valor_total, status, tipo_entrega, created_at, pedido_itens(nome_produto, quantidade)")
-        .eq("user_id", profile.id).eq("origem", "cardapio").order("created_at", { ascending: false }).limit(500),
-      supabase.from("produtos").select("id, imagem_url, descricao, disponivel").eq("user_id", profile.id),
-      supabase.from("loja_cupons").select("cupons").eq("user_id", profile.id).maybeSingle(),
-    ]).then(([v, p, pr, c]) => {
-      if (!vivo) return;
-      if (v.error || p.error || pr.error) { setFalhou(true); return; }
-      setDados({
-        visitas: ((v.data as { created_at: string }[]) || []).map(x => x.created_at),
-        pedidos: (p.data as unknown as PedidoResumo[]) || [],
-        produtos: ((pr.data as ProdutoResumo[]) || []).filter(x => x.disponivel !== false),
-        temCupom: Array.isArray((c.data as { cupons?: unknown } | null)?.cupons) && (c.data as { cupons: { ativo?: boolean }[] }).cupons.some((x) => x?.ativo),
-      });
-    }).catch(() => { if (vivo) setFalhou(true); });
-    return () => { vivo = false; };
-  }, [profile?.id, tentativa]);
   const carregando = falhou
-    ? <p className="vgd-vazio">Não deu para carregar. <button type="button" className="vgd-tentar" onClick={() => setTentativa(t => t + 1)}>Tentar de novo</button></p>
+    ? <p className="vgd-vazio">Não deu para carregar. <button type="button" className="vgd-tentar" onClick={tentar}>Tentar de novo</button></p>
     : <p className="vgd-vazio">Carregando…</p>;
 
   useEffect(() => {
@@ -90,56 +46,8 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
     QRCode.toDataURL(linkCardapio, { width: 480, margin: 1, color: { dark: "#2C1219", light: "#FFFFFF" } }).then(setQr).catch(() => setQr(""));
   }, [linkCardapio]);
 
-  const metr = useMemo(() => {
-    if (!dados) return null;
-    const ini = inicioPeriodo(periodo);
-    const dentro = (iso: string, a: Date | null, b?: Date) => { const t = new Date(iso).getTime(); return (!a || t >= a.getTime()) && (!b || t < b.getTime()); };
-    const ativos = dados.pedidos.filter(p => p.status !== "cancelado");
-    const vis = dados.visitas.filter(x => dentro(x, ini)).length;
-    const ped = ativos.filter(p => dentro(p.created_at, ini));
-    const rec = ped.reduce((s, p) => s + (Number(p.valor_total) || 0), 0);
-    let ant: { vis: number; ped: number; rec: number } | null = null;
-    if (ini) {
-      const dur = Date.now() - ini.getTime(); const a0 = new Date(ini.getTime() - dur);
-      const pa = ativos.filter(p => dentro(p.created_at, a0, ini));
-      ant = { vis: dados.visitas.filter(x => dentro(x, a0, ini)).length, ped: pa.length, rec: pa.reduce((s, p) => s + (Number(p.valor_total) || 0), 0) };
-    }
-    // (31/10 · 5.89) o gráfico em todos os períodos: hoje por hora, 7 e 30 dias por dia, "tudo" por semana (8 semanas)
-    type Barra = { ini: Date; fim: Date; rot: string; dica: string };
-    let barras: Barra[] = [];
-    if (periodo === "hoje") {
-      const h0 = new Date(); h0.setHours(0, 0, 0, 0);
-      barras = Array.from({ length: 24 }, (_, h) => { const i = new Date(h0); i.setHours(h); const f = new Date(i); f.setHours(h + 1); return { ini: i, fim: f, rot: h % 3 === 0 ? `${h}h` : "", dica: `${h}h às ${h + 1}h` }; });
-    } else if (periodo === "tudo") {
-      const fimSem = new Date(); fimSem.setHours(24, 0, 0, 0);
-      barras = Array.from({ length: 8 }, (_, k) => { const f = new Date(fimSem); f.setDate(f.getDate() - 7 * (7 - k)); const i = new Date(f); i.setDate(i.getDate() - 7); const ult = new Date(f); ult.setDate(ult.getDate() - 1);
-        return { ini: i, fim: f, rot: k === 7 ? "esta" : i.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), dica: `${i.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} a ${ult.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}` }; });
-    } else {
-      const nDias = periodo === "30d" ? 30 : 7;
-      barras = Array.from({ length: nDias }, (_, k) => { const i = new Date(); i.setHours(0, 0, 0, 0); i.setDate(i.getDate() - (nDias - 1 - k)); const f = new Date(i); f.setDate(f.getDate() + 1);
-        const rot = nDias === 7 ? (k === nDias - 1 ? "hoje" : i.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")) : (k === nDias - 1 ? "hoje" : k % 5 === 0 ? String(i.getDate()) : "");
-        return { ini: i, fim: f, rot, dica: i.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" }) }; });
-    }
-    // período anterior: a mesma janela, deslocada para trás (no "tudo" não há com o que comparar)
-    const passo = periodo === "hoje" ? 86400000 : periodo === "7d" ? 7 * 86400000 : 30 * 86400000;
-    const serie = barras.map(b => ({ ...b, futuro: b.ini.getTime() > Date.now(), n: dados.visitas.filter(x => dentro(x, b.ini, b.fim)).length,
-      nAntes: periodo === "tudo" ? null : dados.visitas.filter(x => dentro(x, new Date(b.ini.getTime() - passo), new Date(b.fim.getTime() - passo))).length }));
-    // mais pedidos pelo cardápio no período (pela quantidade)
-    const conta = new Map<string, number>();
-    for (const p of ped) for (const it of p.pedido_itens || []) { const nm = String(it.nome_produto || "Produto"); conta.set(nm, (conta.get(nm) || 0) + (Number(it.quantidade) || 1)); }
-    const top = [...conta].sort((a, b) => b[1] - a[1]).slice(0, 5);
-    return { vis, ped: ped.length, rec, conv: vis > 0 ? (ped.length / vis) * 100 : 0, ant, serie, top };
-  }, [dados, periodo]);
-
-  const variacao = (atual: number, antes?: number) => {
-    if (antes == null || periodo === "tudo") return null;
-    if (antes === 0) return atual > 0 ? { txt: "▲ novo no período", up: true } : null;
-    const pct = Math.round(((atual - antes) / antes) * 100);
-    // 13/10: diz com o que comparou ("vs ontem", "vs 7 dias antes") em vez de "vs período anterior"
-    const comQue = periodo === "hoje" ? "ontem" : periodo === "7d" ? "7 dias antes" : "30 dias antes";
-    return { txt: `${pct >= 0 ? "▲" : "▼"} ${Math.abs(pct)}% vs ${comQue}`, up: pct >= 0 };
-  };
-
+  const metr = useMetricasCardapio(dados, periodo);
+  const variacao = (atual: number, antes?: number) => variacaoCardapio(periodo, atual, antes);
 
   const copiar = async () => {
     try { await navigator.clipboard.writeText(linkCardapio); setCopiado(true); setTimeout(() => setCopiado(false), 1800); } catch { /* navegador sem permissão de copiar: só não mostra "copiado" */ }
@@ -149,7 +57,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
     const a = document.createElement("a"); a.href = qr; a.download = `qrcode-cardapio-${profile?.codigo_publico || "doonly"}.png`; a.click();
   };
   const tituloGrafico = periodo === "hoje" ? "Visitas ao longo de hoje" : periodo === "tudo" ? "Visitas nas últimas 8 semanas" : `Visitas nos últimos ${periodo === "7d" ? 7 : 30} dias`;
-  const quandoTxt = periodo === "hoje" ? "hoje" : periodo === "7d" ? "nos últimos 7 dias" : periodo === "30d" ? "nos últimos 30 dias" : "nas últimas 8 semanas";
+  const quandoTxt = quandoCardapio(periodo);
   const ultimos = (dados?.pedidos || []).slice(0, 5);
 
   return (

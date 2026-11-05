@@ -24,7 +24,9 @@ function Dica({ active, payload, rotuloAntes }: { active?: boolean; payload?: { 
   );
 }
 
-export default function GraficoVisitas({ serie, legA, legB, unidade }: { serie: PontoVisita[]; legA: string; legB: string | null; unidade: string }) {
+/** altura: (6.169) no celular o gráfico é mais baixo e com o eixo mais estreito */
+export default function GraficoVisitas({ serie, legA, legB, unidade, altura = 230 }: { serie: PontoVisita[]; legA: string; legB: string | null; unidade: string; altura?: number }) {
+  const compacto = altura < 200;
   let a = 0, b = 0;
   // horas que ainda não chegaram (hoje): a linha rosa para no agora; a do período anterior segue inteira
   const dados = serie.map(p => { if (!p.futuro) a += p.n; if (p.nAntes != null) b += p.nAntes; return { ...p, acum: p.futuro ? null : a, antes: legB ? b : null, unidade }; });
@@ -34,9 +36,9 @@ export default function GraficoVisitas({ serie, legA, legB, unidade }: { serie: 
         <span><i className="a" />{legA}</span>
         {legB && <span><i className="b" />{legB}</span>}
       </div>
-      <div className="grf-g" style={{ height: 230 }} role="img" aria-label={`${legA}: ${a} visitas${legB ? `. ${legB}: ${b}` : ""}.`}>
-        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 900, height: 230 }}>
-          <AreaChart data={dados} margin={{ top: 8, right: 18, bottom: 0, left: 0 }}>
+      <div className="grf-g" style={{ height: altura }} role="img" aria-label={`${legA}: ${a} visitas${legB ? `. ${legB}: ${b}` : ""}.`}>
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: compacto ? 340 : 900, height: altura }}>
+          <AreaChart data={dados} margin={{ top: 8, right: compacto ? 8 : 18, bottom: 0, left: 0 }}>
             <defs>
               <linearGradient id="gvArea" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--ui-rosa)" stopOpacity={0.28} />
@@ -44,8 +46,8 @@ export default function GraficoVisitas({ serie, legA, legB, unidade }: { serie: 
               </linearGradient>
             </defs>
             <CartesianGrid stroke="var(--ui-linha)" vertical={false} />
-            <XAxis dataKey="rot" tick={{ fontSize: 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} interval={0} padding={{ left: 4, right: 4 }} />
-            <YAxis width={44} tick={{ fontSize: 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} tickCount={4} allowDecimals={false} />
+            <XAxis dataKey="rot" tick={{ fontSize: compacto ? 11 : 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} interval={0} padding={{ left: 4, right: 4 }} />
+            <YAxis width={compacto ? 28 : 44} tick={{ fontSize: compacto ? 11 : 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} tickCount={4} allowDecimals={false} />
             <Tooltip content={<Dica rotuloAntes={legB} />} cursor={{ stroke: "var(--ui-rosa)", strokeDasharray: "4 4" }} isAnimationActive={false} />
             {legB && <Line type="monotone" dataKey="antes" stroke="#B9AFB3" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} isAnimationActive={false} />}
             <Area type="monotone" dataKey="acum" stroke="var(--ui-rosa)" strokeWidth={2.5} fill="url(#gvArea)" dot={false}

@@ -1,14 +1,15 @@
 import { useRef, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowCounterClockwise, CaretRight, ChatCircleText, Info } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, CaretLeft, ChatCircleText, Checks, Crown, Info, Microphone, PencilSimple, WarningCircle } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_MENSAGENS, TOUR_MENSAGENS } from "@/lib/comoTelas";
 import { Botao, CampoArea, Janela, avisar } from "@/components/base";
-import { refreshProfile, useProfile } from "@/hooks/useProfile";
-import { MODELOS, exemplo, montarMensagem, type Modelo } from "@/lib/mensagens";
+import { getCardapioUrl, refreshProfile, useProfile } from "@/hooks/useProfile";
+import { MODELOS, etiquetasDesconhecidas, exemplo, montarMensagem, type Modelo } from "@/lib/mensagens";
 import { usePlano } from "@/hooks/usePlano";
+import { useIsMobile } from "@/hooks/use-mobile";
 import RecursoPro from "@/components/billing/RecursoPro";
 import "./mensagens.css";
 
@@ -22,9 +23,34 @@ function textoZap(t: string): ReactNode[] {
   return t.split("\n").flatMap((linha, i, todas) => {
     const partes = linha.split(/(\*[^*\n]+\*|_[^_\n]+_)/g).filter(Boolean).map((p, j) =>
       p.startsWith("*") && p.endsWith("*") ? <b key={`${i}-${j}`}>{p.slice(1, -1)}</b>
-        : p.startsWith("_") && p.endsWith("_") ? <i key={`${i}-${j}`}>{p.slice(1, -1)}</i> : <span key={`${i}-${j}`}>{p}</span>);
+        : p.startsWith("_") && p.endsWith("_") ? <em key={`${i}-${j}`}>{p.slice(1, -1)}</em> : <span key={`${i}-${j}`}>{p}</span>);
     return i < todas.length - 1 ? [...partes, <br key={`br${i}`} />] : partes;
   });
+}
+
+/**
+ * (6.169) A conversa como aparece no WhatsApp da confeiteira: o topo com o contato, o fundo bege e o balão.
+ * Pedido pelo cardápio: quem manda é o cliente (balão branco, chegando). As outras: ela manda (balão verde, com os ✓✓).
+ */
+function ConversaZap({ m, mensagem, compacta = false }: { m: Modelo; mensagem: string; compacta?: boolean }) {
+  const chega = m.chave === "pedido_cardapio";
+  return (
+    <div className={`mz-tel${compacta ? " mz-tel--compacta" : ""}`}>
+      <div className="mz-tel-topo">
+        <CaretLeft size={18} weight="bold" aria-hidden="true" />
+        <span className="mz-tel-av" aria-hidden="true">A</span>
+        <span className="mz-tel-nome"><b>Ana Souza</b><small>{chega ? "cliente · online" : "online"}</small></span>
+      </div>
+      <div className="mz-tel-conversa">
+        <span className="mz-tel-dia">Hoje</span>
+        <div className={`mz-tel-bolha ${chega ? "mz-tel-bolha--chega" : "mz-tel-bolha--vai"}`}>
+          <span>{textoZap(mensagem)}</span>
+          <small className="mz-tel-hora">10:42{!chega && <Checks size={15} weight="bold" aria-hidden="true" />}</small>
+        </div>
+      </div>
+      {!compacta && <div className="mz-tel-pe" aria-hidden="true"><span>Mensagem</span><Microphone size={18} weight="fill" /></div>}
+    </div>
+  );
 }
 
 export default function MensagensWhatsApp() {
@@ -44,6 +70,17 @@ export default function MensagensWhatsApp() {
   const [proAberto, setProAberto] = useState(false);
   const abrir = (m: Modelo) => { if (!carregandoPlano && !isPro) { setProAberto(true); return; } posicao.current = null; setEditando(m); setTexto(salvas[m.chave]?.trim() ? salvas[m.chave] : m.padrao); };
   const fechar = () => setEditando(null);
+  // (6.169) "Ver como fica": a conversa de exemplo (no grátis é o jeito de ver as mensagens; mudar o texto é do PRO)
+  const [vendo, setVendo] = useState<Modelo | null>(null);
+  const celular = useIsMobile(); // título curto na janela do celular (o longo não cabe numa linha)
+  // o exemplo com o nome e o link da própria loja (o resto é de mentira: Ana, pedido #214)
+  const dadosExemplo = (m: Modelo) => {
+    const d = exemplo(m);
+    const loja = (profile?.nome_loja || profile?.nome || "").trim();
+    const link = getCardapioUrl(profile);
+    return { ...d, ...(loja && "loja" in d ? { loja } : {}), ...(link && "link" in d ? { link } : {}) };
+  };
+  const textoDe = (m: Modelo) => (isPro && salvas[m.chave]?.trim() ? salvas[m.chave] : m.padrao);
 
   const colocar = (k: string) => {
     const el = campo.current;
@@ -93,44 +130,63 @@ export default function MensagensWhatsApp() {
     avisar("Mensagem salva", { tipo: "ok" });
   };
 
-  const previa = editando ? montarMensagem(editando.chave, exemplo(editando), texto) : "";
+  const previa = editando ? montarMensagem(editando.chave, dadosExemplo(editando), texto) : "";
+  const desconhecidas = editando ? etiquetasDesconhecidas(texto, editando) : [];
 
   return (
     <>
       <AppPageHeader title="Mensagens" subtitle="Os textos do WhatsApp que o app escreve por você" infoComo={COMO_MENSAGENS} infoTour={TOUR_MENSAGENS} onBack={() => navigate(voltarPara)} />
       <div className="mz">
-        <p className="mz-intro"><Info size={20} weight="bold" aria-hidden="true" />O app abre o WhatsApp com a mensagem pronta.{isPro ? " Aqui você troca o texto do seu jeito." : " No PRO, você troca o texto do seu jeito."}</p>
+        {/* (6.169) uma linha no celular; no PC, a explicação inteira */}
+        <p className="mz-intro"><Info size={20} weight="bold" aria-hidden="true" />
+          <span className="mz-so-cel">Veja como cada mensagem chega.</span>
+          <span className="mz-so-pc">O app abre o WhatsApp com a mensagem pronta. {isPro ? "Aqui você vê como cada uma chega e muda o texto do seu jeito." : "Veja como cada uma chega. No PRO, você muda o texto do seu jeito."}</span>
+        </p>
         {proAberto && <RecursoPro recurso="mensagens" onClose={() => setProAberto(false)} />}
         <section className="mz-lista">
           {MODELOS.map(m => {
             const personalizada = isPro && !!salvas[m.chave]?.trim();
             return (
-              <button key={m.chave} type="button" className="mz-item" onClick={() => abrir(m)}>
+              <div key={m.chave} className="mz-item">
                 <span className="mz-ic" aria-hidden="true"><ChatCircleText size={22} weight="bold" /></span>
                 <span className="mz-tx">
-                  <b>{m.curto}</b>
-                  <small>{m.resumo}</small>
-                  {/* (04/11 · 6.20) como a mensagem chega: o balão do WhatsApp com um exemplo preenchido */}
-                  <span className="mz-zap" aria-label="Como fica no WhatsApp">
-                    <span className="mz-zap-tx">{textoZap(montarMensagem(m.chave, exemplo(m), personalizada ? salvas[m.chave] : m.padrao))}</span>
-                    <i aria-hidden="true">{personalizada ? "Seu texto" : "Texto do app"} · 10:42 ✓✓</i>
-                  </span>
+                  <b><span className="mz-so-cel">{m.curto}</span><span className="mz-so-pc">{m.titulo}</span></b>
+                  <small>{m.resumo}{personalizada && <> · <em className="on">Seu texto</em></>}</small>
                 </span>
-                <CaretRight size={18} weight="bold" className="mz-seta" aria-hidden="true" />
-              </button>
+                <span className="mz-acoes">
+                  <Botao variante="secundario" tamanho="p" icone={celular ? undefined : <ChatCircleText size={18} weight="bold" />} onClick={() => setVendo(m)}>Ver como fica</Botao>
+                  <Botao variante="secundario" tamanho="p" icone={isPro ? <PencilSimple size={18} weight="bold" /> : <Crown size={18} weight="fill" />} onClick={() => abrir(m)}>Editar</Botao>
+                </span>
+              </div>
             );
           })}
         </section>
       </div>
 
-      <Janela aberta={!!editando} aoFechar={fechar} tipo="conteudo" travada titulo={editando?.titulo || ""}
+      <Janela aberta={!!vendo} aoFechar={() => setVendo(null)} tipo="conteudo" titulo={(celular ? vendo?.curto : vendo?.titulo) || ""}
+        acoes={<><Botao variante="secundario" onClick={() => setVendo(null)}>Fechar</Botao>
+          <Botao icone={isPro ? <PencilSimple size={20} weight="bold" /> : <Crown size={20} weight="fill" />} onClick={() => { const m = vendo; setVendo(null); if (m) abrir(m); }}>{isPro ? (celular ? "Editar" : "Editar mensagem") : "Mudar o texto"}</Botao></>}>
+        {vendo && (
+          <div className="mz-ver">
+            <p className="mz-quando">{vendo.quando}.</p>
+            <ConversaZap m={vendo} mensagem={montarMensagem(vendo.chave, dadosExemplo(vendo), textoDe(vendo))} />
+            <p className="mz-ver-nota">{isPro && salvas[vendo.chave]?.trim() ? "Com o seu texto." : "Texto do app."} O cliente e o pedido são de exemplo.{!isPro && " No PRO, você escreve do seu jeito."}</p>
+          </div>
+        )}
+      </Janela>
+
+      <Janela aberta={!!editando} aoFechar={fechar} tipo="conteudo" travada titulo={(celular ? editando?.curto : editando?.titulo) || ""} className="mz-janela-ed"
         acoes={<><Botao variante="secundario" onClick={fechar}>Cancelar</Botao><Botao onClick={salvar} carregando={salvando}>Salvar</Botao></>}>
         {editando && (
           <div className="mz-ed">
             <p className="mz-quando">{editando.quando}.</p>
             <CampoArea ref={campo} rotulo="Mensagem" value={texto} rows={5} maxLength={600} onChange={e => setTexto(e.target.value)}
               onSelect={e => { const t = e.currentTarget; posicao.current = { ini: t.selectionStart, fim: t.selectionEnd }; }}
-              dica="*assim* fica em negrito e _assim_ em itálico no WhatsApp." />
+              dica={celular ? "*assim* fica negrito e _assim_, itálico" : "*assim* fica em negrito e _assim_ em itálico no WhatsApp."} />
+            {desconhecidas.length > 0 && (
+              <p className="mz-alerta" role="status"><WarningCircle size={18} weight="bold" aria-hidden="true" />
+                <span>{desconhecidas.map(k => `{${k}}`).join(", ")} não é uma informação do app e vai assim para o cliente. Use os botões abaixo.</span></p>
+            )}
             <div>
               <p className="mz-rot">Colocar informação</p>
               <div className="mz-chips">
@@ -140,9 +196,9 @@ export default function MensagensWhatsApp() {
               </div>
               {editando.aviso && <p className="mz-aviso">{editando.aviso}</p>}
             </div>
-            <div>
+            <div className="mz-ed-previa">
               <p className="mz-rot">Como fica</p>
-              <div className="mz-previa"><div className="mz-bolha">{textoZap(previa)}</div></div>
+              <ConversaZap m={editando} mensagem={previa} compacta />
             </div>
             {texto.trim() !== editando.padrao && (
               <Botao variante="link" tamanho="p" icone={<ArrowCounterClockwise size={18} weight="bold" />} onClick={() => setTexto(editando.padrao)}>Voltar ao padrão</Botao>
