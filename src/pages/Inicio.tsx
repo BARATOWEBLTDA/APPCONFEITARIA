@@ -762,8 +762,15 @@ export default function Inicio() {
     return () => { vivo = false; window.clearTimeout(t); };
   }, [computador]);
   // (6.144) computador: enquanto os Primeiros passos não acabam, o Início mostra só eles, no centro (foco total)
-  const [focoPassos, setFocoPassos] = useState(() => { try { return localStorage.getItem("doonly_ini_foco") === "1"; } catch { return false; } });
-  const marcarFoco = (completo: boolean) => { setFocoPassos(!completo); try { localStorage.setItem("doonly_ini_foco", completo ? "0" : "1"); } catch { /* sem armazenamento */ } };
+  // (6.160) guardado por conta; sem nada guardado (1º acesso ou outra conta) a tela espera os Primeiros passos dizerem
+  // se faltam passos, em vez de mostrar o Início inteiro e sumir logo depois
+  const chaveFoco = `doonly_ini_foco_${profile?.id || ""}`;
+  const lerFoco = (k: string): boolean | null => { try { const v = localStorage.getItem(k); return v === "1" ? true : v === "0" ? false : null; } catch { return null; } };
+  const [focoPassos, setFocoPassos] = useState<boolean | null>(() => lerFoco(chaveFoco));
+  useEffect(() => { setFocoPassos(lerFoco(chaveFoco)); }, [chaveFoco]);
+  // segurança: se os Primeiros passos não responderem (sem internet), mostra o Início normal depois de 4 s
+  useEffect(() => { if (focoPassos !== null) return; const t = window.setTimeout(() => setFocoPassos(f => f ?? false), 4000); return () => window.clearTimeout(t); }, [focoPassos]);
+  const marcarFoco = (completo: boolean) => { setFocoPassos(!completo); try { if (profile?.id) localStorage.setItem(chaveFoco, completo ? "0" : "1"); } catch { /* sem armazenamento */ } };
   const ATALHOS = [
     /* (6.59) o que ela usa todo dia: Lucratividade e A receber continuam dentro do Financeiro */
     { Icone: CalendarDots,   label: "Agenda",        sub: "Entregas por dia",      path: "/agenda",        key: "agenda" },
@@ -791,7 +798,7 @@ export default function Inicio() {
       <p><strong>Pedidos na semana</strong> e <strong>ticket médio:</strong> os pedidos dos últimos 7 dias e quanto cada um vale, em média.</p>
       <p><strong>Entregas hoje:</strong> quantos pedidos saem hoje. A lista completa fica em Próximas entregas e na Agenda.</p>
     </>} /></div>
-    <div className={`ini-root${computador && focoPassos ? " ini-root--foco" : ""}`}>
+    <div className={`ini-root${computador && focoPassos !== false ? " ini-root--foco" : ""}${computador && focoPassos === null ? " ini-root--decidindo" : ""}`}>
       {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
       <div className="ini-hero">
         {/* Fundo mobile: ondas vinho (fica recortado pelo border-radius do hero) */}
