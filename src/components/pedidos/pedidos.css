@@ -234,3 +234,11 @@
 @media (hover: hover) { .pd-mais:hover { background: var(--ui-cinza); } .pd-mais--link:hover { background: none; text-decoration: underline; } }
 /* (6.10) passo de um pedido de outro dia: botão claro (o escuro fica pro que é de hoje ou está atrasado) */
 .ui-bt.pd-passo.pd-passo--depois { --bt-fundo: var(--ui-cinza); --bt-cor: var(--ui-cinza-texto); --bt-sombra: transparent; box-shadow: none; }
+
+/* (6.84) celular: a linha do pedido ganha os botões embaixo, "Ver pedido" e a próxima etapa, lado a lado */
+.pdk { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: start; column-gap: 12px; row-gap: 10px; }
+.pdk > .pdc-foto { align-self: start; }
+.pdk-dir { align-self: start; padding-top: 1px; }
+.pdk-bts { grid-column: 2 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pdk-bts .ui-bt.pdk-bt { width: 100%; min-height: 38px; font-size: 13.5px; }
+.pdk-bts--1 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }

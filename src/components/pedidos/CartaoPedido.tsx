@@ -206,6 +206,10 @@ export function LinhaCompacta({ p, aoAbrir, aoAvancar, mudando }: Props) {
       </div>
       <div className="pdk-dir">
         <b className="pdk-v">{rs(p.valor_total)}</b>
+      </div>
+      {/* (6.84) "Ver pedido" sempre à vista, ao lado da próxima etapa: nem toda confeiteira sabe que dá para tocar no pedido */}
+      <div className={`pdk-bts${acao ? '' : ' pdk-bts--1'}`}>
+        <Botao className="pdk-bt" variante="secundario" tamanho="p" onClick={parar(() => aoAbrir(p))}>Ver pedido</Botao>
         {acao && <Botao className={aceitar ? 'pdk-bt' : `pdk-bt pd-passo${passoDeDepois(p) ? ' pd-passo--depois' : ''}`} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{rot}</Botao>}
       </div>
     </article>
