@@ -5,6 +5,8 @@ import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
 import CartaoInsumoDoo from '@/components/doo/CartaoInsumoDoo'
+import CartaoAcaoDoo from '@/components/doo/CartaoAcaoDoo'
+import { normalizarAcaoDoo, regrasAcoesDoo, type AcaoDoo } from '@/lib/acoesDoo'
 import { listarInsumosResumo, normalizarRascunho, type InsumoResumo, type RascunhoInsumo } from '@/lib/insumosDoo'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
@@ -21,7 +23,10 @@ interface Message {
   isImage?: boolean
   attachmentPreview?: string
   /** Rascunho de cadastro que a Doo preparou (só é salvo quando ela confirma no cartão) */
-  acao?: RascunhoInsumo | RascunhoPedido
+  acao?: RascunhoInsumo | RascunhoPedido | AcaoDoo
+  /** (6.86) o que o app fez com a ação ("Ana foi cadastrada") e a tela pra abrir */
+  acaoFeito?: string
+  acaoAbrir?: string
   /** 'editando' (11/10): ela tocou em "Editar" e o rascunho foi pra Nova venda (o cartão não registra mais por aqui) */
   acaoEstado?: 'pendente' | 'salvo' | 'cancelado' | 'editando'
   /** número do pedido registrado (pra mostrar no cartão) */
@@ -67,7 +72,12 @@ Nome: Doo
 Cargo: Assistente Inteligente do Doonly
 Personalidade: Amigável, inteligente, prestativa, organizada, criativa, profissional, motivadora e confiável.
 
-Doo fala de forma simples, clara e acolhedora. Evite respostas robóticas. Seja objetiva sem perder simpatia. Não use emojis. Ao listar etapas ou ingredientes, use marcadores com hífen (- item).
+Doo fala de forma simples, clara e acolhedora. Não use emojis. Ao listar etapas ou ingredientes, use marcadores com hífen (- item).
+
+# JEITO DE RESPONDER (o mais importante)
+- Seja honesta, objetiva e rápida. Responda em poucas linhas; resposta longa só quando ela pedir (receita completa, plano, legenda).
+- Quando for fazer algo no app, pergunte só o que falta, uma coisa de cada vez, e já monte o cartão.
+- Nunca invente dados, números, preços ou o que o app faz. Se não souber ou não conseguir fazer, diga isso com clareza em uma frase e diga onde ela faz no app.
 
 # MISSÃO
 Toda resposta deve buscar um ou mais destes objetivos:
@@ -242,7 +252,7 @@ Sempre que a usuária pedir uma receita, entregue automaticamente:
 
 # COMPORTAMENTO
 
-A Doo nunca responde apenas o mínimo. Sempre agrega valor.
+Responda o que ela perguntou, de forma completa mas sem enrolar. Uma dica a mais só quando for realmente útil.
 
 Antes de responder: entenda o objetivo, identifique problemas ocultos, antecipe dificuldades, entregue uma solução completa.
 
@@ -322,7 +332,7 @@ ${catTxt}
 }
 
 /** Separa o bloco acao-doonly da resposta. */
-function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | null } {
+function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | null } {
   const m = reply.match(/```acao-doonly\s*([\s\S]*?)```/)
   if (!m) {
     // (11/10) bloco de ação que não fechou (a resposta foi cortada no meio): o JSON cru não aparece na conversa
@@ -338,10 +348,11 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
     }
     return { texto: reply, acao: null }
   }
-  let acao: RascunhoInsumo | RascunhoPedido | null = null
+  let acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | null = null
   try {
     const j = JSON.parse(m[1].trim())
     if (j?.acao === 'pedido' && Array.isArray(j.itens) && j.itens.length) acao = j as RascunhoPedido
+    else if (['cliente', 'produto', 'orcamento', 'loja', 'cupom'].includes(j?.acao)) acao = normalizarAcaoDoo(j)
     else acao = normalizarRascunho(j)
   } catch { acao = null }
   const texto = reply.replace(m[0], '').trim() || 'Confira e confirme no cartão abaixo.'
@@ -561,11 +572,14 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   const catRef = useRef(catalogo); catRef.current = catalogo
   const insRef = useRef(insumos); insRef.current = insumos
   const carregandoCat = useRef<Promise<unknown> | null>(null)
+  const lojaRef = useRef<{ nome_loja?: string | null; horario?: unknown }>({})
   useEffect(() => {
     if (!open || !uid) return
     carregandoCat.current = Promise.all([
       listarInsumosResumo(uid).then(l => { insRef.current = l; setInsumos(l) }).catch(() => {}),
       listarCatalogo(uid).then(c => { const v = { produtos: c.produtos, clientes: c.clientes }; catRef.current = v; setCatalogo(v) }).catch(() => {}),
+      // (6.86) o nome e o horário da loja (a Doo muda pela conversa)
+      Promise.resolve(supabase.from('profiles').select('nome_loja, horario').eq('id', uid).maybeSingle()).then(({ data }) => { lojaRef.current = (data as { nome_loja?: string | null; horario?: unknown } | null) || {} }).catch(() => {}),
     ])
   }, [open, uid])
 
@@ -764,7 +778,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system: buildSystemPrompt(nomeConfeiteira) + negocio + regrasInsumo(insRef.current) + regrasPedido(catalogoParaDoo(catRef.current)),
+            system: buildSystemPrompt(nomeConfeiteira) + negocio + regrasInsumo(insRef.current) + regrasPedido(catalogoParaDoo(catRef.current)) + regrasAcoesDoo(lojaRef.current),
             messages: historyForApi.map(m => ({ role: m.role, content: buildContent(m) }))
           })
         })
@@ -918,6 +932,18 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                         if (estado === 'salvo') listarInsumosResumo(uid).then(setInsumos).catch(() => {})
                       }} />
                   )}
+                  {msg.acao && uid && ['cliente', 'produto', 'orcamento', 'loja', 'cupom'].includes(msg.acao.acao) && (
+                    <CartaoAcaoDoo uid={uid} acao={msg.acao as AcaoDoo} estado={!msg.acaoEstado || msg.acaoEstado === 'editando' ? 'pendente' : msg.acaoEstado}
+                      feito={msg.acaoFeito} abrir={msg.acaoAbrir} aoAbrir={handleClose}
+                      onFeito={(estado, info) => {
+                        const nota = estado === 'salvo' ? `\n\n[O app confirmou: ${info?.feito}.]` : '\n\n[A confeiteira cancelou.]'
+                        setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: estado, acaoFeito: info?.feito, acaoAbrir: info?.abrir, content: m.content + nota } : m))
+                        if (estado === 'salvo') {
+                          listarCatalogo(uid).then(c => { const v = { produtos: c.produtos, clientes: c.clientes }; catRef.current = v; setCatalogo(v) }).catch(() => {})
+                          if ((msg.acao as AcaoDoo).acao === 'loja') { const a = msg.acao as Extract<AcaoDoo, { acao: 'loja' }>; lojaRef.current = { ...lojaRef.current, ...(a.nome_loja ? { nome_loja: a.nome_loja } : {}), ...(a.horario ? { horario: a.horario } : {}) } }
+                        }
+                      }} />
+                  )}
                   {msg.role === 'assistant' && !msg.isImage && (
                     <div className="dz-acs">
                       <button type="button" onClick={() => copyMessage(msg.content.replace(NOTA_DO_APP, ''), i)} className={copiedId === i ? 'ok' : ''}>
@@ -991,6 +1017,24 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
       </Janela>
 
       <style>{`
+        /* (6.86) cartão das ações (cliente, produto, orçamento, loja, cupom) */
+        .dz-ac { margin-top: 8px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); }
+        .dz-ac-t { margin: 0 0 8px; font-size: 14.5px; font-weight: 600; color: var(--ui-texto); }
+        .dz-ac-l { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+        .dz-ac-l > div { display: flex; flex-direction: column; gap: 1px; }
+        .dz-ac-l dt { font-size: 12px; color: var(--ui-texto-2); }
+        .dz-ac-l dd { margin: 0; font-size: 14px; font-weight: 500; color: var(--ui-texto); overflow-wrap: anywhere; }
+        .dz-ac-bts { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-top: 12px; }
+        .dz-ac-bts button { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; border: 0; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .dz-ac-nao { background: var(--ui-cinza); color: var(--ui-texto); }
+        .dz-ac-sim { background: var(--ui-rosa-botao, #CC2E66); color: #fff; }
+        .dz-ac-bts button:disabled { opacity: .6; cursor: default; }
+        .dz-ac-erro { margin: 10px 0 0; font-size: 13px; font-weight: 600; color: #B91C1C; }
+        .dz-ac-ok { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--ui-linha); }
+        .dz-ac-ok > span { display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--ui-verde); }
+        .dz-ac-ok button { flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--ui-cinza); font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); cursor: pointer; }
+        .dz-ac-can { margin: 10px 0 0; font-size: 13px; color: var(--ui-texto-3); }
+        .dz-ac--cancelado { opacity: .7; }
         /* (6.85) topo de bolo */
         .dz-topo { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 10px; padding: 12px 14px; border: 1px solid #F3C6D8; border-radius: 16px; background: #FFF5F9; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
         .dz-topo .dz-si { flex: none; }
