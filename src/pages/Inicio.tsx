@@ -1219,7 +1219,7 @@ export default function Inicio() {
         <div className="ini-news-pc">
           <div className="ini-news-col"><UpdatesFeed linha /></div>
           {/* (6.122) do lado das Novidades, o mesmo banner do Início do celular (some sozinho quando não há banner) */}
-          <div className="ini-news-banner"><AdminBannerMobile /></div>
+          <div className="ini-news-banner"><AdminBannerMobile preencher /></div>
         </div>
       )}
 
