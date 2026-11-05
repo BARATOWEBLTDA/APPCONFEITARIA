@@ -214,7 +214,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     avisar(passosFaltando("logo") ? "Logo salva!" : "Tudo configurado!", { tipo: "ok" });
   };
   // conta do Google com foto: continua a janela, pra escolher entre usar a foto ou trocar
-  const logoDireto = largo && !(estado.perfil?.foto_url && !estado.perfil?.logo_url);
+  // (6.130) no celular também: Fazer agora já abre a galeria (a janela com a prévia saiu)
+  const logoDireto = !(estado.perfil?.foto_url && !estado.perfil?.logo_url);
   const depois = () => seguir(true);
 
 
@@ -282,6 +283,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         {folha === "pagamento" && <FolhaPagamento uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
         {folha === "caixa" && <FolhaCaixa uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
         {folha === "horario" && <FolhaHorario uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
+        <input ref={logoInput} type="file" accept="image/*" hidden onChange={escolheuLogo} />
+        {logoCrop && <ImageCropper imageSrc={logoCrop} cropShape="round" aspect={1} onCancel={() => setLogoCrop(null)} onCropDone={enviarLogoDireto} />}
         <style>{CSS}</style>
       </div>
     );
