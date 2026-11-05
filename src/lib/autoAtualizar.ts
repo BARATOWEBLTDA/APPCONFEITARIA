@@ -1,3 +1,5 @@
+import { recarregarLimpo } from "./recarregarLimpo";
+
 /**
  * Atualização automática do app (02/10).
  * O app instalado (iPhone e Android) fica aberto na memória e continuava na versão antiga
@@ -8,9 +10,13 @@
  *     pra nunca perder o que ela está digitando. Se não for seguro, espera e tenta de novo.
  */
 const TELAS_DE_PREENCHER = [/^\/vendas\/novo/, /^\/pedidos\/[^/]+\/editar/, /^\/ficha-tecnica/, /^\/cardapio-config/, /^\/checkout-config/,
-  /^\/solicitar-recurso/, /^\/relatar-problema/, /^\/reset-password/, /^\/login/, /^\/cadastro/,
-  // (11/10) também: recuperar a senha (e os outros nomes da mesma tela), conferir o e-mail e o painel da equipe inteiro
-  /^\/esqueci-senha/, /^\/verificar-email/, /^\/(redefinir|nova|alterar)-senha/, /^\/admin(\/|$)/];
+  /^\/solicitar-recurso/, /^\/relatar-problema/, /^\/reset-password/,
+  // (11/10) também: conferir o e-mail, criar a senha nova e o painel da equipe inteiro
+  /^\/verificar-email/, /^\/(redefinir|nova|alterar)-senha/, /^\/admin(\/|$)/];
+// (6.143) login, cadastro e "esqueci a senha": atualiza na hora, a não ser que ela já tenha digitado algo
+const TELAS_DE_ENTRAR = [/^\/login/, /^\/cadastro/, /^\/esqueci-senha/];
+const temAlgoDigitado = () => Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea"))
+  .some(el => !!el.value);
 
 let temVersaoNova = false;
 /** (6.91) já se sabe que tem versão nova publicada (a tela de erro vira o aviso de atualização) */
@@ -23,6 +29,7 @@ const CALMA = 3000;
 export function momentoSeguro(): boolean {
   const path = window.location.pathname;
   if (TELAS_DE_PREENCHER.some(r => r.test(path))) return false;
+  if (TELAS_DE_ENTRAR.some(r => r.test(path)) && temAlgoDigitado()) return false;
   // (11/10) sacola do cardápio com itens (o cardápio marca) e a tela "Complete seu cadastro"
   if (document.documentElement.dataset.sacola === "1") return false;
   if (document.querySelector("[data-sem-recarregar]")) return false;
@@ -39,7 +46,7 @@ function recarregarSePuder() {
   // com o excluir ou o salvar ainda em andamento
   if (temVersaoNova && document.visibilityState === "visible" && Date.now() - ultimaAcao >= CALMA && momentoSeguro()) {
     try { sessionStorage.setItem("doonly_splash_shown", "1"); } catch { /* sem sessionStorage: só mostra a abertura de novo */ }
-    window.location.reload();
+    recarregarLimpo(); // (6.143) baixa a versão nova sem usar o guardado no aparelho
   }
 }
 
@@ -56,7 +63,7 @@ async function conferir() {
 export function iniciarAutoAtualizacao(): void {
   if (typeof window === "undefined" || import.meta.env.DEV) return;
   // o cardápio do cliente também atualiza, mas nunca com a sacola aberta (o [role=dialog] cuida disso)
-  setTimeout(conferir, 4000);
+  setTimeout(conferir, 1500); // (6.143) logo ao abrir (antes 4 s)
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") conferir(); });
   window.addEventListener("focus", conferir);
   // trocou de tela: se já tem versão nova esperando, aproveita se a tela nova for segura
@@ -65,6 +72,11 @@ export function iniciarAutoAtualizacao(): void {
   window.addEventListener("pointerdown", agir, { capture: true, passive: true });
   window.addEventListener("keydown", agir, { capture: true, passive: true });
   window.addEventListener("popstate", () => { agir(); setTimeout(recarregarSePuder, CALMA + 200); });
+  // (6.143) trocou de tela pelo app (ex.: entrou na conta e foi para o Início): com versão nova esperando, atualiza ali
+  for (const m of ["pushState", "replaceState"] as const) {
+    const orig = history[m].bind(history);
+    history[m] = ((...a: Parameters<History["pushState"]>) => { orig(...a); if (temVersaoNova) setTimeout(recarregarSePuder, CALMA + 200); }) as History["pushState"];
+  }
   // com versão nova esperando, tenta de novo a cada 30s (só recarrega se o momento for seguro)
   setInterval(() => { if (temVersaoNova) recarregarSePuder(); }, 30 * 1000);
   setInterval(conferir, 10 * 60 * 1000);
