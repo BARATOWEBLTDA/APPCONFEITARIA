@@ -1,5 +1,6 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import { resumoItens, type Pedido } from "@/components/pedidos/pedidoTexto";
+import { usePlaceholderVivo } from "@/hooks/usePlaceholderVivo";
 import { SELO_TESTE } from "@/lib/beneficiosPro";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
@@ -99,6 +100,9 @@ function Variacao({ atual, anterior, quando }: { atual: number; anterior: number
   );
 }
 
+/** (6.116) exemplos curtos (cabem no campo do celular) do que a Doo faz de verdade */
+const EXEMPLOS_DOO = ["Me passa uma receita", "Quanto cobrar num bolo?", "Quanto vendi esse mês?", "O pedido #12 ficou pronto", "Monta minha ficha técnica", "Cria a logo da minha loja"];
+
 export default function Inicio() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -154,6 +158,9 @@ export default function Inicio() {
     loading: true,
   });
   const [perguntaDoo, setPerguntaDoo] = useState("") // (6.91) o campo da Doo no topo do Início
+  // (6.116) o texto do campo da Doo ganha vida: de vez em quando digita um exemplo do que dá para pedir
+  const [dooFoco, setDooFoco] = useState(false);
+  const placeholderDoo = usePlaceholderVivo("Pergunte algo à Doo", EXEMPLOS_DOO, { parado: dooFoco || !!perguntaDoo });
   const [menuOpen, setMenuOpen] = useState(false);
   const fotoRef = useRef<HTMLButtonElement>(null); // o menu da conta abre embaixo da foto
   // (16/10) sino com as não lidas no topo do celular (antes só pela foto › Notificações, sem aviso nenhum)
@@ -1013,7 +1020,7 @@ export default function Inicio() {
       {!computador && (
         <form className="ini-section ini-section--doo" onSubmit={e => { e.preventDefault(); const t = perguntaDoo.trim(); setPerguntaDoo(""); (document.activeElement as HTMLElement | null)?.blur(); abrirDooIA(t); }}>
           <img src="/Sistema/doo.webp" alt="" aria-hidden="true" />
-          <input type="search" name="pergunta-doo" value={perguntaDoo} onChange={e => setPerguntaDoo(e.target.value)} placeholder="Pergunte algo à Doo" aria-label="Pergunte qualquer coisa à Doo IA" enterKeyHint="send" autoComplete="off" />
+          <input type="search" name="pergunta-doo" value={perguntaDoo} onChange={e => setPerguntaDoo(e.target.value)} placeholder={placeholderDoo} onFocus={() => setDooFoco(true)} onBlur={() => setDooFoco(false)} aria-label="Pergunte qualquer coisa à Doo IA" enterKeyHint="send" autoComplete="off" />
           <button type="submit" aria-label="Enviar para a Doo"><SetaDoo size={18} weight="bold" /></button>
         </form>
       )}

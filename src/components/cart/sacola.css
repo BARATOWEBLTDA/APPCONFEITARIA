@@ -248,3 +248,9 @@
 /* (6.82) "Pedido depois das 18:00" colado na data e no horário, com folga antes do Pagamento */
 .sc-quando-dh.com-aviso { padding-bottom: 8px; }
 .sc-quando-dh.com-aviso + .sc-aviso { margin: 0 16px 16px; }
+
+/* (6.116) quanto falta para o cupom valer (o cupom entra sozinho quando chega lá) */
+.sc-cupom-falta { display: flex; align-items: center; gap: 8px; margin: 0 16px 8px; padding: 9px 12px; border-radius: 12px; background: #FDF2F6; color: #9D2B57; font-size: 13px; line-height: 1.35; }
+.sc-cupom-falta svg { flex: none; }
+.sc-cupom-falta span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-cupom-falta b { font-weight: 600; }

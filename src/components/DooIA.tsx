@@ -385,8 +385,17 @@ function respostaFeito(a: AcaoDoo, feito: string): string {
   }
 }
 
-/** Separa o bloco acao-doonly da resposta. */
-function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | AcaoImagem | null } {
+/** Separa o bloco acao-doonly da resposta.
+ *  (6.116) a Doo às vezes manda duas ações numa resposta ("registrando os dois"): a primeira vira o cartão e as outras
+ *  vêm em "extras" (um cartão para cada). Nenhum bloco aparece cru na conversa. */
+function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | AcaoImagem | null; extras: (RascunhoInsumo | RascunhoPedido | AcaoDoo)[] } {
+  const todos = [...reply.matchAll(/```acao-doonly\s*([\s\S]*?)```/g)]
+  if (todos.length > 1) {
+    const um = todos.map(b => extrairAcao(b[0]).acao).filter(Boolean) as (RascunhoInsumo | RascunhoPedido | AcaoDoo | AcaoImagem)[]
+    const semImagem = um.filter(a => a.acao !== 'imagem') as (RascunhoInsumo | RascunhoPedido | AcaoDoo)[]
+    const texto = todos.reduce((t, b) => t.replace(b[0], ''), reply).trim() || 'Confira e confirme nos cartões abaixo.'
+    return { texto, acao: semImagem[0] || null, extras: semImagem.slice(1) }
+  }
   const m = reply.match(/```acao-doonly\s*([\s\S]*?)```/)
   if (!m) {
     // (11/10) bloco de ação que não fechou (a resposta foi cortada no meio): o JSON cru não aparece na conversa
@@ -397,10 +406,10 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
       // (11/10) bloco ``` comum sem nome não esconde o resto; só a cerca recém-aberta (nada depois dela)
       const ehAcao = nome ? (nome.startsWith('acao-doonly') || 'acao-doonly'.startsWith(nome)) : !resto.trim()
       if (ehAcao) {
-        return { texto: reply.slice(0, i).trim() || 'Não consegui terminar de montar. Peça de novo, por favor.', acao: null }
+        return { texto: reply.slice(0, i).trim() || 'Não consegui terminar de montar. Peça de novo, por favor.', acao: null, extras: [] }
       }
     }
-    return { texto: reply, acao: null }
+    return { texto: reply, acao: null, extras: [] }
   }
   let acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | AcaoImagem | null = null
   try {
@@ -416,7 +425,7 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
     else acao = normalizarRascunho(j)
   } catch { acao = null }
   const texto = reply.replace(m[0], '').trim() || 'Confira e confirme no cartão abaixo.'
-  return { texto, acao }
+  return { texto, acao, extras: [] }
 }
 
 /** (27/10) Só pedido claro de imagem ("cria uma imagem", "gera o topo", "desenha uma arte").
@@ -1033,7 +1042,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         } else {
           // (11/10) resposta que bateu no limite de tamanho: avisa embaixo (antes ela só parava no meio da frase)
           const cortada = data?.stop_reason === 'max_tokens'
-          const { texto, acao: acaoBruta } = extrairAcao(reply)
+          const { texto, acao: acaoBruta, extras } = extrairAcao(reply)
           // (6.94) a Doo entendeu que é pedido de imagem: o app cria (antes ela respondia que não conseguia)
           // (6.105) trava: imagem só quando a mensagem dela (ou a pergunta da Doo logo antes) é sobre imagem.
           //         "oi" ou "obrigada" nunca criam (a Doo às vezes repetia um topo antigo da conversa)
@@ -1073,7 +1082,9 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           const acao = acaoBruta as RascunhoInsumo | RascunhoPedido | AcaoDoo | null
           setMessages(prev => [...prev, acao
             ? { role: 'assistant', content: texto, acao, acaoEstado: 'pendente' }
-            : { role: 'assistant', content: texto, ...(cortada ? { cortada: true } : {}) }])
+            : { role: 'assistant', content: texto, ...(cortada ? { cortada: true } : {}) },
+            // (6.116) as outras ações da mesma resposta: um cartão para cada, sem balão de texto
+            ...extras.map(a => ({ role: 'assistant' as const, content: '', acao: a, acaoEstado: 'pendente' as const }))])
         }
       }
     } catch (err: unknown) {
@@ -1185,11 +1196,11 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               <div key={i} className={`dz-m ${msg.role === 'user' ? 'dz-m--eu' : 'dz-m--doo'}`}>
                 {msg.role === 'assistant' && <img src="/Sistema/doo.webp" alt="" className="dz-mav" />}
                 <div className="dz-mc">
-                  <div className="dz-bd">
+                  {(msg.content.replace(NOTA_DO_APP, '').trim() || msg.attachmentPreview || msg.imageUrl) && <div className="dz-bd">
                     {msg.attachmentPreview && <img src={msg.attachmentPreview} alt="Referência" className="dz-anexo" />}
                     {msg.imageUrl && <img src={msg.imageUrl} alt="Imagem gerada" className="dz-gerada" />}
                     <span dangerouslySetInnerHTML={{ __html: formatText(msg.content.replace(NOTA_DO_APP, '')) }} />
-                  </div>
+                  </div>}
                   {msg.cortada && <p className="dz-corte">A resposta ficou longa e foi cortada. Peça para continuar.</p>}
                   {/* (11/10) "Editar" levou o rascunho pra Nova venda: o cartão fica resolvido (antes continuava pendente e,
                       ao reabrir a Doo, um toque registrava o pedido de novo) */}
@@ -1236,7 +1247,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                         }
                       }} />
                   )}
-                  {msg.role === 'assistant' && !msg.isImage && (
+                  {msg.role === 'assistant' && !msg.isImage && !!msg.content.replace(NOTA_DO_APP, '').trim() && (
                     <div className="dz-acs">
                       <button type="button" onClick={() => copyMessage(msg.content.replace(NOTA_DO_APP, ''), i)} className={copiedId === i ? 'ok' : ''}>
                         {copiedId === i ? <><Check size={16} weight="bold" />Copiado</> : <><Copy size={16} weight="bold" />Copiar</>}

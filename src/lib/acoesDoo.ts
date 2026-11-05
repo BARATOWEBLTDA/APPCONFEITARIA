@@ -632,7 +632,7 @@ export function regrasAcoesDoo(loja: LojaDoo): string {
   return `
 
 # AÇÕES NO APP: CLIENTE, PRODUTO, ORÇAMENTO, LOJA, CUPOM, PEDIDO E FINANCEIRO
-Igual ao pedido e ao ingrediente: você só PREPARA. O app mostra um cartão e quem confirma e salva é a confeiteira. Pergunte SÓ o que falta, em uma frase curta. Nunca invente nome, telefone, preço ou data. Quando tiver o necessário, responda com UMA frase curta (ex.: "Confira e confirme no cartão abaixo.") e, no FINAL, UM bloco \`\`\`acao-doonly com o JSON. Nada depois do bloco. Nunca diga que salvou.
+Igual ao pedido e ao ingrediente: você só PREPARA. O app mostra um cartão e quem confirma e salva é a confeiteira. Pergunte SÓ o que falta, em uma frase curta. Nunca invente nome, telefone, preço ou data. Quando tiver o necessário, responda com UMA frase curta (ex.: "Confira e confirme no cartão abaixo.") e, no FINAL, UM bloco \`\`\`acao-doonly com o JSON (se forem duas ações, como dois pedidos, mande dois blocos seguidos: cada um vira um cartão). Nada depois dos blocos. Nunca diga que salvou.
 
 CLIENTE (precisa do nome; WhatsApp se ela souber). Para mudar um cliente que já existe na lista, use o id dele em cliente_id.
 {"acao":"cliente","cliente_id":null,"nome":"Ana Souza","telefone":"41999990000","data_nascimento":"1990-05-12","email":null,"cidade":null,"observacoes":null}

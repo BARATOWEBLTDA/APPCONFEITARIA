@@ -6,7 +6,7 @@
 import { perfilAtual, getCardapioUrl } from "@/hooks/useProfile";
 import { saldoPedido } from "@/components/pedidos/pedidoTexto";
 
-export type ChaveMensagem = "pedido_cardapio" | "sobre_pedido" | "aniversario";
+export type ChaveMensagem = "pedido_cardapio" | "sobre_pedido" | "aniversario" | "aniversario_antes";
 
 export type Etiqueta = { k: string; rotulo: string; exemplo: string };
 
@@ -67,12 +67,27 @@ export const MODELOS: Modelo[] = [
     chave: "aniversario",
     titulo: "Parabéns de aniversário",
     curto: "Parabéns de aniversário",
-    resumo: "Você manda em Clientes",
-    quando: "Você manda pelo botão de parabéns em Clientes",
+    resumo: "No dia do aniversário",
+    quando: "Você manda pelo botão Parabéns em Clientes, no dia do aniversário",
     // (6.101) com o link do cardápio: o parabéns já leva para a encomenda do bolo
     padrao: "Feliz aniversário, {nome}! 🎂\n\nQue o seu dia seja tão doce quanto você. Um abraço da *{loja}*!\n\nSe quiser comemorar com um docinho, é só pedir por aqui:\n{link}",
     etiquetas: [
       { k: "nome", rotulo: "Nome do cliente", exemplo: "Ana" },
+      { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
+      { k: "link", rotulo: "Link do cardápio", exemplo: "https://doonly.com.br/c/doce/cardapio" },
+    ],
+  },
+  {
+    // (6.116) antes do dia não é parabéns: é o convite para encomendar o bolo (antes ia "Feliz aniversário" 6 dias antes)
+    chave: "aniversario_antes",
+    titulo: "Aniversário chegando",
+    curto: "Aniversário chegando",
+    resumo: "Antes do aniversário",
+    quando: "Você manda pelo botão Oferecer bolo em Clientes, nos dias antes do aniversário",
+    padrao: "Oi, {nome}! 🎂\n\nSeu aniversário está chegando: {quando}! Que tal comemorar com um bolo feito do seu jeitinho?\n\nA *{loja}* já está separando as encomendas para essa data. É só escolher por aqui:\n{link}",
+    etiquetas: [
+      { k: "nome", rotulo: "Nome do cliente", exemplo: "Ana" },
+      { k: "quando", rotulo: "Dia do aniversário", exemplo: "sábado, 11/11" },
       { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
       { k: "link", rotulo: "Link do cardápio", exemplo: "https://doonly.com.br/c/doce/cardapio" },
     ],

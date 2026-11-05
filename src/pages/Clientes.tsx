@@ -888,14 +888,19 @@ export default function Clientes() {
               <p className="cl9-j-apoio">Nos próximos 30 dias. Uma mensagem de parabéns costuma virar pedido de bolo.</p>
               {aniversariantes.map(c => {
                 const d = getDaysUntil(c.data_nascimento!);
-                const wa = linkWhats(c, montarMensagem("aniversario", { nome: primeiroNome(c.nome), loja: perfilAtual()?.nome_loja || "" }));
+                // (6.116) no dia: parabéns; antes do dia: convite para encomendar o bolo, com o dia do aniversário
+                const diaNiver = new Date(); diaNiver.setHours(0, 0, 0, 0); diaNiver.setDate(diaNiver.getDate() + d);
+                const quandoTx = d === 1 ? "amanhã" : `${diaNiver.toLocaleDateString("pt-BR", { weekday: "long" }).replace("-feira", "")}, ${String(diaNiver.getDate()).padStart(2, "0")}/${String(diaNiver.getMonth() + 1).padStart(2, "0")}`;
+                const wa = linkWhats(c, d === 0
+                  ? montarMensagem("aniversario", { nome: primeiroNome(c.nome), loja: perfilAtual()?.nome_loja || "" })
+                  : montarMensagem("aniversario_antes", { nome: primeiroNome(c.nome), loja: perfilAtual()?.nome_loja || "", quando: quandoTx }));
                 return (
                   <div key={c.id} className="cl9-j-l">
                     <button type="button" className="cl9-j-quem" onClick={() => { setShowNiver(false); navigate(`/clientes/${c.id}`); }}>
                       <Avatar c={c} />
-                      <span><b>{c.nome}</b><small>{niverCurto(c.data_nascimento)} · {quandoNiver(d)}</small></span>
+                      <span><b>{c.nome}</b><small>{String(diaNiver.getDate()).padStart(2, "0")}/{String(diaNiver.getMonth() + 1).padStart(2, "0")} · {quandoNiver(d)}</small></span>
                     </button>
-                    {wa && <a className="cl9-parabens" href={wa} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={18} />Parabéns</a>}
+                    {wa && <a className="cl9-parabens" href={wa} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={18} />{d === 0 ? "Parabéns" : "Oferecer bolo"}</a>}
                   </div>
                 );
               })}

@@ -66,7 +66,7 @@
 .cl9-j-l { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--ui-linha); }
 .cl9-j-l > span:nth-child(2) { flex: 1; min-width: 0; }
 .cl9-j-l b { display: block; font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cl9-j-l small { display: block; font-size: 13px; color: var(--ui-texto-2); }
+.cl9-j-l small { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 @media (min-width: 600px) {
   .cl9 { padding: 20px 20px 112px; }
@@ -112,7 +112,7 @@
 .cl9-tab-l { cursor: pointer; }
 .cl9-j-l .cl9-j-quem { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; margin: 0; padding: 0; border: 0; background: none; text-align: left; color: var(--ui-texto); font-family: inherit; cursor: pointer; }
 .cl9-j-quem > span:last-child { min-width: 0; }
-.cl9-parabens { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: var(--ui-raio); background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 14px; font-weight: 600; text-decoration: none; }
+.cl9-parabens { flex: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: var(--ui-raio); background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 14px; font-weight: 600; text-decoration: none; }
 .cl9-esq { display: flex; flex-direction: column; gap: 8px; }
 .cl9-esq span { height: 72px; border-radius: var(--ui-raio-cartao); background: linear-gradient(90deg, var(--ui-branco) 0%, var(--ui-cinza) 50%, var(--ui-branco) 100%); background-size: 200% 100%; animation: cl9Esq 1.2s ease-in-out infinite; }
 .cl9-esq span:first-child { height: 96px; }
@@ -268,3 +268,6 @@
 .cl9-card > .cl9-barra { margin-bottom: 8px; }
 .cl9-barra + .cl9-lista, .cl9-barra ~ .cl9-lista { margin-top: 0; }
 .cl9-barra + .ig-tab-cab + .ig-l, .cl9-barra + .ig-l, .cl9-barra ~ .ig-tab-cab + .ig-l { border-top: 0; }
+
+/* (6.116) celular pequeno: o botão do aniversário mais justo, para o nome caber */
+@media (max-width: 380px) { .cl9-j-l .cl9-parabens { padding: 0 10px; gap: 5px; font-size: 13.5px; } .cl9-j-l .cl9-j-quem { gap: 10px; } }

@@ -21,7 +21,7 @@ import type { HorarioLoja } from '@/lib/agendaCardapio'
 import { contarItens, detalhesItem, qtdItem, semMeioEmoji, valorLinha } from '@/lib/itemSacola'
 import { r2, somarReais } from '@/lib/moeda'
 import { Campo, CampoArea, avisar } from '@/components/base'
-import { esquecerCupomEscolhido, lerCupomEscolhido } from '@/lib/cupons'
+import { esquecerCupomEscolhido, lerCupomEscolhido, textoDesconto, type CupomVitrine } from '@/lib/cupons'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 import { explicarErro } from '@/lib/erros'
 import { linkWhatsApp } from '@/lib/telefone'
@@ -129,6 +129,8 @@ interface CheckoutConfig {
   exibir_campo_troco: boolean
   cupons_desconto: { codigo: string; tipo: string; valor: number; ativo: boolean }[]
   tem_cupom?: boolean
+  /** (6.116) os cupons do topo do cardápio (públicos): o melhor entra sozinho quando a sacola cumpre a regra */
+  cupons_vitrine?: CupomVitrine[]
   aceita_agendamento: boolean
   prazo_minimo_horas: number
   /** (20/10) Pix pelo cardápio */
@@ -510,7 +512,12 @@ function CartContent({
   const [validandoCupom, setValidandoCupom] = useState(false)
   // Subtotal com que o cupom foi conferido (se a sacola mudar, confere de novo)
   const subtotalDoCupom = useRef(0)
-  const aplicarCupom = async (codigo?: string) => {
+  // (6.116) cupom esperando o pedido mínimo (entra sozinho quando a sacola chega lá) e o melhor da vitrine aplicado sozinho
+  const [cupomEsperando, setCupomEsperando] = useState<{ codigo: string; minimo: number } | null>(null)
+  const recusouAuto = useRef(false)
+  const tentadosAuto = useRef(new Set<string>())
+  const minimoDoErro = (e?: string) => { const m = /a partir de R\$\s*([\d.]+,\d{2})/.exec(e || ''); return m ? Number(m[1].replace(/\./g, '').replace(',', '.')) : 0 }
+  const aplicarCupom = async (codigo?: string, modo: 'manual' | 'esperando' | 'auto' = 'manual') => {
     setCupomErro('')
     const code = (codigo ?? cupomDigitado).trim().toUpperCase()
     if (!code) return
@@ -524,18 +531,43 @@ function CartContent({
       if (!error && r?.ok) {
         subtotalDoCupom.current = totalPrice
         setCupomAplicado({ codigo: r.codigo, tipo: r.tipo, valor: Number(r.valor) || 0 })
+        setCupomEsperando(null)
+        if (modo === 'esperando') avisar(`Cupom ${r.codigo} aplicado na sua sacola`, { tipo: 'ok' })
+        if (modo === 'auto') avisar(`Aplicamos o cupom ${r.codigo} para você`, { tipo: 'ok' })
+      } else if (modo === 'auto') {
+        tentadosAuto.current.add(code) // não deu (esgotou, por exemplo): não tenta de novo
+      } else if (minimoDoErro(r?.erro) > 0) {
+        // abaixo do mínimo: o cupom fica esperando e a sacola mostra quanto falta
+        setCupomEsperando({ codigo: code, minimo: minimoDoErro(r?.erro) })
+        setCupomAplicado(null)
       } else {
-        setCupomErro(r?.erro || 'Cupom inválido ou expirado')
+        if (modo === 'manual') setCupomErro(r?.erro || 'Cupom inválido ou expirado')
+        setCupomEsperando(null)
         setCupomAplicado(null)
       }
     } catch {
-      setCupomErro('Não foi possível validar o cupom. Tente de novo.')
-      setCupomAplicado(null)
+      if (modo === 'manual') setCupomErro('Não foi possível validar o cupom. Tente de novo.')
+      if (modo !== 'esperando') setCupomAplicado(null)
     }
     setValidandoCupom(false)
   }
 
-  const removerCupom = () => { setCupomAplicado(null); setCupomDigitado(''); setCupomErro(''); esquecerCupomEscolhido() }
+  const removerCupom = () => { setCupomAplicado(null); setCupomEsperando(null); setCupomDigitado(''); setCupomErro(''); esquecerCupomEscolhido(); recusouAuto.current = true }
+
+  // (6.116) o melhor cupom do topo do cardápio que esta sacola já pode usar (só os de todos: o de 1º pedido depende do WhatsApp)
+  const cuponsTopo = (config.cupons_vitrine || []).filter(c => (c.publico || 'todos') === 'todos')
+  const descontoDe = (c: CupomVitrine, sub: number) => Math.min(sub, c.tipo === 'percentual' ? r2(sub * Math.min(100, Number(c.valor) || 0) / 100) : Number(c.valor) || 0)
+  const melhorTopo = cuponsTopo.filter(c => (Number(c.valor_minimo) || 0) <= totalPrice && !tentadosAuto.current.has(c.codigo.toUpperCase()))
+    .sort((a, b) => descontoDe(b, totalPrice) - descontoDe(a, totalPrice))[0]
+  // o próximo cupom do topo que falta pouco para usar (a sacola mostra "Faltam R$ X")
+  const proximoTopo = cuponsTopo.filter(c => (Number(c.valor_minimo) || 0) > totalPrice).sort((a, b) => Number(a.valor_minimo) - Number(b.valor_minimo))[0]
+  const cupomLigado = !!(config.tem_cupom || config.cupons_desconto.length > 0)
+  useEffect(() => {
+    if (!cupomLigado || cupomAplicado || validandoCupom || items.length === 0) return
+    if (cupomEsperando) { if (totalPrice >= cupomEsperando.minimo - 0.009) void aplicarCupom(cupomEsperando.codigo, 'esperando'); return }
+    if (recusouAuto.current || cupomDigitado.trim() || lerCupomEscolhido()) return
+    if (melhorTopo && descontoDe(melhorTopo, totalPrice) > 0) void aplicarCupom(melhorTopo.codigo, 'auto')
+  }, [totalPrice, cupomAplicado, cupomEsperando, cupomLigado, validandoCupom, melhorTopo?.codigo]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // (20/10) cupom que o cliente tocou no topo do cardápio: já entra aplicado na sacola (1 cupom por pedido)
   useEffect(() => {
@@ -563,7 +595,11 @@ function CartContent({
         if (!valendo || error) return
         const r = data as RespostaCupom
         if (r?.ok) setCupomAplicado({ codigo: r.codigo, tipo: r.tipo, valor: Number(r.valor) || 0 })
-        else { setCupomAplicado(null); avisar(r?.erro || 'O cupom não vale mais para essa sacola.', { tipo: 'info' }) }
+        else {
+          // (6.116) ficou abaixo do mínimo: o cupom espera e volta sozinho se a sacola subir de novo
+          if (minimoDoErro(r?.erro) > 0) setCupomEsperando({ codigo: cupomAplicado.codigo, minimo: minimoDoErro(r?.erro) })
+          setCupomAplicado(null); avisar(r?.erro || 'O cupom não vale mais para essa sacola.', { tipo: 'info' })
+        }
       } catch { /* sem internet: mantém o cupom */ }
     })()
     return () => { valendo = false }
@@ -819,7 +855,7 @@ function CartContent({
     pixelEvento('Purchase', { value: totalCriado, num_items: items.length }) // (19/10) Pixel do Facebook: pedido enviado
     clearCart()
     // (27/10) o cupom tocado na vitrine vale para este pedido só (antes voltava no próximo)
-    esquecerCupomEscolhido(); setCupomAplicado(null); setCupomDigitado('')
+    esquecerCupomEscolhido(); setCupomAplicado(null); setCupomDigitado(''); setCupomEsperando(null); recusouAuto.current = false; tentadosAuto.current.clear()
     setStep('cart')
     // (21/10) curto pra caber numa linha: "Retirada qua, 28/10 às 20:00"
     const quandoTxt = (() => {
@@ -845,7 +881,13 @@ function CartContent({
   const nomeLoja = lojaAtualNome()
   const temCupom = !!(config.tem_cupom || config.cupons_desconto.length > 0)
   // (27/10) o mesmo bloco do cupom aparece no Finalizar do computador (lá a sacola pula direto para o finalizar)
-  const blocoCupom = temCupom && (cupomAplicado ? (
+  const faltaCupom = !temCupom || cupomAplicado ? null
+    : cupomEsperando && cupomEsperando.minimo > totalPrice ? { falta: r2(cupomEsperando.minimo - totalPrice), texto: `para usar o cupom ${cupomEsperando.codigo}` }
+    : !cupomEsperando && proximoTopo && !recusouAuto.current ? { falta: r2(Number(proximoTopo.valor_minimo) - totalPrice), texto: `para ganhar ${textoDesconto(proximoTopo)} com ${proximoTopo.codigo}` }
+    : null
+  const blocoCupom = temCupom && (<>{faltaCupom && (
+              <p className="sc-cupom-falta"><Tag size={16} weight="bold" aria-hidden="true" /><span>Faltam <b>{formatCurrency(faltaCupom.falta)}</b> {faltaCupom.texto}</span></p>
+            )}{cupomAplicado ? (
               <button type="button" className="sc-linha ok" onClick={removerCupom}>
                 <Tag size={20} weight="bold" /><span><b>Cupom {cupomAplicado.codigo}</b><small>− {formatCurrency(desconto)} · tirar o cupom</small></span><X size={18} weight="bold" />
               </button>
@@ -863,7 +905,7 @@ function CartContent({
               <button type="button" className="sc-linha" onClick={() => setCupomAberto(true)}>
                 <Tag size={20} weight="bold" /><span><b>Cupom</b><small>Tem um código? Coloque aqui</small></span><CaretRight size={18} weight="bold" />
               </button>
-            ))
+            )}</>)
 
   // Entrega na sacola (08/10): segue o que a loja configurou
   //   só retirada → nem aparece · fixa → o valor · grátis → "Grátis" · por bairro → "Depende do bairro" · motoboy/combinar → "A combinar"
