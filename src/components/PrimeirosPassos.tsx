@@ -254,7 +254,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     return (
       <div ref={raiz} className={`pp pp--inicio pp--banner${destaque ? " pp--destaque" : ""}`}>
         <div className="ppb-topo">
-          <img src="/Sistema/banner-passos.webp" alt="" aria-hidden="true" className="ppb-img" />
+          {/* (6.126) cada passo pode ter o seu Doo; o da logo pinta a fachada da loja */}
+          <img src={p.t === "Logo da loja" ? "/Sistema/banner-passos-logo.webp" : "/Sistema/banner-passos.webp"} alt="" aria-hidden="true" className="ppb-img" />
           <b className="ppb-t">{faltam === 1 ? "Falta só 1 passo" : "Seu cardápio quase no ar"}</b>
           <small className="ppb-sub">{feitos === 0 ? `${passos.length} passos rápidos, uns 5 minutos` : `${feitos} de ${passos.length} prontos`}</small>
           <div className="ppb-bar" role="progressbar" aria-valuemin={0} aria-valuemax={passos.length} aria-valuenow={feitos} aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
@@ -343,7 +344,9 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
                         <button type="button" className="pp-hero-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}<ArrowRight size={18} weight="bold" aria-hidden="true" /></button>
                       </div>
                     </div>
-                    <div className="pp-hero-masc"><i aria-hidden="true" /><Mascote pose="prancheta" /></div>
+                    {p.t === "Logo da loja"
+                      ? <div className="pp-hero-masc pp-hero-masc--largo"><img src="/marca/leve/doo-pintando-logo.webp" alt="" aria-hidden="true" /></div>
+                      : <div className="pp-hero-masc"><i aria-hidden="true" /><Mascote pose="prancheta" /></div>}
                   </div>
                   <div className="pp-hero-dica">
                     <span aria-hidden="true"><Lightbulb size={22} weight="bold" /></span>
@@ -991,6 +994,9 @@ const CSS = `
   .pp-hero-masc { position: relative; flex: none; width: clamp(140px, 12vw, 190px); display: flex; justify-content: center; }
   .pp-hero-masc::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -4px; height: 18px; border-radius: 50%; background: rgba(214, 69, 122, .14); }
   .pp-hero-masc img { position: relative; z-index: 1; width: 90%; height: auto; }
+  /* (6.126) o Doo pintando a logo é mais largo (tem o cavalete) */
+  .pp-hero-masc--largo { width: clamp(200px, 18vw, 290px); }
+  .pp-hero-masc--largo img { width: 100%; }
   .pp-hero-masc > i { position: absolute; left: 6px; top: 22px; width: 18px; height: 16px; background:
       linear-gradient(var(--ui-rosa), var(--ui-rosa)) 0 0 / 4px 12px no-repeat,
       linear-gradient(var(--ui-rosa), var(--ui-rosa)) 8px 2px / 4px 10px no-repeat; transform: rotate(-35deg); border-radius: 2px; opacity: .85; }
