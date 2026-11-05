@@ -71,8 +71,9 @@ export default function PedidosNovosTopo({ novos, atrasados, aoAceitar }: { novo
         <div className="pnt-l">
           <span className="pnt-dot pnt-dot--ace" aria-hidden="true" />
           <button type="button" className="pnt-tx pnt-abre" onClick={() => navigate(`/pedidos/${um.id}`)}>
-            <b>{podeAceitar ? `Pedido novo de ${um.cliente}` : `${um.cliente} · falta pagar`}</b>
-            <small>{[um.produto, diaCurto(um.data, agora), real(um.valor)].filter(Boolean).join(" · ")}</small>
+            {/* (6.118) o primeiro nome e o número em cima (antes "Pedido novo de Bea…" cortava o nome); "Novo" vai para a 2ª linha */}
+            <b>{`${(um.cliente || "Cliente").trim().split(/\s+/)[0]}${um.numero ? ` · #${um.numero}` : ""}`}</b>
+            <small>{[podeAceitar ? "Novo" : "Esperando o Pix", um.produto, diaCurto(um.data, agora), real(um.valor)].filter(Boolean).join(" · ")}</small>
           </button>
           {/* (6.71) "Ver" junto do "Aceitar": ela confere o pedido antes de aceitar */}
           <span className="pnt-bts">

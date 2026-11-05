@@ -184,26 +184,27 @@
 .cp9-dado > svg, .cp9-obs > svg { flex: none; margin-top: 2px; color: var(--ui-texto-3); }
 .cp9-dado > span, .cp9-obs > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .cp9-dado small, .cp9-obs small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-.cp9-dado b, .cp9-obs b { font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+/* (6.118) tipografia suave no perfil: 600 só no nome, nos títulos e no valor do pedido */
+.cp9-dado b, .cp9-obs b { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
 .cp9-dado em { font-style: normal; font-size: 14px; color: var(--ui-texto-2); }
 .cp9-obs { margin-top: 4px; padding: 12px; border: 0; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); }
 .cp9-obs > svg, .cp9-obs small { color: var(--ui-laranja); }
-.cp9-link { flex: none; align-self: center; display: flex; align-items: center; min-height: 44px; padding: 0 4px; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); text-decoration: none; }
+.cp9-link { flex: none; align-self: center; display: flex; align-items: center; min-height: 44px; padding: 0 4px; font-size: 14px; font-weight: 500; color: var(--ui-rosa-escuro); text-decoration: none; }
 .cp9-falta { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
-.cp9-falta button { display: block; min-height: 44px; margin: 4px 0 0; padding: 0; border: 0; background: none; font-size: 15px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+.cp9-falta button { display: block; min-height: 44px; margin: 4px 0 0; padding: 0; border: 0; background: none; font-size: 15px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; }
 .cp9-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; }
 .cp9-nums > div { display: flex; flex-direction: column; min-width: 0; }
 .cp9-nums small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-.cp9-nums b { font-size: 20px; font-weight: 600; line-height: 1.25; }
+.cp9-nums b { font-size: 20px; font-weight: 500; line-height: 1.25; }
 .cp9-ped { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "a v" "s c"; align-items: center; gap: 4px 12px; width: 100%; min-height: 64px; margin: 0; padding: 10px 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; text-align: left; color: var(--ui-texto); cursor: pointer; }
 .cp9 .ui-tit + .cp9-ped { border-top: 0; }
 .cp9-ped > span { grid-area: a; min-width: 0; display: flex; align-items: baseline; gap: 8px; }
-.cp9-ped b { font-size: 15px; font-weight: 600; }
+.cp9-ped b { font-size: 15px; font-weight: 500; }
 .cp9-ped small { font-size: 13px; color: var(--ui-texto-2); }
 .cp9-ped strong { grid-area: v; font-size: 15px; font-weight: 600; text-align: right; }
 .cp9-ped > svg { grid-area: c; justify-self: end; color: var(--ui-texto-3); }
 /* (27/10) "Situação: Entregue" em texto, sem etiqueta (padrão do app); a cor fica só na situação */
-.cp9-st { grid-area: s; justify-self: start; padding: 0; background: none; color: var(--ui-texto); font-size: 13px; font-style: normal; font-weight: 600; white-space: nowrap; }
+.cp9-st { grid-area: s; justify-self: start; padding: 0; background: none; color: var(--ui-texto); font-size: 13px; font-style: normal; font-weight: 500; white-space: nowrap; }
 .cp9-st::before { content: "Situação: "; font-weight: 500; color: var(--ui-texto-2); }
 .cp9-st--rosa { color: var(--ui-rosa-escuro); }
 .cp9-st--verde { color: var(--ui-verde); }

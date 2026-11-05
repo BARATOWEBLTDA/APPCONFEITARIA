@@ -507,9 +507,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
                 placeholder={EXEMPLO_DESCRICAO} onChange={(e) => setDescricao(e.target.value)} />
               <span className="dl-desc-ia"><BotaoIA carregando={gerando} onClick={gerarDescricao} /></span>
             </div>
-            <div className="dl-desc-pe">
-              <small>{descricao.length} de 200 caracteres</small>
-            </div>
+            {/* (6.118) a contagem de letras fica só a do campo (antes aparecia duas vezes) */}
           </div>
           </>)}
         </section>

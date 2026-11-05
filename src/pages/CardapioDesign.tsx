@@ -529,7 +529,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
         })}
         {/* (30/10 · 5.25) no grátis: só as 4 cores de cada lugar e um botão só no fim (antes as do PRO apareciam com cadeado) */}
         {!isPro && (
-          <button type="button" className="ap-mais-cores" onClick={() => navigate("/assinar")}>
+          <button type="button" className="ap-mais-cores" onClick={() => abrirConvitePro("cores")}>{/* (6.118) o convite no padrão (antes ia direto para a assinatura) */}
             <Crown size={16} weight="fill" aria-hidden="true" />Desbloquear mais cores<span>PRO</span>
           </button>
         )}

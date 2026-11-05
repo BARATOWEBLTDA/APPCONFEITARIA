@@ -3,6 +3,7 @@
  * Foto, nome, WhatsApp, e-mail (só leitura) e "Trocar a senha" (abre embaixo, pede a senha atual).
  * Os dados e as ações vêm do Configuracoes.tsx.
  */
+import { mascaraTelefone } from "@/lib/telefone";
 import { useEffect, useState } from "react";
 import { Camera, CaretDown, LockSimple } from "@phosphor-icons/react";
 import { Botao, Campo, Janela } from "@/components/base";
@@ -56,7 +57,7 @@ export default function EditarPerfilModal({
         </button>
 
         <Campo rotulo="Nome" placeholder="Seu nome" value={nome} autoComplete="name" onChange={e => onNomeChange(e.target.value)} />
-        <Campo rotulo="WhatsApp" type="tel" inputMode="tel" placeholder="(41) 99999-8888" value={telefone} autoComplete="tel" onChange={e => onTelefoneChange(e.target.value)} />
+        <Campo rotulo="WhatsApp" type="tel" inputMode="tel" placeholder="(41) 99999-8888" value={mascaraTelefone(telefone)} autoComplete="tel" onChange={e => onTelefoneChange(mascaraTelefone(e.target.value))} />{/* (6.118) com a máscara, igual aos outros campos de WhatsApp */}
         <Campo rotulo="E-mail" type="email" value={email} disabled dica="Para trocar o e-mail, fale com o suporte." onChange={() => {}} />
         {saveError && <p className="ep9-erro" role="alert">{saveError}</p>}
 

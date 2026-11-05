@@ -151,7 +151,7 @@ export default function DespesaSheet({ onClose, onSalvo, onReceberPedido, tipo =
         <p className="fo-nota fo-nota--amarela">Não sai do caixa agora. Fica em A pagar.</p>
       </>) : (<>
         <p className="fo-lb">{ehEntrada ? "Quando entrou?" : "Quando pagou?"}</p>
-        <div className="fo-seg">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quando === q ? "on" : ""} aria-pressed={quando === q} onClick={() => setQuando(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
+        <div className="fo-chips">{/* (6.118) botões separados, iguais aos de "Como recebeu?" e aos do "Quando pagou?" da conta a pagar */}{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quando === q ? "on" : ""} aria-pressed={quando === q} onClick={() => setQuando(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
         {quando === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outra} onChange={setOutra} max={isoDia()} titulo={ehEntrada ? "Data da entrada" : "Data do pagamento"} /></div>}
         {antesDoCaixa && <p className="fo-nota">Essa data é de antes de você informar o saldo em caixa, então o saldo não muda (esse dinheiro já estava na conta). Entra nos números do período.</p>}
       </>)}

@@ -4,7 +4,7 @@
 .eqm-tx { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .eqm-tx b { display: flex; align-items: center; gap: 8px; font-size: 15.5px; font-weight: 600; color: var(--ui-texto); }
 .eqm-tx small { font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
-.eqm-pro { flex: none; padding: 2px 7px; border-radius: 6px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 11.5px; font-style: normal; font-weight: 700; letter-spacing: .02em; }
+.eqm-pro { flex: none; padding: 2px 7px; border-radius: 6px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 11.5px; font-style: normal; font-weight: 600; letter-spacing: .02em; }
 .eqm-bt { grid-column: 1 / -1; width: 100%; }
 .eqm-g { display: none; } .eqm-c { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .eqm-tx small { display: flex; min-width: 0; }

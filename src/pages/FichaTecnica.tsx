@@ -975,7 +975,7 @@ export default function FichaTecnica() {
           <button type="button" className="fl-alerta" onClick={() => setFiltro("prejuizo")}>
             <span className="fl-alerta-ic"><TrendDown size={24} weight="bold" /></span>
             <span>
-              <b>{nPrejuizo === 1 ? "1 produto está" : `${nPrejuizo} produtos estão`} dando prejuízo</b>
+              <b>{nPrejuizo === 1 ? "1 produto com prejuízo" : `${nPrejuizo} produtos com prejuízo`}</b>{/* (6.118) cabe numa linha no celular */}
               <small>O preço de venda não cobre o custo. Veja qual e ajuste.</small>
             </span>
             <CaretRight size={20} weight="bold" />

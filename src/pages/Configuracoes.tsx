@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
+import { digitosTelefone } from "@/lib/telefone";
 import { useNavigate } from "react-router-dom";
 import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, FileText, Lightbulb,  SignOut, SlidersHorizontal, Bug, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
@@ -162,7 +163,7 @@ export default function Configuracoes() {
   const salvarPerfil = async () => {
     if (!userId || erroCarregar) return; // perfil não lido: não grava o formulário em branco por cima
     if (saving) return;
-    const nome = rascunho.nome.trim(), telefone = rascunho.telefone;
+    const nome = rascunho.nome.trim(), telefone = digitosTelefone(rascunho.telefone); // (6.118) o campo tem máscara; no banco ficam só os números, como antes
     if (!nome) { setError("Escreva seu nome."); return; }
     setSaving(true); setError("");
     const { error: err } = await supabase.from("profiles").upsert({ id: userId, nome, nome_loja: form.nome_loja, foto_url: form.foto_url, telefone }, { onConflict: "id" });

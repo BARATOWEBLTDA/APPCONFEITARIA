@@ -226,9 +226,10 @@ export default function Orcamentos() {
                 <button type="button" className="orc-it-b" onClick={() => navigate(`/orcamentos/${o.id}`)}>
                   <span className="orc-av" aria-hidden="true">{(o.cliente_nome || '?').trim().charAt(0).toUpperCase()}</span>
                   <span className="orc-it-tx">
-                    <b className="orc-it-t"><span>Orçamento #{o.numero}</span>{st && <em className={`orc-st orc-st--${st[1]}`}>{st[0]}</em>}</b>
-                    <small>Data do evento: {o.data_evento ? (o.data_evento_fim && o.data_evento_fim > o.data_evento ? dataCurtaEvento(o) : diaSemanaCurto(o.data_evento)) : 'a combinar'}</small>
-                    <small>Hora do evento: {o.horario_evento ? horaCurta(o.horario_evento) : 'a combinar'}</small>
+                    {/* (6.118) o nome da cliente e o valor no cartão: ela acha o orçamento sem abrir um por um */}
+                    <b className="orc-it-t"><span>{o.cliente_nome || `Orçamento #${o.numero}`}</span>{st && <em className={`orc-st orc-st--${st[1]}`}>{st[0]}</em>}</b>
+                    <small>{[`#${o.numero}`, o.data_evento ? (o.data_evento_fim && o.data_evento_fim > o.data_evento ? dataCurtaEvento(o) : diaSemanaCurto(o.data_evento)) : 'data a combinar', o.horario_evento ? horaCurta(o.horario_evento) : ''].filter(Boolean).join(' · ')}</small>
+                    {(totalOrcamento(o) > 0 || o.nome_evento) && <small>{totalOrcamento(o) > 0 && <b className="orc-it-v">{brl(totalOrcamento(o))}</b>}{totalOrcamento(o) > 0 && o.nome_evento ? ' · ' : ''}{o.nome_evento || ''}</small>}
                   </span>
                   <CaretRight size={18} weight="bold" aria-hidden="true" />
                 </button>

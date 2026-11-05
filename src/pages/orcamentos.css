@@ -606,3 +606,6 @@
 .orc-add:not(.orc-add--cli) { grid-template-columns: repeat(2, minmax(0, 200px)); }
 @media (max-width: 600px) { .orc-add, .orc-add:not(.orc-add--cli), .orc-add--cli { grid-template-columns: repeat(2, minmax(0, 1fr)); } .orc-add-op { min-width: 0; } }
 .orc-busca { flex: none; height: 48px; min-height: 48px; box-sizing: border-box; background: var(--ui-branco); }
+
+/* (6.118) o valor do orçamento no cartão da lista */
+.orc-it-tx > small .orc-it-v { display: inline; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); }

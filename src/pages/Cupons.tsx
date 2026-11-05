@@ -10,7 +10,7 @@ export default function Cupons() {
   return (
     <>
       <AppPageHeader title="Cupons" voltar="/inicio" subtitle="Descontos para trazer cliente nova e fazer quem já comprou voltar"
-        infoContent={<><p>Crie um código de desconto (ex.: <strong>BEMVINDA10</strong>) e divulgue no WhatsApp e no Instagram.</p><p>A cliente digita o código no cardápio e o desconto entra sozinho no pedido.</p></>} />
+        infoContent={<><p>Crie um código de desconto (ex.: <strong>BEMVINDA10</strong>) e divulgue no WhatsApp e no Instagram.</p><p>A cliente digita o código no cardápio. Os 2 cupons do topo do cardápio entram sozinhos na sacola quando o pedido chega ao mínimo.</p></>} />
       <div className="mk"><div className="mk-cupons"><CheckoutConfigPage embutido parte="cupons" /></div></div>
     </>
   );

@@ -376,7 +376,7 @@ const CSS = `
   .lu-pc--bt { cursor: pointer; } .lu-pc--bt:hover .lu-pc-nm { color: var(--ui-rosa-escuro); }
   .lu-pc--bt:focus-visible { outline: 3px solid rgba(236, 72, 153, .4); outline-offset: 2px; border-radius: 8px; }
 
-  .lu-eq-v { display: block; font-size: 26px; font-weight: 600; letter-spacing: -.02em; } .lu-eq-v small { font-size: 13px; font-weight: 400; color: var(--ui-texto-2); }
+  .lu-eq-v { display: block; white-space: nowrap; font-size: clamp(22px, 7vw, 26px); font-weight: 600; letter-spacing: -.02em; } .lu-eq-v small { font-size: 13px; font-weight: 400; color: var(--ui-texto-2); }
   .lu-eq-t { margin: 4px 0 0; font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; }
   .lu-eq-s { margin: 0; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); } .lu-nota { margin: 6px 0 0; font-size: 12px; color: var(--ui-texto-3); }
   .lu-sec { margin-top: 12px; min-height: 44px; padding: 0 16px; border: 1px solid #EADFE3; border-radius: 12px; background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }

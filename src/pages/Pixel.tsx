@@ -11,7 +11,7 @@ import { Botao, Campo, avisar } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { useProfile, refreshProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
-import { abrirConvitePro } from "@/components/billing/RecursoPro";
+import { abrirConvitePro, CartaoPro } from "@/components/billing/RecursoPro";
 import { pixelValido, googleValido, tiktokValido } from "@/lib/facebookPixel";
 import "./marketing.css";
 
@@ -85,15 +85,17 @@ function CartaoPixel({ p, salvo, onSalvo }: { p: Plataforma; salvo: string; onSa
 
 export default function Pixel() {
   const { profile } = useProfile();
+  const { isPro, loading: carregandoPlano } = usePlano(); // (6.118) grátis: o convite do PRO no topo, como nas outras telas do PRO
   const pf = (profile || {}) as Partial<Record<Plataforma["coluna"], string | null>>;
   return (
     <>
       <AppPageHeader title="Pixel" voltar="/inicio" subtitle="Meça as visitas e as vendas dos seus anúncios"
         infoContent={<><p>O pixel conta para o <strong>Meta</strong> (Facebook e Instagram), o <strong>Google</strong> e o <strong>TikTok</strong> quem visitou o seu cardápio e quem fez pedido.</p><p>Com isso os anúncios chegam em quem tem mais chance de comprar, e você vê quanto cada anúncio vendeu.</p></>} />
       <div className="pxl">
+        {!isPro && !carregandoPlano && <div className="pxl-pro"><CartaoPro recurso="pixel" /></div>}
         {PLATAFORMAS.map(p => <CartaoPixel key={p.coluna} p={p} salvo={String(pf[p.coluna] || "")} onSalvo={async () => { await refreshProfile(); }} />)}
         <section className="pxl-card pxl-ev">
-          <b className="pxl-ev-t">O que o pixel registra no seu cardápio</b>
+          <b className="pxl-ev-t">O que o pixel registra</b>
           {["Visita ao cardápio", "Produto colocado na sacola", "Começou a finalizar o pedido", "Pedido enviado, com o valor"].map(t => (
             <span key={t}><CheckCircle size={18} weight="fill" aria-hidden="true" />{t}</span>
           ))}
@@ -101,6 +103,7 @@ export default function Pixel() {
         </section>
       </div>
       <style>{`
+        .pxl-pro { grid-column: 1 / -1; }
         .pxl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; max-width: 1080px; padding: 16px; font-family: var(--font-base); }
         @media (min-width: 900px) { .pxl { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 24px; } }
         .pxl-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
