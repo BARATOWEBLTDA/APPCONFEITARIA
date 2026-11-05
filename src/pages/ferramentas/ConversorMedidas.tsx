@@ -3,7 +3,7 @@ import { CaretDown, CaretRight, Copy, Info, MagnifyingGlass, Plus } from "@phosp
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Campo, Gaveta, avisar } from "@/components/base";
 import { supabase } from "@/lib/supabase";
-import { INGREDIENTES, MEDIDAS, ML, emGramas, emMl, fotoIngrediente, gramasTexto, lerQuantidade, numeroReceita, type Ingrediente, type Medida } from "@/lib/medidas";
+import { INGREDIENTES, MEDIDAS, ML, emGramas, emMl, fotoIngrediente, ilustracaoIngrediente, gramasTexto, lerQuantidade, numeroReceita, type Ingrediente, type Medida } from "@/lib/medidas";
 import "./ferramentas.css";
 
 /**
@@ -24,7 +24,9 @@ function lerRecentes(): string[] {
 }
 
 function Foto({ i, g }: { i: Ingrediente; g?: boolean }) {
-  return <img className={`fm-foto${g ? " g" : ""}`} src={fotoIngrediente(i)} alt="" loading="lazy" />;
+  // foto real; sem internet ou se o CDN falhar, a ilustração da tigela
+  return <img className={`fm-foto${g ? " g" : ""}${i.proprio ? " il" : ""}`} src={fotoIngrediente(i, g ? 192 : 96)} alt="" loading="lazy"
+    onError={e => { const im = e.currentTarget; const il = ilustracaoIngrediente(i); if (!im.src.endsWith(il)) { im.src = il; im.classList.add("il"); } }} />;
 }
 
 export default function ConversorMedidas() {

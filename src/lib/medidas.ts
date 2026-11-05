@@ -20,8 +20,47 @@ export const MEDIDAS: { v: Medida; um: string; varios: string }[] = [
 /** gramas em 1 xícara (240 ml) */
 export type Ingrediente = { id: string; nome: string; xicara: number; grupo: "Secos" | "Gorduras" | "Líquidos" | "Outros" | "Seus"; proprio?: boolean };
 
-/** foto do ingrediente (os cadastrados por ela usam a tigela neutra) */
-export const fotoIngrediente = (i: Ingrediente) => `/ingredientes/${i.proprio ? "seu" : i.id}.webp`;
+/**
+ * (6.151) Fotos reais dos ingredientes: Unsplash (licença livre, uso comercial sem atribuição obrigatória),
+ * servidas já recortadas no tamanho certo pelo CDN deles. Se a foto não carregar, fica a ilustração da tigela.
+ */
+const FOTOS: Record<string, string> = {
+  "farinha": "photo-1627485937980-221c88ac04f9",
+  "acucar": "photo-1634612831148-03a8550e1d52",
+  "acucar-cristal": "photo-1673791031202-ebc0eea03bf2",
+  "acucar-mascavo": "photo-1704079611177-a3a60ce6f975",
+  "acucar-confeiteiro": "photo-1738667763809-d064c7a0fc69",
+  "chocolate-po": "photo-1640958899669-12f9b327d38f",
+  "cacau": "photo-1765710686877-f7c433d88936",
+  "amido": "photo-1714842981153-ffeaf74e7a1a",
+  "leite-po": "photo-1704650312191-005ab02786f5",
+  "coco": "photo-1582362731298-b3f9789a17ce",
+  "aveia": "photo-1598048851887-0263d4f43e73",
+  "fuba": "photo-1673694800551-b84c5e7d2933",
+  "polvilho": "photo-1641301553499-9a0ff924fcb5",
+  "fermento": "photo-1737098140591-f0988ae7e15a",
+  "bicarbonato": "photo-1770732851655-a789335a31c8",
+  "sal": "photo-1558394299-f2e6198506a6",
+  "castanha": "photo-1693812879904-b8161644ce5a",
+  "granulado": "photo-1657502360008-667db038296b",
+  "manteiga": "photo-1589985270826-4b7bb135bc9d",
+  "margarina": "photo-1660190368311-64d54386e494",
+  "oleo": "photo-1552592074-ea7a91b851b3",
+  "leite": "photo-1517448931760-9bf4414148c5",
+  "agua": "photo-1781510350868-b81dfa490295",
+  "leite-condensado": "photo-1612676855298-c7116c892b1a",
+  "creme-leite": "photo-1633893215271-f7e1fca081ad",
+  "chantilly": "photo-1786695144564-d1cd05367032",
+  "mel": "photo-1587049352851-8d4e89133924",
+  "doce-leite": "photo-1729673520938-98c2394f33df",
+  "nutella": "photo-1551578657-a7e74acb0135",
+  "requeijao": "photo-1573810655264-8d1e50f1592d",
+};
+export const ilustracaoIngrediente = (i: Ingrediente) => `/ingredientes/${i.proprio ? "seu" : i.id}.webp`;
+export const fotoIngrediente = (i: Ingrediente, px = 96) => {
+  const f = !i.proprio && FOTOS[i.id];
+  return f ? `https://images.unsplash.com/${f}?w=${px}&h=${px}&fit=crop&q=70&auto=format` : ilustracaoIngrediente(i);
+};
 
 export const INGREDIENTES: Ingrediente[] = [
   { id: "farinha", nome: "Farinha de trigo", xicara: 120, grupo: "Secos" },
