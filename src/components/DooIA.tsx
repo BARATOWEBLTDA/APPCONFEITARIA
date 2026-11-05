@@ -1,6 +1,6 @@
 import { pegarPedidoDoo } from '@/components/MenuContaItens'
 import { useState, useRef, useEffect } from 'react'
-import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf, Storefront, WhatsappLogo, ChatCircleDots } from '@phosphor-icons/react'
+import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf, Storefront, WhatsappLogo, ChatCircleDots, CaretRight } from '@phosphor-icons/react'
 import { card, gerarDocumento } from '@/lib/pdfDoonly'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
@@ -787,6 +787,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   // (6.115) "Nova conversa" guarda a de agora nas Conversas recentes (antes apagava)
   const chaveHist = uid ? `doonly_doo_historico_${uid}` : ''
   const [historico, setHistorico] = useState<ConversaSalva[]>([])
+  const zerarRef = useRef(false)
   const [verTodas, setVerTodas] = useState(false)
   useEffect(() => {
     if (!chaveHist || !open) return
@@ -991,7 +992,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
       attachmentPreview: pendingImage?.preview
     }
 
-    const newMessages = [...messages, userMsg]
+    // (6.122) acabou de abrir e a conversa de antes foi guardada: começa do zero (o estado ainda não atualizou)
+    const base = zerarRef.current ? [] : messages
+    zerarRef.current = false
+    const newMessages = [...base, userMsg]
     setMessages(newMessages)
     setInput(''); if (inputRef.current) inputRef.current.style.height = ''
     const imgPayload = pendingImage
@@ -1104,6 +1108,19 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     setLoading(false)
     setGeneratingImage(false)
   }
+  // (6.122) toda vez que abre, a Doo começa na tela de abertura: a conversa de antes vai para "Continuar conversa anterior"
+  const abriuRef = useRef(false)
+  useEffect(() => {
+    if (!open) { abriuRef.current = false; return }
+    if (abriuRef.current || !conversaCarregada || loading || generatingImage) return
+    abriuRef.current = true
+    if (!messages.some(m => m.role === 'user')) return
+    let salvo: ConversaSalva[] = []
+    try { const h = JSON.parse(localStorage.getItem(chaveHist) || '[]'); if (Array.isArray(h)) salvo = h } catch { /* guardado estragado */ }
+    gravarHistorico(guardarAtual(salvo))
+    zerarRef.current = true
+    setMessages([]); setVerTodas(false)
+  }, [open, conversaCarregada]) // eslint-disable-line react-hooks/exhaustive-deps
   // (21/10) aberta por um atalho (tela da Doo IA): já manda o pedido escrito
   useEffect(() => {
     if (!open || loading || generatingImage) return
@@ -1164,10 +1181,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             {showSuggestions && (
               <div className="dz-ini">
                 {/* (6.115) abertura nova: oi curto, o topo de bolo em destaque, 6 atalhos e as conversas recentes */}
-                <div className="dz-hero2">
-                  <img src="/Sistema/doo.webp" alt="" />
-                  <span><b>{nomeConfeiteira ? `Oi, ${nomeConfeiteira}!` : 'Oi!'}</b><small>Peça do seu jeito: eu calculo, cadastro, crio e configuro sua loja.</small></span>
-                </div>
+                {/* (6.122) sem o "Oi, fulana!": repetia o que os atalhos já mostram */}
                 {isPro && <button type="button" className="dz-dest" onClick={() => setTopoAberto(true)}>
                   <span className="dz-dest-ic"><Cake size={22} weight="bold" /></span>
                   <span className="dz-dest-tx"><b>Topo de bolo com IA</b><small>Nome e tema · PDF pronto</small></span>
@@ -1182,13 +1196,21 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                 </div>
                 {historico.length > 0 && (
                   <section className="dz-rec" aria-label="Conversas recentes">
-                    <p className="dz-rec-t"><span>Conversas recentes</span>{historico.length > 3 && <button type="button" onClick={() => setVerTodas(v => !v)}>{verTodas ? 'Ver menos' : 'Ver todas'}</button>}</p>
-                    {(verTodas ? historico : historico.slice(0, 3)).map(c => (
-                      <button type="button" key={c.id} className="dz-rec-i" onClick={() => abrirConversa(c)}>
-                        <span className="dz-rec-ic" aria-hidden="true"><ChatCircleDots size={16} weight="bold" /></span>
-                        <span className="dz-rec-tx"><b>{c.titulo}</b><small>{quandoFoi(c.quando)}</small></span>
-                      </button>
-                    ))}
+                    {/* (6.122) a última conversa em destaque, para continuar de onde parou */}
+                    <button type="button" className="dz-cont" onClick={() => abrirConversa(historico[0])}>
+                      <span className="dz-cont-ic" aria-hidden="true"><ChatCircleDots size={22} weight="bold" /></span>
+                      <span className="dz-cont-tx"><em>Continuar conversa anterior</em><b>{historico[0].titulo}</b><small>{quandoFoi(historico[0].quando)}</small></span>
+                      <CaretRight size={18} weight="bold" className="dz-cont-seta" aria-hidden="true" />
+                    </button>
+                    {historico.length > 1 && <>
+                      <p className="dz-rec-t"><span>Conversas recentes</span>{historico.length > 4 && <button type="button" onClick={() => setVerTodas(v => !v)}>{verTodas ? 'Ver menos' : 'Ver todas'}</button>}</p>
+                      {(verTodas ? historico.slice(1) : historico.slice(1, 4)).map(c => (
+                        <button type="button" key={c.id} className="dz-rec-i" onClick={() => abrirConversa(c)}>
+                          <span className="dz-rec-ic" aria-hidden="true"><ChatCircleDots size={16} weight="bold" /></span>
+                          <span className="dz-rec-tx"><b>{c.titulo}</b><small>{quandoFoi(c.quando)}</small></span>
+                        </button>
+                      ))}
+                    </>}
                   </section>
                 )}
               </div>
@@ -1387,7 +1409,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         }
         /* (04/11 · 6.42) COMPUTADOR: janelinha de chat no canto direito, em cima do balão (estilo atendimento de site) */
         @media (min-width: 901px) {
-          .dooia-panel { top: auto; left: auto; right: 24px; bottom: 100px; width: 390px; height: min(620px, calc(100dvh - 124px)); border-radius: 20px; animation: dooPop .2s cubic-bezier(.16,1,.3,1); transform-origin: bottom right; }
+          .dooia-panel { top: auto; left: auto; right: 24px; bottom: 100px; width: 420px; height: min(700px, calc(100dvh - 124px)); border-radius: 20px; animation: dooPop .2s cubic-bezier(.16,1,.3,1); transform-origin: bottom right; }
         }
         @keyframes dooPop { from { opacity: 0; transform: translateY(12px) scale(.96); } }
         .dz-hd { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 14px; background: radial-gradient(130% 160% at 0 0, #5A3626, var(--ui-vinho-escuro) 70%); color: var(--ui-branco); }
@@ -1438,6 +1460,14 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           .dz-dest { gap: 10px; padding: 11px 10px; } .dz-dest-bt { padding: 7px 10px; }
         }
         .dz-rec { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+        .dz-cont { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 76px; margin-bottom: 6px; padding: 14px; border: 1px solid #F3C9D9; border-radius: 16px; background: linear-gradient(135deg, #FFF5F9, var(--ui-branco)); font-family: inherit; text-align: left; color: inherit; cursor: pointer; transition: border-color .15s; }
+        .dz-cont:hover { border-color: var(--ui-rosa, #E85A8C); }
+        .dz-cont-ic { flex: none; width: 44px; height: 44px; border-radius: 12px; background: var(--ui-branco); box-shadow: inset 0 0 0 1px #F3C9D9; color: var(--ui-rosa-escuro, #C33A6E); display: flex; align-items: center; justify-content: center; }
+        .dz-cont-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+        .dz-cont-tx em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--ui-rosa-escuro, #C33A6E); }
+        .dz-cont-tx b { font-size: 14.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dz-cont-tx small { font-size: 12px; color: var(--ui-texto-3); }
+        .dz-cont-seta { flex: none; color: var(--ui-texto-3); }
         .dz-rec-t { display: flex; justify-content: space-between; align-items: center; margin: 0; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
         .dz-rec-t button { border: 0; background: none; padding: 4px 0; font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
         .dz-rec-i { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border: 1px solid #F0EBED; border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
