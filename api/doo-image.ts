@@ -1,6 +1,6 @@
 import { usuarioDoToken, respostaNaoAutorizado, planoDoUsuario, usarCota, respostaLimite, respostaJson, lerCorpo, chaveOpenAI } from "./_auth";
 
-const LIMITE_CORPO = 32 * 1024;
+const LIMITE_CORPO = 3.5 * 1024 * 1024; // (6.100) cabe a foto de referência (já reduzida no aparelho)
 const MAX_PROMPT = 4000; // (11/10) o limite do próprio gerador de imagem
 
 export const config = { runtime: "edge" };
@@ -32,8 +32,8 @@ export default async function handler(req: Request) {
   if (!apiKey) return new Response(JSON.stringify({ error: "missing_key" }), { status: 500, headers: CORS });
 
   const cru = await lerCorpo(req, LIMITE_CORPO);
-  let prompt: unknown, tipo: unknown;
-  try { const j = cru === null ? null : JSON.parse(cru); prompt = j?.prompt; tipo = j?.tipo; } catch { return respostaJson({ error: "invalid_request_error" }, 400, CORS); }
+  let prompt: unknown, tipo: unknown, referencia: unknown;
+  try { const j = cru === null ? null : JSON.parse(cru); prompt = j?.prompt; tipo = j?.tipo; referencia = j?.referencia; } catch { return respostaJson({ error: "invalid_request_error" }, 400, CORS); }
   if (cru !== null && (typeof prompt !== "string" || !prompt.trim())) return respostaJson({ error: "invalid_request_error" }, 400, CORS);
   if (cru === null || (prompt as string).length > MAX_PROMPT) {
     return respostaJson({ error: "too_large", message: "O pedido da imagem ficou grande demais." }, 413, CORS);
@@ -45,12 +45,23 @@ export default async function handler(req: Request) {
   // (6.96) tenta em cascata: gpt-image-1 completo → gpt-image-1 simples (se a OpenAI recusar algum parâmetro) → dall-e-3.
   // O erro de cada tentativa (código, parâmetro e mensagem) volta para a tela e para o log, para achar o motivo de verdade.
   type ErroOpenAI = { code?: string; type?: string; param?: string; message?: string };
+  // (6.100) com foto de referência ("faz uma parecida com essa"): vai pela rota de edição, com a foto junto
+  const ref = typeof referencia === "string" && referencia.length > 100 ? referencia.replace(/^data:[^,]+,/, "") : "";
+  const blobRef = () => { const bin = atob(ref); const b = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) b[k] = bin.charCodeAt(k); return new Blob([b], { type: "image/jpeg" }); };
   const pedir = async (corpo: Record<string, unknown>) => {
-    const r = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-      body: JSON.stringify(corpo),
-    });
+    let r: Response;
+    if (ref) {
+      const fd = new FormData();
+      for (const [k, v] of Object.entries(corpo)) fd.append(k, String(v));
+      fd.append("image", blobRef(), "referencia.jpg");
+      r = await fetch("https://api.openai.com/v1/images/edits", { method: "POST", headers: { "Authorization": `Bearer ${apiKey}` }, body: fd });
+    } else {
+      r = await fetch("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+        body: JSON.stringify(corpo),
+      });
+    }
     const d = await r.json().catch(() => null);
     return { ok: r.ok, status: r.status, d, erro: (d?.error || null) as ErroOpenAI | null };
   };
