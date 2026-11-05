@@ -31,14 +31,14 @@ const isoDe = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padSta
 // (31/10 · 5.84) fora do componente do gráfico (antes era refeito a cada desenho)
 /** Ponto do gráfico como chega na dica (com a soma e o período anterior) */
 type PontoDica = Ponto & { acum: number; antes: number };
-function Dica({ active, payload, rotulo }: { active?: boolean; payload?: { payload: PontoDica }[]; rotulo?: string }) {
+function Dica({ active, payload, rotulo }: { active?: boolean; payload?: { payload: PontoDica }[]; rotulo?: string | null }) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload;
   return (
     <div className="grf-dica">
       <small>{diaLongo(p.iso, p.dia)}</small>
       <b>{brl(p.acum)}</b>
-      <span>{rotulo}: {brl(p.antes)}</span>
+      {rotulo && <span>{rotulo}: {brl(p.antes)}</span>}
     </div>
   );
 }
@@ -73,17 +73,18 @@ export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
     });
     const total = a, totalAntes = b;
     const pct = totalAntes > 0 ? Math.round(((total - totalAntes) / totalAntes) * 100) : null;
-    const hojeValor = dados.find(p => p.iso === isoDe(hoje))?.valor ?? dados[dados.length - 1]?.valor ?? 0;
-    return { serie, total, totalAntes, pct, hojeValor };
+    return { serie, total, totalAntes, pct };
   }, [dados, periodo]);
 
   const mes = MESES_LONGOS[new Date().getMonth()];
   const mesAnt = MESES_LONGOS[(new Date().getMonth() + 11) % 12];
   const txt = periodo === "mes"
-    ? { titulo: `Recebido em ${mes}`, compara: `em relação ao mesmo período de ${mesAnt}`, nada: `Sem vendas em ${mesAnt} para comparar`, legA: "Este mês", legB: "Mês passado", dica: "Mês passado" }
-    : { titulo: `Recebido nos últimos ${periodo} dias`, compara: `em relação aos ${periodo} dias anteriores`, nada: "Sem vendas antes para comparar", legA: `Últimos ${periodo} dias`, legB: `${periodo} dias anteriores`, dica: "Período anterior" };
+    ? { titulo: `Recebido em ${mes}`, compara: `em relação ao mesmo período de ${mesAnt}`, legA: "Este mês", legB: "Mês passado", dica: "Mês passado" }
+    : { titulo: `Recebido nos últimos ${periodo} dias`, compara: `em relação aos ${periodo} dias anteriores`, legA: `Últimos ${periodo} dias`, legB: `${periodo} dias anteriores`, dica: "Período anterior" };
 
-  const { serie, total, totalAntes, pct, hojeValor } = g;
+  const { serie, total, totalAntes, pct } = g;
+  // sem vendas no período anterior: sem linha tracejada, sem legenda e sem texto de comparação
+  const temAntes = totalAntes > 0;
   const n = serie.length;
   const intervalo = n > 10 ? Math.ceil(n / 7) - 1 : 0;
   return (
@@ -91,15 +92,15 @@ export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
       <div className="grf-topo">
         <div className="grf-tot">
           <small>{txt.titulo}</small>
-          <b>{brl(total)}</b>
-          {pct !== null ? (
-            <span className={pct >= 0 ? "sobe" : "desce"}>
-              {pct >= 0 ? "▲" : "▼"} {Math.abs(pct).toLocaleString("pt-BR")}% <em>{txt.compara}</em>
-            </span>
-          ) : (
-            <span><em>{total > 0 ? txt.nada : ""}</em></span>
-          )}
-          <span className="grf-hoje"><em>Hoje:</em> {brl(hojeValor)}</span>
+          {/* (6.154) só o essencial: o valor e, quando dá para comparar, a variação numa etiqueta ao lado */}
+          <span className="grf-val">
+            <b>{brl(total)}</b>
+            {pct !== null && (
+              <span className={`grf-pct ${pct >= 0 ? "sobe" : "desce"}`} title={txt.compara}>
+                {pct >= 0 ? "▲" : "▼"} {Math.abs(pct).toLocaleString("pt-BR")}%
+              </span>
+            )}
+          </span>
         </div>
         <div className="grf-seg" role="tablist" aria-label="Período do gráfico">
           {([[7, "7 dias"], [30, "30 dias"], ["mes", "Este mês"]] as [Periodo, string][]).map(([k, rot]) => (
@@ -107,10 +108,12 @@ export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
           ))}
         </div>
       </div>
-      <div className="grf-leg" aria-hidden="true">
-        <span><i className="a" />{txt.legA}</span>
-        <span><i className="b" />{txt.legB}</span>
-      </div>
+      {temAntes && (
+        <div className="grf-leg" aria-hidden="true">
+          <span><i className="a" />{txt.legA}</span>
+          <span><i className="b" />{txt.legB}</span>
+        </div>
+      )}
       <div className="grf-g" role="img" aria-label={`${txt.titulo}: ${brl(total)}. ${txt.legB}: ${brl(totalAntes)}.`}>
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 600, height: 210 }}>
           <AreaChart key={String(periodo)} data={serie} margin={{ top: 8, right: 18, bottom: 0, left: 0 }}>
@@ -123,8 +126,8 @@ export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
             <CartesianGrid stroke="var(--ui-linha)" vertical={false} />
             <XAxis dataKey="dia" tick={{ fontSize: 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} interval={intervalo} padding={{ left: 4, right: 4 }} />
             <YAxis width={78} tick={{ fontSize: 12, fill: "var(--ui-texto-3)" }} tickLine={false} axisLine={false} tickFormatter={curto} tickCount={4} allowDecimals={false} />
-            <Tooltip content={<Dica rotulo={txt.dica} />} cursor={{ stroke: "var(--ui-rosa)", strokeDasharray: "4 4" }} isAnimationActive={false} />
-            <Line type="monotone" dataKey="antes" stroke="#B9AFB3" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} isAnimationActive={false} />
+            <Tooltip content={<Dica rotulo={temAntes ? txt.dica : null} />} cursor={{ stroke: "var(--ui-rosa)", strokeDasharray: "4 4" }} isAnimationActive={false} />
+            {temAntes && <Line type="monotone" dataKey="antes" stroke="#B9AFB3" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} isAnimationActive={false} />}
             <Area type="monotone" dataKey="acum" stroke="var(--ui-rosa)" strokeWidth={2.5} fill="url(#grfArea)" dot={false}
               activeDot={{ r: 5, fill: "var(--ui-rosa)", stroke: "#fff", strokeWidth: 2 }} />
           </AreaChart>

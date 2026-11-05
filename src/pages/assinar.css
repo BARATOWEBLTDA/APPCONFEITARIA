@@ -96,3 +96,5 @@ button.pro9-l2-i { cursor: pointer; }
 /* (6.101) ícones da lista no padrão do app (caixinha branca, borda fina), não no rosa lavado */
 .pro9-ic { background: var(--ic-fundo); color: var(--ic-cor); box-shadow: inset 0 0 0 1px var(--ic-borda); border-radius: 12px; }
 @media (min-width: 901px) { .pro9 .pro9-faq { margin-right: 72px; } } /* o balão da Doo não cobre a seta das dúvidas */
+/* (6.154) na coluna do lado, as dúvidas ficam da largura do cartão do plano (o balão da Doo fica embaixo, longe delas) */
+@media (min-width: 901px) { .pro9 .pro9-lado .pro9-faq { margin-right: 0; } }

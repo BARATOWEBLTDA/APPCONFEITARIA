@@ -107,8 +107,10 @@
 .cf9-lista > .cf9-grupo:first-child > .cf9-sec:first-child { margin-top: 10px; }
 @media (min-width: 901px) {
   .cf9-busca { max-width: 520px; }
-  .cf9-lista:has(> .cf9-grupo) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; padding: 0; border: 0; background: transparent; box-shadow: none; }
-  .cf9-grupo { display: block; padding: 4px 8px 8px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
+  /* (6.154) um cartão branco só, com as 3 colunas dentro separadas por uma linha fina (antes 3 cartões soltos) */
+  .cf9-lista:has(> .cf9-grupo) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; align-items: stretch; padding: 8px 0; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
+  .cf9-grupo { display: block; padding: 4px 12px 8px; }
+  .cf9-grupo + .cf9-grupo { border-left: 1px solid var(--ui-linha); }
   .cf9-grupo > .cf9-sec:first-child { margin-top: 10px; }
   .cf9 .ui-bt.cf9-sair { width: auto; margin: 4px auto 0; padding: 0 28px; background: transparent; box-shadow: none; }
 }

@@ -9,7 +9,7 @@ import {
 } from "@phosphor-icons/react";
 import { abrirBuscaRapida } from "@/components/BuscaRapida";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target, ShareNetwork, Scales } from "@phosphor-icons/react";
+import { Ticket, Target, ShareNetwork, Scales, ArrowsDownUp, HandCoins, CalendarCheck } from "@phosphor-icons/react";
 import { indicarDoonly } from "@/lib/indicarDoonly";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { usePlano } from "@/hooks/usePlano";
@@ -61,7 +61,11 @@ const GRUPOS: Grupo[] = [
   {
     label: "Dinheiro",
     items: [
-      { label: "Financeiro",    desc: "Entradas, saídas e contas", path: "/financeiro", Icone: CurrencyDollar },
+      // (6.154) as partes do Financeiro direto do Menu (igual ao menu do computador), sem passar pela Visão geral
+      { label: "Financeiro",    desc: "Visão geral do mês",        path: "/financeiro", Icone: CurrencyDollar },
+      { label: "Transações",    desc: "Tudo o que entrou e saiu",  path: "/financeiro/transacoes", Icone: ArrowsDownUp },
+      { label: "A receber",     desc: "O que os clientes devem",   path: "/financeiro/a-receber", Icone: HandCoins },
+      { label: "A pagar",       desc: "Contas e boletos",          path: "/financeiro/a-pagar", Icone: CalendarCheck },
       { label: "Lucratividade", desc: "Lucro de cada produto", path: "/lucratividade", Icone: ChartPieSlice, pro: true },
     ],
   },

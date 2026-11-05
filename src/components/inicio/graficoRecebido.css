@@ -8,7 +8,10 @@
 .grf-tot span em { font-style: normal; font-weight: 500; color: var(--ui-texto-2); }
 .grf-tot .sobe { color: var(--ui-verde); }
 .grf-tot .desce { color: var(--ui-vermelho); }
-.grf-tot .grf-hoje { margin-top: 2px; font-weight: 600; color: var(--ui-texto); }
+.grf-val { display: flex; align-items: center; gap: 8px; min-height: 0; overflow: visible; }
+.grf-tot .grf-pct { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; }
+.grf-tot .grf-pct.sobe { background: var(--ui-verde-fundo); }
+.grf-tot .grf-pct.desce { background: var(--ui-vermelho-fundo); }
 .grf-seg { flex: none; display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--ui-cinza); }
 .grf-seg button { height: 32px; margin: 0; padding: 0 12px; border: 0; border-radius: 8px; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); cursor: pointer; }
 .grf-seg button[aria-selected="true"] { background: var(--ui-branco); color: var(--ui-texto); box-shadow: 0 1px 3px rgba(34, 19, 14, .1); }

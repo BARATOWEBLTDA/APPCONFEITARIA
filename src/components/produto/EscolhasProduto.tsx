@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import Destaque, { jaViuDestaque, marcarDestaque } from "@/components/Destaque";
+import Destaque from "@/components/Destaque";
+import { useProfile } from "@/hooks/useProfile";
 import { CaretDown, Check, GearSix, Info, Plus, Sparkle, X } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -617,20 +618,26 @@ function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: P
   // resumo curto que cabe numa linha: "Serve de 10 a 50 pessoas" (ou "Serve até 10 pessoas" se for um só)
   const nsR = comNum.map(o => Number(numeroServe(o.serve))).sort((x, y) => x - y);
   const resumo = ok ? (nsR.length > 1 && nsR[0] !== nsR[nsR.length - 1] ? `Serve de ${nsR[0]} a ${nsR[nsR.length - 1]} ${un}` : `Serve até ${nsR[0]} ${un}`) : "";
-  // (19/10) primeira vez cadastrando tamanhos sem rendimento: balão mostrando que dá pra definir (e salvar pra usar de novo)
+  // (6.154) chegou na tela dos tamanhos sem rendimento: balão chamando pelo nome para configurar.
+  // "Agora não" vale até fechar o app (não volta a cada produto); com rendimento definido, não aparece.
   const linhaRef = useRef<HTMLButtonElement>(null);
   const [dica, setDica] = useState(false);
+  const { profile } = useProfile();
+  const primeiroNome = String(profile?.nome || "").trim().split(/\s+/)[0] || "";
   useEffect(() => {
-    if (ok || jaViuDestaque("rendimento")) return;
-    const t = window.setTimeout(() => { marcarDestaque("rendimento"); setDica(true); }, 600);
+    let dispensou = false;
+    try { dispensou = sessionStorage.getItem("doonly_rend_agora_nao") === "1"; } catch { /* sem armazenamento */ }
+    if (ok || dispensou) return;
+    const t = window.setTimeout(() => setDica(true), 600);
     return () => window.clearTimeout(t);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const agoraNao = () => { setDica(false); try { sessionStorage.setItem("doonly_rend_agora_nao", "1"); } catch { /* sem armazenamento */ } };
   const exemplo = g.opcoes.slice(0, 2).map((o, i) => ({ nome: `${o.nome || (i ? "Grande" : "Pequeno")}${Number(o.peso_kg) > 0 && !/kg|\d\s*g\b/i.test(o.nome || "") ? ` · ${String(o.peso_kg).replace(".", ",")} kg` : ""}` /* (27/10) "1 kg" em vez de "1 kg · 1 kg" */, serve: i ? "Serve até 20 pessoas" : "Serve até 10 pessoas" }));
   return (<>
     {dica && (
-      <Destaque alvo={linhaRef} sobreJanela mascote raio={14} semNao titulo="Defina o rendimento" acao="Entendi"
-        texto="Mostre quantas pessoas cada tamanho serve. Você salva uma vez e usa nos outros produtos."
-        aoAcao={() => setDica(false)} aoFechar={() => setDica(false)}
+      <Destaque alvo={linhaRef} sobreJanela mascote raio={14} titulo={primeiroNome ? `${primeiroNome}, configure o rendimento` : "Configure o rendimento"} acao="Configurar" naoTexto="Agora não"
+        texto="Mostre quantas pessoas cada tamanho serve. Fica lindo no cardápio!"
+        aoAcao={() => { setDica(false); setAberta(true); }} aoFechar={agoraNao}
         extra={<div className="esc-dica-prev" aria-hidden="true">
           <small>No cardápio fica assim:</small>
           {exemplo.map(e => <div key={e.nome} className="esc-dica-l"><span><b>{e.nome}</b><em>{e.serve}</em></span><i /></div>)}

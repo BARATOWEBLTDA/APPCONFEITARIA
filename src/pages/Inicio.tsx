@@ -88,7 +88,8 @@ let cacheInicio: { uid: string; dia: string; dados: DadosInicio } | null = null;
 /** (30/10 · 5.60) Indicador de variação: compara com o período anterior equivalente.
  *  Subiu: verde com seta para cima. Caiu: vermelho com seta para baixo. Igual: cinza. Sem base: "Sem dados para comparar". */
 function Variacao({ atual, anterior, quando }: { atual: number; anterior: number; quando: string }) {
-  if (!(anterior > 0)) return <span className="ini-var ini-var--sem">Sem dados para comparar</span>;
+  // (6.154) sem base para comparar: nada (antes os quatro cartões repetiam "Sem dados para comparar")
+  if (!(anterior > 0)) return null;
   const pct = Math.round(((atual - anterior) / anterior) * 1000) / 10;
   const tipo = pct > 0 ? "sobe" : pct < 0 ? "desce" : "igual";
   const Ic = tipo === "sobe" ? ArrowUp : tipo === "desce" ? ArrowDown : Minus;
