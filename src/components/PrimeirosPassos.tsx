@@ -255,7 +255,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       <div ref={raiz} className={`pp pp--inicio pp--banner${destaque ? " pp--destaque" : ""}`}>
         <div className="ppb-topo">
           {/* (6.126) cada passo pode ter o seu Doo; o da logo pinta a fachada da loja */}
-          <img src={p.t === "Logo da loja" ? "/Sistema/banner-passos-logo.webp" : "/Sistema/banner-passos.webp"} alt="" aria-hidden="true" className="ppb-img" />
+          <img src={DOO_PASSO[p.t]?.banner || "/Sistema/banner-passos.webp"} alt="" aria-hidden="true" className="ppb-img" />
           <b className="ppb-t">{faltam === 1 ? "Falta só 1 passo" : "Seu cardápio quase no ar"}</b>
           <small className="ppb-sub">{feitos === 0 ? `${passos.length} passos rápidos, uns 5 minutos` : `${feitos} de ${passos.length} prontos`}</small>
           <div className="ppb-bar" role="progressbar" aria-valuemin={0} aria-valuemax={passos.length} aria-valuenow={feitos} aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
@@ -344,8 +344,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
                         <button type="button" className="pp-hero-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}<ArrowRight size={18} weight="bold" aria-hidden="true" /></button>
                       </div>
                     </div>
-                    {p.t === "Logo da loja"
-                      ? <div className="pp-hero-masc pp-hero-masc--largo"><img src="/marca/leve/doo-pintando-logo.webp" alt="" aria-hidden="true" /></div>
+                    {DOO_PASSO[p.t]
+                      ? <div className={`pp-hero-masc${DOO_PASSO[p.t].largo ? " pp-hero-masc--largo" : ""}`}><img src={DOO_PASSO[p.t].pc} alt="" aria-hidden="true" /></div>
                       : <div className="pp-hero-masc"><i aria-hidden="true" /><Mascote pose="prancheta" /></div>}
                   </div>
                   <div className="pp-hero-dica">
@@ -889,6 +889,12 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
     </Janelinha>
   );
 }
+
+/** (6.126) o Doo de cada passo: no computador ao lado do passo da vez; no celular, já montado no banner do topo */
+const DOO_PASSO: Record<string, { pc: string; banner: string; largo?: boolean }> = {
+  "Logo da loja": { pc: "/marca/leve/doo-pintando-logo.webp", banner: "/Sistema/banner-passos-logo.webp", largo: true },
+  "Sobre a confeitaria": { pc: "/marca/leve/doo-loja.webp", banner: "/Sistema/banner-passos-sobre.webp" },
+};
 
 const CSS = `
   /* (22/10) celular, Início: cartão-banner (arte com o Doo acenando à direita, texto à esquerda) */
