@@ -11,7 +11,7 @@ import "./sistema.css";
  * (o mesmo desenho da "página não encontrada") no lugar da tela em branco.
  * "Recarregar" abre o app de novo na mesma tela; "Voltar pro início" sai da tela que quebrou.
  */
-type Estado = { quebrou: boolean; atualizacao?: boolean };
+type Estado = { quebrou: boolean; atualizacao?: boolean; detalhe?: string };
 
 /** (6.91) parte do app que mudou numa atualização (o arquivo antigo não existe mais) */
 export const ehErroDeAtualizacao = (msg: string) => /dynamically imported module|Importing a module script failed|Failed to load module script|error loading dynamically|preload CSS|Loading chunk|Loading CSS chunk|MIME type/i.test(msg);
@@ -19,7 +19,7 @@ export const ehErroDeAtualizacao = (msg: string) => /dynamically imported module
 export default class TelaDeErro extends Component<{ children: ReactNode }, Estado> {
   state: Estado = { quebrou: false, atualizacao: false };
 
-  static getDerivedStateFromError(erro: unknown): Estado { return { quebrou: true, atualizacao: ehErroDeAtualizacao(String((erro as Error)?.message || "")) || haVersaoNova() }; }
+  static getDerivedStateFromError(erro: unknown): Estado { const msg = String((erro as Error)?.message || erro || ""); return { quebrou: true, atualizacao: ehErroDeAtualizacao(msg) || haVersaoNova(), detalhe: `${window.location.pathname} · ${msg}`.slice(0, 220) }; }
 
   componentDidCatch(erro: Error, info: ErrorInfo) {
     console.error("[Doonly] a tela quebrou:", erro, info.componentStack);
@@ -64,6 +64,8 @@ export default class TelaDeErro extends Component<{ children: ReactNode }, Estad
             <Botao cheio icone={<ArrowClockwise size={20} weight="bold" />} onClick={() => window.location.reload()}>Recarregar</Botao>
             {!noInicio && <Botao cheio variante="secundario" onClick={() => { window.location.href = "/inicio"; }}>Voltar para o início</Botao>}
           </div>
+          {/* (6.102) o motivo, pequeno, para o suporte achar o erro (mande o print) */}
+          {this.state.detalhe && <p className="sis-erro-cod">Código: {this.state.detalhe}</p>}
         </main>
       </div>
     );

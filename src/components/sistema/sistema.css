@@ -10,3 +10,5 @@
 
 /* Tela de erro: os dois botões, um embaixo do outro */
 .sis-erro-acoes { display: flex; flex-direction: column; gap: 10px; }
+/* (6.102) o motivo do erro, pequeno, para o suporte */
+.sis-erro-cod { margin: 14px 0 0; font-size: 11.5px; line-height: 1.4; color: var(--ui-texto-3, #9A8C92); overflow-wrap: anywhere; user-select: text; }

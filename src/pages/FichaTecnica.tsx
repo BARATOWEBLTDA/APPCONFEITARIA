@@ -14,7 +14,7 @@ import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
 import DooInfoModal from "@/components/DooInfoModal";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_FICHA, TOUR_FICHA } from "@/lib/comoTelas";
-import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import { Camera, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, TrendDown, WarningCircle, X, ListBullets, SquaresFour } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
@@ -22,6 +22,8 @@ import "./clientes.css";
 import "./fichaLista.css";
 import AbasFicha from "@/components/ficha/AbasFicha";
 import "./fichaDetalhe.css";
+import { usePlano } from "@/hooks/usePlano";
+import { abrirDooIA } from "@/components/MenuContaItens";
 
 // ── Famílias de unidades e conversão ──
 
@@ -200,15 +202,12 @@ function calcular(p: Produto, conta: MaoConta = null, cvConta: number | null = n
   return calcularCustoLucro(p, conta, cvConta, VENDA);
 }
 
-// (31/10 · 5.84) fora do componente da tela
-function Chave({ ligado, aoMudar, rotulo }: { ligado: boolean; aoMudar: (v: boolean) => void; rotulo: string }) {
-  return <button type="button" role="switch" aria-checked={ligado} aria-label={rotulo} className="fd-chave" onClick={() => aoMudar(!ligado)}><span /></button>;
-}
 
 export default function FichaTecnica() {
   const { profile } = useProfile();
   const primeiroNome = (profile?.nome || "").split(" ")[0] || "Confeiteira";
   const location = useLocation();
+  const { isPro: isProFicha } = usePlano();
   const navigate = useNavigate();
   const [userId, setUserId] = useState("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -619,7 +618,11 @@ export default function FichaTecnica() {
           <div className="fd-aviso-custos" role="note">
             <WarningCircle size={20} weight="bold" aria-hidden="true" />
             <span><b>Para o custo sair certo</b><small>Cadastre {!maoConta && cvConta == null ? "sua mão de obra e os custos invisíveis (gás, luz e perdas)" : !maoConta ? "sua mão de obra" : "os custos invisíveis (gás, luz e perdas)"} em Custos.</small></span>
-            <Botao variante="secundario" tamanho="m" onClick={() => navigate("/custos", { state: { abrir: !maoConta ? "mao" : "invisiveis" } })}>Cadastrar</Botao>
+            <span className="fd-aviso-bts">
+              {/* (6.102) PRO: a Doo pergunta e configura pela conversa */}
+              {isProFicha && <Botao variante="secundario" tamanho="m" onClick={() => abrirDooIA("Quero configurar minha mão de obra e os custos invisíveis")}>Pedir à Doo</Botao>}
+              <Botao variante="secundario" tamanho="m" onClick={() => navigate("/custos", { state: { abrir: !maoConta ? "mao" : "invisiveis" } })}>Cadastrar</Botao>
+            </span>
           </div>
         )}
         <div className="fd-grade">
@@ -697,32 +700,7 @@ export default function FichaTecnica() {
               dica={!maoConta ? "Entra no custo quando você cadastrar a sua mão de obra em Custos." : Number(extras.tempo_preparo_min) > 0 ? `Sua mão de obra nesta receita: R$ ${fmt(moLive)}` : "Com o tempo, o valor do seu trabalho entra no custo."} />
           </section>
 
-          {/* Informações do produto */}
-          <section className="cl9-card fd-sec">
-            <div className="fd-sec-cab">
-              <Titulo>Informações do produto</Titulo>
-              <Chave ligado={infoAtivo} aoMudar={setInfoAtivo} rotulo="Mostrar informações do produto" />
-            </div>
-            {!infoAtivo ? (
-              <p className="fd-dica">Ligue para anotar rendimento, validade, embalagem e observações.</p>
-            ) : (<>
-              <div className="cl9-f-2">
-                <Campo rotulo="Rende" opcional placeholder="Ex.: 20 brigadeiros" value={extras.rendimento_qtd} onChange={e => setExtras(s => ({ ...s, rendimento_qtd: e.target.value }))} />
-                <Campo rotulo="Peso total" opcional placeholder="Ex.: 1,2 kg" value={extras.rendimento_peso} onChange={e => setExtras(s => ({ ...s, rendimento_peso: e.target.value }))} />
-                <Campo rotulo="Validade" opcional inputMode="numeric" placeholder="5" value={extras.validade_dias} onChange={e => setExtras(s => ({ ...s, validade_dias: e.target.value }))} depois={<span className="cl9-f-uf">dias</span>} />
-              </div>
-              <div>
-                  <p className="fd-rot">Guardar</p>
-                  <div className="cl9-f-chips">
-                    {([["ambiente", "Ambiente"], ["refrigerado", "Geladeira"], ["congelado", "Freezer"]] as const).map(([v, t]) => (
-                      <button key={v} type="button" aria-pressed={extras.validade_tipo === v} onClick={() => setExtras(s => ({ ...s, validade_tipo: v }))}>{t}</button>
-                    ))}
-                  </div>
-                </div>
-              <Campo rotulo="Embalagem" opcional placeholder="Ex.: caixa kraft 20x20" value={extras.embalagem} onChange={e => setExtras(s => ({ ...s, embalagem: e.target.value }))} />
-              <CampoArea rotulo="Observações" opcional rows={2} placeholder="Produção, armazenamento ou venda" value={extras.observacoes_ficha} onChange={e => setExtras(s => ({ ...s, observacoes_ficha: e.target.value }))} />
-            </>)}
-          </section>
+          {/* (6.102) "Informações do produto" saiu da ficha: não entra no custo (o que já foi salvo continua guardado) */}
         </div>
 
         {/* Computador: resumo fixo ao lado */}

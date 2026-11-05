@@ -21,8 +21,11 @@ export type AcaoOrcamento = {
 }
 export type AcaoLoja = { acao: 'loja'; nome_loja?: string | null; horario?: HorarioDoo | null }
 export type AcaoCupom = { acao: 'cupom'; codigo: string; tipo: 'percentual' | 'fixo'; valor: number; valor_minimo?: number | null; data_fim?: string | null; limite_uso?: number | null; publico?: 'todos' | 'primeiro_pedido' | null }
-export type AcaoDoo = AcaoCliente | AcaoProduto | AcaoOrcamento | AcaoLoja | AcaoCupom
-export const ACOES_DOO = ['cliente', 'produto', 'orcamento', 'loja', 'cupom'] as const
+/** (6.102) mão de obra e custos invisíveis (o que a ficha técnica usa para o custo) */
+export type AcaoCustos = { acao: 'custos'; salario_mensal?: number | null; horas_dia?: number | null; dias?: string[] | null; custos_invisiveis_pct?: number | null }
+export type AcaoDoo = AcaoCliente | AcaoProduto | AcaoOrcamento | AcaoLoja | AcaoCupom | AcaoCustos
+export const ACOES_DOO = ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos'] as const
+const DIA_NUM: Record<string, number> = { seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6, dom: 7 }
 
 const brl = (v: number) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const dataBR = (iso?: string | null) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ''); return m ? `${m[3]}/${m[2]}/${m[1]}` : '' }
@@ -66,6 +69,12 @@ export function normalizarAcaoDoo(j: unknown): AcaoDoo | null {
       if (!cod || !v || v <= 0) return null
       return { acao: 'cupom', codigo: cod.slice(0, 20), tipo: o.tipo === 'fixo' ? 'fixo' : 'percentual', valor: v, valor_minimo: n(o.valor_minimo), data_fim: s(o.data_fim), limite_uso: n(o.limite_uso), publico: o.publico === 'primeiro_pedido' ? 'primeiro_pedido' : 'todos' }
     }
+    case 'custos': {
+      const sal = n(o.salario_mensal), hd = n(o.horas_dia), pct = n(o.custos_invisiveis_pct)
+      const dias = Array.isArray(o.dias) ? (o.dias as unknown[]).map(d => String(d).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 3)).filter(d => DIA_NUM[d]) : null
+      if (sal == null && hd == null && pct == null && !dias?.length) return null
+      return { acao: 'custos', salario_mensal: sal, horas_dia: hd, dias: dias?.length ? dias : null, custos_invisiveis_pct: pct }
+    }
     default: return null
   }
 }
@@ -85,6 +94,10 @@ export function resumoAcaoDoo(a: AcaoDoo): { titulo: string; linhas: [string, st
       ] as [string, string][]).filter(l => l[1]) }
     }
     case 'loja': return { titulo: 'Dados da loja', linhas: ([['Nome da loja', a.nome_loja || ''], ['Horário', textoHorario(a.horario)]] as [string, string][]).filter(l => l[1]) }
+    case 'custos': return { titulo: 'Mão de obra e custos', linhas: ([
+      ['Salário que quer tirar', a.salario_mensal != null ? `${brl(a.salario_mensal)} por mês` : ''], ['Horas por dia', a.horas_dia != null ? `${a.horas_dia} h` : ''],
+      ['Dias que produz', (a.dias || []).map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')], ['Custos invisíveis', a.custos_invisiveis_pct != null ? `${a.custos_invisiveis_pct}% sobre os ingredientes` : ''],
+    ] as [string, string][]).filter(l => l[1]) }
     case 'cupom': return { titulo: 'Novo cupom', linhas: ([
       ['Código', a.codigo], ['Desconto', a.tipo === 'percentual' ? `${a.valor}%` : brl(a.valor)], ['Para', a.publico === 'primeiro_pedido' ? '1º pedido do cliente' : 'Todos os pedidos'],
       ['Pedido mínimo', a.valor_minimo ? brl(a.valor_minimo) : ''], ['Vale até', dataBR(a.data_fim)], ['Limite de usos', a.limite_uso ? String(a.limite_uso) : ''],
@@ -148,6 +161,20 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
         if (error) throw error
         return { ok: true, feito: 'Loja atualizada', abrir: '/cardapio-config' }
       }
+      case 'custos': {
+        if (a.salario_mensal != null || a.horas_dia != null || a.dias?.length) {
+          const { data: atual } = await supabase.from('config_mao_obra').select('salario_mensal, horas_dia, dias_semana_array').eq('user_id', uid).maybeSingle()
+          const at = (atual || {}) as { salario_mensal?: number | null; horas_dia?: number | null; dias_semana_array?: number[] | null }
+          const dias = a.dias?.length ? a.dias.map(d => DIA_NUM[d]).sort((x, y) => x - y) : (at.dias_semana_array?.length ? at.dias_semana_array : [1, 2, 3, 4, 5])
+          const { error } = await supabase.from('config_mao_obra').upsert({ user_id: uid, salario_mensal: a.salario_mensal ?? at.salario_mensal ?? 0, horas_dia: a.horas_dia ?? at.horas_dia ?? 8, dias_semana: dias.length, dias_semana_array: dias, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
+          if (error) throw error
+        }
+        if (a.custos_invisiveis_pct != null) {
+          const { error } = await supabase.from('profiles').update({ custos_invisiveis_pct: Math.max(0, Math.min(100, a.custos_invisiveis_pct)) }).eq('id', uid)
+          if (error) throw error
+        }
+        return { ok: true, feito: 'Custos atualizados', abrir: '/custos' }
+      }
       case 'cupom': {
         const { data: lc } = await supabase.from('loja_cupons').select('cupons').eq('user_id', uid).maybeSingle()
         const lista = Array.isArray((lc as { cupons?: unknown } | null)?.cupons) ? ((lc as { cupons: Record<string, unknown>[] }).cupons) : []
@@ -190,6 +217,9 @@ Hoje a loja se chama "${loja.nome_loja || 'sem nome'}" e o horário é: ${textoH
 
 CUPOM (precisa do código e do desconto; tipo "percentual" ou "fixo" em reais; publico "primeiro_pedido" se for só para cliente novo; mínimo, validade AAAA-MM-DD e limite de usos só se ela falar).
 {"acao":"cupom","codigo":"NATAL10","tipo":"percentual","valor":10,"valor_minimo":null,"data_fim":null,"limite_uso":null,"publico":"todos"}
+
+MÃO DE OBRA E CUSTOS INVISÍVEIS (o que a ficha técnica usa para o custo de cada produto). Pergunte uma coisa de cada vez: quanto ela quer tirar de salário por mês, quantas horas trabalha por dia e em quais dias produz. Custos invisíveis são gás, luz, água e perdas, em % sobre os ingredientes: se ela não souber, sugira 25% e explique em uma frase. Mande só o que ela disse.
+{"acao":"custos","salario_mensal":3000,"horas_dia":8,"dias":["seg","ter","qua","qui","sex","sab"],"custos_invisiveis_pct":25}
 
 O QUE VOCÊ NÃO FAZ PELA CONVERSA (diga com honestidade, em uma frase, e diga onde ela faz): excluir qualquer coisa, mudar preço ou foto de produto que já existe, configurar entrega e taxas, Pix e formas de pagamento, cores e banners do cardápio, e mexer no financeiro. Ex.: "Isso eu ainda não faço por aqui: é em Cardápio digital › Dados da loja."
 `

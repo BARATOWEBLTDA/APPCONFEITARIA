@@ -129,3 +129,5 @@
 .fd-aviso-custos b { font-size: 14px; font-weight: 600; color: #7A4706; }
 .fd-aviso-custos small { font-size: 13px; line-height: 1.4; color: #8A5A16; }
 @media (max-width: 599px) { .fd-aviso-custos { flex-wrap: wrap; } .fd-aviso-custos .ui-bt { width: 100%; } }
+/* (6.102) aviso dos custos: Pedir à Doo (PRO) e Cadastrar */
+.fd-aviso-bts { display: inline-flex; gap: 8px; flex-wrap: wrap; }

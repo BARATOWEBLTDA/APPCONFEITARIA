@@ -357,6 +357,7 @@ function respostaFeito(a: AcaoDoo, feito: string): string {
     case 'produto': return `Prontinho! ${a.nome} já está no seu cardápio por ${brl(a.preco)}. Para colocar a foto e os tamanhos, toque em Abrir no cartão.`
     case 'orcamento': return `Pronto! ${feito.replace(' criado', '')} está salvo como rascunho. Toque em Abrir para revisar e enviar ao cliente pelo WhatsApp.`
     case 'loja': return 'Prontinho! Os dados da loja foram atualizados e o cardápio já mostra a mudança.'
+    case 'custos': return 'Prontinho! Sua mão de obra e os custos invisíveis já entram no custo de todas as fichas técnicas.'
     case 'cupom': return `Prontinho! O cupom ${a.codigo} já está valendo no cardápio. Quer que eu escreva uma mensagem para divulgar no WhatsApp?`
   }
 }
@@ -382,7 +383,7 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
   try {
     const j = JSON.parse(m[1].trim())
     if (j?.acao === 'pedido' && Array.isArray(j.itens) && j.itens.length) acao = j as RascunhoPedido
-    else if (['cliente', 'produto', 'orcamento', 'loja', 'cupom'].includes(j?.acao)) acao = normalizarAcaoDoo(j)
+    else if (['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos'].includes(j?.acao)) acao = normalizarAcaoDoo(j)
     else if (j?.acao === 'imagem' && typeof j.descricao === 'string' && j.descricao.trim()) acao = { acao: 'imagem', topo: j.tipo ? j.tipo === 'topo' : j.topo !== false, tipo: ['topo', 'arte', 'logo', 'banner'].includes(j.tipo) ? j.tipo : (j.topo !== false ? 'topo' : 'arte'), descricao: j.descricao.trim().slice(0, 1200) }
     else acao = normalizarRascunho(j)
   } catch { acao = null }
@@ -1116,7 +1117,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                         if (estado === 'salvo') listarInsumosResumo(uid).then(setInsumos).catch(() => {})
                       }} />
                   )}
-                  {msg.acao && uid && ['cliente', 'produto', 'orcamento', 'loja', 'cupom'].includes(msg.acao.acao) && (
+                  {msg.acao && uid && ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos'].includes(msg.acao.acao) && (
                     <CartaoAcaoDoo uid={uid} acao={msg.acao as AcaoDoo} estado={!msg.acaoEstado || msg.acaoEstado === 'editando' ? 'pendente' : msg.acaoEstado}
                       feito={msg.acaoFeito} abrir={msg.acaoAbrir} aoAbrir={handleClose}
                       onFeito={(estado, info) => {
