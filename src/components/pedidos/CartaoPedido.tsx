@@ -100,7 +100,10 @@ export function CartaoPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudand
       <div className="pdc-linhas">
         <div className="pdc-l1">
           <Linha rotulo="Situação" tom={sit.tom}>{sit.nome}</Linha>
+          <span className="pdc-bts">
+          <Botao className="pd-ver" variante="secundario" tamanho="p" onClick={parar(() => aoAbrir(p))}>Ver pedido</Botao>
           {acao && <Botao className={aceitar ? undefined : `pd-passo${passoDeDepois(p) ? ' pd-passo--depois' : ''}`} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
+          </span>
         </div>
         {!cancelado && <Linha rotulo="Pagamento" tom={textoPagamento(p, falta).tom}>{textoPagamento(p, falta).texto}</Linha>}
         <Linha rotulo={entrega ? 'Entrega' : 'Retirada'} tom={atr ? 'vermelho' : undefined}>{dataLonga(p.data_entrega, p.horario_entrega)}</Linha>
@@ -167,6 +170,8 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
       </p>
       <div className="pdl-acao" role="cell">
         {aceitar && aoRecusar && <Botao className="pd-recusar" variante="secundario" tamanho="p" disabled={mudando} onClick={parar(() => aoRecusar(p))}>Recusar</Botao>}
+        {/* (6.99) computador: "Ver" à vista na linha (no pedido novo a linha já tem Recusar e Aceitar) */}
+        {!aceitar && <Botao className="pd-ver" variante="secundario" tamanho="p" onClick={parar(() => aoAbrir(p))}>Ver</Botao>}
         {acao && <Botao className={aceitar ? undefined : `pd-passo${passoDeDepois(p) ? ' pd-passo--depois' : ''}`} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
       </div>
       <div role="cell">

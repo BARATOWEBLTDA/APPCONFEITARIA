@@ -600,3 +600,5 @@
 .orc-it-t > .orc-st { flex: none; padding: 2px 8px; border-radius: 6px; background: #FCE4EE; font-size: 12px; }
 .orc-it-t > .orc-st--r { background: var(--ui-cinza); } .orc-it-t > .orc-st--e { background: #FFF7ED; }
 @media (max-width: 899px) { .orc-link-bts { display: flex; } .orc-link-bts .ui-bt { flex: 1 1 auto; min-width: 0; } }
+/* (6.99) "Adicionar outro produto" embaixo dos itens (como na Nova venda) */
+.orc-add-outro { margin-top: var(--space-3); }

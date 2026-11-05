@@ -242,3 +242,7 @@
 .pdk-bts { grid-column: 2 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .pdk-bts .ui-bt.pdk-bt { width: 100%; min-height: 38px; font-size: 13.5px; }
 .pdk-bts--1 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+/* (6.99) "Ver pedido" ao lado da próxima etapa (cartão e linha do computador) */
+.pdc-bts { display: inline-flex; gap: 8px; flex: none; }
+.ui-bt.pd-ver { background: var(--ui-branco); border: 1px solid var(--ui-borda); color: var(--ui-texto); box-shadow: none; }
+@media (hover: hover) { .ui-bt.pd-ver:hover { background: var(--ui-linha); } }

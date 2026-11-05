@@ -574,7 +574,9 @@ export default function OrcamentoEditar() {
             ))}
             </div>}
             {/* (6.53) as duas formas de pôr item: dois cartões quadrados no meio da tela */}
-            <div className={`orc-add${(o.itens || []).length ? ' orc-add--mais' : ''}`}>
+            {/* (6.99) com itens já na lista: um botão só "Adicionar outro produto" (abre os produtos, com o item personalizado no topo) */}
+            {(o.itens || []).length > 0 && <Botao variante="secundario" cheio className="orc-add-outro" icone={<Plus size={20} weight="bold" />} onClick={() => { setBusca(''); setEscolher(true) }}>Adicionar outro produto</Botao>}
+            {(o.itens || []).length === 0 && <div className="orc-add">
               <button type="button" className="orc-add-op" onClick={() => { setBusca(''); setEscolher(true) }}>
                 <span className="orc-add-ic" aria-hidden="true"><Storefront size={26} weight="duotone" /></span>
                 <b>Do cardápio</b><small>Seus produtos</small>
@@ -583,7 +585,7 @@ export default function OrcamentoEditar() {
                 <span className="orc-add-ic" aria-hidden="true"><PencilSimpleLine size={26} weight="duotone" /></span>
                 <b>Personalizado</b><small>Feito sob medida</small>
               </button>
-            </div>
+            </div>}
             {(o.itens || []).length > 0 && <div className="orc-tot"><span>Subtotal dos itens</span><b>{brl(somarItens(o.itens))}</b></div>}
           </section>
         </>)}
@@ -726,6 +728,13 @@ export default function OrcamentoEditar() {
       <div className="orc-esc">
         <label className="orc-busca"><MagnifyingGlass size={18} weight="bold" /><input type="search" placeholder="Buscar produto" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar produto" /></label>
         <div className="orc-esc-l">
+          {/* (6.99) item sob medida também pela lista */}
+          {(o.itens || []).length > 0 && !busca.trim() && (
+            <button type="button" className="orc-esc-it" onClick={() => { setEscolher(false); muda({ itens: [...(o.itens || []), { id: novoId(), nome: '', quantidade: 1, valor_unitario: 0 }] }) }}>
+              <span className="orc-item-ft" aria-hidden="true"><PencilSimpleLine size={20} /></span>
+              <span className="orc-esc-tx"><b>Item personalizado</b><small>Feito sob medida: você escreve o nome e o valor</small></span>
+            </button>
+          )}
           {prodsFiltrados.map(p => {
             const pc = precoCardapioComPromocao(p)
             return (
