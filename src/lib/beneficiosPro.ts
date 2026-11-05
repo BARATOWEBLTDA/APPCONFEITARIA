@@ -1,5 +1,5 @@
 import {
-  AddressBook, ChartLineUp, ChatCircleText, Crown, FilePdf, FileText, ImageSquare, Infinity as Infinito, Palette,
+  AddressBook, Cake, ChartLineUp, ChatCircleText, Crown, FilePdf, FileText, ImageSquare, Infinity as Infinito, Palette,
   HandHeart, Robot, SealCheck, Stack, Tag, type Icon,
 } from "@phosphor-icons/react";
 
@@ -11,8 +11,10 @@ export type Beneficio = [Icon, string, string, string, string, string | null];
 export const BENEFICIOS: Beneficio[] = [
   [ChartLineUp, "Seu lucro de verdade", "Relatórios de lucratividade por produto e por mês, para decidir com segurança.", "Lucro de verdade", "Lucratividade de cada produto", "/lucratividade"],
   // (6.81) a equipe Doonly monta o cardápio (produtos, logo e banners)
-  [HandHeart, "A equipe Doonly monta seu cardápio", "A gente cadastra seus produtos, cria a logo e os banners da sua loja. Você só manda as fotos e os preços.", "Cardápio montado pela equipe", "Produtos, logo e banners", "equipe"],
-  [Robot, "A Doo IA, sua assistente", "A sua assistente no PRO: calcula preço, monta pedido, cria legenda e imagens. Até 150 mensagens por dia.", "Doo IA 150 por dia", "E cria imagens", "doo"],
+  [HandHeart, "A equipe Doonly monta seu cardápio", "Cadastramos seus produtos e criamos a logo e os banners da sua loja. Você só manda as fotos e os preços.", "Cardápio montado pela equipe", "Produtos, logo e banners", "equipe"],
+  [Robot, "A Doo IA, sua assistente", "Cadastra clientes, produtos, pedidos e cupons pela conversa, calcula preço e avisa o que está atrasado. Até 150 mensagens por dia.", "Doo IA 150 por dia", "Faz o trabalho pela conversa", "doo"],
+  // (6.101) imagens com IA
+  [Cake, "Topos de bolo, logo e banners com IA", "A Doo cria o topo com o nome e o tema da festa, pronto para imprimir em PDF. Também faz a sua logo e os banners e já coloca no cardápio.", "Topos, logo e banners", "Criados pela Doo IA", "doo"],
   [FileText, "Orçamentos que o cliente aprova", "Monte a proposta, mande o link e o cliente aprova pelo celular. Aprovou, vira pedido.", "Orçamentos", "Proposta com link para aprovar", "/orcamentos"],
   // (6.29) adicionais são do PRO (a página e o cardápio só mostram no PRO). (6.10) PDFs (com o "Feito com Doonly"): o texto diz o que o PRO muda de verdade
   [Stack, "Adicionais", "Topo de bolo, velas e outros extras que o cliente marca no produto. Cada pedido vale mais.", "Adicionais", "Extras que o cliente marca", "/complementos"],

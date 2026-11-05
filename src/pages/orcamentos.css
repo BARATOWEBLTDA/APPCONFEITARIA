@@ -602,3 +602,7 @@
 @media (max-width: 899px) { .orc-link-bts { display: flex; } .orc-link-bts .ui-bt { flex: 1 1 auto; min-width: 0; } }
 /* (6.99) "Adicionar outro produto" embaixo dos itens (como na Nova venda) */
 .orc-add-outro { margin-top: var(--space-3); }
+/* (6.101) itens: os 2 cartões (Do cardápio · Personalizado) do mesmo tamanho; cliente: a busca da lista não encolhe */
+.orc-add:not(.orc-add--cli) { grid-template-columns: repeat(2, minmax(0, 200px)); }
+@media (max-width: 600px) { .orc-add, .orc-add:not(.orc-add--cli), .orc-add--cli { grid-template-columns: repeat(2, minmax(0, 1fr)); } .orc-add-op { min-width: 0; } }
+.orc-busca { flex: none; height: 48px; min-height: 48px; box-sizing: border-box; background: var(--ui-branco); }

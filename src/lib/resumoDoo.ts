@@ -22,7 +22,7 @@ export async function resumoDoNegocio(uid: string): Promise<string> {
   const iniMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
   const em7 = new Date(agora); em7.setDate(em7.getDate() + 7);
   const CAMPOS = "numero, cliente_nome, valor_total, status, status_pagamento, valor_recebido, data_entrega, horario_entrega, created_at, origem";
-  const [mes, prox, abertos, contas, orcs, clis] = await Promise.all([
+  const [mes, prox, abertos, contas, orcs, clis, avisos] = await Promise.all([
     // (27/10) "Quanto vendi" não conta pedido ainda não aceito
     supabase.from("pedidos").select(CAMPOS).eq("user_id", uid).gte("created_at", iniMes.toISOString()).not("status", "in", "(cancelado,recusado,aguardando_aceite,novo,pendente)").limit(2000),
     supabase.from("pedidos").select(CAMPOS).eq("user_id", uid).gte("data_entrega", hoje).lte("data_entrega", iso(em7)).neq("status", "cancelado")
@@ -35,6 +35,8 @@ export async function resumoDoNegocio(uid: string): Promise<string> {
     supabase.from("contas_pagar").select("descricao, valor, vencimento").eq("user_id", uid).eq("status", "pendente").lte("vencimento", iso(em7)).order("vencimento").limit(30),
     supabase.from("orcamentos").select("numero, cliente_nome, status, data_evento, enviado_em").eq("user_id", uid).in("status", ["novo", "rascunho", "enviado"]).order("created_at", { ascending: false }).limit(20),
     supabase.from("clientes").select("nome, data_nascimento").eq("user_id", uid).not("data_nascimento", "is", null).limit(2000),
+    // (6.101) avisos da equipe Doonly e novidades dos últimos 15 dias
+    supabase.from("notificacoes").select("tipo, titulo, mensagem, created_at").eq("user_id", uid).in("tipo", ["aviso", "noticia", "pro", "sugestao", "conquista"]).gte("created_at", new Date(Date.now() - 15 * 86400000).toISOString()).order("created_at", { ascending: false }).limit(8),
   ]);
   if (mes.error || prox.error) return "";
   const lAbertos = ((abertos.data || []) as PedidoResumo[]);
@@ -69,6 +71,7 @@ Use estes números quando ela perguntar das vendas, do faturamento, do que falta
 - Contas a pagar vencidas ou até ${dm(iso(em7))}: ${lContas.length}${lContas.length ? "\n" + lContas.map(c => `- ${c.descricao} · ${real(Number(c.valor) || 0)} · vence ${dm(c.vencimento)}${c.vencimento < hoje ? " (VENCIDA)" : ""}`).join("\n") : ""}
 - Orçamentos em aberto (novos, rascunho ou enviados esperando o cliente): ${lOrcs.length}${lOrcs.length ? "\n" + lOrcs.map(o => `- Orçamento #${o.numero} · ${o.cliente_nome || "sem nome"} · ${o.status}${o.data_evento ? ` · evento ${dm(o.data_evento)}` : ""}`).join("\n") : ""}
 - Clientes que fazem aniversário nos próximos 7 dias: ${nivers.length}${nivers.length ? "\n" + nivers.map(c => `- ${c.nome} · ${String(c.data_nascimento).slice(8, 10)}/${String(c.data_nascimento).slice(5, 7)}`).join("\n") : ""}
+- Avisos e novidades da equipe Doonly para ela (últimos 15 dias): ${((avisos.data || []) as { titulo: string; mensagem: string; created_at: string }[]).length}${((avisos.data || []) as { titulo: string; mensagem: string; created_at: string }[]).map(a => `\n- ${dm(a.created_at.slice(0, 10))} · ${a.titulo}: ${(a.mensagem || '').slice(0, 160)}`).join('')}
 Status: aguardando_aceite = novo, agendado = aceito, em_producao = produzindo, finalizado/aguardando_retirada = pronto, em_entrega = saiu, entregue = concluído.
 `;
 }

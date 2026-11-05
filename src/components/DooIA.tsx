@@ -1,6 +1,6 @@
 import { pegarPedidoDoo } from '@/components/MenuContaItens'
 import { useState, useRef, useEffect } from 'react'
-import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf } from '@phosphor-icons/react'
+import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf, Storefront } from '@phosphor-icons/react'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
@@ -37,6 +37,9 @@ interface Message {
   promptTopo?: string
   /** (6.89) imagem de topo de bolo: ganha o "Baixar em PDF" */
   ehTopo?: boolean
+  /** (6.101) logo ou banner criado pela Doo: ganha o botão de colocar no cardápio */
+  usoImagem?: 'logo' | 'banner'
+  usoFeito?: boolean
   /** (11/10) o erro se resolve começando outra conversa: mostra o botão embaixo */
   oferecerNova?: boolean
   /** (11/10) a resposta bateu no limite de tamanho e veio cortada */
@@ -50,7 +53,7 @@ const SUGESTOES_CARTOES = [
   { Ic: CurrencyCircleDollar, t: 'Calcular preço', s: 'de um bolo ou doce', p: 'Calcular o preço de um bolo' },
   { Ic: BookOpenText, t: 'Criar receita', s: 'com o que você tem', p: 'Criar receita de bolo' },
   { Ic: InstagramLogo, t: 'Legenda para o Instagram', s: 'pronta para postar', p: 'Criar legenda para o Instagram' },
-  { Ic: CalendarCheck, t: 'Planejar a semana', s: 'produção e compras', p: 'Planejar produção da semana' },
+  { Ic: Storefront, t: 'Criar minha logo', s: 'e já pôr no cardápio', p: 'Quero criar a logo da minha loja' },
   { Ic: Receipt, t: 'Registrar pedido', s: 'direto pela conversa', p: 'Registrar um pedido' },
   { Ic: Package, t: 'Cadastrar ingrediente', s: 'com preço e custo', p: 'Cadastrar um ingrediente' },
 ]
@@ -85,10 +88,10 @@ Doo fala de forma simples, clara e acolhedora. Não use emojis. Ao listar etapas
 Você CRIA imagens pelo app: topos de bolo para imprimir, artes, posts e banners. Nunca diga que não consegue criar imagens.
 Quando ela pedir uma imagem ou um topo (do jeito que escrever), confira se tem o tema. Para topo, pergunte também o nome e a idade se ela não disse (em uma pergunta só). Quando tiver, responda com UMA frase curta (ex.: "Já estou criando o seu topo.") e, no FINAL, este bloco:
 \`\`\`acao-doonly
-{"acao":"imagem","topo":true,"descricao":"tema jardim encantado, nome Alice, 5 anos, cores rosa e lilás, estilo fofo"}
+{"acao":"imagem","tipo":"topo","descricao":"tema jardim encantado, nome Alice, 5 anos, cores rosa e lilás, estilo fofo"}
 \`\`\`
 Se ela pedir personagem ou marca famosa, diga em uma frase "O Doonly não cria personagens nem marcas famosas" (nunca cite OpenAI, Anthropic ou outra empresa) e já ofereça o mesmo topo com um tema próprio parecido, com o nome e as cores. Se ela mandar uma foto e pedir "uma parecida", mande o bloco descrevendo o que ela quer: o app usa a foto como referência.
-"topo": false para arte que não é topo de bolo (post, banner, convite). Para mudar uma imagem que acabou de sair, mande o bloco de novo com a descrição completa já com a mudança.
+"tipo": "topo" (topo de bolo), "logo" (logo da loja: pergunte o nome da loja como deve aparecer, as cores e o estilo; ela pode mandar fotos de referência), "banner" (banner do cardápio: pergunte o que divulgar, ex.: promoção, produto, data) ou "arte" (post, convite, outros). Logo e banner vêm com um botão para ela colocar direto no cardápio. Para mudar uma imagem que acabou de sair, mande o bloco de novo com a descrição completa já com a mudança.
 
 # MISSÃO
 Toda resposta deve buscar um ou mais destes objetivos:
@@ -343,7 +346,8 @@ ${catTxt}
 }
 
 /** (6.94) a Doo pede uma imagem pela conversa (qualquer jeito de pedir): o app cria */
-type AcaoImagem = { acao: 'imagem'; topo: boolean; descricao: string }
+type AcaoImagem = { acao: 'imagem'; topo: boolean; descricao: string; tipo?: 'topo' | 'arte' | 'logo' | 'banner' }
+type TipoImagem = 'topo' | 'arte' | 'logo' | 'banner'
 
 /** (6.91) a frase da Doo depois que a ação foi salva, com o próximo passo que faz sentido */
 function respostaFeito(a: AcaoDoo, feito: string): string {
@@ -379,7 +383,7 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
     const j = JSON.parse(m[1].trim())
     if (j?.acao === 'pedido' && Array.isArray(j.itens) && j.itens.length) acao = j as RascunhoPedido
     else if (['cliente', 'produto', 'orcamento', 'loja', 'cupom'].includes(j?.acao)) acao = normalizarAcaoDoo(j)
-    else if (j?.acao === 'imagem' && typeof j.descricao === 'string' && j.descricao.trim()) acao = { acao: 'imagem', topo: j.topo !== false, descricao: j.descricao.trim().slice(0, 1200) }
+    else if (j?.acao === 'imagem' && typeof j.descricao === 'string' && j.descricao.trim()) acao = { acao: 'imagem', topo: j.tipo ? j.tipo === 'topo' : j.topo !== false, tipo: ['topo', 'arte', 'logo', 'banner'].includes(j.tipo) ? j.tipo : (j.topo !== false ? 'topo' : 'arte'), descricao: j.descricao.trim().slice(0, 1200) }
     else acao = normalizarRascunho(j)
   } catch { acao = null }
   const texto = reply.replace(m[0], '').trim() || 'Confira e confirme no cartão abaixo.'
@@ -424,6 +428,21 @@ function promptTopo(f: TopoForm): string {
     + 'All text in Portuguese, perfect spelling, no other words. '
     + (f.cores.trim() ? `Color palette: ${f.cores.trim()}. ` : '')
     + `Style: ${ESTILO_TOPO[f.estilo]}. ` + FOLHA_TOPO
+}
+
+/** (6.101) o banner do cardápio é 16:9: corta o meio da imagem deitada */
+async function cortarBanner(blob: Blob): Promise<Blob> {
+  try {
+    const url = URL.createObjectURL(blob)
+    const img = await new Promise<HTMLImageElement>((ok, falhou) => { const i = new Image(); i.onload = () => ok(i); i.onerror = falhou; i.src = url })
+    URL.revokeObjectURL(url)
+    const w = img.naturalWidth, h = Math.round(w * 9 / 16)
+    if (h >= img.naturalHeight) return blob
+    const c = document.createElement('canvas'); c.width = w; c.height = h
+    const ctx = c.getContext('2d'); if (!ctx) return blob
+    ctx.drawImage(img, 0, Math.round((img.naturalHeight - h) / 2), w, h, 0, 0, w, h)
+    return (await new Promise<Blob | null>(r => c.toBlob(r, 'image/jpeg', 0.92))) || blob
+  } catch { return blob }
 }
 
 /** (6.89) marca d'água embaixo da folha: "Criado no Doonly App · doonly.com.br" (fora das peças de recortar) */
@@ -648,13 +667,14 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   }, [open, uid])
 
   // (6.95) novidade sobre a ideia que ela mandou (recebida, em análise, implementada, recado da equipe): a Doo conta ao abrir
+  // (6.101) e também os avisos da equipe Doonly (avisos, novidades e do plano PRO)
   useEffect(() => {
     if (!open || !uid || !conversaCarregada) return
     let vivo = true
-    const chave = `doonly_doo_ideias_visto_${uid}`
+    const chave = `doonly_doo_avisos_visto_${uid}`
     let visto = ''
     try { visto = localStorage.getItem(chave) || '' } catch { /* sem armazenamento */ }
-    let q = supabase.from('notificacoes').select('titulo, mensagem, created_at').eq('user_id', uid).eq('tipo', 'sugestao').order('created_at', { ascending: true }).limit(5)
+    let q = supabase.from('notificacoes').select('titulo, mensagem, created_at').eq('user_id', uid).in('tipo', ['sugestao', 'aviso', 'noticia', 'pro']).order('created_at', { ascending: true }).limit(5)
     if (visto) q = q.gt('created_at', visto)
     else q = q.gt('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
     void Promise.resolve(q).then(({ data }) => {
@@ -748,6 +768,15 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   // (6.91) depois que ela confirma o cartão, a Doo responde (antes salvava e ficava calada)
   const dooResponde = (texto: string) => setMessages(prev => [...prev, { role: 'assistant', content: texto }])
 
+  // (6.101) a logo ou o banner que a Doo criou vão direto para o cardápio
+  const usarNoCardapio = async (idx: number, uso: 'logo' | 'banner', url: string) => {
+    if (!uid) return
+    const { error } = await supabase.from('profiles').update(uso === 'logo' ? { logo_url: url } : { banner_url: url }).eq('id', uid)
+    if (error) { avisar('Não deu para colocar no cardápio. Tente de novo.', { tipo: 'erro' }); return }
+    setMessages(prev => prev.map((m, k) => k === idx ? { ...m, usoFeito: true } : m))
+    dooResponde(uso === 'logo' ? 'Prontinho! Essa é a logo da sua loja agora e já aparece no cardápio. Para trocar depois, é em Cardápio digital › Aparência.' : 'Prontinho! O banner já está no topo do seu cardápio. Para trocar depois, é em Cardápio digital › Aparência.')
+  }
+
   // (6.89) o topo numa folha A4 em PDF, pronto para imprimir (no celular abre o compartilhar, pra mandar no WhatsApp ou salvar)
   const [gerandoPdf, setGerandoPdf] = useState(false)
   const baixarPdfTopo = async (url: string) => {
@@ -785,12 +814,14 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   }
 
   // (6.85) cria a imagem (topo de bolo ou arte). A imagem fica guardada no Doonly: o link não vence e a conversa lembra dela.
-  const criarImagem = async (prompt0: string, ehTopoDeBolo: boolean, referencia?: string) => {
+  const criarImagem = async (prompt0: string, tipoImg: boolean | TipoImagem, referencia?: string) => {
+    const tipoI: TipoImagem = typeof tipoImg === 'boolean' ? (tipoImg ? 'topo' : 'arte') : tipoImg
+    const ehTopoDeBolo = tipoI === 'topo'
     // (6.100) com foto de referência: a mesma composição e estilo, mas um desenho novo
     const prompt = referencia ? `Use the attached image only as a reference for the layout, composition, style, colors and finish. Create a NEW original design that follows it closely, with the changes below. Do not copy logos, watermarks or website text from the reference. ${prompt0}` : prompt0
     setGeneratingImage(true)
     try {
-      const res = await apiFetch('/api/doo-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, tipo: ehTopoDeBolo ? 'topo' : 'arte', ...(referencia ? { referencia } : {}) }) })
+      const res = await apiFetch('/api/doo-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, tipo: tipoI, ...(referencia ? { referencia } : {}) }) })
       const data = await lerResposta(res)
       const d0 = data?.data?.[0]
       let imageUrl = ''
@@ -798,7 +829,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         const tipoArq = d0.formato === 'jpeg' ? 'image/jpeg' : 'image/png'
         const bin = atob(d0.b64); const bytes = new Uint8Array(bin.length)
         for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k)
-        const blob = ehTopoDeBolo ? await comMarcaDagua(new Blob([bytes], { type: tipoArq })) : new Blob([bytes], { type: tipoArq })
+        const bruto = new Blob([bytes], { type: tipoArq })
+        const blob = ehTopoDeBolo ? await comMarcaDagua(bruto) : tipoI === 'banner' ? await cortarBanner(bruto) : bruto
         try {
           const caminho = `doo/${uid || 'sem-conta'}/${Date.now()}.${tipoArq === 'image/jpeg' ? 'jpg' : 'png'}`
           const { error } = await supabase.storage.from('products').upload(caminho, blob, { contentType: tipoArq, upsert: false })
@@ -825,7 +857,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         role: 'assistant',
         content: ehTopoDeBolo
           ? 'Seu topo de bolo está pronto! Baixe em PDF para imprimir numa folha A4, ou a imagem para mandar à gráfica.\n\n**Para imprimir:** papel fotográfico ou adesivo, em boa qualidade. Recorte pela borda branca e cole num palito ou num papel firme. Quer mudar algo? É só me dizer o que trocar.'
+          : tipoI === 'logo' ? 'Aqui está a sua logo! Se gostou, toque em "Usar como logo da loja" e ela já aparece no seu cardápio. Quer outra versão? É só me dizer o que mudar.'
+          : tipoI === 'banner' ? 'Aqui está o seu banner! Toque em "Colocar no cardápio" e ele já aparece no topo do seu cardápio. Quer mudar algo? É só me dizer.'
           : 'Aqui está a imagem. Toque em "Baixar imagem" para guardar.',
+        ...(tipoI === 'logo' || tipoI === 'banner' ? { usoImagem: tipoI } : {}),
         imageUrl,
         isImage: true,
         ...(ehTopoDeBolo ? { ehTopo: true } : {}),
@@ -928,9 +963,14 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             const ai = acaoBruta as AcaoImagem
             setMessages(prev => [...prev, { role: 'assistant', content: texto }])
             setLoading(false)
-            await criarImagem(ai.topo
+            const tipoAi: TipoImagem = ai.tipo || (ai.topo ? 'topo' : 'arte')
+            await criarImagem(tipoAi === 'topo'
               ? `Printable cake topper sheet for a Brazilian confectionery. Request in Portuguese: "${ai.descricao}". Any name or text must be written exactly as asked, with perfect Portuguese spelling, in bold script lettering with a white outline. ${FOLHA_TOPO}`
-              : buildImagePrompt(ai.descricao), ai.topo, imgPayload?.base64 || (pedeParecida ? ultimaReferencia.current : undefined))
+              : tipoAi === 'logo'
+                ? `Professional logo for a Brazilian confectionery (cake and sweets shop). Request in Portuguese: "${ai.descricao}". The store name must be written exactly as asked, perfect spelling, highly readable. Centered round badge composition that works inside a circle, simple shapes, flat vector style, crisp edges, solid background filling the whole square, no mockup, no extra words.`
+              : tipoAi === 'banner'
+                ? `Wide promotional banner for a Brazilian confectionery's online menu. Request in Portuguese: "${ai.descricao}". Landscape composition with the important content centered and safe margins on all sides, any text in Portuguese with perfect spelling and few words, appetizing sweets, vibrant and clean, high quality, no website text, no mockup.`
+              : buildImagePrompt(ai.descricao), tipoAi, imgPayload?.base64 || (pedeParecida ? ultimaReferencia.current : undefined))
             return
           }
           const acao = acaoBruta as RascunhoInsumo | RascunhoPedido | AcaoDoo | null
@@ -1103,6 +1143,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                     <div className="dz-acs">
                       <button type="button" onClick={() => baixarImagem(msg.imageUrl as string)}><DownloadSimple size={16} weight="bold" />Baixar imagem</button>
                       {msg.ehTopo && <button type="button" disabled={gerandoPdf} onClick={() => void baixarPdfTopo(msg.imageUrl as string)}><FilePdf size={16} weight="bold" />{gerandoPdf ? 'Gerando…' : 'Baixar em PDF'}</button>}
+                      {msg.usoImagem && !msg.usoFeito && /^https?:/.test(msg.imageUrl || '') && <button type="button" onClick={() => void usarNoCardapio(i, msg.usoImagem!, msg.imageUrl as string)}><Storefront size={16} weight="bold" />{msg.usoImagem === 'logo' ? 'Usar como logo da loja' : 'Colocar no cardápio'}</button>}
+                      {msg.usoFeito && <span className="dz-uso-ok"><Check size={14} weight="bold" />{msg.usoImagem === 'logo' ? 'É a logo da loja' : 'Está no cardápio'}</span>}
                     </div>
                   )}
                 </div>
@@ -1167,6 +1209,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
       <style>{`
         /* (6.86) cartão das ações (cliente, produto, orçamento, loja, cupom) */
+.dz-uso-ok { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--ui-verde); }
         .dz-ac { margin-top: 8px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); }
         .dz-ac-t { margin: 0 0 8px; font-size: 14.5px; font-weight: 600; color: var(--ui-texto); }
         .dz-ac-l { display: flex; flex-direction: column; gap: 6px; margin: 0; }

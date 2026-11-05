@@ -3,7 +3,7 @@
  * Sem texto salvo, vale o padrão daqui. As informações entram pelas etiquetas {nome}, {pedido}…
  * Tela de editar: pages/MensagensWhatsApp.tsx.
  */
-import { perfilAtual } from "@/hooks/useProfile";
+import { perfilAtual, getCardapioUrl } from "@/hooks/useProfile";
 import { saldoPedido } from "@/components/pedidos/pedidoTexto";
 
 export type ChaveMensagem = "pedido_cardapio" | "sobre_pedido" | "aniversario";
@@ -60,6 +60,7 @@ export const MODELOS: Modelo[] = [
       { k: "total", rotulo: "Total", exemplo: "R$ 140,00" },
       { k: "falta", rotulo: "Falta pagar", exemplo: "R$ 70,00" },
       { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
+      { k: "link", rotulo: "Link do cardápio", exemplo: "https://doonly.com.br/c/doce/cardapio" }, // (6.101)
     ],
   },
   {
@@ -68,10 +69,12 @@ export const MODELOS: Modelo[] = [
     curto: "Parabéns de aniversário",
     resumo: "Você manda em Clientes",
     quando: "Você manda pelo botão de parabéns em Clientes",
-    padrao: "Feliz aniversário, {nome}! 🎂\n\nQue o seu dia seja tão doce quanto você. Um abraço da *{loja}*!", // (6.82)
+    // (6.101) com o link do cardápio: o parabéns já leva para a encomenda do bolo
+    padrao: "Feliz aniversário, {nome}! 🎂\n\nQue o seu dia seja tão doce quanto você. Um abraço da *{loja}*!\n\nSe quiser comemorar com um docinho, é só pedir por aqui:\n{link}",
     etiquetas: [
       { k: "nome", rotulo: "Nome do cliente", exemplo: "Ana" },
       { k: "loja", rotulo: "Nome da loja", exemplo: "Doce Formiga" },
+      { k: "link", rotulo: "Link do cardápio", exemplo: "https://doonly.com.br/c/doce/cardapio" },
     ],
   },
 ];
@@ -153,7 +156,9 @@ export function montarMensagem(chave: ChaveMensagem, dados: Record<string, strin
   let texto = (salvo && salvo.trim()) ? salvo : m.padrao;
   // (11/10) {Pedido} com maiúscula também vale: antes o app achava que faltava e colocava os itens duas vezes
   if (m.obrigatoria && !texto.toLowerCase().includes(`{${m.obrigatoria}}`)) texto = `${texto.trim()}\n\n{${m.obrigatoria}}`;
-  return preencher(texto, dados);
+  // (6.101) {link}: o link do cardápio da loja logada (no pedido do cardápio quem manda é o cliente: lá não entra)
+  const comLink = chave !== "pedido_cardapio" && dados.link === undefined ? { ...dados, link: getCardapioUrl(perfil) || "" } : dados;
+  return preencher(texto, comLink);
 }
 
 /** Dados de exemplo pra prévia */
