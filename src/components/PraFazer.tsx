@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Basket, Bell, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo } from "@phosphor-icons/react";
+import { Basket, Bell, DeviceMobile, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
 import { useAoVoltar } from "@/hooks/useAoVoltar";
 import { precisaInstalarNoIphone, ehIphone } from "@/lib/notifications";
+import { getInstallPrompt, isStandalone, onInstallChange, promptInstall } from "@/lib/installPrompt";
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
 import { avisoDoPro } from "@/lib/notificacoesUsuario";
 import { supabase } from "@/lib/supabase";
@@ -175,6 +176,17 @@ export default function PraFazer() {
     aoTocar: () => { void ativarNotif(); },
   }] : [];
 
+  // (6.88) Android pelo navegador: o convite de instalar (um toque abre a janela do próprio Chrome). Some depois de instalado.
+  const [podeInstalar, setPodeInstalar] = useState(() => !!getInstallPrompt())
+  useEffect(() => onInstallChange(() => setPodeInstalar(!!getInstallPrompt())), [])
+  const celularAndroid = typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent || "")
+  const itemInstalar: Item[] = uid && celularAndroid && podeInstalar && !isStandalone() ? [{
+    chave: "instalar_android", nivel: "atencao", Ic: DeviceMobile, ordem: -95, acao: "Instalar", link: "/configuracoes", fechar: true,
+    t: "Instale o Doonly no celular", s: "Abre direto, como um app",
+    txt: "Abre direto, como um app, e fica na tela inicial do celular.",
+    aoTocar: () => { void promptInstall().then(ok => { setPodeInstalar(!!getInstallPrompt()); if (ok) avisar("Pronto! O Doonly está na tela inicial do celular.", { tipo: "ok" }) }) },
+  }] : [];
+
   // (23/10) plano PRO vencendo ou em atraso: antes só aparecia na tela Notificações (que saiu)
   const avisoPro = profile?.pro_expira_em ? avisoDoPro(profile.pro_expira_em) : null;
   const itemPro: Item[] = avisoPro ? [{
@@ -186,6 +198,7 @@ export default function PraFazer() {
 
   const itens: Item[] = [
     ...itemNotif,
+    ...itemInstalar,
     ...itemPro,
     ...avisos.map((a, i): Item => ({
       chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, estado: a.estado, ordem: i,
