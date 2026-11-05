@@ -256,7 +256,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         <div className="ppb-topo">
           {/* (6.126) cada passo pode ter o seu Doo; o da logo pinta a fachada da loja */}
           <img src={DOO_PASSO[p.t]?.banner || "/Sistema/banner-passos.webp"} alt="" aria-hidden="true" className="ppb-img" />
-          <b className="ppb-t">{faltam === 1 ? "Falta só 1 passo" : "Seu cardápio quase no ar"}</b>
+          <b className="ppb-t">{faltam === 1 ? "Falta só 1 passo" : "Cardápio quase no ar"}</b>
           <small className="ppb-sub">{feitos === 0 ? `${passos.length} passos rápidos, uns 5 minutos` : `${feitos} de ${passos.length} prontos`}</small>
           <div className="ppb-bar" role="progressbar" aria-valuemin={0} aria-valuemax={passos.length} aria-valuenow={feitos} aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
         </div>
@@ -902,8 +902,9 @@ const CSS = `
   .ppb-topo { position: relative; aspect-ratio: 10 / 3; min-height: 96px; padding: 14px 16px 0; box-sizing: border-box; background: #FFE3EE; overflow: hidden; }
   .ppb-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: right center; pointer-events: none; }
   .ppb-t, .ppb-sub, .ppb-bar { position: relative; }
-  .ppb-t { display: block; max-width: 72%; font-size: 17px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppb-sub { display: block; max-width: 72%; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 380px) { .ppb-t { font-size: 16px; } }
+  .ppb-t { display: block; max-width: 68%; font-size: 17px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppb-sub { display: block; max-width: 68%; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ppb-bar { width: 58%; height: 8px; margin-top: 10px; border-radius: 4px; background: rgba(214, 63, 117, .15); overflow: hidden; }
   .ppb-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .4s ease; }
   .ppb-at { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 0; }
