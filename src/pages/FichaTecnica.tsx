@@ -224,6 +224,7 @@ export default function FichaTecnica() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState("");
   const [moAtivo, setMoAtivo] = useState(false);
+  const ajeitarTempo = () => { const tot = (parseInt(tempoH) || 0) * 60 + (parseInt(tempoM) || 0); if ((parseInt(tempoM) || 0) >= 60) { setTempoH(String(Math.floor(tot / 60))); setTempoM(tot % 60 ? String(tot % 60) : ""); } };
   // (04/11 · 6.23) modo quadro (cartões com foto) ou lista; no PC abre em quadro; o app lembra a escolha
   const [modo, setModoBruto] = useState<"lista" | "quadro">(() => {
     try { const v = localStorage.getItem("doonly_ficha_modo"); if (v === "lista" || v === "quadro") return v; } catch { /* sem storage */ }
@@ -277,6 +278,20 @@ export default function FichaTecnica() {
     };
   }, [showQuickAdd]);
   const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40" });
+  // (6.163) tempo de preparo em horas + minutos (antes só minutos: "2h30" virava conta de cabeça). Guarda em minutos, como antes.
+  const [tempoH, setTempoH] = useState("");
+  const [tempoM, setTempoM] = useState("");
+  useEffect(() => {
+    const t = parseInt(extras.tempo_preparo_min) || 0;
+    if (t === (parseInt(tempoH) || 0) * 60 + (parseInt(tempoM) || 0)) return;
+    setTempoH(t >= 60 ? String(Math.floor(t / 60)) : ""); setTempoM(t % 60 ? String(t % 60) : "");
+  }, [extras.tempo_preparo_min]); // eslint-disable-line react-hooks/exhaustive-deps
+  const mudarTempo = (h: string, m: string) => {
+    setTempoH(h); setTempoM(m);
+    const tot = Math.min(9999, (parseInt(h) || 0) * 60 + (parseInt(m) || 0));
+    setExtras(s => ({ ...s, tempo_preparo_min: tot > 0 ? String(tot) : "" })); setMoAtivo(tot > 0);
+  };
+  /** 90 min vira 1 h 30 min quando sai do campo */
   const [saving, setSaving] = useState(false);
 
   const [maoConta, setMaoConta] = useState<MaoConta>(null);
@@ -579,13 +594,13 @@ export default function FichaTecnica() {
       <div className="fd-conta">
         <div><span>Ingredientes</span><span>R$ {fmt(cmvLive)}</span></div>
         <div><span>Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
-        <div><span>Mão de obra{tempoMin > 0 && moAtivo ? ` (${tempoMin} min)` : ""}</span><span>R$ {fmt(moLive)}</span></div>
+        <div><span>Mão de obra{tempoMin > 0 && moAtivo ? ` (${tempoMin >= 60 ? `${Math.floor(tempoMin / 60)}h${tempoMin % 60 ? String(tempoMin % 60).padStart(2, "0") : ""}` : `${tempoMin} min`})` : ""}</span><span>R$ {fmt(moLive)}</span></div>
         {venda.credito > 0 && <div><span>Taxa no crédito ({fmtPct(venda.credito)}%)</span><span>R$ {fmt(taxaLive)}</span></div>}
         {fixoLive > 0 && <div><span>Por pedido (embalagem)</span><span>R$ {fmt(fixoLive)}</span></div>}
         <div className="fd-t"><span>Custo total</span><span>R$ {fmt(custoTotalLive)}</span></div>
         <div className="fd-pv"><span>Preço de venda</span><span>R$ {fmt(precoLive)}</span></div>
         {ganhoPix >= 0.01 && <div className="fd-pix"><span>No Pix ou dinheiro, você ganha R$ {fmt(ganhoPix)} a mais</span></div>}
-        {infoAtivo && rendeUn > 0 && <div><span>Custo de cada unidade (rende {extras.rendimento_qtd})</span><span>R$ {fmt(custoTotalLive / rendeUn)}</span></div>}
+        {infoAtivo && rendeUn > 0 && <div><span>Por unidade ({extras.rendimento_qtd})</span><span>R$ {fmt(custoTotalLive / rendeUn)}</span></div>}
       </div>
     );
     const barra = precoLive > 0 ? (() => {
@@ -658,7 +673,7 @@ export default function FichaTecnica() {
                   ? <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirCadastro}>Cadastrar ingrediente</Botao>
                   : <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirPicker}>Adicionar ingrediente</Botao>} />
             ) : (<>
-              <div className="fd-ing-cab" aria-hidden="true"><span>Ingrediente</span><span>Quanto vai</span><span>Custo</span><span /></div>
+              <div className="fd-ing-cab" aria-hidden="true"><span>Nome</span><span>Quanto vai</span><span>Custo</span><span /></div>
               {ficha.map(f => {
                 const ins = f.insumo;
                 const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
@@ -683,6 +698,8 @@ export default function FichaTecnica() {
                   </div>
                 );
               })}
+              {/* (6.163) no PC a lista é uma tabela, com o total no pé */}
+              <div className="fd-ing-tot" aria-hidden="true"><span>Total</span><b>R$ {fmt(cmvLive)}</b></div>
               <div className="fd-ing-acoes">
                 {insumosCadastrados.length > 0 && <Botao variante="secundario" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirPicker}>Adicionar ingrediente</Botao>}
                 <Botao variante="link" tamanho="m" onClick={abrirCadastro}>Cadastrar novo</Botao>
@@ -694,10 +711,16 @@ export default function FichaTecnica() {
               Aqui fica só o tempo da receita, que é o que a mão de obra precisa. */}
           <section className="cl9-card fd-sec">
             <Titulo>Tempo de preparo</Titulo>
-            <Campo rotulo="Quanto tempo leva esta receita" inputMode="numeric" placeholder="0" value={extras.tempo_preparo_min}
-              onChange={e => { const v = e.target.value.replace(/\D/g, "").slice(0, 4); setExtras(s => ({ ...s, tempo_preparo_min: v })); setMoAtivo(Number(v) > 0); }}
-              depois={<span className="cl9-f-uf">min</span>}
-              dica={!maoConta ? "Entra no custo quando você cadastrar a sua mão de obra em Custos." : Number(extras.tempo_preparo_min) > 0 ? `Sua mão de obra nesta receita: R$ ${fmt(moLive)}` : "Com o tempo, o valor do seu trabalho entra no custo."} />
+            <p className="fd-dica">Do começo ao fim da receita.</p>
+            <div className="fd-tempo">
+              <Campo rotulo="Horas" inputMode="numeric" placeholder="0" value={tempoH}
+                onChange={e => mudarTempo(e.target.value.replace(/\D/g, "").slice(0, 2), tempoM)}
+                depois={<span className="cl9-f-uf">h</span>} />
+              <Campo rotulo="Minutos" inputMode="numeric" placeholder="0" value={tempoM} onBlur={ajeitarTempo}
+                onChange={e => mudarTempo(tempoH, e.target.value.replace(/\D/g, "").slice(0, 3))}
+                depois={<span className="cl9-f-uf">min</span>} />
+            </div>
+            <p className="ui-campo-msg fd-tempo-d">{!maoConta ? "Entra no custo quando você cadastrar a sua mão de obra em Custos." : Number(extras.tempo_preparo_min) > 0 ? `Sua mão de obra nesta receita: R$ ${fmt(moLive)}` : "Com o tempo, o valor do seu trabalho entra no custo."}</p>
           </section>
 
           {/* (6.102) "Informações do produto" saiu da ficha: não entra no custo (o que já foi salvo continua guardado) */}

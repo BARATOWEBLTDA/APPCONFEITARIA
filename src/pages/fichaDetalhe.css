@@ -40,6 +40,9 @@
 .fd-ing-custo { grid-area: custo; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 2px; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
 .fd-ing-custo svg { display: none; color: var(--ui-texto-3); }
 .fd-ing > .ui-bti, .fd-ing > button:last-child { grid-area: x; align-self: start; }
+.fd-tempo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+.fd-tempo-d { margin: 8px 0 0; }
+.fd-ing-tot { display: none; }
 .fd-ing-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 4px; }
 
 /* Seções */
@@ -90,6 +93,14 @@
   .fd-ing-th { align-self: center; }
   .fd-ing-custo { justify-content: flex-end; }
   .fd-ing-custo svg { display: block; }
+  /* (6.163) tabela no PC: linha forte em cima e embaixo, linhas finas entre os ingredientes, total no pé */
+  .fd-ing-cab { margin-top: 4px; border-top: 2px solid var(--ui-texto); border-bottom: 1px solid var(--ui-texto); }
+  .fd-ing-cab span:nth-child(3) { text-align: right; padding-right: 22px; }
+  .fd-ing { padding: 8px 0; }
+  .fd-ing-tot { display: grid; grid-template-columns: minmax(0, 1fr) 120px 44px; gap: 12px; align-items: center; min-height: 48px; margin-bottom: 12px; border-top: 2px solid var(--ui-texto); font-size: 15px; font-weight: 600; }
+  .fd-ing-tot b { font-weight: 600; text-align: right; padding-right: 22px; }
+  .fd-ing-tot::after { content: ""; }
+  .fd-tempo { grid-template-columns: 180px 180px; }
 }
 @media (min-width: 1100px) {
   .fd { padding-bottom: 40px; }

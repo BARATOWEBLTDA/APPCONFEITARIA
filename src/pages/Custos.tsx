@@ -132,6 +132,8 @@ export default function Custos() {
         </div>
 
         <div className="cu-grid">
+          {/* (6.163) duas colunas independentes no PC: um cartão alto não deixa buraco no cartão ao lado */}
+          <div className="cu-col">
           <section className="cu-card cu-a-fixos">
             <div className="cu-ct"><span className="cu-ic"><Buildings size={18} weight="duotone" /></span><div><b>Custos fixos</b><small>Pagos todo mês</small></div>
               <button type="button" className="cu-add" onClick={() => setEditFixo("novo")}><Plus size={14} weight="bold" />Adicionar</button></div>
@@ -144,18 +146,6 @@ export default function Custos() {
                 <span className="cu-it-v">{brl(f.valor)}</span><CaretRight size={14} weight="bold" className="cu-it-ar" />
               </button>
             ))}
-          </section>
-
-          <section className="cu-card cu-a-mo">
-            <div className="cu-ct"><span className="cu-ic"><Clock size={18} weight="duotone" /></span><div><b>Mão de obra</b><small>O seu trabalho também tem preço</small></div>
-              {/* (01/11 · 5.98) "Editar" no canto, como o "+ Adicionar" dos cartões ao lado (antes um botão na largura toda) */}
-              <button type="button" className="cu-add" onClick={() => setEditMo(true)}><PencilSimple size={14} weight="bold" />Editar</button></div>
-            <div className="cu-mo">
-              <div className="cu-mo-l"><span>Salário</span><b>{brl(mo.salario_mensal)}</b></div>
-              <div className="cu-mo-l"><span>Jornada</span><b>{mo.horas_dia}h por dia · {diasTxt(mo.dias_semana_array)}</b></div>
-              <div className="cu-mo-l"><span>Salário por hora</span><b className="rosa">{brl(valorHora)}</b></div>
-              <div className="cu-mo-l"><span>Salário por dia</span><b>{brl(valorHora * mo.horas_dia)}</b></div>
-            </div>
           </section>
 
           <section className="cu-card cu-a-var">
@@ -180,10 +170,23 @@ export default function Custos() {
               </button>
             )}
           </section>
+          </div>
+          <div className="cu-col">
+          <section className="cu-card cu-a-mo">
+            <div className="cu-ct"><span className="cu-ic"><Clock size={18} weight="duotone" /></span><div><b>Mão de obra</b><small>Seu trabalho tem preço</small></div>
+              {/* (01/11 · 5.98) "Editar" no canto, como o "+ Adicionar" dos cartões ao lado (antes um botão na largura toda) */}
+              <button type="button" className="cu-add" onClick={() => setEditMo(true)}><PencilSimple size={14} weight="bold" />Editar</button></div>
+            <div className="cu-mo">
+              <div className="cu-mo-l"><span>Salário</span><b>{brl(mo.salario_mensal)}</b></div>
+              <div className="cu-mo-l"><span>Jornada</span><b>{mo.horas_dia}h por dia · {diasTxt(mo.dias_semana_array)}</b></div>
+              <div className="cu-mo-l"><span>Salário por hora</span><b className="rosa">{brl(valorHora)}</b></div>
+              <div className="cu-mo-l"><span>Salário por dia</span><b>{brl(valorHora * mo.horas_dia)}</b></div>
+            </div>
+          </section>
 
           {/* (16/10) custos invisíveis: antes só dava pra mudar dentro da Ficha técnica */}
           <section className="cu-card cu-a-cv">
-            <div className="cu-ct"><span className="cu-ic"><Fire size={18} weight="duotone" /></span><div><b>Custos invisíveis</b><small>Gás do forno, perdas, descartáveis</small></div>
+            <div className="cu-ct"><span className="cu-ic"><Fire size={18} weight="duotone" /></span><div><b>Custos invisíveis</b><small>Gás, perdas, descartáveis</small></div>
               <button type="button" className="cu-add" onClick={() => setEditCv(true)}><PencilSimple size={14} weight="bold" />Editar</button></div>
             <div className="cu-mo">
               <div className="cu-mo-l"><span>Sobre os ingredientes</span><b className="rosa">{String(cv ?? 25).replace(".", ",")}%</b></div>
@@ -191,6 +194,7 @@ export default function Custos() {
             </div>
             <p className="cu-vazio">{cv == null ? "Usando o padrão de 25%. " : ""}A maioria das confeiteiras usa entre 20% e 30%. Entra em todas as fichas técnicas.</p>
           </section>
+          </div>
         </div>
         </>)}
       </div>
@@ -465,7 +469,8 @@ const CSS = `
   .cu-k.destaque { background: radial-gradient(130% 160% at 0 0, #5A3626, var(--ui-vinho-escuro) 70%); border: none; color: var(--ui-branco); }
   .cu-k.destaque small, .cu-k.destaque i { color: rgba(255,255,255,.72); }
   .cu-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "fixos" "mo" "var" "cv"; }
-  @media (min-width: 900px) { .cu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "fixos mo" "var cv"; align-items: start; } }
+  .cu-col { display: contents; }
+  @media (min-width: 900px) { .cu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: none; align-items: start; } .cu-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; } .cu-col > .cu-card { grid-area: auto; } }
   .cu-a-fixos { grid-area: fixos; } .cu-a-mo { grid-area: mo; } .cu-a-var { grid-area: var; } .cu-a-cv { grid-area: cv; }
   .cu-card { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-cartao); padding: 14px; }
   .cu-ct { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }

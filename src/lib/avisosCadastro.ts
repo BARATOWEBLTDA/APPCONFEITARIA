@@ -121,7 +121,7 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
   if (tel.length >= 10 && conferido !== tel) {
     const fmt = tel.length === 11 ? `(${tel.slice(0, 2)}) ${tel.slice(2, 7)}-${tel.slice(7)}` : tel.length === 10 ? `(${tel.slice(0, 2)}) ${tel.slice(2, 6)}-${tel.slice(6)}` : tel;
     l.push({ chave: `conferir_whatsapp_${tel}`, icone: "whatsapp", semNotificar: true, titulo: "Confira o WhatsApp dos pedidos", confirmarWhats: tel,
-      texto: `Os pedidos do cardápio chegam no ${fmt}. Esse número está certo?`, link: "/cardapio-config", nivel: "atencao", curto: { t: "WhatsApp dos pedidos", s: fmt },
+      texto: `Os pedidos chegam no ${fmt}. Está certo?`, link: "/cardapio-config", nivel: "atencao", curto: { t: "WhatsApp dos pedidos", s: fmt },
       estado: { abrir: "loja", destacar: { alvo: "#dl-in-whats", titulo: "Corrija o WhatsApp aqui", texto: "É nele que chegam os pedidos do cardápio." } } });
   }
   return l;

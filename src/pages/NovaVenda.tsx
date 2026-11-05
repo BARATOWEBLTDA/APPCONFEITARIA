@@ -732,7 +732,7 @@ export default function NovaVenda() {
   const pagamentoNoResumo = !!situacaoPag && etapa >= etapas.indexOf('Pagamento') + 1
   const enderecoTexto = [[enderecoRua, enderecoNumero].filter(Boolean).join(', '), enderecoBairro].filter(Boolean).join(' · ')
   // subtítulo (10/10): no passo 1 explica a escolha; depois mostra o tipo escolhido; no fim, que a venda foi registrada
-  const subtituloTopo = sucessoAberto ? 'Venda registrada' : etapa === 1 || !tipo ? 'Encomenda ou pronta entrega' : tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'
+  const subtituloTopo = sucessoAberto ? 'Venda registrada' : etapa === 1 && clienteId && clienteNome.trim() ? `Venda para ${toTitleCase(clienteNome.trim().split(/\s+/)[0])}` : etapa === 1 || !tipo ? 'Encomenda ou pronta entrega' : tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'
   // (16/10) a seta do topo volta um passo (no primeiro, pergunta antes de cancelar), igual ao "Voltar" de baixo
   // (01/11 · 5.98) computador: no 1º passo sem a seta de voltar (é uma tela do menu, como as outras); do 2º passo em diante ela volta o passo
   const semVoltarPc = !sucessoAberto && etapa <= 1 && typeof window !== 'undefined' && window.matchMedia('(min-width: 901px)').matches
@@ -1196,7 +1196,7 @@ export default function NovaVenda() {
           )}
         <div className="nv3-lado-inf">
           <p><span>Tipo</span><b className={tipo ? '' : 'falta'}>{tipo === 'pronta_entrega' ? 'Pronta entrega' : tipo === 'encomenda' ? 'Encomenda' : 'Falta escolher'}</b></p>
-          <p><span>Cliente</span><b className={etapa < 2 ? 'falta' : ''}>{etapa < 2 ? 'Falta escolher' : nomeDaCliente}</b></p>
+          <p><span>Cliente</span><b className={etapa < 2 && !clienteId ? 'falta' : ''}>{etapa < 2 && !clienteId ? 'Falta escolher' : nomeDaCliente}</b></p>
           <p><span>{ehEntrega ? 'Entrega' : 'Retirada'}</span><b className={etapa < 3 || ((tipo === 'encomenda' || buscaDepois) && !dataEntrega) ? 'falta' : ''}>{
             etapa < 3 ? 'Falta escolher'
             : tipo === 'encomenda' || buscaDepois ? (dataEntrega ? dataLonga(dataEntrega, horarioEntrega) : 'Falta escolher')
