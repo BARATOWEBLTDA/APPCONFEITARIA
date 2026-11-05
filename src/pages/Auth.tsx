@@ -13,7 +13,8 @@ import { explicarErro, erroDeConexao } from "@/lib/erros";
 import { Eye, EyeSlash, Check, ArrowRight } from "@phosphor-icons/react";
 
 /** (29/10 · 4.78) a página de vendas (o login no computador leva pra lá, pra quem quer conhecer ou comprar o Doonly) */
-const SITE_VENDAS = "https://vendas.doonly.com.br";
+// (6.158) a página de vendas agora fica na raiz (doonly.com.br); o ?site=1 mostra ela mesmo para quem já tem conta
+const SITE_VENDAS = "/?site=1";
 import { destinoDepoisDoLogin } from "@/lib/destinoLogin";
 
 // ───────────────────────────────────────────────────────────────
@@ -895,7 +896,8 @@ export default function Auth() {
         .auth-vit2 .auth-vit-seta { flex: none; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin-left: 4px; border-radius: 50%; background: rgba(255,255,255,.14); }
         /* (29/10 · 4.80) celular: num cartão de chocolate translúcido, na largura do cartão de cima (antes ficava solto no fundo) */
         .auth-vit2 { align-self: stretch; margin: 14px 0 0; padding: 10px 12px 10px 8px; border-radius: 18px;
-          background: rgba(58, 30, 20, .55); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 10px 24px -12px rgba(0,0,0,.5);
+          /* (6.158) rosa, igual ao lado rosa do computador (antes marrom) */
+          background: linear-gradient(135deg, #FF9DC4 0%, var(--ui-rosa) 55%, var(--ui-rosa-escuro) 100%); box-shadow: 0 10px 24px -12px rgba(190,24,93,.55);
           -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
         .auth-vit2 .auth-vit-tx { flex: 1; min-width: 0; }
         .auth-vit2 .auth-vit-seta { background: var(--ui-branco); color: var(--ui-rosa-escuro); }
