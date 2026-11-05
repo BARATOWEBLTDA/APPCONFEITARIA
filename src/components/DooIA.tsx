@@ -537,9 +537,9 @@ function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'ima
 }
 
 /** O que as rotas da Doo devolvem (chat e imagem) */
-type RespostaDoo = { error?: string | { type?: string } | null; codigo?: string; status?: number | string; data?: { url?: string; b64?: string; formato?: string }[]; content?: { text?: string }[]; stop_reason?: string }
+type RespostaDoo = { error?: string | { type?: string } | null; codigo?: string; detalhe?: string; status?: number | string; data?: { url?: string; b64?: string; formato?: string }[]; content?: { text?: string }[]; stop_reason?: string }
 /** Erro lançado por lerResposta */
-type ErroDoo = { type?: string; status?: number; codigo?: string }
+type ErroDoo = { type?: string; status?: number; codigo?: string; detalhe?: string }
 
 /** Lê a resposta das rotas da Doo. Erro vira { type, status } (o chat responde 200 e manda o erro dentro do JSON). */
 async function lerResposta(res: Response): Promise<RespostaDoo> {
@@ -547,7 +547,7 @@ async function lerResposta(res: Response): Promise<RespostaDoo> {
   try { data = await res.json() } catch { /* resposta sem JSON (ex.: o 413 da hospedagem) */ }
   if (!res.ok || !data || data.error) {
     const tipo = typeof data?.error === 'string' ? data.error : (data?.error as { type?: string } | null)?.type
-    throw { type: tipo || (res.ok ? 'api_error' : ''), status: res.ok ? (Number(data?.status) || 500) : res.status, codigo: data?.codigo }
+    throw { type: tipo || (res.ok ? 'api_error' : ''), status: res.ok ? (Number(data?.status) || 500) : res.status, codigo: data?.codigo, detalhe: data?.detalhe }
   }
   return data
 }
@@ -829,7 +829,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     } catch (err: unknown) {
       const e = err as ErroDoo
       const frase = getErrorMessage(e?.type ?? '', e?.status, 'imagem', e?.codigo)
-      setMessages(prev => [...prev, { role: 'assistant', content: e?.codigo && frase.startsWith('Não consegui') ? `${frase} (código: ${e.codigo})` : frase, erro: true }])
+      setMessages(prev => [...prev, { role: 'assistant', content: e?.codigo && frase.startsWith('Não consegui') ? `${frase} (código: ${e.codigo}${e.detalhe ? ` · ${e.detalhe}` : ''})` : frase, erro: true }])
     } finally {
       setGeneratingImage(false)
     }
