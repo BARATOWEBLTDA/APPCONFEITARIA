@@ -2,7 +2,6 @@
 // lucro = vendido (pedidos entregues no mês) − custo dos ingredientes (ficha técnica) − despesas pagas
 // (sem as de insumos, que já estão no custo da ficha). Mais: ponto de equilíbrio e lucro por produto.
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
-import { CTA_PRO } from "@/lib/beneficiosPro";
 import { useEffect, useRef, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -13,6 +12,7 @@ import { useDiaAtual } from "@/hooks/useAoVoltar";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_LUCRATIVIDADE, TOUR_LUCRATIVIDADE } from "@/lib/comoTelas";
 import { Botao, TelaVazia } from "@/components/base";
+import { CartaoPro } from "@/components/billing/RecursoPro";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { calcularCustoLucro, lerMaoObraConta, type ProdutoCustoJson } from "@/lib/produto-precificacao";
@@ -32,6 +32,8 @@ const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "cu
 const CSS_AMOSTRA = `
   .lu-amostra { filter: blur(6px); opacity: .7; pointer-events: none; user-select: none; max-height: calc(100dvh - 140px); overflow: hidden; }
   .lu-gratis { position: relative; }
+  .lu-pro { padding: 16px 16px 0; max-width: 1100px; margin: 0 auto; box-sizing: border-box; }
+  .lu-ex-t { margin: 20px 16px 0; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); text-align: center; }
   .lu-convite { position: absolute; left: 0; right: 0; top: 140px; z-index: 2; width: calc(100% - 40px); max-width: 380px; margin: 0 auto; padding: 26px 22px; box-sizing: border-box; border-radius: 20px; background: var(--ui-branco); box-shadow: 0 12px 40px rgba(45, 31, 38, .18); text-align: center; }
   .lu-convite-ic { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 50%; background: var(--primary-light); color: var(--ui-rosa-escuro); }
   .lu-convite b { display: block; font-size: 18px; font-weight: 600; color: var(--ui-texto); }
@@ -49,7 +51,10 @@ export default function Lucratividade() {
       <AppPageHeader title="Lucratividade" subtitle="Onde está o seu lucro de verdade" onBack={() => navigate("/financeiro")} />
       <EstiloFinanceiro />
       {/* (27/10) atrás do convite, um relatório de EXEMPLO borrado (números inventados, nada da conta dela): mostra o que o PRO entrega */}
+      {/* (6.110) o convite no padrão do app (faixa rosa, mascote e 3 benefícios) e, embaixo, o exemplo borrado do relatório */}
       <div className="lu-gratis">
+      <div className="lu-pro"><CartaoPro recurso="lucratividade" /></div>
+      <p className="lu-ex-t">Exemplo do relatório</p>
       <div className="lu lu-amostra" aria-hidden="true">
         <div className="lu-conta">
           {([["Vendido", "R$ 4.850,00", "n", "18 entregues"], ["Ingredientes", "R$ 1.620,00", "s", "pela ficha técnica"], ["Taxas", "R$ 96,00", "s", "cobradas por pedido"], ["Despesas", "R$ 980,00", "s", "sem os ingredientes"]] as const).map(([t, v, c, i]) => (
@@ -63,12 +68,6 @@ export default function Lucratividade() {
             <li key={n as string} className="lu-pc"><span className="lu-pc-foto"><ShoppingBagOpen size={28} /></span><span className="lu-pc-tx"><b className="lu-pc-nm">{n}</b><small>{q}</small><span className="lu-pc-l">Lucro</span><strong>{l}</strong><span className="lu-pc-m"><span className="lu-p-bar"><i style={{ width: `${m}%` }} /></span>margem {m}%</span></span></li>
           ))}</ul>
         </section>
-      </div>
-      <div className="lu-convite" role="region" aria-label="Lucratividade é do PRO">
-        <span className="lu-convite-ic" aria-hidden="true"><ChartLineUp size={28} weight="duotone" /></span>
-        <b>Seu lucro de verdade está aqui</b>
-        <p>Quanto sobra de cada produto e do mês, já tirando ingredientes, taxas e despesas.</p>
-        <Botao tamanho="m" onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao>
       </div>
       </div>
       <style>{CSS}{CSS_AMOSTRA}</style>

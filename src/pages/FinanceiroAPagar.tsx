@@ -164,7 +164,7 @@ export default function FinanceiroAPagar() {
           <div className="fap-topo">
             {/* (24/10) filtro padrão do app: botão que abre na lateral (antes as abas Atrasadas/Semana/Mês/Todas) */}
             {/* (24/10) a mesma ordem das outras telas: busca, filtro e o botão de cadastrar */}
-            <label className="fap-busca"><MagnifyingGlass size={18} /><input type="search" aria-label="Buscar conta" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} />
+            <label className="fap-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" aria-label="Buscar conta" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} />
               {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={16} weight="bold" /></button>}</label>
             <BotaoFiltro className="fap-filtro" ativos={filtro === "mes" ? 0 : 1} onClick={() => setFiltroAberto(true)} />
             <Botao icone={<Plus size={18} weight="bold" />} onClick={() => setNova(true)} className="fap-nova-bt">Nova conta</Botao>

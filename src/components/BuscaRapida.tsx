@@ -1,15 +1,19 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  MagnifyingGlass, X, House, ClipboardText, Plus, CalendarBlank, Sparkle, SquaresFour, Cake, Tag, Stack, Basket, ListChecks, Users,
+  MagnifyingGlass, X, House, ClipboardText, Plus, CalendarBlank, Sparkle, Cake, Tag, Stack, Basket, ListChecks, Users,
   ShoppingBag, Palette, Storefront, ArrowSquareOut, CurrencyDollar, ArrowsDownUp, HandCoins, CalendarCheck, Receipt, ChartLineUp,
-  Coins, CreditCard, Buildings, Newspaper, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb,
+  Coins, CreditCard, Buildings, Newspaper, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb, FileText, Lifebuoy,
+  WhatsappLogo, PauseCircle, PixLogo, Clock, Truck, MapPin, Money, WarningCircle, BellRinging, Wrench, DeviceMobile, Eye, Hourglass,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { Ticket, Target } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { useSobreposicao } from "@/components/base/useSobreposicao";
+import { abrirDooIA } from "@/components/MenuContaItens";
+import { getInstallPrompt, isStandalone, promptInstall } from "@/lib/installPrompt";
+import { WHATSAPP_EQUIPE } from "@/components/billing/EquipeMonta";
 import "./buscaRapida.css";
 
 /**
@@ -17,9 +21,26 @@ import "./buscaRapida.css";
  * Abre pelo campo do topo (computador), pelo campo do Início (celular) ou com Ctrl+K / ⌘K.
  * Setas pra navegar, Enter pra abrir, Esc pra fechar. Busca também por palavras (pix, horário, senha, cupom…).
  */
-type Item = { g: string; t: string; ic: Icon; rota?: string; estado?: Record<string, unknown>; fazer?: () => void; chaves?: string };
+type Item = { g: string; t: string; ic: Icon; rota?: string; estado?: Record<string, unknown>; fazer?: () => void; chaves?: string; pro?: boolean };
 
-const sem = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const sem = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+/** (6.110) a palavra sem o plural: "notificações" e "notificação" viram "notificacao"; "mensagens" vira "mensagen"… */
+const raiz = (w: string) => { const x = sem(w).replace(/oes$/, "ao").replace(/aes$/, "ao").replace(/ns$/, "m"); return x.length > 3 && x.endsWith("s") ? x.slice(0, -1) : x; };
+/** Pontos do item para a busca (0 = não acha). Todas as palavras precisam achar; o nome conta mais que as palavras-chave. */
+function pontos(i: Item, termos: string[]): number {
+  const titulo = sem(i.t).split(/[^a-z0-9]+/).filter(Boolean).map(raiz);
+  const chaves = sem(i.chaves || "").split(/[^a-z0-9]+/).filter(Boolean).map(raiz);
+  let total = 0;
+  for (const [k, t0] of termos.entries()) {
+    const t = raiz(t0);
+    if (k === 0 && titulo[0]?.startsWith(t)) total += 6;
+    else if (titulo.some(w => w.startsWith(t))) total += 4;
+    else if (chaves.some(w => w.startsWith(t))) total += 2;
+    else if (sem(`${i.t} ${i.chaves || ""}`).includes(sem(t0))) total += 1;
+    else return 0;
+  }
+  return total;
+}
 
 export function abrirBuscaRapida() { window.dispatchEvent(new Event("doonly:busca")); }
 
@@ -48,54 +69,77 @@ export default function BuscaRapida() {
   // fecha ao trocar de tela
   useEffect(() => { setAberta(false); }, [pathname]);
 
+  // (6.110) os mesmos grupos do Menu; telas, partes de tela e ações (pix, horário, taxa, pausar, senha, sair…)
   const itens: Item[] = useMemo(() => {
     const link = profile ? getCardapioUrl(profile) : "";
+    const DIA = "Dia a dia", PROD = "Produção e preço", LOJA = "Minha loja", DIN = "Dinheiro", DIV = "Divulgar", CONTA = "Conta e ajuda";
+    const zap = () => window.open(`https://wa.me/${WHATSAPP_EQUIPE}?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener");
     return [
-      { g: "Principal", t: "Início", ic: House, rota: "/inicio", chaves: "resumo dia" },
-      { g: "Principal", t: "Pedidos", ic: ClipboardText, rota: "/pedidos", chaves: "encomendas pronta entrega quadro aceitar" },
-      { g: "Principal", t: "Nova venda", ic: Plus, rota: "/vendas/novo", chaves: "novo pedido vender registrar venda" },
-      { g: "Principal", t: "Agenda", ic: CalendarBlank, rota: "/agenda", chaves: "calendario entregas dia" },
-      { g: "Principal", t: "Doo IA", ic: Sparkle, fazer: () => window.dispatchEvent(new Event("doonly:abrir-doo")), chaves: "assistente ajuda inteligencia artificial perguntar" },
-      { g: "Cadastros", t: "Cadastros", ic: SquaresFour, rota: "/cadastros" },
-      { g: "Cadastros", t: "Produtos", ic: Cake, rota: "/produtos", chaves: "bolo doce salgado preco foto" },
-      { g: "Cadastros", t: "Novo produto", ic: Plus, rota: "/produtos", estado: { abrirCadastro: true }, chaves: "cadastrar produto criar" },
-      { g: "Cadastros", t: "Categorias", ic: Tag, rota: "/categorias", chaves: "ordem cardapio" },
-      { g: "Cadastros", t: "Adicionais", ic: Stack, rota: "/complementos", chaves: "complementos sabores recheios extras topo vela" },
-      { g: "Cadastros", t: "Ingredientes", ic: Basket, rota: "/insumos", chaves: "insumo insumos ingrediente materia prima compra compras mercado embalagem preco" },
-      { g: "Cadastros", t: "Ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", chaves: "receita custo lucro margem" },
-      { g: "Cadastros", t: "Clientes", ic: Users, rota: "/clientes", chaves: "aniversario contatos" },
-      { g: "Cardápio digital", t: "Cardápio digital", ic: ShoppingBag, rota: "/cardapio", chaves: "minha loja link qr code visitas compartilhar" },
-      { g: "Cardápio digital", t: "Aparência do cardápio", ic: Palette, rota: "/cardapio-design", chaves: "cores logo banner foto tema natal" },
-      { g: "Cardápio digital", t: "Dados da loja", ic: Storefront, rota: "/cardapio-config", chaves: "pix chave horario endereco entrega taxa whatsapp telefone nome loja redes instagram facebook pagamento retirada" },
-      ...(link ? [{ g: "Cardápio digital", t: "Ver meu cardápio", ic: ArrowSquareOut, fazer: () => window.open(link, "_blank", "noopener,noreferrer"), chaves: "abrir como cliente" }] : []),
-      { g: "Financeiro", t: "Financeiro", ic: CurrencyDollar, rota: "/financeiro", chaves: "visao geral caixa dinheiro" },
-      { g: "Financeiro", t: "Transações", ic: ArrowsDownUp, rota: "/financeiro/transacoes", chaves: "extrato entradas saidas exportar" },
-      { g: "Financeiro", t: "A receber", ic: HandCoins, rota: "/financeiro/a-receber", chaves: "sinal falta receber cobrar" },
-      { g: "Financeiro", t: "A pagar", ic: CalendarCheck, rota: "/financeiro/a-pagar", chaves: "contas boletos fornecedor vencimento" },
-      { g: "Financeiro", t: "Custos", ic: Receipt, rota: "/custos", chaves: "fixos variaveis salario mao de obra aluguel luz gas" },
-      { g: "Financeiro", t: "Lucratividade", ic: ChartLineUp, rota: "/lucratividade", chaves: "lucro margem ponto de equilibrio" },
-      { g: "Financeiro", t: "Informar o saldo do caixa", ic: Coins, rota: "/financeiro", estado: { abrir: "saldo" }, chaves: "dinheiro gaveta" },
-      { g: "Financeiro", t: "Cadastrar custo fixo", ic: Buildings, rota: "/custos", estado: { abrir: "fixo" }, chaves: "aluguel luz internet" },
-      { g: "Financeiro", t: "Taxa da maquininha", ic: CreditCard, rota: "/custos", estado: { abrir: "maquininha" }, chaves: "cartao credito debito" },
-      { g: "Mais", t: "Cupons", ic: Ticket, rota: "/cupons", chaves: "cupom desconto promocao codigo marketing" },
-      { g: "Mais", t: "Pixel", ic: Target, rota: "/pixel", chaves: "pixel facebook instagram meta google tiktok anuncio marketing" },
-      { g: "Mais", t: "Mensagens do WhatsApp", ic: ChatCircleText, rota: "/configuracoes/mensagens", chaves: "mensagem texto pronto zap whats recado" },
-      { g: "Mais", t: "Novidades", ic: Newspaper, rota: "/noticias", chaves: "dicas tutoriais avisos notificacoes" },
-      { g: "Conta e ajuda", t: "Configurações", ic: Gear, rota: "/configuracoes", chaves: "conta senha email sair instalar atualizar excluir termos privacidade" },
-      { g: "Conta e ajuda", t: "Minha assinatura", ic: Crown, rota: isPro ? "/minha-assinatura" : "/assinar", chaves: "plano pro pagamento" },
-      { g: "Conta e ajuda", t: "Notificações e sons", ic: SpeakerHigh, rota: "/configuracoes/notificacoes", chaves: "som aviso push celular" },
-      { g: "Conta e ajuda", t: "Mensagens do WhatsApp", ic: ChatCircleText, rota: "/configuracoes/mensagens", chaves: "textos prontos" },
-      { g: "Conta e ajuda", t: "Relatar um problema", ic: Bug, rota: "/relatar-problema", chaves: "erro bug suporte" },
-      { g: "Conta e ajuda", t: "Sugerir uma melhoria", ic: Lightbulb, rota: "/solicitar-recurso", chaves: "ideia" },
+      { g: DIA, t: "Início", ic: House, rota: "/inicio", chaves: "resumo dia hoje" },
+      { g: DIA, t: "Pedidos", ic: ClipboardText, rota: "/pedidos", chaves: "encomendas pronta entrega quadro aceitar status cancelar" },
+      { g: DIA, t: "Pedidos para aceitar", ic: Hourglass, rota: "/pedidos?filtro=aguardando", chaves: "novos aguardando aceitar pagamento" },
+      { g: DIA, t: "Pedidos atrasados", ic: WarningCircle, rota: "/pedidos?filtro=atrasados", chaves: "atrasado passou hora" },
+      { g: DIA, t: "Nova venda", ic: Plus, rota: "/vendas/novo", chaves: "novo pedido vender registrar venda balcao encomenda" },
+      { g: DIA, t: "Agenda", ic: CalendarBlank, rota: "/agenda", chaves: "calendario entregas dia producao semana imprimir folha pdf" },
+      { g: DIA, t: "Orçamentos", ic: FileText, rota: "/orcamentos", pro: true, chaves: "orcamento proposta aprovar festa casamento evento" },
+      { g: DIA, t: "Clientes", ic: Users, rota: "/clientes", chaves: "cliente aniversario contatos importar historico" },
+      { g: DIA, t: "Mensagens do WhatsApp", ic: ChatCircleText, rota: "/configuracoes/mensagens", chaves: "mensagem whatsapp zap whats texto pronto recado aniversario parabens" },
+      { g: DIA, t: "Doo IA", ic: Sparkle, fazer: () => abrirDooIA(), pro: true, chaves: "assistente ia inteligencia artificial perguntar topo bolo legenda instagram calcular preco imagem arte logo" },
+      { g: PROD, t: "Produtos", ic: Cake, rota: "/produtos", chaves: "produto bolo doce salgado preco foto esgotado tamanho destaque promocao" },
+      { g: PROD, t: "Novo produto", ic: Plus, rota: "/produtos", estado: { abrirCadastro: true }, chaves: "cadastrar produto criar" },
+      { g: PROD, t: "Categorias", ic: Tag, rota: "/categorias", chaves: "categoria ordem cardapio secao grupo" },
+      { g: PROD, t: "Adicionais", ic: Stack, rota: "/complementos", pro: true, chaves: "complementos extras topo vela escrita" },
+      { g: PROD, t: "Ingredientes", ic: Basket, rota: "/insumos", chaves: "insumo ingrediente materia prima compra mercado embalagem preco" },
+      { g: PROD, t: "Ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", chaves: "receita custo lucro margem preco sugerido rendimento" },
+      { g: PROD, t: "Produtos sem ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", estado: { abrir: "sem-ficha" }, chaves: "falta ficha" },
+      { g: PROD, t: "Custos", ic: Receipt, rota: "/custos", chaves: "custo fixos variaveis despesa gasto aluguel luz gas" },
+      { g: PROD, t: "Mão de obra", ic: Wrench, rota: "/custos", estado: { abrir: "mao" }, chaves: "salario hora jornada trabalho" },
+      { g: PROD, t: "Custos invisíveis", ic: Receipt, rota: "/custos", estado: { abrir: "invisiveis" }, chaves: "gas forno perdas descartaveis porcentagem" },
+      { g: PROD, t: "Cadastrar custo fixo", ic: Buildings, rota: "/custos", estado: { abrir: "fixo" }, chaves: "aluguel luz internet agua conta mensal" },
+      { g: PROD, t: "Taxa da maquininha", ic: CreditCard, rota: "/custos", estado: { abrir: "maquininha" }, chaves: "cartao credito debito" },
+      { g: LOJA, t: "Minha loja", ic: ShoppingBag, rota: "/cardapio", chaves: "cardapio digital link visitas compartilhar qr code divulgar" },
+      { g: LOJA, t: "Pausar pedidos", ic: PauseCircle, rota: "/cardapio", chaves: "pausar fechar abrir loja fechada aberta parar ferias" },
+      ...(link ? [
+        { g: LOJA, t: "Ver meu cardápio", ic: ArrowSquareOut, fazer: () => window.open(link, "_blank", "noopener,noreferrer"), chaves: "abrir como cliente" },
+        { g: LOJA, t: "Copiar o link do cardápio", ic: ShoppingBag, fazer: () => { void navigator.clipboard?.writeText(link); }, chaves: "link copiar compartilhar divulgar" },
+      ] : []),
+      { g: LOJA, t: "Ver como fica", ic: Eye, rota: "/cardapio-preview", chaves: "previa visualizar cliente" },
+      { g: LOJA, t: "Aparência", ic: Palette, rota: "/cardapio-design", chaves: "logo cores cor banner capa foto topo visual" },
+      { g: LOJA, t: "Dados da loja", ic: Storefront, rota: "/cardapio-config", estado: { abrir: "loja" }, chaves: "nome descricao sobre whatsapp telefone" },
+      { g: LOJA, t: "Horário de funcionamento", ic: Clock, rota: "/cardapio-config", estado: { abrir: "horario" }, chaves: "horario aberto fechado dias semana abrir fechar expediente" },
+      { g: LOJA, t: "Entrega e taxa de entrega", ic: Truck, rota: "/cardapio-config", estado: { secao: "entrega" }, chaves: "taxa entrega frete delivery retirada bairro raio km mapa motoboy" },
+      { g: LOJA, t: "Formas de pagamento", ic: Money, rota: "/cardapio-config", estado: { abrir: "pag" }, chaves: "pagamento dinheiro cartao credito debito troco" },
+      { g: LOJA, t: "Pix pelo cardápio", ic: PixLogo, rota: "/cardapio-config", estado: { abrir: "pix" }, chaves: "pix chave sinal pagamento online qr" },
+      { g: LOJA, t: "Endereço da loja", ic: MapPin, rota: "/cardapio-config", estado: { abrir: "endereco" }, chaves: "endereco cep rua cidade mapa localizacao" },
+      { g: LOJA, t: "Redes sociais", ic: Storefront, rota: "/cardapio-config", estado: { abrir: "redes" }, chaves: "instagram facebook redes" },
+      { g: DIN, t: "Financeiro", ic: CurrencyDollar, rota: "/financeiro", chaves: "visao geral caixa dinheiro relatorio faturamento resultado mes" },
+      { g: DIN, t: "Lançar uma saída", ic: ArrowsDownUp, rota: "/financeiro", estado: { abrir: "saida" }, chaves: "despesa gasto saida paguei compra" },
+      { g: DIN, t: "Lançar uma entrada", ic: ArrowsDownUp, rota: "/financeiro", estado: { abrir: "entrada" }, chaves: "entrada recebi venda avulsa" },
+      { g: DIN, t: "Nova conta a pagar", ic: CalendarCheck, rota: "/financeiro", estado: { abrir: "apagar" }, chaves: "boleto vencimento conta fornecedor" },
+      { g: DIN, t: "Transações", ic: ArrowsDownUp, rota: "/financeiro/transacoes", chaves: "extrato entradas saidas receitas despesas planilha excel exportar" },
+      { g: DIN, t: "A receber", ic: HandCoins, rota: "/financeiro/a-receber", chaves: "sinal falta receber cobrar fiado devendo" },
+      { g: DIN, t: "A pagar", ic: CalendarCheck, rota: "/financeiro/a-pagar", chaves: "contas boletos fornecedor vencimento despesa" },
+      { g: DIN, t: "Lucratividade", ic: ChartLineUp, rota: "/lucratividade", pro: true, chaves: "lucro margem ponto de equilibrio relatorio produto" },
+      { g: DIN, t: "Informar o saldo do caixa", ic: Coins, rota: "/financeiro", estado: { abrir: "saldo" }, chaves: "dinheiro gaveta banco" },
+      { g: DIV, t: "Cupons", ic: Ticket, rota: "/cupons", pro: true, chaves: "cupom desconto promocao codigo" },
+      { g: DIV, t: "Pixel", ic: Target, rota: "/pixel", pro: true, chaves: "facebook instagram meta google tiktok anuncio" },
+      { g: CONTA, t: isPro ? "Minha assinatura" : "Assinar o PRO", ic: Crown, rota: isPro ? "/minha-assinatura" : "/assinar", chaves: "plano pro assinatura pagamento mensalidade cancelar testar gratis" },
+      { g: CONTA, t: "Configurações", ic: Gear, rota: "/configuracoes", chaves: "conta senha email foto perfil sair atualizar versao excluir termos privacidade" },
+      { g: CONTA, t: "Notificações e sons", ic: BellRinging, rota: "/configuracoes/notificacoes", chaves: "notificacao som aviso alerta push celular toque" },
+      ...(!isStandalone() ? [{ g: CONTA, t: "Instalar o app", ic: DeviceMobile, fazer: () => { if (getInstallPrompt()) void promptInstall(); else navigate("/configuracoes"); }, chaves: "instalar app tela inicial atalho" }] : []),
+      { g: CONTA, t: "Central de Ajuda", ic: Lifebuoy, rota: "/ajuda", chaves: "ajuda tutorial como usar duvida passo a passo" },
+      { g: CONTA, t: "Falar com o suporte", ic: WhatsappLogo, fazer: zap, chaves: "suporte atendimento whatsapp ajuda falar" },
+      { g: CONTA, t: "Novidades", ic: Newspaper, rota: "/noticias", chaves: "dicas avisos o que mudou" },
+      { g: CONTA, t: "Relatar um problema", ic: Bug, rota: "/relatar-problema", chaves: "erro bug nao funciona travou" },
+      { g: CONTA, t: "Sugerir uma melhoria", ic: Lightbulb, rota: "/solicitar-recurso", chaves: "ideia sugestao pedir recurso" },
     ];
-  }, [profile, isPro]);
+  }, [profile, isPro, navigate]);
 
   const lista = useMemo(() => {
     const termos = sem(q).split(/\s+/).filter(Boolean);
     if (!termos.length) return itens;
-    return itens
-      .filter(i => { const alvo = sem(`${i.t} ${i.g} ${i.chaves || ""}`); return termos.every(t => alvo.includes(t)); })
-      .sort((a, b) => Number(sem(b.t).startsWith(termos[0])) - Number(sem(a.t).startsWith(termos[0])));
+    // (6.110) não busca pelo nome do grupo ("conta" trazia o grupo inteiro) e ordena pelos pontos
+    return itens.map(i => [i, pontos(i, termos)] as const).filter(([, p]) => p > 0).sort((a, b) => b[1] - a[1]).map(([i]) => i);
   }, [q, itens]);
 
   useEffect(() => { setSel(0); }, [q]);
@@ -143,7 +187,7 @@ export default function BuscaRapida() {
                   <i.ic size={20} aria-hidden="true" />
                   <span className="br-it-t">{i.t}</span>
                   {q && <span className="br-it-g">{i.g}</span>}
-                  {atual(i) && <em className="br-atual">atual</em>}
+                  {i.pro && !isPro ? <em className="br-pro">PRO</em> : atual(i) && <em className="br-atual">atual</em>}
                 </button>
               </div>
             );

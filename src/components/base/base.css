@@ -328,3 +328,26 @@ html[data-ui-janela] .ui-aviso--saindo { animation-name: uiAvisoSomeCima; }
 @keyframes uiVeuMenu { from { opacity: 0; } }
 .cal-usar-g { display: none; }
 @media (min-width: 768px) { .cal-usar-g { display: inline; } .cal-usar-c { display: none; } }
+
+/* (6.110) Busca: um padrão só no app (o do Campo: 48px, borda 1,5px, foco rosa, lupa 20 rosa-escuro, X para limpar).
+   As buscas antigas de cada tela (clientes, ingredientes, fichas, financeiro, orçamento, ajuda, configurações, adicionais) seguem este visual. */
+body :is(.cl9-busca, .fap-busca, .far-busca, .tx-busca, .orc-busca, .cf9-busca, .ca-busca, .rp-busca, .pz-busca) {
+  display: flex; align-items: center; gap: 8px; box-sizing: border-box; height: 48px; min-height: 48px; padding: 0 4px 0 12px;
+  border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); box-shadow: none;
+  transition: border-color var(--dur-fast) linear;
+}
+body :is(.cl9-busca, .fap-busca, .far-busca, .tx-busca, .orc-busca, .cf9-busca, .ca-busca, .rp-busca, .pz-busca):focus-within { border-color: var(--ui-rosa); }
+body :is(.cl9-busca, .fap-busca, .far-busca, .tx-busca, .orc-busca, .cf9-busca, .ca-busca, .rp-busca, .pz-busca) > svg:first-child { flex: none; width: 20px; height: 20px; color: var(--ui-rosa-escuro); }
+body :is(.cl9-busca, .fap-busca, .far-busca, .tx-busca, .orc-busca, .cf9-busca, .ca-busca, .rp-busca, .pz-busca) input {
+  flex: 1; min-width: 0; height: 100%; margin: 0; padding: 0; border: 0; outline: 0; background: transparent; box-shadow: none;
+  font-family: var(--font-base); font-size: 16px; font-weight: 500; color: var(--ui-texto);
+}
+body :is(.cl9-busca, .fap-busca, .far-busca, .tx-busca, .orc-busca, .cf9-busca, .ca-busca, .rp-busca, .pz-busca) input::placeholder { color: var(--ui-texto-3); font-weight: 400; opacity: 1; }
+body :is(.cl9-busca, .fap-busca, .far-busca, .tx-busca, .orc-busca, .cf9-busca, .ca-busca, .rp-busca, .pz-busca) input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+body :is(.cl9-busca, .fap-busca, .far-busca, .tx-busca, .orc-busca, .cf9-busca, .ca-busca, .rp-busca, .pz-busca) > button, .ui-busca-x {
+  flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin: 0; padding: 0;
+  border: 0; border-radius: var(--ui-raio-p); background: none; color: var(--ui-texto-2); cursor: pointer;
+}
+
+/* (6.110) etiqueta "PRO" pequena (menu, busca, recursos travados) */
+.ui-tag-pro { display: inline-block; flex: none; padding: 2px 7px; border-radius: 6px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 11.5px; font-style: normal; font-weight: 600; line-height: 1.3; letter-spacing: .02em; vertical-align: middle; }

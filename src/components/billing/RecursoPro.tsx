@@ -11,6 +11,7 @@ import {
   AddressBook, Robot, Lightning, Users, ChatCircleText, Receipt, Cake, Target, ChartLineUp, Storefront, FileXls, CalendarBlank, Briefcase,
   Stack, CurrencyCircleDollar, ShoppingBag, Palette, Ticket, ClockCounterClockwise, Gift, Images, Megaphone, Sparkle, Printer,
   ListChecks, Truck, FilePdf, Crown, ArrowRight, Percent, ShareNetwork,
+  LinkSimple, Package, FileText, Eye, ArrowsClockwise, HandHeart, WhatsappLogo,
 } from "@phosphor-icons/react";
 import { Botao, Janela } from "@/components/base";
 import { CTA_PRO } from "@/lib/beneficiosPro";
@@ -30,16 +31,17 @@ export const RECURSOS_PRO = {
     beneficios: [[Target, "Anúncios mais certeiros", "Pra quem já se interessou"], [ChartLineUp, "Veja o que dá resultado", "Visitas, carrinhos e compras"], [Storefront, "Meta, Google e TikTok", "É só colar o código"]] },
   planilha: { nome: "Extrato em planilha", texto: "Baixe o extrato do período pronto pra abrir no Excel ou mandar pro contador.", frase: ["Contas", "em dia!"],
     beneficios: [[FileXls, "Planilha pronta", "Abre no Excel e no Google"], [CalendarBlank, "Do período que quiser", "Mês, semana ou dia"], [Briefcase, "Pronto pro contador", "Entradas e saídas separadas"]] },
-  complementos: { nome: "Adicionais", texto: "Topo de bolo, velas e escrita que o cliente marca no produto. O valor soma sozinho no pedido.", frase: ["Mais em cada", "pedido!"],
-    beneficios: [[Stack, "Quantos quiser", "Sabores, recheios e tamanhos"], [CurrencyCircleDollar, "Cada um com seu preço", "O total soma sozinho"], [ShoppingBag, "Pedidos maiores", "A cliente monta do jeito dela"]] },
+  // (6.110) os textos batem com a página de Adicionais
+  complementos: { nome: "Adicionais", texto: "Topo de bolo, velas e escrita que o cliente marca no produto. O valor soma sozinho no pedido.", frase: ["Cada pedido", "vale mais!"],
+    beneficios: [[CurrencyCircleDollar, "O valor soma sozinho", "Cada extra com o seu preço"], [Storefront, "Você escolhe onde aparece", "Em quais produtos"], [Images, "O cliente manda a foto", "Ou a frase do topo"]] },
   produtos: { nome: "Cardápio completo", texto: "Mostre todos os seus produtos no cardápio ao mesmo tempo. Os que estão fora continuam salvos.", frase: ["Vitrine", "completa!"],
-    beneficios: [[Storefront, "Todos os produtos", "Sem limite no cardápio"], [Palette, "Cores e banners", "O cardápio com a sua cara"], [Ticket, "Cupons de desconto", "Pra vender mais"]] },
+    beneficios: [[Storefront, "Todos no cardápio", "Sem limite de produtos"], [ClockCounterClockwise, "Nada se perde", "Os de fora continuam salvos"], [Lightning, "Liga e desliga à vontade", "Sem contar limite"]] },
   clientes: { nome: "Clientes sem limite", texto: "Guarde todas as suas clientes e o que cada uma já comprou. O que já cadastrou continua salvo.", frase: ["Clientela", "fiel!"],
     beneficios: [[Users, "Todas as clientes", "Sem limite"], [ClockCounterClockwise, "Histórico de compras", "De cada cliente"], [Gift, "Aniversários", "Lembrete pra mandar parabéns"]] },
-  banners: { nome: "Mais banners", texto: "Mostre até 4 banners no topo do cardápio, com promoções e novidades.", frase: ["Vitrine", "que vende!"],
-    beneficios: [[Images, "Até 4 banners", "Passam sozinhos no topo"], [Megaphone, "Promoção em destaque", "A cliente vê primeiro"], [Sparkle, "Banners prontos", "É só escolher e usar"]] },
-  cores: { nome: "Cores do cardápio", texto: "Deixe o cardápio com as cores da sua marca: fundo, botões e o nome da loja.", frase: ["Com a sua", "cara!"],
-    beneficios: [[Palette, "Qualquer cor", "Igual à da sua marca"], [Storefront, "Cardápio com a sua cara", "Botões, fundo e nome"], [Sparkle, "Temas de datas", "Natal, Páscoa e mais"]] },
+  banners: { nome: "Banner pronto exclusivo", texto: "Use qualquer banner da galeria no topo do cardápio, feitos pela equipe Doonly para datas e promoções.", frase: ["Pronto pra", "divulgar!"],
+    beneficios: [[Sparkle, "Toda a galeria liberada", "Bolos, doces, festas e datas"], [Megaphone, "Promoção em destaque", "A cliente vê primeiro"], [Lightning, "Em um toque", "Sem precisar editar nada"]] },
+  cores: { nome: "Cores do cardápio", texto: "Use as cores da sua marca no topo do cardápio: na faixa, na borda da logo e no nome da loja.", frase: ["Com a sua", "cara!"],
+    beneficios: [[Palette, "Qualquer cor", "Igual à da sua marca"], [Storefront, "Faixa, logo e nome", "O topo com a sua cara"], [Sparkle, "Mais 4 cores prontas", "Para escolher num toque"]] },
   agenda: { nome: "Imprimir a agenda", texto: "Leve pra cozinha a folha do dia com os pedidos, os horários e o que produzir.", frase: ["Dia", "organizado!"],
     beneficios: [[Printer, "Folha do dia", "Pedidos em ordem de hora"], [ListChecks, "O que produzir", "Somado por produto"], [Truck, "Entregas e retiradas", "Endereço e quanto receber"]] },
   fichaPdf: { nome: "Ficha técnica em PDF", texto: "Baixe a ficha do produto com ingredientes, custo e preço pra imprimir ou guardar.", frase: ["Receita", "no papel!"],
@@ -48,6 +50,17 @@ export const RECURSOS_PRO = {
     beneficios: [[Robot, "150 mensagens por dia", "Pergunte o que precisar"], [CurrencyCircleDollar, "Preço e pedido", "Ela calcula e monta pra você"], [Sparkle, "Cria imagens", "Legendas e artes pra divulgar"]] },
   cupons: { nome: "Cupom de desconto", texto: "Crie cupons pra trazer cliente nova e fazer quem já comprou voltar.", frase: ["Desconto", "que vende!"],
     beneficios: [[Ticket, "Cupom com seu código", "Ex.: NATAL10"], [Percent, "Em % ou em reais", "Com validade e mínimo"], [ShareNetwork, "Divulgue no WhatsApp", "A cliente usa no cardápio"]] },
+  // (6.110) convites que faltavam (antes eram aviso solto ou iam direto para a página do PRO)
+  lucratividade: { nome: "Lucratividade", texto: "Veja quanto sobra de cada produto e do mês, já tirando ingredientes, taxas e despesas.", frase: ["Lucro de", "verdade!"],
+    beneficios: [[ChartLineUp, "Lucro por produto", "O que sobra de cada um"], [CalendarBlank, "Lucro do mês", "Com a sua margem em %"], [Receipt, "Tudo descontado", "Ingredientes, taxas e despesas"]] },
+  orcamentos: { nome: "Orçamentos", texto: "O cliente conta a ideia pelo seu link, você monta a proposta e ele aprova pelo celular. Aprovou, vira pedido.", frase: ["Mais propostas,", "mais vendas!"],
+    beneficios: [[LinkSimple, "Link para pedir orçamento", "Os pedidos chegam organizados"], [Package, "Proposta com seus produtos", "Ou itens com foto e valor"], [FileText, "O cliente aprova pelo link", "E baixa a proposta em PDF"]] },
+  fotosProduto: { nome: "Mais fotos", texto: "Mostre o produto de vários jeitos: até 4 fotos que a cliente passa no cardápio, e uma foto para cada sabor ou tamanho.", frase: ["Foto que", "dá vontade!"],
+    beneficios: [[Images, "Até 4 fotos por produto", "A cliente passa com o dedo"], [Cake, "Mostre o recheio", "Fatia, lado e detalhe"], [Eye, "Foto de cada opção", "Troca quando a cliente escolhe"]] },
+  link: { nome: "Link com o nome da loja", texto: "O link do cardápio leva o nome da sua loja, e o link antigo continua abrindo.", frase: ["Fácil de", "lembrar!"],
+    beneficios: [[LinkSimple, "Com o nome da sua loja", "Do jeito que você escolher"], [ShareNetwork, "Mais confiança", "No Instagram e no WhatsApp"], [ArrowsClockwise, "O antigo continua valendo", "Nenhum cliente se perde"]] },
+  equipe: { nome: "Montagem do cardápio", texto: "A equipe Doonly cadastra seus produtos e cria a logo e os banners da loja. Você só manda as fotos e os preços.", frase: ["A gente", "monta!"],
+    beneficios: [[HandHeart, "Produtos cadastrados", "Com preço e foto"], [Palette, "Logo e banners", "Feitos pela equipe"], [WhatsappLogo, "Pelo WhatsApp", "Direto com a equipe"]] },
 } satisfies Record<string, RecursoInfo>;
 export type RecursoPro = keyof typeof RECURSOS_PRO;
 

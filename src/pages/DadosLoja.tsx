@@ -387,6 +387,11 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   // veio do "Definir taxa de entrega" (ou do antigo Entrega e pagamento): abre direto a Entrega
   useEffect(() => { if (!loading && irEntrega) setParte("ent"); }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!loading && abrirLoja && cel) setParte("loja"); }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
+  // (6.110) a busca do app abre direto a parte certa no celular (horário, pagamento, pix, endereço, redes)
+  useEffect(() => {
+    const p = estadoNav?.abrir as Parte | undefined;
+    if (!loading && cel && p && p !== "loja" && ["redes", "endereco", "horario", "pag", "pix", "ent"].includes(p)) setParte(p);
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
   // (22/10) computador: salva sozinho quando ela para de digitar (sem botão Salvar)
   const salvoPc = useRef("");
   const fotoAgora = fotoDados();

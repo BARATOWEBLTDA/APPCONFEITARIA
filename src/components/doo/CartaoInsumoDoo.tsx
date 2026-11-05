@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 import { Package, Check, X } from "@phosphor-icons/react";
 import CampoNumero from "@/components/ui/CampoNumero";
+import { lerBRL, mascaraBRL, textoBRL } from "@/lib/moeda";
 import { custoLegivel, procurarInsumoPorNome, salvarInsumoDoo, UNIDADES_INSUMO, EMBALAGENS_INSUMO, type RascunhoInsumo, type InsumoResumo } from "@/lib/insumosDoo";
 
 /**
@@ -91,7 +92,7 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
             <label className="cid-l">Unidade<select className="cid-in" value={r.unidade} onChange={e => setR({ ...r, unidade: e.target.value })}>{UNIDADES_INSUMO.map(u => <option key={u} value={u}>{u}</option>)}</select></label>
           </div>
           <div className="cid-row">
-            <label className="cid-l">Valor pago (R$)<CampoNumero className="cid-in" value={r.valor_compra} onValor={n => setR({ ...r, valor_compra: n })} /></label>
+            <label className="cid-l">Valor pago<span className="cid-rs"><em>R$</em><input className="cid-in" inputMode="numeric" autoComplete="off" placeholder="0,00" value={textoBRL(r.valor_compra)} onChange={e => setR({ ...r, valor_compra: lerBRL(mascaraBRL(e.target.value)) })} /></span></label>
             <label className="cid-l">Embalagem<select className="cid-in" value={r.embalagem_tipo} onChange={e => setR({ ...r, embalagem_tipo: e.target.value })}>{EMBALAGENS_INSUMO.map(u => <option key={u} value={u}>{u}</option>)}</select></label>
           </div>
           <p className="cid-custo cid-custo--ed">{custo ? `Custo: ${custo}` : "Preencha a quantidade e o valor"}</p>
@@ -141,6 +142,10 @@ const CSS = `
   .cid-l { display: block; flex: 1; min-width: 0; font-size: 13px; font-weight: 500; color: var(--ui-cinza-texto); margin-top: 10px; }
   .cid-in { display: block; width: 100%; box-sizing: border-box; margin-top: 5px; min-height: 44px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 10px 12px; font-family: inherit; font-size: 16px; color: var(--ui-texto); background: var(--ui-branco); }
   .cid-in:focus { outline: none; border-color: var(--ui-rosa); box-shadow: 0 0 0 3px rgba(232,90,140,.12); }
+  /* (6.110) valor em R$ com o prefixo dentro do campo, como os outros campos de dinheiro */
+  .cid-rs { position: relative; display: block; }
+  .cid-rs em { position: absolute; left: 12px; top: 50%; margin-top: 2.5px; transform: translateY(-50%); font-style: normal; font-size: 15px; font-weight: 600; color: var(--ui-texto-3); pointer-events: none; }
+  .cid-rs .cid-in { padding-left: 38px; }
   .cid-row { display: flex; gap: 8px; }
   .cid-fotos { margin-top: 12px; }
   .cid-fl { margin: 0 0 6px; font-size: 13px; font-weight: 500; color: var(--ui-cinza-texto); }

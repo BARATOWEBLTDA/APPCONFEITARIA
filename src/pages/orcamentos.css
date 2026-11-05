@@ -109,10 +109,10 @@
 .orc-qtd { display: inline-flex; align-items: center; height: 40px; border-radius: 12px; background: #F3EEF1; }
 .orc-qtd button { display: flex; align-items: center; justify-content: center; width: 36px; height: 40px; margin: 0; padding: 0; border: 0; background: none; color: var(--ui-texto-2); cursor: pointer; }
 .orc-qtd b { min-width: 26px; text-align: center; font-size: 15px; }
-.orc-valor { flex: 0 1 140px; min-width: 0; display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 10px; border: 1px solid var(--ui-borda-campo); border-radius: 10px; background: var(--ui-branco); }
+.orc-valor { flex: 0 1 140px; min-width: 0; display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 10px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); }
 .orc-valor:focus-within { border-color: var(--ui-rosa); }
 .orc-valor span { font-size: 14px; color: var(--ui-texto-3); }
-.orc-valor input { flex: 1; min-width: 0; height: 38px; margin: 0; padding: 0; border: 0; outline: 0; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); background: none; }
+.orc-valor input { flex: 1; min-width: 0; height: 40px; margin: 0; padding: 0; border: 0; outline: 0; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); background: none; }
 .orc-tira { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin: 0 -6px 0 0; padding: 0; border: 0; border-radius: 10px; background: none; color: var(--ui-vermelho); cursor: pointer; }
 .orc-add { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); justify-content: center; gap: var(--gap-stack); margin: var(--space-4) 0 var(--space-2); }
 .orc-add-op { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; aspect-ratio: 1 / .85; padding: var(--space-3); border: 1.5px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); font-family: inherit; text-align: center; color: var(--ui-texto); cursor: pointer; transition: border-color .15s, background .15s; }

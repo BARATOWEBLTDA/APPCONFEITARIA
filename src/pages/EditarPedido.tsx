@@ -1647,7 +1647,7 @@ export default function EditarPedido() {
                 </div>
                 <div className="ui-campo">
                   <span className="ui-campo-r"><span>Horário</span></span>
-                  <button type="button" className="ui-campo-c tpd-fal" onClick={() => setHoraSheetAberto(true)}><span className="ui-campo-ic" aria-hidden="true"><Clock size={20} weight="bold" /></span><span className={horarioEntrega ? '' : 'tpd-ph'}>{horarioEntrega ? horarioEntrega.slice(0, 5) : 'Escolher'}</span></button>
+                  <button type="button" className="ui-campo-c tpd-fal" onClick={() => setHoraSheetAberto(true)}><span className="ui-campo-ic" aria-hidden="true"><Clock size={20} weight="bold" /></span><span className={horarioEntrega ? '' : 'tpd-ph'}>{horarioEntrega ? horarioEntrega.slice(0, 5) : '--:--'}</span></button>
                 </div>
               </div>
             </section>
@@ -1914,7 +1914,7 @@ export default function EditarPedido() {
           <Janela aberta={modalCliente} aoFechar={() => setModalCliente(false)} tipo="conteudo" titulo="Escolher cliente">
             <div className="ui-campo-c tpj-busca">
               <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-              <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar cliente por nome ou telefone" placeholder="Nome ou telefone" value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
+              <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar cliente por nome ou telefone" placeholder="Buscar nome ou telefone" value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
             </div>
             <div className="tpj-lista">
               {lista.map(c => (

@@ -2268,7 +2268,7 @@ export default function Produtos() {
                 const imgs = (form.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
                 const principal = imgs[0];
                 const escolher = (slot: number) => {
-                  if (slot > 0 && !isPro) { avisar("Mais fotos por produto é do plano PRO.", { tipo: "info" }); return; }
+                  if (slot > 0 && !isPro) { abrirConvitePro("fotosProduto"); return; } // (6.110) convite no padrão (antes um aviso solto)
                   if (!uploading) (slot === 0 ? imgRef : slot === 1 ? img2Ref : slot === 2 ? img3Ref : img4Ref).current?.click();
                 };
                 return (
@@ -2362,16 +2362,14 @@ export default function Produtos() {
                     </p>
 
                     {!isPro ? (
-                      <div className="prod-var-fotos-lock">
-                        <img src="/log.webp" alt="Doonly" className="prod-var-fotos-lock-logo" />
-                        <div>
-                          <div style={{fontSize: 13, fontWeight: 600, color: "#2D1F26", display: "inline-flex", alignItems: "center", gap: 6}}>
-                            Recurso PRO
-                            <img src="/coroa.webp" alt="" style={{width: 14, height: 14, objectFit: "contain"}} />
-                          </div>
-                          <div style={{fontSize: 12, color: "#6B5D64", marginTop: 2}}>Fotos personalizadas por variação — venda muito mais com fotos que valorizam cada opção.</div>
-                        </div>
-                      </div>
+                      /* (6.110) caixa tocável que abre o convite do PRO (antes uma caixa parada no estilo antigo) */
+                      <button type="button" className="prod-var-fotos-lock" onClick={() => abrirConvitePro("fotosProduto")}>
+                        <img src="/coroa.webp" alt="" className="prod-var-fotos-lock-logo" />
+                        <span style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+                          <b style={{ display: "block", fontSize: 14, fontWeight: 600, color: "var(--ui-texto)" }}>Uma foto para cada opção <em className="ui-tag-pro" style={{ marginLeft: 6 }}>PRO</em></b>
+                          <small style={{ display: "block", fontSize: 12.5, color: "var(--ui-texto-2)", marginTop: 2 }}>A foto troca quando a cliente escolhe o sabor ou o tamanho.</small>
+                        </span>
+                      </button>
                     ) : (
                       <div className="prod-var-fotos-lista">
                         {variacoes.map(({ key, label }) => (
@@ -2444,7 +2442,7 @@ export default function Produtos() {
                           <span role="cell">{op.nome}{esg && <small> · esgotado</small>}</span>
                           <span role="cell">
                             <label className="prod-ptab-in"><span>R$</span>
-                              <input type="text" inputMode="numeric" value={formatPreco(op.preco)} aria-label={`Preço de ${op.nome}`} placeholder="0,00"
+                              <input type="text" inputMode="numeric" value={op.preco ? formatPreco(op.preco) : ""} aria-label={`Preço de ${op.nome}`} placeholder="0,00"
                                 onChange={e => { const preco = parsePreco(e.target.value); setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO), opcoes: (f.grupo_tamanhos?.opcoes || []).map(o => o.id === op.id ? { ...o, preco } : o) } })); }} />
                             </label>
                           </span>
@@ -4395,10 +4393,13 @@ export default function Produtos() {
           display: flex;
           align-items: center;
           gap: 14px;
+          width: 100%;
           padding: 14px 16px;
-          background: #FAF8F5;
-          border: 1.5px dashed #E5D8DE;
+          background: var(--ui-branco);
+          border: 1.5px dashed var(--ui-borda-campo, #EDE6E9);
           border-radius: var(--ui-raio);
+          font-family: inherit;
+          cursor: pointer;
         }
         .prod-var-fotos-lock-logo {
           width: 44px;

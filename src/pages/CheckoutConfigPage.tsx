@@ -916,14 +916,15 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
             <div className="ui-campo">
               <span className="ui-campo-r" id="ep-tipo"><span>Tipo de desconto</span></span>
               {/* (01/11 · 5.99) caixinhas com bolinha no lugar do seletor lado a lado */}
-              <CaixasEscolha rotuloId="ep-tipo" valor={cupomForm.tipo === 'percentual' ? 'percentual' : 'fixo'} onMudar={v => setCupomForm({ ...cupomForm, tipo: v })} opcoes={[
+              <CaixasEscolha rotuloId="ep-tipo" valor={cupomForm.tipo === 'percentual' ? 'percentual' : 'fixo'} onMudar={v => setCupomForm({ ...cupomForm, tipo: v, valor: v === 'fixo' ? reaisParaCampo(parseNumBR(cupomForm.valor)) : String(parseNumBR(cupomForm.valor) || '').replace('.', ',') })} opcoes={[
                 { v: 'percentual', t: 'Porcentagem', sub: 'Ex.: 10% de desconto no pedido' },
                 { v: 'fixo', t: 'Valor em reais', sub: 'Ex.: R$ 10,00 de desconto no pedido' },
               ]} />
             </div>
-            <Campo rotulo="Desconto" obrigatorio inputMode="decimal" placeholder="0" value={cupomForm.valor}
+            {/* (6.110) em reais, a máscara de centavos igual aos outros campos de R$ (antes aceitava "1.000" e "10.5" soltos) */}
+            <Campo rotulo="Desconto" obrigatorio inputMode={cupomForm.tipo === 'percentual' ? 'decimal' : 'numeric'} placeholder={cupomForm.tipo === 'percentual' ? '0' : '0,00'} value={cupomForm.valor}
               prefixo={cupomForm.tipo === 'percentual' ? undefined : 'R$'} depois={cupomForm.tipo === 'percentual' ? <span className="ep-depois">%</span> : undefined}
-              onChange={e => setCupomForm({ ...cupomForm, valor: e.target.value.replace(/[^0-9.,]/g, '') })} />
+              onChange={e => setCupomForm({ ...cupomForm, valor: cupomForm.tipo === 'percentual' ? e.target.value.replace(/[^0-9,]/g, '') : mascaraReais(e.target.value) })} />
 
             {/* (20/10) para quem: todos ou só cliente novo (1º pedido, pelo WhatsApp) */}
             <div className="ui-campo">

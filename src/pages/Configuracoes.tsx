@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, FileText, Lightbulb,  SignOut, SlidersHorizontal, Bug, User, WarningCircle, MagnifyingGlass } from "@phosphor-icons/react";
+import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, FileText, Lightbulb,  SignOut, SlidersHorizontal, Bug, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -42,28 +42,34 @@ function ItemConfig({ icone, tom, nome, apoio, onClick, destaque, children }: {
 const formatPhone = mascaraTelefone;
 
 /** (16/10) busca das Configurações (ideia vista no Dora): acha o ajuste e diz onde ele fica */
-type Achado = { nome: string; onde: string; palavras: string; ir: string | "conta" | "termos" | "avancado" | "notif" | "instalar" | "suporte" };
+type Achado = { nome: string; onde: string; palavras: string; ir: string | "conta" | "termos" | "avancado" | "notif" | "instalar" | "suporte"; abrir?: string };
+// (6.110) "onde" com os nomes de hoje (Minha loja, Produtos, Financeiro) e cada item abre a parte certa
 const INDICE: Achado[] = [
   { nome: "Nome, telefone e senha", onde: "Conta › Minha conta", palavras: "foto perfil logo email e-mail celular trocar senha", ir: "conta" },
   { nome: "Minha assinatura", onde: "Conta", palavras: "plano pro pagamento mensalidade cancelar", ir: "assinatura" },
-  { nome: "Nome e descrição da loja", onde: "Cadastros › Dados da loja", palavras: "sobre confeitaria texto", ir: "/cardapio-config" },
-  { nome: "Endereço", onde: "Cadastros › Dados da loja", palavras: "cep rua mapa cidade localização", ir: "/cardapio-config" },
-  { nome: "Horário de funcionamento", onde: "Cadastros › Dados da loja", palavras: "horario aberto fechado dias semana abrir fechar", ir: "/cardapio-config" },
-  { nome: "Formas de pagamento", onde: "Cadastros › Dados da loja", palavras: "pix dinheiro cartão credito debito pagar", ir: "/checkout-config" },
-  { nome: "Entrega e retirada", onde: "Cadastros › Dados da loja", palavras: "taxa de entrega frete retirar buscar delivery", ir: "/checkout-config" },
-  { nome: "Logo, cores e banner", onde: "Cadastros › Cardápio digital › Aparência", palavras: "logotipo cor tema modelo imagem capa visual", ir: "/cardapio-design" },
-  { nome: "Mensagens do WhatsApp", onde: "Cadastros", palavras: "whatsapp textos modelo resposta cliente", ir: "/configuracoes/mensagens" },
-  { nome: "Custos fixos", onde: "Financeiro › Custos", palavras: "aluguel luz internet agua conta mensal", ir: "/custos" },
-  { nome: "Salário e jornada", onde: "Financeiro › Custos", palavras: "mao de obra hora horas custo da hora trabalho", ir: "/custos" },
-  { nome: "Taxa da maquininha", onde: "Financeiro › Custos", palavras: "cartão credito debito custos variaveis embalagem", ir: "/custos" },
-  { nome: "Custos invisíveis", onde: "Financeiro › Custos", palavras: "gas forno perdas descartaveis porcentagem", ir: "/custos" },
-  { nome: "Saldo do caixa", onde: "Financeiro", palavras: "dinheiro gaveta banco quanto tenho", ir: "/financeiro" },
-  { nome: "Velas e topos de bolo", onde: "Cadastros › Adicionais", palavras: "adicionais extras complementos escrita papel de arroz", ir: "/complementos" },
-  { nome: "Categorias do cardápio", onde: "Cadastros › Categorias", palavras: "grupos ordem secoes", ir: "/categorias" },
-  { nome: "Notificações e sons", onde: "App", palavras: "avisos som alerta pedido novo", ir: "notif" },
+  { nome: "Nome e descrição da loja", onde: "Minha loja › Dados da loja", palavras: "sobre confeitaria texto whatsapp", ir: "/cardapio-config", abrir: "loja" },
+  { nome: "Endereço", onde: "Minha loja › Dados da loja", palavras: "cep rua mapa cidade localização", ir: "/cardapio-config", abrir: "endereco" },
+  { nome: "Horário de funcionamento", onde: "Minha loja › Dados da loja", palavras: "horario aberto fechado dias semana abrir fechar", ir: "/cardapio-config", abrir: "horario" },
+  { nome: "Formas de pagamento", onde: "Minha loja › Pagamento", palavras: "dinheiro cartão credito debito pagar troco", ir: "/cardapio-config", abrir: "pag" },
+  { nome: "Pix pelo cardápio", onde: "Minha loja › Pix", palavras: "pix chave sinal pagamento online", ir: "/cardapio-config", abrir: "pix" },
+  { nome: "Entrega e retirada", onde: "Minha loja › Entrega", palavras: "taxa de entrega frete retirar buscar delivery bairro raio", ir: "/cardapio-config", abrir: "ent" },
+  { nome: "Redes sociais", onde: "Minha loja › Dados da loja", palavras: "instagram facebook", ir: "/cardapio-config", abrir: "redes" },
+  { nome: "Pausar pedidos", onde: "Minha loja", palavras: "fechar loja ferias parar pausa", ir: "/cardapio" },
+  { nome: "Logo, cores e banner", onde: "Minha loja › Aparência", palavras: "logotipo cor tema modelo imagem capa visual", ir: "/cardapio-design" },
+  { nome: "Mensagens do WhatsApp", onde: "Menu › Dia a dia", palavras: "whatsapp textos modelo resposta cliente aniversario", ir: "/configuracoes/mensagens" },
+  { nome: "Custos fixos", onde: "Menu › Custos", palavras: "aluguel luz internet agua conta mensal", ir: "/custos", abrir: "fixo" },
+  { nome: "Salário e jornada", onde: "Menu › Custos", palavras: "mao de obra hora horas custo da hora trabalho", ir: "/custos", abrir: "mao" },
+  { nome: "Taxa da maquininha", onde: "Menu › Custos", palavras: "cartão credito debito custos variaveis embalagem", ir: "/custos", abrir: "maquininha" },
+  { nome: "Custos invisíveis", onde: "Menu › Custos", palavras: "gas forno perdas descartaveis porcentagem", ir: "/custos", abrir: "invisiveis" },
+  { nome: "Saldo do caixa", onde: "Financeiro", palavras: "dinheiro gaveta banco quanto tenho", ir: "/financeiro", abrir: "saldo" },
+  { nome: "Velas e topos de bolo", onde: "Minha loja › Adicionais", palavras: "adicionais extras complementos escrita papel de arroz", ir: "/complementos" },
+  { nome: "Categorias do cardápio", onde: "Minha loja › Categorias", palavras: "grupos ordem secoes", ir: "/categorias" },
+  { nome: "Notificações e sons", onde: "App", palavras: "notificacao notificacoes avisos som alerta pedido novo", ir: "notif" },
   { nome: "Instalar o app", onde: "App", palavras: "tela inicial atalho celular", ir: "instalar" },
   { nome: "Central de Ajuda", onde: "Ajuda", palavras: "tutorial como usar artigos duvidas passo a passo", ir: "/ajuda" },
   { nome: "Fale com o suporte", onde: "Ajuda", palavras: "whatsapp ajuda atendimento", ir: "suporte" },
+  { nome: "Relatar um problema", onde: "Ajuda", palavras: "erro bug travou nao funciona", ir: "/relatar-problema" },
+  { nome: "Sugerir uma melhoria", onde: "Ajuda", palavras: "ideia sugestao recurso", ir: "/solicitar-recurso" },
   { nome: "Termos e privacidade", onde: "Ajuda", palavras: "lgpd dados contrato", ir: "termos" },
   { nome: "Excluir a conta", onde: "App › Avançado", palavras: "apagar deletar encerrar", ir: "avancado" },
 ];
@@ -243,12 +249,14 @@ export default function Configuracoes() {
           )}
           {/* (14/10) Uma lista só, sem cards: Conta (minha conta e assinatura), App, Ajuda e Avançado. Sair embaixo. */}
           <label className="cf9-busca">
-            <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
+            <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
             <input type="search" placeholder="Horário, pix, senha, custos…" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar nas configurações" autoComplete="off" />
+            {busca && <button type="button" className="ui-busca-x" aria-label="Limpar a busca" onClick={() => setBusca('')}><X size={18} weight="bold" /></button>}
           </label>
           {busca.trim() ? (() => {
             const q = semAcento(busca.trim());
-            const achados = INDICE.filter(a => semAcento(`${a.nome} ${a.onde} ${a.palavras}`).includes(q));
+            // (6.110) cada palavra pode estar em qualquer lugar ("taxa entrega" acha "taxa de entrega")
+            const achados = INDICE.filter(a => { const alvo = semAcento(`${a.nome} ${a.onde} ${a.palavras}`); return q.split(/\s+/).every(p => alvo.includes(p.replace(/oes$/, "ao").replace(/s$/, ""))); });
             const ir = (a: Achado) => {
               if (a.ir === "conta") { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }
               else if (a.ir === "assinatura") navigate(pro ? "/minha-assinatura" : "/assinar");
@@ -257,7 +265,7 @@ export default function Configuracoes() {
               else if (a.ir === "termos") setTermosOpen(true);
               else if (a.ir === "avancado") setAvancadoOpen(true);
               else if (a.ir === "suporte") window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener");
-              else navigate(a.ir, { state: { de: "/configuracoes" } });
+              else navigate(a.ir, { state: { de: "/configuracoes", ...(a.ir === "/cardapio-config" && a.abrir === "ent" ? { secao: "entrega" } : a.abrir ? { abrir: a.abrir } : {}) } });
             };
             return (
               <section className="cf9-card cf9-lista" aria-label="Resultados da busca">

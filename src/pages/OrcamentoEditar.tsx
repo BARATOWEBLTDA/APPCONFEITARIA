@@ -6,7 +6,8 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowsClockwise, CalendarBlank, CaretDown, Check, CheckCircle, Clock, Copy, UserPlus, UsersThree, FilePdf, MagnifyingGlass, MapPin, Minus, Package, PencilSimpleLine, Phone, Plus, Storefront, Trash, WarningCircle } from '@phosphor-icons/react'
+import { ArrowsClockwise, CalendarBlank, CaretDown, Check, CheckCircle, Clock, Copy, UserPlus, UsersThree, FilePdf, MagnifyingGlass, MapPin, Minus, Package, PencilSimpleLine, Phone, Plus, Storefront, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import { CartaoPro } from '@/components/billing/RecursoPro'
 import AppPageHeader from '@/components/AppPageHeader'
 import CampoData from '@/components/CampoData'
 import CalendarioMes from '@/components/CalendarioMes'
@@ -319,7 +320,8 @@ export default function OrcamentoEditar() {
   const subtitulo = o?.id ? [o.cliente_nome, o.origem === 'link' ? chegouHa(o.created_at).replace(/^Chegou/, 'pediu pelo link') : ''].filter(Boolean).join(' · ') || 'Monte a proposta e envie o link' : 'Monte a proposta e envie o link'
   if (erro) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para abrir o orçamento" texto={erro} acao={<Botao onClick={() => navigate('/orcamentos')}>Voltar para a lista</Botao>} /></div></>)
   if (!o) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><div className="orc-carregando"><span className="ui-gira" aria-label="Carregando" /></div></div></>)
-  if (!isPro) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Orçamentos é um recurso do PRO" texto={`Teste o PRO grátis por 7 dias para montar e enviar orçamentos.`} acao={<Botao onClick={() => navigate('/orcamentos')}>Voltar</Botao>} /></div></>)
+  // (6.110) aberto por link na conta grátis: o convite no padrão do app (antes era um aviso com só "Voltar")
+  if (!isPro) return (<><AppPageHeader title="Orçamento" subtitle="Proposta para o cliente" voltar="/orcamentos" /><div className="orc"><CartaoPro recurso="orcamentos" /></div></>)
 
   // (6.82) o que o cliente pediu pelo link: um resumo em texto corrido e, embaixo, os dados um por linha (com o mapa do local)
   const localMapa = (o.local_evento || '').trim()
@@ -504,7 +506,7 @@ export default function OrcamentoEditar() {
                 <span className="ui-campo-r"><span>Horário</span></span>
                 <button type="button" className="cdata" onClick={() => setHoraAberta(true)} aria-label={`Horário: ${o.horario_evento ? o.horario_evento.slice(0, 5) : 'escolher'}`}>
                   <Clock size={20} weight="bold" aria-hidden="true" />
-                  <span className={o.horario_evento ? '' : 'ph'}>{o.horario_evento ? o.horario_evento.slice(0, 5) : 'Escolher'}</span>
+                  <span className={o.horario_evento ? '' : 'ph'}>{o.horario_evento ? o.horario_evento.slice(0, 5) : '--:--'}</span>
                 </button>
               </div>
               <button type="button" role="checkbox" aria-checked={varios} className="orc-varios orc-ev-varios" onClick={() => ligarVarios(!varios)}>
@@ -726,7 +728,7 @@ export default function OrcamentoEditar() {
 
     <Janela aberta={escolher} aoFechar={() => setEscolher(false)} tipo="conteudo" titulo="Produtos do cardápio" className="orc-esc-janela">
       <div className="orc-esc">
-        <label className="orc-busca"><MagnifyingGlass size={18} weight="bold" /><input type="search" placeholder="Buscar produto" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar produto" /></label>
+        <label className="orc-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" placeholder="Buscar produto" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar produto" />{busca && <button type="button" className="ui-busca-x" aria-label="Limpar a busca" onClick={() => setBusca('')}><X size={18} weight="bold" /></button>}</label>
         <div className="orc-esc-l">
           {/* (6.99) item sob medida também pela lista */}
           {(o.itens || []).length > 0 && !busca.trim() && (
@@ -776,7 +778,7 @@ export default function OrcamentoEditar() {
     {/* (6.62) cliente da lista: busca parada em cima e só a lista rola */}
     <Janela aberta={cliJanela === 'lista'} aoFechar={() => setCliJanela(null)} tipo="conteudo" titulo="Seus clientes" className="orc-esc-janela">
       <div className="orc-esc">
-        <label className="orc-busca"><MagnifyingGlass size={18} weight="bold" /><input type="search" placeholder="Buscar nome ou telefone" value={buscaCli} onChange={e => setBuscaCli(e.target.value)} aria-label="Buscar cliente" /></label>
+        <label className="orc-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" placeholder="Buscar nome ou telefone" value={buscaCli} onChange={e => setBuscaCli(e.target.value)} aria-label="Buscar cliente" />{buscaCli && <button type="button" className="ui-busca-x" aria-label="Limpar a busca" onClick={() => setBuscaCli('')}><X size={18} weight="bold" /></button>}</label>
         <div className="orc-esc-l">
           {listaClientes.map(c => (
             <button key={c.id} type="button" className="orc-esc-it" onClick={() => usarCliente(c)}>

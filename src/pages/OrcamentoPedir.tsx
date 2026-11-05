@@ -124,7 +124,7 @@ export default function OrcamentoPedir() {
             <div className="ui-campo">
               <span className="ui-campo-r"><span>Horário</span></span>
               <button type="button" className="cdata" onClick={() => { (document.activeElement as HTMLElement | null)?.blur(); setHoraAberta(true) }} aria-label={`Horário: ${hora || 'escolher'}`}>
-                <Clock size={20} weight="bold" aria-hidden="true" /><span className={hora ? '' : 'ph'}>{hora || 'Escolher'}</span>
+                <Clock size={20} weight="bold" aria-hidden="true" /><span className={hora ? '' : 'ph'}>{hora || '--:--'}</span>
               </button>
             </div>
           </div>

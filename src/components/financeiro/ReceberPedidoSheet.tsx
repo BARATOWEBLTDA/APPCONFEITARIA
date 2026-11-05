@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import Folha from "@/components/financeiro/Folha";
 import { ReceberSheet } from "@/pages/FinanceiroAReceber";
 import { carregarAReceber, type ItemReceber } from "@/lib/contasReceber";
@@ -51,8 +51,9 @@ export default function ReceberPedidoSheet({ itens: dados, inicial, onClose, onF
 
   return (
     <Folha titulo="Receber pedido" onClose={onClose}>
-      <div className="rp-busca"><MagnifyingGlass size={18} aria-hidden="true" />
-        <input autoComplete="off" placeholder="Buscar cliente ou nº do pedido" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar pedido" /></div>
+      <label className="rp-busca"><MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
+        <input type="search" autoComplete="off" placeholder="Buscar cliente ou número" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar pedido" />
+        {busca && <button type="button" className="ui-busca-x" aria-label="Limpar a busca" onClick={() => setBusca('')}><X size={18} weight="bold" /></button>}</label>
       {!itens && !erro && <p className="rp-msg">Carregando…</p>}
       {erro && <p className="rp-msg">Não deu para carregar. Confira a internet e tente de novo.</p>}
       {itens && !erro && itens.length === 0 && <p className="rp-msg">Nenhum pedido com valor a receber.</p>}

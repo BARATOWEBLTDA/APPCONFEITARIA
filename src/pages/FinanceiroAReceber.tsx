@@ -120,7 +120,7 @@ export default function FinanceiroAReceber() {
 
         {!carregando && itens.length > 0 && (
           <div className="far-bb">
-            <label className="far-busca"><MagnifyingGlass size={18} /><input type="search" aria-label="Buscar cliente ou número do pedido" placeholder="Buscar cliente ou número" value={busca} onChange={e => setBusca(e.target.value)} />
+            <label className="far-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" aria-label="Buscar cliente ou número do pedido" placeholder="Buscar cliente ou número" value={busca} onChange={e => setBusca(e.target.value)} />
               {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={16} weight="bold" /></button>}</label>
             <BotaoFiltro className="far-filtro" ativos={mostrar === "todos" ? 0 : 1} onClick={() => setFiltroAberto(true)} />
           </div>
