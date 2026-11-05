@@ -882,8 +882,8 @@ function CartContent({
   const temCupom = !!(config.tem_cupom || config.cupons_desconto.length > 0)
   // (27/10) o mesmo bloco do cupom aparece no Finalizar do computador (lá a sacola pula direto para o finalizar)
   const faltaCupom = !temCupom || cupomAplicado ? null
-    : cupomEsperando && cupomEsperando.minimo > totalPrice ? { falta: r2(cupomEsperando.minimo - totalPrice), texto: `para usar o cupom ${cupomEsperando.codigo}` }
-    : !cupomEsperando && proximoTopo && !recusouAuto.current ? { falta: r2(Number(proximoTopo.valor_minimo) - totalPrice), texto: `para ganhar ${textoDesconto(proximoTopo)} com ${proximoTopo.codigo}` }
+    : cupomEsperando && cupomEsperando.minimo > totalPrice ? { falta: r2(cupomEsperando.minimo - totalPrice), texto: `para usar o ${cupomEsperando.codigo}` }
+    : !cupomEsperando && proximoTopo && !recusouAuto.current ? { falta: r2(Number(proximoTopo.valor_minimo) - totalPrice), texto: `para ganhar ${textoDesconto(proximoTopo)}` }
     : null
   const blocoCupom = temCupom && (<>{faltaCupom && (
               <p className="sc-cupom-falta"><Tag size={16} weight="bold" aria-hidden="true" /><span>Faltam <b>{formatCurrency(faltaCupom.falta)}</b> {faltaCupom.texto}</span></p>

@@ -344,6 +344,7 @@ function CardapioContent() {
         exibir_campo_troco: config.exibir_campo_troco !== false,
         cupons_desconto: [],
         tem_cupom: !!config.tem_cupom,
+        cupons_vitrine: config.cupons_vitrine || [], // (6.117) a sacola usa os cupons do topo (aplica o melhor sozinho e mostra quanto falta)
         aceita_agendamento: config.aceita_agendamento !== false,
         prazo_minimo_horas: config.prazo_minimo_horas ?? 24,
         msg_pedido: config.msg_pedido || null,
