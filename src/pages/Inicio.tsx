@@ -739,6 +739,9 @@ export default function Inicio() {
   })();
 
   // (6.59) Acesso rápido: o mesmo no celular (grade) e no computador (faixa embaixo dos Primeiros passos)
+  // (6.144) computador: enquanto os Primeiros passos não acabam, o Início mostra só eles, no centro (foco total)
+  const [focoPassos, setFocoPassos] = useState(() => { try { return localStorage.getItem("doonly_ini_foco") === "1"; } catch { return false; } });
+  const marcarFoco = (completo: boolean) => { setFocoPassos(!completo); try { localStorage.setItem("doonly_ini_foco", completo ? "0" : "1"); } catch { /* sem armazenamento */ } };
   const ATALHOS = [
     /* (6.59) o que ela usa todo dia: Lucratividade e A receber continuam dentro do Financeiro */
     { Icone: CalendarDots,   label: "Agenda",        sub: "Entregas por dia",      path: "/agenda",        key: "agenda" },
@@ -766,7 +769,7 @@ export default function Inicio() {
       <p><strong>Pedidos na semana</strong> e <strong>ticket médio:</strong> os pedidos dos últimos 7 dias e quanto cada um vale, em média.</p>
       <p><strong>Entregas hoje:</strong> quantos pedidos saem hoje. A lista completa fica em Próximas entregas e na Agenda.</p>
     </>} /></div>
-    <div className="ini-root">
+    <div className={`ini-root${computador && focoPassos ? " ini-root--foco" : ""}`}>
       {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
       <div className="ini-hero">
         {/* Fundo mobile: ondas vinho (fica recortado pelo border-radius do hero) */}
@@ -925,7 +928,7 @@ export default function Inicio() {
       </div>
 
       {/* (29/10 · 4.93) computador: os Primeiros passos vêm antes dos números (pra loja nova os números estão zerados) */}
-      {computador && <section className="ini-section ini-pp ini-pp--topo"><PrimeirosPassos /></section>}
+      {computador && <section className="ini-section ini-pp ini-pp--topo"><PrimeirosPassos onEstado={marcarFoco} /></section>}
       {/* (6.71) computador: pedido novo para aceitar (e atrasados) no topo, como no celular: antes só tocava e não aparecia no Início */}
       {computador && !loading && !erroCarga && (pedidosNovos.length > 0 || counts.pedidosAtrasados > 0) && (
         <section className="ini-novos-pc">
