@@ -51,6 +51,7 @@ window.addEventListener('vite:preloadError', (e) => {
     if (Date.now() - ult < 30000) return
     sessionStorage.setItem('doonly_recarga_arquivo', String(Date.now()))
   } catch { /* sem sessionStorage: recarrega mesmo assim */ }
-  e.preventDefault()
+  // (6.102) sem preventDefault: com ele o import "dava certo" vazio e a tela quebrava com "reading 'default'" (erro genérico)
+  void e
   window.location.reload()
 })

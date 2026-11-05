@@ -14,7 +14,7 @@ import "./sistema.css";
 type Estado = { quebrou: boolean; atualizacao?: boolean; detalhe?: string };
 
 /** (6.91) parte do app que mudou numa atualização (o arquivo antigo não existe mais) */
-export const ehErroDeAtualizacao = (msg: string) => /dynamically imported module|Importing a module script failed|Failed to load module script|error loading dynamically|preload CSS|Loading chunk|Loading CSS chunk|MIME type/i.test(msg);
+export const ehErroDeAtualizacao = (msg: string) => /dynamically imported module|Importing a module script failed|Failed to load module script|error loading dynamically|preload CSS|Loading chunk|Loading CSS chunk|MIME type|reading 'default'|reading "default"/i.test(msg); // (6.102) "reading 'default'": a tela que sumiu na atualização
 
 export default class TelaDeErro extends Component<{ children: ReactNode }, Estado> {
   state: Estado = { quebrou: false, atualizacao: false };
