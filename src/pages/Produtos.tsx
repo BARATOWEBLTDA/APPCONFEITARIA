@@ -2165,6 +2165,15 @@ export default function Produtos() {
                       </button>
                   </div>
                 </div>
+                {/* (6.103) rendimento: o cliente vê no cardápio. Com tamanhos, cada tamanho já tem o seu ("serve até…") */}
+                {!(form as Produto & { grupo_tamanhos?: { ativo?: boolean } }).grupo_tamanhos?.ativo && (
+                  <div className="prod-field">
+                    <label className="prod-field-label-novo" htmlFor="prod-rende-input">Rendimento <small className="prod-rende-dica">o cliente vê no cardápio</small></label>
+                    <input id="prod-rende-input" type="text" maxLength={60} placeholder="Ex.: serve 10 pessoas, 20 fatias"
+                      value={String((form as Produto & { rendimento_qtd?: string | null }).rendimento_qtd || "")}
+                      onChange={e => setForm(f => ({ ...f, rendimento_qtd: e.target.value } as Produto))} />
+                  </div>
+                )}
                 {/* 2. Categoria */}
                 <div className="prod-field" id="prod-categoria-campo">
                   <label className="prod-field-label-novo">Categoria <ReqTag /></label>

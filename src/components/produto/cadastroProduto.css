@@ -421,3 +421,5 @@ body .prod-modal--novo .prod-opc:has(> .prod-selo-rec) { position: relative; ove
   .prod-fotos .prod-dicas-t { margin-top: 0; }
   .prod-fotos .prod-dicas li { min-height: 44px; }
 }
+/* (6.103) rendimento do produto (o cliente vê no cardápio) */
+.prod-rende-dica { margin-left: 6px; font-size: 12.5px; font-weight: 400; color: var(--ui-texto-3); }

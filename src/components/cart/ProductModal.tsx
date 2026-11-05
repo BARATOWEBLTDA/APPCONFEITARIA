@@ -44,7 +44,7 @@ type ProdutoModal = Produto & {
   kit_qtd?: KitQtdConfig | null
   quantidade_base?: number | null
   aceita_referencia?: boolean
-  grupo_tamanhos?: { rendimento_unidade?: string } | null
+  grupo_tamanhos?: { rendimento_unidade?: string; ativo?: boolean } | null
 }
 
 /** Opção de grupo com os campos extras gravados no banco */
@@ -667,6 +667,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
           {/* (20/10) computador: o X ao lado do nome (sai a faixa de cima que repetia o nome) */}
           <button type="button" className="pm-x-pc" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button></div>
         {product.descricao && <p className="pm-desc">{product.descricao}</p>}
+        {/* (6.103) rendimento do produto sem tamanhos (com tamanhos, cada um mostra o seu "serve até…") */}
+        {!(product as { grupo_tamanhos?: { ativo?: boolean } | null }).grupo_tamanhos?.ativo && String((product as { rendimento_qtd?: string | null }).rendimento_qtd || '').trim() && <p className="pm-rende">Rendimento: {String((product as { rendimento_qtd?: string | null }).rendimento_qtd).trim()}</p>}
         <div className="pm-preco">
           {/* (19/10) com tamanhos: "a partir de R$ X" (o menor), em vez de "R$ X a R$ Y" */}
           {/* (20/10) a linha do "a partir de" fica reservada depois de escolher: a lista não sobe */}
