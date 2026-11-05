@@ -82,6 +82,7 @@ const DOO_FOLHA: Partial<Record<Passo, string>> = {
   logo: "/marca/leve/doo-pintando-logo.webp",
   descricao: "/marca/leve/doo-loja.webp",
   endereco: "/marca/leve/doo-endereco.webp",
+  horario: "/marca/leve/doo-horario.webp",
 };
 
 /** (29/10) computador (901px ou mais): as janelas dos passos ganham duas colunas */
@@ -921,6 +922,7 @@ const DOO_PASSO: Record<string, { pc: string; banner: string; largo?: boolean }>
   "Logo da loja": { pc: "/marca/leve/doo-pintando-logo.webp", banner: "/Sistema/banner-passos-logo.webp", largo: true },
   "Sobre a confeitaria": { pc: "/marca/leve/doo-loja.webp", banner: "/Sistema/banner-passos-sobre.webp" },
   "Endereço": { pc: "/marca/leve/doo-endereco.webp", banner: "/Sistema/banner-passos-endereco.webp" },
+  "Horário": { pc: "/marca/leve/doo-horario.webp", banner: "/Sistema/banner-passos-horario.webp" },
 };
 
 const CSS = `
