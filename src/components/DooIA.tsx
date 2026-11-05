@@ -87,6 +87,7 @@ Quando ela pedir uma imagem ou um topo (do jeito que escrever), confira se tem o
 \`\`\`acao-doonly
 {"acao":"imagem","topo":true,"descricao":"tema jardim encantado, nome Alice, 5 anos, cores rosa e lilás, estilo fofo"}
 \`\`\`
+Se ela pedir personagem ou marca famosa, diga em uma frase "O Doonly não cria personagens nem marcas famosas" (nunca cite OpenAI, Anthropic ou outra empresa) e já ofereça o mesmo topo com um tema próprio parecido, com o nome e as cores. Se ela mandar uma foto e pedir "uma parecida", mande o bloco descrevendo o que ela quer: o app usa a foto como referência.
 "topo": false para arte que não é topo de bolo (post, banner, convite). Para mudar uma imagem que acabou de sair, mande o bloco de novo com a descrição completa já com a mudança.
 
 # MISSÃO
@@ -512,8 +513,8 @@ function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'ima
   // (6.94) imagem: o motivo de verdade que a OpenAI mandou
   if (caso === 'imagem' && codigo) {
     if (/billing|quota/i.test(codigo)) return 'A criação de imagens está sem crédito agora. Avise o suporte do Doonly.'
-    if (/content_policy|moderation|safety/i.test(codigo)) return 'A OpenAI não deixou criar essa imagem. Personagens e marcas famosas costumam ser bloqueados: tente com um tema próprio.'
-    if (/verif|organization/i.test(codigo)) return 'A conta de imagens ainda está sendo liberada. Tente de novo mais tarde.'
+    if (/content_policy|moderation|safety/i.test(codigo)) return 'O Doonly não cria personagens nem marcas famosas. Me diga um tema próprio (ex.: jardim, safári, fazendinha, futebol) que eu faço com o nome e as cores da festa.'
+    if (/verif|organization/i.test(codigo)) return 'A criação de imagens ainda está sendo liberada no Doonly. Tente de novo mais tarde.'
   }
   // (4.23) limite diário de uso da Doo
   // (27/10) grátis: 10 mensagens por mês
@@ -583,6 +584,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   const painelRef = useRef<HTMLDivElement>(null)
   // (11/10) imagens geradas já baixadas no aparelho (quando o endereço deixa), pro botão "Baixar imagem"
   const blobsImagem = useRef<Record<string, Blob>>({})
+  /** (6.100) a última foto que ela mandou (para "faz uma parecida") */
+  const ultimaReferencia = useRef<string>('')
   // (6.85) o formulário do topo de bolo
   const [topoAberto, setTopoAberto] = useState(false)
   const [topo, setTopo] = useState<TopoForm>({ tema: '', nome: '', texto: '', cores: '', estilo: 'fofo' })
@@ -782,10 +785,12 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   }
 
   // (6.85) cria a imagem (topo de bolo ou arte). A imagem fica guardada no Doonly: o link não vence e a conversa lembra dela.
-  const criarImagem = async (prompt: string, ehTopoDeBolo: boolean) => {
+  const criarImagem = async (prompt0: string, ehTopoDeBolo: boolean, referencia?: string) => {
+    // (6.100) com foto de referência: a mesma composição e estilo, mas um desenho novo
+    const prompt = referencia ? `Use the attached image only as a reference for the layout, composition, style, colors and finish. Create a NEW original design that follows it closely, with the changes below. Do not copy logos, watermarks or website text from the reference. ${prompt0}` : prompt0
     setGeneratingImage(true)
     try {
-      const res = await apiFetch('/api/doo-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, tipo: ehTopoDeBolo ? 'topo' : 'arte' }) })
+      const res = await apiFetch('/api/doo-image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, tipo: ehTopoDeBolo ? 'topo' : 'arte', ...(referencia ? { referencia } : {}) }) })
       const data = await lerResposta(res)
       const d0 = data?.data?.[0]
       let imageUrl = ''
@@ -857,6 +862,8 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     setMessages(newMessages)
     setInput(''); if (inputRef.current) inputRef.current.style.height = ''
     const imgPayload = pendingImage
+    if (imgPayload) ultimaReferencia.current = imgPayload.base64
+    const pedeParecida = /\b(semelhante|parecid[ao]|igual|nesse estilo|neste estilo|desse jeito|como essa|como esse|baseado|inspirad[ao])\b/i.test(text.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
     setPendingImage(null)
     setLoading(true)
 
@@ -873,6 +880,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         // (27/10) no grátis a Doo conversa, mas criar imagem é do PRO (não chama a API nem gasta mensagem)
         setLoading(false)
         setMessages(prev => [...prev, { role: 'assistant', content: 'Criar imagens é do plano PRO. No grátis eu ajudo com receitas, preços, legendas e pedidos. Quer que eu escreva uma legenda para esse post?' }])
+      } else if ((imgPayload && (isImageRequest(text) || pedeParecida)) || (!imgPayload && pedeParecida && ultimaReferencia.current)) {
+        // (6.100) "faz uma parecida com essa" (com a foto agora ou a última que ela mandou): a foto vai junto como referência
+        setLoading(false)
+        await criarImagem(buildImagePrompt(text), ehTopo(text) || true, imgPayload?.base64 || ultimaReferencia.current)
       } else if (!imgPayload && isImageRequest(text)) {
         setLoading(false)
         await criarImagem(buildImagePrompt(text), ehTopo(text))
@@ -919,7 +930,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             setLoading(false)
             await criarImagem(ai.topo
               ? `Printable cake topper sheet for a Brazilian confectionery. Request in Portuguese: "${ai.descricao}". Any name or text must be written exactly as asked, with perfect Portuguese spelling, in bold script lettering with a white outline. ${FOLHA_TOPO}`
-              : buildImagePrompt(ai.descricao), ai.topo)
+              : buildImagePrompt(ai.descricao), ai.topo, imgPayload?.base64 || (pedeParecida ? ultimaReferencia.current : undefined))
             return
           }
           const acao = acaoBruta as RascunhoInsumo | RascunhoPedido | AcaoDoo | null
