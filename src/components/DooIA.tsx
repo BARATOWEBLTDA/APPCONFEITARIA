@@ -81,6 +81,14 @@ Doo fala de forma simples, clara e acolhedora. Não use emojis. Ao listar etapas
 - Quando for fazer algo no app, pergunte só o que falta, uma coisa de cada vez, e já monte o cartão.
 - Nunca invente dados, números, preços ou o que o app faz. Se não souber ou não conseguir fazer, diga isso com clareza em uma frase e diga onde ela faz no app.
 
+# IMAGENS E TOPOS DE BOLO
+Você CRIA imagens pelo app: topos de bolo para imprimir, artes, posts e banners. Nunca diga que não consegue criar imagens.
+Quando ela pedir uma imagem ou um topo (do jeito que escrever), confira se tem o tema. Para topo, pergunte também o nome e a idade se ela não disse (em uma pergunta só). Quando tiver, responda com UMA frase curta (ex.: "Já estou criando o seu topo.") e, no FINAL, este bloco:
+\`\`\`acao-doonly
+{"acao":"imagem","topo":true,"descricao":"tema jardim encantado, nome Alice, 5 anos, cores rosa e lilás, estilo fofo"}
+\`\`\`
+"topo": false para arte que não é topo de bolo (post, banner, convite). Para mudar uma imagem que acabou de sair, mande o bloco de novo com a descrição completa já com a mudança.
+
 # MISSÃO
 Toda resposta deve buscar um ou mais destes objetivos:
 1. Aumentar o lucro da confeiteira.
@@ -333,6 +341,9 @@ ${catTxt}
 `
 }
 
+/** (6.94) a Doo pede uma imagem pela conversa (qualquer jeito de pedir): o app cria */
+type AcaoImagem = { acao: 'imagem'; topo: boolean; descricao: string }
+
 /** (6.91) a frase da Doo depois que a ação foi salva, com o próximo passo que faz sentido */
 function respostaFeito(a: AcaoDoo, feito: string): string {
   const brl = (v: number) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -346,7 +357,7 @@ function respostaFeito(a: AcaoDoo, feito: string): string {
 }
 
 /** Separa o bloco acao-doonly da resposta. */
-function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | null } {
+function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | AcaoImagem | null } {
   const m = reply.match(/```acao-doonly\s*([\s\S]*?)```/)
   if (!m) {
     // (11/10) bloco de ação que não fechou (a resposta foi cortada no meio): o JSON cru não aparece na conversa
@@ -362,11 +373,12 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
     }
     return { texto: reply, acao: null }
   }
-  let acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | null = null
+  let acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | AcaoImagem | null = null
   try {
     const j = JSON.parse(m[1].trim())
     if (j?.acao === 'pedido' && Array.isArray(j.itens) && j.itens.length) acao = j as RascunhoPedido
     else if (['cliente', 'produto', 'orcamento', 'loja', 'cupom'].includes(j?.acao)) acao = normalizarAcaoDoo(j)
+    else if (j?.acao === 'imagem' && typeof j.descricao === 'string' && j.descricao.trim()) acao = { acao: 'imagem', topo: j.topo !== false, descricao: j.descricao.trim().slice(0, 1200) }
     else acao = normalizarRascunho(j)
   } catch { acao = null }
   const texto = reply.replace(m[0], '').trim() || 'Confira e confirme no cartão abaixo.'
@@ -496,7 +508,13 @@ const NOTA_DO_APP = /\n\n\[(O app confirmou|A confeiteira cancelou|A confeiteira
 const PEDE_NOVA_CONVERSA = 'Comece uma nova conversa e tente de novo.'
 
 /** caso: 'foto' = a mensagem levava uma foto · 'imagem' = pedido de criar imagem · 'texto' = conversa normal */
-function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'imagem' | 'texto' = 'texto'): string {
+function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'imagem' | 'texto' = 'texto', codigo?: string): string {
+  // (6.94) imagem: o motivo de verdade que a OpenAI mandou
+  if (caso === 'imagem' && codigo) {
+    if (/billing|quota/i.test(codigo)) return 'A criação de imagens está sem crédito agora. Avise o suporte do Doonly.'
+    if (/content_policy|moderation|safety/i.test(codigo)) return 'A OpenAI não deixou criar essa imagem. Personagens e marcas famosas costumam ser bloqueados: tente com um tema próprio.'
+    if (/verif|organization/i.test(codigo)) return 'A conta de imagens ainda está sendo liberada. Tente de novo mais tarde.'
+  }
   // (4.23) limite diário de uso da Doo
   // (27/10) grátis: 10 mensagens por mês
   if (errorType === 'limite_mensal') return 'A Doo IA é do plano PRO. Teste grátis por 7 dias.'
@@ -519,9 +537,9 @@ function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'ima
 }
 
 /** O que as rotas da Doo devolvem (chat e imagem) */
-type RespostaDoo = { error?: string | { type?: string } | null; status?: number | string; data?: { url?: string; b64?: string; formato?: string }[]; content?: { text?: string }[]; stop_reason?: string }
+type RespostaDoo = { error?: string | { type?: string } | null; codigo?: string; status?: number | string; data?: { url?: string; b64?: string; formato?: string }[]; content?: { text?: string }[]; stop_reason?: string }
 /** Erro lançado por lerResposta */
-type ErroDoo = { type?: string; status?: number }
+type ErroDoo = { type?: string; status?: number; codigo?: string }
 
 /** Lê a resposta das rotas da Doo. Erro vira { type, status } (o chat responde 200 e manda o erro dentro do JSON). */
 async function lerResposta(res: Response): Promise<RespostaDoo> {
@@ -529,7 +547,7 @@ async function lerResposta(res: Response): Promise<RespostaDoo> {
   try { data = await res.json() } catch { /* resposta sem JSON (ex.: o 413 da hospedagem) */ }
   if (!res.ok || !data || data.error) {
     const tipo = typeof data?.error === 'string' ? data.error : (data?.error as { type?: string } | null)?.type
-    throw { type: tipo || (res.ok ? 'api_error' : ''), status: res.ok ? (Number(data?.status) || 500) : res.status }
+    throw { type: tipo || (res.ok ? 'api_error' : ''), status: res.ok ? (Number(data?.status) || 500) : res.status, codigo: data?.codigo }
   }
   return data
 }
@@ -790,7 +808,9 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         ...(ehTopoDeBolo && prompt.length < 3400 ? { promptTopo: prompt } : {}),
       }])
     } catch (err: unknown) {
-      setMessages(prev => [...prev, { role: 'assistant', content: getErrorMessage((err as ErroDoo)?.type ?? '', (err as ErroDoo)?.status, 'imagem'), erro: true }])
+      const e = err as ErroDoo
+      const frase = getErrorMessage(e?.type ?? '', e?.status, 'imagem', e?.codigo)
+      setMessages(prev => [...prev, { role: 'assistant', content: e?.codigo && frase.startsWith('Não consegui') ? `${frase} (código: ${e.codigo})` : frase, erro: true }])
     } finally {
       setGeneratingImage(false)
     }
@@ -872,7 +892,18 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         } else {
           // (11/10) resposta que bateu no limite de tamanho: avisa embaixo (antes ela só parava no meio da frase)
           const cortada = data?.stop_reason === 'max_tokens'
-          const { texto, acao } = extrairAcao(reply)
+          const { texto, acao: acaoBruta } = extrairAcao(reply)
+          // (6.94) a Doo entendeu que é pedido de imagem: o app cria (antes ela respondia que não conseguia)
+          if (acaoBruta && acaoBruta.acao === 'imagem') {
+            const ai = acaoBruta as AcaoImagem
+            setMessages(prev => [...prev, { role: 'assistant', content: texto }])
+            setLoading(false)
+            await criarImagem(ai.topo
+              ? `Printable cake topper sheet for a Brazilian confectionery. Request in Portuguese: "${ai.descricao}". Any name or text must be written exactly as asked, with perfect Portuguese spelling, in bold script lettering with a white outline. ${FOLHA_TOPO}`
+              : buildImagePrompt(ai.descricao), ai.topo)
+            return
+          }
+          const acao = acaoBruta as RascunhoInsumo | RascunhoPedido | AcaoDoo | null
           setMessages(prev => [...prev, acao
             ? { role: 'assistant', content: texto, acao, acaoEstado: 'pendente' }
             : { role: 'assistant', content: texto, ...(cortada ? { cortada: true } : {}) }])
