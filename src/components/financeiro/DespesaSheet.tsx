@@ -6,7 +6,7 @@ import { Botao, CaixasEscolha } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { faltaNoBanco } from "@/lib/pagamentos";
-import { APORTE, RETIRADA, nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
+import { APORTE, RETIRADA, nomeCategoriaFin, CATEGORIAS_SAIDA, CATEGORIAS_ENTRADA } from "@/lib/categoriasFinanceiro";
 
 /**
  * Financeiro · "Nova entrada" e "Nova saída".
@@ -19,8 +19,7 @@ import { APORTE, RETIRADA, nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
  *   · categorias: as 5 que ela mais usa primeiro (neste aparelho) e abre na última usada; o resto em "Mais"
  *   · "Lançar e nova": lança, limpa valor e descrição e deixa a janela aberta (mesma categoria e data)
  */
-const CATEGORIAS = ["Insumos", "Embalagens", "Gás", "Transporte", "Aluguel", "Energia e água", "Internet", "Marketing", "Equipamentos", "Impostos e taxas", RETIRADA, "Outros"];
-const CATEGORIAS_ENTRADA = ["Venda no balcão", "Venda fora do app", APORTE, "Outros"];
+const CATEGORIAS = CATEGORIAS_SAIDA;
 const FORMAS = [{ k: "pix", l: "Pix" }, { k: "dinheiro", l: "Dinheiro" }, { k: "credito", l: "Crédito" }, { k: "debito", l: "Débito" }];
 const VISIVEIS = 5;
 /** Nome curto no botão (cabe sem cortar no celular); o valor salvo continua o mesmo */

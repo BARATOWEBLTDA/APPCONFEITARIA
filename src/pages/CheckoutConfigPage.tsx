@@ -25,6 +25,7 @@ import { usePlano } from "@/hooks/usePlano"
 import { CartaoPro } from "@/components/billing/RecursoPro"
 import MapaRaios, { CORES_RAIO } from "@/components/MapaRaios"
 import MapaEndereco from "@/components/MapaEndereco"
+import MapaBairros from "@/components/MapaBairros"
 import { bairrosDaCidade } from "@/lib/bairros"
 import { distanciaKm, faixasOrdenadas, pontoDoEndereco, type ModoEntrega, type Ponto } from "@/lib/taxaEntrega"
 import { LIMITE_CUPONS_ATIVOS_GRATIS } from '@/lib/limitesPlano'
@@ -839,6 +840,9 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
           {/* (30/10 · 5.55) computador: o mapa primeiro (maior), depois como cobrar e, por último, as formas de entrega */}
           {modoEntrega === 'raio' && lojaPonto && formasEntrega.includes('entrega_propria')
             ? <div className="ep-mapa-topo"><MapaRaios loja={lojaPonto} faixas={faixasMapa} nome={nomeLoja} /><p className="ep-mapa-leg">Área aproximada pelo caminho de carro.</p></div>
+            : modoEntrega === 'bairro' && enderecoLoja?.cidade && formasEntrega.includes('entrega_propria')
+            // (6.115) por bairro: o mapa contorna cada bairro com a taxa no meio (antes mostrava só o pino da loja)
+            ? <div className="ep-mapa-topo"><MapaBairros cidade={enderecoLoja.cidade} uf={ufLoja} bairros={entregaPorBairro.filter(b => b.bairro.trim()).map(b => ({ bairro: b.bairro, valor: numBR(b.valor) || 0 }))} /></div>
             : enderecoLoja?.cidade ? <div className="ep-mapa-topo"><MapaEndereco busca={{ rua: enderecoLoja.rua, numero: enderecoLoja.numero, cidade: enderecoLoja.cidade, estado: enderecoLoja.estado || enderecoLoja.uf }} soCidade={false} selo="" altura={320} /></div> : null}
           {formasEntrega.includes('entrega_propria') && blocoTaxa}
           <p className="ep-modo-t">Formas de entrega</p>

@@ -1,13 +1,13 @@
 import { pegarPedidoDoo } from '@/components/MenuContaItens'
 import { useState, useRef, useEffect } from 'react'
-import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf, Storefront, WhatsappLogo } from '@phosphor-icons/react'
+import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf, Storefront, WhatsappLogo, ChatCircleDots } from '@phosphor-icons/react'
 import { card, gerarDocumento } from '@/lib/pdfDoonly'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
 import CartaoInsumoDoo from '@/components/doo/CartaoInsumoDoo'
 import CartaoAcaoDoo from '@/components/doo/CartaoAcaoDoo'
-import { CAMPOS_LOJA_DOO, normalizarAcaoDoo, regrasAcoesDoo, type AcaoDoo, type LojaDoo } from '@/lib/acoesDoo'
+import { ACOES_DOO, CAMPOS_LOJA_DOO, normalizarAcaoDoo, regrasAcoesDoo, type AcaoDoo, type LojaDoo } from '@/lib/acoesDoo'
 import { listarInsumosResumo, normalizarRascunho, type InsumoResumo, type RascunhoInsumo } from '@/lib/insumosDoo'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
@@ -50,14 +50,28 @@ interface Message {
 const MAX_HISTORY = 12
 
 /** Sugestões do começo da conversa (cartões com ícone de linha) */
+// (6.115) os 6 atalhos que mais vendem e poupam tempo (nome curto, numa linha só)
 const SUGESTOES_CARTOES = [
-  { Ic: CurrencyCircleDollar, t: 'Calcular preço', s: 'de um bolo ou doce', p: 'Calcular o preço de um bolo' },
-  { Ic: BookOpenText, t: 'Criar receita', s: 'com o que você tem', p: 'Criar receita de bolo' },
-  { Ic: InstagramLogo, t: 'Legenda para o Instagram', s: 'pronta para postar', p: 'Criar legenda para o Instagram' },
-  { Ic: Storefront, t: 'Criar minha logo', s: 'e já pôr no cardápio', p: 'Quero criar a logo da minha loja' },
-  { Ic: Receipt, t: 'Registrar pedido', s: 'direto pela conversa', p: 'Registrar um pedido' },
-  { Ic: Package, t: 'Cadastrar ingrediente', s: 'com preço e custo', p: 'Cadastrar um ingrediente' },
+  { Ic: CurrencyCircleDollar, t: 'Quanto cobrar', s: 'preço com lucro', p: 'Quero saber quanto cobrar por um produto' },
+  { Ic: BookOpenText, t: 'Ficha técnica', s: 'custo de verdade', p: 'Quero montar a ficha técnica de um produto' },
+  { Ic: Receipt, t: 'Pedido do zap', s: 'cole a conversa', p: 'Quero registrar um pedido que chegou no WhatsApp' },
+  { Ic: Storefront, t: 'Loja pronta', s: 'eu configuro', p: 'Deixa minha loja pronta' },
+  { Ic: InstagramLogo, t: 'Post que vende', s: 'legenda + arte', p: 'Quero um post que vende para o Instagram' },
+  { Ic: Sparkle, t: 'Minha logo', s: 'e já no cardápio', p: 'Quero criar a logo da minha loja' },
 ]
+/** (6.115) conversas guardadas no aparelho (as 10 últimas) */
+type ConversaSalva = { id: string; titulo: string; quando: string; msgs: Message[] }
+const tituloDaConversa = (ms: Message[]) => {
+  const t = (ms.find(m => m.role === 'user' && m.content?.trim())?.content || 'Conversa').replace(/\s+/g, ' ').trim()
+  return t.length > 44 ? t.slice(0, 43) + '…' : t
+}
+const quandoFoi = (iso: string) => {
+  const d = new Date(iso), h = new Date(); const ontem = new Date(); ontem.setDate(h.getDate() - 1)
+  const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  if (d.toDateString() === h.toDateString()) return `hoje, ${hora}`
+  if (d.toDateString() === ontem.toDateString()) return `ontem, ${hora}`
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+}
 
 const PLACEHOLDERS = [
   // (6.112) curtos: cabem no campo do celular sem cortar
@@ -363,6 +377,11 @@ function respostaFeito(a: AcaoDoo, feito: string): string {
     case 'loja': return 'Prontinho! Os dados da loja foram atualizados e o cardápio já mostra a mudança.'
     case 'custos': return 'Prontinho! Sua mão de obra e os custos invisíveis já entram no custo de todas as fichas técnicas.'
     case 'cupom': return `Prontinho! O cupom ${a.codigo} já está valendo no cardápio. Quer que eu escreva uma mensagem para divulgar no WhatsApp?`
+    case 'ficha': return `Prontinho! A ficha técnica de ${a.produto_nome} está salva. Toque em Abrir para ver o custo e o lucro.`
+    // (6.115) pedido, financeiro e produto que já existe
+    case 'pedido_status': return `Prontinho! Pedido ${feito}.${a.etapa === 'pronto' ? ' Quer que eu escreva a mensagem avisando a cliente?' : ''}`
+    case 'lancamento': return `Prontinho! ${feito}.`
+    case 'produto_editar': return a.disponivel === false ? `Prontinho! ${a.produto_nome} saiu do cardápio. Quando voltar a ter, é só me falar.` : `Prontinho! ${feito} e o cardápio já mostra a mudança.`
   }
 }
 
@@ -387,7 +406,7 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
   try {
     const j = JSON.parse(m[1].trim())
     if (j?.acao === 'pedido' && Array.isArray(j.itens) && j.itens.length) acao = j as RascunhoPedido
-    else if (['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos', 'ficha'].includes(j?.acao)) acao = normalizarAcaoDoo(j)
+    else if ((ACOES_DOO as readonly string[]).includes(j?.acao)) acao = normalizarAcaoDoo(j)
     else if (j?.acao === 'imagem' && ((typeof j.descricao === 'string' && j.descricao.trim()) || (typeof j.tema === 'string' && j.tema.trim()))) {
       const tipoJ = ['topo', 'arte', 'logo', 'banner'].includes(j.tipo) ? j.tipo : (j.topo !== false ? 'topo' : 'arte')
       const txt = (v: unknown) => (typeof v === 'string' ? v.trim().slice(0, 120) : '')
@@ -752,7 +771,27 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     return () => clearInterval(t)
   }, [open])
 
+  // (6.115) "Nova conversa" guarda a de agora nas Conversas recentes (antes apagava)
+  const chaveHist = uid ? `doonly_doo_historico_${uid}` : ''
+  const [historico, setHistorico] = useState<ConversaSalva[]>([])
+  const [verTodas, setVerTodas] = useState(false)
+  useEffect(() => {
+    if (!chaveHist || !open) return
+    try { const h = JSON.parse(localStorage.getItem(chaveHist) || '[]'); if (Array.isArray(h)) setHistorico(h) } catch { /* guardado estragado: começa vazio */ }
+  }, [chaveHist, open])
+  const gravarHistorico = (l: ConversaSalva[]) => { setHistorico(l); try { if (chaveHist) localStorage.setItem(chaveHist, JSON.stringify(l)) } catch { /* sem espaço: só não guarda */ } }
+  const guardarAtual = (base: ConversaSalva[]) => {
+    const ms = messages.filter(m => !m.erro).slice(-60).map(m => ({ ...m, attachmentPreview: undefined, imageUrl: m.imageUrl?.startsWith('blob:') ? undefined : m.imageUrl }))
+    if (!ms.some(m => m.role === 'user')) return base
+    return [{ id: `c${Date.now().toString(36)}`, titulo: tituloDaConversa(ms), quando: new Date().toISOString(), msgs: ms }, ...base].slice(0, 10)
+  }
+  const abrirConversa = (c: ConversaSalva) => {
+    if (loading || generatingImage) return
+    gravarHistorico(guardarAtual(historico.filter(x => x.id !== c.id)))
+    setMessages(c.msgs); setVerTodas(false)
+  }
   const clearConversation = () => {
+    gravarHistorico(guardarAtual(historico))
     setMessages([])
     setInput('')
     setPendingImage(null)
@@ -763,7 +802,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
   const novaConversa = async () => {
     if (loading || generatingImage) return
     if (messages.length) {
-      const ok = await confirmar({ titulo: 'Começar uma nova conversa?', texto: 'A conversa de agora some deste aparelho.', rotulo: 'Nova conversa', rotuloVoltar: 'Voltar', icone: 'info' })
+      const ok = await confirmar({ titulo: 'Começar uma nova conversa?', texto: 'A conversa de agora fica guardada em Conversas recentes.', rotulo: 'Nova conversa', rotuloVoltar: 'Voltar', icone: 'info' })
       if (!ok) return
     }
     clearConversation()
@@ -1109,25 +1148,34 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           <div className="dz-body">
             {showSuggestions && (
               <div className="dz-ini">
-                <div className="dz-hero">
-                  <div className="dz-hav2"><img src="/Sistema/doo.webp" alt="" /></div>
-                  <b>{nomeConfeiteira ? `Oi, ${nomeConfeiteira}! Eu sou a Doo` : 'Oi! Eu sou a Doo'}</b>
-                  <p>Sua assistente de confeitaria: calculo preços, crio receitas e topos de bolo, e cadastro clientes, produtos, pedidos e cupons para você.</p>
+                {/* (6.115) abertura nova: oi curto, o topo de bolo em destaque, 6 atalhos e as conversas recentes */}
+                <div className="dz-hero2">
+                  <img src="/Sistema/doo.webp" alt="" />
+                  <span><b>{nomeConfeiteira ? `Oi, ${nomeConfeiteira}!` : 'Oi!'}</b><small>Peça do seu jeito: eu calculo, cadastro, crio e configuro sua loja.</small></span>
                 </div>
-                <p className="dz-sl">Comece por aqui</p>
-                {/* (6.85) topo de bolo: a Doo desenha pronto para imprimir */}
-                {isPro && <button type="button" className="dz-topo" onClick={() => setTopoAberto(true)}>
-                  <span className="dz-si"><Cake size={22} /></span>
-                  <span className="dz-topo-tx"><b>Criar topo de bolo</b><small>Com o nome, o tema e as cores, pronto para imprimir</small></span>
-                  <Sparkle size={18} weight="fill" className="dz-topo-br" aria-hidden="true" />
+                {isPro && <button type="button" className="dz-dest" onClick={() => setTopoAberto(true)}>
+                  <span className="dz-dest-ic"><Cake size={22} weight="bold" /></span>
+                  <span className="dz-dest-tx"><b>Topo de bolo com IA</b><small>Nome e tema · PDF pronto</small></span>
+                  <span className="dz-dest-bt">Criar</span>
                 </button>}
-                <div className="dz-sg">
+                <div className="dz-sg2">
                   {SUGESTOES_CARTOES.map(({ Ic, t, s, p }) => (
-                    <button type="button" key={t} className="dz-sc" onClick={() => sendMessage(p)}>
-                      <span className="dz-si"><Ic size={20} /></span><b>{t}</b><small>{s}</small>
+                    <button type="button" key={t} className="dz-sc2" onClick={() => sendMessage(p)}>
+                      <span className="dz-sc2-ic"><Ic size={18} weight="bold" /></span><span className="dz-sc2-tx"><b>{t}</b><small>{s}</small></span>
                     </button>
                   ))}
                 </div>
+                {historico.length > 0 && (
+                  <section className="dz-rec" aria-label="Conversas recentes">
+                    <p className="dz-rec-t"><span>Conversas recentes</span>{historico.length > 3 && <button type="button" onClick={() => setVerTodas(v => !v)}>{verTodas ? 'Ver menos' : 'Ver todas'}</button>}</p>
+                    {(verTodas ? historico : historico.slice(0, 3)).map(c => (
+                      <button type="button" key={c.id} className="dz-rec-i" onClick={() => abrirConversa(c)}>
+                        <span className="dz-rec-ic" aria-hidden="true"><ChatCircleDots size={16} weight="bold" /></span>
+                        <span className="dz-rec-tx"><b>{c.titulo}</b><small>{quandoFoi(c.quando)}</small></span>
+                      </button>
+                    ))}
+                  </section>
+                )}
               </div>
             )}
 
@@ -1174,7 +1222,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                         if (estado === 'salvo') listarInsumosResumo(uid).then(setInsumos).catch(() => {})
                       }} />
                   )}
-                  {msg.acao && uid && ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos', 'ficha'].includes(msg.acao.acao) && (
+                  {msg.acao && uid && (ACOES_DOO as readonly string[]).includes(msg.acao.acao) && (
                     <CartaoAcaoDoo uid={uid} acao={msg.acao as AcaoDoo} estado={!msg.acaoEstado || msg.acaoEstado === 'editando' ? 'pendente' : msg.acaoEstado}
                       feito={msg.acaoFeito} abrir={msg.acaoAbrir} aoAbrir={handleClose}
                       onFeito={(estado, info) => {
@@ -1352,6 +1400,33 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-ht small.dz-esc { color: #FBCFE8; } .dz-ht small.dz-esc i { background: #F472B6; box-shadow: 0 0 0 3px rgba(244,114,182,.3); animation: dooTyping 1.2s infinite; }
         .dz-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 16px 14px 8px; display: flex; flex-direction: column; gap: 12px; }
         .dz-ini { display: flex; flex-direction: column; gap: 12px; }
+        .dz-hero2 { display: flex; align-items: center; gap: 12px; padding: 2px 2px 0; }
+        .dz-hero2 img { flex: none; width: 60px; height: 60px; object-fit: contain; }
+        .dz-hero2 b { display: block; font-size: 18px; font-weight: 600; }
+        .dz-hero2 small { display: block; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+        .dz-dest { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; border: 0; border-radius: 16px; font-family: inherit; text-align: left; color: #fff; cursor: pointer;
+          background: radial-gradient(120% 120% at 100% 0%, rgba(232,90,140,.55), rgba(232,90,140,0) 60%), linear-gradient(140deg, #4A2B1F, #22130E); }
+        .dz-dest-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; color: #FF9DC4; }
+        .dz-dest-tx { flex: 1; min-width: 0; } .dz-dest-tx b { display: block; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dz-dest-tx small { display: block; font-size: 12px; color: rgba(255,255,255,.75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dz-dest-bt { flex: none; padding: 7px 12px; border-radius: 10px; background: #fff; color: var(--ui-rosa-escuro); font-size: 13px; font-weight: 600; }
+        .dz-sg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .dz-sc2 { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 10px; border: 1px solid #F0EBED; border-radius: 14px; background: var(--ui-branco); font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+        .dz-sc2:hover { border-color: #F7C6D9; }
+        .dz-sc2-ic { flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--ic-fundo, #fff); box-shadow: inset 0 0 0 1px var(--ic-borda, #E8E1E4); color: var(--ic-cor, #E85A8C); display: flex; align-items: center; justify-content: center; }
+        .dz-sc2-tx { min-width: 0; } .dz-sc2-tx b { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dz-sc2-tx small { display: block; font-size: 11.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        @media (max-width: 380px) {
+          .dz-sc2 { gap: 7px; padding: 9px 8px; } .dz-sc2-ic { width: 30px; height: 30px; }
+          .dz-sc2-tx b { font-size: 12.5px; } .dz-sc2-tx small { font-size: 11px; }
+          .dz-dest { gap: 10px; padding: 11px 10px; } .dz-dest-bt { padding: 7px 10px; }
+        }
+        .dz-rec { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+        .dz-rec-t { display: flex; justify-content: space-between; align-items: center; margin: 0; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
+        .dz-rec-t button { border: 0; background: none; padding: 4px 0; font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
+        .dz-rec-i { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border: 1px solid #F0EBED; border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+        .dz-rec-ic { flex: none; width: 28px; height: 28px; border-radius: 8px; background: var(--ic-fundo, #fff); box-shadow: inset 0 0 0 1px var(--ic-borda, #E8E1E4); color: var(--ic-cor, #E85A8C); display: flex; align-items: center; justify-content: center; }
+        .dz-rec-tx { min-width: 0; } .dz-rec-tx b { display: block; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .dz-rec-tx small { font-size: 11.5px; color: var(--ui-texto-3); }
         .dz-hero { text-align: center; padding: 8px 6px 2px; }
         .dz-hav2 { width: 84px; height: 84px; margin: 0 auto; border-radius: 26px; background: #FCE7F3; overflow: hidden; box-shadow: 0 10px 26px rgba(232,90,140,.28); }
         .dz-hav2 img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }

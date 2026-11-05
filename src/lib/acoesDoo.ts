@@ -10,6 +10,11 @@ import { adivinharTipo, normalizarChave, problemaNaChave } from '@/lib/pix'
 import { atualizarPontoDaLoja } from '@/lib/taxaEntrega'
 import { categoriaPeloNome } from '@/lib/categoriasInsumo'
 import { gravarInsumosDoProduto, procurarInsumoPorNome, salvarInsumoDoo } from '@/lib/insumosDoo'
+import { registrarPagamento } from '@/lib/pagamentos'
+import { registrarEtapa } from '@/lib/historicoPedido'
+import { grupoDoStatus, saldoPedido, nomeDaSituacao } from '@/components/pedidos/pedidoTexto'
+import { lerProdutosDeVenda, opcoesDoProduto } from '@/lib/pedidosDoo'
+import { CATEGORIAS_ENTRADA, CATEGORIAS_SAIDA } from '@/lib/categoriasFinanceiro'
 
 export type HorarioDoo = {
   dias?: string[]; abertura?: string; fechamento?: string
@@ -34,7 +39,8 @@ export type AcaoLoja = {
   instagram?: string | null; facebook?: string | null
   pagamentos?: string[] | null; troco?: boolean | null
   entregas?: string[] | null; horario_retirada?: string | null
-  taxa?: { modo: 'fixa' | 'bairro' | 'cidade' | 'raio' | 'combinar'; valor?: number | null; bairros?: { bairro: string; valor: number }[]; cidades?: { cidade: string; valor: number }[]; raios?: { km: number; valor: number }[]; fora_valor?: number | null } | null
+  /** (6.115) bairros, cidades e faixas SOMAM aos que já existem (o mesmo nome atualiza o valor); "remover" tira pelo nome */
+  taxa?: { modo: 'fixa' | 'bairro' | 'cidade' | 'raio' | 'combinar'; valor?: number | null; bairros?: { bairro: string; valor: number }[]; cidades?: { cidade: string; valor: number }[]; raios?: { km: number; valor: number }[]; fora_valor?: number | null; remover?: string[] } | null
   pix?: { chave?: string | null; nome?: string | null; cidade?: string | null; online?: boolean | null; modo?: 'escolha' | 'sinal' | 'total' | null; sinal_pct?: number | null; pagar_na_retirada?: boolean | null } | null
   cores?: { faixa_topo?: string | null; borda_logo?: string | null; nome_loja?: string | null } | null
   pausada?: boolean | null
@@ -52,8 +58,22 @@ export type AcaoCustos = { acao: 'custos'; salario_mensal?: number | null; horas
 export type ItemFichaDoo = { insumo_id?: string | null; nome: string; quantidade: number; unidade: string
   novo?: { unidade: string; qtd_embalagem: number; valor_compra: number; embalagem_tipo?: string | null; marca?: string | null } | null }
 export type AcaoFicha = { acao: 'ficha'; produto_id?: string | null; produto_nome: string; rendimento?: string | null; itens: ItemFichaDoo[] }
-export type AcaoDoo = AcaoCliente | AcaoProduto | AcaoOrcamento | AcaoLoja | AcaoCupom | AcaoCustos | AcaoFicha
-export const ACOES_DOO = ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos', 'ficha'] as const
+/** (6.115) andar com o pedido: a próxima situação e/ou o dinheiro que entrou */
+export type EtapaDoo = 'aceito' | 'produzindo' | 'pronto' | 'saiu' | 'entregue'
+export type AcaoPedidoStatus = { acao: 'pedido_status'; numero: number; cliente?: string | null; etapa?: EtapaDoo | null; recebido?: number | 'tudo' | null; forma?: string | null }
+/** (6.115) lançamento no financeiro: entrada, saída já paga ou conta a pagar */
+export type AcaoLancamento = { acao: 'lancamento'; tipo: 'entrada' | 'saida'; valor: number; descricao?: string | null; categoria: string; data?: string | null; forma?: string | null; vencimento?: string | null }
+/** (6.115) mudar um produto que já existe: preço, promoção, pausar, destaque, venda e textos */
+export type AcaoProdutoEditar = { acao: 'produto_editar'; produto_id?: string | null; produto_nome: string; nome?: string | null; preco?: number | null
+  preco_promocional?: number | null; desconto_percentual?: number | null; sem_promocao?: boolean; disponivel?: boolean | null; destaque?: boolean | null
+  pronta_entrega?: boolean | null; descricao?: string | null; categoria?: string | null }
+export type AcaoDoo = AcaoCliente | AcaoProduto | AcaoOrcamento | AcaoLoja | AcaoCupom | AcaoCustos | AcaoFicha | AcaoPedidoStatus | AcaoLancamento | AcaoProdutoEditar
+export const ACOES_DOO = ['cliente', 'produto', 'orcamento', 'loja', 'cupom', 'custos', 'ficha', 'pedido_status', 'lancamento', 'produto_editar'] as const
+const ETAPAS: Record<EtapaDoo, string> = { aceito: 'Aceito (agendado)', produzindo: 'Em produção', pronto: 'Pronto', saiu: 'Saiu para entrega', entregue: 'Entregue' }
+const FORMAS_FIN: Record<string, string> = { pix: 'Pix', dinheiro: 'Dinheiro', credito: 'Crédito', debito: 'Débito' }
+const formaOk = (v: unknown) => { const x = String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); return x.includes('pix') ? 'pix' : x.includes('dinheiro') ? 'dinheiro' : x.includes('debito') ? 'debito' : x.includes('credito') || x.includes('cartao') ? 'credito' : null }
+const dataOk = (v: unknown) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v.trim()) ? v.trim() : null)
+const hojeLocal = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
 /** unidades da receita e a família (para conferir com a unidade do ingrediente) */
 const UNID: Record<string, { fam: string; base: number }> = { g: { fam: 'massa', base: 0.001 }, kg: { fam: 'massa', base: 1 }, ml: { fam: 'volume', base: 0.001 }, L: { fam: 'volume', base: 1 }, un: { fam: 'unidade', base: 1 }, m: { fam: 'comp', base: 1 }, cm: { fam: 'comp', base: 0.01 } }
 const unidadeOk = (u: unknown) => { const x = String(u || '').trim(); const y = x.toLowerCase() === 'l' ? 'L' : x.toLowerCase(); return UNID[y] ? y : null }
@@ -109,7 +129,9 @@ export function normalizarAcaoDoo(j: unknown): AcaoDoo | null {
         bairros: arr(t!.bairros).filter(b => s(b.bairro) && n(b.valor) != null).map(b => ({ bairro: s(b.bairro)!, valor: Math.max(0, n(b.valor)!) })),
         cidades: arr(t!.cidades).filter(c => s(c.cidade) && n(c.valor) != null).map(c => ({ cidade: s(c.cidade)!, valor: Math.max(0, n(c.valor)!) })),
         raios: arr(t!.raios).filter(r => (n(r.km) ?? 0) > 0 && n(r.valor) != null).map(r => ({ km: n(r.km)!, valor: Math.max(0, n(r.valor)!) })).sort((x, y) => x.km - y.km),
-        fora_valor: n(t!.fora_valor) != null ? Math.max(0, n(t!.fora_valor)!) : null,
+        // (6.115) sem o campo, fica como está (antes mandar só um bairro apagava o "fora disso")
+        fora_valor: !('fora_valor' in t!) ? undefined : n(t!.fora_valor) != null ? Math.max(0, n(t!.fora_valor)!) : null,
+        remover: Array.isArray(t!.remover) ? (t!.remover as unknown[]).map(x => String(x).trim()).filter(Boolean).slice(0, 30) : [],
       } : null
       const px = obj(o.pix)
       const pix = px ? { chave: s(px.chave), nome: s(px.nome)?.slice(0, 25) || null, cidade: s(px.cidade)?.slice(0, 15) || null, online: bool(px.online),
@@ -149,6 +171,34 @@ export function normalizarAcaoDoo(j: unknown): AcaoDoo | null {
       if (!s(o.produto_nome) && !s(o.produto_id)) return null
       if (!itens.length) return null
       return { acao: 'ficha', produto_id: s(o.produto_id), produto_nome: s(o.produto_nome) || '', rendimento: s(o.rendimento)?.slice(0, 60) || null, itens }
+    }
+    case 'pedido_status': {
+      const num = n(o.numero)
+      const etapa = ['aceito', 'produzindo', 'pronto', 'saiu', 'entregue'].includes(String(o.etapa)) ? o.etapa as EtapaDoo : null
+      const recebido = o.recebido === 'tudo' ? 'tudo' : (n(o.recebido) ?? 0) > 0 ? Math.round(n(o.recebido)! * 100) / 100 : null
+      if (!num || num <= 0 || (!etapa && !recebido)) return null
+      return { acao: 'pedido_status', numero: Math.round(num), cliente: s(o.cliente), etapa, recebido, forma: formaOk(o.forma) }
+    }
+    case 'lancamento': {
+      const tipo = o.tipo === 'entrada' ? 'entrada' : o.tipo === 'saida' ? 'saida' : null
+      const v = n(o.valor)
+      if (!tipo || !v || v <= 0) return null
+      const cats = tipo === 'entrada' ? CATEGORIAS_ENTRADA : CATEGORIAS_SAIDA
+      const pedida = s(o.categoria)?.toLowerCase()
+      const categoria = cats.find(c => c.toLowerCase() === pedida) || (pedida && tipo === 'saida' && /ingrediente/.test(pedida) ? 'Insumos' : null) || 'Outros'
+      const venc = tipo === 'saida' ? dataOk(o.vencimento) : null
+      return { acao: 'lancamento', tipo, valor: Math.round(v * 100) / 100, descricao: s(o.descricao)?.slice(0, 120) || null, categoria, data: venc ? null : dataOk(o.data), forma: tipo === 'entrada' ? formaOk(o.forma) || 'pix' : null, vencimento: venc }
+    }
+    case 'produto_editar': {
+      if (!s(o.produto_nome) && !s(o.produto_id)) return null
+      const preco = (n(o.preco) ?? 0) > 0 ? n(o.preco) : null
+      const r: AcaoProdutoEditar = { acao: 'produto_editar', produto_id: s(o.produto_id), produto_nome: s(o.produto_nome) || '', nome: s(o.nome)?.slice(0, 80) || null, preco,
+        preco_promocional: (n(o.preco_promocional) ?? 0) > 0 ? n(o.preco_promocional) : null,
+        desconto_percentual: (n(o.desconto_percentual) ?? 0) >= 1 && n(o.desconto_percentual)! <= 90 ? Math.round(n(o.desconto_percentual)!) : null,
+        sem_promocao: o.sem_promocao === true, disponivel: typeof o.disponivel === 'boolean' ? o.disponivel : null, destaque: typeof o.destaque === 'boolean' ? o.destaque : null,
+        pronta_entrega: typeof o.pronta_entrega === 'boolean' ? o.pronta_entrega : null, descricao: typeof o.descricao === 'string' ? o.descricao.trim().slice(0, 500) : null, categoria: s(o.categoria) }
+      const muda = ['nome', 'preco', 'preco_promocional', 'desconto_percentual', 'disponivel', 'destaque', 'pronta_entrega', 'descricao', 'categoria'].some(k => (r as Record<string, unknown>)[k] != null) || r.sem_promocao
+      return muda ? r : null
     }
     case 'custos': {
       const sal = n(o.salario_mensal), hd = n(o.horas_dia), pct = n(o.custos_invisiveis_pct)
@@ -205,6 +255,23 @@ export function resumoAcaoDoo(a: AcaoDoo): { titulo: string; linhas: [string, st
     case 'custos': return { titulo: 'Mão de obra e custos', linhas: ([
       ['Salário que quer tirar', a.salario_mensal != null ? `${brl(a.salario_mensal)} por mês` : ''], ['Horas por dia', a.horas_dia != null ? `${a.horas_dia} h` : ''],
       ['Dias que produz', (a.dias || []).map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')], ['Custos invisíveis', a.custos_invisiveis_pct != null ? `${a.custos_invisiveis_pct}% sobre os ingredientes` : ''],
+    ] as [string, string][]).filter(l => l[1]) }
+    case 'pedido_status': return { titulo: `Pedido #${a.numero}${a.cliente ? ` · ${a.cliente}` : ''}`, linhas: ([
+      ['Situação', a.etapa ? ETAPAS[a.etapa] : ''],
+      ['Recebido', a.recebido === 'tudo' ? `Tudo o que falta${a.forma ? `, no ${FORMAS_FIN[a.forma]}` : ''}` : a.recebido ? `${brl(a.recebido)}${a.forma ? ` no ${FORMAS_FIN[a.forma]}` : ''}` : ''],
+    ] as [string, string][]).filter(l => l[1]) }
+    case 'lancamento': return { titulo: a.tipo === 'entrada' ? 'Nova entrada no financeiro' : a.vencimento ? 'Nova conta a pagar' : 'Nova saída no financeiro', linhas: ([
+      ['Valor', brl(a.valor)], ['Descrição', a.descricao || ''], ['Categoria', a.categoria === 'Insumos' ? 'Ingredientes' : a.categoria],
+      ['Recebido no', a.tipo === 'entrada' && a.forma ? FORMAS_FIN[a.forma] : ''], ['Vence', dataBR(a.vencimento)],
+      ['Data', a.vencimento ? '' : a.data && a.data !== hojeLocal() ? dataBR(a.data) : 'Hoje'],
+    ] as [string, string][]).filter(l => l[1]) }
+    case 'produto_editar': return { titulo: `Mudar produto · ${a.produto_nome}`, linhas: ([
+      ['Nome novo', a.nome || ''], ['Preço', a.preco ? brl(a.preco) : ''],
+      ['Promoção', a.sem_promocao ? 'Tirar a promoção' : a.preco_promocional ? `Por ${brl(a.preco_promocional)}` : a.desconto_percentual ? `${a.desconto_percentual}% de desconto` : ''],
+      ['No cardápio', a.disponivel === false ? 'Pausado (some do cardápio)' : a.disponivel === true ? 'Volta a aparecer' : ''],
+      ['Destaque', a.destaque === true ? 'Sim, no topo do cardápio' : a.destaque === false ? 'Tirar do destaque' : ''],
+      ['Venda', a.pronta_entrega === true ? 'Pronta entrega' : a.pronta_entrega === false ? 'Sob encomenda' : ''],
+      ['Categoria', a.categoria || ''], ['Descrição', a.descricao == null ? '' : a.descricao || '(sem descrição)'],
     ] as [string, string][]).filter(l => l[1]) }
     case 'cupom': return { titulo: 'Novo cupom', linhas: ([
       ['Código', a.codigo], ['Desconto', a.tipo === 'percentual' ? `${a.valor}%` : brl(a.valor)], ['Para', a.publico === 'primeiro_pedido' ? '1º pedido do cliente' : 'Todos os pedidos'],
@@ -275,9 +342,12 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
           try { atual = typeof bruto === 'string' ? JSON.parse(bruto) : (bruto as HorarioDoo) || {} } catch { atual = {} }
           up.horario = JSON.stringify({ ...atual, ...a.horario })
         }
-        const precisa = a.endereco || a.pix || a.entregas
-        const { data: perf } = precisa ? await supabase.from('profiles').select('endereco, formas_entrega, endereco_retirada, nome_loja, pix_chave, pix_nome, pix_cidade, pix_online').eq('id', uid).maybeSingle() : { data: null }
-        const pf = (perf || {}) as { endereco?: string | null; formas_entrega?: string[] | null; endereco_retirada?: string | null; pix_chave?: string | null; pix_nome?: string | null; pix_cidade?: string | null; pix_online?: boolean | null }
+        // (6.115) a taxa também lê o perfil: antes mudar só a taxa gravava "retirada + entrega própria" por cima das outras formas de entrega
+        const precisa = a.endereco || a.pix || a.entregas || a.taxa
+        const { data: perf } = precisa ? await supabase.from('profiles').select('endereco, formas_entrega, endereco_retirada, nome_loja, pix_chave, pix_nome, pix_cidade, pix_online, entrega_por_bairro, entrega_por_cidade, entrega_por_raio').eq('id', uid).maybeSingle() : { data: null }
+        if (precisa && !perf) return { ok: false, erro: 'Não deu para ler a loja agora. Confira a internet e tente de novo.' }
+        const pf = (perf || {}) as { endereco?: string | null; formas_entrega?: string[] | null; endereco_retirada?: string | null; pix_chave?: string | null; pix_nome?: string | null; pix_cidade?: string | null; pix_online?: boolean | null
+          entrega_por_bairro?: { bairro: string; valor: number }[] | null; entrega_por_cidade?: { cidade: string; valor: number; ativo?: boolean }[] | null; entrega_por_raio?: { km: number; valor: number; ativo?: boolean }[] | null }
         if (a.descricao) up.descricao_loja = a.descricao
         if (a.whatsapp) up.telefone = a.whatsapp
         let endNovo: EnderecoDoo | null = null
@@ -301,9 +371,17 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
           const t = a.taxa
           up.entrega_modo = t.modo
           if (t.modo === 'fixa') up.valor_entrega_propria = t.valor
-          if (t.modo === 'bairro') up.entrega_por_bairro = (t.bairros || []).filter((b, i, l) => l.findIndex(x => x.bairro.toLowerCase() === b.bairro.toLowerCase()) === i)
-          if (t.modo === 'cidade') up.entrega_por_cidade = (t.cidades || []).filter((c, i, l) => l.findIndex(x => x.cidade.toLowerCase() === c.cidade.toLowerCase()) === i).map(c => ({ ...c, ativo: true }))
-          if (t.modo === 'raio') up.entrega_por_raio = (t.raios || []).filter((r, i, l) => l.findIndex(x => x.km === r.km) === i).map(r => ({ ...r, ativo: true }))
+          // (6.115) soma aos que já existem: o mesmo nome atualiza o valor; "remover" tira (antes a lista nova apagava os outros bairros)
+          const chave = (x: string) => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+          const fora = new Set((t.remover || []).map(chave))
+          const somar = <T,>(antes: T[] | null | undefined, novos: T[], nome: (x: T) => string) => {
+            const l = (Array.isArray(antes) ? antes : []).filter(x => !fora.has(chave(nome(x))))
+            for (const x of novos) { const i = l.findIndex(y => chave(nome(y)) === chave(nome(x))); if (i >= 0) l[i] = { ...x, ...l[i], valor: (x as { valor: number }).valor }; else l.push(x) }
+            return l
+          }
+          if (t.modo === 'bairro') up.entrega_por_bairro = somar(pf.entrega_por_bairro, t.bairros || [], b => b.bairro)
+          if (t.modo === 'cidade') up.entrega_por_cidade = somar(pf.entrega_por_cidade, (t.cidades || []).map(c => ({ ...c, ativo: true })), c => c.cidade)
+          if (t.modo === 'raio') up.entrega_por_raio = somar(pf.entrega_por_raio, (t.raios || []).map(r => ({ ...r, ativo: true })), r => String(r.km)).sort((x, y) => x.km - y.km)
           if (t.modo !== 'fixa' && t.modo !== 'combinar' && t.fora_valor !== undefined) up.entrega_fora_valor = t.fora_valor
           // entrega por taxa: a entrega própria fica ligada
           const ents = (up.formas_entrega as string[] | undefined) || pf.formas_entrega || ['retirada']
@@ -405,6 +483,98 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
         }
         return { ok: true, feito: 'Custos atualizados', abrir: '/custos' }
       }
+      case 'pedido_status': {
+        const { data: lp, error: el } = await supabase.from('pedidos').select('id, numero, cliente_nome, status, tipo_entrega, valor_total, valor_recebido, status_pagamento, forma_pagamento')
+          .eq('user_id', uid).eq('numero', a.numero).limit(1)
+        if (el) throw el
+        const p = (lp || [])[0] as { id: string; numero: number; cliente_nome: string | null; status: string; tipo_entrega: string | null; valor_total: number; valor_recebido: number; status_pagamento: string | null; forma_pagamento: string | null } | undefined
+        if (!p) return { ok: false, erro: `Não achei o pedido #${a.numero}.` }
+        const g = grupoDoStatus(p.status)
+        if (g === 'cancelado') return { ok: false, erro: `O pedido #${p.numero} está cancelado.` }
+        const retirada = p.tipo_entrega !== 'entrega'
+        // a etapa vira a situação do banco (retirada: "pronto" é "Pronto para retirar"; "saiu" só existe na entrega)
+        let novo: string | null = null
+        if (a.etapa) {
+          if (a.etapa === 'saiu' && retirada) return { ok: false, erro: `O pedido #${p.numero} é para retirar: ele vai de Pronto direto para Entregue.` }
+          novo = { aceito: 'agendado', produzindo: 'em_producao', pronto: retirada ? 'aguardando_retirada' : 'finalizado', saiu: 'em_entrega', entregue: 'entregue' }[a.etapa]
+          if (g === 'entregue' && novo !== 'entregue') return { ok: false, erro: `O pedido #${p.numero} já foi entregue. Para voltar a situação, use a tela do pedido.` }
+          if (grupoDoStatus(novo) === g) novo = null
+        }
+        // 1) o dinheiro primeiro (igual a lista de Pedidos): se não gravar, a situação não muda
+        let recebeu = 0
+        const falta = saldoPedido(p)
+        if (a.recebido) {
+          if (falta <= 0.009) { if (!novo) return { ok: false, erro: `O pedido #${p.numero} já está pago.` } }
+          else {
+            const v = a.recebido === 'tudo' ? falta : Math.min(a.recebido, falta)
+            const ja = falta < (Number(p.valor_total) || 0) - 0.009
+            const r = await registrarPagamento({ pedidoId: p.id, userId: uid, valor: v, forma: a.forma || p.forma_pagamento, tipo: v >= falta - 0.009 ? (ja ? 'restante' : 'total') : 'parcial', origem: 'doo' })
+            if (!r.ok) return { ok: false, erro: r.erro || 'Não deu para registrar o recebimento. Tente de novo.' }
+            recebeu = v
+          }
+        }
+        // 2) a situação (aceitar só vale se o pedido ainda está esperando)
+        if (novo) {
+          let q = supabase.from('pedidos').update({ status: novo }).eq('id', p.id)
+          if (novo === 'agendado' && g === 'aguardando_aceite') q = q.in('status', ['aguardando_aceite', 'novo', 'pendente'])
+          const { data: mudou, error } = await q.select('id')
+          if (error) return { ok: false, erro: recebeu ? `O recebimento de ${brl(recebeu)} entrou, mas a situação não mudou. Tente de novo.` : 'Não deu para mudar a situação. Tente de novo.' }
+          if (!mudou?.length) return { ok: false, erro: `O pedido #${p.numero} já tinha sido atualizado em outro lugar.` }
+          registrarEtapa(p.id, novo, 'Pela Doo IA')
+        }
+        const sobra = Math.max(0, Math.round((falta - recebeu) * 100) / 100)
+        const partes = [novo ? nomeDaSituacao(novo, p.tipo_entrega || 'retirada') : '', recebeu ? `${brl(recebeu)} recebido` : '', sobra > 0.009 ? `falta ${brl(sobra)}` : recebeu ? 'pago' : '']
+        return { ok: true, feito: `#${p.numero} · ${partes.filter(Boolean).join(' · ')}`, abrir: `/pedidos/${p.id}/editar` }
+      }
+      case 'lancamento': {
+        const hoje = hojeLocal()
+        const desc = a.descricao || (a.categoria === 'Insumos' ? 'Ingredientes' : a.categoria)
+        if (a.vencimento) {
+          const { error } = await supabase.from('contas_pagar').insert({ user_id: uid, descricao: desc, categoria: a.categoria, valor: a.valor, vencimento: a.vencimento })
+          if (error) throw error
+          return { ok: true, feito: `Conta de ${brl(a.valor)} em A pagar · vence ${dataBR(a.vencimento)}`, abrir: '/financeiro' }
+        }
+        const data = a.data && a.data <= hoje ? a.data : hoje
+        const linha: Record<string, unknown> = { user_id: uid, tipo: a.tipo, categoria: a.categoria, descricao: desc, valor: a.valor, data }
+        let { error } = await supabase.from('financeiro').insert(a.tipo === 'entrada' ? { ...linha, forma: a.forma || 'pix' } : linha)
+        if (error && a.tipo === 'entrada' && /forma/.test(error.message || '')) ({ error } = await supabase.from('financeiro').insert(linha))
+        if (error) throw error
+        return { ok: true, feito: `${a.tipo === 'entrada' ? 'Entrada' : 'Saída'} de ${brl(a.valor)} lançada${data === hoje ? '' : ` em ${dataBR(data)}`}`, abrir: '/financeiro' }
+      }
+      case 'produto_editar': {
+        const { data: todos, error: el } = await lerProdutosDeVenda(uid, ',disponivel')
+        if (el) throw el
+        const semAc = (x: string) => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+        const lista = todos || []
+        const p = (a.produto_id && lista.find(x => x.id === a.produto_id)) || lista.find(x => semAc(x.nome) === semAc(a.produto_nome))
+          || (() => { const l = lista.filter(x => semAc(x.nome).includes(semAc(a.produto_nome))); return l.length === 1 ? l[0] : undefined })()
+        if (!p) return { ok: false, erro: `Não achei o produto "${a.produto_nome}".` }
+        const temOpcoes = opcoesDoProduto(p).length > 1
+        if ((a.preco || a.preco_promocional) && temOpcoes) return { ok: false, erro: `${p.nome} tem tamanhos ou opções com preços diferentes: mude os preços na tela do produto.` }
+        const precoBase = a.preco || Number(p.preco_normal) || 0
+        if (a.preco_promocional && a.preco_promocional >= precoBase) return { ok: false, erro: `O preço da promoção precisa ser menor que ${brl(precoBase)}.` }
+        const up: Record<string, unknown> = {}
+        if (a.nome) up.nome = a.nome
+        if (a.preco) up.preco_normal = a.preco
+        if (a.sem_promocao) Object.assign(up, { promocao: false, preco_promocional: null, desconto_percentual: null })
+        else if (a.preco_promocional) Object.assign(up, { promocao: true, tipo_promocao: 'fixo', preco_promocional: a.preco_promocional })
+        else if (a.desconto_percentual) Object.assign(up, { promocao: true, tipo_promocao: 'percentual', desconto_percentual: a.desconto_percentual })
+        if (a.disponivel != null) up.disponivel = a.disponivel
+        if (a.destaque != null) up.destaque = a.destaque
+        if (a.pronta_entrega != null) up.pronta_entrega = a.pronta_entrega
+        if (a.descricao != null) up.descricao = a.descricao || null
+        if (a.categoria) up.categoria = a.categoria
+        const { error } = await supabase.from('produtos').update(up).eq('id', p.id).eq('user_id', uid)
+        if (error) {
+          if (/limite_destaques/.test(`${error.message} ${(error as { hint?: string }).hint || ''}`)) return { ok: false, erro: 'Já tem 6 produtos em destaque. Tire um do destaque antes.' }
+          throw error
+        }
+        if (a.categoria) {
+          const { data: cat } = await supabase.from('categorias').select('nome').eq('user_id', uid).ilike('nome', a.categoria).limit(1)
+          if (!cat || !cat.length) await supabase.from('categorias').insert({ user_id: uid, nome: a.categoria })
+        }
+        return { ok: true, feito: `${a.nome || p.nome} atualizado`, abrir: '/produtos' }
+      }
       case 'cupom': {
         const { data: lc } = await supabase.from('loja_cupons').select('cupons').eq('user_id', uid).maybeSingle()
         const lista = Array.isArray((lc as { cupons?: unknown } | null)?.cupons) ? ((lc as { cupons: Record<string, unknown>[] }).cupons) : []
@@ -461,7 +631,7 @@ export function regrasAcoesDoo(loja: LojaDoo): string {
   try { h = typeof loja.horario === 'string' ? JSON.parse(loja.horario) : (loja.horario as HorarioDoo) || null } catch { h = null }
   return `
 
-# AÇÕES NO APP: CLIENTE, PRODUTO, ORÇAMENTO, LOJA E CUPOM
+# AÇÕES NO APP: CLIENTE, PRODUTO, ORÇAMENTO, LOJA, CUPOM, PEDIDO E FINANCEIRO
 Igual ao pedido e ao ingrediente: você só PREPARA. O app mostra um cartão e quem confirma e salva é a confeiteira. Pergunte SÓ o que falta, em uma frase curta. Nunca invente nome, telefone, preço ou data. Quando tiver o necessário, responda com UMA frase curta (ex.: "Confira e confirme no cartão abaixo.") e, no FINAL, UM bloco \`\`\`acao-doonly com o JSON. Nada depois do bloco. Nunca diga que salvou.
 
 CLIENTE (precisa do nome; WhatsApp se ela souber). Para mudar um cliente que já existe na lista, use o id dele em cliente_id.
@@ -486,6 +656,7 @@ LOJA E CARDÁPIO: você pode preencher QUALQUER campo da loja e do cardápio. Ma
 - pagamentos: lista com "pix", "dinheiro", "credito", "debito" (a lista INTEIRA de como fica); troco: true para o cliente dizer se precisa de troco no dinheiro.
 - entregas: lista com "retirada", "entrega_propria", "motoboy", "uber_flash", "combinar" (a lista INTEIRA); horario_retirada: texto curto (ex.: "das 9h às 18h").
 - taxa (da entrega própria): {"modo":"fixa","valor":8} (valor 0 = grátis); {"modo":"bairro","bairros":[{"bairro":"Centro","valor":5}]}; {"modo":"cidade","cidades":[{"cidade":"Curitiba","valor":10}]}; {"modo":"raio","raios":[{"km":3,"valor":5},{"km":6,"valor":10}],"fora_valor":null}; {"modo":"combinar"}. "fora_valor": quanto cobra fora das faixas (null = não entrega fora).
+  Bairros, cidades e faixas SOMAM aos que já existem: mande só os que entram ou mudam de valor (os outros continuam). Para tirar, "remover":["Centro"].
 - pix: {"chave":"...","nome":"quem recebe","cidade":"cidade (até 15 letras)","online":true para o cliente pagar o Pix pelo cardápio,"modo":"escolha" (cliente escolhe sinal ou total), "sinal" ou "total","sinal_pct":50,"pagar_na_retirada":false}. Para ligar o online precisa da chave, do nome e da cidade.
 - cores (do topo do cardápio, #RRGGBB): {"faixa_topo":"#F48FB1","borda_logo":"#FFFFFF","nome_loja":"#5A2E3E"}. Sugira cores que combinem com a logo e o estilo dela.
 - pausada: true para parar de receber pedidos pelo cardápio (férias, agenda cheia); false para voltar.
@@ -507,6 +678,24 @@ FICHA TÉCNICA (ingredientes de um produto do cardápio, com a quantidade da rec
 MÃO DE OBRA E CUSTOS INVISÍVEIS (o que a ficha técnica usa para o custo de cada produto). Pergunte uma coisa de cada vez: quanto ela quer tirar de salário por mês, quantas horas trabalha por dia e em quais dias produz. Custos invisíveis são gás, luz, água e perdas, em % sobre os ingredientes: se ela não souber, sugira 25% e explique em uma frase. Mande só o que ela disse.
 {"acao":"custos","salario_mensal":3000,"horas_dia":8,"dias":["seg","ter","qua","qui","sex","sab"],"custos_invisiveis_pct":25}
 
-O QUE VOCÊ NÃO FAZ PELA CONVERSA (diga com honestidade, em uma frase, e diga onde ela faz): excluir qualquer coisa, mudar preço ou foto de produto que já existe, trocar o link (endereço) do cardápio e mexer no financeiro. Ex.: "Isso eu ainda não faço por aqui: é em Produtos, no produto."
+ANDAR COM O PEDIDO (ex.: "o pedido da Maria ficou pronto", "entreguei o #12", "ela pagou o resto no Pix"). Use o número do pedido das listas acima; se houver mais de um da mesma cliente ou ele não estiver nas listas, pergunte o número.
+- etapa: "aceito" (aceitar pedido novo), "produzindo", "pronto", "saiu" (só pedido de entrega), "entregue". Só mande a etapa que ela disse.
+- recebido: o valor que entrou agora, ou "tudo" para o que falta; forma: "pix", "dinheiro", "credito" ou "debito".
+- Antes de marcar "entregue" (ou aceitar um que espera o Pix) um pedido que ainda tem valor a receber, pergunte numa frase se a cliente já pagou o que falta (diga o valor) e como.
+- Cancelar pedido você não faz: diga que é na tela do pedido.
+{"acao":"pedido_status","numero":12,"cliente":"Maria","etapa":"entregue","recebido":"tudo","forma":"pix"}
+
+FINANCEIRO (dinheiro que entrou fora dos pedidos ou que saiu). Recebimento de PEDIDO não é aqui: use "pedido_status" com "recebido".
+- tipo "saida" (gasto já pago) com categoria: ${CATEGORIAS_SAIDA.map(c => `"${c}"`).join(', ')}. "Insumos" é ingrediente. Conta que ainda vai pagar: mande "vencimento" (AAAA-MM-DD) e ela vai para A pagar.
+- tipo "entrada" com categoria: ${CATEGORIAS_ENTRADA.map(c => `"${c}"`).join(', ')}, e "forma" (pix, dinheiro, credito, debito).
+- data AAAA-MM-DD só se não for hoje (ex.: "ontem"). Descrição curta com o que ela disse.
+{"acao":"lancamento","tipo":"saida","valor":32.5,"descricao":"Leite condensado","categoria":"Insumos","data":null,"forma":null,"vencimento":null}
+
+MUDAR PRODUTO QUE JÁ EXISTE (preço, promoção, pausar ou voltar ao cardápio, destaque, pronta entrega ou encomenda, nome, categoria, descrição). Use o id da lista do cardápio (produto pausado não está na lista: mande só o produto_nome). Mande SÓ o que muda.
+- disponivel false = pausar ("acabou", "esgotou", "tira do cardápio"); true = voltar. destaque true/false (cabem 6). sem_promocao true = tirar a promoção.
+- Produto com tamanhos ou opções de preço: o preço muda na tela do produto (diga isso).
+{"acao":"produto_editar","produto_id":"ID","produto_nome":"Bolo de pote Ninho","preco":16,"disponivel":null,"destaque":null}
+
+O QUE VOCÊ NÃO FAZ PELA CONVERSA (diga com honestidade, em uma frase, e diga onde ela faz): excluir qualquer coisa, cancelar pedido, mudar foto, tamanhos ou sabores de produto, trocar o link (endereço) do cardápio, apagar ou corrigir lançamento do financeiro. Ex.: "Isso eu ainda não faço por aqui: é em Produtos, no produto."
 `
 }

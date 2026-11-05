@@ -15,3 +15,7 @@ export const nomeCategoriaFin = (cat?: string | null) => {
   const c = String(cat || "").trim();
   return /^insumos?$/i.test(c) ? "Ingredientes" : c;
 };
+
+/** (6.115) as categorias dos lançamentos manuais (a janela Nova saída/entrada e a Doo usam a mesma lista) */
+export const CATEGORIAS_SAIDA = ["Insumos", "Embalagens", "Gás", "Transporte", "Aluguel", "Energia e água", "Internet", "Marketing", "Equipamentos", "Impostos e taxas", RETIRADA, "Outros"];
+export const CATEGORIAS_ENTRADA = ["Venda no balcão", "Venda fora do app", APORTE, "Outros"];

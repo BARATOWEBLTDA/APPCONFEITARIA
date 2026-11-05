@@ -23,8 +23,11 @@ import './lib/installPrompt' // captura o convite de instalação do Chrome o qu
 if (typeof window !== "undefined") {
   window.addEventListener("load", () => { ensureServiceWorker(); });
 
-  // Bloqueia menu de contexto (clique direito no desktop + long-press no mobile)
-  window.addEventListener("contextmenu", (e) => e.preventDefault());
+  // Bloqueia menu de contexto (clique direito no desktop + long-press no mobile) dentro do app da confeiteira.
+  // (6.115) Nas páginas do cliente (cardápio, orçamento) fica liberado: segurar a foto para salvar, compartilhar,
+  // copiar o texto ou pesquisar com o Google Lens.
+  const paginaDoCliente = () => /^\/(c|cardapio|o|orcamento)\//.test(window.location.pathname);
+  window.addEventListener("contextmenu", (e) => { if (!paginaDoCliente()) e.preventDefault(); });
 }
 
 createRoot(document.getElementById('root')!).render(
