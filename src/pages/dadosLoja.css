@@ -131,6 +131,7 @@
 .dl-li-st { flex: none; padding: 3px 8px; border-radius: 6px; font-style: normal; font-size: 12px; font-weight: 600; }
 .dl-li-st.ok { background: #DDF3E4; color: #157A3C; }
 .dl-li-st.falta { background: #FDECD3; color: #9A4A06; }
+.dl-li-st.pro { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); letter-spacing: .02em; }
 .dl-li-st.op { background: #F3EEF1; color: var(--ui-texto-3); font-weight: 600; }
 .dl-li-seta { flex: none; color: var(--ui-texto-3); }
 .dl-lista-salva { display: flex; align-items: center; gap: 6px; margin: 12px 4px 0; font-size: 13px; color: var(--ui-texto-2); }

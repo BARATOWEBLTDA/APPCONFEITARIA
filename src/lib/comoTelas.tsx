@@ -38,6 +38,15 @@ export const COMO_INICIO: Como = {
   ],
 };
 
+/** (6.146) celular, conta nova: logo depois do tutorial, os balões mostram por onde começar */
+export const TOUR_PRIMEIRA_VEZ_CEL: PassoTour[] = [
+  { el: ".ppb-at", titulo: "Comece por aqui", texto: "Toque em Fazer agora e configure a sua loja passo a passo. Em poucos minutos o cardápio fica pronto para vender." },
+  { el: ".bn-novo", titulo: "Nova venda", texto: "Pedido que chegou pelo WhatsApp ou venda no balcão: registre aqui, a qualquer momento.", redondo: true },
+  { el: '.bn-item[href="/pedidos"]', titulo: "Pedidos", texto: "Todos os pedidos, do cardápio e os que você registrou. Os novos chegam aqui para você aceitar." },
+  { el: '.bn-item[href="/cardapio"]', titulo: "Minha loja", texto: "Seu cardápio digital: produtos, horário, entrega, pagamento e o link para mandar para os clientes." },
+  { el: ".bn-menu", titulo: "Menu", texto: "Todas as outras telas: agenda, clientes, financeiro, ficha técnica, ajuda e configurações." },
+];
+
 /** tour do Início no celular (só entram os passos que estão na tela) */
 export const TOUR_INICIO_CEL: PassoTour[] = [
   { el: ".ini-section--novos", titulo: "Avisos", texto: "Pedidos novos para aceitar e pedidos atrasados aparecem aqui primeiro." },
@@ -507,7 +516,7 @@ export const COMO_APARENCIA: Como = {
 export const TOUR_APARENCIA: PassoTour[] = [
   { el: ".ap-sec-logo", titulo: "Logo", texto: "A logo aparece no topo do cardápio. Toque em Trocar para mudar." },
   { el: ".ap-sec-topo", titulo: "Foto do topo", texto: "A foto atrás do nome da loja. Toque em Ver como fica para ver do jeito que o cliente vê." },
-  { el: ".ap-sec-banners", titulo: "Banners de promoção", texto: "Imagens que divulgam promoções no cardápio. No plano PRO, até quatro banners passando sozinhos." },
+  { el: ".ap-sec-banners", titulo: "Banners de promoção", texto: "Uma imagem para divulgar promoções e datas especiais, logo abaixo do topo do cardápio." },
   { el: ".ap-sec-link", titulo: "Link do cardápio", texto: "O nome da loja no fim do link (plano PRO). Ao mudar, o link antigo continua funcionando." },
   { el: ".ap-sec-cores", titulo: "Cores do topo", texto: "Defina as cores do topo do cardápio: a faixa, a borda da logo e o nome da loja." },
 ];

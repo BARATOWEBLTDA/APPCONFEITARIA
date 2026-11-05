@@ -169,8 +169,6 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     // Celular, primeira vez: o destaque do "Começar". Senão: o passo da vez pisca.
     window.scrollTo(0, 0);
     const kSpot = uid ? `doonly_pp_destaque_visto_${uid}` : "";
-    let viu = true;
-    try { viu = !kSpot || localStorage.getItem(kSpot) === "1"; } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }
     const celular = window.matchMedia("(max-width: 767px)").matches;
     // espera outra janela (boas-vindas, conta ativa) fechar antes de mostrar o destaque
     let tentativas = 0;
@@ -178,7 +176,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
       if (!montado.current) return;
       if (document.querySelector('[role="dialog"][aria-modal="true"]') && tentativas++ < 40) { window.setTimeout(mostrar, 500); return; }
       window.scrollTo(0, 0);
-      if (celular && !viu) { try { localStorage.setItem(kSpot, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } setSpot(true); return; }
+      // (6.146) celular: o "Comece por aqui" agora é o 1º balão do tour da primeira vez (Início)
+      if (celular) { try { localStorage.setItem(kSpot, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } return; }
       setDestaque(true);
       window.setTimeout(() => { if (montado.current) setDestaque(false); }, 2300);
     };

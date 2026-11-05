@@ -482,6 +482,9 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
             try { sessionStorage.setItem("doonly_pp_destacar", "1"); } catch { /* sem storage: só não destaca */ }
             if (local.pathname !== "/inicio") depoisDoVoltar(() => navegar("/inicio"));
           }
+          // (6.146) celular: no Início, os balões mostram por onde começar (nos dois casos: terminou ou pulou)
+          try { sessionStorage.setItem("doonly_tour_primeira_vez", "1"); } catch { /* sem storage: sem os balões */ }
+          if (!configurar && local.pathname !== "/inicio") depoisDoVoltar(() => navegar("/inicio"));
           // Terminou ou tocou em "Pular": nos dois casos o guia não volta mais
           try {
             localStorage.setItem("doonly_tutorial_auto_aberto", "1");

@@ -16,7 +16,7 @@ type Contas = { produtos: number; categorias: number; complementos: number };
 
 const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
 
-export default function MinhaLoja({ uid }: { uid?: string; pro?: boolean }) {
+export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boolean }) {
   const navigate = useNavigate();
   const [vis, setVis] = useState<Visual | null>(null);
   const [n, setN] = useState<Contas | null>(null);
@@ -88,11 +88,13 @@ export default function MinhaLoja({ uid }: { uid?: string; pro?: boolean }) {
     </button>
   );
   // (23/10) sem o cartão de Primeiros passos aqui: o que falta aparece como "Falta" na própria linha
-  const linha = (Ic: typeof Cake, titulo: string, sub: string, rota: string, falta = false) => (
+  const linha = (Ic: typeof Cake, titulo: string, sub: string, rota: string, falta = false, soPro = false) => (
     <button type="button" className="dl-li" onClick={() => navigate(rota)}>
       <span className="dl-li-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
       <span className="dl-li-tx"><b>{titulo}</b><small className={falta ? "falta" : ""}>{sub}</small></span>
       {falta && <em className="dl-li-st falta">Falta</em>}
+      {/* (6.146) recurso do PRO: a etiqueta avisa antes de tocar (igual ao Menu) */}
+      {soPro && !pro && <em className="dl-li-st pro">PRO</em>}
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
   );
@@ -107,7 +109,7 @@ export default function MinhaLoja({ uid }: { uid?: string; pro?: boolean }) {
         <div className="dl-lista-c">
           {linha(Cake, "Produtos", qtd(n?.produtos, "produto", "produtos", "Nenhum ainda"), "/produtos", n?.produtos === 0)}
           {linha(SquaresFour, "Categorias", qtd(n?.categorias, "categoria", "categorias", "Nenhuma categoria ainda"), "/categorias")}
-          {linha(Stack, "Adicionais", qtd(n?.complementos, "adicional", "adicionais", "Topo, velas e outros extras"), "/complementos")}
+          {linha(Stack, "Adicionais", qtd(n?.complementos, "adicional", "adicionais", "Topo, velas e outros extras"), "/complementos", false, true)}
         </div>
       </section>
       <DadosLoja embutido extras={{ antes: linhaLogo, depois: linhaAparencia }} />

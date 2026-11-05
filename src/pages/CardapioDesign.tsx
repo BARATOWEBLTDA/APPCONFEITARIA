@@ -447,7 +447,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
                 </div>
               ) : (
                 <button type="button" className="ap-enviar ap-slot" onClick={() => !uploading && bannerRefs[i].current?.click()} disabled={!!uploading}>
-                  {uploading === `banner${i}` ? <span className="ui-gira" aria-label="Enviando" /> : <><Plus size={20} weight="bold" /><b>Adicionar</b><small>Do celular</small></>}
+                  {uploading === `banner${i}` ? <span className="ui-gira" aria-label="Enviando" /> : <><Plus size={20} weight="bold" /><b>Adicionar banner de promoção</b><small>Deitado, 1200 × 675 · o texto no meio</small></>}
                 </button>
               )}
               <input ref={bannerRefs[i]} type="file" accept="image/*" hidden onChange={e => { bannerIdx.current = i; recorteBanner.escolher(e); }} />

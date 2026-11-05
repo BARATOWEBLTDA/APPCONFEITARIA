@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
-import { Copy, Eye, QrCode, ShareNetwork } from "@phosphor-icons/react";
+import { Copy, Eye, LockSimple, QrCode, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile, fotoDaLoja, type Profile } from "@/hooks/useProfile";
 
@@ -11,7 +11,7 @@ import { avisar } from "@/components/base";
 import { explicarErro } from "@/lib/erros";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
-import { marcarCompartilhado } from "@/lib/primeirosPassos";
+import { marcarCompartilhado, lerPassos, passosCompletos } from "@/lib/primeirosPassos";
 
 /**
  * (16/10) Cardápio digital no CELULAR: um cartão só no lugar do verde "Recebendo pedidos" + "Seu cardápio tá no ar".
@@ -30,6 +30,17 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   const [qr, setQr] = useState("");
   const pausada = local ?? ((profile as PerfilLoja)?.loja_pausada === true);
   const sit = useMemo(() => situacaoLoja((profile as PerfilLoja)?.horario), [(profile as PerfilLoja)?.horario]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // (6.146) conta nova: o cardápio só libera quando os Primeiros passos acabam (antes já aparecia "Recebendo pedidos" sem nada pronto)
+  const [liberado, setLiberado] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!profile?.id) return;
+    let vivo = true;
+    const ler = () => { lerPassos(profile.id).then(e => { if (vivo && !e.falhou) setLiberado(passosCompletos(e)); }, () => {}); };
+    ler();
+    window.addEventListener("doonly:passos", ler);
+    return () => { vivo = false; window.removeEventListener("doonly:passos", ler); };
+  }, [profile?.id]);
 
   useEffect(() => {
     if (!link) return;
@@ -76,22 +87,33 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   const foto = fotoDaLoja(profile as PerfilLoja);
   const linkCurto = link.replace(/^https?:\/\/(www\.)?/, "");
 
+  const travado = liberado === false;
   return (
-    <section className="clc" aria-label="Seu cardápio">
+    <section className={`clc${travado ? " clc--travado" : ""}`} aria-label="Seu cardápio">
       <div className="clc-loja">
         <span className="clc-logo" aria-hidden="true">{foto ? <img src={foto} alt="" /> : iniciais}</span>
         <span className="clc-nome"><b>{nome}</b><small>{linkCurto}</small></span>
       </div>
+      {travado ? (
+        <>
+          <div className="clc-sit">
+            <span className="clc-st clc-st--trava"><b><LockSimple size={15} weight="bold" aria-hidden="true" />Cardápio bloqueado</b><small>Configure a loja para liberar grátis</small></span>
+            <span className="clc-cadeado" aria-hidden="true"><LockSimple size={16} weight="bold" /></span>
+          </div>
+          <button type="button" className="clc-enviar" onClick={() => navigate("/inicio")}>Configurar e liberar grátis</button>
+        </>
+      ) : (<>
       <div className="clc-sit">
         <span className={`clc-st clc-st--${tom}`}><b><i aria-hidden="true" />{titulo}</b><small>{sub}</small></span>
         <button type="button" role="switch" aria-checked={!pausada} aria-label={pausada ? "Abrir a loja" : "Pausar os pedidos"}
           className="clc-chave" disabled={salvando} onClick={alternar}><span /></button>
       </div>
       <button type="button" className="clc-enviar" onClick={compartilhar}><ShareNetwork size={20} weight="bold" aria-hidden="true" />Enviar meu cardápio</button>
-      <div className="clc-bts">
-        <button type="button" className="clc-b" onClick={copiar}><Copy size={17} weight="bold" aria-hidden="true" /><span>Copiar</span></button>
-        <button type="button" className="clc-b" onClick={() => navigate("/cardapio-preview")}><Eye size={17} weight="bold" aria-hidden="true" /><span>Ver</span></button>
-        <button type="button" className="clc-b" onClick={baixarQr} disabled={!qr}><QrCode size={17} weight="bold" aria-hidden="true" /><span>QR Code</span></button>
+      </>)}
+      <div className="clc-bts" aria-disabled={travado || undefined}>
+        <button type="button" className="clc-b" onClick={copiar} disabled={travado}><Copy size={17} weight="bold" aria-hidden="true" /><span>Copiar</span></button>
+        <button type="button" className="clc-b" onClick={() => navigate("/cardapio-preview")} disabled={travado}><Eye size={17} weight="bold" aria-hidden="true" /><span>Ver</span></button>
+        <button type="button" className="clc-b" onClick={baixarQr} disabled={!qr || travado}><QrCode size={17} weight="bold" aria-hidden="true" /><span>QR Code</span></button>
       </div>
       <style>{CSS}</style>
     </section>
@@ -116,6 +138,10 @@ const CSS = `
   .clc-st--aberto b { color: #86EFAC; } .clc-st--aberto i { background: #4ADE80; animation: clcPisca 1.6s ease-in-out infinite; }
   .clc-st--fechado b { color: #FCD34D; } .clc-st--fechado i { background: #FBBF24; }
   .clc-st--pausa b { color: #FCA5A5; } .clc-st--pausa i { background: #F87171; }
+  /* (6.146) cardápio bloqueado até terminar os Primeiros passos */
+  .clc-st--trava b { color: #FCD34D; } .clc-st--trava small { padding-left: 22px; }
+  .clc-cadeado { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 28px; border-radius: 999px; background: rgba(255, 255, 255, .12); color: rgba(255, 255, 255, .55); }
+  .clc--travado .clc-b { opacity: .4; }
   @keyframes clcPisca { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
   .clc-chave { flex: none; position: relative; width: 48px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .22); cursor: pointer; transition: background-color .15s linear; }
   .clc-chave span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .15s ease-out; }

@@ -16,6 +16,7 @@ import { digitosTelefone, digitosAoDigitar } from "@/lib/telefone";
 import { limparFacebook, limparInstagram } from "@/lib/redesSociais";
 import ListaChaves from "@/components/loja/ListaChaves";
 import CheckoutConfigPage, { type EstadoEntregaPagamento } from "./CheckoutConfigPage";
+import { lerPassos, marcarPagamentoConferido, marcarEntregaConferida, type EstadoPassos } from "@/lib/primeirosPassos";
 import "./dadosLoja.css";
 
 /**
@@ -102,7 +103,11 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   // 02/10: "Recebo pedidos nesse endereço" — vira o endereço de retirada da Finalizar encomenda
   const [recebeAqui, setRecebeAqui] = useState(true);
   const [endModal, setEndModal] = useState(false);
-  const [horario, setHorario] = useState<Horario>(HORARIO_PADRAO);
+  const [horario, setHorarioBruto] = useState<Horario>(HORARIO_PADRAO);
+  // (6.146) o horário padrão (seg a sex, 8h às 18h) só vale depois que ela mexe ou confirma: antes ele era gravado sozinho
+  // ao salvar qualquer outra parte e o "Falta" do Horário nunca aparecia na conta nova
+  const [horarioDefinido, setHorarioDefinido] = useState(false);
+  const setHorario = (h: Horario | ((p: Horario) => Horario)) => { setHorarioBruto(h); setHorarioDefinido(true); };
   // (4.25) Instagram e Facebook: vazios = não aparecem no cardápio. Sem as colunas no banco (SQL 4.25), o bloco avisa.
   const [instagram, setInstagram] = useState("");
   const [facebook, setFacebook] = useState("");
@@ -173,9 +178,9 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
       { nome: "WhatsApp", ok: telefone.replace(/\D/g, "").length >= 10, alvo: "dl-whats" },
       { nome: "Descrição", ok: descricao.trim().length > 0, alvo: "dl-desc" },
       { nome: "Endereço", ok: !!(end.cidade.trim() && (end.rua.trim() || end.cep.trim())), alvo: "dl-endereco" },
-      { nome: "Horário", ok: !!temHorario, alvo: "dl-horario" },
+      { nome: "Horário", ok: !!temHorario && horarioDefinido, alvo: "dl-horario" },
     ];
-  }, [nome, telefone, descricao, end, horario]);
+  }, [nome, telefone, descricao, end, horario, horarioDefinido]);
   // (22/10) celular: lista de 7 partes, cada uma numa gaveta. Computador: a mesma lista à esquerda e a parte escolhida à direita
   const [cel, setCel] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches);
   useEffect(() => {
@@ -319,8 +324,9 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
       endereco_retirada: recebeAqui
         ? [[end.rua, end.numero, end.complemento].filter(Boolean).join(", "), end.bairro, [end.cidade, end.estado].filter(Boolean).join("/")].filter(Boolean).join(" · ")
         : "",
-      horario: JSON.stringify(horario),
+      ...(horarioDefinido || parte === "horario" ? { horario: JSON.stringify(horario) } : {}),
     }).eq("id", userId);
+    if (!error && parte === "horario") setHorarioDefinido(true);
     if (!error) void atualizarPontoDaLoja(userId, end); // (29/10 · 5.12) o ponto da taxa por raio acompanha o endereço
     let erroRedes = false;
     if (!error && redesNoBanco) {
@@ -361,7 +367,10 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   // fechar = salvar sozinho (só se mudou algo). Se faltar alguma coisa, avisa e a gaveta continua aberta.
   const fecharParte = async () => {
     if (fechando) return;
-    if (parte && ["loja", "redes", "endereco", "horario"].includes(parte) && fotoDados() !== fotoAoAbrir.current) {
+    // (6.146) Pagamento e Entrega: fechar a gaveta confirma (some o "Falta" da conta nova)
+    if (userId && parte === "pag") marcarPagamentoConferido(userId);
+    if (userId && parte === "ent") marcarEntregaConferida(userId);
+    if (parte && ["loja", "redes", "endereco", "horario"].includes(parte) && (fotoDados() !== fotoAoAbrir.current || (parte === "horario" && !horarioDefinido))) {
       setFechando(true);
       const ok = await salvar();
       setFechando(false);
@@ -369,6 +378,16 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     }
     setParte(null);
   };
+  // (6.146) a conta nova já vem com "Pix" e "Retirada" no banco: o "Falta" segue os Primeiros passos (conferiu ou não)
+  const [passosEst, setPassosEst] = useState<EstadoPassos | null>(null);
+  useEffect(() => {
+    if (!userId) return;
+    let vivo = true;
+    const ler = () => { lerPassos(userId).then(e => { if (vivo && !e.falhou) setPassosEst(e); }, () => {}); };
+    ler();
+    window.addEventListener("doonly:passos", ler);
+    return () => { vivo = false; window.removeEventListener("doonly:passos", ler); };
+  }, [userId]);
   // resumo de Pagamento, Pix e Entrega (lido do perfil e atualizado ao vivo pela gaveta)
   const [ep, setEp] = useState<EstadoEntregaPagamento | null>(null);
   useEffect(() => {
@@ -619,9 +638,9 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? listaBR(redesTxt) : "Nenhuma ainda", st: redesTxt.length ? "ok" : "op" },
     { k: "endereco", Ic: MapPin, t: "Endereço", sub: itens[3].ok ? [end.rua.trim(), end.numero.trim()].filter(Boolean).join(", ") || cidadeUf : "Falta o endereço da loja", st: itens[3].ok ? "ok" : "falta" },
     { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorarioCurto() : "Falta o horário de funcionamento", st: itens[4].ok ? "ok" : "falta" },
-    { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : pagTxt ? pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1) : "Falta escolher como o cliente paga", st: !ep || pagTxt ? "ok" : "falta" },
+    { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : !pagTxt ? "Falta escolher como o cliente paga" : passosEst && !passosEst.pagamento ? "Falta conferir como o cliente paga" : pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1), st: !ep ? "ok" : !pagTxt || (passosEst && !passosEst.pagamento) ? "falta" : "ok" },
     ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : "Ligado · sinal ou total") : "Desligado · paga pelo WhatsApp", st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
-    { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta a taxa de entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.modo === "combinar" ? "entrega a combinar" : ep.modo === "raio" ? "entrega por raio" : ep.modo === "cidade" ? "entrega por cidade" : ep.porBairro ? "entrega por bairro" : ep.taxa > 0 ? `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "entrega grátis") : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa ? "falta" : "ok" },
+    { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta a taxa de entrega" : passosEst && !passosEst.entrega ? "Falta conferir como o cliente recebe" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.modo === "combinar" ? "entrega a combinar" : ep.modo === "raio" ? "entrega por raio" : ep.modo === "cidade" ? "entrega por cidade" : ep.porBairro ? "entrega por bairro" : ep.taxa > 0 ? `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "entrega grátis") : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa || (passosEst && !passosEst.entrega) ? "falta" : "ok" },
   ];
   const TITULO: Record<Parte, string> = { loja: embutido ? "Sobre a loja" : "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
   const gaveta = (

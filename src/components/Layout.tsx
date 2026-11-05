@@ -368,7 +368,7 @@ export default function Layout() {
             })}
             <button
               type="button"
-              className={`bn-item${maisOpen ? " bn-item--active" : ""}`}
+              className={`bn-item bn-menu${maisOpen ? " bn-item--active" : ""}`}
               onClick={() => setMaisOpen(!maisOpen)}
               aria-expanded={maisOpen}
               aria-haspopup="dialog"

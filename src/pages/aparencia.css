@@ -446,3 +446,6 @@ body .ap-tirar.ui-bti { background: rgba(255,255,255,.94); color: var(--ui-texto
 
 /* (6.81) a equipe Doonly monta o cardápio: logo depois do banner de abertura, na largura toda */
 .ap > .eqm { order: -1; grid-column: 1 / -1; width: 100%; max-width: 1100px; margin: 0 auto; }
+
+/* (6.146) um banner só para todos os planos: o espaço dele tem a largura toda, igual à foto do topo (antes era um quadradinho no canto) */
+html body .ap-sec-banners .ap-banners { grid-template-columns: minmax(0, 1fr) !important; }

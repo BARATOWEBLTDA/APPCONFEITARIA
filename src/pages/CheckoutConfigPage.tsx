@@ -26,6 +26,7 @@ import { CartaoPro } from "@/components/billing/RecursoPro"
 import MapaRaios, { CORES_RAIO } from "@/components/MapaRaios"
 import MapaEndereco from "@/components/MapaEndereco"
 import MapaBairros from "@/components/MapaBairros"
+import PixApresentacao from "@/components/loja/PixApresentacao"
 import { bairrosDaCidade } from "@/lib/bairros"
 import { distanciaKm, faixasOrdenadas, pontoDoEndereco, type ModoEntrega, type Ponto } from "@/lib/taxaEntrega"
 import { LIMITE_CUPONS_ATIVOS_GRATIS } from '@/lib/limitesPlano'
@@ -774,7 +775,9 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
 
         {/* (20/10) Pix pelo cardápio */}
         {so === 'pix' && !formasPagamento.includes('pix') && <p className="ep-pix-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" />Marque Pix em Pagamento para usar o Pix pelo cardápio.</p>}
-        {(!so || so === 'pix') && formasPagamento.includes('pix') && (
+        {/* (6.146) desligado: a apresentação com o Doo e o aviso que chega no celular; o botão liga e mostra os campos */}
+        {(!so || so === 'pix') && formasPagamento.includes('pix') && !pixOnline && <PixApresentacao onLigar={() => setPixOnline(true)} />}
+        {(!so || so === 'pix') && formasPagamento.includes('pix') && pixOnline && (
         <section className="ep-card">
           <Cabeca Ic={QrCode} titulo="Pix pelo cardápio" apoio="O cliente paga com QR Code" />
           <Chave on={pixOnline} rotulo="Receber Pix pelo cardápio" apoio={pixOnline ? 'O cliente paga ao fazer o pedido' : 'Desligado: paga pelo WhatsApp'} aoMudar={setPixOnline} />
