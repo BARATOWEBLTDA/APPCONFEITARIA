@@ -35,6 +35,47 @@
     <meta name="apple-mobile-web-app-title" content="Doonly" />
     <link rel="manifest" href="/manifest.json" />
     <title>Doonly · Sistema para confeitarias</title>
+    <!-- (6.124) conserto da atualização: se um arquivo do app ficou guardado "quebrado" no aparelho (ex.: um "não encontrado"
+         de uma publicação no meio do caminho), o Recarregar normal repetia o erro e só o Ctrl+Shift+R (ou reinstalar o app) resolvia.
+         Aqui o app baixa de novo, sem usar o guardado, a página e os arquivos dela e só então recarrega. -->
+    <script>
+      (function () {
+        function achar(txt, re, pre) { var l = [], m; while ((m = re.exec(txt))) l.push((pre || "") + m[1]); return l; }
+        window.__doonlyReparar = function (extra) {
+          try {
+            var ult = Number(sessionStorage.getItem("doonly_reparo") || 0);
+            if (Date.now() - ult < 60000) { location.reload(); return; }
+            sessionStorage.setItem("doonly_reparo", String(Date.now()));
+          } catch (e) { /* sem sessionStorage: segue */ }
+          var foi = false;
+          function ir() { if (foi) return; foi = true; location.reload(); }
+          setTimeout(ir, 8000);
+          var lista = [].concat(extra || []);
+          var fresco = function (u) { return fetch(u, { cache: "reload", credentials: "same-origin" }); };
+          fresco(location.pathname).then(function (r) { return r.text(); }).then(function (html) {
+            var arqs = achar(html, /["'](\/assets\/[^"'\s]+?\.(?:js|css))["']/g);
+            lista = lista.concat(arqs);
+            return Promise.all(arqs.filter(function (u) { return /\.js$/.test(u); }).map(function (u) {
+              return fresco(u).then(function (r) { return r.text(); }).then(function (js) {
+                lista = lista.concat(achar(js, /["'`]\.\/([\w.-]+\.(?:js|css))["'`]/g, "/assets/"));
+              }).catch(function () {});
+            }));
+          }).then(function () {
+            return Promise.all(lista.map(function (u) { return fresco(u).catch(function () {}); }));
+          }).catch(function () {}).then(ir);
+        };
+        // o app nem abriu porque um arquivo dele falhou: conserta sozinho (uma vez por minuto, no máximo)
+        window.addEventListener("error", function (e) {
+          var t = e.target;
+          if (!t || t === window || window.__doonlyMontou) return;
+          var src = t.src || t.href || "";
+          if ((t.tagName === "SCRIPT" || t.tagName === "LINK") && src.indexOf("/assets/") >= 0) {
+            try { if (Date.now() - Number(sessionStorage.getItem("doonly_reparo") || 0) < 60000) return; } catch (x) { return; }
+            window.__doonlyReparar([src.replace(location.origin, "")]);
+          }
+        }, true);
+      })();
+    </script>
     <!-- (22/10) console no celular: abra com ?debug=1 no endereço (ex.: doonly.com.br/inicio?debug=1) e aparece a engrenagem do Eruda -->
     <script>
       (function () {

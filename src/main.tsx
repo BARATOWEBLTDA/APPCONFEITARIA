@@ -30,6 +30,7 @@ if (typeof window !== "undefined") {
   window.addEventListener("contextmenu", (e) => { if (!paginaDoCliente()) e.preventDefault(); });
 }
 
+import { marcarAppAberto } from './lib/recarregarLimpo'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
@@ -76,3 +77,5 @@ window.addEventListener('vite:preloadError', (e) => {
   void e
   window.location.reload()
 })
+// (6.124) o app abriu (some o conserto automático do index.html)
+setTimeout(marcarAppAberto, 3000)

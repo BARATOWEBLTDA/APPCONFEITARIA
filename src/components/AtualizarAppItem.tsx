@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowsClockwise, CaretRight } from "@phosphor-icons/react";
 import { VERSAO_APP } from "@/lib/versao";
+import { recarregarLimpo } from "@/lib/recarregarLimpo";
 
 /**
  * Item "Atualizar app" (Configurações → Ações rápidas).
@@ -30,7 +31,7 @@ export default function AtualizarAppItem() {
 
   const atualizar = () => {
     setAtualizando(true);
-    window.location.reload();
+    recarregarLimpo();
   };
 
   return (

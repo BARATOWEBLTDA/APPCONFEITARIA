@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { ArrowClockwise, Sparkle } from "@phosphor-icons/react";
 import { haVersaoNova } from "@/lib/autoAtualizar";
+import { recarregarLimpo } from "@/lib/recarregarLimpo";
 import { Botao } from "@/components/base";
 import { Mascote, NomeDoonly } from "@/components/marca/Mascote";
 import "@/pages/naoEncontrada.css";
@@ -30,7 +31,7 @@ export default class TelaDeErro extends Component<{ children: ReactNode }, Estad
         if (Date.now() - ult < 30000) return;
         sessionStorage.setItem("doonly_recarga_arquivo", String(Date.now()));
       } catch { /* sem sessionStorage: recarrega mesmo assim */ }
-      window.location.reload();
+      recarregarLimpo(String(erro?.message || ""));
     }
   }
 
@@ -47,7 +48,7 @@ export default class TelaDeErro extends Component<{ children: ReactNode }, Estad
           <h1 className="ne-h">Tem uma versão nova do Doonly!</h1>
           <p className="ne-p">Atualizamos o app enquanto você usava. Toque em Atualizar para continuar de onde parou.</p>
           <div className="sis-erro-acoes">
-            <Botao cheio icone={<Sparkle size={20} weight="fill" />} onClick={() => window.location.reload()}>Atualizar agora</Botao>
+            <Botao cheio icone={<Sparkle size={20} weight="fill" />} onClick={() => recarregarLimpo(this.state.detalhe || "")}>Atualizar agora</Botao>
           </div>
         </main>
       </div>
@@ -61,7 +62,7 @@ export default class TelaDeErro extends Component<{ children: ReactNode }, Estad
           <h1 className="ne-h">Algo deu errado por aqui</h1>
           <p className="ne-p">Não foi nada que você fez. Recarregue o app para continuar de onde parou.</p>
           <div className="sis-erro-acoes">
-            <Botao cheio icone={<ArrowClockwise size={20} weight="bold" />} onClick={() => window.location.reload()}>Recarregar</Botao>
+            <Botao cheio icone={<ArrowClockwise size={20} weight="bold" />} onClick={() => recarregarLimpo(this.state.detalhe || "")}>Recarregar</Botao>
             {!noInicio && <Botao cheio variante="secundario" onClick={() => { window.location.href = "/inicio"; }}>Voltar para o início</Botao>}
           </div>
           {/* (6.102) o motivo, pequeno, para o suporte achar o erro (mande o print) */}
