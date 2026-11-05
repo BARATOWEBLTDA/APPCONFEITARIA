@@ -20,9 +20,20 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
   const [editando, setEditando] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  // Foto: a mesma busca de imagem do cadastro manual, já feita ao abrir o cartão (insumo novo)
+  // Foto: a mesma busca de imagem do cadastro manual. (6.113) Só busca quando ela pede ("Buscar foto"), antes buscava sozinha
   const [fotos, setFotos] = useState<string[]>([]);
   const [buscando, setBuscando] = useState(false);
+  const [podeFoto, setPodeFoto] = useState(false);
+  const [semResultado, setSemResultado] = useState(false);
+  const buscarFotos = () => {
+    if (buscando) return;
+    setBuscando(true); setSemResultado(false);
+    apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(`${r.nome} ${r.marca || ""}`.trim())}`)
+      .then(x => x.json())
+      .then(d => { const l = Array.isArray(d?.images) ? d.images.slice(0, 3) : []; setFotos(l); setSemResultado(!l.length); if (l[0]) setR(x => ({ ...x, imagem_url: x.imagem_url || l[0] })); })
+      .catch(() => setSemResultado(true))
+      .finally(() => setBuscando(false));
+  };
   // (11/10) ingrediente que já existe mas a Doo não recebeu na lista: achado pelo nome, o cartão vira "Atualizar preço"
   const [achado, setAchado] = useState<InsumoResumo | null>(null);
   const [conferindo, setConferindo] = useState(estado === "pendente" && !rascunho.insumo_id);
@@ -37,13 +48,7 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
       if (cancel) return;
       setConferindo(false);
       if (ja) { setAchado(ja); setR(x => ({ ...x, insumo_id: ja.id, nome: ja.nome })); return; } // já existe: atualiza o preço; o nome e a foto ficam os do cadastro
-      if (rascunho.nome.trim().length < 3) return;
-      setBuscando(true);
-      apiFetch(`/api/buscar-imagem?q=${encodeURIComponent(`${rascunho.nome} ${rascunho.marca || ""}`.trim())}`)
-        .then(r => r.json())
-        .then(d => { if (!cancel && Array.isArray(d?.images)) { const l = d.images.slice(0, 3); setFotos(l); if (l[0]) setR(x => ({ ...x, imagem_url: x.imagem_url || l[0] })); } })
-        .catch(() => {})
-        .finally(() => { if (!cancel) setBuscando(false); });
+      if (rascunho.nome.trim().length >= 3) setPodeFoto(true);
     })();
     return () => { cancel = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -99,6 +104,13 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
         </div>
       )}
 
+      {/* (6.113) primeiro pergunta; a busca só acontece se ela quiser */}
+      {estado === "pendente" && podeFoto && !atualizar && !buscando && fotos.length === 0 && (
+        <div className="cid-qf">
+          <span>{semResultado ? "Não achei foto. Pode seguir sem." : "Quer pôr uma foto?"}</span>
+          {!semResultado && <button type="button" onClick={buscarFotos}>Buscar foto</button>}
+        </div>
+      )}
       {(buscando || fotos.length > 0) && (
         <div className="cid-fotos">
           <p className="cid-fl">Foto do ingrediente</p>
@@ -148,6 +160,8 @@ const CSS = `
   .cid-rs .cid-in { padding-left: 38px; }
   .cid-row { display: flex; gap: 8px; }
   .cid-fotos { margin-top: 12px; }
+  .cid-qf { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: var(--ui-raio); background: #FAF7F8; font-size: 14px; color: var(--ui-texto-2); }
+  .cid-qf button { flex: none; height: 36px; padding: 0 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio-p); background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
   .cid-fl { margin: 0 0 6px; font-size: 13px; font-weight: 500; color: var(--ui-cinza-texto); }
   .cid-fg { display: flex; gap: 8px; }
   .cid-f { position: relative; width: 56px; height: 56px; border-radius: var(--ui-raio); border: 2px solid var(--ui-borda-campo); background: #FAF7F8; padding: 0; overflow: hidden; cursor: pointer; flex-shrink: 0; }
