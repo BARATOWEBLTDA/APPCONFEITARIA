@@ -24,7 +24,7 @@
     },
     {
       "source": "/((?!assets/).*)",
-      "destination": "/index.html"
+      "destination": "/app.html"
     }
   ],
   "headers": [
@@ -55,7 +55,7 @@
       ]
     },
     {
-      "source": "/(index.html|version.json|sw.js|manifest.json)?",
+      "source": "/(index.html|app.html|version.json|sw.js|manifest.json)?",
       "headers": [
         {
           "key": "Cache-Control",
@@ -69,6 +69,15 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/site/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
         }
       ]
     }

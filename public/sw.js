@@ -43,7 +43,7 @@ self.addEventListener("fetch", (event) => {
 
 // Recebe a notificação push do servidor e exibe
 self.addEventListener("push", (event) => {
-  let data = { title: "Doonly", body: "Você tem uma nova notificação", url: "/" };
+  let data = { title: "Doonly", body: "Você tem uma nova notificação", url: "/inicio" };
   try {
     if (event.data) {
       data = { ...data, ...event.data.json() };
@@ -57,7 +57,7 @@ self.addEventListener("push", (event) => {
     icon: data.icon || "/Sistema/icon-192.png",
     badge: data.badge || "/Sistema/badge.png?v=2",
     image: data.image,
-    data: { url: data.url || "/" },
+    data: { url: data.url && data.url !== "/" ? data.url : "/inicio" },
     vibrate: [120, 60, 120],
     tag: data.tag,
     requireInteraction: false,
@@ -74,7 +74,9 @@ self.addEventListener("push", (event) => {
 // Se o app aberto não responder em 3 s (versão antiga, ainda sem esse ouvinte), faz como antes.
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl = event.notification.data?.url || "/";
+  // (6.145) o "/" agora é a página de vendas: aviso sem endereço abre o Início do app
+  const bruto = event.notification.data?.url;
+  const targetUrl = !bruto || bruto === "/" ? "/inicio" : bruto;
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (clientsArr) => {
       const client = clientsArr.find((c) => "focus" in c);

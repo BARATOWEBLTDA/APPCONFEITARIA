@@ -324,6 +324,8 @@ export default function Auth() {
         email: cadastroForm.email.trim(),
         password: cadastroForm.senha,
         options: {
+          // (6.145) o "/" virou a página de vendas: a confirmação do e-mail volta direto para o app
+          emailRedirectTo: `${window.location.origin}/inicio`,
           data: {
             nome: cadastroForm.nome,
             nome_loja: cadastroForm.nomeLoja,

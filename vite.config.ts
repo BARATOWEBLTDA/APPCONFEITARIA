@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { montarLanding } from './landing/montar'
 
 // Etiqueta de versão: muda a cada build (deploy). O app compara com /version.json
 // pra saber se tem versão nova (Configurações → Ações rápidas → Atualizar app).
@@ -14,6 +15,12 @@ export default defineConfig({
       generateBundle() {
         this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ id: BUILD_ID }) })
       },
+    },
+    {
+      // (6.145) a página de vendas fica em doonly.com.br/ e o app em dist/app.html (landing/montar.ts)
+      name: 'doonly-landing',
+      apply: 'build',
+      closeBundle() { montarLanding(__dirname, path.resolve(__dirname, 'dist'), BUILD_ID.replace(/\D/g, '').slice(0, 12)) },
     },
   ],
   define: {

@@ -3,7 +3,7 @@
   "name": "Doonly",
   "short_name": "Doonly",
   "description": "Gestão inteligente para confeitarias",
-  "start_url": "/",
+  "start_url": "/inicio",
   "scope": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",
