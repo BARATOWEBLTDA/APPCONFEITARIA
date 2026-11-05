@@ -80,8 +80,8 @@ export default function GraficoRecebido({ dados }: { dados: Ponto[] }) {
   const mes = MESES_LONGOS[new Date().getMonth()];
   const mesAnt = MESES_LONGOS[(new Date().getMonth() + 11) % 12];
   const txt = periodo === "mes"
-    ? { titulo: `Recebido em ${mes}`, compara: `em relação ao mesmo período de ${mesAnt}`, nada: `Nada recebido no mesmo período de ${mesAnt}`, legA: "Este mês", legB: "Mês passado", dica: "Mês passado" }
-    : { titulo: `Recebido nos últimos ${periodo} dias`, compara: `em relação aos ${periodo} dias anteriores`, nada: `Nada recebido nos ${periodo} dias anteriores`, legA: `Últimos ${periodo} dias`, legB: `${periodo} dias anteriores`, dica: "Período anterior" };
+    ? { titulo: `Recebido em ${mes}`, compara: `em relação ao mesmo período de ${mesAnt}`, nada: `Sem vendas em ${mesAnt} para comparar`, legA: "Este mês", legB: "Mês passado", dica: "Mês passado" }
+    : { titulo: `Recebido nos últimos ${periodo} dias`, compara: `em relação aos ${periodo} dias anteriores`, nada: "Sem vendas antes para comparar", legA: `Últimos ${periodo} dias`, legB: `${periodo} dias anteriores`, dica: "Período anterior" };
 
   const { serie, total, totalAntes, pct, hojeValor } = g;
   const n = serie.length;

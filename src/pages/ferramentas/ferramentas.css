@@ -5,7 +5,7 @@
 .fm-rot { display: block; margin: 0 2px 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
 .fm-tit { margin: 0 2px 6px; font-size: 16px; font-weight: 600; }
 
-.fm-ing { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 8px 14px 8px 10px; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
+.fm-ing { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0 0 14px; padding: 8px 14px 8px 10px; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; }
 .fm-ing svg { flex: none; color: var(--ui-texto-2); }
 .fm-ing-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .fm-ing-tx b { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -40,13 +40,6 @@
 .fm-foto.g { width: 88px; height: 88px; margin-bottom: 6px; box-shadow: 0 0 0 4px var(--ui-branco), 0 8px 18px -6px rgba(120,30,70,.35); }
 .fm-foto.g.il { box-shadow: none; }
 .fm-li .fm-foto { width: 32px; height: 32px; }
-
-/* usados por último: um toque troca o ingrediente */
-.fm-rec { display: flex; gap: 6px; margin: 8px -16px 14px; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
-.fm-rec::-webkit-scrollbar { display: none; }
-.fm-rec button { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 38px; margin: 0; padding: 0 12px 0 4px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; }
-.fm-rec .fm-foto { width: 28px; height: 28px; }
-@media (hover: hover) { .fm-rec button:hover { background: var(--ui-linha); } }
 
 /* tabela */
 .fm-tab { padding: 14px 12px 8px; }
@@ -85,6 +78,5 @@
   .fm-tab .fm-tit, .fm-tab .fm-todos { grid-column: 1 / -1; }
   .fm-tab .fm-li:nth-of-type(2) { border-top: 0; }
   .fm-nota { grid-area: nota; }
-  .fm-rec { flex-wrap: wrap; margin: 8px 0 14px; padding: 0; overflow: visible; }
   .fm-res-g { font-size: 52px; }
 }

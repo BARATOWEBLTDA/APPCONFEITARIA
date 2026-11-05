@@ -13,15 +13,9 @@ import "./ferramentas.css";
 const FRACOES: [string, string][] = [["¼", "1/4"], ["⅓", "1/3"], ["½", "1/2"], ["1", "1"], ["1 ½", "1 1/2"], ["2", "2"], ["3", "3"]];
 const PESOS: [string, string][] = [["50", "50"], ["100", "100"], ["200", "200"], ["250", "250"], ["395", "395"], ["500", "500"]];
 const TABELA = ["farinha", "acucar", "chocolate-po", "manteiga", "oleo", "leite", "leite-condensado", "amido"];
-const PRIMEIROS = ["acucar", "manteiga", "chocolate-po", "leite-condensado"];
-const CHAVE_RECENTES = "doonly_conv_recentes";
 
 const nomeMedida = (m: Medida, n: number) => { const x = MEDIDAS.find(y => y.v === m)!; return n > 1.001 ? x.varios : x.um; };
 const semAcento = (t: string) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
-
-function lerRecentes(): string[] {
-  try { const v = JSON.parse(localStorage.getItem(CHAVE_RECENTES) || "[]"); return Array.isArray(v) && v.length ? v : PRIMEIROS; } catch { return PRIMEIROS; }
-}
 
 function Foto({ i, g }: { i: Ingrediente; g?: boolean }) {
   // foto real; sem internet ou se o CDN falhar, a ilustração da tigela
@@ -35,7 +29,6 @@ export default function ConversorMedidas() {
   const [ing, setIng] = useState<Ingrediente>(INGREDIENTES[0]);
   const [qtdTxt, setQtdTxt] = useState("2");
   const [medida, setMedidaBruta] = useState<Medida>("xicara");
-  const [recentes, setRecentes] = useState<string[]>(lerRecentes);
   const [lista, setLista] = useState(false);
   const [busca, setBusca] = useState("");
   const [novo, setNovo] = useState<{ nome: string; g: string } | null>(null);
@@ -58,14 +51,7 @@ export default function ConversorMedidas() {
     setMedidaBruta(m);
   };
 
-  const escolher = (i: Ingrediente) => {
-    setIng(i);
-    setRecentes(r => {
-      const n = [i.id, ...r.filter(x => x !== i.id)].slice(0, 5);
-      try { localStorage.setItem(CHAVE_RECENTES, JSON.stringify(n)); } catch { /* sem armazenamento */ }
-      return n;
-    });
-  };
+  const escolher = (i: Ingrediente) => setIng(i);
 
   const qtd = lerQuantidade(qtdTxt);
   const ml = qtd > 0 ? emMl(ing, qtd, medida) : 0;
@@ -120,7 +106,6 @@ export default function ConversorMedidas() {
   };
 
   const rapidos = medida === "g" || medida === "ml" ? PESOS : FRACOES;
-  const recentesVis = recentes.map(id => todos.find(i => i.id === id)).filter((i): i is Ingrediente => !!i && i.id !== ing.id).slice(0, 3);
 
   return (
     <>
@@ -134,13 +119,6 @@ export default function ConversorMedidas() {
               <span className="fm-ing-tx"><b>{ing.nome}</b><small>1 xícara = {gramasTexto(ing.xicara)}</small></span>
               <CaretDown size={18} weight="bold" aria-hidden="true" />
             </button>
-            {recentesVis.length > 0 && (
-              <div className="fm-rec" role="group" aria-label="Usados por último">
-                {recentesVis.map(i => (
-                  <button type="button" key={i.id} onClick={() => escolher(i)}><Foto i={i} /><span>{i.nome}</span></button>
-                ))}
-              </div>
-            )}
             <div className="fm-dois">
               <label className="fm-campo fm-qtd">
                 <span className="fm-rot">Quantidade</span>
