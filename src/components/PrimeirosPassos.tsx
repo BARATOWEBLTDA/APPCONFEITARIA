@@ -53,14 +53,36 @@ const proximoPasso = (e: EstadoPassos, feitoAgora?: Passo, pulados: Set<Passo> =
 /** (13/10) Topo de cada card: "Passo 2 de 6" e a barrinha */
 function PassoTopo({ k }: { k: Passo }) {
   // (27/10) conta os 7 passos, igual ao cartão do Início ("1 de 7 prontos"); antes dizia "Passo 2 de 6"
+  // (6.132) virou uma faixa com o Doo do passo e o porquê: ao seguir de um passo para o outro, cada janela tem a sua cara
   const n = ORDEM.indexOf(k) + 1;
   return (
-    <div className="ppf-topo" aria-label={`Passo ${n} de ${ORDEM.length}`}>
-      <span>Passo <b>{n} de {ORDEM.length}</b></span>
-      <div className="ppf-barra" aria-hidden="true">{ORDEM.map((x, i) => <i key={x} className={i < n ? "on" : ""} />)}</div>
+    <div className="ppf-topo ppf-topo--doo" aria-label={`Passo ${n} de ${ORDEM.length}`}>
+      <div className="ppf-topo-tx">
+        <span>Passo <b>{n} de {ORDEM.length}</b></span>
+        <div className="ppf-barra" aria-hidden="true">{ORDEM.map((x, i) => <i key={x} className={i < n ? "on" : ""} />)}</div>
+        <p>{PQ_PASSO[k]}</p>
+      </div>
+      <img src={DOO_FOLHA[k] || "/marca/leve/prancheta.webp"} alt="" aria-hidden="true" />
     </div>
   );
 }
+
+/** (6.132) o porquê de cada passo (o mesmo do Início) e o Doo de cada janela (sem Doo próprio, o da prancheta) */
+const PQ_PASSO: Record<Passo, string> = {
+  logo: "Deixa sua loja com cara profissional e ajuda o cliente a te reconhecer.",
+  descricao: "Conta em poucas palavras quem você é e o que faz de especial.",
+  endereco: "Com ele, o app calcula a taxa de entrega de cada cliente sozinho.",
+  horario: "O cliente vê se você está aberta e para quando pode encomendar.",
+  pagamento: "Diga se aceita Pix, cartão ou dinheiro.",
+  entrega: "Diga se o cliente busca, se você entrega e quanto cobra.",
+  caixa: "Assim o app mostra quanto dinheiro você tem de verdade, todo dia.",
+  produto: "Com o primeiro doce cadastrado, o cardápio já pode receber pedidos.",
+};
+const DOO_FOLHA: Partial<Record<Passo, string>> = {
+  logo: "/marca/leve/doo-pintando-logo.webp",
+  descricao: "/marca/leve/doo-loja.webp",
+  endereco: "/marca/leve/doo-endereco.webp",
+};
 
 /** (29/10) computador (901px ou mais): as janelas dos passos ganham duas colunas */
 function useLargo() {
@@ -898,6 +920,7 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
 const DOO_PASSO: Record<string, { pc: string; banner: string; largo?: boolean }> = {
   "Logo da loja": { pc: "/marca/leve/doo-pintando-logo.webp", banner: "/Sistema/banner-passos-logo.webp", largo: true },
   "Sobre a confeitaria": { pc: "/marca/leve/doo-loja.webp", banner: "/Sistema/banner-passos-sobre.webp" },
+  "Endereço": { pc: "/marca/leve/doo-endereco.webp", banner: "/Sistema/banner-passos-endereco.webp" },
 };
 
 const CSS = `
@@ -1232,6 +1255,15 @@ const CSS = `
   .ppf-topo { display: flex; align-items: center; gap: 12px; margin: 2px 0 0; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
   .ppf-topo b { font-weight: 600; color: var(--ui-rosa-escuro); }
   .ppf-barra { display: flex; gap: 4px; flex: 1; }
+  /* (6.132) faixa do passo com o Doo */
+  .ppf-topo--doo { align-items: flex-end; gap: 10px; padding: 12px 8px 0 14px; border-radius: 16px; background: linear-gradient(120deg, #FFF0F6, #FFE3EE); white-space: normal; overflow: hidden; }
+  .ppf-topo--doo .ppf-topo-tx { flex: 1; min-width: 0; align-self: center; display: flex; flex-direction: column; gap: 6px; padding-bottom: 12px; }
+  .ppf-topo--doo .ppf-topo-tx > span { white-space: nowrap; }
+  .ppf-topo--doo .ppf-barra { flex: none; max-width: 200px; }
+  .ppf-topo--doo p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ui-texto-2); }
+  .ppf-topo--doo img { flex: none; width: auto; height: 92px; max-width: 34%; object-fit: contain; object-position: bottom; }
+  /* computador: faixa mais baixa (as janelas não podem ganhar barra de rolagem) */
+  @media (min-width: 901px) { .ppf-topo--doo { padding: 8px 8px 0 14px; } .ppf-topo--doo .ppf-topo-tx { gap: 4px; padding-bottom: 8px; } .ppf-topo--doo img { height: 64px; } .ppf-topo--doo p { font-size: 12.5px; } }
   .ppf-barra i { flex: 1; height: 4px; border-radius: 4px; background: var(--ui-linha); }
   .ppf-barra i.on { background: var(--ui-rosa); }
   .ppf-sub { margin: 10px 0 0; font-size: 14px; color: var(--ui-texto-2); line-height: 1.4; }
