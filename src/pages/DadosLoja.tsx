@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { ajustarDescricao } from "@/lib/descricaoLoja";
 import { atualizarPontoDaLoja } from "@/lib/taxaEntrega";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -257,13 +258,13 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: `Crie uma descrição curta e atraente para uma confeitaria chamada "${nome.trim()}". Máximo 150 caracteres, português brasileiro, transmita carinho e qualidade. Retorne APENAS a descrição, sem aspas.`,
+          prompt: `Crie uma descrição curta e atraente para uma confeitaria chamada "${nome.trim()}". Entre 100 e 150 caracteres (nunca mais de 150), português brasileiro, transmita carinho e qualidade. Retorne APENAS a descrição, sem aspas.`,
         }),
       });
       const data = await res.json();
       if (data?.error === "limite_diario") { mostrarAviso(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo.", "err"); setGerando(false); return; }
       const texto = data.content?.[0]?.text?.trim();
-      if (texto) setDescricao(texto.slice(0, 200));
+      if (texto) setDescricao(ajustarDescricao(texto));
       else mostrarAviso("A IA não respondeu. Tente de novo.", "err");
     } catch {
       mostrarAviso("A IA não respondeu. Tente de novo.", "err");

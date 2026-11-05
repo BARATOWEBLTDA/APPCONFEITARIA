@@ -4,6 +4,7 @@
 // A Doo só PREPARA (bloco acao-doonly); o app mostra um cartão e quem salva é a confeiteira.
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabase } from '@/lib/supabase'
+import { ajustarDescricao } from '@/lib/descricaoLoja'
 import { MAX_CUPONS_ATIVOS } from '@/lib/cupons'
 import { limparFacebook, limparInstagram } from '@/lib/redesSociais'
 import { adivinharTipo, normalizarChave, problemaNaChave } from '@/lib/pix'
@@ -153,7 +154,7 @@ export function normalizarAcaoDoo(j: unknown): AcaoDoo | null {
       const cores = c ? { faixa_topo: cor(c.faixa_topo), borda_logo: cor(c.borda_logo), nome_loja: cor(c.nome_loja) } : null
       const r: AcaoLoja = {
         acao: 'loja', nome_loja: s(o.nome_loja), horario: h && typeof h === 'object' ? h : null,
-        descricao: s(o.descricao)?.slice(0, 300) || null, whatsapp: s(o.whatsapp) ? fone(s(o.whatsapp)!) || null : null,
+        descricao: s(o.descricao) ? ajustarDescricao(s(o.descricao)!) || null : null, whatsapp: s(o.whatsapp) ? fone(s(o.whatsapp)!) || null : null,
         endereco: endereco && Object.keys(endereco).length ? endereco : null,
         mostrar_endereco: ['completo', 'cidade', 'nao'].includes(String(o.mostrar_endereco)) ? o.mostrar_endereco as 'completo' | 'cidade' | 'nao' : null,
         instagram: s(o.instagram), facebook: s(o.facebook),
@@ -753,7 +754,7 @@ ORÇAMENTO (precisa do cliente e de pelo menos um item com valor; data, horário
 {"acao":"orcamento","cliente":{"id":null,"nome":"Ana","telefone":""},"nome_evento":"Aniversário da Malu","data_evento":"2026-12-05","horario_evento":"16:00","pessoas":40,"local_evento":"","itens":[{"produto_id":null,"nome":"Bolo 2 andares","detalhe":"tema jardim","quantidade":1,"valor_unitario":380}],"tipo_entrega":"retirada","taxa_entrega":0}
 
 LOJA E CARDÁPIO: você pode preencher QUALQUER campo da loja e do cardápio. Mande no bloco SÓ os campos que mudam (os outros ficam como estão). Pode juntar vários num bloco só.
-- nome_loja; descricao (frase curta que aparece no cardápio, até 300 letras; ofereça escrever uma se estiver faltando); whatsapp (com DDD).
+- nome_loja; descricao (frase curta que aparece no topo do cardápio: de 100 a 150 letras, NUNCA mais de 150, sem emojis; ofereça escrever uma se estiver faltando); whatsapp (com DDD).
 - horario: "dias" com os dias úteis abertos (Segunda, Terça, Quarta, Quinta, Sexta), "abertura" e "fechamento" HH:MM; sábado e domingo com abre_sabado / abre_domingo e os horários deles.
 - endereco: {cep, rua, numero, complemento, bairro, cidade, estado (sigla)}; mostrar_endereco: "completo", "cidade" ou "nao" (o que o cliente vê no cardápio).
 - instagram (o @) e facebook (o link da página).

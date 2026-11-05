@@ -25,6 +25,7 @@ import { PreviaSobreHorario } from "@/components/cardapio/SobreLoja";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { definirSaldoInicial } from "@/lib/caixa";
 import { mascaraBRL, lerBRL } from "@/lib/moeda";
+import { ajustarDescricao } from "@/lib/descricaoLoja";
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
  * 7 passos (13/10: + "Pagamento e entrega"); os que dá pra preencher abrem numa janelinha que sobe de baixo, sem sair da tela:
@@ -582,14 +583,14 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
       + (oQue.length ? `, que faz ${oQue.join(", ")}` : "")
       + (ocasioes.length ? `, para ${ocasioes.join(", ")}` : "")
       + (dif ? `. O diferencial dela: ${dif}` : "")
-      + `. Cada opção com 110 a 160 caracteres (umas 3 linhas no celular), em português do Brasil, linguagem profissional e acolhedora, `
+      + `. Cada opção com 100 a 150 caracteres, nunca mais de 150 (umas 3 linhas no celular), em português do Brasil, linguagem profissional e acolhedora, `
       + `dizendo o que a confeitaria faz e para quais ocasiões. Sem emojis, sem aspas, sem numeração. Responda APENAS com as 3 opções, uma por linha.`;
     try {
       const res = await apiFetch("/api/gerar-descricao", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }) });
       const data = await res.json();
       if (data?.error === "limite_diario") { setErro(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo."); setGerando(false); return; }
       const bruto = String(data.content?.[0]?.text || "");
-      const lista = bruto.split(/\n+/).map(l => l.replace(/^\s*(\d+[.)-]|[-•*])\s*/, "").replace(/^["“]|["”]$/g, "").trim()).filter(l => l.length >= 40).map(l => l.slice(0, 200)).slice(0, 3);
+      const lista = bruto.split(/\n+/).map(l => l.replace(/^\s*(\d+[.)-]|[-•*])\s*/, "").replace(/^["“]|["”]$/g, "").trim()).filter(l => l.length >= 40).map(l => ajustarDescricao(l)).slice(0, 3);
       if (lista.length) { setOpcoes(lista); setEscolhida(0); }
       else setErro("A Doo IA não conseguiu escrever agora. Tente de novo.");
     } catch { setErro("Sem internet agora. Tente de novo em instantes."); }

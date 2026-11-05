@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactElement } from "react";
+import { ajustarDescricao } from "@/lib/descricaoLoja";
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { lerPassos, marcarCompartilhado as marcarCompartilhadoLib } from "@/lib/primeirosPassos";
 import { useNavigate } from "react-router-dom";
@@ -197,13 +198,13 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: `Crie uma descrição curta e atraente para uma confeitaria chamada "${nomeLoja.trim()}". Máximo 150 caracteres, português brasileiro, transmita carinho e qualidade. Retorne APENAS a descrição, sem aspas.`,
+          prompt: `Crie uma descrição curta e atraente para uma confeitaria chamada "${nomeLoja.trim()}". Entre 100 e 150 caracteres (nunca mais de 150), português brasileiro, transmita carinho e qualidade. Retorne APENAS a descrição, sem aspas.`,
         }),
       });
       const data = await res.json();
       if (data?.error === "limite_diario") { mostrarAviso(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo.", "err"); setGerando(false); return; }
       const texto = data.content?.[0]?.text?.trim();
-      if (texto) setDescDraft(texto.slice(0, 200));
+      if (texto) setDescDraft(ajustarDescricao(texto));
       else mostrarAviso("A IA não respondeu. Tente de novo.", "err");
     } catch {
       mostrarAviso("A IA não respondeu. Tente de novo.", "err");
