@@ -380,18 +380,47 @@ const ESTILO_TOPO: Record<TopoForm['estilo'], string> = {
   elegante: 'elegant and sophisticated, fine lines, refined typography, minimal ornaments, gold accents',
   divertido: 'fun and colorful cartoon, bold playful lettering, lively elements',
 }
+/** (6.89) o formato de folha de topo para imprimir (o padrão do mercado): peça principal com a faixa do nome em cima,
+ *  peças menores do tema embaixo, cada uma com borda branca para recortar */
+const FOLHA_TOPO = 'Layout: a portrait printable sheet of cake topper pieces (Brazilian "topo de bolo para imprimir"). '
+  + 'At the top, the MAIN piece: a big decorative ribbon banner with themed illustrations around and behind it. '
+  + 'Below it, 4 to 8 smaller SEPARATE pieces that match the theme (for example the age number, stars, balloons, hearts and themed elements), well spaced so each one can be cut out. '
+  + 'Every piece is a die-cut sticker with a thick white contour border and a thin colored outer line. '
+  + 'Flat glossy vector illustration, vibrant colors, crisp clean edges, transparent background, no scenery, no cake, no table, no photo, no mockup, no website or watermark text. '
+  + 'Only original generic illustrations: no known cartoon characters, mascots or brands.'
+
 function promptTopo(f: TopoForm): string {
-  const textos = [f.nome.trim() && `the main name, written exactly as "${f.nome.trim()}"`, f.texto.trim() && `a smaller second line, written exactly as "${f.texto.trim()}"`].filter(Boolean).join(' and ')
-  return `Printable cake topper design (Brazilian "topo de bolo") for a confectionery. Theme: ${f.tema.trim()}.`
-    + (textos ? ` It shows ${textos}, in Portuguese, with perfect spelling and no other words.` : ' No text.')
-    + (f.cores.trim() ? ` Color palette: ${f.cores.trim()}.` : '')
-    + ` Style: ${ESTILO_TOPO[f.estilo]}. Centered composition with the name as the hero and themed decorative elements around it,`
-    + ' die-cut sticker look with a clean thick white outline around the whole piece so it can be cut out,'
-    + ' flat high-quality illustration, crisp edges, no cake, no table, no photo, no mockup, transparent background.'
+  const nome = f.nome.trim(), texto = f.texto.trim()
+  return `Printable cake topper sheet for a Brazilian confectionery. Theme: ${f.tema.trim()}. `
+    + (nome ? `The main banner shows the name written exactly as "${nome}" in bold script lettering with a white outline. ` : 'The main banner shows "Parabéns" in bold script lettering with a white outline. ')
+    + (texto ? `One of the smaller pieces shows, written exactly, "${texto}". ` : '')
+    + 'All text in Portuguese, perfect spelling, no other words. '
+    + (f.cores.trim() ? `Color palette: ${f.cores.trim()}. ` : '')
+    + `Style: ${ESTILO_TOPO[f.estilo]}. ` + FOLHA_TOPO
+}
+
+/** (6.89) marca d'água embaixo da folha: "Criado no Doonly App · doonly.com.br" (fora das peças de recortar) */
+async function comMarcaDagua(blob: Blob): Promise<Blob> {
+  try {
+    const url = URL.createObjectURL(blob)
+    const img = await new Promise<HTMLImageElement>((ok, falhou) => { const i = new Image(); i.onload = () => ok(i); i.onerror = falhou; i.src = url })
+    URL.revokeObjectURL(url)
+    const faixa = Math.round(img.naturalWidth * 0.055)
+    const c = document.createElement('canvas')
+    c.width = img.naturalWidth; c.height = img.naturalHeight + faixa
+    const ctx = c.getContext('2d'); if (!ctx) return blob
+    ctx.drawImage(img, 0, 0)
+    ctx.fillStyle = '#6B5C63'
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    ctx.font = `600 ${Math.round(faixa * 0.42)}px Poppins, Arial, sans-serif`
+    ctx.fillText('Criado no Doonly App · doonly.com.br', c.width / 2, img.naturalHeight + faixa / 2)
+    const novo = await new Promise<Blob | null>(r => c.toBlob(r, 'image/png'))
+    return novo || blob
+  } catch { return blob }
 }
 
 function buildImagePrompt(userMessage: string): string {
-  if (ehTopo(userMessage)) return `Printable cake topper design (Brazilian "topo de bolo") for a confectionery, based on this request in Portuguese: "${userMessage}". Any name or text must be written exactly as the client asked, with perfect Portuguese spelling. Centered composition, die-cut sticker look with a clean thick white outline so it can be cut out, flat high-quality illustration, crisp edges, no cake, no table, no photo, no mockup, transparent background.`
+  if (ehTopo(userMessage)) return `Printable cake topper sheet for a Brazilian confectionery, based on this request in Portuguese: "${userMessage}". Any name or text must be written exactly as asked, with perfect Portuguese spelling, in bold script lettering with a white outline. ${FOLHA_TOPO}`
   return `High quality digital art for a Brazilian confectionery business. ${userMessage}. Style: elegant, pastel colors, professional cake topper design, clean white background, suitable for printing. Detailed and beautiful.`
 }
 
@@ -686,7 +715,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         const tipoArq = d0.formato === 'jpeg' ? 'image/jpeg' : 'image/png'
         const bin = atob(d0.b64); const bytes = new Uint8Array(bin.length)
         for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k)
-        const blob = new Blob([bytes], { type: tipoArq })
+        const blob = ehTopoDeBolo ? await comMarcaDagua(new Blob([bytes], { type: tipoArq })) : new Blob([bytes], { type: tipoArq })
         try {
           const caminho = `doo/${uid || 'sem-conta'}/${Date.now()}.${tipoArq === 'image/jpeg' ? 'jpg' : 'png'}`
           const { error } = await supabase.storage.from('products').upload(caminho, blob, { contentType: tipoArq, upsert: false })
@@ -696,7 +725,17 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         blobsImagem.current[imageUrl] = blob
       } else if (d0?.url) {
         imageUrl = d0.url
-        fetch(imageUrl).then(r => (r.ok ? r.blob() : null)).then(b => { if (b) blobsImagem.current[imageUrl] = b }).catch(() => {})
+        // (6.89) o topo pelo gerador antigo também ganha a marca d'água e fica guardado no Doonly (quando o endereço deixa baixar)
+        const original = await fetch(d0.url).then(r => (r.ok ? r.blob() : null)).catch(() => null)
+        if (original) {
+          const blob = ehTopoDeBolo ? await comMarcaDagua(original) : original
+          try {
+            const caminho = `doo/${uid || 'sem-conta'}/${Date.now()}.png`
+            const { error } = await supabase.storage.from('products').upload(caminho, blob, { contentType: blob.type || 'image/png', upsert: false })
+            if (!error) imageUrl = supabase.storage.from('products').getPublicUrl(caminho).data.publicUrl
+          } catch { /* fica o endereço da OpenAI */ }
+          blobsImagem.current[imageUrl] = blob
+        }
       }
       if (!imageUrl) throw { type: 'api_error' }
       setMessages(prev => [...prev, {
