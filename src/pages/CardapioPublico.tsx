@@ -468,6 +468,27 @@ function CardapioContent() {
     )
   }
 
+  // (6.147) loja que ainda não terminou os Primeiros passos: o link mostra "Cardápio em preparação" (antes abria um cardápio vazio)
+  if (design.cardapio_liberado === false) {
+    const previa = new URLSearchParams(window.location.search).has('previa') || window.self !== window.top
+    const nome = String(design.nome_loja || '').trim()
+    const fone = String(config?.telefone || '').replace(/\D/g, '')
+    const zap = fone.length >= 10 ? `https://wa.me/${fone.length <= 11 ? '55' : ''}${fone}` : ''
+    return (
+      <div className="ne-root">
+        <div className="ne-fundo" />
+        <main className="ne-cartao">
+          {design.logo_url
+            ? <img src={String(design.logo_url).split(',')[0]} alt="" className="ne-masc" style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', boxShadow: '0 0 0 3px #F7C6D9' }} />
+            : <Mascote pose="prancheta" className="ne-masc" />}
+          <h1 className="ne-h">{previa ? 'Seu cardápio está quase pronto' : 'Cardápio em preparação'}</h1>
+          <p className="ne-p">{previa ? 'Ele abre para os clientes assim que você terminar os Primeiros passos, no Início do app.' : `${nome || 'A confeitaria'} está preparando o cardápio. Volte em breve!`}</p>
+          {!previa && zap && <a className="ui-bt ui-bt--cheio" href={zap} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>Falar no WhatsApp</a>}
+        </main>
+      </div>
+    )
+  }
+
   const isDesktop = device === 'desktop'
   const categorias = getCategories()
   const contagem = categorias.reduce((acc: Record<string, number>, c: CategoriaMenu) => { acc[c.name] = produtos.filter(p => p.categoria === c.name).length; return acc }, {} as Record<string, number>)

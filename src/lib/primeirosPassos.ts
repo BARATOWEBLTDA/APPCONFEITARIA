@@ -21,6 +21,7 @@ type PerfilLido = {
   nome_loja?: string | null; descricao_loja?: string | null; logo_url?: string | null; foto_url?: string | null;
   endereco?: unknown; horario?: unknown; mostrar_localizacao?: boolean | null; mostrar_apenas_cidade?: boolean | null; formas_entrega?: string[] | null;
   design_escolhido?: unknown; cardapio_compartilhado?: boolean | null; logo_confirmado?: boolean | null; caixa_inicio_em?: string | null;
+  cardapio_liberado?: boolean | null;
 };
 /** Os dados do perfil que as janelinhas dos passos recebem (endereço e horário já lidos) */
 export type PerfilDosPassos = Omit<PerfilLido, "endereco" | "horario"> & { endereco: EnderecoPassos; horario: NonNullable<HorarioLoja> | null };
@@ -52,7 +53,7 @@ const lerJson = <T>(v: unknown): T | null => { if (!v) return null; if (typeof v
 
 // Campos novos (vêm de SQLs que podem ainda não ter sido rodados): lidos à parte, um por um,
 // pra um campo faltando não derrubar a leitura do resto (antes o cartão mostrava tudo "não feito").
-const CAMPOS_NOVOS = ["design_escolhido", "cardapio_compartilhado", "logo_confirmado", "caixa_inicio_em"] as const;
+const CAMPOS_NOVOS = ["design_escolhido", "cardapio_compartilhado", "logo_confirmado", "caixa_inicio_em", "cardapio_liberado"] as const;
 const chaveLogo = (uid: string) => `doonly_logo_ok_${uid}`;
 
 // (15/10) velocidade: várias partes do app pedem os passos ao mesmo tempo (Início, "loja pronta?", cardápio).
@@ -65,6 +66,12 @@ export function lerPassos(uid: string): Promise<EstadoPassos> {
   const u = ultimaLeitura;
   if (u && u.uid === uid && u.versao === versaoPassos && Date.now() - u.em < 3000) return u.p;
   const p = lerPassosDoBanco(uid);
+  // (6.147) terminou os passos: o cardápio público é liberado (até lá o link mostra "Cardápio em preparação")
+  p.then(e => {
+    if (!e.falhou && passosCompletos(e) && e.perfil.cardapio_liberado === false) {
+      supabase.from("profiles").update({ cardapio_liberado: true }).eq("id", uid).then(() => {}, () => {});
+    }
+  }, () => {});
   ultimaLeitura = { uid, versao: versaoPassos, em: Date.now(), p };
   p.then(e => { if (e.falhou && ultimaLeitura?.p === p) ultimaLeitura = null; }, () => { if (ultimaLeitura?.p === p) ultimaLeitura = null; });
   return p;

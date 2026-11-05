@@ -210,6 +210,8 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
     // (04/11 · 6.20) Pixel do Google e do TikTok (também só no PRO)
     google_tag_id: isPro ? (profile as { google_tag_id?: string | null }).google_tag_id || '' : '',
     tiktok_pixel_id: isPro ? (profile as { tiktok_pixel_id?: string | null }).tiktok_pixel_id || '' : '',
+    // (6.147) false = a loja ainda não terminou os Primeiros passos (o link mostra "Cardápio em preparação")
+    cardapio_liberado: (profile as { cardapio_liberado?: boolean | null }).cardapio_liberado !== false,
   }
 
   const config: Configuracoes = {

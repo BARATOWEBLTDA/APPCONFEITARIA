@@ -20,6 +20,7 @@ export interface Produto {
 }
 
 export interface DesignSettings {
+  cardapio_liberado?: boolean;
   id?: string
   user_id?: string
   codigo?: string
