@@ -28,7 +28,7 @@ export const diasAte = (iso: string) => { const [y, m, d] = iso.split("-").map(N
 export async function carregarAReceber(uid: string): Promise<{ itens: ItemReceber[]; erro: boolean }> {
   const { data, error } = await buscarTudo<Omit<ItemReceber, "total" | "recebido" | "falta" | "dataRef" | "dias">>((de, ate) => supabase.from("pedidos")
     .select("id, numero, cliente_nome, valor_total, valor_recebido, status, status_pagamento, forma_pagamento, data_entrega, horario_entrega, data_prevista_pagamento")
-    .eq("user_id", uid).neq("status", "cancelado")
+    .eq("user_id", uid).not("status", "in", "(cancelado,recusado,aguardando_aceite,novo,pendente)") // (6.156) pedido ainda não aceito não é dívida
     .or("status_pagamento.is.null,status_pagamento.not.in.(pago,estornado)")
     .order("id").range(de, ate));
   if (error) { console.error("[a receber] não consegui carregar:", error); return { itens: [], erro: true }; }

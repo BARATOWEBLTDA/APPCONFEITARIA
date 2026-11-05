@@ -292,7 +292,7 @@ export default function EditarPedido() {
   const [enderecoRua, setEnderecoRua] = useState('')
   const [enderecoNumero, setEnderecoNumero] = useState('')
   const [enderecoBairro, setEnderecoBairro] = useState('')
-  const [enderecoCidade, setEnderecoCidade] = useState('Curitiba')
+  const [enderecoCidade, setEnderecoCidade] = useState('') // (6.156) começa vazia e vem a cidade da loja (antes "Curitiba" pra todo mundo)
   const [enderecoComplemento, setEnderecoComplemento] = useState('')
   const [cepLoading, setCepLoading] = useState(false)
 
@@ -592,6 +592,7 @@ export default function EditarPedido() {
       const { data } = await supabase.from('profiles').select('nome_loja, endereco').eq('id', user.id).maybeSingle()
       let a: EnderecoLoja = {}; try { a = (data as PerfilLoja | null)?.endereco ? (typeof (data as PerfilLoja).endereco === 'string' ? JSON.parse((data as PerfilLoja).endereco as string) : (data as PerfilLoja).endereco) : {} } catch { a = {} }
       const l1 = [a.rua, a.numero].filter(Boolean).join(', '), l2 = [a.bairro, a.cidade].filter(Boolean).join(' · ')
+      if (a.cidade) setEnderecoCidade(atual => atual || String(a.cidade).trim())
       setLojaInfo({ nome: (data as PerfilLoja | null)?.nome_loja || '', endereco: (l1 || l2) ? { linha1: l1 || l2, linha2: l1 ? l2 : '', completo: [l1, a.bairro, a.cidade].filter(Boolean).join(' - ') } : null })
       // (28/10 · 4.49) a regra da taxa da loja, pra sugerir o valor neste pedido (sem as colunas novas, fica só fixa/bairro)
       const { data: r1 } = await supabase.from('profiles').select('valor_entrega_propria, entrega_por_bairro').eq('id', user.id).maybeSingle()
@@ -704,11 +705,12 @@ export default function EditarPedido() {
       setEnderecoRua(p.endereco_rua || '')
       setEnderecoNumero(p.endereco_numero || '')
       setEnderecoBairro(p.endereco_bairro || '')
-      setEnderecoCidade(p.endereco_cidade || 'Curitiba')
+      setEnderecoCidade(atual => p.endereco_cidade || atual)
       setEnderecoComplemento(p.endereco_complemento || '')
       { const d = String(p.endereco_cep || '').replace(/\D/g, ''); setEnderecoCep(d.length === 8 ? `${d.slice(0, 5)}-${d.slice(5)}` : d) } // CEP: antes não era lido
       // Popular valores (Fase 4)
-      setDesconto(p.desconto || 0)
+      // (6.156) pedido do cardápio com cupom e desconto gravado 0: o cupom vale (antes a tela somava o cupom de volta no total)
+      setDesconto(p.cupom_codigo ? Math.max(Number(p.desconto) || 0, Number(p.cupom_desconto) || 0) : (p.desconto || 0))
       setTaxaEntrega(p.taxa_entrega || 0)
       // Acréscimo: se a coluna existir na tabela, popula; senão fica 0
       if (typeof p.acrescimo === 'number') {

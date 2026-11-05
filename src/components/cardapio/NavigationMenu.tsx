@@ -777,7 +777,7 @@ function CartContent({
       // (4.22) O banco cria o pedido e os itens de uma vez (função cardapio_criar_pedido): confere a loja e os produtos,
       // refaz a soma, o cupom e o total, e não duplica numa nova tentativa. Sem a função no banco, grava como antes.
       const viaBanco = await supabase.rpc('cardapio_criar_pedido', {
-        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido, forma_entrega: formaEntrega, entrega_a_combinar: aCombinarFora, bairro_taxa: bairroSelecionado || null, cliente_lat: taxaArea.lat ?? null, cliente_lng: taxaArea.lng ?? null, pagar_na_retirada: comPagarDepois && pagaDepois, pix_combinar: pixEscolhivel && pixZap }, p_itens: itensDoPedido,
+        p_loja: confeteiraUserId, p_pedido: { id: novoPedidoId, ...dadosPedido, forma_entrega: formaEntrega, entrega_a_combinar: aCombinarFora, bairro_taxa: bairroSelecionado || null, cliente_lat: taxaArea.lat ?? null, cliente_lng: taxaArea.lng ?? null, pagar_na_retirada: comPagarDepois && pagaDepois, pix_combinar: formaPagamento === 'pix' && !pixOnline /* (6.156) sem o QR na tela (chave com problema), o Pix é combinado: antes o pedido ficava "Falta pagar o Pix" */ }, p_itens: itensDoPedido,
       })
       const semFuncao = !!viaBanco.error && (viaBanco.error.code === 'PGRST202' || viaBanco.error.code === '42883' || /could not find the function/i.test(String(viaBanco.error.message || '')))
       if (viaBanco.error && !semFuncao) return falhou(viaBanco.error)

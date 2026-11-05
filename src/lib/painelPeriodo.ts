@@ -84,7 +84,7 @@ export async function carregarPeriodo(uid: string, ini: string, ate: string): Pr
         .select("id, valor, forma, tipo, recebido_em, created_at, pedidos(cliente_nome)")
         .eq("user_id", uid).is("estornado_em", null).gte("recebido_em", ini).lte("recebido_em", ate).order("id").range(de, a)),
       buscarTudo<LinhaVenda>((de, a) => supabase.from("pedidos").select("id, status, data_entrega, pedido_itens(nome_produto, quantidade, valor_unitario)")
-        .eq("user_id", uid).neq("status", "cancelado").gte("data_entrega", ini).lte("data_entrega", ate).order("id").range(de, a)),
+        .eq("user_id", uid).not("status", "in", "(cancelado,recusado,aguardando_aceite,novo,pendente)").gte("data_entrega", ini).lte("data_entrega", ate).order("id").range(de, a)), // (6.156) sem os não aceitos, igual ao Início
     ]);
     if (entradas.erro || saidas.erro || vend.error) return vazio;
     const temPagamentos = !pag.error;

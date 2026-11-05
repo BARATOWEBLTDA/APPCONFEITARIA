@@ -315,15 +315,22 @@ async function custosVariaveisDosPedidos(uid: string, pedidos: PedidoVendido[]):
  */
 /** (27/10) conta fixa conta uma vez só: a próxima que vence (a mesma regra da tela A pagar). Antes o aluguel de
  *  outubro em aberto + o de novembro já gerado davam "R$ 3.000 · 2 contas" no Financeiro. A lista vem por vencimento. */
-export function umaPorContaFixa<T extends { custo_fixo_id?: string | null }>(lista: T[]): T[] {
+/** (6.156) as VENCIDAS ficam todas (aluguel de outubro e de novembro em aberto = R$ 3.000, 2 vencidas); das que ainda vão
+ *  vencer, só a primeira de cada conta fixa. Antes a vencida do mês passado escondia a deste mês e a dívida sumia. */
+export function umaPorContaFixa<T extends { custo_fixo_id?: string | null; vencimento?: string | null }>(lista: T[], hoje: string = iso(new Date())): T[] {
   const vistas = new Set<string>();
-  return lista.filter(c => { if (!c.custo_fixo_id) return true; if (vistas.has(c.custo_fixo_id)) return false; vistas.add(c.custo_fixo_id); return true; });
+  return lista.filter(c => {
+    if (!c.custo_fixo_id) return true;
+    if (String(c.vencimento || "").slice(0, 10) < hoje) return true;
+    if (vistas.has(c.custo_fixo_id)) return false;
+    vistas.add(c.custo_fixo_id); return true;
+  });
 }
 export type ResumoAPagar = { total: number; qtd: number; vencidas: number; proxima: string | null; erro?: boolean };
 export async function resumoAPagar(uid: string, hoje: string = iso(new Date())): Promise<ResumoAPagar | null> {
   const { data, error } = await supabase.from("contas_pagar").select("valor, vencimento, custo_fixo_id").eq("user_id", uid).eq("status", "pendente").order("vencimento", { ascending: true });
   if (error) return faltaNoBanco(error) ? null : { total: 0, qtd: 0, vencidas: 0, proxima: null, erro: true };
-  const l = umaPorContaFixa((data as ContaPendente[]) || []);
+  const l = umaPorContaFixa((data as ContaPendente[]) || [], hoje);
   const dia = (c: ContaPendente) => String(c.vencimento || "").slice(0, 10);
   return {
     total: r2(l.reduce((s, c) => s + (Number(c.valor) || 0), 0)), qtd: l.length,

@@ -143,7 +143,8 @@
           var src = el && (el.src || el.href);
           if (src && /\/assets\//.test(src) && (el.tagName === 'SCRIPT' || el.tagName === 'LINK')) recarregar();
         }, true);
-        window.addEventListener('vite:preloadError', function (e) { e.preventDefault(); recarregar(); });
+        // (6.156) sem preventDefault e sem recarregar aqui: quem cuida do vite:preloadError é o main.tsx (com o preventDefault,
+        // dentro da trava de 30 s o import "dava certo" vazio e a tela quebrava com o erro genérico)
         window.addEventListener('unhandledrejection', function (e) {
           var m = String((e && e.reason && e.reason.message) || '');
           if (/dynamically imported module|Importing a module script failed|Failed to load module script|error loading dynamically/i.test(m)) recarregar();

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CaretRight } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { umaPorContaFixa } from "@/lib/painelFinanceiro";
 
 type Conta = { id: string; descricao: string | null; valor: number; vencimento: string };
 
@@ -21,9 +22,10 @@ export default function CustosDoMes({ recebido, fixos, mostrarVazio = false, com
     void (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("contas_pagar").select("id, descricao, valor, vencimento")
-        .eq("user_id", user.id).eq("status", "pendente").order("vencimento", { ascending: true }).limit(3);
-      if (vivo) setContas((data as Conta[] | null) ?? []);
+      // (6.156) a mesma regra do Financeiro: o aluguel deste mês e o do próximo não aparecem juntos
+      const { data } = await supabase.from("contas_pagar").select("id, descricao, valor, vencimento, custo_fixo_id")
+        .eq("user_id", user.id).eq("status", "pendente").order("vencimento", { ascending: true }).limit(30);
+      if (vivo) setContas(umaPorContaFixa((data as (Conta & { custo_fixo_id?: string | null })[] | null) ?? []).slice(0, 3));
     })().catch(() => { if (vivo) setContas([]); });
     return () => { vivo = false; };
   }, [comContas]);

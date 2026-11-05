@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
+import { umaPorContaFixa } from "@/lib/painelFinanceiro";
 import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle, MagnifyingGlass, PencilSimple, Plus, Receipt, WarningCircle, X } from "@phosphor-icons/react";
@@ -91,8 +92,7 @@ export default function FinanceiroAPagar() {
       setErro(false);
       // (13/10) conta fixa aparece uma vez só: a próxima que vence (antes a do mês que vem aparecia junto, parecendo repetida)
       const pend = data.filter(c => c.status === "pendente");
-      const vistas = new Set<string>();
-      setContas(pend.filter(c => { if (!c.custo_fixo_id) return true; if (vistas.has(c.custo_fixo_id)) return false; vistas.add(c.custo_fixo_id); return true; }));
+      setContas(umaPorContaFixa(pend)); // (6.156) as vencidas aparecem todas
       setPagasMes(data.filter(c => c.status === "paga" && (c.pago_em || "") >= ini).sort((a, b) => (b.pago_em || "").localeCompare(a.pago_em || "")));
       // a lista carregou, mas a geração das contas dos custos fixos falhou: avisa (uma vez por visita à tela)
       if (eGerar && !avisouGerar.current) {

@@ -222,6 +222,28 @@ function Excluir({ nome, onSim, onNao, ocupado }: { nome: string; onSim: () => v
   </div>;
 }
 
+/** (6.156) as contas a pagar já geradas (este mês e o próximo) seguem o custo fixo: mudou valor ou dia, pausou ou
+ *  excluiu, as pendentes saem e as novas são geradas de novo (antes ficavam com o valor antigo, ou cobrando o pausado) */
+const competenciaDe = (mais = 0) => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + mais); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; };
+async function refazerContasDoFixo(custoId: string, f: { nome: string; valor: number; dia: number | null; ativo: boolean; voltou?: boolean } | null) {
+  try {
+    const { data } = await supabase.from("contas_pagar").select("id, competencia, status").eq("custo_fixo_id", custoId)
+      .in("status", ["pendente", "cancelada"]).gte("competencia", competenciaDe(0));
+    const linhas = (data || []) as { id: string; competencia: string; status: string }[];
+    const vale = !!f && f.ativo && !!f.dia && f.valor > 0;
+    for (const c of linhas) {
+      // cancelada só volta quando o custo estava pausado e voltou (uma conta que ela cancelou à mão continua cancelada)
+      if (c.status === "cancelada" && !(vale && f?.voltou)) continue;
+      if (!vale) { if (c.status === "pendente") await supabase.from("contas_pagar").update({ status: "cancelada" }).eq("id", c.id); continue; }
+      const [a, m] = c.competencia.split("-").map(Number);
+      const ult = new Date(a, m, 0).getDate();
+      const venc = `${c.competencia}-${String(Math.min(Math.max(f!.dia!, 1), ult)).padStart(2, "0")}`;
+      await supabase.from("contas_pagar").update({ descricao: f!.nome, valor: f!.valor, vencimento: venc, status: "pendente" }).eq("id", c.id);
+    }
+    if (vale) await Promise.all([supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competenciaDe(0) }), supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competenciaDe(1) })]);
+  } catch (e) { console.error("[custos] não atualizei as contas a pagar:", e); }
+}
+
 function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFixo | null; onClose: () => void; onFeito: () => void }) {
   const [nome, setNome] = useState(item?.nome || "");
   const [valor, setValor] = useState(textoBRL(item?.valor));
@@ -238,6 +260,7 @@ function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFi
     setOcupado(true);
     const payload = { nome: nome.trim(), valor: v, ativo, dia_vencimento: d };
     const { error } = item ? await supabase.from("custos_fixos").update(payload).eq("id", item.id) : await supabase.from("custos_fixos").insert({ user_id: uid, ...payload });
+    if (!error && item) await refazerContasDoFixo(item.id, { nome: payload.nome, valor: v, dia: d, ativo, voltou: !item.ativo && ativo });
     setOcupado(false);
     if (error) { setErro("Não foi possível salvar agora."); return; }
     onFeito();
@@ -247,6 +270,7 @@ function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFi
     setOcupado(true);
     // 11/10: confere se excluiu mesmo (antes a folha fechava e o custo reaparecia)
     const { error } = await supabase.from("custos_fixos").delete().eq("id", item.id);
+    if (!error) await refazerContasDoFixo(item.id, null);
     setOcupado(false);
     if (error) { console.error("[custos] não excluiu:", error); setExcluir(false); setErro(explicarErro(error, "Não deu para excluir. Tente de novo.")); return; }
     onFeito();

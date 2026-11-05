@@ -749,14 +749,15 @@ export default function Produtos() {
    * - "Pudim (cópia)"        → "Pudim (cópia 2)"
    * - "Pudim (cópia 2)"      → "Pudim (cópia 3)"
    */
-  const proximoNomeCopia = (nome: string): string => {
+  const proximoNomeCopia = (nome: string, extras: string[] = []): string => {
     const semTag = nome.replace(/\s*\(cópia(?:\s*\d+)?\)\s*$/i, "").trim();
     // Procura maior N já usado nas cópias existentes
     const regex = new RegExp(`^${semTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\(cópia(?:\\s*(\\d+))?\\)\\s*$`, "i");
     let maiorN = 0;
     let temCopiaSimples = false;
-    produtos.forEach(p => {
-      const m = p.nome.match(regex);
+    // (6.156) extras: os nomes já criados no mesmo "Duplicar" em massa (antes saíam dois "Pudim (cópia 2)")
+    [...produtos.map(p => p.nome), ...extras].forEach(nomeP => {
+      const m = nomeP.match(regex);
       if (m) {
         if (m[1]) maiorN = Math.max(maiorN, parseInt(m[1]));
         else temCopiaSimples = true;
@@ -1050,6 +1051,7 @@ export default function Produtos() {
   // Liga/desliga e edita o kit (Tamanhos e Sabores saem quando o kit liga)
   const onKitChange = (k: KitQtdConfig) => setForm(f => {
     const ligando = k.ativo && !kitAtivo(f.kit_qtd);
+    const desligando = !k.ativo && kitAtivo(f.kit_qtd); // (6.156) antes ficava "R$ X o kit" no produto simples
     return {
       ...f,
       kit_qtd: k,
@@ -1058,6 +1060,7 @@ export default function Produtos() {
         grupo_sabores: { ...(f.grupo_sabores || GRUPO_SABORES_VAZIO), ativo: false },
         forma_venda: "kit",
       } : {}),
+      ...(desligando && f.forma_venda === "kit" ? { forma_venda: "unidade" } : {}),
       ...(k.ativo && precoMinKit(k) > 0 ? { preco_normal: precoMinKit(k) } : {}),
     } as Produto;
   });
@@ -1178,8 +1181,9 @@ export default function Produtos() {
       const url = `${data.publicUrl}?t=${Date.now()}`;
       setForm(f => {
         const imgs = (f.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
-        imgs[slot] = url;
-        return { ...f, imagem_url: imgs.join(",") };
+        // (6.156) sem a principal, a foto entra na primeira vaga livre (antes gravava ",https://…" e o cardápio ficava sem foto)
+        imgs[Math.min(slot, imgs.length)] = url;
+        return { ...f, imagem_url: imgs.filter(Boolean).join(",") };
       });
     }
     setUploading(false);
@@ -1306,11 +1310,14 @@ export default function Produtos() {
     setBulkLoading(true);
     let ok = 0, falhas = 0, semFicha = 0;
     const usadosSku = skusDe(produtos); // (21/10) a cópia ganha um SKU novo (nunca repete)
+    const nomesNovos: string[] = [];
     for (const p of selecionados) {
       const { id, created_at, updated_at, produto_insumos, user_id, ...limpo } = p;
       const sku = limpo.sku ? skuLivre(limpo.sku, usadosSku) : null;
       if (sku) usadosSku.add(sku);
-      const novo = { ...limpo, sku, nome: proximoNomeCopia(p.nome), user_id: userId, disponivel: false };
+      const nomeCopia = proximoNomeCopia(p.nome, nomesNovos);
+      nomesNovos.push(nomeCopia);
+      const novo = { ...limpo, sku, nome: nomeCopia, user_id: userId, disponivel: false };
       const { data, error } = await supabase.from("produtos").insert(novo).select("id").single();
       if (error) { falhas++; continue; }
       // Duplica ficha técnica também (11/10: confere a leitura e a gravação; antes dizia "cópia criada" sem a ficha)
@@ -1349,7 +1356,7 @@ export default function Produtos() {
     if (gerandoDesc) return avisar("Espere a descrição ficar pronta.", { tipo: "info" });
     const eraPrimeiro = !form.id && produtos.length === 0;
     if (!form.nome.trim()) return avisar("Dê um nome ao produto", { tipo: "erro" });
-    if (!(form.categoria || "").trim()) return avisar("Escolha a categoria do produto", { tipo: "erro" }); // (27/10) categoria vazia no banco vinha como null e travava o salvar
+    if (!(form.categoria || "").trim()) { if (form.id) setEditTab("info"); return avisar("Escolha a categoria do produto", { tipo: "erro" }); } // (27/10) categoria vazia no banco vinha como null e travava o salvar
     // (14/10) todo produto diz se é pronta entrega ou encomenda (na edição fica na aba Fotos, em "Como o cliente recebe")
     if (!(form.pronta_entrega === true || form.antecedencia)) {
       if (form.id) setEditTab("entrega");
@@ -1457,6 +1464,14 @@ export default function Produtos() {
     // Com kit ou tamanhos de preço fixo os campos da promoção em valor somem da tela, então o que ficou gravado antes sai
     // (no cardápio e na lista virava desconto em todos os tamanhos). Promoção em % continua como está.
     let ajustePromo: Partial<Produto> = {};
+    // (6.156) promoção em % só existe nos tamanhos de preço fixo, no preço pelo sabor e no kit. Se a escolha saiu
+    // (ex.: desmarcou Tamanho), o % ficava ativo e escondido, dando desconto no cardápio sem ela ver
+    if (form.promocao && form.tipo_promocao === "percentual") {
+      const gtP: GrupoTamanhos = formSalvar.grupo_tamanhos;
+      const temPct = kitAtivo(form.kit_qtd) || !!precosDosSabores(formSalvar)
+        || (!!gtP?.ativo && (gtP.opcoes || []).length > 0 && (gtP.modo_preco_tamanho || "preco_fixo") === "preco_fixo");
+      if (!temPct) ajustePromo = { promocao: false, desconto_percentual: 0 };
+    }
     if (form.tipo_promocao !== "percentual") {
       const pp = Number(form.preco_promocional) || 0;
       const gtS: GrupoTamanhos = formSalvar.grupo_tamanhos;
@@ -1506,7 +1521,8 @@ export default function Produtos() {
     if (kitAtivo(form.kit_qtd) && precoMinKit(form.kit_qtd) > 0) precoBase = precoMinKit(form.kit_qtd);
 
     // (14/10) SKU: só vai quando tem; se o banco ainda não tem a coluna (SQL 4.36), salva sem ele e avisa
-    if (!String(formLimpo.sku || "").trim()) delete formLimpo.sku;
+    // (6.156) apagou o SKU na edição: grava vazio (antes o código antigo ficava no banco)
+    if (!String(formLimpo.sku || "").trim()) { if (form.id && (produtos.find(x => x.id === form.id) as Produto & { sku?: string | null } | undefined)?.sku) formLimpo.sku = null; else delete formLimpo.sku; }
     else {
       // (21/10) o SKU não pode repetir na loja
       formLimpo.sku = String(formLimpo.sku).trim().toUpperCase();
@@ -2308,7 +2324,8 @@ export default function Produtos() {
                                 : trava ? <><Crown size={18} weight="fill" aria-hidden="true" /><b>Foto {slot + 1}</b><small>No PRO</small></>
                                 : <><PlusIc size={20} weight="bold" aria-hidden="true" /><b>Foto {slot + 1}</b></>}
                             </button>
-                            {url && !trava && <button type="button" className="prod-img-remove" aria-label="Tirar a foto" onClick={() => removeImage(slot)}><XIc size={16} weight="bold" aria-hidden="true" /></button>}
+                            {/* (6.156) sem PRO a foto extra ainda pode sair (antes ficava presa no cardápio) */}
+                            {url && <button type="button" className="prod-img-remove" aria-label="Tirar a foto" onClick={() => removeImage(slot)}><XIc size={16} weight="bold" aria-hidden="true" /></button>}
                             <input ref={slot === 1 ? img2Ref : slot === 2 ? img3Ref : img4Ref} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, slot)} />
                           </div>
                         );

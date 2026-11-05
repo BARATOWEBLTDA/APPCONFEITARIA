@@ -647,8 +647,20 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
         if (!(o.itens || []).length) return { ok: false, erro: `O orçamento #${o.numero} ainda não tem itens. Complete na tela de Orçamentos.` }
         if (!digitos(o.cliente_telefone)) return { ok: false, erro: `O orçamento #${o.numero} está sem o WhatsApp do cliente. Complete na tela de Orçamentos.` }
         if (!['rascunho', 'novo', 'enviado'].includes(String(o.status))) return { ok: false, erro: `O orçamento #${o.numero} já foi ${o.status === 'aprovado' ? 'aprovado' : 'respondido'}.` }
-        const { data: salvo, error } = await supabase.from('orcamentos').update({ status: 'enviado', enviado_em: o.enviado_em || new Date().toISOString() }).eq('id', o.id).select('*').single()
+        // (6.156) validade vencida (rascunho antigo) ganha de novo o mesmo prazo a partir de hoje; e só muda se ainda não foi
+        // respondido (antes podia voltar um aprovado para "enviado" numa corrida e a cliente aprovar de novo)
+        const hojeD = new Date(); const hojeS = `${hojeD.getFullYear()}-${String(hojeD.getMonth() + 1).padStart(2, '0')}-${String(hojeD.getDate()).padStart(2, '0')}`
+        let validade = o.validade || null
+        if (validade && validade < hojeS) {
+          const base = String(o.enviado_em || o.created_at || '').slice(0, 10)
+          const prazo = base ? Math.max(1, Math.round((new Date(validade + 'T12:00:00').getTime() - new Date(base + 'T12:00:00').getTime()) / 86400000)) : 7
+          const v = new Date(hojeD.getFullYear(), hojeD.getMonth(), hojeD.getDate() + prazo)
+          validade = `${v.getFullYear()}-${String(v.getMonth() + 1).padStart(2, '0')}-${String(v.getDate()).padStart(2, '0')}`
+        }
+        const { data: salvo, error } = await supabase.from('orcamentos').update({ status: 'enviado', enviado_em: o.enviado_em || new Date().toISOString(), validade })
+          .eq('id', o.id).in('status', ['rascunho', 'novo', 'enviado']).select('*').maybeSingle()
         if (error) throw error
+        if (!salvo) return { ok: false, erro: `O orçamento #${o.numero} já foi respondido.` }
         const { data: pf } = await supabase.from('profiles').select('nome_loja').eq('id', uid).maybeSingle()
         const link = linkProposta((salvo as Orcamento).token, window.location.origin)
         const zap = linkWhatsApp(o.cliente_telefone, textoProposta(salvo as Orcamento, (pf as { nome_loja?: string } | null)?.nome_loja || '', link))

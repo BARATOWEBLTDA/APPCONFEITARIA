@@ -12,7 +12,9 @@ import { recarregarLimpo } from "./recarregarLimpo";
 const TELAS_DE_PREENCHER = [/^\/vendas\/novo/, /^\/pedidos\/[^/]+\/editar/, /^\/ficha-tecnica/, /^\/cardapio-config/, /^\/checkout-config/,
   /^\/solicitar-recurso/, /^\/relatar-problema/, /^\/reset-password/,
   // (11/10) também: conferir o e-mail, criar a senha nova e o painel da equipe inteiro
-  /^\/verificar-email/, /^\/(redefinir|nova|alterar)-senha/, /^\/admin(\/|$)/];
+  /^\/verificar-email/, /^\/(redefinir|nova|alterar)-senha/, /^\/admin(\/|$)/,
+  // (6.156) orçamento (a confeiteira editando) e as páginas públicas que o cliente preenche: orçamento e cardápio
+  /^\/orcamentos\/[^/]+/, /^\/o\//, /^\/orcamento\//, /^\/c\//];
 // (6.143) login, cadastro e "esqueci a senha": atualiza na hora, a não ser que ela já tenha digitado algo
 const TELAS_DE_ENTRAR = [/^\/login/, /^\/cadastro/, /^\/esqueci-senha/];
 const temAlgoDigitado = () => Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea"))
