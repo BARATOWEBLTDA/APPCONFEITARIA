@@ -204,7 +204,7 @@ export default function NoticiaDetalhe() {
 
               <div className="nd-autor">
                 <span className="nd-foto" aria-hidden="true">
-                  {noticia.autor_info?.foto_url ? <img src={noticia.autor_info.foto_url} alt="" /> : autor.charAt(0).toUpperCase()}
+                  {/* (6.92) sem foto do autor (Equipe Doonly): a logo do app */}{noticia.autor_info?.foto_url ? <img src={noticia.autor_info.foto_url} alt="" /> : <img src="/Sistema/icon-splash-192.png?v=2810" alt="" />}
                 </span>
                 <span className="nd-autor-tx">
                   <b>{autor}</b>
