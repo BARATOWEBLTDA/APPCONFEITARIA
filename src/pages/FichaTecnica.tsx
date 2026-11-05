@@ -83,6 +83,13 @@ function calcCusto(qtd: number, unidadeUtilizada: string, insumo: Insumo): numbe
   return qtd * custoUnit;
 }
 
+/** (6.164) preço de compra na unidade cheia (kg, L, un, m), pra coluna "Preço" da tabela */
+function precoCheio(insumo: Insumo): { valor: number; un: string } {
+  const fam = UNIT_FAMILIES[insumo.unidade]?.family;
+  const un = fam === "massa" ? "kg" : fam === "volume" ? "L" : fam === "comprimento" ? "m" : insumo.unidade || "un";
+  return { valor: calcCusto(1, un, insumo), un };
+}
+
 // ── Types ──
 
 type InsumoJoin = {
@@ -673,7 +680,8 @@ export default function FichaTecnica() {
                   ? <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirCadastro}>Cadastrar ingrediente</Botao>
                   : <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirPicker}>Adicionar ingrediente</Botao>} />
             ) : (<>
-              <div className="fd-ing-cab" aria-hidden="true"><span>Nome</span><span>Quanto vai</span><span>Custo</span><span /></div>
+              <div className="fd-tab">
+              <div className="fd-ing-cab" aria-hidden="true"><span>Ingrediente</span><span>Quanto vai</span><span>Preço</span><span>Custo</span><span /></div>
               {ficha.map(f => {
                 const ins = f.insumo;
                 const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
@@ -681,8 +689,11 @@ export default function FichaTecnica() {
                 const semQtd = !(f.quantidade > 0);
                 return (
                   <div key={f.insumo_id} className="fd-ing">
+                    <span className="fd-c fd-c-nome">
                     <span className="fd-ing-th">{ins.imagem_url ? <img src={ins.imagem_url} alt="" /> : ins.nome.charAt(0).toUpperCase()}</span>
                     <span className="fd-ing-nome"><b>{ins.nome}</b>{semQtd && <small>Falta a quantidade</small>}</span>
+                    </span>
+                    <span className="fd-c fd-c-qtd">
                     <span className="fd-ing-qtd">
                       <CampoNumero value={f.quantidade} placeholder="0" onValor={n => setQtd(f.insumo_id, n)} aria-label={`Quanto vai de ${ins.nome}`} />
                       {unidades.length > 1 ? (
@@ -691,15 +702,22 @@ export default function FichaTecnica() {
                         </select>
                       ) : <i>{f.unidade_utilizada}</i>}
                     </span>
+                    </span>
+                    {(() => { const pc = precoCheio(ins); return <span className="fd-c fd-c-preco">R$ {fmt(pc.valor)}/{pc.un}</span>; })()}
+                    <span className="fd-c fd-c-custo">
                     <button type="button" className="fd-ing-custo" onClick={() => setInfoCustoAberto(f.insumo_id)} aria-label={`Custo de ${ins.nome}: R$ ${fmt(custoLinha)}. Ver a conta`}>
                       R$ {fmt(custoLinha)}<Info size={16} weight="bold" aria-hidden="true" />
                     </button>
+                    </span>
+                    <span className="fd-c fd-c-x">
                     <BotaoIcone rotulo={`Tirar ${ins.nome} da ficha`} variante="limpo" onClick={() => removeInsumo(f.insumo_id)}><X size={18} weight="bold" /></BotaoIcone>
+                    </span>
                   </div>
                 );
               })}
               {/* (6.163) no PC a lista é uma tabela, com o total no pé */}
-              <div className="fd-ing-tot" aria-hidden="true"><span>Total</span><b>R$ {fmt(cmvLive)}</b></div>
+              <div className="fd-ing-tot" aria-hidden="true"><span>Total</span><b>R$ {fmt(cmvLive)}</b><span /></div>
+              </div>
               <div className="fd-ing-acoes">
                 {insumosCadastrados.length > 0 && <Botao variante="secundario" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={abrirPicker}>Adicionar ingrediente</Botao>}
                 <Botao variante="link" tamanho="m" onClick={abrirCadastro}>Cadastrar novo</Botao>

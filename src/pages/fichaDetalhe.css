@@ -39,7 +39,9 @@
 .fd-ing-qtd select, .fd-ing-qtd i { flex: none; min-width: 56px; padding: 0 10px; border: 0; border-left: 1px solid var(--ui-borda); background: var(--ui-cinza); font-family: inherit; font-size: 16px; font-style: normal; font-weight: 600; color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; }
 .fd-ing-custo { grid-area: custo; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 2px; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
 .fd-ing-custo svg { display: none; color: var(--ui-texto-3); }
-.fd-ing > .ui-bti, .fd-ing > button:last-child { grid-area: x; align-self: start; }
+.fd-c { display: contents; }
+.fd-c-preco { display: none; }
+.fd-c-x > .ui-bti, .fd-c-x > button { grid-area: x; align-self: start; }
 .fd-tempo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
 .fd-tempo-d { margin: 8px 0 0; }
 .fd-ing-tot { display: none; }
@@ -86,20 +88,30 @@
   .fd-par { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
   .fd .fd-par .cl9-card + .cl9-card { margin-top: 0; }
   .fd .cl9-card + .fd-par { margin-top: 12px; }
-  .fd-ing-cab { display: grid; grid-template-columns: 44px minmax(0, 1fr) 190px 120px 44px; gap: 12px; padding: 8px 0; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-  .fd-ing-cab span:first-child { grid-column: 1 / 3; }
-  .fd-ing { grid-template-columns: 44px minmax(0, 1fr) 190px 120px 44px; grid-template-areas: "th nome qtd custo x"; gap: 12px; }
-  .fd-ing > .ui-bti, .fd-ing > button:last-child { align-self: center; }
-  .fd-ing-th { align-self: center; }
-  .fd-ing-custo { justify-content: flex-end; }
+  /* (6.164) tabela de verdade no PC: borda em volta, linhas entre as colunas e as linhas, cabeçalho e total em cinza */
+  .fd-tab { --fd-cols: minmax(0, 1fr) 148px 112px 112px 44px; margin: 4px 0 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); overflow: hidden; }
+  .fd-ing-cab, .fd-ing, .fd-ing-tot { display: grid; grid-template-columns: var(--fd-cols); grid-template-areas: none; gap: 0; padding: 0; align-items: stretch; }
+  .fd-ing-cab { background: var(--ui-cinza); border-bottom: 1px solid var(--ui-borda); font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+  .fd-ing-cab > span, .fd-c, .fd-ing-tot > * { display: flex; align-items: center; min-width: 0; padding: 8px 12px; border-left: 1px solid var(--ui-borda); }
+  .fd-ing-cab > span { min-height: 40px; }
+  .fd-ing-cab > span:first-child, .fd-c-nome, .fd-ing-tot > :first-child { border-left: 0; }
+  .fd-ing-cab > span:nth-child(3), .fd-ing-cab > span:nth-child(4), .fd-c-preco, .fd-c-custo { justify-content: flex-end; text-align: right; }
+  .fd-ing { border-top: 1px solid var(--ui-borda); }
+  .fd-ing-cab + .fd-ing { border-top: 0; }
+  .fd-c-nome { gap: 10px; }
+  .fd-c-nome .fd-ing-nome { flex: 1; }
+  .fd-c-nome .fd-ing-th { width: 36px; height: 36px; }
+  .fd-c-qtd { padding: 6px 8px; }
+  .fd-ing-qtd { width: 100%; max-width: none; height: 40px; }
+  .fd-c-preco { font-size: 14px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
+  .fd-c-custo { padding-right: 8px; }
+  .fd-ing-custo { justify-content: flex-end; min-height: 40px; }
   .fd-ing-custo svg { display: block; }
-  /* (6.163) tabela no PC: linha forte em cima e embaixo, linhas finas entre os ingredientes, total no pé */
-  .fd-ing-cab { margin-top: 4px; border-top: 2px solid var(--ui-texto); border-bottom: 1px solid var(--ui-texto); }
-  .fd-ing-cab span:nth-child(3) { text-align: right; padding-right: 22px; }
-  .fd-ing { padding: 8px 0; }
-  .fd-ing-tot { display: grid; grid-template-columns: minmax(0, 1fr) 120px 44px; gap: 12px; align-items: center; min-height: 48px; margin-bottom: 12px; border-top: 2px solid var(--ui-texto); font-size: 15px; font-weight: 600; }
-  .fd-ing-tot b { font-weight: 600; text-align: right; padding-right: 22px; }
-  .fd-ing-tot::after { content: ""; }
+  .fd-c-x { justify-content: center; padding: 4px; }
+  .fd-ing-tot { border-top: 1px solid var(--ui-borda); background: var(--ui-cinza); font-size: 15px; font-weight: 600; }
+  .fd-ing-tot > * { min-height: 44px; }
+  .fd-ing-tot > :first-child { grid-column: 1 / 4; }
+  .fd-ing-tot b { justify-content: flex-end; font-weight: 600; padding-right: 30px; }
   .fd-tempo { grid-template-columns: 180px 180px; }
 }
 @media (min-width: 1100px) {
@@ -127,7 +139,7 @@
   .fd-ing-qtd { align-self: center; height: 44px; max-width: none; }
   .fd-ing-qtd input { padding: 0 8px; text-align: center; }
   .fd-ing-qtd select, .fd-ing-qtd i { min-width: 48px; padding: 0 6px; font-size: 14px; }
-  .fd-ing > .ui-bti, .fd-ing > button:last-child { align-self: center; width: 40px; }
+  .fd-c-x > .ui-bti, .fd-c-x > button { align-self: center; width: 40px; }
 }
 /* (13/10) quanto sobra a mais quando o cliente paga no Pix ou em dinheiro (sem taxa da maquininha) */
 .fd-conta .fd-pix { justify-content: flex-start; padding-top: 6px; }

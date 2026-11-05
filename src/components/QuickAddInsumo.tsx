@@ -616,7 +616,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
               onChange={e => setForm(f => ({ ...f, cada_qtd: e.target.value }))}
               depois={<Medida valor={form.cada_un} qual="cada" aoEscolher={u => setForm(f => ({ ...f, cada_un: u }))} />} />
           </div>
-          <Campo rotulo={`Quanto pagou ${EMB_FEMININAS.some(f => f.toLowerCase() === nomeEmb) ? "na" : "no"} ${nomeEmb} toda`} inputMode="numeric" prefixo="R$" placeholder="0,00" value={form.valor_compra} erro={erroValor}
+          <Campo rotulo={(fem => `Quanto pagou ${fem ? "na" : "no"} ${nomeEmb} ${fem ? "toda" : "todo"}`)(nomeEmb === "embalagem" || EMB_FEMININAS.some(f => f.toLowerCase() === nomeEmb))} inputMode="numeric" prefixo="R$" placeholder="0,00" value={form.valor_compra} erro={erroValor}
             onChange={e => { const d = e.target.value.replace(/\D/g, ""); setForm(f => ({ ...f, valor_compra: d ? reais(parseInt(d, 10) / 100) : "" })) }} />
         </div>
       ) : (<>

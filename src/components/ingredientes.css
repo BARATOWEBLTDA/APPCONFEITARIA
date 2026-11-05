@@ -167,7 +167,7 @@
 
 /* ═════ (04/11 · 6.31) janela do ingrediente nova: foto grande, categoria e "Vem em" à vista, medida num menu do app ═════ */
 .ig-col1, .ig-col2 { display: flex; flex-direction: column; gap: var(--gap-stack); min-width: 0; }
-.ig-f { gap: var(--gap-stack); }
+.cl9-f.ig-f { gap: var(--gap-stack); }
 .ig-col2 { gap: var(--space-5); }
 .ig-topo { display: flex; align-items: stretch; gap: var(--space-4); }
 /* (6.161) a foto na altura do Nome + Marca (quadrada, alinhada com os dois campos) */
@@ -220,7 +220,7 @@
 }
 @media (min-width: 1024px) {
   .ui-janela.ig-janela-cheia { width: min(920px, calc(100vw - 48px)); }
-  .ig-f--janela { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: var(--gap-section); align-items: start; }
+  .cl9-f.ig-f--janela { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: var(--gap-section); align-items: start; }
   .ig-f--janela .ig-col2 { align-self: stretch; padding-left: var(--gap-section); border-left: 1px solid var(--ui-linha); }
   .ig-janela-cheia .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ig-janela-cheia .ui-janela-pe .ui-bt { flex: none; width: auto; padding-left: 28px; padding-right: 28px; }

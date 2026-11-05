@@ -140,7 +140,8 @@ export default function SelectDoonly({
         </div>
       )}
 
-      {open && !isMobile && pop && (
+      {/* (6.164) a lista vai pro body: dentro de uma janela (que tem transform) o position: fixed saía deslocado */}
+      {open && !isMobile && pop && createPortal(
         <div
           ref={popRef}
           className="sd-popover"
@@ -176,7 +177,7 @@ export default function SelectDoonly({
               <span className="sd-item-label">{extraOptionLabel}</span>
             </button>
           )}
-        </div>
+        </div>, document.body
       )}
 
       <style>{`
@@ -308,7 +309,7 @@ export default function SelectDoonly({
           border-radius: var(--ui-raio-p);
           box-shadow: 0 12px 32px rgba(0,0,0,0.18), 0 4px 10px rgba(0,0,0,0.08);
           padding: 6px;
-          z-index: 10050;
+          z-index: 10300;
           max-height: 320px;
           overflow-y: auto;
           animation: sdPopIn 0.15s ease;
