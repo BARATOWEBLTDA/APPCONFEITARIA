@@ -121,7 +121,7 @@ export function montarHtml(loja: Loja, d: Doc, rodapeDePagina = sabeRodapeDePagi
 <meta name="viewport" content="width=840">
 <style>${fontesPoppins()}</style>
 <style>${CSS}${pagina}</style></head><body>
-<div class="bar-acoes"><button id="bt-share" type="button" style="display:none" disabled>Preparando o PDF…</button><button id="bt-print" onclick="window.print()">Salvar PDF / Imprimir</button></div>
+<div class="bar-acoes"><button id="bt-share" type="button" style="display:none" disabled>Preparando o PDF…</button><span class="bar-dica" id="bt-dica" style="display:none">Toque em Enviar PDF, escolha o WhatsApp e a conversa do cliente</span><button id="bt-print" onclick="window.print()">Salvar PDF / Imprimir</button></div>
 <div class="pg">
 <div class="hd"><div class="av">${av}</div>
 <div class="lj"><b>${esc(loja.nome)}</b>${loja.contato ? `<span>${esc(loja.contato)}</span>` : ""}</div>
@@ -188,9 +188,9 @@ if(document.readyState==="complete")vai();else window.addEventListener("load",va
 const compartilharPdf = (titulo: string) => `(function(){
 var b=document.getElementById("bt-share"),pr=document.getElementById("bt-print");if(!b)return;
 var pode=false;try{pode=!!(window.matchMedia&&matchMedia("(pointer: coarse)").matches&&navigator.canShare&&navigator.canShare({files:[new File(["x"],"a.pdf",{type:"application/pdf"})]}))}catch(e){}
-if(!pode)return;window.__compartilha=true;b.style.display="";b.parentNode.className+=" dois";if(pr)pr.textContent="Imprimir";
+if(!pode)return;window.__compartilha=true;b.style.display="";var dc=document.getElementById("bt-dica");if(dc)dc.style.display="";b.parentNode.className+=" dois";if(pr)pr.textContent="Imprimir";
 var nome=${JSON.stringify(titulo.replace(/[\\/:*?"<>|]+/g, " ").trim() || "Documento").replace(/</g, "\\u003c")}+".pdf",arq=null;
-function pronto(f){arq=f;b.disabled=false;b.textContent="Compartilhar PDF"}
+function pronto(f){arq=f;b.disabled=false;b.textContent="Enviar PDF"}
 function falhou(){b.textContent="Não deu para montar o PDF";b.disabled=true;window.__compartilha=false}
 function monta(){var el=document.querySelector(".pg");var fn=document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve();
 fn.then(function(){return window.html2pdf().set({margin:[8,6,10,6],filename:nome,image:{type:"jpeg",quality:.95},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css","legacy"],avoid:[".card:not(.tab)","tr",".kpis"]}}).from(el).outputPdf("blob")})
@@ -209,9 +209,10 @@ const CSS = `
 html, body { font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #2C1219; background: #EFE9EC; font-size: 10.5px; line-height: 1.4; }
 b, strong { font-weight: 600; }
 .bar-acoes { position: sticky; top: 0; z-index: 5; display: flex; justify-content: center; gap: 10px; padding: 10px; background: rgba(239,233,236,.92); }
+.bar-acoes { flex-wrap: wrap; } .bar-dica { flex-basis: 100%; text-align: center; font: 500 12px "Poppins", sans-serif; color: #6B5D64; }
 .bar-acoes button:disabled { opacity: .6; } .bar-acoes.dois #bt-print { background: #fff; color: #C33A6E; box-shadow: inset 0 0 0 2px #E85A8C; }
 .bar-acoes button { border: none; border-radius: 10px; padding: 10px 18px; background: linear-gradient(90deg,#E85A8C,#C33A6E); color: #fff; font: 600 13px "Poppins", sans-serif; cursor: pointer; }
-@media (pointer: coarse) { .bar-acoes { padding: 18px; } .bar-acoes button { font-size: 28px; padding: 20px 40px; border-radius: 18px; } }
+@media (pointer: coarse) { .bar-acoes { padding: 18px; } .bar-acoes button { font-size: 28px; padding: 20px 40px; border-radius: 18px; } .bar-dica { font-size: 22px; } }
 .pg { max-width: 794px; margin: 0 auto 30px; background: #fff; padding: 14mm 12mm; border-radius: 6px; box-shadow: 0 10px 30px rgba(60,20,35,.12); }
 /* (03/11) no celular a tela mostra a folha inteira em miniatura (viewport 840), igual ao PDF que vai sair */
 @media print { html, body { background: #fff; } .bar-acoes { display: none; } .pg { box-shadow: none; border-radius: 0; margin: 0; padding: 0; max-width: none; } }

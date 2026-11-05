@@ -1485,7 +1485,7 @@ export default function EditarPedido() {
   // (31/10 · 5.84) ⋮ do pedido no padrão MenuMais: abre colado no botão (antes abria uma janela)
   const itensMenu: ItemMenuMais[] = [
     { Ic: Clock, t: 'Acompanhar pedido', sub: 'O histórico do pedido', aoTocar: () => setTimelineAberto(true) },
-    { Ic: Printer, t: 'Imprimir ou baixar PDF', sub: 'Para a produção ou o cliente', aoTocar: () => handleExportarPDF() },
+    { Ic: Printer, t: 'PDF do pedido', sub: 'Enviar ao cliente ou imprimir', aoTocar: () => handleExportarPDF() },
     ...(statusPedido !== 'cancelado' ? [{ Ic: Package, t: 'Mudar a etapa', sub: 'Voltar ou pular uma etapa', aoTocar: () => setEtapasAberto(true) }] : []),
     ...(statusPedido !== 'cancelado' ? [{ Ic: Prohibit, t: 'Cancelar pedido', sub: 'Fica guardado como cancelado', perigo: true, aoTocar: () => { setDevolverSinal(null); setCancelarAberto(true) } }] : []),
     { Ic: Trash, t: 'Excluir pedido', sub: 'Apaga de vez', perigo: true, aoTocar: () => excluirPedido() },

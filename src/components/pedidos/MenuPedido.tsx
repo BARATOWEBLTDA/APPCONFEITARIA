@@ -21,7 +21,7 @@ export function itensMenuPedido(p: Pedido, aoEscolher: (p: Pedido, acao: AcaoMen
     { Ic: Copy, t: 'Duplicar pedido', sub: 'Um igual, para outra data', aoTocar: vai('duplicar') },
     ...(temTelefone(p) ? [{ Ic: Zap, t: 'Chamar no WhatsApp', sub: 'Abre a conversa com o cliente', aoTocar: vai('contatar') }] : []),
     { Ic: Zap, t: 'Enviar resumo do pedido', sub: 'O pedido escrito no WhatsApp', aoTocar: vai('compartilhar') },
-    { Ic: FilePdf, t: 'Baixar PDF', sub: 'Para imprimir ou mandar', aoTocar: vai('pdf') },
+    { Ic: FilePdf, t: 'PDF do pedido', sub: 'Enviar ao cliente ou imprimir', aoTocar: vai('pdf') }, // (6.111) o PDF abre com "Enviar PDF" (WhatsApp) no celular
     { Ic: Trash, t: 'Excluir pedido', sub: 'Apaga de vez', perigo: true, aoTocar: vai('excluir') },
   ]
 }
