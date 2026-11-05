@@ -42,29 +42,36 @@ export default async function handler(req: Request) {
 
   // (6.85) gpt-image-1 escreve o nome certinho e faz o fundo transparente (bom pra imprimir o topo de bolo).
   // Se a conta da OpenAI não tiver acesso a ele, cai no dall-e-3 como antes.
+  // (6.96) tenta em cascata: gpt-image-1 completo → gpt-image-1 simples (se a OpenAI recusar algum parâmetro) → dall-e-3.
+  // O erro de cada tentativa (código, parâmetro e mensagem) volta para a tela e para o log, para achar o motivo de verdade.
+  type ErroOpenAI = { code?: string; type?: string; param?: string; message?: string };
+  const pedir = async (corpo: Record<string, unknown>) => {
+    const r = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+      body: JSON.stringify(corpo),
+    });
+    const d = await r.json().catch(() => null);
+    return { ok: r.ok, status: r.status, d, erro: (d?.error || null) as ErroOpenAI | null };
+  };
   const gerar = async (): Promise<{ status: number; corpo: unknown }> => {
-    const r1 = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: "gpt-image-1", prompt, n: 1, size: topo ? "1024x1536" : "1024x1024", quality: "medium", ...(topo ? { background: "transparent", output_format: "png" } : { output_format: "jpeg" }) }),
-    });
-    const d1 = await r1.json().catch(() => null);
-    const b64 = d1?.data?.[0]?.b64_json;
-    if (r1.ok && b64) return { status: 200, corpo: { data: [{ b64, formato: topo ? "png" : "jpeg" }], modelo: "gpt-image-1" } };
-    const r2 = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: "dall-e-3", prompt, n: 1, size: topo ? "1024x1792" : "1024x1024", quality: "standard" }),
-    });
-    const d2 = await r2.json().catch(() => null);
-    if (!r2.ok) {
-      // (6.94) o motivo de verdade (sem crédito, bloqueio de conteúdo, conta sem verificação) vai para a tela, para dar o aviso certo
-      const codigos = [d1?.error?.code, d2?.error?.code, d1?.error?.type, d2?.error?.type].filter(Boolean).map(String);
-      const motivo = codigos.find(c => /billing|quota/i.test(c)) || codigos.find(c => /content_policy|moderation|safety/i.test(c)) || codigos[0] || "api_error";
-      console.error("[doo-image]", r1.status, JSON.stringify(d1?.error || {}), r2.status, JSON.stringify(d2?.error || {}));
-      return { status: r2.status, corpo: { error: d2?.error?.type ?? "api_error", codigo: motivo, status: r2.status } };
+    const erros: ErroOpenAI[] = [];
+    const t1 = await pedir({ model: "gpt-image-1", prompt, n: 1, size: topo ? "1024x1536" : "1024x1024", quality: "medium", ...(topo ? { background: "transparent", output_format: "png" } : { output_format: "jpeg" }) });
+    if (t1.ok && t1.d?.data?.[0]?.b64_json) return { status: 200, corpo: { data: [{ b64: t1.d.data[0].b64_json, formato: topo ? "png" : "jpeg" }], modelo: "gpt-image-1" } };
+    if (t1.erro) erros.push(t1.erro);
+    if (t1.status === 400) {
+      const t2 = await pedir({ model: "gpt-image-1", prompt, n: 1, size: "1024x1024" });
+      if (t2.ok && t2.d?.data?.[0]?.b64_json) return { status: 200, corpo: { data: [{ b64: t2.d.data[0].b64_json, formato: "png" }], modelo: "gpt-image-1" } };
+      if (t2.erro) erros.push(t2.erro);
     }
-    return { status: 200, corpo: { ...d2, modelo: "dall-e-3" } };
+    const t3 = await pedir({ model: "dall-e-3", prompt: (prompt as string).slice(0, 3900), n: 1, size: "1024x1024", quality: "standard" });
+    if (t3.ok && t3.d?.data?.[0]) return { status: 200, corpo: { ...t3.d, modelo: "dall-e-3" } };
+    if (t3.erro) erros.push(t3.erro);
+    console.error("[doo-image]", JSON.stringify(erros));
+    const codigos = erros.flatMap(e => [e.code, e.type]).filter(Boolean).map(String);
+    const motivo = codigos.find(c => /billing|quota/i.test(c)) || codigos.find(c => /content_policy|moderation|safety/i.test(c)) || codigos[0] || "api_error";
+    const detalhe = erros.map(e => [e.param, (e.message || "").slice(0, 90)].filter(Boolean).join(": ")).filter(Boolean).join(" | ").slice(0, 300);
+    return { status: t3.status || 500, corpo: { error: erros[erros.length - 1]?.type ?? "api_error", codigo: motivo, detalhe, status: t3.status || 500 } };
   };
 
   // A imagem pode levar mais de 25 s: a resposta começa na hora e manda espaços até a imagem ficar pronta
