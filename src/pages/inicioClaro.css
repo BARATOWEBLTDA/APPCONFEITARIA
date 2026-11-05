@@ -57,3 +57,7 @@
   html body .ini-root .ini-hero-greeting .ini-ajuda { flex: none; margin-left: 2px; }
   html body .ini-root .ini-hero-greeting .ini-ajuda .cf-ajuda-bt { width: 24px; height: 24px; }
 }
+
+/* (6.87) a Doo no topo do Início (celular) */
+html body .ini-root .ini-hero-ac--doo { overflow: hidden; padding: 0 !important; background: #FCE7F3 !important; box-shadow: inset 0 0 0 2px #F3C6D8; }
+html body .ini-root .ini-hero-ac--doo img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }

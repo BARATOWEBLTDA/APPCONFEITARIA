@@ -816,6 +816,10 @@ export default function Inicio() {
 
         {/* (16/10) celular: o sino com as não lidas (antes só pela foto › Notificações, sem aviso nenhum) */}
         <div className="ini-hero-acoes">
+          {/* (6.87) celular: a Doo IA no topo do Início, ao lado da coroa e do sino */}
+          <button type="button" className="ini-hero-ac ini-hero-ac--doo" onClick={() => window.dispatchEvent(new Event("doonly:abrir-doo"))} aria-label="Abrir a Doo IA" title="Doo IA">
+            <img src="/Sistema/doo.webp" alt="" aria-hidden="true" />
+          </button>
           {/* (22/10) a coroa do PRO do lado do sino (como o Clube do iFood): leva pra assinatura */}
           {profile && (
             <button type="button" className="ini-hero-ac ini-hero-ac--pro" onClick={() => navigate(isPro ? "/minha-assinatura" : "/assinar")}

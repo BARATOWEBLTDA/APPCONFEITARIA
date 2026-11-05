@@ -90,3 +90,11 @@
 .mais-cab .mais-ola-t { flex: none; text-align: center; }
 /* (31/10 · 5.72) Assinatura em destaque: a coroa dourada no fundo amarelinho (as outras seguem no rosa) */
 .mais-it--pro .mais-it-ic { background: #FFF3D1; color: #C98A00; }
+
+/* (6.87) Doo IA em destaque no topo do Menu */
+.mais-doo { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 10px 14px 10px 10px; border: 1px solid #F3C6D8; border-radius: 16px; background: #FFF5F9; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.mais-doo img { flex: none; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: top center; background: #FCE7F3; }
+.mais-doo-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.mais-doo-tx b { font-size: 15px; font-weight: 600; }
+.mais-doo-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mais-doo > svg { flex: none; color: var(--ui-texto-3); }
