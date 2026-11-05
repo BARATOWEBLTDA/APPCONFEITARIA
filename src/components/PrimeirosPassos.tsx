@@ -215,6 +215,10 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
     antes.current = completo;
   }, [estado, completo, largo, local]);
 
+  // (6.141) computador: tocar num passo da lista mostra ele no bloco grande (com o Doo dele); a janela só abre no botão
+  const [escolhido, setEscolhido] = useState<number | null>(null);
+  useEffect(() => { setEscolhido(null); }, [estado]);
+
   if (!uid || !estado) return null;
 
   // No Cardápio digital o cartão some quando está tudo pronto (a tela mostra o cartão do link)
@@ -317,7 +321,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         {verTodos && <div className="ppb-lista">{passos.map((q, i) => i === atual ? null : (
           <button type="button" key={q.t} className={`pp-ps${q.feito ? " pp-ps--ok" : ""}`} onClick={q.abrir}>
             <span className={`pp-ic${q.feito ? " pp-ic--ok" : ""}`}>{q.feito ? I(Check) : <>{q.ic}<i className="pp-n">{i + 1}</i></>}</span>
-            <span className="pp-tx"><b>{q.t}</b><small>{q.feito ? "Feito · alterar" : q.s}</small></span>
+            <span className="pp-tx"><b>{q.t}</b><small>{q.feito ? "Feito · editar" : q.s}</small></span>
             <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>
           </button>
         ))}</div>}
@@ -360,14 +364,15 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
         ) : (
           <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.abrir}>
             <span className={`pp-ic${p.feito ? " pp-ic--ok" : ""}`}>{p.feito ? I(Check) : <>{p.ic}<i className="pp-n">{i + 1}</i></>}</span>
-            <span className="pp-tx"><b>{p.t}</b><small>{p.feito ? "Feito · alterar" : p.s}</small></span>
+            <span className="pp-tx"><b>{p.t}</b><small>{p.feito ? "Feito · editar" : p.s}</small></span>
             <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>
           </button>
         );
         if (!colunas) return <>{cab}{passos.map(item)}</>;
         // (29/10 · 4.95) computador: à esquerda o passo da vez num bloco com o porquê e o mascote;
         // à direita a lista com os 7 passos (o da vez marcado só pelo número rosa, sem fundo)
-        const p = atual >= 0 ? passos[atual] : null;
+        const sel = escolhido ?? atual;
+        const p = sel >= 0 ? passos[sel] : null;
         const animo = feitos === 0 ? "Vamos começar!" : passos.length - feitos <= 2 ? "Falta pouco!" : "Você está indo bem!";
         return (
           <div className="pp-dk">
@@ -386,12 +391,12 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
                 <div className="pp-hero" ref={atRef}>
                   <div className="pp-hero-topo">
                     <div className="pp-hero-tx">
-                      <span className="pp-hero-n" aria-hidden="true">{atual + 1}</span>
+                      <span className={`pp-hero-n${p.feito ? " pp-hero-n--ok" : ""}`} aria-hidden="true">{p.feito ? <Check size={28} weight="bold" /> : sel + 1}</span>
                       <div>
                         <b className="pp-hero-t">{p.t}</b>
                         <small className="pp-hero-s">{p.s}</small>
                         <p className="pp-hero-p">{p.pq}</p>
-                        <button type="button" className="pp-hero-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}<ArrowRight size={18} weight="bold" aria-hidden="true" /></button>
+                        <button type="button" className="pp-hero-btn" ref={btnRef} onClick={p.abrir}>{p.feito ? "Editar" : feitos === 0 ? "Começar" : "Fazer agora"}<ArrowRight size={18} weight="bold" aria-hidden="true" /></button>
                       </div>
                     </div>
                     {DOO_PASSO[p.t]
@@ -406,9 +411,9 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
                 </div>
               )}
               <div className="pp-lista">{passos.map((q, k) => (
-                <button type="button" key={q.t} className={`pp-li${q.feito ? " pp-li--ok" : ""}${k === atual ? " pp-li--vez" : ""}`} onClick={q.abrir}>
+                <button type="button" key={q.t} className={`pp-li${q.feito ? " pp-li--ok" : ""}${k === sel ? " pp-li--vez" : ""}`} aria-pressed={k === sel} onClick={() => setEscolhido(k)}>
                   <span className="pp-li-n">{q.feito ? <Check size={15} weight="bold" /> : k + 1}</span>
-                  <span className="pp-li-tx"><b>{q.t}</b><small>{q.feito ? "Feito · alterar" : q.s}</small></span>
+                  <span className="pp-li-tx"><b>{q.t}</b><small>{q.feito ? "Feito · editar" : q.s}</small></span>
                   <CaretRight size={16} weight="bold" className="pp-li-seta" />
                 </button>
               ))}</div>
@@ -1060,6 +1065,7 @@ const CSS = `
   .pp-hero { display: flex; flex-direction: column; gap: 18px; padding: 26px 26px 24px; border: 1px solid #F6DCE6; border-radius: 18px; background: linear-gradient(180deg, #FFF6F9, #FDF0F5); }
   .pp-hero-topo { flex: 1; display: flex; align-items: center; gap: 16px; }
   .pp-hero-tx { flex: 1; min-width: 0; display: flex; gap: 22px; align-items: flex-start; }
+  .pp-hero-n--ok { background: var(--ui-verde) !important; box-shadow: 0 6px 16px rgba(46, 158, 91, .25) !important; }
   .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(214, 69, 122, .25); }
   .pp-hero-t { display: block; margin-top: 4px; font-size: 26px; font-weight: 600; letter-spacing: -.015em; color: #241A1E; line-height: 1.2; }
   .pp-hero-s { display: block; margin-top: 4px; font-size: 18px; color: var(--ui-texto-2); }
