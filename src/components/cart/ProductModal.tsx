@@ -137,7 +137,7 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
       else if (max === 1) { arr.splice(0, 1, id) }
       aoMudar(arr)
     } else {
-      aoMudar(valor === id ? (obrig ? id : null) : id)
+      aoMudar(valor === id ? null : id) // (6.112) tocar de novo desmarca, mesmo quando é obrigatório (o botão volta a pedir a escolha)
     }
   }
   return (

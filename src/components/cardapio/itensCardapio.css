@@ -145,8 +145,8 @@
   .ic-sec:not(.ic-sec--pc) .ic-fila > .ic-cp { flex: 0 0 43%; scroll-snap-align: start; }
   .ic-sec:not(.ic-sec--pc) .ic-fila--dq > .ic-cp { flex-basis: 80%; }
   .ic-cp--dq .ic-cp-ft { aspect-ratio: 1.55; }
-  .ic-cp--dq .ic-cp-nome { font-size: 16.5px; -webkit-line-clamp: 1; }
-  .ic-cp--dq .ic-cp-desc { -webkit-line-clamp: 1; }
+  .ic-cp--dq .ic-cp-nome { font-size: 16.5px; -webkit-line-clamp: 2; }
+  .ic-cp--dq .ic-cp-desc { -webkit-line-clamp: 2; } /* (6.112) a descrição em 2 linhas, igual à lista das categorias */
 }
 
 /* (31/10 · 5.94) computador: produtos das categorias em 2 colunas largas (como nos apps de delivery),
@@ -158,6 +158,9 @@
 /* (04/11 · 6.33) Promoções no celular: cartões quadrados, 2 por linha (antes deslizavam pro lado igual aos Destaques) */
 .ic-sec:not(.ic-sec--pc) .ic-grade--promo { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .ic-sec:not(.ic-sec--pc) .ic-grade--promo .ic-cp-ft { aspect-ratio: 1; }
-.ic-sec:not(.ic-sec--pc) .ic-grade--promo .ic-cp-desc { display: none; }
-.ic-sec:not(.ic-sec--pc) .ic-grade--promo .ic-cp-nome { -webkit-line-clamp: 1; white-space: nowrap; display: block; text-overflow: ellipsis; }
+.ic-sec:not(.ic-sec--pc) .ic-grade--promo .ic-cp-desc { font-size: 12.5px; -webkit-line-clamp: 2; }
+.ic-sec:not(.ic-sec--pc) .ic-grade--promo .ic-cp-nome { font-size: 14px; -webkit-line-clamp: 2; }
+/* (6.112) nome e descrição em até 2 linhas nos cartões (antes o nome cortava em "Linha Caseira Fer…" e a descrição sumia);
+   o preço fica sempre embaixo, alinhado entre os cartões da mesma fileira */
+.ic-cp .ic-pp { margin-top: auto; padding-top: 6px; }
 .ic-selo-pct { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 3px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 700; line-height: 1.2; color: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .18); }

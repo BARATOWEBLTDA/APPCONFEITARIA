@@ -59,6 +59,8 @@ export function Campo({ rotulo, dica, erro, opcional, obrigatorio, prefixo, icon
         {prefixo ? <span className="ui-campo-pre" aria-hidden="true">{prefixo}</span> : null}
         <input
           ref={ref} id={meuId} type={senha && mostrar ? 'text' : type} disabled={disabled}
+          // (6.112) sem a barra de senhas, cartões e endereços do celular em cima do teclado (só login e senha usam o preenchimento)
+          autoComplete={senha || type === 'email' ? undefined : 'off'}
           aria-invalid={erro ? true : undefined} aria-required={obrigatorio || undefined}
           aria-describedby={erro || dica ? `${meuId}-msg` : undefined}
           {...resto}

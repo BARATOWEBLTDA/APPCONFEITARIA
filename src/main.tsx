@@ -45,6 +45,24 @@ iniciarMedidaDoTeclado()
 // App instalado: atualiza sozinho quando sai versão nova (num momento seguro)
 iniciarAutoAtualizacao()
 // (6.91) arquivo de uma tela que sumiu com a atualização (o Vite avisa antes de quebrar): recarrega uma vez e pega a versão nova
+// (6.112) Campos do app sem "autocomplete": o Android abria em cima do teclado a barra de senhas, cartões e endereços
+// (Google/Samsung). Todo campo de texto sem a marca ganha autocomplete="off"; os de login (e-mail, senha) têm a marca deles e ficam como estão.
+{
+  const marcar = (raiz: ParentNode) => {
+    raiz.querySelectorAll?.('input:not([autocomplete]), textarea:not([autocomplete])').forEach(el => {
+      const t = (el as HTMLInputElement).type
+      if (t === 'password' || t === 'email' || t === 'file' || t === 'checkbox' || t === 'radio' || t === 'hidden') return
+      el.setAttribute('autocomplete', 'off')
+    })
+  }
+  const iniciar = () => {
+    marcar(document)
+    new MutationObserver(lista => { for (const m of lista) m.addedNodes.forEach(n => { if (n.nodeType === 1) { const e = n as Element; if (/^(INPUT|TEXTAREA)$/.test(e.tagName)) marcar(e.parentNode || document); else marcar(e) } }) })
+      .observe(document.body, { childList: true, subtree: true })
+  }
+  if (document.body) iniciar(); else document.addEventListener('DOMContentLoaded', iniciar)
+}
+
 window.addEventListener('vite:preloadError', (e) => {
   try {
     const ult = Number(sessionStorage.getItem('doonly_recarga_arquivo') || 0)

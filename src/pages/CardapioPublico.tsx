@@ -495,7 +495,7 @@ function CardapioContent() {
           <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Para encomendar, chame a loja no WhatsApp.</small></span></div>
         )}
                 {/* Espaço embaixo: menu (60px) e, com itens, a barra "Ver seu pedido" (~64px) não cobrem o último produto */}
-        <div style={{ padding: `0 10px calc(${cartCount > 0 ? 148 : 84}px + env(safe-area-inset-bottom, 0px))` }}>
+        <div style={{ padding: `0 10px calc(${cartCount > 0 ? 160 : 84}px + env(safe-area-inset-bottom, 0px))` }}>
           {produtos.length > 0 ? (
             <ProductList
               produtos={filteredProdutos}

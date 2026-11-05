@@ -59,11 +59,12 @@ const SUGESTOES_CARTOES = [
 ]
 
 const PLACEHOLDERS = [
+  // (6.112) curtos: cabem no campo do celular sem cortar
   'Pergunte algo à Doo…',
-  'Calcular preço de bolo...',
-  'Criar legenda para Instagram...',
-  'Planejar produção da semana...',
-  'Mensagem para o cliente...',
+  'Calcular um preço…',
+  'Legenda para o Instagram…',
+  'Criar um topo de bolo…',
+  'Cadastrar um produto…',
 ]
 
 const buildSystemPrompt = (nome: string) => `Você é Doo, a assistente inteligente oficial do Doonly.
@@ -972,8 +973,15 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           const cumprimento = /^\s*(oi+|ol[aá]|e a[ií]|bom dia|boa tarde|boa noite|tudo bem\??|obrigad[ao]|valeu|ok+|blz|beleza|tchau)[\s!.?,]*$/i.test(text)
           const sobreImagem = /topo|topper|imagem|foto|logo|banner|arte|post|convite|faixa|idade|anos|cor|tema|estilo|nome|desenh|cria|gera|fa[zç]|refa[zç]|troca|muda|sim|pode|isso|separad|junt/i.test(text)
             || (/\?\s*$/.test(anterior.replace(/\n\n\[[^\]]*\]$/, '')) && /topo|imagem|logo|banner|arte|faixa|idade|cor|tema|estilo/i.test(anterior))
-          if (acaoBruta && acaoBruta.acao === 'imagem' && (cumprimento || !sobreImagem)) {
-            setMessages(prev => [...prev, { role: 'assistant', content: texto || 'Oi! Em que posso ajudar?' }])
+          // (6.112) também quando ela só agradeceu e a resposta diz que "está criando" (sem criar nada)
+          const falaCriando = /(estou|vou|j[aá]).{0,20}(criando|criar|gerando|gerar|fazendo)/i.test(texto || '')
+          if ((acaoBruta && acaoBruta.acao === 'imagem' && (cumprimento || !sobreImagem)) || (cumprimento && falaCriando)) {
+            // (6.112) a resposta da IA falava em criar a imagem ("Já estou criando o seu topo"): no lugar dela, uma resposta curta e certa
+            const agradeceu = /obrigad|valeu|brigad/i.test(text)
+            const falaDeImagem = /cri(ando|ar|ei)|gerando|topo|imagem|logo|banner/i.test(texto || '')
+            const resposta = agradeceu ? 'De nada! Precisando de mais alguma coisa, é só chamar.'
+              : (!texto || falaDeImagem) ? `Oi${nomeConfeiteira ? `, ${nomeConfeiteira}` : ''}! Em que posso ajudar?` : texto
+            setMessages(prev => [...prev, { role: 'assistant', content: resposta }])
             setLoading(false)
             return
           }

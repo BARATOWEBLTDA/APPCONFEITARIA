@@ -1467,12 +1467,12 @@ export function NavigationMenu({ corBotao, celular, corTopo, logoUrl, sugestoes,
         /* 08/10 · 3.28: menu de baixo (vinho, igual ao do app) e o botão do pedido na cor da loja */
         .cpn-pe { pointer-events: none; }
         .cpn-pe > * { pointer-events: auto; }
-        .cpn-pedido { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 50px; margin: 0; padding: 6px 16px; border: 0; border-radius: 0; color: var(--ui-branco); font-family: inherit; text-align: left; white-space: nowrap; cursor: pointer; }
-        .cpn-pedido-ic { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--ui-raio); background: rgba(255,255,255,.2); flex: none; }
+        .cpn-pedido { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 62px; margin: 0; padding: 10px 16px; /* (6.112) faixa um pouco mais alta */ border: 0; border-radius: 0; color: var(--ui-branco); font-family: inherit; text-align: left; white-space: nowrap; cursor: pointer; }
+        .cpn-pedido-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: rgba(255,255,255,.2); flex: none; }
         .cpn-pedido-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-        .cpn-pedido-tx b { font-size: 15px; font-weight: 600; line-height: 1.25; }
+        .cpn-pedido-tx b { font-size: 16px; font-weight: 600; line-height: 1.25; }
         .cpn-pedido-tx small { font-size: 13px; opacity: .9; }
-        .cpn-pedido strong { font-size: 16px; font-weight: 600; }
+        .cpn-pedido strong { font-size: 17px; font-weight: 600; }
         /* (19/10) menu branco (padrão iFood/99): parada em cinza, ativa na cor do topo da loja */
         .cpn-pe { box-shadow: 0 -2px 12px rgba(44,18,25,.08); }
         .cpn-menu { display: flex; padding-bottom: env(safe-area-inset-bottom, 0px); background: #fff; border-top: 1px solid #EFE7E3; }
