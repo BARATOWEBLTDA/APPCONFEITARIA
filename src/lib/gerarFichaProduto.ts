@@ -19,9 +19,11 @@ type ProdutoFicha = Omit<ProdutoCustoJson, "produto_insumos"> & {
 
 const VALIDADE: Record<string, string> = { refrigerado: "geladeira", congelado: "congelador", ambiente: "temperatura ambiente" };
 
-export async function gerarFichaProduto(produto: ProdutoFicha | null | undefined, _userId?: string): Promise<void> {
+/** (6.168) compartilhar: abre pronto pra enviar (WhatsApp e outros); antes: grava a ficha da tela antes de ler (devolve se gravou) */
+export async function gerarFichaProduto(produto: ProdutoFicha | null | undefined, _userId?: string, opcoes: { compartilhar?: boolean; antes?: () => Promise<boolean> } = {}): Promise<void> {
   const janela = abrirJanela();
   await gerarDocumento(async () => {
+    if (opcoes.antes && !(await opcoes.antes())) throw new Error("a ficha não foi salva");
     // Busca o produto completo com os ingredientes (a prévia da lista pode vir sem)
     let p: ProdutoFicha = produto;
     if (produto?.id) {
@@ -34,7 +36,11 @@ export async function gerarFichaProduto(produto: ProdutoFicha | null | undefined
     const linhas = itens.map((x) => {
       const q = Number(x.quantidade) || 0, un = x.unidade_utilizada || x.insumos.unidade || "";
       const cu = Number(x.insumos.custo_unitario) || 0;
-      return { nome: x.insumos.nome, qtd: `${String(q).replace(".", ",")} ${un}`, custo: custoIngrediente(q, un, x.insumos), preco: `${brl(cu)}/${esc(x.insumos.unidade || "un")}` };
+      // (6.168) preço na unidade cheia (R$/kg, R$/L), igual à tabela da tela (antes "R$ 0,02/g")
+      const iu = x.insumos.unidade || "un";
+      const cheia = iu === "g" ? "kg" : iu === "ml" ? "L" : iu === "cm" ? "m" : iu;
+      const fator = iu === "g" || iu === "ml" ? 1000 : iu === "cm" ? 100 : 1;
+      return { nome: x.insumos.nome, qtd: `${String(q).replace(".", ",")} ${un}`, custo: custoIngrediente(q, un, x.insumos), preco: `${brl(cu * fator)}/${esc(cheia)}` };
     });
     // Mesma conta da tela da ficha: custos invisíveis e mão de obra salvos na conta valem pra todos os produtos (09/10)
     const uid = p.user_id || _userId;
@@ -91,6 +97,7 @@ ${rendeUn > 0 ? `<div><span>Custo por unidade</span><b>${brl(custo / rendeUn)}</
     const atualizado = p.updated_at ? new Date(p.updated_at).toLocaleDateString("pt-BR") : new Date().toLocaleDateString("pt-BR");
     return {
       titulo: `Ficha técnica · ${p.nome || ""}`,
+      marcaDagua: true, compartilhar: !!opcoes.compartilhar,
       tipo: "Ficha técnica",
       numero: "",
       sub: `Atualizada em ${atualizado}`,

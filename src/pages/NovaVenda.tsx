@@ -325,9 +325,13 @@ export default function NovaVenda() {
   const prontaRetirada = tipo === 'pronta_entrega' && tipoEntrega === 'retirada'
   const buscaDepois = prontaRetirada && vemBuscar
   const jaLevou = prontaRetirada && !vemBuscar
-  useEffect(() => { if (jaLevou) setStatusPedido('entregue') }, [jaLevou])
+  // (6.168) situação posta sozinha (pronta entrega) volta pra "Agendado" quando deixa de valer
+  // (ex.: marcou Pronta entrega e trocou pra Encomenda: o pedido de amanhã entrava como "Entregue")
+  const statusAuto = useRef(false)
+  useEffect(() => { if (jaLevou) { setStatusPedido('entregue'); statusAuto.current = true } }, [jaLevou])
+  useEffect(() => { if (!jaLevou && !buscaDepois && statusAuto.current) { statusAuto.current = false; setStatusPedido('agendado') } }, [jaLevou, buscaDepois])
   // vem buscar: entra como "Pronto pra retirar", com a data de hoje já marcada
-  useEffect(() => { if (buscaDepois) { setStatusPedido('finalizado'); setDataEntrega(d => d && d >= hojeISO() ? d : hojeISO()) } }, [buscaDepois])
+  useEffect(() => { if (buscaDepois) { setStatusPedido('finalizado'); statusAuto.current = true; setDataEntrega(d => d && d >= hojeISO() ? d : hojeISO()) } }, [buscaDepois])
   useEffect(() => { if (tipo === 'pronta_entrega') setSituacaoPag(s => s ?? 'total') }, [tipo])
 
   // Scroll pro topo quando muda de etapa ou entra na tela de sucesso
@@ -1136,7 +1140,7 @@ export default function NovaVenda() {
           <section className="nv3-card">
             <Titulo>Em que situação o pedido entra?</Titulo>
             <div className="nv3-sit" role="group" aria-label="Em que situação o pedido entra">
-              {COMECOS.map(c => <button key={c.chave} type="button" aria-pressed={statusPedido === c.chave} disabled={jaLevou && c.chave !== 'entregue'} onClick={() => setStatusPedido(c.chave)}>{c.nome}</button>)}
+              {COMECOS.map(c => <button key={c.chave} type="button" aria-pressed={statusPedido === c.chave} disabled={jaLevou && c.chave !== 'entregue'} onClick={() => { statusAuto.current = false; setStatusPedido(c.chave) }}>{c.nome}</button>)}
             </div>
             <p className="nv3-dica"><b>{comeco.nome}:</b> {comeco.dica}</p>
           </section>

@@ -86,7 +86,11 @@ export function abrirJanela(): Window | null {
  * tipo + numero: o que vai no canto direito do cabeçalho. Número com "#" sai junto
  * ("Pedido #148"); texto (nome do produto, dia) sai embaixo do tipo.
  */
-export type Doc = { titulo: string; tipo: string; numero: string; sub?: string; destaque?: string; alerta?: boolean; corpo: string };
+export type Doc = { titulo: string; tipo: string; numero: string; sub?: string; destaque?: string; alerta?: boolean; corpo: string;
+  /** (6.168) marca d'água do Doonly no fundo de todas as páginas (ficha técnica que a confeiteira manda no WhatsApp) */
+  marcaDagua?: boolean;
+  /** (6.168) veio do "Compartilhar": onde o aparelho compartilha arquivos (celular e computador), mostra o Enviar PDF em vez de abrir a impressão */
+  compartilhar?: boolean };
 
 /** Texto pronto pra ir dentro de content: "…" no CSS (sem quebrar a regra nem fechar o <style>) */
 const cssTexto = (s: string) => `"${String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\r\n]+/g, " ").replace(/</g, "\\3C ")}"`;
@@ -122,14 +126,14 @@ export function montarHtml(loja: Loja, d: Doc, rodapeDePagina = sabeRodapeDePagi
 <style>${fontesPoppins()}</style>
 <style>${CSS}${pagina}</style></head><body>
 <div class="bar-acoes"><button id="bt-share" type="button" style="display:none" disabled>Preparando o PDF…</button><span class="bar-dica" id="bt-dica" style="display:none">Toque em Enviar PDF, escolha o WhatsApp e a conversa do cliente</span><button id="bt-print" onclick="window.print()">Salvar PDF / Imprimir</button></div>
-<div class="pg">
+<div class="pg">${d.marcaDagua ? `<div class="mdg" aria-hidden="true" style="background-image:url('${typeof location !== "undefined" ? location.origin : ""}/marca/leve/texto.webp')"></div>` : ""}
 <div class="hd"><div class="av">${av}</div>
 <div class="lj"><b>${esc(loja.nome)}</b>${loja.contato ? `<span>${esc(loja.contato)}</span>` : ""}</div>
 <div class="nr"><b>${esc(titulo)}</b>${linhasDireita.map(l => `<span>${esc(l)}</span>`).join("")}${d.destaque ? `<em${d.alerta ? ' class="al"' : ""}>${esc(d.destaque)}</em>` : ""}</div></div>
 ${corpo}
 <div class="ft"><span>Gerado em ${esc(gerado)}</span>${loja.isPro ? "" : `<span class="fb">${esc(marca)}</span>`}</div>
 </div>
-<script>${compartilharPdf(d.titulo)}<\/script>
+${d.compartilhar ? "<script>window.__querCompartilhar=true<\/script>" : ""}<script>${compartilharPdf(d.titulo)}<\/script>
 <script>${ESPERA_E_IMPRIME}<\/script>
 </body></html>`;
 }
@@ -187,8 +191,8 @@ if(document.readyState==="complete")vai();else window.addEventListener("load",va
  */
 const compartilharPdf = (titulo: string) => `(function(){
 var b=document.getElementById("bt-share"),pr=document.getElementById("bt-print");if(!b)return;
-var pode=false;try{pode=!!(window.matchMedia&&matchMedia("(pointer: coarse)").matches&&navigator.canShare&&navigator.canShare({files:[new File(["x"],"a.pdf",{type:"application/pdf"})]}))}catch(e){}
-if(!pode)return;window.__compartilha=true;b.style.display="";var dc=document.getElementById("bt-dica");if(dc)dc.style.display="";b.parentNode.className+=" dois";if(pr)pr.textContent="Imprimir";
+var pode=false;try{pode=!!((window.__querCompartilhar||(window.matchMedia&&matchMedia("(pointer: coarse)").matches))&&navigator.canShare&&navigator.canShare({files:[new File(["x"],"a.pdf",{type:"application/pdf"})]}))}catch(e){}
+if(!pode){if(window.__querCompartilhar){var d0=document.getElementById("bt-dica");if(d0){d0.textContent="Salve o PDF e envie pelo WhatsApp Web (anexar documento)";d0.style.display=""}}return;}window.__compartilha=true;b.style.display="";var dc=document.getElementById("bt-dica");if(dc)dc.style.display="";b.parentNode.className+=" dois";if(pr)pr.textContent="Imprimir";
 var nome=${JSON.stringify(titulo.replace(/[\\/:*?"<>|]+/g, " ").trim() || "Documento").replace(/</g, "\\u003c")}+".pdf",arq=null;
 function pronto(f){arq=f;b.disabled=false;b.textContent="Enviar PDF"}
 function falhou(){b.textContent="Não deu para montar o PDF";b.disabled=true;window.__compartilha=false}
@@ -214,6 +218,10 @@ b, strong { font-weight: 600; }
 .bar-acoes button { border: none; border-radius: 10px; padding: 10px 18px; background: linear-gradient(90deg,#E85A8C,#C33A6E); color: #fff; font: 600 13px "Poppins", sans-serif; cursor: pointer; }
 @media (pointer: coarse) { .bar-acoes { padding: 18px; } .bar-acoes button { font-size: 28px; padding: 20px 40px; border-radius: 18px; } .bar-dica { font-size: 22px; } }
 .pg { max-width: 794px; margin: 0 auto 30px; background: #fff; padding: 14mm 12mm; border-radius: 6px; box-shadow: 0 10px 30px rgba(60,20,35,.12); }
+/* (6.168) marca d'água do Doonly: o logo bem clarinho, repetido no fundo de todas as páginas */
+.pg { position: relative; }
+.mdg { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .035; background-repeat: space; background-size: 170px auto; background-position: center 40px; }
+.pg > :not(.mdg) { position: relative; z-index: 1; }
 /* (03/11) no celular a tela mostra a folha inteira em miniatura (viewport 840), igual ao PDF que vai sair */
 @media print { html, body { background: #fff; } .bar-acoes { display: none; } .pg { box-shadow: none; border-radius: 0; margin: 0; padding: 0; max-width: none; } }
 /* cabeçalho: uma faixa baixa, linha rosa embaixo */

@@ -17,13 +17,15 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_FICHA, TOUR_FICHA } from "@/lib/comoTelas";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
-import { Camera, CaretDown, CaretRight, Check, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, X, ListBullets, SquaresFour } from "@phosphor-icons/react";
+import { Camera, CaretDown, CaretRight, Check, FilePdf, WhatsappLogo, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, X, ListBullets, SquaresFour } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
 import "./clientes.css";
 import "./fichaLista.css";
 import AbasFicha from "@/components/ficha/AbasFicha";
 import "./fichaDetalhe.css";
 import { usePlano } from "@/hooks/usePlano";
+import { abrirConvitePro } from "@/components/billing/RecursoPro";
+import { gerarFichaProduto } from "@/lib/gerarFichaProduto";
 import { abrirDooIA } from "@/components/MenuContaItens";
 
 // ── Famílias de unidades e conversão ──
@@ -326,6 +328,7 @@ export default function FichaTecnica() {
   }, [showQuickAdd]);
   const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40" });
   // (6.163) tempo de preparo em horas + minutos (antes só minutos: "2h30" virava conta de cabeça). Guarda em minutos, como antes.
+  const [editandoTempo, setEditandoTempo] = useState(false); // (6.168) tempo já definido: caixa cinza com "Editar"
   const [tempoH, setTempoH] = useState("");
   const [tempoM, setTempoM] = useState("");
   useEffect(() => {
@@ -437,6 +440,7 @@ export default function FichaTecnica() {
 
   const abrirFicha = (p: Produto) => {
     setSelected(p);
+    setEditandoTempo(!(Number(p.tempo_preparo_min) > 0)); // sem tempo: já abre com os campos; com tempo: caixa cinza
     const fichaAberta: FichaItem[] = (p.produto_insumos || []).map(pi => {
       const insumo = pi.insumos as Insumo;
       return {
@@ -521,8 +525,9 @@ export default function FichaTecnica() {
     setQuickAddName("");
   };
 
-  const salvarFicha = async () => {
-    if (!selected || !userId) return;
+  /** ficar: grava sem sair da ficha e sem aviso (6.168: antes do PDF). Devolve se gravou. */
+  const salvarFicha = async (ficar = false): Promise<boolean> => {
+    if (!selected || !userId) return false;
     setSaving(true);
 
     // 1. Persiste vinculos produto_insumos (10/10: confere o erro antes de seguir)
@@ -542,7 +547,7 @@ export default function FichaTecnica() {
       // Não deixa a ficha "sumir" calada: avisa e para (os ingredientes continuam na tela pra tentar de novo)
       setSaving(false);
       avisar(explicarErro(errIns, "Não deu para salvar os ingredientes. Tente de novo."), { tipo: "erro" });
-      return;
+      return false;
     }
 
     // 2. Persiste campos extras no produto (respeitando os toggles ativos)
@@ -563,7 +568,7 @@ export default function FichaTecnica() {
       // Os ingredientes já foram gravados; o que não entrou foram os outros campos da ficha
       setSaving(false);
       avisar(explicarErro(errProd, "Os ingredientes foram salvos, mas o resto da ficha não. Tente salvar de novo."), { tipo: "erro" });
-      return;
+      return false;
     }
 
     // 3. Recarrega e atualiza o produto selecionado
@@ -578,6 +583,7 @@ export default function FichaTecnica() {
     // salvou: o que está na tela passa a ser o ponto de partida (a seta de voltar não pergunta mais)
     retrato.current = { ficha: assinarFicha(ficha), extras: { ...extras }, mo: moAtivo, info: infoAtivo };
     setSaving(false);
+    if (ficar) return true;
     avisar("Ficha técnica salva", { tipo: "ok" });
     // (04/11 · 6.20) salvou: volta pra lista da Ficha técnica, com a ficha salva destacada
     const salvaId = selected.id;
@@ -586,6 +592,7 @@ export default function FichaTecnica() {
     setRecemSalva(salvaId);
     window.setTimeout(() => document.querySelector(`[data-ficha="${salvaId}"]`)?.scrollIntoView({ block: "center" }), 120);
     window.setTimeout(() => setRecemSalva(r => (r === salvaId ? null : r)), 3200);
+    return true;
   };
 
   const filtrados = produtos.filter(p => {
@@ -636,6 +643,13 @@ export default function FichaTecnica() {
     const buscaPicker = pickerBusca.trim();
     const temExato = insumosCadastrados.some(i => i.nome.trim().toLowerCase() === buscaPicker.toLowerCase());
     const abrirCadastro = (nome = "") => { setQuickAddName(nome); setShowQuickAdd(true); };
+    // (6.168) PDF da ficha: grava o que está na tela (sem sair) e abre o documento; "compartilhar" já abre pronto pra enviar
+    const exportarFicha = (compartilhar: boolean) => {
+      if (!isProFicha) { abrirConvitePro("fichaPdf"); return; }
+      const sel = selected;
+      void gerarFichaProduto(sel, userId || undefined, { compartilhar, antes: () => (mudouFicha() ? salvarFicha(true) : Promise.resolve(true)) })
+        .catch(() => avisar("Não foi possível gerar o PDF. Tente de novo.", { tipo: "erro" }));
+    };
 
     // Conta do lucro (a mesma no resumo do celular e na coluna do computador)
     // (31/10 · 5.84) pedaços prontos (não componentes criados a cada desenho)
@@ -766,6 +780,13 @@ export default function FichaTecnica() {
               Aqui fica só o tempo da receita, que é o que a mão de obra precisa. */}
           <section className="cl9-card fd-sec">
             <Titulo>Tempo de preparo</Titulo>
+            {tempoMin > 0 && !editandoTempo ? (
+              <div className="fd-mo-conta">
+                <span><b>{tempoMin >= 60 ? `${Math.floor(tempoMin / 60)}h${tempoMin % 60 ? String(tempoMin % 60).padStart(2, "0") : ""}` : `${tempoMin} min`}</b>
+                  <small>{maoConta ? `Mão de obra nesta receita: R$ ${fmt(moLive)}` : "Entra no custo com a mão de obra de Custos"}</small></span>
+                <Botao variante="secundario" tamanho="m" onClick={() => setEditandoTempo(true)}>Editar</Botao>
+              </div>
+            ) : (<>
             <p className="fd-dica">Do começo ao fim da receita.</p>
             <div className="fd-tempo">
               <Campo rotulo="Horas" inputMode="numeric" placeholder="0" value={tempoH}
@@ -776,7 +797,16 @@ export default function FichaTecnica() {
                 depois={<span className="cl9-f-uf">min</span>} />
             </div>
             <p className="ui-campo-msg fd-tempo-d">{!maoConta ? "Entra no custo quando você cadastrar a sua mão de obra em Custos." : Number(extras.tempo_preparo_min) > 0 ? `Sua mão de obra nesta receita: R$ ${fmt(moLive)}` : "Com o tempo, o valor do seu trabalho entra no custo."}</p>
+            </>)}
           </section>
+
+          {/* (6.168) mandar a ficha: PDF no padrão do app, com a marca d'água do Doonly (recurso PRO, como o PDF de Produtos) */}
+          {ficha.length > 0 && (
+            <div className="fd-exportar">
+              <Botao variante="secundario" icone={<WhatsappLogo size={20} weight="bold" />} onClick={() => exportarFicha(true)}>Compartilhar ficha</Botao>
+              <Botao variante="secundario" icone={<FilePdf size={20} weight="bold" />} onClick={() => exportarFicha(false)}>Salvar em PDF</Botao>
+            </div>
+          )}
 
           {/* (6.102) "Informações do produto" saiu da ficha: não entra no custo (o que já foi salvo continua guardado) */}
         </div>
@@ -794,7 +824,7 @@ export default function FichaTecnica() {
             </div>
             {barra}
             {conta}
-            <Botao cheio carregando={saving} onClick={salvarFicha}>Salvar ficha</Botao>
+            <Botao cheio carregando={saving} onClick={() => { void salvarFicha(); }}>Salvar ficha</Botao>
           </section>
         </aside>
         </div>
@@ -806,7 +836,7 @@ export default function FichaTecnica() {
           <small>{lucroLive < 0 ? "Prejuízo" : "Lucro"} · {fmtPct(margemLucroLive)}%</small>
           <b>R$ {fmt(Math.abs(lucroLive))}</b>
         </div>
-        <Botao carregando={saving} onClick={salvarFicha}>Salvar ficha</Botao>
+        <Botao carregando={saving} onClick={() => { void salvarFicha(); }}>Salvar ficha</Botao>
       </div>
 
       {/* Escolher ingredientes já cadastrados (vários de uma vez) */}
