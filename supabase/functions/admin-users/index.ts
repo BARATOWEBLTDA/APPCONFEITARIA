@@ -89,6 +89,27 @@ serve(async (req) => {
       });
     }
 
+    // (6.167) trocar o e-mail de login: a conta é a mesma; o e-mail antigo fica guardado
+    // pra Hotmart continuar achando a conta (renovação, cancelamento e reembolso chegam com o e-mail da compra)
+    if (action === "change_email") {
+      const json = (status: number, corpo: unknown) => new Response(JSON.stringify(corpo), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const novo = String(email || "").trim().toLowerCase();
+      if (!userId || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(novo)) return json(400, { error: "E-mail inválido" });
+      const { data: alvo, error: eAlvo } = await adminClient.auth.admin.getUserById(userId);
+      if (eAlvo || !alvo?.user) return json(404, { error: "Conta não encontrada" });
+      const antigo = String(alvo.user.email || "").trim().toLowerCase();
+      if (antigo === novo) return json(400, { error: "Esse já é o e-mail da conta" });
+      const { data: dono } = await adminClient.rpc("hotmart_usuario_por_email", { p_email: novo });
+      if (dono && dono !== userId) return json(409, { error: "Esse e-mail já é de outra conta" });
+      const { error: eTroca } = await adminClient.auth.admin.updateUserById(userId, { email: novo, email_confirm: true });
+      if (eTroca) return json(400, { error: eTroca.message });
+      const { data: perfil } = await adminClient.from("profiles").select("emails_anteriores").eq("id", userId).maybeSingle();
+      const lista = [...new Set([...(((perfil as any)?.emails_anteriores as string[]) || []), antigo].filter(e => e && e !== novo))];
+      const { error: eLista } = await adminClient.from("profiles").update({ emails_anteriores: lista }).eq("id", userId);
+      if (eLista) console.error("Trocou o e-mail, mas não guardou o antigo:", eLista.message);
+      return json(200, { success: true, email: novo, antigo, guardou_antigo: !eLista });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

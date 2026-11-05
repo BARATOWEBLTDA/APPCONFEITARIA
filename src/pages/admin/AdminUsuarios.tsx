@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import PainelLoja, { type AcaoLoja } from "./PainelLoja";
 import { registrar, nomeConta } from "@/lib/adminPerfil";
 import { supabase } from "@/lib/supabase";
-import { Plus, MagnifyingGlass, X, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { Plus, MagnifyingGlass, X, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight, EnvelopeSimple } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, avisar, confirmar, informar } from "@/components/base";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { explicarErro } from "@/lib/erros";
@@ -69,6 +69,7 @@ export default function AdminUsuarios() {
     const pro = u.plano === "pro" && (!u.pro_expira_em || new Date(u.pro_expira_em) > new Date());
     return [
       { rotulo: pro ? "Tirar o PRO" : "Dar o PRO", sub: pro ? "A conta volta a ser grátis" : "Por quantos dias quiser", icone: <Crown size={20} weight={pro ? "fill" : "bold"} />, ativo: pro, aoClicar: () => handleTogglePRO(u) },
+      { rotulo: "Trocar o e-mail", sub: "Mesma conta, mesma senha e o PRO continua", icone: <EnvelopeSimple size={20} weight="bold" />, aoClicar: () => { setEmailAlvo(u); setEmailNovo(""); setEmailErro(""); } },
       { rotulo: u.banned_until ? "Desbloquear" : "Bloquear o acesso", sub: u.banned_until ? "Ela volta a entrar no app" : "Ela não consegue mais entrar", icone: u.banned_until ? <LockOpen size={20} weight="bold" /> : <Lock size={20} weight="bold" />, aoClicar: () => setConfirmBlock(u) },
       { rotulo: "Excluir a conta", sub: "Apaga a conta e tudo dela", icone: <Trash size={20} weight="bold" />, perigo: true, aoClicar: () => setConfirmDelete(u) },
     ];
@@ -85,6 +86,11 @@ export default function AdminUsuarios() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  // (6.167) trocar o e-mail de login (o antigo fica guardado pra Hotmart continuar achando a conta)
+  const [emailAlvo, setEmailAlvo] = useState<UsuarioAdmin | null>(null);
+  const [emailNovo, setEmailNovo] = useState("");
+  const [emailErro, setEmailErro] = useState("");
+  const [emailSalvando, setEmailSalvando] = useState(false);
 
   const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`;
 
@@ -240,6 +246,24 @@ export default function AdminUsuarios() {
       avisar((err as Error).message, { tipo: "erro" });
     }
     setActionLoading(false);
+  };
+
+  const trocarEmail = async () => {
+    if (!emailAlvo) return;
+    const novo = emailNovo.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(novo)) { setEmailErro("Confira o e-mail: falta o @ ou o final (.com, .com.br)."); return; }
+    if (novo === (emailAlvo.email || "").toLowerCase()) { setEmailErro("Esse já é o e-mail da conta."); return; }
+    setEmailSalvando(true); setEmailErro("");
+    try {
+      await callEdge({ action: "change_email", userId: emailAlvo.id, email: novo });
+      void registrar(`trocou o e-mail de ${nomeConta(emailAlvo)} de ${emailAlvo.email} para ${novo}`, { tipo: "usuario", alvo_id: emailAlvo.id });
+      avisar(`E-mail trocado. ${emailAlvo.nome?.split(" ")[0] || "Ela"} já entra com ${novo} e a mesma senha.`, { tipo: "ok" });
+      setEmailAlvo(null);
+      await load();
+    } catch (err) {
+      setEmailErro(explicarErro(err, "Não deu para trocar o e-mail. Tente de novo."));
+    }
+    setEmailSalvando(false);
   };
 
   const handleBlock = async () => {
@@ -448,6 +472,29 @@ export default function AdminUsuarios() {
               <button key={o.d} type="button" aria-pressed={proDias === o.d} onClick={() => { setProDias(o.d); setProErro(""); }}>{o.t}</button>
             ))}
           </div>
+        </div>
+      </Janela>
+
+      {/* Janela: trocar e-mail (6.167) */}
+      <Janela
+        aberta={!!emailAlvo}
+        aoFechar={() => { if (!emailSalvando) setEmailAlvo(null); }}
+        tipo="conteudo"
+        titulo="Trocar o e-mail"
+        acoes={<>
+          <Botao variante="secundario" onClick={() => setEmailAlvo(null)} disabled={emailSalvando}>Cancelar</Botao>
+          <Botao icone={<EnvelopeSimple size={20} weight="bold" />} onClick={trocarEmail} carregando={emailSalvando}>Trocar e-mail</Botao>
+        </>}
+      >
+        <div className="au-form">
+          <p className="au-j-apoio">Hoje {emailAlvo?.nome || "a conta"} entra com <b>{emailAlvo?.email}</b>.</p>
+          <Campo
+            rotulo="E-mail novo" type="email" inputMode="email" autoComplete="off" autoCapitalize="none"
+            value={emailNovo} onChange={e => { setEmailNovo(e.target.value); setEmailErro(""); }}
+            erro={emailErro || undefined}
+            dica="A senha, os pedidos e o PRO continuam. A Hotmart continua achando a conta pelo e-mail antigo."
+            onKeyDown={e => { if (e.key === "Enter") trocarEmail(); }}
+          />
         </div>
       </Janela>
 
