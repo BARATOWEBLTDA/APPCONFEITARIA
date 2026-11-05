@@ -889,6 +889,8 @@ export default function Produtos() {
   useEffect(() => {
     if (!loading && (location.state as { abrirCadastro?: boolean } | null)?.abrirCadastro) {
       window.history.replaceState({ ...(window.history.state || {}), usr: null }, ""); // (11/10) mantém idx e key do roteador (o voltarOuIr usa)
+      // (6.140) sem nenhum produto ainda: fica na tela de começo (com o Doo e o "Cadastrar produto"), que ela nunca via
+      if (produtos.length === 0) return;
       // Abre igual ao botão "Novo produto" (a escolha com imagens: bolos, doces, salgados…).
       // Antes abria a janela sem zerar e caía na tela antiga de tipo de cadastro.
       openNovo();

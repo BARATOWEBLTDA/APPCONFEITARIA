@@ -246,3 +246,7 @@
 .pdc-bts { display: inline-flex; gap: 8px; flex: none; }
 .ui-bt.pd-ver { background: var(--ui-branco); border: 1px solid var(--ui-borda); color: var(--ui-texto); box-shadow: none; }
 @media (hover: hover) { .ui-bt.pd-ver:hover { background: var(--ui-linha); } }
+
+/* (6.140) sem produto: o Doo pensando com a caixa no lugar do ícone do bolo */
+.pd-sem-produto .ui-vazia-ic { width: auto; height: auto; margin-bottom: 4px; border-radius: 0; background: none; box-shadow: none; }
+.pd-sem-produto .ui-vazia-ic img { display: block; width: 180px; height: auto; }
