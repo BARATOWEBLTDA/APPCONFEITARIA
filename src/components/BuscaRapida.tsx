@@ -7,7 +7,7 @@ import {
   WhatsappLogo, PauseCircle, PixLogo, Clock, Truck, MapPin, Money, WarningCircle, BellRinging, Wrench, DeviceMobile, Eye, Hourglass,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target } from "@phosphor-icons/react";
+import { Ticket, Target, Scales } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { useSobreposicao } from "@/components/base/useSobreposicao";
@@ -91,6 +91,7 @@ export default function BuscaRapida() {
       { g: PROD, t: "Adicionais", ic: Stack, rota: "/complementos", pro: true, chaves: "complementos extras topo vela escrita" },
       { g: PROD, t: "Ingredientes", ic: Basket, rota: "/insumos", chaves: "insumo ingrediente materia prima compra mercado embalagem preco" },
       { g: PROD, t: "Ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", chaves: "receita custo lucro margem preco sugerido rendimento" },
+      { g: PROD, t: "Conversor de medidas", ic: Scales, rota: "/ferramentas/medidas", chaves: "ferramentas xicara colher gramas converter medida peso" },
       { g: PROD, t: "Produtos sem ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", estado: { abrir: "sem-ficha" }, chaves: "falta ficha" },
       { g: PROD, t: "Custos", ic: Receipt, rota: "/custos", chaves: "custo fixos variaveis despesa gasto aluguel luz gas" },
       { g: PROD, t: "Mão de obra", ic: Wrench, rota: "/custos", estado: { abrir: "mao" }, chaves: "salario hora jornada trabalho" },

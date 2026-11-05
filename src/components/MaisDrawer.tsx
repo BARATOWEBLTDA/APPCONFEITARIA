@@ -9,7 +9,7 @@ import {
 } from "@phosphor-icons/react";
 import { abrirBuscaRapida } from "@/components/BuscaRapida";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target, ShareNetwork } from "@phosphor-icons/react";
+import { Ticket, Target, ShareNetwork, Scales } from "@phosphor-icons/react";
 import { indicarDoonly } from "@/lib/indicarDoonly";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { usePlano } from "@/hooks/usePlano";
@@ -70,6 +70,13 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Cupons", desc: "Descontos para vender", path: "/cupons", Icone: Ticket, pro: true },
       { label: "Pixel",  desc: "Meta, Google e TikTok",        path: "/pixel",  Icone: Target, pro: true },
+    ],
+  },
+  {
+    // (6.152) ferramentas de cozinha: conversor de medidas (e as próximas)
+    label: "Ferramentas",
+    items: [
+      { label: "Conversor de medidas", desc: "Xícaras e colheres em gramas", path: "/ferramentas/medidas", Icone: Scales },
     ],
   },
   {
