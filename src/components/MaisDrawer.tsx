@@ -5,7 +5,9 @@ import {
   Gear, Crown, CaretRight,
   CalendarDots, CurrencyDollar,
   Newspaper, FileText, Users, ChatCircleText, Cake, Package, ClipboardText,
+  Calculator, ChartPieSlice, Lifebuoy, MagnifyingGlass,
 } from "@phosphor-icons/react";
+import { abrirBuscaRapida } from "@/components/BuscaRapida";
 import type { Icon } from "@phosphor-icons/react";
 import { Ticket, Target } from "@phosphor-icons/react";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
@@ -27,53 +29,59 @@ interface MaisDrawerProps {
   onClose: () => void;
 }
 
-interface Item { label: string; desc: string; path: string; Icone: Icon }
+interface Item { label: string; desc: string; path: string; Icone: Icon; pro?: boolean }
 interface Grupo { label: string; items: Item[] }
 
 // (13/10) TODAS as telas da confeiteira (as mesmas do menu do computador, na mesma ordem),
 // inclusive as que também abrem pelo Início. Só ficam fora as que já estão no menu de baixo (Início, Pedidos, Cardápio, Doo IA).
 // (18/10) reorganizado pela prioridade do dia a dia: o que ela usa todo dia primeiro, o que mexe pouco no fim
 // (6.59) sem o "Cadastros" no meio do caminho: cada tela aparece direto, em grupos pelo uso do dia a dia
+// (6.109) ordem pelo uso: o que se abre todo dia em cima. Custos, Lucratividade e Ajuda entraram (antes só por dentro de outras telas).
+//         Recurso do PRO leva a etiqueta "PRO" para quem é grátis (sabe antes de tocar).
 const GRUPOS: Grupo[] = [
   {
     label: "Dia a dia",
     items: [
       { label: "Agenda",       desc: "Entregas por dia",               path: "/agenda",     Icone: CalendarDots },
-      { label: "Orçamentos",   desc: "Propostas que o cliente aprova", path: "/orcamentos", Icone: FileText },
       { label: "Clientes",     desc: "Quem já comprou com você",       path: "/clientes",   Icone: Users },
+      { label: "Orçamentos",   desc: "Propostas para aprovar", path: "/orcamentos", Icone: FileText, pro: true },
       { label: "Mensagens do WhatsApp", desc: "Textos prontos para o cliente", path: "/configuracoes/mensagens", Icone: ChatCircleText },
     ],
   },
   {
-    label: "Produção",
+    label: "Produção e preço",
     items: [
-      { label: "Produtos",      desc: "Preço, foto e esgotado",  path: "/produtos",      Icone: Cake },
-      { label: "Ingredientes",  desc: "O que você compra",       path: "/insumos",       Icone: Package },
+      { label: "Produtos",      desc: "Preço, foto e esgotado",        path: "/produtos",      Icone: Cake },
       { label: "Ficha técnica", desc: "Custo e lucro de cada produto", path: "/ficha-tecnica", Icone: ClipboardText },
+      { label: "Ingredientes",  desc: "O que você compra",             path: "/insumos",       Icone: Package },
+      { label: "Custos",        desc: "Mão de obra, contas fixas e taxas", path: "/custos",    Icone: Calculator },
     ],
   },
   {
     label: "Dinheiro",
     items: [
-      { label: "Financeiro", desc: "Entradas, saídas, a receber e lucro", path: "/financeiro", Icone: CurrencyDollar },
+      { label: "Financeiro",    desc: "Entradas, saídas e contas", path: "/financeiro", Icone: CurrencyDollar },
+      { label: "Lucratividade", desc: "Lucro de cada produto", path: "/lucratividade", Icone: ChartPieSlice, pro: true },
     ],
   },
   {
     label: "Divulgar",
     items: [
-      { label: "Cupons", desc: "Descontos que trazem cliente", path: "/cupons", Icone: Ticket },
-      { label: "Pixel",  desc: "Meta, Google e TikTok",        path: "/pixel",  Icone: Target },
+      { label: "Cupons", desc: "Descontos para vender", path: "/cupons", Icone: Ticket, pro: true },
+      { label: "Pixel",  desc: "Meta, Google e TikTok",        path: "/pixel",  Icone: Target, pro: true },
     ],
   },
   {
     label: "Conta",
     items: [
-      { label: "Novidades",     desc: "O que mudou no app", path: "/noticias",      Icone: Newspaper },
-      { label: "Configurações", desc: "Conta, loja e app",  path: "/configuracoes", Icone: Gear },
-      { label: "Assinatura",    desc: "Seu plano",          path: "/assinar",       Icone: Crown },
+      { label: "Assinatura",      desc: "Seu plano",                      path: "/assinar",       Icone: Crown },
+      { label: "Ajuda e suporte", desc: "Tutoriais e WhatsApp do suporte", path: "/ajuda",        Icone: Lifebuoy },
+      { label: "Novidades",       desc: "O que mudou no app",             path: "/noticias",      Icone: Newspaper },
+      { label: "Configurações",   desc: "Conta, notificações e app",      path: "/configuracoes", Icone: Gear },
     ],
   },
 ];
+
 
 
 export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
@@ -110,10 +118,14 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         </div>
 
         <div className="mais-corpo">
+          {/* (6.109) a busca do app no topo do Menu: acha qualquer tela ou ajuste pelo nome ("pix", "taxa", "senha"…) */}
+          <button type="button" className="mais-busca" onClick={() => { onClose(); setTimeout(abrirBuscaRapida, 60); }}>
+            <MagnifyingGlass size={20} weight="bold" aria-hidden="true" /><span>Buscar no app</span>
+          </button>
           {/* (6.87) a Doo IA volta ao Menu do celular, em destaque no topo (no computador ela é o balão do canto) */}
           <button type="button" className="mais-doo" onClick={() => { onClose(); abrirDooIA(); }}>
             <img src="/Sistema/doo.webp" alt="" />
-            <span className="mais-doo-tx"><b>Doo IA</b><small>Cadastra, monta pedido e cria topo</small></span>
+            <span className="mais-doo-tx"><b>Doo IA</b><small>Faz o trabalho pela conversa</small></span>
             <SetaDoo size={18} weight="bold" aria-hidden="true" />
           </button>
           {GRUPOS.map(grupo => (
@@ -130,7 +142,8 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
                     >
                       {({ isActive }) => (<>
                         <span className="mais-it-ic" aria-hidden="true"><item.Icone size={20} weight={isActive || item.path === "/assinar" ? "fill" : "bold"} /></span>
-                        <span className="mais-it-txt"><b>{item.label}</b><small>{item.desc}</small></span>
+                        <span className="mais-it-txt"><b>{item.label}</b><small>{item.path === "/assinar" && !isPro ? "7 dias grátis para testar" : item.desc}</small></span>
+                        {item.pro && !isPro && <em className="mais-it-pro">PRO</em>}
                         <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
                       </>)}
                     </NavLink>

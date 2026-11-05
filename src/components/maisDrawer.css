@@ -98,3 +98,8 @@
 .mais-doo-tx b { font-size: 15px; font-weight: 600; }
 .mais-doo-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mais-doo > svg { flex: none; color: var(--ui-texto-3); }
+
+/* (6.109) busca do app no topo do Menu (mesmo campo da busca das telas) e a etiqueta PRO de quem é grátis */
+.mais-busca { display: flex; align-items: center; gap: 10px; width: 100%; height: 48px; margin: 0 0 12px; padding: 0 14px; border: 1.5px solid var(--ui-borda-campo, #EDE6E9); border-radius: var(--ui-raio, 12px); background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto-3); text-align: left; cursor: pointer; }
+.mais-busca svg { flex: none; color: var(--ui-texto-2); }
+.mais-it-pro { flex: none; padding: 2px 7px; border-radius: 6px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 11.5px; font-style: normal; font-weight: 600; letter-spacing: .02em; }
