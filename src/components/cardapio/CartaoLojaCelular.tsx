@@ -97,7 +97,7 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
       {travado ? (
         <>
           <div className="clc-sit">
-            <span className="clc-st clc-st--trava"><b><LockSimple size={15} weight="bold" aria-hidden="true" />Cardápio bloqueado</b><small>Configure a loja para liberar grátis</small></span>
+            <span className="clc-st clc-st--trava"><b><LockSimple size={15} weight="bold" aria-hidden="true" />Cardápio bloqueado</b><small>Configure a loja para liberar</small></span>
             <span className="clc-cadeado" aria-hidden="true"><LockSimple size={16} weight="bold" /></span>
           </div>
           <button type="button" className="clc-enviar" onClick={() => navigate("/inicio")}>Configurar e liberar grátis</button>

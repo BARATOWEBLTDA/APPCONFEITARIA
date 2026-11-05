@@ -635,12 +635,12 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   type Linha = { k: Parte; Ic: typeof Storefront; t: string; sub: string; st: "ok" | "falta" | "op" };
   const linhas: Linha[] = [
     { k: "loja", Ic: Storefront, t: "Sua loja", sub: okDe("loja") ? (nome.trim() || telefone) : `Falta ${listaBR(itens.slice(0, 3).filter(i => !i.ok).map(i => i.nome === "WhatsApp" ? "o WhatsApp" : i.nome === "Nome" ? "o nome" : "a descrição"))}`, st: okDe("loja") ? "ok" : "falta" },
-    { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? listaBR(redesTxt) : "Nenhuma ainda", st: redesTxt.length ? "ok" : "op" },
+    { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? listaBR(redesTxt) : embutido ? "Falta o Instagram" : "Nenhuma ainda", st: redesTxt.length ? "ok" : "op" },
     { k: "endereco", Ic: MapPin, t: "Endereço", sub: itens[3].ok ? [end.rua.trim(), end.numero.trim()].filter(Boolean).join(", ") || cidadeUf : "Falta o endereço da loja", st: itens[3].ok ? "ok" : "falta" },
-    { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorarioCurto() : "Falta o horário de funcionamento", st: itens[4].ok ? "ok" : "falta" },
-    { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : !pagTxt ? "Falta escolher como o cliente paga" : passosEst && !passosEst.pagamento ? "Falta conferir como o cliente paga" : pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1), st: !ep ? "ok" : !pagTxt || (passosEst && !passosEst.pagamento) ? "falta" : "ok" },
-    ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : "Ligado · sinal ou total") : "Desligado · paga pelo WhatsApp", st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
-    { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher como o cliente recebe" : faltaTaxa ? "Falta a taxa de entrega" : passosEst && !passosEst.entrega ? "Falta conferir como o cliente recebe" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.modo === "combinar" ? "entrega a combinar" : ep.modo === "raio" ? "entrega por raio" : ep.modo === "cidade" ? "entrega por cidade" : ep.porBairro ? "entrega por bairro" : ep.taxa > 0 ? `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "entrega grátis") : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa || (passosEst && !passosEst.entrega) ? "falta" : "ok" },
+    { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorarioCurto() : "Falta o horário", st: itens[4].ok ? "ok" : "falta" },
+    { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : !pagTxt ? "Falta escolher o pagamento" : passosEst && !passosEst.pagamento ? "Falta conferir o pagamento" : pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1), st: !ep ? "ok" : !pagTxt || (passosEst && !passosEst.pagamento) ? "falta" : "ok" },
+    ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : "Ligado · sinal ou total") : (embutido ? "Falta ligar o Pix" : "Desligado · paga pelo WhatsApp"), st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
+    { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher a entrega" : faltaTaxa ? "Falta a taxa de entrega" : passosEst && !passosEst.entrega ? "Falta conferir a entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.modo === "combinar" ? "entrega a combinar" : ep.modo === "raio" ? "entrega por raio" : ep.modo === "cidade" ? "entrega por cidade" : ep.porBairro ? "entrega por bairro" : ep.taxa > 0 ? `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "entrega grátis") : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa || (passosEst && !passosEst.entrega) ? "falta" : "ok" },
   ];
   const TITULO: Record<Parte, string> = { loja: embutido ? "Sobre a loja" : "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
   const gaveta = (
@@ -663,8 +663,9 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
       return (
         <button key={l.k} type="button" className="dl-li" onClick={() => abrirParte(l.k)}>
           <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
-          <span className="dl-li-tx"><b>{titulo || l.t}</b><small className={l.st === "falta" ? "falta" : ""}>{l.sub}</small></span>
-          {l.st === "falta" && <em className="dl-li-st falta">Falta</em>}
+          <span className="dl-li-tx"><b>{titulo || l.t}</b><small className={l.st !== "ok" ? "falta" : ""}>{l.sub}</small></span>
+          {/* (6.148) na Minha loja o opcional que ainda não foi feito (redes, Pix) também mostra "Falta" */}
+          {l.st !== "ok" && <em className="dl-li-st falta">Falta</em>}
           <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
         </button>
       );

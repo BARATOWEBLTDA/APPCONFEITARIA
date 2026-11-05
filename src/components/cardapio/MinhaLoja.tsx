@@ -11,7 +11,7 @@ import DadosLoja from "@/pages/DadosLoja";
  * A loja para o cliente (logo, nome e WhatsApp, aparência, redes) · Como você vende (horário, entrega, pagamento, Pix, endereço)
  * · O que você vende (produtos, categorias, complementos). Cada linha mostra o valor atual; tocar abre a parte para editar.
  */
-type Visual = { logo: string; foto: string; banners: number };
+type Visual = { logo: string; foto: string; topo: string; banners: number };
 type Contas = { produtos: number; categorias: number; complementos: number };
 
 const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
@@ -26,11 +26,11 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
   useEffect(() => {
     if (!uid) return;
     let vivo = true;
-    const ler = () => supabase.from("profiles").select("logo_url, foto_url, banner_url, banner1_url, banner2_url, banner3_url").eq("id", uid).maybeSingle()
+    const ler = () => supabase.from("profiles").select("logo_url, foto_url, banner_topo_url, banner_url, banner1_url, banner2_url, banner3_url").eq("id", uid).maybeSingle()
       .then(({ data }) => {
         if (!vivo || !data) return;
-        const d: { logo_url?: string | null; foto_url?: string | null; banner_url?: string | null; banner1_url?: string | null; banner2_url?: string | null; banner3_url?: string | null } = data;
-        setVis({ logo: d.logo_url || "", foto: d.foto_url || "",
+        const d: { logo_url?: string | null; foto_url?: string | null; banner_topo_url?: string | null; banner_url?: string | null; banner1_url?: string | null; banner2_url?: string | null; banner3_url?: string | null } = data;
+        setVis({ logo: d.logo_url || "", foto: d.foto_url || "", topo: d.banner_topo_url || "",
           banners: [d.banner_url, d.banner1_url, d.banner2_url, d.banner3_url].filter(Boolean).length }); // (27/10) o banner_url é o 1º dos 4 (antes contava 3)
       }, () => {});
     ler();
@@ -80,10 +80,13 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
       <input type="file" accept="image/*" hidden disabled={enviando} onChange={recorte.escolher} />
     </label>
   );
+  // (6.148) sem a foto do topo o cardápio fica sem capa: "Falta" igual às outras linhas
+  const semTopo = !!vis && !vis.topo;
   const linhaAparencia = (
     <button type="button" className="dl-li" onClick={() => navigate("/cardapio-design")}>
       <span className="dl-li-ic" aria-hidden="true"><PaintBrush size={20} weight="bold" /></span>
-      <span className="dl-li-tx"><b>Aparência</b><small>{!vis ? "…" : `Topo, cores e ${vis.banners ? plural(vis.banners, "banner", "banners") : "banners"}`}</small></span>
+      <span className="dl-li-tx"><b>Aparência</b><small className={semTopo ? "falta" : ""}>{!vis ? "…" : semTopo ? "Falta a foto do topo" : `Topo, cores e ${vis.banners ? plural(vis.banners, "banner", "banners") : "banners"}`}</small></span>
+      {semTopo && <em className="dl-li-st falta">Falta</em>}
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
   );

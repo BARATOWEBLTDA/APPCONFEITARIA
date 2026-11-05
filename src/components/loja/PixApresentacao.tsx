@@ -26,9 +26,9 @@ export default function PixApresentacao({ onLigar }: { onLigar: () => void }) {
         <p>O cliente paga na hora de fazer o pedido, direto na sua chave Pix. O dinheiro cai na sua conta na hora, sem taxa e sem intermediário.</p>
         <ul className="pxa-lista">
           {([
-            [Percent, "Sem taxa nenhuma", "O Doonly não fica com nada da venda"],
-            [Bank, "Direto na sua conta", "Pix na sua chave, sem intermediário"],
-            [BellRinging, "Aviso no seu celular", "Quando o cliente paga, você confere"],
+            [Percent, "Sem taxa nenhuma", "O Doonly não cobra nada"],
+            [Bank, "Direto na sua conta", "Cai na sua chave Pix"],
+            [BellRinging, "Aviso no seu celular", "Você confere no banco"],
           ] as const).map(([Ic, t, sub]) => (
             <li key={t}><span className="pxa-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span><span className="pxa-li-tx"><b>{t}</b><small>{sub}</small></span></li>
           ))}
