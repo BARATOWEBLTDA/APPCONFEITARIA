@@ -1128,8 +1128,8 @@ export default function Auth() {
             background: var(--ui-branco); border-radius: 28px; box-shadow: 0 30px 70px -30px rgba(80,20,45,.45); }
           .auth-marca { display: block; text-align: center; color: var(--ui-branco); padding: 0 40px; border-radius: 28px 0 0 28px;
             background: linear-gradient(160deg, #FF9DC4 0%, var(--ui-rosa) 55%, var(--ui-rosa-escuro) 100%); position: relative; }
-          /* o conteúdo fica no centro da parte VISÍVEL do painel (no cadastro o cartão é mais alto que a tela) */
-          .auth-marca-in { position: sticky; top: 0; height: min(100%, calc(100vh - 48px)); height: min(100%, calc(100dvh - 48px)); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+          /* (6.149) o conteúdo fica no centro do painel e rola junto com o cartão (antes ficava preso na tela ao rolar o cadastro) */
+          .auth-marca-in { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
           .auth-marca-masc { display: block; width: 170px; height: auto; filter: drop-shadow(0 12px 16px rgba(80,10,40,.3)); }
           .auth-marca-cen { display: flex; flex-direction: column; align-items: center; }
           .auth-marca-in:has(.auth-vit) .auth-marca-cen { margin-top: -70px; }

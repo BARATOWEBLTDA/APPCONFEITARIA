@@ -1,3 +1,4 @@
+import { marcarSaidaDaConta } from "@/lib/destinoLogin";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -250,6 +251,7 @@ export function clearProfileCache() {
  * Devolve true quando não sobrou sessão neste aparelho (só aí a tela pode ir pro login).
  */
 export async function sairDaConta(): Promise<boolean> {
+  marcarSaidaDaConta();
   // (11/10) este aparelho para de receber os avisos da conta. Espera no máximo 2,5 s: nunca trava o sair.
   try { await Promise.race([desfazerPushDesteAparelho(), new Promise(r => setTimeout(r, 2500))]); } catch { /* segue */ }
   let erro: unknown;
