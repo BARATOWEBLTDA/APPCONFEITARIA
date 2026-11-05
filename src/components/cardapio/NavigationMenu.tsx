@@ -718,7 +718,9 @@ function CartContent({
         return avisar(`${cupomCurto(/cupom_esgotado/.test(msg) ? 'esgotou' : String((err as { details?: unknown } | null)?.details || ''))}. Confira o novo total.`, { tipo: 'erro' })
       }
       // (17/10) o servidor confere a data e a forma de entrega
-      if (/data_invalida/.test(msg)) return avisar('A data escolhida já passou. Escolha outra data e envie de novo.', { tipo: 'erro' })
+      // (6.157) o servidor também confere dia fechado, horário fora do expediente e a antecedência dos produtos
+      if (/data_invalida/.test(msg)) return avisar('Esse dia ou horário não está disponível. Escolha outra data e envie de novo.', { tipo: 'erro' })
+      if (/loja_em_preparacao/.test(msg)) return avisar('Esta loja ainda está preparando o cardápio. Volte em breve!', { tipo: 'erro' })
       if (/entrega_fora_area/.test(msg)) return avisar('Esse endereço está fora da área de entrega da loja. Confira o endereço ou escolha retirar.', { tipo: 'erro' })
       if (/entrega_invalida/.test(msg)) return avisar('A forma de entrega mudou na loja. Escolha de novo como receber e envie.', { tipo: 'erro' })
       if (/item_invalido/.test(msg)) return avisar('Um produto da sacola mudou ou saiu do cardápio. Confira a sacola e envie de novo.', { tipo: 'erro' })
@@ -786,6 +788,8 @@ function CartContent({
       const srv = viaBanco.data as RespostaPedido
       if (srv && Number.isFinite(Number(srv.valor_total))) {
         totalCriado = r2(Number(srv.valor_total))
+        // (6.157) o banco recalcula a taxa (ex.: a rota exata do mapa) e o cupom: se o total mudou, a cliente fica sabendo
+        if (Math.abs(totalCriado - totalFinal) >= 0.01) avisar(`O total do pedido ficou ${formatCurrency(totalCriado)}${Number(srv.taxa_entrega) !== freteValor ? ' (a taxa de entrega foi recalculada)' : ''}.`, { tipo: 'info' })
         if (Number.isFinite(Number(srv.taxa_entrega))) freteMsg = r2(Number(srv.taxa_entrega))
         if (Number.isFinite(Number(srv.cupom_desconto))) descontoMsg = r2(Number(srv.cupom_desconto))
       }

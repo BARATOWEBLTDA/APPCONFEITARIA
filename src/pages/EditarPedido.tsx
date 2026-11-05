@@ -357,9 +357,9 @@ export default function EditarPedido() {
   // Excluir pedido (03/10): veio da janela da lista, que saiu; aqui fica longe do toque fácil
   const excluindoRef = useRef(false)
   const excluirPedido = async () => {
-    const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: pedido?.status === 'cancelado' && recebidoAtual > 0 ? 'Ele some da lista. O sinal que você ficou continua no caixa. Não dá para desfazer.' : 'Ele some da lista, da agenda e do financeiro. Não dá para desfazer. Se o cliente só desistiu, prefira "Cancelar pedido".', icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
+    const ok = await confirmarJanela({ titulo: `Excluir o pedido #${pedido?.numero ?? ''}?`, texto: recebidoAtual > 0 ? (pedido?.status === 'cancelado' ? 'Ele some da lista. O sinal que você ficou continua no caixa. Não dá para desfazer.' : 'Ele some da lista e da agenda. O que já foi recebido continua no caixa. Não dá para desfazer. Se devolveu o dinheiro, estorne o recebimento antes.') : 'Ele some da lista, da agenda e do financeiro. Não dá para desfazer. Se o cliente só desistiu, prefira "Cancelar pedido".', /* (6.157) o recebido fica no caixa e nos relatórios */ icone: 'erro', rotuloConfirmar: 'Excluir', perigo: true })
     if (!ok || !pedido || excluindoRef.current) return
-    // (10/10) a mesma regra da lista (lib/pedidosDoo): estorna os recebimentos antes e para se algum passo falhar
+    // (10/10) a mesma regra da lista (lib/pedidosDoo); (6.157) o recebido fica no caixa como "Pedido excluído"
     excluindoRef.current = true
     try {
       const r = await excluirPedidoNoBanco(pedido.id)

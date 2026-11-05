@@ -1,5 +1,6 @@
 import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
 import { r2 } from '@/lib/moeda'
+import { valorLinha } from '@/lib/itemSacola'
 import type { CartItem, EscolhasV3 } from '@/types/cart'
 import type { ExtraEscolhido } from '@/lib/kitTexto'
 
@@ -28,7 +29,12 @@ export function itemDoCarrinhoParaPedido(item: ItemDoCarrinho) {
         cobertura: item.selectedCobertura || null,
       })
   // (11/10) preço do item em centavos certos: é dele que saem a linha, o subtotal e o total do pedido
-  const preco = r2(item.price)
+  // (6.157) peso livre com complemento (entra uma vez na linha): valor_unitario = valor da linha ÷ kg, com 6 casas,
+  // pra valor_unitario × quantidade dar exatamente o valor que a sacola mostrou (25 ÷ 3 kg não fecha em centavos)
+  const qtd = Number(item.quantity) || 0
+  const preco = (Number(item.extraLinha) || 0) > 0 && qtd > 0
+    ? Math.round((valorLinha(item) / qtd) * 1e6) / 1e6
+    : r2(item.price)
   const breakdown = item.precoBreakdown ? item.precoBreakdown : criarBreakdownV1({ final: preco })
   // (27/10) o complemento vai com o id: o banco confere o preço pelo id (pelo nome, dois iguais contavam duas vezes)
   const temExtras = Array.isArray(item.extrasBiblioteca) && item.extrasBiblioteca.length > 0

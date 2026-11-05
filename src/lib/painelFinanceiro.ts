@@ -2,12 +2,12 @@ import { ehDinheiroDaDona } from "@/lib/categoriasFinanceiro";
 import { supabase } from "@/lib/supabase";
 import { valorRecebidoPedido } from "@/lib/financeiroPedido";
 import { buscarTudo } from "@/lib/buscarTudo";
-import { faltaNoBanco, normalizarForma } from "@/lib/pagamentos";
+import { contaComoRecebido, faltaNoBanco, normalizarForma } from "@/lib/pagamentos";
 import { pesoDoTamanho } from "@/lib/itemSacola";
 import type { OpcaoGrupoJson } from "@/lib/precoCardapio";
 import { qtdBaseDoKit } from "@/lib/kitQuantidade";
 
-type LinhaPagamento = { valor: number; recebido_em: string };
+type LinhaPagamento = { valor: number; recebido_em: string; estornado_em?: string | null; observacao?: string | null; pedido_id?: string | null };
 type LinhaLancamento = { tipo: string | null; categoria: string | null; valor: number; data: string; estornado_em?: string | null; forma?: string | null };
 type PedidoRecebidoAntigo = { valor_total: number | null; valor_recebido: number | null; status: string | null; status_pagamento: string | null; data_entrega: string };
 type LinhaFicha = { produto_id: string; quantidade: number | null; unidade_utilizada: string | null; insumos: { custo_unitario: number | null; unidade: string | null } | null };
@@ -30,6 +30,8 @@ type ContaPendente = { valor: number | null; vencimento: string | null; custo_fi
  *                    do pagamento (pagamentos.taxa_pct, SQL 4.34); sem ela, a taxa cadastrada hoje.
  *   Lucro .......... vendido − custo dos ingredientes (ficha técnica) − custos variáveis − despesas pagas do mês,
  *                    SEM as despesas de insumos (o ingrediente já está no custo da ficha; senão contaria 2x)
+ *                    (6.157) e SEM as despesas de Embalagens quando há custo "R$ por pedido" ativo (a embalagem já
+ *                    entra por pedido nos custos variáveis; senão contaria 2x). O fluxo de caixa não muda: só o lucro.
  * Sem a tabela de pagamentos (SQL do Passo 1 não rodado), o recebido usa a regra antiga (pelo mês da entrega).
  * 10/10: a regra antiga só vale quando a tabela ou a coluna não existe MESMO. Queda de internet ou outro erro
  * devolve { erro: true } e a tela avisa "Não deu pra carregar" (antes virava R$ 0,00 ou um número pela regra antiga).
@@ -39,6 +41,10 @@ export type Semana = { label: string; entradas: number; saidas: number; acumulad
 export type MesFinanceiro = {
   recebido: number; recebidoPedidos: number; entradasAvulsas: number; qtdRecebimentos: number;
   despesasPagas: number; despesasInsumos: number;
+  /** (6.157) despesas de Embalagens que ficaram fora do lucro (há custo "R$ por pedido" ativo); 0 quando entram */
+  despesasEmbalagens: number;
+  /** (6.157) as despesas pagas que entram no lucro: despesasPagas − despesasInsumos − despesasEmbalagens */
+  despesasNoLucro: number;
   vendido: number; qtdVendidos: number; cmv: number; semFicha: number;
   /** (13/10) taxas da maquininha (pela forma de pagamento de cada pedido) e custos por pedido (embalagem) */
   custosVariaveis: number;
@@ -48,17 +54,24 @@ export type MesFinanceiro = {
   erro?: boolean;
 };
 const MES_COM_ERRO: MesFinanceiro = {
-  recebido: 0, recebidoPedidos: 0, entradasAvulsas: 0, qtdRecebimentos: 0, despesasPagas: 0, despesasInsumos: 0,
+  recebido: 0, recebidoPedidos: 0, entradasAvulsas: 0, qtdRecebimentos: 0, despesasPagas: 0, despesasInsumos: 0, despesasEmbalagens: 0, despesasNoLucro: 0,
   vendido: 0, qtdVendidos: 0, cmv: 0, semFicha: 0, custosVariaveis: 0, lucro: 0, margem: 0, semanas: [], fonteRecebido: "pagamentos", erro: true,
 };
 
 const r2 = (v: number) => Math.round((Number(v) || 0) * 100) / 100;
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 export const ehInsumo = (cat?: string | null) => /insumo|ingrediente|mat[eé]ria/i.test(cat || "");
+/** (6.157) categoria "Embalagens" (e parecidas) */
+export const ehEmbalagem = (cat?: string | null) => /embalag/i.test(cat || "");
 
-/** Recebimentos de pedidos (sem os estornados) entre dois dias, pela data do recebimento. */
-const buscarPagamentos = (uid: string, ini: string, ate: string) => buscarTudo<LinhaPagamento>((de, a) => supabase.from("pagamentos")
-  .select("valor, recebido_em").eq("user_id", uid).is("estornado_em", null).gte("recebido_em", ini).lte("recebido_em", ate).order("id").range(de, a));
+/** Recebimentos de pedidos (sem os estornados) entre dois dias, pela data do recebimento.
+ *  (6.157) com a regra do caixa (contaComoRecebido): o estornado só porque o pedido foi excluído continua contando
+ *  (o dinheiro ficou na gaveta). Antes o caixa contava e o Entrou e o Recebido do mês não. */
+async function buscarPagamentos(uid: string, ini: string, ate: string) {
+  const r = await buscarTudo<LinhaPagamento>((de, a) => supabase.from("pagamentos")
+    .select("valor, recebido_em, estornado_em, observacao, pedido_id").eq("user_id", uid).gte("recebido_em", ini).lte("recebido_em", ate).order("id").range(de, a));
+  return r.error ? r : { ...r, data: r.data.filter(contaComoRecebido) };
+}
 
 /** Lançamentos manuais entre dois dias. Sem a coluna de estorno (SQL não rodado), busca sem ela; outro erro volta como erro. */
 async function buscarLancamentos(uid: string, ini: string, ate: string) {
@@ -236,8 +249,12 @@ async function calcularIntervalo(uid: string, ini: string, fim: string): Promise
     if (faltou) semFicha++;
   }
   cmv = r2(cmv);
-  const custosVariaveis = await custosVariaveisDosPedidos(uid, vendidos);
-  const lucro = r2(vendido - cmv - custosVariaveis - (despesasPagas - despesasInsumos));
+  const { total: custosVariaveis, temFixoPorPedido } = await custosVariaveisDosPedidos(uid, vendidos);
+  // (6.157) com custo "R$ por pedido" ativo (embalagem), a compra de embalagem fica fora do lucro, igual aos ingredientes:
+  // o custo dela já entrou em cada pedido. Os números do caixa (despesasPagas, semanas) continuam com tudo o que saiu.
+  const despesasEmbalagens = temFixoPorPedido ? r2(saidas.filter(l => !ehInsumo(l.categoria) && ehEmbalagem(l.categoria)).reduce((s, l) => s + (Number(l.valor) || 0), 0)) : 0;
+  const despesasNoLucro = r2(despesasPagas - despesasInsumos - despesasEmbalagens);
+  const lucro = r2(vendido - cmv - custosVariaveis - despesasNoLucro);
   const margem = vendido > 0 ? Math.round((lucro / vendido) * 100) : 0;
 
   // ── Fluxo por semana: de 7 em 7 dias a partir do início (no mês: 1–7, 8–14, 15–21, 22–28, 29–fim) ──
@@ -260,7 +277,7 @@ async function calcularIntervalo(uid: string, ini: string, fim: string): Promise
 
   return {
     recebido: r2(recebidoPedidos + entradasAvulsas), recebidoPedidos, entradasAvulsas, qtdRecebimentos: recebimentos.length,
-    despesasPagas, despesasInsumos, vendido, qtdVendidos: vendidos.length, cmv, semFicha, custosVariaveis, lucro, margem, semanas, fonteRecebido,
+    despesasPagas, despesasInsumos, despesasEmbalagens, despesasNoLucro, vendido, qtdVendidos: vendidos.length, cmv, semFicha, custosVariaveis, lucro, margem, semanas, fonteRecebido,
   };
 }
 
@@ -278,13 +295,14 @@ export function taxaPctDaForma(forma: string | null | undefined, vars: Variavel[
 /** Valor fixo por pedido (embalagem etc.) */
 export const fixoPorPedido = (vars: Variavel[]) => vars.filter(v => v.ativo !== false && v.tipo === "fixo").reduce((s, v) => s + (Number(v.valor) || 0), 0);
 
-/** Taxas e custos por pedido dos pedidos entregues. Leitura que falha lança (o mês todo vira erro, sem lucro inflado). */
-async function custosVariaveisDosPedidos(uid: string, pedidos: PedidoVendido[]): Promise<number> {
-  if (!pedidos.length) return 0;
+/** Taxas e custos por pedido dos pedidos entregues. Leitura que falha lança (o mês todo vira erro, sem lucro inflado).
+ *  (6.157) diz também se há custo "R$ por pedido" ativo (lido mesmo sem pedido entregue: decide se a Embalagem entra no lucro). */
+async function custosVariaveisDosPedidos(uid: string, pedidos: PedidoVendido[]): Promise<{ total: number; temFixoPorPedido: boolean }> {
   const vr = await supabase.from("custos_variaveis").select("*").eq("user_id", uid);
-  if (vr.error) { if (faltaNoBanco(vr.error)) return 0; throw vr.error; }
+  if (vr.error) { if (faltaNoBanco(vr.error)) return { total: 0, temFixoPorPedido: false }; throw vr.error; }
   const vars = (vr.data as Variavel[]) || [];
-  if (!vars.length) return 0;
+  const temFixoPorPedido = fixoPorPedido(vars) > 0;
+  if (!vars.length || !pedidos.length) return { total: 0, temFixoPorPedido };
   const ids = pedidos.map(p => p.id);
   const pags: PagamentoDoPedido[] = [];
   for (let i = 0; i < ids.length; i += 100) {
@@ -303,7 +321,7 @@ async function custosVariaveisDosPedidos(uid: string, pedidos: PedidoVendido[]):
     else total += (Number(p.valor_total) || 0) * (taxaPctDaForma(normalizarForma(p.forma_pagamento), vars) / 100);
   }
   total += fixoPorPedido(vars) * pedidos.length;
-  return r2(total);
+  return { total: r2(total), temFixoPorPedido };
 }
 
 /**

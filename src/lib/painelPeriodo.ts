@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
-import { faltaNoBanco } from "@/lib/pagamentos";
+import { contaComoRecebido, faltaNoBanco } from "@/lib/pagamentos";
 import { entradasNoPeriodo } from "@/lib/painelFinanceiro";
 import { ehDinheiroDaDona } from "@/lib/categoriasFinanceiro";
 
@@ -52,7 +52,7 @@ const NOME_FORMA: Record<FormaPagamento["chave"], string> = { pix: "Pix", cartao
 const NOME_TIPO: Record<string, string> = { sinal: "Sinal", parcial: "Parte", restante: "Restante", total: "Pago", pagamento: "Pago", migracao: "Pago" };
 
 type LinhaSaida = { tipo?: string | null; categoria?: string | null; valor: number; data: string; estornado_em?: string | null };
-type LinhaPagamento = { id: string; valor: number; forma?: string | null; tipo: string; recebido_em: string; created_at: string; pedidos: { cliente_nome?: string | null } | { cliente_nome?: string | null }[] | null };
+type LinhaPagamento = { id: string; valor: number; forma?: string | null; tipo: string; recebido_em: string; created_at: string; estornado_em?: string | null; observacao?: string | null; pedido_id?: string | null; pedidos: { cliente_nome?: string | null } | { cliente_nome?: string | null }[] | null };
 type LinhaVenda = { id: string; status: string; data_entrega: string; pedido_itens: { nome_produto?: string | null; quantidade: number; valor_unitario: number }[] | null };
 
 async function saidasNoPeriodo(uid: string, ini: string, ate: string) {
@@ -80,9 +80,11 @@ export async function carregarPeriodo(uid: string, ini: string, ate: string): Pr
     const [entradas, saidas, pag, vend] = await Promise.all([
       entradasNoPeriodo(uid, ini, ate),
       saidasNoPeriodo(uid, ini, ate),
+      // (6.157) sem o filtro de estorno no banco: a regra é a do caixa (contaComoRecebido, logo abaixo)
       buscarTudo<LinhaPagamento>((de, a) => supabase.from("pagamentos")
-        .select("id, valor, forma, tipo, recebido_em, created_at, pedidos(cliente_nome)")
-        .eq("user_id", uid).is("estornado_em", null).gte("recebido_em", ini).lte("recebido_em", ate).order("id").range(de, a)),
+        .select("id, valor, forma, tipo, recebido_em, created_at, estornado_em, observacao, pedido_id, pedidos(cliente_nome)")
+        .eq("user_id", uid).gte("recebido_em", ini).lte("recebido_em", ate).order("id").range(de, a))
+        .then(r => r.error ? r : { ...r, data: r.data.filter(contaComoRecebido) }),
       buscarTudo<LinhaVenda>((de, a) => supabase.from("pedidos").select("id, status, data_entrega, pedido_itens(nome_produto, quantidade, valor_unitario)")
         .eq("user_id", uid).not("status", "in", "(cancelado,recusado,aguardando_aceite,novo,pendente)").gte("data_entrega", ini).lte("data_entrega", ate).order("id").range(de, a)), // (6.156) sem os não aceitos, igual ao Início
     ]);
@@ -125,7 +127,8 @@ export async function carregarPeriodo(uid: string, ini: string, ate: string): Pr
       .sort((a, b) => `${b.recebido_em} ${b.created_at}`.localeCompare(`${a.recebido_em} ${a.created_at}`)).slice(0, 5)
       .map(g => {
         const ped = Array.isArray(g.pedidos) ? g.pedidos[0] : g.pedidos;
-        return { id: String(g.id), quem: String(ped?.cliente_nome || "").trim() || "Venda sem cliente", tipo: NOME_TIPO[g.tipo] || "Pago", valor: r2(g.valor), data: String(g.recebido_em).slice(0, 10) };
+        // (6.157) recebimento de pedido excluído: o dinheiro ficou, o pedido não
+        return { id: String(g.id), quem: !g.pedido_id ? "Pedido excluído" : String(ped?.cliente_nome || "").trim() || "Venda sem cliente", tipo: NOME_TIPO[g.tipo] || "Pago", valor: r2(g.valor), data: String(g.recebido_em).slice(0, 10) };
       }) : [];
 
     return {

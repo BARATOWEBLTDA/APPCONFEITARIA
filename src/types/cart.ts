@@ -25,6 +25,8 @@ export interface PrecoBreakdownCarrinho {
   subtotal: number
   desconto: number
   final: number  // preço unitário final
+  /** (6.157) peso livre (kg sem tamanho): complementos que entram UMA vez na linha (fora do `final`, que é por kg) */
+  extras_linha?: number
 }
 
 // ═══ Item do carrinho ═════════════════════════════════════════════
@@ -34,7 +36,16 @@ export interface CartItem {
   lineId?: string
   name: string
   description: string
-  price: number  // preço unitário final (mantido pra retrocompat)
+  price: number  // preço unitário final (mantido pra retrocompat) — price × quantity = valor da linha
+  /**
+   * (6.157) Peso livre com complemento (topo de bolo…): o complemento entra uma vez na linha, não por kg.
+   * `precoUnidade` = preço do kg (sem o complemento) · `extraLinha` = complementos da linha (uma vez).
+   * `price` fica = precoUnidade + extraLinha ÷ quantity (refeito quando a quantidade muda), então
+   * price × quantity continua sendo o valor da linha em todo lugar (sacola, total, pedido enviado).
+   * Antes o topo de R$ 25 em 2,5 kg cobrava R$ 62,50.
+   */
+  precoUnidade?: number
+  extraLinha?: number
   imageUrl?: string
   saleType: string
   quantity: number

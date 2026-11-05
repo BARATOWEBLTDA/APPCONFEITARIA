@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
-import { faltaNoBanco, ESTORNO_POR_EXCLUSAO, SUBSTITUI_RECEBIMENTO } from "@/lib/pagamentos";
+import { faltaNoBanco, ESTORNO_POR_EXCLUSAO, SUBSTITUI_RECEBIMENTO, contaComoRecebido } from "@/lib/pagamentos";
 import { nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
 
 /**
@@ -81,13 +81,16 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
   // 10/10: outro erro (internet, servidor) não vira saldo: antes os recebimentos sumiam ou os estornados voltavam a contar
   if ((pag.error && !semPagamentos) || fin.error
     || (pagEst.error && !faltaNoBanco(pagEst.error)) || (finEst.error && !faltaNoBanco(finEst.error))) return { ...vazio, erro: true };
+  // (6.157) estornado por exclusão só volta aqui se o pedido sumiu mesmo (contaComoRecebido, a regra dos relatórios);
+  // o "Pedido excluído" ativo (exclusão da 6.157 em diante) já vem na busca normal e não entra de novo
   const extras: PagCaixa[] = pagExtra.error ? [] : pagExtra.data.filter((g) => g.observacao === ESTORNO_POR_EXCLUSAO
-    ? !!g.estornado_em && g.recebido_em >= diaInicio && g.recebido_em <= hoje
+    ? !!g.estornado_em && contaComoRecebido(g) && g.recebido_em >= diaInicio && g.recebido_em <= hoje
     : !g.estornado_em && g.recebido_em < diaInicio);
   const pagamentos: PagCaixa[] = semPagamentos ? [] : [...pag.data, ...extras.map(g => g.observacao === SUBSTITUI_RECEBIMENTO ? { ...g, recebido_em: diaLocal(g.created_at) } : g)];
   const lancamentos: LancCaixa[] = fin.data.filter(l => !l.estornado_em); // estornado não conta
   // estorno feito porque o pedido foi excluído não é devolução: o dinheiro contado no saldo informado continua lá
-  const pagDesfeitos: PagCaixa[] = pagEst.error ? [] : pagEst.data.filter((g) => g.observacao !== ESTORNO_POR_EXCLUSAO);
+  // (6.157) pela mesma regra dos relatórios: se o pedido ainda existe (a exclusão parou no meio), o estorno vale
+  const pagDesfeitos: PagCaixa[] = pagEst.error ? [] : pagEst.data.filter((g) => !contaComoRecebido(g));
   const finDesfeitos: LancCaixa[] = finEst.error ? [] : finEst.data;
 
   // nome do pedido (número e cliente) só dos recebimentos mais recentes, os que aparecem em "Últimas movimentações"
@@ -109,7 +112,8 @@ export async function carregarCaixa(uid: string): Promise<EstadoCaixa> {
     const n = g.pedido_id ? nomes[g.pedido_id] : null;
     movimentos.push({
       id: "g" + g.id, tipo: "entrada", valor: v, data: g.recebido_em, ordem: ordemPag(g),
-      titulo: `${TIPO[g.tipo] || "Pagamento"}${n ? ` · Pedido #${n.numero ?? "—"}` : ""}`,
+      // (6.157) recebimento de pedido que foi excluído: o dinheiro ficou, o pedido não
+      titulo: `${TIPO[g.tipo] || "Pagamento"}${n ? ` · Pedido #${n.numero ?? "—"}` : !g.pedido_id ? " · Pedido excluído" : ""}`,
       detalhe: [n?.cliente, FORMA[g.forma] || g.forma].filter(Boolean).join(" · "),
     });
   }

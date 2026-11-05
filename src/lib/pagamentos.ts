@@ -19,11 +19,20 @@ type PedidoPagamento = { valor_total?: number | null; valor_recebido?: number | 
 type LinhaRecebimento = { id: string; valor: number | null; created_at: string | null; recebido_em: string | null };
 const tabelaNaoExiste = (e: { code?: string; message?: string } | null) => !!e && (e.code === "42P01" || e.code === "PGRST205" || /pagamentos/i.test(e.message || "") && /exist|schema cache|not find/i.test(e.message || ""));
 
-/** Texto gravado na observação do recebimento estornado porque o PEDIDO FOI EXCLUÍDO (10/10). Não é devolução de dinheiro: o caixa lê isso. */
+/** Texto gravado na observação do recebimento estornado porque o PEDIDO FOI EXCLUÍDO (10/10). Não é devolução de dinheiro: o caixa lê isso.
+ *  (6.157) agora vai na observação do recebimento que fica ATIVO e sem pedido (só quando ela estava vazia). */
 export const ESTORNO_POR_EXCLUSAO = "Pedido excluído";
 /** (27/10) recebimento que SUBSTITUI um estornado (o que sobrou ao diminuir um pagamento): o caixa conta ele mesmo com a data antiga */
 export const SUBSTITUI_RECEBIMENTO = "Ajuste no Editar pedido · substitui um recebimento";
 
+/**
+ * (6.157) UMA regra pro caixa e pros relatórios (Entrou, Recebido do mês, Transações, Formas): o recebimento conta como
+ * dinheiro recebido quando está ativo OU quando foi estornado só porque o pedido foi excluído (o pedido sumiu, o dinheiro
+ * ficou na gaveta: vira "recebido sem pedido"). Se o pedido ainda existe (a exclusão parou no meio), o estorno vale.
+ * Desde a 6.157 a exclusão nem estorna mais (o recebimento fica ativo e sem pedido); isto cobre os estornados antes.
+ */
+export const contaComoRecebido = (g: { estornado_em?: string | null; observacao?: string | null; pedido_id?: string | null }) =>
+  !g.estornado_em || (g.observacao === ESTORNO_POR_EXCLUSAO && !g.pedido_id);
 /**
  * O erro é de coluna ou tabela que ainda não existe no banco (SQL não rodado)? (10/10)
  * Só nesse caso o financeiro usa o plano B (regra antiga). Queda de internet ou qualquer outro erro

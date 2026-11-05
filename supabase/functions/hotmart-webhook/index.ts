@@ -128,15 +128,21 @@ Deno.serve(async (req) => {
   // 5) Aplica na conta (ou deixa guardado pra quando ela se cadastrar)
   if (mudanca) {
     if (userId) {
-      const { data: perfil } = await sb.from("profiles").select("plano, pro_expira_em").eq("id", userId).maybeSingle();
+      const { data: perfil } = await sb.from("profiles").select("plano, pro_expira_em, hotmart_transacao, hotmart_assinante").eq("id", userId).maybeSingle();
       const atual = paraData((perfil as any)?.pro_expira_em);
       const jaPro = (perfil as any)?.plano === "pro";
+      // (6.157) reembolso/cancelamento de OUTRA compra (ex.: boleto que venceu depois que ela pagou no cartão, ou uma
+      // compra antiga) não derruba a assinatura ativa: só vale se for a mesma transação ou o mesmo assinante
+      const transPerfil = (perfil as any)?.hotmart_transacao || null, assPerfil = (perfil as any)?.hotmart_assinante || null;
+      const mesmaCompra = (transacao && transPerfil && String(transacao) === String(transPerfil)) || (assinante && assPerfil && String(assinante) === String(assPerfil));
+      const temRegistro = !!(transPerfil || assPerfil);
+      if ((DESLIGAR.has(evento) || CANCELAR_NO_FIM.has(evento)) && temRegistro && !mesmaCompra) { mudanca = null; resultado = "ignorado_outra_compra"; }
       // Cancelamento: nunca aumenta o prazo que ela já tem
-      if (CANCELAR_NO_FIM.has(evento) && mudanca.pro_expira_em && atual && atual < new Date(String(mudanca.pro_expira_em))) delete mudanca.pro_expira_em;
+      if (mudanca && CANCELAR_NO_FIM.has(evento) && mudanca.pro_expira_em && atual && atual < new Date(String(mudanca.pro_expira_em))) delete mudanca.pro_expira_em;
       // (31/10) aviso do teste chegando depois da 1ª cobrança (ex.: "Compra completa" de R$ 0): não volta para "teste"
       if (teste && jaPro && atual && expira && atual > expira) { mudanca = null; resultado = "teste_ignorado_ja_paga"; }
       // Compra: nunca ENCURTA um prazo maior que ela já tenha (ex.: aviso atrasado chegando depois da renovação)
-      else if (LIGAR.has(evento) && atual && jaPro && expira && atual > expira) {
+      else if (mudanca && LIGAR.has(evento) && atual && jaPro && expira && atual > expira) {
         expira = atual; mudanca.pro_expira_em = atual.toISOString();
       }
       if (mudanca) {
@@ -150,6 +156,15 @@ Deno.serve(async (req) => {
       resultado = teste ? "teste_sem_conta" : "sem_conta"; // aplicado automaticamente quando ela criar a conta com esse e-mail
     } else {
       resultado += "_sem_conta";
+      // (6.157) reembolso/estorno antes de criar a conta: o PRO guardado daquela compra não é mais aplicado no cadastro
+      if (DESLIGAR.has(evento) && email) {
+        const { data: pend } = await sb.from("hotmart_eventos").select("id, transacao, assinante").eq("email", email).in("resultado", ["sem_conta", "teste_sem_conta"]);
+        const alvo = ((pend as any[]) || []).filter(e => (!transacao && !assinante) || (transacao && String(e.transacao) === String(transacao)) || (assinante && String(e.assinante) === String(assinante)));
+        if (alvo.length) {
+          const { error: eP } = await sb.from("hotmart_eventos").update({ resultado: "reembolsado_sem_conta" }).in("id", alvo.map(e => e.id));
+          if (eP) { console.error("Erro ao cancelar o PRO guardado:", eP.message); return json(500, { erro: "não foi possível registrar o reembolso" }); }
+        }
+      }
     }
   }
 

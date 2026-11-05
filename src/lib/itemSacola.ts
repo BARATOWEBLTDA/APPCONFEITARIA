@@ -20,6 +20,26 @@ export type ItemSacolaLeitura = {
   selectedRecheio?: string | null
   selectedCobertura?: string | null
   extrasBiblioteca?: ExtraEscolhido[] | null
+  /** (6.157) peso livre com complemento: preço do kg sem o complemento e o complemento da linha (uma vez) */
+  precoUnidade?: number
+  extraLinha?: number
+}
+
+/** (6.157) complemento que entra uma vez na linha (peso livre), ou 0 */
+const extraDaLinha = (item: ItemSacolaLeitura): number => {
+  const e = Number(item?.extraLinha) || 0
+  return e > 0 && Number.isFinite(e) && Number.isFinite(Number(item?.precoUnidade)) ? e : 0
+}
+
+/**
+ * (6.157) Preço por unidade que fecha a linha: preço do kg + complemento da linha ÷ quantidade.
+ * Assim price × quantidade = (preço do kg × kg) + complemento uma vez só. Sem complemento da linha, é o próprio preço.
+ * Fica com 6 casas (não 2): 25 ÷ 3 kg não fecha em centavos, e preço × quantidade precisa voltar ao valor exato da linha.
+ */
+export function precoNaQuantidade(precoUnidade: number, extraLinha: number | null | undefined, quantidade: number): number {
+  const e = Number(extraLinha) || 0, q = Number(quantidade) || 0
+  if (!(e > 0) || !(q > 0)) return Number(precoUnidade) || 0
+  return Math.round(((Number(precoUnidade) || 0) + e / q) * 1e6) / 1e6
 }
 
 /**
@@ -28,6 +48,9 @@ export type ItemSacolaLeitura = {
  * (antes 0,5 kg de R$ 19,99 aparecia R$ 10,00 na linha e R$ 9,99 no total).
  */
 export function valorLinha(item: ItemSacolaLeitura): number {
+  // (6.157) peso livre com complemento: kg × preço do kg + complemento uma vez (a mesma conta de price × quantity, sem resto de divisão)
+  const extra = extraDaLinha(item)
+  if (extra > 0) return r2(Number(item.precoUnidade) * (Number(item?.quantity) || 0) + extra)
   return r2((Number(item?.price) || 0) * (Number(item?.quantity) || 0))
 }
 

@@ -440,9 +440,9 @@ export default function Agenda() {
   };
 
   const excluirPedido = async (p: PedidoAgenda) => {
-    const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ""}?`, texto: "Ele some da agenda, da lista de pedidos e do financeiro. Não dá para desfazer.", rotulo: "Excluir", perigo: true });
+    const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ""}?`, texto: recebidoPedido(p) > 0 ? "Ele some da agenda e da lista de pedidos. O que já foi recebido continua no caixa. Não dá para desfazer." : "Ele some da agenda, da lista de pedidos e do financeiro. Não dá para desfazer.", /* (6.157) o recebido fica no caixa e nos relatórios */ rotulo: "Excluir", perigo: true });
     if (!ok) return;
-    // (10/10) pela função única: estorna os recebimentos antes de apagar (antes o dinheiro continuava no financeiro)
+    // (10/10) pela função única (lib/pedidosDoo); (6.157) o recebido fica no caixa e nos relatórios como "Pedido excluído"
     versao.current++;
     const r = await excluirPedidoNoBanco(p.id);
     if (r.ok === false) { avisar(r.erro, { tipo: "erro" }); if (r.estornou) setTentativa(t => t + 1); return; }

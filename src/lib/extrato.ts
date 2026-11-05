@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
-import { faltaNoBanco } from "@/lib/pagamentos";
+import { contaComoRecebido, ESTORNO_POR_EXCLUSAO, faltaNoBanco } from "@/lib/pagamentos";
 import { nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
 
 /**
@@ -20,8 +20,10 @@ export type MovExtrato = {
   forma: string | null; categoria: string | null; pedidoId: string | null; estornado: boolean; ordem: string;
   /** (24/10) extrato: quem pagou (ou o que foi), o número do pedido e a hora do lançamento */
   quem?: string; pedidoNumero?: number | null; hora?: string;
+  /** (6.157) recebimento de um pedido que foi excluído: o dinheiro ficou (conta como recebido), o pedido não */
+  excluido?: boolean;
 };
-type LinhaPagamento = { id: string; valor: number | null; forma: string | null; tipo: string | null; recebido_em: string; pedido_id: string | null; created_at: string | null; estornado_em: string | null };
+type LinhaPagamento = { id: string; valor: number | null; forma: string | null; tipo: string | null; recebido_em: string; pedido_id: string | null; created_at: string | null; estornado_em: string | null; observacao?: string | null };
 type LinhaFinanceiro = { id: string; tipo: string | null; categoria: string | null; descricao: string | null; valor: number | null; data: string; created_at?: string | null; estornado_em?: string | null; forma?: string | null };
 type PedidoDoPagamento = { id: string; numero: number | null; cliente_nome: string | null; clientes?: { nome?: string | null } | { nome?: string | null }[] | null };
 const horaDe = (iso?: string | null) => { if (!iso || !/T|\s\d{2}:/.test(iso)) return ""; const d = new Date(iso); return isNaN(d.getTime()) ? "" : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
@@ -40,7 +42,7 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
   const lancamentos = (colunas: string) => buscarTudo<LinhaFinanceiro>((de, ate) => supabase.from("financeiro").select<string, LinhaFinanceiro>(colunas)
     .eq("user_id", uid).gte("data", ini).lte("data", fim).order("id").range(de, ate));
   const [pag, fin1] = await Promise.all([
-    buscarTudo<LinhaPagamento>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at, estornado_em")
+    buscarTudo<LinhaPagamento>((de, ate) => supabase.from("pagamentos").select("id, valor, forma, tipo, recebido_em, pedido_id, created_at, estornado_em, observacao")
       .eq("user_id", uid).gte("recebido_em", ini).lte("recebido_em", fim).order("id").range(de, ate)),
     lancamentos("id, tipo, categoria, descricao, valor, data, created_at, estornado_em, forma"),
   ]);
@@ -76,10 +78,13 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
     itens.push({
       id: "g" + g.id, origem: "pagamento", ref: g.id, tipo: "entrada", valor: Number(g.valor) || 0, data: g.recebido_em,
       // 10/10: "Pedido #N · Nome do cliente" (antes "Pagamento de pedido", sem dizer qual)
-      titulo: n ? [n.numero != null ? `Pedido #${n.numero}` : "Pedido", n.cliente].filter(Boolean).join(" · ") : "Pagamento de pedido",
+      // (6.157) sem pedido = o pedido foi excluído e o dinheiro ficou
+      titulo: n ? [n.numero != null ? `Pedido #${n.numero}` : "Pedido", n.cliente].filter(Boolean).join(" · ") : !g.pedido_id ? "Pedido excluído" : "Pagamento de pedido",
       subtipo: TIPO[g.tipo] || "Pagamento",
       detalhe: nomeForma(g.forma),
-      forma: g.forma || null, categoria: "Pedidos", pedidoId: g.pedido_id || null, estornado: !!g.estornado_em, ordem: `${g.recebido_em} ${g.created_at || ""}`,
+      forma: g.forma || null, categoria: "Pedidos", pedidoId: g.pedido_id || null,
+      // (6.157) a regra do caixa: estornado só porque o pedido foi excluído continua como recebido (não fica riscado)
+      estornado: !contaComoRecebido(g), excluido: !g.pedido_id, ordem: `${g.recebido_em} ${g.created_at || ""}`,
       quem: n?.cliente || "", pedidoNumero: n?.numero ?? null, hora: horaDe(g.created_at),
     });
   }
@@ -106,8 +111,15 @@ export async function estornar(m: MovExtrato): Promise<{ ok: boolean; erro?: str
   const agora = new Date().toISOString();
   if (m.origem === "pagamento") {
     // (27/10) só estorna o que ainda não foi estornado (em outra aba): antes regravava a hora e o caixa contava a saída de novo
-    const { error } = await supabase.from("pagamentos").update({ estornado_em: agora }).eq("id", m.ref).is("estornado_em", null);
-    return error ? { ok: false, erro: "Não foi possível estornar agora." } : { ok: true };
+    const { data: feito, error } = await supabase.from("pagamentos").update({ estornado_em: agora }).eq("id", m.ref).is("estornado_em", null).select("id");
+    if (error) return { ok: false, erro: "Não foi possível estornar agora." };
+    // (6.157) recebimento de pedido excluído que já tinha sido estornado na exclusão (antes da 6.157) e que conta como recebido:
+    // tirar a marca faz o estorno valer (ela devolveu o dinheiro) — sai do caixa e dos relatórios juntos
+    if (Array.isArray(feito) && feito.length === 0 && m.excluido) {
+      const { error: e2 } = await supabase.from("pagamentos").update({ observacao: "Pedido excluído · estornado" }).eq("id", m.ref).eq("observacao", ESTORNO_POR_EXCLUSAO);
+      if (e2) return { ok: false, erro: "Não foi possível estornar agora." };
+    }
+    return { ok: true };
   }
   const { data: feito, error } = await supabase.from("financeiro").update({ estornado_em: agora }).eq("id", m.ref).is("estornado_em", null).select("id");
   if (!error && Array.isArray(feito) && feito.length === 0) return { ok: true }; // já estava estornado: nada a mudar

@@ -43,6 +43,7 @@ import "./inicioClaro.css";
 import "./inicioAtalhos.css";
 import AdminBannerMobile from "@/components/AdminBannerMobile";
 import { ImageCropper } from "@/components/ui/ImageCropper";
+import { garantirContasFixas } from "@/lib/contasFixas";
 
 interface ChartPoint { iso: string; dia: string; valor: number; }
 /** Cliente com a data de nascimento (aniversariantes) */
@@ -423,6 +424,9 @@ export default function Inicio() {
     if (!profile?.id) return;
     carregarTudo(contaNaTela.current === profile.id);
   }, [profile?.id, hoje]);
+  // (6.157) gera as contas fixas que ficaram pra trás (uma vez por sessão, por trás): os totais do A pagar
+  // ficam certos sem precisar abrir a tela A pagar
+  useEffect(() => { if (profile?.id) void garantirContasFixas(profile.id); }, [profile?.id, hoje]);
   useAoVoltar(() => { if (profile?.id) carregarTudo(true); });
   // (6.71) pedido novo chegou com o Início aberto: recarrega sem piscar e ele aparece no topo (antes só saindo e voltando)
   useEffect(() => {

@@ -339,7 +339,7 @@ export default function Pedidos() {
     } finally { travar(id, false) }
   }
 
-  // (10/10) Excluir estorna os recebimentos do pedido antes (some do financeiro, como a confirmação promete)
+  // (10/10) Excluir pelo lib/pedidosDoo. (6.157) não estorna mais: o recebido fica no caixa e nos relatórios como "Pedido excluído"
   // e para se algum passo falhar. A regra fica em lib/pedidosDoo, a mesma da tela do pedido.
   const excluindo = useRef(false)
   const excluirPedido = async (p: Pedido) => {
@@ -443,7 +443,7 @@ export default function Pedidos() {
       fechar(); return
     }
     if (acao === 'excluir') {
-      const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ''}?`, texto: p.status === 'cancelado' && recebidoPedido(p) > 0 ? 'Ele some da lista. O sinal que você ficou continua no caixa.' : 'Ele some da lista, da agenda e do financeiro.', rotulo: 'Excluir', perigo: true })
+      const ok = await confirmar({ titulo: `Excluir o pedido #${p.numero || ''}?`, texto: recebidoPedido(p) > 0 ? (p.status === 'cancelado' ? 'Ele some da lista. O sinal que você ficou continua no caixa.' : 'Ele some da lista e da agenda. O que já foi recebido continua no caixa.') : 'Ele some da lista, da agenda e do financeiro.', /* (6.157) o recebido fica no caixa e nos relatórios */ rotulo: 'Excluir', perigo: true })
       if (!ok) return
       if (await excluirPedido(p)) fechar()
     }

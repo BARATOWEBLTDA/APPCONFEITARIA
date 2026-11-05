@@ -75,11 +75,11 @@ export const REGRA_CONFLITO_DEFAULT: RegraConflitoTamanho = "preco_tamanho";
  * Calcula quanto uma opção (massa/recheio/cobertura/sabor) contribui
  * ao preço final, dado o contexto do pedido.
  *
- * SEMÂNTICA:
+ * SEMÂNTICA — (6.157) o valor devolvido é SEMPRE por unidade do pedido (1 un., 1 kg…): a sacola multiplica pela quantidade.
  * - fixo:           adicional × 1
  * - por_unidade:    adicional por unidade (o preço é unitário; a sacola já multiplica pela quantidade)
- * - por_kg:         adicional × peso_em_kg (do tamanho escolhido ou quantidade_pedido se venda por kg)
- * - por_quantidade: adicional × (quantidade_pedido / quantidade_base)
+ * - por_kg:         com tamanho: adicional × peso do tamanho · venda por kg sem tamanho: adicional (por kg)
+ * - por_quantidade: adicional ÷ quantidade_base por unidade → na linha, adicional × (quantidade_pedido / quantidade_base)
  *                   Ex: cento (base=100), cliente pede 300 → 3 × adicional
  *
  * Proteção defensiva: nunca retorna NaN ou Infinity. Retorna 0 se
@@ -113,7 +113,9 @@ export function calcularAdicionalOpcao(
       if (pesoTamanho > 0) {
         resultado = adicional * pesoTamanho;
       } else if (contexto.forma_venda === "kg") {
-        resultado = adicional * qtd;
+        // (6.157) peso livre: o preço é por kg e a sacola já multiplica pelos kg.
+        // Antes era adicional × kg aqui e × kg de novo na sacola (recheio +R$ 10/kg em 3 kg cobrava R$ 90, não R$ 30).
+        resultado = adicional;
       } else {
         // Sem peso disponível → fallback pra fixo pra não zerar silenciosamente
         resultado = adicional;
@@ -124,8 +126,9 @@ export function calcularAdicionalOpcao(
     case "por_quantidade": {
       const base = Number(contexto.quantidade_base) || 1;
       if (base > 1 && qtd > 0) {
-        const blocos = qtd / base;
-        resultado = adicional * blocos;
+        // (6.157) por unidade do pedido: adicional ÷ base (a sacola multiplica pela quantidade, dando adicional × qtd/base uma vez).
+        // Antes era adicional × (qtd/base) aqui e × qtd de novo na sacola (cobrava qtd² vezes).
+        resultado = adicional / base;
       } else {
         // Sem quantidade_base válida — fallback fixo pra proteger
         resultado = adicional;

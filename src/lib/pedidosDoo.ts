@@ -3,7 +3,7 @@
  * Assim um pedido feito pela Doo fica idêntico ao manual: mesma situação, mesmo cálculo de
  * pagamento, mesmo cadastro de cliente novo, mesmos itens (com tamanho/kit) e mesmo histórico.
  */
-import { ajustarRecebido, ESTORNO_POR_EXCLUSAO, faltaNoBanco, registrarPagamento } from "@/lib/pagamentos";
+import { ESTORNO_POR_EXCLUSAO, faltaNoBanco, registrarPagamento } from "@/lib/pagamentos";
 import { explicarErro } from "@/lib/erros";
 import { pesoDoTamanho } from "@/lib/itemSacola";
 import { supabase } from "@/lib/supabase";
@@ -322,33 +322,35 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
  * Qualquer passo que falhar para tudo: o pedido não é apagado e a tela avisa.
  * "estornou" diz se os recebimentos já tinham sido estornados quando parou (a tela precisa reler o pedido).
  */
+/*
+ * (6.157) Regra nova, a MESMA do caixa e dos relatórios: o dinheiro que entrou foi recebido de verdade e está na gaveta.
+ * Excluir o pedido não estorna mais nada: o recebimento continua ativo e fica sem pedido (o banco põe pedido_id = null),
+ * então o caixa, o Entrou, o Recebido do mês, as Transações e as Formas contam o mesmo valor ("Pedido excluído").
+ * Antes o caixa contava e os relatórios não (os números não batiam), e se apagar o pedido falhasse depois do estorno
+ * o pedido ficava sem os recebimentos. Agora a marca só é gravada DEPOIS que o pedido saiu: se apagar falhar, nada mudou.
+ * Se ela devolveu o dinheiro, estorna o recebimento em Transações (aí sai do caixa e dos relatórios juntos).
+ * "estornou" fica sempre false (as telas ainda leem o campo).
+ */
 export async function excluirPedido(pedidoId: string): Promise<{ ok: true } | { ok: false; erro: string; estornou: boolean }> {
-  // 1) recebimentos ativos do pedido (sem a tabela de pagamentos não há o que estornar)
+  // 1) recebimentos ativos do pedido, pra marcar depois (sem a tabela de pagamentos não há o que marcar)
   const { data: ativos, error: errPag } = await supabase.from("pagamentos")
     .select("id").eq("pedido_id", pedidoId).is("estornado_em", null);
   if (errPag && !faltaNoBanco(errPag)) {
     return { ok: false, estornou: false, erro: explicarErro(errPag, "Não deu para conferir os recebimentos deste pedido, então ele não foi excluído. Tente de novo.") };
   }
-  // (27/10) pedido cancelado em que ela ficou com o sinal: o dinheiro continua no caixa (o recebimento fica sem pedido).
-  // Antes a exclusão estornava e o saldo e o "Recebido no mês" caíam com o dinheiro ainda na mão dela.
-  const { data: ped } = await supabase.from("pedidos").select("status").eq("id", pedidoId).maybeSingle();
-  const cancelado = (ped as { status?: string } | null)?.status === "cancelado";
-  let estornou = false;
-  if (!errPag && !cancelado && (ativos || []).length > 0) {
-    const r = await ajustarRecebido({ pedidoId, alvo: 0 }); // alvo zero = estorna todos os ativos (nada é apagado)
-    if (!r.ok) return { ok: false, estornou: true, erro: "Não deu para estornar os recebimentos deste pedido, então ele não foi excluído. Confira os pagamentos do pedido e tente de novo." };
-    estornou = true;
-    // marca que o estorno veio da exclusão (não é devolução de dinheiro): o saldo em caixa informado antes não mexe por isso
-    const { error: errMarca } = await supabase.from("pagamentos").update({ observacao: ESTORNO_POR_EXCLUSAO }).in("id", (ativos as { id: string }[]).map(a => a.id));
-    if (errMarca) console.error("[Doonly] marca do estorno por exclusão:", errMarca);
-  }
-  const depoisDoEstorno = estornou ? " Os recebimentos dele já foram estornados." : "";
   // 2) itens (antes o erro daqui era ignorado)
   const { error: errItens } = await supabase.from("pedido_itens").delete().eq("pedido_id", pedidoId);
-  if (errItens) return { ok: false, estornou, erro: explicarErro(errItens, "Não deu para excluir o pedido. Tente de novo.") + depoisDoEstorno };
+  if (errItens) return { ok: false, estornou: false, erro: explicarErro(errItens, "Não deu para excluir o pedido. Tente de novo.") };
   // 3) o pedido
   const { error } = await supabase.from("pedidos").delete().eq("id", pedidoId);
-  if (error) return { ok: false, estornou, erro: explicarErro(error, "Não deu para excluir o pedido. Tente de novo.") + depoisDoEstorno };
+  if (error) return { ok: false, estornou: false, erro: explicarErro(error, "Não deu para excluir o pedido. Tente de novo.") };
+  // 4) (6.157) só agora, com o pedido apagado: "Pedido excluído" na observação (só nas vazias: "substitui um recebimento"
+  // é lida pelo caixa e não pode ser trocada). Sem a marca nada muda nas contas: recebimento sem pedido já conta igual.
+  const ids = ((ativos as { id: string }[] | null) || []).map(a => a.id);
+  if (!errPag && ids.length) {
+    const { error: errMarca } = await supabase.from("pagamentos").update({ observacao: ESTORNO_POR_EXCLUSAO }).in("id", ids).is("observacao", null);
+    if (errMarca) console.error("[Doonly] marca do recebimento de pedido excluído:", errMarca);
+  }
   return { ok: true };
 }
 

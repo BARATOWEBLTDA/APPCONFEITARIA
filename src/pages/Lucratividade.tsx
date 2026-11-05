@@ -154,7 +154,8 @@ function LucratividadeTela() {
     return () => { cancelado = true; clearTimeout(relogio); };
   }, [periodo.tipo, periodo.ini, periodo.fim, tentativa]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const despesasSemInsumos = dados ? dados.despesasPagas - dados.despesasInsumos : 0;
+  // (6.157) as despesas que entram no lucro: sem ingredientes e, com custo "R$ por pedido", sem embalagem (a mesma conta do painel)
+  const despesasSemInsumos = dados ? dados.despesasNoLucro : 0;
   // (13/10) o que sobra de cada venda já tira as taxas da maquininha e a embalagem
   const margemBruta = dados && dados.vendido > 0 ? (dados.vendido - dados.cmv - dados.custosVariaveis) / dados.vendido : 0;
   const metaEquilibrio = fixos && margemBruta > 0 ? (fixos.custos + fixos.salario) / margemBruta : 0;
@@ -179,6 +180,8 @@ function LucratividadeTela() {
           <p>O lucro aqui é <strong>o mesmo do painel do Financeiro</strong>: o que você vendeu (pedidos entregues) menos o custo dos ingredientes (ficha técnica), as taxas da maquininha e a embalagem de cada pedido, e as despesas pagas do mês.</p>
           <p>A taxa da maquininha entra só nos pedidos pagos no cartão, a do crédito ou a do débito. Pix e dinheiro não pagam taxa.</p>
           <p>As despesas de <strong>ingredientes</strong> não entram de novo, porque o custo deles já está na ficha técnica de cada produto.</p>
+          {/* (6.157) embalagem também não conta 2x */}
+          <p>Se você cadastrou um custo <strong>por pedido</strong> (como a embalagem), as compras de <strong>Embalagens</strong> também não entram de novo: o custo já está em cada pedido.</p>
         </>}
       />
       <EstiloFinanceiro />
@@ -206,7 +209,7 @@ function LucratividadeTela() {
             <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Taxas</small><b className="s">{brl(dados.custosVariaveis)}</b>
               <i>{dados.custosVariaveis > 0 ? "cobradas por pedido" : <button type="button" className="lu-link" onClick={() => navigate("/custos")}>Cadastrar taxas</button>}</i></div>
             <div className="lu-k"><span className="lu-ki s" aria-hidden="true"><Minus size={15} weight="bold" /></span><small>Despesas</small><b className="s">{brl(despesasSemInsumos)}</b>
-              <i>sem os ingredientes</i></div>
+              <i>{dados.despesasEmbalagens > 0 ? "sem ingredientes e embalagem" : "sem os ingredientes"}</i></div>
             <div className={`lu-k lu-k--lucro${dados.lucro < 0 ? " ruim" : ""}`}><span className="lu-ki l" aria-hidden="true"><Equals size={15} weight="bold" /></span><small>{ehMes ? "Lucro do mês" : "Lucro do período"}</small><b>{brl(dados.lucro)}</b>
               <div className="lu-margem"><div className="lu-bar"><i style={{ width: `${Math.max(0, Math.min(100, dados.margem))}%` }} /></div><span>margem de <b>{dados.margem}%</b></span></div></div>
           </div>

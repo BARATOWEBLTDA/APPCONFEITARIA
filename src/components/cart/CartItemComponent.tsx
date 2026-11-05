@@ -64,7 +64,8 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove, cor = '#E8
       </div>
       {/* (20/10) o preço aparece uma vez só, com o seletor ao lado; o preço do kg/unidade só quando a quantidade não é 1 */}
       <div className="sc-it-pr">
-        {livre && item.quantity !== 1 && <small>{formatCurrency(item.price)} o kg</small>}
+        {/* (6.157) o preço do kg sem o complemento da linha (o price tem o topo dividido pelos kg) */}
+        {livre && item.quantity !== 1 && <small>{formatCurrency(item.precoUnidade ?? item.price)} o kg</small>}
         {unidade && item.quantity !== 1 && <small>{formatCurrency(item.price)} {unidade}</small>}
         {/* (24/10) em promoção: o preço cheio riscado em cima (a sacola soma o cheio no Subtotal e tira na linha Promoção) */}
         {descontoLinha > 0 && <s className="sc-it-de">{formatCurrency(total + descontoLinha)}</s>}

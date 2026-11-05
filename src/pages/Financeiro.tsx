@@ -18,6 +18,7 @@ import { nomeCategoriaFin } from "@/lib/categoriasFinanceiro";
 import { carregarExtrato, type MovExtrato } from "@/lib/extrato";
 import DespesaSheet from "@/components/financeiro/DespesaSheet";
 import { resumoAPagar, umaPorContaFixa, type ResumoAPagar } from "@/lib/painelFinanceiro";
+import { garantirContasFixas } from "@/lib/contasFixas";
 import { carregarPeriodo, totaisDoPeriodo, diasEntre, isoDe, type DiaFluxo, type Periodo as PeriodoDados } from "@/lib/painelPeriodo";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { carregarAReceber, isoDia, type ItemReceber } from "@/lib/contasReceber";
@@ -134,11 +135,14 @@ export default function Financeiro() {
       setRec({ total: l.reduce((s, x) => s + x.falta, 0), qtd: l.length, semana: l.filter(x => x.dataRef && x.dataRef >= dia0 && x.dataRef <= em7).length, erro });
       setRecItens(erro ? null : l);
     }, () => { if (!cancelado) setRec({ total: 0, qtd: 0, semana: 0, erro: true }); });
-    resumoAPagar(uid, dia0).then(r => { if (!cancelado) setPag(r); }, () => { if (!cancelado) setPag({ total: 0, qtd: 0, vencidas: 0, proxima: null, erro: true }); });
+    // (6.157) gera as contas fixas que faltam (uma vez por sessão; nunca falha) antes de somar o A pagar:
+    // sem isso, quem não abria a tela A pagar via o total sem os meses que ficaram pra trás
+    const contasFixas = garantirContasFixas(uid);
+    contasFixas.then(() => resumoAPagar(uid, dia0)).then(r => { if (!cancelado) setPag(r); }, () => { if (!cancelado) setPag({ total: 0, qtd: 0, vencidas: 0, proxima: null, erro: true }); });
     // as 3 próximas contas (lista do computador)
-    supabase.from("contas_pagar").select("id, descricao, categoria, valor, vencimento, status, pago_em, valor_pago, custo_fixo_id")
+    contasFixas.then(() => supabase.from("contas_pagar").select("id, descricao, categoria, valor, vencimento, status, pago_em, valor_pago, custo_fixo_id")
       .eq("user_id", uid).eq("status", "pendente").order("vencimento", { ascending: true }).order("id").range(0, 29)
-      .then(({ data, error }) => { if (!cancelado) setContas(error ? null : umaPorContaFixa((data as Conta[]) || []).slice(0, 3)); }); // (27/10) sem repetir a conta fixa
+      .then(({ data, error }) => { if (!cancelado) setContas(error ? null : umaPorContaFixa((data as Conta[]) || []).slice(0, 3)); })); // (27/10) sem repetir a conta fixa
     return () => { cancelado = true; };
   }, [uid, versao, dia]);
 

@@ -3,7 +3,7 @@ import { unidadePreco } from '@/lib/formaVenda'
 import KitPicker from '@/components/cardapio/KitPicker'
 import { precoCardapio, precoDoTamanho, descontoCardapio, comDesconto, tamanhosEsgotados, precoCardapioComPromocao } from '@/lib/precoCardapio'
 import { produtosDaLojaAtual, lojaAtualId } from '@/components/cardapio/lojaAtual'
-import { pesoDoNome, pesoDoTamanho } from '@/lib/itemSacola'
+import { pesoDoNome, pesoDoTamanho, precoNaQuantidade } from '@/lib/itemSacola'
 import { r2 } from '@/lib/moeda'
 import { kitAtivo, calcularKit, selecaoInicial, kitUnico, kitsValidos, palavraKit, type KitSelecao } from '@/lib/kitQuantidade'
 import { Fragment, useState, useEffect, useMemo, useRef } from 'react'
@@ -292,6 +292,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   // Autoplay removido — cliente controla clicando nas miniaturas
 
   const isKg = product?.forma_venda === 'kg'
+  // (6.157) peso livre: por kg, sem tamanho e sem kit (a quantidade é o peso). Era calculado só lá embaixo, depois do preço.
+  const pesoLivre = isKg && !gTamanho && !kitCfg
 
   // Preço base = preço CHEIO. A promoção entra uma vez só, pelo descPct lá embaixo
   // (antes usava o preço promocional E aplicava o desconto de novo: 52,90 → 47,61 → 42,85)
@@ -365,6 +367,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     if (kitInfo) baseEfetivo = kitInfo.preco
 
     // Soma adicionais das opções escolhidas
+    // (6.157) calcularAdicionalOpcao devolve o valor POR UNIDADE (por kg no peso livre): a sacola multiplica pela quantidade.
+    // Antes o por_kg (e o por_quantidade) já vinha × quantidade e a sacola multiplicava de novo (3 kg de +R$ 10/kg = R$ 90).
     let adicionaisTotal = 0
     const ctx = {
       quantidade_pedido: quantity,
@@ -395,12 +399,16 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     })
     // (27/10) complementos (topo, vela…) sempre no preço cheio: a promoção é do produto.
     // Antes o topo de R$ 25 aparecia "+ R$ 22,17" num produto com 11% de desconto.
-    adicionaisTotal += extrasBibliotecaTotal
+    // (6.157) no peso livre o complemento é do bolo, não do kg: entra UMA vez na linha (extras_linha), fora do preço do kg.
+    // Antes entrava no preço do kg e a sacola multiplicava pelos kg (topo de R$ 25 em 2,5 kg = R$ 62,50).
+    const extrasNaLinha = pesoLivre ? extrasBibliotecaTotal : 0
+    const extrasPorUnidade = extrasBibliotecaTotal - extrasNaLinha
+    adicionaisTotal += extrasPorUnidade
 
     // (11/10) centavos por uma conta só (r2 + comDesconto), a mesma do cartão e do preço ao lado de cada opção.
     // Antes era toFixed aqui e Math.round lá: 0,5 kg de R$ 31,99 dava R$ 16,00 no cartão e R$ 15,99 no botão.
     const subtotal = r2(baseEfetivo + adicionaisTotal)
-    const final = r2(comDesconto(r2(baseEfetivo + adicionaisTotal - extrasBibliotecaTotal), descPct) + extrasBibliotecaTotal)
+    const final = r2(comDesconto(r2(baseEfetivo + adicionaisTotal - extrasPorUnidade), descPct) + extrasPorUnidade)
     const desconto = r2(subtotal - final)
 
     return {
@@ -410,9 +418,10 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       subtotal,
       desconto,
       final,
+      ...(extrasNaLinha > 0 ? { extras_linha: r2(extrasNaLinha) } : {}),
     }
     // 10/10: depende das escolhas de recheio (antes era só a quantidade: trocar o recheio A pelo B, com máximo de 1, mantinha o adicional do A)
-  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, pesoOpTamanho, tamanhoPorPeso, escolhasRecheio, basePrice, descPct, extrasMarcados, extrasBiblioteca, kitInfo?.preco]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, pesoOpTamanho, tamanhoPorPeso, escolhasRecheio, basePrice, descPct, extrasMarcados, extrasBiblioteca, kitInfo?.preco, pesoLivre]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ═══ Validação: obrigatórios preenchidos ═══════════════════════════
   const podeAdicionar = useMemo(() => {
@@ -490,7 +499,9 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   // ═══ Early return DEPOIS de todos os hooks (regra do React) ══════
   if (!isOpen || !product) return null
 
-  const totalDisplay = r2(calculo.final * quantity) // (11/10) a linha da sacola faz a mesma conta
+  // (6.157) + complemento do peso livre uma vez só (a linha da sacola faz a mesma conta, em lib/itemSacola valorLinha)
+  const extraLinha = Number(calculo.extras_linha) || 0
+  const totalDisplay = r2(calculo.final * quantity + extraLinha) // (11/10) a linha da sacola faz a mesma conta
 
   // ═══ Handler pra adicionar no carrinho ═════════════════════════════
   const handleAdd = () => {
@@ -524,7 +535,10 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
     ;(onAdicionar || addItem)({
       id: product.id, name: product.nome, description: product.descricao || '',
-      price: orcamento && !kitInfo ? precoOrc : calculo.final,
+      // (6.157) peso livre com complemento: price = preço do kg + complemento ÷ kg (price × kg = valor da linha);
+      // precoUnidade/extraLinha deixam a sacola refazer o price quando os kg mudam
+      price: orcamento && !kitInfo ? precoOrc : precoNaQuantidade(calculo.final, extraLinha, quantity),
+      ...(extraLinha > 0 && !(orcamento && !kitInfo) ? { precoUnidade: calculo.final, extraLinha } : {}),
       imageUrl: product.imagem_url,
       saleType: product.forma_venda,
       quantity, observations,
@@ -556,7 +570,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
   // Quantidade: produto por kg (sem tamanho) anda de 0,5 kg; o resto, de 1 em 1.
   // Por kg COM tamanho a quantidade fica 1 (o tamanho já define o peso).
-  const kgLivre = isKg && !gTamanho && !kitCfg
+  const kgLivre = pesoLivre
   // (24/10) kit "ele escolhe" (cento): a quantidade já é escolhida em unidades lá em cima; o contador "1 kit" embaixo confundia e cortava o botão
   const semQuantidade = (isKg && !kgLivre) || (!!kitCfg && kitCfg.modo === 'livre')
   const passo = kgLivre ? 0.5 : 1
@@ -653,6 +667,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       return comPromo(v)
     }
     // tamanho e sabor com preço próprio não somam adicional no total
+    // (6.157) valor por unidade (no peso livre, por kg — igual ao preço do topo, "por kg"); antes o por_kg mostrava × os kg
     const ad = calcularAdicionalOpcao(op, ctxOpcao)
     return ad > 0 ? `+ ${comPromo(ad)}` : ''
   }

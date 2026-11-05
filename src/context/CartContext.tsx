@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { CartItem } from '@/types/cart'
-import { subtotalSacola } from '@/lib/itemSacola'
+import { subtotalSacola, precoNaQuantidade } from '@/lib/itemSacola'
 import { avisar } from '@/components/base'
 import { pixelEvento } from '@/lib/facebookPixel'
 import type { ItemDoCarrinho } from '@/lib/itemDoCarrinho'
@@ -118,7 +118,8 @@ export function CartProvider({ children, loja }: { children: ReactNode; loja?: s
       extras: Array.isArray(it.extrasBiblioteca) ? it.extrasBiblioteca.map((x) => x.id).sort() : [],
       foto: it.fotoReferencia ?? null,
       obs: (it.observations || '').trim(),
-      preco: it.price,
+      // (6.157) peso livre com complemento: o price muda com os kg; a chave usa o preço do kg + o complemento
+      preco: (Number(it.extraLinha) || 0) > 0 ? [it.precoUnidade, it.extraLinha] : it.price,
     })
     let h = 0
     for (let i = 0; i < base.length; i++) h = (h * 31 + base.charCodeAt(i)) | 0
@@ -127,30 +128,40 @@ export function CartProvider({ children, loja }: { children: ReactNode; loja?: s
   const mesmaLinha = (i: CartItem, alvo: string) => (i.lineId ?? i.id) === alvo
   // (27/10) até 50 por item, o mesmo limite do banco (acima disso o pedido era recusado com "o produto mudou")
   const ate50 = (q: number) => Math.min(QTD_MAXIMA, q)
+  // (6.157) peso livre com complemento (entra uma vez na linha): o preço por kg é refeito para a nova quantidade.
+  // Antes mudar os kg na sacola mantinha o preço calculado para a quantidade antiga.
+  const comQuantidade = (i: CartItem, q: number): CartItem =>
+    (Number(i.extraLinha) || 0) > 0 && Number.isFinite(Number(i.precoUnidade))
+      ? { ...i, quantity: q, price: precoNaQuantidade(Number(i.precoUnidade), i.extraLinha, q) }
+      : { ...i, quantity: q }
 
   const addItem = useCallback((newItem: CartItem) => {
     setItems(prev => {
-      const lineId = chaveLinha(newItem)
-      const existing = prev.find(i => i.lineId === lineId)
+      const chave = chaveLinha(newItem)
+      // (6.157) com complemento da linha (topo de bolo no peso livre) não junta: é outro bolo, com o seu próprio topo
+      // (juntando, o segundo topo sumia da conta). Fica numa linha nova.
+      const separada = (Number(newItem.extraLinha) || 0) > 0 && prev.some(i => i.lineId === chave || i.lineId?.startsWith(`${chave}~`))
+      const lineId = separada ? `${chave}~${Date.now().toString(36)}` : chave
+      const existing = separada ? undefined : prev.find(i => i.lineId === lineId)
 
       if (existing) {
         // Mesma personalização: apenas soma a quantidade
         return prev.map(i =>
-          i === existing ? { ...i, quantity: ate50(i.quantity + newItem.quantity) } : i
+          i === existing ? comQuantidade(i, ate50(i.quantity + newItem.quantity)) : i
         )
       }
 
       // (19/10) Pixel do Facebook: produto na sacola
       pixelEvento('AddToCart', { content_name: newItem.name, value: Number(newItem.price) * Number(newItem.quantity || 1), content_ids: [newItem.id], content_type: 'product' })
       // Item novo: adiciona ao carrinho e dispara evento
-      const updated = [...prev, { ...newItem, quantity: ate50(newItem.quantity), lineId }]
+      const updated = [...prev, { ...comQuantidade(newItem, ate50(newItem.quantity)), lineId }]
       window.dispatchEvent(new CustomEvent('cartUpdated', { detail: updated }))
       return updated
     })
   }, [])
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
-    setItems(prev => prev.map(i => mesmaLinha(i, id) ? { ...i, quantity: ate50(quantity) } : i))
+    setItems(prev => prev.map(i => mesmaLinha(i, id) ? comQuantidade(i, ate50(quantity)) : i))
   }, [])
 
   const updateObservations = useCallback((id: string, observations: string) => {

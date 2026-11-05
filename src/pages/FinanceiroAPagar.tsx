@@ -15,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { erroDeConexao } from "@/lib/erros";
 import { faltaNoBanco } from "@/lib/pagamentos";
+import { gerarContasFixas } from "@/lib/contasFixas";
 import { Botao, CaixasEscolha, MenuMais, TelaVazia, confirmar, avisar as avisarBase } from "@/components/base";
 
 /**
@@ -22,6 +23,7 @@ import { Botao, CaixasEscolha, MenuMais, TelaVazia, confirmar, avisar as avisarB
  * A conta não mexe no caixa até usar "Pagar": aí a função do banco contas_pagar_pagar()
  * lança a saída no financeiro e marca a conta como paga, tudo junto.
  * Custos fixos com dia de vencimento viram uma conta por mês (este mês e o próximo).
+ * (6.157) e os meses que ficaram pra trás desde a última conta fixa gerada (até 12), pelo lib/contasFixas.
  */
 export type Conta = {
   id: string; descricao: string; categoria: string | null; valor: number; vencimento: string;
@@ -35,8 +37,7 @@ const diasAte = (iso: string) => { const [y, m, d] = iso.split("-").map(Number);
 const dataCurta = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" }).replace(".", ""); };
 const quando = (d: number) => d === 0 ? "vence hoje" : d === 1 ? "vence amanhã" : d > 1 ? `em ${d} dias` : d === -1 ? "venceu ontem" : `venceu há ${-d} dias`;
 const num = (s: string) => Math.round((parseFloat(String(s).replace(/\./g, "").replace(",", ".")) || 0) * 100) / 100;
-/** A função do banco ainda não existe (SQL do Passo 5 não rodado)? Aí não é falha: a tela já avisa que falta o SQL. */
-const funcaoNaoExiste = (e: unknown) => ["PGRST202", "42883"].includes(String((e as { code?: unknown } | null)?.code || "")) || faltaNoBanco(e);
+// (6.157) o "falta a função do banco" foi pro lib/contasFixas, junto com a geração dos meses
 const FORMAS = [{ k: "pix", l: "Pix" }, { k: "dinheiro", l: "Dinheiro" }, { k: "credito", l: "Crédito" }, { k: "debito", l: "Débito" }, { k: "boleto", l: "Boleto" }];
 type Filtro = "atrasadas" | "semana" | "mes" | "todas";
 // (01/11 · 5.98) "Este mês" virou "Próximos 30 dias": no fim do mês, as contas de daqui a 2 ou 3 dias sumiam da lista
@@ -76,9 +77,8 @@ export default function FinanceiroAPagar() {
       if (!user) { if (erroDeConexao(eUser) && !quieto) { setErro(true); setCarregando(false); } return; }
       // contas do mês (e do próximo) a partir dos custos fixos — não duplica
       // 11/10: o rpc não lança, devolve { error } (o .catch de antes nunca disparava e a falha passava calada)
-      const geradas = await Promise.all([supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competencia(0) }), supabase.rpc("contas_pagar_gerar_mes", { p_competencia: competencia(1) })])
-        .catch(e => [{ error: e }]);
-      const eGerar = geradas.map(r => r.error).find(e => e && !funcaoNaoExiste(e));
+      // (6.157) pelo lib/contasFixas: gera também os meses que ficaram pra trás (quem passou 2+ meses sem abrir a tela)
+      const { error: eGerar } = await gerarContasFixas(user.id);
       // 10/10: só as contas dela (antes dependia só da regra de segurança do banco) e de 1.000 em 1.000
       // (o Supabase corta em 1.000 linhas sem avisar; pela ordem do vencimento, as cortadas seriam as mais novas)
       const { data, error } = await buscarTudo<Conta>((de, ate) => supabase.from("contas_pagar")
