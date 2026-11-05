@@ -2109,7 +2109,7 @@ export default function Produtos() {
                   <div className="prod-desc-caixa">
                     <textarea
                       id="prod-desc-input"
-                      placeholder={"Ex.: Massa de baunilha, recheio de ninho com morango e cobertura de chantilly. Serve 15 fatias."}
+                      placeholder={"Ex.: Massa de baunilha, recheio de ninho com morango e cobertura de chantilly."}
                       value={form.descricao}
                       onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
                       rows={5}
@@ -4028,12 +4028,12 @@ export default function Produtos() {
         .prod-img-remove { position: absolute; top: var(--space-1); right: var(--space-1); background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 22px; height: 22px; color: var(--text-inverse); font-size: var(--font-caption); cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .prod-field { display: flex; flex-direction: column; gap: var(--space-1); }
         .prod-field label { font-size: var(--font-field-label); font-weight: 500; line-height: var(--lh-normal); color: var(--text-secondary); }
-        .prod-field input, .prod-field select, .prod-field textarea { padding: var(--pad-input); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); line-height: var(--lh-normal); color: var(--text-title); background: var(--bg-input); outline: none; transition: border-color var(--dur-fast) var(--ease-out); width: 100%; box-sizing: border-box; }
+        .prod-field input, .prod-field select, .prod-field textarea { padding: var(--pad-input); border: 1.5px solid var(--ui-borda-campo, #EDE6E9); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); line-height: var(--lh-normal); color: var(--text-title); background: var(--bg-input); outline: none; transition: border-color var(--dur-fast) var(--ease-out); width: 100%; box-sizing: border-box; }
         .prod-field input:focus, .prod-field select:focus, .prod-field textarea:focus { border-color: var(--border-focus); }
         .prod-field textarea { resize: none; }
         .prod-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-stack); }
         .prod-row-2.prod-row-1 { grid-template-columns: 1fr; }
-        .prod-preco-input { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-input); transition: border-color var(--dur-fast) var(--ease-out); }
+        .prod-preco-input { display: flex; align-items: center; border: 1.5px solid var(--ui-borda-campo, #EDE6E9); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-input); transition: border-color var(--dur-fast) var(--ease-out); }
         .prod-preco-input span { padding: 0 var(--space-3); font-weight: var(--fw-bold); color: var(--success); font-size: var(--font-input); flex-shrink: 0; }
         .prod-preco-input input { border: none !important; border-radius: 0 !important; flex: 1; padding: var(--space-3) var(--space-2) var(--space-3) 0 !important; outline: none !important; box-shadow: none !important; }
         .prod-preco-input:focus-within { border-color: var(--border-focus); }

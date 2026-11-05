@@ -1060,7 +1060,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             <div className="dz-hav"><img src="/Sistema/doo.webp" alt="" /><i aria-hidden="true" /></div>
             <div className="dz-ht">
               <b>Doo IA{isPro && <> <em>PRO</em></>}</b>
-              <small className={loading || generatingImage ? 'dz-esc' : ''}><i aria-hidden="true" />{loading ? 'Escrevendo…' : generatingImage ? 'Criando a imagem…' : 'Online · responde na hora'}</small>
+              <small className={loading || generatingImage ? 'dz-esc' : ''}><i aria-hidden="true" />{loading ? 'Escrevendo…' : generatingImage ? 'Criando a imagem…' : <>Online<span className="dz-on-x"> · responde na hora</span></>}</small>
             </div>
             {messages.length > 0 && (
               <button type="button" className="dz-hb" onClick={novaConversa} disabled={loading || generatingImage} aria-label="Nova conversa" title="Nova conversa"><NotePencil size={20} weight="bold" /></button>
@@ -1295,7 +1295,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-ht { flex: 1; min-width: 0; }
         .dz-ht b { display: flex; align-items: center; gap: 7px; font-size: 17px; font-weight: 600; }
         .dz-ht em { font-style: normal; font-size: 12px; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: linear-gradient(90deg, #F9A8D4, #C4B5FD); color: var(--ui-texto); }
-        .dz-ht small { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #BBF7D0; margin-top: 2px; }
+        .dz-ht small { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #BBF7D0; margin-top: 2px; white-space: nowrap; }
+        .dz-ht small i { flex: none; }
+        /* (6.108) celular estreito: só "Online" (o "responde na hora" quebrava em 2 linhas) */
+        @media (max-width: 380px) { .dz-ht small .dz-on-x { display: none; } }
         .dz-ht small i { width: 7px; height: 7px; border-radius: 50%; background: #22C55E; box-shadow: 0 0 0 3px rgba(34,197,94,.25); }
         .dz-ht small.dz-esc { color: #FBCFE8; } .dz-ht small.dz-esc i { background: #F472B6; box-shadow: 0 0 0 3px rgba(244,114,182,.3); animation: dooTyping 1.2s infinite; }
         .dz-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 16px 14px 8px; display: flex; flex-direction: column; gap: 12px; }

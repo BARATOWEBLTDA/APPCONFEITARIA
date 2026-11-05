@@ -942,7 +942,7 @@ export default function NovaVenda() {
                 {/* (21/10) busca e lista na própria tela; "Sem cliente" vem marcado */}
                 <div className="ui-campo-c nv3-cbusca">
                   <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-                  <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar cliente pelo nome ou telefone" placeholder="Buscar pelo nome ou telefone" value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
+                  <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar cliente pelo nome ou telefone" placeholder="Buscar nome ou telefone" value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
                   {buscaCliente && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBuscaCliente('')}><X size={20} weight="bold" /></BotaoIcone>}
                 </div>
                 <Botao cheio className="nv3-cnovo" icone={<UserPlus size={20} weight="bold" />} onClick={() => { tirarCliente(); setModoNovoCli(true) }}>Cadastrar novo cliente</Botao>
@@ -1027,7 +1027,7 @@ export default function NovaVenda() {
                   <span className="ui-campo-r"><span>Horário</span><small>opcional</small></span>
                   <button type="button" className="ui-campo-c nv3-abre" onClick={() => setHoraSheetAberto(true)}>
                     <span className="ui-campo-ic" aria-hidden="true"><Clock size={20} weight="bold" /></span>
-                    <span className={horarioEntrega ? '' : 'nv3-ph'}>{horarioEntrega || 'Escolher'}</span>
+                    <span className={horarioEntrega ? '' : 'nv3-ph'}>{horarioEntrega || '--:--'}</span>
                   </button>
                 </div>
               </div>

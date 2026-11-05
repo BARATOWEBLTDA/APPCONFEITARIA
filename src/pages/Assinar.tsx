@@ -131,7 +131,7 @@ export default function Assinar() {
               <span className="pro9-desc">Hoje você não paga nada</span>
               <b className="pro9-oferta-t">Plano PRO mensal</b>
               <div className="pro9-preco"><b>Grátis</b><small>por {DIAS_TESTE} dias</small></div>
-              <p className="pro9-oferta-s">Depois, {PRECO_CHEIO} por mês. Cancele antes do {DIAS_TESTE + 1}º dia e não paga nada.</p>
+              <p className="pro9-oferta-s">Depois, {PRECO_CHEIO} por mês (menos de R$ 1 por dia). Cancele antes do {DIAS_TESTE + 1}º dia e não paga nada.</p>
               <Botao cheio icone={<Crown size={20} weight="fill" />} onClick={assinarNaHotmart}>{CTA_PRO}</Botao>
               <p className="pro9-seg"><Lock size={14} weight="bold" /> Pagamento seguro pela Hotmart</p>
             </section>
@@ -140,10 +140,11 @@ export default function Assinar() {
 
           <section className="cl9-card pro9-lista">
             <Titulo>O que o PRO libera</Titulo>
-            {BENEFICIOS.map(([Ic, t, d]) => (
+            {/* (6.108) a equipe que monta já está no cartão de cima; no celular, o título curto (o longo quebrava em 2 linhas) */}
+            {BENEFICIOS.filter(b => b[5] !== "equipe").map(([Ic, t, d, curto]) => (
               <div className="pro9-li" key={t}>
                 <span className="pro9-ic"><Ic size={22} weight="duotone" /></span>
-                <span><b>{t}</b><small>{d}</small></span>
+                <span><b>{computador ? t : curto}</b><small>{d}</small></span>
               </div>
             ))}
           </section>

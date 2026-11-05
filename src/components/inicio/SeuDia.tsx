@@ -135,7 +135,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
           <div>
             {/* (21/10) com pedido esperando, a frase diz o que fazer (antes "Sua agenda está livre" com 3 pedidos lá em cima) */}
             {/* (24/10) título curto (o de antes quebrava em 2 linhas no celular) e a explicação em até 3 linhas */}
-            <b>Nenhuma entrega marcada</b>
+            <b>Nenhuma entrega ainda</b>
             <span>{novos > 0
               ? `${novos === 1 ? "Tem 1 pedido esperando" : `Tem ${novos} pedidos esperando`} você aceitar. Depois de ${novos === 1 ? "aceito, ele aparece" : "aceitos, eles aparecem"} aqui com o dia e a hora da entrega.`
               : "Quando um pedido for aceito, ele aparece aqui com o dia e a hora da entrega. Que tal divulgar seu cardápio?"}</span>

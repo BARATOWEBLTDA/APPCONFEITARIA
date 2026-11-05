@@ -776,7 +776,7 @@ export default function OrcamentoEditar() {
     {/* (6.62) cliente da lista: busca parada em cima e só a lista rola */}
     <Janela aberta={cliJanela === 'lista'} aoFechar={() => setCliJanela(null)} tipo="conteudo" titulo="Seus clientes" className="orc-esc-janela">
       <div className="orc-esc">
-        <label className="orc-busca"><MagnifyingGlass size={18} weight="bold" /><input type="search" placeholder="Buscar pelo nome ou telefone" value={buscaCli} onChange={e => setBuscaCli(e.target.value)} aria-label="Buscar cliente" /></label>
+        <label className="orc-busca"><MagnifyingGlass size={18} weight="bold" /><input type="search" placeholder="Buscar nome ou telefone" value={buscaCli} onChange={e => setBuscaCli(e.target.value)} aria-label="Buscar cliente" /></label>
         <div className="orc-esc-l">
           {listaClientes.map(c => (
             <button key={c.id} type="button" className="orc-esc-it" onClick={() => usarCliente(c)}>
