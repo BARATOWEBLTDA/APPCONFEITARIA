@@ -1,6 +1,6 @@
 import { pegarPedidoDoo } from '@/components/MenuContaItens'
 import { useState, useRef, useEffect } from 'react'
-import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle } from '@phosphor-icons/react'
+import { CaretLeft, X, Minus, Check, Copy, ImageSquare, ArrowRight, CurrencyCircleDollar, BookOpenText, InstagramLogo, CalendarCheck, Receipt, Package, NotePencil, DownloadSimple, Cake, Sparkle, FilePdf } from '@phosphor-icons/react'
 import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
@@ -35,6 +35,8 @@ interface Message {
   erro?: boolean
   /** (6.85) o pedido do topo de bolo (para refazer com as mudanças que ela pedir) */
   promptTopo?: string
+  /** (6.89) imagem de topo de bolo: ganha o "Baixar em PDF" */
+  ehTopo?: boolean
   /** (11/10) o erro se resolve começando outra conversa: mostra o botão embaixo */
   oferecerNova?: boolean
   /** (11/10) a resposta bateu no limite de tamanho e veio cortada */
@@ -691,6 +693,30 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     setTimeout(() => URL.revokeObjectURL(endereco), 10000)
   }
 
+  // (6.89) o topo numa folha A4 em PDF, pronto para imprimir (no celular abre o compartilhar, pra mandar no WhatsApp ou salvar)
+  const [gerandoPdf, setGerandoPdf] = useState(false)
+  const baixarPdfTopo = async (url: string) => {
+    if (gerandoPdf) return
+    setGerandoPdf(true)
+    try {
+      const blob = blobsImagem.current[url] || await fetch(url).then(r => r.blob())
+      const dataUrl = await new Promise<string>((ok, falhou) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result)); fr.onerror = falhou; fr.readAsDataURL(blob) })
+      const dim = await new Promise<{ w: number; h: number }>((ok, falhou) => { const i = new Image(); i.onload = () => ok({ w: i.naturalWidth, h: i.naturalHeight }); i.onerror = falhou; i.src = dataUrl })
+      const { jsPDF } = await import('jspdf')
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const mx = 10, my = 10, lw = 210 - mx * 2, lh = 297 - my * 2
+      const esc = Math.min(lw / dim.w, lh / dim.h)
+      const w = dim.w * esc, h = dim.h * esc
+      doc.addImage(dataUrl, 'PNG', (210 - w) / 2, my, w, h)
+      const nome = `topo-de-bolo-${Date.now()}.pdf`
+      const arq = new File([doc.output('blob')], nome, { type: 'application/pdf' })
+      const toque = window.matchMedia('(pointer: coarse)').matches
+      if (toque && navigator.canShare?.({ files: [arq] })) await navigator.share({ files: [arq], title: 'Topo de bolo' }).catch(() => {})
+      else doc.save(nome)
+    } catch { avisar('Não deu para gerar o PDF. Tente de novo.', { tipo: 'erro' }) }
+    finally { setGerandoPdf(false) }
+  }
+
   const removePendingImage = () => {
     if (pendingImage) URL.revokeObjectURL(pendingImage.preview)
     setPendingImage(null)
@@ -741,10 +767,11 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: ehTopoDeBolo
-          ? 'Seu topo de bolo está pronto! Toque em "Baixar imagem" para guardar.\n\n**Para imprimir:** papel fotográfico ou adesivo, em boa qualidade. Recorte pela borda branca e cole num palito ou num papel firme. Quer mudar algo? É só me dizer o que trocar.'
+          ? 'Seu topo de bolo está pronto! Baixe em PDF para imprimir numa folha A4, ou a imagem para mandar à gráfica.\n\n**Para imprimir:** papel fotográfico ou adesivo, em boa qualidade. Recorte pela borda branca e cole num palito ou num papel firme. Quer mudar algo? É só me dizer o que trocar.'
           : 'Aqui está a imagem. Toque em "Baixar imagem" para guardar.',
         imageUrl,
         isImage: true,
+        ...(ehTopoDeBolo ? { ehTopo: true } : {}),
         ...(ehTopoDeBolo && prompt.length < 3400 ? { promptTopo: prompt } : {}),
       }])
     } catch (err: unknown) {
@@ -996,6 +1023,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                   {msg.imageUrl && (
                     <div className="dz-acs">
                       <button type="button" onClick={() => baixarImagem(msg.imageUrl as string)}><DownloadSimple size={16} weight="bold" />Baixar imagem</button>
+                      {msg.ehTopo && <button type="button" disabled={gerandoPdf} onClick={() => void baixarPdfTopo(msg.imageUrl as string)}><FilePdf size={16} weight="bold" />{gerandoPdf ? 'Gerando…' : 'Baixar em PDF'}</button>}
                     </div>
                   )}
                 </div>
