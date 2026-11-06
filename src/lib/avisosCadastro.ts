@@ -29,7 +29,7 @@ type ProdutoAvisos = { id: string; nome: string | null; descricao: string | null
 const diaISO = (somar = 0) => { const d = new Date(); d.setDate(d.getDate() + somar); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 
 export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
-  const [fixos, variaveis, perfil, produtos, contas, maoObra, nComplementos, nClientes, eu] = await Promise.all([
+  const [fixos, variaveis, perfil, produtos, contas, maoObra, nComplementos, nClientes, eu, cupons] = await Promise.all([
     supabase.from("custos_fixos").select("id").eq("user_id", uid).limit(1),
     supabase.from("custos_variaveis").select("*").eq("user_id", uid),
     supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
@@ -41,6 +41,8 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
     supabase.from("biblioteca_extras").select("id", { count: "exact", head: true }).eq("user_id", uid),
     supabase.from("clientes").select("id", { count: "exact", head: true }).eq("user_id", uid),
     supabase.auth.getUser(),
+    // (6.177) os cupons moram em loja_cupons (o campo antigo do perfil fica vazio)
+    supabase.from("loja_cupons").select("cupons").eq("user_id", uid).maybeSingle(),
   ]);
   const l: AvisoCadastro[] = [];
   // contas primeiro (são as mais urgentes): atrasada, hoje, amanhã. A chave muda com a situação, pra avisar de novo quando vira "hoje"
@@ -97,13 +99,17 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
       link: "/produtos", estado: { abrir: `descricao:${listaSemDesc[0].id}` }, nivel: "normal",
       curto: { t: semDesc === 1 ? `${primeiro} sem descrição` : `${semDesc} sem descrição`, s: "Sabor, tamanho e quantos serve" } });
   }
-  if (pf && !(pf.banner_url || pf.banner1_url || pf.banner_topo_url)) l.push({ chave: "falta_banner", icone: "banner", semNotificar: true, titulo: "Crie um banner de promoção",
+  if (pf && !(pf.banner_url || pf.banner1_url)) l.push({ chave: "falta_banner", icone: "banner", semNotificar: true, titulo: "Crie um banner de promoção",
     texto: "Anuncie a promoção da semana no topo do cardápio, antes dos produtos.", link: "/cardapio-design", nivel: "normal", curto: { t: "Banner de promoção", s: "No topo do cardápio" },
     estado: { destacar: { alvo: ".ap-enviar.ap-slot:not(.ap-slot--logo):not(.ap-slot--topo)", titulo: "Toque aqui para pôr o banner", texto: "Escolha uma imagem da promoção. Ela aparece no topo do cardápio.", acao: "Escolher imagem" } } });
   // (04/11 · 6.20) "Pra vender mais": só depois que o cardápio tem produto (não compete com os primeiros passos)
+  const pfP = (perfil.data || {}) as { plano?: string | null; pro_expira_em?: string | null };
+  const ehProAviso = pfP.plano === "pro" && (!pfP.pro_expira_em || new Date(pfP.pro_expira_em) > new Date());
   const temProduto = !produtos.error && ((produtos.data as ProdutoAvisos[]) || []).length > 0;
-  const semCupom = !!pf && !(Array.isArray((pf as { cupons_desconto?: unknown[] | null }).cupons_desconto) && ((pf as { cupons_desconto?: unknown[] }).cupons_desconto || []).length);
-  if (temProduto && semCupom) l.push({ chave: "falta_cupom", icone: "cupom", semNotificar: true, titulo: "Crie seu primeiro cupom",
+  const listaCupons = (cupons.data as { cupons?: unknown[] | null } | null)?.cupons;
+  const semCupom = !cupons.error && !(Array.isArray(listaCupons) && listaCupons.length) && !(Array.isArray((pf as { cupons_desconto?: unknown[] | null } | null)?.cupons_desconto) && ((pf as { cupons_desconto?: unknown[] }).cupons_desconto || []).length);
+  // (6.177) cupom é do PRO: no grátis o passo levaria só pro convite
+  if (ehProAviso && temProduto && semCupom) l.push({ chave: "falta_cupom", icone: "cupom", semNotificar: true, titulo: "Crie seu primeiro cupom",
     texto: "Um cupom de desconto traz cliente nova e faz quem já comprou voltar.", link: "/cupons", nivel: "normal", curto: { t: "Seu primeiro cupom", s: "Pra trazer cliente nova" },
     estado: { destacar: { alvo: ".guia-novo-cupom", titulo: "Crie o cupom aqui", texto: "Escolha o código (ex.: BEMVINDA10) e o desconto. A cliente usa no cardápio.", acao: "Criar cupom" } } });
   // (6.29) adicionais são do PRO: no grátis o aviso levaria só pro convite do PRO
@@ -116,7 +122,9 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
     texto: "Com as clientes no app, você manda parabéns no aniversário e vê o que cada uma comprou.", link: "/clientes", nivel: "normal", curto: { t: "Primeira cliente", s: "Aniversário e histórico" },
     estado: { destacar: { alvo: ".guia-novo-cliente", titulo: "Cadastre a cliente aqui", texto: "Nome e WhatsApp já bastam. Quem pede pelo cardápio entra sozinha.", acao: "Cadastrar cliente" } } });
   // (04/11 · 6.20) o WhatsApp que recebe os pedidos: pede pra conferir (volta se o número mudar)
-  const tel = String((pf as { telefone?: string | null } | null)?.telefone || "").replace(/\D/g, "");
+  // (6.177) número com +55 na frente também sai formatado (antes aparecia "5541999990000")
+  const tel0 = String((pf as { telefone?: string | null } | null)?.telefone || "").replace(/\D/g, "");
+  const tel = (tel0.length === 12 || tel0.length === 13) && tel0.startsWith("55") ? tel0.slice(2) : tel0;
   const conferido = String((eu.data?.user?.user_metadata as { whatsapp_ok?: string } | undefined)?.whatsapp_ok || "");
   if (tel.length >= 10 && conferido !== tel) {
     const fmt = tel.length === 11 ? `(${tel.slice(0, 2)}) ${tel.slice(2, 7)}-${tel.slice(7)}` : tel.length === 10 ? `(${tel.slice(0, 2)}) ${tel.slice(2, 6)}-${tel.slice(6)}` : tel;

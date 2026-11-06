@@ -141,9 +141,14 @@ export default function PraFazer() {
   const [voltou, setVoltou] = useState(0);
   useAoVoltar(() => setVoltou(v => v + 1));
   useEffect(() => {
-    if (!uid || pronta !== true) return;
+    if (!uid) return;
     let vivo = true;
-    lerAvisosCadastro(uid).then(l => { if (!vivo) return; setAvisos(l); notificarAvisosCadastro(l); }).catch(() => {});
+    // (6.177) conta atrasada e o WhatsApp dos pedidos aparecem sempre; os passos de cadastro só com a loja pronta
+    lerAvisosCadastro(uid).then(l0 => {
+      if (!vivo) return;
+      const l = pronta === true ? l0 : l0.filter(a => a.chave.startsWith("conta_") || a.chave.startsWith("conferir_whatsapp"));
+      setAvisos(l); notificarAvisosCadastro(l);
+    }).catch(() => {});
     return () => { vivo = false; };
   }, [uid, pronta, voltou]);
 
