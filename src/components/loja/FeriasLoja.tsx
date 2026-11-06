@@ -68,7 +68,8 @@ export function FeriasLoja({ uid }: { uid: string }) {
   }
   const mesmo = (a: DiaFechado, b: DiaFechado) => a.inicio === b.inicio && a.fim === b.fim
   const fimReal = tipo === 'folga' ? inicio : fim
-  const erro = !inicio ? '' : tipo === 'ferias' && fim && fim < inicio ? 'O último dia precisa ser depois do primeiro.' : ''
+  // (6.181) alterar um período em andamento para um dia que já passou apagava o período sem avisar
+  const erro = !inicio ? '' : tipo === 'ferias' && fim && fim < inicio ? 'O último dia precisa ser depois do primeiro.' : fimReal && fimReal < hoje ? 'Esse dia já passou. Escolha hoje ou depois.' : ''
   const podeSalvar = !!inicio && !!fimReal && !erro
   const salvarJanela = async () => {
     if (!podeSalvar) return

@@ -19,6 +19,7 @@ import { lerProdutosDeVenda, opcoesDoProduto } from '@/lib/pedidosDoo'
 import { CATEGORIAS_ENTRADA, CATEGORIAS_SAIDA } from '@/lib/categoriasFinanceiro'
 import { linkWhatsApp } from '@/lib/telefone'
 import { linkProposta, textoProposta, type Orcamento } from '@/lib/orcamentos'
+import { ddmm as ddmmF, fechadosAtivos, lerFechados, textoPeriodo } from '@/lib/diasFechados'
 
 export type HorarioDoo = {
   dias?: string[]; abertura?: string; fechamento?: string
@@ -715,7 +716,7 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
 
 /** As regras que a Doo segue para essas ações (vão no prompt do sistema) */
 /** (6.107) os campos da loja que a Doo lê para saber como está o cardápio hoje */
-export const CAMPOS_LOJA_DOO = 'nome_loja, horario, descricao_loja, telefone, endereco, mostrar_localizacao, mostrar_apenas_cidade, instagram, facebook, formas_pagamento, exibir_campo_troco, formas_entrega, horario_retirada, entrega_modo, valor_entrega_propria, entrega_por_bairro, entrega_por_cidade, entrega_por_raio, entrega_fora_valor, pix_online, pix_chave, pix_nome, pix_cidade, pix_modo, pix_sinal_pct, pagar_na_retirada, cor_navbar, cor_borda, cor_nome, loja_pausada, logo_url, banner_url, banner_topo_url'
+export const CAMPOS_LOJA_DOO = 'nome_loja, horario, descricao_loja, telefone, endereco, mostrar_localizacao, mostrar_apenas_cidade, instagram, facebook, formas_pagamento, exibir_campo_troco, formas_entrega, horario_retirada, entrega_modo, valor_entrega_propria, entrega_por_bairro, entrega_por_cidade, entrega_por_raio, entrega_fora_valor, pix_online, pix_chave, pix_nome, pix_cidade, pix_modo, pix_sinal_pct, pagar_na_retirada, cor_navbar, cor_borda, cor_nome, loja_pausada, dias_fechados, logo_url, banner_url, banner_topo_url'
 export type LojaDoo = Record<string, unknown> & { nome_loja?: string | null; horario?: unknown }
 
 /** Como o cardápio está hoje, em linhas curtas (vai no prompt: a Doo sabe o que falta e não pergunta o que já tem) */
@@ -743,6 +744,8 @@ function estadoLoja(l: LojaDoo, h: HorarioDoo | null): string {
     `Pix: ${t(l.pix_chave) ? `chave ${t(l.pix_chave)}, ${t(l.pix_nome) || 'sem nome'}, ${t(l.pix_cidade) || 'sem cidade'}` : 'sem chave'} · pago pelo cardápio: ${l.pix_online ? `sim (${l.pix_modo === 'sinal' ? `sinal de ${l.pix_sinal_pct || 50}%` : l.pix_modo === 'total' ? 'valor total' : 'cliente escolhe'})` : 'não'}`,
     `Cores: faixa ${t(l.cor_navbar) || 'padrão'}, borda ${t(l.cor_borda) || 'padrão'}, nome ${t(l.cor_nome) || 'padrão'} · Logo: ${t(l.logo_url) ? 'tem' : 'FALTA'} · Foto do topo: ${t(l.banner_topo_url) ? 'tem' : 'não tem'}`,
     `Loja: ${l.loja_pausada ? 'PAUSADA (não recebe pedidos)' : 'aberta para pedidos'}`,
+    // (6.181) férias e feriados fechados (Dados da loja → Férias e feriados): a Doo sabe e não diz que está aberta
+    `Dias fechados (férias/feriados, o cardápio não aceita pedido nesses dias): ${fechadosAtivos(lerFechados(l.dias_fechados)).map(f => f.inicio === f.fim ? `${f.nome || 'fechado'} ${ddmmF(f.inicio)}` : `férias ${textoPeriodo(f)}`).join(', ') || 'nenhum'}`,
   ].map(x => '- ' + x).join('\n')
 }
 
