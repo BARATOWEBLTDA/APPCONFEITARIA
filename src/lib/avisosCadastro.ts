@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { criarNotificacaoPessoal } from "@/lib/notificacoesUsuario";
 import { deIso, expediente } from "@/lib/agendaCardapio";
-import { avisoFechado, diaDaSemana, diaDeVolta, diasAte, fechadoEm, hojeBr, lerFechados, proximosFeriados, textoPeriodo } from "@/lib/diasFechados";
+import { avisoFechado, diaDaSemana, diaDeVolta, diasAte, fechadoEm, hojeBr, lerFechados, proximosFeriados, textoAviso, textoPeriodo } from "@/lib/diasFechados";
 
 /**
  * (13/10) O que falta cadastrar pro app mostrar os números certos (lucro, caixa, contas).
@@ -216,15 +216,16 @@ async function passosExtras(uid: string, pf: Record<string, unknown> | null, ehP
   // 7) (6.179) de férias agora ou começando nesta semana
   const fechados = lerFechados(pf?.dias_fechados);
   const hojeB = hojeBr();
-  const av = avisoFechado(fechados, hojeB);
+  const av = avisoFechado(fechados, hojeB, 7);
   if (av && (av.agora || diasAte(av.f.inicio, hojeB) <= 7)) {
     const um = av.f.inicio === av.f.fim;
     const volta = ddmm(diaDeVolta(av.f));
+    const clientesVeem = !!avisoFechado(fechados, hojeB); // o aviso do cardápio já apareceu (antecedência que ela escolheu)
     l.push({ chave: `ferias_${av.f.inicio}_${av.f.fim}`, icone: "ferias", semNotificar: true, nivel: av.agora ? "atencao" : "normal",
       titulo: av.agora ? (um ? "Loja fechada hoje" : `De férias até ${ddmm(av.f.fim)}`) : um ? `Fechada no dia ${ddmm(av.f.inicio)}` : `Férias de ${textoPeriodo(av.f)}`,
-      texto: av.agora ? `O cardápio avisa as clientes e aceita encomendas a partir do dia ${volta}.` : "O cardápio já avisa as clientes e não deixa marcar esses dias.",
+      texto: av.agora ? `O cardápio avisa as clientes e aceita encomendas a partir do dia ${volta}.` : `O cardápio não deixa marcar esses dias.${clientesVeem ? " As clientes já veem o aviso no topo." : ` ${textoAviso(av.f)} no topo do cardápio.`}`,
       link: "/cardapio-config", estado: { abrir: "ferias" },
-      curto: { t: av.agora ? (um ? "Fechada hoje" : `De férias até ${ddmm(av.f.fim)}`) : um ? `Fechada dia ${ddmm(av.f.inicio)}` : `Férias de ${textoPeriodo(av.f)}`, s: av.agora ? `Volta dia ${volta}` : "O cardápio já avisa" } });
+      curto: { t: av.agora ? (um ? "Fechada hoje" : `De férias até ${ddmm(av.f.fim)}`) : um ? `Fechada dia ${ddmm(av.f.inicio)}` : `Férias de ${textoPeriodo(av.f)}`, s: av.agora ? `Volta dia ${volta}` : clientesVeem ? "O cardápio já avisa" : textoAviso(av.f) } });
   }
 
   // 8) (6.179) feriado nos próximos 3 dias num dia que a loja abre: "Sua loja abre no feriado?"

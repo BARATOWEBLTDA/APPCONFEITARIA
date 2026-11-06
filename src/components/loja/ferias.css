@@ -21,3 +21,6 @@
 .fl-datas label > span { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
 .fl-dica, .fl-erro { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
 .fl-erro { color: #B42318; }
+.fl-tx--bt { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.fl-tx--bt:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.fl-rot { margin-top: 2px; font-size: 14px; font-weight: 600; color: var(--ui-texto); }

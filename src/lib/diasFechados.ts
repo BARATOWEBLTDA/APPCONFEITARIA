@@ -3,7 +3,12 @@
  * Fica em profiles.dias_fechados (lista de { inicio, fim, tipo, nome }). O cardápio risca esses dias no calendário,
  * mostra o aviso no topo e o banco recusa pedido para eles (pedido_data_ok → data_fechada).
  */
-export type DiaFechado = { inicio: string; fim: string; tipo: "ferias" | "feriado"; nome?: string };
+/** avisar: quantos dias antes o cardápio mostra o aviso (0 = só quando fechar · 999 = desde já) */
+export type DiaFechado = { inicio: string; fim: string; tipo: "ferias" | "feriado"; nome?: string; avisar?: number };
+export const AVISO_PADRAO = 15;
+export const avisarDe = (f: DiaFechado) => typeof f.avisar === "number" && f.avisar >= 0 ? f.avisar : AVISO_PADRAO;
+/** "Avisa 15 dias antes" · "Avisa desde já" · "Avisa quando fechar" */
+export const textoAviso = (f: DiaFechado) => { const n = avisarDe(f); return n >= 999 ? "Avisa desde já" : n === 0 ? "Avisa quando fechar" : `Avisa ${n} ${n === 1 ? "dia" : "dias"} antes`; };
 
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 export const isoDe = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -31,7 +36,9 @@ export function lerFechados(bruto: unknown): DiaFechado[] {
     if (!ISO.test(inicio)) continue;
     let fim = ISO.test(String(o.fim || "")) ? String(o.fim) : inicio;
     if (fim < inicio) fim = inicio;
-    out.push({ inicio, fim, tipo: o.tipo === "feriado" || (fim === inicio && o.tipo !== "ferias") ? "feriado" : "ferias", nome: o.nome ? String(o.nome).slice(0, 60) : undefined });
+    const av = Number(o.avisar);
+    out.push({ inicio, fim, tipo: o.tipo === "feriado" || (fim === inicio && o.tipo !== "ferias") ? "feriado" : "ferias",
+      ...(o.nome ? { nome: String(o.nome).slice(0, 60) } : {}), ...(o.avisar != null && Number.isFinite(av) && av >= 0 ? { avisar: Math.min(999, Math.round(av)) } : {}) });
   }
   return out.sort((a, b) => a.inicio.localeCompare(b.inicio));
 }
@@ -50,17 +57,18 @@ export const textoPeriodo = (f: DiaFechado) => f.inicio === f.fim ? ddmm(f.inici
 export const diaDeVolta = (f: DiaFechado) => somar(f.fim, 1);
 
 /**
- * Aviso do cardápio: fechado agora (hoje dentro do período) ou um período que começa nos próximos 15 dias.
+ * Aviso do cardápio: fechado agora (hoje dentro do período) ou um período que já entrou na antecedência que a loja escolheu
+ * (dias antes: avisar de cada período; `janela` força um prazo, ex.: os próximos passos da loja).
  * Junta períodos colados (ex.: férias até 31/12 e feriado 01/01) pra dizer o dia certo da volta.
  */
-export function avisoFechado(lista: DiaFechado[], hoje = hojeBr()): { agora: boolean; f: DiaFechado } | null {
+export function avisoFechado(lista: DiaFechado[], hoje = hojeBr(), janela?: number): { agora: boolean; f: DiaFechado } | null {
   const ativos = fechadosAtivos(lista, hoje);
-  const prox = ativos[0];
-  if (!prox) return null;
+  const i = ativos.findIndex(o => o.inicio <= hoje || o.inicio <= somar(hoje, janela ?? Math.min(avisarDe(o), 400)));
+  if (i < 0) return null;
+  const prox = ativos[i];
   const agora = prox.inicio <= hoje;
-  if (!agora && prox.inicio > somar(hoje, 15)) return null;
   let f = { ...prox };
-  for (const o of ativos.slice(1)) { if (o.inicio <= somar(f.fim, 1)) { if (o.fim > f.fim) f = { ...f, fim: o.fim, tipo: "ferias" }; } else break; }
+  for (const o of ativos.slice(i + 1)) { if (o.inicio <= somar(f.fim, 1)) { if (o.fim > f.fim) f = { ...f, fim: o.fim, tipo: "ferias" }; } else break; }
   return { agora, f };
 }
 

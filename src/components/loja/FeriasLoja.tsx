@@ -7,7 +7,7 @@ import CampoData from '@/components/CampoData'
 import { explicarErro } from '@/lib/erros'
 import { deIso, expediente } from '@/lib/agendaCardapio'
 import {
-  type DiaFechado, ddmm, diaDaSemana, diaDeVolta, diasAte, fechadoEm, fechadosAtivos, hojeBr, lerFechados, proximosFeriados, salvarFechados, textoPeriodo,
+  type DiaFechado, AVISO_PADRAO, avisarDe, ddmm, textoAviso, diaDaSemana, diaDeVolta, fechadoEm, fechadosAtivos, hojeBr, lerFechados, proximosFeriados, salvarFechados, textoPeriodo,
 } from '@/lib/diasFechados'
 import './ferias.css'
 
@@ -22,6 +22,9 @@ export function FeriasLoja({ uid }: { uid: string }) {
   const [tipo, setTipo] = useState<'ferias' | 'folga'>('ferias')
   const [inicio, setInicio] = useState('')
   const [fim, setFim] = useState('')
+  const [aviso, setAviso] = useState<string>(String(AVISO_PADRAO))
+  // (6.180) tocar num período abre a mesma janela para alterar
+  const [editando, setEditando] = useState<DiaFechado | null>(null)
   const [salvando, setSalvando] = useState<string | null>(null)
   const hoje = hojeBr()
 
@@ -58,20 +61,27 @@ export function FeriasLoja({ uid }: { uid: string }) {
     return true
   }
 
-  const abrirJanela = () => { setTipo('ferias'); setInicio(''); setFim(''); setJanela(true) }
+  const abrirJanela = (f?: DiaFechado) => {
+    setEditando(f || null)
+    setTipo(f && f.inicio === f.fim ? 'folga' : 'ferias'); setInicio(f?.inicio || ''); setFim(f && f.inicio !== f.fim ? f.fim : '')
+    setAviso(String(f ? avisarDe(f) : AVISO_PADRAO)); setJanela(true)
+  }
+  const mesmo = (a: DiaFechado, b: DiaFechado) => a.inicio === b.inicio && a.fim === b.fim
   const fimReal = tipo === 'folga' ? inicio : fim
   const erro = !inicio ? '' : tipo === 'ferias' && fim && fim < inicio ? 'O último dia precisa ser depois do primeiro.' : ''
   const podeSalvar = !!inicio && !!fimReal && !erro
   const salvarJanela = async () => {
     if (!podeSalvar) return
-    const novo: DiaFechado = { inicio, fim: fimReal, tipo: tipo === 'ferias' && fimReal !== inicio ? 'ferias' : 'feriado', ...(tipo === 'folga' ? { nome: 'Folga' } : {}) }
-    const ok = await gravar('janela', l => [...l, novo], novo.inicio === novo.fim ? `Pronto, dia ${ddmm(novo.inicio)} fechado no cardápio.` : `Pronto, férias de ${textoPeriodo(novo)} no cardápio.`, novo)
+    const nome = editando && editando.inicio === inicio && editando.fim === fimReal ? editando.nome : tipo === 'folga' ? 'Folga' : undefined
+    const novo: DiaFechado = { inicio, fim: fimReal, tipo: tipo === 'ferias' && fimReal !== inicio ? 'ferias' : 'feriado', ...(nome ? { nome } : {}), avisar: Number(aviso) }
+    const ok = await gravar('janela', l => [...l.filter(x => !editando || !mesmo(x, editando)), novo],
+      editando ? 'Pronto, alterado no cardápio.' : novo.inicio === novo.fim ? `Pronto, dia ${ddmm(novo.inicio)} fechado no cardápio.` : `Pronto, férias de ${textoPeriodo(novo)} no cardápio.`, novo)
     if (ok) setJanela(false)
   }
   const tirar = (f: DiaFechado) => gravar(`tirar_${f.inicio}`, l => l.filter(x => !(x.inicio === f.inicio && x.fim === f.fim)),
     f.inicio === f.fim ? `Dia ${ddmm(f.inicio)} aberto de novo.` : 'Férias tiradas. O cardápio voltou a aceitar esses dias.')
   const fecharFeriado = (data: string, nome: string) => {
-    const novo: DiaFechado = { inicio: data, fim: data, tipo: 'feriado', nome }
+    const novo: DiaFechado = { inicio: data, fim: data, tipo: 'feriado', nome, avisar: 7 }
     return gravar(`fer_${data}`, l => [...l, novo], `Pronto, dia ${ddmm(data)} fechado no cardápio.`, novo)
   }
 
@@ -88,21 +98,20 @@ export function FeriasLoja({ uid }: { uid: string }) {
             const agora = f.inicio <= hoje
             const um = f.inicio === f.fim
             const Ic = um ? CalendarX : Island
-            const n = diasAte(f.fim, f.inicio) + 1
             return (
               <li key={`${f.inicio}_${f.fim}`} className={agora ? 'agora' : ''}>
                 <span className="fl-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
-                <span className="fl-tx">
+                <button type="button" className="fl-tx fl-tx--bt" aria-label={`Alterar ${um ? `o dia ${ddmm(f.inicio)}` : `as férias de ${textoPeriodo(f)}`}`} onClick={() => abrirJanela(f)}>
                   <b>{um ? `${f.nome || 'Fechado'} · ${ddmm(f.inicio)}` : `Férias · ${textoPeriodo(f)}`}</b>
-                  <small>{agora ? `Fechada agora · volta dia ${ddmm(diaDeVolta(f))}` : um ? `${diaDaSemana(f.inicio).replace(/^./, c => c.toUpperCase())}, a loja não abre` : `${n} dias fechada`}</small>
-                </span>
+                  <small>{agora ? `Fechada agora · volta dia ${ddmm(diaDeVolta(f))}` : textoAviso(f)}</small>
+                </button>
                 <Botao variante="secundario" tamanho="m" carregando={salvando === `tirar_${f.inicio}`} onClick={() => tirar(f)}>Tirar</Botao>
               </li>
             )
           })}
         </ul>
       ) : <p className="fl-vazio">Nenhum dia fechado marcado.</p>}
-      <Botao variante="secundario" cheio icone={<Plus size={18} weight="bold" />} onClick={abrirJanela}>Marcar férias ou folga</Botao>
+      <Botao variante="secundario" cheio icone={<Plus size={18} weight="bold" />} onClick={() => abrirJanela()}>Marcar férias ou folga</Botao>
 
       {feriados.length > 0 && (<>
         <h3 className="fl-t">Próximos feriados</h3>
@@ -120,7 +129,7 @@ export function FeriasLoja({ uid }: { uid: string }) {
         </ul>
       </>)}
 
-      <Janela aberta={janela} aoFechar={() => setJanela(false)} tipo="conteudo" titulo="Fechar a loja"
+      <Janela aberta={janela} aoFechar={() => setJanela(false)} tipo="conteudo" titulo={editando ? "Alterar dias fechados" : "Fechar a loja"}
         acoes={<><Botao variante="secundario" onClick={() => setJanela(false)}>Cancelar</Botao><Botao disabled={!podeSalvar} carregando={salvando === 'janela'} onClick={salvarJanela}>Salvar</Botao></>}>
         <div className="fl-form">
           <CaixasEscolha rotulo="Quanto tempo" valor={tipo} onMudar={v => { setTipo(v); if (v === 'folga') setFim('') }} opcoes={[
@@ -134,7 +143,17 @@ export function FeriasLoja({ uid }: { uid: string }) {
               <CampoData valor={fim} min={inicio || hoje} titulo="Último dia fechado" curto onChange={setFim} /></label>}
           </div>
           {erro ? <p className="fl-erro">{erro}</p>
-            : inicio && fimReal ? <p className="fl-dica">{fimReal === inicio ? `Dia ${ddmm(inicio)} fechado. ` : `Fechada de ${ddmm(inicio)} a ${ddmm(fimReal)}. `}O cardápio volta a aceitar pedidos para o dia {ddmm(diaDeVolta({ inicio, fim: fimReal, tipo: 'ferias' }))}.</p> : null}
+            : null}
+          {!erro && inicio && fimReal ? <p className="fl-dica">{fimReal === inicio ? `Dia ${ddmm(inicio)} fechado. ` : `Fechada de ${ddmm(inicio)} a ${ddmm(fimReal)}. `}O cardápio volta a aceitar pedidos para o dia {ddmm(diaDeVolta({ inicio, fim: fimReal, tipo: 'ferias' }))}.</p> : null}
+          {(!inicio || inicio > hoje) && (<>
+            <span className="fl-rot" id="fl-aviso">Aviso no topo do cardápio</span>
+            <CaixasEscolha rotuloId="fl-aviso" valor={aviso} onMudar={setAviso} opcoes={[
+              { v: '999', t: 'Desde já', sub: 'As clientes se programam antes' },
+              { v: '15', t: '15 dias antes', sub: 'Dá tempo de encomendar antes' },
+              { v: '7', t: '7 dias antes', sub: 'Uma semana antes de fechar' },
+              { v: '0', t: 'Só quando fechar', sub: 'Antes disso ninguém vê o aviso' },
+            ]} />
+          </>)}
         </div>
       </Janela>
     </div>
