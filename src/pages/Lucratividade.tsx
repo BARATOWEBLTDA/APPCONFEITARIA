@@ -16,7 +16,7 @@ import { CartaoPro } from "@/components/billing/RecursoPro";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { calcularCustoLucro, lerMaoObraConta, type ProdutoCustoJson } from "@/lib/produto-precificacao";
-import { carregarIntervalo, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, type MesFinanceiro } from "@/lib/painelFinanceiro";
+import { carregarIntervalo, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, taxaPctDaForma, fixoPorPedido, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
 /** Item vendido (com o produto, que vem como objeto) */
 type ItemLucro = {
@@ -63,7 +63,7 @@ export default function Lucratividade() {
           <div className="lu-k lu-k--lucro"><span className="lu-ki l"><Equals size={15} weight="bold" /></span><small>Lucro do mês</small><b>R$ 2.154,00</b>
             <div className="lu-margem"><div className="lu-bar"><i style={{ width: "44%" }} /></div><span>margem de <b>44%</b></span></div></div>
         </div>
-        <section className="lu-card"><p className="lu-ct">Lucro por produto <small>O que sobra depois dos ingredientes</small></p>
+        <section className="lu-card"><p className="lu-ct">Lucro por produto <small>A mesma conta da ficha técnica</small></p>
           <ul className="lu-pg">{[["Bolo de brigadeiro", "6 vendidos · R$ 720,00", "R$ 412,00", 57], ["Caixa de doces", "9 vendidos · R$ 405,00", "R$ 230,00", 57], ["Torta de morango", "3 vendidos · R$ 390,00", "R$ 168,00", 43]].map(([n, q, l, m]) => (
             <li key={n as string} className="lu-pc"><span className="lu-pc-foto"><ShoppingBagOpen size={28} /></span><span className="lu-pc-tx"><b className="lu-pc-nm">{n}</b><small>{q}</small><span className="lu-pc-l">Lucro</span><strong>{l}</strong><span className="lu-pc-m"><span className="lu-p-bar"><i style={{ width: `${m}%` }} /></span>margem {m}%</span></span></li>
           ))}</ul>
@@ -130,8 +130,25 @@ function LucratividadeTela() {
       const itens = peds.data.filter(p => p.status !== "cancelado").flatMap(p => p.pedido_itens || []);
       const ids = [...new Set(itens.map((it: ItemLucro) => it.produtos?.id).filter(Boolean))] as string[];
       // (6.08) a mesma régua do Lucro do mês: o produto tira só os ingredientes (a sua hora entra no Ponto de equilíbrio)
-      const [custo, peloPeso] = await Promise.all([custoPorProduto(ids), produtosPeloPeso(itens)]);
+      // (6.173) o lucro de cada produto usa a MESMA conta da Ficha técnica: ingredientes + invisíveis + mão de obra + taxa do crédito e embalagem
+      const [custo, peloPeso, extras, maoC, perfilCv, vars] = await Promise.all([
+        custoPorProduto(ids), produtosPeloPeso(itens),
+        ids.length ? supabase.from("produtos").select("id, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais").in("id", ids) : Promise.resolve({ data: [] as unknown[], error: null }),
+        lerMaoObraConta(user.id).catch(() => null),
+        supabase.from("profiles").select("custos_invisiveis_pct").eq("id", user.id).maybeSingle(),
+        supabase.from("custos_variaveis").select("*").eq("user_id", user.id),
+      ]);
       if (cancelado) return;
+      const cvC = (perfilCv.data as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct;
+      const vv = ((vars.data || []) as Parameters<typeof taxaPctDaForma>[1]);
+      const taxaPct = taxaPctDaForma("credito", vv), fixoPed = fixoPorPedido(vv);
+      const extraDe: Record<string, ProdutoCustoJson> = {};
+      for (const e of ((extras.data || []) as (ProdutoCustoJson & { id: string })[])) extraDe[e.id] = e;
+      // custo da unidade como na ficha (a conta é a mesma função: o custo dos ingredientes entra como uma linha só)
+      const unidadeFicha = (id: string) => {
+        const c = calcularCustoLucro({ ...(extraDe[id] || {}), produto_insumos: [{ quantidade: custo[id] || 0, unidade_utilizada: "un", insumos: { unidade: "un", custo_unitario: 1 } }] }, maoC, cvC != null ? Number(cvC) : null, null);
+        return c.cmv + c.cv + c.mo;
+      };
       const mapa: Record<string, Produto> = {};
       for (const it of itens) {
         const id = it.produtos?.id; const chave = id || `nome:${it.nome_produto}`;
@@ -140,8 +157,7 @@ function LucratividadeTela() {
         p.qtd += q; p.vendido += (Number(it.valor_unitario) || 0) * q;
         const c = id ? custo[id] : 0;
         // 11/10: tamanho pelo peso ("M · 2 kg") e kit (50 un) custam o tamanho/kit inteiro, não 1 kg ou 1 unidade
-        // (6.171) só os ingredientes (a mão de obra e os fixos entram no Ponto de equilíbrio, senão contariam duas vezes)
-        if (c) p.custo += c * multiplicadorDoItem(it, peloPeso) * q; else p.semFicha = true;
+        if (c && id) p.custo += unidadeFicha(id) * multiplicadorDoItem(it, peloPeso) * q + (Number(it.valor_unitario) || 0) * q * (taxaPct / 100) + fixoPed * q; else p.semFicha = true;
       }
       const lista = Object.values(mapa).map(p => ({ ...p, lucro: p.vendido - p.custo, margem: p.vendido > 0 ? Math.round(((p.vendido - p.custo) / p.vendido) * 100) : 0 }))
         .sort((a, b) => b.lucro - a.lucro);
@@ -228,7 +244,7 @@ function LucratividadeTela() {
 
           <div className="lu-grid">
             <section className="lu-card lu-a-prod">
-              <p className="lu-ct">Lucro por produto <small>O que sobra depois dos ingredientes</small></p>
+              <p className="lu-ct">Lucro por produto <small>A mesma conta da ficha técnica</small></p>
               {!produtos ? <div className="lu-ph" style={{ height: 120 }} /> : produtos.length === 0 ? (
                 <p className="lu-vz">Monte a <button type="button" className="lu-link" onClick={() => navigate("/ficha-tecnica")}>ficha técnica dos produtos</button> para ver o lucro de cada um.</p>
               ) : (
