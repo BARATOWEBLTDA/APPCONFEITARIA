@@ -172,6 +172,7 @@ type Produto = {
   tempo_preparo_min?: number;
   salario_desejado?: number;
   horas_semanais?: number;
+  ficha_rende?: number | null;
   produto_insumos: InsumoJoin[];
 };
 
@@ -247,6 +248,10 @@ type MaoConta = MaoObraConta;
 // 10/10: a conta agora mora em produto-precificacao (a mesma em Produtos, aqui e no PDF) e considera promoção em %
 // 13/10: + a taxa da maquininha no crédito (pior caso) e o custo fixo por pedido (Custos → Custos variáveis)
 let VENDA: CustoDaVenda | null = null;
+/** (6.183) pode dividir pelo rendimento: produto por unidade (o de kg, o kit e o tamanho pelo peso já têm a sua base) */
+function podeRender(p: Produto): boolean {
+  return p.forma_venda !== "kg" && !(qtdBaseDoKit(p.kit_qtd) > 0) && (p as { grupo_tamanhos?: { modo_preco_tamanho?: string } | null }).grupo_tamanhos?.modo_preco_tamanho !== "por_peso";
+}
 function calcular(p: Produto, conta: MaoConta = null, cvConta: number | null = null) {
   return calcularCustoLucro(p, conta, cvConta, VENDA);
 }
@@ -326,7 +331,7 @@ export default function FichaTecnica() {
       if (top) window.scrollTo(0, parseInt(top || "0") * -1);
     };
   }, [showQuickAdd]);
-  const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40" });
+  const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40", ficha_rende: "1" });
   // (6.163) tempo de preparo em horas + minutos (antes só minutos: "2h30" virava conta de cabeça). Guarda em minutos, como antes.
   const [editandoTempo, setEditandoTempo] = useState(false); // (6.168) tempo já definido: caixa cinza com "Editar"
   const [tempoH, setTempoH] = useState("");
@@ -462,6 +467,7 @@ export default function FichaTecnica() {
       tempo_preparo_min: p.tempo_preparo_min ? String(p.tempo_preparo_min) : "",
       salario_desejado: maoConta ? String(maoConta.salario) : (p.salario_desejado ? String(p.salario_desejado) : ""),
       horas_semanais: maoConta ? String(maoConta.horasSemana) : (p.horas_semanais ? String(p.horas_semanais) : "40"),
+      ficha_rende: String(Number(p.ficha_rende) > 1 ? Number(p.ficha_rende) : 1),
     };
     setExtras(extrasAbertos);
     setBuscaInsumo("");
@@ -562,6 +568,7 @@ export default function FichaTecnica() {
       tempo_preparo_min: moAtivo ? (parseInt(extras.tempo_preparo_min) || 0) : 0,
       salario_desejado: moAtivo ? (parseNumBR(extras.salario_desejado) || 0) : 0,
       horas_semanais: moAtivo ? (parseNumBR(extras.horas_semanais) || 40) : 40,
+      ficha_rende: podeRender(selected) ? Math.max(1, Math.min(10000, Math.round(parseNumBR(extras.ficha_rende) || 1))) : 1, // (6.183)
       updated_at: new Date().toISOString(),
     }).eq("id", selected.id);
     if (errProd) {
@@ -610,7 +617,10 @@ export default function FichaTecnica() {
 
   /* DETAIL / EDIT VIEW */
   if (selected) {
-    const cmvLive = ficha.reduce((s, f) => s + calcCusto(f.quantidade, f.unidade_utilizada, f.insumo), 0);
+    // (6.183) a receita rende várias unidades: o custo e o lucro são de 1 unidade (a tabela mostra a receita inteira)
+    const rende = podeRender(selected) ? Math.max(1, Math.round(parseNumBR(extras.ficha_rende) || 1)) : 1;
+    const cmvReceitaLive = ficha.reduce((s, f) => s + calcCusto(f.quantidade, f.unidade_utilizada, f.insumo), 0);
+    const cmvLive = cmvReceitaLive / rende;
     // 10/10: preço que o cliente paga, com promoção em valor ou em %
     const precoLive = precoQueClientePaga(selected);
 
@@ -623,7 +633,8 @@ export default function FichaTecnica() {
     const horasSem = parseNumBR(extras.horas_semanais) || 40;
     const tempoMin = parseInt(extras.tempo_preparo_min) || 0;
     const custoHora = custoDaHora(maoConta ?? { salario, horasSemana: horasSem });
-    const moLive = moAtivo ? custoHora * (tempoMin / 60) : 0;
+    const moReceitaLive = moAtivo ? custoHora * (tempoMin / 60) : 0;
+    const moLive = moReceitaLive / rende;
 
     // (13/10) taxa da maquininha no crédito (pior caso) + embalagem por pedido
     const taxaLive = precoLive * (venda.credito / 100);
@@ -638,7 +649,6 @@ export default function FichaTecnica() {
     const foto = (selected.imagem_url || "").split(",")[0];
         const tom = margemLucroLive >= 30 ? "ok" : margemLucroLive >= 0 ? "atencao" : "neg";
     // (6.182) o primeiro número do texto ("rende 20", "2 bolos de 1,5kg"): a mesma leitura do PDF
-    const rendeUn = parseNumBR(/\d+(?:[.,]\d+)?/.exec(extras.rendimento_qtd || "")?.[0] || "") || 0;
     // (6.165) a lista mostra todos (os que já estão na ficha aparecem marcados, sem dar pra escolher de novo)
     const pickerLista = insumosCadastrados.filter(i => i.nome.toLowerCase().includes(pickerBusca.trim().toLowerCase()));
     const buscaPicker = pickerBusca.trim();
@@ -657,6 +667,7 @@ export default function FichaTecnica() {
     // (31/10 · 5.84) pedaços prontos (não componentes criados a cada desenho)
     const conta = (
       <div className="fd-conta">
+        {rende > 1 && <p className="fd-conta-un">Conta de 1 unidade · a receita rende {rende}</p>}
         <div><span>Ingredientes</span><span>R$ {fmt(cmvLive)}</span></div>
         <div><span>Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
         <div><span>Mão de obra{tempoMin > 0 && moAtivo ? ` (${tempoMin >= 60 ? `${Math.floor(tempoMin / 60)}h${tempoMin % 60 ? String(tempoMin % 60).padStart(2, "0") : ""}` : `${tempoMin} min`})` : ""}</span><span>R$ {fmt(moLive)}</span></div>
@@ -665,7 +676,6 @@ export default function FichaTecnica() {
         <div className="fd-t"><span>Custo total</span><span>R$ {fmt(custoTotalLive)}</span></div>
         <div className="fd-pv"><span>Preço de venda</span><span>R$ {fmt(precoLive)}</span></div>
         {ganhoPix >= 0.01 && <div className="fd-pix"><span>No Pix ou dinheiro, você ganha R$ {fmt(ganhoPix)} a mais</span></div>}
-        {infoAtivo && rendeUn > 0 && <div><span>Por unidade ({extras.rendimento_qtd})</span><span>R$ {fmt(custoTotalLive / rendeUn)}</span></div>}
       </div>
     );
     const barra = precoLive > 0 ? (() => {
@@ -773,8 +783,15 @@ export default function FichaTecnica() {
               })}
               {/* (6.165) adicionar é a última linha da tabela (cadastrar um novo fica dentro da lista) */}
               <button type="button" className="fd-ing-mais" onClick={abrirPicker}><Plus size={18} weight="bold" />Adicionar ingrediente</button>
-              <div className="fd-ing-tot" aria-hidden="true"><span>Total</span><b>R$ {fmt(cmvLive)}</b><span className="fd-so-pc" /></div>
+              <div className="fd-ing-tot" aria-hidden="true"><span>Total{rende > 1 ? " da receita" : ""}</span><b>R$ {fmt(cmvReceitaLive)}</b><span className="fd-so-pc" /></div>
               </div>
+              {/* (6.183) quantas unidades a receita rende: o custo e o lucro passam a ser de 1 unidade */}
+              {podeRender(selected) && (
+                <div className="fd-rende">
+                  <span className="fd-rende-t"><b>A receita rende</b><small>{rende > 1 ? `Ingredientes de 1 unidade: R$ ${fmt(cmvLive)}` : "Ex.: 30 brigadeiros, 12 fatias"}</small></span>
+                  <span className="fd-rende-c"><CampoNumero inteiro value={rende} placeholder="1" onValor={n => setExtras(e => ({ ...e, ficha_rende: String(Math.max(1, Math.round(n || 1))) }))} aria-label="Quantas unidades a receita rende" /><i>un</i></span>
+                </div>
+              )}
             </>)}
           </section>
 
@@ -785,7 +802,7 @@ export default function FichaTecnica() {
             {tempoMin > 0 && !editandoTempo ? (
               <div className="fd-mo-conta">
                 <span><b>{tempoMin >= 60 ? `${Math.floor(tempoMin / 60)}h${tempoMin % 60 ? String(tempoMin % 60).padStart(2, "0") : ""}` : `${tempoMin} min`}</b>
-                  <small>{maoConta ? `Mão de obra nesta receita: R$ ${fmt(moLive)}` : "Entra no custo com a mão de obra de Custos"}</small></span>
+                  <small>{maoConta ? (rende > 1 ? `Na receita toda: R$ ${fmt(moReceitaLive)} · R$ ${fmt(moLive)} por unidade` : `Mão de obra nesta receita: R$ ${fmt(moLive)}`) : "Entra no custo com a mão de obra de Custos"}</small></span>
                 <Botao variante="secundario" tamanho="m" onClick={() => setEditandoTempo(true)}>Editar</Botao>
               </div>
             ) : (<>
@@ -798,7 +815,7 @@ export default function FichaTecnica() {
                 onChange={e => mudarTempo(tempoH, e.target.value.replace(/\D/g, "").slice(0, 3))}
                 depois={<span className="cl9-f-uf">min</span>} />
             </div>
-            <p className="ui-campo-msg fd-tempo-d">{!maoConta ? "Entra no custo quando você cadastrar a sua mão de obra em Custos." : Number(extras.tempo_preparo_min) > 0 ? `Sua mão de obra nesta receita: R$ ${fmt(moLive)}` : "Com o tempo, o valor do seu trabalho entra no custo."}</p>
+            <p className="ui-campo-msg fd-tempo-d">{!maoConta ? "Entra no custo quando você cadastrar a sua mão de obra em Custos." : Number(extras.tempo_preparo_min) > 0 ? (rende > 1 ? `Na receita toda: R$ ${fmt(moReceitaLive)} · R$ ${fmt(moLive)} por unidade` : `Sua mão de obra nesta receita: R$ ${fmt(moLive)}`) : "Com o tempo, o valor do seu trabalho entra no custo."}</p>
             </>)}
           </section>
 

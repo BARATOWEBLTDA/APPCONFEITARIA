@@ -15,7 +15,7 @@ import { Botao, TelaVazia } from "@/components/base";
 import { CartaoPro } from "@/components/billing/RecursoPro";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
-import { calcularCustoLucro, lerMaoObraConta, type ProdutoCustoJson } from "@/lib/produto-precificacao";
+import { calcularCustoLucro, lerMaoObraConta, rendeDaFicha, type ProdutoCustoJson } from "@/lib/produto-precificacao";
 import { carregarIntervalo, custoPorProduto, multiplicadorDoItem, produtosPeloPeso, taxaPctDaForma, fixoPorPedido, type MesFinanceiro } from "@/lib/painelFinanceiro";
 
 /** Item vendido (com o produto, que vem como objeto) */
@@ -138,7 +138,7 @@ function LucratividadeTela() {
       const [custo, peloPeso, extras, maoC, perfilCv, vars] = await Promise.all([
         custoPorProduto(ids), produtosPeloPeso(itens),
         // (6.182) em grupos de 30 (lista grande estourava o tamanho do endereço)
-        Promise.all(Array.from({ length: Math.ceil(ids.length / 30) }, (_, k) => supabase.from("produtos").select("id, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais").in("id", ids.slice(k * 30, k * 30 + 30))))
+        Promise.all(Array.from({ length: Math.ceil(ids.length / 30) }, (_, k) => supabase.from("produtos").select("id, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais, ficha_rende").in("id", ids.slice(k * 30, k * 30 + 30))))
           .then(rs => ({ data: rs.flatMap(r => (r.data || []) as unknown[]), error: rs.find(r => r.error)?.error || null })),
         lerMaoObraConta(user.id).catch(() => null),
         supabase.from("profiles").select("custos_invisiveis_pct").eq("id", user.id).maybeSingle(),
@@ -153,7 +153,7 @@ function LucratividadeTela() {
       for (const e of ((extras.data || []) as (ProdutoCustoJson & { id: string })[])) extraDe[e.id] = e;
       // custo da unidade como na ficha (a conta é a mesma função: o custo dos ingredientes entra como uma linha só)
       const unidadeFicha = (id: string) => {
-        const c = calcularCustoLucro({ ...(extraDe[id] || {}), produto_insumos: [{ quantidade: custo[id] || 0, unidade_utilizada: "un", insumos: { unidade: "un", custo_unitario: 1 } }] }, maoC, cvC != null ? Number(cvC) : null, null);
+        const c = calcularCustoLucro({ ...(extraDe[id] || {}), produto_insumos: [{ quantidade: (custo[id] || 0) * rendeDaFicha(extraDe[id]), /* custo[id] já é de 1 unidade; a conta divide de novo */ unidade_utilizada: "un", insumos: { unidade: "un", custo_unitario: 1 } }] }, maoC, cvC != null ? Number(cvC) : null, null);
         return c.cmv + c.cv + c.mo;
       };
       const mapa: Record<string, Produto> = {};

@@ -128,8 +128,12 @@ export async function custoPorProduto(produtoIds: string[]): Promise<Record<stri
   const partes = await Promise.all(blocos.map(bloco => buscarTudo<LinhaFicha>((de, ate) => supabase.from("produto_insumos")
     .select<string, LinhaFicha>("produto_id, quantidade, unidade_utilizada, insumos(custo_unitario, unidade)").in("produto_id", bloco)
     .order("produto_id").order("insumo_id").range(de, ate))));
-  const falha = partes.find(p => p.error);
+  // (6.183) a receita que rende várias unidades: o custo de 1 unidade é a receita dividida pelo rendimento
+  const rendes = await Promise.all(blocos.map(bloco => supabase.from("produtos").select("id, ficha_rende").in("id", bloco)));
+  const falha = partes.find(p => p.error) || rendes.find(r => r.error);
   if (falha) throw falha.error;
+  const rendeDe: Record<string, number> = {};
+  for (const r of rendes) for (const x of ((r.data || []) as { id: string; ficha_rende?: number | string | null }[])) rendeDe[x.id] = Number(x.ficha_rende) > 1 ? Number(x.ficha_rende) : 1;
   const linhas = partes.flatMap(p => p.data);
   const fator: Record<string, number> = { kg: 1, g: 0.001, L: 1, l: 1, ml: 0.001, un: 1, m: 1, cm: 0.01 };
   for (const f of linhas) {
@@ -137,7 +141,7 @@ export async function custoPorProduto(produtoIds: string[]): Promise<Record<stri
     const uUsada = f.unidade_utilizada || f.insumos?.unidade || "", uInsumo = f.insumos?.unidade || "";
     const fu = fator[uUsada], fi = fator[uInsumo];
     const c = fu != null && fi != null && fi > 0 ? ((qtd * fu) / fi) * custo : qtd * custo;
-    out[f.produto_id] = (out[f.produto_id] || 0) + c;
+    out[f.produto_id] = (out[f.produto_id] || 0) + c / (rendeDe[f.produto_id] || 1);
   }
   return out;
 }

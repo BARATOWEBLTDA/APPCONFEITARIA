@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 import { gerarDocumento, abrirJanela, esc, brl, card, kv } from "@/lib/pdfDoonly";
 import { calcularCustoLucro, custoIngrediente, lerMaoObraConta } from "@/lib/produto-precificacao";
 import { taxaPctDaForma, fixoPorPedido } from "@/lib/painelFinanceiro";
-import { parseNumBR } from "@/lib/numeroBR";
 import type { ProdutoCustoJson } from "@/lib/produto-precificacao";
 
 type InsumoFicha = { id?: string; nome?: string; unidade?: string; custo_unitario?: number };
@@ -63,7 +62,6 @@ export async function gerarFichaProduto(produto: ProdutoFicha | null | undefined
     const { cmv, cvPct, cv, mo, preco, lucro } = conta;
     const taxaCredito = preco * ((Number(venda.pct) || 0) / 100);
     const fixoPedido = Number(venda.fixo) || 0;
-    const rendeUn = parseNumBR(/\d+(?:[.,]\d+)?/.exec(String(p.rendimento_qtd ?? ""))?.[0] || "") || 0; // (6.182) o primeiro número, como na tela
     const min = conta.tempoMin;
     const custo = conta.custoTotal;
     const margem = conta.margemLucro;
@@ -71,7 +69,7 @@ export async function gerarFichaProduto(produto: ProdutoFicha | null | undefined
     // (03/11) estilo de sistema: nome do produto em destaque, tabela com o preço de cada insumo e a formação do preço num quadro só
     const linhasTab = linhas.map((l, i) => `<tr><td class="n">${i + 1}</td><td class="um">${esc(l.nome)}</td><td class="c">${esc(l.qtd)}</td><td class="r">${l.preco}</td><td class="r">${brl(l.custo)}</td></tr>`).join("");
     const tabela = linhas.length
-      ? `<table class="tb"><thead><tr><th>#</th><th>Ingrediente</th><th class="c qt">Quantidade</th><th class="r">Preço do insumo</th><th class="r">Custo</th></tr></thead><tbody>${linhasTab}<tr class="sub fim"><td></td><td>Total dos ingredientes</td><td></td><td></td><td class="r">${brl(cmv)}</td></tr></tbody></table>`
+      ? `<table class="tb"><thead><tr><th>#</th><th>Ingrediente</th><th class="c qt">Quantidade</th><th class="r">Preço do insumo</th><th class="r">Custo</th></tr></thead><tbody>${linhasTab}<tr class="sub fim"><td></td><td>Total dos ingredientes${conta.rende > 1 ? " (a receita toda)" : ""}</td><td></td><td></td><td class="r">${brl(conta.cmvReceita)}</td></tr></tbody></table>`
       : `<p class="vazio">Nenhum ingrediente na ficha técnica ainda.</p>`;
     const tempo = mo ? (min >= 60 ? `${Math.floor(min / 60)}h${min % 60 ? String(min % 60).padStart(2, "0") : ""}` : `${min} min`) : "";
     // (03/11) rendimento, validade e embalagem num quadro embaixo dos ingredientes; embaixo do nome só a categoria
@@ -83,13 +81,13 @@ export async function gerarFichaProduto(produto: ProdutoFicha | null | undefined
     const foto = typeof p.imagem_url === "string" && p.imagem_url.trim() ? `<img src="${esc(p.imagem_url.trim())}" alt="">` : "";
     const tituloProduto = `<div class="prod">${foto}<div><b>${esc(p.nome || "Produto")}</b>${dados ? `<span>${dados}</span>` : ""}</div></div>`;
     const formacao = `<div class="tot">
+      ${conta.rende > 1 ? `<div><span>A receita rende ${String(conta.rende).replace(".", ",")} · conta de 1 unidade</span><b></b></div>` : ""}
       <div><span>Ingredientes</span><b>${brl(cmv)}</b></div>
       ${cvPct && cv > 0.004 ? `<div><span>Custos invisíveis (${String(cvPct).replace(".", ",")}%)</span><b>${brl(cv)}</b></div>` : ""}
       ${mo ? `<div><span>Mão de obra (${tempo})</span><b>${brl(mo)}</b></div>` : ""}
       ${taxaCredito > 0.004 ? `<div><span>Taxa no crédito (${String(Math.round(venda.pct * 100) / 100).replace(".", ",")}%)</span><b>${brl(taxaCredito)}</b></div>` : ""}
       ${fixoPedido > 0.004 ? `<div><span>Por pedido (embalagem)</span><b>${brl(fixoPedido)}</b></div>` : ""}
       <div class="tt"><span>Custo total</span><b>${brl(custo)}</b></div>
-${rendeUn > 0 ? `<div><span>Custo por unidade</span><b>${brl(custo / rendeUn)}</b></div>` : ""}
             <div><span>Preço de venda</span><b>${brl(preco)}</b></div>
       <div class="rest"><span>Lucro (${margem.toFixed(1).replace(".", ",")}%)</span><b class="${lucro < 0 ? "neg" : ""}">${brl(lucro)}</b></div>
     </div>`;

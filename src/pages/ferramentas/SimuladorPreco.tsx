@@ -55,7 +55,7 @@ export default function SimuladorPreco() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/login"); return; }
       const [prods, maoC, perfil, vars] = await Promise.all([
-        supabase.from("produtos").select("id, nome, imagem_url, preco_normal, preco_promocional, promocao, tipo_promocao, desconto_percentual, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais, grupo_tamanhos, grupo_sabores, kit_qtd, produto_insumos(quantidade, unidade_utilizada, insumos(unidade, custo_unitario))")
+        supabase.from("produtos").select("id, nome, imagem_url, preco_normal, preco_promocional, promocao, tipo_promocao, desconto_percentual, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais, ficha_rende, grupo_tamanhos, grupo_sabores, kit_qtd, produto_insumos(quantidade, unidade_utilizada, insumos(unidade, custo_unitario))")
           .eq("user_id", user.id).order("nome"),
         lerMaoObraConta(user.id).catch(() => null),
         supabase.from("profiles").select("custos_invisiveis_pct").eq("id", user.id).maybeSingle(),

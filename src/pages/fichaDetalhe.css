@@ -183,3 +183,13 @@
 @media (max-width: 599px) { .fd-aviso-custos { flex-wrap: wrap; } .fd-aviso-custos .ui-bt { width: 100%; } }
 /* (6.102) aviso dos custos: Pedir à Doo (PRO) e Cadastrar */
 .fd-aviso-bts { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+
+/* (6.183) a receita rende N unidades: o custo e o lucro são de 1 unidade */
+.fd-rende { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); }
+.fd-rende-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fd-rende-t b { font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+.fd-rende-t small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fd-rende-c { flex: none; display: flex; align-items: stretch; width: 108px; height: 40px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); overflow: hidden; }
+.fd-rende-c input { flex: 1; min-width: 0; padding: 0 8px; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 600; text-align: center; color: var(--ui-texto); }
+.fd-rende-c i { flex: none; display: flex; align-items: center; padding: 0 10px; border-left: 1px solid var(--ui-borda); background: var(--ui-cinza); font-style: normal; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); }
+.fd-conta-un { margin: 0 0 4px; font-size: 13px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

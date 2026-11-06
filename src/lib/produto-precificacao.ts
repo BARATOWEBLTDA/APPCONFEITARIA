@@ -347,11 +347,19 @@ export async function lerMaoObraConta(uid: string): Promise<MaoObraConta> {
 export type ProdutoCustoJson = PromocaoJson & {
   produto_insumos?: { quantidade?: number | string | null; unidade_utilizada?: string | null; insumos?: { unidade?: string; custo_unitario?: number } | null }[] | null;
   cv_percentual?: number | string | null; salario_desejado?: number | string | null; tempo_preparo_min?: number | string | null; horas_semanais?: number | string | null;
+  /** (6.183) quantas unidades a receita da ficha rende (1 = a ficha é de 1 unidade) */
+  ficha_rende?: number | string | null;
 };
+
+/** (6.183) Quantas unidades a receita rende (nunca menos que 1) */
+export const rendeDaFicha = (p: { ficha_rende?: number | string | null } | null | undefined) => { const n = Number(p?.ficha_rende); return Number.isFinite(n) && n > 1 ? n : 1; };
 
 export function calcularCustoLucro(p: ProdutoCustoJson | null | undefined, mao: MaoObraConta = null, cvConta: number | null = null, venda: CustoDaVenda | null = null) {
   const itens = (p?.produto_insumos || []).filter((x) => x?.insumos);
-  const cmv = itens.reduce((s, pi) => s + custoIngrediente(Number(pi.quantidade) || 0, pi.unidade_utilizada || pi.insumos?.unidade || "", pi.insumos), 0);
+  // (6.183) a receita rende várias unidades: ingredientes e mão de obra divididos pelo rendimento (o custo é de 1 unidade)
+  const rende = rendeDaFicha(p);
+  const cmvReceita = itens.reduce((s, pi) => s + custoIngrediente(Number(pi.quantidade) || 0, pi.unidade_utilizada || pi.insumos?.unidade || "", pi.insumos), 0);
+  const cmv = cmvReceita / rende;
   const cvPct = cvConta != null ? Number(cvConta) || 0 : (p?.cv_percentual != null ? Number(p.cv_percentual) || 0 : 25);
   const cv = cmv * (cvPct / 100);
   // Mão de obra: liga quando a ficha tem salário ou tempo salvos
@@ -359,7 +367,8 @@ export function calcularCustoLucro(p: ProdutoCustoJson | null | undefined, mao: 
   const tempoMin = parseInt(String(p?.tempo_preparo_min || 0)) || 0;
   // (16/10) a hora vem da conta (fixos + salário); produto antigo sem nada na conta usa o que ficou salvo nele
   const custoHora = custoDaHora(mao ?? { salario: Number(p?.salario_desejado) || 0, horasSemana: Number(p?.horas_semanais) || 40 });
-  const mo = moAtivo ? custoHora * (tempoMin / 60) : 0;
+  const moReceita = moAtivo ? custoHora * (tempoMin / 60) : 0;
+  const mo = moReceita / rende;
   const preco = precoQueClientePaga(p);
   // (13/10) taxa da maquininha (a do crédito, o pior caso) e custo fixo por pedido (embalagem)
   const taxa = venda ? preco * ((Number(venda.pct) || 0) / 100) + (Number(venda.fixo) || 0) : 0;
@@ -367,7 +376,7 @@ export function calcularCustoLucro(p: ProdutoCustoJson | null | undefined, mao: 
   const lucro = preco - custoTotal;
   const margemCmv = preco > 0 ? (cmv / preco) * 100 : 0;
   const margemLucro = preco > 0 ? (lucro / preco) * 100 : 0;
-  return { cmv, cvPct, cv, mo, taxa, tempoMin, custoTotal, preco, lucro, margemCmv, margemLucro, temFicha: itens.length > 0 };
+  return { cmv, cvPct, cv, mo, taxa, tempoMin, custoTotal, preco, lucro, margemCmv, margemLucro, temFicha: itens.length > 0, rende, cmvReceita, moReceita };
 }
 
 // ─── Peso do tamanho pelo nome (10/10) ──────────────────────────────
