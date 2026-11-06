@@ -754,13 +754,14 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     </>
   )
 
+  const lojaPausada = typeof document !== 'undefined' && document.documentElement.dataset.lojaPausada === '1'
   const pe = previa ? (
     <footer className="pm-pe">
       <button type="button" className="pm-add so-texto" style={{ background: corBotao }} onClick={onClose}><span>Entendi</span></button>
     </footer>
   ) : (
     <footer className="pm-pe">
-      {!semQuantidade && (
+      {!semQuantidade && !(lojaPausada && !orcamento && !onAdicionar) && (
         <div className="pm-qtd">
           <button type="button" aria-label="Diminuir" disabled={quantity <= minimo} onClick={() => setQuantity(q => Math.max(minimo, Math.round((q - passo) * 10) / 10))}><Minus size={20} weight="bold" /></button>
           <b aria-live="polite">{qtdTexto}</b>
@@ -770,7 +771,9 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       {/* Faltando escolha obrigatória o botão diz o que falta; sem tamanho/kit ainda não mostra preço (seria o do menor como se estivesse escolhido) */}
       {/* (14/10) todos os tamanhos esgotados: o botão diz isso e não deixa pedir */}
       {/* (14/10) faltando escolha: só o texto ("Escolha a massa" cortava em "Escolha…" ao lado do preço) */}
-      {tamanhosEsgotados(product) ? <button type="button" className="pm-add so-texto" disabled style={{ background: '#B5AAB0', cursor: 'not-allowed' }}><span>Esgotado no momento</span></button> :
+      {/* (6.178) loja com os pedidos pausados: não deixa pôr na sacola (o cardápio continua para olhar) */}
+      {lojaPausada && !orcamento && !onAdicionar ? <button type="button" className="pm-add so-texto" disabled style={{ background: '#B5AAB0', cursor: 'not-allowed' }}><span>Pedidos pausados no momento</span></button> :
+      tamanhosEsgotados(product) ? <button type="button" className="pm-add so-texto" disabled style={{ background: '#B5AAB0', cursor: 'not-allowed' }}><span>Esgotado no momento</span></button> :
       <button type="button" className={`pm-add${faltou ? ' treme' : ''}${pendente ? ' so-texto pm-add--falta' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
         <span>{pendente ? textoFalta(pendente) : (rotuloAdicionar || 'Adicionar')}</span>
         {!pendente && <strong>{formatCurrency(orcamento && !kitInfo ? r2(precoOrc * quantity) : totalDisplay)}</strong>}

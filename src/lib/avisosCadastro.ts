@@ -10,7 +10,12 @@ export type AvisoCadastro = {
   chave: string; titulo: string; texto: string; link: string;
   /** abrir: a tela abre direto no que resolve · destacar: o balão em cima do lugar de tocar (04/11 · 6.20) */
   estado?: { abrir?: string; destacar?: { alvo: string; titulo: string; texto: string; acao?: string } };
-  icone: "custos" | "maquininha" | "ficha" | "caixa" | "conta" | "entrega" | "descricao" | "banner" | "cupom" | "complemento" | "cliente" | "whatsapp";
+  icone: "custos" | "maquininha" | "ficha" | "caixa" | "conta" | "entrega" | "descricao" | "banner" | "cupom" | "complemento" | "cliente" | "whatsapp"
+    | "receber" | "pausa" | "orcamento" | "divulgar" | "pix" | "categoria";
+  /** (6.178) dinheiro atrasado: "Cobrar" abre o WhatsApp da cliente com esse texto */
+  cobrar?: { telefone: string; texto: string };
+  /** (6.178) o botão de baixo é "Não quero" (some de vez neste aparelho), no lugar do "Agora não" */
+  naoQuero?: boolean;
   /** (04/11) WhatsApp: "Está certo" confirma aqui mesmo (some até o número mudar) */
   confirmarWhats?: string;
   /** (16/10) dica do cardápio: aparece no cartão, mas não vira notificação */
@@ -132,6 +137,77 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
       texto: `Os pedidos chegam no ${fmt}. Está certo?`, link: "/cardapio-config", nivel: "atencao", curto: { t: "WhatsApp dos pedidos", s: fmt },
       estado: { abrir: "loja", destacar: { alvo: "#dl-in-whats", titulo: "Corrija o WhatsApp aqui", texto: "É nele que chegam os pedidos do cardápio." } } });
   }
+  // ───── (6.178) passos novos: dinheiro atrasado, loja pausada, orçamentos, divulgar, Pix e categorias ─────
+  try { l.push(...await passosExtras(uid, pf as Record<string, unknown> | null, ehProAviso, ((produtos.data as ProdutoAvisos[]) || []).length)); } catch { /* falhou: segue sem os passos novos */ }
+  return l;
+}
+
+const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const ddmm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+const primeiroNome = (n?: string | null) => String(n || "").trim().split(/\s+/)[0] || "";
+
+async function passosExtras(uid: string, pf: Record<string, unknown> | null, ehPro: boolean, qtdProdutos: number): Promise<AvisoCadastro[]> {
+  const l: AvisoCadastro[] = [];
+  const hoje = diaISO(0);
+  const seteDias = new Date(Date.now() - 7 * 86400000).toISOString();
+  const [peds, orcs, visitas, cats] = await Promise.all([
+    // pedidos com dinheiro a receber que já passou da data combinada (ou entregues e ainda sem pagar)
+    supabase.from("pedidos").select("id, numero, cliente_nome, cliente_telefone, valor_total, valor_recebido, status, status_pagamento, data_entrega, data_prevista_pagamento")
+      .eq("user_id", uid).neq("status_pagamento", "pago").not("status", "in", "(cancelado,recusado,aguardando_aceite,novo,pendente,aguardando_pagamento)")
+      .or(`data_prevista_pagamento.lt.${hoje},and(status.eq.entregue,data_entrega.lt.${hoje})`).order("data_entrega", { ascending: true }).limit(60),
+    ehPro ? supabase.from("orcamentos").select("id, numero, cliente_nome, status, origem, created_at, enviado_em").eq("user_id", uid).in("status", ["novo", "enviado"]).order("created_at", { ascending: true }).limit(30) : Promise.resolve({ data: [], error: null }),
+    pf?.codigo_publico ? supabase.from("cardapio_visitas").select("id", { count: "exact", head: true }).eq("user_id", uid).gte("created_at", seteDias) : Promise.resolve({ count: null, error: null }),
+    qtdProdutos > 5 ? supabase.from("categorias").select("id", { count: "exact", head: true }).eq("user_id", uid) : Promise.resolve({ count: null, error: null }),
+  ]);
+
+  // 1) dinheiro atrasado: um passo por pedido (até 3), com "Cobrar" e "Já recebi"
+  type P = { id: string; numero: number | null; cliente_nome: string | null; cliente_telefone: string | null; valor_total: number | null; valor_recebido: number | null; status: string; data_entrega: string | null; data_prevista_pagamento: string | null };
+  if (!peds.error) {
+    const atrasados = ((peds.data as P[]) || []).map(p => ({ p, falta: Math.round(((Number(p.valor_total) || 0) - (Number(p.valor_recebido) || 0)) * 100) / 100 })).filter(x => x.falta > 0.009);
+    for (const { p, falta } of atrasados.slice(0, 3)) {
+      const quem = primeiroNome(p.cliente_nome) || `Pedido #${p.numero ?? ""}`.trim();
+      const desde = p.data_prevista_pagamento && p.data_prevista_pagamento < hoje ? p.data_prevista_pagamento : String(p.data_entrega || "").slice(0, 10);
+      const tel = String(p.cliente_telefone || "").replace(/\D/g, "");
+      l.push({ chave: `receber_atrasado_${p.id}`, icone: "receber", semNotificar: true, nivel: "urgente",
+        titulo: `${quem} · ${brl(falta)} atrasado`, texto: desde ? `Combinou pagar até ${ddmm(desde)}. Já recebeu? Marque aqui.` : "Já recebeu? Marque aqui.",
+        link: `/pedidos/${p.id}/editar?aba=pagamento`, curto: { t: `${quem} · ${brl(falta)}`, s: desde ? `Atrasado desde ${ddmm(desde)}` : "Pagamento atrasado" },
+        ...(tel.length >= 10 ? { cobrar: { telefone: tel, texto: `Oi, ${primeiroNome(p.cliente_nome) || "tudo bem"}! Passando pra lembrar do pagamento do pedido #${p.numero ?? ""}: ficou ${brl(falta)}. Qualquer coisa me chama 😊` } } : {}) });
+    }
+  }
+
+  // 2) loja pausada: clientes não conseguem pedir
+  if (pf?.loja_pausada === true) l.push({ chave: "loja_pausada", icone: "pausa", semNotificar: true, nivel: "atencao", titulo: "Sua loja está pausada",
+    texto: "Enquanto estiver pausada, as clientes não conseguem pedir pelo cardápio.", link: "/cardapio", curto: { t: "Loja pausada", s: "Clientes não conseguem pedir" } });
+
+  // 3) orçamentos (PRO): pedido pelo link sem proposta há mais de 1 dia; enviado sem resposta há 3 dias
+  if (ehPro && !orcs.error) {
+    type O = { id: string; numero: number | null; cliente_nome: string | null; status: string; origem: string | null; created_at: string; enviado_em: string | null };
+    const agora = Date.now();
+    for (const o of ((orcs.data as O[]) || [])) {
+      const nome = primeiroNome(o.cliente_nome);
+      if (o.status === "novo" && agora - new Date(o.created_at).getTime() > 86400000) l.push({ chave: `orc_sem_proposta_${o.id}`, icone: "orcamento", semNotificar: true, nivel: "atencao",
+        titulo: nome ? `Orçamento de ${nome}` : `Orçamento #${o.numero ?? ""}`, texto: "Chegou pelo link e está esperando a sua proposta.", link: `/orcamentos/${o.id}`,
+        curto: { t: nome ? `Orçamento de ${nome}` : `Orçamento #${o.numero ?? ""}`, s: "Esperando sua proposta" } });
+      else if (o.status === "enviado" && o.enviado_em && agora - new Date(o.enviado_em).getTime() > 3 * 86400000) l.push({ chave: `orc_sem_resposta_${o.id}`, icone: "orcamento", semNotificar: true, nivel: "normal",
+        titulo: `Orçamento #${o.numero ?? ""} sem resposta`, texto: `${nome || "O cliente"} ainda não respondeu. Que tal chamar no WhatsApp?`, link: `/orcamentos/${o.id}`,
+        curto: { t: `Orçamento #${o.numero ?? ""} sem resposta`, s: "Chame no WhatsApp" } });
+    }
+  }
+
+  // 4) cardápio publicado sem nenhuma visita na semana
+  const criadoHa = pf?.created_at ? Date.now() - new Date(String(pf.created_at)).getTime() : 0;
+  if (!visitas.error && visitas.count === 0 && pf?.codigo_publico && criadoHa > 7 * 86400000) l.push({ chave: "divulgar_cardapio", icone: "divulgar", semNotificar: true, nivel: "normal",
+    titulo: "Divulgue seu cardápio", texto: "Ninguém abriu o cardápio esta semana. Mande o link no WhatsApp e no Instagram.", link: "/cardapio", curto: { t: "Divulgue seu cardápio", s: "Nenhuma visita na semana" } });
+
+  // 5) aceita Pix mas o Pix pelo cardápio está desligado ("Não quero" some de vez)
+  const formas = Array.isArray(pf?.formas_pagamento) ? (pf!.formas_pagamento as string[]).map(f => String(f).toLowerCase()) : [];
+  if (formas.some(f => f.includes("pix")) && pf?.pix_online !== true) l.push({ chave: "ligar_pix_cardapio", icone: "pix", semNotificar: true, nivel: "normal", naoQuero: true,
+    titulo: "Ligue o Pix pelo cardápio", texto: "A cliente paga o sinal ou o total na hora de pedir, e você recebe antes de fazer.", link: "/cardapio-config", estado: { abrir: "pix" },
+    curto: { t: "Pix pelo cardápio", s: "Receba antes de fazer" } });
+
+  // 6) mais de 5 produtos e nenhuma categoria
+  if (!cats.error && cats.count === 0 && qtdProdutos > 5) l.push({ chave: "criar_categorias", icone: "categoria", semNotificar: true, nivel: "normal",
+    titulo: "Organize por categorias", texto: "Bolos, doces, salgados… com categorias a cliente acha mais rápido no cardápio.", link: "/categorias", curto: { t: "Organize por categorias", s: "Fica mais fácil achar" } });
   return l;
 }
 

@@ -273,6 +273,12 @@ function CardapioContent() {
   // (23/10) ao sair do cardápio, a aba volta a ter o ícone e o nome do app
   useEffect(() => { const t = document.title; return () => { voltarFaviconDoApp(); document.title = t } }, [])
   const [config, setConfig] = useState<Configuracoes | null>(null)
+  // (6.178) pedidos pausados: a janela do produto não mostra o "Adicionar" (lê esta marca)
+  useEffect(() => {
+    const el = document.documentElement
+    if (config?.loja_pausada) el.dataset.lojaPausada = '1'; else delete el.dataset.lojaPausada
+    return () => { delete el.dataset.lojaPausada }
+  }, [config?.loja_pausada])
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [isPro, setIsPro] = useState(false)
   const [cardapioModelo, setCardapioModelo] = useState('modelo1')

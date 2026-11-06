@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Basket, Bell, DeviceMobile, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo } from "@phosphor-icons/react";
+import { Basket, Bell, DeviceMobile, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo, PauseCircle, ShareNetwork, QrCode, SquaresFour } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
@@ -10,6 +10,7 @@ import { getInstallPrompt, isStandalone, onInstallChange, promptInstall } from "
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
 import { avisoDoPro } from "@/lib/notificacoesUsuario";
 import { supabase } from "@/lib/supabase";
+import { linkWhatsApp } from "@/lib/telefone";
 import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { Botao, Janela, avisar, informar } from "@/components/base";
@@ -29,12 +30,16 @@ import { ConteudoComo, type Como } from "@/components/como/ComoFunciona";
  */
 type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; t: string; s: string; acao: string; link: string; estado?: AvisoCadastro["estado"]; fechar?: boolean; ordem: number; aoTocar?: () => void;
   /** (22/10) frase do porquê (até 2 linhas) e, na conta, o vencimento em vermelho em cima dela */
-  txt?: string; alerta?: string; comoFunciona?: Como; revisar?: AvisoCadastro["estado"]; rotuloRevisar?: string };
+  txt?: string; alerta?: string; comoFunciona?: Como; revisar?: AvisoCadastro["estado"]; rotuloRevisar?: string;
+  /** (6.178) botão de baixo com ação própria (ex.: "Cobrar" no WhatsApp) e o "Não quero" que some de vez */
+  aoRevisar?: () => void; naoQuero?: boolean };
 
 /** (21/10) o botão de cada linha diz o que fazer */
-const ACAO: Record<AvisoCadastro["icone"], string> = { custos: "Definir", maquininha: "Definir", ficha: "Fazer", caixa: "Informar", conta: "Pagar", entrega: "Definir", descricao: "Escrever", banner: "Colocar", cupom: "Criar", complemento: "Criar", cliente: "Cadastrar", whatsapp: "Está certo" };
+const ACAO: Record<AvisoCadastro["icone"], string> = { custos: "Definir", maquininha: "Definir", ficha: "Fazer", caixa: "Informar", conta: "Pagar", entrega: "Definir", descricao: "Escrever", banner: "Colocar", cupom: "Criar", complemento: "Criar", cliente: "Cadastrar", whatsapp: "Está certo",
+  receber: "Já recebi", pausa: "Ver loja", orcamento: "Abrir", divulgar: "Divulgar", pix: "Ligar", categoria: "Criar" };
 const ACAO_NOVIDADE: Record<string, string> = { "aniversarios": "Ver", "produtos-sem-foto": "Pôr foto", "clientes-sumidos": "Chamar" };
-const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquininha: CreditCard, ficha: ClipboardText, caixa: Coins, conta: CalendarCheck, entrega: Truck, descricao: TextAlignLeft, banner: ImageSquare, cupom: Ticket, complemento: Stack, cliente: UserPlus, whatsapp: WhatsappLogo };
+const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquininha: CreditCard, ficha: ClipboardText, caixa: Coins, conta: CalendarCheck, entrega: Truck, descricao: TextAlignLeft, banner: ImageSquare, cupom: Ticket, complemento: Stack, cliente: UserPlus, whatsapp: WhatsappLogo,
+  receber: Coins, pausa: PauseCircle, orcamento: ClipboardText, divulgar: ShareNetwork, pix: QrCode, categoria: SquaresFour };
 const DIA = 86400000;
 const PESO = { urgente: 0, atencao: 1, normal: 2 };
 const VISIVEIS = 3;
@@ -207,10 +212,11 @@ export default function PraFazer() {
     ...itemPro,
     ...avisos.map((a, i): Item => ({
       chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, estado: a.estado, ordem: i,
-      acao: ACAO[a.icone] || "Ver", fechar: a.icone !== "conta" && a.icone !== "whatsapp",
+      acao: ACAO[a.icone] || "Ver", fechar: a.icone !== "conta" && a.icone !== "whatsapp" && !a.cobrar, naoQuero: a.naoQuero,
+      aoRevisar: a.cobrar ? () => { const c = a.cobrar!; window.open(linkWhatsApp(c.telefone, c.texto) || `https://wa.me/?text=${encodeURIComponent(c.texto)}`, "_blank", "noopener"); } : undefined,
       // (04/11 · 6.20) WhatsApp: "Está certo" confirma aqui mesmo; "Corrigir" leva pro campo com o balão
       aoTocar: a.confirmarWhats ? () => { const tel = a.confirmarWhats!; supabase.auth.updateUser({ data: { whatsapp_ok: tel } }).then(() => { setAvisos(l => l.filter(x => x.chave !== a.chave)); avisar("Pronto, número confirmado.", { tipo: "ok" }); }, () => avisar("Não deu para confirmar agora. Tente de novo.", { tipo: "erro" })); } : undefined,
-      rotuloRevisar: a.icone === "whatsapp" ? "Corrigir" : undefined,
+      rotuloRevisar: a.icone === "whatsapp" ? "Corrigir" : a.cobrar ? "Cobrar" : undefined,
       // conta: o vencimento em vermelho e, no lugar do "Agora não", o "Revisar" (digitou errado ou a conta não existe)
       txt: a.icone === "conta" ? "Pague ou marque como paga." : a.texto,
       alerta: a.icone === "conta" ? a.curto.s : undefined,
@@ -253,7 +259,11 @@ export default function PraFazer() {
               <p>{x.txt || x.s}{x.comoFunciona && <> <button type="button" className="pf-como" aria-expanded={como === x.chave} onClick={() => setComo(c => c === x.chave ? null : x.chave)}>Como funciona <Info size={14} weight="bold" aria-hidden="true" /></button></>}</p>
               {!cel && como === x.chave && x.comoFunciona && <ConteudoComo c={x.comoFunciona} rotulo={x.t} className="pf-cf" />}
               <div className="pf-bts">
-                {x.revisar ? (
+                {x.aoRevisar ? (
+                  <button type="button" className="pf-nao" onClick={x.aoRevisar}>{x.rotuloRevisar || "Revisar"}</button>
+                ) : x.naoQuero ? (
+                  <button type="button" className="pf-nao" onClick={() => adiar(x, "nunca")}>Não quero</button>
+                ) : x.revisar ? (
                   <button type="button" className="pf-nao" onClick={() => navigate(x.link, { state: x.revisar })}>{x.rotuloRevisar || "Revisar"}</button>
                 ) : x.fechar ? (
                   <div className="pf-nao-w">
