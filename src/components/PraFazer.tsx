@@ -12,9 +12,10 @@ import { avisoDoPro } from "@/lib/notificacoesUsuario";
 import { supabase } from "@/lib/supabase";
 import { linkWhatsApp } from "@/lib/telefone";
 import { salvarFechados } from "@/lib/diasFechados";
+import { registrarPagamento } from "@/lib/pagamentos";
 import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
-import { Botao, Janela, avisar, informar } from "@/components/base";
+import { Botao, Janela, avisar, confirmar, informar } from "@/components/base";
 import { ConteudoComo, type Como } from "@/components/como/ComoFunciona";
 
 /**
@@ -220,7 +221,16 @@ export default function PraFazer() {
         setMexeu(n => n + 1); avisar("Combinado, o cardápio segue aceitando pedidos nesse dia.", { tipo: "ok" });
       } : a.cobrar ? () => { const c = a.cobrar!; window.open(linkWhatsApp(c.telefone, c.texto) || `https://wa.me/?text=${encodeURIComponent(c.texto)}`, "_blank", "noopener"); } : undefined,
       // (04/11 · 6.20) WhatsApp: "Está certo" confirma aqui mesmo; "Corrigir" leva pro campo com o balão
-      aoTocar: a.feriado && uid ? () => {
+      aoTocar: a.receber ? async () => {
+        // (6.182) "Já recebi" registra de verdade (antes só abria o pedido): pergunta, lança no caixa e some
+        const r0 = a.receber!;
+        const valor = r0.falta.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        const ok = await confirmar({ titulo: `Recebeu ${valor}?`, texto: `${r0.rotulo}. O valor entra no caixa.`, rotulo: "Recebi", rotuloVoltar: "Voltar" });
+        if (!ok) return;
+        const r = await registrarPagamento({ pedidoId: r0.pedidoId, userId: uid, valor: r0.falta, forma: r0.forma, tipo: r0.parcial ? "restante" : "total" });
+        if (!r.ok) { avisar(r.erro || "Não deu para registrar agora. Tente de novo.", { tipo: "erro" }); return; }
+        setAvisos(l => l.filter(x => x.chave !== a.chave)); avisar(`Pronto, ${valor} no caixa.`, { tipo: "ok" });
+      } : a.feriado && uid ? () => {
         const f = a.feriado!;
         salvarFechados(uid, l => [...l, { inicio: f.data, fim: f.data, tipo: "feriado", nome: f.nome }]).then(r => {
           if (!r.ok) { avisar("Não deu para fechar o dia agora. Tente de novo.", { tipo: "erro" }); return; }

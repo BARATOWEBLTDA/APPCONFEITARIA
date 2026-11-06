@@ -63,7 +63,7 @@ export async function gerarFichaProduto(produto: ProdutoFicha | null | undefined
     const { cmv, cvPct, cv, mo, preco, lucro } = conta;
     const taxaCredito = preco * ((Number(venda.pct) || 0) / 100);
     const fixoPedido = Number(venda.fixo) || 0;
-    const rendeUn = parseNumBR(String(p.rendimento_qtd ?? "").replace(/[^\d.,]/g, "")) || 0;
+    const rendeUn = parseNumBR(/\d+(?:[.,]\d+)?/.exec(String(p.rendimento_qtd ?? ""))?.[0] || "") || 0; // (6.182) o primeiro número, como na tela
     const min = conta.tempoMin;
     const custo = conta.custoTotal;
     const margem = conta.margemLucro;

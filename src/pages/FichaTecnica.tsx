@@ -256,7 +256,7 @@ export default function FichaTecnica() {
   const { profile } = useProfile();
   const primeiroNome = (profile?.nome || "").split(" ")[0] || "Confeiteira";
   const location = useLocation();
-  const { isPro: isProFicha } = usePlano();
+  const { isPro: isProFicha, loading: carregandoPlano } = usePlano();
   const navigate = useNavigate();
   const [userId, setUserId] = useState("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -637,7 +637,8 @@ export default function FichaTecnica() {
 
     const foto = (selected.imagem_url || "").split(",")[0];
         const tom = margemLucroLive >= 30 ? "ok" : margemLucroLive >= 0 ? "atencao" : "neg";
-    const rendeUn = parseNumBR(extras.rendimento_qtd) || 0;
+    // (6.182) o primeiro número do texto ("rende 20", "2 bolos de 1,5kg"): a mesma leitura do PDF
+    const rendeUn = parseNumBR(/\d+(?:[.,]\d+)?/.exec(extras.rendimento_qtd || "")?.[0] || "") || 0;
     // (6.165) a lista mostra todos (os que já estão na ficha aparecem marcados, sem dar pra escolher de novo)
     const pickerLista = insumosCadastrados.filter(i => i.nome.toLowerCase().includes(pickerBusca.trim().toLowerCase()));
     const buscaPicker = pickerBusca.trim();
@@ -645,6 +646,7 @@ export default function FichaTecnica() {
     const abrirCadastro = (nome = "") => { setQuickAddName(nome); setShowQuickAdd(true); };
     // (6.168) PDF da ficha: grava o que está na tela (sem sair) e abre o documento; "compartilhar" já abre pronto pra enviar
     const exportarFicha = (compartilhar: boolean) => {
+      if (carregandoPlano) return; // (6.182) o plano ainda carregando: o PRO via o convite do PRO
       if (!isProFicha) { abrirConvitePro("fichaPdf"); return; }
       const sel = selected;
       void gerarFichaProduto(sel, userId || undefined, { compartilhar, antes: () => (mudouFicha() ? salvarFicha(true) : Promise.resolve(true)) })

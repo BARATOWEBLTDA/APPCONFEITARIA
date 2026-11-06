@@ -942,6 +942,7 @@ export default function EditarPedido() {
       data_prevista_pagamento: faltaReceber > 0.009 ? (dataPrevistaPagamento || null) : null,
       origem: pedido.origem,
       cupom_codigo: pedido.cupom_codigo,
+      cupom_desconto: (pedido as { cupom_desconto?: number | null }).cupom_desconto ?? null, // (6.182) sem isso o PDF mostrava todo o desconto como cupom
       created_at: pedido.created_at,
       pedido_itens: itens.map(it => ({ ...it, forma_venda: produtos.find(x => x.id === it.produto_id)?.forma_venda || null })),
     })

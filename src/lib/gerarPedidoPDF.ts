@@ -56,6 +56,7 @@ export type PedidoPDF = {
   data_prevista_pagamento?: string | null;
   origem?: string | null;
   cupom_codigo?: string | null;
+  cupom_desconto?: number | null;
   created_at?: string | null;
   pedido_itens?: PedidoItemPDF[];
 };

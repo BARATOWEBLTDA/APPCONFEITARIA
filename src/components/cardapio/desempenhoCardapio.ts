@@ -63,7 +63,8 @@ export function useMetricasCardapio(dados: DadosCardapio | null, periodo: Period
     if (!dados) return null;
     const ini = inicioPeriodo(periodo);
     const dentro = (iso: string, a: Date | null, b?: Date) => { const t = new Date(iso).getTime(); return (!a || t >= a.getTime()) && (!b || t < b.getTime()); };
-    const ativos = dados.pedidos.filter(p => p.status !== "cancelado");
+    // (6.182) venda é pedido que valeu: recusado, não aceito e Pix não pago não contam
+    const ativos = dados.pedidos.filter(p => !["cancelado", "recusado", "aguardando_aceite", "aguardando_pagamento"].includes(p.status));
     const vis = dados.visitas.filter(x => dentro(x, ini)).length;
     const ped = ativos.filter(p => dentro(p.created_at, ini));
     const rec = ped.reduce((s, p) => s + (Number(p.valor_total) || 0), 0);

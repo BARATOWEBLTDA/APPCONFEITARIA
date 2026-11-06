@@ -414,7 +414,8 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   useEffect(() => {
     const p = estadoNav?.abrir as Parte | undefined;
     if (!loading && cel && p && p !== "loja" && ["redes", "endereco", "horario", "ferias", "pag", "pix", "ent"].includes(p)) setParte(p);
-    if (!loading && !cel && !embutido && p === "ferias") setParte(p); // (6.179) próximos passos → Férias e feriados também no computador
+    // (6.182) no computador também (o "Ligar" do Pix abria a primeira parte com "Falta")
+    if (!loading && !cel && !embutido && p && ["redes", "endereco", "horario", "ferias", "pag", "pix", "ent"].includes(p)) setParte(p);
   }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
   // (22/10) computador: salva sozinho quando ela para de digitar (sem botão Salvar)
   const salvoPc = useRef("");

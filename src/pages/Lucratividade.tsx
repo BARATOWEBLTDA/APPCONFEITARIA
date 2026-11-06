@@ -24,7 +24,7 @@ type ItemLucro = {
   personalizacoes?: { tamanho?: unknown } | null
   produtos?: { id: string; nome?: string | null; forma_venda?: string | null; imagem_url?: string | null; kit_qtd?: unknown } | null
 };
-type PedidoLucro = { status: string; pedido_itens?: ItemLucro[] | null };
+type PedidoLucro = { status: string; forma_pagamento?: string | null; pedido_itens?: ItemLucro[] | null };
 type Produto = { chave: string; nome: string; foto: string; qtd: number; vendido: number; custo: number; lucro: number; margem: number; semFicha: boolean; kg?: boolean };
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -117,7 +117,7 @@ function LucratividadeTela() {
       const [d, peds, cf, mo] = await Promise.all([
         carregarIntervalo(user.id, ini, fim),
         // de 1.000 em 1.000, igual ao painel (o Supabase corta em 1.000 linhas sem avisar)
-        buscarTudo<PedidoLucro>((de, ate) => supabase.from("pedidos").select("status, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda, imagem_url, kit_qtd))")
+        buscarTudo<PedidoLucro>((de, ate) => supabase.from("pedidos").select("status, forma_pagamento, pedido_itens(nome_produto, quantidade, valor_unitario, personalizacoes, produtos(id, nome, forma_venda, imagem_url, kit_qtd))")
           .eq("user_id", user.id).eq("status", "entregue").gte("data_entrega", ini).lte("data_entrega", fim).order("id").range(de, ate) as PromiseLike<{ data: PedidoLucro[] | null; error: unknown }>),
         supabase.from("custos_fixos").select("valor, ativo").eq("user_id", user.id),
         supabase.from("config_mao_obra").select("salario_mensal, horas_dia, dias_semana").eq("user_id", user.id).maybeSingle(),
@@ -127,21 +127,28 @@ function LucratividadeTela() {
       setDados(d);
       setFixos({ custos: ((cf.data as { valor: number | string; ativo?: boolean | null }[]) || []).filter(x => x.ativo !== false).reduce((s, x) => s + (Number(x.valor) || 0), 0), salario: Number((mo.data as { salario_mensal?: number | string | null } | null)?.salario_mensal) || 0 });
       // lucro por produto
-      const itens = peds.data.filter(p => p.status !== "cancelado").flatMap(p => p.pedido_itens || []);
+      const pedsOk = peds.data.filter(p => p.status !== "cancelado");
+      const itens = pedsOk.flatMap(p => p.pedido_itens || []);
+      // (6.182) a forma de pagamento e a parte da embalagem de cada item (a embalagem é por pedido, dividida entre os itens)
+      const formaDoIt = new Map<ItemLucro, string | null>(), parteDoIt = new Map<ItemLucro, number>();
+      for (const p of pedsOk) { const l = p.pedido_itens || []; for (const it of l) { formaDoIt.set(it, p.forma_pagamento ?? null); parteDoIt.set(it, l.length ? 1 / l.length : 0); } }
       const ids = [...new Set(itens.map((it: ItemLucro) => it.produtos?.id).filter(Boolean))] as string[];
       // (6.08) a mesma régua do Lucro do mês: o produto tira só os ingredientes (a sua hora entra no Ponto de equilíbrio)
       // (6.173) o lucro de cada produto usa a MESMA conta da Ficha técnica: ingredientes + invisíveis + mão de obra + taxa do crédito e embalagem
       const [custo, peloPeso, extras, maoC, perfilCv, vars] = await Promise.all([
         custoPorProduto(ids), produtosPeloPeso(itens),
-        ids.length ? supabase.from("produtos").select("id, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais").in("id", ids) : Promise.resolve({ data: [] as unknown[], error: null }),
+        // (6.182) em grupos de 30 (lista grande estourava o tamanho do endereço)
+        Promise.all(Array.from({ length: Math.ceil(ids.length / 30) }, (_, k) => supabase.from("produtos").select("id, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais").in("id", ids.slice(k * 30, k * 30 + 30))))
+          .then(rs => ({ data: rs.flatMap(r => (r.data || []) as unknown[]), error: rs.find(r => r.error)?.error || null })),
         lerMaoObraConta(user.id).catch(() => null),
         supabase.from("profiles").select("custos_invisiveis_pct").eq("id", user.id).maybeSingle(),
         supabase.from("custos_variaveis").select("*").eq("user_id", user.id),
       ]);
       if (cancelado) return;
+      if (extras.error || vars.error) { clearTimeout(relogio); setErro(true); return; } // (6.182) sem isso a mão de obra e as taxas zeravam sem aviso
       const cvC = (perfilCv.data as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct;
       const vv = ((vars.data || []) as Parameters<typeof taxaPctDaForma>[1]);
-      const taxaPct = taxaPctDaForma("credito", vv), fixoPed = fixoPorPedido(vv);
+      const fixoPed = fixoPorPedido(vv);
       const extraDe: Record<string, ProdutoCustoJson> = {};
       for (const e of ((extras.data || []) as (ProdutoCustoJson & { id: string })[])) extraDe[e.id] = e;
       // custo da unidade como na ficha (a conta é a mesma função: o custo dos ingredientes entra como uma linha só)
@@ -157,7 +164,7 @@ function LucratividadeTela() {
         p.qtd += q; p.vendido += (Number(it.valor_unitario) || 0) * q;
         const c = id ? custo[id] : 0;
         // 11/10: tamanho pelo peso ("M · 2 kg") e kit (50 un) custam o tamanho/kit inteiro, não 1 kg ou 1 unidade
-        if (c && id) p.custo += unidadeFicha(id) * multiplicadorDoItem(it, peloPeso) * q + (Number(it.valor_unitario) || 0) * q * (taxaPct / 100) + fixoPed * q; else p.semFicha = true;
+        if (c && id) p.custo += unidadeFicha(id) * multiplicadorDoItem(it, peloPeso) * q + (Number(it.valor_unitario) || 0) * q * (taxaPctDaForma(formaDoIt.get(it), vv) / 100) + fixoPed * (parteDoIt.get(it) ?? 0); else p.semFicha = true;
       }
       const lista = Object.values(mapa).map(p => ({ ...p, lucro: p.vendido - p.custo, margem: p.vendido > 0 ? Math.round(((p.vendido - p.custo) / p.vendido) * 100) : 0 }))
         .sort((a, b) => b.lucro - a.lucro);

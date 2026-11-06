@@ -16,6 +16,8 @@ export type AvisoCadastro = {
     | "receber" | "pausa" | "orcamento" | "divulgar" | "pix" | "categoria" | "feriado" | "ferias";
   /** (6.179) feriado chegando: "Vou fechar" marca o dia como fechado; "Abre normal" some */
   feriado?: { data: string; nome: string };
+  /** (6.182) pagamento atrasado: "Já recebi" registra o que falta (pergunta antes) */
+  receber?: { pedidoId: string; falta: number; forma: string | null; parcial: boolean; rotulo: string };
   /** (6.178) dinheiro atrasado: "Cobrar" abre o WhatsApp da cliente com esse texto */
   cobrar?: { telefone: string; texto: string };
   /** (6.178) o botão de baixo é "Não quero" (some de vez neste aparelho), no lugar do "Agora não" */
@@ -156,7 +158,7 @@ async function passosExtras(uid: string, pf: Record<string, unknown> | null, ehP
   const seteDias = new Date(Date.now() - 7 * 86400000).toISOString();
   const [peds, orcs, visitas, cats] = await Promise.all([
     // pedidos com dinheiro a receber que já passou da data combinada (ou entregues e ainda sem pagar)
-    supabase.from("pedidos").select("id, numero, cliente_nome, cliente_telefone, valor_total, valor_recebido, status, status_pagamento, data_entrega, data_prevista_pagamento")
+    supabase.from("pedidos").select("id, numero, cliente_nome, cliente_telefone, valor_total, valor_recebido, forma_pagamento, status, status_pagamento, data_entrega, data_prevista_pagamento")
       .eq("user_id", uid).neq("status_pagamento", "pago").not("status", "in", "(cancelado,recusado,aguardando_aceite,novo,pendente,aguardando_pagamento)")
       .or(`data_prevista_pagamento.lt.${hoje},and(status.eq.entregue,data_entrega.lt.${hoje})`).order("data_entrega", { ascending: true }).limit(60),
     ehPro ? supabase.from("orcamentos").select("id, numero, cliente_nome, status, origem, created_at, enviado_em").eq("user_id", uid).in("status", ["novo", "enviado"]).order("created_at", { ascending: true }).limit(30) : Promise.resolve({ data: [], error: null }),
@@ -165,7 +167,7 @@ async function passosExtras(uid: string, pf: Record<string, unknown> | null, ehP
   ]);
 
   // 1) dinheiro atrasado: um passo por pedido (até 3), com "Cobrar" e "Já recebi"
-  type P = { id: string; numero: number | null; cliente_nome: string | null; cliente_telefone: string | null; valor_total: number | null; valor_recebido: number | null; status: string; data_entrega: string | null; data_prevista_pagamento: string | null };
+  type P = { id: string; numero: number | null; forma_pagamento: string | null; cliente_nome: string | null; cliente_telefone: string | null; valor_total: number | null; valor_recebido: number | null; status: string; data_entrega: string | null; data_prevista_pagamento: string | null };
   if (!peds.error) {
     const atrasados = ((peds.data as P[]) || []).map(p => ({ p, falta: Math.round(((Number(p.valor_total) || 0) - (Number(p.valor_recebido) || 0)) * 100) / 100 })).filter(x => x.falta > 0.009);
     for (const { p, falta } of atrasados.slice(0, 3)) {
@@ -173,7 +175,8 @@ async function passosExtras(uid: string, pf: Record<string, unknown> | null, ehP
       const desde = p.data_prevista_pagamento && p.data_prevista_pagamento < hoje ? p.data_prevista_pagamento : String(p.data_entrega || "").slice(0, 10);
       const tel = String(p.cliente_telefone || "").replace(/\D/g, "");
       l.push({ chave: `receber_atrasado_${p.id}`, icone: "receber", semNotificar: true, nivel: "urgente",
-        titulo: `${quem} · ${brl(falta)} atrasado`, texto: desde ? `Combinou pagar até ${ddmm(desde)}. Já recebeu? Marque aqui.` : "Já recebeu? Marque aqui.",
+        receber: { pedidoId: p.id, falta, forma: p.forma_pagamento, parcial: (Number(p.valor_recebido) || 0) > 0, rotulo: `${p.cliente_nome || "Cliente"} · pedido #${p.numero ?? ""}` },
+        titulo: `${quem} · ${brl(falta)} atrasado`, texto: desde ? `Combinou pagar até ${ddmm(desde)}. Já recebeu? Toque em Já recebi.` : "Já recebeu? Toque em Já recebi.",
         link: `/pedidos/${p.id}/editar?aba=pagamento`, curto: { t: `${quem} · ${brl(falta)}`, s: desde ? `Atrasado desde ${ddmm(desde)}` : "Pagamento atrasado" },
         ...(tel.length >= 10 ? { cobrar: { telefone: tel, texto: `Oi, ${primeiroNome(p.cliente_nome) || "tudo bem"}! Passando pra lembrar do pagamento do pedido #${p.numero ?? ""}: ficou ${brl(falta)}. Qualquer coisa me chama 😊` } } : {}) });
     }
