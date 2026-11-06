@@ -54,7 +54,7 @@ export default function CustosDoMes({ recebido, fixos, mostrarVazio = false, com
           <circle cx={m.x} cy={m.y} r="3.2" fill="var(--ui-branco)" stroke="var(--ui-texto-2)" strokeWidth="1.6" />
         </svg>
         <div className="cdm-tx">
-          <small>Custos fixos pagos no mês</small>
+          <small>Entradas × custos fixos</small>
           <b>{pago}%</b>
           <span>esperado hoje: {esperado}%</span>
         </div>
@@ -63,7 +63,7 @@ export default function CustosDoMes({ recebido, fixos, mostrarVazio = false, com
         {vazio
           ? <>Cadastre aluguel, luz, gás e internet para ver quanto as entradas do mês já pagaram deles.</>
           : pago >= 100
-          ? <>As entradas do mês já cobrem todos os custos fixos ({real(fixos)}). Daqui para frente, é lucro.</>
+          ? <>As entradas do mês já cobrem todos os custos fixos ({real(fixos)}). Daqui para frente, ajudam a pagar ingredientes e o seu lucro.</>
           : falta > 0.009
           ? <>As entradas cobrem <b>{pago}%</b> dos custos fixos ({real(fixos)}). Para chegar no esperado de hoje, faltam <b>{real(falta)}</b>.</>
           : <>As entradas cobrem <b>{pago}%</b> dos custos fixos ({real(fixos)}). Você está em dia com o mês.</>}

@@ -1,3 +1,4 @@
+import { precoQueClientePaga } from "@/lib/produto-precificacao";
 import { supabase } from "@/lib/supabase";
 import { grupoDoStatus, recebidoPedido, saldoPedido } from "@/components/pedidos/pedidoTexto";
 import { pedidoAtrasado } from "@/lib/pedidoStatus";
@@ -28,11 +29,12 @@ async function lucroParaDoo(uid: string): Promise<string> {
     const agora = new Date();
     const [mes, prods] = await Promise.all([
       carregarMes(uid, agora.getFullYear(), agora.getMonth()),
-      supabase.from("produtos").select("id, nome, preco_normal").eq("user_id", uid).eq("disponivel", true).limit(300),
+      supabase.from("produtos").select("id, nome, preco_normal, preco_promocional, promocao, tipo_promocao, desconto_percentual").eq("user_id", uid).eq("disponivel", true).limit(300),
     ]);
-    const lista = ((prods.data || []) as { id: string; nome: string; preco_normal: number | null }[]).filter(p => Number(p.preco_normal) > 0);
+    // (6.171) o preço que o cliente paga (com a promoção), igual a Produtos e Ficha técnica
+    const lista = ((prods.data || []) as ({ id: string; nome: string } & Parameters<typeof precoQueClientePaga>[0])[]).map(p => ({ ...p, pv: precoQueClientePaga(p) })).filter(p => p.pv > 0);
     const custos = lista.length ? await custoPorProduto(lista.map(p => p.id)) : {};
-    const comFicha = lista.filter(p => (custos[p.id] || 0) > 0).map(p => ({ nome: p.nome, preco: Number(p.preco_normal), sobra: Number(p.preco_normal) - custos[p.id] }));
+    const comFicha = lista.filter(p => (custos[p.id] || 0) > 0).map(p => ({ nome: p.nome, preco: p.pv, sobra: p.pv - custos[p.id] }));
     const ord = [...comFicha].sort((a, b) => b.sobra - a.sobra);
     const linhaP = (p: { nome: string; preco: number; sobra: number }) => `- ${p.nome}: vende por ${real(p.preco)}, sobra ${real(p.sobra)} depois dos ingredientes (${Math.round((p.sobra / p.preco) * 100)}%)`;
     // (6.157) as despesas mostradas são as que entram no lucro (antes mostrava todas e a conta não fechava)
@@ -73,7 +75,8 @@ export async function resumoDoNegocio(uid: string): Promise<string> {
   const lAbertos = ((abertos.data || []) as PedidoResumo[]);
   const atrasados = lAbertos.filter(p => pedidoAtrasado(p, hoje));
   const novos = lAbertos.filter(p => grupoDoStatus(String(p.status)) === "aguardando_aceite" || p.status === "aguardando_pagamento");
-  const aReceber = lAbertos.filter(p => saldoPedido(p) > 0.009);
+  // (6.171) o mesmo "a receber" da tela A receber: pedido ainda não aceito não entra
+  const aReceber = lAbertos.filter(p => saldoPedido(p) > 0.009 && !["aguardando_aceite", "novo", "pendente", "aguardando_pagamento"].includes(String(p.status)));
   const lContas = ((contas.data || []) as { descricao: string; valor: number; vencimento: string }[]);
   const lOrcs = ((orcs.data || []) as { numero: number; cliente_nome: string | null; status: string; data_evento: string | null }[]);
   const md = (d: Date) => `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;

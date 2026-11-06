@@ -140,7 +140,7 @@ function LucratividadeTela() {
         p.qtd += q; p.vendido += (Number(it.valor_unitario) || 0) * q;
         const c = id ? custo[id] : 0;
         // 11/10: tamanho pelo peso ("M · 2 kg") e kit (50 un) custam o tamanho/kit inteiro, não 1 kg ou 1 unidade
-        // 13/10: custo total da ficha (ingredientes + custos invisíveis + mão de obra), igual à tela da ficha técnica
+        // (6.171) só os ingredientes (a mão de obra e os fixos entram no Ponto de equilíbrio, senão contariam duas vezes)
         if (c) p.custo += c * multiplicadorDoItem(it, peloPeso) * q; else p.semFicha = true;
       }
       const lista = Object.values(mapa).map(p => ({ ...p, lucro: p.vendido - p.custo, margem: p.vendido > 0 ? Math.round(((p.vendido - p.custo) / p.vendido) * 100) : 0 }))

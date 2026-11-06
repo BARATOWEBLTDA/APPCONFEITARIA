@@ -1145,13 +1145,13 @@ function CartContent({
       <div className="sc-rolo">
         {/* Como receber + endereço */}
         <section ref={refEndereco}>
-          <Cab t="Como você quer receber?" sub={opsEntrega.ret && opsEntrega.ent ? 'Escolha 1 opção' : undefined} obr ok={okReceber} pendente={faltaReceber || undefined}
+          <Cab t="Como receber?" sub={opsEntrega.ret && opsEntrega.ent ? 'Escolha 1 opção' : undefined} obr ok={okReceber} pendente={faltaReceber || undefined}
             falta={feErro === 'endereco' ? (config.entrega_por_bairro.length > 0 && !bairroSelecionado && rua.trim() && numero.trim() ? 'Escolha o bairro da entrega' : 'Preencha o endereço da entrega') : undefined} />
           <div className={`sc-receber${opsEntrega.ret && opsEntrega.ent ? '' : ' um'}`}>
             {opsEntrega.ret && (
               <button type="button" aria-pressed={formaEntrega === 'retirada'} style={formaEntrega === 'retirada' ? { borderColor: accent } : undefined}
                 onClick={() => { setFormaEntrega('retirada'); setBairroSelecionado(''); setFeErro('') }}>
-                <Storefront size={22} weight="bold" /><b>Retirar na loja</b>
+                <Storefront size={22} weight="bold" /><b>Retirada</b>
                 <i className="sc-r" aria-hidden="true" style={formaEntrega === 'retirada' ? { borderColor: accent } : undefined} />
               </button>
             )}
@@ -1268,7 +1268,7 @@ function CartContent({
         {/* Quando */}
         <section ref={refAgenda}>
           {/* (20/10) título curto e o prazo numa linha só (antes quebrava em duas) */}
-          <Cab t={tipo === 'retirada' ? 'Quando busca?' : 'Quando chega?'} sub={regras.horas > 0 ? `${antTexto} de antecedência` : `Escolha o dia e o horário da ${tipo}`} obr ok={okQuando}
+          <Cab t={tipo === 'retirada' ? 'Quando busca?' : 'Quando chega?'} sub={regras.horas > 0 ? `${antTexto} de antecedência` : 'Escolha dia e horário'} obr ok={okQuando}
             falta={feErro === 'agenda' ? 'Escolha a data e o horário para continuar' : undefined} />
           <div className={`sc-quando sc-quando-dh${regras.cortado && primeiraDisp ? ' com-aviso' : ''}`}>
             <button type="button" className={`sc-campo${feErro === 'agenda' && !dataEntrega ? ' err' : ''}`} onClick={() => { acertarRelogio(); setCalAberto(true) }}>
@@ -1391,7 +1391,7 @@ function CartContent({
         <section>
           <Cab t="Recado para a loja" opc />
           <div className="sc-campos sc-recado">
-            <CampoArea rotulo="" aria-label="Recado para a loja" value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder='Ex.: escrever "Parabéns, Lia!" no bolo' rows={3} />
+            <CampoArea rotulo="" aria-label="Recado para a loja" value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder='Ex.: escrever "Parabéns, Lia!" no bolo' rows={3} maxLength={2000} />
           </div>
         </section>
 

@@ -286,7 +286,7 @@ export function PagarSheet({ conta, onClose, onFeito }: { conta: Conta; onClose:
       <div className="fo-chips">{(["hoje", "ontem", "outra"] as const).map(q => <button type="button" key={q} className={quandoPg === q ? "on" : ""} onClick={() => setQuandoPg(q)}>{q === "hoje" ? "Hoje" : q === "ontem" ? "Ontem" : "Outra data"}</button>)}</div>
       {quandoPg === "outra" && <div style={{ marginTop: 8 }}><CampoData valor={outra} onChange={setOutra} max={isoDia()} titulo="Data do pagamento" /></div>}
       {doCaixa
-        ? <div className="fap-prev"><b>Sai do caixa: {brl(num(valor))}</b><small>Entra no caixa na data do pagamento.</small></div>
+        ? <div className="fap-prev"><b>Sai do caixa: {brl(num(valor))}</b><small>Sai do caixa na data do pagamento.</small></div>
         : <div className="fap-prev fap-prev--neutro"><b>O caixa não muda</b><small>A conta fica como paga e não entra saída no financeiro.</small></div>}
       {erro && <p className="fo-erro">{erro}</p>}
     </Folha>

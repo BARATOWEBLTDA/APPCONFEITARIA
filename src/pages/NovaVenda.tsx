@@ -2,7 +2,7 @@ import { precoCardapioComPromocao, ehCentoLivre } from "@/lib/precoCardapio";
 import { unidadePreco } from "@/lib/formaVenda";
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { criarPedido, novoIdTentativa, lerProdutosDeVenda, opcoesDoProduto as opcoesDoProdutoLib, opcaoKitLivre, quantidadesSugeridas, precoDeVenda, totalDe, type DadosPedido, type ItemPedido } from '@/lib/pedidosDoo'
+import { criarPedido, subtotalDe, novoIdTentativa, lerProdutosDeVenda, opcoesDoProduto as opcoesDoProdutoLib, opcaoKitLivre, quantidadesSugeridas, precoDeVenda, totalDe, type DadosPedido, type ItemPedido } from '@/lib/pedidosDoo'
 import type { GrupoJson, OpcaoGrupoJson } from '@/lib/precoCardapio'
 import type { KitQtdConfig } from '@/lib/kitQuantidade'
 import type { ExtraEscolhido } from '@/lib/kitTexto'
@@ -325,6 +325,10 @@ export default function NovaVenda() {
   const prontaRetirada = tipo === 'pronta_entrega' && tipoEntrega === 'retirada'
   const buscaDepois = prontaRetirada && vemBuscar
   const jaLevou = prontaRetirada && !vemBuscar
+  // (6.171) "Paga na entrega/retirada": encomenda, vem buscar e pronta entrega levada até o cliente
+  const temNaEntrega = tipo === 'encomenda' || buscaDepois || (tipo === 'pronta_entrega' && tipoEntrega === 'entrega')
+  // a opção sumiu (ex.: trocou pra "Já levou"): não fica marcada escondida (o pedido entrava entregue e sem pagar)
+  useEffect(() => { if (situacaoPag === 'na_entrega' && !temNaEntrega) setSituacaoPag(tipo === 'pronta_entrega' ? 'total' : null) }, [situacaoPag, temNaEntrega, tipo])
   // (6.168) situação posta sozinha (pronta entrega) volta pra "Agendado" quando deixa de valer
   // (ex.: marcou Pronta entrega e trocou pra Encomenda: o pedido de amanhã entrava como "Entregue")
   const statusAuto = useRef(false)
@@ -381,7 +385,7 @@ export default function NovaVenda() {
       return null
     }
     if (etapaLabelAtual === 'Pagamento') {
-      if (!situacaoPag) return 'Escolha quanto já entrou para continuar.'
+      if (!situacaoPag || (situacaoPag === 'na_entrega' && !temNaEntrega)) return 'Escolha quanto já entrou para continuar.'
       // Pagamento parcial precisa do valor recebido (maior que zero e menor que o total)
       if (situacaoPag === 'parcial' && !(r2(valorParcial) > 0 && r2(valorParcial) < total)) return 'Escreva quanto ele já pagou para continuar.'
     }
@@ -1080,7 +1084,7 @@ export default function NovaVenda() {
               {([
                 { chave: 'total', nome: 'Tudo agora', dica: `Recebi ${rs(total)}` },
                 { chave: 'parcial', nome: 'Só uma parte (sinal)', dica: 'Você escreve quanto recebeu' },
-                ...(tipo === 'encomenda' || buscaDepois ? [{ chave: 'na_entrega', nome: ehEntrega ? 'Paga na entrega' : 'Paga na retirada', dica: ehEntrega ? 'Ele paga quando receber o pedido' : 'Ele paga quando vier buscar' }] : []),
+                ...(temNaEntrega ? [{ chave: 'na_entrega', nome: ehEntrega ? 'Paga na entrega' : 'Paga na retirada', dica: ehEntrega ? 'Ele paga quando receber o pedido' : 'Ele paga quando vier buscar' }] : []),
                 { chave: 'fiado', nome: 'Vai pagar depois', dica: 'Você escolhe a data combinada' },
               ] as { chave: SituacaoPag; nome: string; dica: string }[]).map(o => (
                 <div key={o.chave}>
@@ -1130,7 +1134,7 @@ export default function NovaVenda() {
           <section className="nv3-card">
             <Titulo>Desconto ou acréscimo</Titulo>
             <div className="nv3-cols nv3-cols--fim">
-              <Campo rotulo="Desconto" opcional prefixo="R$" inputMode="numeric" placeholder="0,00" value={formatMaskMoney(desconto)} onChange={e => setDesconto(parseMaskMoney(e.target.value))} />
+              <Campo rotulo="Desconto" opcional prefixo="R$" inputMode="numeric" placeholder="0,00" value={formatMaskMoney(desconto)} onChange={e => setDesconto(Math.min(parseMaskMoney(e.target.value), r2(subtotalDe(itens) + taxaConta + acrescimo)))} dica={desconto > 0 && desconto >= r2(subtotalDe(itens) + taxaConta + acrescimo) ? 'Desconto no valor total da venda.' : undefined} />
               <Campo rotulo="Acréscimo" opcional prefixo="R$" inputMode="numeric" placeholder="0,00" value={formatMaskMoney(acrescimo)} onChange={e => setAcrescimo(parseMaskMoney(e.target.value))} />
             </div>
           </section>

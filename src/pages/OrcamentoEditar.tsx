@@ -158,6 +158,14 @@ export default function OrcamentoEditar() {
   }, [o?.itens]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const muda = (p: Partial<Orcamento>) => { setO(x => (x ? { ...x, ...p } : x)); setMudou(true) }
+  // (6.171) desconto em %: acompanha o valor dos itens (antes ficava o R$ calculado na hora em que digitou)
+  const subItens = o ? somarItens(o.itens) : 0
+  useEffect(() => {
+    if (descModo !== 'pct' || !o) return
+    const p = Math.min(100, Number(String(descPct).replace(',', '.')) || 0)
+    const d = Math.round(subItens * p) / 100
+    if (Math.abs((Number(o.desconto) || 0) - d) > 0.004) setO(x => (x ? { ...x, desconto: d } : x))
+  }, [subItens, descModo]) // eslint-disable-line react-hooks/exhaustive-deps
   // (6.51) evento de mais de um dia e horário (opcional)
   const [variosDias, setVariosDias] = useState<boolean | null>(null)
   const [horaAberta, setHoraAberta] = useState(false)

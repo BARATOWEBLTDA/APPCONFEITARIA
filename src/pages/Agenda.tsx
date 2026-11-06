@@ -409,8 +409,12 @@ export default function Agenda() {
     if (ocupadosRef.current.has(p.id)) return;
     ocupar(p.id, true);
     try {
-      const { error } = await supabase.from("pedidos").update({ status: novo }).eq("id", p.id);
+      // (6.171) aceitar só vale se ainda está esperando (o mesmo cuidado de Pedidos: cancelado em outro aparelho não volta)
+      let q = supabase.from("pedidos").update({ status: novo }).eq("id", p.id);
+      if (novo === "agendado") q = q.in("status", ["aguardando_aceite", "novo", "pendente"]);
+      const { data: mudou, error } = await q.select("id");
       if (error) { avisar("Não deu para mudar a situação. Confira a internet e tente de novo.", { tipo: "erro" }); return; }
+      if (novo === "agendado" && !mudou?.length) { avisar("Esse pedido já tinha sido atualizado em outro lugar.", { tipo: "info" }); return; }
       registrarEtapa(p.id, novo);
       mudarPedidos(prev => prev.map(x => x.id === p.id ? { ...x, status: novo } : x));
       avisarComDesfazer(p, novo);
