@@ -7,7 +7,7 @@ import {
   WhatsappLogo, PauseCircle, PixLogo, Clock, Truck, MapPin, Money, WarningCircle, BellRinging, Wrench, DeviceMobile, Eye, Hourglass,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target, Scales } from "@phosphor-icons/react";
+import { Ticket, Target, Scales, Sliders } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { useSobreposicao } from "@/components/base/useSobreposicao";
@@ -92,6 +92,7 @@ export default function BuscaRapida() {
       { g: PROD, t: "Ingredientes", ic: Basket, rota: "/insumos", chaves: "insumo ingrediente materia prima compra mercado embalagem preco" },
       { g: PROD, t: "Ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", chaves: "receita custo lucro margem preco sugerido rendimento" },
       { g: PROD, t: "Conversor de medidas", ic: Scales, rota: "/ferramentas/medidas", chaves: "ferramentas xicara colher gramas converter medida peso" },
+      { g: PROD, t: "Simulador de preço", ic: Sliders, rota: "/ferramentas/simulador", chaves: "ferramentas simular preco lucro margem quanto cobrar calculadora" },
       { g: PROD, t: "Produtos sem ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", estado: { abrir: "sem-ficha" }, chaves: "falta ficha" },
       { g: PROD, t: "Custos", ic: Receipt, rota: "/custos", chaves: "custo fixos variaveis despesa gasto aluguel luz gas" },
       { g: PROD, t: "Mão de obra", ic: Wrench, rota: "/custos", estado: { abrir: "mao" }, chaves: "salario hora jornada trabalho" },
@@ -106,6 +107,7 @@ export default function BuscaRapida() {
       ] : []),
       { g: LOJA, t: "Ver como fica", ic: Eye, rota: "/cardapio-preview", chaves: "previa visualizar cliente" },
       { g: LOJA, t: "Aparência", ic: Palette, rota: "/cardapio-design", chaves: "logo cores cor banner capa foto topo visual" },
+      { g: LOJA, t: "Métricas do cardápio", ic: ChartLineUp, rota: "/cardapio-metricas", chaves: "metricas visitas acessos quantas pessoas desempenho mais pedidos vendidos conversao estatisticas" },
       { g: LOJA, t: "Dados da loja", ic: Storefront, rota: "/cardapio-config", estado: { abrir: "loja" }, chaves: "nome descricao sobre whatsapp telefone" },
       { g: LOJA, t: "Horário de funcionamento", ic: Clock, rota: "/cardapio-config", estado: { abrir: "horario" }, chaves: "horario aberto fechado dias semana abrir fechar expediente" },
       { g: LOJA, t: "Entrega e taxa de entrega", ic: Truck, rota: "/cardapio-config", estado: { secao: "entrega" }, chaves: "taxa entrega frete delivery retirada bairro raio km mapa motoboy" },

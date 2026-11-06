@@ -10,7 +10,8 @@ const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "cu
  * período anterior), pedidos, vendido e conversão, o gráfico das visitas e os mais pedidos pelo cardápio.
  * A mesma conta da Visão geral do computador (desempenhoCardapio).
  */
-export default function DesempenhoCelular({ uid }: { uid?: string | null }) {
+/** semTitulo: na tela Métricas o título já está no topo (6.170) */
+export default function DesempenhoCelular({ uid, semTitulo = false }: { uid?: string | null; semTitulo?: boolean }) {
   const [periodo, setPeriodo] = useState<Periodo>("7d");
   const { dados, falhou, tentar } = useDadosCardapio(uid);
   const metr = useMetricasCardapio(dados, periodo);
@@ -20,7 +21,7 @@ export default function DesempenhoCelular({ uid }: { uid?: string | null }) {
 
   return (
     <section className="dl-emb dsc" aria-label="Desempenho do cardápio">
-      <h2 className="dl-emb-t">Desempenho do cardápio</h2>
+      {!semTitulo && <h2 className="dl-emb-t">Desempenho do cardápio</h2>}
       <div className="dsc-card">
         <div className="dsc-topo">
           <small>Visitas</small>
@@ -46,7 +47,7 @@ export default function DesempenhoCelular({ uid }: { uid?: string | null }) {
               <div><small>Conversão</small><b>{metr.conv.toFixed(1).replace(".", ",")}%</b></div>
             </div>
             {metr.serie.every(x => x.n === 0) ? (
-              <p className="dsc-vazio">Ninguém abriu o cardápio {quando}. Mande o link para os seus clientes.</p>
+              <p className="dsc-vazio">Nenhuma visita {quando}.</p>
             ) : (
               <Suspense fallback={<div style={{ height: 176 }} />}>
                 <GraficoVisitas serie={metr.serie} unidade="dia" altura={150}
@@ -55,7 +56,7 @@ export default function DesempenhoCelular({ uid }: { uid?: string | null }) {
             )}
             <p className="dsc-sub">Mais pedidos pelo cardápio</p>
             {metr.top.length === 0 ? (
-              <p className="dsc-vazio">Aparecem aqui quando chegarem pedidos {quando}.</p>
+              <p className="dsc-vazio">Nenhum pedido {quando}.</p>
             ) : (
               <ol className="dsc-top">
                 {metr.top.slice(0, 3).map(([nm, qt], i) => (
@@ -81,7 +82,7 @@ export default function DesempenhoCelular({ uid }: { uid?: string | null }) {
         .dsc-mini small { display: block; font-size: 11.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dsc-mini b { display: block; font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
         .dsc-sub { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--ui-linha); font-size: 14px; font-weight: 600; color: var(--ui-texto); }
-        .dsc-vazio { margin: 12px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
+        .dsc-vazio { margin: 12px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dsc-tentar { margin: 0; padding: 0; border: 0; background: none; color: var(--ui-rosa-escuro); font: inherit; font-weight: 600; cursor: pointer; }
         .dsc-ph { height: 120px; margin-top: 10px; border-radius: var(--ui-raio); background: var(--ui-cinza); }
         .dsc-top { margin: 4px 0 0; padding: 0; list-style: none; }

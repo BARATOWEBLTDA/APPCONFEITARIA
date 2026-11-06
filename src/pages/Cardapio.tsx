@@ -8,7 +8,6 @@ import AppPageHeader from "@/components/AppPageHeader";
 import PassoAPassoCardapio from "@/components/PassoAPassoCardapio";
 import CartaoLojaCelular from "@/components/cardapio/CartaoLojaCelular";
 import MinhaLoja from "@/components/cardapio/MinhaLoja";
-import DesempenhoCelular from "@/components/cardapio/DesempenhoCelular";
 
 /**
  * Tela Cardápio.
@@ -68,8 +67,7 @@ export default function Cardapio() {
       {publicado && linkCardapio ? <CartaoLojaCelular link={linkCardapio} /> : (
         <PassoAPassoCardapio userId={profile?.id} publicado={publicado} linkCardapio={linkCardapio} onShareClick={handleShare} />
       )}
-      {/* (6.169) quantas pessoas abriram o cardápio e os mais pedidos, também no celular (antes só no computador) */}
-      {publicado && <DesempenhoCelular uid={profile?.id} />}
+      {/* (6.170) as métricas do cardápio ficam na linha "Métricas" (tela própria), não soltas aqui */}
       {/* (23/10) "Minha loja", no estilo do Dora: a loja para o cliente, como você vende e o que você vende, cada linha com o valor atual */}
       <MinhaLoja uid={profile?.id} pro={pro} />
 

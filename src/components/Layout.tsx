@@ -21,7 +21,7 @@ import { ClipboardText, ChartBar, Stack, Palette, Storefront, ArrowSquareOut, Ar
   Receipt, Sparkle, Crown, Bell, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target, X, Wrench, Scales } from "@phosphor-icons/react";
+import { Ticket, Target, X, Wrench, Scales, Sliders } from "@phosphor-icons/react";
 import { ligarAcessoOnline } from "@/lib/acessoOnline";
 import { ConviteProGlobal } from "@/components/billing/RecursoPro";
 import DestaqueDaNavegacao from "@/components/guia/DestaqueDaNavegacao";
@@ -268,8 +268,9 @@ export default function Layout() {
             <SubitemMenu to="/lucratividade" icone={ChartLineUp}>Lucratividade</SubitemMenu>
           </GrupoMenu>
           {/* (6.152) ferramentas de cozinha */}
-          <GrupoMenu id="ferramentas" aberto={grupoAberto === "ferramentas"} onAbrir={setGrupoAberto} rotulo="Ferramentas" icone={Wrench} rotas={["/ferramentas/medidas", "/ferramentas"]} recolhido={recolhido}>
+          <GrupoMenu id="ferramentas" aberto={grupoAberto === "ferramentas"} onAbrir={setGrupoAberto} rotulo="Ferramentas" icone={Wrench} rotas={["/ferramentas/medidas", "/ferramentas/simulador", "/ferramentas"]} recolhido={recolhido}>
             <SubitemMenu to="/ferramentas/medidas" icone={Scales}>Conversor de medidas</SubitemMenu>
+            <SubitemMenu to="/ferramentas/simulador" icone={Sliders}>Simulador de preço</SubitemMenu>
           </GrupoMenu>
           {/* (04/11 · 6.42) a Doo IA saiu do menu: no computador ela é o balão flutuante no canto (doo-fab) */}
           <GrupoMenu id="conta" aberto={grupoAberto === "conta"} onAbrir={setGrupoAberto} rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar"]} recolhido={recolhido}>

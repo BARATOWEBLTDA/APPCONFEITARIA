@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ImageSquare, Cake, CaretRight, PaintBrush, SquaresFour, Stack } from "@phosphor-icons/react";
+import { ImageSquare, Cake, CaretRight, ChartLineUp, PaintBrush, SquaresFour, Stack } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { useRecorte } from "@/components/ui/useRecorte";
@@ -106,6 +106,13 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
   return (
     <>
       {recorte.janela}
+      {/* (6.170) métricas do cardápio (visitas, pedidos e mais pedidos) numa tela própria */}
+      <section className="dl-emb" aria-label="Desempenho">
+        <h2 className="dl-emb-t">Desempenho</h2>
+        <div className="dl-lista-c">
+          {linha(ChartLineUp, "Métricas", "Visitas e mais pedidos do cardápio", "/cardapio-metricas")}
+        </div>
+      </section>
       {/* (6.59) o que o cliente vê vem primeiro: produtos logo abaixo do cartão de compartilhar */}
       <section className="dl-emb ml-produtos" aria-label="O que você vende">
         <h2 className="dl-emb-t">O que você vende</h2>

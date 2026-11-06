@@ -103,6 +103,7 @@ const CardapioDesign = lazy(() => import("@/pages/CardapioDesign"));
 const DadosLoja = lazy(() => import("@/pages/DadosLoja"));
 const CardapioPublico = lazy(() => import("@/pages/CardapioPublico"));
 const Cardapio = lazy(() => import("@/pages/Cardapio"));
+const CardapioMetricas = lazy(() => import("@/pages/CardapioMetricas"));
 const Financeiro = lazy(() => import("@/pages/Financeiro"));
 const FinanceiroTransacoes = lazy(() => import("@/pages/FinanceiroTransacoes"));
 const FinanceiroAReceber = lazy(() => import("@/pages/FinanceiroAReceber"));
@@ -111,6 +112,7 @@ const Custos = lazy(() => import("@/pages/Custos"));
 const Lucratividade = lazy(() => import("@/pages/Lucratividade"));
 const FichaTecnica = lazy(() => import("@/pages/FichaTecnica"));
 const ConversorMedidas = lazy(() => import("@/pages/ferramentas/ConversorMedidas"));
+const SimuladorPreco = lazy(() => import("@/pages/ferramentas/SimuladorPreco"));
 const NaoEncontrada = lazy(() => import("@/pages/NaoEncontrada"));
 const PRE_CARREGAR: (() => Promise<unknown>)[] = [
   carregarLayout,
@@ -574,6 +576,7 @@ export default function App() {
           <Route path="/insumos" element={<Insumos />} />
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />
           <Route path="/ferramentas/medidas" element={<ConversorMedidas />} />
+          <Route path="/ferramentas/simulador" element={<SimuladorPreco />} />
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/cadastros" element={<Cadastros />} />
           <Route path="/complementos" element={<Complementos />} />
@@ -590,6 +593,7 @@ export default function App() {
           <Route path="/promocoes" element={<Navigate to="/cardapio" replace />} />
           <Route path="/cardapio" element={<Cardapio />} />
           <Route path="/cardapio-config" element={<DadosLoja />} />
+          <Route path="/cardapio-metricas" element={<CardapioMetricas />} />
           <Route path="/cardapio-resumo" element={<Navigate to="/cardapio" replace />} />{/* (27/10) tela sem uso: vai para Minha loja */}
           <Route path="/cardapio-preview" element={<CardapioPrevia />} />
           <Route path="/cardapio-design" element={<CardapioDesign />} />

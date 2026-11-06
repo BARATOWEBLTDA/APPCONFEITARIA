@@ -5,7 +5,7 @@ import {
   Gear, Crown, CaretRight,
   CalendarDots, CurrencyDollar,
   Newspaper, FileText, Users, ChatCircleText, Cake, Package, ClipboardText,
-  Calculator, ChartPieSlice, Lifebuoy, MagnifyingGlass,
+  Calculator, Sliders, ChartPieSlice, Lifebuoy, MagnifyingGlass,
 } from "@phosphor-icons/react";
 import { abrirBuscaRapida } from "@/components/BuscaRapida";
 import type { Icon } from "@phosphor-icons/react";
@@ -81,6 +81,7 @@ const GRUPOS: Grupo[] = [
     label: "Ferramentas",
     items: [
       { label: "Conversor de medidas", desc: "Xícaras e colheres em gramas", path: "/ferramentas/medidas", Icone: Scales },
+      { label: "Simulador de preço", desc: "Teste preços e veja o lucro", path: "/ferramentas/simulador", Icone: Sliders },
     ],
   },
   {
