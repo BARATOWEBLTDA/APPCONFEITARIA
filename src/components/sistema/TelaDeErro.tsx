@@ -20,7 +20,13 @@ export const ehErroDeAtualizacao = (msg: string) => /dynamically imported module
 export default class TelaDeErro extends Component<{ children: ReactNode }, Estado> {
   state: Estado = { quebrou: false, atualizacao: false };
 
-  static getDerivedStateFromError(erro: unknown): Estado { const msg = String((erro as Error)?.message || erro || ""); return { quebrou: true, atualizacao: ehErroDeAtualizacao(msg) || haVersaoNova(), detalhe: `${window.location.pathname} · ${msg}`.slice(0, 220) }; }
+  static getDerivedStateFromError(erro: unknown): Estado {
+    const msg = String((erro as Error)?.message || erro || "");
+    // (6.175) acabou de atualizar e quebrou de novo: não é atualização, é erro de verdade (antes ficava preso no "Tem uma versão nova")
+    let recem = false;
+    try { const t = Math.max(Number(sessionStorage.getItem("doonly_reparo") || 0), Number(sessionStorage.getItem("doonly_recarga_arquivo") || 0)); recem = Date.now() - t < 120000; } catch { /* sem sessionStorage */ }
+    return { quebrou: true, atualizacao: !recem && (ehErroDeAtualizacao(msg) || haVersaoNova()), detalhe: `${window.location.pathname} · ${msg}`.slice(0, 220) };
+  }
 
   componentDidCatch(erro: Error, info: ErrorInfo) {
     console.error("[Doonly] a tela quebrou:", erro, info.componentStack);
@@ -48,8 +54,9 @@ export default class TelaDeErro extends Component<{ children: ReactNode }, Estad
           <h1 className="ne-h">Tem uma versão nova do Doonly!</h1>
           <p className="ne-p">Atualizamos o app enquanto você usava. Toque em Atualizar para continuar de onde parou.</p>
           <div className="sis-erro-acoes">
-            <Botao cheio icone={<Sparkle size={20} weight="fill" />} onClick={() => recarregarLimpo(this.state.detalhe || "")}>Atualizar agora</Botao>
+            <Botao cheio icone={<Sparkle size={20} weight="fill" />} onClick={() => { try { sessionStorage.setItem("doonly_reparo", "0"); } catch { /* segue */ } recarregarLimpo(this.state.detalhe || ""); }}>Atualizar agora</Botao>
           </div>
+          {this.state.detalhe && <p className="sis-erro-cod">Código: {this.state.detalhe}</p>}
         </main>
       </div>
     );
