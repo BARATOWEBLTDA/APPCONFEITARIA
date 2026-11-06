@@ -104,7 +104,8 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
     // (10/10) cada parte passa pelo esc(): o endereço é digitado pela cliente no cardápio
     const linhaEndereco = endereco.length ? [esc(endereco.slice(0, 2).join(", ")), endereco[2] ? esc(endereco[2]) : ""].filter(Boolean).join(sep) : "";
     const quando = diaLongo(pedido.data_entrega, pedido.horario_entrega);
-    const blocoCliente = prontaEntrega
+    // (6.175) pronta entrega levada até a cliente: mostra o endereço como na encomenda
+    const blocoCliente = prontaEntrega && !entrega
       ? (linhaCliente ? card("Cliente", kv([["Cliente", linhaCliente]])) : "")
       : card(entrega ? "Cliente e entrega" : "Cliente e retirada", kv([
           ["Cliente", linhaCliente || "Sem cliente"],
@@ -132,7 +133,7 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
 
     // ── Pagamento: forma, quanto entrou e quanto falta (e quando) ──
     const forma = PAGAMENTO[pedido.forma_pagamento || ""] || pedido.forma_pagamento || "";
-    const quandoPaga = pedido.data_prevista_pagamento ? `até ${dataBR(pedido.data_prevista_pagamento)}` : prontaEntrega ? "" : entrega ? "na entrega" : "na retirada";
+    const quandoPaga = pedido.data_prevista_pagamento ? `até ${dataBR(pedido.data_prevista_pagamento)}` : prontaEntrega && !entrega ? "" : entrega ? "na entrega" : "na retirada";
     const linhasPag: [string, string][] = ([
       ["Forma", esc(forma)],
       ["Situação", cancelado ? `<span class="neg">Pedido cancelado</span>` : ""],
@@ -145,9 +146,15 @@ export async function gerarPedidoPDF(pedido: PedidoPDF, janelaAberta?: Window | 
     const desc = Number(pedido.desconto) || 0, acr = Number(pedido.acrescimo) || 0;
     const totais = `<div class="tot">
       <div><span>Subtotal</span><b>${brl(subtotal)}</b></div>
-      ${taxa ? `<div><span>Frete</span><b>${brl(taxa)}</b></div>` : ""}
+      ${taxa ? `<div><span>Taxa de entrega</span><b>${brl(taxa)}</b></div>` : ""}
       ${acr ? `<div><span>Acréscimo</span><b>${brl(acr)}</b></div>` : ""}
-      ${desc ? `<div><span>${pedido.cupom_codigo ? `Cupom ${esc(pedido.cupom_codigo)}` : "Desconto"}</span><b class="neg">− ${brl(desc)}</b></div>` : ""}
+      ${(() => {
+        // (6.175) cupom e desconto manual em linhas separadas (o banco guarda os dois somados em "desconto")
+        const cup = pedido.cupom_codigo ? Math.min(Number((pedido as { cupom_desconto?: number | null }).cupom_desconto) || desc, desc) : 0;
+        const man = r2(desc - cup);
+        return (cup > 0.009 ? `<div><span>Cupom ${esc(pedido.cupom_codigo)}</span><b class="neg">− ${brl(cup)}</b></div>` : "")
+          + (man > 0.009 ? `<div><span>Desconto</span><b class="neg">− ${brl(man)}</b></div>` : "");
+      })()}
       <div class="tt"><span>Total</span><b>${brl(total)}</b></div>
       ${!cancelado && falta > 0.009 ? `<div class="rest"><span>Falta receber</span><b>${brl(falta)}</b></div>` : ""}
     </div>`;

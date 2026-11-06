@@ -118,11 +118,13 @@ export default function OrcamentoEditar() {
       // pedido que chegou pelo link ainda não tem as condições: começa com 7 dias, sem sinal e a combinar
       d.forma_pagamento = d.forma_pagamento || 'combinar'
       d.sinal_tipo = d.sinal_tipo || 'sem'
-      if (!d.validade && (d.status === 'novo' || d.status === 'rascunho')) d.validade = maisDias(7)
+      const validadePadrao = !d.validade && (d.status === 'novo' || d.status === 'rascunho')
+      if (validadePadrao) d.validade = maisDias(7)
       setO(d)
       setExtras({ desconto: Number(d.desconto) > 0, acrescimo: Number(d.acrescimo) > 0, entrega: d.tipo_entrega === 'entrega' })
       setDescModo(Number(d.desconto) > 0 ? 'valor' : 'sem')
-      if (d.validade) {
+      if (validadePadrao) setValidadeTipo('7') // (6.175) padrão posto agora: é "7 dias" (contar do pedido antigo virava "Escolher data")
+      else if (d.validade) {
         const dias = Math.round((new Date(`${d.validade}T12:00:00`).getTime() - new Date(`${(d.enviado_em || d.created_at).slice(0, 10)}T12:00:00`).getTime()) / 86400000)
         setValidadeTipo(dias === 3 ? '3' : dias === 15 ? '15' : dias === 30 ? '30' : dias === 7 ? '7' : 'data')
       } else if (d.status !== 'novo' && d.status !== 'rascunho') setValidadeTipo('sem') // (6.43) enviado sem validade = "Sem prazo"
@@ -251,9 +253,9 @@ export default function OrcamentoEditar() {
   }
 
   // (28/10) a validade de 7/15/30 dias conta do dia do envio (antes contava do dia em que o rascunho foi criado)
-  const dadosEnvio = (): Partial<Orcamento> | null => {
+  const dadosEnvio = (ignorarValidade = false): Partial<Orcamento> | null => {
     if (!o) return null
-    if (validadeTipo === 'data' && o.validade && o.validade < hojeISO()) { avisar('A validade já passou. Escolha outra data.', { tipo: 'erro' }); return null }
+    if (!ignorarValidade && validadeTipo === 'data' && o.validade && o.validade < hojeISO()) { avisar('A validade já passou. Escolha outra data.', { tipo: 'erro' }); return null }
     return { status: 'enviado', enviado_em: o.enviado_em || new Date().toISOString(), ...(validadeTipo === 'sem' ? { validade: null } : validadeTipo !== 'data' ? { validade: maisDias(Number(validadeTipo)) } : {}) }
   }
   const enviarWhats = async () => {
@@ -291,7 +293,7 @@ export default function OrcamentoEditar() {
       let tok = o.token
       // ainda não enviado (ou vencido): grava como enviado, sem prazo vencido, para poder aprovar
       if (o.status !== 'enviado' || mudou || (o.validade && o.validade < hojeISO())) {
-        const env = dadosEnvio(); if (!env) return
+        const env = dadosEnvio(true); if (!env) return // (6.175) aprovar orçamento vencido: a validade sai, não trava
         const salvo = await salvar({ ...env, ...(o.validade && o.validade < hojeISO() ? { validade: null } : {}) })
         if (!salvo) return
         tok = salvo.token

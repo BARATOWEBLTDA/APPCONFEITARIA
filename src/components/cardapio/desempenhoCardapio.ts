@@ -1,3 +1,4 @@
+import { buscarTudo } from "@/lib/buscarTudo";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -35,9 +36,10 @@ export function useDadosCardapio(uid?: string | null) {
     setFalhou(false);
     const desde = new Date(); desde.setDate(desde.getDate() - 60);
     Promise.all([
-      supabase.from("cardapio_visitas").select("created_at").eq("user_id", uid).gte("created_at", desde.toISOString()),
-      supabase.from("pedidos").select("id, numero, cliente_nome, valor_total, status, tipo_entrega, created_at, pedido_itens(nome_produto, quantidade)")
-        .eq("user_id", uid).eq("origem", "cardapio").order("created_at", { ascending: false }).limit(500),
+      // (6.175) de 1.000 em 1.000: o banco corta em 1.000 linhas sem avisar (loja com muita visita via menos)
+      buscarTudo<{ created_at: string }>((de, ate) => supabase.from("cardapio_visitas").select("created_at").eq("user_id", uid).gte("created_at", desde.toISOString()).order("created_at").order("id").range(de, ate)),
+      buscarTudo<Record<string, unknown>>((de, ate) => supabase.from("pedidos").select("id, numero, cliente_nome, valor_total, status, tipo_entrega, created_at, pedido_itens(nome_produto, quantidade)")
+        .eq("user_id", uid).eq("origem", "cardapio").gte("created_at", desde.toISOString()).order("created_at", { ascending: false }).order("id").range(de, ate)),
       supabase.from("produtos").select("id, imagem_url, descricao, disponivel").eq("user_id", uid),
       supabase.from("loja_cupons").select("cupons").eq("user_id", uid).maybeSingle(),
     ]).then(([v, p, pr, c]) => {

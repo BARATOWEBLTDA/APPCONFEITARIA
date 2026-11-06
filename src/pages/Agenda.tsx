@@ -474,8 +474,10 @@ export default function Agenda() {
 
   const baixarPdf = async (p: PedidoAgenda) => {
     const janela = abrirJanela();
-    const { data } = await supabase.from("pedidos").select("*, pedido_itens(*, produtos(forma_venda))").eq("id", p.id).maybeSingle();
-    await gerarPedidoPDF((data || { id: p.id }) as Parameters<typeof gerarPedidoPDF>[0], janela);
+    const { data, error } = await supabase.from("pedidos").select("*, pedido_itens(*, produtos(forma_venda))").eq("id", p.id).maybeSingle();
+    // (6.175) leitura falhou: avisa (antes saía um PDF em branco)
+    if (error || !data) { try { janela?.close(); } catch { /* já fechada */ } avisar("Não deu para gerar o PDF. Tente de novo.", { tipo: "erro" }); return; }
+    await gerarPedidoPDF(data as Parameters<typeof gerarPedidoPDF>[0], janela);
   };
 
   // ── Agenda do dia em PDF (modelo padrão · recurso PRO) ──
@@ -503,7 +505,8 @@ export default function Agenda() {
   const filtrosDesligados = SITUACOES_FILTRO.filter(f => f.k !== "cancelado" && !f.grupos.every(g => statusSelecionados.includes(g))).length;
   const mostrarTodas = () => setStatusSelecionados(TODAS_SITUACOES);
   // 4.08: a agenda não mostra o total vendido no dia (isso é do Financeiro); mostra só o que falta receber, quando existe
-  const aReceberDoDia = pedidosDoDia.filter((p: PedidoAgenda) => p.status !== "cancelado" && saldoPedido(p) > 0.009);
+  // (6.175) igual à tela A receber: pedido ainda não aceito não entra
+  const aReceberDoDia = pedidosDoDia.filter((p: PedidoAgenda) => !["cancelado", "recusado", "aguardando_aceite", "novo", "pendente", "aguardando_pagamento"].includes(String(p.status)) && saldoPedido(p) > 0.009);
   const faltaDoDia = somarReais(aReceberDoDia.map((p: PedidoAgenda) => saldoPedido(p))); // (11/10) soma em centavos certos
   const stDia = dayStats[diaSel] || { total: 0 };
   const relDia = relativo(diaSel);
