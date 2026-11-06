@@ -107,7 +107,7 @@ export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _p
               {([[Eye, "Visitas", String(metr.vis), variacao(metr.vis, metr.ant?.vis)],
                 [Receipt, "Pedidos pelo cardápio", String(metr.ped), variacao(metr.ped, metr.ant?.ped)],
                 [CurrencyCircleDollar, "Vendido pelo cardápio", brl(metr.rec), variacao(metr.rec, metr.ant?.rec)],
-                [ChartLineUp, "Conversão", `${metr.conv.toFixed(1).replace(".", ",")}%`, metr.vis ? { txt: `${Math.round(metr.conv)} de cada 100 visitas compram`, up: true, neutro: true } : { txt: "sem visitas ainda", up: true, neutro: true }],
+                [ChartLineUp, "Conversão", metr.vis ? `${metr.conv.toFixed(1).replace(".", ",")}%` : "—", metr.vis ? { txt: `${Math.round(metr.conv)} de cada 100 visitas compram`, up: true, neutro: true } : { txt: "sem visitas ainda", up: true, neutro: true }],
               ] as [typeof Eye, string, string, Variacao][]).map(([Ic, l, v, d]) => (
                 <div className="vgd-k" key={l}>
                   <span className="vgd-k-ic" aria-hidden="true"><Ic size={18} weight="bold" /></span>

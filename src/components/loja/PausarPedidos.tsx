@@ -34,7 +34,7 @@ export function PausarPedidos({ compacto = false, escuro = false }: { compacto?:
   if (pronta === false) return (
     <div className={`lj-pausa lj-pausa--montando${compacto ? ' compacto' : ''}${escuro ? ' escuro' : ''}`}>
       <span className="lj-pausa-luz" aria-hidden="true" />
-      <span className="lj-pausa-tx"><b>Loja em montagem</b><small>Termine os primeiros passos</small></span>
+      <span className="lj-pausa-tx"><b>Loja em montagem</b><small>Termine os passos</small></span>
     </div>
   )
   const pausada = local ?? ((profile as PerfilLoja).loja_pausada === true)

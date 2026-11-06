@@ -117,7 +117,9 @@ async function lerPassosDoBanco(uid: string): Promise<EstadoPassos> {
     // (09/10: antes pedia o logo mesmo com foto colocada). A foto que vem do Google sozinha não conta.
     logo: !!p.logo_url || !!p.logo_confirmado || logoLocal || fotoPropria(p.foto_url),
     endereco: !!(String(end.cidade || "").trim() && (String(end.rua || "").trim() || String(end.cep || "").trim())),
-    horario: !!hor && ((hor.dias?.length || 0) > 0 || !!hor.abre_sabado || !!hor.abre_domingo),
+    // (6.172) a mesma regra de Dados da loja e do servidor: horário salvo sem a lista de dias usa Seg a Sex (antes um passo dizia
+    // "falta" e a outra tela mostrava ✓ "Seg a Sex 8h–18h")
+    horario: !!hor && (((Array.isArray(hor.dias) ? hor.dias.length : 5) > 0) || !!hor.abre_sabado || !!hor.abre_domingo),
     produto: produtos.disponivel > 0,
     compartilhou: !!p.cardapio_compartilhado || local,
     // (13/10) salvo também na conta (user_metadata), não só no aparelho

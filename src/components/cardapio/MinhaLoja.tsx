@@ -110,7 +110,7 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
       <section className="dl-emb" aria-label="Desempenho">
         <h2 className="dl-emb-t">Desempenho</h2>
         <div className="dl-lista-c">
-          {linha(ChartLineUp, "Métricas", "Visitas e mais pedidos do cardápio", "/cardapio-metricas")}
+          {linha(ChartLineUp, "Métricas", "Visitas e mais pedidos", "/cardapio-metricas")}
         </div>
       </section>
       {/* (6.59) o que o cliente vê vem primeiro: produtos logo abaixo do cartão de compartilhar */}

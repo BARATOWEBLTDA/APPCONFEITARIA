@@ -347,12 +347,13 @@ const CSS = `
   .lu-pc-m.ruim { color: var(--ui-vermelho); }
   /* (6.08) computador: uma tabela (Produto · Vendidos · Faturou · Lucro · Margem), o nome inteiro e a ordem clara */
   @media (min-width: 1024px) {
-    .lu-tab .lu-th, .lu-tab .lu-pc { display: grid; grid-template-columns: 40px minmax(0, 1fr) 110px 130px 130px 80px; column-gap: 16px; align-items: center; }
+    .lu-tab .lu-th, .lu-tab .lu-pc { display: grid; grid-template-columns: 40px minmax(0, 1fr) 96px 108px 108px 64px; column-gap: 12px; align-items: center; }
     .lu-tab .lu-th { padding: 0 0 8px; border-bottom: 1px solid var(--ui-linha); font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
     .lu-tab .lu-th span:nth-child(n+3) { text-align: right; }
     .lu-tab .lu-pc { padding: 8px 0; }
     .lu-tab .lu-pc-foto { width: 40px; height: 40px; border-radius: 10px; }
-    .lu-tab .lu-pc-tx { display: block; }
+    .lu-tab .lu-pc-tx { display: block; min-width: 0; overflow: hidden; } /* (6.172) nome longo não passa por cima de "Vendidos" */
+    .lu-tab .lu-pc-nm { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; overflow: hidden; line-height: 1.3; }
     .lu-tab .lu-pc-tx > :not(.lu-pc-nm) { display: none; }
     .lu-tab .lu-col { display: block; text-align: right; font-size: 14px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .lu-tab .lu-col-q, .lu-tab .lu-col-m { color: var(--ui-texto-2); }

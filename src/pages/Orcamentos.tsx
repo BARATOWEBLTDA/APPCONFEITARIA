@@ -158,7 +158,7 @@ export default function Orcamentos() {
           <div className="orc-link-tx"><b>Seu link de orçamento</b><small>{link || 'Publique o cardápio para ter o link'}</small></div>
           {link && <div className="orc-link-bts">
             <Botao variante="secundario" tamanho="m" icone={<Copy size={18} weight="bold" />} onClick={copiar}>Copiar</Botao>
-            <Botao variante="suave" tamanho="m" icone={<ShareNetwork size={18} weight="bold" />} onClick={() => void compartilharTexto(textoPedirOrcamento(link, nomeLoja), nomeLoja)}>Compartilhar</Botao>
+            <Botao variante="suave" tamanho="m" icone={<ShareNetwork size={18} weight="bold" />} onClick={() => void compartilharTexto(textoPedirOrcamento(link, nomeLoja), nomeLoja)}><span className="orc-lbl-longo">Compartilhar</span><span className="orc-lbl-curto">Enviar</span></Botao>
             <Botao variante="secundario" tamanho="m" icone={<ArrowSquareOut size={18} weight="bold" />} onClick={() => window.open(link, '_blank', 'noopener')}>Ver</Botao>
           </div>}
         </section>

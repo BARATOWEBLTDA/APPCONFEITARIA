@@ -17,22 +17,22 @@ import "./marketing.css";
 
 type Plataforma = {
   coluna: "facebook_pixel_id" | "google_tag_id" | "tiktok_pixel_id";
-  nome: string; sub: string; Ic: Icon; cor: string;
+  nome: string; sub: string; subCel: string; Ic: Icon; cor: string;
   rotulo: string; exemplo: string; dica: string; erro: string;
   limpar: (v: string) => string; valido: (v: string) => boolean;
   passos: React.ReactNode[];
 };
 
 const PLATAFORMAS: Plataforma[] = [
-  { coluna: "facebook_pixel_id", nome: "Meta", sub: "Facebook e Instagram", Ic: FacebookLogo, cor: "#1877F2",
+  { coluna: "facebook_pixel_id", nome: "Meta", sub: "Facebook e Instagram", subCel: "Insta e Facebook", Ic: FacebookLogo, cor: "#1877F2",
     rotulo: "ID do pixel", exemplo: "Ex.: 123456789012345", dica: "Só os números.", erro: "O ID do pixel do Meta tem só números (de 10 a 20).",
     limpar: v => v.replace(/\D/g, "").slice(0, 20), valido: v => pixelValido(v),
     passos: [<>Abra o <b>Gerenciador de Eventos</b> (business.facebook.com).</>, <>Em <b>Fontes de dados</b>, escolha o pixel. Sem pixel? Toque em <b>Conectar dados</b> e crie um.</>, <>Copie o número embaixo do nome do pixel e cole aqui.</>] },
-  { coluna: "google_tag_id", nome: "Google", sub: "Analytics e Google Ads", Ic: GoogleLogo, cor: "#EA4335",
+  { coluna: "google_tag_id", nome: "Google", sub: "Analytics e Google Ads", subCel: "Analytics e Ads", Ic: GoogleLogo, cor: "#EA4335",
     rotulo: "ID da tag do Google", exemplo: "Ex.: G-AB12CD34EF", dica: "Começa com G- (Analytics) ou AW- (Ads).", erro: "A tag do Google começa com G- ou AW-. Ex.: G-AB12CD34EF.",
     limpar: v => v.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 24), valido: v => googleValido(v),
     passos: [<>No <b>Google Analytics</b>, abra <b>Administrador</b> › <b>Fluxos de dados</b> e escolha o site.</>, <>Copie o <b>ID da métrica</b> (começa com G-) e cole aqui.</>, <>Usa o <b>Google Ads</b>? Em <b>Ferramentas</b> › <b>Tag do Google</b>, copie o ID que começa com AW-.</>] },
-  { coluna: "tiktok_pixel_id", nome: "TikTok", sub: "Anúncios do TikTok", Ic: TiktokLogo, cor: "#111111",
+  { coluna: "tiktok_pixel_id", nome: "TikTok", sub: "Anúncios do TikTok", subCel: "Anúncios", Ic: TiktokLogo, cor: "#111111",
     rotulo: "ID do pixel", exemplo: "Ex.: C9ABCDEF12GHIJ34KLMN", dica: "Letras e números, sem espaços.", erro: "O ID do pixel do TikTok tem letras e números (de 15 a 30).",
     limpar: v => v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 30), valido: v => tiktokValido(v),
     passos: [<>Abra o <b>TikTok Ads Manager</b> › <b>Ferramentas</b> › <b>Eventos</b>.</>, <>Escolha <b>Eventos da web</b> e o seu pixel. Sem pixel? Crie um com <b>Configurar eventos da web</b>.</>, <>Copie o <b>ID do pixel</b> (letras e números) e cole aqui.</>] },
@@ -66,7 +66,7 @@ function CartaoPixel({ p, salvo, onSalvo }: { p: Plataforma; salvo: string; onSa
     <section className="pxl-card">
       <div className="pxl-cab">
         <span className="pxl-ic" aria-hidden="true" style={{ color: p.cor }}><p.Ic size={26} weight="fill" /></span>
-        <span className="pxl-tx"><b>{p.nome}</b><small>{p.sub}</small></span>
+        <span className="pxl-tx"><b>{p.nome}</b><small><span className="pxl-sub-pc">{p.sub}</span><span className="pxl-sub-cel">{p.subCel}</span></small></span>
         <span className={`mk-status${salvo ? " on" : ""}`}>{salvo ? "Ativo" : "Desligado"}</span>
       </div>
       <Campo rotulo={p.rotulo} placeholder={p.exemplo} autoComplete="off" spellCheck={false} value={v} erro={erro} dica={p.dica}
@@ -112,6 +112,7 @@ export default function Pixel() {
         .pxl-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .pxl-tx b { font-size: 15.5px; font-weight: 600; color: var(--ui-texto); }
         .pxl-tx small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pxl-sub-cel { display: none; } @media (max-width: 420px) { .pxl-sub-pc { display: none; } .pxl-sub-cel { display: inline; } }
         .pxl-como { align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
         .pxl-passos { margin: 0; padding: 12px 14px 12px 32px; border-radius: 12px; background: #F7F4F5; font-size: 13.5px; line-height: 1.5; color: var(--ui-texto-2); }
         .pxl-passos li { display: list-item; white-space: normal; }

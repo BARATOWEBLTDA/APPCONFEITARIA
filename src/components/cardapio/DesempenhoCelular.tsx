@@ -44,7 +44,7 @@ export default function DesempenhoCelular({ uid, semTitulo = false }: { uid?: st
             <div className="dsc-mini">
               <div><small>Pedidos</small><b>{metr.ped}</b></div>
               <div><small>Vendido</small><b>{brl(metr.rec)}</b></div>
-              <div><small>Conversão</small><b>{metr.conv.toFixed(1).replace(".", ",")}%</b></div>
+              <div><small>Conversão</small><b>{metr.vis ? `${metr.conv.toFixed(1).replace(".", ",")}%` : "—"}</b></div>
             </div>
             {metr.serie.every(x => x.n === 0) ? (
               <p className="dsc-vazio">Nenhuma visita {quando}.</p>

@@ -154,6 +154,8 @@ html body .clc, html body .ep2-card, html body .ep2-cli, html body .ep2-ca, html
 /* (04/11 · 6.42) Doo IA no computador: balão flutuante no canto direito (no celular ela fica no Início e no menu) */
 .doo-fab { display: none; }
 @media (min-width: 901px) {
+  /* (6.172) espaço no fim de toda tela: o último valor, botão ou chave rola acima do balão da Doo (antes ficava embaixo dele) */
+  html body .layout-main { padding-bottom: 96px; }
   .doo-fab { position: fixed; right: 24px; bottom: 24px; z-index: 1201; display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; margin: 0; padding: 0; overflow: visible; border: 3px solid #fff; border-radius: 50%; background: #FCE7F3; box-shadow: 0 10px 28px rgba(44, 18, 25, .28); cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
   .doo-fab img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: top center; }
   .doo-fab:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(44, 18, 25, .32); }

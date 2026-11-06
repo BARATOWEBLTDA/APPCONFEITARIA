@@ -290,7 +290,7 @@ export default function Categorias() {
             acao={<Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={openNova}><span className="ct-g">Nova categoria</span><span className="ct-c">Nova</span></Botao>}>Suas categorias</Titulo>
           <section className="ct-card">
             {categorias.map((cat, i) => (
-              <div key={cat.id} className="ct-row">
+              <div key={cat.id || cat.nome} className="ct-row">
                 <button type="button" className="ct-row-b" onClick={() => openEditar(cat)}>
                   <Icone src={fotoDaCategoria(cat)} />
                   <span className="ct-row-tx"><b>{cat.nome}</b><small>{qtdTexto(contarProdutos(cat.nome))}</small></span>

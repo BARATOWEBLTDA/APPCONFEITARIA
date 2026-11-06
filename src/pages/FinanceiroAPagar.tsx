@@ -413,7 +413,7 @@ const CSS = `
   .fap-vazio-ic { width: 64px; height: 64px; border-radius: 20px; background: #F0FDF4; color: #15803D; display: inline-flex; align-items: center; justify-content: center; }
   .fap-vazio b { display: block; font-size: 17px; font-weight: 600; color: var(--ui-texto); margin-top: 12px; }
   .fap-vazio p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 380px; text-wrap: balance; }
-  .fap-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 600; cursor: pointer; text-decoration: underline; }
+  .fap-link { border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 600; cursor: pointer; text-decoration: underline; display: inline; white-space: nowrap; overflow: visible; min-width: 0; width: auto; }
   .fap-gt { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-3); } .fap-gt span { color: var(--ui-texto-2); }
   .fap-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
   @media (min-width: 900px) { .fap-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
