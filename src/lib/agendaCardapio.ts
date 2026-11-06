@@ -1,4 +1,5 @@
 import { horasAntecedencia } from "@/lib/entregaProduto";
+import { fechadoEm, lerFechados } from "@/lib/diasFechados";
 /**
  * Regras do agendamento na "Finalizar encomenda" do cardápio (02/10).
  *  - Dias e horários: os de funcionamento da loja (Dados da loja → Horário), de hora em hora.
@@ -12,6 +13,8 @@ export type HorarioLoja = {
   dias?: string[]; abertura?: string; fechamento?: string;
   abre_sabado?: boolean; sabado_abertura?: string; sabado_fechamento?: string;
   abre_domingo?: boolean; domingo_abertura?: string; domingo_fechamento?: string;
+  /** (6.179) férias e feriados fechados, juntados pelo cardápio (lib/diasFechados · horarioComFechados) */
+  fechados?: unknown;
 } | null | undefined;
 
 export type InfoEntregaProduto = { ant?: string | null; pronta?: boolean | null };
@@ -58,6 +61,8 @@ export function lerHorario(h: unknown): NonNullable<HorarioLoja> {
 /** Abre e fecha (em minutos do dia) naquele dia, ou null se a loja não abre. */
 export function expediente(d: Date, horarioBruto: unknown): { abre: number; fecha: number } | null {
   const h = lerHorario(horarioBruto);
+  // (6.179) dia de férias ou feriado fechado: a loja não abre
+  if (h.fechados && fechadoEm(isoDia(d), lerFechados(h.fechados))) return null;
   const dia = d.getDay();
   let a: string | undefined, f: string | undefined;
   if (dia === 6) { if (!h.abre_sabado) return null; a = h.sabado_abertura || h.abertura; f = h.sabado_fechamento || h.fechamento; }
@@ -168,7 +173,7 @@ export function horarioPermitido(dataIso: string, hora: string, horario: unknown
 export type SituacaoLoja = {
   aberto: boolean;
   fecha: number; // só quando está aberto (senão 0)
-  abre: { dias: number; diaSemana: number; minutos: number } | null; // só quando está fechado
+  abre: { dias: number; diaSemana: number; minutos: number; data?: string } | null; // só quando está fechado
 };
 
 export function situacaoDaLoja(horarioBruto: unknown, agora: Date = agoraLoja()): SituacaoLoja | null {
@@ -180,10 +185,10 @@ export function situacaoDaLoja(horarioBruto: unknown, agora: Date = agoraLoja())
   const hoje = expediente(agora, h);
   if (hoje && agoraMin >= hoje.abre && agoraMin < hoje.fecha) return { aberto: true, fecha: hoje.fecha, abre: null };
   if (hoje && agoraMin < hoje.abre) return { aberto: false, fecha: 0, abre: { dias: 0, diaSemana: agora.getDay(), minutos: hoje.abre } };
-  for (let i = 1; i <= 7; i++) {
+  for (let i = 1; i <= 7 || (i <= 90 && !!(h as { fechados?: unknown }).fechados); i++) { // (6.179) de férias, procura a volta mais longe
     const d = somarDias(inicioDoDia(agora), i);
     const ex = expediente(d, h);
-    if (ex) return { aberto: false, fecha: 0, abre: { dias: i, diaSemana: d.getDay(), minutos: ex.abre } };
+    if (ex) return { aberto: false, fecha: 0, abre: { dias: i, diaSemana: d.getDay(), minutos: ex.abre, data: isoDia(d) } };
   }
   return { aberto: false, fecha: 0, abre: null };
 }
@@ -217,6 +222,6 @@ export function situacaoLoja(horario: unknown): { aberto: boolean; txt: string }
   if (!s) return null;
   if (s.aberto) return { aberto: true, txt: `Aberto agora · fecha às ${horaTexto(s.fecha)}` };
   if (!s.abre) return { aberto: false, txt: "Fechado" };
-  const quando = s.abre.dias === 0 ? "hoje" : s.abre.dias === 1 ? "amanhã" : DIAS_LABEL[s.abre.diaSemana];
+  const quando = s.abre.dias === 0 ? "hoje" : s.abre.dias === 1 ? "amanhã" : s.abre.dias > 6 && s.abre.data ? `dia ${s.abre.data.slice(8, 10)}/${s.abre.data.slice(5, 7)}` : DIAS_LABEL[s.abre.diaSemana];
   return { aberto: false, txt: `Fechado · abre ${quando} às ${horaTexto(s.abre.minutos)}` };
 }

@@ -4,7 +4,7 @@ import { atualizarPontoDaLoja } from "@/lib/taxaEntrega";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { CaretRight, Check, Clock, PencilSimple, MapPin, QrCode, ShareNetwork, Storefront, Truck, Wallet, WarningCircle } from "@phosphor-icons/react";
+import { CaretRight, Check, Clock, Island, PencilSimple, MapPin, QrCode, ShareNetwork, Storefront, Truck, Wallet, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { LogoFacebook, LogoInstagram } from "@/components/LogosRedes";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -17,6 +17,8 @@ import { limparFacebook, limparInstagram } from "@/lib/redesSociais";
 import ListaChaves from "@/components/loja/ListaChaves";
 import CheckoutConfigPage, { type EstadoEntregaPagamento } from "./CheckoutConfigPage";
 import { lerPassos, marcarPagamentoConferido, marcarEntregaConferida, type EstadoPassos } from "@/lib/primeirosPassos";
+import { FeriasLoja, resumoFerias } from "@/components/loja/FeriasLoja";
+import { useProfile } from "@/hooks/useProfile";
 import "./dadosLoja.css";
 
 /**
@@ -86,6 +88,7 @@ type PagamentoSalvo = {
 
 export default function DadosLoja({ embutido = false, extras }: { embutido?: boolean; extras?: { antes?: ReactNode; depois?: ReactNode } } = {}) {
   const navigate = useNavigate();
+  const { profile: perfilVivo } = useProfile(); // (6.179) resumo das férias (atualiza quando a parte salva)
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
   const voltarPara = (useLocation().state as EstadoNavegacao)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
   const [userId, setUserId] = useState<string | null>(null);
@@ -354,7 +357,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     return () => window.clearTimeout(t);
   }, [end.rua, end.numero, end.cidade, end.estado]);
   // ── (22/10) celular: a tela vira uma lista de 7 partes; cada uma abre numa gaveta e salva sozinha ao fechar ──
-  type Parte = "loja" | "redes" | "endereco" | "horario" | "pag" | "pix" | "ent";
+  type Parte = "loja" | "redes" | "endereco" | "horario" | "ferias" | "pag" | "pix" | "ent";
   const [parte, setParte] = useState<Parte | null>(null);
   const [fechando, setFechando] = useState(false);
   const fotoDados = () => JSON.stringify({ nome, telefone, descricao, end, mostrarLocal, recebeAqui, horario, instagram, facebook, instaOn, faceOn });
@@ -410,7 +413,8 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   // (6.110) a busca do app abre direto a parte certa no celular (horário, pagamento, pix, endereço, redes)
   useEffect(() => {
     const p = estadoNav?.abrir as Parte | undefined;
-    if (!loading && cel && p && p !== "loja" && ["redes", "endereco", "horario", "pag", "pix", "ent"].includes(p)) setParte(p);
+    if (!loading && cel && p && p !== "loja" && ["redes", "endereco", "horario", "ferias", "pag", "pix", "ent"].includes(p)) setParte(p);
+    if (!loading && !cel && !embutido && p === "ferias") setParte(p); // (6.179) próximos passos → Férias e feriados também no computador
   }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
   // (22/10) computador: salva sozinho quando ela para de digitar (sem botão Salvar)
   const salvoPc = useRef("");
@@ -632,17 +636,18 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   const temEntregaPropria = !!ep?.formasEntrega?.includes("entrega_propria");
   const faltaTaxa = temEntregaPropria && !!ep && !ep.taxaOk;
   const redesTxt = [instaOn && instagram.trim() ? "Instagram" : "", faceOn && facebook.trim() ? "Facebook" : ""].filter(Boolean);
-  type Linha = { k: Parte; Ic: typeof Storefront; t: string; sub: string; st: "ok" | "falta" | "op" };
+  type Linha = { k: Parte; Ic: typeof Storefront; t: string; sub: string; st: "ok" | "falta" | "op" | "nada" };
   const linhas: Linha[] = [
     { k: "loja", Ic: Storefront, t: "Sua loja", sub: okDe("loja") ? (nome.trim() || telefone) : `Falta ${listaBR(itens.slice(0, 3).filter(i => !i.ok).map(i => i.nome === "WhatsApp" ? "o WhatsApp" : i.nome === "Nome" ? "o nome" : "a descrição"))}`, st: okDe("loja") ? "ok" : "falta" },
     { k: "redes", Ic: ShareNetwork, t: "Redes sociais", sub: redesTxt.length ? listaBR(redesTxt) : embutido ? "Falta o Instagram" : "Nenhuma ainda", st: redesTxt.length ? "ok" : "op" },
     { k: "endereco", Ic: MapPin, t: "Endereço", sub: itens[3].ok ? [end.rua.trim(), end.numero.trim()].filter(Boolean).join(", ") || cidadeUf : "Falta o endereço da loja", st: itens[3].ok ? "ok" : "falta" },
     { k: "horario", Ic: Clock, t: "Horário", sub: itens[4].ok ? resumoHorarioCurto() : "Falta o horário", st: itens[4].ok ? "ok" : "falta" },
+    { k: "ferias", Ic: Island, t: "Férias e feriados", sub: resumoFerias((perfilVivo as { dias_fechados?: unknown } | null)?.dias_fechados), st: "nada" },
     { k: "pag", Ic: Wallet, t: "Pagamento", sub: !ep ? "…" : !pagTxt ? "Falta escolher o pagamento" : passosEst && !passosEst.pagamento ? "Falta conferir o pagamento" : pagTxt.charAt(0).toUpperCase() + pagTxt.slice(1), st: !ep ? "ok" : !pagTxt || (passosEst && !passosEst.pagamento) ? "falta" : "ok" },
     ...(temPix ? [{ k: "pix" as Parte, Ic: QrCode, t: "Pix pelo cardápio", sub: ep!.pixOnline ? (ep!.pixModo === "total" ? "Ligado · o total" : ep!.pixModo === "sinal" ? `Ligado · sinal de ${ep!.pixPct}%` : "Ligado · sinal ou total") : (embutido ? "Falta ligar o Pix" : "Desligado"), st: (ep!.pixOnline ? "ok" : "op") as Linha["st"] }] : []),
     { k: "ent", Ic: Truck, t: "Entrega", sub: !ep ? "…" : !(ep.formasEntrega || []).length ? "Falta escolher a entrega" : faltaTaxa ? "Falta a taxa de entrega" : passosEst && !passosEst.entrega ? "Falta conferir a entrega" : [ep.formasEntrega.includes("retirada") ? "Retirada" : "", temEntregaPropria ? (ep.modo === "combinar" ? "entrega a combinar" : ep.modo === "raio" ? "entrega por raio" : ep.modo === "cidade" ? "entrega por cidade" : ep.porBairro ? "entrega por bairro" : ep.taxa > 0 ? `entrega R$ ${ep.taxa.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "entrega grátis") : ""].filter(Boolean).join(" e ") || "Configurada", st: !ep ? "ok" : !(ep.formasEntrega || []).length || faltaTaxa || (passosEst && !passosEst.entrega) ? "falta" : "ok" },
   ];
-  const TITULO: Record<Parte, string> = { loja: embutido ? "Sobre a loja" : "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
+  const TITULO: Record<Parte, string> = { loja: embutido ? "Sobre a loja" : "Sua loja", redes: "Redes sociais", endereco: "Endereço", horario: "Horário", ferias: "Férias e feriados", pag: "Pagamento", pix: "Pix pelo cardápio", ent: "Entrega" };
   const gaveta = (
     <Gaveta aberta={!!parte} aoFechar={fecharParte} titulo={parte ? TITULO[parte] : ""}
       rodape={<Botao cheio carregando={fechando} onClick={fecharParte}>{fechando ? "Salvando…" : "Pronto"}</Botao>}>
@@ -651,6 +656,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
         {parte === "redes" && secRedes}
         {parte === "endereco" && secEndereco}
         {parte === "horario" && secHorario}
+        {parte === "ferias" && userId && <FeriasLoja uid={userId} />}
         {(parte === "pag" || parte === "pix" || parte === "ent") && <CheckoutConfigPage embutido parte="entrega" so={parte} onEstado={setEp} />}
       </div>
     </Gaveta>
@@ -665,7 +671,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
           <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
           <span className="dl-li-tx"><b>{titulo || l.t}</b><small className={l.st !== "ok" ? "falta" : ""}>{l.sub}</small></span>
           {/* (6.148) na Minha loja o opcional que ainda não foi feito (redes, Pix) também mostra "Falta" */}
-          {l.st !== "ok" && <em className="dl-li-st falta">Falta</em>}
+          {(l.st === "falta" || l.st === "op") && <em className="dl-li-st falta">Falta</em>}
           <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
         </button>
       );
@@ -678,7 +684,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
         </section>
         <section className="dl-emb ml-vende" aria-label="Como você vende">
           <h2 className="dl-emb-t">Como você vende</h2>
-          <div className="dl-lista-c">{linhaEmb("horario")}{linhaEmb("ent")}{linhaEmb("pag")}{linhaEmb("pix")}{linhaEmb("endereco")}</div>
+          <div className="dl-lista-c">{linhaEmb("horario")}{linhaEmb("ferias")}{linhaEmb("ent")}{linhaEmb("pag")}{linhaEmb("pix")}{linhaEmb("endereco")}</div>
         </section>
         {gaveta}
       </>
@@ -694,7 +700,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
               <button key={l.k} type="button" className="dl-li" onClick={() => abrirParte(l.k)}>
                 <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
                 <span className="dl-li-tx"><b>{l.t}</b><small className={l.st === "falta" ? "falta" : ""}>{l.sub}</small></span>
-                {l.st === "ok" ? <span className="dl-li-ok" aria-label="Pronto"><Check size={13} weight="bold" /></span> : <em className={`dl-li-st ${l.st}`}>{l.st === "falta" ? "Falta" : "Opcional"}</em>}
+                {l.st === "nada" ? null : l.st === "ok" ? <span className="dl-li-ok" aria-label="Pronto"><Check size={13} weight="bold" /></span> : <em className={`dl-li-st ${l.st}`}>{l.st === "falta" ? "Falta" : "Opcional"}</em>}
                 <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
               </button>
             ))}
@@ -720,7 +726,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
               <button key={l.k} type="button" className={`dl-li${l.k === parteVista ? " on" : ""}`} aria-current={l.k === parteVista ? "true" : undefined} onClick={() => { abrirParte(l.k); }}>
                 <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
                 <span className="dl-li-tx"><b>{l.t}</b><small className={l.st === "falta" ? "falta" : ""}>{l.sub}</small></span>
-                {l.st === "ok" ? <span className="dl-li-ok" aria-label="Pronto"><Check size={13} weight="bold" /></span> : <em className={`dl-li-st ${l.st}`}>{l.st === "falta" ? "Falta" : "Opcional"}</em>}
+                {l.st === "nada" ? null : l.st === "ok" ? <span className="dl-li-ok" aria-label="Pronto"><Check size={13} weight="bold" /></span> : <em className={`dl-li-st ${l.st}`}>{l.st === "falta" ? "Falta" : "Opcional"}</em>}
                 <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
               </button>
             ))}
@@ -738,6 +744,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
             {parteVista === "redes" && secRedes}
             {parteVista === "endereco" && secEndereco}
             {parteVista === "horario" && secHorario}
+            {parteVista === "ferias" && userId && <FeriasLoja uid={userId} />}
             {(parteVista === "pag" || parteVista === "pix" || parteVista === "ent") && <CheckoutConfigPage key={parteVista} embutido parte="entrega" so={parteVista} onEstado={setEp} />}
           </div>
         </section>

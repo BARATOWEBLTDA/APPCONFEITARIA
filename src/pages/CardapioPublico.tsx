@@ -35,6 +35,7 @@ import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
 import { corClara, nomeSobreTopo, topoEscurecido } from '@/lib/coresCardapio'
 import './cardapioPublico.css'
+import { avisoFechado, ddmm, diaDeVolta, textoPeriodo, type DiaFechado } from '@/lib/diasFechados'
 
 /* ══════════════════════════════════════════════ */
 /*     COMPUTADOR (08/10 · 3.28, no padrão do guia) */
@@ -531,6 +532,7 @@ function CardapioContent() {
 {config?.loja_pausada && (
           <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Para encomendar, chame a loja no WhatsApp.</small></span></div>
         )}
+        {!config?.loja_pausada && <AvisoFerias fechados={config?.dias_fechados} />}
                 {/* Espaço embaixo: menu (60px) e, com itens, a barra "Ver seu pedido" (~64px) não cobrem o último produto */}
         <div style={{ padding: `0 10px calc(${cartCount > 0 ? 160 : 84}px + env(safe-area-inset-bottom, 0px))` }}>
           {produtos.length > 0 ? (
@@ -576,6 +578,7 @@ function CardapioContent() {
           {config?.loja_pausada && (
           <div className="cp-pausada" role="status"><i aria-hidden="true" /><span><b>Pedidos pausados no momento</b><small>Você pode olhar o cardápio. Para encomendar, chame a loja no WhatsApp.</small></span></div>
         )}
+          {!config?.loja_pausada && <AvisoFerias fechados={config?.dias_fechados} />}
           {produtos.length === 0 ? <EmptyState telefone={config?.telefone} /> : (<>
           <div className="cp-busca-linha">
           <div className="cp-busca">
@@ -629,6 +632,18 @@ function CardapioContent() {
       <DeskFooterBar design={design} config={config} isPro={isPro} />
     </div>
   )
+}
+
+/** (6.179) Férias ou feriado: aviso no topo (fechado agora ou começando nos próximos 15 dias) */
+function AvisoFerias({ fechados }: { fechados?: DiaFechado[] }) {
+  const av = avisoFechado(fechados || [])
+  if (!av) return null
+  const { agora, f } = av
+  const um = f.inicio === f.fim
+  const volta = ddmm(diaDeVolta(f))
+  const t = agora ? (um ? 'Fechado hoje' : `De férias até ${ddmm(f.fim)}`) : um ? `Fechado no dia ${ddmm(f.inicio)}` : `Férias de ${textoPeriodo(f)}`
+  const sub = agora ? `Você pode olhar o cardápio e encomendar a partir do dia ${volta}.` : um ? 'Nesse dia a loja não entrega nem retira. Os outros dias seguem normais.' : 'Nesses dias a loja não entrega nem retira. Encomende para antes ou depois.'
+  return <div className="cp-pausada cp-ferias" role="status"><i aria-hidden="true" /><span><b>{t}</b><small>{sub}</small></span></div>
 }
 
 export default function CardapioPublico() {

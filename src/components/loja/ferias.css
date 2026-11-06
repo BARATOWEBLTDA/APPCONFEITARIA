@@ -1,0 +1,23 @@
+/* (6.179) Férias e feriados (Dados da loja → Férias e feriados) */
+.fl { display: flex; flex-direction: column; gap: 12px; min-width: 0; font-family: var(--font-base); }
+.fl-apoio { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+.fl-vazio { margin: 0; padding: 14px; border: 1px dashed var(--ui-borda); border-radius: 12px; font-size: 14px; color: var(--ui-texto-3); text-align: center; }
+.fl-lista, .fl-fer { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.fl-lista li, .fl-fer li { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); }
+.fl-lista li.agora { background: #FFF8E6; border-color: #F5E2B0; }
+.fl-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); }
+.fl-lista li.agora .fl-ic { background: #FCEBC0; color: #8A5A00; }
+.fl-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fl-tx b { font-size: 15px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fl-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fl-lista .ui-bt, .fl-fer .ui-bt { flex: none; white-space: nowrap; }
+.fl-t { margin: 8px 0 0; font-size: 14px; font-weight: 600; color: var(--ui-texto); }
+.fl-fer li { padding: 8px 12px; }
+.fl-tag { flex: none; padding: 4px 10px; border-radius: 6px; background: #FCEBC0; color: #8A5A00; font-style: normal; font-size: 12.5px; font-weight: 600; }
+.fl-form { display: flex; flex-direction: column; gap: 14px; }
+.fl-datas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fl-datas.um { grid-template-columns: 1fr; }
+.fl-datas label { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fl-datas label > span { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
+.fl-dica, .fl-erro { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
+.fl-erro { color: #B42318; }

@@ -80,6 +80,8 @@ export interface Configuracoes {
   /** (4.27) a loja pausou os pedidos do cardápio na hora (folga, agenda cheia) */
   loja_pausada?: boolean | null
   facebook?: string | null
+  /** (6.179) férias e feriados fechados (já sem os que passaram) */
+  dias_fechados?: import('@/lib/diasFechados').DiaFechado[]
   // Checkout
   formas_pagamento?: string[]
   formas_entrega?: string[]

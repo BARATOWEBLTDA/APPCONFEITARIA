@@ -6,6 +6,7 @@ import { DesignSettings, Configuracoes } from '@/types/database'
 import { seloEntrega, horasAntecedencia, rotuloAntecedencia } from '@/lib/entregaProduto'
 import type { ProdutoEntrega } from '@/lib/entregaProduto'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
+import { ddmm, fechadoEm, hojeBr, lerFechados } from '@/lib/diasFechados'
 import './cardapioModelo1.css'
 import { Vouchers } from './Vouchers'
 import { topoEscurecido } from '@/lib/coresCardapio'
@@ -33,11 +34,15 @@ type Status = { aberto: boolean; msg: string; curto: string }
 export function getStatusLoja(horarioJson: unknown): Status | null {
   const s = situacaoDaLoja(horarioJson)
   if (!s) return null
+  // (6.179) hoje é dia de férias ou feriado fechado
+  const fx = !s.aberto ? (() => { const h = horarioJson && typeof horarioJson === 'object' ? (horarioJson as { fechados?: unknown }).fechados : null; return h ? fechadoEm(hojeBr(), lerFechados(h)) : null })() : null
+  if (fx && fx.tipo === 'ferias') return { aberto: false, msg: s.abre?.data ? `De férias · volta dia ${ddmm(s.abre.data)}` : 'De férias', curto: s.abre?.data ? `De férias · volta ${ddmm(s.abre.data)}` : 'De férias' }
+  if (fx) return { aberto: false, msg: s.abre ? `Fechado hoje · abre ${s.abre.dias === 1 ? 'amanhã' : s.abre.data ? `dia ${ddmm(s.abre.data)}` : DIAS_LABEL[s.abre.diaSemana]}` : 'Fechado hoje', curto: 'Fechado hoje' }
   if (s.aberto) return { aberto: true, msg: `Aberto agora · até ${horaTexto(s.fecha)}`, curto: `Aberto · até ${curtoHora(s.fecha)}` }
   if (!s.abre) return { aberto: false, msg: 'Fechado', curto: 'Fechado' }
   const ab = s.abre.minutos
   if (s.abre.dias === 0) return { aberto: false, msg: `Fechado · abre hoje às ${horaTexto(ab)}`, curto: `Fechado · abre ${curtoHora(ab)}` }
-  const label = s.abre.dias === 1 ? 'amanhã' : DIAS_LABEL[s.abre.diaSemana]
+  const label = s.abre.dias === 1 ? 'amanhã' : s.abre.dias > 6 && s.abre.data ? `dia ${s.abre.data.slice(8, 10)}/${s.abre.data.slice(5, 7)}` : DIAS_LABEL[s.abre.diaSemana]
   return { aberto: false, msg: `Fechado · abre ${label} às ${horaTexto(ab)}`, curto: `Fechado · abre ${label} ${curtoHora(ab)}` }
 }
 

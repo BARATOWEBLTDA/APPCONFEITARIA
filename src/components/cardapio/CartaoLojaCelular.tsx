@@ -6,12 +6,13 @@ import { supabase } from "@/lib/supabase";
 import { useProfile, fotoDaLoja, type Profile } from "@/hooks/useProfile";
 
 /** Campos da loja que vêm junto do perfil (fora do tipo Profile) */
-type PerfilLoja = Profile & { loja_pausada?: boolean | null; horario?: unknown };
+type PerfilLoja = Profile & { loja_pausada?: boolean | null; horario?: unknown; dias_fechados?: unknown };
 import { avisar } from "@/components/base";
 import { explicarErro } from "@/lib/erros";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
 import { marcarCompartilhado, lerPassos, passosCompletos } from "@/lib/primeirosPassos";
+import { horarioComFechados } from '@/lib/diasFechados'
 
 /**
  * (16/10) Cardápio digital no CELULAR: um cartão só no lugar do verde "Recebendo pedidos" + "Seu cardápio tá no ar".
@@ -29,7 +30,7 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   const [salvando, setSalvando] = useState(false);
   const [qr, setQr] = useState("");
   const pausada = local ?? ((profile as PerfilLoja)?.loja_pausada === true);
-  const sit = useMemo(() => situacaoLoja((profile as PerfilLoja)?.horario), [(profile as PerfilLoja)?.horario]); // eslint-disable-line react-hooks/exhaustive-deps
+  const sit = useMemo(() => situacaoLoja(horarioComFechados((profile as PerfilLoja)?.horario, (profile as PerfilLoja)?.dias_fechados)), [(profile as PerfilLoja)?.horario, (profile as PerfilLoja)?.dias_fechados]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // (6.146) conta nova: o cardápio só libera quando os Primeiros passos acabam (antes já aparecia "Recebendo pedidos" sem nada pronto)
   const [liberado, setLiberado] = useState<boolean | null>(null);

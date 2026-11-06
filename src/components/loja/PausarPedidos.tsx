@@ -4,12 +4,13 @@ import { supabase } from '@/lib/supabase'
 import { useProfile, type Profile } from '@/hooks/useProfile'
 
 /** Campos da loja que vêm junto do perfil (fora do tipo Profile) */
-type PerfilLoja = Profile & { loja_pausada?: boolean | null; horario?: unknown }
+type PerfilLoja = Profile & { loja_pausada?: boolean | null; horario?: unknown; dias_fechados?: unknown }
 import { avisar } from '@/components/base'
 import { explicarErro } from '@/lib/erros'
 import { useLojaPronta } from '@/lib/primeirosPassos'
 import { horaTexto, situacaoDaLoja } from '@/lib/agendaCardapio'
 import './loja.css'
+import { horarioComFechados } from '@/lib/diasFechados'
 
 /**
  * Pausar pedidos (4.27) · abre e fecha a loja na hora, sem mexer no horário.
@@ -62,13 +63,13 @@ export function PausarPedidos({ compacto = false, escuro = false }: { compacto?:
   // Antes dizia "Loja aberta" (a chave) enquanto o cardápio dizia "Fechado" (o horário): parecia contradição.
   if (escuro) {
     const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
-    const s = situacaoDaLoja((profile as PerfilLoja).horario)
+    const s = situacaoDaLoja(horarioComFechados((profile as PerfilLoja).horario, (profile as PerfilLoja).dias_fechados))
     const tom = pausada ? 'pausada' : !s || s.aberto ? 'aberta' : 'fechada'
     const linha = pausada ? 'Pedidos pausados'
       : !s ? 'Recebendo pedidos'
       : s.aberto ? `Aberta · fecha ${horaTexto(s.fecha)}`
       : !s.abre ? 'Fechada'
-      : `Fechada · abre ${s.abre.dias === 0 ? horaTexto(s.abre.minutos) : s.abre.dias === 1 ? 'amanhã' : DIAS[s.abre.diaSemana]}`
+      : `Fechada · abre ${s.abre.dias === 0 ? horaTexto(s.abre.minutos) : s.abre.dias === 1 ? 'amanhã' : s.abre.dias > 6 && s.abre.data ? `dia ${s.abre.data.slice(8, 10)}/${s.abre.data.slice(5, 7)}` : DIAS[s.abre.diaSemana]}`
     const dica = pausada ? 'O cardápio não aceita pedidos' : s && !s.aberto ? 'Fora do horário o cardápio ainda aceita encomendas' : 'O cardápio está aceitando pedidos'
     return (
       <div className={`lj-pausa escuro lj-sb${pausada ? ' pausada' : ''}`}>

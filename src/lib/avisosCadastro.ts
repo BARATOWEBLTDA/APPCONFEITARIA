@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { criarNotificacaoPessoal } from "@/lib/notificacoesUsuario";
+import { deIso, expediente } from "@/lib/agendaCardapio";
+import { avisoFechado, diaDaSemana, diaDeVolta, diasAte, fechadoEm, hojeBr, lerFechados, proximosFeriados, textoPeriodo } from "@/lib/diasFechados";
 
 /**
  * (13/10) O que falta cadastrar pro app mostrar os números certos (lucro, caixa, contas).
@@ -11,7 +13,9 @@ export type AvisoCadastro = {
   /** abrir: a tela abre direto no que resolve · destacar: o balão em cima do lugar de tocar (04/11 · 6.20) */
   estado?: { abrir?: string; destacar?: { alvo: string; titulo: string; texto: string; acao?: string } };
   icone: "custos" | "maquininha" | "ficha" | "caixa" | "conta" | "entrega" | "descricao" | "banner" | "cupom" | "complemento" | "cliente" | "whatsapp"
-    | "receber" | "pausa" | "orcamento" | "divulgar" | "pix" | "categoria";
+    | "receber" | "pausa" | "orcamento" | "divulgar" | "pix" | "categoria" | "feriado" | "ferias";
+  /** (6.179) feriado chegando: "Vou fechar" marca o dia como fechado; "Abre normal" some */
+  feriado?: { data: string; nome: string };
   /** (6.178) dinheiro atrasado: "Cobrar" abre o WhatsApp da cliente com esse texto */
   cobrar?: { telefone: string; texto: string };
   /** (6.178) o botão de baixo é "Não quero" (some de vez neste aparelho), no lugar do "Agora não" */
@@ -208,6 +212,34 @@ async function passosExtras(uid: string, pf: Record<string, unknown> | null, ehP
   // 6) mais de 5 produtos e nenhuma categoria
   if (!cats.error && cats.count === 0 && qtdProdutos > 5) l.push({ chave: "criar_categorias", icone: "categoria", semNotificar: true, nivel: "normal",
     titulo: "Organize por categorias", texto: "Bolos, doces, salgados… com categorias a cliente acha mais rápido no cardápio.", link: "/categorias", curto: { t: "Organize por categorias", s: "Fica mais fácil achar" } });
+
+  // 7) (6.179) de férias agora ou começando nesta semana
+  const fechados = lerFechados(pf?.dias_fechados);
+  const hojeB = hojeBr();
+  const av = avisoFechado(fechados, hojeB);
+  if (av && (av.agora || diasAte(av.f.inicio, hojeB) <= 7)) {
+    const um = av.f.inicio === av.f.fim;
+    const volta = ddmm(diaDeVolta(av.f));
+    l.push({ chave: `ferias_${av.f.inicio}_${av.f.fim}`, icone: "ferias", semNotificar: true, nivel: av.agora ? "atencao" : "normal",
+      titulo: av.agora ? (um ? "Loja fechada hoje" : `De férias até ${ddmm(av.f.fim)}`) : um ? `Fechada no dia ${ddmm(av.f.inicio)}` : `Férias de ${textoPeriodo(av.f)}`,
+      texto: av.agora ? `O cardápio avisa as clientes e aceita encomendas a partir do dia ${volta}.` : "O cardápio já avisa as clientes e não deixa marcar esses dias.",
+      link: "/cardapio-config", estado: { abrir: "ferias" },
+      curto: { t: av.agora ? (um ? "Fechada hoje" : `De férias até ${ddmm(av.f.fim)}`) : um ? `Fechada dia ${ddmm(av.f.inicio)}` : `Férias de ${textoPeriodo(av.f)}`, s: av.agora ? `Volta dia ${volta}` : "O cardápio já avisa" } });
+  }
+
+  // 8) (6.179) feriado nos próximos 3 dias num dia que a loja abre: "Sua loja abre no feriado?"
+  if (pf?.horario) {
+    for (const f of proximosFeriados(hojeB, 3)) {
+      const em = diasAte(f.data, hojeB);
+      if (em < 1 || fechadoEm(f.data, fechados) || !expediente(deIso(f.data), pf.horario)) continue;
+      const quando = em === 1 ? "Amanhã" : diaDaSemana(f.data).replace(/^./, c => c.toUpperCase());
+      l.push({ chave: `feriado_${f.data}`, icone: "feriado", semNotificar: true, nivel: "atencao", feriado: { data: f.data, nome: f.nome },
+        titulo: `${quando} é feriado: ${f.nome}`, texto: `${quando}, ${ddmm(f.data)}, é ${f.nome}. Sua loja abre? Se fechar, o cardápio não deixa marcar entrega nem retirada nesse dia.`,
+        link: "/cardapio-config", estado: { abrir: "ferias" },
+        curto: { t: `Abre no feriado de ${ddmm(f.data)}?`, s: f.nome } });
+      break;
+    }
+  }
   return l;
 }
 

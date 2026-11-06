@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Basket, Bell, DeviceMobile, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo, PauseCircle, ShareNetwork, QrCode, SquaresFour } from "@phosphor-icons/react";
+import { Basket, Bell, DeviceMobile, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo, PauseCircle, ShareNetwork, QrCode, SquaresFour, CalendarX, Island } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
@@ -11,6 +11,7 @@ import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "
 import { avisoDoPro } from "@/lib/notificacoesUsuario";
 import { supabase } from "@/lib/supabase";
 import { linkWhatsApp } from "@/lib/telefone";
+import { salvarFechados } from "@/lib/diasFechados";
 import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { Botao, Janela, avisar, informar } from "@/components/base";
@@ -36,10 +37,10 @@ type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; 
 
 /** (21/10) o botão de cada linha diz o que fazer */
 const ACAO: Record<AvisoCadastro["icone"], string> = { custos: "Definir", maquininha: "Definir", ficha: "Fazer", caixa: "Informar", conta: "Pagar", entrega: "Definir", descricao: "Escrever", banner: "Colocar", cupom: "Criar", complemento: "Criar", cliente: "Cadastrar", whatsapp: "Está certo",
-  receber: "Já recebi", pausa: "Ver loja", orcamento: "Abrir", divulgar: "Divulgar", pix: "Ligar", categoria: "Criar" };
+  receber: "Já recebi", pausa: "Ver loja", orcamento: "Abrir", divulgar: "Divulgar", pix: "Ligar", categoria: "Criar", feriado: "Vou fechar", ferias: "Ver" };
 const ACAO_NOVIDADE: Record<string, string> = { "aniversarios": "Ver", "produtos-sem-foto": "Pôr foto", "clientes-sumidos": "Chamar" };
 const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquininha: CreditCard, ficha: ClipboardText, caixa: Coins, conta: CalendarCheck, entrega: Truck, descricao: TextAlignLeft, banner: ImageSquare, cupom: Ticket, complemento: Stack, cliente: UserPlus, whatsapp: WhatsappLogo,
-  receber: Coins, pausa: PauseCircle, orcamento: ClipboardText, divulgar: ShareNetwork, pix: QrCode, categoria: SquaresFour };
+  receber: Coins, pausa: PauseCircle, orcamento: ClipboardText, divulgar: ShareNetwork, pix: QrCode, categoria: SquaresFour, feriado: CalendarX, ferias: Island };
 const DIA = 86400000;
 const PESO = { urgente: 0, atencao: 1, normal: 2 };
 const VISIVEIS = 3;
@@ -96,7 +97,7 @@ const TEXTO_NOVIDADE: Record<string, string> = {
 
 export default function PraFazer() {
   const navigate = useNavigate();
-  const { profile } = useProfile();
+  const { profile, refetch } = useProfile();
   const uid = profile?.id as string | undefined;
   const pronta = useLojaPronta(uid);
   const { updates } = useAtualizacoes();
@@ -213,10 +214,21 @@ export default function PraFazer() {
     ...avisos.map((a, i): Item => ({
       chave: a.chave, nivel: a.nivel, Ic: ICONE[a.icone], t: a.curto.t, s: a.curto.s, link: a.link, estado: a.estado, ordem: i,
       acao: ACAO[a.icone] || "Ver", fechar: a.icone !== "conta" && a.icone !== "whatsapp" && !a.cobrar, naoQuero: a.naoQuero,
-      aoRevisar: a.cobrar ? () => { const c = a.cobrar!; window.open(linkWhatsApp(c.telefone, c.texto) || `https://wa.me/?text=${encodeURIComponent(c.texto)}`, "_blank", "noopener"); } : undefined,
+      aoRevisar: a.feriado ? () => {
+        // (6.179) "Abre normal": some de vez (é só deste feriado)
+        try { localStorage.setItem(kAte(a.chave), "nunca"); } catch { /* sem armazenamento */ }
+        setMexeu(n => n + 1); avisar("Combinado, o cardápio segue aceitando pedidos nesse dia.", { tipo: "ok" });
+      } : a.cobrar ? () => { const c = a.cobrar!; window.open(linkWhatsApp(c.telefone, c.texto) || `https://wa.me/?text=${encodeURIComponent(c.texto)}`, "_blank", "noopener"); } : undefined,
       // (04/11 · 6.20) WhatsApp: "Está certo" confirma aqui mesmo; "Corrigir" leva pro campo com o balão
-      aoTocar: a.confirmarWhats ? () => { const tel = a.confirmarWhats!; supabase.auth.updateUser({ data: { whatsapp_ok: tel } }).then(() => { setAvisos(l => l.filter(x => x.chave !== a.chave)); avisar("Pronto, número confirmado.", { tipo: "ok" }); }, () => avisar("Não deu para confirmar agora. Tente de novo.", { tipo: "erro" })); } : undefined,
-      rotuloRevisar: a.icone === "whatsapp" ? "Corrigir" : a.cobrar ? "Cobrar" : undefined,
+      aoTocar: a.feriado && uid ? () => {
+        const f = a.feriado!;
+        salvarFechados(uid, l => [...l, { inicio: f.data, fim: f.data, tipo: "feriado", nome: f.nome }]).then(r => {
+          if (!r.ok) { avisar("Não deu para fechar o dia agora. Tente de novo.", { tipo: "erro" }); return; }
+          setAvisos(l => l.filter(x => x.chave !== a.chave)); void refetch();
+          avisar(`Pronto, dia ${f.data.slice(8, 10)}/${f.data.slice(5, 7)} fechado no cardápio.`, { tipo: "ok" });
+        }, () => avisar("Não deu para fechar o dia agora. Tente de novo.", { tipo: "erro" }));
+      } : a.confirmarWhats ? () => { const tel = a.confirmarWhats!; supabase.auth.updateUser({ data: { whatsapp_ok: tel } }).then(() => { setAvisos(l => l.filter(x => x.chave !== a.chave)); avisar("Pronto, número confirmado.", { tipo: "ok" }); }, () => avisar("Não deu para confirmar agora. Tente de novo.", { tipo: "erro" })); } : undefined,
+      rotuloRevisar: a.icone === "whatsapp" ? "Corrigir" : a.cobrar ? "Cobrar" : a.feriado ? "Abre normal" : undefined,
       // conta: o vencimento em vermelho e, no lugar do "Agora não", o "Revisar" (digitou errado ou a conta não existe)
       txt: a.icone === "conta" ? "Pague ou marque como paga." : a.texto,
       alerta: a.icone === "conta" ? a.curto.s : undefined,

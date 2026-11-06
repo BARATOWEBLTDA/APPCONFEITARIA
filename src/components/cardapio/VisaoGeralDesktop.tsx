@@ -9,6 +9,7 @@ const GraficoVisitas = lazy(() => import("@/components/cardapio/GraficoVisitas")
 import { Botao } from "@/components/base";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import type { Profile } from "@/hooks/useProfile";
+import { horarioComFechados } from '@/lib/diasFechados'
 
 /**
  * Visão geral do Cardápio digital — COMPUTADOR (aprovada 02/10).
@@ -28,14 +29,14 @@ const STATUS: Record<string, [string, string]> = {
   aguardando_retirada: ["Pronto", "ok"], em_entrega: ["Saiu para entrega", "bl"], entregue: ["Entregue", "ok"], concluido: ["Entregue", "ok"], cancelado: ["Cancelado", "cz"],
 };
 
-export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _publicado, onShare }: { profile: (Profile & { horario?: unknown }) | null; linkCardapio: string; publicado: boolean; onShare: () => void }) {
+export default function VisaoGeralDesktop({ profile, linkCardapio, publicado: _publicado, onShare }: { profile: (Profile & { horario?: unknown; dias_fechados?: unknown }) | null; linkCardapio: string; publicado: boolean; onShare: () => void }) {
   const navigate = useNavigate();
   const [completo, setCompleto] = useState<boolean | null>(null);
   const [periodo, setPeriodo] = useState<Periodo>("7d");
   const { dados, falhou, tentar } = useDadosCardapio(profile?.id); // (6.169) a mesma busca do celular
   const [qr, setQr] = useState("");
   const [copiado, setCopiado] = useState(false);
-  const situacao = useMemo(() => situacaoLoja(profile?.horario), [profile?.horario]);
+  const situacao = useMemo(() => situacaoLoja(horarioComFechados(profile?.horario, (profile as { dias_fechados?: unknown } | null)?.dias_fechados)), [profile?.horario, (profile as { dias_fechados?: unknown } | null)?.dias_fechados]);
 
   const carregando = falhou
     ? <p className="vgd-vazio">Não deu para carregar. <button type="button" className="vgd-tentar" onClick={tentar}>Tentar de novo</button></p>

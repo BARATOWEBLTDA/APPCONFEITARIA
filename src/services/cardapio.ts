@@ -7,6 +7,7 @@ import { Produto, DesignSettings, Configuracoes } from '@/types/database'
 import { problemaNaChave, tipoDaChave } from '@/lib/pix'
 import { lojaAntecipada, restoAntecipado } from '@/lib/cardapioAntecipado'
 import type { PixLoja } from '@/lib/pix'
+import { fechadosAtivos, horarioComFechados, lerFechados } from '@/lib/diasFechados'
 
 /** O perfil da loja como vem da função cardapio_loja (ou da tabela profiles) */
 type PerfilLoja = {
@@ -64,6 +65,7 @@ type PerfilLoja = {
   instagram?: string | null
   loja_pausada?: boolean | null
   facebook?: string | null
+  dias_fechados?: unknown
 }
 type ErroBanco = { code?: string; message?: string } | null
 
@@ -221,7 +223,8 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
     endereco: profile.endereco || null,
     mostrar_localizacao: profile.mostrar_localizacao || false,
     mostrar_apenas_cidade: profile.mostrar_apenas_cidade || false,
-    horario: profile.horario || null,
+    horario: (horarioComFechados(profile.horario || null, profile.dias_fechados) as string | null) || null, // (6.179) férias e feriados entram no horário
+    dias_fechados: fechadosAtivos(lerFechados(profile.dias_fechados)),
     // Novos campos de checkout
     formas_pagamento: profile.formas_pagamento || ['pix'],
     formas_entrega: profile.formas_entrega || ['retirada'],
