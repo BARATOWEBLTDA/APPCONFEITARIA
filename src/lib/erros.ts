@@ -18,7 +18,12 @@ export function erroDeConexao(err: unknown): boolean {
 }
 
 /** A frase pra mostrar: "sem internet" quando for o caso; senão, a frase da tela (ou a padrão). */
+export const LIMITE_GRATIS = "No grátis, até 10 produtos ficam no cardápio. Tire um ou teste o PRO.";
+
 export function explicarErro(err: unknown, padrao = "Algo não saiu como esperado. Tente de novo em instantes."): string {
   if (err) console.error("[Doonly]", err);
+  // (6.174) o banco recusou o 11º produto do plano grátis
+  const e = err as { message?: string; hint?: string; details?: string } | null;
+  if (e && /limite_plano_gratis/.test(`${e.message || ""} ${e.hint || ""} ${e.details || ""}`)) return LIMITE_GRATIS;
   return erroDeConexao(err) ? SEM_INTERNET : padrao;
 }

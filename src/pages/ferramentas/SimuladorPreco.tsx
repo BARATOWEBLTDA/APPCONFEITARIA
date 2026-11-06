@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabase";
 import { calcularCustoLucro, lerMaoObraConta, type MaoObraConta, type ProdutoCustoJson } from "@/lib/produto-precificacao";
 import { taxaPctDaForma, fixoPorPedido } from "@/lib/painelFinanceiro";
 import { explicarErro } from "@/lib/erros";
+import { precoCardapioComPromocao, precosDosSabores, type ProdutoPrecoJson } from "@/lib/precoCardapio";
+import { kitAtivo } from "@/lib/kitQuantidade";
 import "./ferramentas.css";
 
 /**
@@ -14,7 +16,17 @@ import "./ferramentas.css";
  * A conta é a mesma da Ficha técnica (ingredientes + invisíveis + mão de obra + taxa do crédito + embalagem por pedido).
  * Só a taxa da maquininha muda com o preço (é % da venda); o resto do custo é fixo.
  */
-type Prod = ProdutoCustoJson & { id: string; nome: string; imagem_url?: string | null; promocao?: boolean | null; preco_normal?: number | null };
+type Prod = ProdutoCustoJson & ProdutoPrecoJson & { id: string; nome: string; imagem_url?: string | null; promocao?: boolean | null; preco_normal?: number | null };
+
+/** (6.174) o preço do cardápio vem dos tamanhos de preço fixo, do kit ou do sabor: "Usar esse preço" não mudaria nada */
+const precoPorOpcao = (p: Prod) => {
+  const gt = p.grupo_tamanhos;
+  const tamFixo = !!gt?.ativo && (gt.opcoes || []).length > 0 && gt.modo_preco_tamanho !== "por_peso";
+  return kitAtivo(p.kit_qtd) ? "Preço do kit: mude em Produtos" : tamFixo ? "Tem tamanhos: mude o preço em Produtos"
+    : (precosDosSabores(p) || []).length ? "Preço pelo sabor: mude em Produtos" : "";
+};
+/** tamanhos pelo peso: o preço do produto é o do kg */
+const porKg = (p: Prod) => !!p.grupo_tamanhos?.ativo && (p.grupo_tamanhos.opcoes || []).length > 0 && p.grupo_tamanhos.modo_preco_tamanho === "por_peso";
 
 const brl = (v: number) => (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const pct = (v: number) => `${(Math.round(v * 10) / 10).toLocaleString("pt-BR")}%`;
@@ -43,7 +55,7 @@ export default function SimuladorPreco() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/login"); return; }
       const [prods, maoC, perfil, vars] = await Promise.all([
-        supabase.from("produtos").select("id, nome, imagem_url, preco_normal, preco_promocional, promocao, tipo_promocao, desconto_percentual, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais, produto_insumos(quantidade, unidade_utilizada, insumos(unidade, custo_unitario))")
+        supabase.from("produtos").select("id, nome, imagem_url, preco_normal, preco_promocional, promocao, tipo_promocao, desconto_percentual, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais, grupo_tamanhos, grupo_sabores, kit_qtd, produto_insumos(quantidade, unidade_utilizada, insumos(unidade, custo_unitario))")
           .eq("user_id", user.id).order("nome"),
         lerMaoObraConta(user.id).catch(() => null),
         supabase.from("profiles").select("custos_invisiveis_pct").eq("id", user.id).maybeSingle(),
@@ -70,13 +82,15 @@ export default function SimuladorPreco() {
   const base = useMemo(() => {
     if (!sel) return null;
     const c = calcularCustoLucro(sel, mao, cvConta, null);
-    return { cmv: c.cmv, cvPct: c.cvPct, cv: c.cv, mo: c.mo, tempoMin: c.tempoMin, fixo: c.cmv + c.cv + c.mo + venda.fixo, precoAtual: c.preco };
+    // (6.174) "Hoje" é o preço que o cardápio mostra (tamanho, kit ou sabor mais barato, já com a promoção)
+    const pc = precoCardapioComPromocao(sel);
+    return { cmv: c.cmv, cvPct: c.cvPct, cv: c.cv, mo: c.mo, tempoMin: c.tempoMin, fixo: c.cmv + c.cv + c.mo + venda.fixo, precoAtual: porKg(sel) ? c.preco : pc.final || c.preco, aPartir: !porKg(sel) && pc.aPartir };
   }, [sel, mao, cvConta, venda.fixo]);
 
   function escolher(p: Prod, m = mao, cv = cvConta) {
     setSelId(p.id);
     const c = calcularCustoLucro(p, m, cv, null);
-    setPrecoTxt(reaisTxt(c.preco));
+    setPrecoTxt(reaisTxt(porKg(p) ? c.preco : precoCardapioComPromocao(p).final || c.preco));
   }
 
   const taxa = (Number(venda.pct) || 0) / 100;
@@ -94,6 +108,8 @@ export default function SimuladorPreco() {
   const vendas = Math.max(0, Math.floor(lerReais(vendasTxt)));
   const tempo = base && base.tempoMin > 0 ? (base.tempoMin >= 60 ? `${Math.floor(base.tempoMin / 60)}h${base.tempoMin % 60 ? String(base.tempoMin % 60).padStart(2, "0") : ""}` : `${base.tempoMin} min`) : "";
   const mudou = !!base && preco > 0 && Math.abs(preco - base.precoAtual) >= 0.005;
+  const porOpcao = sel ? precoPorOpcao(sel) : "";
+  const doKg = !!sel && porKg(sel);
 
   const usarPreco = async () => {
     if (!sel || !(preco > 0)) return;
@@ -128,12 +144,12 @@ export default function SimuladorPreco() {
               <span className="fm-rot">Produto</span>
               <button type="button" className="fm-ing" onClick={() => setLista(true)}>
                 {fotoDe(sel) ? <img className="sp-foto" src={fotoDe(sel)} alt="" /> : <span className="sp-foto sp-foto--l">{sel.nome.charAt(0).toUpperCase()}</span>}
-                <span className="fm-ing-tx"><b>{sel.nome}</b><small>Hoje: {brl(base.precoAtual)}</small></span>
+                <span className="fm-ing-tx"><b>{sel.nome}</b><small>Hoje: {base.aPartir ? "a partir de " : ""}{brl(base.precoAtual)}{doKg ? " o kg" : ""}</small></span>
                 <CaretDown size={18} weight="bold" aria-hidden="true" />
               </button>
 
               <label className="fm-campo sp-preco">
-                <span className="fm-rot">Preço de venda</span>
+                <span className="fm-rot">{doKg ? "Preço do kg" : "Preço de venda"}</span>
                 <span className="sp-preco-c"><i>R$</i><input inputMode="decimal" value={precoTxt} onChange={e => setPrecoTxt(e.target.value.replace(/[^\d,]/g, ""))} placeholder="0,00" aria-label="Preço de venda em reais" /></span>
               </label>
               <input type="range" className="sp-regua" min={min} max={max} step={0.5} value={Math.min(max, Math.max(min, preco || min))}
@@ -160,7 +176,7 @@ export default function SimuladorPreco() {
               <div className="sp-barra" aria-hidden="true"><i style={{ width: `${Math.max(0, Math.min(100, preco > 0 ? (custo / preco) * 100 : 0))}%` }} /></div>
               <p className="sp-frase">{preco <= 0 ? "" : lucro < 0 ? `Abaixo de ${brl(empate)} dá prejuízo.` : margem < 30 ? "Margem baixa: o ideal é passar de 30%." : "Boa margem: paga tudo e sobra lucro."}</p>
               {vendas > 0 && preco > 0 && <div className="sp-mes"><span>{vendas} vendas no mês</span><b>{lucro < 0 ? "− " : ""}{brl(Math.abs(lucro * vendas))}</b></div>}
-              {mudou && lucro >= 0 && <Botao cheio carregando={salvando} icone={<Check size={20} weight="bold" />} onClick={() => void usarPreco()}>Usar esse preço</Botao>}
+              {porOpcao ? <p className="sp-opcao">{porOpcao}</p> : mudou && lucro >= 0 && <Botao cheio carregando={salvando} icone={<Check size={20} weight="bold" />} onClick={() => void usarPreco()}>Usar esse preço</Botao>}
             </section>
 
             <section className="fm-card sp-conta">

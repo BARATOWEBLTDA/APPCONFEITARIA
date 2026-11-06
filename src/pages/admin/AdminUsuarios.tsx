@@ -149,7 +149,7 @@ export default function AdminUsuarios() {
       });
       if (!ok) return;
       const { data, error } = await supabase.from("profiles")
-        .update({ plano: null, pro_expira_em: null })
+        .update({ plano: "free", pro_expira_em: null, assinatura_status: null }) // (6.174) sem "ativa" sobrando
         .eq("id", u.id)
         .select();
       if (error) { informar({ titulo: "Não deu para desativar o PRO", texto: error.message, icone: "erro" }); return; }
@@ -172,10 +172,14 @@ export default function AdminUsuarios() {
     setProSalvando(true);
     const expira = new Date();
     expira.setDate(expira.getDate() + dias);
-    const { data, error } = await supabase.from("profiles")
-      .update({ plano: "pro", pro_expira_em: expira.toISOString() })
+    // (6.174) PRO dado pela equipe: a Minha assinatura mostra "liberado pela equipe" (antes ficava "Teste grátis" de um teste antigo)
+    let { data, error } = await supabase.from("profiles")
+      .update({ plano: "pro", pro_expira_em: expira.toISOString(), assinatura_origem: "admin", assinatura_status: "ativa" })
       .eq("id", u.id)
       .select();
+    // o banco não aceita "admin" como origem: grava só o PRO, como antes
+    if (error && (error as { code?: string }).code === "23514") ({ data, error } = await supabase.from("profiles")
+      .update({ plano: "pro", pro_expira_em: expira.toISOString() }).eq("id", u.id).select());
     setProSalvando(false);
     if (error) { informar({ titulo: "Não deu para ativar o PRO", texto: error.message, icone: "erro" }); return; }
     if (!data || data.length === 0) { informar({ titulo: "Nenhuma linha foi atualizada", texto: "Provável causa: a policy RLS está bloqueando (sem permissão de admin em profiles). Rode o SQL de policy admin.", icone: "alerta" }); return; }

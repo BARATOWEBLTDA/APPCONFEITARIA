@@ -5,6 +5,7 @@
  */
 import { ESTORNO_POR_EXCLUSAO, faltaNoBanco, registrarPagamento } from "@/lib/pagamentos";
 import { explicarErro } from "@/lib/erros";
+import { digitosTelefone } from "@/lib/telefone";
 import { pesoDoTamanho } from "@/lib/itemSacola";
 import { supabase } from "@/lib/supabase";
 import { criarPersonalizacoesV1, criarBreakdownV1, SNAPSHOT_VERSION_ATUAL } from "@/lib/pedido-snapshot";
@@ -190,7 +191,19 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
 
   const avisos: string[] = [];
   let clienteIdFinal = d.clienteId;
+  // (6.174) "Cadastrar novo cliente" com um WhatsApp que já está na lista: usa a ficha que existe (não duplica)
   if (!d.semCliente && !d.clienteId && d.clienteNovo && d.clienteNome.trim()) {
+    const tel = digitosTelefone(d.clienteTelefone);
+    if (tel.length >= 10) {
+      const fim = tel.slice(-4);
+      const { data: parecidos } = await supabase.from("clientes").select("id, whatsapp, telefone").eq("user_id", userId)
+        .or(`whatsapp.ilike.%${fim}%,telefone.ilike.%${fim}%`).limit(50);
+      const igual = ((parecidos || []) as { id: string; whatsapp?: string | null; telefone?: string | null }[])
+        .find(c => digitosTelefone(c.whatsapp) === tel || digitosTelefone(c.telefone) === tel);
+      if (igual) clienteIdFinal = igual.id;
+    }
+  }
+  if (!d.semCliente && !clienteIdFinal && d.clienteNovo && d.clienteNome.trim()) {
     const end: Record<string, string | null> = d.tipoEntrega === "entrega" ? { rua: d.endereco.rua || null, numero: d.endereco.numero || null, bairro: d.endereco.bairro || null, cidade: d.endereco.cidade || null, complemento: d.endereco.complemento || null } : {};
     const { data: cliNovo, error: errCli } = await supabase.from("clientes")
       .insert({ user_id: userId, nome: d.clienteNome.trim(), whatsapp: d.clienteTelefone.trim() || null, ...end })

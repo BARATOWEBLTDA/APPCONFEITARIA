@@ -15,7 +15,15 @@ import { TOQUES, alertaPedidoHabilitado, toqueEscolhido, tocarToque } from "@/ho
 
 const CHAVE_VISTO = "doonly_pedidos_visto_em";
 const lerVisto = () => { try { return localStorage.getItem(CHAVE_VISTO) || ""; } catch { return ""; } };
-const marcarVisto = () => { try { localStorage.setItem(CHAVE_VISTO, new Date().toISOString()); } catch { /* sem armazenamento */ } };
+/** (6.174) "visto" = o pedido mais novo que o servidor tem (antes era o relógio do celular: adiantado, escondia pedidos novos) */
+const marcarVisto = async (uid?: string | null) => {
+  if (!uid) return;
+  try {
+    const { data, error } = await supabase.from("pedidos").select("created_at").eq("user_id", uid).order("created_at", { ascending: false }).limit(1);
+    const ultimo = !error && data && data[0] ? String((data[0] as { created_at: string }).created_at) : "";
+    if (ultimo && ultimo > lerVisto()) localStorage.setItem(CHAVE_VISTO, ultimo);
+  } catch { /* sem internet ou sem armazenamento: fica o visto anterior */ }
+};
 const VEZES = 4;
 const LEMBRETE_MS = 5 * 60 * 1000;
 
@@ -27,14 +35,14 @@ export default function AlertaPedidoNovo({ uid }: { uid?: string | null }) {
   const ultimoNaoVistos = useRef(0);
 
   // abriu Pedidos: tudo o que chegou até agora conta como visto
-  useEffect(() => { if (naTelaPedidos) { marcarVisto(); setNaoVistos(0); } }, [naTelaPedidos, pathname]);
+  useEffect(() => { if (naTelaPedidos) { void marcarVisto(uid); setNaoVistos(0); } }, [naTelaPedidos, pathname, uid]);
 
   useEffect(() => {
     vivo.current = true;
     if (!uid) return;
     const conferir = async () => {
       if (document.visibilityState !== "visible") return;
-      if (window.location.pathname.startsWith("/pedidos")) { marcarVisto(); if (vivo.current) setNaoVistos(0); return; }
+      if (window.location.pathname.startsWith("/pedidos")) { void marcarVisto(uid); if (vivo.current) setNaoVistos(0); return; }
       let q = supabase.from("pedidos").select("id", { count: "exact", head: true })
         .eq("user_id", uid).in("status", ["aguardando_aceite", "novo", "pendente"]);
       const visto = lerVisto();

@@ -80,7 +80,7 @@ export async function resumoDoNegocio(uid: string): Promise<string> {
   const lContas = ((contas.data || []) as { descricao: string; valor: number; vencimento: string }[]);
   const lOrcs = ((orcs.data || []) as { numero: number; cliente_nome: string | null; status: string; data_evento: string | null }[]);
   const md = (d: Date) => `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const proxDias = Array.from({ length: 8 }, (_, k) => { const d = new Date(agora); d.setDate(d.getDate() + k); return md(d); });
+  const proxDias = Array.from({ length: 7 }, (_, k) => { const d = new Date(agora); d.setDate(d.getDate() + k); return md(d); });
   const nivers = ((clis.data || []) as { nome: string; data_nascimento: string }[]).filter(c => proxDias.includes(String(c.data_nascimento).slice(5, 10)))
     .sort((a, b) => proxDias.indexOf(String(a.data_nascimento).slice(5, 10)) - proxDias.indexOf(String(b.data_nascimento).slice(5, 10)));
   const doMes = (mes.data || []) as PedidoResumo[];

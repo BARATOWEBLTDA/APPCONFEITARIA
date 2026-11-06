@@ -118,6 +118,7 @@
 .sp-mes { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; max-width: 360px; margin-top: 12px; padding: 10px 14px; border-radius: var(--ui-raio); background: rgba(255,255,255,.75); font-size: 14px; }
 .sp-mes b { font-size: 17px; font-weight: 600; color: var(--sp-cor); white-space: nowrap; }
 .sp-res .ui-bt { margin-top: 14px; max-width: 360px; }
+.sp-opcao { margin: 12px 0 0; padding: 8px 12px; border-radius: var(--ui-raio); background: rgba(255,255,255,.75); font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 
 .sp-conta { padding: 14px 16px 10px; }
 .sp-l { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; font-size: 14px; color: var(--ui-texto-2); }

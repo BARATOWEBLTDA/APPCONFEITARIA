@@ -144,7 +144,7 @@ export default function NotificacoesSons() {
             <span className="ns-ico"><BellRinging size={20} /></span>
             <div className="ns-txt">
               <div className="ns-name">Som de pedido novo</div>
-              <div className="ns-desc">Toca até aceitar ou recusar</div>
+              <div className="ns-desc">Toca 4 vezes e lembra a cada 5 min</div>
             </div>
             <label className="ns-toggle">
               <input type="checkbox" checked={alerta} onChange={trocarAlerta} aria-label="Som de pedido novo" />

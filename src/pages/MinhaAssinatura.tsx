@@ -10,7 +10,7 @@ import { usePlano } from "@/hooks/usePlano";
 import { useProfile, refreshProfile, type Profile } from "@/hooks/useProfile";
 
 /** O perfil com os dados da assinatura (Hotmart) */
-type PerfilAssinatura = (Profile & { assinatura_status?: string | null; assinatura_origem?: string | null; email?: string | null }) | null;
+type PerfilAssinatura = (Profile & { assinatura_status?: string | null; assinatura_origem?: string | null; email?: string | null; hotmart_transacao?: string | null; hotmart_assinante?: string | null }) | null;
 import { BENEFICIOS } from "@/lib/beneficiosPro";
 import { voltarOuIr } from "@/lib/voltar"; // 11/10: seta de voltar que funciona com a tela aberta direto
 
@@ -57,9 +57,20 @@ export default function MinhaAssinatura() {
   const folga = (profile as PerfilAssinatura)?.assinatura_origem === "hotmart" ? (emTeste ? 1 : 3) : 0;
   const cobranca = proExpiraEm ? new Date(proExpiraEm.getTime() - folga * 86400000) : null;
   const dias = cobranca ? Math.max(0, Math.ceil((cobranca.getTime() - Date.now()) / 86400000)) : null;
+  // (6.174) o que diz a assinatura de verdade: cancelada (PRO até o fim do pago), pagamento atrasado ou PRO dado pela equipe
+  const pa = profile as PerfilAssinatura;
+  const status = pa?.assinatura_status || "";
+  const daHotmart = pa?.assinatura_origem === "hotmart";
+  const cancelada = daHotmart && status === "cancelada";
+  const atrasada = daHotmart && status === "atrasada";
+  const pelaEquipe = !emTeste && (pa?.assinatura_origem === "admin" || (!pa?.assinatura_origem && !pa?.hotmart_transacao && !pa?.hotmart_assinante));
+  const ate = proExpiraEm ? diaMes(proExpiraEm) : "";
+  const semFim = dias != null && dias > 400;
+  const [emailConta, setEmailConta] = useState("");
+  useEffect(() => { supabase.auth.getUser().then(({ data }) => setEmailConta(data.user?.email || "")).catch(() => {}); }, []);
   const whats = () => {
     const quem = [profile?.nome, profile?.nome_loja].filter(Boolean).join(" · ");
-    const msg = `Olá! Tenho uma dúvida sobre a minha assinatura do Doonly PRO.${quem ? `\nNome: ${quem}` : ""}${(profile as PerfilAssinatura)?.email ? `\nE-mail da conta: ${(profile as PerfilAssinatura).email}` : ""}`;
+    const msg = `Olá! Tenho uma dúvida sobre a minha assinatura do Doonly PRO.${quem ? `\nNome: ${quem}` : ""}${emailConta ? `\nE-mail da conta: ${emailConta}` : ""}`;
     window.open(`https://wa.me/${WHATSAPP_EQUIPE}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -75,12 +86,19 @@ export default function MinhaAssinatura() {
             <div className="mas-top">
               <span className="mas-cr"><Crown size={24} weight="fill" aria-hidden="true" /></span>
               <b>Doonly PRO</b>
-              <span className={`mas-at${emTeste ? " mas-at--teste" : ""}`}>{emTeste ? "Teste grátis" : "Ativo"}</span>
+              <span className={`mas-at${emTeste || cancelada || atrasada ? " mas-at--teste" : ""}`}>{emTeste ? "Teste grátis" : cancelada ? "Cancelada" : atrasada ? "Pagamento atrasado" : "Ativo"}</span>
             </div>
-            <p className="mas-v">{emTeste ? <>Grátis <small>até {cobranca ? diaMes(new Date(cobranca.getTime() - 86400000)) : "o 7º dia"}</small></> : <>{VALOR} <small>por mês</small></>}</p>
+            <p className="mas-v">{emTeste ? <>Grátis <small>até {cobranca ? diaMes(new Date(cobranca.getTime() - 86400000)) : "o 7º dia"}</small></> : pelaEquipe ? <>PRO <small>liberado pela equipe</small></> : <>{VALOR} <small>por mês</small></>}</p>
             {assinanteDesde && <div className="mas-l">Assinante desde<b>{dataBR(assinanteDesde)}</b></div>}
-            <div className="mas-l">Pagamento<b>{emTeste ? `Hotmart, ${VALOR} por mês` : "Hotmart, todo mês"}</b></div>
-            <div className="mas-l">{emTeste ? "Primeira cobrança" : "Próxima cobrança"}<b>{cobranca && dias != null && dias > 400 ? "Sem vencimento" : cobranca ? `${diaMes(cobranca)} · ${dias === 0 ? "hoje" : dias === 1 ? "amanhã" : `em ${dias} dias`}` : "Veja na Hotmart"}</b></div>
+            {pelaEquipe ? (
+              <div className="mas-l">PRO até<b>{semFim || !ate ? "Sem vencimento" : ate}</b></div>
+            ) : cancelada ? (<>
+              <div className="mas-l">Pagamento<b>Cancelado na Hotmart</b></div>
+              <div className="mas-l">PRO até<b>{ate || "o fim do mês pago"}</b></div>
+            </>) : (<>
+              <div className="mas-l">Pagamento<b>{atrasada ? "Atrasado na Hotmart" : emTeste ? `Hotmart, ${VALOR} por mês` : "Hotmart, todo mês"}</b></div>
+              <div className="mas-l">{emTeste ? "Primeira cobrança" : atrasada ? "PRO até" : "Próxima cobrança"}<b>{atrasada ? (ate || "Veja na Hotmart") : cobranca && semFim ? "Sem vencimento" : cobranca ? `${diaMes(cobranca)} · ${dias === 0 ? "hoje" : dias === 1 ? "amanhã" : `em ${dias} dias`}` : "Veja na Hotmart"}</b></div>
+            </>)}
           </section>
 
           <section className="mas-c">

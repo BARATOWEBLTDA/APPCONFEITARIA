@@ -160,7 +160,7 @@ export default function Pedidos() {
       }
       setUserId(user.id)
       fetchPedidos(user.id)
-      supabase.from('produtos').select('id', { count: 'exact', head: true }).eq('user_id', user.id).then(({ count }) => setTotalProdutos(count ?? 0))
+      supabase.from('produtos').select('id', { count: 'exact', head: true }).eq('user_id', user.id).then(({ count, error }) => setTotalProdutos(error || count == null ? null : count), () => setTotalProdutos(null)) // (6.174) falha na leitura não é "sem produtos"
     })
   }, [fetchPedidos, navigate]) // eslint-disable-line react-hooks/exhaustive-deps
 

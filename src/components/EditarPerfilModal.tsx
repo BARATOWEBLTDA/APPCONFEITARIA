@@ -32,6 +32,8 @@ interface Props {
   onNovaSenhaChange: (v: string) => void;
   onConfirmSenhaChange: (v: string) => void;
   onAlterarSenha: () => Promise<void> | void;
+  /** (6.174) conta só do Google: "Criar senha", sem a senha atual */
+  semSenha?: boolean;
   saveError?: string;
   saveSuccess?: boolean;
 }
@@ -40,11 +42,11 @@ export default function EditarPerfilModal({
   open, onClose, nome, telefone, email, fotoPreview, inicial,
   onNomeChange, onTelefoneChange, onFotoClick, onSave, saving, uploading,
   senhaAtual, novaSenha, confirmSenha, senhaMsg, savingSenha,
-  onSenhaAtualChange, onNovaSenhaChange, onConfirmSenhaChange, onAlterarSenha, saveError,
+  onSenhaAtualChange, onNovaSenhaChange, onConfirmSenhaChange, onAlterarSenha, saveError, semSenha = false,
 }: Props) {
   const [showSenha, setShowSenha] = useState(false);
   useEffect(() => { if (!open) { const t = setTimeout(() => setShowSenha(false), 300); return () => clearTimeout(t); } }, [open]);
-  const senhaOk = /alterada/i.test(senhaMsg);
+  const senhaOk = /alterada|criada/i.test(senhaMsg);
 
   return (
     <Janela aberta={open} aoFechar={onClose} tipo="conteudo" titulo="Editar perfil"
@@ -63,15 +65,15 @@ export default function EditarPerfilModal({
 
         <div className="ep9-senha">
           <button type="button" className="ep9-senha-bt" aria-expanded={showSenha} onClick={() => setShowSenha(s => !s)}>
-            <LockSimple size={20} weight="bold" /><span>Trocar a senha</span><CaretDown size={18} weight="bold" className={showSenha ? "aberto" : ""} />
+            <LockSimple size={20} weight="bold" /><span>{semSenha ? "Criar uma senha" : "Trocar a senha"}</span><CaretDown size={18} weight="bold" className={showSenha ? "aberto" : ""} />
           </button>
           {showSenha && (
             <div className="ep9-senha-c">
-              <Campo rotulo="Senha atual" type="password" autoComplete="current-password" value={senhaAtual} onChange={e => onSenhaAtualChange(e.target.value)} />
-              <Campo rotulo="Nova senha" type="password" autoComplete="new-password" placeholder="Pelo menos 6 letras ou números" value={novaSenha} onChange={e => onNovaSenhaChange(e.target.value)} />
+              {!semSenha && <Campo rotulo="Senha atual" type="password" autoComplete="current-password" value={senhaAtual} onChange={e => onSenhaAtualChange(e.target.value)} />}
+              <Campo rotulo="Nova senha" type="password" autoComplete="new-password" placeholder="Pelo menos 8 letras ou números" value={novaSenha} onChange={e => onNovaSenhaChange(e.target.value)} />
               <Campo rotulo="Repita a nova senha" type="password" autoComplete="new-password" value={confirmSenha} onChange={e => onConfirmSenhaChange(e.target.value)} />
               {senhaMsg && <p className={senhaOk ? "ep9-ok" : "ep9-erro"} role="status">{senhaMsg}</p>}
-              <Botao variante="secundario" cheio carregando={savingSenha} onClick={() => onAlterarSenha()}>Trocar a senha</Botao>
+              <Botao variante="secundario" cheio carregando={savingSenha} onClick={() => onAlterarSenha()}>{semSenha ? "Criar senha" : "Trocar a senha"}</Botao>
             </div>
           )}
         </div>

@@ -108,17 +108,20 @@ export default function Configuracoes() {
   const [confirmSenha, setConfirmSenha] = useState("");
   const [senhaMsg, setSenhaMsg] = useState("");
   const [savingSenha, setSavingSenha] = useState(false);
+  // (6.174) conta que entra só pelo Google não tem senha: cria uma (sem pedir a "senha atual")
+  const [semSenha, setSemSenha] = useState(false);
 
   // (10/10) Sem internet a tela ficava carregando pra sempre (o getUser vai à rede) e, quando só a leitura do perfil
   // falhava, abria com o formulário em branco: salvar gravava vazio por cima. Agora mostra o erro com "Tentar de novo"
   // e o perfil só pode ser editado depois de lido. O getSession lê a conta do próprio aparelho.
   const carregar = async () => {
     setLoading(true); setErroCarregar("");
-    let user: { id: string; email?: string } | null = null;
+    let user: { id: string; email?: string; app_metadata?: { providers?: string[]; provider?: string } } | null = null;
     try { user = (await supabase.auth.getSession()).data.session?.user ?? null; } catch { /* trata abaixo */ }
     if (!user) { setErroCarregar("Tente de novo em instantes."); setLoading(false); return; }
     setUserId(user.id);
     setUserEmail(user.email || "");
+    { const prov = user.app_metadata?.providers || (user.app_metadata?.provider ? [user.app_metadata.provider] : []); setSemSenha(prov.length > 0 && !prov.includes("email")); }
     const { data, error: erroPerfil } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
     if (erroPerfil) { setErroCarregar(explicarErro(erroPerfil, "Tente de novo em instantes.")); setLoading(false); return; }
     const proExpira = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
@@ -179,13 +182,13 @@ export default function Configuracoes() {
   };
 
   const alterarSenha = async () => {
-    if (!senhaAtual) return setSenhaMsg("Escreva sua senha atual.");
+    if (!semSenha && !senhaAtual) return setSenhaMsg("Escreva sua senha atual.");
     if (novaSenha.length < 8) return setSenhaMsg("A nova senha precisa ter pelo menos 8 caracteres.");
     if (novaSenha !== confirmSenha) return setSenhaMsg("As duas senhas novas não são iguais.");
-    if (novaSenha === senhaAtual) return setSenhaMsg("A nova senha precisa ser diferente da atual.");
+    if (!semSenha && novaSenha === senhaAtual) return setSenhaMsg("A nova senha precisa ser diferente da atual.");
     if (!userEmail) return setSenhaMsg("Entre de novo na conta e tente outra vez.");
     setSavingSenha(true);
-    const { error: reauthErr } = await supabase.auth.signInWithPassword({ email: userEmail, password: senhaAtual });
+    const { error: reauthErr } = semSenha ? { error: null } : await supabase.auth.signInWithPassword({ email: userEmail, password: senhaAtual });
     // (11/10) queda de internet não é senha errada
     if (reauthErr) {
       setSavingSenha(false);
@@ -200,7 +203,8 @@ export default function Configuracoes() {
     let saiuDosOutros = false;
     try { saiuDosOutros = !(await supabase.auth.signOut({ scope: "others" })).error; } catch { /* avisa abaixo */ }
     setSavingSenha(false);
-    setSenhaMsg(saiuDosOutros ? "Senha alterada. Os outros aparelhos saíram da conta." : "Senha alterada. Não deu para sair dos outros aparelhos agora.");
+    setSenhaMsg(semSenha ? "Senha criada. Agora você entra também com o e-mail e essa senha." : saiuDosOutros ? "Senha alterada. Os outros aparelhos saíram da conta." : "Senha alterada. Não deu para sair dos outros aparelhos agora.");
+    setSemSenha(false);
     setSenhaAtual(""); setNovaSenha(""); setConfirmSenha("");
   };
 
@@ -355,6 +359,7 @@ export default function Configuracoes() {
         onNovaSenhaChange={setNovaSenha}
         onConfirmSenhaChange={setConfirmSenha}
         onAlterarSenha={alterarSenha}
+        semSenha={semSenha}
         saveError={error}
       />
 

@@ -1,3 +1,4 @@
+import { LIMITE_GRATIS } from '@/lib/erros'
 // ── acoesDoo.ts ──────────────────────────────────────────────────────────────
 // (6.86) O que a Doo consegue fazer no app pela conversa, além de pedido e ingrediente:
 // cliente, produto, orçamento, loja e cardápio (todos os campos, 6.107), cupom e custos.
@@ -337,7 +338,10 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
       case 'produto': {
         const promo = a.preco_promocional ? { promocao: true, tipo_promocao: 'fixo', preco_promocional: a.preco_promocional }
           : a.desconto_percentual ? { promocao: true, tipo_promocao: 'percentual', desconto_percentual: a.desconto_percentual } : {}
-        const novo = { user_id: uid, nome: a.nome, preco_normal: a.preco, categoria: a.categoria || null, descricao: a.descricao || null, pronta_entrega: a.pronta_entrega !== false, forma_venda: a.forma_venda || 'unidade', disponivel: true,
+        // (6.174) a categoria que já existe entra com o nome dela ("bolos" → "Bolos"): o cardápio compara o nome exato
+        const catAchada = a.categoria ? (await supabase.from('categorias').select('nome').eq('user_id', uid).ilike('nome', a.categoria.replace(/[%_\\]/g, '\\$&')).limit(1)).data : null
+        const catNome = catAchada && catAchada.length ? (catAchada[0] as { nome: string }).nome : a.categoria
+        const novo = { user_id: uid, nome: a.nome, preco_normal: a.preco, categoria: catNome || null, descricao: a.descricao || null, pronta_entrega: a.pronta_entrega !== false, forma_venda: a.forma_venda || 'unidade', disponivel: true,
           ...(a.rendimento ? { rendimento_qtd: a.rendimento } : {}), ...promo }
         let semDestaque = false
         let { data, error } = await supabase.from('produtos').insert({ ...novo, destaque: !!a.destaque }).select('id').single()
@@ -347,10 +351,7 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
           ;({ data, error } = await supabase.from('produtos').insert({ ...novo, destaque: false }).select('id').single())
         }
         if (error) throw error
-        if (a.categoria) {
-          const { data: cat } = await supabase.from('categorias').select('nome').eq('user_id', uid).ilike('nome', a.categoria).limit(1)
-          if (!cat || !cat.length) await supabase.from('categorias').insert({ user_id: uid, nome: a.categoria })
-        }
+        if (a.categoria && !(catAchada && catAchada.length)) await supabase.from('categorias').insert({ user_id: uid, nome: a.categoria })
         void data
         return { ok: true, feito: semDestaque ? 'Produto no cardápio (já tem 6 destaques, este ficou fora)' : a.destaque ? 'Produto no cardápio, em destaque' : 'Produto no cardápio', abrir: '/produtos' }
       }
@@ -597,16 +598,15 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
         if (a.destaque != null) up.destaque = a.destaque
         if (a.pronta_entrega != null) up.pronta_entrega = a.pronta_entrega
         if (a.descricao != null) up.descricao = a.descricao || null
-        if (a.categoria) up.categoria = a.categoria
+        // (6.174) categoria que já existe: o nome dela, exato
+        const catAchada = a.categoria ? (await supabase.from('categorias').select('nome').eq('user_id', uid).ilike('nome', a.categoria.replace(/[%_\\]/g, '\\$&')).limit(1)).data : null
+        if (a.categoria) up.categoria = catAchada && catAchada.length ? (catAchada[0] as { nome: string }).nome : a.categoria
         const { error } = await supabase.from('produtos').update(up).eq('id', p.id).eq('user_id', uid)
         if (error) {
           if (/limite_destaques/.test(`${error.message} ${(error as { hint?: string }).hint || ''}`)) return { ok: false, erro: 'Já tem 6 produtos em destaque. Tire um do destaque antes.' }
           throw error
         }
-        if (a.categoria) {
-          const { data: cat } = await supabase.from('categorias').select('nome').eq('user_id', uid).ilike('nome', a.categoria).limit(1)
-          if (!cat || !cat.length) await supabase.from('categorias').insert({ user_id: uid, nome: a.categoria })
-        }
+        if (a.categoria && !(catAchada && catAchada.length)) await supabase.from('categorias').insert({ user_id: uid, nome: a.categoria })
         return { ok: true, feito: `${a.nome || p.nome} atualizado`, abrir: '/produtos' }
       }
       case 'pedido_editar': {
@@ -706,7 +706,10 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
       }
     }
   } catch (e) {
-    return { ok: false, erro: (e as { message?: string })?.message || 'Não deu para salvar. Tente de novo.' }
+    // (6.174) o 11º produto do grátis: a Doo explica (antes ia o texto cru do banco)
+    const msg = (e as { message?: string; hint?: string })?.message || ''
+    if (/limite_plano_gratis/.test(`${msg} ${(e as { hint?: string })?.hint || ''}`)) return { ok: false, erro: LIMITE_GRATIS }
+    return { ok: false, erro: msg || 'Não deu para salvar. Tente de novo.' }
   }
 }
 
