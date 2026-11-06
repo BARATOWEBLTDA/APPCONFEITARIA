@@ -5,9 +5,8 @@ import {
   Gear, Crown, CaretRight,
   CalendarDots, CurrencyDollar,
   Newspaper, FileText, Users, ChatCircleText, Cake, Package, ClipboardText,
-  Calculator, Sliders, ChartPieSlice, Lifebuoy, MagnifyingGlass,
+  Calculator, Sliders, ChartPieSlice, Lifebuoy,
 } from "@phosphor-icons/react";
-import { abrirBuscaRapida } from "@/components/BuscaRapida";
 import type { Icon } from "@phosphor-icons/react";
 import { Ticket, Target, ShareNetwork, Scales, ArrowsDownUp, HandCoins, CalendarCheck } from "@phosphor-icons/react";
 import { indicarDoonly } from "@/lib/indicarDoonly";
@@ -132,10 +131,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         </div>
 
         <div className="mais-corpo">
-          {/* (6.109) a busca do app no topo do Menu: acha qualquer tela ou ajuste pelo nome ("pix", "taxa", "senha"…) */}
-          <button type="button" className="mais-busca" onClick={() => { onClose(); setTimeout(abrirBuscaRapida, 60); }}>
-            <MagnifyingGlass size={20} weight="bold" aria-hidden="true" /><span>Buscar no app</span>
-          </button>
+          {/* (6.184) a busca saiu do Menu (o Bruno: "nem era pra ela estar aí"); continua no Início */}
           {/* (6.87) a Doo IA volta ao Menu do celular, em destaque no topo (no computador ela é o balão do canto) */}
           <button type="button" className="mais-doo" onClick={() => { onClose(); abrirDooIA(); }}>
             <img src="/Sistema/doo.webp" alt="" />
