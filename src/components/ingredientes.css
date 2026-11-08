@@ -52,7 +52,8 @@
 .ig-alerta-bts button.on { background: #92400E; color: var(--ui-branco); }
 .ig-foto { display: flex; flex-direction: column; gap: 10px; margin-top: -6px; }
 .ig-foto-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.ig-foto-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+/* (08/11) as 3 fotos da IA têm tamanho máximo: no computador a janela é larga e cada quadrado ficava enorme */
+.ig-foto-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 110px)); gap: 8px; justify-content: start; }
 .ig-foto-grade button { aspect-ratio: 1; margin: 0; padding: 0; overflow: hidden; border: 2px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); }
 .ig-foto-grade button[aria-pressed="true"] { border-color: var(--ui-rosa); }
 .ig-foto-grade img { width: 100%; height: 100%; object-fit: cover; display: block; }
