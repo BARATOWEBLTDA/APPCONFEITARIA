@@ -96,3 +96,9 @@ html body .ini-main > .ini-news-cel { order: 10; margin-top: var(--space-3); }
   /* (6.160) ainda sem saber se faltam passos: nada aparece (os Primeiros passos carregam escondidos e decidem) */
   html body .ini-root--decidindo > .ini-pp--topo { visibility: hidden; }
 }
+
+/* (09/11) celular com os Primeiros passos por fazer: só eles (com os 8 passos abertos) embaixo do topo vinho.
+   Pedido novo para aceitar continua aparecendo (não pode passar despercebido). */
+@media (max-width: 900px) {
+  html body .ini-root--foco-cel .ini-content .ini-section:not(.ini-pp):not(.ini-section--novos) { display: none !important; }
+}

@@ -115,7 +115,7 @@ function useDesignPrevia(uid: string, ligado: boolean) {
 
 const maskCep = (v: string) => { const d = v.replace(/\D/g, "").slice(0, 8); return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d; };
 
-export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?: Local; onEstado?: (completo: boolean) => void }) {
+export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbertos = false }: { local?: Local; onEstado?: (completo: boolean) => void; todosAbertos?: boolean }) {
   // (19/10) computador no Início: duas colunas (o passo da vez à esquerda, a lista à direita), nada esticado
   const [largo, setLargo] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 901px)").matches);
   useEffect(() => {
@@ -315,14 +315,14 @@ export default function PrimeirosPassos({ local = "inicio", onEstado }: { local?
           <button type="button" className="ppb-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}</button>
           {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
         </div>
-        {verTodos && <div className="ppb-lista">{passos.map((q, i) => i === atual ? null : (
+        {(verTodos || todosAbertos) && <div className="ppb-lista">{passos.map((q, i) => i === atual ? null : (
           <button type="button" key={q.t} className={`pp-ps${q.feito ? " pp-ps--ok" : ""}`} onClick={q.abrir}>
             <span className={`pp-ic${q.feito ? " pp-ic--ok" : ""}`}>{q.feito ? I(Check) : <>{q.ic}<i className="pp-n">{i + 1}</i></>}</span>
             <span className="pp-tx"><b>{q.t}</b><small>{q.feito ? "Feito · editar" : q.s}</small></span>
             <span className="pp-seta"><CaretRight size={16} weight="bold" /></span>
           </button>
         ))}</div>}
-        <button type="button" className="ppb-ver" aria-expanded={verTodos} onClick={() => setVerTodos(v => !v)}>{verTodos ? "Esconder os passos" : `Ver todos os ${passos.length} passos`}</button>
+        {!todosAbertos && <button type="button" className="ppb-ver" aria-expanded={verTodos} onClick={() => setVerTodos(v => !v)}>{verTodos ? "Esconder os passos" : `Ver todos os ${passos.length} passos`}</button>}
 
         {folha === "descricao" && <FolhaDescricao uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}
         {folha === "logo" && <FolhaLogo uid={uid} perfil={{ ...estado.perfil, ...perfilNovo }} onClose={() => setFolha(null)} onSalvo={salvo} onDepois={depois} />}

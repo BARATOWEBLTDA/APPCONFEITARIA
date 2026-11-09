@@ -798,7 +798,7 @@ export default function Inicio() {
       <p><strong>Pedidos na semana</strong> e <strong>ticket médio:</strong> os pedidos dos últimos 7 dias e quanto cada um vale, em média.</p>
       <p><strong>Entregas hoje:</strong> quantos pedidos saem hoje. A lista completa fica em Próximas entregas e na Agenda.</p>
     </>} /></div>
-    <div className={`ini-root${computador && focoPassos !== false ? " ini-root--foco" : ""}${computador && focoPassos === null ? " ini-root--decidindo" : ""}`}>
+    <div className={`ini-root${computador && focoPassos !== false ? " ini-root--foco" : ""}${computador && focoPassos === null ? " ini-root--decidindo" : ""}${!computador && focoPassos === true ? " ini-root--foco-cel" : ""}`}>
       {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
       <div className="ini-hero">
         {/* Fundo mobile: ondas vinho (fica recortado pelo border-radius do hero) */}
@@ -1085,7 +1085,8 @@ export default function Inicio() {
              (07/10 · 2.94) Passou a aparecer em todos os aparelhos: é o único guia depois das boas-vindas (o tour saiu). ── */}
       {!computador && (
         <section className="ini-section ini-section--checklist-top ini-pp">
-          <PrimeirosPassos />
+          {/* (09/11) celular: enquanto faltam passos, o Início mostra só eles, com os 8 passos abertos */}
+          <PrimeirosPassos onEstado={marcarFoco} todosAbertos={focoPassos === true} />
         </section>
       )}
 
