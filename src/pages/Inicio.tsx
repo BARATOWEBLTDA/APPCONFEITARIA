@@ -23,7 +23,7 @@ import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { TelaVazia, informar } from "@/components/base";
 import MenuConta from "@/components/MenuConta";
 import { abrirDooIA } from "@/components/MenuContaItens";
-import { ArrowRight as SetaDoo, Plus as MaisIc, ArrowCircleDown, ArrowCircleUp } from "@phosphor-icons/react";
+import { ArrowRight as SetaDoo, Plus as MaisIc, ArrowCircleDown, ArrowCircleUp, Crown } from "@phosphor-icons/react";
 import { useNotifications } from "@/context/NotificationContext";
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
@@ -409,7 +409,9 @@ export default function Inicio() {
 
   const hojeFormatado = () => {
     const d = new Date();
-    const s = d.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+    // (09/11) celular: dia da semana curto ("Seg, 9 de novembro") pra caber numa linha ao lado do "7 dias grátis"
+    const sem = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
+    const s = `${sem}, ${d.toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}`;
     return s.charAt(0).toUpperCase() + s.slice(1);
   };
 
@@ -870,12 +872,17 @@ export default function Inicio() {
         {/* (16/10) celular: o sino com as não lidas (antes só pela foto › Notificações, sem aviso nenhum) */}
         <div className="ini-hero-acoes">
           {/* (22/10) a coroa do PRO do lado do sino (como o Clube do iFood): leva pra assinatura */}
-          {profile && (
-            <button type="button" className="ini-hero-ac ini-hero-ac--pro" onClick={() => navigate(isPro ? "/minha-assinatura" : "/assinar")}
-              aria-label={isPro ? "Minha assinatura PRO" : "Assinar o plano PRO"} title={isPro ? "Minha assinatura" : "Testar o PRO grátis"}>
+          {/* (09/11) quem não é PRO vê a etiqueta "7 dias grátis" (a coroa sozinha ninguém entendia); PRO fica com a coroa, como selo */}
+          {profile && (isPro ? (
+            <button type="button" className="ini-hero-ac ini-hero-ac--pro" onClick={() => navigate("/minha-assinatura")}
+              aria-label="Minha assinatura PRO" title="Minha assinatura">
               <img src="/coroa.webp" alt="" aria-hidden="true" />
             </button>
-          )}
+          ) : (
+            <button type="button" className="selo-teste-cel" onClick={() => navigate("/assinar")} aria-label="Testar o PRO grátis por 7 dias">
+              <Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}
+            </button>
+          ))}
           <button type="button" className={`ini-hero-ac${notifCount > 0 ? " ini-hero-ac--tem" : ""}`} onClick={() => navigate("/noticias")} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? "s" : ""}` : "Novidades"} title="Novidades">
             <Bell size={24} weight="regular" />
             {notifCount > 0 && <i className="ini-hero-bolinha">{notifCount > 9 ? "9+" : notifCount}</i>}

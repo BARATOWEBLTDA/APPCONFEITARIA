@@ -176,3 +176,8 @@
   .cab-sino--novo { color: var(--ui-texto); }
   .cab-sino-n { position: absolute; top: 3px; right: 2px; min-width: 17px; height: 17px; padding: 0 4px; border: 2px solid var(--ui-branco); border-radius: 9px; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 10px; font-style: normal; font-weight: 600; line-height: 13px; text-align: center; box-sizing: border-box; }
 }
+
+/* (09/11) celular: a etiqueta "7 dias grátis" no lugar da coroa (mesma do topo do computador) */
+.selo-teste-cel { display: inline-flex; align-items: center; gap: 5px; flex: none; height: 32px; margin: 0; padding: 0 11px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-p); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 12.5px; font-weight: 600; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.selo-teste-cel svg { color: #C9962B; }
+.selo-teste-cel:active { background: #F6F3F4; }

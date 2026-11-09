@@ -146,12 +146,16 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
       <div className={`cab-foto-area ${className}`}>
         {/* (22/10) celular: coroa e sino, iguais ao Início (no lugar da logo da loja) */}
         <div className="cab-cel-acoes">
-          {profile && (
-            <button type="button" className="cab-cel-ac cab-cel-ac--pro" onClick={() => navigate(isPro ? '/minha-assinatura' : '/assinar')}
-              aria-label={isPro ? 'Minha assinatura PRO' : 'Assinar o plano PRO'}>
+          {/* (09/11) igual ao Início: "7 dias grátis" pra quem não é PRO; a coroa só como selo do PRO */}
+          {profile && (isPro ? (
+            <button type="button" className="cab-cel-ac cab-cel-ac--pro" onClick={() => navigate('/minha-assinatura')} aria-label="Minha assinatura PRO">
               <img src="/coroa.webp" alt="" aria-hidden="true" />
             </button>
-          )}
+          ) : !carregandoPlano && (
+            <button type="button" className="selo-teste-cel" onClick={() => navigate('/assinar')} aria-label="Testar o PRO grátis por 7 dias">
+              <Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}
+            </button>
+          ))}
           <button type="button" className="cab-cel-ac" onClick={() => navigate('/noticias')} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? 's' : ''}` : 'Novidades'}>
             <Bell size={21} weight="regular" />
             {notifCount > 0 && <i className="cab-cel-bolinha">{notifCount > 9 ? '9+' : notifCount}</i>}
