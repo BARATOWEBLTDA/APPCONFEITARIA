@@ -281,3 +281,13 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 .nv3-ok-res .nv3-ok-tot > span { color: var(--ui-texto); font-weight: 600; } .nv3-ok-res .nv3-ok-tot > b { font-weight: 600; }
 .nv3-ok-bts { display: flex; flex-direction: column; gap: 8px; align-self: stretch; }
 .nv3-ok-bts .ui-bt--link { align-self: center; margin-top: 2px; }
+
+/* (09/11) recado longo ou sem espaço não estoura: quebra a palavra e mostra no máximo 2 linhas no resumo */
+.nv3-contas p.rec, .nv3-lado-its p.rec { min-width: 0; }
+.nv3-contas p.rec > span, .nv3-lado-its p.rec > span { flex: 1 1 auto; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; white-space: normal !important; }
+/* (09/11) celular de tela baixa: o "Adicionar produto" ficava escondido atrás da barra de baixo (o toque caía no "+").
+   Sem a caixinha do ícone, o botão sobe e aparece inteiro sem rolar. */
+@media (max-width: 900px) and (max-height: 760px) {
+  .nv3-vz { padding: 4px 8px 8px; }
+  .nv3-vz-ic { display: none; }
+}

@@ -552,6 +552,8 @@ export default function NovaVenda() {
   }, [itens.length])
   // (5.64) recados abertos (o campo só aparece quando ela toca em "+ Recado")
   const [recadoAberto, setRecadoAberto] = useState<number[]>([])
+  // (09/11) recado do item com limite (sem limite, um texto sem espaço estourava o Resumo para fora da tela)
+  const RECADO_MAX = 150
   // (28/10) produto por kg sem tamanho anda de meio em meio quilo (antes só ia de 1 em 1 kg)
   const passoDo = (it: { personalizacoes?: unknown; forma_venda?: string | null }) => pesoLivre(it) ? 0.5 : 1
   const atualizarQtd = (idx: number, qtd: number) => {
@@ -919,7 +921,7 @@ export default function NovaVenda() {
                         </div>
                       </div>
                       {recadoAberto.includes(idx)
-                        ? <Campo rotulo="Recado do item" autoFocus placeholder="Ex.: Parabéns, Lia!" value={it.observacoes} onChange={e => atualizarObs(idx, e.target.value)}
+                        ? <Campo rotulo="Recado do item" autoFocus placeholder="Ex.: Parabéns, Lia!" maxLength={RECADO_MAX} value={it.observacoes} onChange={e => atualizarObs(idx, e.target.value.slice(0, RECADO_MAX))}
                             onBlur={() => setRecadoAberto(l => l.filter(i => i !== idx))} />
                         : <button type="button" className={`nv3-recado${it.observacoes.trim() ? ' tem' : ''}`} onClick={() => setRecadoAberto(l => [...l, idx])}>
                             {it.observacoes.trim() ? <><PencilSimple size={14} weight="bold" aria-hidden="true" /><span>{it.observacoes.trim()}</span></> : <><Plus size={14} weight="bold" aria-hidden="true" />Recado</>}
