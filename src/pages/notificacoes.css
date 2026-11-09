@@ -22,7 +22,7 @@
 .nf-ic { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px #E6E0E3; }
 .nf-ic--foto { box-shadow: none; }
 .nf-ic--foto > img { width: 100%; height: 100%; border-radius: 12px; object-fit: cover; }
-.nf-ic--foto.sem { background: #FCE7F3; } .nf-ic--foto.sem .nf-doo { width: 30px; height: 30px; object-fit: contain; border-radius: 0; }
+.nf-ic--foto.sem { background: #fff; box-shadow: inset 0 0 0 1px #E6E0E3; }
 .nf-alerta { position: absolute; right: -3px; bottom: -3px; display: flex; align-items: center; justify-content: center; width: 17px; height: 17px; border: 2px solid #fff; border-radius: 50%; background: #DC2626; color: #fff; }
 .nf-ic--pix { background: #32BCAD; box-shadow: none; } .nf-ic--pix img { width: 22px; height: 22px; }
 .nf-ic--cal { flex-direction: column; justify-content: flex-start; overflow: hidden; }
@@ -37,5 +37,5 @@
 .nf-vazio-doo { width: 120px; height: auto; margin-bottom: 8px; }
 .nf-vazio b { font-size: 17px; font-weight: 500; color: #3B3236; }
 .nf-vazio p { margin: 0; font-size: 14px; color: var(--ui-texto-2); }
-@media (max-width: 900px) { .nf { padding: 4px 16px 120px; } }
+@media (max-width: 900px) { .nf { padding: 4px 8px 120px; } }
 @media (min-width: 901px) { html body .layout-root:has(.nf) { --col: 720px; } } /* a lista no meio, na largura de leitura */

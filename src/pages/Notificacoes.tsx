@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wallet, WarningCircle } from "@phosphor-icons/react";
+import { ChatCircleText, Receipt, Wallet, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import AbasAvisos from "@/components/AbasAvisos";
 import { Botao, TelaVazia } from "@/components/base";
@@ -39,7 +39,7 @@ function Imagem({ n }: { n: NotifVista }) {
     case "atrasado":
       return (
         <span className={`nf-ic nf-ic--foto${n.foto ? "" : " sem"}`}>
-          {n.foto ? <img src={n.foto} alt="" loading="lazy" /> : <img src="/Sistema/doo.webp" alt="" className="nf-doo" />}
+          {n.foto ? <img src={n.foto} alt="" loading="lazy" /> : <Receipt size={22} weight="regular" />}
           {n.tipo === "atrasado" && <i className="nf-alerta"><WarningCircle size={11} weight="bold" /></i>}
         </span>
       );
@@ -52,7 +52,7 @@ function Imagem({ n }: { n: NotifVista }) {
     );
     case "conta": return <span className="nf-ic nf-ic--conta"><Wallet size={22} weight="regular" /></span>;
     case "pro": return <span className="nf-ic nf-ic--pro"><img src="/coroa.webp" alt="" /></span>;
-    case "equipe": return <span className="nf-ic nf-ic--doo"><Mascote pose="acenando" /></span>;
+    case "equipe": return <span className="nf-ic"><ChatCircleText size={22} weight="regular" /></span>;
   }
 }
 

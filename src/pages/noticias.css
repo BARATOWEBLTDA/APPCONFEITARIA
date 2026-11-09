@@ -25,7 +25,6 @@
 
 /* (23/10 · v2) lista no jeito do iFood: de ponta a ponta, sem cartão e sem borda, fundo branco na tela toda.
    Imagem quadrada à esquerda, título, texto e o tempo no canto. Não lida: branco. Lida: cinza claro e texto mais leve. */
-html:has(.layout-root[data-rota="/noticias"]) body,
 /* (09/11) a página de Novidades no mesmo cinza das Notificações (as duas são abas da mesma página) */
 .nl-lista { margin: 0 -16px; padding: 0; list-style: none; } /* (28/10) antes calc(50% - 50vw): em alguns Android passava da tela e o texto vazava para a direita */
 .nl-it { display: flex; align-items: flex-start; gap: 14px; padding: 18px 16px; background: var(--ui-branco); color: var(--ui-texto); text-decoration: none; -webkit-tap-highlight-color: transparent; transition: background-color var(--dur-fast) linear; }
@@ -160,3 +159,6 @@ html:has(.layout-root[data-rota="/noticias"]) body,
 .nl-lista > li { list-style: none; }
 .nl-it-t, .nl-it-d { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
 .nl-it { box-sizing: border-box; }
+/* (09/11) as abas no mesmo lugar nas duas abas (antes pulavam pro lado e encostavam na borda do celular) */
+@media (max-width: 900px) { .nl > .aba-av { margin: 0 0 8px; } }
+@media (min-width: 901px) { html body .layout-root:has(.nl) { --col: 720px; } }
