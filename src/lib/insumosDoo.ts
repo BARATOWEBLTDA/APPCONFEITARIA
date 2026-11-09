@@ -26,12 +26,12 @@ export type RascunhoInsumo = {
   imagem_url?: string;
 };
 
-export type InsumoResumo = { id: string; nome: string; unidade: string; qtd_embalagem: number; valor_compra: number; custo_unitario: number };
+export type InsumoResumo = { id: string; nome: string; unidade: string; qtd_embalagem: number; valor_compra: number; custo_unitario: number; tem_foto?: boolean };
 
-const CAMPOS_RESUMO = "id, nome, unidade, qtd_embalagem, valor_compra, custo_unitario";
+const CAMPOS_RESUMO = "id, nome, unidade, qtd_embalagem, valor_compra, custo_unitario, imagem_url";
 /** O insumo como vem do banco (as colunas de CAMPOS_RESUMO, e às vezes a marca) */
-type InsumoLido = { id: string; nome: string; unidade: string; qtd_embalagem: number | null; valor_compra: number | null; custo_unitario: number | null; marca?: string | null };
-const paraResumo = (i: InsumoLido): InsumoResumo => ({ id: i.id, nome: i.nome, unidade: i.unidade, qtd_embalagem: Number(i.qtd_embalagem) || 1, valor_compra: Number(i.valor_compra) || 0, custo_unitario: Number(i.custo_unitario) || 0 });
+type InsumoLido = { id: string; nome: string; unidade: string; qtd_embalagem: number | null; valor_compra: number | null; custo_unitario: number | null; marca?: string | null; imagem_url?: string | null };
+const paraResumo = (i: InsumoLido): InsumoResumo => ({ id: i.id, nome: i.nome, unidade: i.unidade, qtd_embalagem: Number(i.qtd_embalagem) || 1, valor_compra: Number(i.valor_compra) || 0, custo_unitario: Number(i.custo_unitario) || 0, tem_foto: !!(i.imagem_url && String(i.imagem_url).trim()) });
 /** Quantos ingredientes a Doo recebe (11/10: antes 200). Os que passarem disso ainda são achados pelo nome no cartão. */
 const TETO_INSUMOS_DOO = 500;
 
@@ -153,4 +153,36 @@ export async function gravarInsumosDoProduto(produtoId: string, itens: { insumo_
   if (unicos.length) q = q.not('insumo_id', 'in', `(${unicos.map(i => i.insumo_id).join(',')})`)
   const { error } = await q
   return { error }
+}
+
+/**
+ * Foto do ingrediente pela Doo (08/11): a Doo pede, o app busca na internet (a mesma busca do cadastro),
+ * escolhe a melhor e mostra no cartão; só grava depois do "Usar esta foto" da confeiteira.
+ */
+export type RascunhoFotoInsumo = { acao: "foto_insumo"; insumo_id?: string | null; nome: string; marca?: string };
+
+export function normalizarFotoInsumo(r: { acao?: string; insumo_id?: unknown; nome?: unknown; marca?: unknown } | null | undefined): RascunhoFotoInsumo | null {
+  if (!r || r.acao !== "foto_insumo") return null;
+  const nome = String(r.nome ?? "").trim().slice(0, 80);
+  if (!nome) return null;
+  return { acao: "foto_insumo", insumo_id: typeof r.insumo_id === "string" && r.insumo_id.trim() ? r.insumo_id.trim() : null, nome, marca: String(r.marca ?? "").trim().slice(0, 60) };
+}
+
+/** Grava a foto escolhida no ingrediente (acha pelo id; sem id, pelo nome). Só mexe na foto. */
+export async function salvarFotoInsumoDoo(uid: string, r: RascunhoFotoInsumo, url: string): Promise<{ ok: true; id: string; nome: string } | { ok: false; erro: string }> {
+  if (!/^https:\/\//i.test(url)) return { ok: false, erro: "Essa foto não pode ser usada. Escolha outra." };
+  let alvo: { id: string; nome: string } | null = null;
+  if (r.insumo_id) {
+    const { data } = await supabase.from("insumos").select("id, nome").eq("id", r.insumo_id).eq("user_id", uid).maybeSingle();
+    if (data) alvo = data as { id: string; nome: string };
+  }
+  if (!alvo) {
+    const ja = await procurarInsumoPorNome(uid, r.nome, r.marca || "");
+    if (ja) alvo = { id: ja.id, nome: ja.nome };
+  }
+  if (!alvo) return { ok: false, erro: `Não achei "${r.nome}" nos seus ingredientes. Cadastre ele primeiro.` };
+  const { data: mudou, error } = await supabase.from("insumos").update({ imagem_url: url, updated_at: new Date().toISOString() }).eq("id", alvo.id).eq("user_id", uid).select("id");
+  if (error) return { ok: false, erro: explicarErro(error, "Não deu para salvar a foto. Tente de novo.") };
+  if (!(mudou as { id: string }[] | null)?.length) return { ok: false, erro: "Esse ingrediente não está mais no cadastro." };
+  return { ok: true, id: alvo.id, nome: alvo.nome };
 }

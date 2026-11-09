@@ -72,7 +72,7 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
       <div className={`cid cid--fim${estado === "cancelado" ? " cid--cancel" : ""}`}>
         <span className="cid-ok">{estado === "salvo" ? <Check size={16} weight="bold" /> : <X size={14} weight="bold" />}</span>
         <span>{estado === "salvo" ? `${r.nome} ${atualizar ? "atualizado" : "cadastrado"} nos seus ingredientes` : "Cadastro cancelado"}</span>
-        <style>{CSS}</style>
+        <style>{CSS_CID}</style>
       </div>
     );
   }
@@ -134,12 +134,12 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
         </button>
       </div>
       <button type="button" className="cid-x" onClick={() => onFeito("cancelado")}>Cancelar</button>
-      <style>{CSS}</style>
+      <style>{CSS_CID}</style>
     </div>
   );
 }
 
-const CSS = `
+export const CSS_CID = `
   .cid { margin-top: 10px; background: var(--ui-branco); border: 1.5px solid #F7C6D9; border-radius: var(--ui-raio-cartao); padding: 14px; font-family: var(--font-base); color: var(--ui-texto); max-width: 340px; }
   .cid-hd { display: flex; gap: 11px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--ui-linha); }
   .cid-ic { width: 40px; height: 40px; border-radius: var(--ui-raio-p); background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }

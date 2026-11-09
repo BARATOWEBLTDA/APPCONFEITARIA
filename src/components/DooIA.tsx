@@ -6,9 +6,10 @@ import { useNavigate as useNavigateDoo } from 'react-router-dom'
 import CartaoPedidoDoo from '@/components/doo/CartaoPedidoDoo'
 import { listarCatalogo, catalogoParaDoo, type RascunhoPedido, type ProdutoCat, type ClienteCat } from '@/lib/pedidosDoo'
 import CartaoInsumoDoo from '@/components/doo/CartaoInsumoDoo'
+import CartaoFotoInsumoDoo from '@/components/doo/CartaoFotoInsumoDoo'
 import CartaoAcaoDoo from '@/components/doo/CartaoAcaoDoo'
 import { ACOES_DOO, CAMPOS_LOJA_DOO, normalizarAcaoDoo, regrasAcoesDoo, type AcaoDoo, type LojaDoo } from '@/lib/acoesDoo'
-import { listarInsumosResumo, normalizarRascunho, type InsumoResumo, type RascunhoInsumo } from '@/lib/insumosDoo'
+import { listarInsumosResumo, normalizarRascunho, normalizarFotoInsumo, type InsumoResumo, type RascunhoInsumo, type RascunhoFotoInsumo } from '@/lib/insumosDoo'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
 import { ConvitePro } from '@/components/billing/RecursoPro'
@@ -24,7 +25,7 @@ interface Message {
   isImage?: boolean
   attachmentPreview?: string
   /** Rascunho de cadastro que a Doo preparou (só é salvo quando ela confirma no cartão) */
-  acao?: RascunhoInsumo | RascunhoPedido | AcaoDoo
+  acao?: RascunhoInsumo | RascunhoPedido | AcaoDoo | RascunhoFotoInsumo
   /** (6.86) o que o app fez com a ação ("Ana foi cadastrada") e a tela pra abrir */
   acaoFeito?: string
   acaoAbrir?: string
@@ -322,13 +323,22 @@ Quando tiver as 3 informações, responda com UMA frase curta (ex.: "Confira os 
 \`\`\`acao-doonly
 {"acao":"insumo","insumo_id":null,"nome":"Leite condensado","marca":"","categoria":"Ingredientes","unidade":"g","embalagem_tipo":"Lata","qtd_embalagem":395,"valor_compra":6.79}
 \`\`\`
-Regras do bloco: números com ponto (6.79), sem texto depois do bloco, um bloco por resposta.
+Regras do bloco: números com ponto (6.79), sem texto depois do bloco, um bloco por ingrediente.
 - categoria: uma de Secos, Laticínios e ovos, Chocolates, Frutas, Carnes e frios, Embalagens, Decorações, Descartáveis, Bebidas, Outros.
 - embalagem_tipo: uma de Avulso, Pacote, Caixa, Lata, Pote, Garrafa, Frasco, Bandeja, Bisnaga, Sachê, Envelope, Balde, Rolo.
 - Nunca diga que "cadastrou" ou "salvou": quem salva é ela, no cartão.
 
+# AÇÃO: COLOCAR FOTO NO INGREDIENTE
+Você CONSEGUE colocar foto em ingrediente que ela já tem (ou acabou de cadastrar). Quando ela pedir foto (de um ingrediente ou de vários, ex.: "coloca foto nos meus ingredientes"), NÃO diga que não pode. O app busca na internet sozinho, já deixa a melhor foto marcada e ela confirma no cartão. Você só pede, com UMA frase curta (ex.: "Achei a foto, confira no cartão abaixo.") e, no FINAL, o bloco:
+\`\`\`acao-doonly
+{"acao":"foto_insumo","insumo_id":"ID da lista","nome":"Leite condensado","marca":"Moça"}
+\`\`\`
+- Use o id e o nome exatos da lista abaixo; marca só se estiver no nome/ela falar. Se o ingrediente não está na lista, ofereça cadastrar primeiro.
+- Para vários ingredientes (os marcados "SEM FOTO" na lista), mande no máximo 5 blocos por resposta, um por ingrediente (um cartão para cada), e avise que pode continuar com os próximos.
+- Nunca diga que "colocou" ou "salvou" a foto: quem confirma é ela.
+
 Insumos que ela já tem (id · nome · embalagem · valor pago):
-${lista.length ? lista.map(i => `- ${i.id} · ${i.nome} · ${String(i.qtd_embalagem).replace('.', ',')} ${i.unidade} · R$ ${i.valor_compra.toFixed(2).replace('.', ',')}`).join('\n') : '- (nenhum ainda)'}
+${lista.length ? lista.map(i => `- ${i.id} · ${i.nome} · ${String(i.qtd_embalagem).replace('.', ',')} ${i.unidade} · R$ ${i.valor_compra.toFixed(2).replace('.', ',')}${i.tem_foto ? '' : ' · SEM FOTO'}`).join('\n') : '- (nenhum ainda)'}
 `
 
 /** Ação "registrar pedido" (02/10): segue as 5 etapas da Nova venda. Quem salva é a confeiteira, no cartão. */
@@ -392,11 +402,11 @@ function respostaFeito(a: AcaoDoo, feito: string): string {
 /** Separa o bloco acao-doonly da resposta.
  *  (6.116) a Doo às vezes manda duas ações numa resposta ("registrando os dois"): a primeira vira o cartão e as outras
  *  vêm em "extras" (um cartão para cada). Nenhum bloco aparece cru na conversa. */
-function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | AcaoImagem | null; extras: (RascunhoInsumo | RascunhoPedido | AcaoDoo)[] } {
+function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | RascunhoFotoInsumo | AcaoImagem | null; extras: (RascunhoInsumo | RascunhoPedido | AcaoDoo | RascunhoFotoInsumo)[] } {
   const todos = [...reply.matchAll(/```acao-doonly\s*([\s\S]*?)```/g)]
   if (todos.length > 1) {
-    const um = todos.map(b => extrairAcao(b[0]).acao).filter(Boolean) as (RascunhoInsumo | RascunhoPedido | AcaoDoo | AcaoImagem)[]
-    const semImagem = um.filter(a => a.acao !== 'imagem') as (RascunhoInsumo | RascunhoPedido | AcaoDoo)[]
+    const um = todos.map(b => extrairAcao(b[0]).acao).filter(Boolean) as (RascunhoInsumo | RascunhoPedido | AcaoDoo | RascunhoFotoInsumo | AcaoImagem)[]
+    const semImagem = um.filter(a => a.acao !== 'imagem') as (RascunhoInsumo | RascunhoPedido | AcaoDoo | RascunhoFotoInsumo)[]
     const texto = todos.reduce((t, b) => t.replace(b[0], ''), reply).trim() || 'Confira e confirme nos cartões abaixo.'
     return { texto, acao: semImagem[0] || null, extras: semImagem.slice(1) }
   }
@@ -415,7 +425,7 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
     }
     return { texto: reply, acao: null, extras: [] }
   }
-  let acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | AcaoImagem | null = null
+  let acao: RascunhoInsumo | RascunhoPedido | AcaoDoo | RascunhoFotoInsumo | AcaoImagem | null = null
   try {
     const j = JSON.parse(m[1].trim())
     if (j?.acao === 'pedido' && Array.isArray(j.itens) && j.itens.length) acao = j as RascunhoPedido
@@ -426,6 +436,7 @@ function extrairAcao(reply: string): { texto: string; acao: RascunhoInsumo | Ras
       acao = { acao: 'imagem', topo: tipoJ === 'topo', tipo: tipoJ, descricao: String(j.descricao || j.tema || '').trim().slice(0, 1200),
         ...(tipoJ === 'topo' && txt(j.tema) ? { campos: { tema: txt(j.tema), nome: txt(j.nome), texto: txt(j.idade) || txt(j.frase), cores: txt(j.cores), estilo: (['fofo', 'elegante', 'divertido'].includes(j.estilo) ? j.estilo : 'fofo') as TopoForm['estilo'], idadeNaFaixa: j.idade_na_faixa === true } } : {}) }
     }
+    else if (j?.acao === 'foto_insumo') acao = normalizarFotoInsumo(j)
     else acao = normalizarRascunho(j)
   } catch { acao = null }
   const texto = reply.replace(m[0], '').trim() || 'Confira e confirme no cartão abaixo.'
@@ -1087,7 +1098,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               : buildImagePrompt(ai.descricao), tipoAi, imgPayload?.base64 || (pedeParecida ? ultimaReferencia.current : undefined))
             return
           }
-          const acao = acaoBruta as RascunhoInsumo | RascunhoPedido | AcaoDoo | null
+          const acao = acaoBruta as RascunhoInsumo | RascunhoPedido | AcaoDoo | RascunhoFotoInsumo | null
           setMessages(prev => [...prev, acao
             ? { role: 'assistant', content: texto, acao, acaoEstado: 'pendente' }
             : { role: 'assistant', content: texto, ...(cortada ? { cortada: true } : {}) },
@@ -1257,6 +1268,15 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                         setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: estado, content: m.content + nota } : m))
                         if (estado === 'salvo') dooResponde(`Prontinho! ${final?.nome || 'O ingrediente'} já está ${(msg.acao as RascunhoInsumo).insumo_id ? 'com o preço novo' : 'nos seus ingredientes'}. As fichas técnicas que usam ele já recalculam o custo.`)
                         if (estado === 'salvo') listarInsumosResumo(uid).then(setInsumos).catch(() => {})
+                      }} />
+                  )}
+                  {msg.acao && uid && msg.acao.acao === 'foto_insumo' && (
+                    <CartaoFotoInsumoDoo uid={uid} rascunho={msg.acao as RascunhoFotoInsumo} estado={!msg.acaoEstado || msg.acaoEstado === 'editando' ? 'pendente' : msg.acaoEstado}
+                      onFeito={(estado, nome) => {
+                        const nota = estado === 'salvo' ? `\n\n[O app confirmou: a foto de ${nome} foi salva no ingrediente.]` : '\n\n[A confeiteira cancelou a foto.]'
+                        setMessages(prev => prev.map((m, k) => k === i ? { ...m, acaoEstado: estado, content: m.content + nota } : m))
+                        if (estado === 'salvo') dooResponde(`Prontinho! A foto de ${nome || 'o ingrediente'} já está nos seus ingredientes.`)
+                        if (estado === 'salvo') listarInsumosResumo(uid).then(l => { insRef.current = l; setInsumos(l) }).catch(() => {})
                       }} />
                   )}
                   {msg.acao && uid && (ACOES_DOO as readonly string[]).includes(msg.acao.acao) && (
