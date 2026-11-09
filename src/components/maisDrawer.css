@@ -107,3 +107,6 @@ button.mais-it + .mais-it, .mais-it + button.mais-it { border-top: 1px solid var
 .mais-busca { display: flex; align-items: center; gap: 10px; width: 100%; height: 48px; margin: 0 0 12px; padding: 0 14px; border: 1.5px solid var(--ui-borda-campo, #EDE6E9); border-radius: var(--ui-raio, 12px); background: var(--ui-branco); font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto-3); text-align: left; cursor: pointer; }
 .mais-busca svg { flex: none; color: var(--ui-texto-2); }
 .mais-it-pro { flex: none; padding: 2px 7px; border-radius: 6px; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 11.5px; font-style: normal; font-weight: 600; letter-spacing: .02em; }
+
+/* (09/11) a tela do Menu com o mesmo cinza das outras telas, topo incluído (antes topo branco e fundo rosado) */
+.ui-janela.mais, .mais-cab, .mais-corpo { background: #F1F2F2 !important; }
