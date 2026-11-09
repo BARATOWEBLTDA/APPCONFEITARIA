@@ -1063,7 +1063,7 @@ export default function NovaVenda() {
                   <span className="ui-campo-r"><span>Horário</span><small>opcional</small></span>
                   <button type="button" className="ui-campo-c nv3-abre" onClick={() => setHoraSheetAberto(true)}>
                     <span className="ui-campo-ic" aria-hidden="true"><Clock size={20} weight="bold" /></span>
-                    <span className={horarioEntrega ? '' : 'nv3-ph'}>{horarioEntrega || '--:--'}</span>
+                    <span className={horarioEntrega ? '' : 'nv3-ph'}>{horarioEntrega || <>Definir<span className="nv3-so-pc" style={{ marginLeft: 0 }}>&nbsp;horário</span></>}</span>
                   </button>
                 </div>
               </div>
