@@ -7,7 +7,8 @@ import type { Icon } from "@phosphor-icons/react";
 import { Botao, Janela, avisar } from "@/components/base";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { abrirDooIA } from "@/components/MenuContaItens";
-import { sairDaConta } from "@/hooks/useProfile";
+import { perfilAtual, sairDaConta } from "@/hooks/useProfile";
+import { Mascote } from "@/components/marca/Mascote";
 import { VERSAO_APP } from "@/lib/versao";
 import "./menuConta.css";
 
@@ -31,6 +32,8 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
   const [lugar, setLugar] = useState({ topo: 88, direita: 12 });
   const [perguntando, setPerguntando] = useState(false);
   const [saindo, setSaindo] = useState(false);
+  // (09/11) a janela de sair chama pelo primeiro nome, com o Doo acenando tchau
+  const primeiroNome = (perfilAtual()?.nome || "").trim().split(/\s+/)[0] || "";
   useSobreposicao(aberto, aoFechar, caixa);
 
   // mede onde está a foto antes de a tela travar a rolagem
@@ -102,11 +105,12 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
 
       <Janela
         aberta={perguntando} aoFechar={() => { if (!saindo) setPerguntando(false); }}
-        titulo="Sair do Doonly?" texto="Você vai precisar entrar de novo na próxima vez."
-        icone={<SignOut size={32} />} tom="vermelho"
+        titulo={primeiroNome ? `Já vai, ${primeiroNome}?` : "Já vai?"}
+        texto="Seus pedidos e o cardápio continuam funcionando. Quando voltar, é só entrar."
+        icone={<Mascote pose="acenando" className="mc-sair-masc" />} tom="rosa"
         acoes={<>
-          <Botao variante="secundario" onClick={() => setPerguntando(false)} disabled={saindo}>Voltar</Botao>
-          <Botao variante="perigo" onClick={sair} carregando={saindo} data-foco-inicial>Sair</Botao>
+          <Botao variante="secundario" onClick={sair} carregando={saindo}>Sair</Botao>
+          <Botao onClick={() => setPerguntando(false)} disabled={saindo} data-foco-inicial>Ficar</Botao>
         </>}
       />
     </>

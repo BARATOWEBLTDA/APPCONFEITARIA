@@ -28,3 +28,6 @@
 .mc-it--sair .mc-it-ic { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho); }
 @media (hover: hover) { .mc-it--sair:hover { background: var(--ui-vermelho-fundo); } }
 @media (prefers-reduced-motion: reduce) { .mc-veu, .mc { animation-duration: 1ms !important; } }
+/* (09/11) janela de sair: o Doo acenando dentro do mesmo círculo rosa das outras janelas */
+.ui-janela-ic:has(> .mc-sair-masc) { overflow: hidden; }
+.mc-sair-masc { width: 54px; height: 54px; object-fit: contain; margin-top: 6px; }
