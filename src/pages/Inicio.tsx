@@ -770,6 +770,8 @@ export default function Inicio() {
   useEffect(() => { setFocoPassos(lerFoco(chaveFoco)); }, [chaveFoco]);
   // segurança: se os Primeiros passos não responderem (sem internet), mostra o Início normal depois de 4 s
   useEffect(() => { if (focoPassos !== null) return; const t = window.setTimeout(() => setFocoPassos(f => f ?? false), 4000); return () => window.clearTimeout(t); }, [focoPassos]);
+  // (09/11) enquanto faltam passos: topo sem busca e sem o (i) do Início (o texto e o tour falam de partes que nem aparecem)
+  const focoPC = computador && focoPassos !== false;
   const marcarFoco = (completo: boolean) => { setFocoPassos(!completo); try { if (profile?.id) localStorage.setItem(chaveFoco, completo ? "0" : "1"); } catch { /* sem armazenamento */ } };
   const ATALHOS = [
     /* (6.59) o que ela usa todo dia: Lucratividade e A receber continuam dentro do Financeiro */
@@ -793,7 +795,7 @@ export default function Inicio() {
   return (
     <>
     {/* (19/10) computador: a mesma barra de cima das outras telas (no celular fica o hero rosa) */}
-    <div className={`ini-dk-cab${computador && focoPassos !== false ? " ini-dk-cab--foco" : ""}`}><AppPageHeader title={saudacao} resumo={computador && focoPassos !== false ? "Vamos deixar sua loja pronta para vender" : resumoTopo} subtitle="O resumo do seu dia" infoIcon="📈" infoComo={COMO_INICIO} infoTour={TOUR_INICIO_PC} infoContent={<>
+    <div className={`ini-dk-cab${focoPC ? " ini-dk-cab--foco" : ""}`}><AppPageHeader title={saudacao} resumo={focoPC ? "Vamos deixar sua loja pronta para vender" : resumoTopo} subtitle="O resumo do seu dia" infoIcon="📈" infoComo={focoPC ? undefined : COMO_INICIO} infoTour={focoPC ? undefined : TOUR_INICIO_PC} infoContent={focoPC ? undefined : <>
       <p><strong>Recebido no mês:</strong> o dinheiro que entrou de verdade neste mês (sinais e pagamentos).</p>
       <p><strong>Pedidos na semana</strong> e <strong>ticket médio:</strong> os pedidos dos últimos 7 dias e quanto cada um vale, em média.</p>
       <p><strong>Entregas hoje:</strong> quantos pedidos saem hoje. A lista completa fica em Próximas entregas e na Agenda.</p>
@@ -896,7 +898,7 @@ export default function Inicio() {
               )}
             </span>
             {/* (22/10) celular: o (?) do Início, como na Dora (o que tem na tela e o tour) */}
-            {!computador && <BotaoAjuda c={COMO_INICIO_CEL} rotulo="Início" tipo="pergunta" tour={TOUR_INICIO_CEL} className="ini-ajuda" />}
+            {!computador && focoPassos !== true && <BotaoAjuda c={COMO_INICIO_CEL} rotulo="Início" tipo="pergunta" tour={TOUR_INICIO_CEL} className="ini-ajuda" />}
             {profile && (
               isPro ? (
                 <span className="ini-plan-tag ini-plan-tag--pc ini-plan-tag--pro" aria-label="Plano PRO">
