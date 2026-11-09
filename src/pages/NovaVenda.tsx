@@ -25,7 +25,7 @@ import AppPageHeader from '@/components/AppPageHeader'
 import { COMO_NOVA_VENDA, TOUR_NOVA_VENDA } from "@/lib/comoTelas";
 import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
-import { Bank, CalendarBlank, CalendarDots, Check, Clock, CreditCard, Info, Lightning, MagnifyingGlass, Minus, Money, Package, PencilSimple, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
+import { Bank, CalendarBlank, CalendarDots, Check, CheckCircle, Clock, CreditCard, Info, Lightning, MagnifyingGlass, Minus, Money, Package, PencilSimple, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
 import HeroVazio from '@/components/HeroVazio'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
 import { historicoAssentado } from '@/components/base/useSobreposicao'
@@ -862,6 +862,7 @@ export default function NovaVenda() {
   }
 
   const clienteEscolhida = clienteId ? clientes.find(x => x.id === clienteId) : undefined
+  const enderecoDoCadastro = !!clienteEscolhida?.rua && clienteEscolhida.rua === enderecoRua && (clienteEscolhida.numero || '') === enderecoNumero
   const podeUsarEndereco = !!clienteEscolhida?.rua && (clienteEscolhida.rua !== enderecoRua || (clienteEscolhida.numero || '') !== enderecoNumero)
   const usarEnderecoDaCliente = () => {
     const c = clienteEscolhida
@@ -1085,6 +1086,8 @@ export default function NovaVenda() {
           {ehEntrega && (
             <section className="nv3-card nv3-end">
               <Titulo acao={podeUsarEndereco ? <Botao variante="link" onClick={usarEnderecoDaCliente}>Usar o de {primeiroNome}</Botao> : undefined}>Endereço</Titulo>
+              {/* (09/11) avisa quando o endereço veio sozinho do cadastro do cliente */}
+              {enderecoDoCadastro && <p className="nv3-auto"><CheckCircle size={16} weight="fill" aria-hidden="true" /><span>Puxado do cadastro de {toTitleCase(primeiroNome)}</span></p>}
               {/* (09/11) 3 linhas cheias: CEP | Cidade, Rua | Número, Bairro | Complemento; a taxa fecha o cartão (depende do endereço) */}
               <div className="nv3-cols">
                 <Campo

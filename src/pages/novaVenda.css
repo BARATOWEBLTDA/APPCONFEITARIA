@@ -348,3 +348,7 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
   .nv3-formas button { flex-direction: row; justify-content: flex-start; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; }
   .nv3-formas .nv3-tipo-r, .nv3-formas .nv3-tipo-r { position: static; order: -1; flex: none; margin: 0; top: auto; right: auto; }
 }
+/* (09/11) aviso "Endereço do cadastro de Juliana" */
+.nv3-auto { display: flex; align-items: center; gap: 6px; margin: calc(-1 * var(--space-1)) 0 var(--space-3); font-size: 13px; color: #15803D; }
+.nv3-auto svg { flex: none; }
+.nv3-auto span { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
