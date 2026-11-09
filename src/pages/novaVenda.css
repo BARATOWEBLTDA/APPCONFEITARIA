@@ -326,3 +326,7 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 /* (09/11) espaçamentos do "Como o pedido chega?" na escala do themes: pergunta nova = 24 acima, 8 até as opções; data/horário 16 */
 .nv3-sub { margin: var(--space-6) 0 var(--space-2); font-weight: 500; }
 .nv3-dh { margin-top: var(--space-4); }
+/* (09/11) cartão só com a bolinha à esquerda (sem ícone): Já levou / Vem buscar */
+.nv3-tipos--marca button, .nv3-tipos.nv3-tipos--marca button { flex-direction: row; align-items: center; gap: 12px; min-height: 64px; padding: 12px 14px; }
+.nv3-tipos--marca .nv3-tipo-r { position: static; flex: none; margin: 0; }
+@media (max-width: 600px) { .nv3-tipos.nv3-tipos--marca { grid-template-columns: minmax(0, 1fr); } } /* celular: uma embaixo da outra, o texto cabe numa linha */
