@@ -955,12 +955,17 @@ export default function NovaVenda() {
             ) : (
               <>
                 {/* (21/10) busca e lista na própria tela; "Sem cliente" vem marcado */}
-                <div className="ui-campo-c nv3-cbusca">
-                  <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-                  <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar cliente pelo nome ou telefone" placeholder="Buscar nome ou telefone" value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
-                  {buscaCliente && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBuscaCliente('')}><X size={20} weight="bold" /></BotaoIcone>}
+                {/* (09/11) busca e "+ Novo cliente" na mesma linha; o botão é branco (o rosa da tela fica só no Continuar) */}
+                <div className="nv3-cbusca-l">
+                  <div className="ui-campo-c nv3-cbusca">
+                    <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
+                    <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar cliente pelo nome ou telefone" placeholder="Nome ou telefone" value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
+                    {buscaCliente && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBuscaCliente('')}><X size={20} weight="bold" /></BotaoIcone>}
+                  </div>
+                  <button type="button" className="nv3-cnovo" onClick={() => { tirarCliente(); setModoNovoCli(true) }}>
+                    <Plus size={16} weight="bold" aria-hidden="true" />Novo<span className="nv3-so-pc">cliente</span>
+                  </button>
                 </div>
-                <Botao cheio className="nv3-cnovo" icone={<UserPlus size={20} weight="bold" />} onClick={() => { tirarCliente(); setModoNovoCli(true) }}>Cadastrar novo cliente</Botao>
                 {(() => {
                   const q = buscaCliente.trim().toLowerCase()
                   // (11/10) o telefone é procurado nos dois campos e só pelos números ("41 9999" acha "(41) 99999-0000")
@@ -979,9 +984,9 @@ export default function NovaVenda() {
                     const on = clienteId === c.id
                     return (
                       <button key={c.id} type="button" className={`nv3-cl${on ? ' on' : ''}`} aria-pressed={on} onClick={() => selecionarCliente(c)}>
+                        <i className="nv3-radio" aria-hidden="true" />
                         <span className="nv3-ini" aria-hidden="true">{c.foto_url ? <img src={c.foto_url} alt="" /> : initialsOf(c.nome || '?')}</span>
                         <span className="nv3-cl-tx"><b>{toTitleCase(c.nome || 'Sem nome')}</b><small>{(c.telefone || c.whatsapp) ? telefoneBonito(c.telefone || c.whatsapp || '') : 'Sem telefone'}</small></span>
-                        <i className="nv3-radio" aria-hidden="true" />
                       </button>
                     )
                   }
@@ -989,15 +994,15 @@ export default function NovaVenda() {
                     <>
                       <p className="nv3-cl-t">{q ? 'Clientes encontrados' : 'Últimos clientes'}</p>
                       <div className="nv3-cls">
-                        {!q && (
-                          <button type="button" className={`nv3-cl${!clienteId ? ' on' : ''}`} aria-pressed={!clienteId} onClick={tirarCliente}>
-                            <span className="nv3-ini nv3-ini--sem" aria-hidden="true"><Minus size={20} weight="bold" /></span>
-                            <span className="nv3-cl-tx"><b>Sem cliente</b><small>Fica como Venda avulsa</small></span>
-                            <i className="nv3-radio" aria-hidden="true" />
-                          </button>
-                        )}
                         {lista.map(linha)}
                       </div>
+                      {/* (09/11) "Sem cliente" separado da lista (não parece um cliente); vem marcado */}
+                      {!q && (
+                        <button type="button" className={`nv3-cl nv3-cl--sem${!clienteId ? ' on' : ''}`} aria-pressed={!clienteId} onClick={tirarCliente}>
+                          <i className="nv3-radio" aria-hidden="true" />
+                          <span className="nv3-cl-tx"><b>Vender sem cliente</b><small>Fica como Venda avulsa</small></span>
+                        </button>
+                      )}
                       {q && lista.length === 0 && <p className="nv3-dica">Nenhum cliente com “{buscaCliente.trim()}”.</p>}
                       {clienteId && enderecoTexto && <p className="nv3-dica">Endereço: {enderecoTexto}</p>}
                     </>

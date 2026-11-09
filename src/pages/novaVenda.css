@@ -291,3 +291,21 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
   .nv3-vz { padding: 4px 8px 8px; }
   .nv3-vz-ic { display: none; }
 }
+
+/* (09/11) "Para quem é?": busca + "Novo cliente" (branco) na mesma linha; clientes em cartões com a marcação à esquerda
+   (2 por linha no computador); "Vender sem cliente" numa caixinha separada embaixo */
+.nv3-cbusca-l { display: flex; gap: 8px; }
+.nv3-cbusca-l .nv3-cbusca { flex: 1; min-width: 0; }
+.nv3-cnovo { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 48px; margin: 0; padding: 0 14px; border: 1px solid #E4DCDD; border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 500; color: #3B3236; white-space: nowrap; cursor: pointer; }
+.nv3-cnovo:hover { background: #FAF8F9; border-color: #D6CDD1; }
+.nv3-so-pc { display: none; }
+.nv3-cl-t { margin: 16px 2px 8px; font-size: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; color: #8A7B80; }
+.nv3-cls { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.nv3-cl, .nv3-cl + .nv3-cl, .nv3-cl.on + .nv3-cl { min-height: 64px; padding: 10px 14px; border: 1.5px solid #ECE7E9; border-radius: 12px; background: var(--ui-branco); box-shadow: none; }
+.nv3-cl.on { border-color: #3B3236; background: #FAF8F9; }
+.nv3-cl-tx b { font-weight: 500; }
+.nv3-cl--sem { margin-top: 12px; }
+@media (min-width: 901px) {
+  .nv3-so-pc { display: inline; margin-left: -2px; }
+  .nv3-cls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
