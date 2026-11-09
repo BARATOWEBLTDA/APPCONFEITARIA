@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, ChatCircleText, Receipt, Wallet, WarningCircle } from "@phosphor-icons/react";
+import { Bell, ChatCircleText, Receipt, Trash, Wallet, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import AbasAvisos from "@/components/AbasAvisos";
 import { Botao, TelaVazia } from "@/components/base";
-import { marcarLidas } from "@/lib/notificacoesUsuario";
+import { excluirNotificacao, marcarLidas } from "@/lib/notificacoesUsuario";
 import { carregarNotifConfeiteira, type NotifVista } from "@/lib/notifConfeiteira";
 import { hojeISO, dataISO } from "@/lib/pedidoStatus";
 import "./notificacoes.css";
@@ -55,6 +55,56 @@ function Imagem({ n }: { n: NotifVista }) {
   }
 }
 
+/**
+ * (09/11) Uma notificação. No celular: arrastar pro lado esquerdo mostra o "Excluir" vermelho; soltou passando
+ * da metade do caminho (ou num arraste rápido) ela sai. No computador: a lixeira aparece ao passar o mouse.
+ * Feito à mão com os eventos de toque do navegador (não precisa de biblioteca).
+ */
+const LIMITE = 96;
+function Linha({ n, onAbrir, onExcluir }: { n: NotifVista; onAbrir: () => void; onExcluir: () => void }) {
+  const [dx, setDx] = useState(0);
+  const [saindo, setSaindo] = useState(false);
+  const [solto, setSolto] = useState(true);
+  const g = useRef<{ x: number; y: number; t: number; modo: "?" | "x" | "y"; id: number } | null>(null);
+  const arrastou = useRef(false);
+
+  const sair = () => { setSolto(true); setSaindo(true); setDx(-window.innerWidth); window.setTimeout(onExcluir, 220); };
+
+  return (
+    <div className={`nf-sw${saindo ? " sai" : ""}`}>
+      <span className="nf-del" aria-hidden="true" style={{ opacity: Math.min(1, -dx / 40) }}><Trash size={20} weight="regular" />Excluir</span>
+      <button type="button" className={`nf-it${n.lida ? "" : " nova"}`}
+        style={{ transform: dx ? `translateX(${dx}px)` : undefined, transition: solto ? "transform .22s ease" : "none" }}
+        onPointerDown={e => {
+          if (e.pointerType === "mouse") return; // no computador é a lixeira
+          g.current = { x: e.clientX, y: e.clientY, t: Date.now(), modo: "?", id: e.pointerId }; arrastou.current = false;
+        }}
+        onPointerMove={e => {
+          const a = g.current; if (!a) return;
+          const mx = e.clientX - a.x, my = e.clientY - a.y;
+          if (a.modo === "?") {
+            if (Math.abs(mx) > 8 && Math.abs(mx) > Math.abs(my)) { a.modo = "x"; setSolto(false); try { e.currentTarget.setPointerCapture(a.id); } catch { /* */ } }
+            else if (Math.abs(my) > 8) { g.current = null; return; }
+          }
+          if (a.modo === "x") { arrastou.current = true; setDx(Math.min(0, mx > 0 ? 0 : mx)); }
+        }}
+        onPointerUp={e => {
+          const a = g.current; g.current = null; if (!a || a.modo !== "x") return;
+          const mx = e.clientX - a.x; const rapido = mx < -40 && Date.now() - a.t < 250;
+          const largura = e.currentTarget.offsetWidth;
+          if (mx < -Math.max(LIMITE, largura * 0.45) || rapido) sair(); else { setSolto(true); setDx(0); }
+        }}
+        onPointerCancel={() => { g.current = null; setSolto(true); setDx(0); }}
+        onClick={() => { if (arrastou.current) { arrastou.current = false; return; } onAbrir(); }}>
+        <Imagem n={n} />
+        <span className="nf-tx"><b>{n.titulo}</b>{n.detalhe && <small>{n.detalhe}</small>}</span>
+        <span className="nf-h">{hora(n.criada)}{!n.lida && <em className="nf-nova">Nova</em>}</span>
+      </button>
+      <button type="button" className="nf-x" aria-label="Excluir notificação" title="Excluir" onClick={sair}><Trash size={18} weight="regular" /></button>
+    </div>
+  );
+}
+
 export default function Notificacoes() {
   const navigate = useNavigate();
   const [lista, setLista] = useState<NotifVista[] | null>(null);
@@ -79,6 +129,10 @@ export default function Notificacoes() {
   const abrir = (n: NotifVista) => {
     if (!n.lida) { setLista(l => (l || []).map(x => x.id === n.id ? { ...x, lida: true } : x)); void marcarLidas([n.id]); }
     if (n.link) navigate(n.link);
+  };
+  const excluir = (n: NotifVista) => {
+    setLista(l => (l || []).filter(x => x.id !== n.id));
+    void excluirNotificacao(n.id); // marca lida + excluída: o número do sino desce junto
   };
   const lerTodas = () => {
     const ids = naoLidas.map(n => n.id);
@@ -111,12 +165,7 @@ export default function Notificacoes() {
                 <h3 className="nf-dia">{g}</h3>
                 <div className="nf-card">
                   {itens.map(n => (
-                    <button key={n.id} type="button" className={`nf-it${n.lida ? "" : " nova"}`} onClick={() => abrir(n)}>
-                      <span className="nf-pt" aria-hidden="true" />
-                      <Imagem n={n} />
-                      <span className="nf-tx"><b>{n.titulo}</b>{n.detalhe && <small>{n.detalhe}</small>}</span>
-                      <span className="nf-h">{hora(n.criada)}</span>
-                    </button>
+                    <Linha key={n.id} n={n} onAbrir={() => abrir(n)} onExcluir={() => excluir(n)} />
                   ))}
                 </div>
               </section>
