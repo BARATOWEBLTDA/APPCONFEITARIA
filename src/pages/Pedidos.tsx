@@ -4,6 +4,7 @@ import { compartilharTexto } from "@/lib/compartilharCardapio";
 import { montarMensagem, dadosDoPedido } from '@/lib/mensagens'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { Cake, CalendarDots, CaretDown, Funnel, Kanban, Lightning, ListBullets, MagnifyingGlass, Plus, Receipt, WarningCircle, X } from '@phosphor-icons/react'
+import HeroVazio from '@/components/HeroVazio'
 import AppPageHeader from '@/components/AppPageHeader'
 import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
 import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
@@ -604,7 +605,10 @@ export default function Pedidos() {
     const carregandoTudo = estado === 'carregando' || (estado === 'pronto' && pedidos.length === 0 && !produtosConferidos)
     if (carregandoTudo) return demorou || estado === 'pronto' ? <p className="pd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : <span aria-hidden="true" />
     if (estado === 'erro') return <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar os pedidos" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => userId && fetchPedidos(userId)}>Tentar de novo</Botao>} />
-    if (totalProdutos === 0 && pedidos.length === 0) return <TelaVazia className="pd-sem-produto" icone={<img src="/Sistema/pedidos-sem-produto.webp" alt="" width={180} height={189} />} titulo="Cadastre um produto primeiro" texto="Para registrar um pedido, você precisa ter pelo menos um produto." acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/produtos', { state: { abrirCadastro: true, direto: true } })}>Cadastrar produto</Botao>} />
+    // (09/11) o mesmo estado vazio da Nova venda e de Produtos (etiqueta, título, frase, botão e o Doo)
+    if (totalProdutos === 0 && pedidos.length === 0) return <HeroVazio etiqueta="Antes do primeiro pedido" titulo={<>Cadastre seu<br />primeiro produto</>}
+      texto="Com um produto cadastrado, os pedidos do cardápio e os que você registrar aparecem aqui."
+      botao="Cadastrar produto" imagem="/Sistema/pedidos-sem-produto.webp" aoClicar={() => navigate('/produtos', { state: { abrirCadastro: true, direto: true } })} />
     // (19/10) sem pedido nenhum, a barra de cima (abas, busca, Lista/Quadro, Nova venda) fica: antes ela sumia e a tela "pulava"
     return null
   }

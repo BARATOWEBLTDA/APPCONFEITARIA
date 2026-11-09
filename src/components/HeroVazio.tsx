@@ -30,7 +30,7 @@ const CSS = `
   .hv { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-6) var(--space-4); }
   .hv-tx { display: flex; flex-direction: column; gap: var(--space-3); order: 2; text-align: center; align-items: center; }
   .hv-masc { order: 1; align-self: center; }
-  .hv-masc img { width: 200px; height: auto; display: block; margin: 0 auto; }
+  .hv-masc img { width: auto; height: 170px; max-width: 220px; object-fit: contain; display: block; margin: 0 auto; } /* mesma altura do Doo em todas as telas */
   .hv-et { font-size: var(--text-sm); font-weight: var(--fw-black); color: #B02C5F; line-height: 1; }
   .hv-t { font-size: 2rem; font-weight: var(--fw-black); letter-spacing: -0.03em; line-height: 1.1; color: var(--text-title); margin: var(--space-1) 0 0; }
   .hv-d { font-size: var(--text-md); color: var(--text-secondary); line-height: 1.55; margin: var(--space-2) 0 0; max-width: 480px; }
@@ -42,6 +42,7 @@ const CSS = `
     .hv { min-height: calc(100dvh - 170px); flex-direction: row; align-items: center; justify-content: center; gap: var(--space-6); padding: 0 var(--space-4); }
     .hv-tx { order: 1; gap: var(--space-4); flex: 1.3 1 440px; max-width: 560px; min-width: 0; text-align: left; align-items: flex-start; }
     .hv-masc { order: 2; flex: 0 0 220px; width: 220px; }
+    .hv-masc img { height: 200px; }
     .hv-et { font-size: var(--text-sm); }
     .hv-t { font-size: 2.5rem; line-height: 1.05; }
     .hv-d { font-size: var(--text-lg); }
