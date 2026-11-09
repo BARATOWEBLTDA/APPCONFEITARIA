@@ -1049,8 +1049,8 @@ const CSS = `
   .pp-col-a .pp-at { margin-top: 16px; }
   /* (29/10 · 4.96) computador, no modelo que o Bruno trouxe: cabeçalho com foguete e barra; à esquerda o passo da vez
      (número grande, porquê, botão, mascote e a dica); à direita a lista com os 7 passos */
-  .pp-dk-cab { display: flex; align-items: center; gap: 18px; }
-  .pp-dk-ic { width: 64px; height: 64px; flex: none; border-radius: 16px; background: #FDEBF1; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
+  .pp-dk-cab { display: flex; align-items: center; gap: 18px; padding-bottom: 22px; border-bottom: 1px solid var(--ui-linha); } /* (09/11) uma linha separa o cabeçalho, no lugar das caixas */
+  .pp-dk-ic { width: 64px; height: 64px; flex: none; border-radius: var(--ui-raio-cartao); background: #FDEBF1; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
   .pp-dk-tit { flex: 1; min-width: 0; }
   .pp-dk .pp-t { font-size: 26px; font-weight: 600; letter-spacing: -.015em; color: #241A1E; }
   .pp-dk .pp-sub { font-size: 16px; margin-top: 2px; }
@@ -1058,16 +1058,17 @@ const CSS = `
   .pp-dk-bar span { flex: 1; height: 8px; border-radius: 4px; background: #EFEAEC; overflow: hidden; }
   .pp-dk-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .4s ease; }
   .pp-dk-bar small { font-size: 15px; color: var(--ui-texto-2); white-space: nowrap; }
-  .pp-dk .pp-cols { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); gap: 32px; align-items: stretch; margin-top: 26px; }
-  .pp-hero { display: flex; flex-direction: column; gap: 18px; padding: 26px 26px 24px; border: 1px solid #F6DCE6; border-radius: 18px; background: linear-gradient(180deg, #FFF6F9, #FDF0F5); }
-  .pp-hero-topo { flex: 1; display: flex; align-items: center; gap: 16px; }
+  .pp-dk .pp-cols { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); gap: 32px; align-items: stretch; margin-top: 22px; }
+  /* (09/11) o passo da vez sem a caixa rosa em volta (era moldura dentro do cartão) */
+  .pp-hero { display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 4px 0 0; }
+  .pp-hero-topo { display: flex; align-items: center; gap: 16px; }
   .pp-hero-tx { flex: 1; min-width: 0; display: flex; gap: 22px; align-items: flex-start; }
   .pp-hero-n--ok { background: var(--ui-verde) !important; box-shadow: 0 6px 16px rgba(46, 158, 91, .25) !important; }
   .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(214, 69, 122, .25); }
   .pp-hero-t { display: block; margin-top: 4px; font-size: 26px; font-weight: 600; letter-spacing: -.015em; color: #241A1E; line-height: 1.2; }
   .pp-hero-s { display: block; margin-top: 4px; font-size: 18px; color: var(--ui-texto-2); }
   .pp-hero-p { margin: 18px 0 0; max-width: 380px; font-size: 16px; line-height: 1.6; color: #6B5C62; }
-  .pp-hero-btn { display: inline-flex; align-items: center; gap: 12px; min-height: 54px; margin-top: 26px; padding: 0 30px; border: 0; border-radius: 12px; font-family: inherit; font-size: 17px; font-weight: 600; color: #fff; background: var(--ui-rosa-botao, #CC2E66); box-shadow: 0 6px 16px rgba(214, 69, 122, .28); cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease; }
+  .pp-hero-btn { display: inline-flex; align-items: center; gap: 12px; min-height: 54px; margin-top: 26px; padding: 0 30px; border: 0; border-radius: var(--ui-raio-botao); font-family: inherit; font-size: 17px; font-weight: 600; color: #fff; background: var(--ui-rosa-botao, #CC2E66); box-shadow: 0 6px 16px rgba(214, 69, 122, .28); cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease; }
   .pp-hero-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(214, 69, 122, .34); }
   .pp-hero-masc { position: relative; flex: none; width: clamp(140px, 12vw, 190px); display: flex; justify-content: center; }
   .pp-hero-masc::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -4px; height: 18px; border-radius: 50%; background: rgba(214, 69, 122, .14); }
@@ -1078,11 +1079,12 @@ const CSS = `
   .pp-hero-masc > i { position: absolute; left: 6px; top: 22px; width: 18px; height: 16px; background:
       linear-gradient(var(--ui-rosa), var(--ui-rosa)) 0 0 / 4px 12px no-repeat,
       linear-gradient(var(--ui-rosa), var(--ui-rosa)) 8px 2px / 4px 10px no-repeat; transform: rotate(-35deg); border-radius: 2px; opacity: .85; }
-  .pp-hero-dica { display: flex; align-items: center; gap: 16px; padding: 16px 20px; border: 1px solid #F6DCE6; border-radius: 14px; background: rgba(255, 255, 255, .6); }
-  .pp-hero-dica > span { width: 44px; height: 44px; flex: none; border-radius: 50%; background: #FDEBF1; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
+  .pp-hero-dica { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: var(--ui-raio); background: #FDF2F6; }
+  .pp-hero-dica > span { width: 40px; height: 40px; flex: none; border-radius: 50%; background: #fff; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
   .pp-hero-dica p { margin: 0; font-size: 14.5px; color: #6B5C62; line-height: 1.45; }
   .pp-hero-dica b { display: block; font-size: 17px; font-weight: 600; color: var(--ui-rosa); margin-bottom: 2px; }
-  .pp-lista { display: flex; flex-direction: column; padding: 10px; border: 1px solid var(--ui-linha); border-radius: 16px; }
+  /* (09/11) a lista sem moldura própria: só uma linha separa as duas colunas */
+  .pp-lista { display: flex; flex-direction: column; padding: 0 0 0 24px; border-left: 1px solid var(--ui-linha); }
   .pp-li { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 64px; padding: 8px 14px; border: 0; border-bottom: 1px solid var(--ui-linha); border-radius: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
   .pp-li:last-child { border-bottom: 0; }
   .pp-li:disabled { cursor: default; }
@@ -1092,7 +1094,7 @@ const CSS = `
   .pp-li-tx b { display: block; font-size: 16px; font-weight: 500; color: #241A1E; line-height: 1.25; }
   .pp-li-tx small { display: block; margin-top: 2px; font-size: 14px; color: var(--ui-texto-2); }
   .pp-li-seta { flex: none; color: #B4AAAE; }
-  .pp-li--vez { background: #FDEBF1; border-radius: 12px; border-bottom-color: transparent; }
+  .pp-li--vez { background: #FDEBF1; border-radius: var(--ui-raio); border-bottom-color: transparent; }
   .pp-li--vez:not(:disabled):hover { background: #FBE2EB; }
   .pp-li--vez .pp-li-n { background: var(--ui-rosa-botao, #CC2E66); color: #fff; }
   .pp-li--vez .pp-li-seta { color: var(--ui-rosa); }
