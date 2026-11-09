@@ -333,3 +333,18 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 /* (09/11) mapa da entrega embaixo de Retirada / Entrega */
 .nv3-mapa .mpe { margin-top: var(--space-4); height: 180px; border-radius: 12px; }
 @media (min-width: 901px) { .nv3-mapa .mpe { height: 220px; } }
+/* (09/11) "Quanto já entrou?" e "Como ele pagou?" no padrão das outras escolhas: marcada com a bolinha escura (antes rosa clarinho)
+   e a bolinha das formas de pagamento dentro do cartão (no PC ela saía pela borda: faltava o cartão ser a referência) */
+.nv3-esc:checked + .nv3-rd { border-color: var(--ui-escolha); }
+.nv3-op b { font-weight: 500; }
+.nv3-formas button { position: relative; }
+.nv3-formas .nv3-tipo-r { margin-top: 0; }
+.nv3-formas button[aria-pressed="true"] .nv3-tipo-r { border-color: var(--ui-escolha); }
+@media (max-width: 389px) { .nv3-formas .nv3-tipo-r { margin-top: -9px; } }
+.nv3-formas button { padding-top: 12px; font-weight: 500; }
+/* (09/11) celular: formas de pagamento 2 por linha, bolinha à esquerda (com 4 lado a lado a bolinha ficava em cima do ícone) */
+@media (max-width: 600px) {
+  .nv3-formas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nv3-formas button { flex-direction: row; justify-content: flex-start; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; }
+  .nv3-formas .nv3-tipo-r, .nv3-formas .nv3-tipo-r { position: static; order: -1; flex: none; margin: 0; top: auto; right: auto; }
+}
