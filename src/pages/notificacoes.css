@@ -5,12 +5,12 @@
 .nf-topo button { margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--ui-rosa-botao, #CC2E66); white-space: nowrap; cursor: pointer; }
 .nf-dia { margin: 18px 2px 8px; font-size: 13px; font-weight: 500; color: #8A7B80; }
 .nf-card { overflow: hidden; border: 1px solid #ECE7E9; border-radius: var(--ui-raio-cartao, 16px); background: #fff; }
-.nf-it { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 68px; margin: 0; padding: 10px 14px 10px 22px; border: 0; border-top: 1px solid #F1EDEF; background: #FAF8F9; font-family: inherit; text-align: left; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.nf-it { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 68px; margin: 0; padding: 10px 14px; border: 0; border-top: 1px solid #F1EDEF; background: #FAF8F9; font-family: inherit; text-align: left; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .nf-card .nf-it:first-child { border-top: 0; }
 .nf-it.nova { background: #fff; }
 @media (hover: hover) { .nf-it:hover { background: #F6F3F4; } }
 .nf-pt { position: absolute; left: 8px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; }
-.nf-it.nova .nf-pt { background: var(--ui-rosa-botao, #CC2E66); }
+.nf-pt { display: none; } /* (09/11) sem a bolinha antes da imagem: a não lida se destaca pelo fundo branco, título forte e horário rosa */
 .nf-tx { flex: 1; min-width: 0; }
 .nf-tx b, .nf-tx small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nf-tx b { font-size: 14px; font-weight: 500; color: #5E5357; }
