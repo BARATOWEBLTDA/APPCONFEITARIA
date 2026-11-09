@@ -166,7 +166,7 @@ export default function Inicio() {
   const [menuOpen, setMenuOpen] = useState(false);
   const fotoRef = useRef<HTMLButtonElement>(null); // o menu da conta abre embaixo da foto
   // (16/10) sino com as não lidas no topo do celular (antes só pela foto › Notificações, sem aviso nenhum)
-  const { notifCount } = useNotifications();
+  const { notifCount, toque } = useNotifications();
 
   // Upload rápido de foto de perfil pelo ícone de câmera no header.
   // Fluxo: escolhe arquivo → abre cropper (círculo, com zoom) → confirma → upload.
@@ -882,9 +882,9 @@ export default function Inicio() {
               <Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}
             </button>
           ))}
-          <button type="button" className={`ini-hero-ac${notifCount > 0 ? " ini-hero-ac--tem" : ""}`} onClick={() => navigate("/notificacoes")} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? "s" : ""}` : "Novidades"} title="Novidades">
-            <Bell size={24} weight="regular" />
-            {notifCount > 0 && <i className="ini-hero-bolinha">{notifCount > 9 ? "9+" : notifCount}</i>}
+          <button type="button" className={`ini-hero-ac${notifCount > 0 ? " ini-hero-ac--tem sino-tem" : ""}`} onClick={() => navigate("/notificacoes")} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? "s" : ""}` : "Novidades"} title="Novidades">
+            <span key={toque} className={`sino-ic${toque ? " sino-toca" : ""}`}><Bell size={24} weight={notifCount > 0 ? "fill" : "regular"} /></span>
+            {notifCount > 0 && <i key={`n${toque}`} className={`ini-hero-bolinha${toque ? " sino-pop" : ""}`}>{notifCount > 9 ? "9+" : notifCount}</i>}
           </button>
         </div>
 

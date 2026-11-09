@@ -14,6 +14,8 @@ interface Notification {
 
 interface NotificationContextType {
   notifCount: number;
+  /** (09/11) aumenta toda vez que chega notificação nova (o sino balança uma vez) */
+  toque: number;
   notifOpen: boolean;
   notificacoes: Notification[];
   notifRef: React.RefObject<HTMLDivElement>;
@@ -28,6 +30,8 @@ const UsarContext = createContext<(() => () => void) | null>(null);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifCount, setNotifCount] = useState(0);
+  const [toque, setToque] = useState(0);
+  const anterior = useRef<number | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notificacoes] = useState<Notification[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -41,7 +45,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     // Conta as não lidas (guardado na conta, não só no aparelho) e atualiza quando algo muda
     // (23/10) a tela Notificações saiu: o sino conta as novidades que ela ainda não leu
     // (09/11) o sino abre Notificações (as da confeiteira) com a aba Novidades ao lado: conta as duas
-    const load = async () => { const [a, b] = await Promise.all([contarNotifConfeiteira(), contarNovidadesNaoLidas()]); setNotifCount(a + b); };
+    const load = async () => {
+      const [a, b] = await Promise.all([contarNotifConfeiteira(), contarNovidadesNaoLidas()]);
+      const n = a + b;
+      // (09/11) chegou notificação nova com o app aberto: o sino balança uma vez e o celular (Android) dá uma vibradinha curta
+      if (anterior.current !== null && n > anterior.current) {
+        setToque(t => t + 1);
+        try { if (document.visibilityState === "visible") navigator.vibrate?.(60); } catch { /* aparelho sem vibração */ }
+      }
+      anterior.current = n;
+      setNotifCount(n);
+    };
     load();
     window.addEventListener("doonly:notif-mudou", load);
     const t = window.setInterval(() => { if (document.visibilityState === "visible") load(); }, 60000);
@@ -69,7 +83,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const toggleNotif = () => { if (!notifOpen) markAsSeen(); setNotifOpen(o => !o); };
 
   return (
-    <NotificationContext.Provider value={{ notifCount, notifOpen, notificacoes, notifRef, openNotif, closeNotif, toggleNotif }}>
+    <NotificationContext.Provider value={{ notifCount, toque, notifOpen, notificacoes, notifRef, openNotif, closeNotif, toggleNotif }}>
       <UsarContext.Provider value={usar}>{children}</UsarContext.Provider>
     </NotificationContext.Provider>
   );
