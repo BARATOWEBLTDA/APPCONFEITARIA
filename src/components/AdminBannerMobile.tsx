@@ -71,6 +71,7 @@ export default function AdminBannerMobile({ computador = false }: { computador?:
           display: block;
           width: 100%;
           height: auto;
+          border-radius: var(--ui-raio-cartao, 16px); /* (09/11) cantos arredondados como os cartões do app */
         }
         /* (6.125) computador: a arte preenche o espaço ao lado das Novidades (mesma altura), cortando um pouco as bordas se precisar */
         .admin-banner-mobile--pc { display: block !important; height: 100%; min-height: 220px; overflow: hidden; border-radius: var(--ui-raio-cartao, 18px); }
