@@ -1060,8 +1060,8 @@ const CSS = `
   .pp-dk-bar small { font-size: 15px; color: var(--ui-texto-2); white-space: nowrap; }
   .pp-dk .pp-cols { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); gap: 32px; align-items: stretch; margin-top: 22px; }
   /* (09/11) o passo da vez sem a caixa rosa em volta (era moldura dentro do cartão) */
-  .pp-hero { display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 4px 0 0; }
-  .pp-hero-topo { display: flex; align-items: center; gap: 16px; }
+  .pp-hero { display: flex; flex-direction: column; gap: 22px; padding: 4px 0 0; }
+  .pp-hero-topo { flex: 1; display: flex; align-items: center; gap: 16px; } /* ocupa a altura: o aviso fica rente ao último passo da lista */
   .pp-hero-tx { flex: 1; min-width: 0; display: flex; gap: 22px; align-items: flex-start; }
   .pp-hero-n--ok { background: var(--ui-verde) !important; box-shadow: 0 6px 16px rgba(46, 158, 91, .25) !important; }
   .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(214, 69, 122, .25); }
@@ -1085,7 +1085,7 @@ const CSS = `
   .pp-hero-dica b { display: block; font-size: 17px; font-weight: 600; color: var(--ui-rosa); margin-bottom: 2px; }
   /* (09/11) a lista sem moldura própria: só uma linha separa as duas colunas */
   .pp-lista { display: flex; flex-direction: column; padding: 0 0 0 24px; border-left: 1px solid var(--ui-linha); }
-  .pp-li { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 64px; padding: 8px 14px; border: 0; border-bottom: 1px solid var(--ui-linha); border-radius: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
+  .pp-li { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 58px; padding: 6px 14px; border: 0; border-bottom: 1px solid var(--ui-linha); border-radius: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
   .pp-li:last-child { border-bottom: 0; }
   .pp-li:disabled { cursor: default; }
   .pp-li:not(:disabled):hover { background: #FCF7F9; }
