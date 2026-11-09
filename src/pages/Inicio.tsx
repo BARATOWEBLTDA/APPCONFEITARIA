@@ -793,7 +793,7 @@ export default function Inicio() {
   return (
     <>
     {/* (19/10) computador: a mesma barra de cima das outras telas (no celular fica o hero rosa) */}
-    <div className="ini-dk-cab"><AppPageHeader title={saudacao} resumo={resumoTopo} subtitle="O resumo do seu dia" infoIcon="📈" infoComo={COMO_INICIO} infoTour={TOUR_INICIO_PC} infoContent={<>
+    <div className={`ini-dk-cab${computador && focoPassos !== false ? " ini-dk-cab--foco" : ""}`}><AppPageHeader title={saudacao} resumo={computador && focoPassos !== false ? "Vamos deixar sua loja pronta para vender" : resumoTopo} subtitle="O resumo do seu dia" infoIcon="📈" infoComo={COMO_INICIO} infoTour={TOUR_INICIO_PC} infoContent={<>
       <p><strong>Recebido no mês:</strong> o dinheiro que entrou de verdade neste mês (sinais e pagamentos).</p>
       <p><strong>Pedidos na semana</strong> e <strong>ticket médio:</strong> os pedidos dos últimos 7 dias e quanto cada um vale, em média.</p>
       <p><strong>Entregas hoje:</strong> quantos pedidos saem hoje. A lista completa fica em Próximas entregas e na Agenda.</p>
@@ -2142,6 +2142,8 @@ export default function Inicio() {
         @media (min-width: 901px) {
           .ini-dk { display: block; margin: 0 0 4px; }
           .ini-dk-cab { display: contents; }
+          /* (09/11) conta com Primeiros passos por fazer: sem a busca no topo (ainda não tem o que buscar) */
+          .ini-dk-cab--foco .cab-busca { display: none !important; }
           /* rosa encostado no topo e nas laterais da área do app (sem mexer nos cartões) */
           /* (19/10) sem a faixa rosa: a saudação no fundo da página, como o título das outras telas */
           .ini-dk-top { display: none; } /* (4.92) a saudação e o resumo foram pro topo */
