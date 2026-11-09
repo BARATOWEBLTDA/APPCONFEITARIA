@@ -2,12 +2,13 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { Gear, Lightbulb, Newspaper, SignOut, Sparkle, WarningCircle } from "@phosphor-icons/react";
+import { Crown, Gear, Lifebuoy, SignOut, Storefront, User } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
-import { abrirDooIA } from "@/components/MenuContaItens";
 import JanelaSair from "@/components/JanelaSair";
 import { VERSAO_APP } from "@/lib/versao";
+import { useProfile } from "@/hooks/useProfile";
+import { usePlano } from "@/hooks/usePlano";
 import "./menuConta.css";
 
 /**
@@ -44,19 +45,23 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
     return () => window.removeEventListener("resize", medir);
   }, [aberto, ancora]);
 
-  const ir = (para: string) => {
+  const ir = (para: string, state?: Record<string, unknown>) => {
     // o menu guarda uma entrada no histórico pro "voltar" do Android; a tela nova entra no lugar dela
     const substituir = !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela;
-    navigate(para, { replace: substituir });
+    navigate(para, { replace: substituir, state });
     aoFechar();
   };
+  const { profile } = useProfile();
+  const { isPro } = usePlano();
 
+  // (09/11) os itens do menu da foto, no modelo dos apps de gestão: a conta, a loja, o plano, as configurações e a ajuda.
+  // Novidades ficam no sino do topo e a Doo IA no balão do canto; sugerir e relatar ficam na Central de ajuda.
   const itens: { nome: string; Icone: Icon; acao: () => void }[] = [
-    { nome: "Novidades", Icone: Newspaper, acao: () => ir("/noticias") }, // (21/10) caminho fixo pras novidades do Doonly
+    { nome: "Minha conta", Icone: User, acao: () => ir("/configuracoes", { abrirConta: true }) },
+    { nome: "Minha loja", Icone: Storefront, acao: () => ir("/cardapio") },
+    { nome: isPro ? "Minha assinatura" : "Assinatura", Icone: Crown, acao: () => ir(isPro ? "/minha-assinatura" : "/assinar") },
     { nome: "Configurações", Icone: Gear, acao: () => ir("/configuracoes") },
-    { nome: "Doo IA", Icone: Sparkle, acao: () => { aoFechar(); abrirDooIA(); } },
-    { nome: "Sugerir uma melhoria", Icone: Lightbulb, acao: () => ir("/solicitar-recurso") },
-    { nome: "Relatar um problema", Icone: WarningCircle, acao: () => ir("/relatar-problema") },
+    { nome: "Central de ajuda", Icone: Lifebuoy, acao: () => ir("/ajuda") },
   ];
 
 
@@ -69,8 +74,8 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
             style={{ top: lugar.topo, right: lugar.direita, maxHeight: `calc(100dvh - ${lugar.topo + 12}px)` }} onClick={e => e.stopPropagation()}
           >
             <div className="mc-cab">
-              <p className="mc-cab-n">Doonly Gestão Inteligente</p>
-              <p className="mc-cab-v">Versão {VERSAO_APP}</p>
+              <p className="mc-cab-n">{profile?.nome || "Minha conta"}</p>
+              <p className="mc-cab-v">{[profile?.nome_loja, isPro ? "Plano PRO" : "Plano grátis"].filter(Boolean).join(" · ")}</p>
             </div>
             <div className="mc-lista">
               {itens.map(({ nome, Icone, acao }) => (
@@ -84,6 +89,7 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
                 <span className="mc-it-t">Sair</span>
               </button>
             </div>
+            <p className="mc-versao">Doonly · versão {VERSAO_APP}</p>
           </div>
         </div>,
         document.body,

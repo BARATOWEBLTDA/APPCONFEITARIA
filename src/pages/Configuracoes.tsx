@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { digitosTelefone } from "@/lib/telefone";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, FileText, Lightbulb,  SignOut, SlidersHorizontal, Bug, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
@@ -135,6 +135,14 @@ export default function Configuracoes() {
     setLoading(false);
   };
   useEffect(() => { void carregar(); }, []);
+  // (09/11) "Minha conta" do menu da foto: abre direto a janela da conta (foto, nome, telefone e senha)
+  const location = useLocation();
+  const abriuConta = useRef(false);
+  useEffect(() => {
+    if (loading || abriuConta.current || !(location.state as { abrirConta?: boolean } | null)?.abrirConta) return;
+    abriuConta.current = true;
+    setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true);
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const enviarFoto = async (file: File) => {
     if (!userId) return;

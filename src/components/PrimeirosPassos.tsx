@@ -304,9 +304,9 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
       <div ref={raiz} className={`pp pp--inicio pp--banner${destaque ? " pp--destaque" : ""}`}>
         <div className="ppb-topo">
           {/* (6.126) cada passo pode ter o seu Doo; o da logo pinta a fachada da loja */}
-          <img src={DOO_PASSO[p.t]?.banner || "/Sistema/banner-passos.webp"} alt="" aria-hidden="true" className="ppb-img" />
+          <img src={DOO_PASSO[p.t]?.pc || "/marca/leve/prancheta.webp"} alt="" aria-hidden="true" className="ppb-img" />
           <b className="ppb-t">{faltam === 1 ? "Falta só 1 passo" : TITULO_PASSO[p.t] || "Cardápio quase no ar"}</b>
-          <small className="ppb-sub">{feitos === 0 ? `${passos.length} passos rápidos, uns 5 minutos` : `${feitos} de ${passos.length} prontos`}</small>
+          <small className="ppb-sub">{feitos === 0 ? `${passos.length} passos, uns 5 minutos` : `${feitos} de ${passos.length} prontos`}</small>
           <div className="ppb-bar" role="progressbar" aria-valuemin={0} aria-valuemax={passos.length} aria-valuenow={feitos} aria-label={`${feitos} de ${passos.length} passos feitos`}><i style={{ width: `${(feitos / passos.length) * 100}%` }} /></div>
         </div>
         <div className="ppb-at" ref={atRef}>
@@ -969,14 +969,15 @@ const DOO_PASSO: Record<string, { pc: string; banner: string; largo?: boolean }>
 const CSS = `
   /* (22/10) celular, Início: cartão-banner (arte com o Doo acenando à direita, texto à esquerda) */
   .pp.pp--banner { padding: 0; overflow: hidden; }
-  .ppb-topo { position: relative; aspect-ratio: 10 / 3; min-height: 96px; padding: 14px 16px 0; box-sizing: border-box; background: #FFE3EE; overflow: hidden; }
-  .ppb-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: right center; pointer-events: none; }
-  .ppb-t, .ppb-sub, .ppb-bar { position: relative; }
+  .ppb-topo { position: relative; aspect-ratio: 10 / 3; min-height: 96px; padding: 14px 16px 0; box-sizing: border-box; background: linear-gradient(135deg, #3A2219, #22130E); overflow: hidden; } /* (09/11) chocolate, a 2ª cor da marca */
+  .ppb-img { position: absolute; right: 6px; bottom: -6px; width: auto; height: 108%; max-width: 40%; object-fit: contain; object-position: right bottom; pointer-events: none; } /* o Doo sem fundo, por cima do chocolate */
+  .ppb-t, .ppb-sub, .ppb-bar { position: relative; z-index: 1; }
+  .ppb-topo .ppb-t, .ppb-topo .ppb-sub { max-width: 58% !important; } /* (09/11) o texto não passa por baixo do Doo */
   @media (max-width: 380px) { .ppb-t { font-size: 16px; } }
-  .ppb-t { display: block; max-width: 68%; font-size: 17px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppb-sub { display: block; max-width: 68%; margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ppb-bar { width: 58%; height: 8px; margin-top: 10px; border-radius: 4px; background: rgba(214, 63, 117, .15); overflow: hidden; }
-  .ppb-bar i { display: block; height: 100%; border-radius: 4px; background: var(--ui-rosa); transition: width .4s ease; }
+  .ppb-t { display: block; max-width: 68%; font-size: 17px; font-weight: 600; line-height: 1.3; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppb-sub { display: block; max-width: 68%; margin-top: 2px; font-size: 13px; color: rgba(255, 255, 255, .75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ppb-bar { width: 58%; height: 8px; margin-top: 10px; border-radius: 4px; background: rgba(255, 255, 255, .18); overflow: hidden; }
+  .ppb-bar i { display: block; height: 100%; border-radius: 4px; background: #FF6FA3; transition: width .4s ease; }
   .ppb-at { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 0; }
   .ppb-n { flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-size: 14px; font-weight: 600; }
   .ppb-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }

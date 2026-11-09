@@ -31,3 +31,6 @@
 /* (09/11) janela de sair: o Doo acenando dentro do mesmo círculo rosa das outras janelas */
 .ui-janela-ic:has(> .mc-sair-masc) { overflow: hidden; }
 .mc-sair-masc { width: 54px; height: 54px; object-fit: contain; margin-top: 6px; }
+/* (09/11) a versão do app foi pro rodapé do menu (o topo mostra a conta e o plano) */
+.mc-versao { flex: none; margin: 0; padding: 6px 16px 10px; font-size: 11.5px; color: var(--ui-texto-3, #A39A9E); }
+.mc-cab-n, .mc-cab-v { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

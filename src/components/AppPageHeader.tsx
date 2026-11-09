@@ -3,17 +3,15 @@ import { SELO_TESTE } from "@/lib/beneficiosPro";
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
-  ArrowSquareOut, Bell, Cake, CalendarDots, Calculator, Camera, CaretLeft, ChartLineUp, Crown, CurrencyDollar, Info, Invoice, Lightbulb,
+  ArrowSquareOut, Bell, Cake, CalendarDots, Calculator, CaretLeft, ChartLineUp, Crown, CurrencyDollar, Info, Invoice, Lightbulb,
   ListDashes, MagnifyingGlass, Newspaper, Package, PaintBrush, Receipt, ShoppingBag, ShoppingCart, SquaresFour, User, Users,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import { Botao, BotaoIcone, Janela } from '@/components/base'
 import MenuConta from '@/components/MenuConta'
 import { abrirBuscaRapida } from '@/components/BuscaRapida'
-import { ImageCropper } from '@/components/ui/ImageCropper'
 import { useProfile, avatarDaConta, getCardapioUrl } from '@/hooks/useProfile'
 import { useLojaPronta } from '@/lib/primeirosPassos'
-import { useAvatarUpload } from '@/hooks/useAvatarUpload'
 import { useNavigate } from 'react-router-dom'
 import { usePlano } from '@/hooks/usePlano'
 import { useNotifications } from '@/context/NotificationContext'
@@ -138,7 +136,6 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
   const { profile } = useProfile()
   const { isPro, loading: carregandoPlano } = usePlano()
   const navigate = useNavigate()
-  const { fileInputRef, uploading: enviandoFoto, handleFileSelected, cropSrc, cancelCrop, handleCropDone } = useAvatarUpload()
   const foto = useRef<HTMLButtonElement>(null)
   // (21/10) computador: atalho pro cardápio da loja (só quando ele tem o que mostrar, igual ao link de vendas)
   const linkCardapio = profile ? getCardapioUrl(profile) : ''
@@ -170,6 +167,12 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
         {!carregandoPlano && !isPro && (
           <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}</button>
         )}
+        {/* (09/11) computador: o sino saiu do menu da esquerda e fica aqui, entre o PRO e a foto */}
+        <button type="button" className={`cab-sino${notifCount > 0 ? ' cab-sino--novo' : ''}`} onClick={() => navigate('/noticias')} title="Novidades"
+          aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? 's' : ''}` : 'Novidades'}>
+          <Bell size={20} weight={notifCount > 0 ? 'fill' : 'regular'} aria-hidden="true" />
+          {notifCount > 0 && <i className="cab-sino-n" aria-hidden="true">{notifCount > 9 ? '9+' : notifCount}</i>}
+        </button>
         <div className="cab-foto-caixa">
           {/* (07/10 · 3.07) a foto abre o menu da conta em todo lugar onde aparece */}
           <button
@@ -181,18 +184,10 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
               : <User size={24} weight="bold" aria-hidden="true" />}
           </button>
           {isPro && <span className="cab-foto-pro" role="img" aria-label="Plano PRO"><Crown size={11} weight="fill" /></span>}
-          {/* sem foto: a câmera é o atalho pra colocar uma */}
-          {!avatarDaConta(profile) && (
-            <button type="button" className="cab-foto-cam" disabled={enviandoFoto} onClick={() => fileInputRef.current?.click()} aria-label="Colocar uma foto" title="Colocar uma foto">
-              <Camera size={16} weight="bold" aria-hidden="true" />
-            </button>
-          )}
+          {/* (09/11) a câmera saiu: a foto se coloca em Minha conta */}
         </div>
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelected} style={{ display: 'none' }} tabIndex={-1} aria-hidden="true" />
       </div>
       <MenuConta aberto={menuAberto} aoFechar={() => setMenuAberto(false)} ancora={foto} />
-      {/* (07/10 · 3.05) a janela de recortar a foto */}
-      {cropSrc && <ImageCropper imageSrc={cropSrc} aspect={1} cropShape="round" onCancel={cancelCrop} onCropDone={handleCropDone} />}
     </>
   )
 }

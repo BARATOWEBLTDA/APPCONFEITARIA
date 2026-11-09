@@ -4,7 +4,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  CalendarCheck, CaretRight, ChartLineUp, Crown, CurrencyDollar, FileText, MagnifyingGlass, Notebook, Sparkle, Storefront, X,
+  Bug, CalendarCheck, CaretRight, Lightbulb, ChartLineUp, Crown, CurrencyDollar, FileText, MagnifyingGlass, Notebook, Sparkle, Storefront, X,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
@@ -31,12 +31,28 @@ function Linha({ slug, titulo, resumo }: { slug: string; titulo: string; resumo:
 }
 
 export function CartaoSuporte() {
+  const navigate = useNavigate()
   return (
-    <section className="ca-sup">
-      <span className="ca-sup-ic" aria-hidden="true"><IconeWhatsApp size={22} /></span>
-      <span className="ca-sup-tx"><b>Ainda com dúvida?</b><small>Fale com a equipe</small></span>
-      <a className="ca-sup-bt" href={WHATS} target="_blank" rel="noopener noreferrer">Falar</a>
-    </section>
+    <>
+      <section className="ca-sup">
+        <span className="ca-sup-ic" aria-hidden="true"><IconeWhatsApp size={22} /></span>
+        <span className="ca-sup-tx"><b>Ainda com dúvida?</b><small>Fale com a equipe</small></span>
+        <a className="ca-sup-bt" href={WHATS} target="_blank" rel="noopener noreferrer">Falar</a>
+      </section>
+      {/* (09/11) sugerir e relatar saíram do menu da foto e ficam aqui, junto do suporte */}
+      <section className="ca-lista ca-mais">
+        <button type="button" className="ca-art" onClick={() => navigate('/solicitar-recurso')}>
+          <span className="ca-mais-ic" aria-hidden="true"><Lightbulb size={20} weight="bold" /></span>
+          <span className="ca-art-tx"><b>Sugerir uma melhoria</b><small>Conte o que falta no app</small></span>
+          <CaretRight size={18} weight="bold" aria-hidden="true" />
+        </button>
+        <button type="button" className="ca-art" onClick={() => navigate('/relatar-problema')}>
+          <span className="ca-mais-ic" aria-hidden="true"><Bug size={20} weight="bold" /></span>
+          <span className="ca-art-tx"><b>Relatar um problema</b><small>Algo não funcionou?</small></span>
+          <CaretRight size={18} weight="bold" aria-hidden="true" />
+        </button>
+      </section>
+    </>
   )
 }
 

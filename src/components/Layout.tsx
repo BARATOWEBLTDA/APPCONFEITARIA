@@ -1,4 +1,3 @@
-import { useNotifications } from "@/context/NotificationContext";
 import { ROTAS_CARDAPIO } from "@/components/CardapioSubnav";
 const ROTAS_CATALOGO = ["/produtos", "/produtos/categorias", "/categorias", "/complementos"];
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
@@ -18,7 +17,7 @@ import { ClipboardText, ChartBar, Stack, Palette, Storefront, ArrowSquareOut, Ar
   House, CalendarDots, ShoppingBag, Users,
   Package, CurrencyDollar, Gear, CaretDown, Cake,
   SquaresFour, Plus,
-  Receipt, Sparkle, Crown, Bell, FileText,
+  Receipt, Sparkle, Crown, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { Ticket, Target, X, Wrench, Scales, Sliders } from "@phosphor-icons/react";
@@ -39,31 +38,7 @@ import { Mascote, NomeDoonly } from "@/components/marca/Mascote";
  * Item do menu lateral (07/10 · 2.95, guia A14): ícone de 20px, em traço grosso;
  * quando é a tela atual, o ícone fica cheio e rosa. "ativoSe" marca o item também em telas "filhas".
  */
-/** (4.27) Sininho do menu da esquerda (computador): número de notificações novas e atalho pra lista */
-function SinoMenu() {
-  const { notifCount } = useNotifications();
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const n = notifCount > 9 ? "9+" : String(notifCount);
-  return (
-    <button type="button" className={`sidebar-sino${pathname === "/noticias" ? " ativo" : ""}${notifCount > 0 ? " sidebar-sino--novo" : ""}`} onClick={() => navigate("/noticias")}
-      aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? "s" : ""}` : "Novidades"}>
-      <Bell size={20} weight={pathname === "/noticias" || notifCount > 0 ? "fill" : "bold"} />
-      {notifCount > 0 && <span className="sidebar-sino-n" aria-hidden="true">{n}</span>}
-    </button>
-  );
-}
-/** só monta no computador (no celular o menu da esquerda fica escondido e não precisa buscar nada) */
-function useComputador() {
-  const [sim, setSim] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 901px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 901px)");
-    const f = () => setSim(mq.matches);
-    mq.addEventListener("change", f);
-    return () => mq.removeEventListener("change", f);
-  }, []);
-  return sim;
-}
+/* (09/11) o sino do menu da esquerda foi para o topo, ao lado da foto (AppPageHeader) */
 
 function ItemMenu({ to, icone: Icone, children, ativoSe, tour }: { to: string; icone: Icon; children: ReactNode; ativoSe?: (caminho: string) => boolean; tour?: string }) {
   const { pathname } = useLocation();
@@ -138,7 +113,6 @@ export default function Layout() {
   } = useAvatarUpload();
   const [maisOpen, setMaisOpen] = useState(false);
   const [dooOpen, setDooOpen] = useState(false);
-  const computador = useComputador();
   const linkCardapio = profile ? getCardapioUrl(profile) : "";
   // (13/10) menu recolhido (só os ícones): fica lembrado neste aparelho. A largura vai na variável --sidebar-w,
   // que as barras fixas de baixo (Nova venda, Dados da loja, Editar pedido) também usam.
@@ -229,10 +203,9 @@ export default function Layout() {
           {/* (31/10 · 5.98) a seta de recolher subiu para o lado do sino: embaixo ela tomava a altura de um item do menu */}
           {!recolhido ? (
             <span className="sb-topo-bts">
-              {computador && <SinoMenu />}
               <button type="button" className="sb-recolher" onClick={alternarRecolhido} aria-label="Recolher o menu" title="Recolher o menu"><CaretDoubleLeft size={16} weight="bold" /></button>
             </span>
-          ) : computador && <SinoMenu />}
+          ) : null}
         </div>
 
         <nav ref={navRef} className="sidebar-nav" aria-label="Menu principal">

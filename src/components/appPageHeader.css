@@ -167,3 +167,12 @@
   .cab--heroi .cab-t { font-size: 28px; font-weight: 600; letter-spacing: -.02em; }
   html body .cab--heroi .cab-s { display: block; margin-top: 4px; font-size: 14.5px; font-weight: 400; color: var(--ui-texto-2) !important; }
 }
+
+/* (09/11) sino no topo do computador, entre o "7 dias grátis" e a foto */
+.cab-sino { display: none; }
+@media (min-width: 901px) {
+  .cab-sino { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 38px; height: 38px; border: 0; border-radius: var(--ui-raio-p); background: transparent; color: var(--ui-texto-2); cursor: pointer; }
+  .cab-sino:hover { background: var(--ui-cinza); color: var(--ui-texto); }
+  .cab-sino--novo { color: var(--ui-texto); }
+  .cab-sino-n { position: absolute; top: 3px; right: 2px; min-width: 17px; height: 17px; padding: 0 4px; border: 2px solid var(--ui-branco); border-radius: 9px; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 10px; font-style: normal; font-weight: 600; line-height: 13px; text-align: center; box-sizing: border-box; }
+}
