@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChatCircleText, Receipt, Wallet, WarningCircle } from "@phosphor-icons/react";
+import { Bell, ChatCircleText, Receipt, Wallet, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import AbasAvisos from "@/components/AbasAvisos";
 import { Botao, TelaVazia } from "@/components/base";
-import { Mascote } from "@/components/marca/Mascote";
 import { marcarLidas } from "@/lib/notificacoesUsuario";
 import { carregarNotifConfeiteira, type NotifVista } from "@/lib/notifConfeiteira";
 import { hojeISO, dataISO } from "@/lib/pedidoStatus";
@@ -98,11 +97,8 @@ export default function Notificacoes() {
         ) : lista === null ? (
           <p className="nf-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando…</p>
         ) : lista.length === 0 ? (
-          <div className="nf-vazio">
-            <Mascote pose="acenando" className="nf-vazio-doo" />
-            <b>Tudo em dia por aqui</b>
-            <p>Quando chegar um pedido ou um Pix, ele aparece aqui.</p>
-          </div>
+          // (09/11) sem mascote nesta página: só o sino numa caixinha branca
+          <TelaVazia icone={<Bell size={30} />} titulo="Tudo em dia por aqui" texto="Quando chegar um pedido ou um Pix, ele aparece aqui." />
         ) : (
           <>
             <div className="nf-topo">

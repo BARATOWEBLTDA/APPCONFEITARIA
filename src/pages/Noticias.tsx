@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Lightbulb, Newspaper, PlayCircle, Sparkle, WarningCircle } from "@phosphor-icons/react";
-import { Mascote } from "@/components/marca/Mascote";
 import AppPageHeader from "@/components/AppPageHeader";
 import AbasAvisos from "@/components/AbasAvisos";
 import { COMO_NOVIDADES, TOUR_NOVIDADES } from "@/lib/comoTelas";
@@ -65,20 +64,9 @@ function iconeDaCategoria(c: string | null) {
 }
 
 /** (21/10) Convites úteis no fim da lista e na tela vazia */
-function Convite({ titulo, texto, botao, para, destaque }: { titulo: string; texto: string; botao: string; para: string; destaque?: boolean }) {
-  const navigate = useNavigate();
-  return (
-    <div className={`nl-conv${destaque ? " nl-conv--d" : ""}`}>
-      <span className="nl-conv-ic" aria-hidden="true">{destaque ? <Lightbulb size={20} weight="fill" /> : <WarningCircle size={20} weight="fill" />}</span>
-      <span className="nl-conv-tx"><b>{titulo}</b><small>{texto}</small></span>
-      <button type="button" onClick={() => navigate(para)}>{botao}</button>
-    </div>
-  );
-}
 
 // (30/10 · 5.66) o arrastar para excluir saiu: causava a rolagem para o lado e cortava o texto
 export default function Noticias() {
-  const navigate = useNavigate();
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   // (21/10) as que ela já abriu (sem a bolinha rosa)
   const [lidas, setLidas] = useState<Set<string>>(new Set());
@@ -152,21 +140,8 @@ export default function Noticias() {
             acao={<Botao variante="suave" tamanho="m" onClick={carregar}>Tentar de novo</Botao>}
           />
         ) : noticias.filter(n => !ocultas.has(n.id)).length === 0 ? (
-          /* (21/10) vazia: no computador um cartão com o mascote; embaixo, Sugerir e Relatar */
-          <div className="nl-vazia">
-            <div className="nl-vazia-c">
-              <Mascote pose="acenando" className="nl-vazia-m" />
-              <div>
-                <h2>Nenhuma novidade ainda</h2>
-                <p>As dicas para vender mais e as novidades do Doonly aparecem aqui. A gente avisa no sininho quando sair uma nova.</p>
-                <button type="button" className="nl-vazia-bt" onClick={() => navigate("/inicio")}>Voltar para o Início</button>
-              </div>
-            </div>
-            <div className="nl-convs">
-              <Convite destaque titulo="Tem uma ideia?" texto="Conta o que ajudaria você." botao="Sugerir" para="/solicitar-recurso" />
-              <Convite titulo="Algo não funcionou?" texto="Conta o que aconteceu." botao="Relatar" para="/relatar-problema" />
-            </div>
-          </div>
+          /* (09/11) vazia igual à aba Notificações: sem mascote, só o ícone numa caixinha branca */
+          <TelaVazia icone={<Newspaper size={30} />} titulo="Nenhuma novidade ainda" texto="Dicas e novidades do Doonly aparecem aqui." />
         ) : (
           (() => {
             // (23/10 · v2) igual ao iFood: só a lista, de ponta a ponta, sem cartão. Imagem quadrada, título, texto e o tempo
