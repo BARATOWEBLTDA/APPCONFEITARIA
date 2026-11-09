@@ -146,10 +146,10 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
       <div className={`cab-foto-area ${className}`}>
         {/* (22/10) celular: coroa e sino, iguais ao Início (no lugar da logo da loja) */}
         <div className="cab-cel-acoes">
-          {/* (09/11) igual ao Início: "7 dias grátis" pra quem não é PRO; a coroa só como selo do PRO */}
+          {/* (09/11) igual ao Início: "7 dias grátis" pra quem não é PRO; quem é PRO vê a etiqueta "PRO" no mesmo formato (discreta) */}
           {profile && (isPro ? (
-            <button type="button" className="cab-cel-ac cab-cel-ac--pro" onClick={() => navigate('/minha-assinatura')} aria-label="Minha assinatura PRO">
-              <img src="/coroa.webp" alt="" aria-hidden="true" />
+            <button type="button" className="selo-teste-cel selo-teste-cel--pro" onClick={() => navigate('/minha-assinatura')} aria-label="Minha assinatura PRO">
+              <Crown size={13} weight="fill" aria-hidden="true" />PRO
             </button>
           ) : !carregandoPlano && (
             <button type="button" className="selo-teste-cel" onClick={() => navigate('/assinar')} aria-label="Testar o PRO grátis por 7 dias">

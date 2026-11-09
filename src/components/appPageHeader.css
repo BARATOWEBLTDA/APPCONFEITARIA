@@ -181,3 +181,4 @@
 .selo-teste-cel { display: inline-flex; align-items: center; gap: 5px; flex: none; height: 32px; margin: 0; padding: 0 11px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-p); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 12.5px; font-weight: 600; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .selo-teste-cel svg { color: #C9962B; }
 .selo-teste-cel:active { background: #F6F3F4; }
+.selo-teste-cel--pro { letter-spacing: .04em; } /* (09/11) PRO: a mesma etiqueta, discreta (só a palavra muda) */

@@ -874,9 +874,8 @@ export default function Inicio() {
           {/* (22/10) a coroa do PRO do lado do sino (como o Clube do iFood): leva pra assinatura */}
           {/* (09/11) quem não é PRO vê a etiqueta "7 dias grátis" (a coroa sozinha ninguém entendia); PRO fica com a coroa, como selo */}
           {profile && (isPro ? (
-            <button type="button" className="ini-hero-ac ini-hero-ac--pro" onClick={() => navigate("/minha-assinatura")}
-              aria-label="Minha assinatura PRO" title="Minha assinatura">
-              <img src="/coroa.webp" alt="" aria-hidden="true" />
+            <button type="button" className="selo-teste-cel selo-teste-cel--pro" onClick={() => navigate("/minha-assinatura")} aria-label="Minha assinatura PRO">
+              <Crown size={13} weight="fill" aria-hidden="true" />PRO
             </button>
           ) : (
             <button type="button" className="selo-teste-cel" onClick={() => navigate("/assinar")} aria-label="Testar o PRO grátis por 7 dias">
