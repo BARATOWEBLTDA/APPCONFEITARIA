@@ -179,10 +179,10 @@ const ETAPAS_PRONTA    = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
 
 // Em que situação o pedido entra: o valor gravado não muda, só o nome na tela (igual à lista de pedidos)
 const COMECOS = [
-  { chave: 'aguardando_aceite', nome: 'Novo pedido', dica: 'Fica em "Para aceitar" na sua lista até você aceitar.' },
-  { chave: 'agendado', nome: 'Agendado', dica: 'Já confirmado com o cliente, entra na agenda.' },
-  { chave: 'finalizado', nome: 'Pronto', dica: 'Já está feito, esperando o cliente.' },
-  { chave: 'entregue', nome: 'Entregue', dica: 'O cliente já levou o pedido.' },
+  { chave: 'aguardando_aceite', nome: 'Novo pedido', dica: 'Fica pra você aceitar' },
+  { chave: 'agendado', nome: 'Agendado', dica: 'Confirmado, vai pra agenda' },
+  { chave: 'finalizado', nome: 'Pronto', dica: 'Feito, esperando o cliente' },
+  { chave: 'entregue', nome: 'Entregue', dica: 'O cliente já levou' },
 ] as const
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1250,10 +1250,20 @@ export default function NovaVenda() {
         <>
           <section className="nv3-card">
             <Titulo>Em que situação o pedido entra?</Titulo>
-            <div className="nv3-sit" role="group" aria-label="Em que situação o pedido entra">
-              {COMECOS.map(c => <button key={c.chave} type="button" aria-pressed={statusPedido === c.chave} disabled={(jaLevou && c.chave !== 'entregue') || (c.chave === 'entregue' && encomendaFutura)} onClick={() => { statusAuto.current = false; setStatusPedido(c.chave) }}>{c.nome}</button>)}
+            {/* (09/11) no padrão das escolhas do app: cartão com a bolinha à esquerda e a explicação dentro (antes: botões rosa + frase embaixo) */}
+            <div className="nv3-sits" role="radiogroup" aria-label="Em que situação o pedido entra">
+              {COMECOS.map(c => {
+                const on = statusPedido === c.chave
+                return (
+                  <button key={c.chave} type="button" role="radio" aria-checked={on} className={`nv3-cl${on ? ' on' : ''}`}
+                    disabled={(jaLevou && c.chave !== 'entregue') || (c.chave === 'entregue' && encomendaFutura)}
+                    onClick={() => { statusAuto.current = false; setStatusPedido(c.chave) }}>
+                    <i className="nv3-radio" aria-hidden="true" />
+                    <span className="nv3-cl-tx"><b>{c.nome}</b><small>{c.dica}</small></span>
+                  </button>
+                )
+              })}
             </div>
-            <p className="nv3-dica"><b>{comeco.nome}:</b> {comeco.dica}</p>
           </section>
 
           <section className="nv3-card nv3-res-card">

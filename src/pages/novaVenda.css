@@ -355,3 +355,7 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 /* (09/11) endereços já usados pelo cliente */
 .nv3-ends { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); margin-bottom: var(--space-4); }
 @media (min-width: 901px) { .nv3-ends { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); } }
+/* (09/11) "Em que situação o pedido entra?" em cartões com bolinha: 2 por linha no PC, um embaixo do outro no celular */
+.nv3-sits { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+@media (min-width: 901px) { .nv3-sits { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); } }
+.nv3-sits .nv3-cl:disabled { opacity: .45; cursor: not-allowed; }
