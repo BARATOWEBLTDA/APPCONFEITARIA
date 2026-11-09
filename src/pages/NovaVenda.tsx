@@ -13,6 +13,7 @@ import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import MapaEndereco, { type BuscaMapa } from '@/components/MapaEndereco'
 import { erroDeConexao, explicarErro } from '@/lib/erros'
 import { r2 } from '@/lib/moeda'
 import { digitosTelefone, linkWhatsApp } from '@/lib/telefone'
@@ -395,6 +396,8 @@ export default function NovaVenda() {
   const [tentou, setTentou] = useState(false)
   // (09/11) "Grátis" dentro do campo da taxa de entrega
   const [taxaGratis, setTaxaGratis] = useState(false)
+  // (09/11) mapa da entrega: abre na cidade da loja (ou no Brasil) e dá zoom no endereço conforme ela preenche (espera ela parar de digitar)
+  const [buscaMapa, setBuscaMapa] = useState<BuscaMapa>(null)
   useEffect(() => { setTentou(false) }, [etapa])
 
   // ── Passos no histórico (11/10) ─────────────────────────────────────────
@@ -490,6 +493,11 @@ export default function NovaVenda() {
   const faltasEntrega = etapaLabelAtual === 'Entrega' ? [tipo === 'encomenda' && !dataEntrega && 'data', tipoEntrega === 'entrega' && !enderecoRua.trim() && 'rua'].filter(Boolean) as string[] : []
   const faltaData = tentou && faltasEntrega.includes('data')
   const faltaRua = tentou && faltasEntrega.includes('rua')
+  useEffect(() => {
+    const cidade = (enderecoCidade || cidadeDaLoja.current || '').trim()
+    const t = window.setTimeout(() => setBuscaMapa(cidade ? { rua: enderecoRua.trim(), numero: enderecoNumero.trim(), cidade } : null), 700)
+    return () => window.clearTimeout(t)
+  }, [enderecoRua, enderecoNumero, enderecoCidade])
   const proximaEtapa = () => {
     const falta = oQueFalta()
     // (09/11) faltou algo: o campo fica vermelho e a tela rola até ele
@@ -1035,6 +1043,7 @@ export default function NovaVenda() {
                 <span className="nv3-tipo-ic" aria-hidden="true"><Truck size={24} weight={ehEntrega ? 'fill' : 'bold'} /></span><span className="nv3-tipo-tx"><b>Entrega</b><small>Você vai entregar</small></span><i className="nv3-tipo-r" aria-hidden="true" />
               </button>
             </div>
+            {ehEntrega && <div className="nv3-mapa"><MapaEndereco busca={buscaMapa} soCidade={!buscaMapa?.rua} selo="" /></div>}
             {prontaRetirada && (
               <>
                 <p className="nv3-sub">O cliente já levou?</p>

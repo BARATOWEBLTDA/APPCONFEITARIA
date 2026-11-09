@@ -330,3 +330,6 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 .nv3-tipos--marca button, .nv3-tipos.nv3-tipos--marca button { flex-direction: row; align-items: center; gap: 12px; min-height: 64px; padding: 12px 14px; }
 .nv3-tipos--marca .nv3-tipo-r { position: static; flex: none; margin: 0; }
 @media (max-width: 600px) { .nv3-tipos.nv3-tipos--marca { grid-template-columns: minmax(0, 1fr); } } /* celular: uma embaixo da outra, o texto cabe numa linha */
+/* (09/11) mapa da entrega embaixo de Retirada / Entrega */
+.nv3-mapa .mpe { margin-top: var(--space-4); height: 180px; border-radius: 12px; }
+@media (min-width: 901px) { .nv3-mapa .mpe { height: 220px; } }
