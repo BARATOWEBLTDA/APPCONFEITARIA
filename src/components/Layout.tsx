@@ -14,6 +14,7 @@ import { Suspense, useState, useEffect, useRef, type ReactNode } from "react";
 import "@/styles/mobileClaro.css";
 import "@/styles/desktopPadrao.css";
 import "@/styles/menuClaro.css";
+import { gerarAvisosDoDia } from "@/lib/notifConfeiteira";
 import { ClipboardText, ChartBar, Stack, Palette, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, HandCoins, CaretDoubleLeft, CaretDoubleRight,
   House, CalendarDots, ShoppingBag, Users,
   Package, CurrencyDollar, Gear, CaretDown, Cake,
@@ -101,6 +102,8 @@ function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children, tour,
 export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  // (09/11) avisos do dia nas Notificações ("3 entregas hoje", "Pedido atrasado"): uma vez por abertura do app (a chave não repete)
+  useEffect(() => { if (profile?.id) void gerarAvisosDoDia(profile.id); }, [profile?.id]);
   const paraAceitar = usePedidosParaAceitar(profile?.id);
   const { isPro } = usePlano();
   const [grupoAberto, setGrupoAberto] = useState<string | null>(null);

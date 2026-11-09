@@ -60,6 +60,7 @@ const Pedidos = lazy(() => import("@/pages/Pedidos"));
 const EditarPedido = lazy(() => import("@/pages/EditarPedido"));
 const NovaVenda = lazy(() => import("@/pages/NovaVenda"));
 const Noticias = lazy(() => import("@/pages/Noticias"));
+const Notificacoes = lazy(() => import("@/pages/Notificacoes"));
 const NoticiaDetalhe = lazy(() => import("@/pages/NoticiaDetalhe"));
 const Agenda = lazy(() => import("@/pages/Agenda"));
 const Insumos = lazy(() => import("@/pages/Insumos"));
@@ -552,7 +553,7 @@ export default function App() {
           <Route path="/assinar" element={<Assinar />} />
           {/* (31/10 · 5.84) Receitas e Indique e ganhe saíram do código; os links antigos vão para o Início */}
           <Route path="/receitas" element={<Navigate to="/inicio" replace />} />
-          <Route path="/notificacoes" element={<Navigate to="/noticias" replace />} />
+          <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/solicitar-recurso" element={<SolicitarRecurso />} />
           <Route path="/relatar-problema" element={<RelatarProblema />} />
           <Route path="/assistente-virtual" element={<AssistenteVirtual />} />

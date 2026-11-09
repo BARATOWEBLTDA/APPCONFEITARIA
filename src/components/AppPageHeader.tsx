@@ -156,7 +156,7 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
               <Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}
             </button>
           ))}
-          <button type="button" className="cab-cel-ac" onClick={() => navigate('/noticias')} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? 's' : ''}` : 'Novidades'}>
+          <button type="button" className="cab-cel-ac" onClick={() => navigate('/notificacoes')} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? 's' : ''}` : 'Novidades'}>
             <Bell size={21} weight="regular" />
             {notifCount > 0 && <i className="cab-cel-bolinha">{notifCount > 9 ? '9+' : notifCount}</i>}
           </button>
@@ -172,7 +172,7 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
           <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}</button>
         )}
         {/* (09/11) computador: o sino saiu do menu da esquerda e fica aqui, entre o PRO e a foto */}
-        <button type="button" className={`cab-sino${notifCount > 0 ? ' cab-sino--novo' : ''}`} onClick={() => navigate('/noticias')} title="Novidades"
+        <button type="button" className={`cab-sino${notifCount > 0 ? ' cab-sino--novo' : ''}`} onClick={() => navigate('/notificacoes')} title="Novidades"
           aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? 's' : ''}` : 'Novidades'}>
           <Bell size={20} weight={notifCount > 0 ? 'fill' : 'regular'} aria-hidden="true" />
           {notifCount > 0 && <i className="cab-sino-n" aria-hidden="true">{notifCount > 9 ? '9+' : notifCount}</i>}

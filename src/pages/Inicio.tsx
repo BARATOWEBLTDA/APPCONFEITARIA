@@ -882,7 +882,7 @@ export default function Inicio() {
               <Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}
             </button>
           ))}
-          <button type="button" className={`ini-hero-ac${notifCount > 0 ? " ini-hero-ac--tem" : ""}`} onClick={() => navigate("/noticias")} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? "s" : ""}` : "Novidades"} title="Novidades">
+          <button type="button" className={`ini-hero-ac${notifCount > 0 ? " ini-hero-ac--tem" : ""}`} onClick={() => navigate("/notificacoes")} aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? "s" : ""}` : "Novidades"} title="Novidades">
             <Bell size={24} weight="regular" />
             {notifCount > 0 && <i className="ini-hero-bolinha">{notifCount > 9 ? "9+" : notifCount}</i>}
           </button>

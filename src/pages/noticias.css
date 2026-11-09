@@ -26,7 +26,7 @@
 /* (23/10 · v2) lista no jeito do iFood: de ponta a ponta, sem cartão e sem borda, fundo branco na tela toda.
    Imagem quadrada à esquerda, título, texto e o tempo no canto. Não lida: branco. Lida: cinza claro e texto mais leve. */
 html:has(.layout-root[data-rota="/noticias"]) body,
-html body .layout-root[data-rota="/noticias"], html body .layout-root[data-rota="/noticias"] .layout-main { background: var(--ui-branco) !important; }
+/* (09/11) a página de Novidades no mesmo cinza das Notificações (as duas são abas da mesma página) */
 .nl-lista { margin: 0 -16px; padding: 0; list-style: none; } /* (28/10) antes calc(50% - 50vw): em alguns Android passava da tela e o texto vazava para a direita */
 .nl-it { display: flex; align-items: flex-start; gap: 14px; padding: 18px 16px; background: var(--ui-branco); color: var(--ui-texto); text-decoration: none; -webkit-tap-highlight-color: transparent; transition: background-color var(--dur-fast) linear; }
 .nl-it--lida { background: #F3F3F3; }

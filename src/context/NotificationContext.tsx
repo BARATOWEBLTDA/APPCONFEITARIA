@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { contarNovidadesNaoLidas, marcarLidas } from "@/lib/notificacoesUsuario";
+import { contarNotifConfeiteira } from "@/lib/notifConfeiteira";
 
 interface Notification {
   id: string;
@@ -39,7 +40,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (telasUsando === 0) return;
     // Conta as não lidas (guardado na conta, não só no aparelho) e atualiza quando algo muda
     // (23/10) a tela Notificações saiu: o sino conta as novidades que ela ainda não leu
-    const load = async () => { setNotifCount(await contarNovidadesNaoLidas()); };
+    // (09/11) o sino abre Notificações (as da confeiteira) com a aba Novidades ao lado: conta as duas
+    const load = async () => { const [a, b] = await Promise.all([contarNotifConfeiteira(), contarNovidadesNaoLidas()]); setNotifCount(a + b); };
     load();
     window.addEventListener("doonly:notif-mudou", load);
     const t = window.setInterval(() => { if (document.visibilityState === "visible") load(); }, 60000);

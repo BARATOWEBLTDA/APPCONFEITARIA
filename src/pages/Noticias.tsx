@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Lightbulb, Newspaper, PlayCircle, Sparkle, WarningCircle } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
 import AppPageHeader from "@/components/AppPageHeader";
+import AbasAvisos from "@/components/AbasAvisos";
 import { COMO_NOVIDADES, TOUR_NOVIDADES } from "@/lib/comoTelas";
 import { Botao, TelaVazia } from "@/components/base";
 import { supabase } from "@/lib/supabase";
@@ -128,7 +129,7 @@ export default function Noticias() {
   return (
     <>
       <AppPageHeader
-        title="Novidades" centro voltar="/inicio"
+        title="Notificações" centro voltar="/inicio"
         subtitle="Dicas, novidades e tutoriais do Doonly" infoComo={COMO_NOVIDADES} infoTour={TOUR_NOVIDADES}
         infoIcon="📰"
         infoContent={
@@ -140,6 +141,7 @@ export default function Noticias() {
         infoTip={<>Escolha uma <strong>categoria</strong> para ver só as dicas, as novidades ou os tutoriais.</>}
       />
       <div className="nl">
+        <AbasAvisos atual="novidades" />
         {estado === "carregando" ? (
           demorou ? <p className="nl-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando as novidades…</p> : null
         ) : estado === "erro" ? (
