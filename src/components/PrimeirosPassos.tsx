@@ -1051,7 +1051,7 @@ const CSS = `
   /* (29/10 · 4.96) computador, no modelo que o Bruno trouxe: cabeçalho com foguete e barra; à esquerda o passo da vez
      (número grande, porquê, botão, mascote e a dica); à direita a lista com os 7 passos */
   .pp-dk-cab { display: flex; align-items: center; gap: 18px; padding-bottom: 22px; border-bottom: 1px solid var(--ui-linha); } /* (09/11) uma linha separa o cabeçalho, no lugar das caixas */
-  .pp-dk-ic { width: 64px; height: 64px; flex: none; border-radius: var(--ui-raio-cartao); background: #FDEBF1; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
+  .pp-dk-ic { width: 64px; height: 64px; flex: none; border-radius: var(--ui-raio-cartao); border: 1px solid var(--ui-borda); background: var(--ui-branco); color: var(--ui-texto); display: flex; align-items: center; justify-content: center; box-sizing: border-box; } /* (09/11) estilo Dora: caixinha branca, borda fina, ícone neutro */
   .pp-dk-tit { flex: 1; min-width: 0; }
   .pp-dk .pp-t { font-size: 26px; font-weight: 600; letter-spacing: -.015em; color: #241A1E; }
   .pp-dk .pp-sub { font-size: 16px; margin-top: 2px; }
@@ -1065,12 +1065,12 @@ const CSS = `
   .pp-hero-topo { flex: 1; display: flex; align-items: center; gap: 16px; } /* ocupa a altura: o aviso fica rente ao último passo da lista */
   .pp-hero-tx { flex: 1; min-width: 0; display: flex; gap: 22px; align-items: flex-start; }
   .pp-hero-n--ok { background: var(--ui-verde) !important; box-shadow: 0 6px 16px rgba(46, 158, 91, .25) !important; }
-  .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(214, 69, 122, .25); }
+  .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
   .pp-hero-t { display: block; margin-top: 4px; font-size: 26px; font-weight: 600; letter-spacing: -.015em; color: #241A1E; line-height: 1.2; }
   .pp-hero-s { display: block; margin-top: 4px; font-size: 18px; color: var(--ui-texto-2); }
   .pp-hero-p { margin: 18px 0 0; max-width: 380px; font-size: 16px; line-height: 1.6; color: #6B5C62; }
-  .pp-hero-btn { display: inline-flex; align-items: center; gap: 12px; min-height: 54px; margin-top: 26px; padding: 0 30px; border: 0; border-radius: var(--ui-raio-botao); font-family: inherit; font-size: 17px; font-weight: 600; color: #fff; background: var(--ui-rosa-botao, #CC2E66); box-shadow: 0 6px 16px rgba(214, 69, 122, .28); cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease; }
-  .pp-hero-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(214, 69, 122, .34); }
+  .pp-hero-btn { display: inline-flex; align-items: center; gap: 12px; min-height: 54px; margin-top: 26px; padding: 0 30px; border: 0; border-radius: var(--ui-raio-botao); font-family: inherit; font-size: 17px; font-weight: 600; color: #fff; background: var(--ui-rosa-botao, #CC2E66); box-shadow: none; cursor: pointer; white-space: nowrap; transition: background-color .15s ease; } /* (09/11) chapado, sem a sombra rosa */
+  .pp-hero-btn:hover { background: var(--ui-rosa-botao-sombra, #A51E50); }
   .pp-hero-masc { position: relative; flex: none; width: clamp(140px, 12vw, 190px); display: flex; justify-content: center; }
   .pp-hero-masc::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -4px; height: 18px; border-radius: 50%; background: rgba(214, 69, 122, .14); }
   .pp-hero-masc img { position: relative; z-index: 1; width: 90%; height: auto; }
