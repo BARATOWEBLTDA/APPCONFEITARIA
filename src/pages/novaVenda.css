@@ -352,3 +352,6 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 .nv3-auto { display: flex; align-items: center; gap: 6px; margin: calc(-1 * var(--space-1)) 0 var(--space-3); font-size: 13px; color: #15803D; }
 .nv3-auto svg { flex: none; }
 .nv3-auto span { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* (09/11) endereços já usados pelo cliente */
+.nv3-ends { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); margin-bottom: var(--space-4); }
+@media (min-width: 901px) { .nv3-ends { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); } }

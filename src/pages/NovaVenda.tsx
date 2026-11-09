@@ -399,6 +399,10 @@ export default function NovaVenda() {
   const [taxaGratis, setTaxaGratis] = useState(false)
   // (09/11) mapa da entrega: abre na cidade da loja (ou no Brasil) e dá zoom no endereço conforme ela preenche (espera ela parar de digitar)
   const [buscaMapa, setBuscaMapa] = useState<BuscaMapa>(null)
+  // (09/11) endereços que o cliente já usou em pedidos (além do cadastro): ela escolhe um e preenche tudo
+  type EndUsado = { rua: string; numero: string; bairro: string; cidade: string; complemento: string }
+  const [endsPedidos, setEndsPedidos] = useState<EndUsado[]>([])
+  const ruaAtual = useRef('')
   // no celular o mapa vai embaixo do endereço (ela preenche e já vê o mapa, sem subir a tela); no computador fica em cima
   const celular = useIsMobile()
   useEffect(() => { setTentou(false) }, [etapa])
@@ -496,6 +500,26 @@ export default function NovaVenda() {
   const faltasEntrega = etapaLabelAtual === 'Entrega' ? [tipo === 'encomenda' && !dataEntrega && 'data', tipoEntrega === 'entrega' && !enderecoRua.trim() && 'rua'].filter(Boolean) as string[] : []
   const faltaData = tentou && faltasEntrega.includes('data')
   const faltaRua = tentou && faltasEntrega.includes('rua')
+  useEffect(() => {
+    setEndsPedidos([])
+    if (!clienteId) return
+    let vivo = true
+    supabase.from('pedidos').select('endereco_rua, endereco_numero, endereco_bairro, endereco_cidade, endereco_complemento')
+      .eq('cliente_id', clienteId).not('endereco_rua', 'is', null).neq('endereco_rua', '').order('created_at', { ascending: false }).limit(30)
+      .then(({ data }) => {
+        if (!vivo || !data) return
+        const l: EndUsado[] = []
+        for (const p of data as { endereco_rua: string | null; endereco_numero: string | null; endereco_bairro: string | null; endereco_cidade: string | null; endereco_complemento: string | null }[]) {
+          const e = { rua: (p.endereco_rua || '').trim(), numero: (p.endereco_numero || '').trim(), bairro: (p.endereco_bairro || '').trim(), cidade: (p.endereco_cidade || '').trim(), complemento: (p.endereco_complemento || '').trim() }
+          if (e.rua && !l.some(x => chaveEnd(x.rua, x.numero) === chaveEnd(e.rua, e.numero))) l.push(e)
+        }
+        setEndsPedidos(l)
+        // cliente sem endereço no cadastro: já puxa o do último pedido
+        const c = clientes.find(x => x.id === clienteId)
+        if (!c?.rua && l[0] && !ruaAtual.current.trim()) usarEnd(l[0])
+      }, () => {})
+    return () => { vivo = false }
+  }, [clienteId]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const cidade = (enderecoCidade || cidadeDaLoja.current || '').trim()
     const t = window.setTimeout(() => setBuscaMapa(cidade ? { rua: enderecoRua.trim(), numero: enderecoNumero.trim(), cidade } : null), 700)
@@ -862,6 +886,20 @@ export default function NovaVenda() {
   }
 
   const clienteEscolhida = clienteId ? clientes.find(x => x.id === clienteId) : undefined
+  // os endereços pra escolher: o do cadastro primeiro, depois os dos pedidos (sem repetir), até 3
+  const chaveEnd = (rua?: string | null, num?: string | null) => `${(rua || '').trim().toLowerCase()}|${(num || '').trim().toLowerCase()}`
+  const endsCliente: EndUsado[] = (() => {
+    const l: EndUsado[] = []
+    const c = clienteEscolhida
+    if (c?.rua) l.push({ rua: c.rua, numero: c.numero || '', bairro: c.bairro || '', cidade: c.cidade || '', complemento: c.complemento || '' })
+    for (const e of endsPedidos) if (!l.some(x => chaveEnd(x.rua, x.numero) === chaveEnd(e.rua, e.numero))) l.push(e)
+    return l.slice(0, 3)
+  })()
+  const endAtual = chaveEnd(enderecoRua, enderecoNumero)
+  ruaAtual.current = enderecoRua
+  const usarEnd = (e: EndUsado) => { setEnderecoRua(e.rua); setEnderecoNumero(e.numero); setEnderecoBairro(e.bairro); if (e.cidade) setEnderecoCidade(e.cidade); setEnderecoComplemento(e.complemento); setEnderecoCep('') }
+  const outroEnd = () => { setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro(''); setEnderecoComplemento(''); setEnderecoCep('') }
+  const enderecoDoPedido = !!enderecoRua.trim() && endsPedidos.some(e => chaveEnd(e.rua, e.numero) === endAtual)
   const enderecoDoCadastro = !!clienteEscolhida?.rua && clienteEscolhida.rua === enderecoRua && (clienteEscolhida.numero || '') === enderecoNumero
   const podeUsarEndereco = !!clienteEscolhida?.rua && (clienteEscolhida.rua !== enderecoRua || (clienteEscolhida.numero || '') !== enderecoNumero)
   const usarEnderecoDaCliente = () => {
@@ -1087,7 +1125,27 @@ export default function NovaVenda() {
             <section className="nv3-card nv3-end">
               <Titulo acao={podeUsarEndereco ? <Botao variante="link" onClick={usarEnderecoDaCliente}>Usar o de {primeiroNome}</Botao> : undefined}>Endereço</Titulo>
               {/* (09/11) avisa quando o endereço veio sozinho do cadastro do cliente */}
-              {enderecoDoCadastro && <p className="nv3-auto"><CheckCircle size={16} weight="fill" aria-hidden="true" /><span>Puxado do cadastro de {toTitleCase(primeiroNome)}</span></p>}
+              {(enderecoDoCadastro || enderecoDoPedido) && <p className="nv3-auto"><CheckCircle size={16} weight="fill" aria-hidden="true" /><span>{enderecoDoCadastro ? `Puxado do cadastro de ${toTitleCase(primeiroNome)}` : `Puxado de um pedido de ${toTitleCase(primeiroNome)}`}</span></p>}
+              {/* (09/11) mais de um endereço já usado: ela escolhe (bolinha à esquerda) ou "Outro endereço" */}
+              {endsCliente.length > 1 && (
+                <div className="nv3-ends" role="radiogroup" aria-label="Endereços já usados">
+                  {endsCliente.map(e => {
+                    const on = chaveEnd(e.rua, e.numero) === endAtual
+                    return (
+                      <button key={chaveEnd(e.rua, e.numero)} type="button" role="radio" aria-checked={on} className={`nv3-cl${on ? ' on' : ''}`} onClick={() => usarEnd(e)}>
+                        <i className="nv3-radio" aria-hidden="true" />
+                        <span className="nv3-cl-tx"><b>{e.rua}{e.numero ? `, ${e.numero}` : ''}</b><small>{[e.bairro, e.cidade].filter(Boolean).join(' · ') || 'Sem bairro'}</small></span>
+                      </button>
+                    )
+                  })}
+                  {(() => { const on = !endsCliente.some(e => chaveEnd(e.rua, e.numero) === endAtual); return (
+                    <button type="button" role="radio" aria-checked={on} className={`nv3-cl${on ? ' on' : ''}`} onClick={() => { if (!on) outroEnd() }}>
+                      <i className="nv3-radio" aria-hidden="true" />
+                      <span className="nv3-cl-tx"><b>Outro endereço</b><small>Escreva nos campos abaixo</small></span>
+                    </button>
+                  ) })()}
+                </div>
+              )}
               {/* (09/11) 3 linhas cheias: CEP | Cidade, Rua | Número, Bairro | Complemento; a taxa fecha o cartão (depende do endereço) */}
               <div className="nv3-cols">
                 <Campo
