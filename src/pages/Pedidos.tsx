@@ -613,14 +613,16 @@ export default function Pedidos() {
     return null
   }
   const parada = conteudo()
+  const semProdutoNenhum = totalProdutos === 0 && pedidos.length === 0
 
   return (
     <>
       <AppPageHeader
         title="Meus pedidos"
         subtitle="Acompanhe suas encomendas e produção"
-        infoIcon="📋" infoComo={COMO_PEDIDOS} infoTour={TOUR_PEDIDOS}
-        infoContent={
+        // (09/11) conta sem produto: sem o (i) (o texto e o tour falam de filtro, botões e lista que ainda não existem)
+        infoIcon="📋" infoComo={semProdutoNenhum ? undefined : COMO_PEDIDOS} infoTour={semProdutoNenhum ? undefined : TOUR_PEDIDOS}
+        infoContent={semProdutoNenhum ? undefined : 
           <>
             <p>Aqui ficam <strong>todas as suas encomendas</strong>, agrupadas por dia: o que está atrasado, o que entrega hoje, amanhã e nos próximos dias.</p>
             <p>O botão de cada pedido leva para o próximo passo: aceitar, produzir, marcar pronto, marcar entregue ou retirado.</p>

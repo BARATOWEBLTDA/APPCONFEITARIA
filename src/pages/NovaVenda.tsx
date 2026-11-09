@@ -748,7 +748,7 @@ export default function NovaVenda() {
   // (16/10) a seta do topo volta um passo (no primeiro, pergunta antes de cancelar), igual ao "Voltar" de baixo
   // (01/11 · 5.98) computador: no 1º passo sem a seta de voltar (é uma tela do menu, como as outras); do 2º passo em diante ela volta o passo
   const semVoltarPc = !sucessoAberto && etapa <= 1 && typeof window !== 'undefined' && window.matchMedia('(min-width: 901px)').matches
-  const cabecalho = <AppPageHeader title="Nova venda" subtitle={subtituloTopo} infoComo={COMO_NOVA_VENDA} infoTour={TOUR_NOVA_VENDA} onBack={semVoltarPc ? undefined : sucessoAberto ? () => navigate('/pedidos') : voltarEtapa} />
+  const cabecalho = <AppPageHeader title="Nova venda" subtitle={subtituloTopo} infoComo={produtos.length === 0 ? undefined : COMO_NOVA_VENDA} infoTour={produtos.length === 0 ? undefined : TOUR_NOVA_VENDA} onBack={semVoltarPc ? undefined : sucessoAberto ? () => navigate('/pedidos') : voltarEtapa} />
 
   // ═══ Venda registrada ═══
   if (sucessoAberto && pedidoCriado) {
