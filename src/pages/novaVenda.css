@@ -310,3 +310,16 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
   .nv3-so-pc { display: inline; margin-left: -2px; }
   .nv3-cls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 }
+
+/* (09/11) taxa de entrega: "Grátis" dentro do campo, encostado na borda (igual ao "Começo do zero") */
+.nv3-taxa2 .ui-campo-c { padding-right: 0; overflow: hidden; }
+.nv3-gratis { align-self: stretch; display: inline-flex; align-items: center; gap: 6px; flex: none; margin: 0; padding: 0 14px 0 12px; border: 0; background: #F1EDEF; font-family: inherit; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; white-space: nowrap; }
+.nv3-gratis i { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border: 1.5px solid #C9BCC2; border-radius: 4px; background: var(--ui-branco); color: #fff; box-sizing: border-box; }
+.nv3-taxa2--gratis .ui-campo-c { background: #F3F1F2; border-color: #E8E3E5; }
+.nv3-taxa2--gratis .nv3-gratis { background: #DCF3E4; color: #15803D; }
+.nv3-taxa2--gratis .nv3-gratis i { border-color: #15803D; background: #15803D; }
+/* (09/11) celular: o endereço um campo embaixo do outro (só Rua | Número lado a lado) e a taxa na largura toda */
+@media (max-width: 600px) {
+  .nv3-end .nv3-cols:not(.nv3-rn) { grid-template-columns: minmax(0, 1fr); }
+  .nv3-end .nv3-cols > span:empty { display: none; }
+}

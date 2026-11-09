@@ -393,6 +393,8 @@ export default function NovaVenda() {
     return null
   }
   const [tentou, setTentou] = useState(false)
+  // (09/11) "Grátis" dentro do campo da taxa de entrega
+  const [taxaGratis, setTaxaGratis] = useState(false)
   useEffect(() => { setTentou(false) }, [etapa])
 
   // ── Passos no histórico (11/10) ─────────────────────────────────────────
@@ -484,9 +486,14 @@ export default function NovaVenda() {
     return () => { vivo = false }
   }, [temItens, sucessoAberto, locNV.key])
 
+  // (09/11) o que falta na etapa de entrega: no resumo do computador ("Falta: data e rua") e, depois do Continuar, no campo
+  const faltasEntrega = etapaLabelAtual === 'Entrega' ? [tipo === 'encomenda' && !dataEntrega && 'data', tipoEntrega === 'entrega' && !enderecoRua.trim() && 'rua'].filter(Boolean) as string[] : []
+  const faltaData = tentou && faltasEntrega.includes('data')
+  const faltaRua = tentou && faltasEntrega.includes('rua')
   const proximaEtapa = () => {
     const falta = oQueFalta()
-    if (falta) { setTentou(true); return }
+    // (09/11) faltou algo: o campo fica vermelho e a tela rola até ele
+    if (falta) { setTentou(true); window.setTimeout(() => document.querySelector('.nv3 [aria-invalid="true"], .nv3 .ui-campo--erro')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 60); return }
     if (etapa < totalEtapas) irParaPasso(etapa + 1)
   }
   const voltarEtapa = () => {
@@ -1019,11 +1026,15 @@ export default function NovaVenda() {
         <>
           <section className="nv3-card">
             <Titulo>Como o pedido chega?</Titulo>
-            <div className="nv3-seg" role="group" aria-label="Retirada ou entrega">
-              <button type="button" aria-pressed={!ehEntrega} onClick={() => setTipoEntrega('retirada')}><Storefront size={20} weight={!ehEntrega ? 'fill' : 'bold'} />Retirada</button>
-              <button type="button" aria-pressed={ehEntrega} onClick={() => setTipoEntrega('entrega')}><Truck size={20} weight={ehEntrega ? 'fill' : 'bold'} />Entrega</button>
+            {/* (09/11) Retirada / Entrega nos mesmos cartões de Encomenda / Pronta entrega (a frase solta embaixo saiu) */}
+            <div className="nv3-tipos" role="group" aria-label="Retirada ou entrega">
+              <button type="button" aria-pressed={!ehEntrega} onClick={() => setTipoEntrega('retirada')}>
+                <span className="nv3-tipo-ic" aria-hidden="true"><Storefront size={24} weight={!ehEntrega ? 'fill' : 'bold'} /></span><span className="nv3-tipo-tx"><b>Retirada</b><small>Cliente vem buscar</small></span><i className="nv3-tipo-r" aria-hidden="true" />
+              </button>
+              <button type="button" aria-pressed={ehEntrega} onClick={() => setTipoEntrega('entrega')}>
+                <span className="nv3-tipo-ic" aria-hidden="true"><Truck size={24} weight={ehEntrega ? 'fill' : 'bold'} /></span><span className="nv3-tipo-tx"><b>Entrega</b><small>Você vai entregar</small></span><i className="nv3-tipo-r" aria-hidden="true" />
+              </button>
             </div>
-            <p className="nv3-dica">{ehEntrega ? 'Você leva o pedido até o cliente.' : 'O cliente vem buscar com você.'}</p>
             {prontaRetirada && (
               <>
                 <p className="nv3-sub">O cliente já levou?</p>
@@ -1036,12 +1047,13 @@ export default function NovaVenda() {
             )}
             {(tipo === 'encomenda' || buscaDepois) && (
               <div className="nv3-cols nv3-dh">
-                <div className="ui-campo">
+                <div className={`ui-campo${faltaData ? ' ui-campo--erro' : ''}`}>
                   <span className="ui-campo-r"><span>{ehEntrega ? 'Data da entrega' : 'Data da retirada'}</span></span>
-                  <button type="button" className="ui-campo-c nv3-abre" onClick={() => setCalNv('entrega')}>
+                  <button type="button" className="ui-campo-c nv3-abre" aria-invalid={faltaData || undefined} onClick={() => setCalNv('entrega')}>
                     <span className="ui-campo-ic" aria-hidden="true"><CalendarBlank size={20} weight="bold" /></span>
                     <span className={dataEntrega ? '' : 'nv3-ph'}>{dataEntrega ? dataDoCampo(dataEntrega) : 'Escolher'}</span>
                   </button>
+                  {faltaData && <p className="ui-campo-msg" role="alert"><WarningCircle size={14} weight="bold" aria-hidden="true" /><span>Escolha a data</span></p>}
                 </div>
                 <div className="ui-campo">
                   <span className="ui-campo-r"><span>Horário</span><small>opcional</small></span>
@@ -1055,32 +1067,37 @@ export default function NovaVenda() {
           </section>
 
           {ehEntrega && (
-            <section className="nv3-card">
+            <section className="nv3-card nv3-end">
               <Titulo acao={podeUsarEndereco ? <Botao variante="link" onClick={usarEnderecoDaCliente}>Usar o de {primeiroNome}</Botao> : undefined}>Endereço</Titulo>
+              {/* (09/11) 3 linhas cheias: CEP | Cidade, Rua | Número, Bairro | Complemento; a taxa fecha o cartão (depende do endereço) */}
               <div className="nv3-cols">
                 <Campo
                   rotulo="CEP" opcional inputMode="numeric" placeholder="00000-000" maxLength={9} value={enderecoCep}
                   dica={cepLoading ? 'Buscando o endereço…' : undefined}
                   onChange={e => { const m = formatCep(e.target.value); setEnderecoCep(m); if (m.replace(/\D/g, '').length === 8) fetchCep(m) }}
                 />
-                <span />
+                <Campo rotulo="Cidade" placeholder="Ex.: Curitiba" value={enderecoCidade} onChange={e => setEnderecoCidade(e.target.value)} />
               </div>
               <div className="nv3-cols nv3-rn">
-                <Campo rotulo="Rua" placeholder="Ex.: Rua das Flores" value={enderecoRua} onChange={e => setEnderecoRua(e.target.value)} />
+                <Campo rotulo="Rua" placeholder="Ex.: Rua das Flores" value={enderecoRua} onChange={e => setEnderecoRua(e.target.value)} erro={faltaRua ? 'Escreva a rua' : undefined} />
                 <Campo rotulo="Número" inputMode="numeric" placeholder="120" value={enderecoNumero} onChange={e => setEnderecoNumero(e.target.value)} />
               </div>
               <div className="nv3-cols">
                 <Campo rotulo="Bairro" placeholder="Ex.: Centro" value={enderecoBairro} onChange={e => setEnderecoBairro(e.target.value)} />
-                <Campo rotulo="Cidade" value={enderecoCidade} onChange={e => setEnderecoCidade(e.target.value)} />
+                <Campo rotulo="Complemento" opcional placeholder="Apto, bloco, referência" value={enderecoComplemento} onChange={e => setEnderecoComplemento(e.target.value)} />
               </div>
-              <Campo rotulo="Complemento" opcional placeholder="Ex.: apto, bloco, ponto de referência" value={enderecoComplemento} onChange={e => setEnderecoComplemento(e.target.value)} />
-              <div className="nv3-taxa">
-                <Campo rotulo="Taxa de entrega" opcional prefixo="R$" inputMode="numeric" placeholder="0,00" value={formatMaskMoney(taxaEntrega)} onChange={e => setTaxaEntrega(parseMaskMoney(e.target.value))} />
+              <div className="nv3-cols">
+                <Campo className={`nv3-taxa2${taxaGratis ? ' nv3-taxa2--gratis' : ''}`} rotulo="Taxa de entrega" opcional prefixo="R$" inputMode="numeric" placeholder="0,00"
+                  disabled={taxaGratis} value={taxaGratis ? '0,00' : formatMaskMoney(taxaEntrega)} onChange={e => setTaxaEntrega(parseMaskMoney(e.target.value))}
+                  depois={
+                    <button type="button" className="nv3-gratis" role="checkbox" aria-checked={taxaGratis} onClick={() => { setTaxaGratis(g => !g); setTaxaEntrega(0) }}>
+                      <i aria-hidden="true">{taxaGratis && <Check size={11} weight="bold" />}</i>Grátis
+                    </button>
+                  } />
+                <span />
               </div>
             </section>
           )}
-          {tipo === 'encomenda' && !dataEntrega && <p className={`nv3-dica nv3-centro${tentou ? ' nv3-falta' : ''}`}>Escolha a data para continuar.</p>}
-          {ehEntrega && !enderecoRua.trim() && <p className={`nv3-dica nv3-centro${tentou ? ' nv3-falta' : ''}`}>Escreva a rua para continuar.</p>}
         </>
       )}
 
@@ -1233,6 +1250,9 @@ export default function NovaVenda() {
             : <Botao cheio onClick={proximaEtapa} disabled={etapa === 1 && itens.length === 0}>Continuar</Botao>}
           <Botao cheio variante="secundario" onClick={voltarEtapa} disabled={salvando}>{etapa === 1 ? 'Cancelar' : 'Voltar'}</Botao>
         </div>
+        {faltasEntrega.length > 0 && (
+          <p className="nv3-lado-ajuda"><Info size={18} weight="bold" aria-hidden="true" />Falta: {faltasEntrega.join(' e ')}</p>
+        )}
         {etapa === 1 && itens.length === 0 && (
           <p className="nv3-lado-ajuda"><Info size={18} weight="bold" aria-hidden="true" />O botão Continuar fica disponível quando você adicionar pelo menos um produto.</p>
         )}
