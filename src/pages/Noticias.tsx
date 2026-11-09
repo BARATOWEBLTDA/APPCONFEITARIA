@@ -66,7 +66,8 @@ function iconeDaCategoria(c: string | null) {
 /** (21/10) Convites úteis no fim da lista e na tela vazia */
 
 // (30/10 · 5.66) o arrastar para excluir saiu: causava a rolagem para o lado e cortava o texto
-export default function Noticias() {
+/** (09/11) A lista das novidades: na página (no computador vira cartões, igual às Novidades do Início) e no painel do sino. */
+export function ConteudoNovidades() {
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   // (21/10) as que ela já abriu (sem a bolinha rosa)
   const [lidas, setLidas] = useState<Set<string>>(new Set());
@@ -116,20 +117,6 @@ export default function Noticias() {
 
   return (
     <>
-      <AppPageHeader
-        title="Notificações" centro voltar="/inicio"
-        subtitle="Dicas, novidades e tutoriais do Doonly" infoComo={COMO_NOVIDADES} infoTour={TOUR_NOVIDADES}
-        infoIcon="📰"
-        infoContent={
-          <>
-            <p>Aqui ficam <strong>todas as novidades</strong> do Doonly: dicas para vender mais, novidades do app, tutoriais passo a passo e avisos importantes.</p>
-            <p>A novidade <strong>fixada</strong> fica sempre no topo, em destaque. As outras aparecem da mais nova para mais antiga.</p>
-          </>
-        }
-        infoTip={<>Escolha uma <strong>categoria</strong> para ver só as dicas, as novidades ou os tutoriais.</>}
-      />
-      <div className="nl">
-        <AbasAvisos atual="novidades" />
         {estado === "carregando" ? (
           demorou ? <p className="nl-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando as novidades…</p> : null
         ) : estado === "erro" ? (
@@ -160,6 +147,7 @@ export default function Noticias() {
                           {capa && <img src={capa} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
                         </span>
                         <span className="nl-it-tx">
+                          {n.categoria && <span className="nl-it-cat">{n.categoria}</span>}
                           <b className="nl-it-t">{tituloSemCategoria(n.titulo, n.categoria)}</b>
                           {n.descricao && <span className="nl-it-d">{n.descricao}</span>}
                         </span>
@@ -172,6 +160,28 @@ export default function Noticias() {
             );
           })()
         )}
+    </>
+  );
+}
+
+export default function Noticias() {
+  return (
+    <>
+      <AppPageHeader
+        title="Notificações" centro voltar="/inicio"
+        subtitle="Dicas, novidades e tutoriais do Doonly" infoComo={COMO_NOVIDADES} infoTour={TOUR_NOVIDADES}
+        infoIcon="📰"
+        infoContent={
+          <>
+            <p>Aqui ficam <strong>todas as novidades</strong> do Doonly: dicas para vender mais, novidades do app, tutoriais passo a passo e avisos importantes.</p>
+            <p>A novidade <strong>fixada</strong> fica sempre no topo, em destaque. As outras aparecem da mais nova para mais antiga.</p>
+          </>
+        }
+        infoTip={<>Escolha uma <strong>categoria</strong> para ver só as dicas, as novidades ou os tutoriais.</>}
+      />
+      <div className="nl">
+        <AbasAvisos atual="novidades" />
+        <ConteudoNovidades />
       </div>
     </>
   );

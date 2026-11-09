@@ -1,6 +1,6 @@
 import type React from 'react'
 import { SELO_TESTE } from "@/lib/beneficiosPro";
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   ArrowSquareOut, Bell, Cake, CalendarDots, Calculator, CaretLeft, ChartLineUp, Crown, CurrencyDollar, Info, Invoice, Lightbulb,
@@ -18,6 +18,8 @@ import { useNotifications } from '@/context/NotificationContext'
 import { BotaoAjuda, type Como } from '@/components/como/ComoFunciona'
 import type { PassoTour } from '@/components/como/tour'
 import './appPageHeader.css'
+// (09/11) o painel do sino do computador só baixa quando abre
+const PainelSino = lazy(() => import('@/components/PainelSino'))
 
 /**
  * Cabeçalho das telas (guia A4): faixa rosa com voltar, título, (i), subtítulo e a foto.
@@ -137,6 +139,9 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
   const { isPro, loading: carregandoPlano } = usePlano()
   const navigate = useNavigate()
   const foto = useRef<HTMLButtonElement>(null)
+  const sino = useRef<HTMLDivElement>(null)
+  const [painel, setPainel] = useState(false)
+  const fecharPainel = useCallback(() => setPainel(false), [])
   // (21/10) computador: atalho pro cardápio da loja (só quando ele tem o que mostrar, igual ao link de vendas)
   const linkCardapio = profile ? getCardapioUrl(profile) : ''
   const pronta = useLojaPronta(profile?.id)
@@ -172,11 +177,14 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
           <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}</button>
         )}
         {/* (09/11) computador: o sino saiu do menu da esquerda e fica aqui, entre o PRO e a foto */}
-        <button type="button" className={`cab-sino${notifCount > 0 ? ' cab-sino--novo sino-tem' : ''}`} onClick={() => navigate('/notificacoes')} title="Novidades"
-          aria-label={notifCount > 0 ? `Novidades, ${notifCount} não lida${notifCount > 1 ? 's' : ''}` : 'Novidades'}>
-          <span key={toque} className={`sino-ic${toque ? ' sino-toca' : ''}`}><Bell size={20} weight={notifCount > 0 ? 'fill' : 'regular'} aria-hidden="true" /></span>
-          {notifCount > 0 && <i key={`n${toque}`} className={`cab-sino-n${toque ? ' sino-pop' : ''}`} aria-hidden="true">{notifCount > 9 ? '9+' : notifCount}</i>}
-        </button>
+        <div ref={sino} className="cab-sino-caixa">
+          <button type="button" className={`cab-sino${notifCount > 0 ? ' cab-sino--novo sino-tem' : ''}`} onClick={() => setPainel(a => !a)} title="Notificações" aria-haspopup="dialog" aria-expanded={painel}
+            aria-label={notifCount > 0 ? `Notificações, ${notifCount} não lida${notifCount > 1 ? 's' : ''}` : 'Notificações'}>
+            <span key={toque} className={`sino-ic${toque ? ' sino-toca' : ''}`}><Bell size={20} weight={notifCount > 0 ? 'fill' : 'regular'} aria-hidden="true" /></span>
+            {notifCount > 0 && <i key={`n${toque}`} className={`cab-sino-n${toque ? ' sino-pop' : ''}`} aria-hidden="true">{notifCount > 9 ? '9+' : notifCount}</i>}
+          </button>
+          {painel && <Suspense fallback={null}><PainelSino fechar={fecharPainel} ancora={sino} /></Suspense>}
+        </div>
         <div className="cab-foto-caixa">
           {/* (07/10 · 3.07) a foto abre o menu da conta em todo lugar onde aparece */}
           <button

@@ -7,7 +7,7 @@ import { contarNotifConfeiteira } from "@/lib/notifConfeiteira";
  * (09/11) As duas abas da página do sino: Notificações (o que é da confeiteira) e Novidades (o que o Doonly posta).
  * Cada aba mostra quantas ainda não foram lidas.
  */
-export default function AbasAvisos({ atual }: { atual: "notificacoes" | "novidades" }) {
+export default function AbasAvisos({ atual, onTrocar }: { atual: "notificacoes" | "novidades"; onTrocar?: (k: "notificacoes" | "novidades") => void }) {
   const navigate = useNavigate();
   const [n, setN] = useState({ notif: 0, novid: 0 });
   useEffect(() => {
@@ -17,7 +17,7 @@ export default function AbasAvisos({ atual }: { atual: "notificacoes" | "novidad
     window.addEventListener("doonly:notif-nova", ler);
     return () => { window.removeEventListener("doonly:notif-mudou", ler); window.removeEventListener("doonly:notif-nova", ler); };
   }, []);
-  const ir = (k: "notificacoes" | "novidades") => { if (k !== atual) navigate(k === "notificacoes" ? "/notificacoes" : "/noticias", { replace: true }); };
+  const ir = (k: "notificacoes" | "novidades") => { if (onTrocar) { onTrocar(k); return; } if (k !== atual) navigate(k === "notificacoes" ? "/notificacoes" : "/noticias", { replace: true }); };
   return (
     <div className="aba-av" role="tablist" aria-label="Notificações e novidades">
       <button type="button" role="tab" aria-selected={atual === "notificacoes"} className={atual === "notificacoes" ? "on" : ""} onClick={() => ir("notificacoes")}>

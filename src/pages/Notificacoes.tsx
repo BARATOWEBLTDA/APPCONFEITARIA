@@ -106,7 +106,8 @@ function Linha({ n, onAbrir, onExcluir }: { n: NotifVista; onAbrir: () => void; 
   );
 }
 
-export default function Notificacoes() {
+/** (09/11) A lista (com "Marcar todas", grupos por dia, vazio e erro). Usada na página e no painel do sino do computador. */
+export function ConteudoNotif({ aoIr }: { aoIr?: () => void }) {
   const navigate = useNavigate();
   const [lista, setLista] = useState<NotifVista[] | null>(null);
   const [erro, setErro] = useState(false);
@@ -129,7 +130,7 @@ export default function Notificacoes() {
 
   const abrir = (n: NotifVista) => {
     if (!n.lida) { setLista(l => (l || []).map(x => x.id === n.id ? { ...x, lida: true } : x)); void marcarLidas([n.id]); }
-    if (n.link) navigate(n.link);
+    if (n.link) { aoIr?.(); navigate(n.link); }
   };
   const excluir = (n: NotifVista) => {
     setLista(l => (l || []).filter(x => x.id !== n.id));
@@ -142,39 +143,42 @@ export default function Notificacoes() {
     void marcarLidas(ids);
   };
 
+  return erro ? (
+    <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar as notificações" texto="Confira a internet e tente de novo."
+      acao={<Botao variante="suave" tamanho="m" onClick={carregar}>Tentar de novo</Botao>} />
+  ) : lista === null ? (
+    <p className="nf-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando…</p>
+  ) : lista.length === 0 ? (
+    // (09/11) sem mascote nesta página: só o sino numa caixinha branca
+    <TelaVazia icone={<Bell size={30} />} titulo="Tudo em dia por aqui" texto="Quando chegar um pedido ou um Pix, ele aparece aqui." />
+  ) : (
+    <>
+      <div className="nf-topo">
+        <span>{naoLidas.length === 0 ? "Tudo lido" : naoLidas.length === 1 ? "1 não lida" : `${naoLidas.length} não lidas`}</span>
+        {naoLidas.length > 0 && <button type="button" onClick={lerTodas}>Marcar todas como lidas</button>}
+      </div>
+      {grupos.map(({ g, itens }) => (
+        <section key={g} aria-label={g}>
+          <h3 className="nf-dia">{g}</h3>
+          <div className="nf-card">
+            {itens.map(n => (
+              <Linha key={n.id} n={n} onAbrir={() => abrir(n)} onExcluir={() => excluir(n)} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </>
+  );
+}
+
+export default function Notificacoes() {
   return (
     <>
       <AppPageHeader title="Notificações" centro voltar="/inicio" subtitle="Pedidos, pagamentos e avisos da sua loja" />
       <div className="nf">
         <AbasAvisos atual="notificacoes" />
-        {erro ? (
-          <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar as notificações" texto="Confira a internet e tente de novo."
-            acao={<Botao variante="suave" tamanho="m" onClick={carregar}>Tentar de novo</Botao>} />
-        ) : lista === null ? (
-          <p className="nf-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando…</p>
-        ) : lista.length === 0 ? (
-          // (09/11) sem mascote nesta página: só o sino numa caixinha branca
-          <TelaVazia icone={<Bell size={30} />} titulo="Tudo em dia por aqui" texto="Quando chegar um pedido ou um Pix, ele aparece aqui." />
-        ) : (
-          <>
-            <div className="nf-topo">
-              <span>{naoLidas.length === 0 ? "Tudo lido" : naoLidas.length === 1 ? "1 não lida" : `${naoLidas.length} não lidas`}</span>
-              {naoLidas.length > 0 && <button type="button" onClick={lerTodas}>Marcar todas como lidas</button>}
-            </div>
-            {grupos.map(({ g, itens }) => (
-              <section key={g} aria-label={g}>
-                <h3 className="nf-dia">{g}</h3>
-                <div className="nf-card">
-                  {itens.map(n => (
-                    <Linha key={n.id} n={n} onAbrir={() => abrir(n)} onExcluir={() => excluir(n)} />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </>
-        )}
+        <ConteudoNotif />
       </div>
     </>
   );
 }
-

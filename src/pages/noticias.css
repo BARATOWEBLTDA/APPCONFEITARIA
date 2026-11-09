@@ -162,3 +162,21 @@
 /* (09/11) as abas no mesmo lugar nas duas abas (antes pulavam pro lado e encostavam na borda do celular) */
 @media (max-width: 900px) { .nl > .aba-av { margin: 0 0 8px; } }
 @media (min-width: 901px) { html body .layout-root:has(.nl) { --col: 720px; } }
+/* (09/11) a categoria só aparece nos cartões do computador */
+.nl-it-cat { display: none; }
+/* (09/11) computador: a página de Novidades em cartões, no mesmo desenho das Novidades do Início (imagem em cima,
+   categoria rosa, título e texto). Só na página (.nl > .nl-lista): no painel do sino continua a lista compacta. */
+@media (min-width: 901px) {
+  .nl > .nl-lista { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 16px 0 0; overflow: visible; border: 0; border-radius: 0; }
+  .nl > .nl-lista > li { display: flex; min-width: 0; }
+  .nl > .nl-lista > li + li .nl-it:not(.nl-it--lida) { box-shadow: none; }
+  .nl > .nl-lista .nl-it, .nl > .nl-lista .nl-it--lida { flex: 1; flex-direction: column; align-items: stretch; gap: 0; min-width: 0; padding: 0; overflow: hidden; border: 1px solid #ECE7E9; border-radius: 12px; background: var(--ui-branco); transition: box-shadow .15s, transform .15s; }
+  .nl > .nl-lista .nl-it:hover { background: var(--ui-branco); box-shadow: 0 6px 16px rgba(40, 20, 25, .08); transform: translateY(-1px); }
+  .nl > .nl-lista .nl-it:focus-visible { outline-offset: 2px; }
+  .nl > .nl-lista .nl-it-img { width: 100%; height: 120px; border-radius: 0; background: var(--ui-rosa-claro); }
+  .nl > .nl-lista .nl-it-tx { gap: 4px; padding: 12px 14px 14px; }
+  .nl > .nl-lista .nl-it-cat { display: block; font-size: 12.5px; font-weight: 600; line-height: 1.3; color: var(--ui-rosa-escuro); }
+  .nl > .nl-lista .nl-it-t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+  .nl > .nl-lista .nl-it-d { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; font-size: 13px; color: var(--ui-texto-2); }
+  .nl > .nl-lista .nl-it time { display: none; }
+}
