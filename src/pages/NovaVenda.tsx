@@ -1038,11 +1038,15 @@ export default function NovaVenda() {
             {prontaRetirada && (
               <>
                 <p className="nv3-sub">O cliente já levou?</p>
-                <div className="nv3-seg" role="group" aria-label="O cliente já levou?">
-                  <button type="button" aria-pressed={!vemBuscar} onClick={() => setVemBuscar(false)}><Check size={20} weight="bold" />Já levou</button>
-                  <button type="button" aria-pressed={vemBuscar} onClick={() => setVemBuscar(true)}><Clock size={20} weight={vemBuscar ? 'fill' : 'bold'} />Vem buscar</button>
+                {/* (09/11) nos mesmos cartões (antes: seletor + frase que quebrava linha no celular) */}
+                <div className="nv3-tipos" role="group" aria-label="O cliente já levou?">
+                  <button type="button" aria-pressed={!vemBuscar} onClick={() => setVemBuscar(false)}>
+                    <span className="nv3-tipo-ic" aria-hidden="true"><Check size={24} weight="bold" /></span><span className="nv3-tipo-tx"><b>Já levou</b><small>Fica como entregue</small></span><i className="nv3-tipo-r" aria-hidden="true" />
+                  </button>
+                  <button type="button" aria-pressed={vemBuscar} onClick={() => setVemBuscar(true)}>
+                    <span className="nv3-tipo-ic" aria-hidden="true"><Clock size={24} weight={vemBuscar ? 'fill' : 'bold'} /></span><span className="nv3-tipo-tx"><b>Vem buscar</b><small>Pronto pra retirar</small></span><i className="nv3-tipo-r" aria-hidden="true" />
+                  </button>
                 </div>
-                <p className="nv3-dica">{vemBuscar ? 'Entra como "Pronto para retirar" e aparece nas suas entregas.' : 'Entra como entregue.'}</p>
               </>
             )}
             {(tipo === 'encomenda' || buscaDepois) && (
