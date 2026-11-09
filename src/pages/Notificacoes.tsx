@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, ChatCircleText, Receipt, Trash, Wallet, WarningCircle } from "@phosphor-icons/react";
+import { Bell, Receipt, Ticket, Trash, Wallet, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import AbasAvisos from "@/components/AbasAvisos";
 import { Botao, TelaVazia } from "@/components/base";
@@ -51,7 +51,7 @@ function Imagem({ n }: { n: NotifVista }) {
     );
     case "conta": return <span className="nf-ic nf-ic--conta"><Wallet size={22} weight="regular" /></span>;
     case "pro": return <span className="nf-ic nf-ic--pro"><img src="/coroa.webp" alt="" /></span>;
-    case "equipe": return <span className="nf-ic"><ChatCircleText size={22} weight="regular" /></span>;
+    case "equipe": return <span className="nf-ic"><Ticket size={22} weight="regular" /></span>;
   }
 }
 

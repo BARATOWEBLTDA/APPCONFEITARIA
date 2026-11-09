@@ -22,7 +22,7 @@ declare v_t text; v_ch text;
 begin
   if tg_op = 'INSERT' then
     if coalesce(new.origem, '') <> 'link' then return new; end if;
-    v_t := 'Pedido de orçamento'; v_ch := 'orc-novo-' || new.id;
+    v_t := 'Novo orçamento pra fazer'; v_ch := 'orc-novo-' || new.id;
   else
     if new.status is not distinct from old.status or new.status not in ('aprovado', 'recusado') then return new; end if;
     v_t := case when new.status = 'aprovado' then 'Orçamento aprovado' else 'Orçamento recusado' end;

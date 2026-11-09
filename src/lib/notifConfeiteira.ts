@@ -46,7 +46,7 @@ function tipoDe(n: Notif): TipoNotif | null {
 }
 const idDoLink = (link?: string | null, base = "pedidos") => new RegExp(`/${base}/([0-9a-f-]{36})`).exec(link || "")?.[1] || null;
 
-type PedidoInfo = { id: string; numero: number | null; data_entrega: string | null; horario_entrega: string | null; valor_total: number | null; pix_informado_valor: number | null; clientes: { nome: string | null } | null; pedido_itens: { nome_produto: string | null; imagem_url: string | null; produtos: { imagem_url: string | null } | null }[] | null };
+type PedidoInfo = { id: string; numero: number | null; data_entrega: string | null; horario_entrega: string | null; valor_total: number | null; pix_informado_valor: number | null; clientes: { nome: string | null } | null; pedido_itens: { nome_produto: string | null; imagem_url: string | null; quantidade: number | null; valor_unitario: number | null; produtos: { imagem_url: string | null } | null }[] | null };
 type OrcInfo = { id: string; numero: number | null; cliente_nome: string | null };
 
 /** As notificações da confeiteira, já com o texto curto e a imagem de cada tipo */
@@ -55,7 +55,7 @@ export async function carregarNotifConfeiteira(): Promise<NotifVista[]> {
   const idsPed = [...new Set(todas.filter(n => ["pedido", "pix", "atrasado"].includes(tipoDe(n)!)).map(n => idDoLink(n.link)).filter(Boolean) as string[])];
   const idsOrc = [...new Set(todas.filter(n => tipoDe(n) === "orcamento").map(n => idDoLink(n.link, "orcamentos")).filter(Boolean) as string[])];
   const [ped, orc] = await Promise.all([
-    idsPed.length ? supabase.from("pedidos").select("id, numero, data_entrega, horario_entrega, valor_total, pix_informado_valor, clientes(nome), pedido_itens(nome_produto, imagem_url, produtos(imagem_url))").in("id", idsPed) : Promise.resolve({ data: [] }),
+    idsPed.length ? supabase.from("pedidos").select("id, numero, data_entrega, horario_entrega, valor_total, pix_informado_valor, clientes(nome), pedido_itens(nome_produto, imagem_url, quantidade, valor_unitario, produtos(imagem_url))").in("id", idsPed) : Promise.resolve({ data: [] }),
     idsOrc.length ? supabase.from("orcamentos").select("id, numero, cliente_nome").in("id", idsOrc) : Promise.resolve({ data: [] }),
   ]);
   const P = new Map(((ped.data || []) as unknown as PedidoInfo[]).map(p => [p.id, p]));
@@ -65,23 +65,28 @@ export async function carregarNotifConfeiteira(): Promise<NotifVista[]> {
     const tipo = tipoDe(n)!;
     const base = { id: n.id, tipo, link: n.link || "", criada: n.created_at, lida: n.lida };
     const p = P.get(idDoLink(n.link) || "");
-    const it = p?.pedido_itens?.[0];
-    const foto = it?.imagem_url || it?.produtos?.imagem_url || null;
+    // (09/11) com mais de um produto: a foto do item mais caro (preço × quantidade) que tenha foto
+    const fotoDe = (i: NonNullable<PedidoInfo["pedido_itens"]>[number]) => i.imagem_url || i.produtos?.imagem_url || null;
+    const foto = [...(p?.pedido_itens || [])].filter(fotoDe)
+      .sort((a, b) => (Number(b.valor_unitario) || 0) * (Number(b.quantidade) || 1) - (Number(a.valor_unitario) || 0) * (Number(a.quantidade) || 1))
+      .map(fotoDe)[0] || null;
     const cli = primeiro(p?.clientes?.nome);
     const num = p?.numero ? `#${p.numero}` : "";
     switch (tipo) {
       case "pedido":
-        return { ...base, titulo: cli ? `Novo pedido · ${cli}` : "Novo pedido", foto,
-          detalhe: p ? juntar(num, quando(p.data_entrega, p.horario_entrega), Number(p.valor_total) > 0 && brl(Number(p.valor_total))) : (n.mensagem || "") };
+        // (09/11) a entrega no título (é o que decide se dá pra fazer); embaixo valor · número · cliente, igual ao Pix
+        return { ...base, titulo: juntar("Novo pedido", p && quando(p.data_entrega, p.horario_entrega)), foto,
+          detalhe: p ? juntar(Number(p.valor_total) > 0 && brl(Number(p.valor_total)), num, cli) : (n.mensagem || "") };
       case "pix": {
         const v = Number(p?.pix_informado_valor) || 0;
-        return { ...base, titulo: v > 0 ? `Pix pra conferir · ${brl(v)}` : "Pix pra conferir", detalhe: p ? juntar(num && `Pedido ${num}`, cli) : "Confira e confirme o pagamento" };
+        return { ...base, titulo: "Pix pra conferir", detalhe: p ? juntar(v > 0 && brl(v), num, cli) : "Confira e confirme o pagamento" };
       }
       case "atrasado":
         return { ...base, titulo: num ? `Pedido ${num} atrasado` : "Pedido atrasado", foto, detalhe: p ? juntar(cli, `era ${quando(p.data_entrega, p.horario_entrega)}`) : (n.mensagem || "") };
       case "orcamento": {
         const o = O.get(idDoLink(n.link, "orcamentos") || "");
-        return { ...base, titulo: n.titulo, detalhe: juntar(primeiro(o?.cliente_nome) || primeiro(n.mensagem), o?.numero ? `#${o.numero}` : "") };
+        const t = /aprovado/i.test(n.titulo) ? "Orçamento aprovado" : /recusado/i.test(n.titulo) ? "Orçamento recusado" : "Novo orçamento pra fazer";
+        return { ...base, titulo: t, detalhe: juntar(o?.numero ? `#${o.numero}` : "", primeiro(o?.cliente_nome) || primeiro(n.mensagem)) };
       }
       case "agenda": {
         const d = new Date(n.created_at);
