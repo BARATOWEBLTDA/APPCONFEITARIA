@@ -31,3 +31,15 @@
   html body .cab .cab-busca { background: #fff !important; border-color: #E6E0E3 !important; }
   html body .cab .cab-sino:hover { background: #E6E3E4; }
 }
+
+/* (09/11) topo do computador: mais respiro em cima (a saudação ficava colada no alto) e o sino com contraste
+   (caixinha branca com borda fina, igual ao "7 dias grátis" e à busca) */
+@media (min-width: 901px) {
+  html body .cab { min-height: 76px !important; padding-top: 14px !important; padding-bottom: 14px !important; align-items: center !important; }
+  html body .cab .cab-sino { width: 38px; height: 38px; border: 1px solid #E6E0E3; border-radius: var(--ui-raio-p); background: #fff; color: #3B3236; }
+  html body .cab .cab-sino:hover { background: #F6F3F4; color: #241A1E; }
+}
+@media (min-width: 901px) {
+  /* "7 dias grátis" na mesma altura do sino (antes era mais baixinho) */
+  html body .cab .cab-seja-pro { height: 38px !important; padding: 0 12px !important; font-size: 13px !important; border-radius: var(--ui-raio-p) !important; }
+}
