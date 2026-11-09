@@ -65,7 +65,8 @@ export default function Notificacoes() {
     carregar();
     const f = () => carregarNotifConfeiteira().then(setLista).catch(() => {});
     window.addEventListener("doonly:notif-mudou", f);
-    return () => window.removeEventListener("doonly:notif-mudou", f);
+    window.addEventListener("doonly:notif-nova", f); // (09/11) chegou pelo tempo real: a lista atualiza sozinha
+    return () => { window.removeEventListener("doonly:notif-mudou", f); window.removeEventListener("doonly:notif-nova", f); };
   }, []);
 
   const grupos = useMemo(() => {

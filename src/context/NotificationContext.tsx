@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { contarNovidadesNaoLidas, marcarLidas } from "@/lib/notificacoesUsuario";
 import { contarNotifConfeiteira } from "@/lib/notifConfeiteira";
+import { supabase } from "@/lib/supabase";
 
 interface Notification {
   id: string;
@@ -58,8 +59,27 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     };
     load();
     window.addEventListener("doonly:notif-mudou", load);
-    const t = window.setInterval(() => { if (document.visibilityState === "visible") load(); }, 60000);
-    return () => { window.removeEventListener("doonly:notif-mudou", load); window.clearInterval(t); };
+    // (09/11) tempo real: o Supabase avisa na hora quando entra uma notificação desta conta (pedido, Pix, orçamento…),
+    // sem o app ficar perguntando. A conferência por tempo virou reserva: a cada 5 min e ao voltar pro app.
+    let canal: ReturnType<typeof supabase.channel> | null = null;
+    let vivo = true;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const uid = session?.user?.id;
+      if (!vivo || !uid) return;
+      canal = supabase.channel(`notif-${uid}`)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "notificacoes", filter: `user_id=eq.${uid}` }, () => { void load(); window.dispatchEvent(new CustomEvent("doonly:notif-nova")); })
+        .subscribe();
+    }).catch(() => {});
+    const aoVoltar = () => { if (document.visibilityState === "visible") load(); };
+    document.addEventListener("visibilitychange", aoVoltar);
+    const t = window.setInterval(() => { if (document.visibilityState === "visible") load(); }, 5 * 60000);
+    return () => {
+      vivo = false;
+      window.removeEventListener("doonly:notif-mudou", load);
+      document.removeEventListener("visibilitychange", aoVoltar);
+      window.clearInterval(t);
+      if (canal) { try { supabase.removeChannel(canal); } catch { /* já saiu */ } }
+    };
   }, [telasUsando === 0]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {

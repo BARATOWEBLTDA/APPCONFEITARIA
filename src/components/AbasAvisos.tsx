@@ -14,7 +14,8 @@ export default function AbasAvisos({ atual }: { atual: "notificacoes" | "novidad
     const ler = () => { Promise.all([contarNotifConfeiteira(), contarNovidadesNaoLidas()]).then(([notif, novid]) => setN({ notif, novid })).catch(() => {}); };
     ler();
     window.addEventListener("doonly:notif-mudou", ler);
-    return () => window.removeEventListener("doonly:notif-mudou", ler);
+    window.addEventListener("doonly:notif-nova", ler);
+    return () => { window.removeEventListener("doonly:notif-mudou", ler); window.removeEventListener("doonly:notif-nova", ler); };
   }, []);
   const ir = (k: "notificacoes" | "novidades") => { if (k !== atual) navigate(k === "notificacoes" ? "/notificacoes" : "/noticias", { replace: true }); };
   return (

@@ -39,3 +39,6 @@ create trigger trg_notif_orcamento_ins after insert on public.orcamentos for eac
 drop trigger if exists trg_notif_orcamento_upd on public.orcamentos;
 create trigger trg_notif_orcamento_upd after update of status on public.orcamentos for each row execute function public.notif_orcamento();
 -- notif_enviar_push passou a enviar também 'pix' e 'orcamento' (ver push_pessoal.sql)
+
+-- (09/11) tempo real: o app escuta as notificações novas de cada confeiteira (o sino balança na hora)
+alter publication supabase_realtime add table public.notificacoes;
