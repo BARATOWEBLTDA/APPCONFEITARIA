@@ -28,6 +28,9 @@ export default function PainelSino({ fechar, ancora }: { fechar: () => void; anc
   }, [fechar, ancora]);
 
   return (
+    <>
+    {/* (09/11) escurece em volta: o foco fica no painel; clicar no escuro fecha */}
+    <div className="sp-fundo" aria-hidden="true" />
     <div ref={caixa} className="sp" role="dialog" aria-label="Notificações"
       // tocar numa novidade (é um link) também fecha
       onClick={e => { if ((e.target as HTMLElement).closest("a")) fechar(); }}>
@@ -40,6 +43,8 @@ export default function PainelSino({ fechar, ancora }: { fechar: () => void; anc
         Ver todas <CaretRight size={14} weight="bold" aria-hidden="true" />
       </button>
       <style>{`
+        .sp-fundo { position: fixed; inset: 0; z-index: 59; background: rgba(36, 26, 30, .32); animation: spFundo .16s ease-out; }
+        @keyframes spFundo { from { opacity: 0; } to { opacity: 1; } }
         .sp { position: absolute; top: calc(100% + 10px); right: 0; z-index: 60; display: flex; flex-direction: column; width: 420px; max-height: min(640px, calc(100vh - 110px)); overflow: hidden; border: 1px solid #ECE7E9; border-radius: 16px; background: #F4F3F3; box-shadow: 0 18px 48px rgba(36, 26, 30, .16), 0 2px 8px rgba(36, 26, 30, .06); font-family: var(--font-base); text-align: left; animation: spEntra .14s ease-out; }
         @keyframes spEntra { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
         .sp-cab { padding: 16px 18px 10px; background: #fff; }
@@ -63,5 +68,6 @@ export default function PainelSino({ fechar, ancora }: { fechar: () => void; anc
         .sp-todas:hover { background: #FAF8F9; }
       `}</style>
     </div>
+    </>
   );
 }
