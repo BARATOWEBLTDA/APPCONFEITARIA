@@ -13,6 +13,7 @@ import AcenderDaAjuda from "@/components/como/AcenderDaAjuda";
 import { Suspense, useState, useEffect, useRef, type ReactNode } from "react";
 import "@/styles/mobileClaro.css";
 import "@/styles/desktopPadrao.css";
+import "@/styles/menuClaro.css";
 import { ClipboardText, ChartBar, Stack, Palette, Storefront, ArrowSquareOut, ArrowsDownUp, CalendarCheck, Tag, ChartLineUp, HandCoins, CaretDoubleLeft, CaretDoubleRight,
   House, CalendarDots, ShoppingBag, Users,
   Package, CurrencyDollar, Gear, CaretDown, Cake,
@@ -198,7 +199,7 @@ export default function Layout() {
         {/* (13/10) topo do menu: a marca Doonly (branca) e o sino. A logo da loja fica no canto direito da faixa rosa. */}
         <div className="sb-topo">
           <button type="button" className="sb-marca" onClick={() => navigate("/inicio")} aria-label="Doonly, ir para o início">
-            {recolhido ? <Mascote pose="acenando" className="sb-marca-masc" /> : <NomeDoonly cor="branco" className="sb-marca-nome" />}
+            {recolhido ? <Mascote pose="acenando" className="sb-marca-masc" /> : <NomeDoonly className="sb-marca-nome" />}
           </button>
           {/* (31/10 · 5.98) a seta de recolher subiu para o lado do sino: embaixo ela tomava a altura de um item do menu */}
           {!recolhido ? (

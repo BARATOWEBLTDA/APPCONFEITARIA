@@ -1,0 +1,25 @@
+/* (09/11) menu da esquerda do computador CLARO (como HostGator, Gestly, Notion): fundo branco, linha fina, textos em cinza
+   escuro, a tela atual em cinza claro com o ícone rosa. Vem depois do desktopPadrao.css e troca as cores do menu escuro (30/10). */
+@media (min-width: 901px) {
+  html body .layout-root { --sidebar-bg: #FFFFFF; }
+  html body .sidebar { background: #fff; border-right: 1px solid #ECE7E9; box-shadow: none; }
+  html body .sidebar .nav-item, html body .sidebar .nav-item--group { color: #3B3236; font-weight: 500; }
+  html body .sidebar .nav-icon { color: #6B5F64; }
+  html body .sidebar .nav-subitem { color: #5E5357; }
+  html body .sidebar .nav-item:hover:not(.active), html body .sidebar .nav-item--group:hover, html body .sidebar .nav-subitem:hover { background: #F6F3F4; color: #241A1E; }
+  html body .sidebar .nav-item.active, html body .sidebar .nav-subitem.active { background: #F2EFF0; color: #241A1E; font-weight: 600; }
+  html body .sidebar .nav-item.active .nav-icon, html body .sidebar .nav-item--group.active-parent .nav-icon, html body .sidebar .nav-subitem.active svg { color: var(--ui-rosa-botao, #CC2E66); }
+  html body .sidebar .nav-item--group.active-parent { color: #241A1E; }
+  html body .sidebar .nav-item:focus-visible, html body .sidebar .nav-item--group:focus-visible, html body .sidebar .nav-subitem:focus-visible, html body .sidebar .sb-marca:focus-visible { outline-color: rgba(204, 46, 102, .45); }
+  html body .sidebar .sb-recolher { background: #F2EFF0; color: #6B5F64; }
+  html body .sidebar .sb-recolher:hover { background: #EAE5E7; color: #241A1E; }
+  html body .sidebar .sidebar-nav { scrollbar-color: #DDD5D8 transparent; }
+  html body .sidebar .sidebar-nav::after { background: linear-gradient(to bottom, transparent, #fff); }
+  /* situação da loja embaixo (em montagem / aberta / pausada) */
+  html body .sidebar .lj-pausa.escuro { border: 1px solid #ECE7E9; background: #fff; }
+  html body .sidebar .lj-pausa.escuro .lj-pausa-tx b, html body .sidebar .lj-sb-st { color: #241A1E; }
+  html body .sidebar .lj-pausa.escuro .lj-pausa-tx small, html body .sidebar .lj-sb-l2 { color: #6B5F64; }
+  html body .sidebar .lj-pausa.escuro.pausada .lj-pausa-tx b, html body .sidebar .lj-pausa.escuro.pausada .lj-sb-st { color: #B91C1C; }
+  html body .sidebar .lj-pausa.escuro .lj-chave { background: #D9CFD3; }
+  html body .sidebar .lj-pausa.escuro .lj-chave[aria-checked="true"] { background: #15803D; }
+}
