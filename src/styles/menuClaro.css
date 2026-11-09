@@ -23,3 +23,11 @@
   html body .sidebar .lj-pausa.escuro .lj-chave { background: #D9CFD3; }
   html body .sidebar .lj-pausa.escuro .lj-chave[aria-checked="true"] { background: #15803D; }
 }
+
+/* (09/11) topo das telas no computador na mesma cor da página (como a HostGator): só o menu da esquerda fica branco.
+   Sem a linha embaixo; a busca vira branca pra continuar aparecendo em cima do cinza. */
+@media (min-width: 901px) {
+  html body .cab { background: #F1F2F2 !important; border-bottom: 0 !important; }
+  html body .cab .cab-busca { background: #fff !important; border-color: #E6E0E3 !important; }
+  html body .cab .cab-sino:hover { background: #E6E3E4; }
+}
