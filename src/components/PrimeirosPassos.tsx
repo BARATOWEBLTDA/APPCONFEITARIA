@@ -1053,7 +1053,7 @@ const CSS = `
   .pp-dk-cab { display: flex; align-items: center; gap: 18px; padding-bottom: 22px; border-bottom: 1px solid var(--ui-linha); } /* (09/11) uma linha separa o cabeçalho, no lugar das caixas */
   .pp-dk-ic { width: 64px; height: 64px; flex: none; border-radius: var(--ui-raio-cartao); border: 1px solid var(--ui-borda); background: var(--ui-branco); color: var(--ui-texto); display: flex; align-items: center; justify-content: center; box-sizing: border-box; } /* (09/11) estilo Dora: caixinha branca, borda fina, ícone neutro */
   .pp-dk-tit { flex: 1; min-width: 0; }
-  .pp-dk .pp-t { font-size: 26px; font-weight: 600; letter-spacing: -.015em; color: #241A1E; }
+  .pp-dk .pp-t { font-size: 26px; font-weight: 500; letter-spacing: -.015em; color: #3B3236; } /* (09/11) títulos mais leves */
   .pp-dk .pp-sub { font-size: 16px; margin-top: 2px; }
   .pp-dk-bar { flex: none; width: 36%; display: flex; align-items: center; gap: 14px; align-self: flex-start; margin-top: 10px; }
   .pp-dk-bar span { flex: 1; height: 8px; border-radius: 4px; background: #EFEAEC; overflow: hidden; }
@@ -1066,7 +1066,7 @@ const CSS = `
   .pp-hero-tx { flex: 1; min-width: 0; display: flex; gap: 22px; align-items: flex-start; }
   .pp-hero-n--ok { background: var(--ui-verde) !important; box-shadow: 0 6px 16px rgba(46, 158, 91, .25) !important; }
   .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
-  .pp-hero-t { display: block; margin-top: 4px; font-size: 26px; font-weight: 600; letter-spacing: -.015em; color: #241A1E; line-height: 1.2; }
+  .pp-hero-t { display: block; margin-top: 4px; font-size: 26px; font-weight: 500; letter-spacing: -.015em; color: #3B3236; line-height: 1.2; }
   .pp-hero-s { display: block; margin-top: 4px; font-size: 18px; color: var(--ui-texto-2); }
   .pp-hero-p { margin: 18px 0 0; max-width: 380px; font-size: 16px; line-height: 1.6; color: #6B5C62; }
   .pp-hero-btn { display: inline-flex; align-items: center; gap: 12px; min-height: 54px; margin-top: 26px; padding: 0 30px; border: 0; border-radius: var(--ui-raio-botao); font-family: inherit; font-size: 17px; font-weight: 600; color: #fff; background: var(--ui-rosa-botao, #CC2E66); box-shadow: none; cursor: pointer; white-space: nowrap; transition: background-color .15s ease; } /* (09/11) chapado, sem a sombra rosa */

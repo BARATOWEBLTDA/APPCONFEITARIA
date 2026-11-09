@@ -43,3 +43,6 @@
   /* "7 dias grátis" na mesma altura do sino (antes era mais baixinho) */
   html body .cab .cab-seja-pro { height: 38px !important; padding: 0 12px !important; font-size: 13px !important; border-radius: var(--ui-raio-p) !important; }
 }
+
+/* (09/11) títulos do topo de todas as telas mais leves: peso 500 e cinza bem escuro (antes 600 quase preto) */
+html body .cab .cab-t, html body .cab:has(.cab-resumo) .cab-t { font-weight: 500 !important; color: #3B3236 !important; }
