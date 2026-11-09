@@ -892,8 +892,9 @@ export default function NovaVenda() {
               <div className="nv3-vz">
                 <span className="nv3-vz-ic" aria-hidden="true"><Package size={30} /></span>
                 <b>Nenhum produto ainda</b>
-                <p>Adicione o que o cliente pediu.</p>
-                <Botao icone={<Plus size={20} weight="bold" />} onClick={() => setModalProduto(true)}>Adicionar produto</Botao>
+                {/* (09/11) primeiro o tipo de venda, depois os produtos: o botão só libera com o tipo escolhido */}
+                <p>{tipo ? 'Adicione o que o cliente pediu.' : 'Escolha acima o tipo de venda para começar.'}</p>
+                <Botao icone={<Plus size={20} weight="bold" />} disabled={!tipo} onClick={() => setModalProduto(true)}>Adicionar produto</Botao>
                 {tentou && <p className="nv3-dica nv3-falta">Adicione pelo menos um produto para continuar.</p>}
               </div>
             ) : (
