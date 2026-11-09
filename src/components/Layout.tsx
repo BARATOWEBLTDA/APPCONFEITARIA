@@ -317,8 +317,9 @@ export default function Layout() {
                 setMaisOpen(false);
               };
               // (30/10 · 5.63) dentro da Nova venda o + desce e fica igual aos outros (aceso): dá respiro para o Cancelar e o Continuar
-              if (item.mais && !location.pathname.startsWith("/vendas/novo")) return (
-                <NavLink key={item.to} to={item.to} className="bn-item bn-novo" aria-label="Nova venda" title="Nova venda" onClick={irPara}>
+              // (09/11) na Nova venda o + fica do tamanho normal, só que dentro da barra (sem pular), em vez do ícone pequeno
+              if (item.mais) return (
+                <NavLink key={item.to} to={item.to} className={`bn-item bn-novo${location.pathname.startsWith("/vendas/novo") ? " bn-novo--baixo" : ""}`} aria-label="Nova venda" title="Nova venda" onClick={irPara}>
                   <span className="bn-novo-c"><Plus size={26} weight="bold" /></span>
                 </NavLink>
               );
