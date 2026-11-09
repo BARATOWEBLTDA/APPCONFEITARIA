@@ -24,6 +24,7 @@ import { COMO_NOVA_VENDA, TOUR_NOVA_VENDA } from "@/lib/comoTelas";
 import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
 import { Bank, CalendarBlank, CalendarDots, Check, Clock, CreditCard, Info, Lightning, MagnifyingGlass, Minus, Money, Package, PencilSimple, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
+import HeroVazio from '@/components/HeroVazio'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
 import { historicoAssentado } from '@/components/base/useSobreposicao'
 import { dataLonga, itemComQtd, nomeDeProduto, recebidoPedido, rs, saldoPedido, telefoneBonito } from '@/components/pedidos/pedidoTexto'
@@ -828,14 +829,14 @@ export default function NovaVenda() {
     return (
       <>
         {cabecalho}
-        <div className="nv3">
-          <TelaVazia
-            icone={<Package size={30} />}
-            titulo="Cadastre seu primeiro produto"
-            texto="Você precisa ter pelo menos um produto cadastrado para registrar vendas."
-            acao={<Botao tamanho="m" onClick={() => navigate('/produtos')}>Cadastrar produto</Botao>}
-          />
-        </div>
+        {/* (09/11) o mesmo estado vazio de Produtos (Doo com a caixa), no celular e no computador */}
+        <HeroVazio
+          etiqueta="Antes da primeira venda"
+          titulo={<>Cadastre seu<br />primeiro produto</>}
+          texto="Com um produto cadastrado você registra vendas em segundos e acompanha tudo na agenda."
+          botao="Cadastrar produto"
+          aoClicar={() => navigate('/produtos', { state: { abrirCadastro: true, direto: true } })}
+        />
       </>
     )
   }

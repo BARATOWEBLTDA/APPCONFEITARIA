@@ -517,7 +517,8 @@ export default function Produtos() {
     if (!loading && (location.state as { abrirCadastro?: boolean } | null)?.abrirCadastro) {
       window.history.replaceState({ ...(window.history.state || {}), usr: null }, ""); // (11/10) mantém idx e key do roteador (o voltarOuIr usa)
       // (6.140) sem nenhum produto ainda: fica na tela de começo (com o Doo e o "Cadastrar produto"), que ela nunca via
-      if (produtos.length === 0) return;
+      // (09/11) exceto vindo da Nova venda: lá ela já viu essa apresentação, então abre direto o cadastro
+      if (produtos.length === 0 && !(location.state as { direto?: boolean } | null)?.direto) return;
       // Abre igual ao botão "Novo produto" (a escolha com imagens: bolos, doces, salgados…).
       // Antes abria a janela sem zerar e caía na tela antiga de tipo de cadastro.
       openNovo();
