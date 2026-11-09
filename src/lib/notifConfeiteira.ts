@@ -46,7 +46,7 @@ function tipoDe(n: Notif): TipoNotif | null {
 }
 const idDoLink = (link?: string | null, base = "pedidos") => new RegExp(`/${base}/([0-9a-f-]{36})`).exec(link || "")?.[1] || null;
 
-type PedidoInfo = { id: string; numero: number | null; data_entrega: string | null; horario_entrega: string | null; valor_total: number | null; pix_informado_valor: number | null; clientes: { nome: string | null } | null; pedido_itens: { nome_produto: string | null; imagem_url: string | null; quantidade: number | null; valor_unitario: number | null; produtos: { imagem_url: string | null } | null }[] | null };
+type PedidoInfo = { id: string; numero: number | null; status: string | null; cliente_nome: string | null; data_entrega: string | null; horario_entrega: string | null; valor_total: number | null; pix_informado_valor: number | null; clientes: { nome: string | null } | null; pedido_itens: { nome_produto: string | null; imagem_url: string | null; quantidade: number | null; valor_unitario: number | null; produtos: { imagem_url: string | null } | null }[] | null };
 type OrcInfo = { id: string; numero: number | null; cliente_nome: string | null };
 
 /** As notificações da confeiteira, já com o texto curto e a imagem de cada tipo */
@@ -55,13 +55,24 @@ export async function carregarNotifConfeiteira(): Promise<NotifVista[]> {
   const idsPed = [...new Set(todas.filter(n => ["pedido", "pix", "atrasado"].includes(tipoDe(n)!)).map(n => idDoLink(n.link)).filter(Boolean) as string[])];
   const idsOrc = [...new Set(todas.filter(n => tipoDe(n) === "orcamento").map(n => idDoLink(n.link, "orcamentos")).filter(Boolean) as string[])];
   const [ped, orc] = await Promise.all([
-    idsPed.length ? supabase.from("pedidos").select("id, numero, data_entrega, horario_entrega, valor_total, pix_informado_valor, clientes(nome), pedido_itens(nome_produto, imagem_url, quantidade, valor_unitario, produtos(imagem_url))").in("id", idsPed) : Promise.resolve({ data: [] }),
+    idsPed.length ? supabase.from("pedidos").select("id, numero, status, cliente_nome, data_entrega, horario_entrega, valor_total, pix_informado_valor, clientes(nome), pedido_itens(nome_produto, imagem_url, quantidade, valor_unitario, produtos(imagem_url))").in("id", idsPed) : Promise.resolve({ data: [] }),
     idsOrc.length ? supabase.from("orcamentos").select("id, numero, cliente_nome").in("id", idsOrc) : Promise.resolve({ data: [] }),
   ]);
   const P = new Map(((ped.data || []) as unknown as PedidoInfo[]).map(p => [p.id, p]));
   const O = new Map(((orc.data || []) as OrcInfo[]).map(o => [o.id, o]));
+  const pedOk = !("error" in ped && ped.error);
 
-  return todas.map((n): NotifVista => {
+  // (09/11) não mostra aviso de pedido que já foi apagado, nem "atrasado" de pedido que já ficou pronto/entregue/cancelado
+  // (só quando a busca dos pedidos deu certo: sem internet, mostra tudo como estava)
+  const vale = (n: Notif) => {
+    const t = tipoDe(n)!;
+    if (!pedOk || !["pedido", "pix", "atrasado"].includes(t)) return true;
+    const id = idDoLink(n.link); if (!id) return true;
+    const p = P.get(id); if (!p) return false;
+    return t !== "atrasado" || STATUS_AINDA_NAO_PRONTO.includes(String(p.status || "agendado"));
+  };
+
+  return todas.filter(vale).map((n): NotifVista => {
     const tipo = tipoDe(n)!;
     const base = { id: n.id, tipo, link: n.link || "", criada: n.created_at, lida: n.lida };
     const p = P.get(idDoLink(n.link) || "");
@@ -70,7 +81,7 @@ export async function carregarNotifConfeiteira(): Promise<NotifVista[]> {
     const foto = [...(p?.pedido_itens || [])].filter(fotoDe)
       .sort((a, b) => (Number(b.valor_unitario) || 0) * (Number(b.quantidade) || 1) - (Number(a.valor_unitario) || 0) * (Number(a.quantidade) || 1))
       .map(fotoDe)[0] || null;
-    const cli = primeiro(p?.clientes?.nome);
+    const cli = primeiro(p?.clientes?.nome || p?.cliente_nome); // sem cadastro: o nome que ela escreveu no pedido
     const num = p?.numero ? `#${p.numero}` : "";
     switch (tipo) {
       case "pedido":
@@ -111,7 +122,8 @@ export async function carregarNotifConfeiteira(): Promise<NotifVista[]> {
 
 /** Quantas notificações da confeiteira ainda não foram lidas (o sino). Nunca lança. */
 export async function contarNotifConfeiteira(): Promise<number> {
-  try { return (await carregarNotificacoes(150)).filter(n => !!n.user_id && tipoDe(n) && !n.lida).length; } catch { return 0; }
+  // (09/11) conta pela mesma lista da tela (o número do sino bate com o que aparece)
+  try { return (await carregarNotifConfeiteira()).filter(n => !n.lida).length; } catch { return 0; }
 }
 
 /**
