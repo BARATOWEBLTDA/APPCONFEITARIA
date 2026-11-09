@@ -305,6 +305,7 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 .nv3-cl.on { border-color: #3B3236; background: #FAF8F9; }
 .nv3-cl-tx b { font-weight: 500; }
 .nv3-cl--sem { margin-top: 12px; }
+.nv3-cl--sem + .nv3-cl-t { margin-top: 22px; } /* (09/11) um respiro entre o "sem cliente" e a lista */
 @media (min-width: 901px) {
   .nv3-so-pc { display: inline; margin-left: -2px; }
   .nv3-cls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }

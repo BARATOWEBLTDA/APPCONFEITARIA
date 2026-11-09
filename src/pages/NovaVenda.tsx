@@ -992,17 +992,17 @@ export default function NovaVenda() {
                   }
                   return (
                     <>
-                      <p className="nv3-cl-t">{q ? 'Clientes encontrados' : 'Últimos clientes'}</p>
-                      <div className="nv3-cls">
-                        {lista.map(linha)}
-                      </div>
-                      {/* (09/11) "Sem cliente" separado da lista (não parece um cliente); vem marcado */}
+                      {/* (09/11) "Vender sem cliente" em primeiro, separado da lista (não parece um cliente); vem marcado */}
                       {!q && (
                         <button type="button" className={`nv3-cl nv3-cl--sem${!clienteId ? ' on' : ''}`} aria-pressed={!clienteId} onClick={tirarCliente}>
                           <i className="nv3-radio" aria-hidden="true" />
                           <span className="nv3-cl-tx"><b>Vender sem cliente</b><small>Fica como Venda avulsa</small></span>
                         </button>
                       )}
+                      <p className="nv3-cl-t">{q ? 'Clientes encontrados' : 'Últimos clientes'}</p>
+                      <div className="nv3-cls">
+                        {lista.map(linha)}
+                      </div>
                       {q && lista.length === 0 && <p className="nv3-dica">Nenhum cliente com “{buscaCliente.trim()}”.</p>}
                       {clienteId && enderecoTexto && <p className="nv3-dica">Endereço: {enderecoTexto}</p>}
                     </>
