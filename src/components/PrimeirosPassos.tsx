@@ -969,7 +969,7 @@ const DOO_PASSO: Record<string, { pc: string; banner: string; largo?: boolean }>
 const CSS = `
   /* (22/10) celular, Início: cartão-banner (arte com o Doo acenando à direita, texto à esquerda) */
   .pp.pp--banner { padding: 0; overflow: hidden; }
-  .ppb-topo { position: relative; aspect-ratio: 10 / 3; min-height: 96px; padding: 14px 16px 0; box-sizing: border-box; background: linear-gradient(135deg, #3A2219, #22130E); overflow: hidden; } /* (09/11) chocolate, a 2ª cor da marca */
+  .ppb-topo { position: relative; aspect-ratio: 10 / 3; min-height: 96px; padding: 14px 16px 0; box-sizing: border-box; background: linear-gradient(135deg, #3A2219, #22130E); overflow: hidden; border-radius: calc(var(--ui-raio-cartao) - 1px) calc(var(--ui-raio-cartao) - 1px) 0 0; } /* (09/11) chocolate, a 2ª cor da marca; cantos de cima arredondados no próprio topo (alguns celulares não cortavam pelo cartão) */
   .ppb-img { position: absolute; right: 6px; bottom: -6px; width: auto; height: 108%; max-width: 40%; object-fit: contain; object-position: right bottom; pointer-events: none; } /* o Doo sem fundo, por cima do chocolate */
   .ppb-t, .ppb-sub, .ppb-bar { position: relative; z-index: 1; }
   .ppb-topo .ppb-t, .ppb-topo .ppb-sub { max-width: 58% !important; } /* (09/11) o texto não passa por baixo do Doo */
