@@ -16,6 +16,7 @@ import TermosModal from "@/components/TermosModal";
 import EditarPerfilModal from "@/components/EditarPerfilModal";
 import InstalarAppCard from "@/components/InstalarAppCard";
 import AtualizarAppItem from "@/components/AtualizarAppItem";
+import JanelaSair from "@/components/JanelaSair";
 import "./configuracoes.css";
 
 /**
@@ -79,6 +80,7 @@ const semAcento = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, 
 export default function Configuracoes() {
   const navigate = useNavigate();
   const [busca, setBusca] = useState("");
+  const [perguntandoSair, setPerguntandoSair] = useState(false); // (09/11) pergunta antes de sair, igual ao menu da foto
   const [loading, setLoading] = useState(true);
   const [erroCarregar, setErroCarregar] = useState("");
   const [saving, setSaving] = useState(false);
@@ -208,11 +210,6 @@ export default function Configuracoes() {
     setSenhaAtual(""); setNovaSenha(""); setConfirmSenha("");
   };
 
-  const sair = async () => {
-    // (10/10) sai neste aparelho mesmo sem internet; só vai pro login quando a sessão daqui foi mesmo encerrada
-    if (!(await sairDaConta())) { avisar("Não deu para sair agora. Tente de novo.", { tipo: "erro" }); return; }
-    navigate("/login");
-  };
 
   // Registra o pedido de exclusão pra equipe processar (apagar a conta exige permissão de servidor)
   const excluirConta = async () => {
@@ -317,9 +314,10 @@ export default function Configuracoes() {
             </div>
           </section>
           </>)}
-          <Botao variante="secundario" cheio className="cf9-sair" icone={<SignOut size={20} weight="bold" />} onClick={sair}>Sair da conta</Botao>
+          <Botao variante="secundario" cheio className="cf9-sair" icone={<SignOut size={20} weight="bold" />} onClick={() => setPerguntandoSair(true)}>Sair da conta</Botao>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
           {recorte.janela}
+          <JanelaSair aberta={perguntandoSair} aoFechar={() => setPerguntandoSair(false)} />
         </>)}
       </div>
 
