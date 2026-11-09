@@ -35,9 +35,8 @@ const CSS = `
   .hv-t { font-size: 2rem; font-weight: var(--fw-black); letter-spacing: -0.03em; line-height: 1.1; color: var(--text-title); margin: var(--space-1) 0 0; }
   .hv-d { font-size: var(--text-md); color: var(--text-secondary); line-height: 1.55; margin: var(--space-2) 0 0; max-width: 480px; }
   .hv-ac { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-3); justify-content: center; }
-  .hv-bt { display: inline-flex; align-items: center; gap: var(--space-2); background: var(--ui-rosa-botao, #CC2E66); color: var(--text-inverse); border: none; padding: var(--space-4) var(--space-6); border-radius: var(--radius-md); font-size: var(--text-md); font-weight: 600; cursor: pointer; font-family: var(--font-base) !important; box-shadow: 0 4px 0 var(--ui-rosa-botao-sombra, #A51E50); transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); white-space: nowrap; }
-  .hv-bt:hover { filter: brightness(1.05); }
-  .hv-bt:active { transform: translateY(4px); box-shadow: 0 0 0 var(--primary-dark); }
+  .hv-bt { display: inline-flex; align-items: center; gap: var(--space-2); background: var(--ui-rosa-botao, #CC2E66); color: var(--text-inverse); border: none; padding: var(--space-4) var(--space-6); border-radius: var(--radius-md); font-size: var(--text-md); font-weight: 600; cursor: pointer; font-family: var(--font-base) !important; box-shadow: none; transition: background-color var(--dur-fast) linear; white-space: nowrap; } /* (09/11) chapado, igual ao Começar dos Primeiros passos */
+  .hv-bt:hover, .hv-bt:active { background: var(--ui-rosa-botao-sombra, #A51E50); }
   @media (min-width: 900px) {
     .hv { min-height: calc(100dvh - 170px); flex-direction: row; align-items: center; justify-content: center; gap: var(--space-6); padding: 0 var(--space-4); }
     .hv-tx { order: 1; gap: var(--space-4); flex: 1.3 1 440px; max-width: 560px; min-width: 0; text-align: left; align-items: flex-start; }

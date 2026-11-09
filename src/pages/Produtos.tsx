@@ -3065,14 +3065,10 @@ export default function Produtos() {
           cursor: pointer;
           font-family: var(--font-base) !important;
           letter-spacing: 0;
-          box-shadow: 0 4px 0 var(--ui-rosa-botao-sombra, #A51E50);
-          transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+          box-shadow: none; /* (09/11) chapado, igual ao Começar dos Primeiros passos */
+          transition: background-color var(--dur-fast) linear;
         }
-        .prod-hero-btn-primary:hover { filter: brightness(1.05); }
-        .prod-hero-btn-primary:active {
-          transform: translateY(4px);
-          box-shadow: 0 0 0 var(--primary-dark);
-        }
+        .prod-hero-btn-primary:hover, .prod-hero-btn-primary:active { background: var(--ui-rosa-botao-sombra, #A51E50); }
 
         .prod-hero-tip {
           display: flex;
