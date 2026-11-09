@@ -102,3 +102,12 @@ html body .fd-res .fd-var + .fd-leg { margin-top: 12px; }
 .nm-num { display: flex !important; align-items: baseline; gap: 5px; min-width: 0; }
 .nm-num > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nm-num > small { flex: none; white-space: nowrap; }
+
+/* (09/11) celular: o topo na mesma cor da página (como no computador). Os botões redondos do topo (voltar, sino)
+   viram brancos com borda fina pra não sumirem no cinza; a etiqueta "7 dias grátis"/"PRO" já é branca. */
+@media (max-width: 900px) {
+  html body .cab { background: linear-gradient(var(--chocolate) 0 env(safe-area-inset-top, 0px), #F1F2F2 env(safe-area-inset-top, 0px)) !important; border-bottom: 0 !important; box-shadow: none !important; }
+  html body .layout-root .ini-root .ini-hero, html body .ini-root.ini-root .ini-hero { background: #F1F2F2 !important; }
+  html body .cab .cab-voltar, html body .cab .cab-cel-ac, html body .ini-root.ini-root .ini-hero-ac { background: #fff !important; box-shadow: inset 0 0 0 1px #E6E0E3 !important; }
+  html body .cab .cab-voltar:active, html body .cab .cab-cel-ac:active, html body .ini-root.ini-root .ini-hero-ac:active { background: #F6F3F4 !important; }
+}

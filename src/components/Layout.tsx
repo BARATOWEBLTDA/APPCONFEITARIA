@@ -140,7 +140,7 @@ export default function Layout() {
     if (!meta) return;
     const antes = meta.getAttribute("content") || "";
     const mq = window.matchMedia("(max-width: 900px)");
-    const aplicar = () => meta.setAttribute("content", mq.matches ? "#FFFFFF" : antes);
+    const aplicar = () => meta.setAttribute("content", mq.matches ? "#F1F2F2" : antes);
     aplicar();
     mq.addEventListener("change", aplicar);
     return () => { mq.removeEventListener("change", aplicar); meta.setAttribute("content", antes); };
