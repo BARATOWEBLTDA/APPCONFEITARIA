@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { carregarNotificacoes, criarNotificacaoPessoal, type Notif } from "@/lib/notificacoesUsuario";
+import { nomeApresentavel } from "@/lib/nomeApresentavel";
 import { STATUS_AINDA_NAO_PRONTO, hojeISO } from "@/lib/pedidoStatus";
 
 /**
@@ -8,7 +9,7 @@ import { STATUS_AINDA_NAO_PRONTO, hojeISO } from "@/lib/pedidoStatus";
  * Os avisos de cadastro ("1 produto sem ficha técnica") ficam no "Seus próximos passos" do Início, não aqui.
  * Os textos são montados aqui, curtos (cabem numa linha): o nome do cliente vai só o primeiro nome.
  */
-export type TipoNotif = "pedido" | "pix" | "orcamento" | "agenda" | "atrasado" | "conta" | "pro" | "equipe";
+export type TipoNotif = "pedido" | "pix" | "orcamento" | "agenda" | "atrasado" | "conta" | "pro" | "equipe" | "teste";
 export type NotifVista = {
   id: string; tipo: TipoNotif; titulo: string; detalhe: string; link: string; criada: string; lida: boolean;
   foto?: string | null; dia?: number; mes?: string;
@@ -41,6 +42,7 @@ function tipoDe(n: Notif): TipoNotif | null {
     case "atrasado": return "atrasado";
     case "pro": case "pro_vencendo": case "pro_atrasado": return "pro";
     case "sugestao": return "equipe";
+    case "teste": return "teste";
     default: return null; // aviso de cadastro, notícia, conquista: fora
   }
 }
@@ -116,6 +118,8 @@ export async function carregarNotifConfeiteira(): Promise<NotifVista[]> {
       }
       case "equipe":
         return { ...base, titulo: "Equipe Doonly respondeu", detalhe: "Sobre a sua ideia" };
+      case "teste":
+        return { ...base, titulo: n.titulo || "Deu certo!", detalhe: n.mensagem || "Os avisos estão chegando aqui" };
     }
   });
 }
@@ -148,4 +152,17 @@ export async function gerarAvisosDoDia(uid: string): Promise<void> {
       await criarNotificacaoPessoal({ tipo: "atrasado", titulo: "Pedido atrasado", mensagem: primeiro(p.clientes?.nome), link: `/pedidos/${p.id}/editar`, chave: `atrasado-${p.id}` });
     }
   } catch { /* sem internet: tenta na próxima abertura */ }
+}
+
+/** (09/11) O "aviso de teste" (ligar as notificações / botão Testar) também entra na lista do sino, e o sino balança */
+export async function avisoDeTesteNaLista(): Promise<void> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const uid = session?.user?.id; if (!uid) return;
+    const { data } = await supabase.from("profiles").select("nome").eq("id", uid).maybeSingle();
+    const nome = nomeApresentavel((data as { nome?: string } | null)?.nome);
+    // o nome vai no título ("Deu certo, Bruno!"): na segunda linha não cabia junto com o texto
+    await criarNotificacaoPessoal({ tipo: "teste", titulo: nome ? `Deu certo, ${nome}!` : "Deu certo!", mensagem: "Os avisos estão chegando aqui",
+      link: "/configuracoes/notificacoes", chave: `teste-${Date.now()}` });
+  } catch { /* sem internet: fica só o aviso no aparelho */ }
 }

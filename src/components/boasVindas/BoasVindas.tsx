@@ -1,3 +1,4 @@
+import { avisoDeTesteNaLista } from "@/lib/notifConfeiteira";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, TouchEvent } from 'react'
 import { ArrowLeft, ArrowRight, ArrowSquareOut, CalendarBlank, CheckCircle, Check, CaretRight, DownloadSimple, ImageSquare, Receipt, Wallet } from '@phosphor-icons/react'
@@ -93,6 +94,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
         icon: '/Sistema/icon-192.png', badge: '/Sistema/badge.png', tag: 'doonly-teste', data: { url: '/inicio' },
       })
     } catch { /* sem o aviso de teste: os avisos continuam ativados */ }
+    void avisoDeTesteNaLista()
   }
   const nomeOk = nomeApresentavel(nome)
   const [saindo, setSaindo] = useState(false)

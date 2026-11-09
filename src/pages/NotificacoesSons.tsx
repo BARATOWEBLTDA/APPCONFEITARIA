@@ -1,3 +1,4 @@
+import { avisoDeTesteNaLista } from "@/lib/notifConfeiteira";
 import { COMO_NOTIFICACOES, TOUR_NOTIFICACOES } from "@/lib/comoTelas";
 import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,7 @@ export default function NotificacoesSons() {
   const [testando, setTestando] = useState(false);
   const testar = async () => {
     setTestando(true);
+    void avisoDeTesteNaLista();
     try {
       const { data, error } = await supabase.functions.invoke("push-pessoal", { body: { teste: true } });
       if (error) throw error;

@@ -43,7 +43,11 @@ Deno.serve(async (req) => {
       const { data: { user } } = await db.auth.getUser(token);
       if (!user) return json({ sent: 0, motivo: "Entre na sua conta para testar." }, 401);
       userId = user.id;
-      aviso = { title: "Aviso de teste", body: "Os avisos do Doonly estão chegando neste aparelho.", url: "/configuracoes/notificacoes", tag: "doonly-teste" };
+      // (09/11) com o primeiro nome dela ("Deu certo, Bruno!"); nome estranho (número, símbolo, muito curto) fica sem
+      const { data: pf } = await db.from("profiles").select("nome").eq("id", user.id).maybeSingle();
+      const p1 = String(pf?.nome || "").trim().split(/\s+/)[0] || "";
+      const nome = /^[\p{L}][\p{L}'’-]{1,19}$/u.test(p1) ? p1.charAt(0).toLocaleUpperCase("pt-BR") + p1.slice(1).toLocaleLowerCase("pt-BR") : "";
+      aviso = { title: nome ? `Deu certo, ${nome}!` : "Deu certo!", body: "Os avisos do Doonly estão chegando neste aparelho.", url: "/notificacoes", tag: "doonly-teste" };
     } else {
       // ── pelo banco: confere o segredo ──
       const segredo = req.headers.get("x-webhook-secret") || "";

@@ -51,6 +51,7 @@ function Imagem({ n }: { n: NotifVista }) {
     );
     case "conta": return <span className="nf-ic nf-ic--conta"><Wallet size={22} weight="regular" /></span>;
     case "pro": return <span className="nf-ic nf-ic--pro"><img src="/coroa.webp" alt="" /></span>;
+    case "teste": return <span className="nf-ic"><Bell size={22} weight="regular" /></span>;
     case "equipe": return <span className="nf-ic"><Ticket size={22} weight="regular" /></span>;
   }
 }

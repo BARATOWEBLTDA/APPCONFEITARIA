@@ -1,3 +1,4 @@
+import { avisoDeTesteNaLista } from "@/lib/notifConfeiteira";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Basket, Bell, DeviceMobile, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo, PauseCircle, ShareNetwork, QrCode, SquaresFour, CalendarX, Island } from "@phosphor-icons/react";
@@ -171,6 +172,7 @@ export default function PraFazer() {
     if (ok) {
       setMexeu(n => n + 1);
       void supabase.functions.invoke("push-pessoal", { body: { teste: true } }).catch(() => {});
+      void avisoDeTesteNaLista();
       avisar("Notificações ligadas. Um aviso de teste chega em alguns segundos.", { tipo: "ok", duracao: 6000 });
     }
     else if (Notification.permission === "denied") comoLiberar();
