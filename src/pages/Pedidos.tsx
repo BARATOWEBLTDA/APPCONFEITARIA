@@ -81,6 +81,7 @@ export default function Pedidos() {
   const [estado, setEstado] = useState<'carregando' | 'erro' | 'pronto'>('carregando')
   const [demorou, setDemorou] = useState(false)
   const [totalProdutos, setTotalProdutos] = useState<number | null>(null)
+  const [produtosConferidos, setProdutosConferidos] = useState(false) // (09/11) só decide a tela vazia depois de saber se tem produto
   const [computador, setComputador] = useState(() => window.matchMedia(MEDIDA_COMPUTADOR).matches)
   const [largo, setLargo] = useState(() => window.matchMedia(MEDIDA_TABLET).matches) // tablet em pé pra cima: tem o Quadro
 
@@ -160,7 +161,7 @@ export default function Pedidos() {
       }
       setUserId(user.id)
       fetchPedidos(user.id)
-      supabase.from('produtos').select('id', { count: 'exact', head: true }).eq('user_id', user.id).then(({ count, error }) => setTotalProdutos(error || count == null ? null : count), () => setTotalProdutos(null)) // (6.174) falha na leitura não é "sem produtos"
+      supabase.from('produtos').select('id', { count: 'exact', head: true }).eq('user_id', user.id).then(({ count, error }) => { setTotalProdutos(error || count == null ? null : count); setProdutosConferidos(true) }, () => { setTotalProdutos(null); setProdutosConferidos(true) }) // (6.174) falha na leitura não é "sem produtos"
     })
   }, [fetchPedidos, navigate]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -599,9 +600,11 @@ export default function Pedidos() {
     aoRecusar: (x: Pedido) => navigate(`/pedidos/${x.id}/editar`, { state: { abrirCancelar: true } }) })
 
   const conteudo = () => {
-    if (estado === 'carregando') return demorou ? <p className="pd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : null
+    // (09/11) enquanto carrega, não mostra a lista vazia ("Nenhum pedido ainda") por baixo: em conta nova ela piscava antes do "Cadastre um produto primeiro"
+    const carregandoTudo = estado === 'carregando' || (estado === 'pronto' && pedidos.length === 0 && !produtosConferidos)
+    if (carregandoTudo) return demorou || estado === 'pronto' ? <p className="pd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando os pedidos…</p> : <span aria-hidden="true" />
     if (estado === 'erro') return <TelaVazia icone={<WarningCircle size={30} />} titulo="Não deu para carregar os pedidos" texto="Confira a internet e tente de novo." acao={<Botao variante="suave" tamanho="m" onClick={() => userId && fetchPedidos(userId)}>Tentar de novo</Botao>} />
-    if (totalProdutos === 0 && pedidos.length === 0) return <TelaVazia className="pd-sem-produto" icone={<img src="/Sistema/pedidos-sem-produto.webp" alt="" width={180} height={189} />} titulo="Cadastre um produto primeiro" texto="Para registrar um pedido, você precisa ter pelo menos um produto." acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/produtos')}>Cadastrar produto</Botao>} />
+    if (totalProdutos === 0 && pedidos.length === 0) return <TelaVazia className="pd-sem-produto" icone={<img src="/Sistema/pedidos-sem-produto.webp" alt="" width={180} height={189} />} titulo="Cadastre um produto primeiro" texto="Para registrar um pedido, você precisa ter pelo menos um produto." acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => navigate('/produtos', { state: { abrirCadastro: true, direto: true } })}>Cadastrar produto</Botao>} />
     // (19/10) sem pedido nenhum, a barra de cima (abas, busca, Lista/Quadro, Nova venda) fica: antes ela sumia e a tela "pulava"
     return null
   }
