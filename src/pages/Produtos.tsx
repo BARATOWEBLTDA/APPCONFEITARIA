@@ -1,3 +1,4 @@
+import AbasCel from "@/components/base/AbasCel";
 import { useState, useEffect, useRef, useMemo } from "react";
 import SelectDoonly from "@/components/base/SelectDoonly";
 import { abrirConvitePro } from "@/components/billing/RecursoPro";
@@ -1429,6 +1430,8 @@ export default function Produtos() {
       }
       infoTip={<>Clique em <strong>"Novo produto"</strong> para cadastrar. Depois é só compartilhar seu cardápio com os clientes.</>}
     />
+    {/* (10/11) celular: Categorias saiu da Minha loja e virou aba aqui */}
+    <AbasCel rotulo="Produtos e categorias" abas={[{ to: "/produtos", nome: "Produtos", end: true }, { to: "/categorias", nome: "Categorias" }]} />
     {cropSrc && (
       <ImageCropper
         imageSrc={cropSrc}

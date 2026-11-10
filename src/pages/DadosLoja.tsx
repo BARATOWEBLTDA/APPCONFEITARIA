@@ -364,6 +364,8 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   const fotoAoAbrir = useRef("");
   const abrirParte = (p: Parte) => {
     if (p === "loja" || p === "redes" || p === "endereco" || p === "horario") { abrir(p); setZapAberto(digitosTelefone(telefone).length < 10 ? true : zapAberto); }
+    // (10/11) Minha loja: "Sobre a loja" tem também as redes e o endereço
+    if (embutido && p === "loja") { abrir("redes"); abrir("endereco"); }
     fotoAoAbrir.current = fotoDados();
     setParte(p);
   };
@@ -413,7 +415,11 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   // (6.110) a busca do app abre direto a parte certa no celular (horário, pagamento, pix, endereço, redes)
   useEffect(() => {
     const p = estadoNav?.abrir as Parte | undefined;
-    if (!loading && cel && p && p !== "loja" && ["redes", "endereco", "horario", "ferias", "pag", "pix", "ent"].includes(p)) setParte(p);
+    if (!loading && cel && p && p !== "loja" && ["redes", "endereco", "horario", "ferias", "pag", "pix", "ent"].includes(p)) {
+      if (embutido && (p === "redes" || p === "endereco")) abrirParte("loja");
+      else if (embutido && p === "ferias") abrirParte("horario");
+      else setParte(p);
+    }
     // (6.182) no computador também (o "Ligar" do Pix abria a primeira parte com "Falta")
     if (!loading && !cel && !embutido && p && ["redes", "endereco", "horario", "ferias", "pag", "pix", "ent"].includes(p)) setParte(p);
   }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -654,10 +660,11 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
       rodape={<Botao cheio carregando={fechando} onClick={fecharParte}>{fechando ? "Salvando…" : "Pronto"}</Botao>}>
       <div className="dl-folha">
         {parte === "loja" && secLoja}
-        {parte === "redes" && secRedes}
-        {parte === "endereco" && secEndereco}
+        {(parte === "redes" || (embutido && parte === "loja")) && secRedes}
+        {(parte === "endereco" || (embutido && parte === "loja")) && secEndereco}
         {parte === "horario" && secHorario}
-        {parte === "ferias" && userId && <FeriasLoja uid={userId} />}
+        {/* (10/11) Minha loja: Férias e feriados ficam dentro do Horário */}
+        {(parte === "ferias" || (embutido && parte === "horario")) && userId && <FeriasLoja uid={userId} />}
         {(parte === "pag" || parte === "pix" || parte === "ent") && <CheckoutConfigPage embutido parte="entrega" so={parte} onEstado={setEp} />}
       </div>
     </Gaveta>
@@ -665,14 +672,19 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   if (embutido) {
     // (23/10) no estilo do Dora: cada linha mostra o valor atual e só o que falta ganha destaque (sem os vistos verdes)
     const linhaEmb = (k: Parte, titulo?: string) => {
-      const l = linhas.find(x => x.k === k);
+      let l = linhas.find(x => x.k === k);
       if (!l) return null;
+      // (10/11) Sobre a loja junta loja, endereço e redes: mostra o primeiro que falta
+      if (k === "loja") {
+        const lj = l, en = linhas.find(x => x.k === "endereco")!, rd = linhas.find(x => x.k === "redes")!;
+        const f = [lj, en, rd].find(x => x.st !== "ok");
+        l = f ? { ...lj, sub: f.sub, st: f.st } : { ...lj, sub: [nome.trim(), rd.sub].filter(Boolean).join(" · ") };
+      }
       return (
         <button key={l.k} type="button" className="dl-li" onClick={() => abrirParte(l.k)}>
           <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
           <span className="dl-li-tx"><b>{titulo || l.t}</b><small className={l.st !== "ok" ? "falta" : ""}>{l.sub}</small></span>
           {/* (6.148) na Minha loja o opcional que ainda não foi feito (redes, Pix) também mostra "Falta" */}
-          {(l.st === "falta" || l.st === "op") && <em className="dl-li-st falta">Falta</em>}
           <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
         </button>
       );
@@ -681,11 +693,11 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
       <>
         <section className="dl-emb ml-cliente" aria-label="A loja para o cliente">
           <h2 className="dl-emb-t">A loja para o cliente</h2>
-          <div className="dl-lista-c">{extras?.antes}{linhaEmb("loja", "Sobre a loja")}{extras?.depois}{linhaEmb("redes")}</div>
+          <div className="dl-lista-c">{extras?.antes}{linhaEmb("loja", "Sobre a loja")}{extras?.depois}</div>
         </section>
         <section className="dl-emb ml-vende" aria-label="Como você vende">
           <h2 className="dl-emb-t">Como você vende</h2>
-          <div className="dl-lista-c">{linhaEmb("horario")}{linhaEmb("ferias")}{linhaEmb("ent")}{linhaEmb("pag")}{linhaEmb("pix")}{linhaEmb("endereco")}</div>
+          <div className="dl-lista-c">{linhaEmb("horario")}{linhaEmb("ent")}{linhaEmb("pag")}{linhaEmb("pix")}</div>
         </section>
         {gaveta}
       </>

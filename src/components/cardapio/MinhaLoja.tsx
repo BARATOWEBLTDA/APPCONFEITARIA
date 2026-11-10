@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ImageSquare, Cake, CaretRight, ChartLineUp, PaintBrush, SquaresFour, Stack } from "@phosphor-icons/react";
+import { Cake, CaretRight, ChartLineUp, PaintBrush, Stack } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { useRecorte } from "@/components/ui/useRecorte";
@@ -69,24 +69,14 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
   }, { aspect: 1, forma: "round" });
 
   const img = vis?.logo || vis?.foto;
-  // (23/10) a logo segue o mesmo padrão das outras linhas: toque na linha para escolher a foto; sem logo, "Falta"
-  const semLogo = !!vis && !vis.logo;
-  const linhaLogo = (
-    <label className={`dl-li${enviando ? " dl-li--fixa" : ""}`} aria-disabled={enviando}>
-      {img ? <img className="dl-li-img" src={img} alt="" /> : <span className="dl-li-ic" aria-hidden="true"><ImageSquare size={20} weight="bold" /></span>}
-      <span className="dl-li-tx"><b>Logo</b><small className={semLogo ? "falta" : ""}>{!vis ? "…" : enviando ? "Enviando…" : vis.logo ? "Toque para trocar" : "Falta a logo da loja"}</small></span>
-      {semLogo && !enviando && <em className="dl-li-st falta">Falta</em>}
-      <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
-      <input type="file" accept="image/*" hidden disabled={enviando} onChange={recorte.escolher} />
-    </label>
-  );
   // (6.148) sem a foto do topo o cardápio fica sem capa: "Falta" igual às outras linhas
   const semTopo = !!vis && !vis.topo;
+  // (10/11) a Logo entrou na Aparência (logo, foto do topo e cores): a linha mostra o que falta primeiro
+  const semLogoAp = !!vis && !vis.logo;
   const linhaAparencia = (
     <button type="button" className="dl-li" onClick={() => navigate("/cardapio-design")}>
-      <span className="dl-li-ic" aria-hidden="true"><PaintBrush size={20} weight="bold" /></span>
-      <span className="dl-li-tx"><b>Aparência</b><small className={semTopo ? "falta" : ""}>{!vis ? "…" : semTopo ? "Falta a foto do topo" : `Topo, cores e ${vis.banners ? plural(vis.banners, "banner", "banners") : "banners"}`}</small></span>
-      {semTopo && <em className="dl-li-st falta">Falta</em>}
+      {img ? <img className="dl-li-img" src={img} alt="" /> : <span className="dl-li-ic" aria-hidden="true"><PaintBrush size={20} weight="bold" /></span>}
+      <span className="dl-li-tx"><b>Aparência</b><small className={semTopo || semLogoAp ? "falta" : ""}>{!vis ? "…" : semLogoAp ? "Falta a logo da loja" : semTopo ? "Falta a foto do topo" : `Logo, topo e ${vis.banners ? plural(vis.banners, "banner", "banners") : "cores"}`}</small></span>
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
   );
@@ -95,7 +85,6 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
     <button type="button" className="dl-li" onClick={() => navigate(rota)}>
       <span className="dl-li-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
       <span className="dl-li-tx"><b>{titulo}</b><small className={falta ? "falta" : ""}>{sub}</small></span>
-      {falta && <em className="dl-li-st falta">Falta</em>}
       {/* (6.146) recurso do PRO: a etiqueta avisa antes de tocar (igual ao Menu) */}
       {soPro && !pro && <em className="dl-li-st pro">PRO</em>}
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
@@ -118,11 +107,10 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
         <h2 className="dl-emb-t">O que você vende</h2>
         <div className="dl-lista-c">
           {linha(Cake, "Produtos", qtd(n?.produtos, "produto", "produtos", "Nenhum ainda"), "/produtos", n?.produtos === 0)}
-          {linha(SquaresFour, "Categorias", qtd(n?.categorias, "categoria", "categorias", "Nenhuma categoria ainda"), "/categorias")}
           {linha(Stack, "Adicionais", qtd(n?.complementos, "adicional", "adicionais", "Topo, velas e outros extras"), "/complementos", false, true)}
         </div>
       </section>
-      <DadosLoja embutido extras={{ antes: linhaLogo, depois: linhaAparencia }} />
+      <DadosLoja embutido extras={{ antes: linhaAparencia }} />
     </>
   );
 }

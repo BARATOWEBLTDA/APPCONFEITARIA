@@ -1,3 +1,4 @@
+import AbasCel from "@/components/base/AbasCel";
 import { useState, useEffect, useRef } from "react";
 import { useRecorte } from "@/components/ui/useRecorte";
 import { useNavigate } from "react-router-dom";
@@ -270,6 +271,7 @@ export default function Categorias() {
           <p>O cliente acha o que quer mais rápido. O cardápio mostra as categorias na ordem desta lista.</p>
         </>}
         infoTip={<>Cada produto fica em uma categoria. Você escolhe a categoria no cadastro do produto.</>} />
+      <AbasCel rotulo="Produtos e categorias" abas={[{ to: "/produtos", nome: "Produtos", end: true }, { to: "/categorias", nome: "Categorias" }]} />
       <div className="ct">
         <div className="ct-abas" role="tablist" aria-label="Catálogo">
           <button type="button" role="tab" aria-selected="false" onClick={() => navigate("/produtos")}>Produtos</button>
