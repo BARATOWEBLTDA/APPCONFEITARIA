@@ -26,8 +26,16 @@ export default function TopoPublico() {
   useEffect(() => {
     let vivo = true;
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) { navigate(destino, { replace: true }); return; }
+      // (09/11) só confere a conta se tiver uma guardada no aparelho, e no máximo 2,5 s: depois de sair da conta,
+      // a leitura da sessão vencida podia ficar presa e a página ficava "Carregando…" pra sempre
+      const temConta = (() => { try { return Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k) && !!localStorage.getItem(k)); } catch { return false; } })();
+      if (temConta) {
+        const sessao = await Promise.race([
+          supabase.auth.getSession().then(r => r.data.session).catch(() => null),
+          new Promise<null>(ok => window.setTimeout(() => ok(null), 2500)),
+        ]);
+        if (sessao) { navigate(destino, { replace: true }); return; }
+      }
       if (/^[a-z0-9]{2,12}$/i.test(de)) void supabase.rpc("topo_quem_compartilhou", { p_codigo: de }).then(({ data: q }) => {
         const r = (Array.isArray(q) ? q[0] : q) as { nome: string | null; loja: string | null; imagem: string | null } | null;
         // (09/11) quem aparece é a loja ("Doce Formiga compartilhou…"); sem nome de loja, o primeiro nome da pessoa
