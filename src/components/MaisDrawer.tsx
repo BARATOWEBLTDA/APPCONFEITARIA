@@ -4,8 +4,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   Gear, Crown, CaretRight,
   CalendarDots, CurrencyDollar,
-  FileText, Users, Cake, Package, ClipboardText,
-  Calculator, Sliders, Lifebuoy, Megaphone,
+  FileText, Users, Package, ClipboardText,
+  Calculator, Sliders, Lifebuoy,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { ShareNetwork, Scales, FlagBanner } from "@phosphor-icons/react";
@@ -48,21 +48,15 @@ const GRUPOS: Grupo[] = [
     ],
   },
   {
-    label: "Produção e preço",
+    // (10/11) Produtos saiu (fica na Minha loja); o Financeiro veio pra cá (o grupo "Dinheiro e vendas" ficou com 1 item só)
+    label: "Produção e dinheiro",
     items: [
-      { label: "Produtos",      desc: "Preço, foto e esgotado",        path: "/produtos",      Icone: Cake },
       { label: "Ficha técnica", desc: "Custo e lucro de cada produto", path: "/ficha-tecnica", Icone: ClipboardText },
       { label: "Ingredientes",  desc: "O que você compra",             path: "/insumos",       Icone: Package },
       { label: "Custos",        desc: "Mão de obra, contas fixas e taxas", path: "/custos",    Icone: Calculator },
-    ],
-  },
-  {
-    label: "Dinheiro e vendas",
-    items: [
       // (10/11) um item só: Transações, A receber, A pagar e Lucro viraram abas no topo do Financeiro
+      // (Divulgar, com Cupons e Pixel, foi pra Minha loja)
       { label: "Financeiro",    desc: "Caixa, contas e lucro",     path: "/financeiro", Icone: CurrencyDollar },
-      // (10/11) Cupons e Pixel numa tela só
-      { label: "Divulgar", desc: "Cupons e pixel dos anúncios", path: "/divulgar", Icone: Megaphone, pro: true },
     ],
   },
   {

@@ -62,6 +62,14 @@ export default function Cardapio() {
       <VisaoGeralDesktop profile={profile} linkCardapio={linkCardapio} publicado={publicado} onShare={handleShare} />
     ) : (
     <div className="cardapio-hub">
+      {/* (10/11) só no celular: um banner no topo explica a tela (quebra a lista de só texto) */}
+      <div className="ml-banner">
+        <span className="ml-banner-tx">
+          <b>Sua loja no Doonly</b>
+          <small>Aqui você ajusta tudo que o cliente vê no seu cardápio.</small>
+        </span>
+        <img src="/marca/leve/doo-loja.webp" alt="" aria-hidden="true" />
+      </div>
       {/* (23/10) sem o cartão de Primeiros passos (ele fica no Início): o que falta aparece como "Falta" em cada linha.
           No topo, o cartão da loja: situação, chave de pausar, Compartilhar, Ver e QR Code */}
       {publicado && linkCardapio ? <CartaoLojaCelular link={linkCardapio} /> : (
@@ -74,6 +82,11 @@ export default function Cardapio() {
 
       <style>{`
         /* (23/10) Minha loja: os blocos usam as linhas de Dados da loja (dadosLoja.css); aqui só o espaço da tela */
+        .ml-banner { position: relative; display: flex; align-items: center; gap: 12px; min-height: 96px; padding: 14px 4px 14px 16px; overflow: hidden; border-radius: 16px; background: linear-gradient(120deg, #FFF0F6, #FCE1EC); }
+        .ml-banner-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+        .ml-banner-tx b { font-size: 16px; font-weight: 500; color: #3B3236; white-space: nowrap; }
+        .ml-banner-tx small { font-size: 13px; line-height: 1.4; color: #6B5A60; }
+        .ml-banner img { flex: none; width: 96px; height: 96px; margin: -10px 0 -18px; object-fit: contain; }
         .cardapio-hub { font-family: var(--font-base); display: flex; flex-direction: column; gap: 12px; max-width: 980px; margin: 0 auto; padding: 16px 8px 112px; }
       `}</style>
     </div>

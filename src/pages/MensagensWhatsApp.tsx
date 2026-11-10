@@ -56,7 +56,8 @@ function ConversaZap({ m, mensagem, compacta = false }: { m: Modelo; mensagem: s
 export default function MensagensWhatsApp() {
   const navigate = useNavigate();
   // (18/10) aberta pela aba Cardápio: o voltar leva pra lá (senão, pra Configurações)
-  const voltarPara = (useLocation().state as { de?: string } | null)?.de === "/cardapio" ? "/cardapio" : "/configuracoes";
+  // (10/11) Mensagens agora mora na Minha loja: o voltar vai pra lá (de onde mais ela abre)
+  const voltarPara = (useLocation().state as { de?: string } | null)?.de || "/cardapio";
   const { profile } = useProfile();
   const salvas = profile?.mensagens_whatsapp || {};
   const [editando, setEditando] = useState<Modelo | null>(null);

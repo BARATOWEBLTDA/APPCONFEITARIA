@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cake, CaretRight, ChartLineUp, PaintBrush, Stack } from "@phosphor-icons/react";
+import { Cake, CaretRight, ChartLineUp, ChatCircleText, PaintBrush, Stack, Target, Ticket } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { useRecorte } from "@/components/ui/useRecorte";
@@ -90,16 +90,27 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
   );
+  // (10/11) Mensagens do WhatsApp saiu de Configurações: é a voz da loja com o cliente
+  const linhaMensagens = (
+    <button type="button" className="dl-li" onClick={() => navigate("/configuracoes/mensagens", { state: { de: "/cardapio" } })}>
+      <span className="dl-li-ic" aria-hidden="true"><ChatCircleText size={20} weight="bold" /></span>
+      <span className="dl-li-tx"><b>Mensagens do WhatsApp</b><small>Textos prontos para o cliente</small></span>
+      <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
+    </button>
+  );
   const qtd = (v: number | undefined, um: string, varios: string, vazio: string) => v == null ? "…" : v < 0 ? varios.charAt(0).toUpperCase() + varios.slice(1) : v === 0 ? vazio : plural(v, um, varios);
 
   return (
     <>
       {recorte.janela}
       {/* (6.170) métricas do cardápio (visitas, pedidos e mais pedidos) numa tela própria */}
-      <section className="dl-emb" aria-label="Desempenho">
-        <h2 className="dl-emb-t">Desempenho</h2>
+      {/* (10/11) Cupons e Pixel vieram do Menu (Divulgar): os dois só funcionam no cardápio */}
+      <section className="dl-emb" aria-label="Divulgar e acompanhar">
+        <h2 className="dl-emb-t">Divulgar e acompanhar</h2>
         <div className="dl-lista-c">
           {linha(ChartLineUp, "Métricas", "Visitas e mais pedidos", "/cardapio-metricas")}
+          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons", false, true)}
+          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel", false, true)}
         </div>
       </section>
       {/* (6.59) o que o cliente vê vem primeiro: produtos logo abaixo do cartão de compartilhar */}
@@ -110,7 +121,7 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
           {linha(Stack, "Adicionais", qtd(n?.complementos, "adicional", "adicionais", "Topo, velas e outros extras"), "/complementos", false, true)}
         </div>
       </section>
-      <DadosLoja embutido extras={{ antes: linhaAparencia }} />
+      <DadosLoja embutido extras={{ antes: linhaAparencia, depois: linhaMensagens }} />
     </>
   );
 }
