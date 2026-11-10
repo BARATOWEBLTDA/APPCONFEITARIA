@@ -40,3 +40,18 @@
 .tp-logo { height: 40px; }
 .tp-banner b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 600px) { .tp-banner span { display: none; } .tp-banner b { font-size: 15.5px; } }
+/* (09/11) textos sem quebra feia: as linhas se equilibram */
+.tp-info h1, .tp-vz h1 { text-wrap: balance; }
+.tp-sub, .tp-vz p { line-height: 1.55; text-wrap: pretty; }
+.tp-sub { margin-bottom: 14px; }
+/* (09/11) quem compartilhou */
+.tp-quem { display: flex; align-items: center; gap: 12px; max-width: 960px; margin: 4px auto 12px; box-sizing: border-box; }
+.tp-quem-img { display: flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; overflow: hidden; border: 2px solid #fff; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(36, 26, 30, .12); color: #8A7B80; }
+.tp-quem-img img { width: 100%; height: 100%; object-fit: cover; }
+.tp-quem-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tp-quem-tx b { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 15px; font-weight: 500; color: #241A1E; }
+.tp-quem-tx small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; color: #8A7B80; }
+.tp-coracao { flex: none; color: #E8457A; }
+@media (max-width: 400px) { .tp-quem-tx b { font-size: 14px; } }
+.tp-quem-tx b { justify-content: flex-start; }
+.tp-quem-n { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }

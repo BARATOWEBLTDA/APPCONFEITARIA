@@ -80,3 +80,30 @@ language sql stable security definer set search_path = public as $$
   where t.id = p_id and t.ativo
 $$;
 grant execute on function public.topo_publico(uuid) to anon, authenticated;
+
+-- (09/11) quem compartilhou o topo (link /topo/:id?de=codigo): só primeiro nome, nome da loja e a logo/foto
+create or replace function public.topo_quem_compartilhou(p_codigo text)
+returns table (nome text, loja text, imagem text)
+language sql stable security definer set search_path = public as $$
+  select split_part(trim(coalesce(p.nome, '')), ' ', 1), p.nome_loja, coalesce(nullif(split_part(coalesce(p.logo_url, ''), ',', 1), ''), nullif(p.foto_url, ''))
+  from profiles p where p.codigo_publico = p_codigo limit 1
+$$;
+grant execute on function public.topo_quem_compartilhou(text) to anon, authenticated;
+
+-- (09/11) link curto do topo (doonly.com.br/topo/658e09) e a página aberta aceita o código ou o id
+alter table public.topos add column if not exists codigo text;
+update public.topos set codigo = substr(md5(id::text || random()::text), 1, 6) where codigo is null;
+alter table public.topos alter column codigo set default substr(md5(gen_random_uuid()::text), 1, 6);
+create unique index if not exists topos_codigo_uniq on public.topos (codigo);
+drop function if exists public.topo_publico(uuid);
+create or replace function public.topo_publico(p_id text)
+returns table (id uuid, titulo text, capa_url text, capa_mini_url text, formatos text[], tem_canva boolean, categoria text, total_topos int)
+language sql stable security definer set search_path = public as $$
+  select t.id, t.titulo, t.capa_url, t.capa_mini_url,
+    coalesce((select array_agg(distinct a->>'formato') from jsonb_array_elements(t.arquivos) a), '{}'),
+    coalesce(t.canva_url, '') <> '', c.nome, (select count(*)::int from topos x where x.ativo)
+  from topos t left join topos_categorias c on c.id = t.categoria_id
+  where (t.codigo = p_id or t.id::text = p_id) and t.ativo
+  limit 1
+$$;
+grant execute on function public.topo_publico(text) to anon, authenticated;

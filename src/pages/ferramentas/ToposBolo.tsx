@@ -5,6 +5,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, TelaVazia, avisar } from "@/components/base";
 import { ConvitePro } from "@/components/billing/RecursoPro";
 import { usePlano } from "@/hooks/usePlano";
+import { useProfile } from "@/hooks/useProfile";
 import { baixarArquivo, infoFormato, carregarCategorias, carregarTopos, tamanhoTexto, type ArquivoTopo, type CategoriaTopo, type Topo } from "@/lib/toposBolo";
 import "./toposBolo.css";
 
@@ -14,6 +15,7 @@ import "./toposBolo.css";
  */
 export default function ToposBolo() {
   const { isPro } = usePlano();
+  const { profile } = useProfile();
   const [params, setParams] = useSearchParams();
   const catId = params.get("cat");
   const [cats, setCats] = useState<CategoriaTopo[] | null>(null);
@@ -60,16 +62,18 @@ export default function ToposBolo() {
   const topoParam = params.get("topo");
   useEffect(() => {
     if (!topoParam || !topos.length) return;
-    const t = topos.find(x => x.id === topoParam);
+    const t = topos.find(x => x.id === topoParam || x.codigo === topoParam);
     if (t) setAberto(t);
     setParams(p => { const n = new URLSearchParams(p); n.delete("topo"); return n; }, { replace: true });
   }, [topoParam, topos.length]); // eslint-disable-line react-hooks/exhaustive-deps
   // (09/11) compartilhar: manda o link do topo (a página aberta mostra só a capa e convida pro Doonly; o arquivo não vai)
   const compartilhar = async (t: Topo) => {
-    const url = `${window.location.origin}/topo/${t.id}`;
-    const texto = `Olha só esse topo de bolo que achei no Doonly: ${t.titulo || "topo de bolo"}`;
-    try { if (navigator.share) { await navigator.share({ title: t.titulo || "Topo de bolo", text: texto, url }); return; } } catch (e) { if ((e as Error)?.name === "AbortError") return; }
-    window.open(`https://wa.me/?text=${encodeURIComponent(`${texto}\n${url}`)}`, "_blank", "noopener");
+    // (09/11) vai junto o código da loja: quem abre vê "Maria compartilhou esse topo com você"
+    const url = `https://doonly.com.br/topo/${t.codigo || t.id}${profile?.codigo_publico ? `?de=${encodeURIComponent(String(profile.codigo_publico))}` : ""}`;
+    // (09/11) o link vai no próprio texto, com uma linha em branco antes (no WhatsApp fica separado)
+    const texto = `Olha só esse topo de bolo que achei no Doonly 🎂\n${t.titulo || "Topo de bolo"}\n\n${url}`;
+    try { if (navigator.share) { await navigator.share({ title: t.titulo || "Topo de bolo", text: texto }); return; } } catch (e) { if ((e as Error)?.name === "AbortError") return; }
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
   };
 
   const baixar = async (a: ArquivoTopo) => {

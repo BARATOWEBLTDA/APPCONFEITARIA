@@ -12,7 +12,7 @@ export default async function handler(req: Request) {
   const e = env();
   const url = e.SUPABASE_URL || e.VITE_SUPABASE_URL;
   const anon = e.SUPABASE_ANON_KEY || e.VITE_SUPABASE_ANON_KEY;
-  if (url && anon && /^[0-9a-f-]{36}$/i.test(id)) {
+  if (url && anon && /^([0-9a-f-]{36}|[0-9a-z]{4,12})$/i.test(id)) {
     try {
       const r = await fetch(`${url}/rest/v1/rpc/topo_publico`, { method: "POST", headers: { apikey: anon, Authorization: `Bearer ${anon}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: id }) });
       let t: any = r.ok ? await r.json() : null;
@@ -21,7 +21,7 @@ export default async function handler(req: Request) {
     } catch { /* fica a prévia padrão */ }
   }
   const nome = `${titulo} · Topo de bolo`;
-  const desc = "Topo de bolo pronto pra imprimir no Doonly. Teste grátis por 7 dias.";
+  const desc = "O Doonly preparou esse lindo topo de bolo em tamanho A4, prontinho para você baixar, imprimir e recortar.";
   const link = `${BASE}/topo/${encodeURIComponent(id)}`;
   const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <title>${esc(nome)}</title>
