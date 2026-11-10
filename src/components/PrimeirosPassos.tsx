@@ -187,6 +187,14 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
   // (10/10) leitura que falhou não conclui nada: fica o que já estava na tela (ou escondido) até ler com sucesso
   const atualizar = useCallback(() => { if (uid) lerPassos(uid).then(e => { if (!e.falhou) setEstado(e); }).catch(() => {}); }, [uid]);
 
+  // (10/11) o cartão da Minha loja (cardápio bloqueado) manda abrir um passo: abre a janelinha dele assim que os passos chegam
+  useEffect(() => {
+    if (local !== "inicio" || !estado) return;
+    let k: string | null = null;
+    try { k = sessionStorage.getItem("doonly_pp_abrir"); sessionStorage.removeItem("doonly_pp_abrir"); } catch { /* sem sessionStorage */ }
+    if (k && (ORDEM as readonly string[]).includes(k) && k !== "produto") setFolha(k as Folha);
+  }, [local, estado]);
+
   useEffect(() => {
     if (!uid) return;
     try { setFechado(localStorage.getItem(kFechado) === "1"); setJaViuIncompleto(localStorage.getItem(kIncompleto) === "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ }

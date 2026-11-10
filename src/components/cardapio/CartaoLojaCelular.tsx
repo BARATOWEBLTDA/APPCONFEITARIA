@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
-import { Copy, Eye, LockSimple, QrCode, ShareNetwork } from "@phosphor-icons/react";
+import { ArrowRight, Camera, Copy, Eye, QrCode, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile, fotoDaLoja, type Profile } from "@/hooks/useProfile";
 
@@ -11,7 +11,7 @@ import { avisar } from "@/components/base";
 import { explicarErro } from "@/lib/erros";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
-import { marcarCompartilhado, lerPassos, passosCompletos } from "@/lib/primeirosPassos";
+import { marcarCompartilhado, lerPassos, passosCompletos, type EstadoPassos } from "@/lib/primeirosPassos";
 import { horarioComFechados } from '@/lib/diasFechados'
 
 /**
@@ -23,6 +23,13 @@ import { horarioComFechados } from '@/lib/diasFechados'
  * (6.118) Desenho novo (aprovado): a loja aparece (logo, nome e link), a situação com o horário e a chave numa caixa,
  * "Enviar meu cardápio" grande e Copiar, Ver e QR Code numa linha embaixo.
  */
+// (10/11) mesma ordem dos Primeiros passos; o rótulo vai no botão "Próximo: …" (cabe numa linha no celular)
+const ORDEM_PASSOS = ["logo", "descricao", "endereco", "horario", "pagamento", "entrega", "caixa", "produto"] as const;
+const ROTULO_PASSO: Record<typeof ORDEM_PASSOS[number], string> = {
+  logo: "colocar a logo", descricao: "falar da sua loja", endereco: "pôr o endereço", horario: "definir o horário",
+  pagamento: "formas de pagamento", entrega: "configurar a entrega", caixa: "saldo do caixa", produto: "cadastrar 1º produto",
+};
+
 export default function CartaoLojaCelular({ link }: { link: string }) {
   const { profile, refetch } = useProfile();
   const navigate = useNavigate();
@@ -34,10 +41,12 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
 
   // (6.146) conta nova: o cardápio só libera quando os Primeiros passos acabam (antes já aparecia "Recebendo pedidos" sem nada pronto)
   const [liberado, setLiberado] = useState<boolean | null>(null);
+  // (10/11) com o cardápio bloqueado, o cartão mostra quanto falta e abre direto o próximo passo
+  const [passos, setPassos] = useState<EstadoPassos | null>(null);
   useEffect(() => {
     if (!profile?.id) return;
     let vivo = true;
-    const ler = () => { lerPassos(profile.id).then(e => { if (vivo && !e.falhou) setLiberado(passosCompletos(e)); }, () => {}); };
+    const ler = () => { lerPassos(profile.id).then(e => { if (vivo && !e.falhou) { setLiberado(passosCompletos(e)); setPassos(e); } }, () => {}); };
     ler();
     window.addEventListener("doonly:passos", ler);
     return () => { vivo = false; window.removeEventListener("doonly:passos", ler); };
@@ -89,19 +98,38 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   const linkCurto = link.replace(/^https?:\/\/(www\.)?/, "");
 
   const travado = liberado === false;
+  const faltando = passos ? ORDEM_PASSOS.filter(k => !passos[k]) : [];
+  const proximo = faltando[0];
+  const feitos = ORDEM_PASSOS.length - faltando.length;
+  // o produto abre a tela de Produtos; os outros abrem a janelinha do passo no Início
+  const irPara = (k: typeof ORDEM_PASSOS[number]) => {
+    if (k === "produto") { navigate("/produtos"); return; }
+    try { sessionStorage.setItem("doonly_pp_abrir", k); } catch { /* sem sessionStorage: só abre o Início */ }
+    navigate("/inicio");
+  };
   return (
     <section className={`clc${travado ? " clc--travado" : ""}`} aria-label="Seu cardápio">
       <div className="clc-loja">
-        <span className="clc-logo" aria-hidden="true">{foto ? <img src={foto} alt="" /> : iniciais}</span>
+        {travado && !foto ? (
+          <button type="button" className="clc-logo clc-logo--bt" aria-label="Colocar a logo da loja" onClick={() => irPara("logo")}>
+            {iniciais}<span className="clc-cam" aria-hidden="true"><Camera size={11} weight="fill" /></span>
+          </button>
+        ) : <span className="clc-logo" aria-hidden="true">{foto ? <img src={foto} alt="" /> : iniciais}</span>}
         <span className="clc-nome"><b>{nome}</b><small>{linkCurto}</small></span>
       </div>
       {travado ? (
         <>
-          <div className="clc-sit">
-            <span className="clc-st clc-st--trava"><b><LockSimple size={15} weight="bold" aria-hidden="true" />Cardápio bloqueado</b><small>Configure a loja para liberar</small></span>
-            <span className="clc-cadeado" aria-hidden="true"><LockSimple size={16} weight="bold" /></span>
+          <div className="clc-prog">
+            <div className="clc-prog-l1">
+              <b>{faltando.length === 1 ? "Falta 1 passo pra liberar" : `Faltam ${faltando.length || ""} passos pra liberar`.replace("  ", " ")}</b>
+              {passos && <span>{feitos} de {ORDEM_PASSOS.length}</span>}
+            </div>
+            <div className="clc-barra" role="progressbar" aria-valuemin={0} aria-valuemax={ORDEM_PASSOS.length} aria-valuenow={feitos} aria-label={`${feitos} de ${ORDEM_PASSOS.length} passos feitos`}><i style={{ width: `${(feitos / ORDEM_PASSOS.length) * 100}%` }} /></div>
+            <small>Depois disso o cardápio já recebe pedidos</small>
           </div>
-          <button type="button" className="clc-enviar" onClick={() => navigate("/inicio")}>Configurar e liberar grátis</button>
+          <button type="button" className="clc-enviar" onClick={() => proximo ? irPara(proximo) : navigate("/inicio")}>
+            {proximo ? `Próximo: ${ROTULO_PASSO[proximo]}` : "Configurar a loja"}<ArrowRight size={17} weight="bold" aria-hidden="true" />
+          </button>
         </>
       ) : (<>
       <div className="clc-sit">
@@ -111,11 +139,11 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
       </div>
       <button type="button" className="clc-enviar" onClick={compartilhar}><ShareNetwork size={20} weight="bold" aria-hidden="true" />Enviar meu cardápio</button>
       </>)}
-      <div className="clc-bts" aria-disabled={travado || undefined}>
-        <button type="button" className="clc-b" onClick={copiar} disabled={travado}><Copy size={17} weight="bold" aria-hidden="true" /><span>Copiar</span></button>
-        <button type="button" className="clc-b" onClick={() => navigate("/cardapio-preview")} disabled={travado}><Eye size={17} weight="bold" aria-hidden="true" /><span>Ver</span></button>
-        <button type="button" className="clc-b" onClick={baixarQr} disabled={!qr || travado}><QrCode size={17} weight="bold" aria-hidden="true" /><span>QR Code</span></button>
-      </div>
+      {!travado && <div className="clc-bts">
+        <button type="button" className="clc-b" onClick={copiar}><Copy size={17} weight="bold" aria-hidden="true" /><span>Copiar</span></button>
+        <button type="button" className="clc-b" onClick={() => navigate("/cardapio-preview")}><Eye size={17} weight="bold" aria-hidden="true" /><span>Ver</span></button>
+        <button type="button" className="clc-b" onClick={baixarQr} disabled={!qr}><QrCode size={17} weight="bold" aria-hidden="true" /><span>QR Code</span></button>
+      </div>}
       <style>{CSS}</style>
     </section>
   );
@@ -129,7 +157,7 @@ const CSS = `
   .clc-logo { flex: none; width: 52px; height: 52px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #fff; box-shadow: 0 0 0 2px #F7C6D9; color: #8A3A2E; font-size: 17px; font-weight: 600; }
   .clc-logo img { width: 100%; height: 100%; object-fit: cover; }
   .clc-nome { min-width: 0; display: flex; flex-direction: column; }
-  .clc-nome b { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clc-nome b { font-size: 17px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .clc-nome small { font-size: 12.5px; color: rgba(255, 255, 255, .7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .clc-sit { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
   .clc-st { min-width: 0; display: flex; flex-direction: column; }
@@ -139,10 +167,17 @@ const CSS = `
   .clc-st--aberto b { color: #86EFAC; } .clc-st--aberto i { background: #4ADE80; animation: clcPisca 1.6s ease-in-out infinite; }
   .clc-st--fechado b { color: #FCD34D; } .clc-st--fechado i { background: #FBBF24; }
   .clc-st--pausa b { color: #FCA5A5; } .clc-st--pausa i { background: #F87171; }
-  /* (6.146) cardápio bloqueado até terminar os Primeiros passos */
-  .clc-st--trava b { color: #FCD34D; } .clc-st--trava small { padding-left: 22px; }
-  .clc-cadeado { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 28px; border-radius: 999px; background: rgba(255, 255, 255, .12); color: rgba(255, 255, 255, .55); }
-  .clc--travado .clc-b { opacity: .4; }
+  /* (10/11) cardápio bloqueado: quanto falta (barra) e o botão do próximo passo */
+  .clc-prog { padding: 12px; border-radius: 14px; background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
+  .clc-prog-l1 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .clc-prog-l1 b { min-width: 0; font-size: 14.5px; font-weight: 500; color: #FCD34D; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clc-prog-l1 span { flex: none; font-size: 12.5px; color: rgba(255, 255, 255, .72); }
+  .clc-barra { height: 6px; margin: 9px 0 7px; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, .14); }
+  .clc-barra i { display: block; height: 100%; border-radius: inherit; background: #FCD34D; transition: width .3s ease-out; }
+  .clc-prog small { display: block; font-size: 12.5px; color: rgba(255, 255, 255, .72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clc--travado .clc-enviar { font-weight: 500; font-size: 15px; }
+  .clc-logo--bt { position: relative; overflow: visible; margin: 0; padding: 0; border: 0; font-family: inherit; cursor: pointer; }
+  .clc-cam { position: absolute; right: -3px; bottom: -3px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--ui-rosa-botao, #CC2E66); color: #fff; border: 2px solid #2E1A15; }
   @keyframes clcPisca { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
   .clc-chave { flex: none; position: relative; width: 48px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .22); cursor: pointer; transition: background-color .15s linear; }
   .clc-chave span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .15s ease-out; }
