@@ -135,3 +135,6 @@ button.mais-it + .mais-it, .mais-it + button.mais-it { border-top: 1px solid var
 .mais-ajuda { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin: 6px 0 0; padding: 12px; border: 0; background: none; font-family: inherit; font-size: 13.5px; color: var(--ui-texto-2); cursor: pointer; }
 .mais-ajuda b { font-weight: 500; color: var(--ui-rosa-botao, #CC2E66); }
 .mais-ajuda svg { color: var(--ui-texto-3); }
+
+/* (10/11) Indique o Doonly: respiro antes do menu de baixo */
+@media (max-width: 767px) { .mais-corpo { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); } }
