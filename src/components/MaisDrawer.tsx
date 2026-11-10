@@ -139,11 +139,12 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
                   return (
                     <NavLink
                       key={item.path} to={destino} end
-                      className={({ isActive }) => `mais-it${isActive ? " mais-it--atual" : ""}${item.path === "/assinar" ? " mais-it--pro" : ""}`}
+                      // (10/11) sem marcar a tela atual: ao voltar pro Menu o item ficava rosa, como se ainda estivesse tocado
+                      className="mais-it"
                       onClick={e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; e.preventDefault(); ir(destino); }}
                     >
-                      {({ isActive }) => (<>
-                        <span className="mais-it-ic" aria-hidden="true"><item.Icone size={20} weight={isActive || item.path === "/assinar" ? "fill" : "bold"} /></span>
+                      {() => (<>
+                        <span className="mais-it-ic" aria-hidden="true"><item.Icone size={20} weight="bold" /></span>
                         <span className="mais-it-txt"><b>{item.label}</b><small>{item.path === "/minha-conta" ? (isPro ? "Seus dados · plano PRO" : "Seus dados · plano grátis") : item.desc}</small></span>
                         {item.pro && !isPro && <em className="mais-it-pro">PRO</em>}
                         <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
