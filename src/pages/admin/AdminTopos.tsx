@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { registrar } from "@/lib/adminPerfil";
-import { Cake, Image as ImageIcon, PencilSimple, Plus, Trash, UploadSimple, WarningCircle, X } from "@phosphor-icons/react";
+import { Cake, Crop, Image as ImageIcon, PencilSimple, Plus, Trash, UploadSimple, WarningCircle, X } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base";
 import { paraWebp } from "@/lib/imagemLeve";
+import { ImageCropper } from "@/components/ui/ImageCropper";
 import {
   ACEITA_ARQUIVOS, ACEITA_IMAGEM, BUCKET_ARQUIVOS, BUCKET_CAPAS, carregarCategorias, carregarTopos, ehImagem, formatoDe, nomeSeguro, tamanhoTexto,
   type ArquivoTopo, type CategoriaTopo, type Topo,
@@ -40,6 +41,20 @@ export default function AdminTopos() {
   const [novaCat, setNovaCat] = useState<{ id?: string; nome: string; img: File | null; imgUrl: string | null } | null>(null);
   const capaRef = useRef<HTMLInputElement>(null);
   const [tagTxt, setTagTxt] = useState("");
+  // (09/11) ajustar a miniatura: recorta 3×4 a partir da imagem original do topo (sem perder qualidade a cada ajuste)
+  const [recorte, setRecorte] = useState<string | null>(null);
+  const [preparando, setPreparando] = useState(false);
+  const abrirAjuste = async () => {
+    if (!form) return;
+    setPreparando(true);
+    try {
+      let fonte: Blob | null = form.novos.find(f => ehImagem(f.name)) || null;
+      const salva = form.arquivos.find(a => ehImagem(a.nome));
+      if (!fonte && salva) { const d = await supabase.storage.from(BUCKET_ARQUIVOS).download(salva.caminho); fonte = d.data || null; }
+      if (!fonte && form.capa) fonte = form.capa;
+      setRecorte(fonte ? URL.createObjectURL(fonte) : form.capaUrl);
+    } finally { setPreparando(false); }
+  };
   // separa por vírgula/ponto e vírgula, tira espaços e repetidas, minúsculo
   const addTags = (txt: string) => {
     const novas = txt.split(/[,;]/).map(x => x.trim().toLowerCase()).filter(Boolean);
@@ -219,6 +234,11 @@ export default function AdminTopos() {
                 {form.capa ? <img src={URL.createObjectURL(form.capa)} alt="" /> : form.capaUrl ? <img src={form.capaUrl} alt="" /> : <span><ImageIcon size={28} />Capa<small>Sem capa, usa a 1ª imagem</small></span>}
               </button>
               <input ref={capaRef} type="file" accept={ACEITA_IMAGEM} hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) setForm({ ...form, capa: f }); }} />
+              {/* (09/11) escolher o pedaço da imagem que aparece na miniatura (ex.: esconder o rodapé com o site) */}
+              {(form.capa || form.capaUrl || form.novos.some(f => ehImagem(f.name)) || form.arquivos.some(a => ehImagem(a.nome))) && (
+                <button type="button" className="atp-ajustar" onClick={abrirAjuste} disabled={preparando}><Crop size={16} weight="bold" />{preparando ? "Abrindo…" : "Ajustar miniatura"}</button>
+              )}
+              <button type="button" className="atp-trocar" onClick={() => capaRef.current?.click()}>Trocar imagem</button>
             </div>
             <div className="atp-form-dados">
               <Campo rotulo="Título" placeholder="Ex.: Festa de Halloween" maxLength={40} value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} />
@@ -273,6 +293,11 @@ export default function AdminTopos() {
           </div>
         )}
       </Janela>
+      {recorte && (
+        <ImageCropper imageSrc={recorte} aspect={3 / 4} cropShape="rect" titulo="Ajustar a miniatura" encaixar
+          onCancel={() => setRecorte(null)}
+          onCropDone={blob => { setForm(f => f && { ...f, capa: new File([blob], "capa.jpg", { type: "image/jpeg" }) }); setRecorte(null); }} />
+      )}
     </div>
   );
 }
