@@ -187,12 +187,20 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
   // (10/10) leitura que falhou não conclui nada: fica o que já estava na tela (ou escondido) até ler com sucesso
   const atualizar = useCallback(() => { if (uid) lerPassos(uid).then(e => { if (!e.falhou) setEstado(e); }).catch(() => {}); }, [uid]);
 
-  // (10/11) o cartão da Minha loja (cardápio bloqueado) manda abrir um passo: abre a janelinha dele assim que os passos chegam
+  // (10/11) o atalho "Liberar meu cardápio" da Minha loja traz pro Início e mostra o balão em volta do passo da vez
   useEffect(() => {
     if (local !== "inicio" || !estado) return;
-    let k: string | null = null;
-    try { k = sessionStorage.getItem("doonly_pp_abrir"); sessionStorage.removeItem("doonly_pp_abrir"); } catch { /* sem sessionStorage */ }
-    if (k && (ORDEM as readonly string[]).includes(k) && k !== "produto") setFolha(k as Folha);
+    let pediu = false;
+    try { pediu = sessionStorage.getItem("doonly_pp_balao") === "1"; sessionStorage.removeItem("doonly_pp_balao"); } catch { /* sem sessionStorage */ }
+    if (!pediu) return;
+    let tentativas = 0;
+    const mostrar = () => {
+      if (!montado.current) return;
+      if (document.querySelector('[role="dialog"][aria-modal="true"]') && tentativas++ < 40) { window.setTimeout(mostrar, 500); return; }
+      atRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+      window.setTimeout(() => { if (montado.current) setSpot(true); }, 350);
+    };
+    window.setTimeout(mostrar, 300);
   }, [local, estado]);
 
   useEffect(() => {
@@ -321,7 +329,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
           <span className="ppb-n" aria-hidden="true">{atual + 1}</span>
           <span className="ppb-tx"><b>{p.t}</b></span>
           <button type="button" className="ppb-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}</button>
-          {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
+          {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo={feitos === 0 ? "Comece por aqui" : "Continue daqui"} texto={feitos === 0 ? "Em poucos minutos seu cardápio fica pronto para vender." : passos.length - feitos === 1 ? "Só falta esse passo pra liberar seu cardápio." : `Faltam ${passos.length - feitos} passos pra liberar seu cardápio.`} acao={feitos === 0 ? "Começar" : "Fazer agora"} aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
         </div>
         {(verTodos || todosAbertos) && <div className="ppb-lista">{passos.map((q, i) => i === atual ? null : (
           <button type="button" key={q.t} className={`pp-ps${q.feito ? " pp-ps--ok" : ""}`} onClick={q.abrir}>
@@ -364,7 +372,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
               <span className="pp-tx"><b>{p.t}</b><small>{p.s}</small></span>
             </div>
             <button type="button" className="pp-btn" ref={btnRef} onClick={p.abrir}>{feitos === 0 ? "Começar" : "Fazer agora"}</button>
-            {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
+            {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo={feitos === 0 ? "Comece por aqui" : "Continue daqui"} texto={feitos === 0 ? "Em poucos minutos seu cardápio fica pronto para vender." : passos.length - feitos === 1 ? "Só falta esse passo pra liberar seu cardápio." : `Faltam ${passos.length - feitos} passos pra liberar seu cardápio.`} acao={feitos === 0 ? "Começar" : "Fazer agora"} aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
           </div>
         ) : (
           <button type="button" key={p.t} className={`pp-ps${p.feito ? " pp-ps--ok" : ""}`} onClick={p.abrir}>
@@ -412,7 +420,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
                     <span aria-hidden="true"><Lightbulb size={22} weight="bold" /></span>
                     <p><b>{animo}</b>Em poucos minutos seu cardápio já fica pronto para vender.</p>
                   </div>
-                  {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo="Comece por aqui" texto="Em poucos minutos seu cardápio fica pronto para vender." acao="Começar" aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
+                  {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo={feitos === 0 ? "Comece por aqui" : "Continue daqui"} texto={feitos === 0 ? "Em poucos minutos seu cardápio fica pronto para vender." : passos.length - feitos === 1 ? "Só falta esse passo pra liberar seu cardápio." : `Faltam ${passos.length - feitos} passos pra liberar seu cardápio.`} acao={feitos === 0 ? "Começar" : "Fazer agora"} aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
                 </div>
               )}
               <div className="pp-lista">{passos.map((q, k) => (

@@ -102,14 +102,14 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   const proximo = faltando[0];
   const feitos = ORDEM_PASSOS.length - faltando.length;
   // o produto abre a tela de Produtos; os outros abrem a janelinha do passo no Início
-  const irPara = (k: typeof ORDEM_PASSOS[number]) => {
-    if (k === "produto") { navigate("/produtos"); return; }
-    try { sessionStorage.setItem("doonly_pp_abrir", k); } catch { /* sem sessionStorage: só abre o Início */ }
+  // (10/11) vai pro Início e mostra o balão em volta do passo da vez (o checklist de verdade fica lá)
+  const irPara = () => {
+    try { sessionStorage.setItem("doonly_pp_balao", "1"); } catch { /* sem sessionStorage: só abre o Início */ }
     navigate("/inicio");
   };
   // (10/11) cardápio bloqueado: o checklist completo já está no Início; aqui fica só um atalho (no estilo do atalho da Doo IA no Menu)
   if (travado) return (
-    <button type="button" className="clc-atalho" onClick={() => proximo ? irPara(proximo) : navigate("/inicio")}>
+    <button type="button" className="clc-atalho" onClick={irPara}>
       <span className="clc-atalho-ic" aria-hidden="true"><LockSimple size={20} weight="bold" /></span>
       <span className="clc-atalho-tx">
         <b>Liberar meu cardápio</b>
@@ -135,7 +135,7 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
             <div className="clc-barra" role="progressbar" aria-valuemin={0} aria-valuemax={ORDEM_PASSOS.length} aria-valuenow={feitos} aria-label={`${feitos} de ${ORDEM_PASSOS.length} passos feitos`}><i style={{ width: `${(feitos / ORDEM_PASSOS.length) * 100}%` }} /></div>
             <small>Depois disso o cardápio já recebe pedidos</small>
           </div>
-          <button type="button" className="clc-enviar" onClick={() => proximo ? irPara(proximo) : navigate("/inicio")}>
+          <button type="button" className="clc-enviar" onClick={irPara}>
             {proximo ? `Próximo: ${ROTULO_PASSO[proximo]}` : "Configurar a loja"}<ArrowRight size={17} weight="bold" aria-hidden="true" />
           </button>
         </>
