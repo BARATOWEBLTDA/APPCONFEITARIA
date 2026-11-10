@@ -100,7 +100,7 @@ export default function FiltroLateral({ statusSelecionados, setStatusSelecionado
         @keyframes flFundo { from { background: rgba(45,31,38,0); } } @keyframes flFundoSai { to { background: rgba(45,31,38,0); } }
         .fl-h { display: flex; justify-content: space-between; align-items: center; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px; border-bottom: 1px solid var(--ui-cinza); }
         .fl-h b { font-size: 19px; font-weight: 600; color: var(--ui-texto); }
-        .fl-x { width: 36px; height: 36px; border-radius: var(--ui-raio-p); border: none; background: var(--ui-linha); color: var(--ui-cinza-texto); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .fl-x { width: 44px; height: 44px; border-radius: var(--ui-raio); border: none; background: none; color: var(--ui-texto); display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .fl-b { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 16px 14px; }
         .fl-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 2px 7px; }
         .fl-sec b { font-size: 12px; font-weight: 600; color: var(--ui-texto-3); }

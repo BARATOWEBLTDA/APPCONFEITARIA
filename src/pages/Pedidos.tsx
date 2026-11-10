@@ -627,7 +627,7 @@ export default function Pedidos() {
   return (
     <>
       <AppPageHeader
-        title="Meus pedidos"
+        title="Pedidos"
         subtitle="Encomendas por dia, do pedido à entrega"
         // (09/11) conta sem produto: sem o (i) (o texto e o tour falam de filtro, botões e lista que ainda não existem)
         infoIcon="📋" infoComo={semProdutoNenhum ? undefined : COMO_PEDIDOS} infoTour={semProdutoNenhum ? undefined : TOUR_PEDIDOS}

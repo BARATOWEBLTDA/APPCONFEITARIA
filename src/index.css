@@ -89,3 +89,16 @@ p, h1, h2, h3, small, .ui-janela-t { text-wrap: pretty; }
 /* (10/11) sem animação infinita de enfeite: o sino, a bolinha do "aberto" e o balão param; avisos e carregando continuam */
 .sidebar-sino--novo svg, .clc-st--aberto i, .lj-pausa.cheio .lj-pausa-luz, .pz-balao { animation: none !important; }
 .cm1-status.aberto i::after, .cp-topo-sub i.aberto::after { display: none !important; }
+
+/* (10/11) tela vazia com o mascote: ele aparece solto, sem a caixinha do ícone */
+.ui-vazia-ic:has(> .mascote-doonly) { width: auto; height: auto; background: none; box-shadow: none; border-radius: 0; }
+.ui-vazia-ic > .mascote-doonly { width: 96px; height: 96px; object-fit: contain; }
+
+/* (10/11) "Cadastre seu primeiro produto": peso suave, igual aos outros títulos */
+.prod-hero-title, .hv-t { font-weight: 500 !important; }
+
+/* (10/11) área de toque maior sem mudar o visual: (i) do topo 44 px, "7 dias grátis" e "Hoje ▾" 40 px */
+.cf-ajuda-bt { position: relative; }
+.cf-ajuda-bt::after { content: ""; position: absolute; inset: -8px; }
+.selo-teste-cel, .pf-chip { position: relative; }
+.selo-teste-cel::after, .pf-chip::after { content: ""; position: absolute; inset: -4px 0; }

@@ -183,7 +183,7 @@ export default function Insumos() {
         ) : insumos.length === 0 ? (
           <TelaVazia caixa icone={<Mascote pose="acenando" className="ig-vazio-masc" />} titulo="Nenhum ingrediente ainda"
             texto="Cadastre o que você compra (leite condensado, chocolate, caixas…) com o preço pago. A ficha técnica usa isso para calcular o custo de cada produto."
-            acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrirForm(null)}>Cadastrar o primeiro ingrediente</Botao>} />
+            acao={<Botao icone={<Plus size={20} weight="bold" />} onClick={() => abrirForm(null)}>Cadastrar ingrediente</Botao>} />
         ) : (
           <section className="cl9-card">
             <div className="cl9-barra">

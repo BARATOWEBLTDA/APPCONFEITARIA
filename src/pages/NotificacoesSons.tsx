@@ -76,11 +76,12 @@ export default function NotificacoesSons() {
     // iPhone no Safari: só funciona com o app instalado (antes dizia "use o Chrome", que não serve no iPhone)
     pushDesc = (
       <>
-        No iPhone, as notificações só funcionam com o Doonly <b>instalado na tela de início</b>:
+        No iPhone, os avisos só chegam com o Doonly <b>instalado na tela de início</b>:
+        {/* (10/11) passos numerados e curtos: antes cortavam na direita (cada um preso numa linha) */}
         <ol className="ns-passos">
-          <li>No Safari, toque em <b>Compartilhar</b> (o quadrado com a seta para cima)</li>
-          <li>Toque em <b>"Adicionar à Tela de Início"</b></li>
-          <li>Abra o Doonly pelo ícone novo e ative aqui</li>
+          <li>No Safari, toque em <b>Compartilhar</b></li>
+          <li>Toque em <b>Adicionar à Tela de Início</b></li>
+          <li>Abra pelo ícone novo e ative aqui</li>
         </ol>
       </>
     );
@@ -257,8 +258,8 @@ export default function NotificacoesSons() {
         .ns-desc--on { color: #15803D; }
         .ns-desc--warn { color: var(--ui-vermelho); }
         .ns-desc--atencao { color: #B45309; font-weight: 600; }
-        .ns-passos { list-style: none; margin: 10px 0 0; padding: 10px 12px; border: 1px solid #F5C99B; border-radius: 12px; background: #FFF8EF; font-weight: 400; font-size: 13.5px; line-height: 1.6; color: var(--ui-texto); }
-        .ns-passos li { white-space: nowrap; }
+        .ns-passos { list-style: decimal; margin: 10px 0 0; padding: 10px 12px 10px 30px; border: 1px solid #F5C99B; border-radius: 12px; background: #FFF8EF; font-weight: 400; font-size: 13.5px; line-height: 1.6; color: var(--ui-texto); }
+        .ns-passos li { white-space: normal; }
         /* (27/10) a caixa dos passos usa a largura do cartão inteiro (passava da borda no celular pequeno) */
         .ns-txt .ns-passos { margin-left: -52px; font-size: 13px; }
         .ns-row:has(.ns-passos) { align-items: flex-start; }

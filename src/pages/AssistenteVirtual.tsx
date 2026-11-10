@@ -27,25 +27,25 @@ export default function AssistenteVirtual() {
   useEffect(() => { const mq = window.matchMedia("(min-width: 901px)"); const f = () => setComputador(mq.matches); mq.addEventListener("change", f); return () => mq.removeEventListener("change", f); }, []);
   return (
     <div className="av-root">
-      <AppPageHeader title="Doo IA" subtitle="Sua assistente de confeitaria" onBack={computador ? undefined : () => voltarOuIr(navigate)} infoComo={COMO_DOO} infoTour={TOUR_DOO} />
+      <AppPageHeader title="Doo" subtitle="Sua assistente de confeitaria" onBack={computador ? undefined : () => voltarOuIr(navigate)} infoComo={COMO_DOO} infoTour={TOUR_DOO} />
       <div className="av-wrap">
         <div className="av-hero">
           <img src="/Sistema/doo.webp" alt="" className="av-doo" onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-          <h1>Oi! Eu sou a Doo</h1>
+          <h1>Oi, eu sou a Doo</h1>
           <p>Preços, receitas, pedidos e textos.</p>
         </div>
         <p className="av-lbl">O que você pode pedir para a Doo</p>
         <div className="av-grid">
           {EXEMPLOS.map(b => {
             const conteudo = (<>
-              {b.novo && <em className="av-novo">Novo</em>}
+              {/* (10/11) sem a etiqueta "Novo" (envelhece rápido) */}
               <span className="av-e" aria-hidden="true"><b.e size={22} weight="bold" /></span>
               <b>{b.t}</b><small>{b.d}</small>
             </>);
             return <button type="button" className="av-item av-item--bt" key={b.t} onClick={() => abrirDooIA(b.p)}>{conteudo}</button>;
           })}
         </div>
-        <button type="button" className="av-cta" onClick={() => abrirDooIA()}>Conversar com a Doo IA</button>
+        <button type="button" className="av-cta" onClick={() => abrirDooIA()}>Conversar com a Doo</button>
         {!isPro && (
           <p className="av-sub">A Doo IA é do PRO. <button type="button" className="av-link" onClick={() => navigate("/assinar")}>Testar grátis por 7 dias</button></p>
         )}
@@ -63,7 +63,7 @@ export default function AssistenteVirtual() {
         @media (min-width: 901px) { .av-wrap { max-width: 1066px !important; padding-top: 24px !important; } .av-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
         .av-item { position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; margin: 0; padding: 14px; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; font-family: inherit; text-align: left; color: var(--ui-texto); }
         .av-item--bt { cursor: pointer; } @media (hover: hover) { .av-item--bt:hover { border-color: #EBB8CD; } }
-        .av-e { width: 40px; height: 40px; border-radius: var(--ui-raio); background: #FCE7F3; color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: 2px; }
+        .av-e { width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-branco); border: 1px solid #ECE7E9; box-sizing: border-box; color: var(--ui-rosa-botao, #CC2E66); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: 2px; }
         .av-item b, .av-item small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
         .av-item b { font-size: 14.5px; } .av-item small { font-size: 12.5px; color: var(--ui-texto-2); }
         .av-novo { position: absolute; top: 10px; right: 10px; padding: 2px 8px; border-radius: 6px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-style: normal; font-size: 11.5px; font-weight: 600; }

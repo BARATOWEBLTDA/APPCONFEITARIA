@@ -86,6 +86,13 @@ type PagamentoSalvo = {
   pix_online?: boolean | null; pix_chave?: string | null; pix_modo?: string | null; pix_sinal_pct?: number | string | null
 };
 
+// (10/11) a frase fixa de cada parte na lista (Dados da loja no celular e no computador)
+const SUB_FIXO: Partial<Record<string, string>> = {
+  loja: "Nome, WhatsApp e descrição", redes: "Instagram, Facebook e TikTok", endereco: "Onde fica a sua loja",
+  horario: "Dias e horas que você atende", ferias: "Dias em que a loja fecha", pag: "Como o cliente paga",
+  pix: "Pix direto no cardápio", ent: "Retirada e taxa de entrega",
+};
+
 export default function DadosLoja({ embutido = false, extras }: { embutido?: boolean; extras?: { antes?: ReactNode; depois?: ReactNode } } = {}) {
   const navigate = useNavigate();
   const { profile: perfilVivo } = useProfile(); // (6.179) resumo das férias (atualiza quando a parte salva)
@@ -710,8 +717,8 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
             {linhas.map(l => (
               <button key={l.k} type="button" className="dl-li" onClick={() => abrirParte(l.k)}>
                 <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
-                <span className="dl-li-tx"><b>{l.t}</b><small className={l.st === "falta" ? "falta" : ""}>{l.sub}</small></span>
-                {l.st === "nada" ? null : l.st === "ok" ? <span className="dl-li-ok" aria-label="Pronto"><Check size={13} weight="bold" /></span> : <em className={`dl-li-st ${l.st}`}>{l.st === "falta" ? "Falta" : "Opcional"}</em>}
+                {/* (10/11) igual à Minha loja: só a frase do que tem dentro, sem "Falta"/"Opcional" (quem avisa é o passo a passo do Início) */}
+                <span className="dl-li-tx"><b>{l.t}</b><small>{SUB_FIXO[l.k] || l.sub}</small></span>
                 <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
               </button>
             ))}
@@ -736,8 +743,8 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
             {linhas.map(l => (
               <button key={l.k} type="button" className={`dl-li${l.k === parteVista ? " on" : ""}`} aria-current={l.k === parteVista ? "true" : undefined} onClick={() => { abrirParte(l.k); }}>
                 <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
-                <span className="dl-li-tx"><b>{l.t}</b><small className={l.st === "falta" ? "falta" : ""}>{l.sub}</small></span>
-                {l.st === "nada" ? null : l.st === "ok" ? <span className="dl-li-ok" aria-label="Pronto"><Check size={13} weight="bold" /></span> : <em className={`dl-li-st ${l.st}`}>{l.st === "falta" ? "Falta" : "Opcional"}</em>}
+                {/* (10/11) igual à Minha loja: só a frase do que tem dentro, sem "Falta"/"Opcional" (quem avisa é o passo a passo do Início) */}
+                <span className="dl-li-tx"><b>{l.t}</b><small>{SUB_FIXO[l.k] || l.sub}</small></span>
                 <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
               </button>
             ))}

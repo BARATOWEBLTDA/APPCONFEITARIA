@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { digitosTelefone } from "@/lib/telefone";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, WhatsappLogo, SignOut, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, WhatsappLogo, Bug, Lightbulb, SignOut, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -336,6 +336,9 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
             {/* (10/11) a Central de Ajuda saiu: o suporte fica aqui, direto no WhatsApp */}
             <ItemConfig icone={<WhatsappLogo size={20} weight="bold" />} nome="Falar com o suporte" apoio="Tire dúvidas pelo WhatsApp"
               onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
+            {/* (10/11) sem a Central de Ajuda, relatar e sugerir ficam aqui */}
+            <ItemConfig icone={<Bug size={20} weight="bold" />} nome="Relatar um problema" apoio="Algo não funcionou" onClick={() => navigate("/relatar-problema", { state: { de: "/configuracoes" } })} />
+            <ItemConfig icone={<Lightbulb size={20} weight="bold" />} nome="Sugerir uma melhoria" apoio="Sua ideia pode virar recurso" onClick={() => navigate("/solicitar-recurso", { state: { de: "/configuracoes" } })} />
             {/* (10/11) Termos e privacidade: linha própria (a LGPD pede a política sempre à mão) */}
             <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Como cuidamos dos seus dados" onClick={() => setTermosOpen(true)} />
             {/* (18/10) Minhas conquistas escondido por enquanto */}
@@ -344,7 +347,13 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
 
           </section>
           </>)}
-          {verConta && <Botao variante="secundario" cheio className="cf9-sair" icone={<SignOut size={20} weight="bold" />} onClick={() => setPerguntandoSair(true)}>Sair da conta</Botao>}
+          {/* (10/11) Sair da conta: linha igual às outras, em cartão próprio e com texto vermelho (antes era uma pílula cinza solta) */}
+          {verConta && <div className="cf9-card cf9-sair-card">
+            <button type="button" className="cf9-item cf9-item--sair" onClick={() => setPerguntandoSair(true)}>
+              <span className="cf9-ic" aria-hidden="true"><SignOut size={20} weight="bold" /></span>
+              <span className="cf9-tx"><b>Sair da conta</b></span>
+            </button>
+          </div>}
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
           {recorte.janela}
           <JanelaSair aberta={perguntandoSair} aoFechar={() => setPerguntandoSair(false)} />

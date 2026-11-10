@@ -169,7 +169,7 @@ export default function FinanceiroTransacoes() {
   return (
     <>
       <AppPageHeader
-        title="Transações"
+        title="Extrato"
         subtitle="Extrato de entradas e saídas" infoComo={COMO_TRANSACOES} infoTour={TOUR_TRANSACOES}
         onBack={() => navigate("/financeiro")}
         infoIcon="📑"

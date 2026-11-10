@@ -133,3 +133,8 @@
 .cf9-sobre-v { margin: 0; font-size: 14px; color: var(--ui-texto-2); text-align: center; }
 .cf9-sobre-v b { display: block; font-size: 16px; font-weight: 500; color: var(--ui-texto); }
 .cf9-sobre-v.on b { color: var(--ui-rosa-escuro); }
+
+/* (10/11) Sair da conta: linha em cartão próprio, texto vermelho */
+.cf9-sair-card { margin-top: 12px; padding: 4px 8px; }
+.cf9-item--sair .cf9-tx b { color: var(--ui-vermelho, #C62828); }
+.cf9-item--sair .cf9-ic { color: var(--ui-vermelho, #C62828); border-color: #F3D3D3; }

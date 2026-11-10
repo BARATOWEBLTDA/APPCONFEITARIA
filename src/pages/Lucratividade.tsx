@@ -48,7 +48,7 @@ export default function Lucratividade() {
   if (isPro) return <LucratividadeTela />;
   return (
     <>
-      <AppPageHeader title="Lucratividade" subtitle="Onde está o seu lucro de verdade" onBack={() => navigate("/financeiro")} />
+      <AppPageHeader title="Lucro por produto" subtitle="Onde está o seu lucro de verdade" onBack={() => navigate("/financeiro")} />
       <EstiloFinanceiro />
       {/* (27/10) atrás do convite, um relatório de EXEMPLO borrado (números inventados, nada da conta dela): mostra o que o PRO entrega */}
       {/* (6.110) o convite no padrão do app (faixa rosa, mascote e 3 benefícios) e, embaixo, o exemplo borrado do relatório */}
@@ -195,7 +195,7 @@ function LucratividadeTela() {
   return (
     <>
       <AppPageHeader
-        title="Lucratividade"
+        title="Lucro por produto"
         subtitle="Onde está o seu lucro de verdade"
         onBack={() => navigate("/financeiro")} infoComo={COMO_LUCRATIVIDADE} infoTour={TOUR_LUCRATIVIDADE}
         infoIcon="📈"
