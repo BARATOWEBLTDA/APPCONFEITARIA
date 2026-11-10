@@ -38,34 +38,33 @@ interface Grupo { label: string; items: Item[] }
 // (6.59) sem o "Cadastros" no meio do caminho: cada tela aparece direto, em grupos pelo uso do dia a dia
 // (6.109) ordem pelo uso: o que se abre todo dia em cima. Custos, Lucratividade e Ajuda entraram (antes só por dentro de outras telas).
 //         Recurso do PRO leva a etiqueta "PRO" para quem é grátis (sabe antes de tocar).
+// (10/11) ordem pelo uso: Financeiro no Dia a dia (abre todo dia); cálculo de preço junto; Topos primeiro nas Ferramentas
 const GRUPOS: Grupo[] = [
   {
     label: "Dia a dia",
     items: [
       { label: "Agenda",       desc: "Entregas por dia",               path: "/agenda",     Icone: CalendarDots },
+      // um item só: Transações, A receber, A pagar e Lucro são abas no topo do Financeiro
+      { label: "Financeiro",   desc: "Caixa, contas e lucro",          path: "/financeiro", Icone: CurrencyDollar },
       { label: "Clientes",     desc: "Quem já comprou com você",       path: "/clientes",   Icone: Users },
       { label: "Orçamentos",   desc: "Propostas para aprovar", path: "/orcamentos", Icone: FileText, pro: true },
     ],
   },
   {
-    // (10/11) Produtos saiu (fica na Minha loja); o Financeiro veio pra cá (o grupo "Dinheiro e vendas" ficou com 1 item só)
-    label: "Produção e dinheiro",
+    // Produtos fica na Minha loja; Divulgar (Cupons e Pixel) também
+    label: "Produção e preço",
     items: [
       { label: "Ficha técnica", desc: "Custo e lucro de cada produto", path: "/ficha-tecnica", Icone: ClipboardText },
       { label: "Ingredientes",  desc: "O que você compra",             path: "/insumos",       Icone: Package },
       { label: "Custos",        desc: "Mão de obra, contas fixas e taxas", path: "/custos",    Icone: Calculator },
-      // (10/11) um item só: Transações, A receber, A pagar e Lucro viraram abas no topo do Financeiro
-      // (Divulgar, com Cupons e Pixel, foi pra Minha loja)
-      { label: "Financeiro",    desc: "Caixa, contas e lucro",     path: "/financeiro", Icone: CurrencyDollar },
     ],
   },
   {
-    // (6.152) ferramentas de cozinha: conversor de medidas (e as próximas)
     label: "Ferramentas",
     items: [
-      { label: "Conversor de medidas", desc: "Xícaras e colheres em gramas", path: "/ferramentas/medidas", Icone: Scales },
-      { label: "Simulador de preço", desc: "Teste preços e veja o lucro", path: "/ferramentas/simulador", Icone: Sliders },
       { label: "Topos de bolo", desc: "Prontos pra imprimir", path: "/ferramentas/topos", Icone: FlagBanner },
+      { label: "Simulador de preço", desc: "Teste preços e veja o lucro", path: "/ferramentas/simulador", Icone: Sliders },
+      { label: "Conversor de medidas", desc: "Xícaras e colheres em gramas", path: "/ferramentas/medidas", Icone: Scales },
     ],
   },
   {
