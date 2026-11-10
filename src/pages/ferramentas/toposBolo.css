@@ -63,3 +63,17 @@
   .tb-det-capa, .tb-det-capa img { max-height: 38dvh; }
 }
 .tb-baixar { flex: none; width: auto; min-height: 36px; padding: 0 12px; font-size: 13.5px; }
+/* (09/11) cartão: a imagem ocupa a largura e a altura do cartão (sem margem), título e formatos embaixo; cantos menores */
+.tb-it { gap: 0; padding: 0; overflow: hidden; border-radius: 10px; }
+.tb-capa { aspect-ratio: 3 / 4; border-radius: 0; }
+.tb-capa img { object-fit: cover; }
+.tb-it-t { padding: 10px 10px 0; }
+.tb-fmts { padding: 6px 10px 10px; }
+@media (min-width: 901px) { .tb-grade { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); } }
+/* páginas */
+.tb-pags { display: flex; align-items: center; justify-content: center; gap: 6px; margin: var(--space-6) 0 0; }
+.tb-pag-g { display: inline-flex; align-items: center; gap: 6px; }
+.tb-pags button { display: inline-flex; align-items: center; justify-content: center; min-width: 38px; height: 38px; margin: 0; padding: 0 10px; border: 1px solid #E4DCDD; border-radius: 10px; background: #fff; font-family: inherit; font-size: 14px; color: #3B3236; cursor: pointer; }
+.tb-pags button.on { border-color: #3B3236; background: #3B3236; color: #fff; }
+.tb-pags button:disabled { opacity: .4; cursor: default; }
+.tb-pag-r { color: #8A7B80; }

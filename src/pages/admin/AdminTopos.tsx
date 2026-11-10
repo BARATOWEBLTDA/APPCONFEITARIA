@@ -114,7 +114,7 @@ export default function AdminTopos() {
       if (img) { const d = await supabase.storage.from(BUCKET_ARQUIVOS).download(img.caminho); if (d.data) fonteCapa = d.data; }
     }
     if (fonteCapa) capa_url = await subirCapa(fonteCapa, id) || capa_url;
-    const titulo = form.titulo.trim() || (form.novos[0]?.name || "").replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").slice(0, 60);
+    const titulo = form.titulo.trim() || (form.novos[0]?.name || "").replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").slice(0, 40);
     const dados = { titulo, categoria_id: form.categoria_id, capa_url, arquivos: [...form.arquivos.map(a => ({ ...a, formato: formatoDe(a.nome) })), ...enviados] };
     const { error } = form.id
       ? await supabase.from("topos").update(dados).eq("id", id)
@@ -214,7 +214,7 @@ export default function AdminTopos() {
               <input ref={capaRef} type="file" accept={ACEITA_IMAGEM} hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) setForm({ ...form, capa: f }); }} />
             </div>
             <div className="atp-form-dados">
-              <Campo rotulo="Título" placeholder="Ex.: Festa de Halloween" maxLength={60} value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} />
+              <Campo rotulo="Título" placeholder="Ex.: Festa de Halloween" maxLength={40} value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} />
               <div className="ui-campo">
                 <span className="ui-campo-r"><span>Categoria</span></span>
                 <div className="atp-cat-esc">

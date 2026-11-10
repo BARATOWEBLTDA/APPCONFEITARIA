@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Crown, DownloadSimple, Images, MagnifyingGlass, WarningCircle, X } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, Crown, DownloadSimple, Images, MagnifyingGlass, WarningCircle, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, TelaVazia, avisar } from "@/components/base";
 import { ConvitePro } from "@/components/billing/RecursoPro";
@@ -46,6 +46,15 @@ export default function ToposBolo() {
   const lista = topos.filter(t => t.categoria_id && conta.has(t.categoria_id) && (!cat || t.categoria_id === cat.id)
     && (!q || semAcento(`${t.titulo} ${nomeCat(t.categoria_id)}`).includes(q)));
 
+  // (09/11) 24 topos por página (2, 3 ou 4 por linha fecham certinho); trocar filtro ou busca volta pra 1ª
+  const POR_PAGINA = 24;
+  const [pagina, setPagina] = useState(1);
+  const totalPaginas = Math.max(1, Math.ceil(lista.length / POR_PAGINA));
+  const pag = Math.min(pagina, totalPaginas);
+  const daPagina = lista.slice((pag - 1) * POR_PAGINA, pag * POR_PAGINA);
+  useEffect(() => { setPagina(1); }, [catId, busca]);
+  const irPagina = (n: number) => { setPagina(n); window.scrollTo({ top: 0, behavior: "smooth" }); };
+
   const escolher = (id: string | null) => setParams(id ? { cat: id } : {}, { replace: true });
 
   const baixar = async (a: ArquivoTopo) => {
@@ -82,7 +91,7 @@ export default function ToposBolo() {
               <p className="tb-nada">Nenhum topo com “{busca.trim()}”{cat ? ` em ${cat.nome}` : ""}.</p>
             ) : (
               <div className="tb-grade">
-                {lista.map(t => (
+                {daPagina.map(t => (
                   <button key={t.id} type="button" className="tb-it" onClick={() => setAberto(t)}>
                     <span className="tb-capa">{t.capa_url ? <img src={t.capa_url} alt="" loading="lazy" /> : <Images size={30} aria-hidden="true" />}</span>
                     <span className="tb-it-t">{t.titulo || "Topo de bolo"}</span>
@@ -90,6 +99,20 @@ export default function ToposBolo() {
                   </button>
                 ))}
               </div>
+            )}
+            {totalPaginas > 1 && (
+              <nav className="tb-pags" aria-label="Páginas">
+                <button type="button" disabled={pag === 1} onClick={() => irPagina(pag - 1)} aria-label="Página anterior"><CaretLeft size={16} weight="bold" /></button>
+                {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+                  .filter(n => n === 1 || n === totalPaginas || Math.abs(n - pag) <= 1)
+                  .map((n, i, arr) => (
+                    <span key={n} className="tb-pag-g">
+                      {i > 0 && n - arr[i - 1] > 1 && <span className="tb-pag-r" aria-hidden="true">…</span>}
+                      <button type="button" className={n === pag ? "on" : ""} aria-current={n === pag ? "page" : undefined} onClick={() => irPagina(n)}>{n}</button>
+                    </span>
+                  ))}
+                <button type="button" disabled={pag === totalPaginas} onClick={() => irPagina(pag + 1)} aria-label="Próxima página"><CaretRight size={16} weight="bold" /></button>
+              </nav>
             )}
           </>
         )}
