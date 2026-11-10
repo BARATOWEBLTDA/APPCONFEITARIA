@@ -119,7 +119,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           {/* (6.87) a Doo IA volta ao Menu do celular, em destaque no topo (no computador ela é o balão do canto) */}
           <button type="button" className="mais-doo" onClick={() => { onClose(); abrirDooIA(); }}>
             <img src="/Sistema/doo.webp" alt="" />
-            <span className="mais-doo-tx"><b>Doo IA</b><small>Faz o trabalho pela conversa</small></span>
+            <span className="mais-doo-tx"><b>Doo</b><small>Sua assistente na confeitaria</small></span>
             <SetaDoo size={18} weight="bold" aria-hidden="true" />
           </button>
           {GRUPOS.map(grupo => (

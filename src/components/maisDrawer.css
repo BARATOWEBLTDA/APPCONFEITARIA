@@ -122,3 +122,11 @@ button.mais-it + .mais-it, .mais-it + button.mais-it { border-top: 1px solid var
 .mais-indica-tx b { font-size: 15px; font-weight: 500; }
 .mais-indica-tx small { font-size: 13px; color: var(--ui-texto-2); }
 .mais-indica > svg { flex: none; color: #CC2E66; }
+
+/* (10/11) Doo em destaque máximo: rosa forte, texto branco */
+.mais-doo { min-height: 72px; padding: 12px 16px 12px 12px; border: 0; background: linear-gradient(120deg, #E0457E, var(--ui-rosa-botao, #CC2E66) 60%, #B01F57); color: #fff; box-shadow: 0 6px 18px rgba(204, 46, 102, .28); }
+.mais-doo img { width: 48px; height: 48px; background: #fff; box-shadow: 0 0 0 2px rgba(255, 255, 255, .5); }
+.mais-doo-tx b { font-size: 17px; font-weight: 600; color: #fff; }
+.mais-doo-tx small { font-size: 13px; color: rgba(255, 255, 255, .88); }
+.mais-doo > svg { color: #fff; }
+.mais-doo:active { transform: scale(.99); }
