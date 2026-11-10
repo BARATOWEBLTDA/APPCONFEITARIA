@@ -34,7 +34,14 @@ export default class TelaDeErro extends Component<{ children: ReactNode }, Estad
     if (ehErroDeAtualizacao(String(erro?.message || ""))) {
       try {
         const ult = Number(sessionStorage.getItem("doonly_recarga_arquivo") || 0);
-        if (Date.now() - ult < 30000) return;
+        // (09/11) já recarregou há pouco e o arquivo ainda não veio (a versão nova estava entrando no ar no mesmo segundo):
+        // tenta mais uma vez daqui a 4 s, no máximo 2 vezes seguidas
+        if (Date.now() - ult < 30000) {
+          const n = Number(sessionStorage.getItem("doonly_recarga_tentativas") || 0);
+          if (n < 2) { sessionStorage.setItem("doonly_recarga_tentativas", String(n + 1)); window.setTimeout(() => recarregarLimpo(String(erro?.message || "")), 4000); }
+          return;
+        }
+        sessionStorage.setItem("doonly_recarga_tentativas", "0");
         sessionStorage.setItem("doonly_recarga_arquivo", String(Date.now()));
       } catch { /* sem sessionStorage: recarrega mesmo assim */ }
       recarregarLimpo(String(erro?.message || ""));
