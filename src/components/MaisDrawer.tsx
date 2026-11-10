@@ -33,7 +33,7 @@ interface Item { label: string; desc: string; path: string; Icone: Icon; pro?: b
 interface Grupo { label: string; items: Item[] }
 
 // (13/10) TODAS as telas da confeiteira (as mesmas do menu do computador, na mesma ordem),
-// inclusive as que também abrem pelo Início. Só ficam fora as que já estão no menu de baixo (Início, Pedidos, Cardápio, Doo IA).
+// inclusive as que também abrem pelo Início. Só ficam fora as que já estão no menu de baixo (Início, Pedidos, Cardápio, Doo).
 // (18/10) reorganizado pela prioridade do dia a dia: o que ela usa todo dia primeiro, o que mexe pouco no fim
 // (6.59) sem o "Cadastros" no meio do caminho: cada tela aparece direto, em grupos pelo uso do dia a dia
 // (6.109) ordem pelo uso: o que se abre todo dia em cima. Custos, Lucratividade e Ajuda entraram (antes só por dentro de outras telas).
@@ -116,7 +116,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
 
         <div className="mais-corpo">
           {/* (6.184) a busca saiu do Menu (o Bruno: "nem era pra ela estar aí"); continua no Início */}
-          {/* (6.87) a Doo IA volta ao Menu do celular, em destaque no topo (no computador ela é o balão do canto) */}
+          {/* (6.87) a Doo volta ao Menu do celular, em destaque no topo (no computador ela é o balão do canto) */}
           <button type="button" className="mais-doo" onClick={() => { onClose(); abrirDooIA(); }}>
             <img src="/Sistema/doo.webp" alt="" />
             <span className="mais-doo-tx"><b>Doo</b><small>Sua assistente na confeitaria</small></span>

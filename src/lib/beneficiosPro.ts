@@ -11,9 +11,9 @@ export type Beneficio = [Icon, string, string, string, string, string | null];
 export const BENEFICIOS: Beneficio[] = [
   // (6.108) ordem de venda: o que mais pesa para a confeiteira grátis vem primeiro (cardápio todo no ar, Doo, topos, orçamentos)
   [Infinito, "Todo o cardápio no ar", "No grátis, até 10 produtos no cardápio ao mesmo tempo. No PRO, todos.", "Produtos sem limite", "Todo o cardápio no ar", null],
-  [Robot, "A Doo IA, sua assistente", "Cadastra clientes, produtos, pedidos e cupons e configura sua loja pela conversa, calcula preço e avisa o que está atrasado. Até 150 mensagens por dia.", "Doo IA, sua assistente", "Faz o trabalho pela conversa", "doo"],
+  [Robot, "A Doo, sua assistente", "Cadastra clientes, produtos, pedidos e cupons e configura sua loja pela conversa, calcula preço e avisa o que está atrasado. Até 150 mensagens por dia.", "Doo, sua assistente", "Faz o trabalho pela conversa", "doo"],
   // (6.101) imagens com IA
-  [Cake, "Topos de bolo, logo e banners com IA", "A Doo cria o topo com o nome e o tema da festa, pronto para imprimir em PDF. Também faz a sua logo e os banners e já coloca no cardápio.", "Topos, logo e banners", "Criados pela Doo IA", "doo"],
+  [Cake, "Topos de bolo, logo e banners com IA", "A Doo cria o topo com o nome e o tema da festa, pronto para imprimir em PDF. Também faz a sua logo e os banners e já coloca no cardápio.", "Topos, logo e banners", "Criados pela Doo", "doo"],
   [FileText, "Orçamentos que o cliente aprova", "Monte a proposta, mande o link e o cliente aprova pelo celular. Aprovou, vira pedido.", "Orçamentos", "Proposta com link para aprovar", "/orcamentos"],
   // (6.81) a equipe Doonly monta o cardápio (produtos, logo e banners)
   [HandHeart, "A equipe Doonly monta seu cardápio", "Cadastramos seus produtos e criamos a logo e os banners da sua loja. Você só manda as fotos e os preços.", "Montamos seu cardápio", "Produtos, logo e banners", "equipe"],

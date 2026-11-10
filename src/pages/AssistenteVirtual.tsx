@@ -7,7 +7,7 @@ import { abrirDooIA } from "@/components/MenuContaItens";
 import { voltarOuIr } from "@/lib/voltar"; // 11/10: seta de voltar que funciona com a tela aberta direto
 import { BookOpenText, Cake, CalendarCheck, ChatCircleDots, CurrencyCircleDollar, Package, PencilSimpleLine, Receipt } from "@phosphor-icons/react";
 
-/** "Doo IA" (21/10, antes "Assistente virtual"): o que dá pra pedir pra Doo. Toca num exemplo e a conversa abre
+/** "Doo" (21/10, antes "Assistente virtual"): o que dá pra pedir pra Doo. Toca num exemplo e a conversa abre
  *  já com o pedido escrito. (27/10) Vale nos dois planos: grátis 10 mensagens por mês, PRO 150 por dia e imagens. */
 const EXEMPLOS = [
   { e: CurrencyCircleDollar, t: "Calcular preço", d: "Bolo ou doce", p: "Calcular o preço de um bolo" },
@@ -47,7 +47,7 @@ export default function AssistenteVirtual() {
         </div>
         <button type="button" className="av-cta" onClick={() => abrirDooIA()}>Conversar com a Doo</button>
         {!isPro && (
-          <p className="av-sub">A Doo IA é do PRO. <button type="button" className="av-link" onClick={() => navigate("/assinar")}>Testar grátis por 7 dias</button></p>
+          <p className="av-sub">A Doo é do PRO. <button type="button" className="av-link" onClick={() => navigate("/assinar")}>Testar grátis por 7 dias</button></p>
         )}
         <p className="av-aviso">A Doo pode errar: confira os valores.</p>
       </div>

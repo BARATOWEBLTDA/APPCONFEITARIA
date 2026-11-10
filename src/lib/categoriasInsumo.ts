@@ -1,6 +1,6 @@
 /**
  * (04/11 · 6.31) Categorias dos ingredientes: UMA lista só, a mesma na janela do ingrediente,
- * no filtro da tela Ingredientes e na Doo IA. A categoria é obrigatória.
+ * no filtro da tela Ingredientes e na Doo. A categoria é obrigatória.
  * categoriaPeloNome() marca sozinha quando o nome deixa claro o que é (leite condensado → Laticínios e ovos);
  * quando não deixa, devolve null e a confeiteira escolhe.
  */

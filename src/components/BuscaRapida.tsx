@@ -84,7 +84,7 @@ export default function BuscaRapida() {
       { g: DIA, t: "Orçamentos", ic: FileText, rota: "/orcamentos", pro: true, chaves: "orcamento proposta aprovar festa casamento evento" },
       { g: DIA, t: "Clientes", ic: Users, rota: "/clientes", chaves: "cliente aniversario contatos importar historico" },
       { g: DIA, t: "Mensagens do WhatsApp", ic: ChatCircleText, rota: "/configuracoes/mensagens", chaves: "mensagem whatsapp zap whats texto pronto recado aniversario parabens" },
-      { g: DIA, t: "Doo IA", ic: Sparkle, fazer: () => abrirDooIA(), pro: true, chaves: "assistente ia inteligencia artificial perguntar topo bolo legenda instagram calcular preco imagem arte logo" },
+      { g: DIA, t: "Doo", ic: Sparkle, fazer: () => abrirDooIA(), pro: true, chaves: "assistente ia inteligencia artificial perguntar topo bolo legenda instagram calcular preco imagem arte logo" },
       { g: PROD, t: "Produtos", ic: Cake, rota: "/produtos", chaves: "produto bolo doce salgado preco foto esgotado tamanho destaque promocao" },
       { g: PROD, t: "Novo produto", ic: Plus, rota: "/produtos", estado: { abrirCadastro: true }, chaves: "cadastrar produto criar" },
       { g: PROD, t: "Categorias", ic: Tag, rota: "/categorias", chaves: "categoria ordem cardapio secao grupo" },

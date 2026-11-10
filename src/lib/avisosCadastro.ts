@@ -100,13 +100,13 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
     if (semTaxa) l.push({ chave: "falta_taxa_entrega", icone: "entrega", titulo: "Defina a taxa de entrega", texto: "Sem a taxa, o cardápio mostra a entrega como \"a combinar\" e você acerta o valor em cada pedido.",
       link: "/checkout-config", nivel: "atencao", curto: { t: "Taxa de entrega", s: "Hoje aparece \"a combinar\"" } });
   }
-  // (04/11 · 6.20) diz qual produto e abre direto na descrição (com a Doo IA pra ajudar)
+  // (04/11 · 6.20) diz qual produto e abre direto na descrição (com a Doo pra ajudar)
   const listaSemDesc = !produtos.error ? ((produtos.data as ProdutoAvisos[]) || []).filter(p => !String(p.descricao || "").trim()) : [];
   const semDesc = listaSemDesc.length;
   if (semDesc > 0) {
     const primeiro = String(listaSemDesc[0].nome || "Produto").trim();
     l.push({ chave: "falta_descricao", icone: "descricao", semNotificar: true, titulo: semDesc === 1 ? `${primeiro} está sem descrição` : `${semDesc} produtos sem descrição`,
-      texto: semDesc === 1 ? "Conte o sabor, o tamanho e quantas pessoas serve. A Doo IA pode escrever pra você." : `Comece pelo ${primeiro}: conte o sabor, o tamanho e quantas pessoas serve. A Doo IA pode escrever pra você.`,
+      texto: semDesc === 1 ? "Conte o sabor, o tamanho e quantas pessoas serve. A Doo pode escrever pra você." : `Comece pelo ${primeiro}: conte o sabor, o tamanho e quantas pessoas serve. A Doo pode escrever pra você.`,
       link: "/produtos", estado: { abrir: `descricao:${listaSemDesc[0].id}` }, nivel: "normal",
       curto: { t: semDesc === 1 ? `${primeiro} sem descrição` : `${semDesc} sem descrição`, s: "Sabor, tamanho e quantos serve" } });
   }

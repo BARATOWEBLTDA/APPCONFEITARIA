@@ -1,5 +1,5 @@
 /**
- * Pedidos: regra ÚNICA (02/10) — usada pela Nova venda E pela Doo IA.
+ * Pedidos: regra ÚNICA (02/10) — usada pela Nova venda E pela Doo.
  * Assim um pedido feito pela Doo fica idêntico ao manual: mesma situação, mesmo cálculo de
  * pagamento, mesmo cadastro de cliente novo, mesmos itens (com tamanho/kit) e mesmo histórico.
  */
@@ -295,7 +295,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
 
   supabase.from("pedido_historico").insert({
     pedido_id: pid, user_id: userId, evento: "Pedido criado",
-    descricao: `Pedido ${d.tipo === "pronta_entrega" ? "de pronta entrega" : "de encomenda"} registrado ${d.origem === "doo" ? "pela Doo IA" : "manualmente"}`,
+    descricao: `Pedido ${d.tipo === "pronta_entrega" ? "de pronta entrega" : "de encomenda"} registrado ${d.origem === "doo" ? "pela Doo" : "manualmente"}`,
   }).then(() => {}, () => {});
 
   // Financeiro · Passo 1: o recebido do pedido vira uma linha em "pagamentos" (com forma e data).
@@ -367,7 +367,7 @@ export async function excluirPedido(pedidoId: string): Promise<{ ok: true } | { 
   return { ok: true };
 }
 
-/* ── Doo IA: catálogo, clientes e o rascunho que ela prepara ─────────────── */
+/* ── Doo: catálogo, clientes e o rascunho que ela prepara ─────────────── */
 export type ProdutoCat = {
   id: string; nome: string; preco_normal: number; forma_venda?: string; imagem_url?: string; categoria?: string; grupo_tamanhos?: GrupoJson | null; grupo_sabores?: GrupoJson | null; kit_qtd?: KitQtdConfig | null;
   promocao?: boolean | null; tipo_promocao?: string | null; desconto_percentual?: number | null; preco_promocional?: number | null;

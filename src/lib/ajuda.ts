@@ -1508,22 +1508,22 @@ export const ARTIGOS: ArtigoAjuda[] = [
   {
     slug: 'doo-ia',
     tema: 'conta',
-    titulo: 'Doo IA, sua assistente',
+    titulo: 'Doo, sua assistente',
     resumo: 'Preço, receita, pedido e textos.',
     minutos: 1,
-    abrir: { rota: '/assistente-virtual', rotulo: 'Abrir a Doo IA' },
+    abrir: { rota: '/assistente-virtual', rotulo: 'Abrir a Doo' },
     secoes: [
       {
         id: 'pedir',
         titulo: 'O que pedir',
         exemplo: 'Quanto cobrar num bolo de 2 kg?',
         texto: ['No celular, a Doo fica no **topo do Início**. No computador, no **menu da lateral**.'],
-        imagens: [{ src: '/ajuda/doo-inicio.webp', alt: 'Tela da Doo IA com os atalhos', marcas: [
+        imagens: [{ src: '/ajuda/doo-inicio.webp', alt: 'Tela da Doo com os atalhos', marcas: [
           '**Calcular preço** de um bolo ou doce.',
           '**Novo pedido** pela conversa.',
           '**Criar receita** com as quantidades.',
         ] }],
-        dica: 'A Doo IA é do **PRO**: até 150 mensagens por dia, com imagens.',
+        dica: 'A Doo é do **PRO**: até 150 mensagens por dia, com imagens.',
       },
     ],
     relacionadas: [

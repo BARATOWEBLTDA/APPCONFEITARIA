@@ -113,7 +113,7 @@ interface Produto {
   preco_promocional?: number | null
 }
 
-/** Opção de tamanho/kit/sabor oferecida na venda (a mesma regra da Doo IA) */
+/** Opção de tamanho/kit/sabor oferecida na venda (a mesma regra da Doo) */
 type OpcaoVenda = ReturnType<typeof opcoesDoProdutoLib>[number]
 
 /** O pedido como volta gravado do banco (só o que esta tela lê) */
@@ -318,7 +318,7 @@ export default function NovaVenda() {
 
   // Ajusta tipoEntrega default quando muda o tipo de venda
   useEffect(() => {
-    // Veio preenchida da Doo IA: mantém a entrega que já veio (não volta pra "Retirada")
+    // Veio preenchida da Doo: mantém a entrega que já veio (não volta pra "Retirada")
     if (preenchidaRef.current) { preenchidaRef.current = false; return }
     setTipoEntrega('retirada')
   }, [tipo])
@@ -551,7 +551,7 @@ export default function NovaVenda() {
   // ── Adicionar produto ──────────────────────────────────────────────────
   // Produto com tamanhos (P/M/G, pelo peso) ou kits: pergunta qual antes de adicionar (30/09).
   // Antes entrava sempre com o menor preço, sem jeito de escolher.
-  const opcoesDoProduto = (p: Produto) => opcoesDoProdutoLib(p) // mesma regra da Doo IA
+  const opcoesDoProduto = (p: Produto) => opcoesDoProdutoLib(p) // mesma regra da Doo
   const [qtdLivre, setQtdLivre] = useState<number | null>(null) // (14/10) kit "ele escolhe": quantidade escolhida
   // (16/10) "Outro tamanho": vendeu um peso que não está na lista (o preço sai do preço do kg, e dá pra mudar)
   const [outro, setOutro] = useState<{ aberto: boolean; peso: string; valor: number }>({ aberto: false, peso: '', valor: 0 })
@@ -649,7 +649,7 @@ export default function NovaVenda() {
     const chaveCliente = `${clienteNome.trim().toLowerCase()}|${digitosTelefone(clienteTelefone)}`
     const jaCriada = clienteNovo && clienteCriada.current?.chave === chaveCliente ? clienteCriada.current.id : null
     try {
-      // Salvar: a mesma função usada pela Doo IA (lib/pedidosDoo) — pedido igual nos dois caminhos
+      // Salvar: a mesma função usada pela Doo (lib/pedidosDoo) — pedido igual nos dois caminhos
       const res = await criarPedido(userId, {
         idTentativa: idTentativaRef.current,
         tipo: (tipo || 'encomenda') as DadosPedido['tipo'], itens, semCliente, clienteId: clienteId || jaCriada, clienteNome, clienteTelefone,
@@ -716,7 +716,7 @@ export default function NovaVenda() {
     await gerarPedidoPDF((data || { id: pc.id, numero: pc.numero, valor_total: pc.total }) as PedidoPDF, janela)
   }
 
-  // Veio do "Editar" do cartão da Doo IA: abre preenchida, direto no Revisar
+  // Veio do "Editar" do cartão da Doo: abre preenchida, direto no Revisar
   // (11/10) Vale também pra quem JÁ está nesta tela e toca "Editar" no cartão: antes só era lido ao abrir a tela e nada era preenchido.
   const jaAbriu = useRef(false)
   const rascunhoLido = useRef('') // a entrada do histórico de onde o rascunho já foi lido (não preenche duas vezes)
@@ -753,7 +753,7 @@ export default function NovaVenda() {
   // Reset completo pra nova venda
   const resetVenda = () => {
     trocarPasso(1)
-    setOrigemDoo(false) // (11/10) a venda seguinte é manual (antes continuava saindo como "pela Doo IA")
+    setOrigemDoo(false) // (11/10) a venda seguinte é manual (antes continuava saindo como "pela Doo")
     clienteCriada.current = null
     setTipo(null)
     setItens([])

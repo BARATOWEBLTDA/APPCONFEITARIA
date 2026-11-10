@@ -579,7 +579,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         <div key={avisoNome} className="ig-aviso-meio" role="status">
           <MagnifyingGlass size={28} weight="bold" />
           <b>Escreva o nome primeiro</b>
-          <span>A Doo IA usa o nome e a marca para achar a foto certa.</span>
+          <span>A Doo usa o nome e a marca para achar a foto certa.</span>
         </div>, document.body)}
 
       <section className="ig-compra ig-compra--simples">

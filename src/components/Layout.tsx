@@ -149,7 +149,7 @@ export default function Layout() {
     return () => { mq.removeEventListener("change", aplicar); meta.setAttribute("content", antes); };
   }, []);
   const isPrevia = location.pathname === "/cardapio-preview";
-  // (24/10) notebook (1366 × 768) com um grupo aberto: os últimos itens (Marketing, Doo IA, Minha conta) ficavam escondidos
+  // (24/10) notebook (1366 × 768) com um grupo aberto: os últimos itens (Marketing, Doo, Minha conta) ficavam escondidos
   // atrás do cartão da loja, e só a sombra avisava. Agora aparece "Mais opções", que rola o menu até o fim.
   const navRef = useRef<HTMLElement>(null);
   const [navTemMais, setNavTemMais] = useState(false);
@@ -262,7 +262,7 @@ export default function Layout() {
             <SubitemMenu to="/ferramentas/simulador" icone={Sliders}>Simulador de preço</SubitemMenu>
             <SubitemMenu to="/ferramentas/topos" icone={FlagBanner}>Topos de bolo</SubitemMenu>
           </GrupoMenu>
-          {/* (04/11 · 6.42) a Doo IA saiu do menu: no computador ela é o balão flutuante no canto (doo-fab) */}
+          {/* (04/11 · 6.42) a Doo saiu do menu: no computador ela é o balão flutuante no canto (doo-fab) */}
           <GrupoMenu id="conta" aberto={grupoAberto === "conta"} onAbrir={setGrupoAberto} rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar"]} recolhido={recolhido}>
             <SubitemMenu to="/configuracoes" end icone={Gear}>Configurações</SubitemMenu>
             <SubitemMenu to={isPro ? "/minha-assinatura" : "/assinar"} icone={Crown} tambem={["/assinar", "/minha-assinatura"]}>Minha assinatura</SubitemMenu>
@@ -315,7 +315,7 @@ export default function Layout() {
       {!isPrevia && (
         <nav className="bottom-nav bottom-nav--claro" aria-label="Menu principal">
           <div className="bottom-nav-pill">
-            {/* (16/10) Início · Cardápio · [+ Nova venda] · Pedidos · Mais. O Doo IA foi pro topo do Início e pro menu da foto */}
+            {/* (16/10) Início · Cardápio · [+ Nova venda] · Pedidos · Mais. O Doo foi pro topo do Início e pro menu da foto */}
             {([
               { to: "/inicio",   Icone: House,       label: "Início",   tour: undefined },
               // (21/10) Início · Pedidos · [+] · Financeiro · Menu. Cadastros (com o cardápio digital dentro) fica no Menu
@@ -379,9 +379,9 @@ export default function Layout() {
       <DooIA forceOpen={dooOpen} onClose={() => setDooOpen(false)} />
       {/* (04/11 · 6.42) computador: a Doo num balão no canto direito; abre a conversa em cima dele e minimiza de volta */}
       <button type="button" className={`doo-fab${dooOpen ? " on" : ""}`} data-tour="doo-pc" onClick={() => setDooOpen(v => !v)}
-        aria-label={dooOpen ? "Minimizar a Doo IA" : "Abrir a Doo IA"} title={dooOpen ? "Minimizar" : "Doo IA"}>
+        aria-label={dooOpen ? "Minimizar a Doo" : "Abrir a Doo"} title={dooOpen ? "Minimizar" : "Doo"}>
         {dooOpen ? <X size={26} weight="bold" /> : <img src="/Sistema/doo.webp" alt="" />}
-        {!dooOpen && <span className="doo-fab-tx">Doo IA</span>}
+        {!dooOpen && <span className="doo-fab-tx">Doo</span>}
       </button>
       <ParabensPro />
 

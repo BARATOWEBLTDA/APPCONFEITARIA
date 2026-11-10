@@ -591,7 +591,7 @@ function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'ima
   }
   // (4.23) limite diário de uso da Doo
   // (27/10) grátis: 10 mensagens por mês
-  if (errorType === 'limite_mensal') return 'A Doo IA é do plano PRO. Teste grátis por 7 dias.'
+  if (errorType === 'limite_mensal') return 'A Doo é do plano PRO. Teste grátis por 7 dias.'
   if (errorType === 'limite_diario') return caso === 'imagem' ? 'Você chegou ao limite de imagens de hoje. Amanhã libera de novo.' : 'Você chegou ao limite de mensagens de hoje. Amanhã libera de novo.'
   if (status === 429 || errorType === 'rate_limit_error') return 'Muitas mensagens em seguida. Aguarde um momento e tente novamente.'
   // (11/10) só o erro de plano mostra o "Assine o PRO" (outro 403 cai no aviso genérico)
@@ -1132,7 +1132,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
     zerarRef.current = true
     setMessages([]); setVerTodas(false)
   }, [open, conversaCarregada]) // eslint-disable-line react-hooks/exhaustive-deps
-  // (21/10) aberta por um atalho (tela da Doo IA): já manda o pedido escrito
+  // (21/10) aberta por um atalho (tela da Doo): já manda o pedido escrito
   useEffect(() => {
     if (!open || loading || generatingImage) return
     const pedido = pegarPedidoDoo()
@@ -1149,7 +1149,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
   const showSuggestions = messages.length === 0 && !loading
 
-  // (6.81) a Doo IA é só do PRO: no grátis, abrir mostra o convite do PRO
+  // (6.81) a Doo é só do PRO: no grátis, abrir mostra o convite do PRO
   if (open && !isPro && !carregandoPlano) return <ConvitePro recurso="doo" onClose={handleClose} />
 
   return (
@@ -1171,14 +1171,14 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
       {/* ── Janela do chat (02/10): tela cheia no celular, painel alto do lado direito no computador ── */}
       {open && (
-        <div ref={painelRef} tabIndex={-1} className="dooia-panel" role="dialog" aria-label="Doo IA">
+        <div ref={painelRef} tabIndex={-1} className="dooia-panel" role="dialog" aria-label="Doo">
 
           {/* Cabeçalho */}
           <div className="dz-hd">
             <button type="button" className="dz-hb dz-voltar" onClick={handleClose} aria-label="Fechar a Doo"><CaretLeft size={20} weight="bold" /></button>
             <div className="dz-hav"><img src="/Sistema/doo.webp" alt="" /><i aria-hidden="true" /></div>
             <div className="dz-ht">
-              <b>Doo IA{isPro && <> <em>PRO</em></>}</b>
+              <b>Doo{isPro && <> <em>PRO</em></>}</b>
               <small className={loading || generatingImage ? 'dz-esc' : ''}><i aria-hidden="true" />{loading ? 'Escrevendo…' : generatingImage ? 'Criando a imagem…' : <>Online<span className="dz-on-x"> · responde na hora</span></>}</small>
             </div>
             {messages.length > 0 && (

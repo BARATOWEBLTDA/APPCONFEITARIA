@@ -55,7 +55,7 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
   const { isPro } = usePlano();
 
   // (09/11) os itens do menu da foto, no modelo dos apps de gestão: a conta, a loja, o plano, as configurações e a ajuda.
-  // Novidades ficam no sino do topo e a Doo IA no balão do canto; sugerir e relatar ficam na Central de ajuda.
+  // Novidades ficam no sino do topo e a Doo no balão do canto; sugerir e relatar ficam na Central de ajuda.
   const itens: { nome: string; Icone: Icon; acao: () => void }[] = [
     { nome: "Minha conta", Icone: User, acao: () => ir("/configuracoes", { abrirConta: true }) },
     { nome: "Minha loja", Icone: Storefront, acao: () => ir("/cardapio") },

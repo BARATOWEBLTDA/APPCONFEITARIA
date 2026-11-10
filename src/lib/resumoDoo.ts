@@ -5,7 +5,7 @@ import { pedidoAtrasado } from "@/lib/pedidoStatus";
 import { carregarMes, custoPorProduto } from "@/lib/painelFinanceiro";
 
 /**
- * (21/10) Resumo do negócio que vai junto com cada pergunta pra Doo IA.
+ * (21/10) Resumo do negócio que vai junto com cada pergunta pra Doo.
  * Antes ela não via nenhum número e respondia "não tenho acesso ao seu histórico de vendas".
  * "Vendas" = pedidos registrados (sem os cancelados). Se a leitura falhar, a Doo segue sem os números.
  */

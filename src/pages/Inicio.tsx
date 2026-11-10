@@ -1041,11 +1041,11 @@ export default function Inicio() {
         </button>
       </section>
 
-      {/* (6.91) celular: a Doo IA logo no topo do Início, num campo de perguntar (escreveu e enviou, a conversa abre com a pergunta) */}
+      {/* (6.91) celular: a Doo logo no topo do Início, num campo de perguntar (escreveu e enviou, a conversa abre com a pergunta) */}
       {!computador && (
         <form className="ini-section ini-section--doo" onSubmit={e => { e.preventDefault(); const t = perguntaDoo.trim(); setPerguntaDoo(""); (document.activeElement as HTMLElement | null)?.blur(); abrirDooIA(t); }}>
           <img src="/Sistema/doo.webp" alt="" aria-hidden="true" />
-          <input type="search" name="pergunta-doo" value={perguntaDoo} onChange={e => setPerguntaDoo(e.target.value)} placeholder={placeholderDoo} onFocus={() => setDooFoco(true)} onBlur={() => setDooFoco(false)} aria-label="Pergunte qualquer coisa à Doo IA" enterKeyHint="send" autoComplete="off" />
+          <input type="search" name="pergunta-doo" value={perguntaDoo} onChange={e => setPerguntaDoo(e.target.value)} placeholder={placeholderDoo} onFocus={() => setDooFoco(true)} onBlur={() => setDooFoco(false)} aria-label="Pergunte qualquer coisa à Doo" enterKeyHint="send" autoComplete="off" />
           <button type="submit" aria-label="Enviar para a Doo"><SetaDoo size={18} weight="bold" /></button>
         </form>
       )}

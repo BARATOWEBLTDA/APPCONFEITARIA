@@ -556,7 +556,7 @@ export async function executarAcaoDoo(uid: string, a: AcaoDoo): Promise<{ ok: tr
           const { data: mudou, error } = await q.select('id')
           if (error) return { ok: false, erro: recebeu ? `O recebimento de ${brl(recebeu)} entrou, mas a situação não mudou. Tente de novo.` : 'Não deu para mudar a situação. Tente de novo.' }
           if (!mudou?.length) return { ok: false, erro: `O pedido #${p.numero} já tinha sido atualizado em outro lugar.` }
-          registrarEtapa(p.id, novo, 'Pela Doo IA')
+          registrarEtapa(p.id, novo, 'Pela Doo')
         }
         const sobra = Math.max(0, Math.round((falta - recebeu) * 100) / 100)
         const partes = [novo ? nomeDaSituacao(novo, p.tipo_entrega || 'retirada') : '', recebeu ? `${brl(recebeu)} recebido` : '', sobra > 0.009 ? `falta ${brl(sobra)}` : recebeu ? 'pago' : '']

@@ -637,7 +637,7 @@ export const TOUR_MENSAGENS: PassoTour[] = [
 
 
 /* ══════ (23/10) Telas que ainda não tinham o (i): perfil do cliente, pedido aberto, notificações e sons,
-   minha assinatura e Doo IA ══════ */
+   minha assinatura e Doo ══════ */
 
 export const COMO_CLIENTE: Como = {
   tela: { nome: "Cliente", Icone: Users },
@@ -711,7 +711,7 @@ export const TOUR_ASSINATURA: PassoTour[] = [
 ];
 
 export const COMO_DOO: Como = {
-  tela: { nome: "Doo IA", Icone: Sparkle },
+  tela: { nome: "Doo", Icone: Sparkle },
   artigo: "doo-ia",
   resumo: "A assistente do Doonly: calcula preços, cria receitas, registra pedidos e escreve por você.",
   fluxo: ["Pergunte", "A Doo responde", "Use no app"],
@@ -722,8 +722,8 @@ export const COMO_DOO: Como = {
   ],
 };
 export const TOUR_DOO: PassoTour[] = [
-  { el: ".av-hero", titulo: "Doo IA", texto: "A sua assistente. Escolha uma das opções abaixo ou abra a conversa e pergunte o que quiser." },
-  { el: ".av-grid", titulo: "O que pedir", texto: "8 atalhos: preço, pedido, receita, ingrediente, legenda, resposta, topo de bolo e a sua semana. A Doo IA é do PRO." },
+  { el: ".av-hero", titulo: "Doo", texto: "A sua assistente. Escolha uma das opções abaixo ou abra a conversa e pergunte o que quiser." },
+  { el: ".av-grid", titulo: "O que pedir", texto: "8 atalhos: preço, pedido, receita, ingrediente, legenda, resposta, topo de bolo e a sua semana. A Doo é do PRO." },
 ];
 
 /** (25/10) Orçamentos: a lista (pedidos que chegaram pelo link, enviados e respondidos) */

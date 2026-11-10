@@ -627,7 +627,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   const [gerando, setGerando] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  // (23/10) Doo IA: 3 perguntas (o que faz, para quando, diferencial) e 3 opções para escolher
+  // (23/10) Doo: 3 perguntas (o que faz, para quando, diferencial) e 3 opções para escolher
   const [perguntando, setPerguntando] = useState(false);
   const [faz, setFaz] = useState<string[]>([]);
   const [quando, setQuando] = useState<string[]>([]);
@@ -656,7 +656,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
       const bruto = String(data.content?.[0]?.text || "");
       const lista = bruto.split(/\n+/).map(l => l.replace(/^\s*(\d+[.)-]|[-•*])\s*/, "").replace(/^["“]|["”]$/g, "").trim()).filter(l => l.length >= 40).map(l => ajustarDescricao(l)).slice(0, 3);
       if (lista.length) { setOpcoes(lista); setEscolhida(0); }
-      else setErro("A Doo IA não conseguiu escrever agora. Tente de novo.");
+      else setErro("A Doo não conseguiu escrever agora. Tente de novo.");
     } catch { setErro("Sem internet agora. Tente de novo em instantes."); }
     setGerando(false);
   };
@@ -686,7 +686,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
             {opcoes ? (
               <>
                 <div className="ppf-ia-cab"><img src="/Sistema/doo.webp" alt="" aria-hidden="true" /><b>Escolha a que mais combina</b></div>
-                <div className="ppf-ia-ops" role="radiogroup" aria-label="Opções da Doo IA">
+                <div className="ppf-ia-ops" role="radiogroup" aria-label="Opções da Doo">
                   {opcoes.map((t, i) => (
                     <button type="button" key={i} role="radio" aria-checked={escolhida === i} className={escolhida === i ? "on" : ""} onClick={() => setEscolhida(i)}>
                       <i aria-hidden="true" />{t}
@@ -700,7 +700,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
               </>
             ) : (
               <>
-                <div className="ppf-ia-cab"><img src="/Sistema/doo.webp" alt="" aria-hidden="true" /><span><b>A Doo IA escreve para você</b><small>Responda e escolha entre 3 opções</small></span></div>
+                <div className="ppf-ia-cab"><img src="/Sistema/doo.webp" alt="" aria-hidden="true" /><span><b>A Doo escreve para você</b><small>Responda e escolha entre 3 opções</small></span></div>
                 <p className="ppf-ia-l">O que você faz?</p>
                 <div className="ppf-d-opc">
                   {FAZ.map(f => <button type="button" key={f} className={faz.includes(f) ? "on" : ""} aria-pressed={faz.includes(f)} onClick={() => alternar(faz, setFaz, f)}>{f}</button>)}

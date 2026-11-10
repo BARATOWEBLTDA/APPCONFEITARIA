@@ -114,7 +114,7 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
     try { sessionStorage.setItem("doonly_pp_balao", "1"); } catch { /* sem sessionStorage: só abre o Início */ }
     navigate("/inicio");
   };
-  // (10/11) cardápio bloqueado: o checklist completo já está no Início; aqui fica só um atalho (no estilo do atalho da Doo IA no Menu)
+  // (10/11) cardápio bloqueado: o checklist completo já está no Início; aqui fica só um atalho (no estilo do atalho da Doo no Menu)
   if (travado) return (
     <button type="button" className="clc-atalho" onClick={irPara}>
       <span className="clc-atalho-ic" aria-hidden="true"><LockSimple size={20} weight="bold" /></span>

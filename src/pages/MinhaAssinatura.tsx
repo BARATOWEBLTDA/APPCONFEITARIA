@@ -23,7 +23,7 @@ const WHATSAPP_EQUIPE = "5511978414991";
 const VALOR = "R$ 29,90";
 /** Área do comprador da Hotmart: compras, assinaturas e recibos */
 const HOTMART_COMPRAS = "https://consumer.hotmart.com/purchase";
-const LIBERADO = ["Doo IA, sua assistente", "Lucro de cada produto", "Cupons e banners no cardápio", "A equipe Doonly monta seu cardápio"];
+const LIBERADO = ["Doo, sua assistente", "Lucro de cada produto", "Cupons e banners no cardápio", "A equipe Doonly monta seu cardápio"];
 const dataBR = (d: Date) => d.toLocaleDateString("pt-BR");
 // (31/10 · 5.84) com o ano quando não é o deste ano (antes "27/09" podia ser de qualquer ano)
 const diaMes = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}${d.getFullYear() !== new Date().getFullYear() ? "/" + d.getFullYear() : ""}`;

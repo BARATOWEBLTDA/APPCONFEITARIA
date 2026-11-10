@@ -1,5 +1,5 @@
 /**
- * Insumos pela Doo IA (02/10) — salva EXATAMENTE como o cadastro manual (QuickAddInsumo):
+ * Insumos pela Doo (02/10) — salva EXATAMENTE como o cadastro manual (QuickAddInsumo):
  * custo_unitario = valor pago ÷ quantidade da embalagem, na unidade do próprio insumo
  * (ex.: lata de 395 g por R$ 6,79 → R$ 0,0172 por grama). Nada é salvo sem a confirmação dela.
  */

@@ -38,7 +38,7 @@ type Props = {
   nome?: string
 }
 
-const TOTAL = 8 // (29/10 · 4.74) entrou a tela da Doo IA (5); avisos virou a 6 e o fim a 7
+const TOTAL = 8 // (29/10 · 4.74) entrou a tela da Doo (5); avisos virou a 6 e o fim a 7
 /** (23/10) a tela que pede pra ligar os avisos do celular (pedido novo e novidades chegam na hora) */
 const DOO = 5
 const AVISOS = 6
@@ -245,7 +245,7 @@ export default function BoasVindas({ isOpen, onClose, nome }: Props) {
             </>)}
             {tela === DOO && (<>
               <p className="bv-sobre">Sua assistente de confeitaria</p>
-              <h1 className="bv-h">A Doo IA cria até o <em>seu topo de bolo</em></h1>
+              <h1 className="bv-h">A Doo cria até o <em>seu topo de bolo</em></h1>
               <p className="bv-p">Peça do seu jeito: ela calcula preço, monta receita e faz o topo pronto pra imprimir.</p>
             </>)}
             {tela === AVISOS && (<>
@@ -310,7 +310,7 @@ function DemoMarca({ comMarca = false, pose = 'acenando' }: { comMarca?: boolean
   )
 }
 
-/* ───────── 5 · Doo IA (29/10 · 4.74): a conversa de verdade da Doo, numa caixa de tamanho fixo que encolhe inteira.
+/* ───────── 5 · Doo (29/10 · 4.74): a conversa de verdade da Doo, numa caixa de tamanho fixo que encolhe inteira.
    A confeiteira digita o pedido do topo, a Doo escreve, cria a imagem e responde com o topo e o PDF pra imprimir.
    Roda uma vez e é só pra ver (nada é clicável). ───────── */
 const PEDIDO_DOO = 'Faz um topo de bolo de Natal com o nome Família Rocha'
@@ -348,7 +348,7 @@ function DemoDoo() {
         <div className="bv-doo-hd">
           <span className="bv-doo-av"><img src="/Sistema/doo.webp" alt="" /><i /></span>
           <div className="bv-doo-ht">
-            <b>Doo IA <em>PRO</em></b>
+            <b>Doo <em>PRO</em></b>
             <small className={passo === 'escrevendo' || passo === 'criando' ? 'esc' : ''}><i />{passo === 'escrevendo' ? 'Escrevendo…' : passo === 'criando' ? 'Criando a imagem…' : 'Online · responde na hora'}</small>
           </div>
         </div>
