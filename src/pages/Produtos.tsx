@@ -1420,9 +1420,10 @@ export default function Produtos() {
       {limiteAberto && <LimitePlano tipo="produtos" limite={LIMITE_PRODUTOS_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader
       title="Produtos" voltar="/cadastros"
-      subtitle="O que aparece no seu cardápio" infoComo={COMO_PRODUTOS} infoTour={TOUR_PRODUTOS}
+      // (10/11) sem produto ainda, a tela já explica tudo: o (i) só aparece depois do 1º produto
+      subtitle="O que aparece no seu cardápio" infoComo={produtos.length ? COMO_PRODUTOS : undefined} infoTour={produtos.length ? TOUR_PRODUTOS : undefined}
       infoIcon="🎂"
-      infoContent={
+      infoContent={produtos.length === 0 ? undefined :
         <>
           <p>Aqui você <strong>cadastra e organiza tudo que vende</strong> na sua confeitaria — bolos, doces, cupcakes, kits de festa e mais.</p>
           <p>Cada produto pode ter foto, preço, descrição, sabores e variações. Você organiza por <strong>categorias</strong> para ficar fácil de encontrar e mostrar no seu cardápio digital.</p>
