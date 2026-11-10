@@ -18,13 +18,23 @@ import "./admin-topos.css";
  */
 const sufixo = () => `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
-async function subirCapa(f: Blob, pasta: string): Promise<string | null> {
+/** sobe uma imagem em WebP (larguraMax px); devolve o endereço público */
+async function subirWebp(f: Blob, pasta: string, larguraMax: number, qualidade: number, fim = ""): Promise<string | null> {
   let corpo: Blob = f, ext = "png", tipo = f.type || "image/png";
-  try { corpo = await paraWebp(f); ext = "webp"; tipo = "image/webp"; } catch { /* sem WebP: vai o original */ }
-  const caminho = `${pasta}/${sufixo()}.${ext}`;
+  try { corpo = await paraWebp(f, larguraMax, qualidade); ext = "webp"; tipo = "image/webp"; } catch { /* sem WebP: vai o original */ }
+  const caminho = `${pasta}/${sufixo()}${fim}.${ext}`;
   const up = await supabase.storage.from(BUCKET_CAPAS).upload(caminho, corpo, { cacheControl: "31536000", upsert: false, contentType: tipo });
   if (up.error) return null;
   return supabase.storage.from(BUCKET_CAPAS).getPublicUrl(caminho).data.publicUrl;
+}
+/** (09/11) capa em 2 tamanhos: a grande (1400 px, só no topo aberto) e a miniatura leve (480 px, grade e bolinhas) */
+async function subirCapa(f: Blob, pasta: string): Promise<{ url: string; mini: string | null } | null> {
+  const [url, mini] = await Promise.all([subirWebp(f, pasta, 1400, 0.84), subirWebp(f, pasta, 480, 0.78, "-mini")]);
+  return url ? { url, mini } : null;
+}
+/** gera a miniatura de uma capa que já está no ar (topos e categorias antigos) */
+async function miniDe(urlCapa: string, pasta: string): Promise<string | null> {
+  try { const r = await fetch(urlCapa); if (!r.ok) return null; return await subirWebp(await r.blob(), pasta, 480, 0.78, "-mini"); } catch { return null; }
 }
 
 type Form = { id?: string; titulo: string; categoria_id: string; capa: File | null; capaUrl: string | null; novos: File[]; arquivos: ArquivoTopo[]; tags: string[]; canva: string };
@@ -72,8 +82,17 @@ export default function AdminTopos() {
         const img = tp.arquivos.find(a => ehImagem(a.nome));
         if (!img) continue;
         const d = await supabase.storage.from(BUCKET_ARQUIVOS).download(img.caminho);
-        const url = d.data ? await subirCapa(d.data, tp.id) : null;
-        if (url && !(await supabase.from("topos").update({ capa_url: url }).eq("id", tp.id)).error) setTopos(l => l.map(x => (x.id === tp.id ? { ...x, capa_url: url } : x)));
+        const c2 = d.data ? await subirCapa(d.data, tp.id) : null;
+        if (c2 && !(await supabase.from("topos").update({ capa_url: c2.url, capa_mini_url: c2.mini }).eq("id", tp.id)).error) setTopos(l => l.map(x => (x.id === tp.id ? { ...x, capa_url: c2.url, capa_mini_url: c2.mini } : x)));
+      }
+      // (09/11) capas de antes da miniatura: cria a versão leve uma vez
+      for (const tp of t.filter(x => x.capa_url && !x.capa_mini_url)) {
+        const mini = await miniDe(tp.capa_url!, tp.id);
+        if (mini) await supabase.from("topos").update({ capa_mini_url: mini }).eq("id", tp.id);
+      }
+      for (const ct of c.filter(x => x.imagem_url && !x.imagem_mini_url)) {
+        const mini = await miniDe(ct.imagem_url!, "categorias");
+        if (mini) await supabase.from("topos_categorias").update({ imagem_mini_url: mini }).eq("id", ct.id);
       }
     }
     catch { setSemTabela(true); }
@@ -85,9 +104,9 @@ export default function AdminTopos() {
   const salvarCategoria = async () => {
     if (!novaCat || !novaCat.nome.trim()) return;
     setSalvando(true);
-    let imagem_url = novaCat.imgUrl;
-    if (novaCat.img) { imagem_url = await subirCapa(novaCat.img, "categorias"); if (!imagem_url) { setSalvando(false); avisar("Não deu para enviar a imagem.", { tipo: "erro" }); return; } }
-    const dados = { nome: novaCat.nome.trim(), imagem_url };
+    let imagem_url = novaCat.imgUrl, imagem_mini_url: string | null | undefined = undefined;
+    if (novaCat.img) { const c2 = await subirCapa(novaCat.img, "categorias"); if (!c2) { setSalvando(false); avisar("Não deu para enviar a imagem.", { tipo: "erro" }); return; } imagem_url = c2.url; imagem_mini_url = c2.mini; }
+    const dados = { nome: novaCat.nome.trim(), imagem_url, ...(imagem_mini_url !== undefined ? { imagem_mini_url } : {}) };
     const r = novaCat.id
       ? await supabase.from("topos_categorias").update(dados).eq("id", novaCat.id).select("id").single()
       : await supabase.from("topos_categorias").insert({ ...dados, ordem: cats.length + 1 }).select("id").single();
@@ -136,9 +155,10 @@ export default function AdminTopos() {
       const img = form.arquivos.find(a => ehImagem(a.nome));
       if (img) { const d = await supabase.storage.from(BUCKET_ARQUIVOS).download(img.caminho); if (d.data) fonteCapa = d.data; }
     }
-    if (fonteCapa) capa_url = await subirCapa(fonteCapa, id) || capa_url;
+    let capa_mini_url: string | null | undefined = undefined;
+    if (fonteCapa) { const c2 = await subirCapa(fonteCapa, id); if (c2) { capa_url = c2.url; capa_mini_url = c2.mini; } }
     const titulo = form.titulo.trim() || (form.novos[0]?.name || "").replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").slice(0, 40);
-    const dados = { titulo, tags: form.tags, canva_url: form.canva.trim() || null, categoria_id: form.categoria_id, capa_url, arquivos: [...form.arquivos.map(a => ({ ...a, formato: formatoDe(a.nome) })), ...enviados] };
+    const dados = { ...(capa_mini_url !== undefined ? { capa_mini_url } : {}), titulo, tags: form.tags, canva_url: form.canva.trim() || null, categoria_id: form.categoria_id, capa_url, arquivos: [...form.arquivos.map(a => ({ ...a, formato: formatoDe(a.nome) })), ...enviados] };
     const { error } = form.id
       ? await supabase.from("topos").update(dados).eq("id", id)
       : await supabase.from("topos").insert({ id, ...dados, ordem: topos.reduce((m, t) => Math.max(m, t.ordem), 0) + 1 });
@@ -208,7 +228,7 @@ export default function AdminTopos() {
               <div className="atp-grade">
                 {visiveis.map(t => (
                   <article key={t.id} className={`atp-it${t.ativo ? "" : " off"}`}>
-                    <button type="button" className="atp-capa" onClick={() => abrirEditar(t)}>{t.capa_url ? <img src={t.capa_url} alt="" loading="lazy" /> : <ImageIcon size={28} />}</button>
+                    <button type="button" className="atp-capa" onClick={() => abrirEditar(t)}>{t.capa_url ? <img src={t.capa_mini_url || t.capa_url} alt="" loading="lazy" /> : <ImageIcon size={28} />}</button>
                     <b>{t.titulo || "Sem título"}</b>
                     <small>{nomeCat(t.categoria_id)}</small>
                     <span className="atp-fmts">{[...new Set(t.arquivos.map(a => a.formato))].map(f => <em key={f}>{f}</em>)}{(t.tags || []).length > 0 && <small className="atp-ntags">{t.tags.length} {t.tags.length === 1 ? "tag" : "tags"}</small>}</span>

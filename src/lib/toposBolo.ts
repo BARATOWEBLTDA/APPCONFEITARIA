@@ -5,8 +5,8 @@ import { supabase } from "@/lib/supabase";
  * a confeiteira vê tudo e só a PRO baixa (os arquivos ficam num bucket privado; o download é por link assinado).
  */
 export type ArquivoTopo = { caminho: string; nome: string; formato: string; tamanho: number };
-export type CategoriaTopo = { id: string; nome: string; imagem_url: string | null; ordem: number; ativo: boolean };
-export type Topo = { id: string; categoria_id: string | null; titulo: string; capa_url: string | null; arquivos: ArquivoTopo[]; tags: string[]; canva_url?: string | null; ativo: boolean; ordem: number; created_at: string };
+export type CategoriaTopo = { id: string; nome: string; imagem_url: string | null; imagem_mini_url?: string | null; ordem: number; ativo: boolean };
+export type Topo = { id: string; categoria_id: string | null; titulo: string; capa_url: string | null; capa_mini_url?: string | null; arquivos: ArquivoTopo[]; tags: string[]; canva_url?: string | null; ativo: boolean; ordem: number; created_at: string };
 
 export const BUCKET_CAPAS = "topos-capas";
 export const BUCKET_ARQUIVOS = "topos-arquivos";
@@ -33,12 +33,12 @@ export function tamanhoTexto(b: number): string {
 export const nomeSeguro = (n: string) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/-+/g, "-").slice(-80);
 
 export async function carregarCategorias(): Promise<CategoriaTopo[]> {
-  const { data, error } = await supabase.from("topos_categorias").select("id, nome, imagem_url, ordem, ativo").order("ordem").order("nome");
+  const { data, error } = await supabase.from("topos_categorias").select("id, nome, imagem_url, imagem_mini_url, ordem, ativo").order("ordem").order("nome");
   if (error) throw error;
   return (data || []) as CategoriaTopo[];
 }
 export async function carregarTopos(categoriaId?: string | null): Promise<Topo[]> {
-  let q = supabase.from("topos").select("id, categoria_id, titulo, capa_url, arquivos, tags, canva_url, ativo, ordem, created_at").order("ordem", { ascending: false }).order("created_at", { ascending: false });
+  let q = supabase.from("topos").select("id, categoria_id, titulo, capa_url, capa_mini_url, arquivos, tags, canva_url, ativo, ordem, created_at").order("ordem", { ascending: false }).order("created_at", { ascending: false });
   if (categoriaId) q = q.eq("categoria_id", categoriaId);
   const { data, error } = await q;
   if (error) throw error;

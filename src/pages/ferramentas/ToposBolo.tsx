@@ -89,7 +89,8 @@ export default function ToposBolo() {
                 <span className="tb-dest-c"><span className="tb-dest-todos"><SquaresFour size={26} weight="regular" /></span></span><span className="tb-dest-n">Todos</span>
               </button>
               {comTopos.map(c => {
-                const img = c.imagem_url || topos.find(t => t.categoria_id === c.id && t.capa_url)?.capa_url || null;
+                const capaTema = topos.find(t => t.categoria_id === c.id && t.capa_url);
+                const img = c.imagem_mini_url || c.imagem_url || capaTema?.capa_mini_url || capaTema?.capa_url || null;
                 return (
                   <button key={c.id} type="button" role="tab" aria-selected={c.id === cat?.id} className={`tb-dest-it${c.id === cat?.id ? " on" : ""}`} onClick={() => escolher(c.id)}>
                     <span className="tb-dest-c">{img ? <img src={img} alt="" loading="lazy" /> : <span className="tb-dest-todos"><Images size={24} /></span>}</span>
@@ -104,7 +105,7 @@ export default function ToposBolo() {
               <div className="tb-grade">
                 {daPagina.map(t => (
                   <button key={t.id} type="button" className="tb-it" onClick={() => setAberto(t)}>
-                    <span className="tb-capa">{t.capa_url ? <img src={t.capa_url} alt="" loading="lazy" /> : <Images size={30} aria-hidden="true" />}</span>
+                    <span className="tb-capa">{t.capa_url ? <img src={t.capa_mini_url || t.capa_url} alt="" loading="lazy" decoding="async" /> : <Images size={30} aria-hidden="true" />}</span>
                     <span className="tb-it-t">{t.titulo || "Topo de bolo"}</span>
                     <span className="tb-fmts">{[...new Set(t.arquivos.map(a => a.formato))].sort((x, y) => infoFormato(x).ordem - infoFormato(y).ordem).map(f => <em key={f}>{f}</em>)}{t.canva_url && <em>CANVA</em>}</span>
                   </button>

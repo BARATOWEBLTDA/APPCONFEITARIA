@@ -62,3 +62,7 @@ alter table public.topos add column if not exists tags text[] not null default '
 
 -- (09/11) link do modelo no Canva (opcional; só PRO abre)
 alter table public.topos add column if not exists canva_url text;
+
+-- (09/11) miniatura leve (480 px) pra grade e pras bolinhas; a capa grande só abre no detalhe
+alter table public.topos add column if not exists capa_mini_url text;
+alter table public.topos_categorias add column if not exists imagem_mini_url text;
