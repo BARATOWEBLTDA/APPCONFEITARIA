@@ -671,20 +671,18 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
   );
   if (embutido) {
     // (23/10) no estilo do Dora: cada linha mostra o valor atual e só o que falta ganha destaque (sem os vistos verdes)
+    // (10/11) na Minha loja cada linha mostra só a frase do que tem dentro: quem avisa o que falta são os Primeiros passos
+    const SUB_EMB: Partial<Record<Parte, string>> = {
+      loja: "Nome, WhatsApp, endereço e redes", horario: "Dias e horas que você atende",
+      ent: "Retirada e taxa de entrega", pag: "Como o cliente paga", pix: "Pix direto no cardápio",
+    };
     const linhaEmb = (k: Parte, titulo?: string) => {
-      let l = linhas.find(x => x.k === k);
+      const l = linhas.find(x => x.k === k);
       if (!l) return null;
-      // (10/11) Sobre a loja junta loja, endereço e redes: mostra o primeiro que falta
-      if (k === "loja") {
-        const lj = l, en = linhas.find(x => x.k === "endereco")!, rd = linhas.find(x => x.k === "redes")!;
-        const f = [lj, en, rd].find(x => x.st !== "ok");
-        l = f ? { ...lj, sub: f.sub, st: f.st } : { ...lj, sub: [nome.trim(), rd.sub].filter(Boolean).join(" · ") };
-      }
       return (
         <button key={l.k} type="button" className="dl-li" onClick={() => abrirParte(l.k)}>
           <span className="dl-li-ic" aria-hidden="true"><l.Ic size={20} weight="bold" /></span>
-          <span className="dl-li-tx"><b>{titulo || l.t}</b><small className={l.st !== "ok" ? "falta" : ""}>{l.sub}</small></span>
-          {/* (6.148) na Minha loja o opcional que ainda não foi feito (redes, Pix) também mostra "Falta" */}
+          <span className="dl-li-tx"><b>{titulo || l.t}</b><small>{SUB_EMB[k] || l.sub}</small></span>
           <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
         </button>
       );

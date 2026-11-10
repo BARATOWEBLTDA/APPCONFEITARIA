@@ -12,14 +12,11 @@ import DadosLoja from "@/pages/DadosLoja";
  * · O que você vende (produtos, categorias, complementos). Cada linha mostra o valor atual; tocar abre a parte para editar.
  */
 type Visual = { logo: string; foto: string; topo: string; banners: number };
-type Contas = { produtos: number; categorias: number; complementos: number };
 
-const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
 
 export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boolean }) {
   const navigate = useNavigate();
   const [vis, setVis] = useState<Visual | null>(null);
-  const [n, setN] = useState<Contas | null>(null);
   const [enviando, setEnviando] = useState(false);
 
   // logo, tema e banners (relê quando a Aparência salva)
@@ -38,17 +35,6 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
     return () => { vivo = false; window.removeEventListener("cardapio-design-saved", ler); };
   }, [uid]);
 
-  // quantos produtos, categorias e complementos
-  useEffect(() => {
-    if (!uid) return;
-    let vivo = true;
-    const conta = (tabela: string) => supabase.from(tabela).select("id", { count: "exact", head: true }).eq("user_id", uid)
-      .then(r => (r.error ? -1 : r.count ?? 0), () => -1);
-    Promise.all([conta("produtos"), conta("categorias"), conta("biblioteca_extras")]).then(([produtos, categorias, complementos]) => {
-      if (vivo) setN({ produtos, categorias, complementos });
-    });
-    return () => { vivo = false; };
-  }, [uid]);
 
   // Trocar a logo sem sair da tela: escolhe, recorta (redondo) e grava no perfil
   const recorte = useRecorte(async (foto) => {
@@ -69,14 +55,10 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
   }, { aspect: 1, forma: "round" });
 
   const img = vis?.logo || vis?.foto;
-  // (6.148) sem a foto do topo o cardápio fica sem capa: "Falta" igual às outras linhas
-  const semTopo = !!vis && !vis.topo;
-  // (10/11) a Logo entrou na Aparência (logo, foto do topo e cores): a linha mostra o que falta primeiro
-  const semLogoAp = !!vis && !vis.logo;
   const linhaAparencia = (
     <button type="button" className="dl-li" onClick={() => navigate("/cardapio-design")}>
       {img ? <img className="dl-li-img" src={img} alt="" /> : <span className="dl-li-ic" aria-hidden="true"><PaintBrush size={20} weight="bold" /></span>}
-      <span className="dl-li-tx"><b>Aparência</b><small className={semTopo || semLogoAp ? "falta" : ""}>{!vis ? "…" : semLogoAp ? "Falta a logo da loja" : semTopo ? "Falta a foto do topo" : `Logo, topo e ${vis.banners ? plural(vis.banners, "banner", "banners") : "cores"}`}</small></span>
+      <span className="dl-li-tx"><b>Aparência</b><small>Logo, foto do topo e cores</small></span>
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
   );
@@ -98,7 +80,6 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
   );
-  const qtd = (v: number | undefined, um: string, varios: string, vazio: string) => v == null ? "…" : v < 0 ? varios.charAt(0).toUpperCase() + varios.slice(1) : v === 0 ? vazio : plural(v, um, varios);
 
   return (
     <>
@@ -108,8 +89,9 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
       <section className="dl-emb ml-produtos" aria-label="O que você vende">
         <h2 className="dl-emb-t">O que você vende</h2>
         <div className="dl-lista-c">
-          {linha(Cake, "Produtos", qtd(n?.produtos, "produto", "produtos", "Falta o primeiro produto"), "/produtos", n?.produtos === 0)}
-          {linha(Stack, "Adicionais", qtd(n?.complementos, "adicional", "adicionais", "Topo, velas e outros extras"), "/complementos", false, true)}
+          {/* (10/11) só a frase do que tem dentro (o que falta fica com os Primeiros passos) */}
+          {linha(Cake, "Produtos", "Preço, foto e sabores", "/produtos")}
+          {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos", false, true)}
         </div>
       </section>
       <DadosLoja embutido extras={{ antes: linhaAparencia, depois: linhaMensagens }} />
