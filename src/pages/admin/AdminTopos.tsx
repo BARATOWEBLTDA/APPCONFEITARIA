@@ -27,8 +27,8 @@ async function subirCapa(f: Blob, pasta: string): Promise<string | null> {
   return supabase.storage.from(BUCKET_CAPAS).getPublicUrl(caminho).data.publicUrl;
 }
 
-type Form = { id?: string; titulo: string; categoria_id: string; capa: File | null; capaUrl: string | null; novos: File[]; arquivos: ArquivoTopo[]; tags: string[] };
-const FORM_VAZIO: Form = { titulo: "", categoria_id: "", capa: null, capaUrl: null, novos: [], arquivos: [], tags: [] };
+type Form = { id?: string; titulo: string; categoria_id: string; capa: File | null; capaUrl: string | null; novos: File[]; arquivos: ArquivoTopo[]; tags: string[]; canva: string };
+const FORM_VAZIO: Form = { titulo: "", categoria_id: "", capa: null, capaUrl: null, novos: [], arquivos: [], tags: [], canva: "" };
 
 export default function AdminTopos() {
   const [cats, setCats] = useState<CategoriaTopo[]>([]);
@@ -112,12 +112,13 @@ export default function AdminTopos() {
 
   // ── topo ──
   const abrirNovo = () => setForm({ ...FORM_VAZIO, categoria_id: filtro || cats[0]?.id || "" });
-  const abrirEditar = (t: Topo) => setForm({ id: t.id, titulo: t.titulo, categoria_id: t.categoria_id || "", capa: null, capaUrl: t.capa_url, novos: [], arquivos: t.arquivos, tags: t.tags || [] });
+  const abrirEditar = (t: Topo) => setForm({ id: t.id, titulo: t.titulo, categoria_id: t.categoria_id || "", capa: null, capaUrl: t.capa_url, novos: [], arquivos: t.arquivos, tags: t.tags || [], canva: t.canva_url || "" });
 
   const salvarTopo = async () => {
     if (!form) return;
     if (!form.categoria_id) { avisar("Escolha ou crie a categoria.", { tipo: "erro" }); return; }
-    if (!form.arquivos.length && !form.novos.length) { avisar("Adicione pelo menos um arquivo.", { tipo: "erro" }); return; }
+    if (form.canva.trim() && !/^https?:\/\/(www\.)?canva\.(com|link)\//i.test(form.canva.trim())) { avisar("O link do Canva não parece certo.", { tipo: "erro" }); return; }
+    if (!form.arquivos.length && !form.novos.length && !form.canva.trim()) { avisar("Adicione pelo menos um arquivo.", { tipo: "erro" }); return; }
     setSalvando(true);
     const id = form.id || crypto.randomUUID();
     const enviados: ArquivoTopo[] = [];
@@ -137,7 +138,7 @@ export default function AdminTopos() {
     }
     if (fonteCapa) capa_url = await subirCapa(fonteCapa, id) || capa_url;
     const titulo = form.titulo.trim() || (form.novos[0]?.name || "").replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").slice(0, 40);
-    const dados = { titulo, tags: form.tags, categoria_id: form.categoria_id, capa_url, arquivos: [...form.arquivos.map(a => ({ ...a, formato: formatoDe(a.nome) })), ...enviados] };
+    const dados = { titulo, tags: form.tags, canva_url: form.canva.trim() || null, categoria_id: form.categoria_id, capa_url, arquivos: [...form.arquivos.map(a => ({ ...a, formato: formatoDe(a.nome) })), ...enviados] };
     const { error } = form.id
       ? await supabase.from("topos").update(dados).eq("id", id)
       : await supabase.from("topos").insert({ id, ...dados, ordem: topos.reduce((m, t) => Math.max(m, t.ordem), 0) + 1 });
@@ -275,6 +276,10 @@ export default function AdminTopos() {
                   <input ref={arqRef} type="file" accept={ACEITA_ARQUIVOS} multiple hidden onChange={e => { const fs = Array.from(e.target.files || []); e.target.value = ""; if (fs.length) setForm({ ...form, novos: [...form.novos, ...fs] }); }} />
                 </div>
               </div>
+              {/* (09/11) link do modelo no Canva: na confeiteira vira "Editar no Canva" (só PRO) */}
+              <Campo rotulo="Link do Canva" opcional type="url" inputMode="url" placeholder="https://www.canva.com/design/…" value={form.canva}
+                onChange={e => setForm({ ...form, canva: e.target.value })}
+                erro={form.canva.trim() && !/^https?:\/\/(www\.)?canva\.(com|link)\//i.test(form.canva.trim()) ? "Cole o link do Canva (começa com https://www.canva.com/)" : undefined} />
             </div>
           </div>
         )}

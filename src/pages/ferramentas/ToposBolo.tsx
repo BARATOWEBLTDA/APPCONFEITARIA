@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { CaretLeft, CaretRight, Crown, SquaresFour, DownloadSimple, Images, MagnifyingGlass, WarningCircle, X } from "@phosphor-icons/react";
+import { ArrowSquareOut, CaretLeft, CaretRight, Crown, SquaresFour, DownloadSimple, Images, MagnifyingGlass, WarningCircle, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, TelaVazia, avisar } from "@/components/base";
 import { ConvitePro } from "@/components/billing/RecursoPro";
 import { usePlano } from "@/hooks/usePlano";
-import { baixarArquivo, carregarCategorias, carregarTopos, tamanhoTexto, type ArquivoTopo, type CategoriaTopo, type Topo } from "@/lib/toposBolo";
+import { baixarArquivo, infoFormato, carregarCategorias, carregarTopos, tamanhoTexto, type ArquivoTopo, type CategoriaTopo, type Topo } from "@/lib/toposBolo";
 import "./toposBolo.css";
 
 /**
@@ -106,7 +106,7 @@ export default function ToposBolo() {
                   <button key={t.id} type="button" className="tb-it" onClick={() => setAberto(t)}>
                     <span className="tb-capa">{t.capa_url ? <img src={t.capa_url} alt="" loading="lazy" /> : <Images size={30} aria-hidden="true" />}</span>
                     <span className="tb-it-t">{t.titulo || "Topo de bolo"}</span>
-                    <span className="tb-fmts">{[...new Set(t.arquivos.map(a => a.formato))].map(f => <em key={f}>{f}</em>)}</span>
+                    <span className="tb-fmts">{[...new Set(t.arquivos.map(a => a.formato))].sort((x, y) => infoFormato(x).ordem - infoFormato(y).ordem).map(f => <em key={f}>{f}</em>)}{t.canva_url && <em>CANVA</em>}</span>
                   </button>
                 ))}
               </div>
@@ -134,16 +134,33 @@ export default function ToposBolo() {
           <div className="tb-det">
             <div className="tb-det-capa">{aberto.capa_url ? <img src={aberto.capa_url} alt={aberto.titulo} /> : <Images size={40} aria-hidden="true" />}</div>
             <div className="tb-det-arqs">
-              <p className="tb-det-l">Arquivos</p>
-              {aberto.arquivos.length === 0 ? <p className="tb-det-vz">Nenhum arquivo neste topo ainda.</p> : aberto.arquivos.map(a => (
-                <div key={a.caminho} className="tb-arq">
-                  <em>{a.formato}</em>
-                  <span className="tb-arq-tx"><b>{a.nome}</b><small>{tamanhoTexto(a.tamanho)}</small></span>
-                  <Botao tamanho="p" className="tb-baixar" variante={isPro ? "principal" : "suave"} carregando={baixando === a.caminho}
-                    icone={isPro ? <DownloadSimple size={16} weight="bold" /> : <Crown size={14} weight="fill" />} onClick={() => baixar(a)}>Baixar</Botao>
-                </div>
-              ))}
-              {!isPro && aberto.arquivos.length > 0 && <p className="tb-det-pro"><Crown size={14} weight="fill" aria-hidden="true" />Baixar os topos é um recurso do PRO</p>}
+              {/* (09/11) "Downloads disponíveis": PDF, PNG, Studio e, se tiver, o Canva (abre o modelo; só PRO) */}
+              <p className="tb-det-l">Downloads disponíveis</p>
+              {aberto.arquivos.length === 0 && !aberto.canva_url ? <p className="tb-det-vz">Nenhum arquivo neste topo ainda.</p> : (
+                <>
+                  {[...aberto.arquivos].sort((x, y) => infoFormato(x.formato).ordem - infoFormato(y.formato).ordem).map(a => {
+                    const f = infoFormato(a.formato);
+                    return (
+                      <div key={a.caminho} className="tb-dl">
+                        <span className="tb-dl-ic" style={{ background: f.cor }}>{a.formato === "STUDIO" ? "STUDIO" : a.formato}</span>
+                        <span className="tb-dl-tx"><b>{f.nome}</b><small>{f.frase}<span className="tb-dl-kb"> · {tamanhoTexto(a.tamanho)}</span></small></span>
+                        <Botao tamanho="p" className="tb-baixar" variante={isPro ? "principal" : "suave"} carregando={baixando === a.caminho}
+                          icone={isPro ? <DownloadSimple size={16} weight="bold" /> : <Crown size={14} weight="fill" />} onClick={() => baixar(a)}>Baixar</Botao>
+                      </div>
+                    );
+                  })}
+                  {aberto.canva_url && (
+                    <div className="tb-dl">
+                      <span className="tb-dl-ic tb-dl-ic--canva">Canva</span>
+                      <span className="tb-dl-tx"><b>Editar no Canva</b><small>Troque nome e idade</small></span>
+                      <Botao tamanho="p" className="tb-baixar tb-abrir" variante={isPro ? "secundario" : "suave"}
+                        icone={isPro ? undefined : <Crown size={14} weight="fill" />} iconeDepois={isPro ? <ArrowSquareOut size={15} weight="bold" /> : undefined}
+                        onClick={() => { if (!isPro) { setAberto(null); setConvite(true); return; } window.open(aberto.canva_url!, "_blank", "noopener"); }}>Abrir</Botao>
+                    </div>
+                  )}
+                </>
+              )}
+              {!isPro && (aberto.arquivos.length > 0 || aberto.canva_url) && <p className="tb-det-pro"><Crown size={14} weight="fill" aria-hidden="true" />Baixar os topos é um recurso do PRO</p>}
             </div>
           </div>
         )}

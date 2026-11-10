@@ -59,3 +59,6 @@ create policy "topos arquivos: admin" on storage.objects for all to authenticate
 
 -- (09/11) tags só pra busca (não aparecem pra confeiteira)
 alter table public.topos add column if not exists tags text[] not null default '{}';
+
+-- (09/11) link do modelo no Canva (opcional; só PRO abre)
+alter table public.topos add column if not exists canva_url text;

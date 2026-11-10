@@ -74,7 +74,14 @@ export default function AppPageHeader({ heroi, title, subtitle, titleExtra, resu
     return () => { document.title = antes }
   }, [title])
   const navegar = useNavigate()
-  const voltarCel = () => { if (((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0) navegar(-1); else if (voltar) navegar(voltar) }
+  const voltarCel = () => {
+    // (09/11) tela aberta pelo Menu: volta e reabre o Menu (antes caía no Início)
+    const st = window.history.state as { idx?: number; usr?: { doMenu?: boolean } } | null
+    const doMenu = !!st?.usr?.doMenu
+    if ((st?.idx ?? 0) > 0) navegar(-1)
+    else if (voltar) navegar(voltar, doMenu ? { replace: true } : undefined)
+    if (doMenu) window.setTimeout(() => window.dispatchEvent(new CustomEvent('doonly:abrir-menu')), 60)
+  }
   const [mostrarInfo, setMostrarInfo] = useState(false)
   const IconeInfo = (infoIcon && ICONE_DO_EMOJI[infoIcon]) || Info
 

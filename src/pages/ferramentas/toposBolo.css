@@ -94,3 +94,12 @@
 .tb-busca { margin: var(--space-2) 0 var(--space-3); }
 .tb-dest { margin-top: 0; margin-bottom: var(--space-3); }
 @media (min-width: 901px) { .tb-busca { margin-top: 0; } }
+/* (09/11) Downloads disponíveis */
+.tb-det-l { font-size: 14px; color: #3B3236; }
+.tb-dl { display: flex; align-items: center; gap: 12px; margin-bottom: var(--space-2); padding: 10px 12px; border: 1px solid #ECE7E9; border-radius: 12px; }
+.tb-dl-ic { display: flex; align-items: center; justify-content: center; flex: none; width: 42px; height: 42px; border-radius: 10px; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+.tb-dl-ic--canva { background: linear-gradient(135deg, #00C4CC, #7D2AE8); }
+.tb-dl-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tb-dl-tx b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14.5px; font-weight: 500; color: #241A1E; }
+.tb-dl-tx small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12.5px; color: #8A7B80; }
+@media (max-width: 600px) { .tb-dl-kb { display: none; } } /* celular: sem o tamanho, a frase cabe numa linha */

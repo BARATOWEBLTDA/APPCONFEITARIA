@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
  */
 export type ArquivoTopo = { caminho: string; nome: string; formato: string; tamanho: number };
 export type CategoriaTopo = { id: string; nome: string; imagem_url: string | null; ordem: number; ativo: boolean };
-export type Topo = { id: string; categoria_id: string | null; titulo: string; capa_url: string | null; arquivos: ArquivoTopo[]; tags: string[]; ativo: boolean; ordem: number; created_at: string };
+export type Topo = { id: string; categoria_id: string | null; titulo: string; capa_url: string | null; arquivos: ArquivoTopo[]; tags: string[]; canva_url?: string | null; ativo: boolean; ordem: number; created_at: string };
 
 export const BUCKET_CAPAS = "topos-capas";
 export const BUCKET_ARQUIVOS = "topos-arquivos";
@@ -38,7 +38,7 @@ export async function carregarCategorias(): Promise<CategoriaTopo[]> {
   return (data || []) as CategoriaTopo[];
 }
 export async function carregarTopos(categoriaId?: string | null): Promise<Topo[]> {
-  let q = supabase.from("topos").select("id, categoria_id, titulo, capa_url, arquivos, tags, ativo, ordem, created_at").order("ordem", { ascending: false }).order("created_at", { ascending: false });
+  let q = supabase.from("topos").select("id, categoria_id, titulo, capa_url, arquivos, tags, canva_url, ativo, ordem, created_at").order("ordem", { ascending: false }).order("created_at", { ascending: false });
   if (categoriaId) q = q.eq("categoria_id", categoriaId);
   const { data, error } = await q;
   if (error) throw error;
@@ -54,3 +54,15 @@ export async function baixarArquivo(a: ArquivoTopo): Promise<boolean> {
   document.body.appendChild(link); link.click(); link.remove();
   return true;
 }
+
+/** (09/11) como cada formato aparece em "Downloads disponíveis": ordem, nome, frase e a cor do ícone */
+export const INFO_FORMATO: Record<string, { ordem: number; nome: string; frase: string; cor: string }> = {
+  PDF: { ordem: 1, nome: "PDF", frase: "Pronto pra imprimir", cor: "#DC2626" },
+  PNG: { ordem: 2, nome: "PNG", frase: "Imagem em alta", cor: "#2563EB" },
+  JPG: { ordem: 3, nome: "JPG", frase: "Imagem pra imprimir", cor: "#0891B2" },
+  WEBP: { ordem: 3, nome: "Imagem", frase: "Imagem pra imprimir", cor: "#0891B2" },
+  SVG: { ordem: 4, nome: "SVG", frase: "Não perde qualidade", cor: "#7C3AED" },
+  STUDIO: { ordem: 5, nome: "Studio", frase: "Corte na Silhouette", cor: "#3B3236" },
+  DXF: { ordem: 6, nome: "DXF", frase: "Arquivo de corte", cor: "#3B3236" },
+};
+export const infoFormato = (f: string) => INFO_FORMATO[f] || { ordem: 9, nome: f, frase: "Arquivo do topo", cor: "#5E5357" };

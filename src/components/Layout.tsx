@@ -188,6 +188,18 @@ export default function Layout() {
   // Scroll pro topo ao mudar de rota (fix: antes ficava na posição anterior)
   // (11/10) menos ao VOLTAR ("POP"): a lista volta no ponto em que ela estava, em vez de pular pro topo
   const tipoNavegacao = useNavigationType();
+  // (09/11) voltou (seta ou voltar do aparelho) de uma tela aberta pelo Menu: reabre o Menu
+  const veioDoMenu = useRef(false);
+  useEffect(() => {
+    const doMenu = !!(location.state as { doMenu?: boolean } | null)?.doMenu;
+    if (tipoNavegacao === "POP" && veioDoMenu.current && !doMenu && window.matchMedia("(max-width: 900px)").matches) setMaisOpen(true);
+    veioDoMenu.current = doMenu;
+  }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const abrir = () => { if (window.matchMedia("(max-width: 900px)").matches) setMaisOpen(true); };
+    window.addEventListener("doonly:abrir-menu", abrir);
+    return () => window.removeEventListener("doonly:abrir-menu", abrir);
+  }, []);
   useEffect(() => {
     if (tipoNavegacao === "POP") return;
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });

@@ -113,7 +113,8 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
     // A gaveta guarda uma entrada no histórico pro "voltar" do Android. Ao escolher um item, a tela nova
     // entra no lugar dessa entrada: assim o voltar da tela nova cai direto de onde a pessoa veio.
     const substituir = !!(window.history.state as { uiJanela?: boolean } | null)?.uiJanela;
-    navigate(path, { replace: substituir });
+    // (09/11) a tela aberta pelo Menu guarda isso: o voltar (seta ou do Android) reabre o Menu em vez de cair no Início
+    navigate(path, { replace: substituir, state: { doMenu: true } });
     onClose();
   };
 
