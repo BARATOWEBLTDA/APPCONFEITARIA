@@ -1020,8 +1020,9 @@ const CSS = `
   .pp-ic--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
   .pp-ic--at { background: var(--ui-rosa); color: var(--ui-branco); }
   .pp-tx { flex: 1; min-width: 0; }
-  .pp-tx b { display: block; font-size: 15px; font-weight: 600; letter-spacing: -.01em; line-height: 1.2; color: #2C2C2A; }
-  .pp-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); margin-top: 2px; line-height: 1.4; }
+  /* (10/11) mesma letra das linhas do Menu, Minha loja e Configurações: título 15/500, frase 12,5/400 */
+  .pp-tx b { display: block; font-size: 15px; font-weight: 500; letter-spacing: -.01em; line-height: 1.2; color: #2C2C2A; }
+  .pp-tx small { display: block; font-size: 12.5px; font-weight: 400; color: var(--ui-texto-2); margin-top: 2px; line-height: 1.4; }
   .pp-ps--ok .pp-tx b { color: var(--ui-texto-2); font-weight: 500; }
   .pp-ps--ok .pp-tx small { color: var(--ui-verde); font-weight: 600; }
   .pp-n { display: none; font-style: normal; }
