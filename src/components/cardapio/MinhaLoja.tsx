@@ -108,7 +108,7 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
       <section className="dl-emb ml-produtos" aria-label="O que você vende">
         <h2 className="dl-emb-t">O que você vende</h2>
         <div className="dl-lista-c">
-          {linha(Cake, "Produtos", qtd(n?.produtos, "produto", "produtos", "Nenhum ainda"), "/produtos", n?.produtos === 0)}
+          {linha(Cake, "Produtos", qtd(n?.produtos, "produto", "produtos", "Falta o primeiro produto"), "/produtos", n?.produtos === 0)}
           {linha(Stack, "Adicionais", qtd(n?.complementos, "adicional", "adicionais", "Topo, velas e outros extras"), "/complementos", false, true)}
         </div>
       </section>
