@@ -489,7 +489,7 @@ function CardapioContent() {
             ? <img src={String(design.logo_url).split(',')[0]} alt="" className="ne-masc" style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', boxShadow: '0 0 0 3px #F7C6D9' }} />
             : <Mascote pose="prancheta" className="ne-masc" />}
           <h1 className="ne-h">{previa ? 'Seu cardápio está quase pronto' : 'Cardápio em preparação'}</h1>
-          <p className="ne-p">{previa ? 'Ele abre para os clientes assim que você terminar os Primeiros passos, no Início do app.' : `${nome || 'A confeitaria'} está preparando o cardápio. Volte em breve!`}</p>
+          <p className="ne-p">{previa ? 'Ele abre para os clientes assim que você terminar os Primeiros passos, no Início do app.' : `${nome || 'A confeitaria'} está preparando o cardápio. Volte em breve.`}</p>
           {!previa && zap && <a className="ui-bt ui-bt--cheio" href={zap} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>Falar no WhatsApp</a>}
         </main>
       </div>

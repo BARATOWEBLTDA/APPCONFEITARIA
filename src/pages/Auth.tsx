@@ -506,7 +506,7 @@ export default function Auth() {
         <div className="auth-marca-cen" aria-hidden="true">
         <Mascote pose={showCadastro ? 'comemorando' : 'acenando'} className="auth-marca-masc" />
         <NomeDoonly cor="branco" className="auth-marca-nome" />
-        <p className="auth-marca-frase">{showCadastro ? 'Vamos começar!' : 'Seus pedidos te esperam'}</p>
+        <p className="auth-marca-frase">{showCadastro ? 'Vamos começar' : 'Seus pedidos te esperam'}</p>
         <p className="auth-marca-sub">{showCadastro ? 'Leva menos de 1 minuto.' : 'Pedidos, agenda e financeiro.'}</p>
         </div>
         {/* (29/10 · 4.78) vitrine: leva pra página de vendas (abre em outra aba, o login continua aqui). (4.81) Só no login: no cadastro ela já decidiu */}

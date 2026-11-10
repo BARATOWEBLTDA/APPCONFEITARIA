@@ -962,7 +962,7 @@ export default function FichaTecnica() {
                     calculamos automaticamente o custo proporcional.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
-                    Esse cálculo compõe o <strong>CMV</strong> (Custo de Mercadoria Vendida) da receita — quanto os ingredientes pesam no custo total do seu produto.
+                    Esse cálculo compõe o <strong>CMV</strong> (Custo de Mercadoria Vendida) da receita: quanto os ingredientes pesam no custo total do seu produto.
                   </p>
                 </>
               ) : isContavel && temEmbalagem && temValorCompra ? (
@@ -996,8 +996,8 @@ export default function FichaTecnica() {
                   </p>
                   <p style={{ margin: "0 0 14px" }}>
                     Total:{" "}
-                    <strong style={{ color: "var(--text-title)" }}>R$ {fmt(custoLinha)}</strong>{" "}
-                    — esse é o custo de {ins.nome} nessa receita.
+                    <strong style={{ color: "var(--text-title)" }}>R$ {fmt(custoLinha)}</strong>.{" "}
+                    Esse é o custo de {ins.nome} nessa receita.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
                     <strong>CMV</strong> (Custo de Mercadoria Vendida) é quanto cada ingrediente pesa no custo total da receita. Quanto menor o CMV, maior seu lucro.

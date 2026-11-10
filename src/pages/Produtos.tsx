@@ -967,7 +967,7 @@ export default function Produtos() {
     await loadProdutos(userId);
     clearSelection();
     if (falhas > 0) {
-      showToast("error", `${ok} ${ok > 1 ? "cópias criadas" : "cópia criada"}, ${falhas} ${falhas > 1 ? "falharam" : "falhou"}`, `As cópias que deram certo estão despublicadas — revise antes de publicar no cardápio.${semFicha > 0 ? ` ${semFicha === 1 ? "1 ficou" : `${semFicha} ficaram`} sem a ficha técnica.` : ""}`);
+      showToast("error", `${ok} ${ok > 1 ? "cópias criadas" : "cópia criada"}, ${falhas} ${falhas > 1 ? "falharam" : "falhou"}`, `As cópias estão escondidas do cardápio. Revise antes de publicar.${semFicha > 0 ? ` ${semFicha === 1 ? "1 ficou" : `${semFicha} ficaram`} sem a ficha técnica.` : ""}`);
     } else if (semFicha > 0) {
       showToast("error", ok === 1 ? "Cópia criada, mas sem a ficha técnica." : `${ok} cópias criadas, ${semFicha} sem a ficha técnica.`, "Abra a cópia e monte a ficha técnica de novo.");
     } else {
@@ -1425,7 +1425,7 @@ export default function Produtos() {
       infoIcon="🎂"
       infoContent={produtos.length === 0 ? undefined :
         <>
-          <p>Aqui você <strong>cadastra e organiza tudo que vende</strong> na sua confeitaria — bolos, doces, cupcakes, kits de festa e mais.</p>
+          <p>Aqui você <strong>cadastra tudo que vende</strong> na sua confeitaria: bolos, doces, cupcakes, kits de festa e mais.</p>
           <p>Cada produto pode ter foto, preço, descrição, sabores e variações. Você organiza por <strong>categorias</strong> para ficar fácil de encontrar e mostrar no seu cardápio digital.</p>
         </>
       }
@@ -1534,8 +1534,7 @@ export default function Produtos() {
             <span className="prod-hero-eyebrow">Vamos começar</span>
             <h1 className="prod-hero-title">Cadastre seu<br/>primeiro produto</h1>
             <p className="prod-hero-desc">
-              Seu catálogo é a vitrine da sua confeitaria. Quanto mais completo,
-              mais profissional ele será e mais clientes você conquista.
+              Cada doce cadastrado vira um item no seu cardápio, com foto e&nbsp;preço.
             </p>
             <div className="prod-hero-actions">
               <button className="prod-hero-btn-primary" onClick={openNovo}>
@@ -2841,7 +2840,7 @@ export default function Produtos() {
                             avisar("Seu cardápio ainda não tem link. Publique o cardápio primeiro.", { tipo: "info", acao: { rotulo: "Ir para o cardápio", aoTocar: () => irFechandoJanela(() => navigate("/cardapio")) } });
                             return;
                           }
-                          try { await navigator.clipboard.writeText(url); avisar("Link do cardápio copiado!", { tipo: "ok" }); }
+                          try { await navigator.clipboard.writeText(url); avisar("Link do cardápio copiado", { tipo: "ok" }); }
                           catch { avisar(url, { tipo: "info" }); }
                         }}
                       >

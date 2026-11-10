@@ -225,11 +225,10 @@ export default function SelectDoonly({
           align-items: center;
           justify-content: center;
           width: 24px; height: 24px;
-          background: var(--primary-light);
+          background: var(--ui-branco);
           color: var(--ui-rosa);
           border-radius: 6px;
-          flex-shrink: 0;
-        }
+          flex-shrink: 0; border: 1px solid #ECE7E9; box-sizing: border-box; }
 
         /* Bottom sheet (mobile) */
         .sd-sheet-ov {
@@ -297,9 +296,8 @@ export default function SelectDoonly({
         }
         .sd-sheet-item--extra .sd-item-label { font-weight: 600; }
         .sd-sheet-item--extra .sd-item-icon {
-          background: var(--primary-light);
-          color: var(--ui-rosa);
-        }
+          background: var(--ui-branco);
+          color: var(--ui-rosa); border: 1px solid #ECE7E9; box-sizing: border-box; }
 
         /* Popover (desktop) */
         .sd-popover {
@@ -348,9 +346,8 @@ export default function SelectDoonly({
         }
         .sd-pop-item--extra .sd-item-label { font-weight: 600; }
         .sd-pop-item--extra .sd-item-icon {
-          background: var(--primary-light);
-          color: var(--ui-rosa);
-        }
+          background: var(--ui-branco);
+          color: var(--ui-rosa); border: 1px solid #ECE7E9; box-sizing: border-box; }
 
         /* Item shared */
         .sd-item-icon {

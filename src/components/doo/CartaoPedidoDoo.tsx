@@ -131,7 +131,7 @@ export default function CartaoPedidoDoo({ uid, rascunho, catalogo, estado, numer
 const CSS = `
   .cpd { margin-top: 10px; background: var(--ui-branco); border: 1.5px solid #F7C6D9; border-radius: var(--ui-raio-cartao); padding: 14px; font-family: var(--font-base); color: var(--ui-texto); max-width: 340px; }
   .cpd-hd { display: flex; gap: 11px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--ui-linha); }
-  .cpd-ic { width: 40px; height: 40px; border-radius: var(--ui-raio-p); background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cpd-ic { width: 40px; height: 40px; border-radius: var(--ui-raio-p); background: var(--ui-branco); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #ECE7E9; box-sizing: border-box; }
   .cpd-k { margin: 0; font-size: 12px; font-weight: 600; color: var(--ui-rosa); }
   .cpd-hd b { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 600; margin-top: 1px; flex-wrap: wrap; }
   .cpd-tag { font-size: 12px; font-weight: 600; color: #1D4ED8; background: #DBEAFE; padding: 2px 7px; border-radius: 6px; }

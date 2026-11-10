@@ -128,7 +128,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
         {
           key: "produto",
           label: "Cadastrar primeiro produto",
-          desc: "Adicione foto, nome e preço — fotos boas vendem 3x mais",
+          desc: "Adicione foto, nome e preço. Foto boa vende 3x mais.",
           icon: <ShoppingBag size={18} weight="fill" />,
           done: temProduto,
           path: "/produtos",
@@ -286,7 +286,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
             <ShareNetwork size={16} weight="bold" /> Compartilhar
           </button>
           <button className="pap-done-btn pap-done-btn-copy" onClick={handleCopy}>
-            <Copy size={15} weight="bold" /> {copied ? "Copiado!" : "Copiar link"}
+            <Copy size={15} weight="bold" /> {copied ? "Copiado" : "Copiar link"}
           </button>
           <button className="pap-done-btn pap-done-btn-copy" onClick={verCardapio}>
             <Eye size={15} weight="bold" /> Ver
@@ -383,7 +383,7 @@ export default function PassoAPassoCardapio({ userId, publicado, linkCardapio, o
             <ShareNetwork size={16} weight="bold" /> Compartilhar
           </button>
           <button className="pap-share-btn pap-share-btn-copy" onClick={handleCopy}>
-            <Copy size={15} weight="bold" /> {copied ? "Copiado!" : "Copiar link"}
+            <Copy size={15} weight="bold" /> {copied ? "Copiado" : "Copiar link"}
           </button>
           <button className="pap-share-btn pap-share-btn-copy pap-share-btn-ver" onClick={verCardapio} aria-label="Ver cardápio">
             <Eye size={15} weight="bold" /> Ver

@@ -61,7 +61,7 @@ export default function RelatarProblema() {
         {ok ? (
           <section className="cl9-card aj-ok">
             <span className="aj-ok-ic" aria-hidden="true"><Check size={30} weight="bold" /></span>
-            <h2>{primeiroNome ? `Obrigado, ${primeiroNome}!` : "Obrigado!"}</h2>
+            <h2>{primeiroNome ? `Obrigado, ${primeiroNome}` : "Obrigado"}</h2>
             <p>Recebemos o seu relato. A equipe vai analisar e corrigir o mais rápido possível, e a gente te avisa quando estiver resolvido.</p>
             <Botao onClick={() => voltarOuIr(navigate, "/configuracoes")}>Voltar</Botao>
             <Botao variante="link" onClick={() => { setOk(false); setTexto(""); setParte(null); }}>Relatar outro problema</Botao>

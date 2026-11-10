@@ -91,7 +91,7 @@ const COMO: Record<string, Como> = {
 /** (16/10) texto de cada novidade aqui: do tamanho de 2 linhas cheias no celular (sem 1 palavra sobrando embaixo) */
 const TEXTO_NOVIDADE: Record<string, string> = {
   "aniversarios": "Mande uma mensagem de parabéns e ofereça um bolo especial para o dia.",
-  "faturamento-up": "Você vendeu mais que nos mesmos dias do mês passado. Continue assim!",
+  "faturamento-up": "Você vendeu mais que nos mesmos dias do mês passado.",
   "faturamento-down": "Vendeu menos que nos mesmos dias do mês passado. Que tal uma promoção?",
   "produtos-sem-foto": "Produto com foto vende mais. Adicione para chamar atenção no cardápio.",
   "clientes-sumidos": "Sem comprar há mais de 60 dias. Mande uma mensagem para chamar de volta.",

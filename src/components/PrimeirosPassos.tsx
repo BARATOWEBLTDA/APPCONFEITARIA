@@ -249,7 +249,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
     setFolha(null); if (!pular) avisarPassos();
     // (29/10 · 4.99) no computador não abre o próximo sozinho: o cartão marca o passo e a pessoa escolhe o próximo
     // (6.142) no celular também: volta para o Início, que já mostra o próximo passo com o Doo dele
-    if (!pular && agora) avisar(passosFaltando(agora) ? "Salvo!" : "Tudo configurado!", { tipo: "ok" });
+    if (!pular && agora) avisar(passosFaltando(agora) ? "Salvo" : "Tudo configurado!", { tipo: "ok" });
   };
   // quantos passos ainda faltam além deste que acabou de ser feito
   const passosFaltando = (feito: Passo) => ORDEM.some(k => k !== feito && !estado[k]);
@@ -265,7 +265,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
     const logoUrl = await subirLogo(uid, blob);
     if (!logoUrl) return;
     setPerfilNovo(p => ({ ...p, logo_url: logoUrl })); avisarPassos();
-    avisar(passosFaltando("logo") ? "Logo salva!" : "Tudo configurado!", { tipo: "ok" });
+    avisar(passosFaltando("logo") ? "Logo salva" : "Tudo configurado!", { tipo: "ok" });
   };
   // conta do Google com foto: continua a janela, pra escolher entre usar a foto ou trocar
   // (6.130) no celular também: Fazer agora já abre a galeria (a janela com a prévia saiu)
@@ -386,7 +386,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
         // à direita a lista com os 7 passos (o da vez marcado só pelo número rosa, sem fundo)
         const sel = escolhido ?? atual;
         const p = sel >= 0 ? passos[sel] : null;
-        const animo = feitos === 0 ? "Vamos começar!" : passos.length - feitos <= 2 ? "Falta pouco!" : "Você está indo bem!";
+        const animo = feitos === 0 ? "Vamos começar" : passos.length - feitos <= 2 ? "Falta pouco" : "";
         return (
           <div className="pp-dk">
             <div className="pp-dk-cab">
@@ -418,7 +418,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
                   </div>
                   <div className="pp-hero-dica">
                     <span aria-hidden="true"><Lightbulb size={22} weight="bold" /></span>
-                    <p><b>{animo}</b>Em poucos minutos seu cardápio já fica pronto para vender.</p>
+                    <p>{animo && <b>{animo}</b>}Em poucos minutos seu cardápio já fica pronto para vender.</p>
                   </div>
                   {spot && <Destaque alvo={atRef} toque={btnRef} mascote titulo={feitos === 0 ? "Comece por aqui" : "Continue daqui"} texto={feitos === 0 ? "Em poucos minutos seu cardápio fica pronto para vender." : passos.length - feitos === 1 ? "Só falta esse passo pra liberar seu cardápio." : `Faltam ${passos.length - feitos} passos pra liberar seu cardápio.`} acao={feitos === 0 ? "Começar" : "Fazer agora"} aoAcao={() => { setSpot(false); p.abrir(); }} aoFechar={() => setSpot(false)} />}
                 </div>
@@ -1024,7 +1024,7 @@ const CSS = `
   .pp-ps { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 2px; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
   .pp-ps:disabled { cursor: default; }
   .pp-ps--sem { border-top: none; padding: 0; cursor: default; }
-  .pp-ic { width: 40px; height: 40px; border-radius: var(--ui-raio-p); background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pp-ic { width: 40px; height: 40px; border-radius: var(--ui-raio-p); background: var(--ui-branco); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #ECE7E9; box-sizing: border-box; }
   .pp-ic--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
   .pp-ic--at { background: var(--ui-rosa); color: var(--ui-branco); }
   .pp-tx { flex: 1; min-width: 0; }
@@ -1301,7 +1301,7 @@ const CSS = `
   /* computador: prévia do Financeiro ao lado */
   .ppf-d--cx { min-height: 300px; }
   .ppf-cx-prev { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; row-gap: 2px; align-items: center; padding: 16px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); }
-  .ppf-cx-prev-ic { grid-row: 1 / 3; width: 40px; height: 40px; border-radius: 12px; background: #FDEBF1; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
+  .ppf-cx-prev-ic { grid-row: 1 / 3; width: 40px; height: 40px; border-radius: 12px; background: var(--ui-branco); color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; border: 1px solid #ECE7E9; box-sizing: border-box; }
   .ppf-cx-prev small { font-size: 13px; color: var(--ui-texto-2); }
   .ppf-cx-prev b { font-size: 22px; font-weight: 600; color: var(--ui-texto); font-variant-numeric: tabular-nums; }
   .ppf-cx-prev em { grid-column: 1 / -1; margin-top: 8px; font-style: normal; font-size: 12.5px; color: var(--ui-texto-3); }

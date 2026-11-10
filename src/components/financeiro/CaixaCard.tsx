@@ -179,7 +179,7 @@ const CSS = `
   .cxc-hoje span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; } .cxc-hoje em { font-style: normal; font-weight: 600; }
   .cxc small { display: block; font-size: 13px; opacity: .6; margin-top: 9px; line-height: 1.4; }
   .cxc-convite { background: var(--ui-branco); border: 1.5px dashed #F3C9DA; border-radius: 18px; padding: 18px; text-align: center; font-family: var(--font-base); }
-  .cxc-convite-ic { width: 52px; height: 52px; border-radius: var(--ui-raio-cartao); background: #FFF1F6; color: var(--ui-rosa-escuro); display: inline-flex; align-items: center; justify-content: center; }
+  .cxc-convite-ic { width: 52px; height: 52px; border-radius: var(--ui-raio-cartao); background: var(--ui-branco); color: var(--ui-rosa-escuro); display: inline-flex; align-items: center; justify-content: center; border: 1px solid #ECE7E9; box-sizing: border-box; }
   .cxc-convite b { display: block; font-size: 17px; font-weight: 600; color: var(--ui-texto); margin-top: 8px; }
   .cxc-convite p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 380px; text-wrap: balance; }
   .cxc-convite--foco { border: 2px solid #F3A9C6; box-shadow: 0 0 0 6px rgba(232,90,140,.12), 0 14px 30px -10px rgba(195,58,110,.45) !important; position: relative; z-index: 2; }

@@ -142,7 +142,7 @@ export default function CartaoInsumoDoo({ uid, rascunho, existente, estado, onFe
 export const CSS_CID = `
   .cid { margin-top: 10px; background: var(--ui-branco); border: 1.5px solid #F7C6D9; border-radius: var(--ui-raio-cartao); padding: 14px; font-family: var(--font-base); color: var(--ui-texto); max-width: 340px; }
   .cid-hd { display: flex; gap: 11px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--ui-linha); }
-  .cid-ic { width: 40px; height: 40px; border-radius: var(--ui-raio-p); background: var(--primary-light); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cid-ic { width: 40px; height: 40px; border-radius: var(--ui-raio-p); background: var(--ui-branco); color: #993556; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #ECE7E9; box-sizing: border-box; }
   .cid-k { margin: 0; font-size: 12px; font-weight: 600; color: var(--ui-rosa); }
   .cid-hd b { display: block; font-size: 16px; font-weight: 600; margin-top: 1px; }
   .cid-kv { display: grid; grid-template-columns: 96px 1fr; gap: 7px 10px; margin: 12px 0 0; font-size: 14px; }

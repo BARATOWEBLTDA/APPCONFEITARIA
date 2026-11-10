@@ -58,7 +58,7 @@ export default class TelaDeErro extends Component<{ children: ReactNode }, Estad
         <main className="ne-cartao" role="alert">
           <Mascote pose="comemorando" className="ne-masc" />
           <NomeDoonly className="ne-nome" />
-          <h1 className="ne-h">Tem uma versão nova do Doonly!</h1>
+          <h1 className="ne-h">Tem uma versão nova do Doonly</h1>
           <p className="ne-p">Atualizamos o app enquanto você usava. Toque em Atualizar para continuar de onde parou.</p>
           <div className="sis-erro-acoes">
             <Botao cheio icone={<Sparkle size={20} weight="fill" />} onClick={() => { try { sessionStorage.setItem("doonly_reparo", "0"); } catch { /* segue */ } recarregarLimpo(this.state.detalhe || ""); }}>Atualizar agora</Botao>

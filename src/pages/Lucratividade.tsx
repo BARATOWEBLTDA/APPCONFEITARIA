@@ -35,7 +35,7 @@ const CSS_AMOSTRA = `
   .lu-pro { padding: 16px 16px 0; max-width: 1100px; margin: 0 auto; box-sizing: border-box; }
   .lu-ex-t { margin: 20px 16px 0; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); text-align: center; }
   .lu-convite { position: absolute; left: 0; right: 0; top: 140px; z-index: 2; width: calc(100% - 40px); max-width: 380px; margin: 0 auto; padding: 26px 22px; box-sizing: border-box; border-radius: 20px; background: var(--ui-branco); box-shadow: 0 12px 40px rgba(45, 31, 38, .18); text-align: center; }
-  .lu-convite-ic { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 50%; background: var(--primary-light); color: var(--ui-rosa-escuro); }
+  .lu-convite-ic { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 50%; background: var(--ui-branco); color: var(--ui-rosa-escuro); border: 1px solid #ECE7E9; box-sizing: border-box; }
   .lu-convite b { display: block; font-size: 18px; font-weight: 600; color: var(--ui-texto); }
   .lu-convite p { margin: 8px 0 16px; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
 `;
@@ -327,7 +327,7 @@ const CSS = `
   .lu { position: relative; margin: 0 auto; max-width: 1160px; padding: 14px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 14px; }
   .lu-ph { height: 260px; background: #FAF7F8; border-radius: var(--ui-raio-cartao); }
   .lu-vazio { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 18px; padding: 30px 20px; text-align: center; }
-  .lu-vazio-ic { width: 60px; height: 60px; border-radius: 18px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: inline-flex; align-items: center; justify-content: center; }
+  .lu-vazio-ic { width: 60px; height: 60px; border-radius: 18px; background: var(--ui-branco); color: var(--ui-rosa-escuro); display: inline-flex; align-items: center; justify-content: center; border: 1px solid #ECE7E9; box-sizing: border-box; }
   .lu-vazio b { display: block; font-size: 17px; font-weight: 600; margin-top: 12px; }
   .lu-vazio p { font-size: 13.5px; color: var(--ui-texto-2); line-height: 1.45; margin: 6px auto 0; max-width: 400px; text-wrap: balance; }
   .lu-cta { margin-top: 14px; border: none; border-radius: var(--ui-raio); padding: 12px 18px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }

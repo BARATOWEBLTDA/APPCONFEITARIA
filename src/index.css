@@ -76,3 +76,6 @@ html body :is(
 /* (6.01) negrito do app no máximo 600 (o padrão do navegador para <b>/<strong> é 700 ou mais) */
 b, strong { font-weight: 600; }
 .ui-so-leitor { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* (10/11) sem palavra sozinha na última linha (ex.: "ideias." caindo sozinha): o navegador equilibra as linhas */
+p, h1, h2, h3, small, .ui-janela-t { text-wrap: pretty; }

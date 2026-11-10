@@ -720,7 +720,7 @@ function CartContent({
       // (17/10) o servidor confere a data e a forma de entrega
       // (6.157) o servidor também confere dia fechado, horário fora do expediente e a antecedência dos produtos
       if (/data_invalida/.test(msg)) return avisar('Esse dia ou horário não está disponível. Escolha outra data e envie de novo.', { tipo: 'erro' })
-      if (/loja_em_preparacao/.test(msg)) return avisar('Esta loja ainda está preparando o cardápio. Volte em breve!', { tipo: 'erro' })
+      if (/loja_em_preparacao/.test(msg)) return avisar('Esta loja ainda está preparando o cardápio. Volte em breve.', { tipo: 'erro' })
       if (/entrega_fora_area/.test(msg)) return avisar('Esse endereço está fora da área de entrega da loja. Confira o endereço ou escolha retirar.', { tipo: 'erro' })
       if (/entrega_invalida/.test(msg)) return avisar('A forma de entrega mudou na loja. Escolha de novo como receber e envie.', { tipo: 'erro' })
       if (/item_invalido/.test(msg)) return avisar('Um produto da sacola mudou ou saiu do cardápio. Confira a sacola e envie de novo.', { tipo: 'erro' })

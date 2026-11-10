@@ -57,7 +57,7 @@ export default function SucessoProdutoTela(p: Props) {
       <div className="spa-topo">
         <div className="spa-ok" aria-hidden="true"><Check size={30} weight="bold" /></div>
         <div>
-          <h2 className="spa-t" id="spa-t">{p.primeiro ? "Primeiro produto cadastrado!" : "Produto cadastrado!"}</h2>
+          <h2 className="spa-t" id="spa-t">{p.primeiro ? "Primeiro produto cadastrado!" : "Produto cadastrado"}</h2>
           <p className="spa-x">
             {p.foraDoCardapio
               ? <><b>{p.nome}</b> ficou guardado só para você e não aparece no cardápio.</>

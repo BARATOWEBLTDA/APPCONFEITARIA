@@ -636,7 +636,7 @@ function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: P
   return (<>
     {dica && (
       <Destaque alvo={linhaRef} sobreJanela mascote raio={14} titulo={primeiroNome ? `${primeiroNome}, configure o rendimento` : "Configure o rendimento"} acao="Configurar" naoTexto="Agora não"
-        texto="Mostre quantas pessoas cada tamanho serve. Fica lindo no cardápio!"
+        texto="Mostre quantas pessoas cada tamanho serve. Fica mais claro pro cliente."
         aoAcao={() => { setDica(false); setAberta(true); }} aoFechar={agoraNao}
         extra={<div className="esc-dica-prev" aria-hidden="true">
           <small>No cardápio fica assim:</small>

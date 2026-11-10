@@ -7,7 +7,7 @@ import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { parseNumBR } from "@/lib/numeroBR";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Buildings, Percent, Clock, Plus, CaretRight, Receipt, WarningCircle, CreditCard, Fire, PencilSimple } from "@phosphor-icons/react";
+import { Buildings, Percent, Clock, Plus, CaretRight, Receipt, WarningCircle, Fire, PencilSimple } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_CUSTOS, TOUR_CUSTOS } from "@/lib/comoTelas";
 import { Botao, TelaVazia } from "@/components/base";
@@ -124,18 +124,13 @@ export default function Custos() {
           <TelaVazia caixa icone={<WarningCircle size={30} />} titulo="Não deu para carregar os custos" texto="Confira a internet e tente de novo."
             acao={<Botao variante="suave" tamanho="m" onClick={() => { setCarregando(true); carregar(); }}>Tentar de novo</Botao>} />
         ) : (<>
-        <div className="cu-resumo">
-          <div className="cu-k"><small>Fixos por mês</small><b>{brl(totalFixos)}</b><i>{qtdFixosAtivos} {qtdFixosAtivos === 1 ? "ativo" : "ativos"}</i></div>
-          <div className="cu-k"><small>Seu salário</small><b>{brl(mo.salario_mensal)}</b><i>mão de obra</i></div>
-          <div className="cu-k destaque"><small>Custo da sua hora</small><b>{brl(custoHora)}</b><i>fixos + salário</i></div>
-          <div className="cu-k"><small>Por pedido</small><b>{brl(varPorPedido)}</b><i>{varPct > 0 ? `+ ${temPctPorForma ? "até " : ""}${String(varPct).replace(".", ",")}% da venda` : `${ativosVar.length} ${ativosVar.length === 1 ? "ativo" : "ativos"}`}</i></div>
-        </div>
+        {/* (10/11) sem os 4 quadradinhos: o total de cada bloco vai do lado do nome e o custo da hora fica na Mão de obra */}
 
         <div className="cu-grid">
           {/* (6.163) duas colunas independentes no PC: um cartão alto não deixa buraco no cartão ao lado */}
           <div className="cu-col">
           <section className="cu-card cu-a-fixos">
-            <div className="cu-ct"><span className="cu-ic"><Buildings size={18} weight="duotone" /></span><div><b>Custos fixos</b><small>Pagos todo mês</small></div>
+            <div className="cu-ct"><span className="cu-ic"><Buildings size={18} weight="duotone" /></span><div><b>Custos fixos</b><small>Pagos todo mês · <em className="cu-tot">{brl(totalFixos)}</em></small></div>
               <button type="button" className="cu-add" onClick={() => setEditFixo("novo")}><Plus size={14} weight="bold" />Adicionar</button></div>
             {carregando ? <div className="cu-ph" /> : fixos.length === 0 ? (
               <p className="cu-vazio">Ex.: aluguel, internet, luz.</p>
@@ -149,7 +144,7 @@ export default function Custos() {
           </section>
 
           <section className="cu-card cu-a-var">
-            <div className="cu-ct"><span className="cu-ic"><Percent size={18} weight="duotone" /></span><div><b>Custos variáveis</b><small>A cada venda</small></div>
+            <div className="cu-ct"><span className="cu-ic"><Percent size={18} weight="duotone" /></span><div><b>Custos variáveis</b><small>A cada venda{ativosVar.length > 0 && <> · <em className="cu-tot">{varPct > 0 ? `${temPctPorForma ? "até " : ""}${String(varPct).replace(".", ",")}%${varPorPedido > 0 ? ` + ${brl(varPorPedido)}` : ""}` : brl(varPorPedido)}</em></>}</small></div>
               <button type="button" className="cu-add" onClick={() => setEditVar("novo")}><Plus size={14} weight="bold" />Adicionar</button></div>
             {carregando ? <div className="cu-ph" /> : variaveis.length === 0 ? (
               <p className="cu-vazio">Nenhum ainda. Ex.: maquininha, embalagem.</p>
@@ -164,7 +159,6 @@ export default function Custos() {
             {/* (27/10) taxa antiga com "maquininha" no nome também conta (antes pedia de novo e a taxa saía em dobro) */}
             {!carregando && !variaveis.some(v => v.forma || /maquin/i.test(v.nome || "")) && (
               <button type="button" className="cu-it cu-it--falta" onClick={() => setEditMaq(true)}>
-                <span className="cu-it-ic" aria-hidden="true"><CreditCard size={16} weight="bold" /></span>
                 <div className="cu-it-t"><b>Taxa da maquininha</b><small>Débito e crédito · falta cadastrar</small></div>
                 <CaretRight size={14} weight="bold" className="cu-it-ar" />
               </button>
@@ -181,6 +175,7 @@ export default function Custos() {
               <div className="cu-mo-l"><span>Jornada</span><b>{mo.horas_dia}h por dia · {diasTxt(mo.dias_semana_array)}</b></div>
               <div className="cu-mo-l"><span>Salário por hora</span><b className="rosa">{brl(valorHora)}</b></div>
               <div className="cu-mo-l"><span>Salário por dia</span><b>{brl(valorHora * mo.horas_dia)}</b></div>
+              <div className="cu-mo-l"><span>Sua hora custa (fixos + salário)</span><b className="rosa">{brl(custoHora)}</b></div>
             </div>
           </section>
 
@@ -461,6 +456,7 @@ const CSS = `
   .cu { max-width: 1120px; margin: 0 auto; padding: 14px 0 96px; font-family: var(--font-base); color: var(--ui-texto); display: flex; flex-direction: column; gap: 16px; }
   .cu-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media (min-width: 900px) { .cu-resumo { grid-template-columns: repeat(4, 1fr); } }
+  .cu-tot { font-style: normal; font-weight: 500; color: var(--ui-texto); }
   .cu-k { background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 14px; padding: 12px; min-width: 0; }
   .cu-k small { display: block; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
   .cu-k b { display: block; font-size: clamp(16px, 4.6vw, 21px); font-weight: 600; letter-spacing: -.02em; margin: 3px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -476,7 +472,7 @@ const CSS = `
   .cu-ct { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .cu-ct > div { flex: 1; min-width: 0; }
   .cu-ct b { display: block; font-size: 15.5px; font-weight: 600; } .cu-ct small { font-size: 12.5px; color: #6F6E68; }
-  .cu-ic { width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cu-ic { width: 38px; height: 38px; border-radius: 11px; background: var(--ui-branco); color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #ECE7E9; box-sizing: border-box; }
   .cu-ph { height: 90px; background: #FAF7F8; border-radius: var(--ui-raio-p); }
   .cu-vazio { margin: 6px 0 4px; font-size: 13px; color: #6F6E68; line-height: 1.45; }
   .cu-it { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid var(--ui-linha); padding: 11px 2px; font-family: inherit; color: var(--ui-texto); cursor: pointer; }
@@ -489,7 +485,7 @@ const CSS = `
   /* (16/10) "+ Adicionar" discreto no título do bloco (antes um botão tracejado embaixo) */
   .cu-add { flex: none; display: flex; align-items: center; gap: 4px; min-height: 36px; margin: 0 -6px 0 0; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   @media (hover: hover) { .cu-add:hover { background: #FFF1F6; } }
-  .cu-it-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: #FFF1F6; color: var(--ui-rosa-escuro); }
+  .cu-it-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: var(--ui-branco); color: var(--ui-rosa-escuro); border: 1px solid #ECE7E9; box-sizing: border-box; }
   .cu-it--falta .cu-it-t small { color: var(--ui-rosa-escuro); }
   .cu-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 44px; margin-top: 10px; border: 1.5px solid #F3C9DA; border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   /* (01/11 · 5.98) sem a caixa cinza dentro do cartão: as linhas no mesmo jeito das listas de custos ao lado */

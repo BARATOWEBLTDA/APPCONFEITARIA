@@ -229,7 +229,7 @@ export const COMO_PRODUTOS: Como = {
     [Camera, <><b>Fotos</b> boas vendem mais: use luz natural e um fundo limpo.</>],
     [ToggleRight, <>A <b>chave</b> mostra ou oculta o produto no cardápio, sem precisar excluí-lo.</>],
     [ListChecks, <>Monte a <b>ficha técnica</b> para ver o custo e o lucro de cada produto.</>],
-    [Tag, <>Organize por <b>categorias</b> para o cliente encontrar tudo com facilidade.</>],
+    [Tag, <>Separe por <b>categorias</b>, como Bolos e Docinhos. O cliente acha mais rápido.</>],
   ],
 };
 
@@ -418,7 +418,7 @@ export const COMO_INGREDIENTES: Como = {
   dicas: [
     [Basket, <>Informe <b>quanto vem</b> na embalagem e <b>quanto pagou</b>. O custo por grama é calculado automaticamente.</>],
     [ArrowsClockwise, <>Quando o preço mudar, atualize aqui: o custo das <b>fichas técnicas</b> acompanha.</>],
-    [Tag, <>Organize por <b>categoria</b>: ingredientes, embalagens, decorações, descartáveis e outros.</>],
+    [Tag, <>Separe por <b>tipo</b>: ingredientes, embalagens, decorações, descartáveis e outros.</>],
     [MagnifyingGlass, <>Busque pelo <b>nome</b> ou pela <b>marca</b>.</>],
   ],
 };
@@ -494,7 +494,6 @@ export const COMO_CUSTOS: Como = {
   ],
 };
 export const TOUR_CUSTOS: PassoTour[] = [
-  { el: ".cu-resumo", titulo: "Resumo", texto: "Custos fixos do mês, seu salário, o custo da sua hora e os custos variáveis por pedido." },
   { el: ".cu-a-fixos", titulo: "Custos fixos", texto: "Aluguel, internet, luz e outros gastos mensais. Com o dia de vencimento, viram uma conta em A pagar." },
   { el: ".cu-a-mo", titulo: "Mão de obra", texto: "Seu salário e sua jornada. Com eles, o app calcula o valor da sua hora de trabalho." },
   { el: ".cu-a-var", titulo: "Custos variáveis", texto: "Custos que acompanham cada venda, como a taxa da maquininha e a embalagem por pedido." },

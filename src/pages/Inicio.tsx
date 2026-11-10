@@ -894,7 +894,7 @@ export default function Inicio() {
             <span>
               {/* 11/10: sem o perfil e com erro, "Olá!" (antes ficava "Olá," com o nome carregando pra sempre) */}
               {/* (24/10) igual ao computador: "Boa tarde, Bruno". Sem o nome da pessoa, "Olá, <loja>" */}
-              {!profile && erroCarga ? "Olá!" : profile && nome.trim() ? saudacao : <>Olá,{" "}</>}
+              {!profile && erroCarga ? "Olá" : profile && nome.trim() ? saudacao : <>Olá,{" "}</>}
               {!profile && erroCarga ? null : profile && nome.trim() ? null : profile ? (
                 // 02/10: o nome da confeitaria (o pessoal só se a loja ainda não tiver nome)
                 // 09/10 · 4.01: só o nome da loja, sem "Confeitaria", "Doceria" etc., pra caber com a etiqueta do plano
@@ -1066,7 +1066,7 @@ export default function Inicio() {
       )}
 
       {destaquePedidos && (
-        <Destaque alvo='.bottom-nav .bn-item[href="/pedidos"]' raio={14} titulo="Pedido aceito!" texto="Todos os seus pedidos ficam aqui, em Pedidos."
+        <Destaque alvo='.bottom-nav .bn-item[href="/pedidos"]' raio={14} titulo="Pedido aceito" texto="Todos os seus pedidos ficam aqui, em Pedidos."
           acao="Ver pedidos" aoAcao={() => { setDestaquePedidos(false); navigate("/pedidos"); }} aoFechar={() => setDestaquePedidos(false)} />
       )}
 

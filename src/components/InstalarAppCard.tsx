@@ -105,7 +105,7 @@ export default function InstalarAppCard() {
             Para instalar no iPhone, abra o Doonly no <b>Safari</b>. Aberto por dentro do Instagram ou do WhatsApp, a Apple não deixa instalar.
           </p>
           <button className="ia-btn ia-btn--ghost" onClick={copiarLink}>
-            {copiado ? "Link copiado!" : "Copiar link para colar no Safari"}
+            {copiado ? "Link copiado" : "Copiar link para colar no Safari"}
           </button>
         </>
       )}

@@ -524,7 +524,7 @@ const CSS = `
   /* período */
   .fd-per { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 16px; padding: 10px 12px; }
   .fd-per-tx { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .fd-per-ic { flex: none; width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
+  .fd-per-ic { flex: none; width: 38px; height: 38px; border-radius: 11px; background: var(--ui-branco); color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; border: 1px solid #ECE7E9; box-sizing: border-box; }
   .fd-per-tx b { display: block; font-size: 14.5px; font-weight: 600; color: var(--ui-texto); }
   .fd-per-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); }
   .fd-per-chips { display: flex; gap: 2px; background: #F4EEF1; border-radius: 12px; padding: 3px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
