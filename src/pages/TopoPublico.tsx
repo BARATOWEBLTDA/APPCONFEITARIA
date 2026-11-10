@@ -30,7 +30,8 @@ export default function TopoPublico() {
       if (session) { navigate(destino, { replace: true }); return; }
       if (/^[a-z0-9]{2,12}$/i.test(de)) void supabase.rpc("topo_quem_compartilhou", { p_codigo: de }).then(({ data: q }) => {
         const r = (Array.isArray(q) ? q[0] : q) as { nome: string | null; loja: string | null; imagem: string | null } | null;
-        const nome = nomeApresentavel(r?.nome) || String(r?.loja || "").trim();
+        // (09/11) quem aparece é a loja ("Doce Formiga compartilhou…"); sem nome de loja, o primeiro nome da pessoa
+        const nome = String(r?.loja || "").trim() || nomeApresentavel(r?.nome);
         if (vivo && nome) setQuem({ nome, loja: r?.loja || null, imagem: r?.imagem && /^https:\/\//.test(r.imagem) ? r.imagem : null });
       });
       const { data } = await supabase.rpc("topo_publico", { p_id: id });
@@ -60,7 +61,6 @@ export default function TopoPublico() {
             <div className="tp-quem">
               <span className="tp-quem-img">{quem.imagem ? <img src={quem.imagem} alt="" onError={() => setQuem(q => q && { ...q, imagem: null })} /> : <Storefront size={24} />}</span>
               <p className="tp-quem-t">{quem.nome} compartilhou esse topo de bolo com você <Heart size={16} weight="fill" className="tp-coracao" aria-label="com carinho" /></p>
-              {quem.loja && quem.loja !== quem.nome && <small className="tp-quem-l">{quem.loja}</small>}
             </div>
           )}
           <section className="tp-card">
