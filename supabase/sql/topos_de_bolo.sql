@@ -107,3 +107,8 @@ language sql stable security definer set search_path = public as $$
   limit 1
 $$;
 grant execute on function public.topo_publico(text) to anon, authenticated;
+
+-- (10/11) baixar os topos é grátis pra toda conta logada (antes só PRO e admin)
+drop policy if exists "topos arquivos: pro baixa" on storage.objects;
+drop policy if exists "topos arquivos: conta baixa" on storage.objects;
+create policy "topos arquivos: conta baixa" on storage.objects for select to authenticated using (bucket_id = 'topos-arquivos');

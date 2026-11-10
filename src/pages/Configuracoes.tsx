@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { digitosTelefone } from "@/lib/telefone";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, SignOut, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, WhatsappLogo, SignOut, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -333,6 +333,9 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
               destaque={temNova || !instalado} onClick={() => setSobreOpen(true)}>
               {temNova && <span className="cf9-ponto" aria-hidden="true" />}
             </ItemConfig>
+            {/* (10/11) a Central de Ajuda saiu: o suporte fica aqui, direto no WhatsApp */}
+            <ItemConfig icone={<WhatsappLogo size={20} weight="bold" />} nome="Falar com o suporte" apoio="Tire dúvidas pelo WhatsApp"
+              onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
             {/* (10/11) Termos e privacidade: linha própria (a LGPD pede a política sempre à mão) */}
             <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Como cuidamos dos seus dados" onClick={() => setTermosOpen(true)} />
             {/* (18/10) Minhas conquistas escondido por enquanto */}

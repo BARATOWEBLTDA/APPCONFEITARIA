@@ -4,7 +4,6 @@ import { ArrowSquareOut, ShareNetwork, CaretLeft, CaretRight, Crown, SquaresFour
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, TelaVazia, avisar } from "@/components/base";
 import { ConvitePro } from "@/components/billing/RecursoPro";
-import { usePlano } from "@/hooks/usePlano";
 import { useProfile } from "@/hooks/useProfile";
 import { baixarArquivo, infoFormato, carregarCategorias, carregarTopos, tamanhoTexto, type ArquivoTopo, type CategoriaTopo, type Topo } from "@/lib/toposBolo";
 import "./toposBolo.css";
@@ -14,7 +13,8 @@ import "./toposBolo.css";
  * Tocar no topo abre a capa grande e os arquivos pra baixar. Todas veem; só a PRO baixa (as outras veem o convite do PRO).
  */
 export default function ToposBolo() {
-  const { isPro } = usePlano();
+  // (10/11) baixar os topos é grátis pra toda conta (antes só PRO)
+  const isPro = true;
   const { profile } = useProfile();
   const [params, setParams] = useSearchParams();
   const catId = params.get("cat");
@@ -77,7 +77,6 @@ export default function ToposBolo() {
   };
 
   const baixar = async (a: ArquivoTopo) => {
-    if (!isPro) { setAberto(null); setConvite(true); return; }
     setBaixando(a.caminho);
     const ok = await baixarArquivo(a);
     setBaixando("");
@@ -181,7 +180,6 @@ export default function ToposBolo() {
                 </>
               )}
               <button type="button" className="tb-compart" onClick={() => compartilhar(aberto)}><ShareNetwork size={18} weight="regular" />Compartilhar</button>
-              {!isPro && (aberto.arquivos.length > 0 || aberto.canva_url) && <p className="tb-det-pro"><Crown size={14} weight="fill" aria-hidden="true" />Baixar os topos é um recurso do PRO</p>}
             </div>
           </div>
         )}
