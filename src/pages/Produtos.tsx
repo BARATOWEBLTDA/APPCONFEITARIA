@@ -1419,7 +1419,7 @@ export default function Produtos() {
     <>
       {limiteAberto && <LimitePlano tipo="produtos" limite={LIMITE_PRODUTOS_GRATIS} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader
-      title="Produtos" voltar="/cadastros"
+      title="Produtos" voltar="/cardapio"
       // (10/11) sem produto ainda, a tela já explica tudo: o (i) só aparece depois do 1º produto
       subtitle="O que aparece no seu cardápio" infoComo={produtos.length ? COMO_PRODUTOS : undefined} infoTour={produtos.length ? TOUR_PRODUTOS : undefined}
       infoIcon="🎂"
@@ -3437,7 +3437,7 @@ export default function Produtos() {
           font-size: 13px;
           font-weight: 600;
           cursor: pointer;
-          box-shadow: 0 3px 0 var(--ui-rosa-escuro);
+          box-shadow: none;
           transition: transform 0.08s, filter 0.08s, box-shadow 0.08s;
           display: inline-flex;
           align-items: center;
@@ -3807,7 +3807,7 @@ export default function Produtos() {
           font-weight: 600;
           letter-spacing: 0.01em;
           text-align: center;
-          box-shadow: 0 3px 0 var(--ui-rosa-escuro);
+          box-shadow: none;
           cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           box-sizing: border-box;
@@ -3821,7 +3821,7 @@ export default function Produtos() {
         .prod-btn-avancar-novo:disabled {
           background: #F5DCE6;
           color: var(--ui-branco);
-          box-shadow: 0 3px 0 #E8C4D2;
+          box-shadow: none;
           cursor: not-allowed;
         }
 
@@ -4490,10 +4490,10 @@ export default function Produtos() {
         .bulk-confirm-btn--excluir {
           background: var(--ui-vermelho);
           color: var(--ui-branco);
-          box-shadow: 0 3px 0 var(--ui-vermelho-escuro);
+          box-shadow: none;
         }
-        .bulk-confirm-btn--excluir:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ui-vermelho-escuro); }
-        .bulk-confirm-btn--excluir:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ui-vermelho-escuro); }
+        .bulk-confirm-btn--excluir:hover { transform: translateY(-1px); box-shadow: none; }
+        .bulk-confirm-btn--excluir:active { transform: translateY(2px); box-shadow: none; }
         .bulk-confirm-btn:disabled { opacity: 0.6; cursor: wait; }
 
 

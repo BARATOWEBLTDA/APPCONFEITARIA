@@ -157,7 +157,7 @@ export default function Insumos() {
   };
 
   const cabecalho = (
-    <AppPageHeader voltar="/cadastros"
+    <AppPageHeader voltar="menu"
       title="Ingredientes" infoComo={COMO_INGREDIENTES} infoTour={TOUR_INGREDIENTES}
       subtitle={loading || insumos.length === 0 ? "O que você compra para produzir" : `${insumos.length} ${insumos.length === 1 ? "cadastrado" : "cadastrados"}`}
       infoContent={

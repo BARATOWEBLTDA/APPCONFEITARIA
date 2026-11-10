@@ -2171,7 +2171,7 @@ export default function Inicio() {
           .ini-dk-bts { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
           .ini-dk-sep { width: 1px; height: 28px; margin: 0 6px; background: rgba(255,255,255,.35); }
           .ini-dk-bt { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--ui-raio); font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-          .ini-dk-bt--1 { border: none; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+          .ini-dk-bt--1 { border: none; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); box-shadow: none; }
           .ini-dk-bt--2 { border: 1.5px solid rgba(255,255,255,.7); background: transparent; color: var(--ui-branco); }
           .ini-dk-bt:hover { transform: translateY(-1px); }
           .ini-dk-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 0; }

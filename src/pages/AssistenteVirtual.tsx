@@ -68,7 +68,7 @@ export default function AssistenteVirtual() {
         .av-item b { font-size: 14.5px; } .av-item small { font-size: 12.5px; color: var(--ui-texto-2); }
         .av-novo { position: absolute; top: 10px; right: 10px; padding: 2px 8px; border-radius: 6px; background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-style: normal; font-size: 11.5px; font-weight: 600; }
         .av-aviso { margin: 14px 0 0; text-align: center; font-size: 12.5px; color: var(--ui-texto-3); }
-        .av-cta { width: 100%; height: 52px; margin-top: 18px; border: none; border-radius: var(--ui-raio); background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .av-cta { width: 100%; height: 52px; margin-top: 18px; border: none; border-radius: var(--ui-raio); background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; box-shadow: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .av-sub { text-align: center; font-size: 12.5px; color: var(--ui-texto-3); margin: 10px 0 0; }
         .av-link { position: relative; border: none; background: none; padding: 0; font: inherit; color: var(--ui-rosa-escuro); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
         .av-link::after { content: ""; position: absolute; inset: -13px -4px; }

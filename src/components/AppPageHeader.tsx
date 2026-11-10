@@ -79,6 +79,8 @@ export default function AppPageHeader({ heroi, title, subtitle, titleExtra, resu
     const st = window.history.state as { idx?: number; usr?: { doMenu?: boolean } } | null
     const doMenu = !!st?.usr?.doMenu
     if ((st?.idx ?? 0) > 0) navegar(-1)
+    // (10/11) voltar="menu": tela que mora no Menu aberta direto (link ou notificação) volta pro Início com o Menu aberto
+    else if (voltar === 'menu') { navegar('/inicio'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('doonly:abrir-menu')), 60) }
     else if (voltar) navegar(voltar, doMenu ? { replace: true } : undefined)
     if (doMenu) window.setTimeout(() => window.dispatchEvent(new CustomEvent('doonly:abrir-menu')), 60)
   }

@@ -89,7 +89,6 @@ const CardapioPrevia = lazy(() => import("@/pages/CardapioPrevia"));
 const Produtos = lazy(() => import("@/pages/Produtos"));
 const Categorias = lazy(() => import("@/pages/Categorias"));
 const Clientes = lazy(() => import("@/pages/Clientes"));
-const Cadastros = lazy(() => import("@/pages/Cadastros"));
 const Complementos = lazy(() => import("@/pages/Complementos"));
 const Orcamentos = lazy(() => import("@/pages/Orcamentos"));
 const OrcamentoEditar = lazy(() => import("@/pages/OrcamentoEditar"));
@@ -144,7 +143,6 @@ const PRE_CARREGAR: (() => Promise<unknown>)[] = [
   () => import("@/pages/Produtos"),
   () => import("@/pages/Categorias"),
   () => import("@/pages/Clientes"),
-  () => import("@/pages/Cadastros"),
   () => import("@/pages/Complementos"),
   () => import("@/pages/Orcamentos"),
   () => import("@/pages/OrcamentoEditar"),
@@ -583,7 +581,8 @@ export default function App() {
           <Route path="/ferramentas/simulador" element={<SimuladorPreco />} />
           <Route path="/ferramentas/topos" element={<ToposBolo />} />
           <Route path="/clientes" element={<Clientes />} />
-          <Route path="/cadastros" element={<Cadastros />} />
+          {/* (10/11) a tela Cadastros saiu: link antigo cai na Minha loja */}
+          <Route path="/cadastros" element={<Navigate to="/cardapio" replace />} />
           <Route path="/complementos" element={<Complementos />} />
           <Route path="/adicionais" element={<Navigate to="/complementos" replace />} />
           <Route path="/clientes/:id" element={<ClientePerfil />} />

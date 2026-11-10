@@ -227,7 +227,7 @@
 .orp-pe > *, .orp-pe > .orp-bt { max-width: 528px; margin: 0 auto; }
 .orp-pe--2 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; }
 @media (min-width: 600px) { .orp-pe--2 { padding-left: calc(50% - 264px); padding-right: calc(50% - 264px); } }
-.orp-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 52px; margin: 0; padding: 0 16px; border: 0; border-radius: 14px; background: var(--ui-rosa-botao, #CC2E66); box-shadow: 0 3px 0 var(--ui-rosa-escuro); font-family: inherit; font-size: 16px; font-weight: 600; color: #fff; text-decoration: none; cursor: pointer; }
+.orp-bt { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 52px; margin: 0; padding: 0 16px; border: 0; border-radius: 14px; background: var(--ui-rosa-botao, #CC2E66); box-shadow: none; font-family: inherit; font-size: 16px; font-weight: 600; color: #fff; text-decoration: none; cursor: pointer; }
 .orp-bt:disabled { opacity: .6; cursor: default; }
 .orp-bt--sec { background: #F3EEF1; color: var(--ui-texto); box-shadow: none; }
 .orp-bt--perigo { background: var(--ui-vermelho); box-shadow: none; }

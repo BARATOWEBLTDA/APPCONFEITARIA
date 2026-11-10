@@ -102,8 +102,8 @@ export default function SucessoProdutoTela(p: Props) {
         .spa-pt { flex: 1; min-width: 0; }
         .spa-pt b { display: block; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .spa-pt small { display: block; font-size: 12.5px; color: rgba(255,255,255,.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .spa-b1 { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; margin: 0; border: 0; border-radius: var(--ui-raio-botao); background: #fff; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 15.5px; font-weight: 600; box-shadow: 0 3px 0 rgba(120,20,60,.35); cursor: pointer; white-space: nowrap; }
-        .spa-b1:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(120,20,60,.35); }
+        .spa-b1 { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; margin: 0; border: 0; border-radius: var(--ui-raio-botao); background: #fff; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 15.5px; font-weight: 600; box-shadow: none; cursor: pointer; white-space: nowrap; }
+        .spa-b1:active { transform: translateY(2px); box-shadow: none; }
         .spa-fe { display: block; width: 100%; min-height: 44px; margin: 6px 0 0; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 500; color: rgba(255,255,255,.92); cursor: pointer; }
         .spa-confete { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
         .spa-confete i { position: absolute; top: -20px; width: 8px; height: 13px; border-radius: 2px; opacity: 0; animation: spa-cai 3s linear forwards; }

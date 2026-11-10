@@ -659,6 +659,8 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
   const mesNome = MESES[refDate.getMonth()];
   const ehMesDeHoje = refDate.getMonth() === new Date().getMonth() && refDate.getFullYear() === new Date().getFullYear();
   const NOME_SIT: Record<Sit, string> = { atr: "atrasado", ace: "para aceitar", age: "na agenda", ok: "concluído" };
+  const NOME_LEG: Record<Sit, string> = { atr: "Atrasado", ace: "Para aceitar", age: "Na agenda", ok: "Concluído" };
+  const legendaMes = ORDEM_SIT.filter(k => cells.some(c => !c.outroMes && (dayStats[c.iso]?.[k] ?? 0) > 0));
 
   return (
     <section className="ag3-card ag3-cal" aria-label="Calendário">
@@ -699,12 +701,10 @@ function Calendario({ refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHo
         })}
       </div>
 
-      <div className="ag3-leg" aria-hidden="true">
-        <span><i className="atr" />Atrasado</span>
-        <span><i className="ace" />Para aceitar</span>
-        <span><i className="age" />Na agenda</span>
-        <span><i className="ok" />Concluído</span>
-      </div>
+      {/* (10/11) a legenda mostra só as cores que aparecem no mês; mês sem pedido, ela some */}
+      {legendaMes.length > 0 && <div className="ag3-leg" aria-hidden="true">
+        {legendaMes.map(k => <span key={k}><i className={k} />{NOME_LEG[k]}</span>)}
+      </div>}
     </section>
   );
 }

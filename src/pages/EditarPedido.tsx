@@ -4082,7 +4082,7 @@ const EP2_CSS = `
   .ep2-save-desk { display: none; } @media (min-width: 1024px) { .ep2-save-desk { display: flex; flex-direction: column; gap: 8px; } }
   .ep2-mud { font-size: 12.5px; font-weight: 600; color: var(--ui-laranja); text-align: center; }
   .ep2-b1, .ep2-b2 { border: none; border-radius: var(--ui-raio); padding: 13px; font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; }
-  .ep2-b1 { background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); box-shadow: 0 3px 0 var(--ui-rosa-escuro); } .ep2-b1.ok { background: #15803D; box-shadow: none; } .ep2-b2 { background: var(--ui-cinza); color: var(--ui-cinza-texto); }
+  .ep2-b1 { background: var(--ui-rosa-botao, #CC2E66); color: var(--ui-branco); box-shadow: none; } .ep2-b1.ok { background: #15803D; box-shadow: none; } .ep2-b2 { background: var(--ui-cinza); color: var(--ui-cinza-texto); }
   .ep2-b1:disabled, .ep2-b2:disabled { opacity: .7; cursor: default; }
   .ep2-foot { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ui-branco); border-top: 1px solid #F0EBED; box-shadow: 0 -6px 16px rgba(44,18,25,.08); padding: 8px 12px 10px; display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; animation: ep2Sobe .2s ease; }
   html.teclado-aberto .ep2-foot { bottom: var(--teclado, 0px); }

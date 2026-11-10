@@ -81,7 +81,7 @@
 .lpc-x::after { content: ""; position: absolute; inset: -8px; }
 .lpc-bts { display: flex; gap: 8px; margin-top: 12px; }
 .lpc-b { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: #F3EEF0; color: var(--ui-texto); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
-.lpc-b--pri { background: #2E9E5B; color: #fff; box-shadow: 0 2px 0 #1F7A45; }
+.lpc-b--pri { background: #2E9E5B; color: #fff; box-shadow: none; }
 @media (min-width: 768px) { .lpc-bts { max-width: 380px; } }
 
 /* (22/10) cartão da loja no menu do computador: situação em cima, chave de receber pedidos embaixo */

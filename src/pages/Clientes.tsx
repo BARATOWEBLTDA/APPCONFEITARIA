@@ -718,7 +718,7 @@ export default function Clientes() {
 
   return (
     <>
-    <AppPageHeader voltar="/cadastros"
+    <AppPageHeader voltar="menu"
       title="Clientes"
       subtitle="Quem compra de você" infoComo={COMO_CLIENTES} infoTour={TOUR_CLIENTES}
       infoContent={

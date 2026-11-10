@@ -613,7 +613,7 @@ export default function FichaTecnica() {
   // (24/10) o próximo a montar: o mais vendido sem ficha (empate: a ordem da lista)
   const proximo = produtos.filter(p => (p.produto_insumos || []).length === 0).sort((a, b) => (vendidos[b.id] || 0) - (vendidos[a.id] || 0))[0];
 
-  if (loading) return <><AppPageHeader title="Ficha técnica" subtitle="O custo e o lucro de cada produto" voltar="/cadastros" /><div className="cl9"><div className="cl9-esq" aria-label="Carregando">{[0, 1, 2, 3].map(k => <span key={k} />)}</div></div></>;
+  if (loading) return <><AppPageHeader title="Ficha técnica" subtitle="O custo e o lucro de cada produto" voltar="menu" /><div className="cl9"><div className="cl9-esq" aria-label="Carregando">{[0, 1, 2, 3].map(k => <span key={k} />)}</div></div></>;
 
   /* DETAIL / EDIT VIEW */
   if (selected) {
@@ -1080,7 +1080,7 @@ export default function FichaTecnica() {
   ] as const).filter(([k, , n]) => k === "todos" || n > 0 || filtro === k);
   return (
     <>
-    <AppPageHeader voltar="/cadastros"
+    <AppPageHeader voltar="menu"
       title="Ficha técnica" infoComo={COMO_FICHA} infoTour={TOUR_FICHA}
       subtitle={produtos.length === 0 ? "O custo e o lucro de cada produto" : `${totalComFicha} de ${produtos.length} com ficha técnica`}
       infoContent={

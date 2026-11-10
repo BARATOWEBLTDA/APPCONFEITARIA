@@ -23,6 +23,7 @@ import { pedidoAtrasado } from '@/lib/pedidoStatus'
 import { gerarPedidoPDF, type PedidoPDF } from '@/lib/gerarPedidoPDF'
 import { abrirJanela } from '@/lib/pdfDoonly'
 import { supabase } from '@/lib/supabase'
+import { lerPassos, passosCompletos } from '@/lib/primeirosPassos'
 import { registrarEtapa } from "@/lib/historicoPedido";
 import { avisarDesfeito, avisarMudanca } from '@/lib/avisoPedido'
 import { semAcento } from '@/lib/noticias'
@@ -79,6 +80,14 @@ export default function Pedidos() {
   const hoje = useDiaAtual() // (11/10) muda sozinho quando vira o dia: "Hoje", "Amanhã" e "Atrasado" não ficam os de ontem
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [userId, setUserId] = useState<string | null>(null)
+  // (10/11) com o cardápio ainda bloqueado, a tela vazia chama pra liberar (não pra divulgar um link que não abre)
+  const [cardapioLiberado, setCardapioLiberado] = useState<boolean | null>(null)
+  useEffect(() => {
+    if (!userId) return
+    let vivo = true
+    lerPassos(userId).then(e => { if (vivo && !e.falhou) setCardapioLiberado(passosCompletos(e)) }, () => {})
+    return () => { vivo = false }
+  }, [userId])
   const [estado, setEstado] = useState<'carregando' | 'erro' | 'pronto'>('carregando')
   const [demorou, setDemorou] = useState(false)
   const [totalProdutos, setTotalProdutos] = useState<number | null>(null)
@@ -686,7 +695,9 @@ export default function Pedidos() {
 
             {pedidos.length === 0 ? (
               <TelaVazia icone={<Receipt size={30} />} titulo="Nenhum pedido ainda" texto="Quando chegar uma encomenda, ela aparece aqui."
-                acao={<Botao variante="link" onClick={() => navigate('/cardapio')}>Divulgar o cardápio</Botao>} />
+                acao={cardapioLiberado === false
+                  ? <Botao variante="link" onClick={() => { try { sessionStorage.setItem('doonly_pp_balao', '1') } catch { /* sem sessionStorage */ } navigate('/inicio') }}>Liberar meu cardápio</Botao>
+                  : <Botao variante="link" onClick={() => navigate('/cardapio')}>Divulgar o cardápio</Botao>} />
             ) : pedidosFiltrados.length === 0 ? (
               filtrando
                 ? <TelaVazia icone={<MagnifyingGlass size={30} />} titulo="Nenhum pedido encontrado" texto={busca.trim() ? `Não achamos nada com “${busca.trim()}”.` : 'Nenhum pedido com esses filtros.'} acao={<Botao variante="suave" tamanho="m" onClick={limparTudo}>Ver todos os pedidos</Botao>} />

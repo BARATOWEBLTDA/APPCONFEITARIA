@@ -17,7 +17,7 @@
   padding: 0 20px; margin: 0;
   border: 0; border-radius: var(--ui-raio-botao);
   background: var(--bt-fundo); color: var(--bt-cor);
-  box-shadow: 0 3px 0 var(--bt-sombra);
+  box-shadow: none;
   font-family: var(--font-base); font-size: 15px; font-weight: 600; line-height: 1.2;
   text-decoration: none; white-space: nowrap;
   cursor: pointer; user-select: none; -webkit-user-select: none;
@@ -29,7 +29,7 @@
 .ui-bt-ic { display: inline-flex; flex: none; }
 @media (hover: hover) { .ui-bt:hover:not(:disabled):not([aria-busy="true"]) { filter: brightness(1.07); } }
 .ui-bt[data-estado="mouse"] { filter: brightness(1.07); }
-.ui-bt:active:not(:disabled):not([aria-busy="true"]), .ui-bt[data-estado="toque"] { transform: translateY(2px); box-shadow: 0 1px 0 var(--bt-sombra); filter: brightness(.96); }
+.ui-bt:active:not(:disabled):not([aria-busy="true"]), .ui-bt[data-estado="toque"] { box-shadow: none; filter: brightness(.92); }
 .ui-bt:focus-visible, .ui-bt[data-estado="foco"] { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 .ui-bt:disabled { opacity: .45; box-shadow: none; cursor: not-allowed; }
 .ui-bt[aria-busy="true"] { cursor: progress; }

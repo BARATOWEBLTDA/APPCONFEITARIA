@@ -1019,8 +1019,8 @@ const CSS = `
   /* (4.93) computador: o passo da vez numa linha limpa (sem o fundo rosa claro) e o "Começar" rosa, do tamanho do texto */
   .pp-cols .pp-at { display: flex; align-items: center; gap: 14px; padding: 14px 0 0; background: none; border-top: 1px solid var(--ui-linha); border-radius: 0; }
   .pp-cols .pp-at .pp-ps { flex: 1; min-width: 0; padding: 0; }
-  .pp-cols .pp-at .pp-btn { flex: none; width: auto; min-height: 44px; margin: 0; padding: 0 22px; background: var(--ui-rosa); box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
-  .pp-cols .pp-at .pp-btn:active { box-shadow: 0 1px 0 var(--ui-rosa-escuro); }
+  .pp-cols .pp-at .pp-btn { flex: none; width: auto; min-height: 44px; margin: 0; padding: 0 22px; background: var(--ui-rosa); box-shadow: none; }
+  .pp-cols .pp-at .pp-btn:active { box-shadow: none; }
   .pp-ps { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 2px; border: none; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
   .pp-ps:disabled { cursor: default; }
   .pp-ps--sem { border-top: none; padding: 0; cursor: default; }
@@ -1053,11 +1053,11 @@ const CSS = `
   .pp--destaque .pp-at { animation: ppDestaque 1.1s ease-in-out 2; }
   @keyframes ppDestaque { 0%, 100% { box-shadow: 0 0 0 0 rgba(232, 90, 140, 0); } 50% { box-shadow: 0 0 0 4px rgba(232, 90, 140, .45); } }
   @media (prefers-reduced-motion: reduce) { .pp--destaque .pp-at { animation: none; box-shadow: 0 0 0 3px rgba(232, 90, 140, .45); } }
-  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-branco); background: var(--ui-rosa-botao, #CC2E66); box-shadow: 0 3px 0 var(--ui-rosa-escuro); cursor: pointer; text-align: center; text-decoration: none; }
+  .pp-btn { display: block; width: 100%; min-height: 48px; margin-top: 12px; border: none; border-radius: var(--ui-raio-botao); padding: 13px; font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ui-branco); background: var(--ui-rosa-botao, #CC2E66); box-shadow: none; cursor: pointer; text-align: center; text-decoration: none; }
   .pp-btn:disabled { background: #F3B6CB; box-shadow: none; cursor: default; }
   /* (15/10) "Fazer agora"/"Começar" no chocolate do onboarding: não compete com o rosa da Nova venda */
-  .pp-at .pp-btn { background: var(--chocolate); box-shadow: 0 3px 0 var(--chocolate-escuro); }
-  .pp-at .pp-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--chocolate-escuro); }
+  .pp-at .pp-btn { background: var(--chocolate); box-shadow: none; }
+  .pp-at .pp-btn:active { transform: translateY(2px); box-shadow: none; }
   .pp-lnk { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
   .pp-lnk--cinza { color: var(--ui-texto-3); font-weight: 500; }
 

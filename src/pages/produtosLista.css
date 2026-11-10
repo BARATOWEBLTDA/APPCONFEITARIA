@@ -83,7 +83,7 @@ body .prod-preview-desc { margin: 0 0 8px; font-size: 14px; line-height: 1.5; co
 .prod-preview-ficha { margin-bottom: 8px; }
 .prod-preview-cad { margin: 0 0 16px; font-size: 13px; color: var(--ui-texto-2); text-align: center; }
 body .prod-preview-actions { gap: 8px; }
-body .prod-preview-btn-editar { min-height: 48px; gap: 8px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-rosa); font-size: 15px; box-shadow: 0 3px 0 var(--ui-rosa-escuro); }
+body .prod-preview-btn-editar { min-height: 48px; gap: 8px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-rosa); font-size: 15px; box-shadow: none; }
 body .prod-preview-btn-icon { min-height: 48px; gap: 6px; padding: 0 16px; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); color: var(--ui-texto); font-size: 15px; font-weight: 600; }
 body .prod-preview-menu-item { min-height: 48px; }
 body .prod-preview-menu-sub { font-size: 12.5px; }

@@ -318,7 +318,7 @@ export default function Complementos() {
   const produtosFiltrados = produtos.filter(p => !termoProd || p.nome.toLowerCase().includes(termoProd));
 
   const cabecalho = (
-    <AppPageHeader voltar="/cadastros"
+    <AppPageHeader voltar="/cardapio"
       title="Adicionais" infoComo={COMO_COMPLEMENTOS} infoTour={TOUR_COMPLEMENTOS}
       subtitle={loading || items.length === 0 ? "Extras que o cliente escolhe no pedido" : `${items.length} ${items.length === 1 ? "cadastrado" : "cadastrados"}`}
       infoContent={<>
