@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { Crown, Gear, Lifebuoy, SignOut, Storefront, User } from "@phosphor-icons/react";
+import { Crown, Gear, SignOut, Storefront, User } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import JanelaSair from "@/components/JanelaSair";
@@ -61,7 +61,6 @@ export default function MenuConta({ aberto, aoFechar, ancora }: Props) {
     { nome: "Minha loja", Icone: Storefront, acao: () => ir("/cardapio") },
     { nome: isPro ? "Minha assinatura" : "Assinatura", Icone: Crown, acao: () => ir(isPro ? "/minha-assinatura" : "/assinar") },
     { nome: "Configurações", Icone: Gear, acao: () => ir("/configuracoes") },
-    { nome: "Central de ajuda", Icone: Lifebuoy, acao: () => ir("/ajuda") },
   ];
 
 

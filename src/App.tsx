@@ -92,8 +92,6 @@ const Clientes = lazy(() => import("@/pages/Clientes"));
 const Cadastros = lazy(() => import("@/pages/Cadastros"));
 const Complementos = lazy(() => import("@/pages/Complementos"));
 const Orcamentos = lazy(() => import("@/pages/Orcamentos"));
-const Ajuda = lazy(() => import("@/pages/Ajuda"));
-const AjudaArtigo = lazy(() => import("@/pages/AjudaArtigo"));
 const OrcamentoEditar = lazy(() => import("@/pages/OrcamentoEditar"));
 const OrcamentoPedir = lazy(() => import("@/pages/OrcamentoPedir"));
 const OrcamentoVer = lazy(() => import("@/pages/OrcamentoVer"));
@@ -149,8 +147,6 @@ const PRE_CARREGAR: (() => Promise<unknown>)[] = [
   () => import("@/pages/Cadastros"),
   () => import("@/pages/Complementos"),
   () => import("@/pages/Orcamentos"),
-  () => import("@/pages/Ajuda"),
-  () => import("@/pages/AjudaArtigo"),
   () => import("@/pages/OrcamentoEditar"),
   () => import("@/pages/OrcamentoPedir"),
   () => import("@/pages/OrcamentoVer"),
@@ -576,9 +572,10 @@ export default function App() {
           <Route path="/pedidos/:id" element={<PedidoVerRedirect />} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/orcamentos" element={<Orcamentos />} />
-          <Route path="/ajuda" element={<Ajuda />} />
-          <Route path="/ajuda/tema/:tema" element={<Ajuda />} />
-          <Route path="/ajuda/:slug" element={<AjudaArtigo />} />
+          {/* (10/11) Central de Ajuda removida: os endereços antigos vão pro Início */}
+          <Route path="/ajuda" element={<Navigate to="/inicio" replace />} />
+          <Route path="/ajuda/tema/:tema" element={<Navigate to="/inicio" replace />} />
+          <Route path="/ajuda/:slug" element={<Navigate to="/inicio" replace />} />
           <Route path="/orcamentos/:id" element={<OrcamentoEditar />} />
           <Route path="/insumos" element={<Insumos />} />
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />

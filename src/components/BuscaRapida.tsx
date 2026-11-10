@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   MagnifyingGlass, X, House, ClipboardText, Plus, CalendarBlank, Sparkle, Cake, Tag, Stack, Basket, ListChecks, Users,
   ShoppingBag, Palette, Storefront, ArrowSquareOut, CurrencyDollar, ArrowsDownUp, HandCoins, CalendarCheck, Receipt, ChartLineUp,
-  Coins, CreditCard, Buildings, Newspaper, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb, FileText, Lifebuoy,
+  Coins, CreditCard, Buildings, Newspaper, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb, FileText,
   WhatsappLogo, PauseCircle, PixLogo, Clock, Truck, MapPin, Money, WarningCircle, BellRinging, Wrench, DeviceMobile, Eye, Hourglass,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
@@ -130,7 +130,6 @@ export default function BuscaRapida() {
       { g: CONTA, t: "Configurações", ic: Gear, rota: "/configuracoes", chaves: "conta senha email foto perfil sair atualizar versao excluir termos privacidade" },
       { g: CONTA, t: "Notificações e sons", ic: BellRinging, rota: "/configuracoes/notificacoes", chaves: "notificacao som aviso alerta push celular toque" },
       ...(!isStandalone() ? [{ g: CONTA, t: "Instalar o app", ic: DeviceMobile, fazer: () => { if (getInstallPrompt()) void promptInstall(); else navigate("/configuracoes"); }, chaves: "instalar app tela inicial atalho" }] : []),
-      { g: CONTA, t: "Central de Ajuda", ic: Lifebuoy, rota: "/ajuda", chaves: "ajuda tutorial como usar duvida passo a passo" },
       { g: CONTA, t: "Falar com o suporte", ic: WhatsappLogo, fazer: zap, chaves: "suporte atendimento whatsapp ajuda falar" },
       { g: CONTA, t: "Novidades", ic: Newspaper, rota: "/noticias", chaves: "dicas avisos o que mudou" },
       { g: CONTA, t: "Relatar um problema", ic: Bug, rota: "/relatar-problema", chaves: "erro bug nao funciona travou" },

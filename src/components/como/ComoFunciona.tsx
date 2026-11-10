@@ -56,7 +56,7 @@ export function ConteudoComo({ c, rotulo, className = "", tour, semArtigo }: { c
         {c.dicas.map(([Ic, t], i) => <li key={i}>{c.checks ? <Check size={16} weight="bold" aria-hidden="true" /> : <Ic size={16} aria-hidden="true" />}<span>{t}</span></li>)}
       </ul>
       {/* (6.65) no (i) do topo sai o "Ver o tutorial completo": fica só o Fazer o tour */}
-      {c.artigo && !semArtigo && <Link className="cf-artigo" to={`/ajuda/${c.artigo}`}><BookOpen size={18} weight="bold" aria-hidden="true" />Ver o tutorial completo<ArrowRight size={16} weight="bold" aria-hidden="true" /></Link>}
+      {false && c.artigo && !semArtigo && <Link className="cf-artigo" to={`/ajuda/${c.artigo}`}><BookOpen size={18} weight="bold" aria-hidden="true" />Ver o tutorial completo<ArrowRight size={16} weight="bold" aria-hidden="true" /></Link>}
       {tour && (
         <button type="button" className="cf-tour" onClick={tour.fazer}>
           <PlayCircle size={22} aria-hidden="true" />

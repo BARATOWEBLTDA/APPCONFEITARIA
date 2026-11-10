@@ -5,7 +5,7 @@ import {
   Gear, CaretRight, User,
   CalendarDots, CurrencyDollar,
   FileText, Users, Package, ClipboardText,
-  Calculator, Sliders, Lifebuoy,
+  Calculator, Sliders,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { ShareNetwork, Scales, FlagBanner } from "@phosphor-icons/react";
@@ -160,10 +160,6 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
             <span className="mais-indica-ic" aria-hidden="true"><ShareNetwork size={20} weight="bold" /></span>
             <span className="mais-indica-tx"><b>Indique o Doonly</b><small>Mande pra uma amiga confeiteira</small></span>
             <CaretRight size={16} weight="bold" aria-hidden="true" />
-          </button>
-          {/* (10/11) a Ajuda sai do caminho mas não some: quem precisa acha o WhatsApp do suporte aqui */}
-          <button type="button" className="mais-ajuda" onClick={() => ir("/ajuda")}>
-            <Lifebuoy size={16} weight="bold" aria-hidden="true" />Precisa de ajuda? <b>Fale com a gente</b>
           </button>
         </div>
       </div>

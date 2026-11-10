@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { digitosTelefone } from "@/lib/telefone";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, SignOut, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, SignOut, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -69,10 +69,9 @@ const INDICE: Achado[] = [
   { nome: "Categorias do cardápio", onde: "Minha loja › Categorias", palavras: "grupos ordem secoes", ir: "/categorias" },
   { nome: "Notificações e sons", onde: "App", palavras: "notificacao notificacoes avisos som alerta pedido novo", ir: "notif" },
   { nome: "Instalar o app", onde: "App › Sobre o app", palavras: "tela inicial atalho celular", ir: "instalar" },
-  { nome: "Central de Ajuda", onde: "Ajuda e suporte", palavras: "tutorial como usar artigos duvidas passo a passo", ir: "/ajuda" },
-  { nome: "Fale com o suporte", onde: "Ajuda e suporte", palavras: "whatsapp ajuda atendimento", ir: "suporte" },
-  { nome: "Relatar um problema", onde: "Ajuda e suporte", palavras: "erro bug travou nao funciona", ir: "/relatar-problema" },
-  { nome: "Sugerir uma melhoria", onde: "Ajuda e suporte", palavras: "ideia sugestao recurso", ir: "/solicitar-recurso" },
+  { nome: "Fale com o suporte", onde: "Configurações", palavras: "whatsapp ajuda atendimento", ir: "suporte" },
+  { nome: "Relatar um problema", onde: "Configurações", palavras: "erro bug travou nao funciona", ir: "/relatar-problema" },
+  { nome: "Sugerir uma melhoria", onde: "Configurações", palavras: "ideia sugestao recurso", ir: "/solicitar-recurso" },
   { nome: "Termos e privacidade", onde: "Configurações", palavras: "lgpd dados contrato", ir: "termos" },
   { nome: "Excluir a conta", onde: "Minha conta", palavras: "apagar deletar encerrar excluir minha conta", ir: "avancado" },
   { nome: "Atualizar o app", onde: "App › Sobre o app", palavras: "versao nova atualizacao recarregar", ir: "sobre" },
@@ -340,12 +339,6 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
 
             </div>}
 
-            {/* (10/11) no celular a Ajuda fica no fim do Menu (link pequeno); no computador continua aqui */}
-            {largo && <div className="cf9-grupo">
-            <h2 className="cf9-sec">Ajuda</h2>
-            {/* (10/11) os 4 de ajuda viraram 1: a Central de Ajuda já tem o WhatsApp, relatar e sugerir */}
-            <ItemConfig icone={<Lifebuoy size={20} weight="bold" />} nome="Ajuda e suporte" apoio="Tutoriais, WhatsApp e sugestões" onClick={() => navigate("/ajuda")} />
-            </div>}
           </section>
           </>)}
           {verConta && <Botao variante="secundario" cheio className="cf9-sair" icone={<SignOut size={20} weight="bold" />} onClick={() => setPerguntandoSair(true)}>Sair da conta</Botao>}
