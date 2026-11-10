@@ -82,10 +82,10 @@ export default function Cardapio() {
 
       <style>{`
         /* (23/10) Minha loja: os blocos usam as linhas de Dados da loja (dadosLoja.css); aqui só o espaço da tela */
-        .ml-banner { position: relative; display: flex; align-items: center; gap: 12px; min-height: 96px; padding: 14px 4px 14px 16px; overflow: hidden; border-radius: 16px; background: linear-gradient(120deg, #FFF0F6, #FCE1EC); }
+        .ml-banner { position: relative; display: flex; align-items: center; gap: 12px; min-height: 96px; padding: 14px 4px 14px 16px; overflow: hidden; border-radius: 16px; background: linear-gradient(120deg, #FBCFE0, #F5A3C4); }
         .ml-banner-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-        .ml-banner-tx b { font-size: 16px; font-weight: 500; color: #3B3236; white-space: nowrap; }
-        .ml-banner-tx small { font-size: 13px; line-height: 1.4; color: #6B5A60; }
+        .ml-banner-tx b { font-size: 16px; font-weight: 500; color: #3A1424; white-space: nowrap; }
+        .ml-banner-tx small { font-size: 13px; line-height: 1.4; color: #5C2B3F; }
         .ml-banner img { flex: none; width: 96px; height: 96px; margin: -10px 0 -18px; object-fit: contain; }
         .cardapio-hub { font-family: var(--font-base); display: flex; flex-direction: column; gap: 12px; max-width: 980px; margin: 0 auto; padding: 16px 8px 112px; }
       `}</style>
