@@ -1,4 +1,3 @@
-import AbasFinanceiro from "@/components/financeiro/AbasFinanceiro";
 import CampoData from '@/components/CampoData'
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
@@ -107,7 +106,6 @@ export default function FinanceiroAReceber() {
           <p>Use <strong>Receber</strong> quando o cliente pagar. O valor entra no financeiro na data que você escolher, e o pedido sai daqui quando estiver quitado.</p>
         </>}
       />
-      <AbasFinanceiro />
       <EstiloFinanceiro />
 
       <div className="far-wrap">

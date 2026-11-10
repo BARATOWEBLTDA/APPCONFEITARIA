@@ -1,5 +1,7 @@
+import { useState } from "react";
 import CampoData from '@/components/CampoData'
-import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { CaretDown, CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { Botao, CaixasEscolha, Janela } from "@/components/base";
 
 /**
  * Filtro de período do financeiro, um só para Financeiro, Transações e Lucratividade (23/10):
@@ -44,7 +46,19 @@ export function rotuloPeriodo(p: Periodo): string {
 
 const BOTOES: [TipoPeriodo, string][] = [["hoje", "Hoje"], ["7dias", "7 dias"], ["30dias", "30 dias"], ["mes", "Mês"], ["personalizado", "Escolher"]];
 
-export default function PeriodoFiltro({ valor, onChange }: { valor: Periodo; onChange: (p: Periodo) => void }) {
+/** (10/11) rótulo curto do botão "Hoje ▾" */
+function rotuloCurto(p: Periodo): string {
+  if (p.tipo === "hoje") return "Hoje";
+  if (p.tipo === "7dias") return "7 dias";
+  if (p.tipo === "30dias") return "30 dias";
+  if (p.tipo === "mes") return MESES[p.mes];
+  const f = (s: string) => `${s.slice(8, 10)}/${s.slice(5, 7)}`;
+  return `${f(p.ini)}–${f(p.fim)}`;
+}
+
+/** compacto (10/11, celular): no lugar das 5 partes lado a lado, um botão "Hoje ▾" que abre as opções em caixinhas */
+export default function PeriodoFiltro({ valor, onChange, compacto = false }: { valor: Periodo; onChange: (p: Periodo) => void; compacto?: boolean }) {
+  const [aberto, setAberto] = useState(false);
   const h = new Date();
   const escolher = (tipo: TipoPeriodo) => {
     if (tipo === "hoje") onChange({ ...valor, tipo, ini: dia(), fim: dia() });
@@ -54,6 +68,46 @@ export default function PeriodoFiltro({ valor, onChange }: { valor: Periodo; onC
     else onChange({ ...valor, tipo, ini: valor.tipo === "personalizado" ? valor.ini : dia(-14), fim: valor.tipo === "personalizado" ? valor.fim : dia() });
   };
   const ehMesAtual = valor.ano === h.getFullYear() && valor.mes === h.getMonth();
+  const mesNav = (
+    <div className="pf-mes">
+      <button type="button" onClick={() => onChange(periodoDoMes(valor.ano, valor.mes - 1))} aria-label="Mês anterior"><CaretLeft size={15} weight="bold" /></button>
+      <b>{MESES[valor.mes]} de {valor.ano}</b>
+      <button type="button" onClick={() => onChange(periodoDoMes(valor.ano, valor.mes + 1))} disabled={ehMesAtual} aria-label="Próximo mês"><CaretRight size={15} weight="bold" /></button>
+    </div>
+  );
+  const datas = (
+    <div className="pf-datas">
+      <div className="pf-d"><span>De</span><CampoData valor={valor.ini} max={valor.fim} titulo="Início do período" curto onChange={d => onChange({ ...valor, ini: d })} /></div>
+      <div className="pf-d"><span>Até</span><CampoData valor={valor.fim} min={valor.ini} max={dia()} titulo="Fim do período" curto onChange={d => onChange({ ...valor, fim: d })} /></div>
+    </div>
+  );
+  if (compacto) return (
+    <>
+      <button type="button" className="pf-chip" aria-haspopup="dialog" onClick={() => setAberto(true)}>{rotuloCurto(valor)}<CaretDown size={13} weight="bold" aria-hidden="true" /></button>
+      <Janela aberta={aberto} aoFechar={() => setAberto(false)} tipo="conteudo" titulo="Período">
+        <div className="pf pf--janela">
+          <CaixasEscolha rotulo="Período" valor={valor.tipo} onMudar={t => { escolher(t); if (t !== "mes" && t !== "personalizado") setAberto(false); }}
+            opcoes={[
+              { v: "hoje", t: "Hoje" }, { v: "7dias", t: "Últimos 7 dias" }, { v: "30dias", t: "Últimos 30 dias" },
+              { v: "mes", t: "Um mês", sub: "Escolha o mês com as setas" }, { v: "personalizado", t: "Escolher as datas", sub: "De um dia até outro" },
+            ]} />
+          {valor.tipo === "mes" && mesNav}
+          {valor.tipo === "personalizado" && datas}
+          {(valor.tipo === "mes" || valor.tipo === "personalizado") && <Botao cheio onClick={() => setAberto(false)}>Pronto</Botao>}
+        </div>
+      </Janela>
+      <style>{`
+        .pf-chip { display: inline-flex; align-items: center; gap: 4px; flex: none; min-height: 32px; margin: 0; padding: 0 10px; border: 0; border-radius: 10px; background: #F1EEEF; font-family: var(--font-base); font-size: 13px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
+        .pf--janela { display: flex; flex-direction: column; gap: 12px; font-family: var(--font-base); }
+        .pf--janela .pf-mes { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 46px; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: 12px; padding: 3px; }
+        .pf--janela .pf-mes b { font-size: 14px; font-weight: 500; }
+        .pf--janela .pf-mes button { width: 40px; height: 40px; border-radius: 9px; border: none; background: #F1EEEF; color: var(--ui-texto); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .pf--janela .pf-mes button:disabled { opacity: .35; }
+        .pf--janela .pf-datas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .pf--janela .pf-d { display: flex; flex-direction: column; gap: 4px; min-width: 0; } .pf--janela .pf-d > span { font-size: 12px; font-weight: 500; color: var(--ui-texto-2); }
+      `}</style>
+    </>
+  );
   return (
     <div className="pf">
       <div className="pf-seg" role="tablist" aria-label="Período">

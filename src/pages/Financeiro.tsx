@@ -1,4 +1,3 @@
-import AbasFinanceiro from "@/components/financeiro/AbasFinanceiro";
 // Financeiro — painel (Passo 7, 03/10; 4.29: por período, com comparação, formas de pagamento e mais vendidos). Junta o que antes ficava na Visão Geral e no menu:
 // saldo em caixa, os números do mês, a receber, a pagar, previstos, fluxo e últimas movimentações.
 import { COMO_FINANCEIRO, TOUR_FINANCEIRO } from "@/lib/comoTelas";
@@ -102,6 +101,8 @@ export default function Financeiro() {
   // (4.29) período: Hoje · 7 dias · 30 dias · Este mês · Personalizado (lembra a última escolha neste aparelho)
   // (13/10) sempre abre no dia de hoje (antes lembrava o último período escolhido)
   const [periodo, setPeriodo] = useState<Periodo>(periodoHoje);
+  // (10/11) celular: o período vira o botão "Hoje ▾" dentro do cartão do Sobrou (sem as abas e sem o seletor de 5 partes)
+  const [cel] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches);
   const tipo = periodo.tipo;
   const [dados, setDados] = useState<PeriodoDados | null>(null);
   const [ant, setAnt] = useState<{ recebido: number; despesas: number } | null>(null);
@@ -216,17 +217,16 @@ export default function Financeiro() {
           <p>Pedido criado ou entregue <strong>não entra no caixa sozinho</strong>: só quando você registra o recebimento.</p>
         </>}
       />
-      <AbasFinanceiro />
       <EstiloFinanceiro />
       <CaixaEstilos />
 
       {/* (22/10) período em pílulas cinza sobre o fundo da tela (saiu a faixa rosa) */}
-      <div className="fd-hero">
+      {!cel && <div className="fd-hero">
         <div className="fd-hero-in">
           {/* (23/10) o mesmo filtro de Transações e Lucratividade */}
           <PeriodoFiltro valor={periodo} onChange={setPeriodo} />
         </div>
-      </div>
+      </div>}
 
       {algumErro && (
         <div className="fd-erro" role="alert">
@@ -237,7 +237,10 @@ export default function Financeiro() {
       <div className={`fd${caixaNeg ? " fd--neg" : ""}${semMov ? " fd--nada" : ""}`}>
         {/* o cartão principal: como foi o período */}
         <div className="fd-a-res fd-card fd-res">
-          <small className="fd-res-rot">{ok && ok.resultado < 0 ? "Saiu mais do que entrou" : "Sobrou"} {quandoPer}</small>
+          <div className="fd-res-cab">
+            <small className="fd-res-rot">{ok && ok.resultado < 0 ? "Saiu mais do que entrou" : "Sobrou"} {quandoPer}</small>
+            {cel && <PeriodoFiltro compacto valor={periodo} onChange={setPeriodo} />}
+          </div>
           <b className={`fd-res-v${ok && ok.resultado < 0 ? " s" : ""}`}>{ok ? brl(Math.abs(ok.resultado)) : esp}</b>
           {ok ? <Variacao atual={ok.resultado} anterior={ant ? r2(ant.recebido - ant.despesas) : null} rotulo={per.rotuloAnt} /> : <span className="fd-var neu">&nbsp;</span>}
           {/* (31/10 · 5.74) tudo zerado: a barra some (antes ficava uma faixa cinza vazia) */}
@@ -355,9 +358,10 @@ export default function Financeiro() {
         <div className="fd-a-mais fd-mais">
           <p className="fd-mais-t">Mais</p>
           <div className="fd-mais-g">
-            <button type="button" onClick={() => navigate("/financeiro/transacoes")}><span><ArrowsLeftRight size={19} weight="duotone" /></span><b>Transações</b><small>Extrato de entradas e saídas</small></button>
-            <button type="button" onClick={() => navigate("/custos")}><span><Calculator size={19} weight="duotone" /></span><b>Custos</b><small>Fixos, variáveis e mão de obra</small></button>
-            <button type="button" onClick={() => navigate("/lucratividade")}><span><ChartPieSlice size={19} weight="duotone" /></span><b>Lucratividade</b><small>Lucro por produto</small></button>
+            {/* (10/11) no celular os 3 viram uma lista só (estilo do Menu); as abas do topo saíram e o Extrato e o Lucro abrem daqui */}
+            <button type="button" onClick={() => navigate("/financeiro/transacoes")}><span><ArrowsLeftRight size={19} weight="bold" /></span><b>Extrato</b><small>Todas as entradas e saídas</small><CaretRight size={16} weight="bold" className="fd-mais-seta" aria-hidden="true" /></button>
+            <button type="button" onClick={() => navigate("/lucratividade")}><span><ChartPieSlice size={19} weight="bold" /></span><b>Lucro por produto</b><small>Quanto sobra de cada doce</small><CaretRight size={16} weight="bold" className="fd-mais-seta" aria-hidden="true" /></button>
+            <button type="button" onClick={() => navigate("/custos")}><span><Calculator size={19} weight="bold" /></span><b>Custos</b><small>Fixos, variáveis e mão de obra</small><CaretRight size={16} weight="bold" className="fd-mais-seta" aria-hidden="true" /></button>
           </div>
         </div>
       </div>
@@ -649,6 +653,18 @@ const CSS = `
   .fd-mais-g button { display: grid; grid-template-columns: 38px 1fr; column-gap: 10px; align-items: center; text-align: left; background: var(--ui-branco); border: 1px solid #F0EBED; border-radius: var(--ui-raio-botao); padding: 12px; font-family: inherit; color: var(--ui-texto); cursor: pointer; }
   .fd-mais-g span { grid-row: span 2; width: 38px; height: 38px; border-radius: 11px; background: #FFF1F6; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
   .fd-mais-g b { font-size: 14px; font-weight: 600; } .fd-mais-g small { font-size: 13px; color: var(--ui-texto-2); }
+  .fd-mais-seta { display: none; }
+  .fd-res-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+  .fd-res-cab .fd-res-rot { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* (10/11) celular: Extrato, Lucro e Custos numa lista só, no estilo do Menu */
+  @media (max-width: 639px) {
+    .fd-mais-g { gap: 0; overflow: hidden; border: 1px solid #ECE7E9; border-radius: 16px; background: var(--ui-branco); }
+    .fd-mais-g button { grid-template-columns: 36px 1fr 16px; column-gap: 12px; min-height: 56px; padding: 8px 14px; border: 0; border-top: 1px solid #F1EEEF; border-radius: 0; }
+    .fd-mais-g button:first-child { border-top: 0; }
+    .fd-mais-g span { width: 36px; height: 36px; border-radius: 10px; background: var(--ui-branco); border: 1px solid #ECE7E9; color: var(--ui-rosa-botao, #CC2E66); }
+    .fd-mais-g b { font-size: 15px; font-weight: 500; } .fd-mais-g small { font-size: 12.5px; }
+    .fd-mais-seta { display: block; grid-row: 1 / span 2; grid-column: 3; color: var(--ui-texto-3); }
+  }
 
   /* ═══ (4.29 · resultado em destaque) ═══ */
   .fd { margin-top: 0; padding-top: 14px; padding-bottom: 150px; grid-template-areas: "res" "tres" "movs" "fluxo" "formas" "vend" "mais"; }
@@ -672,7 +688,10 @@ const CSS = `
   .fd-pilha i { display: block; height: 100%; min-width: 4px; flex-basis: 0; transition: flex-grow .4s ease; }
   .fd-pilha i.e { background: #22C55E; } .fd-pilha i.s { background: #F87171; } .fd-pilha i.z { flex-grow: 1; background: #F3ECEF; }
   .fd-leg { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
-  .fd-leg > div { min-width: 0; padding: 10px; border-radius: 12px; background: #F8F4F6; }
+  /* (10/11) Entrou e Saiu sem as caixinhas cinzas: duas colunas com uma linha fina (sem card dentro de card) */
+  .fd-leg { margin-top: 12px; padding-top: 12px; border-top: 1px solid #F1EEEF; gap: 0; }
+  .fd-leg > div { min-width: 0; padding: 0; }
+  .fd-leg > div + div { padding-left: 14px; border-left: 1px solid #F1EEEF; }
   .fd-leg small { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ui-texto-2); }
   .fd-leg small i { width: 8px; height: 8px; border-radius: 50%; } .fd-leg small i.e { background: #22C55E; } .fd-leg small i.s { background: #F87171; }
   .fd-leg b { display: block; margin-top: 2px; font-size: clamp(14.5px, 4.3vw, 17px); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

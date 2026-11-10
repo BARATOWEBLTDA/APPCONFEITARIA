@@ -1,4 +1,3 @@
-import AbasFinanceiro from "@/components/financeiro/AbasFinanceiro";
 // Transações — o extrato do financeiro, refeito no padrão novo (03/10).
 // Período (hoje, 7 dias, mês ou datas), filtros, busca, exportar e ESTORNO em vez de apagar.
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
@@ -188,7 +187,6 @@ export default function FinanceiroTransacoes() {
           </div>
         }
       />
-      <AbasFinanceiro />
       <EstiloFinanceiro />
       <div className="tx">
         {/* (24/10) extrato de banco: o mês em cima, o saldo em destaque, entradas e saídas embaixo */}
