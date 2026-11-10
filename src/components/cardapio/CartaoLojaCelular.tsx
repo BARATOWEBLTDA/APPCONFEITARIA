@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
-import { ArrowRight, Camera, Copy, Eye, QrCode, ShareNetwork } from "@phosphor-icons/react";
+import { ArrowRight, Copy, Eye, QrCode, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile, fotoDaLoja, type Profile } from "@/hooks/useProfile";
 
@@ -110,11 +110,7 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   return (
     <section className={`clc${travado ? " clc--travado" : ""}`} aria-label="Seu cardápio">
       <div className="clc-loja">
-        {travado && !foto ? (
-          <button type="button" className="clc-logo clc-logo--bt" aria-label="Colocar a logo da loja" onClick={() => irPara("logo")}>
-            {iniciais}<span className="clc-cam" aria-hidden="true"><Camera size={11} weight="fill" /></span>
-          </button>
-        ) : <span className="clc-logo" aria-hidden="true">{foto ? <img src={foto} alt="" /> : iniciais}</span>}
+        <span className="clc-logo" aria-hidden="true">{foto ? <img src={foto} alt="" /> : iniciais}</span>
         <span className="clc-nome"><b>{nome}</b><small>{linkCurto}</small></span>
       </div>
       {travado ? (
@@ -176,8 +172,6 @@ const CSS = `
   .clc-barra i { display: block; height: 100%; border-radius: inherit; background: #FCD34D; transition: width .3s ease-out; }
   .clc-prog small { display: block; font-size: 12.5px; color: rgba(255, 255, 255, .72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .clc--travado .clc-enviar { font-weight: 500; font-size: 15px; }
-  .clc-logo--bt { position: relative; overflow: visible; margin: 0; padding: 0; border: 0; font-family: inherit; cursor: pointer; }
-  .clc-cam { position: absolute; right: -3px; bottom: -3px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--ui-rosa-botao, #CC2E66); color: #fff; border: 2px solid #2E1A15; }
   @keyframes clcPisca { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
   .clc-chave { flex: none; position: relative; width: 48px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .22); cursor: pointer; transition: background-color .15s linear; }
   .clc-chave span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .15s ease-out; }
