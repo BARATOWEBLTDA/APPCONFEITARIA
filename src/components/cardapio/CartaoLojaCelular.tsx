@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
-import { ArrowRight, Copy, Eye, QrCode, ShareNetwork } from "@phosphor-icons/react";
+import { ArrowRight, Copy, LockSimple, Eye, QrCode, ShareNetwork } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile, fotoDaLoja, type Profile } from "@/hooks/useProfile";
 
@@ -107,6 +107,18 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
     try { sessionStorage.setItem("doonly_pp_abrir", k); } catch { /* sem sessionStorage: só abre o Início */ }
     navigate("/inicio");
   };
+  // (10/11) cardápio bloqueado: o checklist completo já está no Início; aqui fica só um atalho (no estilo do atalho da Doo IA no Menu)
+  if (travado) return (
+    <button type="button" className="clc-atalho" onClick={() => proximo ? irPara(proximo) : navigate("/inicio")}>
+      <span className="clc-atalho-ic" aria-hidden="true"><LockSimple size={20} weight="bold" /></span>
+      <span className="clc-atalho-tx">
+        <b>Liberar meu cardápio</b>
+        <small>{passos ? `${faltando.length === 1 ? "Falta 1 passo" : `Faltam ${faltando.length} passos`} · ${feitos} de ${ORDEM_PASSOS.length} feitos` : "Termine a configuração da loja"}</small>
+      </span>
+      <ArrowRight size={18} weight="bold" aria-hidden="true" />
+      <style>{CSS}</style>
+    </button>
+  );
   return (
     <section className={`clc${travado ? " clc--travado" : ""}`} aria-label="Seu cardápio">
       <div className="clc-loja">
@@ -163,6 +175,12 @@ const CSS = `
   .clc-st--aberto b { color: #86EFAC; } .clc-st--aberto i { background: #4ADE80; animation: clcPisca 1.6s ease-in-out infinite; }
   .clc-st--fechado b { color: #FCD34D; } .clc-st--fechado i { background: #FBBF24; }
   .clc-st--pausa b { color: #FCA5A5; } .clc-st--pausa i { background: #F87171; }
+  .clc-atalho { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 10px 14px 10px 10px; border: 1px solid #F3C6D8; border-radius: 16px; background: #FFF5F9; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .clc-atalho-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-branco); color: var(--ui-rosa-botao, #CC2E66); box-shadow: inset 0 0 0 1px #F3C6D8; }
+  .clc-atalho-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .clc-atalho-tx b { font-size: 15px; font-weight: 500; }
+  .clc-atalho-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clc-atalho > svg { flex: none; color: var(--ui-rosa-botao, #CC2E66); }
   /* (10/11) cardápio bloqueado: quanto falta (barra) e o botão do próximo passo */
   .clc-prog { padding: 12px; border-radius: 14px; background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
   .clc-prog-l1 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
