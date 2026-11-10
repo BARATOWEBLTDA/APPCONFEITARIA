@@ -30,6 +30,10 @@ const ROTULO_PASSO: Record<typeof ORDEM_PASSOS[number], string> = {
   pagamento: "formas de pagamento", entrega: "configurar a entrega", caixa: "saldo do caixa", produto: "cadastrar 1º produto",
 };
 
+// (10/11) o último estado lido fica guardado: ao voltar pra Minha loja o cartão certo aparece na hora
+// (antes o cartão escuro "Sua loja está ativa" piscava até os passos chegarem)
+let ultimo: { uid: string; liberado: boolean; passos: EstadoPassos } | null = null;
+
 export default function CartaoLojaCelular({ link }: { link: string }) {
   const { profile, refetch } = useProfile();
   const navigate = useNavigate();
@@ -40,13 +44,14 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   const sit = useMemo(() => situacaoLoja(horarioComFechados((profile as PerfilLoja)?.horario, (profile as PerfilLoja)?.dias_fechados)), [(profile as PerfilLoja)?.horario, (profile as PerfilLoja)?.dias_fechados]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // (6.146) conta nova: o cardápio só libera quando os Primeiros passos acabam (antes já aparecia "Recebendo pedidos" sem nada pronto)
-  const [liberado, setLiberado] = useState<boolean | null>(null);
+  const doCache = ultimo && ultimo.uid === profile?.id ? ultimo : null;
+  const [liberado, setLiberado] = useState<boolean | null>(doCache ? doCache.liberado : null);
   // (10/11) com o cardápio bloqueado, o cartão mostra quanto falta e abre direto o próximo passo
-  const [passos, setPassos] = useState<EstadoPassos | null>(null);
+  const [passos, setPassos] = useState<EstadoPassos | null>(doCache ? doCache.passos : null);
   useEffect(() => {
     if (!profile?.id) return;
     let vivo = true;
-    const ler = () => { lerPassos(profile.id).then(e => { if (vivo && !e.falhou) { setLiberado(passosCompletos(e)); setPassos(e); } }, () => {}); };
+    const ler = () => { lerPassos(profile.id).then(e => { if (vivo && !e.falhou) { const lib = passosCompletos(e); ultimo = { uid: profile.id, liberado: lib, passos: e }; setLiberado(lib); setPassos(e); } }, () => {}); };
     ler();
     window.addEventListener("doonly:passos", ler);
     return () => { vivo = false; window.removeEventListener("doonly:passos", ler); };
@@ -98,6 +103,8 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   const linkCurto = link.replace(/^https?:\/\/(www\.)?/, "");
 
   const travado = liberado === false;
+  // enquanto não sabe se está liberado, não mostra nenhum dos dois cartões
+  if (liberado === null) return null;
   const faltando = passos ? ORDEM_PASSOS.filter(k => !passos[k]) : [];
   const proximo = faltando[0];
   const feitos = ORDEM_PASSOS.length - faltando.length;
