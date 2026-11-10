@@ -56,3 +56,6 @@ create policy "topos arquivos: pro baixa" on storage.objects for select to authe
 drop policy if exists "topos arquivos: admin" on storage.objects;
 create policy "topos arquivos: admin" on storage.objects for all to authenticated
   using (bucket_id = 'topos-arquivos' and public.eh_admin()) with check (bucket_id = 'topos-arquivos' and public.eh_admin());
+
+-- (09/11) tags só pra busca (não aparecem pra confeiteira)
+alter table public.topos add column if not exists tags text[] not null default '{}';

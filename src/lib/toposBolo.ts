@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
  */
 export type ArquivoTopo = { caminho: string; nome: string; formato: string; tamanho: number };
 export type CategoriaTopo = { id: string; nome: string; imagem_url: string | null; ordem: number; ativo: boolean };
-export type Topo = { id: string; categoria_id: string | null; titulo: string; capa_url: string | null; arquivos: ArquivoTopo[]; ativo: boolean; ordem: number; created_at: string };
+export type Topo = { id: string; categoria_id: string | null; titulo: string; capa_url: string | null; arquivos: ArquivoTopo[]; tags: string[]; ativo: boolean; ordem: number; created_at: string };
 
 export const BUCKET_CAPAS = "topos-capas";
 export const BUCKET_ARQUIVOS = "topos-arquivos";
@@ -38,11 +38,11 @@ export async function carregarCategorias(): Promise<CategoriaTopo[]> {
   return (data || []) as CategoriaTopo[];
 }
 export async function carregarTopos(categoriaId?: string | null): Promise<Topo[]> {
-  let q = supabase.from("topos").select("id, categoria_id, titulo, capa_url, arquivos, ativo, ordem, created_at").order("ordem", { ascending: false }).order("created_at", { ascending: false });
+  let q = supabase.from("topos").select("id, categoria_id, titulo, capa_url, arquivos, tags, ativo, ordem, created_at").order("ordem", { ascending: false }).order("created_at", { ascending: false });
   if (categoriaId) q = q.eq("categoria_id", categoriaId);
   const { data, error } = await q;
   if (error) throw error;
-  return ((data || []) as Topo[]).map(t => ({ ...t, arquivos: Array.isArray(t.arquivos) ? t.arquivos : [] }));
+  return ((data || []) as Topo[]).map(t => ({ ...t, arquivos: Array.isArray(t.arquivos) ? t.arquivos : [], tags: Array.isArray(t.tags) ? t.tags : [] }));
 }
 
 /** baixa um arquivo do topo (só funciona pra PRO e admin: o bucket é privado). Devolve false se não deu. */

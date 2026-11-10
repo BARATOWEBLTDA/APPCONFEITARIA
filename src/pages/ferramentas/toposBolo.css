@@ -77,3 +77,16 @@
 .tb-pags button.on { border-color: #3B3236; background: #3B3236; color: #fff; }
 .tb-pags button:disabled { opacity: .4; cursor: default; }
 .tb-pag-r { color: #8A7B80; }
+/* (09/11) temas em bolinhas (destaques do Instagram) */
+.tb-dest { display: flex; gap: var(--space-3); margin: var(--space-2) calc(-1 * var(--space-2)) var(--space-2); padding: 4px var(--space-2) 6px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.tb-dest::-webkit-scrollbar { display: none; }
+.tb-dest-it { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: none; width: 72px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.tb-dest-c { display: flex; align-items: center; justify-content: center; width: 68px; height: 68px; padding: 3px; box-sizing: border-box; border-radius: 50%; background: #E4DCDD; }
+.tb-dest-c > img, .tb-dest-todos { width: 100%; height: 100%; border: 2px solid #F1F2F2; border-radius: 50%; box-sizing: border-box; object-fit: cover; background: #fff; }
+.tb-dest-todos { display: flex; align-items: center; justify-content: center; color: #5E5357; }
+.tb-dest-it.on .tb-dest-c { background: linear-gradient(135deg, #F472B6, #CC2E66 55%, #9D174D); }
+.tb-dest-n { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12.5px; color: #5E5357; }
+.tb-dest-it.on .tb-dest-n { font-weight: 500; color: #241A1E; }
+@media (hover: hover) { .tb-dest-it:not(.on):hover .tb-dest-c { background: #D6CDD1; } }
+.tb-busca { margin-top: var(--space-2); }
+@media (min-width: 901px) { .tb-dest { margin: 0 0 var(--space-3); padding: 4px 0 6px; } .tb-dest-it { width: 84px; } .tb-dest-c { width: 80px; height: 80px; } }

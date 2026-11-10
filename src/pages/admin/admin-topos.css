@@ -45,3 +45,10 @@ button.atp-cat { padding: 4px 12px 4px 4px; }
 .atp-catf { display: flex; align-items: flex-end; gap: var(--space-3); }
 .atp-catf .ui-campo { flex: 1; }
 @media (max-width: 700px) { .atp-form { grid-template-columns: minmax(0, 1fr); } .atp-form-capa { max-width: 200px; } .atp-catf { flex-direction: column; align-items: stretch; } }
+/* (09/11) tags da busca */
+.atp-tags { flex-wrap: wrap; gap: 6px; min-height: 48px; height: auto; padding: 6px 10px; cursor: text; }
+.atp-tags input { flex: 1; min-width: 120px; }
+.atp-tag { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 4px 0 10px; border-radius: 999px; background: #F3F1F2; font-size: 13px; color: #3B3236; }
+.atp-tag button { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: none; color: #8A7B80; cursor: pointer; }
+.atp-tag button:hover { background: #E4DCDD; color: #241A1E; }
+.atp-ntags { align-self: center; margin-left: 2px; font-size: 11.5px; color: #8A7B80; }

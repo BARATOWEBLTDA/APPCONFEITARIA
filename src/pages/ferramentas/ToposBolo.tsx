@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { CaretLeft, CaretRight, Crown, DownloadSimple, Images, MagnifyingGlass, WarningCircle, X } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, Crown, SquaresFour, DownloadSimple, Images, MagnifyingGlass, WarningCircle, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, TelaVazia, avisar } from "@/components/base";
 import { ConvitePro } from "@/components/billing/RecursoPro";
@@ -44,7 +44,7 @@ export default function ToposBolo() {
   const nomeCat = (id: string | null) => (cats || []).find(c => c.id === id)?.nome || "";
   const q = semAcento(busca);
   const lista = topos.filter(t => t.categoria_id && conta.has(t.categoria_id) && (!cat || t.categoria_id === cat.id)
-    && (!q || semAcento(`${t.titulo} ${nomeCat(t.categoria_id)}`).includes(q)));
+    && (!q || semAcento(`${t.titulo} ${nomeCat(t.categoria_id)} ${(t.tags || []).join(' ')}`).includes(q)));
 
   // (09/11) 24 topos por página (2, 3 ou 4 por linha fecham certinho); trocar filtro ou busca volta pra 1ª
   const POR_PAGINA = 24;
@@ -78,14 +78,25 @@ export default function ToposBolo() {
           <TelaVazia icone={<Images size={30} />} titulo="Os topos estão chegando" texto="Logo aparecem aqui os topos prontos pra imprimir." />
         ) : (
           <>
+            {/* (09/11) temas em bolinhas, estilo destaques do Instagram: passa de lado; o tema marcado ganha o anel */}
+            <div className="tb-dest" role="tablist" aria-label="Temas">
+              <button type="button" role="tab" aria-selected={!cat} className={`tb-dest-it${!cat ? " on" : ""}`} onClick={() => escolher(null)}>
+                <span className="tb-dest-c"><span className="tb-dest-todos"><SquaresFour size={26} weight="regular" /></span></span><span className="tb-dest-n">Todos</span>
+              </button>
+              {comTopos.map(c => {
+                const img = c.imagem_url || topos.find(t => t.categoria_id === c.id && t.capa_url)?.capa_url || null;
+                return (
+                  <button key={c.id} type="button" role="tab" aria-selected={c.id === cat?.id} className={`tb-dest-it${c.id === cat?.id ? " on" : ""}`} onClick={() => escolher(c.id)}>
+                    <span className="tb-dest-c">{img ? <img src={img} alt="" loading="lazy" /> : <span className="tb-dest-todos"><Images size={24} /></span>}</span>
+                    <span className="tb-dest-n">{c.nome}</span>
+                  </button>
+                );
+              })}
+            </div>
             <div className="ui-campo-c tb-busca">
               <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
               <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar topo" placeholder="Buscar topo" value={busca} onChange={e => setBusca(e.target.value)} />
               {busca && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></BotaoIcone>}
-            </div>
-            <div className="tb-chips" role="tablist" aria-label="Filtrar por tema">
-              <button type="button" role="tab" aria-selected={!cat} className={!cat ? "on" : ""} onClick={() => escolher(null)}>Todos</button>
-              {comTopos.map(c => <button key={c.id} type="button" role="tab" aria-selected={c.id === cat?.id} className={c.id === cat?.id ? "on" : ""} onClick={() => escolher(c.id)}>{c.nome}</button>)}
             </div>
             {lista.length === 0 ? (
               <p className="tb-nada">Nenhum topo com “{busca.trim()}”{cat ? ` em ${cat.nome}` : ""}.</p>

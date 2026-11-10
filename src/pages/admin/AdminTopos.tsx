@@ -26,8 +26,8 @@ async function subirCapa(f: Blob, pasta: string): Promise<string | null> {
   return supabase.storage.from(BUCKET_CAPAS).getPublicUrl(caminho).data.publicUrl;
 }
 
-type Form = { id?: string; titulo: string; categoria_id: string; capa: File | null; capaUrl: string | null; novos: File[]; arquivos: ArquivoTopo[] };
-const FORM_VAZIO: Form = { titulo: "", categoria_id: "", capa: null, capaUrl: null, novos: [], arquivos: [] };
+type Form = { id?: string; titulo: string; categoria_id: string; capa: File | null; capaUrl: string | null; novos: File[]; arquivos: ArquivoTopo[]; tags: string[] };
+const FORM_VAZIO: Form = { titulo: "", categoria_id: "", capa: null, capaUrl: null, novos: [], arquivos: [], tags: [] };
 
 export default function AdminTopos() {
   const [cats, setCats] = useState<CategoriaTopo[]>([]);
@@ -39,6 +39,13 @@ export default function AdminTopos() {
   const [salvando, setSalvando] = useState(false);
   const [novaCat, setNovaCat] = useState<{ id?: string; nome: string; img: File | null; imgUrl: string | null } | null>(null);
   const capaRef = useRef<HTMLInputElement>(null);
+  const [tagTxt, setTagTxt] = useState("");
+  // separa por vírgula/ponto e vírgula, tira espaços e repetidas, minúsculo
+  const addTags = (txt: string) => {
+    const novas = txt.split(/[,;]/).map(x => x.trim().toLowerCase()).filter(Boolean);
+    setTagTxt("");
+    if (novas.length) setForm(f => f && { ...f, tags: [...new Set([...f.tags, ...novas])].slice(0, 30) });
+  };
   const arqRef = useRef<HTMLInputElement>(null);
   const catImgRef = useRef<HTMLInputElement>(null);
 
@@ -90,7 +97,7 @@ export default function AdminTopos() {
 
   // ── topo ──
   const abrirNovo = () => setForm({ ...FORM_VAZIO, categoria_id: filtro || cats[0]?.id || "" });
-  const abrirEditar = (t: Topo) => setForm({ id: t.id, titulo: t.titulo, categoria_id: t.categoria_id || "", capa: null, capaUrl: t.capa_url, novos: [], arquivos: t.arquivos });
+  const abrirEditar = (t: Topo) => setForm({ id: t.id, titulo: t.titulo, categoria_id: t.categoria_id || "", capa: null, capaUrl: t.capa_url, novos: [], arquivos: t.arquivos, tags: t.tags || [] });
 
   const salvarTopo = async () => {
     if (!form) return;
@@ -115,7 +122,7 @@ export default function AdminTopos() {
     }
     if (fonteCapa) capa_url = await subirCapa(fonteCapa, id) || capa_url;
     const titulo = form.titulo.trim() || (form.novos[0]?.name || "").replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").slice(0, 40);
-    const dados = { titulo, categoria_id: form.categoria_id, capa_url, arquivos: [...form.arquivos.map(a => ({ ...a, formato: formatoDe(a.nome) })), ...enviados] };
+    const dados = { titulo, tags: form.tags, categoria_id: form.categoria_id, capa_url, arquivos: [...form.arquivos.map(a => ({ ...a, formato: formatoDe(a.nome) })), ...enviados] };
     const { error } = form.id
       ? await supabase.from("topos").update(dados).eq("id", id)
       : await supabase.from("topos").insert({ id, ...dados, ordem: topos.reduce((m, t) => Math.max(m, t.ordem), 0) + 1 });
@@ -188,7 +195,7 @@ export default function AdminTopos() {
                     <button type="button" className="atp-capa" onClick={() => abrirEditar(t)}>{t.capa_url ? <img src={t.capa_url} alt="" loading="lazy" /> : <ImageIcon size={28} />}</button>
                     <b>{t.titulo || "Sem título"}</b>
                     <small>{nomeCat(t.categoria_id)}</small>
-                    <span className="atp-fmts">{[...new Set(t.arquivos.map(a => a.formato))].map(f => <em key={f}>{f}</em>)}</span>
+                    <span className="atp-fmts">{[...new Set(t.arquivos.map(a => a.formato))].map(f => <em key={f}>{f}</em>)}{(t.tags || []).length > 0 && <small className="atp-ntags">{t.tags.length} {t.tags.length === 1 ? "tag" : "tags"}</small>}</span>
                     <div className="atp-acoes">
                       <label><input type="checkbox" checked={t.ativo} onChange={e => ativar(t, e.target.checked)} />Visível</label>
                       <BotaoIcone rotulo="Editar" variante="limpo" tamanho="p" onClick={() => abrirEditar(t)}><PencilSimple size={16} /></BotaoIcone>
@@ -215,6 +222,17 @@ export default function AdminTopos() {
             </div>
             <div className="atp-form-dados">
               <Campo rotulo="Título" placeholder="Ex.: Festa de Halloween" maxLength={40} value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} />
+              {/* (09/11) tags: só pra busca achar o topo (não aparecem pra confeiteira) */}
+              <div className="ui-campo">
+                <span className="ui-campo-r"><span>Tags da busca</span><small>não aparecem no app · Enter ou vírgula pra separar</small></span>
+                <div className="ui-campo-c atp-tags" onClick={e => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus()}>
+                  {form.tags.map(t => <span key={t} className="atp-tag">{t}<button type="button" aria-label={`Tirar ${t}`} onClick={() => setForm({ ...form, tags: form.tags.filter(x => x !== t) })}><X size={12} weight="bold" /></button></span>)}
+                  <input placeholder={form.tags.length ? "" : "Ex.: bruxa, abóbora, festa, terror"} value={tagTxt}
+                    onChange={e => { const v = e.target.value; if (/[,;]$/.test(v)) { addTags(v); } else setTagTxt(v); }}
+                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addTags(tagTxt); } else if (e.key === "Backspace" && !tagTxt && form.tags.length) setForm({ ...form, tags: form.tags.slice(0, -1) }); }}
+                    onBlur={() => addTags(tagTxt)} />
+                </div>
+              </div>
               <div className="ui-campo">
                 <span className="ui-campo-r"><span>Categoria</span></span>
                 <div className="atp-cat-esc">
