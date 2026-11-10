@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { digitosTelefone } from "@/lib/telefone";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, SignOut, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, SignOut, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -334,6 +334,8 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
               destaque={temNova || !instalado} onClick={() => setSobreOpen(true)}>
               {temNova && <span className="cf9-ponto" aria-hidden="true" />}
             </ItemConfig>
+            {/* (10/11) Termos e privacidade: linha própria (a LGPD pede a política sempre à mão) */}
+            <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Como cuidamos dos seus dados" onClick={() => setTermosOpen(true)} />
             {/* (18/10) Minhas conquistas escondido por enquanto */}
 
             </div>}
@@ -347,7 +349,6 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
           </section>
           </>)}
           {verConta && <Botao variante="secundario" cheio className="cf9-sair" icone={<SignOut size={20} weight="bold" />} onClick={() => setPerguntandoSair(true)}>Sair da conta</Botao>}
-          {verApp && <p className="cf9-rodape"><button type="button" onClick={() => setTermosOpen(true)}>Termos de uso</button>·<button type="button" onClick={() => setTermosOpen(true)}>Privacidade</button></p>}
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
           {recorte.janela}
           <JanelaSair aberta={perguntandoSair} aoFechar={() => setPerguntandoSair(false)} />
