@@ -79,7 +79,7 @@ export default function MinhaAssinatura() {
 
   return (
     <div className="mas-root">
-      <AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" onBack={computador ? undefined : () => voltarOuIr(navigate, "/configuracoes")} infoComo={COMO_ASSINATURA} infoTour={TOUR_ASSINATURA} />
+      <AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" onBack={computador ? undefined : () => voltarOuIr(navigate, "/minha-conta")} infoComo={COMO_ASSINATURA} infoTour={TOUR_ASSINATURA} />
       <div className="mas-wrap">
         <div className="mas-col">
           <section className="mas-c">

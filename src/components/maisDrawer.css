@@ -130,3 +130,8 @@ button.mais-it + .mais-it, .mais-it + button.mais-it { border-top: 1px solid var
 .mais-doo-tx small { font-size: 13px; color: rgba(255, 255, 255, .88); }
 .mais-doo > svg { color: #fff; }
 .mais-doo:active { transform: scale(.99); }
+
+/* (10/11) Ajuda: link pequeno no fim do Menu */
+.mais-ajuda { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin: 6px 0 0; padding: 12px; border: 0; background: none; font-family: inherit; font-size: 13.5px; color: var(--ui-texto-2); cursor: pointer; }
+.mais-ajuda b { font-weight: 500; color: var(--ui-rosa-botao, #CC2E66); }
+.mais-ajuda svg { color: var(--ui-texto-3); }

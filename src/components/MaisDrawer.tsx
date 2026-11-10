@@ -2,7 +2,7 @@ import { useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  Gear, Crown, CaretRight,
+  Gear, CaretRight, User,
   CalendarDots, CurrencyDollar,
   FileText, Users, Package, ClipboardText,
   Calculator, Sliders, Lifebuoy,
@@ -70,9 +70,10 @@ const GRUPOS: Grupo[] = [
   {
     label: "Conta",
     items: [
-      { label: "Assinatura",      desc: "Seu plano",                      path: "/assinar",       Icone: Crown },
-      { label: "Ajuda e suporte", desc: "Tutoriais e WhatsApp do suporte", path: "/ajuda",        Icone: Lifebuoy },
-      { label: "Configurações",   desc: "Conta, notificações e app",      path: "/configuracoes", Icone: Gear },
+      // (10/11) só 2: Minha conta (dados, assinatura, sair) e Configurações (notificações e o app).
+      // A Ajuda virou um link pequeno no fim do Menu.
+      { label: "Minha conta",     desc: "Seus dados e sua assinatura",    path: "/minha-conta",   Icone: User },
+      { label: "Configurações",   desc: "Notificações e atualizar o app", path: "/configuracoes", Icone: Gear },
     ],
   },
 ];
@@ -143,7 +144,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
                     >
                       {({ isActive }) => (<>
                         <span className="mais-it-ic" aria-hidden="true"><item.Icone size={20} weight={isActive || item.path === "/assinar" ? "fill" : "bold"} /></span>
-                        <span className="mais-it-txt"><b>{item.label}</b><small>{item.path === "/assinar" && !isPro ? "7 dias grátis para testar" : item.desc}</small></span>
+                        <span className="mais-it-txt"><b>{item.label}</b><small>{item.path === "/minha-conta" ? (isPro ? "Seus dados · plano PRO" : "Seus dados · plano grátis") : item.desc}</small></span>
                         {item.pro && !isPro && <em className="mais-it-pro">PRO</em>}
                         <CaretRight size={16} weight="bold" className="mais-it-seta" aria-hidden="true" />
                       </>)}
@@ -158,6 +159,10 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
             <span className="mais-indica-ic" aria-hidden="true"><ShareNetwork size={20} weight="bold" /></span>
             <span className="mais-indica-tx"><b>Indique o Doonly</b><small>Mande pra uma amiga confeiteira</small></span>
             <CaretRight size={16} weight="bold" aria-hidden="true" />
+          </button>
+          {/* (10/11) a Ajuda sai do caminho mas não some: quem precisa acha o WhatsApp do suporte aqui */}
+          <button type="button" className="mais-ajuda" onClick={() => ir("/ajuda")}>
+            <Lifebuoy size={16} weight="bold" aria-hidden="true" />Precisa de ajuda? <b>Fale com a gente</b>
           </button>
         </div>
       </div>

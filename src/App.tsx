@@ -614,6 +614,7 @@ export default function App() {
           <Route path="/pixel" element={<Pixel />} />
           <Route path="/arquivos" element={<Navigate to="/" replace />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/minha-conta" element={<Configuracoes secao="conta" />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />
           <Route path="/configuracoes/mensagens" element={<MensagensWhatsApp />} />
           <Route path="/indicar" element={<Navigate to="/inicio" replace />} />

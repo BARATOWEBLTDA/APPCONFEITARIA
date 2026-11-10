@@ -79,7 +79,12 @@ const INDICE: Achado[] = [
 ];
 const semAcento = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-export default function Configuracoes() {
+// (10/11) no celular a tela se divide em duas: "Minha conta" (dados, assinatura, sair) e "Configurações" (notificações e o app).
+// No computador continua uma tela só com tudo (o menu da conta do topo abre por aqui).
+export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "app" }) {
+  const [largo] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 901px)").matches);
+  const verConta = largo || secao === "conta";
+  const verApp = largo || secao === "app";
   const navigate = useNavigate();
   const [busca, setBusca] = useState("");
   const [perguntandoSair, setPerguntandoSair] = useState(false); // (09/11) pergunta antes de sair, igual ao menu da foto
@@ -263,7 +268,8 @@ export default function Configuracoes() {
 
   return (
     <>
-      <AppPageHeader title="Configurações" voltar="/inicio" subtitle="Sua conta e o app" infoComo={COMO_CONFIGURACOES} infoTour={TOUR_CONFIGURACOES} />
+      <AppPageHeader title={!largo && secao === "conta" ? "Minha conta" : "Configurações"} voltar="/inicio"
+        subtitle={largo ? "Sua conta e o app" : secao === "conta" ? "Seus dados e sua assinatura" : "Notificações e o app"} infoComo={COMO_CONFIGURACOES} infoTour={TOUR_CONFIGURACOES} />
       <div className="cf9">
         {loading ? (
           <div className="cl9-esq" aria-label="Carregando">{[0, 1, 2].map(k => <span key={k} />)}</div>
@@ -274,11 +280,11 @@ export default function Configuracoes() {
               acao={<Botao tamanho="m" onClick={() => void carregar()}>Tentar de novo</Botao>} />
           )}
           {/* (14/10) Uma lista só, sem cards: Conta (minha conta e assinatura), App, Ajuda e Avançado. Sair embaixo. */}
-          <label className="cf9-busca">
+          {largo && <label className="cf9-busca">
             <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
             <input type="search" placeholder="Horário, pix, senha, custos…" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar nas configurações" autoComplete="off" />
             {busca && <button type="button" className="ui-busca-x" aria-label="Limpar a busca" onClick={() => setBusca('')}><X size={18} weight="bold" /></button>}
-          </label>
+          </label>}
           {busca.trim() ? (() => {
             const q = semAcento(busca.trim());
             // (6.110) cada palavra pode estar em qualquer lugar ("taxa entrega" acha "taxa de entrega")
@@ -305,42 +311,43 @@ export default function Configuracoes() {
           <section className="cf9-card cf9-lista" aria-label="Configurações">
             {/* (19/10) Conta de volta em lista, todos os itens iguais (sem os quadradões nem o chocolate)
                 (28/10 · 4.60) cada assunto num grupo: no celular continua uma lista só; no computador vira 3 cartões lado a lado */}
-            <div className="cf9-grupo">
-            <h2 className="cf9-sec">Conta</h2>
+            {verConta && <div className="cf9-grupo">
+            {largo && <h2 className="cf9-sec">Conta</h2>}
             {/* (21/10) "Configurações da loja" saiu: dados da loja, mensagens e o cardápio digital ficam em Cadastros */}
-            <ItemConfig icone={<User size={20} weight="bold" />} nome="Minha conta"
+            <ItemConfig icone={<User size={20} weight="bold" />} nome={largo ? "Minha conta" : "Meus dados"}
               apoio={userEmail || "Foto, nome, telefone e senha"}
               onClick={() => { setError(""); setSenhaMsg(""); setRascunho({ nome: form.nome, telefone: form.telefone }); setEditarOpen(true); }} />
             <ItemConfig icone={<Crown size={20} weight="fill" />} nome="Minha assinatura"
               apoio={pro ? "Plano PRO · ativo" : "Plano grátis · 7 dias de PRO grátis"} destaque={!pro}
               onClick={() => navigate(pro ? "/minha-assinatura" : "/assinar")} />
 
-            </div>
+            </div>}
 
             {/* (15/10) ordem pelo uso: o mais usado primeiro */}
-            <div className="cf9-grupo">
-            <h2 className="cf9-sec">App</h2>
+            {verApp && <div className="cf9-grupo">
+            {largo && <h2 className="cf9-sec">App</h2>}
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
             {/* (10/11) saiu do Menu do celular: é uma configuração que ela ajusta uma vez */}
             {/* (10/11) Instalar e Atualizar viraram 1 linha; sem o app instalado, a frase convida a instalar */}
-            <ItemConfig icone={<DeviceMobile size={20} weight="bold" />} nome="Sobre o app"
+            <ItemConfig icone={<DeviceMobile size={20} weight="bold" />} nome={largo ? "Sobre o app" : "Atualizar o app"}
               apoio={temNova ? "Nova versão disponível" : !instalado ? "Instale na tela inicial" : `Versão ${VERSAO_APP}`}
               destaque={temNova || !instalado} onClick={() => setSobreOpen(true)}>
               {temNova && <span className="cf9-ponto" aria-hidden="true" />}
             </ItemConfig>
             {/* (18/10) Minhas conquistas escondido por enquanto */}
 
-            </div>
+            </div>}
 
-            <div className="cf9-grupo">
+            {/* (10/11) no celular a Ajuda fica no fim do Menu (link pequeno); no computador continua aqui */}
+            {largo && <div className="cf9-grupo">
             <h2 className="cf9-sec">Ajuda</h2>
             {/* (10/11) os 4 de ajuda viraram 1: a Central de Ajuda já tem o WhatsApp, relatar e sugerir */}
             <ItemConfig icone={<Lifebuoy size={20} weight="bold" />} nome="Ajuda e suporte" apoio="Tutoriais, WhatsApp e sugestões" onClick={() => navigate("/ajuda")} />
-            </div>
+            </div>}
           </section>
           </>)}
-          <Botao variante="secundario" cheio className="cf9-sair" icone={<SignOut size={20} weight="bold" />} onClick={() => setPerguntandoSair(true)}>Sair da conta</Botao>
-          <p className="cf9-rodape"><button type="button" onClick={() => setTermosOpen(true)}>Termos de uso</button>·<button type="button" onClick={() => setTermosOpen(true)}>Privacidade</button></p>
+          {verConta && <Botao variante="secundario" cheio className="cf9-sair" icone={<SignOut size={20} weight="bold" />} onClick={() => setPerguntandoSair(true)}>Sair da conta</Botao>}
+          {verApp && <p className="cf9-rodape"><button type="button" onClick={() => setTermosOpen(true)}>Termos de uso</button>·<button type="button" onClick={() => setTermosOpen(true)}>Privacidade</button></p>}
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
           {recorte.janela}
           <JanelaSair aberta={perguntandoSair} aoFechar={() => setPerguntandoSair(false)} />
