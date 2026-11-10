@@ -205,3 +205,11 @@
 
 /* (30/10 · 5.55) menos linhas: o título do quadro não precisa de risco embaixo */
 .dl-painel-cab { padding-bottom: 0; border-bottom: 0; }
+
+/* (10/11) linhas do mesmo tamanho do Menu: 56px, ícone 36px, título 15/500, frase 12,5/400 */
+.dl-li { min-height: 56px; padding: 8px 12px; }
+.dl-li-ic, .dl-emb .dl-li-img { width: 36px; height: 36px; border-radius: 10px; }
+.dl-li-ic svg { width: 19px; height: 19px; }
+.dl-li-tx b { font-size: 15px; font-weight: 500; }
+.dl-li-tx small { font-size: 12.5px; font-weight: 400; }
+.dl-li-tx small.falta { font-weight: 500; }

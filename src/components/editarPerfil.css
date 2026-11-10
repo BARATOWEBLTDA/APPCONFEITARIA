@@ -17,3 +17,5 @@
 .ep9-senha-bt > svg:last-child { color: var(--ui-texto-3); transition: transform var(--dur-fast, .15s); }
 .ep9-senha-bt > svg.aberto { transform: rotate(180deg); }
 .ep9-senha-c { display: flex; flex-direction: column; gap: 14px; padding: 8px 0 4px; }
+/* (10/11) excluir a conta: discreto no fim da janela */
+.ep9-excluir { align-self: center; margin: 8px 0 0; padding: 8px 4px; border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--ui-vermelho, #C62828); cursor: pointer; }

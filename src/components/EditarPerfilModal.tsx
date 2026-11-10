@@ -36,13 +36,15 @@ interface Props {
   semSenha?: boolean;
   saveError?: string;
   saveSuccess?: boolean;
+  /** (10/11) "Excluir minha conta" discreto no fim (antes ficava em Configurações › Avançado) */
+  onExcluirConta?: () => void;
 }
 
 export default function EditarPerfilModal({
   open, onClose, nome, telefone, email, fotoPreview, inicial,
   onNomeChange, onTelefoneChange, onFotoClick, onSave, saving, uploading,
   senhaAtual, novaSenha, confirmSenha, senhaMsg, savingSenha,
-  onSenhaAtualChange, onNovaSenhaChange, onConfirmSenhaChange, onAlterarSenha, saveError, semSenha = false,
+  onSenhaAtualChange, onNovaSenhaChange, onConfirmSenhaChange, onAlterarSenha, saveError, semSenha = false, onExcluirConta,
 }: Props) {
   const [showSenha, setShowSenha] = useState(false);
   useEffect(() => { if (!open) { const t = setTimeout(() => setShowSenha(false), 300); return () => clearTimeout(t); } }, [open]);
@@ -77,6 +79,7 @@ export default function EditarPerfilModal({
             </div>
           )}
         </div>
+        {onExcluirConta && <button type="button" className="ep9-excluir" onClick={onExcluirConta}>Excluir minha conta</button>}
       </div>
     </Janela>
   );

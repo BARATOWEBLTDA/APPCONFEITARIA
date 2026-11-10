@@ -117,3 +117,19 @@
   .cf9-grupo > .cf9-sec:first-child { margin-top: 10px; }
   .cf9 .ui-bt.cf9-sair { width: auto; margin: 4px auto 0; padding: 0 28px; background: transparent; box-shadow: none; }
 }
+
+/* (10/11) linhas do mesmo tamanho do Menu: 56px, ícone 36px, título 15/500, frase 12,5/400 */
+.cf9-item { min-height: 56px; padding: 8px; }
+.cf9-ic { width: 36px; height: 36px; border-radius: 10px; }
+.cf9-ic svg { width: 19px; height: 19px; }
+.cf9-tx b { font-size: 15px; font-weight: 500; }
+.cf9-tx small { font-size: 12.5px; font-weight: 400; }
+.cf9-tx small.on { font-weight: 500; }
+/* (10/11) Termos e privacidade: link pequeno embaixo do Sair */
+.cf9-rodape { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 8px; font-size: 12.5px; color: var(--ui-texto-3); }
+.cf9-rodape button { margin: 0; padding: 6px 2px; border: 0; background: none; font-family: inherit; font-size: inherit; color: var(--ui-texto-2); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+/* (10/11) Sobre o app */
+.cf9-sobre { display: flex; flex-direction: column; gap: 12px; }
+.cf9-sobre-v { margin: 0; font-size: 14px; color: var(--ui-texto-2); text-align: center; }
+.cf9-sobre-v b { display: block; font-size: 16px; font-weight: 500; color: var(--ui-texto); }
+.cf9-sobre-v.on b { color: var(--ui-rosa-escuro); }

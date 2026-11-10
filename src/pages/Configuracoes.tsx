@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { digitosTelefone } from "@/lib/telefone";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Lifebuoy, Bell, ChatCircleText, CaretRight, Crown, DownloadSimple, FileText, Lightbulb,  SignOut, SlidersHorizontal, Bug, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { Lifebuoy, Bell, ChatCircleText, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, SignOut, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -15,7 +15,8 @@ import { useRecorte } from "@/components/ui/useRecorte";
 import TermosModal from "@/components/TermosModal";
 import EditarPerfilModal from "@/components/EditarPerfilModal";
 import InstalarAppCard from "@/components/InstalarAppCard";
-import AtualizarAppItem from "@/components/AtualizarAppItem";
+import { VERSAO_APP } from "@/lib/versao";
+import { recarregarLimpo } from "@/lib/recarregarLimpo";
 import JanelaSair from "@/components/JanelaSair";
 import "./configuracoes.css";
 
@@ -67,13 +68,14 @@ const INDICE: Achado[] = [
   { nome: "Velas e topos de bolo", onde: "Minha loja › Adicionais", palavras: "adicionais extras complementos escrita papel de arroz", ir: "/complementos" },
   { nome: "Categorias do cardápio", onde: "Minha loja › Categorias", palavras: "grupos ordem secoes", ir: "/categorias" },
   { nome: "Notificações e sons", onde: "App", palavras: "notificacao notificacoes avisos som alerta pedido novo", ir: "notif" },
-  { nome: "Instalar o app", onde: "App", palavras: "tela inicial atalho celular", ir: "instalar" },
-  { nome: "Central de Ajuda", onde: "Ajuda", palavras: "tutorial como usar artigos duvidas passo a passo", ir: "/ajuda" },
-  { nome: "Fale com o suporte", onde: "Ajuda", palavras: "whatsapp ajuda atendimento", ir: "suporte" },
-  { nome: "Relatar um problema", onde: "Ajuda", palavras: "erro bug travou nao funciona", ir: "/relatar-problema" },
-  { nome: "Sugerir uma melhoria", onde: "Ajuda", palavras: "ideia sugestao recurso", ir: "/solicitar-recurso" },
-  { nome: "Termos e privacidade", onde: "Ajuda", palavras: "lgpd dados contrato", ir: "termos" },
-  { nome: "Excluir a conta", onde: "App › Avançado", palavras: "apagar deletar encerrar", ir: "avancado" },
+  { nome: "Instalar o app", onde: "App › Sobre o app", palavras: "tela inicial atalho celular", ir: "instalar" },
+  { nome: "Central de Ajuda", onde: "Ajuda e suporte", palavras: "tutorial como usar artigos duvidas passo a passo", ir: "/ajuda" },
+  { nome: "Fale com o suporte", onde: "Ajuda e suporte", palavras: "whatsapp ajuda atendimento", ir: "suporte" },
+  { nome: "Relatar um problema", onde: "Ajuda e suporte", palavras: "erro bug travou nao funciona", ir: "/relatar-problema" },
+  { nome: "Sugerir uma melhoria", onde: "Ajuda e suporte", palavras: "ideia sugestao recurso", ir: "/solicitar-recurso" },
+  { nome: "Termos e privacidade", onde: "Configurações", palavras: "lgpd dados contrato", ir: "termos" },
+  { nome: "Excluir a conta", onde: "Minha conta", palavras: "apagar deletar encerrar excluir minha conta", ir: "avancado" },
+  { nome: "Atualizar o app", onde: "App › Sobre o app", palavras: "versao nova atualizacao recarregar", ir: "sobre" },
 ];
 const semAcento = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
@@ -100,7 +102,21 @@ export default function Configuracoes() {
   const [instalarOpen, setInstalarOpen] = useState(false); // (14/10) "Instalar o app" virou item da lista
   // (31/10 · 5.71) com o convite do Chrome pronto, o toque já abre a janela de instalar do próprio celular (sem passo no meio)
   const abrirInstalar = () => { if (getInstallPrompt()) void promptInstall(); else setInstalarOpen(true); };
-  const [avancadoOpen, setAvancadoOpen] = useState(false); // (14/10) "Avançado" virou item da lista
+  // (10/11) "Sobre o app": versão, atualizar e instalar numa janela só (Instalar e Atualizar eram 2 linhas)
+  const [sobreOpen, setSobreOpen] = useState(false);
+  const [temNova, setTemNova] = useState(false);
+  const [atualizando, setAtualizando] = useState(false);
+  const instalado = isStandalone();
+  useEffect(() => {
+    let cancelado = false;
+    fetch(`/version.json?t=${Date.now()}`, { cache: "no-store" })
+      .then(r => (r.ok ? r.json() : null))
+      .then(v => { if (!cancelado && v?.id && v.id !== __BUILD_ID__) setTemNova(true); })
+      .catch(() => { /* offline ou em dev */ });
+    return () => { cancelado = true; };
+  }, []);
+  // (10/11) "Avançado" saiu: excluir a conta fica no fim da janela Minha conta
+  const pedirExclusao = () => { setEditarOpen(false); setExcluirConfirm(""); setExcluirOpen(true); };
   const [excluirOpen, setExcluirOpen] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
   const [excluindo, setExcluindo] = useState(false);
@@ -273,7 +289,8 @@ export default function Configuracoes() {
               else if (a.ir === "notif") navigate("/configuracoes/notificacoes");
               else if (a.ir === "instalar") abrirInstalar();
               else if (a.ir === "termos") setTermosOpen(true);
-              else if (a.ir === "avancado") setAvancadoOpen(true);
+              else if (a.ir === "avancado") pedirExclusao();
+              else if (a.ir === "sobre") setSobreOpen(true);
               else if (a.ir === "suporte") window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener");
               else navigate(a.ir, { state: { de: "/configuracoes", ...(a.ir === "/cardapio-config" && a.abrir === "ent" ? { secao: "entrega" } : a.abrir ? { abrir: a.abrir } : {}) } });
             };
@@ -306,25 +323,25 @@ export default function Configuracoes() {
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
             {/* (10/11) saiu do Menu do celular: é uma configuração que ela ajusta uma vez */}
             <ItemConfig icone={<ChatCircleText size={20} weight="bold" />} nome="Mensagens do WhatsApp" apoio="Textos prontos para o cliente" onClick={() => navigate("/configuracoes/mensagens")} />
-            {!isStandalone() && <ItemConfig icone={<DownloadSimple size={20} weight="bold" />} nome="Instalar o app" apoio="Abra direto, como um app" onClick={abrirInstalar} />}
-            <AtualizarAppItem />
-            {/* (18/10) Avançado entrou no grupo App (a seção "Outros" saiu) */}
-            <ItemConfig icone={<SlidersHorizontal size={20} weight="bold" />} nome="Avançado" apoio="Excluir a conta" onClick={() => setAvancadoOpen(true)} />
+            {/* (10/11) Instalar e Atualizar viraram 1 linha; sem o app instalado, a frase convida a instalar */}
+            <ItemConfig icone={<DeviceMobile size={20} weight="bold" />} nome="Sobre o app"
+              apoio={temNova ? "Nova versão disponível" : !instalado ? "Instale na tela inicial" : `Versão ${VERSAO_APP}`}
+              destaque={temNova || !instalado} onClick={() => setSobreOpen(true)}>
+              {temNova && <span className="cf9-ponto" aria-hidden="true" />}
+            </ItemConfig>
             {/* (18/10) Minhas conquistas escondido por enquanto */}
 
             </div>
 
             <div className="cf9-grupo">
             <h2 className="cf9-sec">Ajuda</h2>
-            <ItemConfig icone={<Lifebuoy size={20} weight="bold" />} nome="Central de Ajuda" apoio="Tutoriais de cada tela" onClick={() => navigate("/ajuda")} />
-            <ItemConfig icone={<IconeWhatsApp size={20} />} nome="Fale com o suporte" apoio="Pelo WhatsApp" onClick={() => window.open(`https://wa.me/5511978414991?text=${encodeURIComponent("Olá! Preciso de ajuda com o Doonly.")}`, "_blank", "noopener")} />
-            <ItemConfig icone={<Bug size={20} weight="bold" />} nome="Relatar um problema" apoio="Algo não funcionou?" onClick={() => navigate("/relatar-problema")} />
-            <ItemConfig icone={<Lightbulb size={20} weight="bold" />} nome="Sugerir uma melhoria" apoio="Conte o que falta no app" onClick={() => navigate("/solicitar-recurso")} />
-            <ItemConfig icone={<FileText size={20} weight="bold" />} nome="Termos e privacidade" apoio="Termos de uso e privacidade" onClick={() => setTermosOpen(true)} />
+            {/* (10/11) os 4 de ajuda viraram 1: a Central de Ajuda já tem o WhatsApp, relatar e sugerir */}
+            <ItemConfig icone={<Lifebuoy size={20} weight="bold" />} nome="Ajuda e suporte" apoio="Tutoriais, WhatsApp e sugestões" onClick={() => navigate("/ajuda")} />
             </div>
           </section>
           </>)}
           <Botao variante="secundario" cheio className="cf9-sair" icone={<SignOut size={20} weight="bold" />} onClick={() => setPerguntandoSair(true)}>Sair da conta</Botao>
+          <p className="cf9-rodape"><button type="button" onClick={() => setTermosOpen(true)}>Termos de uso</button>·<button type="button" onClick={() => setTermosOpen(true)}>Privacidade</button></p>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={recorte.escolher} />
           {recorte.janela}
           <JanelaSair aberta={perguntandoSair} aoFechar={() => setPerguntandoSair(false)} />
@@ -337,10 +354,12 @@ export default function Configuracoes() {
         <InstalarAppCard />
       </Janela>
 
-      <Janela aberta={avancadoOpen} aoFechar={() => setAvancadoOpen(false)} tipo="conteudo" titulo="Avançado">
-        <div className="cf9-avanc-c">
-          <p>Não quer mais usar o Doonly? A conta e todos os dados são apagados.</p>
-          <Botao variante="perigo" cheio onClick={() => { setAvancadoOpen(false); setExcluirConfirm(""); setExcluirOpen(true); }}>Excluir minha conta</Botao>
+      <Janela aberta={sobreOpen} aoFechar={() => setSobreOpen(false)} tipo="conteudo" titulo="Sobre o app">
+        <div className="cf9-sobre">
+          <p className={`cf9-sobre-v${temNova ? " on" : ""}`}><b>{temNova ? "Tem versão nova" : "Você está na versão mais nova"}</b>Versão {VERSAO_APP}</p>
+          <Botao variante={temNova ? "principal" : "secundario"} cheio carregando={atualizando} icone={<ArrowsClockwise size={18} weight="bold" />}
+            onClick={() => { setAtualizando(true); recarregarLimpo(); }}>Atualizar o app</Botao>
+          {!instalado && <Botao variante="secundario" cheio icone={<DownloadSimple size={18} weight="bold" />} onClick={() => { setSobreOpen(false); abrirInstalar(); }}>Instalar na tela inicial</Botao>}
         </div>
       </Janela>
 
@@ -369,6 +388,7 @@ export default function Configuracoes() {
         onAlterarSenha={alterarSenha}
         semSenha={semSenha}
         saveError={error}
+        onExcluirConta={pedirExclusao}
       />
 
       <Janela aberta={excluirOpen} aoFechar={() => !excluindo && setExcluirOpen(false)} tipo="conteudo" titulo="Excluir minha conta" travada
