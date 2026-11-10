@@ -8,7 +8,7 @@ import {
   Calculator, Sliders, ChartPieSlice, Lifebuoy,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target, ShareNetwork, Scales, ArrowsDownUp, HandCoins, CalendarCheck } from "@phosphor-icons/react";
+import { Ticket, Target, ShareNetwork, Scales, ArrowsDownUp, HandCoins, CalendarCheck, FlagBanner } from "@phosphor-icons/react";
 import { indicarDoonly } from "@/lib/indicarDoonly";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { usePlano } from "@/hooks/usePlano";
@@ -81,6 +81,7 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Conversor de medidas", desc: "Xícaras e colheres em gramas", path: "/ferramentas/medidas", Icone: Scales },
       { label: "Simulador de preço", desc: "Teste preços e veja o lucro", path: "/ferramentas/simulador", Icone: Sliders },
+      { label: "Topos de bolo", desc: "Prontos pra imprimir", path: "/ferramentas/topos", Icone: FlagBanner },
     ],
   },
   {

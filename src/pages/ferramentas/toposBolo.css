@@ -1,0 +1,51 @@
+/* (09/11) Topos de bolo */
+.tb { width: 100%; max-width: 1120px; margin: 0 auto; padding: var(--space-2) var(--space-2) 120px; box-sizing: border-box; font-family: var(--font-base); color: var(--ui-texto); }
+.tb-carregando { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 32px 0; font-size: 14px; color: var(--ui-texto-2); }
+.tb-sub { margin: var(--space-2) 2px var(--space-3); font-size: 15px; font-weight: 500; color: #3B3236; }
+/* temas */
+.tb-cats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.tb-cat { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; overflow: hidden; border: 1px solid #ECE7E9; border-radius: 16px; background: #fff; font-family: inherit; text-align: left; cursor: pointer; transition: box-shadow .15s, transform .15s; -webkit-tap-highlight-color: transparent; }
+.tb-cat-img { display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 3; background: #FAF7F8; color: #B5AAAE; }
+.tb-cat-img img { width: 100%; height: 100%; object-fit: cover; }
+.tb-cat-tx { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 12px; min-width: 0; }
+.tb-cat-tx b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14.5px; font-weight: 500; color: #241A1E; }
+.tb-cat-tx small { font-size: 12.5px; color: #8A7B80; }
+@media (hover: hover) { .tb-cat:hover, .tb-it:hover { box-shadow: 0 6px 16px rgba(40, 20, 25, .08); transform: translateY(-1px); } }
+/* dentro de um tema */
+.tb-topo { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-2) 0 var(--space-3); }
+.tb-voltar { display: inline-flex; align-items: center; gap: 4px; flex: none; height: 34px; margin: 0; padding: 0 12px 0 8px; border: 1px solid #E4DCDD; border-radius: 10px; background: #fff; font-family: inherit; font-size: 13.5px; font-weight: 500; color: #3B3236; cursor: pointer; }
+.tb-cat-nome { flex: 1; min-width: 0; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 17px; font-weight: 500; color: #241A1E; }
+.tb-conta { flex: none; font-size: 13px; color: #8A7B80; }
+.tb-chips { display: flex; gap: var(--space-2); margin: 0 calc(-1 * var(--space-2)) var(--space-3); padding: 0 var(--space-2); overflow-x: auto; scrollbar-width: none; }
+.tb-chips::-webkit-scrollbar { display: none; }
+.tb-chips button { flex: none; height: 34px; margin: 0; padding: 0 14px; border: 1px solid #E4DCDD; border-radius: 999px; background: #fff; font-family: inherit; font-size: 13.5px; font-weight: 500; color: #5E5357; white-space: nowrap; cursor: pointer; }
+.tb-chips button.on { border-color: #3B3236; background: #3B3236; color: #fff; }
+.tb-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.tb-it { display: flex; flex-direction: column; gap: 6px; min-width: 0; margin: 0; padding: 8px 8px 10px; border: 1px solid #ECE7E9; border-radius: 14px; background: #fff; font-family: inherit; text-align: left; cursor: pointer; transition: box-shadow .15s, transform .15s; -webkit-tap-highlight-color: transparent; }
+.tb-capa { display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 10px; background: #FAF7F8; color: #B5AAAE; }
+.tb-capa img { width: 100%; height: 100%; object-fit: contain; }
+.tb-it-t { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 2px; font-size: 13.5px; font-weight: 500; color: #241A1E; }
+.tb-fmts { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 2px; }
+.tb-fmts em, .tb-arq > em { padding: 2px 6px; border-radius: 6px; background: #F3F1F2; font-style: normal; font-size: 10.5px; font-weight: 600; letter-spacing: .02em; color: #5E5357; }
+/* o topo aberto */
+.tb-janela { width: min(860px, calc(100vw - 32px)); max-width: none; }
+.tb-det { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+.tb-det-capa { display: flex; align-items: center; justify-content: center; max-height: 46vh; overflow: hidden; border-radius: 14px; background: #FAF7F8; color: #B5AAAE; }
+.tb-det-capa img { max-width: 100%; max-height: 46vh; object-fit: contain; }
+.tb-det-l { margin: 0 0 var(--space-2); font-size: 13px; font-weight: 500; color: #8A7B80; }
+.tb-det-vz { margin: 0; font-size: 14px; color: #8A7B80; }
+.tb-arq { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #F1EDEF; }
+.tb-arq:first-of-type { border-top: 0; }
+.tb-arq-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tb-arq-tx b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; font-weight: 500; }
+.tb-arq-tx small { font-size: 12px; color: #8A7B80; }
+.tb-det-pro { display: flex; align-items: center; gap: 6px; margin: var(--space-2) 0 0; font-size: 13px; color: #A16207; }
+@media (min-width: 600px) { .tb-cats { grid-template-columns: repeat(3, minmax(0, 1fr)); } .tb-grade { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 901px) {
+  .tb { padding: var(--space-4) 0 var(--space-7); }
+  .tb-cats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); }
+  .tb-grade { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-4); }
+  .tb-chips { margin: 0 0 var(--space-4); padding: 0; flex-wrap: wrap; }
+  .tb-det { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; }
+  .tb-det-capa, .tb-det-capa img { max-height: 60vh; }
+}

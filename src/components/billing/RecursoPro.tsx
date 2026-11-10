@@ -11,7 +11,7 @@ import {
   AddressBook, Robot, Lightning, Users, ChatCircleText, Receipt, Cake, Target, ChartLineUp, Storefront, FileXls, CalendarBlank, Briefcase,
   Stack, CurrencyCircleDollar, ShoppingBag, Palette, Ticket, ClockCounterClockwise, Gift, Images, Megaphone, Sparkle, Printer,
   ListChecks, Truck, FilePdf, Crown, ArrowRight, Percent, ShareNetwork,
-  LinkSimple, Package, FileText, Eye, ArrowsClockwise, HandHeart, WhatsappLogo,
+  LinkSimple, Package, FileText, Eye, ArrowsClockwise, HandHeart, WhatsappLogo, Scissors,
 } from "@phosphor-icons/react";
 import { Botao, Janela } from "@/components/base";
 import { CTA_PRO } from "@/lib/beneficiosPro";
@@ -61,6 +61,9 @@ export const RECURSOS_PRO = {
     beneficios: [[LinkSimple, "Com o nome da sua loja", "Do jeito que você escolher"], [ShareNetwork, "Mais confiança", "No Instagram e no WhatsApp"], [ArrowsClockwise, "O antigo continua valendo", "Nenhum cliente se perde"]] },
   equipe: { nome: "Montagem do cardápio", texto: "A equipe Doonly cadastra seus produtos e cria a logo e os banners da loja. Você só manda as fotos e os preços.", frase: ["A gente", "monta!"],
     beneficios: [[HandHeart, "Produtos cadastrados", "Com preço e foto"], [Palette, "Logo e banners", "Feitos pela equipe"], [WhatsappLogo, "Pelo WhatsApp", "Direto com a equipe"]] },
+  // (09/11) Topos de bolo (Ferramentas)
+  topos: { nome: "Baixar topos de bolo", texto: "Topos prontos pra imprimir e recortar, separados por tema. É só escolher e baixar.", frase: ["Topo", "pronto!"],
+    beneficios: [[Images, "Topos por tema", "Datas, festas e idades"], [Printer, "Pronto pra imprimir", "PNG e PDF em alta"], [Scissors, "Arquivo de recorte", "Studio pra Silhouette"]] },
 } satisfies Record<string, RecursoInfo>;
 export type RecursoPro = keyof typeof RECURSOS_PRO;
 

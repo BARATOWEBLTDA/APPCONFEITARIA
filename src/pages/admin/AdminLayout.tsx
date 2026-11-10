@@ -7,7 +7,7 @@ import EscolherPerfil, { AvatarAdmin } from "./EscolherPerfil";
 import { guardarDestinoDoLogin } from "@/lib/destinoLogin";
 import {
   ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images,
-  ChartBar, Lightbulb, Lifebuoy, Target,
+  ChartBar, Lightbulb, Lifebuoy, Target, Cake,
   ArrowLeft, SignOut, DotsThreeOutline, CaretRight, X, ClockCounterClockwise, ArrowsLeftRight,
 } from "@phosphor-icons/react";
 
@@ -36,6 +36,7 @@ const menuSections: MenuSection[] = [
       { path: "/admin/autores", label: "Autores", icon: <PenNib size={20} weight="bold" /> },
       { path: "/admin/banner", label: "Banner do celular", icon: <ImageIcon size={20} weight="bold" /> },
       { path: "/admin/banners-prontos", label: "Banners prontos", icon: <Images size={20} weight="bold" /> },
+      { path: "/admin/topos", label: "Topos de bolo", icon: <Cake size={20} weight="bold" /> },
     ],
   },
   // (04/11) Biblioteca (receitas da comunidade, receitas Doonly e PDFs) foi descontinuada

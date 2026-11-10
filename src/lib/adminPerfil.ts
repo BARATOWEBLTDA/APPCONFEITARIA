@@ -7,7 +7,7 @@
 import { supabase } from "@/lib/supabase";
 
 export type PerfilAdmin = { id: string; nome: string; foto_url: string | null; cor: string | null };
-export type TipoRegistro = "usuario" | "pro" | "bloqueio" | "exclusao" | "banner" | "noticia" | "autor" | "ideia" | "aviso" | "pixel" | "outro";
+export type TipoRegistro = "usuario" | "pro" | "bloqueio" | "exclusao" | "banner" | "noticia" | "autor" | "ideia" | "aviso" | "pixel" | "topos" | "outro";
 
 const CHAVE = "doonly_admin_perfil";
 const ULTIMO = "doonly_admin_perfil_ultimo";

@@ -114,6 +114,8 @@ const Lucratividade = lazy(() => import("@/pages/Lucratividade"));
 const FichaTecnica = lazy(() => import("@/pages/FichaTecnica"));
 const ConversorMedidas = lazy(() => import("@/pages/ferramentas/ConversorMedidas"));
 const SimuladorPreco = lazy(() => import("@/pages/ferramentas/SimuladorPreco"));
+const ToposBolo = lazy(() => import("@/pages/ferramentas/ToposBolo"));
+const AdminTopos = lazy(() => import("@/pages/admin/AdminTopos"));
 const NaoEncontrada = lazy(() => import("@/pages/NaoEncontrada"));
 const PRE_CARREGAR: (() => Promise<unknown>)[] = [
   carregarLayout,
@@ -578,6 +580,7 @@ export default function App() {
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />
           <Route path="/ferramentas/medidas" element={<ConversorMedidas />} />
           <Route path="/ferramentas/simulador" element={<SimuladorPreco />} />
+          <Route path="/ferramentas/topos" element={<ToposBolo />} />
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/cadastros" element={<Cadastros />} />
           <Route path="/complementos" element={<Complementos />} />
@@ -622,6 +625,7 @@ export default function App() {
           <Route path="notif-templates" element={<AdminNotifTemplates />} />
           <Route path="banner" element={<AdminBanner />} />
           <Route path="banners-prontos" element={<AdminBannersProntos />} />
+          <Route path="topos" element={<AdminTopos />} />
           <Route path="noticias" element={<AdminNoticias />} />
           <Route path="ideias" element={<AdminIdeias />} />
           <Route path="autores" element={<AdminAutores />} />
