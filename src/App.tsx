@@ -115,6 +115,7 @@ const FichaTecnica = lazy(() => import("@/pages/FichaTecnica"));
 const ConversorMedidas = lazy(() => import("@/pages/ferramentas/ConversorMedidas"));
 const SimuladorPreco = lazy(() => import("@/pages/ferramentas/SimuladorPreco"));
 const ToposBolo = lazy(() => import("@/pages/ferramentas/ToposBolo"));
+const TopoPublico = lazy(() => import("@/pages/TopoPublico"));
 const AdminTopos = lazy(() => import("@/pages/admin/AdminTopos"));
 const NaoEncontrada = lazy(() => import("@/pages/NaoEncontrada"));
 const PRE_CARREGAR: (() => Promise<unknown>)[] = [
@@ -517,7 +518,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   // (26/10) quem está logado no app: baixa as outras telas em segundo plano (cardápio do cliente e orçamento público não)
-  useEffect(() => { if (temSessaoGuardada() && !/^\/(c|o|orcamento|admin|termos|privacidade)(\/|$)/.test(window.location.pathname)) preCarregarTelas(); }, []);
+  useEffect(() => { if (temSessaoGuardada() && !/^\/(c|o|orcamento|topo|admin|termos|privacidade)(\/|$)/.test(window.location.pathname)) preCarregarTelas(); }, []);
   // (07/10) a abertura agora é uma tela só, no index.html; quem tira ela do ar é o src/lib/abertura.ts
   return (
     <NotificationProvider>
@@ -534,6 +535,8 @@ export default function App() {
         <Route path="/c/:codigo/:slug" element={<><FaixaComoCliente /><CardapioPublico /></>} />
         {/* (24/10) Orçamentos: a cliente pede pelo link da loja e responde a proposta pelo link dela */}
         <Route path="/o/:codigo" element={<OrcamentoPedir />} />
+        {/* (09/11) topo de bolo compartilhado: página aberta (logada, vai direto pro topo no app) */}
+        <Route path="/topo/:id" element={<TopoPublico />} />
         <Route path="/orcamento/:token" element={<OrcamentoVer />} />
         {/* Fallback: rota antiga /cardapio/:slug — mantida por compat, redireciona internamente */}
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />

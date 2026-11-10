@@ -23,6 +23,17 @@
       "destination": "/api/og?c=:codigo"
     },
     {
+      "source": "/topo/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(WhatsApp|whatsapp|facebookexternalhit|Facebot|meta-externalagent|Twitterbot|TelegramBot|Slackbot|Discordbot|LinkedInBot|Pinterest|SkypeUriPreview|redditbot|Iframely|Embedly|vkShare|Viber).*"
+        }
+      ],
+      "destination": "/api/og-topo?t=:id"
+    },
+    {
       "source": "/((?!assets/).*)",
       "destination": "/app.html"
     }

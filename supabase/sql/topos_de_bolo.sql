@@ -66,3 +66,17 @@ alter table public.topos add column if not exists canva_url text;
 -- (09/11) miniatura leve (480 px) pra grade e pras bolinhas; a capa grande só abre no detalhe
 alter table public.topos add column if not exists capa_mini_url text;
 alter table public.topos_categorias add column if not exists imagem_mini_url text;
+
+-- (09/11) página aberta do topo compartilhado (/topo/:id): só o que pode ser público (sem os arquivos)
+create or replace function public.topo_publico(p_id uuid)
+returns table (id uuid, titulo text, capa_url text, capa_mini_url text, formatos text[], tem_canva boolean, categoria text, total_topos int)
+language sql stable security definer set search_path = public as $$
+  select t.id, t.titulo, t.capa_url, t.capa_mini_url,
+    coalesce((select array_agg(distinct a->>'formato') from jsonb_array_elements(t.arquivos) a), '{}'),
+    coalesce(t.canva_url, '') <> '',
+    c.nome,
+    (select count(*)::int from topos x where x.ativo)
+  from topos t left join topos_categorias c on c.id = t.categoria_id
+  where t.id = p_id and t.ativo
+$$;
+grant execute on function public.topo_publico(uuid) to anon, authenticated;

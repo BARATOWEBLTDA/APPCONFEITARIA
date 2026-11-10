@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArrowSquareOut, CaretLeft, CaretRight, Crown, SquaresFour, DownloadSimple, Images, MagnifyingGlass, WarningCircle, X } from "@phosphor-icons/react";
+import { ArrowSquareOut, ShareNetwork, CaretLeft, CaretRight, Crown, SquaresFour, DownloadSimple, Images, MagnifyingGlass, WarningCircle, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, Janela, TelaVazia, avisar } from "@/components/base";
 import { ConvitePro } from "@/components/billing/RecursoPro";
@@ -56,6 +56,21 @@ export default function ToposBolo() {
   const irPagina = (n: number) => { setPagina(n); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   const escolher = (id: string | null) => setParams(id ? { cat: id } : {}, { replace: true });
+  // (09/11) veio do link compartilhado (/topo/:id → ?topo=): já abre esse topo
+  const topoParam = params.get("topo");
+  useEffect(() => {
+    if (!topoParam || !topos.length) return;
+    const t = topos.find(x => x.id === topoParam);
+    if (t) setAberto(t);
+    setParams(p => { const n = new URLSearchParams(p); n.delete("topo"); return n; }, { replace: true });
+  }, [topoParam, topos.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  // (09/11) compartilhar: manda o link do topo (a página aberta mostra só a capa e convida pro Doonly; o arquivo não vai)
+  const compartilhar = async (t: Topo) => {
+    const url = `${window.location.origin}/topo/${t.id}`;
+    const texto = `Olha só esse topo de bolo que achei no Doonly: ${t.titulo || "topo de bolo"}`;
+    try { if (navigator.share) { await navigator.share({ title: t.titulo || "Topo de bolo", text: texto, url }); return; } } catch (e) { if ((e as Error)?.name === "AbortError") return; }
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${texto}\n${url}`)}`, "_blank", "noopener");
+  };
 
   const baixar = async (a: ArquivoTopo) => {
     if (!isPro) { setAberto(null); setConvite(true); return; }
@@ -161,6 +176,7 @@ export default function ToposBolo() {
                   )}
                 </>
               )}
+              <button type="button" className="tb-compart" onClick={() => compartilhar(aberto)}><ShareNetwork size={18} weight="regular" />Compartilhar</button>
               {!isPro && (aberto.arquivos.length > 0 || aberto.canva_url) && <p className="tb-det-pro"><Crown size={14} weight="fill" aria-hidden="true" />Baixar os topos é um recurso do PRO</p>}
             </div>
           </div>
