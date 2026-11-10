@@ -105,8 +105,8 @@ export default function ToposBolo() {
                 <div key={a.caminho} className="tb-arq">
                   <em>{a.formato}</em>
                   <span className="tb-arq-tx"><b>{a.nome}</b><small>{tamanhoTexto(a.tamanho)}</small></span>
-                  <Botao tamanho="m" variante={isPro ? "principal" : "suave"} carregando={baixando === a.caminho}
-                    icone={isPro ? <DownloadSimple size={18} weight="bold" /> : <Crown size={16} weight="fill" />} onClick={() => baixar(a)}>Baixar</Botao>
+                  <Botao tamanho="p" className="tb-baixar" variante={isPro ? "principal" : "suave"} carregando={baixando === a.caminho}
+                    icone={isPro ? <DownloadSimple size={16} weight="bold" /> : <Crown size={14} weight="fill" />} onClick={() => baixar(a)}>Baixar</Botao>
                 </div>
               ))}
               {!isPro && aberto.arquivos.length > 0 && <p className="tb-det-pro"><Crown size={14} weight="fill" aria-hidden="true" />Baixar os topos é um recurso do PRO</p>}

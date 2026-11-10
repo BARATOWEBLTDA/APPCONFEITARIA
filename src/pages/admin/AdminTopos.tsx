@@ -43,7 +43,17 @@ export default function AdminTopos() {
   const catImgRef = useRef<HTMLInputElement>(null);
 
   const carregar = async () => {
-    try { const [c, t] = await Promise.all([carregarCategorias(), carregarTopos()]); setCats(c); setTopos(t); setSemTabela(false); }
+    try {
+      const [c, t] = await Promise.all([carregarCategorias(), carregarTopos()]); setCats(c); setTopos(t); setSemTabela(false);
+      // (09/11) topo sem capa que tem imagem salva (ex.: .jfif de antes do suporte): cria a capa sozinho, uma vez
+      for (const tp of t.filter(x => !x.capa_url)) {
+        const img = tp.arquivos.find(a => ehImagem(a.nome));
+        if (!img) continue;
+        const d = await supabase.storage.from(BUCKET_ARQUIVOS).download(img.caminho);
+        const url = d.data ? await subirCapa(d.data, tp.id) : null;
+        if (url && !(await supabase.from("topos").update({ capa_url: url }).eq("id", tp.id)).error) setTopos(l => l.map(x => (x.id === tp.id ? { ...x, capa_url: url } : x)));
+      }
+    }
     catch { setSemTabela(true); }
     setCarregando(false);
   };
