@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { CaretLeft, Crown, DownloadSimple, Images, WarningCircle } from "@phosphor-icons/react";
+import { Crown, DownloadSimple, Images, MagnifyingGlass, WarningCircle, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Botao, Janela, TelaVazia, avisar } from "@/components/base";
+import { Botao, BotaoIcone, Janela, TelaVazia, avisar } from "@/components/base";
 import { ConvitePro } from "@/components/billing/RecursoPro";
 import { usePlano } from "@/hooks/usePlano";
 import { baixarArquivo, carregarCategorias, carregarTopos, tamanhoTexto, type ArquivoTopo, type CategoriaTopo, type Topo } from "@/lib/toposBolo";
 import "./toposBolo.css";
 
 /**
- * (09/11) Topos de bolo (Ferramentas): as categorias com imagem; tocando numa, a grade de topos (capa + formatos).
+ * (09/11) Topos de bolo (Ferramentas): busca, filtro por tema e a grade de topos (capa + formatos).
  * Tocar no topo abre a capa grande e os arquivos pra baixar. Todas veem; só a PRO baixa (as outras veem o convite do PRO).
  */
 export default function ToposBolo() {
@@ -31,16 +31,22 @@ export default function ToposBolo() {
   };
   useEffect(carregar, []);
 
-  const porCat = useMemo(() => {
-    const m = new Map<string, Topo[]>();
-    for (const t of topos) if (t.categoria_id) m.set(t.categoria_id, [...(m.get(t.categoria_id) || []), t]);
+  // (09/11) uma tela só: busca + filtro de tema + a grade de todos os topos (sem a tela de temas com imagem grande)
+  const [busca, setBusca] = useState("");
+  const conta = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const t of topos) if (t.categoria_id) m.set(t.categoria_id, (m.get(t.categoria_id) || 0) + 1);
     return m;
   }, [topos]);
-  const comTopos = (cats || []).filter(c => (porCat.get(c.id) || []).length > 0);
+  const comTopos = (cats || []).filter(c => (conta.get(c.id) || 0) > 0);
   const cat = comTopos.find(c => c.id === catId) || null;
-  const lista = cat ? porCat.get(cat.id) || [] : [];
+  const semAcento = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const nomeCat = (id: string | null) => (cats || []).find(c => c.id === id)?.nome || "";
+  const q = semAcento(busca);
+  const lista = topos.filter(t => t.categoria_id && conta.has(t.categoria_id) && (!cat || t.categoria_id === cat.id)
+    && (!q || semAcento(`${t.titulo} ${nomeCat(t.categoria_id)}`).includes(q)));
 
-  const escolher = (id: string | null) => { setParams(id ? { cat: id } : {}, { replace: false }); window.scrollTo({ top: 0 }); };
+  const escolher = (id: string | null) => setParams(id ? { cat: id } : {}, { replace: true });
 
   const baixar = async (a: ArquivoTopo) => {
     if (!isPro) { setAberto(null); setConvite(true); return; }
@@ -61,42 +67,30 @@ export default function ToposBolo() {
           <p className="tb-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando…</p>
         ) : comTopos.length === 0 ? (
           <TelaVazia icone={<Images size={30} />} titulo="Os topos estão chegando" texto="Logo aparecem aqui os topos prontos pra imprimir." />
-        ) : !cat ? (
-          <>
-            <h2 className="tb-sub">Escolha o tema</h2>
-            <div className="tb-cats">
-              {comTopos.map(c => {
-                const n = (porCat.get(c.id) || []).length;
-                const img = c.imagem_url || porCat.get(c.id)?.[0]?.capa_url || null;
-                return (
-                  <button key={c.id} type="button" className="tb-cat" onClick={() => escolher(c.id)}>
-                    <span className="tb-cat-img">{img ? <img src={img} alt="" loading="lazy" /> : <Images size={28} aria-hidden="true" />}</span>
-                    <span className="tb-cat-tx"><b>{c.nome}</b><small>{n} {n === 1 ? "topo" : "topos"}</small></span>
-                  </button>
-                );
-              })}
-            </div>
-          </>
         ) : (
           <>
-            <div className="tb-topo">
-              <button type="button" className="tb-voltar" onClick={() => escolher(null)}><CaretLeft size={16} weight="bold" aria-hidden="true" />Temas</button>
-              <h2 className="tb-cat-nome">{cat.nome}</h2>
-              <span className="tb-conta">{lista.length} {lista.length === 1 ? "topo" : "topos"}</span>
+            <div className="ui-campo-c tb-busca">
+              <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
+              <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar topo" placeholder="Buscar topo" value={busca} onChange={e => setBusca(e.target.value)} />
+              {busca && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></BotaoIcone>}
             </div>
-            {/* os outros temas, pra trocar sem voltar */}
-            <div className="tb-chips" role="tablist" aria-label="Temas">
-              {comTopos.map(c => <button key={c.id} type="button" role="tab" aria-selected={c.id === cat.id} className={c.id === cat.id ? "on" : ""} onClick={() => escolher(c.id)}>{c.nome}</button>)}
+            <div className="tb-chips" role="tablist" aria-label="Filtrar por tema">
+              <button type="button" role="tab" aria-selected={!cat} className={!cat ? "on" : ""} onClick={() => escolher(null)}>Todos</button>
+              {comTopos.map(c => <button key={c.id} type="button" role="tab" aria-selected={c.id === cat?.id} className={c.id === cat?.id ? "on" : ""} onClick={() => escolher(c.id)}>{c.nome}</button>)}
             </div>
-            <div className="tb-grade">
-              {lista.map(t => (
-                <button key={t.id} type="button" className="tb-it" onClick={() => setAberto(t)}>
-                  <span className="tb-capa">{t.capa_url ? <img src={t.capa_url} alt="" loading="lazy" /> : <Images size={30} aria-hidden="true" />}</span>
-                  <span className="tb-it-t">{t.titulo || "Topo de bolo"}</span>
-                  <span className="tb-fmts">{[...new Set(t.arquivos.map(a => a.formato))].map(f => <em key={f}>{f}</em>)}</span>
-                </button>
-              ))}
-            </div>
+            {lista.length === 0 ? (
+              <p className="tb-nada">Nenhum topo com “{busca.trim()}”{cat ? ` em ${cat.nome}` : ""}.</p>
+            ) : (
+              <div className="tb-grade">
+                {lista.map(t => (
+                  <button key={t.id} type="button" className="tb-it" onClick={() => setAberto(t)}>
+                    <span className="tb-capa">{t.capa_url ? <img src={t.capa_url} alt="" loading="lazy" /> : <Images size={30} aria-hidden="true" />}</span>
+                    <span className="tb-it-t">{t.titulo || "Topo de bolo"}</span>
+                    <span className="tb-fmts">{[...new Set(t.arquivos.map(a => a.formato))].map(f => <em key={f}>{f}</em>)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>

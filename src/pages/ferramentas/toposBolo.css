@@ -49,3 +49,8 @@
   .tb-det { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; }
   .tb-det-capa, .tb-det-capa img { max-height: 60vh; }
 }
+/* (09/11) busca + filtro numa tela só */
+.tb-busca { margin: var(--space-2) 0 var(--space-3); background: #fff; }
+.tb-busca input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
+.tb-nada { margin: var(--space-6) 0; text-align: center; font-size: 14px; color: #8A7B80; }
+@media (min-width: 901px) { .tb-busca { max-width: 520px; margin-top: 0; } }

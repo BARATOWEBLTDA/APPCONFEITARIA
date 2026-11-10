@@ -5,7 +5,7 @@ import { Cake, Image as ImageIcon, PencilSimple, Plus, Trash, UploadSimple, Warn
 import { Botao, BotaoIcone, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base";
 import { paraWebp } from "@/lib/imagemLeve";
 import {
-  ACEITA_ARQUIVOS, BUCKET_ARQUIVOS, BUCKET_CAPAS, carregarCategorias, carregarTopos, ehImagem, formatoDe, nomeSeguro, tamanhoTexto,
+  ACEITA_ARQUIVOS, ACEITA_IMAGEM, BUCKET_ARQUIVOS, BUCKET_CAPAS, carregarCategorias, carregarTopos, ehImagem, formatoDe, nomeSeguro, tamanhoTexto,
   type ArquivoTopo, type CategoriaTopo, type Topo,
 } from "@/lib/toposBolo";
 import "./admin-topos.css";
@@ -91,16 +91,21 @@ export default function AdminTopos() {
     const enviados: ArquivoTopo[] = [];
     for (const f of form.novos) {
       const caminho = `${id}/${sufixo()}-${nomeSeguro(f.name)}`;
-      const up = await supabase.storage.from(BUCKET_ARQUIVOS).upload(caminho, f, { upsert: false, contentType: f.type || "application/octet-stream" });
+      const up = await supabase.storage.from(BUCKET_ARQUIVOS).upload(caminho, f, { upsert: false, contentType: f.type || (/\.jfif$/i.test(f.name) ? "image/jpeg" : "application/octet-stream") });
       if (up.error) { setSalvando(false); avisar(`Não deu para enviar ${f.name}${f.size > 50 * 1024 * 1024 ? " (passa de 50 MB)" : ""}.`, { tipo: "erro" }); return; }
       enviados.push({ caminho, nome: f.name, formato: formatoDe(f.name), tamanho: f.size });
     }
     // capa: a escolhida; sem ela, a primeira imagem enviada
     let capa_url = form.capaUrl;
-    const fonteCapa = form.capa || (!capa_url ? form.novos.find(f => ehImagem(f.name)) : undefined);
+    let fonteCapa: Blob | undefined = form.capa || (!capa_url ? form.novos.find(f => ehImagem(f.name)) : undefined);
+    // (09/11) topo sem capa que já tem uma imagem salva (ex.: .jfif enviado antes do suporte): usa ela como capa
+    if (!fonteCapa && !capa_url) {
+      const img = form.arquivos.find(a => ehImagem(a.nome));
+      if (img) { const d = await supabase.storage.from(BUCKET_ARQUIVOS).download(img.caminho); if (d.data) fonteCapa = d.data; }
+    }
     if (fonteCapa) capa_url = await subirCapa(fonteCapa, id) || capa_url;
     const titulo = form.titulo.trim() || (form.novos[0]?.name || "").replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").slice(0, 60);
-    const dados = { titulo, categoria_id: form.categoria_id, capa_url, arquivos: [...form.arquivos, ...enviados] };
+    const dados = { titulo, categoria_id: form.categoria_id, capa_url, arquivos: [...form.arquivos.map(a => ({ ...a, formato: formatoDe(a.nome) })), ...enviados] };
     const { error } = form.id
       ? await supabase.from("topos").update(dados).eq("id", id)
       : await supabase.from("topos").insert({ id, ...dados, ordem: topos.reduce((m, t) => Math.max(m, t.ordem), 0) + 1 });
@@ -196,7 +201,7 @@ export default function AdminTopos() {
               <button type="button" className="atp-capa atp-capa--g" onClick={() => capaRef.current?.click()}>
                 {form.capa ? <img src={URL.createObjectURL(form.capa)} alt="" /> : form.capaUrl ? <img src={form.capaUrl} alt="" /> : <span><ImageIcon size={28} />Capa<small>Sem capa, usa a 1ª imagem</small></span>}
               </button>
-              <input ref={capaRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) setForm({ ...form, capa: f }); }} />
+              <input ref={capaRef} type="file" accept={ACEITA_IMAGEM} hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) setForm({ ...form, capa: f }); }} />
             </div>
             <div className="atp-form-dados">
               <Campo rotulo="Título" placeholder="Ex.: Festa de Halloween" maxLength={60} value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} />
@@ -235,7 +240,7 @@ export default function AdminTopos() {
             <button type="button" className="atp-capa atp-capa--cat" onClick={() => catImgRef.current?.click()}>
               {novaCat.img ? <img src={URL.createObjectURL(novaCat.img)} alt="" /> : novaCat.imgUrl ? <img src={novaCat.imgUrl} alt="" /> : <span><ImageIcon size={24} />Imagem</span>}
             </button>
-            <input ref={catImgRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) setNovaCat({ ...novaCat, img: f }); }} />
+            <input ref={catImgRef} type="file" accept={ACEITA_IMAGEM} hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) setNovaCat({ ...novaCat, img: f }); }} />
             <Campo rotulo="Nome" placeholder="Ex.: Halloween" maxLength={40} autoFocus value={novaCat.nome} onChange={e => setNovaCat({ ...novaCat, nome: e.target.value })} onKeyDown={e => { if (e.key === "Enter") void salvarCategoria(); }} />
           </div>
         )}

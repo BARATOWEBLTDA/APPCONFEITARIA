@@ -11,16 +11,18 @@ export type Topo = { id: string; categoria_id: string | null; titulo: string; ca
 export const BUCKET_CAPAS = "topos-capas";
 export const BUCKET_ARQUIVOS = "topos-arquivos";
 /** o que o admin pode subir como arquivo do topo */
-export const ACEITA_ARQUIVOS = ".png,.jpg,.jpeg,.webp,.svg,.pdf,.studio,.studio3,.dxf,image/png,image/jpeg,image/webp,image/svg+xml,application/pdf";
+export const ACEITA_ARQUIVOS = ".png,.jpg,.jpeg,.jfif,.webp,.svg,.pdf,.studio,.studio3,.dxf,image/png,image/jpeg,image/webp,image/svg+xml,application/pdf";
 
 /** "foto.PNG" → "PNG"; "corte.studio3" → "STUDIO" */
 export function formatoDe(nome: string): string {
   const ext = (nome.split(".").pop() || "").toLowerCase();
-  if (ext === "jpeg" || ext === "jpg") return "JPG";
+  if (ext === "jpeg" || ext === "jpg" || ext === "jfif") return "JPG";
   if (ext.startsWith("studio")) return "STUDIO";
   return ext.toUpperCase() || "ARQUIVO";
 }
-export const ehImagem = (nome: string) => /\.(png|jpe?g|webp)$/i.test(nome);
+export const ehImagem = (nome: string) => /\.(png|jpe?g|jfif|webp)$/i.test(nome);
+/** imagens que dá pra escolher como capa (o .jfif é JPG com outro nome) */
+export const ACEITA_IMAGEM = "image/png,image/jpeg,image/webp,.jfif,.jpg,.jpeg,.png,.webp";
 
 export function tamanhoTexto(b: number): string {
   if (b >= 1024 * 1024) return `${(b / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
