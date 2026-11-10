@@ -1,3 +1,4 @@
+import AbasFinanceiro from "@/components/financeiro/AbasFinanceiro";
 // Financeiro — painel (Passo 7, 03/10; 4.29: por período, com comparação, formas de pagamento e mais vendidos). Junta o que antes ficava na Visão Geral e no menu:
 // saldo em caixa, os números do mês, a receber, a pagar, previstos, fluxo e últimas movimentações.
 import { COMO_FINANCEIRO, TOUR_FINANCEIRO } from "@/lib/comoTelas";
@@ -215,6 +216,7 @@ export default function Financeiro() {
           <p>Pedido criado ou entregue <strong>não entra no caixa sozinho</strong>: só quando você registra o recebimento.</p>
         </>}
       />
+      <AbasFinanceiro />
       <EstiloFinanceiro />
       <CaixaEstilos />
 

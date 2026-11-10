@@ -1,0 +1,11 @@
+.dv { max-width: 720px; margin: 0 auto; padding: var(--space-2) var(--space-4) 120px; font-family: var(--font-base); }
+.dv-lista { overflow: hidden; border: 1px solid #ECE7E9; border-radius: 16px; background: #fff; }
+.dv-it { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin: 0; padding: 10px 14px; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+.dv-it + .dv-it { border-top: 1px solid #F1EDEF; }
+.dv-ic { display: flex; align-items: center; justify-content: center; flex: none; width: 36px; height: 36px; border-radius: 10px; background: #fff; box-shadow: inset 0 0 0 1px #E6E0E3; color: var(--ic-cor, #E85A8C); }
+.dv-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dv-tx b { font-size: 15px; font-weight: 500; color: #241A1E; }
+.dv-tx small { font-size: 13px; color: #8A7B80; }
+.dv-pro { flex: none; padding: 3px 8px; border-radius: 6px; background: #FDF2F7; font-style: normal; font-size: 11.5px; font-weight: 600; color: #CC2E66; }
+.dv-seta { flex: none; color: #B5AAAE; }
+@media (min-width: 901px) { .dv { padding-top: var(--space-4); } }

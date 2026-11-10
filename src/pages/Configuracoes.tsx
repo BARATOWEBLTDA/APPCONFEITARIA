@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { digitosTelefone } from "@/lib/telefone";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Lifebuoy, Bell, CaretRight, Crown, DownloadSimple, FileText, Lightbulb,  SignOut, SlidersHorizontal, Bug, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { Lifebuoy, Bell, ChatCircleText, CaretRight, Crown, DownloadSimple, FileText, Lightbulb,  SignOut, SlidersHorizontal, Bug, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -58,7 +58,7 @@ const INDICE: Achado[] = [
   { nome: "Redes sociais", onde: "Minha loja › Dados da loja", palavras: "instagram facebook", ir: "/cardapio-config", abrir: "redes" },
   { nome: "Pausar pedidos", onde: "Minha loja", palavras: "fechar loja ferias parar pausa", ir: "/cardapio" },
   { nome: "Logo, cores e banner", onde: "Minha loja › Aparência", palavras: "logotipo cor tema modelo imagem capa visual", ir: "/cardapio-design" },
-  { nome: "Mensagens do WhatsApp", onde: "Menu › Dia a dia", palavras: "whatsapp textos modelo resposta cliente aniversario", ir: "/configuracoes/mensagens" },
+  { nome: "Mensagens do WhatsApp", onde: "Configurações › App", palavras: "whatsapp textos modelo resposta cliente aniversario", ir: "/configuracoes/mensagens" },
   { nome: "Custos fixos", onde: "Menu › Custos", palavras: "aluguel luz internet agua conta mensal", ir: "/custos", abrir: "fixo" },
   { nome: "Salário e jornada", onde: "Menu › Custos", palavras: "mao de obra hora horas custo da hora trabalho", ir: "/custos", abrir: "mao" },
   { nome: "Taxa da maquininha", onde: "Menu › Custos", palavras: "cartão credito debito custos variaveis embalagem", ir: "/custos", abrir: "maquininha" },
@@ -304,6 +304,8 @@ export default function Configuracoes() {
             <div className="cf9-grupo">
             <h2 className="cf9-sec">App</h2>
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
+            {/* (10/11) saiu do Menu do celular: é uma configuração que ela ajusta uma vez */}
+            <ItemConfig icone={<ChatCircleText size={20} weight="bold" />} nome="Mensagens do WhatsApp" apoio="Textos prontos para o cliente" onClick={() => navigate("/configuracoes/mensagens")} />
             {!isStandalone() && <ItemConfig icone={<DownloadSimple size={20} weight="bold" />} nome="Instalar o app" apoio="Abra direto, como um app" onClick={abrirInstalar} />}
             <AtualizarAppItem />
             {/* (18/10) Avançado entrou no grupo App (a seção "Outros" saiu) */}

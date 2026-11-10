@@ -1,3 +1,4 @@
+import AbasFinanceiro from "@/components/financeiro/AbasFinanceiro";
 import CampoData from '@/components/CampoData'
 import { useAbrirPedido } from "@/hooks/useAbrirPedido";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
@@ -152,6 +153,7 @@ export default function FinanceiroAPagar() {
           <p>Os <strong>custos fixos com dia de vencimento</strong> (aluguel, internet…) viram uma conta aqui todo mês, sozinhos.</p>
         </>}
       />
+      <AbasFinanceiro />
       <EstiloFinanceiro />
 
       <div className="fap-wrap">

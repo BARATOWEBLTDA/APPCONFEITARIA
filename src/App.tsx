@@ -115,6 +115,7 @@ const FichaTecnica = lazy(() => import("@/pages/FichaTecnica"));
 const ConversorMedidas = lazy(() => import("@/pages/ferramentas/ConversorMedidas"));
 const SimuladorPreco = lazy(() => import("@/pages/ferramentas/SimuladorPreco"));
 const ToposBolo = lazy(() => import("@/pages/ferramentas/ToposBolo"));
+const Divulgar = lazy(() => import("@/pages/Divulgar"));
 const TopoPublico = lazy(() => import("@/pages/TopoPublico"));
 const AdminTopos = lazy(() => import("@/pages/admin/AdminTopos"));
 const NaoEncontrada = lazy(() => import("@/pages/NaoEncontrada"));
@@ -608,6 +609,7 @@ export default function App() {
           <Route path="/estoque" element={<Navigate to="/inicio" replace />} />{/* (24/10) Estoque saiu dos planos */}
           {/* (04/11 · 6.20) Marketing foi escondido: Cupons e Pixel viraram telas próprias */}
           <Route path="/marketing" element={<IrDoMarketing />} />
+          <Route path="/divulgar" element={<Divulgar />} />
           <Route path="/cupons" element={<Cupons />} />
           <Route path="/pixel" element={<Pixel />} />
           <Route path="/arquivos" element={<Navigate to="/" replace />} />

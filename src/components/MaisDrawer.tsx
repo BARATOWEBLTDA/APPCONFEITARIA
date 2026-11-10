@@ -4,11 +4,11 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   Gear, Crown, CaretRight,
   CalendarDots, CurrencyDollar,
-  Newspaper, FileText, Users, ChatCircleText, Cake, Package, ClipboardText,
-  Calculator, Sliders, ChartPieSlice, Lifebuoy,
+  FileText, Users, Cake, Package, ClipboardText,
+  Calculator, Sliders, Lifebuoy, Megaphone,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target, ShareNetwork, Scales, ArrowsDownUp, HandCoins, CalendarCheck, FlagBanner } from "@phosphor-icons/react";
+import { ShareNetwork, Scales, FlagBanner } from "@phosphor-icons/react";
 import { indicarDoonly } from "@/lib/indicarDoonly";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { usePlano } from "@/hooks/usePlano";
@@ -45,7 +45,6 @@ const GRUPOS: Grupo[] = [
       { label: "Agenda",       desc: "Entregas por dia",               path: "/agenda",     Icone: CalendarDots },
       { label: "Clientes",     desc: "Quem já comprou com você",       path: "/clientes",   Icone: Users },
       { label: "Orçamentos",   desc: "Propostas para aprovar", path: "/orcamentos", Icone: FileText, pro: true },
-      { label: "Mensagens do WhatsApp", desc: "Textos prontos para o cliente", path: "/configuracoes/mensagens", Icone: ChatCircleText },
     ],
   },
   {
@@ -58,21 +57,12 @@ const GRUPOS: Grupo[] = [
     ],
   },
   {
-    label: "Dinheiro",
+    label: "Dinheiro e vendas",
     items: [
-      // (6.154) as partes do Financeiro direto do Menu (igual ao menu do computador), sem passar pela Visão geral
-      { label: "Financeiro",    desc: "Visão geral do mês",        path: "/financeiro", Icone: CurrencyDollar },
-      { label: "Transações",    desc: "Tudo o que entrou e saiu",  path: "/financeiro/transacoes", Icone: ArrowsDownUp },
-      { label: "A receber",     desc: "O que os clientes devem",   path: "/financeiro/a-receber", Icone: HandCoins },
-      { label: "A pagar",       desc: "Contas e boletos",          path: "/financeiro/a-pagar", Icone: CalendarCheck },
-      { label: "Lucratividade", desc: "Lucro de cada produto", path: "/lucratividade", Icone: ChartPieSlice, pro: true },
-    ],
-  },
-  {
-    label: "Divulgar",
-    items: [
-      { label: "Cupons", desc: "Descontos para vender", path: "/cupons", Icone: Ticket, pro: true },
-      { label: "Pixel",  desc: "Meta, Google e TikTok",        path: "/pixel",  Icone: Target, pro: true },
+      // (10/11) um item só: Transações, A receber, A pagar e Lucro viraram abas no topo do Financeiro
+      { label: "Financeiro",    desc: "Caixa, contas e lucro",     path: "/financeiro", Icone: CurrencyDollar },
+      // (10/11) Cupons e Pixel numa tela só
+      { label: "Divulgar", desc: "Cupons e pixel dos anúncios", path: "/divulgar", Icone: Megaphone, pro: true },
     ],
   },
   {
@@ -89,8 +79,6 @@ const GRUPOS: Grupo[] = [
     items: [
       { label: "Assinatura",      desc: "Seu plano",                      path: "/assinar",       Icone: Crown },
       { label: "Ajuda e suporte", desc: "Tutoriais e WhatsApp do suporte", path: "/ajuda",        Icone: Lifebuoy },
-      { label: "Novidades",       desc: "O que mudou no app",             path: "/noticias",      Icone: Newspaper },
-      { label: "Indique o Doonly", desc: "Mande para outra confeiteira", path: "#indicar",   Icone: ShareNetwork },
       { label: "Configurações",   desc: "Conta, notificações e app",      path: "/configuracoes", Icone: Gear },
     ],
   },
@@ -172,6 +160,12 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
               </div>
             </section>
           ))}
+          {/* (10/11) Indique o Doonly saiu da lista e virou um cartão no fim do Menu (chama mais atenção) */}
+          <button type="button" className="mais-indica" onClick={() => { onClose(); void indicarDoonly(); }}>
+            <span className="mais-indica-ic" aria-hidden="true"><ShareNetwork size={20} weight="bold" /></span>
+            <span className="mais-indica-tx"><b>Indique o Doonly</b><small>Mande pra uma amiga confeiteira</small></span>
+            <CaretRight size={16} weight="bold" aria-hidden="true" />
+          </button>
         </div>
       </div>
     </div>,

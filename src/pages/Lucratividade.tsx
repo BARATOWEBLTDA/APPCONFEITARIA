@@ -1,3 +1,4 @@
+import AbasFinanceiro from "@/components/financeiro/AbasFinanceiro";
 // Lucratividade — refeita no padrão novo (03/10), com a MESMA regra do painel do Financeiro:
 // lucro = vendido (pedidos entregues no mês) − custo dos ingredientes (ficha técnica) − despesas pagas
 // (sem as de insumos, que já estão no custo da ficha). Mais: ponto de equilíbrio e lucro por produto.
@@ -49,6 +50,7 @@ export default function Lucratividade() {
   return (
     <>
       <AppPageHeader title="Lucratividade" subtitle="Onde está o seu lucro de verdade" onBack={() => navigate("/financeiro")} />
+      <AbasFinanceiro />
       <EstiloFinanceiro />
       {/* (27/10) atrás do convite, um relatório de EXEMPLO borrado (números inventados, nada da conta dela): mostra o que o PRO entrega */}
       {/* (6.110) o convite no padrão do app (faixa rosa, mascote e 3 benefícios) e, embaixo, o exemplo borrado do relatório */}
@@ -207,6 +209,7 @@ function LucratividadeTela() {
           <p>Se você cadastrou um custo <strong>por pedido</strong> (como a embalagem), as compras de <strong>Embalagens</strong> também não entram de novo: o custo já está em cada pedido.</p>
         </>}
       />
+      <AbasFinanceiro />
       <EstiloFinanceiro />
       {/* (23/10) igual às outras telas do Financeiro: fundo cinza, sem a faixa rosa embaixo do topo */}
       <div className="lu">
