@@ -78,6 +78,11 @@ export default function ToposBolo() {
           <TelaVazia icone={<Images size={30} />} titulo="Os topos estão chegando" texto="Logo aparecem aqui os topos prontos pra imprimir." />
         ) : (
           <>
+            <div className="ui-campo-c tb-busca">
+              <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
+              <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar topo" placeholder="Buscar topo" value={busca} onChange={e => setBusca(e.target.value)} />
+              {busca && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></BotaoIcone>}
+            </div>
             {/* (09/11) temas em bolinhas, estilo destaques do Instagram: passa de lado; o tema marcado ganha o anel */}
             <div className="tb-dest" role="tablist" aria-label="Temas">
               <button type="button" role="tab" aria-selected={!cat} className={`tb-dest-it${!cat ? " on" : ""}`} onClick={() => escolher(null)}>
@@ -92,11 +97,6 @@ export default function ToposBolo() {
                   </button>
                 );
               })}
-            </div>
-            <div className="ui-campo-c tb-busca">
-              <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-              <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar topo" placeholder="Buscar topo" value={busca} onChange={e => setBusca(e.target.value)} />
-              {busca && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></BotaoIcone>}
             </div>
             {lista.length === 0 ? (
               <p className="tb-nada">Nenhum topo com “{busca.trim()}”{cat ? ` em ${cat.nome}` : ""}.</p>

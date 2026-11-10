@@ -90,3 +90,7 @@
 @media (hover: hover) { .tb-dest-it:not(.on):hover .tb-dest-c { background: #D6CDD1; } }
 .tb-busca { margin-top: var(--space-2); }
 @media (min-width: 901px) { .tb-dest { margin: 0 0 var(--space-3); padding: 4px 0 6px; } .tb-dest-it { width: 84px; } .tb-dest-c { width: 80px; height: 80px; } }
+/* (09/11) a busca vem primeiro, as bolinhas dos temas embaixo */
+.tb-busca { margin: var(--space-2) 0 var(--space-3); }
+.tb-dest { margin-top: 0; margin-bottom: var(--space-3); }
+@media (min-width: 901px) { .tb-busca { margin-top: 0; } }
