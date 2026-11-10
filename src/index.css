@@ -79,3 +79,13 @@ b, strong { font-weight: 600; }
 
 /* (10/11) sem palavra sozinha na última linha (ex.: "ideias." caindo sozinha): o navegador equilibra as linhas */
 p, h1, h2, h3, small, .ui-janela-t { text-wrap: pretty; }
+
+/* (10/11) sem título pequeno em CAIXA ALTA com letras espaçadas: texto normal, peso suave */
+.cf-t, .cf-cab small, .cf-tour small, .nav-sec, .br-g, .cad-t, .pp-cab small, .pp-sec h3, .nv3-cl-t, .cc-grupo, .ca-tag, .pz-balao small {
+  text-transform: none !important; letter-spacing: normal !important; font-weight: 500 !important;
+}
+.cf-t, .cf-cab small, .cf-tour small, .nav-sec, .br-g, .pz-balao small { font-size: 12.5px !important; }
+
+/* (10/11) sem animação infinita de enfeite: o sino, a bolinha do "aberto" e o balão param; avisos e carregando continuam */
+.sidebar-sino--novo svg, .clc-st--aberto i, .lj-pausa.cheio .lj-pausa-luz, .pz-balao { animation: none !important; }
+.cm1-status.aberto i::after, .cp-topo-sub i.aberto::after { display: none !important; }
