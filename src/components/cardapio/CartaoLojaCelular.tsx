@@ -175,8 +175,8 @@ const CSS = `
   .clc-st--aberto b { color: #86EFAC; } .clc-st--aberto i { background: #4ADE80; animation: clcPisca 1.6s ease-in-out infinite; }
   .clc-st--fechado b { color: #FCD34D; } .clc-st--fechado i { background: #FBBF24; }
   .clc-st--pausa b { color: #FCA5A5; } .clc-st--pausa i { background: #F87171; }
-  .clc-atalho { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 10px 14px 10px 10px; border: 1px solid #F3C6D8; border-radius: 16px; background: #FFF5F9; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-  .clc-atalho-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-branco); color: var(--ui-rosa-botao, #CC2E66); box-shadow: inset 0 0 0 1px #F3C6D8; }
+  .clc-atalho { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 10px 14px 10px 10px; border: 1px solid #ECE7E9; border-radius: 16px; background: var(--ui-branco, #fff); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .clc-atalho-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-branco); color: var(--ui-rosa-botao, #CC2E66); box-shadow: inset 0 0 0 1px #ECE7E9; }
   .clc-atalho-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .clc-atalho-tx b { font-size: 15px; font-weight: 500; }
   .clc-atalho-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
