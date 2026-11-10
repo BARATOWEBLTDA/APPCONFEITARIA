@@ -55,3 +55,11 @@
 @media (max-width: 400px) { .tp-quem-tx b { font-size: 14px; } }
 .tp-quem-tx b { justify-content: flex-start; }
 .tp-quem-n { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* (09/11) quem compartilhou: no centro, foto em cima e a frase embaixo (equilibrada em 2 linhas no celular) */
+.tp { padding-top: 20px; }
+.tp-quem { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 520px; margin: 0 auto 16px; text-align: center; }
+.tp-quem-img { width: 64px; height: 64px; }
+.tp-quem-t { margin: 0; font-size: 16px; font-weight: 500; line-height: 1.4; color: #241A1E; text-wrap: balance; }
+.tp-coracao { display: inline-block; vertical-align: -2px; }
+.tp-quem-l { font-size: 13px; color: #8A7B80; }
+@media (min-width: 768px) { .tp { padding-top: 48px; } .tp-quem-img { width: 72px; height: 72px; } .tp-quem-t { font-size: 17px; } }

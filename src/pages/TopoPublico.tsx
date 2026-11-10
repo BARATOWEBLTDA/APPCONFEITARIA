@@ -45,10 +45,6 @@ export default function TopoPublico() {
 
   return (
     <div className="tp">
-      <header className="tp-cab">
-        <img src="/logoapp.webp" alt="Doonly" className="tp-logo" />
-        <button type="button" className="tp-entrar" onClick={entrar}>Entrar</button>
-      </header>
       {t === undefined ? (
         <p className="tp-car" role="status"><span className="ui-gira" aria-hidden="true" />Carregando…</p>
       ) : t === null ? (
@@ -62,28 +58,21 @@ export default function TopoPublico() {
         <>
           {quem && (
             <div className="tp-quem">
-              <span className="tp-quem-img">{quem.imagem ? <img src={quem.imagem} alt="" onError={() => setQuem(q => q && { ...q, imagem: null })} /> : <Storefront size={20} />}</span>
-              <span className="tp-quem-tx"><b><span className="tp-quem-n">{quem.nome} compartilhou com você</span><Heart size={15} weight="fill" className="tp-coracao" aria-label="com carinho" /></b>{quem.loja && quem.loja !== quem.nome && <small>{quem.loja}</small>}</span>
+              <span className="tp-quem-img">{quem.imagem ? <img src={quem.imagem} alt="" onError={() => setQuem(q => q && { ...q, imagem: null })} /> : <Storefront size={24} />}</span>
+              <p className="tp-quem-t">{quem.nome} compartilhou esse topo de bolo com você <Heart size={16} weight="fill" className="tp-coracao" aria-label="com carinho" /></p>
+              {quem.loja && quem.loja !== quem.nome && <small className="tp-quem-l">{quem.loja}</small>}
             </div>
           )}
           <section className="tp-card">
             <div className="tp-capa">
               {t.capa_url ? <img src={t.capa_url} alt={t.titulo} /> : <Images size={40} aria-hidden="true" />}
-              <span className="tp-marca" aria-hidden="true">doonly</span>
             </div>
             <div className="tp-info">
               <h1>{t.titulo || "Topo de bolo"}</h1>
               <p className="tp-sub">O Doonly preparou esse lindo topo de bolo em tamanho A4, prontinho para você baixar, imprimir e recortar.</p>
-              <button type="button" className="tp-cta" onClick={cadastrar}>Baixar no Doonly<ArrowRight size={16} weight="bold" /></button>
+              <button type="button" className="tp-cta" onClick={cadastrar}>Baixar no app Doonly<ArrowRight size={16} weight="bold" /></button>
               <button type="button" className="tp-ja" onClick={entrar}>Já tenho conta</button>
             </div>
-          </section>
-          <section className="tp-banner">
-            <div>
-              <b>{t.total_topos > 1 ? `Mais de ${Math.max(1, t.total_topos - 1)} topos pra imprimir` : "Topos prontos pra imprimir"}</b>
-              <span>E ainda pedidos, cardápio digital e financeiro da sua confeitaria, num app só.</span>
-            </div>
-            <button type="button" onClick={cadastrar}>Criar conta grátis</button>
           </section>
         </>
       )}
