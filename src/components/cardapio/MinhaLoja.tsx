@@ -104,15 +104,6 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
     <>
       {recorte.janela}
       {/* (6.170) métricas do cardápio (visitas, pedidos e mais pedidos) numa tela própria */}
-      {/* (10/11) Cupons e Pixel vieram do Menu (Divulgar): os dois só funcionam no cardápio */}
-      <section className="dl-emb" aria-label="Divulgar e acompanhar">
-        <h2 className="dl-emb-t">Divulgar e acompanhar</h2>
-        <div className="dl-lista-c">
-          {linha(ChartLineUp, "Métricas", "Visitas e mais pedidos", "/cardapio-metricas")}
-          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons", false, true)}
-          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel", false, true)}
-        </div>
-      </section>
       {/* (6.59) o que o cliente vê vem primeiro: produtos logo abaixo do cartão de compartilhar */}
       <section className="dl-emb ml-produtos" aria-label="O que você vende">
         <h2 className="dl-emb-t">O que você vende</h2>
@@ -122,6 +113,16 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
         </div>
       </section>
       <DadosLoja embutido extras={{ antes: linhaAparencia, depois: linhaMensagens }} />
+      {/* (10/11) ordem por prioridade: o que vende, a loja, como vende e, por último, divulgar e acompanhar */}
+      {/* (10/11) Cupons e Pixel vieram do Menu (Divulgar): os dois só funcionam no cardápio */}
+      <section className="dl-emb" aria-label="Divulgar e acompanhar">
+        <h2 className="dl-emb-t">Divulgar e acompanhar</h2>
+        <div className="dl-lista-c">
+          {linha(ChartLineUp, "Métricas", "Visitas e mais pedidos", "/cardapio-metricas")}
+          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons", false, true)}
+          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel", false, true)}
+        </div>
+      </section>
     </>
   );
 }
