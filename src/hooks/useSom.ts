@@ -41,6 +41,33 @@ export const volumeApp = (): number => {
 }
 export const setVolumeApp = (v: number): void => { if (typeof window !== 'undefined') localStorage.setItem(STORAGE_VOLUME_KEY, String(Math.round(v))) }
 
+// (11/11) sons gravados (public/sons, do Material Design do Google, CC BY 4.0): carregam uma vez e ficam guardados
+const buffers: Record<string, AudioBuffer | null | undefined> = {}
+const carregarArquivo = (nome: string): void => {
+  if (buffers[nome] !== undefined) return
+  const audio = getCtx()
+  if (!audio) return
+  buffers[nome] = null
+  fetch(`/sons/${nome}.mp3`).then(r => r.arrayBuffer()).then(b => audio.decodeAudioData(b)).then(buf => { buffers[nome] = buf }).catch(() => { delete buffers[nome] })
+}
+/** toca o arquivo; devolve false se ainda não carregou (aí quem chamou usa o som sintetizado) */
+const tocarArquivo = (nome: string, ganho = 1): boolean => {
+  const audio = getCtx()
+  const buf = buffers[nome]
+  if (!audio || !buf) { carregarArquivo(nome); return false }
+  const v = ganho * (volumeApp() / 100)
+  if (v <= 0.0005) return true
+  const src = audio.createBufferSource(); src.buffer = buf
+  const g = audio.createGain(); g.gain.value = v
+  src.connect(g); g.connect(audio.destination); src.start()
+  return true
+}
+/** deixa os sons prontos no primeiro toque na tela (o navegador só libera áudio depois de um toque) */
+if (typeof window !== 'undefined') {
+  const preparar = () => { ['aviso', 'erro'].forEach(carregarArquivo); const t = toqueEscolhido(); if (t === 'suave') carregarArquivo('pedido-suave'); if (t === 'minimal') carregarArquivo('pedido-minimal'); window.removeEventListener('pointerdown', preparar) }
+  window.addEventListener('pointerdown', preparar, { passive: true })
+}
+
 // Toca uma nota simples
 const tocarNota = (freq: number, inicio: number, duracao: number, volume = 0.15, tipo: OscillatorType = 'sine') => {
   const audio = getCtx()
@@ -134,9 +161,12 @@ export const tocarSom = (tipo: SomTipo): void => {
   }
 
   if (tipo === 'acao') {
-    // (11/11) o "tic" do aviso: duas notas curtas e baixinhas, subindo
+    // (11/11) o som do aviso (escolhido pelo Bruno: "confirm up" do Material); sem o arquivo ainda, o "tic" sintetizado
+    if (tocarArquivo('aviso', 0.55)) return
     tocarNota(880, 0, 0.09, 0.07)
     tocarNota(1318.5, 0.06, 0.14, 0.06)
+  } else if (tipo === 'erro' && tocarArquivo('erro', 0.6)) {
+    return
   } else if (tipo === 'sucesso') {
     // Acorde ascendente Dó → Mi → Sol (C major)
     tocarNota(523.25, 0, 0.15)     // C5 (Dó)
@@ -175,12 +205,15 @@ export default function useSom() {
 
 
 /* ═══ (30/10 · 5.45) Som de pedido novo: 4 toques (como no Dora). Com o app aberto, repete até aceitar ou recusar ═══ */
-export type ToqueId = 'telefone' | 'telefone_tocando' | 'sinal' | 'sino'
+export type ToqueId = 'telefone' | 'telefone_tocando' | 'sinal' | 'sino' | 'suave' | 'minimal'
 export const TOQUES: { id: ToqueId; nome: string; cada: number }[] = [
   { id: 'telefone', nome: 'Telefone atual', cada: 5 },
   { id: 'telefone_tocando', nome: 'Telefone tocando', cada: 2 },
   { id: 'sinal', nome: 'Sinal Doonly', cada: 3 },
   { id: 'sino', nome: 'Sino de balcão', cada: 2 },
+  // (11/11) toques gravados (Material Design, Google): escolhidos pelo Bruno
+  { id: 'suave', nome: 'Alarme suave', cada: 6 },
+  { id: 'minimal', nome: 'Toque minimalista', cada: 10 },
 ]
 const STORAGE_ALERTA_KEY = 'doonly_alerta_pedido'
 const STORAGE_TOQUE_KEY = 'doonly_toque_pedido'
@@ -193,13 +226,20 @@ export const toqueEscolhido = (): ToqueId => {
   const v = typeof window === 'undefined' ? null : localStorage.getItem(STORAGE_TOQUE_KEY)
   return (TOQUES.some(t => t.id === v) ? v : 'telefone_tocando') as ToqueId
 }
-export const setToqueEscolhido = (v: ToqueId): void => { if (typeof window !== 'undefined') localStorage.setItem(STORAGE_TOQUE_KEY, v) }
+export const setToqueEscolhido = (v: ToqueId): void => { if (typeof window !== 'undefined') localStorage.setItem(STORAGE_TOQUE_KEY, v); if (v === 'suave') carregarArquivo('pedido-suave'); if (v === 'minimal') carregarArquivo('pedido-minimal') }
 
 /** Toca um toque de pedido novo uma vez (não depende de "Sons do app": é aviso de trabalho) */
 export const tocarToque = (id: ToqueId = toqueEscolhido()): void => {
   const audio = getCtx()
   if (!audio) return
   if (audio.state === 'suspended') audio.resume().catch(() => {})
+  if (id === 'suave' || id === 'minimal') {
+    const nome = id === 'suave' ? 'pedido-suave' : 'pedido-minimal'
+    if (tocarArquivo(nome, 0.9)) return
+    // ainda carregando (primeira vez): tenta de novo em instantes; se não der, toca o sinal
+    window.setTimeout(() => { if (!tocarArquivo(nome, 0.9)) tocarToque('sinal') }, 700)
+    return
+  }
   if (id === 'telefone') {
     // toque de celular moderno: marimba subindo, duas vezes
     const m = [659.25, 783.99, 987.77, 1318.5]

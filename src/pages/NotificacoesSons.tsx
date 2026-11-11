@@ -254,6 +254,7 @@ export default function NotificacoesSons() {
               <span className="ns-toggle-s" />
             </label>
           </div>
+          <p className="ns-note">Alguns sons são do Material Design, do Google (licença CC BY 4.0).</p>
         </div>
       </div>
 
