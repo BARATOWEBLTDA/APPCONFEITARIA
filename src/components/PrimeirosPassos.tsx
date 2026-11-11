@@ -1171,9 +1171,12 @@ const CSS = `
   /* (29/10 · 5.00) computador: janela larga, campo à esquerda e a prévia do cardápio à direita; botões no canto */
   .ui-janela:has(.ppf-d--2col) { width: min(880px, calc(100vw - 48px)); max-width: none; }
   /* (11/11) "Sobre a confeitaria": nome e WhatsApp lado a lado, a descrição embaixo (sem a prévia ao lado). A janela tem a altura das outras do passo a passo */
-  .ui-janela:has(.ppf-d--sobre) { width: min(620px, calc(100vw - 48px)); max-width: none; }
-  .ui-janela:has(.ppf-d--sobre) .ui-janela-pe { display: flex; justify-content: flex-end; }
-  .ui-janela:has(.ppf-d--sobre) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
+  /* só no computador: no celular a janela é de tela cheia, como as outras do passo a passo (antes ficava estreita e alta) */
+  @media (min-width: 768px) {
+    .ui-janela:has(.ppf-d--sobre) { width: min(620px, calc(100vw - 48px)); max-width: none; }
+    .ui-janela:has(.ppf-d--sobre) .ui-janela-pe { display: flex; justify-content: flex-end; }
+    .ui-janela:has(.ppf-d--sobre) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
+  }
   .ppf-d--sobre .ppf-d-campo textarea { height: 210px; font-size: 15.5px; line-height: 1.55; }
   /* (11/11) celular: sem a faixa do passo com o mascote (a janela rolava); tudo cabe sem rolar */
   .ppf-d--sobre .ppf-d-dois .ppf-d-l { margin-top: 4px; }
