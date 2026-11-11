@@ -77,7 +77,7 @@ export function lerPassos(uid: string): Promise<EstadoPassos> {
   return p;
 }
 
-const CAMPOS_BASE = "nome_loja, descricao_loja, logo_url, foto_url, endereco, mostrar_localizacao, mostrar_apenas_cidade, horario, formas_entrega";
+const CAMPOS_BASE = "nome_loja, telefone, descricao_loja, logo_url, foto_url, endereco, mostrar_localizacao, mostrar_apenas_cidade, horario, formas_entrega";
 
 async function lerPassosDoBanco(uid: string): Promise<EstadoPassos> {
   // (15/10) a sessão vem do aparelho (getUser ia ao servidor toda vez); o perfil vem numa busca só,

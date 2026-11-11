@@ -20,6 +20,7 @@ import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk
 
 import { Botao, BotaoIA, avisar } from "@/components/base";
 import { LojaProntaCartao } from "@/components/loja/LojaPronta";
+import { mascaraTelefone, telefoneCompleto, digitosTelefone } from "@/lib/telefone";
 import PreviaTopoCardapio, { type DadosPrevia } from "@/components/cardapio/PreviaTopoCardapio";
 import { PreviaSobreHorario } from "@/components/cardapio/SobreLoja";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
@@ -70,7 +71,7 @@ function PassoTopo({ k }: { k: Passo }) {
 /** (6.132) o porquê de cada passo (o mesmo do Início) e o Doo de cada janela (sem Doo próprio, o da prancheta) */
 const PQ_PASSO: Record<Passo, string> = {
   logo: "Deixa sua loja com cara profissional e ajuda o cliente a te reconhecer.",
-  descricao: "Conta em poucas palavras quem você é e o que faz de especial.",
+  descricao: "Confira o nome e o WhatsApp e conte o que você faz de especial.",
   endereco: "Com ele, o app calcula a taxa de entrega de cada cliente sozinho.",
   horario: "O cliente vê se você está aberta e para quando pode encomendar.",
   pagamento: "Diga se aceita Pix, cartão ou dinheiro.",
@@ -298,7 +299,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
     // (29/10 · 4.95) pq: por que o passo importa (aparece no bloco do passo da vez, no computador)
     // (23/10) "Criar sua conta" saiu (já está feito e não é configurar o cardápio); nomes curtos que cabem inteiros no celular
     { feito: estado.logo, ic: I(ImageSquare), t: "Logo da loja", s: "No topo do cardápio", pq: "Deixa sua loja com cara profissional e ajuda o cliente a te reconhecer.", abrir: () => { if (logoDireto) logoInput.current?.click(); else setFolha("logo"); } },
-    { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Sobre a confeitaria", s: "Uma frase sobre você", pq: "Conta em poucas palavras quem você é e o que faz de especial.", abrir: () => setFolha("descricao") },
+    { feito: estado.descricao, ic: I(PencilSimpleLine), t: "Sobre a confeitaria", s: "Nome, WhatsApp e descrição", pq: "Confira o nome e o WhatsApp que recebe os pedidos, e conte o que você faz de especial.", abrir: () => setFolha("descricao") },
     { feito: estado.endereco, ic: I(MapPin), t: "Endereço", s: "Para calcular a entrega", pq: "Com ele, o app calcula a taxa de entrega de cada cliente sozinho.", abrir: () => setFolha("endereco") },
     { feito: estado.horario, ic: I(Clock), t: "Horário", s: estado.horario ? "Aberto agora no cardápio" : "Dias e horas que você atende", pq: "O cliente vê se você está aberta e para quando pode encomendar.", abrir: () => setFolha("horario") },
     { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento", s: "Como o cliente paga", pq: "Diga se aceita Pix, cartão ou dinheiro.", abrir: () => abrirPasso("pagamento") },
@@ -612,7 +613,7 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
 /* ── Janelinha: a Janela de formulário do app (components/financeiro/Folha) ── */
 /** Dados do perfil que as janelinhas leem pra abrir já preenchidas */
 type PerfilPassos = {
-  nome_loja?: string | null; descricao_loja?: string | null; foto_url?: string | null; logo_url?: string | null;
+  nome_loja?: string | null; telefone?: string | null; descricao_loja?: string | null; foto_url?: string | null; logo_url?: string | null;
   endereco?: { cep?: string; rua?: string; numero?: string; complemento?: string; bairro?: string; cidade?: string; estado?: string } | null;
   mostrar_apenas_cidade?: boolean | null; mostrar_localizacao?: boolean | null; horario?: Partial<Horario> | null;
 };
@@ -623,7 +624,11 @@ const FAZ = ["Bolos", "Doces", "Salgados", "Tortas", "Kit festa", "Outros"];
 const QUANDO = ["Festas", "Casamentos", "Dia a dia"];
 function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
   const [txt, setTxt] = useState(String(perfil?.descricao_loja || ""));
-  const nomeLoja = String(perfil?.nome_loja || "Sua confeitaria").trim() || "Sua confeitaria";
+  // (11/11) confere também o nome (pode ter vindo errado do cadastro) e o WhatsApp que recebe os pedidos
+  const [nome, setNome] = useState(String(perfil?.nome_loja || ""));
+  const [zap, setZap] = useState(mascaraTelefone(perfil?.telefone || ""));
+  const nomeLoja = nome.trim() || "Sua confeitaria";
+  const zapOk = telefoneCompleto(zap);
   const [gerando, setGerando] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -634,9 +639,8 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   const [diferencial, setDiferencial] = useState("");
   const [opcoes, setOpcoes] = useState<string[] | null>(null);
   const [escolhida, setEscolhida] = useState(0);
-  // (29/10 · 5.00) computador: janela larga com a prévia do cardápio ao lado (a logo dela, se já tiver)
+  // (11/11) sem a prévia do cardápio ao lado (o Bruno não gostou): uma coluna só
   const largo = useLargo();
-  const design = useDesignPrevia(uid, largo);
   const alternar = (lista: string[], set: (v: string[]) => void, v: string) => set(lista.includes(v) ? lista.filter(x => x !== v) : [...lista, v]);
   const gerar = async () => {
     setGerando(true); setErro("");
@@ -662,23 +666,21 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   };
   const usarOpcao = () => { if (!opcoes) return; setTxt(opcoes[escolhida] || ""); setOpcoes(null); setPerguntando(false); };
   const salvar = async () => {
-    if (!txt.trim()) return;
+    if (!txt.trim() || !nome.trim()) return;
+    if (!zapOk) { setErro("Confira o WhatsApp: faltou o DDD ou algum número."); return; }
     setSalvando(true); setErro("");
-    const e = await atualizarPerfil(uid, { descricao_loja: txt.trim() });
+    const patch = { nome_loja: nome.trim(), telefone: mascaraTelefone(zap), descricao_loja: txt.trim() };
+    const e = await atualizarPerfil(uid, patch);
     setSalvando(false);
     if (e) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); return; }
-    onSalvo();
+    // o número já foi conferido aqui: o "Confira o WhatsApp dos pedidos" do Início não volta
+    supabase.auth.updateUser({ data: { whatsapp_ok: digitosTelefone(zap) } }).then(() => {}, () => {});
+    onSalvo(patch);
   };
   return (
     <Janelinha foco cheia titulo="Sobre a sua confeitaria" onClose={onClose}
-      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim()} carregando={salvando} onClick={salvar}>Salvar</Botao></>}>
-      <div className={`ppf-d${largo ? " ppf-d--2col" : ""}`}>
-        {largo && (
-          <div className="ppf-d-prev">
-            <p>Prévia no seu cardápio</p>
-            <PreviaTopoCardapio d={{ ...design, ...perfil, nome_loja: nomeLoja, descricao_loja: txt }} semDescricao="Sua descrição aparece aqui enquanto você escreve." />
-          </div>
-        )}
+      acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim() || !nome.trim()} carregando={salvando} onClick={salvar}>Salvar</Botao></>}>
+      <div className="ppf-d ppf-d--sobre">
         <PassoTopo k="descricao" />
 
         {perguntando ? (
@@ -720,6 +722,16 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
           </div>
         ) : (
           <>
+            <div className="ppf-d-dois">
+              <div>
+                <label className="ppf-d-l" htmlFor="pp-nome">Nome da confeitaria</label>
+                <input id="pp-nome" className="ppf-ia-in" autoComplete="organization" maxLength={60} value={nome} placeholder="Ex.: Doces da Ana" onChange={e => { setNome(e.target.value); setErro(""); }} />
+              </div>
+              <div>
+                <label className="ppf-d-l" htmlFor="pp-zap">WhatsApp dos pedidos</label>
+                <input id="pp-zap" className="ppf-ia-in" type="tel" inputMode="tel" autoComplete="tel-national" value={zap} placeholder="(00) 00000-0000" onChange={e => { setZap(mascaraTelefone(e.target.value)); setErro(""); }} />
+              </div>
+            </div>
             <label className="ppf-d-l" htmlFor="pp-desc">Descrição da loja</label>
             <div className="ppf-d-campo">
               <textarea id="pp-desc" autoComplete="off" value={txt} maxLength={200}
@@ -1153,11 +1165,18 @@ const CSS = `
   .ppf-d-opc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .ppf-d-opc button { height: 42px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; cursor: pointer; }
   .ppf-d-opc button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); font-weight: 600; }
+  .ppf-d-dois { display: grid; grid-template-columns: 1fr; gap: 0 14px; }
+  @media (min-width: 600px) { .ppf-d-dois { grid-template-columns: 1.3fr 1fr; } }
   .ppf-d-l { display: block; margin: 16px 2px 8px; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
   .ppf-d-l + .ppf-d-campo { margin-top: 0; }
   .ppf-d-ajuda { margin-top: 14px; padding: 0 2px; }
   /* (29/10 · 5.00) computador: janela larga, campo à esquerda e a prévia do cardápio à direita; botões no canto */
   .ui-janela:has(.ppf-d--2col) { width: min(880px, calc(100vw - 48px)); max-width: none; }
+  /* (11/11) "Sobre a confeitaria": nome e WhatsApp lado a lado, a descrição embaixo (sem a prévia ao lado). A janela tem a altura das outras do passo a passo */
+  .ui-janela:has(.ppf-d--sobre) { width: min(620px, calc(100vw - 48px)); max-width: none; }
+  .ui-janela:has(.ppf-d--sobre) .ui-janela-pe { display: flex; justify-content: flex-end; }
+  .ui-janela:has(.ppf-d--sobre) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
+  .ppf-d--sobre .ppf-d-campo textarea { height: 200px; font-size: 15.5px; line-height: 1.55; }
   .ui-janela:has(.ppf-d--2col) .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ui-janela:has(.ppf-d--2col) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
   .ppf-d--2col { position: relative; min-height: 340px; padding-right: 368px; }
