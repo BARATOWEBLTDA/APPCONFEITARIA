@@ -1,3 +1,4 @@
+import { LIMITE_DESCRICAO } from "@/lib/descricaoLoja";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ajustarDescricao } from "@/lib/descricaoLoja";
 import { atualizarPontoDaLoja } from "@/lib/taxaEntrega";
@@ -541,7 +542,7 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
           <div id="dl-desc" className="dl-desc" ref={descRef}>
             {/* (6.10) igual à descrição do produto: caixa maior e o "Gerar com IA" dentro, no canto de baixo */}
             <div className="dl-desc-caixa">
-              <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={200} rows={5} autoComplete="off"
+              <CampoArea id="dl-in-desc" rotulo="Descrição" value={descricao} maxLength={LIMITE_DESCRICAO} rows={5} autoComplete="off"
                 placeholder={EXEMPLO_DESCRICAO} onChange={(e) => setDescricao(e.target.value)} />
               <span className="dl-desc-ia"><BotaoIA carregando={gerando} onClick={gerarDescricao} /></span>
             </div>

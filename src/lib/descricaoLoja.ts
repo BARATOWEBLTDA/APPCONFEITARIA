@@ -1,9 +1,10 @@
 /**
  * (6.131) Descrição da loja feita pela IA: no máximo 160 letras (umas 3 linhas no topo do cardápio do celular).
  * A IA às vezes passa do pedido; aqui o texto é cortado no fim de uma frase (ou de uma palavra), nunca no meio dela.
- * Quem escreve à mão continua com o limite do campo (200).
+ * (11/11) Quem escreve à mão tem o mesmo limite (LIMITE_DESCRICAO): até 160 cabe em 3 linhas no topo do cardápio, no celular.
  */
-export const LIMITE_DESCRICAO_IA = 160;
+export const LIMITE_DESCRICAO = 160;
+export const LIMITE_DESCRICAO_IA = LIMITE_DESCRICAO;
 
 export function ajustarDescricao(bruto: string, max = LIMITE_DESCRICAO_IA): string {
   let t = String(bruto || "").replace(/\s+/g, " ").replace(/^["“'\s]+|["”'\s]+$/g, "").trim();

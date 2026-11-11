@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 // (29/10 · 5.05) no computador, o passo "Pagamento e entrega" usa o editor completo (4 jeitos de cobrar a entrega)
 const EntregaPagamento = lazy(() => import("@/pages/CheckoutConfigPage"));
 import MapaEndereco, { type BuscaMapa } from "@/components/MapaEndereco";
@@ -26,7 +26,7 @@ import { PreviaSobreHorario } from "@/components/cardapio/SobreLoja";
 import { erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { definirSaldoInicial } from "@/lib/caixa";
 import { mascaraBRL, lerBRL } from "@/lib/moeda";
-import { ajustarDescricao } from "@/lib/descricaoLoja";
+import { ajustarDescricao, LIMITE_DESCRICAO } from "@/lib/descricaoLoja";
 /**
  * "Primeiros passos" (aprovado 02/10) — o MESMO cartão no Início (celular) e no Cardápio digital.
  * 7 passos (13/10: + "Pagamento e entrega"); os que dá pra preencher abrem numa janelinha que sobe de baixo, sem sair da tela:
@@ -629,6 +629,9 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   const [zap, setZap] = useState(mascaraTelefone(perfil?.telefone || ""));
   const nomeLoja = nome.trim() || "Sua confeitaria";
   const zapOk = telefoneCompleto(zap);
+  // (11/11) o campo cresce com o texto: a descrição inteira aparece, sem rolar dentro dele
+  const areaDesc = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => { const el = areaDesc.current; if (!el) return; el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; }, [txt]);
   const [gerando, setGerando] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -734,12 +737,12 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
             </div>
             <label className="ppf-d-l" htmlFor="pp-desc">Descrição da loja</label>
             <div className="ppf-d-campo">
-              <textarea id="pp-desc" autoComplete="off" value={txt} maxLength={200}
+              <textarea id="pp-desc" ref={areaDesc} autoComplete="off" value={txt} maxLength={LIMITE_DESCRICAO}
                 placeholder={EXEMPLO_DESCRICAO}
                 onChange={e => setTxt(e.target.value)} />
               <div className="ppf-d-pe">
                 <BotaoIA onMouseDown={e => e.preventDefault()} onClick={() => { setOpcoes(null); setPerguntando(true); }}>{txt.trim() ? "Gerar de novo com IA" : "Gerar com IA"}</BotaoIA>
-                <span>{txt.length}/200</span>
+                <span>{txt.length}/{LIMITE_DESCRICAO}</span>
               </div>
             </div>
             {/* (11/11) sem a frase de ajuda embaixo: o exemplo dentro do campo já ensina */}
@@ -1177,12 +1180,12 @@ const CSS = `
     .ui-janela:has(.ppf-d--sobre) .ui-janela-pe { display: flex; justify-content: flex-end; }
     .ui-janela:has(.ppf-d--sobre) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
   }
-  .ppf-d--sobre .ppf-d-campo textarea { height: 210px; font-size: 15.5px; line-height: 1.55; }
+  .ppf-d--sobre .ppf-d-campo textarea { height: auto; min-height: 150px; overflow: hidden; resize: none; font-size: 15.5px; line-height: 1.55; }
   /* (11/11) celular: sem a faixa do passo com o mascote (a janela rolava); tudo cabe sem rolar */
   .ppf-d--sobre .ppf-d-dois .ppf-d-l { margin-top: 4px; }
   /* (11/11) computador: a janela do tamanho do conteúdo (sem o vão embaixo); a altura mínima já cabe a Doo escrevendo, então não cresce */
   @media (min-width: 768px) { .ui-janela.fo--cheia:has(.ppf-d--sobre) { height: auto; } .ppf-d--sobre { min-height: 430px; } }
-  @media (max-width: 767px) { .ppf-d--sobre .ppf-d-dois > div + div .ppf-d-l { margin-top: 14px; } .ppf-d--sobre .ppf-d-campo textarea { height: 120px; } }
+  @media (max-width: 767px) { .ppf-d--sobre .ppf-d-dois > div + div .ppf-d-l { margin-top: 14px; } .ppf-d--sobre .ppf-d-campo textarea { min-height: 120px; } }
   .ui-janela:has(.ppf-d--2col) .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ui-janela:has(.ppf-d--2col) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
   .ppf-d--2col { position: relative; min-height: 340px; padding-right: 368px; }
