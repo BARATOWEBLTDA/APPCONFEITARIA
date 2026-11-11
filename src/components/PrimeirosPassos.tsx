@@ -396,7 +396,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
                 <p className="pp-sub">{passos.length - feitos === 1 ? "Falta 1 passo para abrir o cardápio." : `Faltam ${passos.length - feitos} passos para abrir o cardápio.`}</p>
               </div>
               <div className="pp-dk-bar" aria-label={`${feitos} de ${passos.length} passos feitos`}>
-                <span><i style={{ width: `${Math.max(feitos, 0.5) / passos.length * 100}%` }} /></span><small>{feitos} de {passos.length}</small>
+                <span><i style={{ width: `${feitos / passos.length * 100}%` }} /></span><small>{feitos} de {passos.length}</small>
               </div>
             </div>
             <div className="pp-cols">
@@ -1097,6 +1097,8 @@ const CSS = `
   .pp-hero-masc > i { position: absolute; left: 6px; top: 22px; width: 18px; height: 16px; background:
       linear-gradient(var(--ui-rosa), var(--ui-rosa)) 0 0 / 4px 12px no-repeat,
       linear-gradient(var(--ui-rosa), var(--ui-rosa)) 8px 2px / 4px 10px no-repeat; transform: rotate(-35deg); border-radius: 2px; opacity: .85; }
+  /* (11/11) computador: sombra leve no cartão dos Primeiros passos (sozinho na tela, ele é o foco) */
+  @media (min-width: 901px) { .pp:has(.pp-dk) { box-shadow: 0 1px 2px rgba(44, 18, 25, .05), 0 8px 22px -6px rgba(44, 18, 25, .10); } }
   .pp-hero-dica { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: var(--ui-raio); background: #FDF2F6; }
   .pp-hero-dica > span { width: 40px; height: 40px; flex: none; border-radius: 50%; background: #fff; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
   .pp-hero-dica p { margin: 0; font-size: 14.5px; color: #6B5C62; line-height: 1.45; }
