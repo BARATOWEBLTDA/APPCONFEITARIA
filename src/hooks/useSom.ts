@@ -10,11 +10,12 @@
  * ```
  */
 
-type SomTipo = 'sucesso' | 'erro' | 'click' | 'notificacao' | 'pedido'
+type SomTipo = 'sucesso' | 'erro' | 'click' | 'notificacao' | 'pedido' | 'acao'
 
 const STORAGE_KEY = 'doonly_sons_habilitados'
 const STORAGE_NOTIF_KEY = 'doonly_som_notificacao'
 const STORAGE_PEDIDO_KEY = 'doonly_som_pedido'
+const STORAGE_AVISOS_KEY = 'doonly_som_avisos'
 
 // Cache do AudioContext (só cria uma vez)
 let ctx: AudioContext | null = null
@@ -100,6 +101,16 @@ export const setSomPedidoHabilitado = (v: boolean): void => {
   localStorage.setItem(STORAGE_PEDIDO_KEY, String(v))
 }
 
+// (11/11) Sub-preferência: som dos avisos ("Salvo", "Pedido em produção"...)
+export const somAvisosHabilitado = (): boolean => {
+  if (typeof window === 'undefined') return true
+  return localStorage.getItem(STORAGE_AVISOS_KEY) !== 'false'
+}
+export const setSomAvisosHabilitado = (v: boolean): void => { if (typeof window !== 'undefined') localStorage.setItem(STORAGE_AVISOS_KEY, String(v)) }
+
+// o último som que tocou: o som do aviso não toca em cima de outro (ex.: o "entregue" já tem o seu)
+let ultimoSom = 0
+
 /**
  * Toca um som pré-definido.
  * Silenciosamente ignora se o usuário desativou sons.
@@ -109,6 +120,10 @@ export const tocarSom = (tipo: SomTipo): void => {
   // Sub-toggles específicos: se OFF, não toca mesmo com o mestre ON
   if (tipo === 'notificacao' && !somNotificacaoHabilitado()) return
   if (tipo === 'pedido' && !somPedidoHabilitado()) return
+  if (tipo === 'acao' && !somAvisosHabilitado()) return
+  const agora = Date.now()
+  if (tipo === 'acao' && agora - ultimoSom < 600) return
+  ultimoSom = agora
 
   const audio = getCtx()
   if (!audio) return
@@ -118,7 +133,11 @@ export const tocarSom = (tipo: SomTipo): void => {
     audio.resume().catch(() => {})
   }
 
-  if (tipo === 'sucesso') {
+  if (tipo === 'acao') {
+    // (11/11) o "tic" do aviso: duas notas curtas e baixinhas, subindo
+    tocarNota(880, 0, 0.09, 0.07)
+    tocarNota(1318.5, 0.06, 0.14, 0.06)
+  } else if (tipo === 'sucesso') {
     // Acorde ascendente Dó → Mi → Sol (C major)
     tocarNota(523.25, 0, 0.15)     // C5 (Dó)
     tocarNota(659.25, 0.08, 0.15)  // E5 (Mi)

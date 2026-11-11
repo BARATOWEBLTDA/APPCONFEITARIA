@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Check, Fire, Info, Moped, X } from '@phosphor-icons/react'
 import './base.css'
+import { somAvisosHabilitado, tocarSom } from '@/hooks/useSom'
 
 /**
  * Aviso rápido do Doonly (07/10 · guia v2, A10): o cartão branco que sobe embaixo da tela
@@ -87,7 +88,11 @@ export function avisar(texto: string, opcoes: OpcoesAviso = {}) {
     document.body.appendChild(lugar)
     createRoot(lugar).render(<Lugar />)
   }
+  // (11/11) aviso curto sem ponto final ("Pedido salvo"); frase dupla mantém a pontuação
+  if (!/[.!?]\s/.test(texto)) texto = texto.replace(/\.$/, '')
   definir({ ...opcoes, id: ++contador, texto })
+  // (11/11) som da ação (desliga em Notificações e sons → "Som dos avisos"); erro com o som de erro
+  try { if (somAvisosHabilitado()) tocarSom(opcoes.tipo === 'erro' || opcoes.icone === 'cancelado' ? 'erro' : 'acao') } catch { /* sem áudio: segue sem som */ }
 }
 
 /** Tira o aviso da tela antes da hora (ao trocar de tela, por exemplo). */

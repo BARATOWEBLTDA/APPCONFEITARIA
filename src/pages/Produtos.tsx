@@ -350,7 +350,7 @@ export default function Produtos() {
   const [categorias, setCategorias] = useState<string[]>([]);
   // (15/10) avisos no padrão do app (avisar): antes era uma janela própria com "Entendi"
   const showToast = (tipo: "success" | "error" | "info", titulo: string, sub?: string) => {
-    avisar(tipo === "error" && sub ? `${titulo}. ${sub}` : titulo, { tipo: tipo === "success" ? "ok" : tipo === "error" ? "erro" : "info" });
+    avisar(titulo, { detalhe: tipo === "error" ? sub : undefined, tipo: tipo === "success" ? "ok" : tipo === "error" ? "erro" : "info" });
   };
 
   // ═══ Bulk selection (desktop) ═══

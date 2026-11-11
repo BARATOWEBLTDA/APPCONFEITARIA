@@ -2,7 +2,7 @@ import { avisoDeTesteNaLista } from "@/lib/notifConfeiteira";
 import { COMO_NOTIFICACOES, TOUR_NOTIFICACOES } from "@/lib/comoTelas";
 import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { DeviceMobile, SpeakerHigh, CashRegister, PaperPlaneTilt, BellRinging, Play } from "@phosphor-icons/react";
+import { DeviceMobile, SpeakerHigh, CashRegister, PaperPlaneTilt, BellRinging, Play, ChatCircleDots } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { Botao, avisar } from "@/components/base";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -10,7 +10,7 @@ import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { precisaInstalarNoIphone, ehIphone } from "@/lib/notifications";
 import {
   sonsHabilitados, setSonsHabilitados,
-  somPedidoHabilitado, setSomPedidoHabilitado,
+  somPedidoHabilitado, setSomPedidoHabilitado, somAvisosHabilitado, setSomAvisosHabilitado,
   tocarSom,
   TOQUES, type ToqueId, alertaPedidoHabilitado, setAlertaPedidoHabilitado, toqueEscolhido, setToqueEscolhido, tocarToque, volumeApp, setVolumeApp,
 } from "@/hooks/useSom";
@@ -57,6 +57,15 @@ export default function NotificacoesSons() {
     setSomGeral(novo);
     setSonsHabilitados(novo);
     if (novo) setTimeout(() => tocarSom("sucesso"), 100); // prévia
+  };
+
+  // (11/11) som dos avisos: o "tic" quando aparece "Salvo", "Pedido em produção"...
+  const [somAvisos, setSomAvisos] = useState(somAvisosHabilitado());
+  const toggleSomAvisos = () => {
+    const novo = !somAvisos;
+    setSomAvisos(novo);
+    setSomAvisosHabilitado(novo);
+    if (novo) setTimeout(() => tocarSom("acao"), 100); // prévia
   };
 
   const toggleSomVenda = () => {
@@ -218,7 +227,7 @@ export default function NotificacoesSons() {
             <div className="ns-txt">
               <div className="ns-name">Som ao registrar venda</div>
               <div className="ns-desc">
-                {somGeral ? "Toca quando você finaliza uma venda" : "Ligue \"Sons do app\" primeiro"}
+                {somGeral ? "Toca ao finalizar uma venda" : "Ligue \"Sons do app\" primeiro"}
               </div>
             </div>
             <label className="ns-toggle">
@@ -229,6 +238,19 @@ export default function NotificacoesSons() {
                 onChange={toggleSomVenda}
                 aria-label="Som ao registrar venda"
               />
+              <span className="ns-toggle-s" />
+            </label>
+          </div>
+          <div className={`ns-row${somGeral ? "" : " ns-row--off"}`}>
+            <span className="ns-ico"><ChatCircleDots size={20} /></span>
+            <div className="ns-txt">
+              <div className="ns-name">Som dos avisos</div>
+              <div className="ns-desc">
+                {somGeral ? "Toca ao salvar e mudar pedidos" : "Ligue \"Sons do app\" primeiro"}
+              </div>
+            </div>
+            <label className="ns-toggle">
+              <input type="checkbox" checked={somAvisos && somGeral} disabled={!somGeral} onChange={toggleSomAvisos} aria-label="Som dos avisos" />
               <span className="ns-toggle-s" />
             </label>
           </div>

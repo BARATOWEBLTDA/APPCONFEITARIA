@@ -424,20 +424,12 @@ export default function EditarPedido() {
 
   // ── Itens (03/10): fechados com resumo, abrem ao tocar; remover com "Desfazer"; adicionar com opções ──
   const [itemMenu, setItemMenu] = useState<number | null>(null) // ⋯ de um item
-  const [removido, setRemovido] = useState<{ item: PedidoItem; idx: number } | null>(null)
-  const removidoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [produtoOpcoes, setProdutoOpcoes] = useState<ProdutoCardapio | null>(null)
   const removerComDesfazer = (idx: number) => {
     const item = itens[idx]
     setItens(prev => prev.filter((_, i) => i !== idx))
-    setRemovido({ item, idx })
-    clearTimeout(removidoTimer.current)
-    removidoTimer.current = setTimeout(() => setRemovido(null), 6000)
-  }
-  const desfazerRemocao = () => {
-    if (!removido) return
-    setItens(prev => { const n = [...prev]; n.splice(Math.min(removido.idx, n.length), 0, removido.item); return n })
-    setRemovido(null); clearTimeout(removidoTimer.current)
+    // (11/11) o aviso padrão do app com "Desfazer" (antes, um aviso próprio desta tela, com outro visual)
+    avisarBase(`${nomeDeProduto(item?.nome_produto) || 'Item'} removido`, { duracao: 6000, acao: { rotulo: 'Desfazer', aoTocar: () => setItens(prev => { const n = [...prev]; n.splice(Math.min(idx, n.length), 0, item); return n }) } })
   }
   // foto do item: a do próprio item ou a do cadastro do produto
   // fotos dos produtos do próprio pedido (mesmo inativos ou fora da lista de adicionar)
@@ -1851,9 +1843,6 @@ export default function EditarPedido() {
           <Botao variante="secundario" tamanho="m" onClick={() => window.location.reload()} disabled={salvando}>Descartar</Botao>
           <Botao tamanho="m" onClick={handleSalvar} carregando={salvando} disabled={salvouOk}>{salvouOk ? 'Salvo' : 'Salvar alterações'}</Botao>
         </div>
-      )}
-      {removido && (
-        <div className="ep2-toast ep2-toast--desfazer" role="status"><span>{removido.item?.nome_produto || 'Item'} removido</span><button onClick={desfazerRemocao}>Desfazer</button></div>
       )}
       {produtoOpcoes && (
         <CartProvider>
@@ -3944,9 +3933,6 @@ const EP2_CSS = `
   .ep2-it-det { display: none; border-top: 1px solid var(--ui-linha); padding: 4px 12px 12px; } .ep2-it.aberto .ep2-it-det { display: block; }
   .ep2-it-det > .ep2-chip { margin-top: 8px; }
   @media (min-width: 1024px) { .ep2-it-det { display: block; } .ep2-it-chev, .ep2-it-marcas { display: none; } .ep2-it-h { cursor: default; } .ep2-it-res { display: none; } }
-  .ep2-toast--desfazer { display: flex; align-items: center; gap: 14px; justify-content: space-between; min-width: 260px; }
-  .ep2-toast--desfazer::before { content: none; }
-  .ep2-toast--desfazer button { border: none; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; padding: 2px 4px; }
   /* ══ itens em estilo cupom (03/10): sempre abertos, valores em coluna, personalização como anexo grampeado ══ */
   .ep2-cupom { position: relative; background: #FFFDF8; border-radius: 10px 10px 0 0; padding: 14px 14px 16px; margin-bottom: 10px; box-shadow: 0 10px 24px -12px rgba(44,18,25,.28); font-variant-numeric: tabular-nums; }
   .ep2-cupom::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: radial-gradient(circle at 7px 0, #FFFDF8 6.5px, transparent 7px) 0 0 / 14px 8px repeat-x; } /* borda serrilhada */
@@ -4120,8 +4106,6 @@ const EP2_CSS = `
   html.teclado-aberto .ep2-foot { bottom: var(--teclado, 0px); }
   .ep2-foot .ep2-mud { grid-column: 1 / -1; }
   @keyframes ep2Sobe { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
-  .ep2-toast { position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; display: inline-flex; align-items: center; gap: 8px; background: var(--ui-branco); color: var(--ui-texto); padding: 9px 15px 9px 11px; border-radius: 99px; border: 1px solid #EDE4E8; font-size: 13px; font-weight: 500; box-shadow: 0 6px 18px -6px rgba(44,18,25,.25); max-width: calc(100vw - 32px); white-space: nowrap; animation: ep2ToastIn .2s ease; }
-  .ep2-toast::before { content: "✓"; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 12px; font-weight: 600; flex-shrink: 0; }
   @keyframes ep2ToastIn { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
   .ep2-ov { position: fixed; inset: 0; z-index: 1300; background: rgba(45,31,38,.5); display: flex; align-items: flex-end; justify-content: center; font-family: var(--font-base); }
   @media (min-width: 768px) { .ep2-ov { align-items: center; } }

@@ -467,5 +467,4 @@ const CSS = `
   .fap-cta { margin-top: 16px; width: 100%; border: none; border-radius: var(--ui-raio-botao); padding: 15px; background: var(--ui-vinho-escuro); color: var(--ui-branco); font-family: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; }
   .fap-cta--rosa { background: var(--ui-rosa); box-shadow: none; }
   .fap-cta:disabled { opacity: .6; cursor: default; }
-  .fap-toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 1400; background: var(--ui-vinho-escuro); color: var(--ui-branco); padding: 12px 16px; border-radius: var(--ui-raio); font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 26px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }
 `;

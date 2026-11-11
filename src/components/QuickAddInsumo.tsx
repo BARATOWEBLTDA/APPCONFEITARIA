@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { Camera, CaretDown, Check, Image as ImagemIc, MagnifyingGlass, Package, Sparkle, Trash, WarningCircle } from "@phosphor-icons/react";
+import { Camera, CaretDown, Check, Image as ImagemIc, Package, Sparkle, Trash, WarningCircle } from "@phosphor-icons/react";
 import { parseNumBR } from "@/lib/numeroBR";
 import { CATEGORIAS_INSUMO, categoriaPeloNome, normalizarCategoria } from "@/lib/categoriasInsumo";
 import SelectDoonly from "@/components/base/SelectDoonly";
@@ -290,9 +290,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const [imagens, setImagens] = useState<string[]>([]);
   const [buscandoImg, setBuscandoImg] = useState(false);
   const [uploadingImg, setUploadingImg] = useState(false);
-  const [avisoNome, setAvisoNome] = useState(0);
   const nomeRef = useRef<HTMLInputElement>(null);
-  useEffect(() => { if (!avisoNome) return; const t = setTimeout(() => setAvisoNome(0), 2600); return () => clearTimeout(t); }, [avisoNome]);
   const [saving, setSaving] = useState(false);
   const [tentouSalvar, setTentouSalvar] = useState(false);
   const categorias: readonly string[] = CATEGORIAS_INSUMO;
@@ -335,7 +333,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const handleBuscarImagem = async (nome = form.nome, marca = form.marca) => {
     const termo = `${nome} ${marca}`.trim();
     // 4.29: sem nome, aviso no meio da tela e o cursor vai pro campo Nome
-    if (nome.trim().length < 3) { setAvisoNome(Date.now()); nomeRef.current?.focus(); return; }
+    if (nome.trim().length < 3) { avisar("Escreva o nome primeiro", { tipo: "info", detalhe: "A Doo usa o nome e a marca para achar a foto" }); nomeRef.current?.focus(); return; }
     setBuscandoImg(true);
     setImagens([]);
     try {
@@ -575,12 +573,6 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           </div>
         </div>
       )}
-      {avisoNome > 0 && createPortal(
-        <div key={avisoNome} className="ig-aviso-meio" role="status">
-          <MagnifyingGlass size={28} weight="bold" />
-          <b>Escreva o nome primeiro</b>
-          <span>A Doo usa o nome e a marca para achar a foto certa.</span>
-        </div>, document.body)}
 
       <section className="ig-compra ig-compra--simples">
       {travaFamilia && <p className="ig-sug">Está em fichas técnicas: a medida fica {({ peso: "em g ou kg", volume: "em ml ou L", un: "em unidade", comprimento: "em metro" } as Record<string, string>)[familiaDaMedida(inicial.current.unidade)]}.</p>}
