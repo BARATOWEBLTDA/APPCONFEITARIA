@@ -81,3 +81,6 @@ begin
   return new;
 exception when others then return new;
 end $$;
+
+-- (11/11) quem pediu (perfil do painel admin): nome, foto e cor, para o convite da confeiteira
+alter table public.acessos_suporte add column if not exists pedido_por_nome text, add column if not exists pedido_por_foto text, add column if not exists pedido_por_cor text;

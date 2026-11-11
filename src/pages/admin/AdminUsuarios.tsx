@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import PainelLoja, { type AcaoLoja } from "./PainelLoja";
-import { registrar, nomeConta } from "@/lib/adminPerfil";
+import { registrar, nomeConta, perfilAtual } from "@/lib/adminPerfil";
 import { supabase } from "@/lib/supabase";
 import { Plus, MagnifyingGlass, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight, EnvelopeSimple, ShieldCheck } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, avisar, confirmar, informar, BotaoLimpar } from "@/components/base";
@@ -102,7 +102,7 @@ export default function AdminUsuarios() {
     }
     const ok = await confirmar({ titulo: `Pedir acesso à loja de ${nome}?`, texto: "Ela recebe o pedido no app e no celular. Liberando, você entra para personalizar o cardápio por 7 dias.", rotulo: "Pedir acesso" });
     if (!ok) return;
-    const p = await supabase.functions.invoke("suporte-acesso", { body: { action: "pedir", userId: u.id } });
+    const p = await supabase.functions.invoke("suporte-acesso", { body: { action: "pedir", userId: u.id, perfilId: perfilAtual()?.id } });
     if (p.error) { avisar("Não deu para pedir o acesso", { tipo: "erro" }); return; }
     void registrar(`pediu acesso de suporte à loja de ${nome}`, { tipo: "usuario", alvo_id: u.id });
     avisar("Pedido enviado", { tipo: "ok", detalhe: `${nome} recebe no app para liberar` });

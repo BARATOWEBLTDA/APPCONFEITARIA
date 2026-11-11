@@ -4,15 +4,20 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ShieldCheck } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Titulo, avisar, confirmar } from "@/components/base";
-import JanelaAcessoSuporte from "@/components/suporte/JanelaAcessoSuporte";
-import { listarAcessos, listarHistorico, revogarAcesso, acessoValido, type AcessoSuporte, type EventoSuporte } from "@/lib/acessoSuporte";
+import JanelaAcessoSuporte, { AvatarSuporte } from "@/components/suporte/JanelaAcessoSuporte";
+import { listarAcessos, listarHistorico, revogarAcesso, acessoValido, quemPediu, type AcessoSuporte, type EventoSuporte } from "@/lib/acessoSuporte";
 
 const quando = (iso: string) => new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 const dia = (iso: string) => new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-const EVENTO: Record<string, string> = { pedido: "Pedido de acesso", aprovado: "Você liberou o acesso", recusado: "Você recusou", entrou: "A equipe Doonly entrou", saiu: "A equipe Doonly saiu", revogado: "Você tirou o acesso", venceu: "O acesso venceu" };
+/** o histórico com o nome de quem pediu ("Pedido do Bruno", "Bruno entrou") */
+const evento = (e: string, a: AcessoSuporte | undefined) => {
+  const n = a?.pedido_por_nome;
+  const quem = n || "A equipe Doonly";
+  const M: Record<string, string> = { pedido: n ? `Pedido do ${n}` : "Pedido de acesso", aprovado: "Você liberou o acesso", recusado: "Você recusou", entrou: `${quem} entrou`, saiu: `${quem} saiu`, revogado: "Você tirou o acesso", venceu: "O acesso venceu" };
+  return M[e] || e;
+};
 
 export default function AcessosSuporte() {
   const [params, setParams] = useSearchParams();
@@ -46,14 +51,14 @@ export default function AcessosSuporte() {
             <Titulo>Agora</Titulo>
             {pendente ? (
               <div className="acs-it">
-                <span className="acs-ic" aria-hidden="true"><ShieldCheck size={20} weight="bold" /></span>
-                <span className="acs-tx"><b>Equipe Doonly pediu acesso</b><small>{pendente.motivo} · {dia(pendente.pedido_em)}</small></span>
+                <AvatarSuporte acesso={pendente} tamanho={40} />
+                <span className="acs-tx"><b>{quemPediu(pendente)}</b><small>Pediu acesso · {dia(pendente.pedido_em)}</small></span>
                 <Botao tamanho="m" onClick={() => setJanela(pendente.id)}>Ver pedido</Botao>
               </div>
             ) : ativo ? (
               <div className="acs-it">
-                <span className="acs-ic on" aria-hidden="true"><ShieldCheck size={20} weight="bold" /></span>
-                <span className="acs-tx"><b>Equipe Doonly</b><small>Liberado até {dia(ativo.expira_em!)}{ativo.ultimo_acesso_em ? ` · entrou ${quando(ativo.ultimo_acesso_em)}` : ""}</small></span>
+                <AvatarSuporte acesso={ativo} tamanho={40} />
+                <span className="acs-tx"><b>{quemPediu(ativo)}</b><small>Liberado até {dia(ativo.expira_em!)}{ativo.ultimo_acesso_em ? ` · entrou ${quando(ativo.ultimo_acesso_em)}` : ""}</small></span>
                 <Botao variante="secundario" tamanho="m" onClick={() => tirar(ativo)}>Tirar acesso</Botao>
               </div>
             ) : <p className="acs-vz">Ninguém tem acesso à sua loja agora.</p>}
@@ -61,7 +66,7 @@ export default function AcessosSuporte() {
           {hist.length > 0 && (
             <section className="acs-card">
               <Titulo>Histórico</Titulo>
-              <ul className="acs-hist">{hist.map(h => <li key={h.id}><span>{EVENTO[h.evento] || h.evento}</span><small>{quando(h.em)}</small></li>)}</ul>
+              <ul className="acs-hist">{hist.map(h => <li key={h.id}><span>{evento(h.evento, lista?.find(a => a.id === h.acesso_id))}</span><small>{quando(h.em)}</small></li>)}</ul>
             </section>
           )}
         </>)}
@@ -71,8 +76,6 @@ export default function AcessosSuporte() {
         .acs { display: flex; flex-direction: column; gap: 12px; max-width: 640px; margin: 0 auto; padding: 12px 0 100px; font-family: var(--font-base); }
         .acs-card { background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); padding: 16px; }
         .acs-it { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
-        .acs-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-2); }
-        .acs-ic.on { color: var(--ui-verde); }
         .acs-tx { flex: 1; min-width: 0; }
         .acs-tx b { display: block; font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .acs-tx small { display: block; font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

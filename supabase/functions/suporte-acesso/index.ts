@@ -25,7 +25,7 @@ serve(async (req) => {
     const { data: { user } } = await admin.auth.getUser(token);
     if (!user) return json({ error: "sem_login" }, 401);
     const body = await req.json().catch(() => ({}));
-    const { action, userId, acessoId } = body as { action?: string; userId?: string; acessoId?: string };
+    const { action, userId, acessoId, perfilId } = body as { action?: string; userId?: string; acessoId?: string; perfilId?: string };
 
     // ── saída: chamada pela aba do suporte, com o login da própria confeiteira
     if (action === "sair") {
@@ -55,13 +55,16 @@ serve(async (req) => {
     if (action === "pedir") {
       const a = await ultimo();
       if (a && (a.status === "pendente" || valido(a))) return json({ acesso: a, jaExiste: true });
-      const { data: novo, error } = await admin.from("acessos_suporte").insert({ user_id: userId, pedido_por: user.email }).select("*").single();
+      // quem pediu: o perfil do painel admin (Bruno, Anthony…), lido do banco (não confia no nome que veio do navegador)
+      const { data: pa } = perfilId ? await admin.from("admin_perfis").select("nome, foto_url, cor").eq("id", perfilId).maybeSingle() : { data: null };
+      const quem = pa?.nome || "Equipe Doonly";
+      const { data: novo, error } = await admin.from("acessos_suporte").insert({ user_id: userId, pedido_por: user.email, pedido_por_nome: pa?.nome || null, pedido_por_foto: pa?.foto_url || null, pedido_por_cor: pa?.cor || null }).select("*").single();
       if (error) throw error;
       await admin.from("acessos_suporte_log").insert({ acesso_id: novo.id, user_id: userId, evento: "pedido" });
       await admin.from("notificacoes").insert({
         user_id: userId, tipo: "suporte", chave: `suporte_${novo.id}`,
-        titulo: "Pedido de acesso do suporte",
-        mensagem: "A equipe Doonly quer personalizar seu cardápio. Toque para permitir.",
+        titulo: pa?.nome ? `${quem}, da equipe Doonly, quer te ajudar` : "A equipe Doonly quer te ajudar",
+        mensagem: "Pediu acesso para deixar seu cardápio pronto para vender. Toque para ver.",
         link: `/acessos-suporte?pedido=${novo.id}`,
       });
       return json({ acesso: novo });

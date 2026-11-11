@@ -126,10 +126,11 @@ export default function PraFazer() {
   const { updates } = useAtualizacoes();
   const [avisos, setAvisos] = useState<AvisoCadastro[]>([]);
   const [suportePend, setSuportePend] = useState<string | null>(null);
+  const [suporteQuem, setSuporteQuem] = useState<string | null>(null);
   const [janelaSuporte, setJanelaSuporte] = useState(false);
   useEffect(() => {
     let vivo = true;
-    const ler = () => { void pedidoPendente().then(p => { if (vivo) setSuportePend(p?.id || null); }).catch(() => {}); };
+    const ler = () => { void pedidoPendente().then(p => { if (vivo) { setSuportePend(p?.id || null); setSuporteQuem(p?.pedido_por_nome || null); } }).catch(() => {}); };
     ler(); window.addEventListener("doonly:suporte", ler);
     return () => { vivo = false; window.removeEventListener("doonly:suporte", ler); };
   }, []);
@@ -259,7 +260,7 @@ export default function PraFazer() {
   // (11/11) a equipe Doonly pediu acesso para personalizar o cardápio: urgente, com a janela que explica antes de liberar
   const itemSuporte: Item[] = suportePend ? [{
     chave: "suporte_acesso", nivel: "urgente", Ic: ShieldCheck, ordem: -200, acao: "Ver pedido", link: "/acessos-suporte", fechar: false,
-    t: "Acesso para o suporte", s: "Personalizar seu cardápio · 7 dias",
+    t: suporteQuem ? `${suporteQuem} pediu acesso` : "Acesso para o suporte", s: "Equipe Doonly · ajuda no cardápio",
     txt: "A equipe Doonly pediu acesso para personalizar seu cardápio. Você decide.",
     aoTocar: () => setJanelaSuporte(true),
   }] : [];

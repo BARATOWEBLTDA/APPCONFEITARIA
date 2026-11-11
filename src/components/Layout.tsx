@@ -5,6 +5,7 @@ import { NavLink, Navigate, Outlet, useNavigate, useLocation, useNavigationType 
 import { emModoSuporte } from "@/lib/supabase";
 import { rotaPermitidaNoSuporte } from "@/lib/acessoSuporte";
 import FaixaSuporte from "@/components/suporte/FaixaSuporte";
+import { avisar } from "@/components/base";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
 
 import ParabensPro from "@/components/pro/ParabensPro";
@@ -102,6 +103,13 @@ function GrupoMenu({ id, rotulo, icone: Icone, rotas, recolhido, children, tour,
   );
 }
 
+/** (11/11) modo suporte: tocou numa tela fechada (ex.: Ficha técnica, Assinar) → avisa e volta para a última tela liberada */
+const rotaSuporte = { ultima: "/cardapio" };
+function TelaFechadaSuporte() {
+  useEffect(() => { avisar("Essa tela fica fechada no acesso de suporte", { tipo: "info" }); }, []);
+  return <Navigate to={rotaSuporte.ultima} replace />;
+}
+
 export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
@@ -141,6 +149,8 @@ export default function Layout() {
     return () => window.removeEventListener("doonly:abrir-doo", abrir);
   }, []);
   const location = useLocation();
+  // (11/11) modo suporte: guarda a última tela liberada (é pra lá que volta quem toca numa tela fechada)
+  useEffect(() => { if (emModoSuporte && rotaPermitidaNoSuporte(location.pathname)) rotaSuporte.ultima = location.pathname + location.search; }, [location.pathname, location.search]);
   // (22/10) celular: topo branco, então a barra do navegador/Android também fica branca (volta ao sair do app da confeiteira)
   useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -211,7 +221,7 @@ export default function Layout() {
   }, [location.pathname]);
 
   // (11/11) modo suporte: só as telas do cardápio e dos produtos
-  if (emModoSuporte && !rotaPermitidaNoSuporte(location.pathname)) return <Navigate to="/cardapio-design" replace />;
+  if (emModoSuporte && !rotaPermitidaNoSuporte(location.pathname)) return <TelaFechadaSuporte />;
 
   return (
     <div className={`layout-root${recolhido ? " menu-recolhido" : ""}`} data-rota={location.pathname} data-suporte={emModoSuporte ? "" : undefined}>

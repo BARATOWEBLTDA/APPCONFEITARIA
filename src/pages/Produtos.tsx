@@ -21,7 +21,7 @@ import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/pr
 import { kitAtivo, precoMinKit, type KitQtdConfig, type KitFechado } from "@/lib/kitQuantidade";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
 import { precoCardapioComPromocao, precosDosSabores, ehCentoLivre } from "@/lib/precoCardapio";
-import { supabase } from "@/lib/supabase";
+import { supabase, emModoSuporte } from "@/lib/supabase";
 import { gravarInsumosDoProduto } from "@/lib/insumosDoo";
 import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grupos";
 import {
@@ -1704,7 +1704,7 @@ export default function Produtos() {
                 semDescricao={!(form.descricao || "").trim()}
                 onFechar={fecharModal}
                 onOutro={() => { setSucesso(null); openNovo(); }}
-                onCusto={() => { const id = sucesso.id; irDepoisDeFechar.current = () => { navigate("/ficha-tecnica", { state: { produtoId: id } }); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }}
+                onCusto={emModoSuporte ? undefined : () => { const id = sucesso.id; irDepoisDeFechar.current = () => { navigate("/ficha-tecnica", { state: { produtoId: id } }); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }}
                 onFoto={() => abrirParteDoNovo("fotos")}
                 onDescricao={() => abrirParteDoNovo("info")}
                 lojaPronta={sucesso.pronta ?? lojaPronta}
@@ -2748,9 +2748,9 @@ export default function Produtos() {
                         {(() => { const pl = precoDaLista(pv); return <>{pl.de > 0 && <><s className="prod-preview-de">R$ {formatPreco(pl.de)}</s> </>}{pl.aPartir || (temVariacoes && !pv.grupo_tamanhos?.ativo) ? "a partir de " : ""}R$ {formatPreco(pl.final)}{pl.unidade ? ` ${pl.unidade}` : ""}</>; })()}
                       </LinhaUi>
                       <LinhaUi rotulo="Opções">{opcoes}</LinhaUi>
-                      <LinhaUi rotulo="Ficha técnica" tom={temFicha ? "verde" : "laranja"}>{temFicha ? `Lucro de R$ ${formatPreco(lucro)} por venda (${margem.toFixed(0)}%)` : "Ainda não montada"}</LinhaUi>
+                      {!emModoSuporte && <LinhaUi rotulo="Ficha técnica" tom={temFicha ? "verde" : "laranja"}>{temFicha ? `Lucro de R$ ${formatPreco(lucro)} por venda (${margem.toFixed(0)}%)` : "Ainda não montada"}</LinhaUi>}
                     </div>
-                    {!temFicha && pv.id && (
+                    {!temFicha && pv.id && !emModoSuporte && (
                       <Botao variante="suave" cheio icone={<ListChecks size={20} weight="bold" />} className="prod-preview-ficha"
                         onClick={() => { const id = pv.id; irDepoisDeFechar.current = () => navigate("/ficha-tecnica", { state: { produtoId: id } }); setPreviewProduto(null); }}>
                         Montar a ficha técnica

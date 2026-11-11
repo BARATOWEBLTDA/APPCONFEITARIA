@@ -89,7 +89,7 @@ export default function Pixel() {
   const pf = (profile || {}) as Partial<Record<Plataforma["coluna"], string | null>>;
   return (
     <>
-      <AppPageHeader title="Pixel" voltar="/inicio" subtitle="Meça as visitas e as vendas dos seus anúncios"
+      <AppPageHeader title="Pixel" voltar="/cardapio" subtitle="Meça as visitas e as vendas dos seus anúncios"
         infoContent={<><p>O pixel conta para o <strong>Meta</strong> (Facebook e Instagram), o <strong>Google</strong> e o <strong>TikTok</strong> quem visitou o seu cardápio e quem fez pedido.</p><p>Com isso os anúncios chegam em quem tem mais chance de comprar, e você vê quanto cada anúncio vendeu.</p></>} />
       <div className="pxl">
         {!isPro && !carregandoPlano && <div className="pxl-pro"><CartaoPro recurso="pixel" /></div>}

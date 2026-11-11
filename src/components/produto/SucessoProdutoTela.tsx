@@ -17,7 +17,8 @@ interface Props {
   onExtras?: () => void;
   onTerminarLoja?: () => void;
   onOutro: () => void;
-  onCusto: () => void;
+  /** sem ele (modo suporte), o passo de custo não aparece */
+  onCusto?: () => void;
   onFoto?: () => void;
   onDescricao?: () => void;
   onFechar: () => void;
@@ -39,7 +40,7 @@ export default function SucessoProdutoTela(p: Props) {
   // próximos passos: o que falta, na ordem de importância (no máximo 2)
   const passos: { k: string; ic: ReactNode; t: string; s: string; on: () => void }[] = [];
   if (p.lojaPronta === false && p.onTerminarLoja) passos.push({ k: "loja", ic: <Storefront size={18} weight="bold" />, t: "Terminar de abrir o cardápio", s: "Para os clientes verem e pedirem", on: p.onTerminarLoja });
-  passos.push({ k: "custo", ic: <Calculator size={18} weight="bold" />, t: "Definir custo e lucro", s: "Monte a ficha técnica", on: p.onCusto });
+  if (p.onCusto) passos.push({ k: "custo", ic: <Calculator size={18} weight="bold" />, t: "Definir custo e lucro", s: "Monte a ficha técnica", on: p.onCusto });
   // (16/10) quem ainda não vende extras: aumentam o valor de cada pedido · (30/10) "velas e topos" era nichado: agora adicionais em geral
   if (p.semExtras && p.onExtras) passos.push({ k: "extras", ic: <Cake size={18} weight="bold" />, t: "Vender adicionais", s: "Vela, topo, papel de arroz, balão", on: p.onExtras });
   if (p.semFoto && p.onFoto) passos.push({ k: "foto", ic: <ImageIc size={18} weight="bold" />, t: "Adicionar foto", s: "Produto com foto vende mais", on: p.onFoto });

@@ -10,11 +10,16 @@ import { supabase } from "@/lib/supabase";
 import { sessaoSuporte, sairDoSuporte, acessoValido, type AcessoSuporte } from "@/lib/acessoSuporte";
 
 const ABAS = [
+  { to: "/cardapio", t: "Minha loja" },
   { to: "/cardapio-design", t: "Aparência" },
   { to: "/cardapio-config", t: "Dados da loja" },
   { to: "/produtos", t: "Produtos" },
   { to: "/categorias", t: "Categorias" },
   { to: "/complementos", t: "Adicionais" },
+  { to: "/configuracoes/mensagens", t: "Mensagens" },
+  { to: "/cupons", t: "Cupons" },
+  { to: "/pixel", t: "Pixel" },
+  { to: "/cardapio-metricas", t: "Métricas" },
 ];
 
 export default function FaixaSuporte() {
@@ -38,7 +43,7 @@ export default function FaixaSuporte() {
         <span className="fsup-tx"><b>Modo suporte</b><small>{s?.loja || "Loja"}{ate ? ` · até ${ate}` : ""}</small></span>
       </div>
       <nav className="fsup-abas" aria-label="Telas liberadas">
-        {ABAS.map(a => <NavLink key={a.to} to={a.to} className={({ isActive }) => `fsup-aba${isActive ? " on" : ""}`}>{a.t}</NavLink>)}
+        {ABAS.map(a => <NavLink key={a.to} to={a.to} end className={({ isActive }) => `fsup-aba${isActive ? " on" : ""}`}>{a.t}</NavLink>)}
       </nav>
       <button type="button" className="fsup-sair" onClick={sair}><SignOut size={16} weight="bold" aria-hidden="true" />Sair</button>
       <style>{`
