@@ -2,7 +2,7 @@ import { VisitasDoApp } from "@/components/PixelsDoApp";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
-import { supabase } from "@/lib/supabase";
+import { supabase, emModoSuporte } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
 import { erroDeConexao } from "@/lib/erros";
 import { momentoSeguro } from "@/lib/autoAtualizar";
@@ -38,6 +38,9 @@ const carregarLayout = () => import("@/components/Layout");
 const carregarInicio = () => import("@/pages/Inicio");
 const Auth = lazy(carregarAuth);
 const Layout = lazy(carregarLayout);
+const AcessosSuporte = lazy(() => import("@/pages/AcessosSuporte"));
+const SuporteEntrar = lazy(() => import("@/pages/SuporteEntrar"));
+const SuporteAvisoLazy = lazy(() => import("@/pages/SuporteEntrar").then(m => ({ default: m.SuporteAviso })));
 const Inicio = lazy(carregarInicio);
 const BoasVindas = lazy(() => import("@/components/boasVindas/BoasVindas"));
 const AceiteTermos = lazy(() => import("@/components/termos/AceiteTermos").then(m => ({ default: m.AceiteTermos })));
@@ -436,7 +439,11 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     return <SemInternetNaEntrada tentando={tentandoRede} aoTentar={tentarRede} />;
   }
   if (session === undefined) return null;
+  // (11/11) modo suporte: sem login nesta aba, o acesso acabou (não manda para a tela de login)
+  if (!session && emModoSuporte) return <SuporteAvisoLazy titulo="O acesso de suporte acabou" texto="Para entrar de novo, abra a loja pelo painel Admin." />;
   if (!session) return <NavigateWithSearch to="/login" replace />;
+  // (11/11) modo suporte: nada de termos, boas-vindas ou completar cadastro (isso é da confeiteira, não do suporte)
+  if (emModoSuporte) return <>{children}</>;
 
   const entrouPeloGoogle = session.user?.app_metadata?.provider === "google"
     || (session.user?.identities || []).some((i) => i?.provider === "google");
@@ -533,6 +540,8 @@ export default function App() {
         <Route path="/orcamento/:token" element={<OrcamentoVer />} />
         {/* Fallback: rota antiga /cardapio/:slug — mantida por compat, redireciona internamente */}
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />
+        {/* (11/11) modo suporte: a aba aberta pela equipe Doonly no Admin */}
+        <Route path="/suporte/entrar" element={<SuporteEntrar />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         {/* outros nomes que um link antigo de e-mail pode usar (09/10 · 3.95): todos abrem a tela de criar a senha nova */}
@@ -608,6 +617,7 @@ export default function App() {
           <Route path="/pixel" element={<Pixel />} />
           <Route path="/arquivos" element={<Navigate to="/" replace />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/acessos-suporte" element={<AcessosSuporte />} />
           <Route path="/minha-conta" element={<Configuracoes secao="conta" />} />
           <Route path="/configuracoes/notificacoes" element={<NotificacoesSons />} />
           <Route path="/configuracoes/mensagens" element={<MensagensWhatsApp />} />

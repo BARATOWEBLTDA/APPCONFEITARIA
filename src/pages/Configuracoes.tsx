@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { digitosTelefone } from "@/lib/telefone";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, WhatsappLogo, Bug, Lightbulb, SignOut, User, WarningCircle, MagnifyingGlass } from "@phosphor-icons/react";
+import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, WhatsappLogo, Bug, Lightbulb, SignOut, User, WarningCircle, MagnifyingGlass, ShieldCheck } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -50,6 +50,7 @@ type Achado = { nome: string; onde: string; palavras: string; ir: string | "cont
 const INDICE: Achado[] = [
   { nome: "Nome, telefone e senha", onde: "Conta › Minha conta", palavras: "foto perfil logo email e-mail celular trocar senha", ir: "conta" },
   { nome: "Minha assinatura", onde: "Conta", palavras: "plano pro pagamento mensalidade cancelar", ir: "assinatura" },
+  { nome: "Acessos de suporte", onde: "Conta", palavras: "suporte equipe doonly acesso permitir liberar personalizar", ir: "/acessos-suporte" },
   { nome: "Nome e descrição da loja", onde: "Minha loja › Dados da loja", palavras: "sobre confeitaria texto whatsapp", ir: "/cardapio-config", abrir: "loja" },
   { nome: "Endereço", onde: "Minha loja › Dados da loja", palavras: "cep rua mapa cidade localização", ir: "/cardapio-config", abrir: "endereco" },
   { nome: "Horário de funcionamento", onde: "Minha loja › Dados da loja", palavras: "horario aberto fechado dias semana abrir fechar", ir: "/cardapio-config", abrir: "horario" },
@@ -319,6 +320,8 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
             <ItemConfig icone={<Crown size={20} weight="fill" />} nome="Minha assinatura"
               apoio={pro ? "Plano PRO · ativo" : "Plano grátis · 7 dias de PRO grátis"} destaque={!pro}
               onClick={() => navigate(pro ? "/minha-assinatura" : "/assinar")} />
+            {/* (11/11) quem pode mexer na loja (a equipe Doonly pede, ela aprova) */}
+            <ItemConfig icone={<ShieldCheck size={20} weight="bold" />} nome="Acessos de suporte" apoio="Quem pode mexer na sua loja" onClick={() => navigate("/acessos-suporte")} />
 
             </div>}
 

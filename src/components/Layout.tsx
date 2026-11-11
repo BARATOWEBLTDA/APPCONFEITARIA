@@ -1,7 +1,10 @@
 import { ROTAS_CARDAPIO } from "@/components/CardapioSubnav";
 const ROTAS_CATALOGO = ["/produtos", "/produtos/categorias", "/categorias", "/complementos"];
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
-import { NavLink, Outlet, useNavigate, useLocation, useNavigationType } from "react-router-dom";
+import { NavLink, Navigate, Outlet, useNavigate, useLocation, useNavigationType } from "react-router-dom";
+import { emModoSuporte } from "@/lib/supabase";
+import { rotaPermitidaNoSuporte } from "@/lib/acessoSuporte";
+import FaixaSuporte from "@/components/suporte/FaixaSuporte";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
 
 import ParabensPro from "@/components/pro/ParabensPro";
@@ -103,14 +106,15 @@ export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   // (09/11) avisos do dia nas Notificações ("3 entregas hoje", "Pedido atrasado"): uma vez por abertura do app (a chave não repete)
-  useEffect(() => { if (profile?.id) void gerarAvisosDoDia(profile.id); }, [profile?.id]);
+  // (11/11) no modo suporte nada disso roda: é a loja dela, mas quem está mexendo é a equipe Doonly
+  useEffect(() => { if (profile?.id && !emModoSuporte) void gerarAvisosDoDia(profile.id); }, [profile?.id]);
   const paraAceitar = usePedidosParaAceitar(profile?.id);
   const { isPro } = usePlano();
   const [grupoAberto, setGrupoAberto] = useState<string | null>(null);
   // (11/10) saiu e entrou de novo neste aparelho: os avisos de pedido voltam a ligar sozinhos
-  useEffect(() => { void reativarPushSeSaiu(); }, []);
+  useEffect(() => { if (!emModoSuporte) void reativarPushSeSaiu(); }, []); // (11/11) nunca registra o navegador do suporte como aparelho dela
   // (03/11) o painel admin vê quem está com o app aberto agora (só a hora do último acesso)
-  useEffect(() => { if (profile?.id) ligarAcessoOnline(); }, [profile?.id]);
+  useEffect(() => { if (profile?.id && !emModoSuporte) ligarAcessoOnline(); }, [profile?.id]);
   const {
     cropSrc,
     handleCropDone, cancelCrop,
@@ -206,8 +210,12 @@ export default function Layout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
+  // (11/11) modo suporte: só as telas do cardápio e dos produtos
+  if (emModoSuporte && !rotaPermitidaNoSuporte(location.pathname)) return <Navigate to="/cardapio-design" replace />;
+
   return (
-    <div className={`layout-root${recolhido ? " menu-recolhido" : ""}`} data-rota={location.pathname}>
+    <div className={`layout-root${recolhido ? " menu-recolhido" : ""}`} data-rota={location.pathname} data-suporte={emModoSuporte ? "" : undefined}>
+      {emModoSuporte && <FaixaSuporte />}
       {/* (13/10) as telas do Cardápio digital agora têm abas na faixa rosa (AppPageHeader), não um 2º menu lateral */}
       {/* ── Sidebar Desktop ── */}
       <aside className="sidebar" aria-label="Menu">
@@ -285,20 +293,17 @@ export default function Layout() {
       </aside>
 
       <main className="layout-main">
-        <AlertaPedidoNovo uid={profile?.id} />
+        {!emModoSuporte && <AlertaPedidoNovo uid={profile?.id} />}
         {/* (07/10 · 2.99) O sininho e a janelinha de avisos saíram: o botão ficava escondido em todos os tamanhos de tela.
             As notificações continuam na tela "Notificações", pelo menu da foto. */}
         <Suspense fallback={null}><Outlet /></Suspense>
-        <ConviteProGlobal />
-        <MarcosDaAssinatura />
-        <DestaqueDaNavegacao />
-        <AcenderDaAjuda />
+        {!emModoSuporte && <><ConviteProGlobal /><MarcosDaAssinatura /><DestaqueDaNavegacao /><AcenderDaAjuda /></>}
       </main>
 
       {/* ── Drawer "Mais" (Proposta D) ── */}
       <MaisDrawer open={maisOpen} onClose={() => setMaisOpen(false)} />
       <BuscaRapida />
-      <PerguntaSons />
+      {!emModoSuporte && <PerguntaSons />}
 
       {/* Modal de crop da foto de perfil (aberto pelo ícone câmera do sidebar) */}
       {cropSrc && (
@@ -376,14 +381,14 @@ export default function Layout() {
         </nav>
       )}
 
-      <DooIA forceOpen={dooOpen} onClose={() => setDooOpen(false)} />
+      {!emModoSuporte && <DooIA forceOpen={dooOpen} onClose={() => setDooOpen(false)} />}
       {/* (04/11 · 6.42) computador: a Doo num balão no canto direito; abre a conversa em cima dele e minimiza de volta */}
       <button type="button" className={`doo-fab${dooOpen ? " on" : ""}`} data-tour="doo-pc" onClick={() => setDooOpen(v => !v)}
         aria-label={dooOpen ? "Minimizar a Doo" : "Abrir a Doo"} title={dooOpen ? "Minimizar" : "Doo"}>
         {dooOpen ? <X size={26} weight="bold" /> : <img src="/Sistema/doo.webp" alt="" />}
         {!dooOpen && <span className="doo-fab-tx">Doo</span>}
       </button>
-      <ParabensPro />
+      {!emModoSuporte && <ParabensPro />}
 
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }

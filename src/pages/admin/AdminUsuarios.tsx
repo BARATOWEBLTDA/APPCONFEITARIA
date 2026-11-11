@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import PainelLoja, { type AcaoLoja } from "./PainelLoja";
 import { registrar, nomeConta } from "@/lib/adminPerfil";
 import { supabase } from "@/lib/supabase";
-import { Plus, MagnifyingGlass, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight, EnvelopeSimple } from "@phosphor-icons/react";
+import { Plus, MagnifyingGlass, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight, EnvelopeSimple, ShieldCheck } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, avisar, confirmar, informar, BotaoLimpar } from "@/components/base";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { explicarErro } from "@/lib/erros";
@@ -69,10 +69,43 @@ export default function AdminUsuarios() {
     const pro = u.plano === "pro" && (!u.pro_expira_em || new Date(u.pro_expira_em) > new Date());
     return [
       { rotulo: pro ? "Tirar o PRO" : "Dar o PRO", sub: pro ? "A conta volta a ser grátis" : "Por quantos dias quiser", icone: <Crown size={20} weight={pro ? "fill" : "bold"} />, ativo: pro, aoClicar: () => handleTogglePRO(u) },
+      { rotulo: "Acesso de suporte", sub: "Pedir acesso ou entrar na loja dela", icone: <ShieldCheck size={20} weight="bold" />, aoClicar: () => { void acessoSuporte(u); } },
       { rotulo: "Trocar o e-mail", sub: "Mesma conta, mesma senha e o PRO continua", icone: <EnvelopeSimple size={20} weight="bold" />, aoClicar: () => { setEmailAlvo(u); setEmailNovo(""); setEmailErro(""); } },
       { rotulo: u.banned_until ? "Desbloquear" : "Bloquear o acesso", sub: u.banned_until ? "Ela volta a entrar no app" : "Ela não consegue mais entrar", icone: u.banned_until ? <LockOpen size={20} weight="bold" /> : <Lock size={20} weight="bold" />, aoClicar: () => setConfirmBlock(u) },
       { rotulo: "Excluir a conta", sub: "Apaga a conta e tudo dela", icone: <Trash size={20} weight="bold" />, perigo: true, aoClicar: () => setConfirmDelete(u) },
     ];
+  };
+  // (11/11) Acesso de suporte: pede (ela aprova no app) e, aprovado, entra na loja numa aba só dela (sem senha)
+  const acessoSuporte = async (u: UsuarioAdmin) => {
+    const nome = nomeConta(u);
+    // a aba abre já no clique (senão o navegador bloqueia por ter vindo depois de esperar o servidor)
+    const aba = window.open("about:blank", "_blank");
+    const fechar = () => { try { aba?.close(); } catch { /* já fechou */ } };
+    const { data, error } = await supabase.functions.invoke("suporte-acesso", { body: { action: "status", userId: u.id } });
+    if (error) { fechar(); avisar("Não deu para ver o acesso agora", { tipo: "erro" }); return; }
+    const a = (data as { acesso?: { status: string; expira_em: string | null } | null }).acesso;
+    if (a?.status === "aprovado") {
+      const r = await supabase.functions.invoke("suporte-acesso", { body: { action: "entrar", userId: u.id } });
+      const d = r.data as { tokenHash?: string; acessoId?: string; loja?: string; expira?: string } | null;
+      if (r.error || !d?.tokenHash) { fechar(); avisar("Não deu para entrar na loja", { tipo: "erro", detalhe: "O acesso pode ter vencido ou sido retirado" }); return; }
+      const h = new URLSearchParams({ th: d.tokenHash, a: d.acessoId || "", l: d.loja || nome, e: d.expira || "" });
+      const url = `${window.location.origin}/suporte/entrar#${h.toString()}`;
+      if (aba) aba.location.href = url; else window.open(url, "_blank");
+      void registrar(`entrou na loja de ${nome} (suporte)`, { tipo: "usuario", alvo_id: u.id });
+      return;
+    }
+    fechar();
+    if (a?.status === "pendente") {
+      const cancelar = await confirmar({ titulo: "Esperando ela liberar", texto: `${nome} ainda não respondeu o pedido. Ela recebe no app e no celular.`, rotulo: "Cancelar o pedido", rotuloVoltar: "Esperar", perigo: true });
+      if (cancelar) { await supabase.functions.invoke("suporte-acesso", { body: { action: "cancelar", userId: u.id } }); avisar("Pedido cancelado", { tipo: "ok" }); }
+      return;
+    }
+    const ok = await confirmar({ titulo: `Pedir acesso à loja de ${nome}?`, texto: "Ela recebe o pedido no app e no celular. Liberando, você entra para personalizar o cardápio por 7 dias.", rotulo: "Pedir acesso" });
+    if (!ok) return;
+    const p = await supabase.functions.invoke("suporte-acesso", { body: { action: "pedir", userId: u.id } });
+    if (p.error) { avisar("Não deu para pedir o acesso", { tipo: "erro" }); return; }
+    void registrar(`pediu acesso de suporte à loja de ${nome}`, { tipo: "usuario", alvo_id: u.id });
+    avisar("Pedido enviado", { tipo: "ok", detalhe: `${nome} recebe no app para liberar` });
   };
   const irPara = (p: number) => { setPagina(p); document.querySelector(".au-card")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   const [erroMetricas, setErroMetricas] = useState(false);

@@ -18,6 +18,9 @@ import { useAtualizacoes } from "@/components/MinhasAtualizacoes";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { Botao, Janela, avisar, confirmar, informar } from "@/components/base";
 import { ConteudoComo, type Como } from "@/components/como/ComoFunciona";
+import { ShieldCheck } from "@phosphor-icons/react";
+import { pedidoPendente } from "@/lib/acessoSuporte";
+import JanelaAcessoSuporte from "@/components/suporte/JanelaAcessoSuporte";
 
 /**
  * (15/10) "Pra fazer": um cartão só no Início, no lugar do "Complete seu app" e do "Suas atualizações".
@@ -122,6 +125,14 @@ export default function PraFazer() {
   const pronta = useLojaPronta(uid);
   const { updates } = useAtualizacoes();
   const [avisos, setAvisos] = useState<AvisoCadastro[]>([]);
+  const [suportePend, setSuportePend] = useState<string | null>(null);
+  const [janelaSuporte, setJanelaSuporte] = useState(false);
+  useEffect(() => {
+    let vivo = true;
+    const ler = () => { void pedidoPendente().then(p => { if (vivo) setSuportePend(p?.id || null); }).catch(() => {}); };
+    ler(); window.addEventListener("doonly:suporte", ler);
+    return () => { vivo = false; window.removeEventListener("doonly:suporte", ler); };
+  }, []);
   const [aberto, setAberto] = useState(false);
   const [, setMexeu] = useState(0);
   // (22/10) "Agora não" (menu com as opções) e "Como funciona" (exemplo) abertos
@@ -245,7 +256,16 @@ export default function PraFazer() {
     txt: "Mande o link no WhatsApp e no Instagram. É assim que chegam os primeiros pedidos.",
   }] : [];
 
+  // (11/11) a equipe Doonly pediu acesso para personalizar o cardápio: urgente, com a janela que explica antes de liberar
+  const itemSuporte: Item[] = suportePend ? [{
+    chave: "suporte_acesso", nivel: "urgente", Ic: ShieldCheck, ordem: -200, acao: "Ver pedido", link: "/acessos-suporte", fechar: false,
+    t: "Acesso para o suporte", s: "Personalizar seu cardápio · 7 dias",
+    txt: "A equipe Doonly pediu acesso para personalizar seu cardápio. Você decide.",
+    aoTocar: () => setJanelaSuporte(true),
+  }] : [];
+
   const brutos: Item[] = [
+    ...itemSuporte,
     ...itemNotif,
     ...itemInstalar,
     ...itemPro,
@@ -431,6 +451,7 @@ export default function PraFazer() {
       )}
     </section>
     )}
+    <JanelaAcessoSuporte id={suportePend} aberta={janelaSuporte} aoFechar={() => setJanelaSuporte(false)} />
     <style>{CSS}</style>
     </div>
   );
