@@ -32,7 +32,7 @@ const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julh
 
 /** "▲ 12% vs ontem" · "▼ 8%" · "Igual a …" · sem base: "Sem dados para comparar" */
 function Compara({ agora, antes, rotulo }: { agora: number; antes: number; rotulo: string }) {
-  if (!antes) return <span className="ad-cmp">{agora ? `Primeiros números · ${rotulo}` : "Sem dados para comparar"}</span>;
+  if (!antes) return <span className="ad-cmp">Sem comparação ainda</span>;
   const d = Math.round(((agora - antes) / antes) * 100);
   if (d === 0) return <span className="ad-cmp">Igual {rotulo.replace(/^vs /, "a ")}</span>;
   return <span className={`ad-cmp ${d > 0 ? "ad-cmp--sobe" : "ad-cmp--desce"}`}><b>{d > 0 ? "▲" : "▼"} {Math.abs(d)}%</b> {rotulo}</span>;
@@ -92,14 +92,6 @@ export default function AdminDashboard() {
   const totalDias = valores.reduce((a, b) => a + b, 0);
   const extras = p ? Math.max(0, p.online_agora - p.online.length) : 0;
 
-  const atalhos = [
-    { Icone: UsersThree, t: "Usuários", s: p ? `${num(p.contas)} contas` : "Contas", ir: "/admin/usuarios" },
-    { Icone: Lightbulb, t: "Ideias", s: p?.ideias_novas ? `${num(p.ideias_novas)} novas` : "Sugestões", ir: "/admin/ideias", badge: p?.ideias_novas },
-    { Icone: Newspaper, t: "Novidades", s: "Avisos no app", ir: "/admin/noticias" },
-    { Icone: ImageIcon, t: "Banner", s: "Do celular", ir: "/admin/banner" },
-    { Icone: Images, t: "Banners prontos", s: "Pras confeiteiras", ir: "/admin/banners-prontos" },
-    { Icone: PenNib, t: "Autores", s: "Das novidades", ir: "/admin/autores" },
-  ];
 
   return (
     <div className="ad-root">
@@ -147,7 +139,7 @@ export default function AdminDashboard() {
           {p && <Compara agora={p.pedidos_hoje} antes={p.pedidos_ontem} rotulo="vs ontem até agora" />}
         </div>
         <div className="ad-num">
-          <span className="ad-num-t"><i className="ad-ic ad-ic--rosa" aria-hidden="true"><Storefront size={18} weight="bold" /></i>Pedidos <span className="ad-so-pc">em&nbsp;</span>30 dias</span>
+          <span className="ad-num-t"><i className="ad-ic ad-ic--rosa" aria-hidden="true"><Storefront size={18} weight="bold" /></i><span>Pedidos<span className="ad-so-pc"> em</span> 30 dias</span></span>
           <b>{p ? num(p.pedidos_30d) : "—"}</b>
           <small>{p ? `${pct(p.pedidos_cardapio_30d, p.pedidos_30d)}% pelo cardápio` : " "}</small>
           {p && <Compara agora={p.pedidos_30d} antes={p.pedidos_30d_ant} rotulo="vs 30 dias antes" />}
@@ -193,19 +185,6 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* ── Acesso rápido, igual ao do Início ── */}
-        <section className="ad-box" aria-label="Acesso rápido">
-          <h2 className="ad-h2">Acesso rápido</h2>
-          <div className="ad-atalhos">
-            {atalhos.map(({ Icone, t, s, ir, badge }) => (
-              <button key={t} type="button" className="ad-at" onClick={() => navigate(ir)}>
-                <span className="ad-at-ic" aria-hidden="true"><Icone size={24} weight="bold" />{badge ? <i>{badge > 99 ? "99+" : badge}</i> : null}</span>
-                <b>{t}</b>
-                <small>{s}</small>
-              </button>
-            ))}
-          </div>
-        </section>
       </div>
 
       {/* ── Últimas atividades dos admins ── */}
@@ -228,17 +207,14 @@ export default function AdminDashboard() {
         .ad-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 4px 0 0; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); }
         .ad-sub > i { font-style: normal; color: var(--ui-texto-3); }
         .ad-vivo { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-        .ad-vivo b, .ad-chip b { width: 8px; height: 8px; border-radius: 50%; background: var(--ui-verde); animation: adPulso 2s infinite; }
-        @keyframes adPulso { 0% { box-shadow: 0 0 0 0 rgba(22,163,74,.45); } 70% { box-shadow: 0 0 0 8px rgba(22,163,74,0); } 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); } }
-        @media (prefers-reduced-motion: reduce) { .ad-vivo b, .ad-chip b { animation: none; } }
-        .ad-erro { margin: 0 0 12px; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-size: 14px; font-weight: 500; }
+        .ad-vivo b, .ad-chip b { width: 8px; height: 8px; border-radius: 50%; background: var(--ui-verde); } /* (10/11) sem piscar sem fim */
+                .ad-erro { margin: 0 0 12px; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-size: 14px; font-weight: 500; }
 
         /* topo rosa (o mesmo clima do "Primeiros passos" do Início) */
         .ad-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 24px; padding: 24px 28px 0; overflow: hidden;
-          border: 1px solid #F6D3DF; border-radius: var(--ui-raio-cartao); background: linear-gradient(135deg, #FDEAF1 0%, #FFF6F9 55%, #FFFFFF 100%); box-shadow: var(--ui-sombra-cartao); }
-        .ad-hero::after { content: ""; position: absolute; right: -60px; top: -80px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--ui-rosa-rgb), .16), transparent 70%); pointer-events: none; }
+          border: 1px solid var(--ui-linha); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); } /* (10/11) cartão branco liso (antes degradê rosa) */
         .ad-hero-tx { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
-        .ad-chip { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 99px; background: var(--ui-branco); color: var(--ui-verde); font-size: 12px; font-weight: 600; box-shadow: 0 1px 2px rgba(44,18,25,.06); }
+        .ad-chip { display: inline-flex; align-items: center; gap: 6px; color: var(--ui-texto-2); font-size: 12px; font-weight: 500; } /* (10/11) texto com a bolinha, sem pílula */
         .ad-hero-n { margin: 10px 0 0; font-size: 48px; font-weight: 600; line-height: 1; color: var(--ui-rosa-escuro); letter-spacing: -.02em; }
         .ad-hero-t { margin: 6px 0 0; font-size: 17px; font-weight: 500; color: var(--ui-texto); }
         .ad-hero-vazio { margin: 12px 0 0; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); }
@@ -249,9 +225,9 @@ export default function AdminDashboard() {
         .ad-pilha-av i { position: absolute; right: -4px; bottom: -3px; display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 2px solid var(--ui-branco); border-radius: 50%; background: var(--ui-vinho); color: #FFD27A; }
         .ad-pilha-mais { display: flex; align-items: center; justify-content: center; min-width: 44px; height: 44px; margin-left: -8px; padding: 0 8px; border: 3px solid var(--ui-branco); border-radius: 99px; background: var(--ui-rosa); color: var(--ui-branco); font-size: 14px; font-weight: 600; }
         .ad-hero-masc { position: relative; z-index: 1; width: 170px; height: auto; align-self: end; margin-bottom: -6px; filter: drop-shadow(0 10px 18px rgba(153,53,86,.18)); }
-        .ad-hero-pe { grid-column: 1 / -1; position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 -28px; border-top: 1px solid #F6D3DF; background: rgba(255,255,255,.7); }
+        .ad-hero-pe { grid-column: 1 / -1; position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 -28px; border-top: 1px solid var(--ui-linha); background: rgba(255,255,255,.7); }
         .ad-hero-pe div { display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 12px 8px; min-width: 0; white-space: nowrap; }
-        .ad-hero-pe div + div { border-left: 1px solid #F6D3DF; }
+        .ad-hero-pe div + div { border-left: 1px solid var(--ui-linha); }
         .ad-hero-pe b { font-size: 18px; font-weight: 600; color: var(--ui-texto); }
         .ad-hero-pe small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
 
@@ -262,8 +238,8 @@ export default function AdminDashboard() {
         .ad-num > b { margin-top: 12px; font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--ui-texto); }
         .ad-num > small { margin-top: 4px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .ad-ic { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; }
-        .ad-ic--rosa { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-        .ad-ic--vinho { background: var(--ui-vinho); color: #FFD27A; }
+        .ad-ic--rosa { border: 1px solid var(--ui-linha); background: var(--ui-branco); color: var(--ui-rosa-escuro); } /* (10/11) caixinha branca (antes rosa lavado) */
+        .ad-ic--vinho { border: 1px solid var(--ui-linha); background: var(--ui-branco); color: #D4A017; }
         .ad-cmp { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--ui-linha); font-size: 12px; font-weight: 500; color: var(--ui-texto-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .ad-cmp b { font-weight: 600; }
         .ad-cmp--sobe b { color: var(--ui-verde); }
@@ -271,7 +247,7 @@ export default function AdminDashboard() {
         .ad-cmp-pro { color: var(--ui-rosa-escuro); }
 
         /* gráfico + acesso rápido */
-        .ad-dupla { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 12px; margin-top: 16px; }
+        .ad-dupla { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 16px; } /* (10/11) sem o Acesso rápido (repetia o menu), o gráfico ocupa a linha */
         .ad-box { min-width: 0; padding: 18px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
         .ad-h2 { margin: 0; font-size: 17px; font-weight: 600; color: var(--ui-texto); }
         .ad-box-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
@@ -287,13 +263,6 @@ export default function AdminDashboard() {
         .ad-barra--hoje span i { background: var(--ui-rosa); opacity: .5; }
         .ad-barra small { font-size: 12px; font-weight: 500; color: var(--ui-texto-3); }
         .ad-barra--hoje small { color: var(--ui-rosa-escuro); font-weight: 600; }
-        .ad-atalhos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 14px; }
-        .ad-at { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 10px 4px; border: 0; border-radius: var(--ui-raio); background: none; font-family: inherit; cursor: pointer; }
-        .ad-at:hover { background: var(--ui-fundo); }
-        .ad-at-ic { position: relative; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; margin-bottom: 6px; border-radius: 16px; background: linear-gradient(145deg, var(--ui-rosa), var(--ui-rosa-escuro)); color: var(--ui-branco); box-shadow: 0 6px 14px rgba(var(--ui-rosa-rgb), .28); }
-        .ad-at-ic i { position: absolute; top: -6px; right: -8px; min-width: 22px; height: 22px; padding: 0 6px; border: 2px solid var(--ui-branco); border-radius: 99px; background: var(--ui-laranja, #E8710A); color: var(--ui-branco); font-size: 11px; font-style: normal; font-weight: 600; line-height: 18px; text-align: center; }
-        .ad-at b { font-size: 14px; font-weight: 600; color: var(--ui-texto); }
-        .ad-at small { max-width: 100%; font-size: 12px; font-weight: 500; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         .ad-reg { margin-top: 16px; }
         .ad-reg .rg-lista { margin-top: 8px; }

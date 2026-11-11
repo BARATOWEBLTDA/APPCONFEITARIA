@@ -17,7 +17,7 @@
 .aa-row-tx b { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .aa-row-tx small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .aa-row-tx .aa-bio { color: var(--ui-texto-3); }
-.aa-tag { align-self: flex-start; margin-top: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-style: normal; font-weight: 600; }
+.aa-tag { align-self: flex-start; margin-top: 4px; color: var(--ui-texto-2); font-size: 12px; font-style: normal; font-weight: 600; }
 .aa-acoes { display: none; }
 .aa-perigo { color: var(--ui-vermelho) !important; }
 @media (hover: hover) { .aa-perigo:hover:not(:disabled) { background: var(--ui-vermelho-fundo) !important; } }

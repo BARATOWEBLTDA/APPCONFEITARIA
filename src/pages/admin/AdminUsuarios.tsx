@@ -559,7 +559,7 @@ export default function AdminUsuarios() {
         .au-l:focus-visible { outline: 2px solid var(--ui-rosa); outline-offset: -2px; }
         .au-l:hover .au-quem-tx b { color: var(--ui-rosa-escuro); }
         .au-quem { flex: 1 1 0; display: flex; align-items: center; gap: 14px; min-width: 0; min-height: 52px; }
-        .au-av { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-size: 17px; font-weight: 600; }
+        .au-av { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1px solid var(--ui-linha); border-radius: 50%; background: var(--ui-branco); color: var(--ui-texto); font-size: 17px; font-weight: 500; /* (10/11) caixinha branca (antes rosa lavado) */ }
         .au-av img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
         .au-av-on { position: absolute; right: 0; bottom: 0; width: 13px; height: 13px; border: 2px solid var(--ui-branco); border-radius: 50%; background: var(--ui-verde); }
         .au-quem-tx { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -592,13 +592,13 @@ export default function AdminUsuarios() {
         .au-ordem { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); }
         .au-ordem select { height: 48px; padding: 0 12px; border: 1px solid var(--ui-borda-campo); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ui-texto); }
         .au-aviso { margin: 10px 0 0; padding: 10px 12px; border-radius: var(--ui-raio); background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-size: 14px; font-weight: 500; }
-        .au-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-texto-2); font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .au-tag { display: inline-flex; align-items: center; gap: 4px; color: var(--ui-texto-2); font-size: 12px; font-weight: 500; white-space: nowrap; } /* (10/11) plano em texto, sem pílula */
         .au-tag em { font-style: normal; font-weight: 500; }
-        .au-tag--pro { background: var(--ui-vinho); color: var(--ui-branco); }
-        .au-tag--pro em { color: rgba(255,255,255,.8); }
-        .au-tag--ok { background: var(--ui-verde-fundo); color: var(--ui-verde); }
-        .au-tag--bloq { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
-        .au-tag--admin { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+        .au-tag--pro { color: var(--ui-rosa-escuro); }
+        .au-tag--pro em { color: var(--ui-texto-2); }
+        .au-tag--ok { color: var(--ui-verde); }
+        .au-tag--bloq { color: var(--ui-vermelho-escuro); }
+        .au-tag--admin { color: var(--ui-rosa-escuro); }
 
         /* computador: tabela (os botões ficam nos detalhes, ao clicar na linha) */
         @media (min-width: 900px) {
@@ -623,7 +623,7 @@ export default function AdminUsuarios() {
         .au-erro { margin: 0; padding: 12px; border-radius: var(--ui-raio); background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); font-size: 14px; font-weight: 500; line-height: 1.4; }
         .au-j-apoio { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); overflow-wrap: anywhere; }
         .au-atalhos { display: flex; gap: 8px; flex-wrap: wrap; margin-top: -4px; }
-        .au-atalhos button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 600; cursor: pointer; }
+        .au-atalhos button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); /* (10/11) caixa, sem pílula */ background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 600; cursor: pointer; }
         .au-atalhos button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
       `}</style>
       <PainelLoja id={lojaAberta} aoFechar={() => setLojaAberta(null)} rev={rev} acoes={acoesDa(users.find(u => u.id === lojaAberta))} />

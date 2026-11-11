@@ -152,9 +152,9 @@ export default function AdminRegistro() {
         .rg-t { margin: 0; font-size: 22px; font-weight: 600; }
         .rg-sub { margin: 4px 0 16px; font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
         .rg-filtro { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-        .rg-filtro button { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 8px; border: 1px solid var(--ui-borda); border-radius: 99px; background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; }
+        .rg-filtro button { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 8px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; }
         .rg-filtro button:first-child { padding-left: 14px; }
-        .rg-filtro button.on { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
+        .rg-filtro button.on { border-color: var(--ui-texto); background: var(--ui-fundo); color: var(--ui-texto); } /* (10/11) caixa, sem pílula */
         .rg-card { padding: 16px 18px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
         .rg-carr { margin: 12px 0 0; font-size: 14px; color: var(--ui-texto-3); text-align: center; }
         .rg-mais { display: flex; justify-content: center; padding-top: 14px; }

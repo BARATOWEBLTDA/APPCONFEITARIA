@@ -7,7 +7,7 @@ import EscolherPerfil, { AvatarAdmin } from "./EscolherPerfil";
 import { guardarDestinoDoLogin } from "@/lib/destinoLogin";
 import {
   ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images,
-  ChartBar, Lightbulb, Lifebuoy, Target, Cake,
+  Lightbulb, Target, Cake,
   ArrowLeft, SignOut, DotsThreeOutline, CaretRight, X, ClockCounterClockwise, ArrowsLeftRight,
 } from "@phosphor-icons/react";
 
@@ -27,6 +27,8 @@ const menuSections: MenuSection[] = [
     items: [
       { path: "/admin", label: "Painel", icon: <ChartLine size={20} weight="bold" /> },
       { path: "/admin/usuarios", label: "Usuários", icon: <UsersThree size={20} weight="bold" /> },
+      // (10/11) o Registro subiu: no notebook a seção "Análise" ficava escondida embaixo do menu
+      { path: "/admin/registro", label: "Registro", icon: <ClockCounterClockwise size={20} weight="bold" /> },
     ],
   },
   {
@@ -47,14 +49,7 @@ const menuSections: MenuSection[] = [
       { path: "/admin/pixels", label: "Pixels do app", icon: <Target size={20} weight="bold" /> }, // (04/11 · 6.21)
     ],
   },
-  {
-    title: "Análise",
-    items: [
-      { path: "/admin/registro", label: "Registro", icon: <ClockCounterClockwise size={20} weight="bold" /> },
-      { path: "/admin/relatorios", label: "Relatórios", icon: <ChartBar size={20} weight="bold" /> },
-      { path: "/admin/ajuda", label: "Central de Ajuda", icon: <Lifebuoy size={20} weight="bold" /> },
-    ],
-  },
+  // (10/11) saíram a Central de Ajuda (a Central saiu do app) e Relatórios (era só "Em breve")
 ];
 
 // Barra de navegação mobile: 4 telas fixas + "Mais" (resto do menu)
@@ -283,8 +278,8 @@ export default function AdminLayout() {
         .adm-brand-role { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.6); }
         .adm-nav { flex: 1; padding: 8px 12px 20px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.15) transparent; }
         .adm-nav-section { margin-bottom: 4px; }
-        .adm-nav-sec-title { margin: 0; padding: 16px 12px 6px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.5); }
-        .adm-nav-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; margin-bottom: 2px; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: rgba(255,255,255,.75); font-family: inherit; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer; transition: background .15s, color .15s; }
+        .adm-nav-sec-title { margin: 0; padding: 12px 12px 4px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.5); }
+        .adm-nav-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 40px; margin-bottom: 2px; padding: 0 12px; border: 0; border-radius: var(--ui-raio); background: none; color: rgba(255,255,255,.75); font-family: inherit; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer; transition: background .15s, color .15s; }
         .adm-nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; }
         .adm-nav-icon svg { width: 20px; height: 20px; }
         .adm-nav-item:hover { background: rgba(255,255,255,.07); color: var(--ui-branco); }
@@ -309,6 +304,8 @@ export default function AdminLayout() {
         /* Conteúdo */
         .adm-main { flex: 1; min-width: 0; min-height: 100vh; margin-left: 260px; padding: 28px 32px 48px; }
         .adm-main > * { max-width: 1200px; }
+        /* (10/11) títulos com peso 500 no painel todo, como no app (antes 600 e 700) */
+        .adm-main :is(h1, h2, h3) { font-weight: 500; }
         .adm-main .an-root, .adm-main .ab-root, .adm-main .aa-root, .adm-main .ai-root { padding: 0; }
 
         /* Celular: topo, barra de baixo e folha "Mais" */

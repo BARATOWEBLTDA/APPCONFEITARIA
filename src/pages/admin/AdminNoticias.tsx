@@ -334,9 +334,7 @@ export default function AdminNoticias() {
                   <p className="an-card-t">{n.titulo}</p>
                   <p className="an-card-d">{n.descricao || "Sem descrição"}</p>
                   <p className="an-card-meta">
-                    <span className="an-card-slug">/{n.slug}</span>
                     {n.views > 0 && <span><Eye size={12} weight="bold" />{n.views} {n.views === 1 ? "visualização" : "visualizações"}</span>}
-                    <span>Posição {idx + 1}</span>
                   </p>
                 </div>
                 <BotaoIcone className="an-mais" rotulo={`Opções de ${n.titulo}`} variante="limpo" onClick={() => setMenuDe(n)}><DotsThree size={22} weight="bold" /></BotaoIcone>

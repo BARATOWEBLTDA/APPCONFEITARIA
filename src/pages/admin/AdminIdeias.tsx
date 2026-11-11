@@ -324,11 +324,12 @@ export default function AdminIdeias() {
         .ai-card { display: flex; gap: 16px; padding: 16px 4px; border-top: 1px solid var(--ui-linha); }
         .ai-card:first-child { border-top: 0; }
         .ai-main { flex: 1; min-width: 0; }
-        .ai-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-        .ai-tag { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-cinza-texto); }
-        .ai-tag--alto { background: var(--ui-vermelho-fundo); color: var(--ui-vermelho-escuro); }
-        .ai-tag--medio { background: var(--ui-laranja-fundo); color: var(--ui-laranja); }
-        .ai-tag--baixo { background: var(--ui-cinza); color: var(--ui-texto-2); }
+        .ai-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
+        .ai-tag { font-size: 12px; font-weight: 500; color: var(--ui-texto-2); } /* (10/11) em texto, sem pílula */
+        .ai-tag + .ai-tag::before { content: "·"; margin-right: 4px; color: var(--ui-texto-3); }
+        .ai-tag--alto { color: var(--ui-vermelho-escuro); }
+        .ai-tag--medio { color: var(--ui-laranja); }
+        .ai-tag--baixo { color: var(--ui-texto-2); }
         .ai-t { font-size: 15px; font-weight: 600; line-height: 1.4; margin: 0; overflow-wrap: anywhere; }
         .ai-d { font-size: 14px; font-weight: 500; color: var(--ui-texto-2); line-height: 1.5; margin: 4px 0 0; overflow-wrap: anywhere; }
         .ai-meta { font-size: 13px; font-weight: 500; color: var(--ui-texto-3); margin: 8px 0 0; overflow-wrap: anywhere; }
