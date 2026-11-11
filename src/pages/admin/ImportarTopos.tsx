@@ -58,9 +58,19 @@ export default function ImportarTopos({ aberta, aoFechar, cats, topos, categoria
   const inputRef = useRef<HTMLInputElement>(null);
 
   const mudar = (i: number, e: Estado, detalhe?: string) => setItens(l => l.map((x, k) => (k === i ? { ...x, estado: e, detalhe } : x)));
-  const escolher = (fs: FileList | null) => {
-    const zips = [...(fs || [])].filter(f => /\.zip$/i.test(f.name));
-    if (!zips.length) { avisar("Escolha arquivos .zip.", { tipo: "erro" }); return; }
+  const escolher = async (fs: FileList | null) => {
+    const escolhidos = [...(fs || [])].filter(f => /\.zip$/i.test(f.name));
+    if (!escolhidos.length) { avisar("Escolha arquivos .zip.", { tipo: "erro" }); return; }
+    // (11/11) um .zip "pacote" com um .zip de cada topo dentro: cada .zip de dentro vira um topo
+    const zips: File[] = [];
+    for (const z of escolhidos) {
+      try {
+        const dentro = await abrirZip(z);
+        const internos = Object.entries(dentro).filter(([c, d]) => d.length > 0 && /\.zip$/i.test(c) && !/(^|\/)(__MACOSX|\.)/.test(c));
+        if (internos.length) internos.forEach(([c, d]) => zips.push(new File([d as Uint8Array<ArrayBuffer>], c.split("/").pop() || c, { type: "application/zip" })));
+        else zips.push(z);
+      } catch { zips.push(z); /* o erro aparece na hora de importar */ }
+    }
     setTerminou(false);
     // o .zip que deu erro pode ser escolhido de novo (corrigido)
     setItens(l => [...l.filter(x => x.estado !== "pronto" && !(x.estado === "erro" && zips.some(z => z.name === x.zip.name))), ...zips.filter(z => !l.some(x => x.zip.name === z.name && x.estado !== "erro")).map(z => ({ zip: z, nome: nomeDoZip(z.name), estado: "fila" as Estado }))]);
@@ -142,7 +152,7 @@ export default function ImportarTopos({ aberta, aoFechar, cats, topos, categoria
         : <><Botao variante="secundario" onClick={fechar} disabled={rodando}>Cancelar</Botao>
           <Botao onClick={importar} carregando={rodando} disabled={!itens.length || !pendentes}>{pendentes ? `Importar ${pendentes} ${pendentes === 1 ? "topo" : "topos"}` : "Importar"}</Botao></>}>
       <div className="atp-imp">
-        <p className="atp-imp-ap">Um .zip por topo. Dentro dele: o <b>.webp</b> vira a capa e os <b>.png</b> e o <b>.pdf</b> ficam para baixar. O nome do topo é o nome do .zip.</p>
+        <p className="atp-imp-ap">Um .zip por topo (ou um .zip com os .zip de cada topo dentro). Em cada topo: o <b>.webp</b> vira a capa e os <b>.png</b> e o <b>.pdf</b> ficam para baixar. O nome do topo é o nome do .zip.</p>
         <label className="ui-campo">
           <span className="ui-campo-r"><span>Categoria do lote</span></span>
           <select className="atp-imp-sel" value={categoria} onChange={e => setCategoria(e.target.value)} disabled={rodando}>
@@ -152,12 +162,12 @@ export default function ImportarTopos({ aberta, aoFechar, cats, topos, categoria
         </label>
         <label className="atp-imp-ia"><input type="checkbox" checked={comTags} onChange={e => setComTags(e.target.checked)} disabled={rodando} /><span>Gerar as tags com IA<small>Pela capa e pelo nome · cerca de R$ 0,01 por topo</small></span></label>
         <button type="button" className="atp-imp-drop" onClick={() => inputRef.current?.click()} disabled={rodando}
-          onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); if (!rodando) escolher(e.dataTransfer.files); }}>
+          onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); if (!rodando) void escolher(e.dataTransfer.files); }}>
           <UploadSimple size={24} weight="bold" aria-hidden="true" />
           <b>Escolher os .zip</b>
-          <small>ou arraste para cá · pode ser vários de uma vez</small>
+          <small>ou arraste para cá · vários de uma vez ou um .zip com todos</small>
         </button>
-        <input ref={inputRef} type="file" accept=".zip,application/zip" multiple hidden onChange={e => { escolher(e.target.files); e.target.value = ""; }} />
+        <input ref={inputRef} type="file" accept=".zip,application/zip" multiple hidden onChange={e => { const fs = e.target.files; void escolher(fs).then(() => { e.target.value = ""; }); }} />
         {itens.length > 0 && (
           <ul className="atp-imp-lista" aria-live="polite">
             {itens.map((x, k) => (
