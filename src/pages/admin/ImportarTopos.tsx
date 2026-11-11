@@ -66,6 +66,19 @@ async function topoDoZip(z: File): Promise<Omit<Item, "estado">[]> {
   return [{ chave: z.name, nome: nomeDoZip(z.name), abrir: async () => validos.map(([c, d]) => paraFile(c, d)) }];
 }
 
+/** tags da busca pela IA (capa + nome); falhou: devolve [] e o topo entra sem tags */
+export async function gerarTags(capa: Blob, nome: string, nomeCat: string): Promise<string[]> {
+  try {
+    const pequena = await paraWebp(capa, 512, 0.8).catch(() => capa);
+    const r = await apiFetch("/api/tags-topo", {
+      method: "POST", headers: { "Content-Type": "application/json" }, signal: AbortSignal.timeout(30000),
+      body: JSON.stringify({ nome, categoria: nomeCat, imagem: await emBase64(pequena), tipo: pequena.type || "image/webp" }),
+    });
+    const j = await r.json().catch(() => null);
+    return Array.isArray(j?.tags) ? (j.tags as unknown[]).map(String).slice(0, 30) : [];
+  } catch { return []; /* sem tags: o topo entra mesmo assim, dá para pôr depois */ }
+}
+
 type Props = {
   aberta: boolean;
   aoFechar: () => void;
@@ -123,17 +136,6 @@ export default function ImportarTopos({ aberta, aoFechar, cats: catsIniciais, to
     void registrar(`criou a categoria de topos "${nome}"`, { tipo: "topos" });
   };
 
-  const gerarTags = async (capa: File, nome: string, nomeCat: string): Promise<string[]> => {
-    try {
-      const pequena = await paraWebp(capa, 512, 0.8).catch(() => capa);
-      const r = await apiFetch("/api/tags-topo", {
-        method: "POST", headers: { "Content-Type": "application/json" }, signal: AbortSignal.timeout(30000),
-        body: JSON.stringify({ nome, categoria: nomeCat, imagem: await emBase64(pequena), tipo: pequena.type || "image/webp" }),
-      });
-      const j = await r.json().catch(() => null);
-      return Array.isArray(j?.tags) ? (j.tags as unknown[]).map(String).slice(0, 30) : [];
-    } catch { return []; /* sem tags: o topo entra mesmo assim, dá para pôr depois */ }
-  };
 
   const importar = async () => {
     if (!categoria) { avisar("Escolha a categoria.", { tipo: "erro" }); return; }
@@ -225,7 +227,7 @@ export default function ImportarTopos({ aberta, aoFechar, cats: catsIniciais, to
           : <><Botao variante="secundario" onClick={fechar}>Cancelar</Botao>
             <Botao onClick={importar} disabled={!pendentes || lendo}>{pendentes ? `Importar ${pendentes} ${pendentes === 1 ? "topo" : "topos"}` : "Importar"}</Botao></>}>
       <div className="atp-imp">
-        <p className="atp-imp-ap">Em cada topo, o <b>.webp</b> vira a capa e os <b>.png</b> e o <b>.pdf</b> ficam para baixar. Pode mandar um .zip por topo, um .zip com os .zip de cada topo dentro, ou um .zip com uma pasta para cada topo.</p>
+        <p className="atp-imp-ap">O <b>.webp</b> vira a capa; o <b>.png</b> e o <b>.pdf</b> ficam para baixar. Vale um .zip por topo, um .zip com vários .zip dentro ou uma pasta por topo.</p>
 
         <div className="ui-campo">
           <span className="ui-campo-r"><span>Categoria do lote</span></span>
@@ -250,13 +252,13 @@ export default function ImportarTopos({ aberta, aoFechar, cats: catsIniciais, to
           <span className="ui-campo-r" id="atp-imp-rep"><span>Se o nome já existir nesta categoria</span></span>
           <CaixasEscolha<"pular" | "substituir"> rotuloId="atp-imp-rep" valor={repetido} onMudar={v => { if (!rodando) setRepetido(v); }} opcoes={[
             { v: "pular", t: "Pular", sub: "O topo que já existe fica como está" },
-            { v: "substituir", t: "Substituir os arquivos", sub: "Troca a capa, os arquivos e as tags pelos novos" },
+            { v: "substituir", t: "Substituir os arquivos", sub: "Troca capa, arquivos e tags" },
           ]} />
         </div>
 
         <div className="atp-imp-checks">
-          <label className="atp-imp-ia"><input type="checkbox" checked={comTags} onChange={e => setComTags(e.target.checked)} disabled={rodando} /><span>Gerar as tags com IA<small>Pela capa e pelo nome · cerca de R$ 0,01 por topo</small></span></label>
-          <label className="atp-imp-ia"><input type="checkbox" checked={escondido} onChange={e => setEscondido(e.target.checked)} disabled={rodando} /><span>Deixar escondidos para eu conferir<small>Entram desmarcados em “Visível”; você libera depois</small></span></label>
+          <label className="atp-imp-ia"><input type="checkbox" checked={comTags} onChange={e => setComTags(e.target.checked)} disabled={rodando} /><span>Gerar as tags com IA<small>Cerca de R$ 0,01 por topo</small></span></label>
+          <label className="atp-imp-ia"><input type="checkbox" checked={escondido} onChange={e => setEscondido(e.target.checked)} disabled={rodando} /><span>Deixar escondidos para eu conferir<small>Você libera depois em “Visível”</small></span></label>
         </div>
 
         <button type="button" className="atp-imp-drop" onClick={() => inputRef.current?.click()} disabled={rodando || lendo}

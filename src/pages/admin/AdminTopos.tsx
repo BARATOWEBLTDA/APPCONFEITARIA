@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { registrar } from "@/lib/adminPerfil";
-import { Cake, Crop, FileZip, Image as ImageIcon, PencilSimple, Plus, Trash, UploadSimple, WarningCircle, X } from "@phosphor-icons/react";
+import { Cake, Crop, FileZip, Sparkle, Image as ImageIcon, PencilSimple, Plus, Trash, UploadSimple, WarningCircle, X } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base";
 import { paraWebp } from "@/lib/imagemLeve";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -9,7 +9,7 @@ import {
   ACEITA_ARQUIVOS, ACEITA_IMAGEM, BUCKET_ARQUIVOS, BUCKET_CAPAS, carregarCategorias, carregarTopos, ehImagem, formatoDe, nomeSeguro, tamanhoTexto,
   type ArquivoTopo, type CategoriaTopo, type Topo,
 } from "@/lib/toposBolo";
-import ImportarTopos from "./ImportarTopos";
+import ImportarTopos, { gerarTags } from "./ImportarTopos";
 import "./admin-topos.css";
 
 /**
@@ -53,6 +53,19 @@ export default function AdminTopos() {
   const [novaCat, setNovaCat] = useState<{ id?: string; nome: string; img: File | null; imgUrl: string | null } | null>(null);
   const capaRef = useRef<HTMLInputElement>(null);
   const [tagTxt, setTagTxt] = useState("");
+  // (11/11) gerar as tags pela IA também no topo avulso (antes só à mão, vindas do ChatGPT)
+  const [gerandoTags, setGerandoTags] = useState(false);
+  const gerarTagsDoForm = async () => {
+    if (!form) return;
+    let fonte: Blob | null = form.capa || form.novos.find(f => ehImagem(f.name)) || null;
+    if (!fonte && form.capaUrl) { try { const r = await fetch(form.capaUrl); if (r.ok) fonte = await r.blob(); } catch { /* sem capa */ } }
+    if (!fonte) { avisar("Escolha a capa primeiro: a IA olha a imagem.", { tipo: "info" }); return; }
+    setGerandoTags(true);
+    const t = await gerarTags(fonte, form.titulo.trim(), cats.find(c => c.id === form.categoria_id)?.nome || "");
+    setGerandoTags(false);
+    if (!t.length) { avisar("Não deu para gerar as tags agora. Tente de novo.", { tipo: "erro" }); return; }
+    setForm(f => f && { ...f, tags: [...new Set([...f.tags, ...t])].slice(0, 30) });
+  };
   // (09/11) ajustar a miniatura: recorta 3×4 a partir da imagem original do topo (sem perder qualidade a cada ajuste)
   const [recorte, setRecorte] = useState<string | null>(null);
   const [preparando, setPreparando] = useState(false);
@@ -199,7 +212,7 @@ export default function AdminTopos() {
 
   return (
     <div className="atp-root">
-      <Titulo nivel="tela" apoio="Topos que as confeiteiras veem em Ferramentas › Topos de bolo. Todas veem as capas; só a PRO baixa os arquivos.">Topos de bolo</Titulo>
+      <Titulo nivel="tela" apoio="Todas veem as capas; só a PRO baixa os arquivos.">Topos de bolo</Titulo>
 
       {semTabela ? (
         <p className="atp-aviso"><WarningCircle size={18} weight="bold" aria-hidden="true" /><span>As tabelas ainda não existem. Rode o SQL topos_de_bolo.sql no Supabase.</span></p>
@@ -263,30 +276,21 @@ export default function AdminTopos() {
               {(form.capa || form.capaUrl || form.novos.some(f => ehImagem(f.name)) || form.arquivos.some(a => ehImagem(a.nome))) && (
                 <button type="button" className="atp-ajustar" onClick={abrirAjuste} disabled={preparando}><Crop size={16} weight="bold" />{preparando ? "Abrindo…" : "Ajustar miniatura"}</button>
               )}
-              <button type="button" className="atp-trocar" onClick={() => capaRef.current?.click()}>Trocar imagem</button>
+              <button type="button" className="atp-trocar" onClick={() => capaRef.current?.click()}>{form.capa || form.capaUrl ? "Trocar a capa" : "Escolher a capa"}</button>
             </div>
             <div className="atp-form-dados">
               <Campo rotulo="Título" placeholder="Ex.: Festa de Halloween" maxLength={40} value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} />
-              {/* (09/11) tags: só pra busca achar o topo (não aparecem pra confeiteira) */}
-              <div className="ui-campo">
-                <span className="ui-campo-r"><span>Tags da busca</span><small>não aparecem no app · Enter ou vírgula pra separar</small></span>
-                <div className="ui-campo-c atp-tags" onClick={e => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus()}>
-                  {form.tags.map(t => <span key={t} className="atp-tag">{t}<button type="button" aria-label={`Tirar ${t}`} onClick={() => setForm({ ...form, tags: form.tags.filter(x => x !== t) })}><X size={12} weight="bold" /></button></span>)}
-                  <input placeholder={form.tags.length ? "" : "Ex.: bruxa, abóbora, festa, terror"} value={tagTxt}
-                    onChange={e => { const v = e.target.value; if (/[,;]$/.test(v)) { addTags(v); } else setTagTxt(v); }}
-                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addTags(tagTxt); } else if (e.key === "Backspace" && !tagTxt && form.tags.length) setForm({ ...form, tags: form.tags.slice(0, -1) }); }}
-                    onBlur={() => addTags(tagTxt)} />
-                </div>
-              </div>
-              <div className="ui-campo">
+              {/* (11/11) categoria numa lista (antes uma fila de botões que quebrava no celular) */}
+              <label className="ui-campo">
                 <span className="ui-campo-r"><span>Categoria</span></span>
-                <div className="atp-cat-esc">
-                  {cats.map(c => <button key={c.id} type="button" className={form.categoria_id === c.id ? "on" : ""} onClick={() => setForm({ ...form, categoria_id: c.id })}>{c.nome}</button>)}
-                  <button type="button" className="atp-cat-nova" onClick={() => setNovaCat({ nome: "", img: null, imgUrl: null })}><Plus size={14} weight="bold" />Nova</button>
-                </div>
-              </div>
+                <select className="atp-imp-sel" value={form.categoria_id} onChange={e => { if (e.target.value === "__nova") setNovaCat({ nome: "", img: null, imgUrl: null }); else setForm({ ...form, categoria_id: e.target.value }); }}>
+                  <option value="">Escolha…</option>
+                  {cats.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                  <option value="__nova">+ Nova categoria…</option>
+                </select>
+              </label>
               <div className="ui-campo">
-                <span className="ui-campo-r"><span>Arquivos</span><small>PNG, JPG, PDF, Studio · até 50 MB cada</small></span>
+                <span className="ui-campo-r"><span>Arquivos para baixar</span></span>
                 <div className="atp-arqs">
                   {form.arquivos.map(a => (
                     <div key={a.caminho} className="atp-arq"><em>{a.formato}</em><span>{a.nome}</span><small>{tamanhoTexto(a.tamanho)}</small>
@@ -296,9 +300,21 @@ export default function AdminTopos() {
                     <div key={`n${i}`} className="atp-arq novo"><em>{formatoDe(f.name)}</em><span>{f.name}</span><small>{tamanhoTexto(f.size)}</small>
                       <BotaoIcone rotulo="Tirar" variante="limpo" tamanho="p" onClick={() => setForm({ ...form, novos: form.novos.filter((_, k) => k !== i) })}><X size={14} /></BotaoIcone></div>
                   ))}
-                  <button type="button" className="atp-add" onClick={() => arqRef.current?.click()}><UploadSimple size={16} weight="bold" />Adicionar arquivos</button>
+                  <button type="button" className="atp-add" onClick={() => arqRef.current?.click()}><UploadSimple size={18} weight="bold" /><span>Adicionar arquivos<small>PNG, PDF, JPG ou Studio · até 50 MB cada</small></span></button>
                   <input ref={arqRef} type="file" accept={ACEITA_ARQUIVOS} multiple hidden onChange={e => { const fs = Array.from(e.target.files || []); e.target.value = ""; if (fs.length) setForm({ ...form, novos: [...form.novos, ...fs] }); }} />
                 </div>
+              </div>
+              {/* (09/11) tags: só pra busca achar o topo (não aparecem pra confeiteira) */}
+              <div className="ui-campo">
+                <span className="ui-campo-r"><span>Tags da busca</span><button type="button" className="ui-ia atp-tags-ia" onClick={gerarTagsDoForm} disabled={gerandoTags}><Sparkle size={15} weight="fill" aria-hidden="true" />{gerandoTags ? "Gerando…" : "Gerar com IA"}</button></span>
+                <div className="ui-campo-c atp-tags" onClick={e => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus()}>
+                  {form.tags.map(t => <span key={t} className="atp-tag">{t}<button type="button" aria-label={`Tirar ${t}`} onClick={() => setForm({ ...form, tags: form.tags.filter(x => x !== t) })}><X size={12} weight="bold" /></button></span>)}
+                  <input placeholder={form.tags.length ? "" : "Ex.: bruxa, abóbora, festa"} value={tagTxt} enterKeyHint="done"
+                    onChange={e => { const v = e.target.value; if (/[,;]$/.test(v)) { addTags(v); } else setTagTxt(v); }}
+                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addTags(tagTxt); } else if (e.key === "Backspace" && !tagTxt && form.tags.length) setForm({ ...form, tags: form.tags.slice(0, -1) }); }}
+                    onBlur={() => addTags(tagTxt)} />
+                </div>
+                <small className="atp-dica">Separe com vírgula. Não aparecem no app, só ajudam a busca.</small>
               </div>
               {/* (09/11) link do modelo no Canva: na confeiteira vira "Editar no Canva" (só PRO) */}
               <Campo rotulo="Link do Canva" opcional type="url" inputMode="url" placeholder="https://www.canva.com/design/…" value={form.canva}
