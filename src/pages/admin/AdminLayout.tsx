@@ -6,7 +6,7 @@ import { NomeDoonly } from "@/components/marca/Mascote";
 import { perfilAtual, escolherPerfil, EVENTO_PERFIL, type PerfilAdmin } from "@/lib/adminPerfil";
 import EscolherPerfil, { AvatarAdmin } from "./EscolherPerfil";
 import { guardarDestinoDoLogin } from "@/lib/destinoLogin";
-import { ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images, Lightbulb, Target, Cake, ArrowLeft, SignOut, DotsThreeOutline, CaretRight, ClockCounterClockwise, ArrowsLeftRight } from "@phosphor-icons/react";
+import { ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images, Lightbulb, Target, Cake, ArrowLeft, SignOut, DotsThreeOutline, CaretRight, ClockCounterClockwise, ArrowsLeftRight, IdentificationBadge } from "@phosphor-icons/react";
 
 interface MenuItem {
   path: string;
@@ -26,6 +26,7 @@ const menuSections: MenuSection[] = [
       { path: "/admin/usuarios", label: "Usuários", icon: <UsersThree size={20} weight="bold" /> },
       // (10/11) o Registro subiu: no notebook a seção "Análise" ficava escondida embaixo do menu
       { path: "/admin/registro", label: "Registro", icon: <ClockCounterClockwise size={20} weight="bold" /> },
+      { path: "/admin/equipe", label: "Equipe", icon: <IdentificationBadge size={20} weight="bold" /> }, // (11/11) nome e foto de cada admin
     ],
   },
   {

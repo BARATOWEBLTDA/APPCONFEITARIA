@@ -5,6 +5,7 @@ import { NavLink, Navigate, Outlet, useNavigate, useLocation, useNavigationType 
 import { emModoSuporte } from "@/lib/supabase";
 import { rotaPermitidaNoSuporte } from "@/lib/acessoSuporte";
 import FaixaSuporte from "@/components/suporte/FaixaSuporte";
+import ConviteSuporte from "@/components/suporte/ConviteSuporte";
 import { avisar } from "@/components/base";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
 
@@ -225,7 +226,7 @@ export default function Layout() {
 
   return (
     <div className={`layout-root${recolhido ? " menu-recolhido" : ""}`} data-rota={location.pathname} data-suporte={emModoSuporte ? "" : undefined}>
-      {emModoSuporte && <FaixaSuporte />}
+      {emModoSuporte ? <FaixaSuporte /> : <ConviteSuporte />}
       {/* (13/10) as telas do Cardápio digital agora têm abas na faixa rosa (AppPageHeader), não um 2º menu lateral */}
       {/* ── Sidebar Desktop ── */}
       <aside className="sidebar" aria-label="Menu">

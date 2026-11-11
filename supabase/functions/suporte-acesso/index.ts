@@ -58,7 +58,7 @@ serve(async (req) => {
       // quem pediu: o perfil do painel admin (Bruno, Anthony…), lido do banco (não confia no nome que veio do navegador)
       const { data: pa } = perfilId ? await admin.from("admin_perfis").select("nome, foto_url, cor").eq("id", perfilId).maybeSingle() : { data: null };
       const quem = pa?.nome || "Equipe Doonly";
-      const { data: novo, error } = await admin.from("acessos_suporte").insert({ user_id: userId, pedido_por: user.email, pedido_por_nome: pa?.nome || null, pedido_por_foto: pa?.foto_url || null, pedido_por_cor: pa?.cor || null }).select("*").single();
+      const { data: novo, error } = await admin.from("acessos_suporte").insert({ user_id: userId, pedido_por: user.email, pedido_por_perfil: pa ? perfilId : null, pedido_por_nome: pa?.nome || null, pedido_por_foto: pa?.foto_url || null, pedido_por_cor: pa?.cor || null }).select("*").single();
       if (error) throw error;
       await admin.from("acessos_suporte_log").insert({ acesso_id: novo.id, user_id: userId, evento: "pedido" });
       await admin.from("notificacoes").insert({

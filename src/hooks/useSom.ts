@@ -72,9 +72,14 @@ const tocarArquivo = (nome: string, ganho = 1, canal = false): boolean => {
   if (canal) { noCanal = src; src.onended = () => { if (noCanal === src) noCanal = null } }
   return true
 }
+/** (11/11) o convite do acesso de suporte: um toque curto (~2s, o início do toque suave). Respeita o "Som dos avisos". */
+export const tocarSomSuporte = (): void => {
+  if (!somAvisosHabilitado()) return
+  if (!tocarArquivo('suporte', 0.7)) window.setTimeout(() => tocarArquivo('suporte', 0.7), 700)
+}
 /** deixa os sons prontos no primeiro toque na tela (o navegador só libera áudio depois de um toque) */
 if (typeof window !== 'undefined') {
-  const preparar = () => { (['aviso', 'erro', 'venda'] as GrupoSom[]).forEach(g => carregarArquivo(arquivoDe(g))); const t = toqueEscolhido(); if (t === 'suave') carregarArquivo('pedido-suave'); if (t === 'minimal') carregarArquivo('pedido-minimal'); window.removeEventListener('pointerdown', preparar) }
+  const preparar = () => { (['aviso', 'erro', 'venda'] as GrupoSom[]).forEach(g => carregarArquivo(arquivoDe(g))); carregarArquivo('suporte'); const t = toqueEscolhido(); if (t === 'suave') carregarArquivo('pedido-suave'); if (t === 'minimal') carregarArquivo('pedido-minimal'); window.removeEventListener('pointerdown', preparar) }
   window.addEventListener('pointerdown', preparar, { passive: true })
 }
 

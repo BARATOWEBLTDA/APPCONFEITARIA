@@ -84,3 +84,15 @@ end $$;
 
 -- (11/11) quem pediu (perfil do painel admin): nome, foto e cor, para o convite da confeiteira
 alter table public.acessos_suporte add column if not exists pedido_por_nome text, add column if not exists pedido_por_foto text, add column if not exists pedido_por_cor text;
+
+-- (11/11) Equipe no Admin: a gestão edita nome, foto e cor de cada perfil; o convite acompanha a mudança
+create policy admin_perfis_editar on public.admin_perfis for update using (eh_admin()) with check (eh_admin());
+alter table public.acessos_suporte add column if not exists pedido_por_perfil text;
+update public.acessos_suporte s set pedido_por_perfil = p.id from public.admin_perfis p where s.pedido_por_perfil is null and s.pedido_por_nome = p.nome;
+create or replace function public.admin_perfil_propagar() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  update public.acessos_suporte set pedido_por_nome = new.nome, pedido_por_foto = new.foto_url, pedido_por_cor = new.cor where pedido_por_perfil = new.id;
+  return new;
+end $$;
+drop trigger if exists admin_perfil_propagar on public.admin_perfis;
+create trigger admin_perfil_propagar after update of nome, foto_url, cor on public.admin_perfis for each row execute function public.admin_perfil_propagar();

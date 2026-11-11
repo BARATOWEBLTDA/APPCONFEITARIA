@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { Cake, ChatCircleText, LockSimple, PaintBrush, Storefront, Ticket } from "@phosphor-icons/react";
 import { Botao, Janela, avisar } from "@/components/base";
+import { BotaoFechar } from "@/components/base/BotoesX";
 import { lerAcesso, quemPediu, responderAcesso, type AcessoSuporte } from "@/lib/acessoSuporte";
 
 /** a foto de quem pediu (sem foto: a inicial na cor do perfil), com o selo da Doonly no canto */
@@ -36,7 +37,8 @@ const PODE = [
   { Ic: Ticket, t: "Cupons e Pixel", s: "Descontos e anúncios" },
 ];
 
-export default function JanelaAcessoSuporte({ id, aberta, aoFechar }: { id: string | null; aberta: boolean; aoFechar: (respondeu?: boolean) => void }) {
+/** telaCheia: o convite que abre sozinho ao entrar no app (no celular cobre a tela; o X é "ver depois") */
+export default function JanelaAcessoSuporte({ id, aberta, aoFechar, telaCheia = false }: { id: string | null; aberta: boolean; aoFechar: (respondeu?: boolean) => void; telaCheia?: boolean }) {
   const [salvando, setSalvando] = useState<"sim" | "nao" | null>(null);
   const [acesso, setAcesso] = useState<AcessoSuporte | null>(null);
   useEffect(() => {
@@ -58,12 +60,13 @@ export default function JanelaAcessoSuporte({ id, aberta, aoFechar }: { id: stri
     setSalvando(null);
   };
   return (
-    <Janela aberta={aberta} aoFechar={() => aoFechar()} className="jas-janela"
+    <Janela aberta={aberta} aoFechar={() => aoFechar()} className={`jas-janela${telaCheia ? " jas-cheia" : ""}`} travada={telaCheia}
       icone={<AvatarSuporte acesso={acesso} tamanho={72} />}
       titulo={nome}
       texto={pessoa ? "Da equipe Doonly · pediu acesso de suporte" : "Pediu acesso de suporte à sua loja"}
       acoes={<><Botao variante="secundario" carregando={salvando === "nao"} disabled={!!salvando} onClick={() => responder(false)}>Agora não</Botao>
         <Botao carregando={salvando === "sim"} disabled={!!salvando} onClick={() => responder(true)} data-foco-inicial>Permitir por 7 dias</Botao></>}>
+      {telaCheia && <BotaoFechar rotulo="Ver depois" className="jas-x" onClick={() => aoFechar()} />}
       <div className="jas">
         <p className="jas-t">O que {pessoa ? `o ${nome}` : "a equipe"} pode fazer no cardápio</p>
         <ul className="jas-l">
@@ -80,6 +83,13 @@ export default function JanelaAcessoSuporte({ id, aberta, aoFechar }: { id: stri
       <style>{`
         .jas-janela .ui-janela-pe { grid-template-columns: auto 1fr; }
         .jas-janela .ui-janela-pe .ui-bt:first-child { padding-inline: 18px; }
+        .jas-janela { position: relative; }
+        .jas-x { position: absolute; top: 8px; right: 8px; z-index: 1; }
+        @media (max-width: 767px) {
+          .ui-janela.jas-cheia { max-width: none; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+          .jas-cheia .ui-janela-alca { display: none; }
+          .jas-cheia .ui-janela-corpo { display: flex; flex-direction: column; justify-content: center; padding-top: calc(28px + env(safe-area-inset-top, 0px)); }
+        }
         .jas-janela .ui-janela-ic { width: auto; height: auto; background: none; margin-bottom: 10px; }
         .jas { margin-top: 18px; text-align: left; }
         .jas-t { margin: 0 0 8px; font-size: 14px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -83,6 +83,7 @@ const AdminBannersProntos = lazy(() => import("@/pages/admin/AdminBannersProntos
 const AdminNoticias = lazy(() => import("@/pages/admin/AdminNoticias"));
 const AdminIdeias = lazy(() => import("@/pages/admin/AdminIdeias"));
 const AdminAutores = lazy(() => import("@/pages/admin/AdminAutores"));
+const AdminEquipe = lazy(() => import("@/pages/admin/AdminEquipe"));
 const Configuracoes = lazy(() => import("@/pages/Configuracoes"));
 const NotificacoesSons = lazy(() => import("@/pages/NotificacoesSons"));
 const MensagensWhatsApp = lazy(() => import("@/pages/MensagensWhatsApp"));
@@ -639,6 +640,7 @@ export default function App() {
           <Route path="noticias" element={<AdminNoticias />} />
           <Route path="ideias" element={<AdminIdeias />} />
           <Route path="autores" element={<AdminAutores />} />
+          <Route path="equipe" element={<AdminEquipe />} />
           <Route path="relatorios" element={<Navigate to="/admin" replace />} />
           <Route path="ajuda" element={<Navigate to="/admin" replace />} />
         </Route>
