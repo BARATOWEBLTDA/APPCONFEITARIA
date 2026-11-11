@@ -1160,29 +1160,33 @@ const CSS = `
     .ui-janela:has(.ppf-pe) .ui-janela-pe { display: flex; justify-content: flex-end; }
     .ui-janela:has(.ppf-pe) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
     .ui-janela:has(.ppf-pe--pag) { width: min(520px, calc(100vw - 48px)); max-width: none; }
-    .ui-janela:has(.ppf-pe--ent) { width: min(1000px, calc(100vw - 48px)); max-width: none; max-height: min(94dvh, 860px); }
+    .ui-janela:has(.ppf-pe--ent) { width: min(1000px, calc(100vw - 48px)); max-width: none; max-height: min(94dvh, 1000px); }
+    .ui-janela.fo--cheia:has(.ppf-pe--ent) { height: min(94dvh, 1000px); } /* (11/11) cabe a taxa sem rolar (antes travava em 860) */
     .ppf-pe .ep { width: 100%; max-width: none; margin: 18px 0 0; padding: 0; }
     .ppf-pe .ep-card { padding: 0; gap: 12px; border: 0; border-radius: 0; background: none; box-shadow: none; }
     .ppf-pe--pag .ep { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
     /* (6.63) o passo usa o editor da Minha loja (um cartão só): à esquerda as escolhas, à direita o mapa no topo */
-    .ppf-pe--ent { min-height: min(680px, calc(94dvh - 196px)); } /* já no tamanho maior: não cresce ao mexer */
+    .ppf-pe--ent { min-height: 0; } /* já no tamanho maior: não cresce ao mexer */
     .ppf-pe--ent .ep { display: block; }
     .ppf-pe--ent .ep-card { width: 100%; max-width: none; box-sizing: border-box;  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 32px; row-gap: 12px; align-items: start; }
-    .ppf-pe--ent .ep-card { grid-template-rows: auto auto auto 1fr; align-content: start; }
+    .ppf-pe--ent .ep-card { grid-template-rows: auto auto auto auto; align-content: start; }
+    .ppf-pe--ent .ep-card > .ep-cab { display: none; }
     .ppf-pe--ent .ep-card > * { min-width: 0; align-self: start; }
     /* esquerda: o título e como cobrar · direita: o mapa no topo e as formas de entrega embaixo dele */
     .ppf-pe--ent .ep-card > :first-child { grid-column: 1; grid-row: 1; }
-    .ppf-pe--ent .ep-card > .ep-taxa { grid-column: 1; grid-row: 2 / span 3; max-width: none; padding-top: 0; border-top: 0; }
-    .ppf-pe--ent .ep-card > .ep-mapa-topo { grid-column: 2; grid-row: 1 / span 2; width: 100%; }
+    .ppf-pe--ent .ep-card > .ep-taxa { grid-column: 2; grid-row: 3 / span 2; max-width: none; padding-top: 0; border-top: 0; }
+    .ppf-pe--ent .ep-card > .ep-mapa-topo { grid-column: 2; grid-row: 1 / span 2; width: 100%; } /* (11/11) escolhas na esquerda; mapa e taxa na direita */ /* (11/11) as escolhas na esquerda e o mapa na direita, no topo */
     .ppf-pe--ent .ep-card > .ep-mapa-topo > * { width: 100% !important; }
-    .ppf-pe--ent .ep-card > p.ep-modo-t { grid-column: 2; grid-row: 3; margin: 4px 0 0; }
-    .ppf-pe--ent .ep-card > :last-child:not(.ep-taxa):not(.ep-mapa-topo) { grid-column: 2; grid-row: 4; }
-    .ppf-pe--ent .mpr, .ppf-pe--ent .ep-mapa-topo .mpe { height: 240px !important; }
+    .ppf-pe--ent .ep-card > p.ep-modo-t { grid-column: 1; grid-row: 1; margin: 0; }
+    .ppf-pe--ent .ep-card > :last-child:not(.ep-taxa):not(.ep-mapa-topo) { grid-column: 1; grid-row: 2 / span 3; }
+    .ppf-pe--ent .mpr, .ppf-pe--ent .ep-mapa-topo .mpe { height: 200px !important; }
   }
   /* (30/10 · 5.21) celular: o editor completo da entrega numa coluna só */
   @media (max-width: 900px) { .ppf-pe .ep { display: flex; flex-direction: column; align-items: stretch; gap: 16px; max-width: none; margin: 12px 0 0; padding: 0; } .ppf-pe .ep-card { padding: 0; border: 0; background: none; box-shadow: none; } .ppf-pe .ep-card--taxa .ep-taxa { padding-top: 0; border-top: 0; } }
+  /* (11/11) na janela do passo, sem o cabeçalho "Formas de entrega" com ícone rosa (repetia o título da lista) */
+  .ppf-pe--ent .ep-cab { display: none; }
   /* (29/10 · 5.20) notebook de tela baixa (1366×768, 1280×720): tudo um pouco mais compacto pra não rolar */
-  @media (max-height: 820px) {
+  @media (min-width: 901px) and (max-height: 820px) { /* (11/11) só no computador: no celular as opções ficavam espremidas (48px) */
     .ppf-pe--ent .mpr, .ppf-pe--ent .ep-mapa-topo .mpe { height: 200px !important; }
     .ppf-pe .lch-l { min-height: 46px; padding-top: 3px; padding-bottom: 3px; }
     .ppf-pe .ep-faixas .ep-faixa { padding-top: 4px; padding-bottom: 4px; }

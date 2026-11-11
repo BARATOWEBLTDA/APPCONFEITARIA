@@ -40,8 +40,9 @@ const CSS = `
   .lch-it + .lch-it { border-top: 1px solid var(--ui-linha); }
   .lch-l { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 62px; margin: 0; padding: 8px 12px; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .lch-l:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: -3px; }
-  .lch-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; background: #F3EEF1; color: var(--ui-texto-3); transition: background .2s, color .2s; }
-  .lch-l.on .lch-ic { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
+  .lch-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; background: var(--ui-branco); border: 1px solid var(--ui-borda); box-sizing: border-box; color: var(--ui-texto-3); transition: background .2s, color .2s; }
+  /* (11/11) caixinha branca com borda fina (padrão do app); ligada, só o ícone fica rosa */
+  .lch-l.on .lch-ic { background: var(--ui-branco); color: var(--ui-rosa-escuro); }
   .lch-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .lch-tx b { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lch-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
