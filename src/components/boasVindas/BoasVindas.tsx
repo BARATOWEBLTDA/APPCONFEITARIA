@@ -577,7 +577,7 @@ function DemoPedidos() {
         <div className="pdk-abas">
           {abas.map(([k, nome, n, on]) => (
             <span key={k} className={`pdk-aba${k === 'aceitar' && n ? ' alerta' : ''}`} aria-selected={on}>
-              <span className="pdk-aba-t">{nome}</span><i key={`${k}${n}`} className="bv-pd-n">{n}</i>
+              <span className="pdk-aba-t">{nome}</span>{n > 0 && <i key={`${k}${n}`} className="bv-pd-n">{n}</i>}
             </span>
           ))}
         </div>

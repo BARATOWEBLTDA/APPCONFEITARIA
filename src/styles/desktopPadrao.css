@@ -66,7 +66,7 @@
   }
   html body .ui-bt.pd-passo:active:not(:disabled), html body .ag3 .ui-bt--vinho:active:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--ui-rosa) !important; background: var(--ui-rosa-claro); }
   /* Registrar recebimento: verde */
-  html body .ui-bt.tpd-receber { --bt-fundo: #15803D; --bt-cor: var(--ui-branco); --bt-sombra: #166534; }
+  html body .ui-bt.tpd-receber { --bt-fundo: var(--ui-branco); --bt-cor: var(--ui-rosa-escuro); --bt-sombra: transparent; } /* (11/11) contorno rosa, igual ao celular */
   /* Pagar: um estilo só, vermelho claro */
   html body .pf-bt--pagar, html body .ntf-acao--pagar, html body .fap-bts .ui-bt {
     background: #FEF2F2 !important; color: var(--ui-vermelho) !important; border-color: transparent !important; box-shadow: none !important;

@@ -439,11 +439,8 @@
 .bv-pd-vazio b { font-size: 16px; font-weight: 600; }
 .bv-pd-vazio small { max-width: 220px; font-size: 13.5px; line-height: 1.45; color: var(--ui-texto-2); }
 /* as abas do celular (número em cima, nome embaixo), em qualquer tamanho de tela */
-.bv-pd .pdk-abas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 14px 0 14px; overflow: visible; }
-.bv-pd .pdk-aba { flex-direction: column-reverse; justify-content: center; gap: 2px; height: 54px; padding: 0 4px; font-size: 12.5px; transition: background-color .3s ease, color .3s ease, border-color .3s ease; }
-.bv-pd .pdk-aba i { min-width: 0; height: auto; padding: 0; background: none !important; font-size: 15px; font-weight: 600; line-height: 1.2; color: inherit; }
-.bv-pd .pdk-aba.alerta i { color: #B45309; }
-.bv-pd .pdk-aba[aria-selected="true"].alerta i { color: #FFD9A8; }
+.bv-pd .pdk-abas { margin: 10px 0 12px; overflow: visible; }
+.bv-pd .pdk-aba { padding: 0 4px; font-size: 13px; transition: color .3s ease, border-color .3s ease; }
 .bv-pd .pdk-aba-sem { visibility: hidden; display: block; }
 .bv-pd-n { animation: bvValor .45s cubic-bezier(.34, 1.56, .64, 1); }
 /* o pedido: a linha do app e, quando aceito, tudo embaixo */

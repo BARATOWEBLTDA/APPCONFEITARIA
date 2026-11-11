@@ -2,7 +2,6 @@ import { nomeExtra, textoSaboresKit } from '@/lib/kitTexto'
 import { COMO_PEDIDO, TOUR_PEDIDO } from "@/lib/comoTelas";
 import CalendarioSheet from '@/components/CalendarioSheet'
 import { explicarErro } from '@/lib/erros'
-import CampoData from '@/components/CampoData'
 import { DotsThree, Check, Plus, Trash, PencilSimple, ArrowUp, ArrowCounterClockwise, CalendarBlank, Image as ImageIcon, CaretRight, Phone, Cake } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { type DialogoOpcoes, type IconeDialogo } from '@/components/DialogoApp'
@@ -271,7 +270,7 @@ export default function EditarPedido() {
   useEffect(() => {
     if (tab === 'itens') return
     const t = window.setTimeout(() => {
-      const el = document.querySelector<HTMLElement>(tab === 'entrega' ? '.tpd-quando-card' : '.ep2-col-dir > .ep2-card:not(.tpd-cli-card)')
+      const el = document.querySelector<HTMLElement>(tab === 'entrega' ? '.tpd-quando-card' : '.ep2-col-dir > .ep2-card:not(.tpd-cli-card):not(.tpd-valores)')
       if (el && el.getClientRects().length) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' })
     }, 700)
     return () => window.clearTimeout(t)
@@ -321,6 +320,9 @@ export default function EditarPedido() {
   const [modalCliente, setModalCliente] = useState(false)
   // (27/10) recado do cliente para o pedido todo (vem do cardápio): antes ficava gravado e não aparecia em lugar nenhum
   const [recadoAberto, setRecadoAberto] = useState(false)
+  // (11/11) Quando e onde: resumo; "Alterar" abre a escolha. combAberto: o calendário do "O resto"
+  const [quandoAberto, setQuandoAberto] = useState(false)
+  const [combAberto, setCombAberto] = useState(false)
   const [recadoTexto, setRecadoTexto] = useState('')
   const [salvandoRecado, setSalvandoRecado] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -1453,6 +1455,23 @@ export default function EditarPedido() {
   const subtituloTopo = clienteNome.trim() ? toTitleCase(clienteNome.trim()) : 'Venda avulsa'
 
   // (28/10) cartão do cliente: no celular fica na aba Itens; no computador sobe pro topo da coluna da direita
+    // (11/11) Itens, taxa, descontos e o total: no celular ficam no fim do cartão dos itens (antes: um cartão "Valores" repetindo cada item)
+  const totais = (<>
+    <div className="ep2-ln ep3-pv-itens"><span>Itens</span><b>{formatMoney(subtotalItens)}</b></div>
+    {tipoEntrega === 'entrega' && <div className="ep2-ln"><span>Taxa de entrega</span><b>{formatMoney(taxaEntrega)}</b></div>}
+    {/* cupom do cardápio separado do desconto dado à parte (03/10) */}
+    {descontoCupom > 0 && <div className="ep2-ln promo"><span>Cupom {String(pedido?.cupom_codigo || '').toUpperCase()}</span><b>− {formatMoney(descontoCupom)}</b></div>}
+    {descontoManual > 0 && <div className="ep2-ln neg"><span>Desconto</span><b>− {formatMoney(descontoManual)}</b></div>}
+    {acrescimo > 0 && <div className="ep2-ln"><span>Acréscimo</span><b>+ {formatMoney(acrescimo)}</b></div>}
+    <div className="ep2-ln tt"><span>Total do pedido</span><b>{formatMoney(total)}</b></div>
+    {[...ajustesHist, ...ajustesPendentes.map(a => ({ ...a, pendente: true }))].length > 0 && (
+      <div className="ep2-ajs">{[...ajustesHist, ...ajustesPendentes.map(a => ({ ...a, pendente: true }))].map((a: AjusteLinha & { pendente?: boolean }, i) => (
+        <span key={i}>{a.tipo === 'desconto' ? 'Desconto' : 'Acréscimo'} de {formatMoney(Number(a.valor) || 0)}{a.motivo ? ` · ${a.motivo}` : ''}{a.pendente ? ' (ainda não salvo)' : ''}</span>
+      ))}</div>
+    )}
+    <Botao className="tpd-aj" variante="link" icone={<PencilSimple size={16} weight="bold" />} onClick={() => setAjusteAberto(true)}>Dar desconto ou acrescentar valor</Botao>
+  </>)
+
   const cartaoCliente = (onde: string) => (
     <section className={`ep2-card tpd-card tpd-cli-card ${onde}`}>
       <Titulo acao={clienteNome.trim() ? <Botao variante="link" icone={<ArrowsLeftRight size={16} weight="bold" />} onClick={() => setModalCliente(true)}>Trocar</Botao> : undefined}>Cliente</Titulo>
@@ -1588,7 +1607,7 @@ export default function EditarPedido() {
                           <div className="tpd-it-tx">
                             <b><NomeComQtd nome={nomeDeProduto(it.nome_produto)} qtd={q} forma={formaDoItem(it)} Destaque="em" /></b>
                             {/* (28/10) no computador o preço sai daqui: ele já está nos Valores, ao lado (telaPedido.css) */}
-                            <span className="tpd-it-preco">{formatMoney(valorDaLinha(it))}{q !== 1 ? ` · ${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}` : ''}</span>
+                            <span className="tpd-it-preco"><span>{q !== 1 ? `${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}` : ''}</span><b>{formatMoney(valorDaLinha(it))}</b></span>
                             {/* (28/10) computador: as escolhas (sabores etc.) ficam logo embaixo do nome, no lugar do preço */}
                             {campos.length > 0 && <div className="tpd-it-esc tpd-it-esc--pc">{campos.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>}
                             {adicionais && <div className="tpd-it-esc--pc">{adicionais}</div>}
@@ -1617,45 +1636,65 @@ export default function EditarPedido() {
                   })}
                 </ul>
               )}
-              {/* (6.74) o recado do cliente fica no rodapé dos itens (antes um cartão à parte) */}
-              <div className="tpd-recado-pe">
-                <div className="tpd-recado-pe-t"><small>Recado do cliente</small>
-                  <button type="button" className="tpd-recado-pe-bt" onClick={() => { setRecadoTexto(pedido.observacoes || ''); setRecadoAberto(true) }}><PencilSimple size={14} weight="bold" aria-hidden="true" />{(pedido.observacoes || '').trim() ? 'Editar' : 'Escrever'}</button>
+              {itens.length > 0 && <div className="tpd-tot-cel">{totais}</div>}
+              {/* (6.74) o recado do cliente fica no rodapé dos itens. (11/11) sem recado, só o link para escrever */}
+              {(pedido.observacoes || '').trim() ? (
+                <div className="tpd-recado-pe">
+                  <div className="tpd-recado-pe-t"><small>Recado do cliente</small>
+                    <button type="button" className="tpd-recado-pe-bt" onClick={() => { setRecadoTexto(pedido.observacoes || ''); setRecadoAberto(true) }}><PencilSimple size={14} weight="bold" aria-hidden="true" />Editar</button>
+                  </div>
+                  <p>“{(pedido.observacoes || '').trim()}”</p>
                 </div>
-                {(pedido.observacoes || '').trim()
-                  ? <p>“{(pedido.observacoes || '').trim()}”</p>
-                  : <p className="vz">O cliente não deixou nenhum recado.</p>}
-              </div>
+              ) : (
+                <div className="tpd-recado-pe tpd-recado-pe--vz">
+                  <Botao variante="link" icone={<PencilSimple size={16} weight="bold" />} onClick={() => { setRecadoTexto(''); setRecadoAberto(true) }}>Escrever um recado</Botao>
+                </div>
+              )}
             </section>
           </div>
 
           {/* ── ENTREGA (03/10): como sai primeiro, data em português, endereço pronto pra ler ── */}
           <div className={`ep2-sec ${tab === 'entrega' ? 'ativa' : ''}`}>
             <section className="ep2-card tpd-card tpd-quando-card">
-              <p className="ep2-ct tpd-so-pc">Quando e onde</p>
+              <Titulo acao={<Botao variante="link" icone={quandoAberto ? <Check size={16} weight="bold" /> : <PencilSimple size={16} weight="bold" />} onClick={() => setQuandoAberto(v => !v)}>{quandoAberto ? 'Pronto' : 'Alterar'}</Botao>}>Quando e onde</Titulo>
+              {/* (11/11) resumo do combinado (antes: as caixas de Entrega/Retirada e os campos ficavam sempre abertos) */}
+              {!quandoAberto ? (
+                <div className="tpd-qo">
+                  <button type="button" className="tpd-qo-l" onClick={() => setQuandoAberto(true)}>
+                    <span className="tpd-qo-ic" aria-hidden="true">{tipoEntrega === 'entrega' ? <Truck size={20} weight="bold" /> : <Storefront size={20} weight="bold" />}</span>
+                    <span className="tpd-qo-tx"><b>{tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada na loja'}</b><small>{tipoEntrega === 'entrega' ? 'Leva até o cliente' : 'A cliente busca'}</small></span>
+                  </button>
+                  <button type="button" className="tpd-qo-l" onClick={() => setQuandoAberto(true)}>
+                    <span className="tpd-qo-ic" aria-hidden="true"><CalendarBlank size={20} weight="bold" /></span>
+                    <span className="tpd-qo-tx"><b className={dataEntrega ? undefined : 'av'}>{dataEntrega ? diaPorExtenso(dataEntrega) : 'Sem data'}</b>
+                      {horarioEntrega ? <small>às {horarioEntrega.slice(0, 5)}</small> : <small className="av">Sem horário combinado</small>}</span>
+                  </button>
+                </div>
+              ) : (<>
               {/* (28/10) Entrega ou Retirada em dois cartões maiores, com a bolinha de escolha dentro */}
-              <div className="tpd-tipo" role="radiogroup" aria-label="Como o pedido sai">
-                {([['entrega', 'Entrega', 'Leva até o cliente', Truck], ['retirada', 'Retirada', 'Busca na loja', Storefront]] as const).map(([k, nome, sub, Ic]) => {
-                  const on = tipoEntrega === k
-                  return (
-                    <button key={k} type="button" role="radio" aria-checked={on} className={on ? 'on' : undefined} onClick={() => setTipoEntrega(k)}>
-                      <span className="tpd-tipo-topo"><Ic size={24} weight={on ? 'fill' : 'regular'} aria-hidden="true" /><i className="tpd-tipo-bola" aria-hidden="true" /></span>
-                      <b>{nome}</b>
-                      <small>{sub}</small>
-                    </button>
-                  )
-                })}
-              </div>
-              <div className="tpd-quando">
-                <div className="ui-campo">
-                  <span className="ui-campo-r"><span>{tipoEntrega === 'entrega' ? 'Data da entrega' : 'Data da retirada'}</span></span>
-                  <button type="button" className="ui-campo-c tpd-fal" onClick={() => setDataSheet(true)}><span className="ui-campo-ic" aria-hidden="true"><CalendarBlank size={20} weight="bold" /></span><span className={dataEntrega ? '' : 'tpd-ph'}>{dataEntrega ? diaPorExtenso(dataEntrega) : 'Escolher'}</span></button>
+                <div className="tpd-tipo" role="radiogroup" aria-label="Como o pedido sai">
+                  {([['entrega', 'Entrega', 'Leva até o cliente', Truck], ['retirada', 'Retirada', 'Busca na loja', Storefront]] as const).map(([k, nome, sub, Ic]) => {
+                    const on = tipoEntrega === k
+                    return (
+                      <button key={k} type="button" role="radio" aria-checked={on} className={on ? 'on' : undefined} onClick={() => setTipoEntrega(k)}>
+                        <span className="tpd-tipo-topo"><Ic size={24} weight={on ? 'fill' : 'regular'} aria-hidden="true" /><i className="tpd-tipo-bola" aria-hidden="true" /></span>
+                        <b>{nome}</b>
+                        <small>{sub}</small>
+                      </button>
+                    )
+                  })}
                 </div>
-                <div className="ui-campo">
-                  <span className="ui-campo-r"><span>Horário</span></span>
-                  <button type="button" className="ui-campo-c tpd-fal" onClick={() => setHoraSheetAberto(true)}><span className="ui-campo-ic" aria-hidden="true"><Clock size={20} weight="bold" /></span><span className={horarioEntrega ? '' : 'tpd-ph'}>{horarioEntrega ? horarioEntrega.slice(0, 5) : '--:--'}</span></button>
+                <div className="tpd-quando">
+                  <div className="ui-campo">
+                    <span className="ui-campo-r"><span>{tipoEntrega === 'entrega' ? 'Data da entrega' : 'Data da retirada'}</span></span>
+                    <button type="button" className="ui-campo-c tpd-fal" onClick={() => setDataSheet(true)}><span className="ui-campo-ic" aria-hidden="true"><CalendarBlank size={20} weight="bold" /></span><span className={dataEntrega ? '' : 'tpd-ph'}>{dataEntrega ? diaPorExtenso(dataEntrega) : 'Escolher'}</span></button>
+                  </div>
+                  <div className="ui-campo">
+                    <span className="ui-campo-r"><span>Horário</span></span>
+                    <button type="button" className="ui-campo-c tpd-fal" onClick={() => setHoraSheetAberto(true)}><span className="ui-campo-ic" aria-hidden="true"><Clock size={20} weight="bold" /></span><span className={horarioEntrega ? '' : 'tpd-ph'}>{horarioEntrega ? horarioEntrega.slice(0, 5) : '--:--'}</span></button>
+                  </div>
                 </div>
-              </div>
+              </>)}
             </section>
 
             {tipoEntrega === 'entrega' ? (
@@ -1726,7 +1765,7 @@ export default function EditarPedido() {
         {/* ── PAGAMENTO (no computador: coluna fixa à direita) ── */}
         <div className={`ep2-col ep2-col-dir ep2-sec ${tab === 'pagamento' ? 'ativa' : ''}`}>
           {cartaoCliente('tpd-cli-dir')}
-          <div className="ep2-card">
+          <div className="ep2-card tpd-valores">
             <Titulo>Valores</Titulo>
             {/* cada item com o seu valor e de onde ele vem (produto, adicionais, promoção) — a aba Itens não tem valores */}
             {itens.map((it: PedidoItem, idx) => {
@@ -1748,19 +1787,7 @@ export default function EditarPedido() {
                 </div>
               )
             })}
-            <div className="ep2-ln ep3-pv-itens"><span>Itens</span><b>{formatMoney(subtotalItens)}</b></div>
-            {tipoEntrega === 'entrega' && <div className="ep2-ln"><span>Taxa de entrega</span><b>{formatMoney(taxaEntrega)}</b></div>}
-            {/* cupom do cardápio separado do desconto dado à parte (03/10) */}
-            {descontoCupom > 0 && <div className="ep2-ln promo"><span>Cupom {String(pedido?.cupom_codigo || '').toUpperCase()}</span><b>− {formatMoney(descontoCupom)}</b></div>}
-            {descontoManual > 0 && <div className="ep2-ln neg"><span>Desconto</span><b>− {formatMoney(descontoManual)}</b></div>}
-            {acrescimo > 0 && <div className="ep2-ln"><span>Acréscimo</span><b>+ {formatMoney(acrescimo)}</b></div>}
-            <div className="ep2-ln tt"><span>Total do pedido</span><b>{formatMoney(total)}</b></div>
-            {[...ajustesHist, ...ajustesPendentes.map(a => ({ ...a, pendente: true }))].length > 0 && (
-              <div className="ep2-ajs">{[...ajustesHist, ...ajustesPendentes.map(a => ({ ...a, pendente: true }))].map((a: AjusteLinha & { pendente?: boolean }, i) => (
-                <span key={i}>{a.tipo === 'desconto' ? 'Desconto' : 'Acréscimo'} de {formatMoney(Number(a.valor) || 0)}{a.motivo ? ` · ${a.motivo}` : ''}{a.pendente ? ' (ainda não salvo)' : ''}</span>
-              ))}</div>
-            )}
-            <Botao className="tpd-aj" variante="link" icone={<PencilSimple size={16} weight="bold" />} onClick={() => setAjusteAberto(true)}>Dar desconto ou acrescentar valor</Botao>
+            {totais}
           </div>
 
           <div className="ep2-card">
@@ -1783,16 +1810,18 @@ export default function EditarPedido() {
               </div>
             ))) : <p className="ep2-vazio">Recebido até agora: <b>{formatMoney(recebidoAtual)}</b>. (A lista de recebimentos aparece depois do SQL do Passo 1.)</p>}
             {statusPedido !== 'cancelado' && (faltaReceber > 0.009 ? (<>
+              {/* (11/11) sem caixa dentro de caixa: a barra, o recebido e o que falta em linhas soltas */}
               <div className="tpd-falta">
+                <div className="tpd-barra" role="progressbar" aria-label="Quanto já foi recebido" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, (recebidoAtual / (total || 1)) * 100))}><i style={{ width: `${Math.min(100, (recebidoAtual / (total || 1)) * 100)}%` }} /></div>
                 <Linha rotulo="Recebido">{formatMoney(recebidoAtual)}</Linha>
                 <Linha rotulo="Falta receber" tom="laranja">{formatMoney(faltaReceber)}</Linha>
-                <div className="tpd-barra" role="progressbar" aria-label="Quanto já foi recebido" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, (recebidoAtual / (total || 1)) * 100))}><i style={{ width: `${Math.min(100, (recebidoAtual / (total || 1)) * 100)}%` }} /></div>
               </div>
-              <Botao className="tpd-receber" cheio icone={<ArrowUp size={20} weight="bold" />} onClick={abrirReceber}>Registrar recebimento</Botao>
               <div className="tpd-comb">
-                <span className="ui-campo-r"><span>Combinado para pagar o resto</span><small>opcional</small></span>
-                <CampoData valor={dataPrevistaPagamento || ''} onChange={setDataPrevistaPagamento} titulo="Combinado para pagar" placeholder={tipoEntrega === 'retirada' ? "Na retirada" : "Na entrega"} />
+                <span>O resto: <b>{dataPrevistaPagamento ? diaPorExtenso(dataPrevistaPagamento) : tipoEntrega === 'retirada' ? 'na retirada' : 'na entrega'}</b></span>
+                <Botao variante="link" onClick={() => setCombAberto(true)}>Alterar</Botao>
               </div>
+              {combAberto && <CalendarioSheet valor={dataPrevistaPagamento || ''} titulo="Combinado para pagar o resto" onClose={() => setCombAberto(false)} onConfirmar={(d: string) => { setDataPrevistaPagamento(d); setCombAberto(false) }} />}
+              <Botao className="tpd-receber" variante="secundario" cheio icone={<ArrowUp size={20} weight="bold" />} onClick={abrirReceber}>Registrar recebimento</Botao>
             </>) : recebidoAMais > 0.009 ? (
               /* (11/10) recebido maior que o total: aparece, com o que fazer (antes ficava escondido atrás de "Pedido pago") */
               <div className="tpd-falta">
