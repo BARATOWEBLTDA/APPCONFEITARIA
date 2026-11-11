@@ -164,3 +164,9 @@
    o preço fica sempre embaixo, alinhado entre os cartões da mesma fileira */
 .ic-cp .ic-pp { margin-top: auto; padding-top: 6px; }
 .ic-selo-pct { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 3px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; line-height: 1.2; color: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .18); }
+
+/* (11/11) celular: Destaques ou Promoções com um produto só ocupam a largura toda (antes sobrava um vazio ao lado) */
+.ic-sec:not(.ic-sec--pc) .ic-fila--dq > .ic-cp:only-child { flex-basis: 100%; width: 100%; max-width: none; }
+.ic-sec:not(.ic-sec--pc) .ic-grade--promo:has(> .ic-cp:only-child) { grid-template-columns: minmax(0, 1fr); }
+.ic-sec:not(.ic-sec--pc) .ic-fila--dq > .ic-cp:only-child .ic-cp-ft,
+.ic-sec:not(.ic-sec--pc) .ic-grade--promo > .ic-cp:only-child .ic-cp-ft { aspect-ratio: 16 / 10; }

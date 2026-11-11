@@ -6,6 +6,7 @@ import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { unidadePreco } from '@/lib/formaVenda'
 import { miniDaFoto } from '@/lib/fotoMini'
+import { MIN_PRODUTOS_SECOES } from '@/lib/cardapioSecoes'
 import { tamanhosEsgotados, descontoCardapio, precoCardapioComPromocao, ehCentoLivre } from '@/lib/precoCardapio'
 import type { ProdutoPrecoJson } from '@/lib/precoCardapio'
 // (o cartão antigo ProductCard saiu; o CSS dele continua carregando por aqui, na mesma ordem)
@@ -137,8 +138,11 @@ export function montarSecoes(produtos: Produto[], categorias: string[], agrupar:
   // com tamanhos de preço fixo não dá desconto, então o produto fica na categoria dele
   const emPromocao = (p: Produto) => descontoCardapio(p) > 0
   // (27/10) Destaques: até 6, marcados pela confeiteira; o que está em destaque não se repete em Promoções
-  const destaques = produtos.filter(p => (p as Produto & { destaque?: boolean }).destaque === true).slice(0, 6)
-  const promo = produtos.filter(p => emPromocao(p) && !destaques.includes(p))
+  // (11/11) loja com menos de 6 produtos: sem Destaques e Promoções (o mesmo produto aparecia duas vezes na mesma tela);
+  // a promoção continua com o preço riscado dentro da categoria
+  const poucos = produtos.length < MIN_PRODUTOS_SECOES
+  const destaques = poucos ? [] : produtos.filter(p => (p as Produto & { destaque?: boolean }).destaque === true).slice(0, 6)
+  const promo = poucos ? [] : produtos.filter(p => emPromocao(p) && !destaques.includes(p))
   const resto = produtos
   const secoes: Secao[] = []
   if (destaques.length) secoes.push({ id: 'sec-destaques', nome: 'Destaques', tipo: 'destaque', produtos: destaques })

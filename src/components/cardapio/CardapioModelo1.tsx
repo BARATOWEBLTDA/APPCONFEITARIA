@@ -79,7 +79,7 @@ export function faixaDaLoja(config: Configuracoes | null, produtos: ProdutoEntre
   else if (entrega) itens.push({ Ic: Truck, v: 'Realiza', t: 'entregas' })
   else if (retirada) itens.push({ Ic: Storefront, v: 'Retirada', t: 'no local' })
   const prazos = produtos.map(p => String(p?.antecedencia || '')).filter(a => horasAntecedencia(a) > 0).sort((x, y) => horasAntecedencia(x) - horasAntecedencia(y))
-  if (prazos.length) itens.push({ Ic: CalendarBlank, v: rotuloAntecedencia(prazos[0]), t: 'encomendas' })
+  if (prazos.length) itens.push({ Ic: CalendarBlank, v: 'Encomendas', t: `pedir ${rotuloAntecedencia(prazos[0])} antes` }) // (11/11) antes "2 dias / encomendas", que não dizia o que fazer
   // (6.181) fechada hoje (férias ou feriado): não promete pronta entrega "Hoje"
   const fechadaHoje = !!(c.horario && typeof c.horario === 'object' && fechadoEm(hojeBr(), lerFechados((c.horario as { fechados?: unknown }).fechados)))
   if (!fechadaHoje && produtos.some(p => seloEntrega(p)?.tipo === 'pronta')) itens.push({ Ic: Lightning, v: 'Hoje', t: 'pronta entrega' })

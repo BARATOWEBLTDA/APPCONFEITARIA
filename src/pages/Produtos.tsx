@@ -1,4 +1,5 @@
 import AbasCel from "@/components/base/AbasCel";
+import { MIN_PRODUTOS_SECOES } from "@/lib/cardapioSecoes";
 import { useState, useEffect, useRef, useMemo } from "react";
 import SelectDoonly from "@/components/base/SelectDoonly";
 import { abrirConvitePro } from "@/components/billing/RecursoPro";
@@ -2518,7 +2519,7 @@ export default function Produtos() {
                     <div className="prod-opcs">
                       {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só para você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false, ...(f.disponivel !== false ? { destaque: false } : {}) } as Produto)))}
                       {/* (27/10) Destaques: até 6, no topo do cardápio em cartão grande */}
-                      {op(form.destaque === true, "Destacar no cardápio", `${qtdDestaques(form.id) + (form.destaque === true ? 1 : 0)} de ${MAX_DESTAQUES} · no topo, em cartão grande`, () => {
+                      {op(form.destaque === true, "Destacar no cardápio", (produtos.filter(x => x.disponivel !== false && x.id !== form.id).length + 1 < MIN_PRODUTOS_SECOES ? `Aparece quando o cardápio tiver ${MIN_PRODUTOS_SECOES} produtos` : `${qtdDestaques(form.id) + (form.destaque === true ? 1 : 0)} de ${MAX_DESTAQUES} · no topo, em cartão grande`), () => {
                         const ligar = form.destaque !== true;
                         if (ligar && form.disponivel === false) { avisar("Mostre o produto no cardápio para poder destacar.", { tipo: "erro" }); return; }
                         if (ligar && qtdDestaques(form.id) >= MAX_DESTAQUES) { avisarLimiteDestaques(false); return; }
