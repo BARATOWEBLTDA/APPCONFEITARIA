@@ -91,7 +91,7 @@ html body .ini-main > .ini-news-cel { order: 10; margin-top: var(--space-3); }
 /* (6.144) computador com os Primeiros passos por fazer: só eles, no meio da tela (o resto do Início some) */
 @media (min-width: 901px) {
   html body .ini-root--foco > :not(.ini-pp--topo):not(style) { display: none !important; }
-  html body .ini-root--foco { min-height: 0; justify-content: flex-start; padding-top: 24px; } /* (09/11) o cartão logo abaixo do topo (no meio da tela sobrava um vão e a saudação parecia "solta" lá em cima) */
+  html body .ini-root--foco { display: flex; flex-direction: column; min-height: calc(100dvh - 96px); justify-content: center; padding-top: 0; padding-bottom: 72px; } /* (11/11) sem a saudação, o cartão fica no meio da tela (antes, 09/11, colado no topo) */
   html body .ini-root--foco > .ini-pp--topo { margin: 0 !important; }
   /* (6.160) ainda sem saber se faltam passos: nada aparece (os Primeiros passos carregam escondidos e decidem) */
   html body .ini-root--decidindo > .ini-pp--topo { visibility: hidden; }
