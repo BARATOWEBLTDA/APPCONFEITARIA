@@ -2687,3 +2687,5 @@ body:has(.dl-root) { margin: 0; }
     radial-gradient(55% 65% at 0% 0%, rgba(96, 18, 64, .38), rgba(96, 18, 64, 0) 70%),
     #0B0710 !important;
 }
+/* (11/11) topo sem o botão "Criar conta grátis": o botão fica só na barra preta (fica o "Entrar") */
+.dl-root .dl-cabecalho .dl-menu__acoes .dl-btn, .dl-root .dl-cabecalho__cta-celular { display: none !important; }
