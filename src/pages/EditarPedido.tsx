@@ -678,7 +678,7 @@ export default function EditarPedido() {
     let cancelado = false
     ;(async () => {
       const [{ data: pedidoData, error }, { data: user }] = await Promise.all([
-        supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', id).maybeSingle(),
+        supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', id).order('created_at', { referencedTable: 'pedido_itens' }).maybeSingle(),
         supabase.auth.getUser(),
       ])
       if (cancelado) return
@@ -1066,7 +1066,10 @@ export default function EditarPedido() {
       let idsNovos: string[] = []
 
       if (itens.length > 0) {
-        const itensInsert = itens.map(it => ({
+        // (10/11) cada item com 1 ms a mais: gravados juntos ficavam com a mesma hora e voltavam em outra ordem ao reabrir
+        const base = Date.now()
+        const itensInsert = itens.map((it, i) => ({
+          created_at: new Date(base + i).toISOString(),
           pedido_id: pedido!.id,
           produto_id: it.produto_id || null,
           nome_produto: it.nome_produto,
@@ -1788,7 +1791,7 @@ export default function EditarPedido() {
               <Botao className="tpd-receber" cheio icone={<ArrowUp size={20} weight="bold" />} onClick={abrirReceber}>Registrar recebimento</Botao>
               <div className="tpd-comb">
                 <span className="ui-campo-r"><span>Combinado para pagar o resto</span><small>opcional</small></span>
-                <CampoData valor={dataPrevistaPagamento || ''} onChange={setDataPrevistaPagamento} titulo="Combinado para pagar" placeholder="Na entrega" />
+                <CampoData valor={dataPrevistaPagamento || ''} onChange={setDataPrevistaPagamento} titulo="Combinado para pagar" placeholder={tipoEntrega === 'retirada' ? "Na retirada" : "Na entrega"} />
               </div>
             </>) : recebidoAMais > 0.009 ? (
               /* (11/10) recebido maior que o total: aparece, com o que fazer (antes ficava escondido atrás de "Pedido pago") */

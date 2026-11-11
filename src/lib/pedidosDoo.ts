@@ -5,7 +5,8 @@
  */
 import { ESTORNO_POR_EXCLUSAO, faltaNoBanco, registrarPagamento } from "@/lib/pagamentos";
 import { explicarErro } from "@/lib/erros";
-import { digitosTelefone } from "@/lib/telefone";
+import { digitosTelefone, mascaraTelefone } from "@/lib/telefone";
+import { nomeDePessoa } from "@/lib/nomePessoa";
 import { pesoDoTamanho } from "@/lib/itemSacola";
 import { supabase } from "@/lib/supabase";
 import { criarPersonalizacoesV1, criarBreakdownV1, SNAPSHOT_VERSION_ATUAL } from "@/lib/pedido-snapshot";
@@ -206,7 +207,7 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
   if (!d.semCliente && !clienteIdFinal && d.clienteNovo && d.clienteNome.trim()) {
     const end: Record<string, string | null> = d.tipoEntrega === "entrega" ? { rua: d.endereco.rua || null, numero: d.endereco.numero || null, bairro: d.endereco.bairro || null, cidade: d.endereco.cidade || null, complemento: d.endereco.complemento || null } : {};
     const { data: cliNovo, error: errCli } = await supabase.from("clientes")
-      .insert({ user_id: userId, nome: d.clienteNome.trim(), whatsapp: d.clienteTelefone.trim() || null, ...end })
+      .insert({ user_id: userId, nome: nomeDePessoa(d.clienteNome), whatsapp: d.clienteTelefone.trim() ? mascaraTelefone(d.clienteTelefone) : null, ...end })
       .select("id").single();
     if (!errCli && (cliNovo as { id?: string } | null)?.id) clienteIdFinal = (cliNovo as { id: string }).id;
     else {
@@ -219,8 +220,8 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
   const linhaPedido: Record<string, unknown> = {
     user_id: userId,
     cliente_id: clienteIdFinal,
-    cliente_nome: d.semCliente ? "" : d.clienteNome,
-    cliente_telefone: d.semCliente ? "" : d.clienteTelefone,
+    cliente_nome: d.semCliente ? "" : nomeDePessoa(d.clienteNome),
+    cliente_telefone: d.semCliente ? "" : (d.clienteTelefone.trim() ? mascaraTelefone(d.clienteTelefone) : ""),
     status,
     status_pagamento: statusPag,
     valor_recebido: valorRecebido,
@@ -267,7 +268,10 @@ export async function criarPedido(userId: string, d: DadosPedido): Promise<{ ok:
   if (error || !novoPedido) return { ok: false, clienteId: clienteIdFinal, erro: explicarErro(error, "Não deu para registrar a venda. Tente de novo.") };
   const pid = (novoPedido as PedidoCriado).id;
 
-  const itensInsert = d.itens.map(it => ({
+  // (10/11) 1 ms a mais por item: gravados juntos ficavam com a mesma hora e a ordem dos produtos mudava ao reabrir
+  const base = Date.now();
+  const itensInsert = d.itens.map((it, i) => ({
+    created_at: new Date(base + i).toISOString(),
     pedido_id: pid,
     produto_id: it.produto_id,
     nome_produto: it.nome_produto,

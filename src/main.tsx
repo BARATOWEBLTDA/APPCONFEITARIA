@@ -15,6 +15,7 @@ import { SpeedInsights } from '@vercel/speed-insights/react'
 import App from './App.tsx'
 import TelaDeErro from './components/sistema/TelaDeErro'
 import { ensureServiceWorker } from './lib/notifications'
+import { selecionarValorAoFocar } from './lib/moeda'
 import './lib/installPrompt' // captura o convite de instalação do Chrome o quanto antes
 
 // Registra o Service Worker cedo (não bloqueia render).
@@ -28,6 +29,11 @@ if (typeof window !== "undefined") {
   // copiar o texto ou pesquisar com o Google Lens.
   const paginaDoCliente = () => /^\/(c|cardapio|o|orcamento)\//.test(window.location.pathname);
   window.addEventListener("contextmenu", (e) => { if (!paginaDoCliente()) e.preventDefault(); });
+
+  // (10/11) em todo campo de valor (teclado numérico), tocar seleciona o valor inteiro e o que for digitado entra no lugar.
+  // Antes só valia no cadastro de produto: no "Registrar recebimento" o valor já vinha preenchido (R$ 544,80) e
+  // digitar 200 virava R$ 54.480.200,00
+  document.addEventListener("focusin", selecionarValorAoFocar);
 }
 
 import { marcarAppAberto } from './lib/recarregarLimpo'

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { nomeDePessoa } from "@/lib/nomePessoa";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import Folha from "@/components/financeiro/Folha";
 import { ReceberSheet } from "@/pages/FinanceiroAReceber";
@@ -65,7 +66,7 @@ export default function ReceberPedidoSheet({ itens: dados, inicial, onClose, onF
             <li key={i.id}>
               <button type="button" onClick={() => setEscolhido(i)}>
                 <span className="rp-tx">
-                  <b>{i.cliente_nome || "Cliente sem nome"}</b>
+                  <b>{nomeDePessoa(i.cliente_nome) || "Cliente sem nome"}</b>
                   <small>{[i.numero != null ? `#${i.numero}` : "", i.dataRef ? `entrega ${dm(i.dataRef)}` : "sem data"].filter(Boolean).join(" · ")}
                     {q && <em className={i.dias !== null && i.dias < 0 ? "atr" : ""}>{q}</em>}</small>
                 </span>

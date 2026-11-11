@@ -48,7 +48,7 @@ type PedidoAgenda = Omit<PedidoTexto, "pedido_itens"> & {
 };
 /** O resumo que "Precisa de atenção" e a busca leem (só algumas colunas) */
 type PedidoResumo = Pick<PedidoAgenda, "id" | "numero" | "status" | "cliente_nome" | "data_entrega" | "horario_entrega">
-  & Partial<Pick<PedidoAgenda, "origem" | "tipo_entrega" | "created_at">>
+  & Partial<Pick<PedidoAgenda, "origem" | "tipo_entrega" | "created_at" | "cliente_id">>
   & { pedido_itens?: { imagem_url?: string | null; produtos?: { imagem_url?: string | null } | null }[] };
 /** O mínimo pra mudar a situação e avisar (serve pro pedido do dia e pro do resumo) */
 type PedidoAcao = Pick<PedidoAgenda, "id" | "status"> & { numero?: number | null; tipo_entrega?: string | null; cliente_nome?: string | null };
@@ -257,12 +257,12 @@ export default function Agenda() {
       const feitoDe = parseISO(faixa.ini); feitoDe.setHours(0, 0, 0, 0);
       const feitoAte = parseISO(faixa.fim); feitoAte.setHours(24, 0, 0, 0);
       const [comData, semData] = await Promise.all([
-        buscarTudo<PedidoAgenda>((de, ate) => supabase.from("pedidos").select(CAMPOS).eq("user_id", userId)
+        buscarTudo<PedidoAgenda>((de, ate) => supabase.from("pedidos").select(CAMPOS).eq("user_id", userId).order("created_at", { referencedTable: "pedido_itens" })
           .gte("data_entrega", faixa.ini).lte("data_entrega", faixa.fim)
           .order("data_entrega", { ascending: true })
           .order("horario_entrega", { ascending: true, nullsFirst: false })
           .order("id").range(de, ate)),
-        buscarTudo<PedidoAgenda>((de, ate) => supabase.from("pedidos").select(CAMPOS).eq("user_id", userId)
+        buscarTudo<PedidoAgenda>((de, ate) => supabase.from("pedidos").select(CAMPOS).eq("user_id", userId).order("created_at", { referencedTable: "pedido_itens" })
           .is("data_entrega", null).gte("created_at", feitoDe.toISOString()).lt("created_at", feitoAte.toISOString())
           .order("id").range(de, ate)),
       ]);
@@ -474,7 +474,7 @@ export default function Agenda() {
 
   const baixarPdf = async (p: PedidoAgenda) => {
     const janela = abrirJanela();
-    const { data, error } = await supabase.from("pedidos").select("*, pedido_itens(*, produtos(forma_venda))").eq("id", p.id).maybeSingle();
+    const { data, error } = await supabase.from("pedidos").select("*, pedido_itens(*, produtos(forma_venda))").eq("id", p.id).order("created_at", { referencedTable: "pedido_itens" }).maybeSingle();
     // (6.175) leitura falhou: avisa (antes saía um PDF em branco)
     if (error || !data) { try { janela?.close(); } catch { /* já fechada */ } avisar("Não deu para gerar o PDF. Tente de novo.", { tipo: "erro" }); return; }
     await gerarPedidoPDF(data as Parameters<typeof gerarPedidoPDF>[0], janela);
@@ -781,7 +781,7 @@ function CartaoAgenda({ p, ocupado, aoAbrir, itensMenu, aoPronto, aoWhats }: { p
     : falta <= 0.009 ? { t: "Pago", tom: "verde" as const }
     : recebido > 0 ? { t: `Falta ${rs(falta).replace(" ", "\u00A0")} · sinal pago`, tom: "laranja" as const } // (27/10) o que falta vem primeiro: com valor de 4 dígitos o fim era cortado
     : { t: `Falta receber ${rs(falta)}`, tom: "laranja" as const };
-  const nome = p.cliente_nome?.trim() ? nomeDeGente(p.cliente_nome) : "Sem nome";
+  const nome = p.cliente_nome?.trim() ? nomeDeGente(p.cliente_nome) : p.cliente_id ? "Sem nome" : "Venda avulsa";
   const ref = useRef<HTMLElement>(null);
 
   return (
@@ -903,7 +903,7 @@ function ResultadosBusca({ userId, busca, comCancelados, onAbrir }: { userId: st
                 <button type="button" className="ag3-res-i" onClick={() => onAbrir(p.id)}>
                   {foto ? <img src={foto} alt="" loading="lazy" /> : <span className="ag3-res-sem" aria-hidden="true"><Package size={20} weight="bold" /></span>}
                   <span className="ag3-res-tx">
-                    <b><span>{nomeDeGente(p.cliente_nome || "") || "Sem nome"}</span>{p.numero != null && <em> #{p.numero}</em>}</b>
+                    <b><span>{nomeDeGente(p.cliente_nome || "") || (p.cliente_id ? "Sem nome" : "Venda avulsa")}</span>{p.numero != null && <em> #{p.numero}</em>}</b>
                     <small className={atr ? "atr" : ""}>{atr ? "Atrasado · " : ""}{quandoBusca(p)}</small>
                   </span>
                   <CaretRight size={16} weight="bold" className="ag3-res-seta" aria-hidden="true" />

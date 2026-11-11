@@ -139,6 +139,7 @@ export default function Pedidos() {
       .eq('user_id', uid)
       .order('numero', { ascending: false })
       .order('id')
+      .order('created_at', { referencedTable: 'pedido_itens' }) // (10/11) os produtos na ordem em que entraram
       .range(de, ate))
     if (error) { if (!quieto) setEstado('erro'); return }
     // uma mudança de situação começou enquanto a lista vinha: essa resposta pode estar velha, fica pra próxima
@@ -449,7 +450,7 @@ export default function Pedidos() {
     if (acao === 'pdf') {
       const janela = abrirJanela()
       // busca o pedido completo (com as escolhas de cada item) pro comprovante sair inteiro
-      const { data } = await supabase.from('pedidos').select('*, pedido_itens(*, produtos(forma_venda))').eq('id', p.id).maybeSingle()
+      const { data } = await supabase.from('pedidos').select('*, pedido_itens(*, produtos(forma_venda))').eq('id', p.id).order('created_at', { referencedTable: 'pedido_itens' }).maybeSingle()
       await gerarPedidoPDF((data || p) as PedidoPDF, janela)
       fechar(); return
     }
@@ -718,7 +719,7 @@ export default function Pedidos() {
                   return (
                     <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
                       {g.chave === 'aceitar' ? (
-                        <div className="pdk-topo"><span>{g.itens.length === 1 ? 'Chegou pelo cardápio' : 'Chegaram pelo cardápio'}</span>
+                        <div className="pdk-topo"><span>{g.itens.every(p => p.origem === 'cardapio') ? (g.itens.length === 1 ? 'Chegou pelo cardápio' : 'Chegaram pelo cardápio') : 'Esperando você aceitar'}</span>
                           {g.itens.length > 1 && <button type="button" className="pdk-todos" onClick={() => aceitarTodos(g.itens)}>Aceitar todos</button>}</div>
                       ) : !unico && <p className={`pdk-t${g.chave === 'atrasado' ? ' t-vermelho' : ''}`}>{g.titulo}{g.itens.length > 0 && <i>{g.itens.length}</i>}</p>}
                       {g.itens.length === 0
@@ -733,7 +734,7 @@ export default function Pedidos() {
               <div className="pd-grupos">
                 {grupos.map(g => g.chave === 'depois' || g.chave === 'antigos' ? <BotaoMais key={g.chave} g={g} /> : (
                   <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
-                    <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? (g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite para entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite para entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>
+                    <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? (!g.itens.every(p => p.origem === 'cardapio') ? 'Aceite para entrar na sua agenda.' : g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite para entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite para entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>
                     <div className="pdl-tabela" role="table">{g.itens.map(p => <LinhaPedido key={p.id} {...props(p)} comDia={g.chave === 'concluidos' || g.chave === 'semdata' || g.chave === 'antes'} />)}</div>
                   </section>
                 ))}

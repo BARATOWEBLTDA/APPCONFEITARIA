@@ -1743,7 +1743,7 @@ export default function Produtos() {
               <div className="prod-section">
                 {/* 1. Nome */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo">Nome do produto <ReqTag /></label>
+                  <label className="prod-field-label-novo" htmlFor="prod-nome-input">Nome do produto <ReqTag /></label>
                   <input
                     id="prod-nome-input"
                     type="text"

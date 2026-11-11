@@ -252,6 +252,9 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 .nv3-it { align-items: flex-start; }
 .nv3-it .nv3-qtd { flex: none; margin: 4px 0 0; }
 .nv3-it .nv3-qtd b { min-width: 28px; font-size: 15px; font-weight: 600; }
+/* (10/11) quantidade que dá para digitar: parece o número de antes, sem caixa */
+.nv3-qtd-in { width: 40px; min-height: 36px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ui-texto); font: inherit; font-size: 15px; font-weight: 600; text-align: center; }
+.nv3-qtd-in:focus { outline: 2px solid var(--ui-rosa, #D63A6E); outline-offset: 0; background: var(--ui-branco); }
 .nv3-lixo { color: var(--ui-texto-3) !important; }
 @media (hover: hover) { .nv3-lixo:hover { color: var(--ui-vermelho) !important; } }
 .nv3-recado { display: inline-flex; align-items: center; gap: 4px; max-width: calc(100% - 60px); min-height: 32px; margin: 4px 0 0 60px; padding: 0 2px; border: 0; background: none; font: 600 13.5px var(--font-base); color: var(--ui-rosa-escuro); cursor: pointer; }

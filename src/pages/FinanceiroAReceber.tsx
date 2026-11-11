@@ -1,4 +1,5 @@
 import CampoData from '@/components/CampoData'
+import { nomeDePessoa } from "@/lib/nomePessoa";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
@@ -162,7 +163,7 @@ export default function FinanceiroAReceber() {
                 {lista.map(it => (
                   <div key={it.id} className="far-it">
                     <div className="far-it-h">
-                      <b>{it.numero ? `Pedido #${it.numero} · ` : ""}{it.cliente_nome || "Cliente"}</b>
+                      <b>{it.numero ? `Pedido #${it.numero} · ` : ""}{nomeDePessoa(it.cliente_nome) || "Cliente"}</b>
                       <span className={`far-tg ${it.dias !== null && it.dias < 0 ? "far-tg--atr" : ""}`}>{quando(it.dias)}</span>
                     </div>
                     <div className="far-it-v">
@@ -185,7 +186,7 @@ export default function FinanceiroAReceber() {
                 <div className="far-tr far-th" role="row"><span role="columnheader">Pedido</span><span role="columnheader">Entrega</span><span role="columnheader">Total</span><span role="columnheader">Pago</span><span role="columnheader">Falta</span><span role="columnheader"><span className="ui-so-leitor">Ações</span></span></div>
                 {lista.map(it => (
                   <div key={it.id} className="far-tr" role="row">
-                    <span role="cell" className="far-td-p"><b>{it.cliente_nome || "Cliente"}</b>{it.numero ? <em>#{it.numero}</em> : null}<span className={`far-tg ${it.dias !== null && it.dias < 0 ? "far-tg--atr" : ""}`}>{quando(it.dias)}</span></span>
+                    <span role="cell" className="far-td-p"><b>{nomeDePessoa(it.cliente_nome) || "Cliente"}</b>{it.numero ? <em>#{it.numero}</em> : null}<span className={`far-tg ${it.dias !== null && it.dias < 0 ? "far-tg--atr" : ""}`}>{quando(it.dias)}</span></span>
                     <span role="cell">{it.data_entrega ? (d => d.charAt(0).toUpperCase() + d.slice(1))(dataCurta(it.data_entrega)) : "Sem data"}</span>
                     <span role="cell">{brl(it.total)}</span>
                     <span role="cell" className="far-td-pg">{brl(it.recebido)}<i className="far-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, (it.recebido / (it.total || 1)) * 100)}%` }} /></i></span>
@@ -235,7 +236,7 @@ export function ReceberSheet({ item, onClose, onFeito }: { item: Item; onClose: 
   };
 
   return (
-    <Folha titulo={`Receber${item.numero ? ` · Pedido #${item.numero}` : ""}`} sub={item.cliente_nome || "Cliente"} onClose={onClose} umaAcao
+    <Folha titulo={`Receber${item.numero ? ` · Pedido #${item.numero}` : ""}`} sub={nomeDePessoa(item.cliente_nome) || "Cliente"} onClose={onClose} umaAcao
       acoes={<Botao cheio icone={<Wallet size={20} weight="bold" />} carregando={salvando} onClick={confirmar}>Confirmar recebimento</Botao>}>
       <div className="far-res">
         <div><span>Total do pedido</span><b>{brl(item.total)}</b></div>

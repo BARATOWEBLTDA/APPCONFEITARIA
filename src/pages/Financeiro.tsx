@@ -1,5 +1,6 @@
 // Financeiro — painel (Passo 7, 03/10; 4.29: por período, com comparação, formas de pagamento e mais vendidos). Junta o que antes ficava na Visão Geral e no menu:
 // saldo em caixa, os números do mês, a receber, a pagar, previstos, fluxo e últimas movimentações.
+import { nomeDePessoa } from "@/lib/nomePessoa";
 import { COMO_FINANCEIRO, TOUR_FINANCEIRO } from "@/lib/comoTelas";
 import { useAbrirPedido } from "@/hooks/useAbrirPedido";
 import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
@@ -293,7 +294,7 @@ export default function Financeiro() {
             {recItens && recItens.length === 0 && <p className="fd-vazio">Nenhum pedido com valor a receber.</p>}
             {(recItens || []).slice(0, 3).map(it => (
               <div key={it.id} className="fd-lst-it">
-                <span className="fd-lst-tx"><b><span className="fd-lst-nm">{it.cliente_nome || "Cliente sem nome"}</span>{it.dataRef && <em className={it.dias !== null && it.dias < 0 ? "atr" : ""}>{dataTag(it.dataRef, it.dias)}</em>}</b>
+                <span className="fd-lst-tx"><b><span className="fd-lst-nm">{nomeDePessoa(it.cliente_nome) || "Cliente sem nome"}</span>{it.dataRef && <em className={it.dias !== null && it.dias < 0 ? "atr" : ""}>{dataTag(it.dataRef, it.dias)}</em>}</b>
                   <small>{[it.numero != null ? `#${it.numero}` : "", it.recebido > 0 ? "sinal pago" : "falta tudo"].filter(Boolean).join(" · ")}</small></span>
                 <span className="fd-lst-v">{brl(it.falta)}{it.recebido > 0 && <small>de {brl(it.total)}</small>}</span>
                 <button type="button" className="fd-lst-bt v" onClick={() => abrirReceber(it)}>Receber</button>

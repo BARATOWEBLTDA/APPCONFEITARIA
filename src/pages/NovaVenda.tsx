@@ -117,7 +117,7 @@ interface Produto {
 type OpcaoVenda = ReturnType<typeof opcoesDoProdutoLib>[number]
 
 /** O pedido como volta gravado do banco (só o que esta tela lê) */
-type PedidoGravado = PedidoParaMensagem & { id: string; numero?: number | null; valor_total?: number | null; status_pagamento?: string | null }
+type PedidoGravado = PedidoParaMensagem & { id: string; numero?: number | null; valor_total?: number | null; status_pagamento?: string | null; taxa_entrega?: number | null; desconto?: number | null; acrescimo?: number | null }
 
 /** O que a tela de sucesso mostra da venda registrada */
 type VendaRegistrada = {
@@ -594,6 +594,8 @@ export default function NovaVenda() {
   }, [itens.length])
   // (5.64) recados abertos (o campo só aparece quando ela toca em "+ Recado")
   const [recadoAberto, setRecadoAberto] = useState<number[]>([])
+  // (10/11) quantidade sendo digitada (o campo pode ficar vazio enquanto ela apaga e escreve outro número)
+  const [qtdDigitada, setQtdDigitada] = useState<{ idx: number; txt: string } | null>(null)
   // (09/11) recado do item com limite (sem limite, um texto sem espaço estourava o Resumo para fora da tela)
   const RECADO_MAX = 150
   // (28/10) produto por kg sem tamanho anda de meio em meio quilo (antes só ia de 1 em 1 kg)
@@ -819,6 +821,10 @@ export default function NovaVenda() {
                 {(pc.itens || []).map((it: ItemVenda, idx: number) => (
                   <p key={idx}><span>{itemComQtd(`${nomeDeProduto(it.nome_produto)}${linhasDoItem(it)[0] ? ` · ${linhasDoItem(it)[0]}` : ''}`, it.quantidade, it.forma_venda === 'kg' && !pesoLivre(it, 'kg') ? null : it.forma_venda)}</span><b>{rs(r2(it.valor_unitario * it.quantidade))}</b></p>
                 ))}
+                {/* (10/11) a taxa, o desconto e o acréscimo entram no total: sem a linha, a conta dos itens não fechava com o Total */}
+                {Number(pc.bruto?.taxa_entrega) > 0 && <p><span>Taxa de entrega</span><b>{rs(r2(Number(pc.bruto?.taxa_entrega)))}</b></p>}
+                {Number(pc.bruto?.desconto) > 0 && <p><span>Desconto</span><b>− {rs(r2(Number(pc.bruto?.desconto)))}</b></p>}
+                {Number(pc.bruto?.acrescimo) > 0 && <p><span>Acréscimo</span><b>{rs(r2(Number(pc.bruto?.acrescimo)))}</b></p>}
               </div>
               <p><span>Cliente</span><b>{pc.clienteNome ? toTitleCase(pc.clienteNome) : 'Venda avulsa'}</b></p>
               {(pc.tipo === 'encomenda' || buscaDepois) && pc.dataEntrega && <p><span>{ehEntrega ? 'Entrega' : 'Retirada'}</span><b>{dataLonga(pc.dataEntrega, pc.horarioEntrega)}</b></p>}
@@ -974,7 +980,13 @@ export default function NovaVenda() {
                           {it.quantidade <= passoDo(it)
                             ? <BotaoIcone rotulo={`Tirar ${nome}`} tamanho="p" className="nv3-lixo" onClick={() => removerItem(idx)}><Trash size={18} weight="bold" /></BotaoIcone>
                             : <BotaoIcone rotulo={`Diminuir ${nome}`} tamanho="p" onClick={() => atualizarQtd(idx, it.quantidade - passoDo(it))}><Minus size={18} weight="bold" /></BotaoIcone>}
-                          <b aria-live="polite" aria-label={`Quantidade: ${it.quantidade}`}>{pesoLivre(it) ? `${String(it.quantidade).replace('.', ',')} kg` : it.quantidade}</b>
+                          {/* (10/11) dá para digitar a quantidade (50 brigadeiros eram 49 toques no +), igual ao "Adicionar item" do pedido */}
+                          {pesoLivre(it)
+                            ? <b aria-live="polite" aria-label={`Quantidade: ${it.quantidade}`}>{`${String(it.quantidade).replace('.', ',')} kg`}</b>
+                            : <input className="nv3-qtd-in" type="text" inputMode="numeric" aria-label={`Quantidade de ${nome}`} maxLength={4}
+                                value={qtdDigitada?.idx === idx ? qtdDigitada.txt : String(it.quantidade)}
+                                onChange={e => { const txt = e.target.value.replace(/\D/g, '').slice(0, 4); setQtdDigitada({ idx, txt }); const n = Number(txt); if (n >= 1) atualizarQtd(idx, n) }}
+                                onBlur={() => setQtdDigitada(null)} />}
                           <BotaoIcone rotulo={`Aumentar ${nome}`} tamanho="p" onClick={() => atualizarQtd(idx, it.quantidade + passoDo(it))}><Plus size={18} weight="bold" /></BotaoIcone>
                         </div>
                       </div>

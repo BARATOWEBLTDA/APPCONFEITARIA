@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { nomeDePessoa } from "@/lib/nomePessoa";
 import { montarMensagem } from "@/lib/mensagens";
 import { useRecorte } from "@/components/ui/useRecorte";
 import DataNascimentoSheet, { rotuloNascimento } from "@/components/DataNascimentoSheet";
@@ -375,7 +376,7 @@ export default function Clientes() {
     const toNullable = (v?: string) => (v && v.trim() ? v.trim() : null);
     const payload: Record<string, unknown> = {
       user_id: userId,
-      nome: completo.nome.trim(),
+      nome: nomeDePessoa(completo.nome),
       whatsapp: toNullable(completo.whatsapp),
       foto_url: completo.foto_url || null,
       email: toNullable(completo.email),
@@ -855,7 +856,7 @@ export default function Clientes() {
                     const ped = c._totalPedidos || 0;
                     return (
                       <div key={c.id} className="cl9-tab-l" role="row" onClick={() => navigate(`/clientes/${c.id}`)}>
-                        <span role="cell" className="cl9-tab-quem"><Avatar c={c} /><span><b>{c.nome}</b><span className="cl9-tab-l2"><small>{formatPhone(c.whatsapp) || "Sem WhatsApp"}</small><Etiqueta c={c} /></span></span></span>
+                        <span role="cell" className="cl9-tab-quem"><Avatar c={c} /><span><b>{nomeDePessoa(c.nome)}</b><span className="cl9-tab-l2"><small>{formatPhone(c.whatsapp) || "Sem WhatsApp"}</small><Etiqueta c={c} /></span></span></span>
                         <span role="cell">{ped || <em className="cl9-nada">0</em>}</span>
                         <span role="cell">{ped ? formatMoneyFull(c._totalGasto) : <em className="cl9-nada">R$ 0,00</em>}</span>
                         <span role="cell">{ped ? ultimaTxt(c) : <em className="cl9-nada">Ainda não comprou</em>}</span>
@@ -875,7 +876,7 @@ export default function Clientes() {
                     <div key={c.id} className="cl9-l">
                       <button type="button" className="cl9-l-b" onClick={() => navigate(`/clientes/${c.id}`)}>
                         <Avatar c={c} />
-                        <span className="cl9-l-tx"><b>{c.nome}</b><small>{linha2(c)}</small><Etiqueta c={c} /></span>
+                        <span className="cl9-l-tx"><b>{nomeDePessoa(c.nome)}</b><small>{linha2(c)}</small><Etiqueta c={c} /></span>
                       </button>
                       <BotaoZap c={c} />
                     </div>
@@ -898,7 +899,7 @@ export default function Clientes() {
                   <div key={c.id} className="cl9-j-l">
                     <button type="button" className="cl9-j-quem" onClick={() => { setShowNiver(false); navigate(`/clientes/${c.id}`); }}>
                       <Avatar c={c} />
-                      <span><b>{c.nome}</b><small>{String(diaNiver.getDate()).padStart(2, "0")}/{String(diaNiver.getMonth() + 1).padStart(2, "0")} · {quandoNiver(d)}</small></span>
+                      <span><b>{nomeDePessoa(c.nome)}</b><small>{String(diaNiver.getDate()).padStart(2, "0")}/{String(diaNiver.getMonth() + 1).padStart(2, "0")} · {quandoNiver(d)}</small></span>
                     </button>
                     {wa && <a className="cl9-parabens" href={wa} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={18} />{d === 0 ? "Parabéns" : "Oferecer bolo"}</a>}
                   </div>

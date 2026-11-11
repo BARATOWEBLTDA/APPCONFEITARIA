@@ -1,3 +1,4 @@
+import { nomeDePessoa } from "@/lib/nomePessoa";
 import { supabase } from "@/lib/supabase";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { contaComoRecebido, ESTORNO_POR_EXCLUSAO, faltaNoBanco } from "@/lib/pagamentos";
@@ -69,7 +70,8 @@ export async function carregarExtrato(uid: string, ini: string, fim: string): Pr
     const data: PedidoDoPagamento[] = (r1.error ? (await supabase.from("pedidos").select("id, numero, cliente_nome").in("id", bloco)).data : r1.data) || [];
     for (const x of data) {
       const cad = Array.isArray(x.clientes) ? x.clientes[0]?.nome : x.clientes?.nome;
-      nomes[x.id] = { numero: x.numero, cliente: String(x.cliente_nome || cad || "").trim() };
+      // (10/11) nome escrito todo minúsculo vira "Renata Alves"; venda de balcão sem cliente aparece como "Venda avulsa"
+      nomes[x.id] = { numero: x.numero, cliente: nomeDePessoa(String(x.cliente_nome || cad || "")) || "Venda avulsa" };
     }
   }
   const itens: MovExtrato[] = [];

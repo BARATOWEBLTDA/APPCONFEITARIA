@@ -227,7 +227,8 @@ export function nomeDeProduto(s: string): string {
   return t.charAt(0).toUpperCase() + t.slice(1)
 }
 // (6.10) "Sem nome" no lugar de "Cliente não informado" (cortado no celular parecia erro)
-export const nomeCliente = (p: Pedido) => (p.cliente_nome?.trim() ? nomeDeGente(p.cliente_nome) : 'Sem nome')
+// (10/11) venda de balcão sem cliente: "Venda avulsa", o mesmo nome da Nova venda (na Agenda aparecia "Sem nome")
+export const nomeCliente = (p: Pedido) => (p.cliente_nome?.trim() ? nomeDeGente(p.cliente_nome) : p.cliente_id ? 'Sem nome' : 'Venda avulsa')
 /** (6.10) O passo de um pedido de outro dia (e que não está atrasado nem pra aceitar) usa o botão claro */
 export function passoDeDepois(p: Pedido): boolean {
   if (precisaAceitar(p) || atrasado(p) || !p.data_entrega) return false
