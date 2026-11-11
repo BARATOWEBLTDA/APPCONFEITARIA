@@ -680,8 +680,8 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   return (
     <Janelinha foco cheia titulo="Sobre a sua confeitaria" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!txt.trim() || !nome.trim()} carregando={salvando} onClick={salvar}>Salvar</Botao></>}>
+      {/* (11/11) sem a faixa do passo com o mascote (o Bruno pediu: no celular fazia rolar e aqui não precisa) */}
       <div className="ppf-d ppf-d--sobre">
-        <PassoTopo k="descricao" />
 
         {perguntando ? (
           <div className="ppf-ia">
@@ -1174,9 +1174,12 @@ const CSS = `
   .ui-janela:has(.ppf-d--sobre) { width: min(620px, calc(100vw - 48px)); max-width: none; }
   .ui-janela:has(.ppf-d--sobre) .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ui-janela:has(.ppf-d--sobre) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
-  .ppf-d--sobre .ppf-d-campo textarea { height: 150px; font-size: 15.5px; line-height: 1.55; }
+  .ppf-d--sobre .ppf-d-campo textarea { height: 210px; font-size: 15.5px; line-height: 1.55; }
   /* (11/11) celular: sem a faixa do passo com o mascote (a janela rolava); tudo cabe sem rolar */
-  @media (max-width: 767px) { .ppf-d--sobre > .ppf-topo { display: none; } .ppf-d--sobre > .ppf-d-l:first-of-type, .ppf-d--sobre .ppf-d-dois .ppf-d-l { margin-top: 4px; } .ppf-d--sobre .ppf-d-dois > div + div .ppf-d-l { margin-top: 14px; } .ppf-d--sobre .ppf-d-campo textarea { height: 120px; } }
+  .ppf-d--sobre .ppf-d-dois .ppf-d-l { margin-top: 4px; }
+  /* (11/11) computador: a janela do tamanho do conteúdo (sem o vão embaixo); a altura mínima já cabe a Doo escrevendo, então não cresce */
+  @media (min-width: 768px) { .ui-janela.fo--cheia:has(.ppf-d--sobre) { height: auto; } .ppf-d--sobre { min-height: 430px; } }
+  @media (max-width: 767px) { .ppf-d--sobre .ppf-d-dois > div + div .ppf-d-l { margin-top: 14px; } .ppf-d--sobre .ppf-d-campo textarea { height: 120px; } }
   .ui-janela:has(.ppf-d--2col) .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ui-janela:has(.ppf-d--2col) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
   .ppf-d--2col { position: relative; min-height: 340px; padding-right: 368px; }
