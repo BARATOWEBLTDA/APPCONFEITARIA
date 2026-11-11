@@ -1175,6 +1175,8 @@ const CSS = `
   .ui-janela:has(.ppf-d--sobre) .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ui-janela:has(.ppf-d--sobre) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
   .ppf-d--sobre .ppf-d-campo textarea { height: 150px; font-size: 15.5px; line-height: 1.55; }
+  /* (11/11) celular: sem a faixa do passo com o mascote (a janela rolava); tudo cabe sem rolar */
+  @media (max-width: 767px) { .ppf-d--sobre > .ppf-topo { display: none; } .ppf-d--sobre > .ppf-d-l:first-of-type, .ppf-d--sobre .ppf-d-dois .ppf-d-l { margin-top: 4px; } .ppf-d--sobre .ppf-d-dois > div + div .ppf-d-l { margin-top: 14px; } .ppf-d--sobre .ppf-d-campo textarea { height: 120px; } }
   .ui-janela:has(.ppf-d--2col) .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ui-janela:has(.ppf-d--2col) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
   .ppf-d--2col { position: relative; min-height: 340px; padding-right: 368px; }
