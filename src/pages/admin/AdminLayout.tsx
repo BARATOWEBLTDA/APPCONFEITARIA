@@ -87,7 +87,8 @@ export default function AdminLayout() {
       const { count } = await supabase
         .from("sugestoes")
         .select("id", { count: "exact", head: true })
-        .or("status.is.null,status.eq.recebida");
+        .or("status.is.null,status.eq.recebida")
+        .or("resposta.is.null,resposta.eq.") // (10/11) respondida não é mais pendente
       setIdeiasNovas(count || 0);
     };
     contar();
