@@ -51,15 +51,25 @@ const carregarArquivo = (nome: string): void => {
   fetch(`/sons/${nome}.mp3`).then(r => r.arrayBuffer()).then(b => audio.decodeAudioData(b)).then(buf => { buffers[nome] = buf }).catch(() => { delete buffers[nome] })
 }
 /** toca o arquivo; devolve false se ainda não carregou (aí quem chamou usa o som sintetizado) */
-const tocarArquivo = (nome: string, ganho = 1): boolean => {
+// (11/11) toques e prévias tocam num "canal" só: um novo para o anterior (antes, ao trocar de opção, os dois tocavam juntos)
+let noCanal: AudioBufferSourceNode | null = null
+let esperaCanal = 0
+const pararCanal = () => {
+  window.clearTimeout(esperaCanal)
+  try { noCanal?.stop() } catch { /* já tinha parado */ }
+  noCanal = null
+}
+const tocarArquivo = (nome: string, ganho = 1, canal = false): boolean => {
   const audio = getCtx()
   const buf = buffers[nome]
   if (!audio || !buf) { carregarArquivo(nome); return false }
+  if (canal) pararCanal()
   const v = ganho * (volumeApp() / 100)
   if (v <= 0.0005) return true
   const src = audio.createBufferSource(); src.buffer = buf
   const g = audio.createGain(); g.gain.value = v
   src.connect(g); g.connect(audio.destination); src.start()
+  if (canal) { noCanal = src; src.onended = () => { if (noCanal === src) noCanal = null } }
   return true
 }
 /** deixa os sons prontos no primeiro toque na tela (o navegador só libera áudio depois de um toque) */
@@ -88,7 +98,9 @@ const arquivoDe = (g: GrupoSom, id = somEscolhido(g)) => (OPCOES_SOM[g].find(o =
 export const ouvirOpcao = (g: GrupoSom, id: string): void => {
   const audio = getCtx(); if (audio?.state === 'suspended') audio.resume().catch(() => {})
   const nome = arquivoDe(g, id)
-  if (!tocarArquivo(nome, g === 'aviso' ? 0.55 : g === 'erro' ? 0.6 : 0.8)) window.setTimeout(() => tocarArquivo(nome, 0.8), 600)
+  const ganho = g === 'aviso' ? 0.55 : g === 'erro' ? 0.6 : 0.8
+  pararCanal()
+  if (!tocarArquivo(nome, ganho, true)) esperaCanal = window.setTimeout(() => tocarArquivo(nome, ganho, true), 600)
 }
 
 // Toca uma nota simples
@@ -257,9 +269,10 @@ export const tocarToque = (id: ToqueId = toqueEscolhido()): void => {
   if (audio.state === 'suspended') audio.resume().catch(() => {})
   if (id === 'suave' || id === 'minimal') {
     const nome = id === 'suave' ? 'pedido-suave' : 'pedido-minimal'
-    if (tocarArquivo(nome, 0.9)) return
+    pararCanal()
+    if (tocarArquivo(nome, 0.9, true)) return
     // ainda carregando (primeira vez): tenta de novo em instantes; se não der, toca o sinal
-    window.setTimeout(() => { if (!tocarArquivo(nome, 0.9)) tocarToque('sinal') }, 700)
+    esperaCanal = window.setTimeout(() => { if (!tocarArquivo(nome, 0.9, true)) tocarToque('sinal') }, 700)
     return
   }
   if (id === 'telefone') {
