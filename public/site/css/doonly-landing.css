@@ -2652,3 +2652,9 @@ html:has(.dl-root.dl-escuro), body:has(.dl-root.dl-escuro) { background: #140D1A
 }
 .dl-root .dl-cardapio__fundo { display: none; }
 body:has(.dl-root) { margin: 0; }
+/* (11/11) contato pelo WhatsApp: nas Dúvidas e no final */
+.dl-root .dl-zap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 22px 0 0; font-size: .9375rem; color: var(--dl-texto-2); }
+.dl-root .dl-zap a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; background: #1FAF54; color: #fff; font-weight: 600; text-decoration: none; white-space: nowrap; transition: filter var(--dl-rapido); }
+.dl-root .dl-zap a:hover { filter: brightness(1.06); }
+.dl-root .dl-zap--final { margin-top: 20px; color: rgba(255, 248, 250, .72); }
+@media (max-width: 899px) { .dl-root .dl-zap { justify-content: center; text-align: center; } }

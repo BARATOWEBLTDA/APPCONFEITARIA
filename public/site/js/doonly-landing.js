@@ -234,3 +234,13 @@
     });
   });
 })();
+
+/* (11/11) clique no "Falar no WhatsApp": conta como contato no pixel */
+(function () {
+  var zaps = document.querySelectorAll('.dl-root [data-dl-zap]');
+  Array.prototype.forEach.call(zaps, function (link) {
+    link.addEventListener('click', function () {
+      if (typeof window.fbq === 'function') { window.fbq('track', 'Contact'); }
+    });
+  });
+})();
