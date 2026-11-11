@@ -92,10 +92,10 @@ export default function JanelaAcessoSuporte({ id, aberta, aoFechar, telaCheia = 
         .jas-janela .ui-janela-pe { grid-template-columns: auto 1fr; }
         .jas-janela .ui-janela-pe .ui-bt { padding-inline: 16px; }
         .jas-janela .ui-janela-alca { display: none; }
-        .jas-x { position: absolute; top: 8px; right: 8px; z-index: 2; color: #3A1424 !important; }
+        .jas-x { position: absolute; top: 8px; right: 8px; z-index: 2; color: #fff !important; }
         /* topo: faixa rosa e a foto saindo entre a faixa e o branco */
         .jas-janela .ui-janela-ic { display: block; width: auto; height: auto; margin: -22px -22px 0; background: none; border-radius: 0; }
-        .jas-faixa { position: relative; display: block; height: 84px; background: linear-gradient(120deg, #FBCFE0, #F5A3C4); }
+        .jas-faixa { position: relative; display: block; height: 84px; background: linear-gradient(120deg, var(--ui-rosa), var(--ui-rosa-escuro)); }
         .jas-foto { position: absolute; left: 50%; bottom: -44px; transform: translateX(-50%); display: flex; padding: 4px; border-radius: 50%; background: var(--ui-branco); }
         .jas-foto .avsup-f { border: 0; }
         .jas-janela .ui-janela-t { margin-top: 50px; font-size: 21px; font-weight: 600; }
