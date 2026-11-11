@@ -71,7 +71,7 @@ function PassoTopo({ k }: { k: Passo }) {
 /** (6.132) o porquê de cada passo (o mesmo do Início) e o Doo de cada janela (sem Doo próprio, o da prancheta) */
 const PQ_PASSO: Record<Passo, string> = {
   logo: "Deixa sua loja com cara profissional e ajuda o cliente a te reconhecer.",
-  descricao: "Confira o nome e o WhatsApp e conte o que você faz de especial.",
+  descricao: "Confira seus dados e conte o que você faz.",
   endereco: "Com ele, o app calcula a taxa de entrega de cada cliente sozinho.",
   horario: "O cliente vê se você está aberta e para quando pode encomendar.",
   pagamento: "Diga se aceita Pix, cartão ou dinheiro.",
@@ -742,9 +742,7 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
                 <span>{txt.length}/200</span>
               </div>
             </div>
-            {/* (23/10) a ajuda vem embaixo do campo (antes era uma caixa rosa em cima) */}
-            {/* (30/10 · 5.21) uma frase só, também no celular (as 3 linhas com check pareciam tarefas feitas) */}
-            <p className="ppf-d-dica1">Conte o que você faz, para quais ocasiões e o que tem de especial.{!largo && " Aparece embaixo do nome, no topo do cardápio."}</p>
+            {/* (11/11) sem a frase de ajuda embaixo: o exemplo dentro do campo já ensina */}
           </>
         )}
         {erro && <p className="ppf-erro">{erro}</p>}
@@ -1167,7 +1165,7 @@ const CSS = `
   .ppf-d-opc button.on { border-color: var(--ui-escolha); background: var(--ui-escolha-fundo); color: var(--ui-escolha); font-weight: 600; }
   .ppf-d-dois { display: grid; grid-template-columns: 1fr; gap: 0 14px; }
   @media (min-width: 600px) { .ppf-d-dois { grid-template-columns: 1.3fr 1fr; } }
-  .ppf-d-l { display: block; margin: 16px 2px 8px; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+  .ppf-d-l { display: block; margin: 16px 2px 8px; font-size: 15px; font-weight: 500; color: var(--ui-texto); }
   .ppf-d-l + .ppf-d-campo { margin-top: 0; }
   .ppf-d-ajuda { margin-top: 14px; padding: 0 2px; }
   /* (29/10 · 5.00) computador: janela larga, campo à esquerda e a prévia do cardápio à direita; botões no canto */
@@ -1176,7 +1174,7 @@ const CSS = `
   .ui-janela:has(.ppf-d--sobre) { width: min(620px, calc(100vw - 48px)); max-width: none; }
   .ui-janela:has(.ppf-d--sobre) .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ui-janela:has(.ppf-d--sobre) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
-  .ppf-d--sobre .ppf-d-campo textarea { height: 200px; font-size: 15.5px; line-height: 1.55; }
+  .ppf-d--sobre .ppf-d-campo textarea { height: 150px; font-size: 15.5px; line-height: 1.55; }
   .ui-janela:has(.ppf-d--2col) .ui-janela-pe { display: flex; justify-content: flex-end; }
   .ui-janela:has(.ppf-d--2col) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
   .ppf-d--2col { position: relative; min-height: 340px; padding-right: 368px; }
