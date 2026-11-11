@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import { Cake, ChatCircleText, LockSimple, PaintBrush, Storefront, Ticket } from "@phosphor-icons/react";
 import { Botao, Janela, avisar } from "@/components/base";
 import { BotaoFechar } from "@/components/base/BotoesX";
+import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import { lerAcesso, quemPediu, responderAcesso, type AcessoSuporte } from "@/lib/acessoSuporte";
 
 /** a foto de quem pediu (sem foto: a inicial na cor do perfil), com o selo da Doonly no canto */
-export function AvatarSuporte({ acesso, tamanho = 40 }: { acesso: Pick<AcessoSuporte, "pedido_por_nome" | "pedido_por_foto" | "pedido_por_cor"> | null; tamanho?: number }) {
+export function AvatarSuporte({ acesso, tamanho = 40, selo = true }: { acesso: Pick<AcessoSuporte, "pedido_por_nome" | "pedido_por_foto" | "pedido_por_cor"> | null; tamanho?: number; selo?: boolean }) {
   const nome = quemPediu(acesso);
   const semPerfil = !acesso?.pedido_por_nome;
   return (
@@ -18,7 +19,7 @@ export function AvatarSuporte({ acesso, tamanho = 40 }: { acesso: Pick<AcessoSup
         {acesso?.pedido_por_foto ? <img src={acesso.pedido_por_foto} alt="" />
           : semPerfil ? <img src="/Sistema/icon-maskable-192.png" alt="" /> : nome.charAt(0).toUpperCase()}
       </span>
-      {!semPerfil && <img className="avsup-selo" src="/Sistema/icon-maskable-192.png" alt="" />}
+      {selo && !semPerfil && <img className="avsup-selo" src="/Sistema/icon-maskable-192.png" alt="" />}
       <style>{`
         .avsup { position: relative; flex: none; display: inline-flex; }
         .avsup-f { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%; overflow: hidden; border-radius: 50%; border: 1px solid var(--ui-borda); color: #fff; font-weight: 500; line-height: 1; }
@@ -40,15 +41,18 @@ const PODE = [
 /** telaCheia: o convite que abre sozinho ao entrar no app (no celular cobre a tela; o X é "ver depois") */
 export default function JanelaAcessoSuporte({ id, aberta, aoFechar, telaCheia = false }: { id: string | null; aberta: boolean; aoFechar: (respondeu?: boolean) => void; telaCheia?: boolean }) {
   const [salvando, setSalvando] = useState<"sim" | "nao" | null>(null);
-  const [acesso, setAcesso] = useState<AcessoSuporte | null>(null);
+  // (11/11) só abre depois de saber quem pediu (antes aparecia a logo do Doonly no lugar da foto, um instante)
+  const [acesso, setAcesso] = useState<{ id: string; a: AcessoSuporte | null } | null>(null);
   useEffect(() => {
     if (!id || !aberta) return;
     let vivo = true;
-    void lerAcesso(id).then(a => { if (vivo) setAcesso(a); }).catch(() => {});
+    void lerAcesso(id).then(a => { if (vivo) setAcesso({ id, a }); }).catch(() => { if (vivo) setAcesso({ id, a: null }); });
     return () => { vivo = false; };
   }, [id, aberta]);
-  const nome = quemPediu(acesso);
-  const pessoa = !!acesso?.pedido_por_nome;
+  const pronto = !!acesso && acesso.id === id;
+  const a = pronto ? acesso.a : null;
+  const nome = quemPediu(a);
+  const pessoa = !!a?.pedido_por_nome;
   const responder = async (permitir: boolean) => {
     if (!id) return;
     setSalvando(permitir ? "sim" : "nao");
@@ -60,9 +64,9 @@ export default function JanelaAcessoSuporte({ id, aberta, aoFechar, telaCheia = 
     setSalvando(null);
   };
   return (
-    <Janela aberta={aberta} aoFechar={() => aoFechar()} className={`jas-janela${telaCheia ? " jas-cheia" : ""}`} travada={telaCheia}
-      icone={<AvatarSuporte acesso={acesso} tamanho={72} />}
-      titulo={nome}
+    <Janela aberta={aberta && pronto} aoFechar={() => aoFechar()} className={`jas-janela${telaCheia ? " jas-cheia" : ""}`} travada={telaCheia}
+      icone={<span className="jas-faixa"><span className="jas-foto"><AvatarSuporte acesso={a} tamanho={84} selo={false} /></span></span>}
+      titulo={<span className="jas-nome">{nome}<SeloVerificado tamanho={20} /></span>}
       texto={pessoa ? "Da equipe Doonly · pediu acesso de suporte" : "Pediu acesso de suporte à sua loja"}
       acoes={<><Botao variante="secundario" carregando={salvando === "nao"} disabled={!!salvando} onClick={() => responder(false)}>Agora não</Botao>
         <Botao carregando={salvando === "sim"} disabled={!!salvando} onClick={() => responder(true)} data-foco-inicial>Permitir por 7 dias</Botao></>}>
@@ -77,32 +81,51 @@ export default function JanelaAcessoSuporte({ id, aberta, aoFechar, telaCheia = 
             </li>
           ))}
         </ul>
-        <p className="jas-fecha"><LockSimple size={16} weight="bold" aria-hidden="true" />Não vê financeiro, pedidos nem clientes</p>
-        <small className="jas-rod">Acaba em 7 dias, ou quando você quiser. Ninguém pede a sua senha.</small>
+        <div className="jas-fecha">
+          <LockSimple size={20} weight="bold" aria-hidden="true" />
+          <span><b>Não vê financeiro, pedidos nem clientes</b><small>Acaba em 7 dias. Ninguém pede a sua senha.</small></span>
+        </div>
       </div>
       <style>{`
+        .ui-janela.jas-janela { position: relative; overflow: hidden; }
+        @media (min-width: 768px) { .ui-veu--centro .ui-janela.jas-janela { max-height: min(96dvh, 820px); } }
         .jas-janela .ui-janela-pe { grid-template-columns: auto 1fr; }
-        .jas-janela .ui-janela-pe .ui-bt:first-child { padding-inline: 18px; }
-        .jas-janela { position: relative; }
-        .jas-x { position: absolute; top: 8px; right: 8px; z-index: 1; }
-        @media (max-width: 767px) {
-          .ui-janela.jas-cheia { max-width: none; height: 100dvh; max-height: 100dvh; border-radius: 0; }
-          .jas-cheia .ui-janela-alca { display: none; }
-          .jas-cheia .ui-janela-corpo { display: flex; flex-direction: column; justify-content: center; padding-top: calc(28px + env(safe-area-inset-top, 0px)); }
-        }
-        .jas-janela .ui-janela-ic { width: auto; height: auto; background: none; margin-bottom: 10px; }
-        .jas { margin-top: 18px; text-align: left; }
-        .jas-t { margin: 0 0 8px; font-size: 14px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .jas-l { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+        .jas-janela .ui-janela-pe .ui-bt { padding-inline: 16px; }
+        .jas-janela .ui-janela-alca { display: none; }
+        .jas-x { position: absolute; top: 8px; right: 8px; z-index: 2; color: #3A1424 !important; }
+        /* topo: faixa rosa e a foto saindo entre a faixa e o branco */
+        .jas-janela .ui-janela-ic { display: block; width: auto; height: auto; margin: -22px -22px 0; background: none; border-radius: 0; }
+        .jas-faixa { position: relative; display: block; height: 84px; background: linear-gradient(120deg, #FBCFE0, #F5A3C4); }
+        .jas-foto { position: absolute; left: 50%; bottom: -44px; transform: translateX(-50%); display: flex; padding: 4px; border-radius: 50%; background: var(--ui-branco); }
+        .jas-foto .avsup-f { border: 0; }
+        .jas-janela .ui-janela-t { margin-top: 50px; font-size: 21px; font-weight: 600; }
+        .jas-nome { display: inline-flex; align-items: center; }
+        .jas-nome .selo-verif { vertical-align: 0 !important; }
+        .jas { margin-top: 14px; text-align: left; }
+        .jas-t { margin: 0 0 6px; font-size: 14px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* tabelinha: linha em cima, embaixo e entre as opções */
+        .jas-l { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--ui-linha); border-bottom: 1px solid var(--ui-linha); }
         .jas-l li { display: flex; align-items: center; gap: 12px; padding: 7px 0; }
-        .jas-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-2); }
+        .jas-l li + li { border-top: 1px solid var(--ui-linha); }
+        .jas-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-2); }
         .jas-tx { min-width: 0; flex: 1; }
         .jas-tx b, .jas-tx small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .jas-tx b { font-size: 14.5px; font-weight: 500; color: var(--ui-texto); }
         .jas-tx small { font-size: 13px; color: var(--ui-texto-2); }
-        .jas-fecha { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--ui-linha); font-size: 13.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; }
-        .jas-fecha svg { flex: none; color: var(--ui-texto-2); }
-        .jas-rod { display: block; margin-top: 6px; font-size: 12.5px; color: var(--ui-texto-2); line-height: 1.45; }
+        /* o que fica fechado: em verde, para tranquilizar */
+        .jas-fecha { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; padding: 10px 14px; border-radius: var(--ui-raio); background: var(--ui-verde-fundo); color: var(--ui-verde); }
+        .jas-fecha svg { flex: none; margin-top: 1px; }
+        .jas-fecha span { min-width: 0; }
+        .jas-fecha b { display: block; font-size: 14px; font-weight: 500; white-space: nowrap; }
+        .jas-fecha small { display: block; margin-top: 1px; font-size: 12.5px; line-height: 1.4; color: var(--ui-texto-2); white-space: nowrap; }
+        @media (max-width: 767px) {
+          .ui-janela.jas-cheia { max-width: none; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+          .jas-cheia .jas-faixa { height: calc(76px + env(safe-area-inset-top, 0px)); }
+          .jas-cheia .ui-janela-corpo { padding-bottom: 0; }
+          .jas-fecha b, .jas-fecha small { white-space: normal; text-wrap: balance; }
+          .jas-cheia .jas-x { top: calc(8px + env(safe-area-inset-top, 0px)); }
+        }
+        @media (max-height: 700px) { .jas-l li { padding: 5px 0; } .jas-janela .ui-janela-x { margin-top: 4px; } .jas { margin-top: 10px; } }
       `}</style>
     </Janela>
   );
