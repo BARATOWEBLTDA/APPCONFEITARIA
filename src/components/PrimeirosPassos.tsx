@@ -51,44 +51,7 @@ const SEQ: Passo[] = ORDEM.filter(k => k !== "produto");
 const proximoPasso = (e: EstadoPassos, feitoAgora?: Passo, pulados: Set<Passo> = new Set()): Passo | null =>
   SEQ.find(k => k !== feitoAgora && !pulados.has(k) && !e[k]) || null;
 
-/** (13/10) Topo de cada card: "Passo 2 de 6" e a barrinha */
-function PassoTopo({ k }: { k: Passo }) {
-  // (27/10) conta os 7 passos, igual ao cartão do Início ("1 de 7 prontos"); antes dizia "Passo 2 de 6"
-  // (6.132) virou uma faixa com o Doo do passo e o porquê: ao seguir de um passo para o outro, cada janela tem a sua cara
-  const n = ORDEM.indexOf(k) + 1;
-  return (
-    <div className="ppf-topo ppf-topo--doo" aria-label={`Passo ${n} de ${ORDEM.length}`}>
-      <div className="ppf-topo-tx">
-        <span>Passo <b>{n} de {ORDEM.length}</b></span>
-        <div className="ppf-barra" aria-hidden="true">{ORDEM.map((x, i) => <i key={x} className={i < n ? "on" : ""} />)}</div>
-        <p>{PQ_PASSO[k]}</p>
-      </div>
-      <img src={DOO_FOLHA[k] || "/marca/leve/prancheta.webp"} alt="" aria-hidden="true" />
-    </div>
-  );
-}
-
-/** (6.132) o porquê de cada passo (o mesmo do Início) e o Doo de cada janela (sem Doo próprio, o da prancheta) */
-const PQ_PASSO: Record<Passo, string> = {
-  logo: "Deixa sua loja com cara profissional e ajuda o cliente a te reconhecer.",
-  descricao: "Confira seus dados e conte o que você faz.",
-  endereco: "Com ele, o app calcula a taxa de entrega de cada cliente sozinho.",
-  horario: "O cliente vê se você está aberta e para quando pode encomendar.",
-  pagamento: "Diga se aceita Pix, cartão ou dinheiro.",
-  entrega: "Diga se o cliente busca, se você entrega e quanto cobra.",
-  caixa: "Assim o app mostra quanto dinheiro você tem de verdade, todo dia.",
-  produto: "Com o primeiro doce cadastrado, o cardápio já pode receber pedidos.",
-};
-const DOO_FOLHA: Partial<Record<Passo, string>> = {
-  logo: "/marca/leve/doo-pintando-logo.webp",
-  descricao: "/marca/leve/doo-loja.webp",
-  endereco: "/marca/leve/doo-endereco.webp",
-  horario: "/marca/leve/doo-horario.webp",
-  pagamento: "/marca/leve/doo-pagamento.webp",
-  produto: "/marca/leve/doo-produto.webp",
-  caixa: "/marca/leve/doo-caixa.webp",
-  entrega: "/marca/leve/doo-entrega.webp",
-};
+/** (11/11) As janelas dos passos não têm mais a faixa "Passo X de 8" com o mascote: o mascote fica só no cartão do Início */
 
 /** (29/10) computador (901px ou mais): as janelas dos passos ganham duas colunas */
 function useLargo() {
@@ -501,7 +464,6 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
           marcarPagamentoConferido(uid); onSalvo();
         }}>Salvar</Botao></>}>
         <div className="ppf-pe ppf-pe--pag">
-          <PassoTopo k="pagamento" />
           <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
             <EntregaPagamento embutido parte="entrega" so="pag" onEstado={setEp} />
           </Suspense>
@@ -516,7 +478,6 @@ function FolhaPagamento({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   return (
     <Janelinha foco cheia titulo="Pagamento" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!paga.length || !carregou} carregando={salvando} onClick={salvar}>Salvar</Botao></>}>
-      <PassoTopo k="pagamento" />
       <ListaChaves titulo="Como o cliente paga" id="pp-paga" itens={PAGA.map(([k, n]) => ({ chave: k, Ic: ICONE_PAGA[k], rotulo: n, sub: SUB_PAGA[k], on: paga.includes(k), aoTocar: () => trocarPaga(k) }))} />
       {erro && <p className="ppf-erro">{erro}</p>}
     </Janelinha>
@@ -534,7 +495,6 @@ function FolhaEntrega({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     <Janelinha foco cheia titulo="Entrega" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio disabled={!ok} onClick={() => { marcarEntregaConferida(uid); onSalvo(); }}>Salvar</Botao></>}>
       <div className="ppf-pe ppf-pe--ent">
-        <PassoTopo k="entrega" />
         <Suspense fallback={<div className="ep-carregando"><span className="ui-gira" aria-label="Carregando" /></div>}>
           {/* (04/11 · 6.20) a mesma tela da Minha loja: o mapa em cima, como cobrar e as formas de entrega */}
           <EntregaPagamento embutido parte="entrega" so="ent" onEstado={setEp} />
@@ -591,14 +551,12 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
             </div>
             <ul className="ppf-cx-pq">{porque.map(t => <li key={t}><Check size={14} weight="bold" aria-hidden="true" />{t}</li>)}</ul>
           </div>
-          <PassoTopo k="caixa" />
           <p className="ppf-l ppf-h-tit">Quanto tem hoje no caixa?</p>
           {campoCaixa}
           {dicaSinal}
           {erro && <p className="ppf-erro">{erro}</p>}
         </div>
       ) : (<>
-        <PassoTopo k="caixa" />
         <p className="ppf-l ppf-h-tit">Quanto tem hoje no caixa?</p>
         {campoCaixa}
         {/* (30/10 · 5.21) igual ao computador: o porquê sem fundo rosa e o aviso do sinal sem moldura */}
@@ -814,7 +772,6 @@ function FolhaLogo({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
           ? <><Botao variante="secundario" onClick={escolherFoto}>Trocar</Botao><Botao cheio carregando={enviando} onClick={usarFoto}>Usar esta foto</Botao></>
           : <><Botao variante="secundario" disabled={enviando} onClick={onDepois}>Agora não</Botao><Botao cheio carregando={enviando} onClick={escolherFoto}>Escolher foto</Botao></>}>
         <input ref={ref} type="file" accept="image/*" hidden onChange={escolher} />
-        <PassoTopo k="logo" />
         {/* (23/10) a prévia é o topo do cardápio de verdade (mesmas peças e cores da loja), com a logo à direita */}
         <div className="ppf-lg3">
           <PreviaTopoCardapio d={{ ...design, ...perfil, nome_loja: nomeLoja }} onLogo={escolherFoto} enviando={enviando} />
@@ -886,7 +843,6 @@ function FolhaEndereco({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) 
           <MapaEndereco busca={busca} soCidade={mostrar !== "completo"} selo={selo || "Digite o CEP para ver no mapa"} altura={500} />
         </div>
       )}
-      <PassoTopo k="endereco" />
       {/* (23/10) o CEP vem primeiro; o mapa só aparece depois que acha o endereço, embaixo, mostrando o que o cliente vê */}
       {!manual && (<>
         <div className="ppf-f ppf-e-cep">
@@ -963,7 +919,6 @@ function FolhaHorario({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps) {
             <PreviaSobreHorario nome={nomeLoja} horario={h} corTopo={design.cor_navbar || design.cor_borda} />
           </div>
         )}
-        <PassoTopo k="horario" />
         <EditorHorario h={h} onMudar={setH} semCardapio={largo} />
         {erro && <p className="ppf-erro">{erro}</p>}
       </div>
