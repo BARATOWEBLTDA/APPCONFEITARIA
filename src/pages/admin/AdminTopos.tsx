@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { registrar } from "@/lib/adminPerfil";
-import { Cake, Crop, Image as ImageIcon, PencilSimple, Plus, Trash, UploadSimple, WarningCircle, X } from "@phosphor-icons/react";
+import { Cake, Crop, FileZip, Image as ImageIcon, PencilSimple, Plus, Trash, UploadSimple, WarningCircle, X } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base";
 import { paraWebp } from "@/lib/imagemLeve";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -9,6 +9,7 @@ import {
   ACEITA_ARQUIVOS, ACEITA_IMAGEM, BUCKET_ARQUIVOS, BUCKET_CAPAS, carregarCategorias, carregarTopos, ehImagem, formatoDe, nomeSeguro, tamanhoTexto,
   type ArquivoTopo, type CategoriaTopo, type Topo,
 } from "@/lib/toposBolo";
+import ImportarTopos from "./ImportarTopos";
 import "./admin-topos.css";
 
 /**
@@ -48,6 +49,7 @@ export default function AdminTopos() {
   const [filtro, setFiltro] = useState<string>("");
   const [form, setForm] = useState<Form | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [importando, setImportando] = useState(false); // (10/11) importar vários topos por .zip
   const [novaCat, setNovaCat] = useState<{ id?: string; nome: string; img: File | null; imgUrl: string | null } | null>(null);
   const capaRef = useRef<HTMLInputElement>(null);
   const [tagTxt, setTagTxt] = useState("");
@@ -223,7 +225,7 @@ export default function AdminTopos() {
           </section>
 
           <section className="atp-sec">
-            <div className="atp-sec-cab"><h2>{filtro ? nomeCat(filtro) : "Todos os topos"} <small>{visiveis.length}</small></h2><Botao tamanho="m" icone={<UploadSimple size={18} weight="bold" />} onClick={abrirNovo}>Novo topo</Botao></div>
+            <div className="atp-sec-cab"><h2>{filtro ? nomeCat(filtro) : "Todos os topos"} <small>{visiveis.length}</small></h2><span className="atp-sec-bts"><Botao variante="secundario" tamanho="m" icone={<FileZip size={18} weight="bold" />} onClick={() => setImportando(true)}>Importar .zip</Botao><Botao tamanho="m" icone={<UploadSimple size={18} weight="bold" />} onClick={abrirNovo}>Novo topo</Botao></span></div>
             {visiveis.length === 0 ? <p className="atp-vz">Nenhum topo aqui ainda.</p> : (
               <div className="atp-grade">
                 {visiveis.map(t => (
@@ -244,6 +246,8 @@ export default function AdminTopos() {
           </section>
         </>
       )}
+
+      {importando && <ImportarTopos aberta={importando} aoFechar={() => setImportando(false)} cats={cats} topos={topos} categoriaInicial={filtro || ""} subirCapa={subirCapa} aoTerminar={() => void carregar()} />}
 
       {/* novo topo / editar */}
       <Janela aberta={!!form} aoFechar={() => !salvando && setForm(null)} tipo="conteudo" titulo={form?.id ? "Editar topo" : "Novo topo"} className="atp-janela"
