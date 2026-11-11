@@ -1079,8 +1079,8 @@ const CSS = `
   .pp-dk .pp-cols { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); gap: 32px; align-items: stretch; margin-top: 22px; }
   /* (09/11) o passo da vez sem a caixa rosa em volta (era moldura dentro do cartão) */
   .pp-hero { display: flex; flex-direction: column; gap: 22px; padding: 4px 0 0; }
-  .pp-hero-topo { flex: 1; display: flex; align-items: center; gap: 16px; } /* ocupa a altura: o aviso fica rente ao último passo da lista */
-  .pp-hero-tx { flex: 1; min-width: 0; display: flex; gap: 22px; align-items: flex-start; }
+  .pp-hero-topo { flex: 1; display: flex; align-items: center; justify-content: center; gap: 36px; } /* (11/11) texto e mascote juntos no meio (antes, um em cada ponta com um vão no meio) */ /* ocupa a altura: o aviso fica rente ao último passo da lista */
+  .pp-hero-tx { flex: 0 1 auto; min-width: 0; display: flex; gap: 22px; align-items: flex-start; }
   .pp-hero-n--ok { background: var(--ui-verde) !important; box-shadow: 0 6px 16px rgba(46, 158, 91, .25) !important; }
   .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
   .pp-hero-t { display: block; margin-top: 4px; font-size: 26px; font-weight: 500; letter-spacing: -.015em; color: #3B3236; line-height: 1.2; }
@@ -1088,21 +1088,22 @@ const CSS = `
   .pp-hero-p { margin: 18px 0 0; max-width: 380px; font-size: 16px; line-height: 1.6; color: #6B5C62; }
   .pp-hero-btn { display: inline-flex; align-items: center; gap: 12px; min-height: 54px; margin-top: 26px; padding: 0 30px; border: 0; border-radius: var(--ui-raio-botao); font-family: inherit; font-size: 17px; font-weight: 600; color: #fff; background: var(--ui-rosa-botao, #CC2E66); box-shadow: none; cursor: pointer; white-space: nowrap; transition: background-color .15s ease; } /* (09/11) chapado, sem a sombra rosa */
   .pp-hero-btn:hover { background: var(--ui-rosa-botao-sombra, #A51E50); }
-  .pp-hero-masc { position: relative; flex: none; width: clamp(140px, 12vw, 190px); display: flex; justify-content: center; }
+  .pp-hero-masc { position: relative; flex: none; width: clamp(110px, 9vw, 140px); /* (11/11) uns 30% menor: o foco é o passo e o botão */ display: flex; justify-content: center; }
   .pp-hero-masc::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -4px; height: 18px; border-radius: 50%; background: rgba(214, 69, 122, .14); }
   .pp-hero-masc img { position: relative; z-index: 1; width: 90%; height: auto; }
   /* (6.126) o Doo pintando a logo é mais largo (tem o cavalete) */
-  .pp-hero-masc--largo { width: clamp(200px, 18vw, 290px); }
+  .pp-hero-masc--largo { width: clamp(150px, 13vw, 200px); }
   .pp-hero-masc--largo img { width: 100%; }
   .pp-hero-masc > i { position: absolute; left: 6px; top: 22px; width: 18px; height: 16px; background:
       linear-gradient(var(--ui-rosa), var(--ui-rosa)) 0 0 / 4px 12px no-repeat,
       linear-gradient(var(--ui-rosa), var(--ui-rosa)) 8px 2px / 4px 10px no-repeat; transform: rotate(-35deg); border-radius: 2px; opacity: .85; }
   /* (11/11) computador: sombra leve no cartão dos Primeiros passos (sozinho na tela, ele é o foco) */
   @media (min-width: 901px) { .pp:has(.pp-dk) { box-shadow: 0 1px 2px rgba(44, 18, 25, .05), 0 8px 22px -6px rgba(44, 18, 25, .10); } }
-  .pp-hero-dica { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: var(--ui-raio); background: #FDF2F6; }
-  .pp-hero-dica > span { width: 40px; height: 40px; flex: none; border-radius: 50%; background: #fff; color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; }
+  /* (11/11) sem a caixa rosa: só uma linha fina em cima, o ícone na caixinha branca e o texto neutro */
+  .pp-hero-dica { display: flex; align-items: center; gap: 14px; padding: 16px 0 8px; border-top: 1px solid var(--ui-linha); }
+  .pp-hero-dica > span { width: 40px; height: 40px; flex: none; border-radius: var(--ui-raio); background: #fff; border: 1px solid var(--ui-borda); color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; }
   .pp-hero-dica p { margin: 0; font-size: 14.5px; color: #6B5C62; line-height: 1.45; }
-  .pp-hero-dica b { display: block; font-size: 17px; font-weight: 600; color: var(--ui-rosa); margin-bottom: 2px; }
+  .pp-hero-dica b { display: block; font-size: 15px; font-weight: 500; color: var(--ui-texto); margin-bottom: 2px; }
   /* (09/11) a lista sem moldura própria: só uma linha separa as duas colunas */
   .pp-lista { display: flex; flex-direction: column; padding: 0 0 0 24px; border-left: 1px solid var(--ui-linha); }
   .pp-li { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 58px; padding: 6px 14px; border: 0; border-bottom: 1px solid var(--ui-linha); border-radius: 0; background: none; font-family: inherit; text-align: left; color: inherit; cursor: pointer; }
