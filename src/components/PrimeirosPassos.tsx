@@ -404,7 +404,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
                 <div className="pp-hero" ref={atRef}>
                   <div className="pp-hero-topo">
                     <div className="pp-hero-tx">
-                      <span className={`pp-hero-n${p.feito ? " pp-hero-n--ok" : ""}`} aria-hidden="true">{p.feito ? <Check size={28} weight="bold" /> : sel + 1}</span>
+                      <span className={`pp-hero-n${p.feito ? " pp-hero-n--ok" : ""}`} aria-hidden="true">{p.feito ? <Check size={24} weight="bold" /> : sel + 1}</span>
                       <div>
                         <b className="pp-hero-t">{p.t}</b>
                         <small className="pp-hero-s">{p.s}</small>
@@ -1082,7 +1082,7 @@ const CSS = `
   .pp-hero-topo { flex: 1; display: flex; align-items: center; justify-content: center; gap: 36px; } /* (11/11) texto e mascote juntos no meio (antes, um em cada ponta com um vão no meio) */ /* ocupa a altura: o aviso fica rente ao último passo da lista */
   .pp-hero-tx { flex: 0 1 auto; min-width: 0; display: flex; gap: 22px; align-items: flex-start; }
   .pp-hero-n--ok { background: var(--ui-verde) !important; box-shadow: 0 6px 16px rgba(46, 158, 91, .25) !important; }
-  .pp-hero-n { width: 60px; height: 60px; flex: none; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 24px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  .pp-hero-n { width: 48px; height: 48px; flex: none; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-size: 20px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
   .pp-hero-t { display: block; margin-top: 4px; font-size: 26px; font-weight: 500; letter-spacing: -.015em; color: #3B3236; line-height: 1.2; }
   .pp-hero-s { display: block; margin-top: 4px; font-size: 18px; color: var(--ui-texto-2); }
   .pp-hero-p { margin: 18px 0 0; max-width: 380px; font-size: 16px; line-height: 1.6; color: #6B5C62; }
