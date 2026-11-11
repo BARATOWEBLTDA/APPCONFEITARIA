@@ -2152,6 +2152,9 @@ export default function Inicio() {
           .ini-dk-cab { display: contents; }
           /* (09/11) conta com Primeiros passos por fazer: sem a busca no topo (ainda não tem o que buscar) */
           .ini-dk-cab--foco .cab-busca { display: none !important; }
+          /* (11/11) com os Primeiros passos na tela, a saudação some (o cartão já diz o que fazer); fica só para leitor de tela */
+          .ini-dk-cab--foco .cab-txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+          .ini-dk-cab--foco .cab-foto-area { margin-left: auto; }
           /* rosa encostado no topo e nas laterais da área do app (sem mexer nos cartões) */
           /* (19/10) sem a faixa rosa: a saudação no fundo da página, como o título das outras telas */
           .ini-dk-top { display: none; } /* (4.92) a saudação e o resumo foram pro topo */
