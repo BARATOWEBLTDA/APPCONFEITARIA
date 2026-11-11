@@ -2658,3 +2658,8 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-zap a:hover { filter: brightness(1.06); }
 .dl-root .dl-zap--final { margin-top: 20px; color: rgba(255, 248, 250, .72); }
 @media (max-width: 899px) { .dl-root .dl-zap { justify-content: center; text-align: center; } }
+/* (11/11) topo sem os links do menu: no tablet/notebook pequeno, sai o botão "Menu" e fica só o "Criar conta grátis" */
+@media (min-width: 900px) and (max-width: 1023px) {
+  .dl-root .dl-hamburguer, .dl-root .dl-menu { display: none !important; }
+  .dl-root .dl-cabecalho__cta-celular { display: inline-flex !important; margin-left: auto; }
+}
