@@ -512,7 +512,6 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   const [zero, setZero] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  const largo = useLargo();
   const campo = useRef<HTMLInputElement>(null);
   const salvar = async () => {
     if (salvando) return;
@@ -523,7 +522,6 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
     supabase.auth.updateUser({ data: { pp_caixa: true } }).then(() => {}, () => {});
     onSalvo();
   };
-  const valor = zero ? 0 : lerBRL(txt || "0");
   const porque = ["O app soma o que entra e tira o que sai", "Você sabe quanto tem, todo dia", "Dá para mudar depois no Financeiro"];
   const campoCaixa = (
     <div className={`ppf-cx${zero ? " ppf-cx--zero" : ""}`}><span>R$</span>
@@ -538,32 +536,15 @@ function FolhaCaixa({ uid, onClose, onSalvo, onDepois }: FolhaProps) {
   return (
     <Janelinha foco cheia titulo="Saldo do caixa" onClose={onClose}
       acoes={<><Botao variante="secundario" onClick={onDepois}>Agora não</Botao><Botao cheio carregando={salvando} onClick={() => salvar()}>Salvar</Botao></>}>
-      {largo ? (
-        <div className="ppf-d ppf-d--2col ppf-d--cx">
-          {/* (29/10 · 5.19) à direita, o que ela vai ver no Financeiro (muda enquanto digita) e o porquê */}
-          <div className="ppf-d-prev">
-            <p>No Financeiro</p>
-            <div className="ppf-cx-prev">
-              <span className="ppf-cx-prev-ic" aria-hidden="true"><Coins size={20} weight="bold" /></span>
-              <small>Saldo em caixa hoje</small>
-              <b>{valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</b>
-              <em>Daqui pra frente, soma o que entra e tira o que sai</em>
-            </div>
-            <ul className="ppf-cx-pq">{porque.map(t => <li key={t}><Check size={14} weight="bold" aria-hidden="true" />{t}</li>)}</ul>
-          </div>
-          <p className="ppf-l ppf-h-tit">Quanto tem hoje no caixa?</p>
-          {campoCaixa}
-          {dicaSinal}
-          {erro && <p className="ppf-erro">{erro}</p>}
-        </div>
-      ) : (<>
+      {/* (11/11) uma coluna só, também no computador (sem a prévia "No Financeiro", que repetia o valor e os checks) */}
+      <div className="ppf-d ppf-d--cx">
         <p className="ppf-l ppf-h-tit">Quanto tem hoje no caixa?</p>
         {campoCaixa}
         {/* (30/10 · 5.21) igual ao computador: o porquê sem fundo rosa e o aviso do sinal sem moldura */}
         <ul className="ppf-cx-pq ppf-cx-pq--cel">{porque.map(t => <li key={t}><Check size={14} weight="bold" aria-hidden="true" />{t}</li>)}</ul>
         {dicaSinal}
         {erro && <p className="ppf-erro">{erro}</p>}
-      </>)}
+      </div>
     </Janelinha>
   );
 }
@@ -601,7 +582,6 @@ function FolhaDescricao({ uid, perfil, onClose, onSalvo, onDepois }: FolhaProps)
   const [opcoes, setOpcoes] = useState<string[] | null>(null);
   const [escolhida, setEscolhida] = useState(0);
   // (11/11) sem a prévia do cardápio ao lado (o Bruno não gostou): uma coluna só
-  const largo = useLargo();
   const alternar = (lista: string[], set: (v: string[]) => void, v: string) => set(lista.includes(v) ? lista.filter(x => x !== v) : [...lista, v]);
   const gerar = async () => {
     setGerando(true); setErro("");
@@ -1290,6 +1270,12 @@ const CSS = `
   .ppf-cx--zero button i { border-color: #15803D; background: #15803D; }
   /* computador: prévia do Financeiro ao lado */
   .ppf-d--cx { min-height: 300px; }
+  @media (min-width: 768px) {
+    .ui-janela:has(.ppf-d--cx) { width: min(620px, calc(100vw - 48px)); max-width: none; }
+    .ui-janela.fo--cheia:has(.ppf-d--cx) { height: auto; }
+    .ui-janela:has(.ppf-d--cx) .ui-janela-pe { display: flex; justify-content: flex-end; }
+    .ui-janela:has(.ppf-d--cx) .ui-janela-pe .ui-bt { width: auto; padding-left: 28px; padding-right: 28px; }
+  }
   .ppf-cx-prev { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; row-gap: 2px; align-items: center; padding: 16px; border: 1px solid var(--ui-borda); border-radius: 14px; background: var(--ui-branco); }
   .ppf-cx-prev-ic { grid-row: 1 / 3; width: 40px; height: 40px; border-radius: 12px; background: var(--ui-branco); color: var(--ui-rosa); display: flex; align-items: center; justify-content: center; border: 1px solid #ECE7E9; box-sizing: border-box; }
   .ppf-cx-prev small { font-size: 13px; color: var(--ui-texto-2); }
@@ -1342,7 +1328,7 @@ const CSS = `
   .ppf-doo { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin-top: 10px; padding: 0 14px; border: 1px solid #F4C6D7; border-radius: var(--ui-raio);
     background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   .ppf-doo:disabled { opacity: .6; cursor: progress; }
-  .ppf-l { display: block; font-size: 13px; font-weight: 600; color: var(--ui-cinza-texto); margin: 16px 0 6px; }
+  .ppf-l { display: block; font-size: 13px; font-weight: 500; color: var(--ui-cinza-texto); margin: 16px 0 6px; }
   .ppf-lrow { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 6px; }
   .ppf-lrow .ppf-l { margin: 0; }
   .ppf-in { width: 100%; box-sizing: border-box; min-height: 48px; border: 1.5px solid var(--ui-borda-campo); border-radius: var(--ui-raio); padding: 0 12px; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--ui-texto); background: var(--ui-branco); }
