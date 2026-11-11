@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { paraWebp } from "@/lib/imagemLeve";
 import { abrirConvitePro } from "@/components/billing/RecursoPro";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -161,9 +162,14 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
   }, [tentativaCarga]);
 
   const uploadImage = async (file: File, path: string) => {
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    // (11/11) banner vira WebP leve antes de subir: o PNG de 2,4 MB era baixado a cada visita ao cardápio (≈ 150 KB agora)
+    let corpo: Blob = file;
+    let ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    if (path.startsWith("banners/") && /^image\/(png|jpe?g|webp|heic|heif)$/i.test(file.type)) {
+      try { corpo = await paraWebp(file, 1800, 0.85); ext = "webp"; } catch { /* sem WebP: vai o original */ }
+    }
     const fullPath = `${path}-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("products").upload(fullPath, file, { upsert: true });
+    const { error } = await supabase.storage.from("products").upload(fullPath, corpo, { upsert: true, contentType: corpo.type || undefined, cacheControl: "31536000" });
     if (error) return null;
     const { data } = supabase.storage.from("products").getPublicUrl(fullPath);
     return `${data.publicUrl}?t=${Date.now()}`;

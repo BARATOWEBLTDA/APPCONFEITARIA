@@ -76,6 +76,7 @@ import ReqTag, { OptTag } from "@/components/ReqTag";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import { apiFetch } from "@/lib/apiFetch";
 import { reduzirFoto } from "@/lib/reduzirFoto";
+import { subirMini, miniDeFotoAntiga } from "@/lib/fotoMini";
 
 // ── Helpers de conversão de unidades (ficha técnica) ──
 const UNIT_FAMILIES_MAP: Record<string, { family: string; base: string; toBase: number }> = {
@@ -561,6 +562,26 @@ export default function Produtos() {
   };
   useEffect(() => { void carregarTudo(); }, []);
 
+  // (11/11) fotos antigas ganham a miniatura da grade do cardápio, aos poucos e sem aparecer (até 40 por vez que abre a tela)
+  const miniFeita = useRef(false);
+  useEffect(() => {
+    if (miniFeita.current || !userId || !produtos.length) return;
+    miniFeita.current = true;
+    void (async () => {
+      for (const p of produtos.slice(0, 40)) {
+        const original = p.imagem_url || "";
+        const imgs = original.split(",").map(x => x.trim()).filter(Boolean);
+        if (!imgs[0]) continue;
+        const nova = await miniDeFotoAntiga(imgs[0]);
+        if (!nova) continue;
+        imgs[0] = nova;
+        const junto = imgs.join(",");
+        const { error } = await supabase.from("produtos").update({ imagem_url: junto }).eq("id", p.id).eq("user_id", userId).eq("imagem_url", original);
+        if (!error) setProdutos(l => l.map(x => (x.id === p.id && x.imagem_url === original ? { ...x, imagem_url: junto } : x)));
+      }
+    })();
+  }, [produtos, userId]);
+
   // Migra campos hardcoded antigos (tem_vela/tem_topo/etc) para o array adicionais
   const migrarAdicionaisLegacy = (p: Produto): Produto => {
     if (p.adicionais && p.adicionais.length > 0) return p;
@@ -817,7 +838,9 @@ export default function Produtos() {
     if (error) avisar(explicarErro(error, "Não deu para enviar a foto. Tente de novo."), { tipo: "erro" });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
-      const url = `${data.publicUrl}?t=${Date.now()}`;
+      // (11/11) sobe também a miniatura da grade do cardápio (o endereço ganha "m=1")
+      const url = await subirMini(path, blob, `${data.publicUrl}?t=${Date.now()}`);
+      if (abertura.current !== vez) { setUploading(false); return; }
       setForm(f => {
         const imgs = (f.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
         // (6.156) sem a principal, a foto entra na primeira vaga livre (antes gravava ",https://…" e o cardápio ficava sem foto)

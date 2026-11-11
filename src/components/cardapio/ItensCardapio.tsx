@@ -5,6 +5,7 @@ import { ProductModal } from '@/components/cart/ProductModal'
 import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { unidadePreco } from '@/lib/formaVenda'
+import { miniDaFoto } from '@/lib/fotoMini'
 import { tamanhosEsgotados, descontoCardapio, precoCardapioComPromocao, ehCentoLivre } from '@/lib/precoCardapio'
 import type { ProdutoPrecoJson } from '@/lib/precoCardapio'
 // (o cartão antigo ProductCard saiu; o CSS dele continua carregando por aqui, na mesma ordem)
@@ -30,6 +31,9 @@ export function precoDoCartao(product: Produto) {
 }
 
 const fotoDe = (p: Produto) => p.imagem_url?.split(',')[0]?.trim() || null
+// (11/11) na grade vai a miniatura (≈ 40 KB em vez de ≈ 250 KB); se ela falhar, troca pela foto inteira
+const fotoGrade = (p: Produto, grande?: boolean) => { const f = fotoDe(p); return grande ? f : miniDaFoto(f) }
+const voltarPraInteira = (inteira: string | null) => (e: React.SyntheticEvent<HTMLImageElement>) => { const i = e.currentTarget; if (inteira && !i.dataset.inteira) { i.dataset.inteira = '1'; i.src = inteira } }
 
 function Entrega({ produto }: { produto: Produto }) {
   if (tamanhosEsgotados(produto)) return <span className="ic-ent ic-ent--esg">Esgotado no momento</span> // (14/10)
@@ -68,7 +72,8 @@ function useAbrir(produto: Produto) {
 
 export function CartaoPromo({ produto, cor = '#E85A8C', pc = false, grande = false }: { produto: Produto; cor?: string; pc?: boolean; grande?: boolean }) {
   const { aberto, fechar, props } = useAbrir(produto)
-  const foto = fotoDe(produto)
+  const inteira = fotoDe(produto)
+  const foto = fotoGrade(produto, grande)
   // (04/11 · 6.33) selo de desconto em cima da foto ("-17%")
   const { de, final } = precoDoCartao(produto)
   const pct = de > final && de > 0 ? Math.round(((de - final) / de) * 100) : 0
@@ -78,7 +83,7 @@ export function CartaoPromo({ produto, cor = '#E85A8C', pc = false, grande = fal
         {/* (14/10) igual aos outros cartões: selo de entrega em cima da foto; depois nome, descrição e preço */}
         <div className="ic-cp-ft">
           {/* (20/10) computador: a foto aparece inteira (sem corte), com a própria foto borrada preenchendo as sobras */}
-          {foto ? (pc ? <><img className="ic-fundo" src={foto} alt="" aria-hidden="true" loading="lazy" /><img className="ic-inteira" src={foto} alt="" loading="lazy" /></> : <img src={foto} alt="" loading="lazy" />) : <span className="ic-sem"><Cake size={32} aria-hidden="true" /></span>}
+          {foto ? (pc ? <><img className="ic-fundo" src={foto} onError={voltarPraInteira(inteira)} alt="" aria-hidden="true" loading="lazy" /><img className="ic-inteira" src={foto} onError={voltarPraInteira(inteira)} alt="" loading="lazy" /></> : <img src={foto} onError={voltarPraInteira(inteira)} alt="" loading="lazy" />) : <span className="ic-sem"><Cake size={32} aria-hidden="true" /></span>}
           {/* (20/10) o prazo aparece só dentro do produto, no celular e no computador */}
           {pct >= 1 && <span className="ic-selo-pct" style={{ background: cor }}>-{pct}%</span>}
         </div>
@@ -93,7 +98,8 @@ export function CartaoPromo({ produto, cor = '#E85A8C', pc = false, grande = fal
 
 export function LinhaProduto({ produto, cor = '#E85A8C', pc = false }: { produto: Produto; cor?: string; pc?: boolean }) {
   const { aberto, fechar, props } = useAbrir(produto)
-  const foto = fotoDe(produto)
+  const inteira = fotoDe(produto)
+  const foto = fotoGrade(produto)
   const { de, final, unidade, aPartir } = precoDoCartao(produto)
   return (
     <>
@@ -110,7 +116,7 @@ export function LinhaProduto({ produto, cor = '#E85A8C', pc = false }: { produto
           {tamanhosEsgotados(produto) && <Entrega produto={produto} />}
         </div>
         <div className="ic-ln-ft">
-          {foto ? (pc ? <><img className="ic-fundo" src={foto} alt="" aria-hidden="true" loading="lazy" /><img className="ic-inteira" src={foto} alt="" loading="lazy" /></> : <img src={foto} alt="" loading="lazy" />) : <span className="ic-sem"><Cake size={28} aria-hidden="true" /></span>}
+          {foto ? (pc ? <><img className="ic-fundo" src={foto} onError={voltarPraInteira(inteira)} alt="" aria-hidden="true" loading="lazy" /><img className="ic-inteira" src={foto} onError={voltarPraInteira(inteira)} alt="" loading="lazy" /></> : <img src={foto} onError={voltarPraInteira(inteira)} alt="" loading="lazy" />) : <span className="ic-sem"><Cake size={28} aria-hidden="true" /></span>}
         </div>
       </article>
       <ProductModal isOpen={aberto} onClose={fechar} product={produto} corBotao={cor} />

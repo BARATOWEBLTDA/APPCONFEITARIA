@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 
 /**
  * (6.169) Desempenho do cardápio: a mesma conta no computador (VisaoGeralDesktop) e no celular (DesempenhoCelular).
- * Busca 60 dias de visitas e pedidos do cardápio (dá pra comparar até "30 dias" com o período anterior).
+ * Busca 60 dias de visitas (totais por hora, contados no banco) e pedidos do cardápio (dá pra comparar até "30 dias" com o período anterior).
  */
 
 /** Pedido do cardápio como vem da busca */
@@ -13,7 +13,9 @@ export type PedidoResumo = {
   tipo_entrega?: string | null; created_at: string; pedido_itens?: { nome_produto?: string | null; quantidade?: number | string | null }[] | null;
 };
 export type ProdutoResumo = { id: string; imagem_url?: string | null; descricao?: string | null; disponivel?: boolean | null };
-export type DadosCardapio = { visitas: string[]; pedidos: PedidoResumo[]; produtos: ProdutoResumo[]; temCupom: boolean };
+/** (11/11) visitas em totais por hora (o banco conta; antes vinha uma linha por visita) */
+export type VisitasHora = { t: string; n: number };
+export type DadosCardapio = { visitas: VisitasHora[]; pedidos: PedidoResumo[]; produtos: ProdutoResumo[]; temCupom: boolean };
 export type Periodo = "hoje" | "7d" | "30d" | "tudo";
 export type Variacao = { txt: string; up: boolean; neutro?: boolean } | null;
 
@@ -37,7 +39,7 @@ export function useDadosCardapio(uid?: string | null) {
     const desde = new Date(); desde.setDate(desde.getDate() - 60);
     Promise.all([
       // (6.175) de 1.000 em 1.000: o banco corta em 1.000 linhas sem avisar (loja com muita visita via menos)
-      buscarTudo<{ created_at: string }>((de, ate) => supabase.from("cardapio_visitas").select("created_at").eq("user_id", uid).gte("created_at", desde.toISOString()).order("created_at").order("id").range(de, ate)),
+      supabase.rpc("cardapio_visitas_por_hora", { p_dias: 60 }),
       buscarTudo<Record<string, unknown>>((de, ate) => supabase.from("pedidos").select("id, numero, cliente_nome, valor_total, status, tipo_entrega, created_at, pedido_itens(nome_produto, quantidade)")
         .eq("user_id", uid).eq("origem", "cardapio").gte("created_at", desde.toISOString()).order("created_at", { ascending: false }).order("id").range(de, ate)),
       supabase.from("produtos").select("id, imagem_url, descricao, disponivel").eq("user_id", uid),
@@ -46,7 +48,7 @@ export function useDadosCardapio(uid?: string | null) {
       if (!vivo) return;
       if (v.error || p.error || pr.error) { setFalhou(true); return; }
       setDados({
-        visitas: ((v.data as { created_at: string }[]) || []).map(x => x.created_at),
+        visitas: ((v.data as { hora: string; n: number }[]) || []).map(x => ({ t: x.hora, n: Number(x.n) || 0 })),
         pedidos: (p.data as unknown as PedidoResumo[]) || [],
         produtos: ((pr.data as ProdutoResumo[]) || []).filter(x => x.disponivel !== false),
         temCupom: Array.isArray((c.data as { cupons?: unknown } | null)?.cupons) && (c.data as { cupons: { ativo?: boolean }[] }).cupons.some((x) => x?.ativo),
@@ -65,14 +67,15 @@ export function useMetricasCardapio(dados: DadosCardapio | null, periodo: Period
     const dentro = (iso: string, a: Date | null, b?: Date) => { const t = new Date(iso).getTime(); return (!a || t >= a.getTime()) && (!b || t < b.getTime()); };
     // (6.182) venda é pedido que valeu: recusado, não aceito e Pix não pago não contam
     const ativos = dados.pedidos.filter(p => !["cancelado", "recusado", "aguardando_aceite", "aguardando_pagamento"].includes(p.status));
-    const vis = dados.visitas.filter(x => dentro(x, ini)).length;
+    const somaVis = (a: Date | null, b?: Date) => dados.visitas.reduce((s, x) => s + (dentro(x.t, a, b) ? x.n : 0), 0);
+    const vis = somaVis(ini);
     const ped = ativos.filter(p => dentro(p.created_at, ini));
     const rec = ped.reduce((s, p) => s + (Number(p.valor_total) || 0), 0);
     let ant: { vis: number; ped: number; rec: number } | null = null;
     if (ini) {
       const dur = Date.now() - ini.getTime(); const a0 = new Date(ini.getTime() - dur);
       const pa = ativos.filter(p => dentro(p.created_at, a0, ini));
-      ant = { vis: dados.visitas.filter(x => dentro(x, a0, ini)).length, ped: pa.length, rec: pa.reduce((s, p) => s + (Number(p.valor_total) || 0), 0) };
+      ant = { vis: somaVis(a0, ini), ped: pa.length, rec: pa.reduce((s, p) => s + (Number(p.valor_total) || 0), 0) };
     }
     // (31/10 · 5.89) o gráfico em todos os períodos: hoje por hora, 7 e 30 dias por dia, "tudo" por semana (8 semanas)
     type Barra = { ini: Date; fim: Date; rot: string; dica: string };
@@ -92,8 +95,8 @@ export function useMetricasCardapio(dados: DadosCardapio | null, periodo: Period
     }
     // período anterior: a mesma janela, deslocada para trás (no "tudo" não há com o que comparar)
     const passo = periodo === "hoje" ? 86400000 : periodo === "7d" ? 7 * 86400000 : 30 * 86400000;
-    const serie = barras.map(b => ({ ...b, futuro: b.ini.getTime() > Date.now(), n: dados.visitas.filter(x => dentro(x, b.ini, b.fim)).length,
-      nAntes: periodo === "tudo" ? null : dados.visitas.filter(x => dentro(x, new Date(b.ini.getTime() - passo), new Date(b.fim.getTime() - passo))).length }));
+    const serie = barras.map(b => ({ ...b, futuro: b.ini.getTime() > Date.now(), n: somaVis(b.ini, b.fim),
+      nAntes: periodo === "tudo" ? null : somaVis(new Date(b.ini.getTime() - passo), new Date(b.fim.getTime() - passo)) }));
     // mais pedidos pelo cardápio no período (pela quantidade)
     const conta = new Map<string, number>();
     for (const p of ped) for (const it of p.pedido_itens || []) { const nm = String(it.nome_produto || "Produto"); conta.set(nm, (conta.get(nm) || 0) + (Number(it.quantidade) || 1)); }
