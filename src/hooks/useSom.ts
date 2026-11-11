@@ -64,8 +64,31 @@ const tocarArquivo = (nome: string, ganho = 1): boolean => {
 }
 /** deixa os sons prontos no primeiro toque na tela (o navegador só libera áudio depois de um toque) */
 if (typeof window !== 'undefined') {
-  const preparar = () => { ['aviso', 'erro'].forEach(carregarArquivo); const t = toqueEscolhido(); if (t === 'suave') carregarArquivo('pedido-suave'); if (t === 'minimal') carregarArquivo('pedido-minimal'); window.removeEventListener('pointerdown', preparar) }
+  const preparar = () => { (['aviso', 'erro', 'venda'] as GrupoSom[]).forEach(g => carregarArquivo(arquivoDe(g))); const t = toqueEscolhido(); if (t === 'suave') carregarArquivo('pedido-suave'); if (t === 'minimal') carregarArquivo('pedido-minimal'); window.removeEventListener('pointerdown', preparar) }
   window.addEventListener('pointerdown', preparar, { passive: true })
+}
+
+/* (11/11) a confeiteira escolhe o som de cada tipo (Notificações e sons). Sons gravados do Material Design (Google) */
+export type GrupoSom = 'aviso' | 'erro' | 'venda'
+export const OPCOES_SOM: Record<GrupoSom, { id: string; nome: string; arquivo: string }[]> = {
+  aviso: [{ id: '1', nome: 'Confirmação', arquivo: 'aviso' }, { id: '2', nome: 'Notificação suave', arquivo: 'aviso-2' }],
+  erro: [{ id: '1', nome: 'Alerta', arquivo: 'erro' }, { id: '2', nome: 'Cancelar suave', arquivo: 'erro-2' }],
+  venda: [{ id: '1', nome: 'Comemoração', arquivo: 'venda' }, { id: '2', nome: 'Comemoração curta', arquivo: 'venda-2' }, { id: '3', nome: 'Comemoração alegre', arquivo: 'venda-3' }],
+}
+export const somEscolhido = (g: GrupoSom): string => {
+  try { const v = localStorage.getItem(`doonly_som_${g}_escolhido`); if (v && OPCOES_SOM[g].some(o => o.id === v)) return v } catch { /* sem armazenamento */ }
+  return '1'
+}
+export const setSomEscolhido = (g: GrupoSom, id: string): void => {
+  try { localStorage.setItem(`doonly_som_${g}_escolhido`, id) } catch { /* sem armazenamento */ }
+  carregarArquivo(arquivoDe(g, id))
+}
+const arquivoDe = (g: GrupoSom, id = somEscolhido(g)) => (OPCOES_SOM[g].find(o => o.id === id) || OPCOES_SOM[g][0]).arquivo
+/** toca a prévia de uma opção (na tela de escolher) */
+export const ouvirOpcao = (g: GrupoSom, id: string): void => {
+  const audio = getCtx(); if (audio?.state === 'suspended') audio.resume().catch(() => {})
+  const nome = arquivoDe(g, id)
+  if (!tocarArquivo(nome, g === 'aviso' ? 0.55 : g === 'erro' ? 0.6 : 0.8)) window.setTimeout(() => tocarArquivo(nome, 0.8), 600)
 }
 
 // Toca uma nota simples
@@ -162,10 +185,13 @@ export const tocarSom = (tipo: SomTipo): void => {
 
   if (tipo === 'acao') {
     // (11/11) o som do aviso (escolhido pelo Bruno: "confirm up" do Material); sem o arquivo ainda, o "tic" sintetizado
-    if (tocarArquivo('aviso', 0.55)) return
+    if (tocarArquivo(arquivoDe('aviso'), 0.55)) return
     tocarNota(880, 0, 0.09, 0.07)
     tocarNota(1318.5, 0.06, 0.14, 0.06)
-  } else if (tipo === 'erro' && tocarArquivo('erro', 0.6)) {
+  } else if (tipo === 'erro' && tocarArquivo(arquivoDe('erro'), 0.6)) {
+    return
+  } else if ((tipo === 'sucesso' || tipo === 'pedido') && tocarArquivo(arquivoDe('venda'), 0.8)) {
+    // (11/11) venda registrada e pedido entregue: a comemoração escolhida
     return
   } else if (tipo === 'sucesso') {
     // Acorde ascendente Dó → Mi → Sol (C major)
@@ -207,11 +233,7 @@ export default function useSom() {
 /* ═══ (30/10 · 5.45) Som de pedido novo: 4 toques (como no Dora). Com o app aberto, repete até aceitar ou recusar ═══ */
 export type ToqueId = 'telefone' | 'telefone_tocando' | 'sinal' | 'sino' | 'suave' | 'minimal'
 export const TOQUES: { id: ToqueId; nome: string; cada: number }[] = [
-  { id: 'telefone', nome: 'Telefone atual', cada: 5 },
-  { id: 'telefone_tocando', nome: 'Telefone tocando', cada: 2 },
-  { id: 'sinal', nome: 'Sinal Doonly', cada: 3 },
-  { id: 'sino', nome: 'Sino de balcão', cada: 2 },
-  // (11/11) toques gravados (Material Design, Google): escolhidos pelo Bruno
+  // (11/11) só os 2 toques gravados (Material Design, Google), escolhidos pelo Bruno; os sintetizados saíram da lista
   { id: 'suave', nome: 'Alarme suave', cada: 6 },
   { id: 'minimal', nome: 'Toque minimalista', cada: 10 },
 ]
@@ -224,7 +246,7 @@ export const alertaPedidoHabilitado = (): boolean => {
 export const setAlertaPedidoHabilitado = (v: boolean): void => { if (typeof window !== 'undefined') localStorage.setItem(STORAGE_ALERTA_KEY, String(v)) }
 export const toqueEscolhido = (): ToqueId => {
   const v = typeof window === 'undefined' ? null : localStorage.getItem(STORAGE_TOQUE_KEY)
-  return (TOQUES.some(t => t.id === v) ? v : 'telefone_tocando') as ToqueId
+  return (TOQUES.some(t => t.id === v) ? v : 'suave') as ToqueId
 }
 export const setToqueEscolhido = (v: ToqueId): void => { if (typeof window !== 'undefined') localStorage.setItem(STORAGE_TOQUE_KEY, v); if (v === 'suave') carregarArquivo('pedido-suave'); if (v === 'minimal') carregarArquivo('pedido-minimal') }
 

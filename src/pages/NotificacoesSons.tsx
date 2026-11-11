@@ -10,7 +10,7 @@ import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { precisaInstalarNoIphone, ehIphone } from "@/lib/notifications";
 import {
   sonsHabilitados, setSonsHabilitados,
-  somPedidoHabilitado, setSomPedidoHabilitado, somAvisosHabilitado, setSomAvisosHabilitado,
+  somPedidoHabilitado, setSomPedidoHabilitado, somAvisosHabilitado, setSomAvisosHabilitado, OPCOES_SOM, somEscolhido, setSomEscolhido, ouvirOpcao, type GrupoSom,
   tocarSom,
   TOQUES, type ToqueId, alertaPedidoHabilitado, setAlertaPedidoHabilitado, toqueEscolhido, setToqueEscolhido, tocarToque, volumeApp, setVolumeApp,
 } from "@/hooks/useSom";
@@ -67,6 +67,15 @@ export default function NotificacoesSons() {
     setSomAvisosHabilitado(novo);
     if (novo) setTimeout(() => tocarSom("acao"), 100); // prévia
   };
+
+  // (11/11) a confeiteira escolhe o som de cada tipo; tocar na opção já toca a prévia
+  const [escolhas, setEscolhas] = useState<Record<GrupoSom, string>>({ aviso: somEscolhido("aviso"), erro: somEscolhido("erro"), venda: somEscolhido("venda") });
+  const escolherSom = (g: GrupoSom, id: string) => { setEscolhas(e => ({ ...e, [g]: id })); setSomEscolhido(g, id); ouvirOpcao(g, id); };
+  const GRUPOS: { g: GrupoSom; t: string; on: boolean }[] = [
+    { g: "venda", t: "Venda registrada", on: somGeral && somVenda },
+    { g: "aviso", t: "Avisos", on: somGeral && somAvisos },
+    { g: "erro", t: "Erros", on: somGeral && somAvisos },
+  ];
 
   const toggleSomVenda = () => {
     const novo = !somVenda;
@@ -156,7 +165,7 @@ export default function NotificacoesSons() {
             <span className="ns-ico"><BellRinging size={20} /></span>
             <div className="ns-txt">
               <div className="ns-name">Som de pedido novo</div>
-              <div className="ns-desc">Toca 4 vezes e lembra a cada 5 min</div>
+              <div className="ns-desc">Toca 4 vezes, lembra em 5 min</div>
             </div>
             <label className="ns-toggle">
               <input type="checkbox" checked={alerta} onChange={trocarAlerta} aria-label="Som de pedido novo" />
@@ -254,7 +263,22 @@ export default function NotificacoesSons() {
               <span className="ns-toggle-s" />
             </label>
           </div>
-          <p className="ns-note">Alguns sons são do Material Design, do Google (licença CC BY 4.0).</p>
+          <div className={`ns-toques-w${somGeral ? "" : " ns-off"}`}>
+            {GRUPOS.map(({ g, t, on }) => (
+              <div key={g} className="ns-esc">
+                <p className="ns-toques-t">{t}</p>
+                <div className="ns-toques" role="radiogroup" aria-label={`Som de ${t.toLowerCase()}`}>
+                  {OPCOES_SOM[g].map(o => (
+                    <button key={o.id} type="button" role="radio" aria-checked={escolhas[g] === o.id} className={`ns-toque${escolhas[g] === o.id ? " on" : ""}`} disabled={!on} onClick={() => escolherSom(g, o.id)}>
+                      <i className="ns-chk" aria-hidden="true" />
+                      <span><b>{o.nome}</b><small>Toque para ouvir</small></span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="ns-note">Sons: Material Design, do Google (CC BY 4.0).</p>
         </div>
       </div>
 
