@@ -97,6 +97,24 @@ const TEXTO_NOVIDADE: Record<string, string> = {
   "clientes-sumidos": "Sem comprar há mais de 60 dias. Mande uma mensagem para chamar de volta.",
 };
 
+/**
+ * (11/11) "Seu próximo passo": a trilha de crescer a loja, um passo por vez. Cada passo é o aviso que já existia;
+ * feito = o aviso não aparece mais. Nomes curtos (cabem numa linha no celular).
+ */
+const TRILHA: { k: string; nome: string; txt: string }[] = [
+  { k: "divulgar_cardapio", nome: "Divulgar o link do cardápio", txt: "Mande o link no WhatsApp e no Instagram." },
+  { k: "produtos-sem-foto", nome: "Foto em todos os produtos", txt: "Produto com foto vende mais no cardápio." },
+  { k: "falta_descricao", nome: "Descrição dos produtos", txt: "Conte o sabor e o tamanho. Ajuda a decidir." },
+  { k: "falta_ficha_tecnica", nome: "Ficha técnica dos produtos", txt: "Mostra o custo e o lucro de cada produto." },
+  { k: "falta_custos", nome: "Custos e taxa da maquininha", txt: "Com eles, o app mostra o seu lucro real." },
+  { k: "ligar_pix_cardapio", nome: "Pix pelo cardápio", txt: "A cliente paga ao pedir e você recebe antes." },
+];
+/** passos a mais (não contam no "X de 6"): aparecem depois dos principais */
+const EXTRAS = ["falta_banner", "criar_categorias", "falta_complemento", "falta_cupom", "falta_cliente"];
+/** qual passo da trilha um aviso representa (a mão de obra entra junto com os custos) */
+const passoDe = (chave: string): string | null =>
+  chave === "falta_mao_obra" ? "falta_custos" : TRILHA.some(t => t.k === chave) || EXTRAS.includes(chave) ? chave : null;
+
 export default function PraFazer() {
   const navigate = useNavigate();
   const { profile, refetch } = useProfile();
@@ -109,7 +127,7 @@ export default function PraFazer() {
   // (22/10) "Agora não" (menu com as opções) e "Como funciona" (exemplo) abertos
   const [menu, setMenu] = useState<string | null>(null);
   const [como, setComo] = useState<string | null>(null);
-  const raiz = useRef<HTMLElement>(null);
+  const raiz = useRef<HTMLDivElement>(null);
   // (22/10) no celular o "Como funciona" abre numa gaveta de baixo (fundo escurecido); no computador, a janelinha na lista
   const [cel, setCel] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches);
   useEffect(() => {
@@ -157,6 +175,16 @@ export default function PraFazer() {
       const l = pronta === true ? l0 : l0.filter(a => a.chave.startsWith("conta_") || a.chave.startsWith("conferir_whatsapp"));
       setAvisos(l); notificarAvisosCadastro(l);
     }).catch(() => {});
+    return () => { vivo = false; };
+  }, [uid, pronta, voltou]);
+
+  // (11/11) cardápio que nunca teve visita: o "Divulgar" já entra na trilha (o aviso de sempre só vem depois de 7 dias)
+  const [semVisita, setSemVisita] = useState(false);
+  useEffect(() => {
+    if (!uid || pronta !== true) return;
+    let vivo = true;
+    void supabase.from("cardapio_visitas").select("id", { count: "exact", head: true }).eq("user_id", uid)
+      .then(r => { if (vivo && !r.error) setSemVisita(r.count === 0); });
     return () => { vivo = false; };
   }, [uid, pronta, voltou]);
 
@@ -210,7 +238,14 @@ export default function PraFazer() {
     txt: avisoPro.mensagem,
   }] : [];
 
-  const itens: Item[] = [
+  // (11/11) "Divulgue seu cardápio" entra na trilha desde o começo (o aviso só aparecia depois de uma semana sem visitas)
+  const itemDivulgar: Item[] = uid && pronta === true && semVisita && !avisos.some(a => a.chave === "divulgar_cardapio") ? [{
+    chave: "divulgar_cardapio", nivel: "normal", Ic: ShareNetwork, ordem: 50, acao: "Divulgar", link: "/divulgar", fechar: true,
+    t: "Divulgue seu cardápio", s: "Mande o link para as clientes",
+    txt: "Mande o link no WhatsApp e no Instagram. É assim que chegam os primeiros pedidos.",
+  }] : [];
+
+  const brutos: Item[] = [
     ...itemNotif,
     ...itemInstalar,
     ...itemPro,
@@ -252,12 +287,45 @@ export default function PraFazer() {
       Ic: u.Icone, t: u.curto.t, s: u.curto.s || TEXTO_NOVIDADE[u.key] || u.descricao, link: u.path, ordem: 100 - u.prioridade, acao: ACAO_NOVIDADE[u.key] || "Ver", fechar: true,
       txt: TEXTO_NOVIDADE[u.key] || u.descricao,
     })),
-  ].filter(x => !x.fechar || !escondido(x.chave))
+    ...itemDivulgar,
+  ];
+  const itens: Item[] = brutos.filter(x => !x.fechar || !escondido(x.chave))
    .sort((a, b) => PESO[a.nivel] - PESO[b.nivel] || a.ordem - b.ordem);
 
-  if (!itens.length) return null;
-  const mostrar = aberto ? itens : itens.slice(0, VISIVEIS);
-  const resto = itens.length - VISIVEIS;
+  // (11/11) "Seu próximo passo": o que é de crescer a loja sai do "Pra fazer" e vira uma trilha, um passo por vez,
+  // com o progresso e o que já foi feito. O "Pra fazer" fica com o urgente e o rápido (conta, WhatsApp, avisos...).
+  // o perfil vem com select("*"): as formas de pagamento estão nele, só não no tipo
+  const formas = (profile as { formas_pagamento?: unknown } | null)?.formas_pagamento;
+  const aceitaPix = Array.isArray(formas) && formas.some(f => String(f).toLowerCase().includes("pix"));
+  const core = TRILHA.filter(t => t.k !== "ligar_pix_cardapio" || aceitaPix);
+  const nunca = (chave: string) => { try { return localStorage.getItem(kAte(chave)) === "nunca"; } catch { return false; } };
+  const pendentes = new Set(brutos.filter(x => !nunca(x.chave)).map(x => passoDe(x.chave)).filter(Boolean) as string[]);
+  const feitos = core.filter(t => !pendentes.has(t.k));
+  const daTrilha = (x: Item) => !!passoDe(x.chave);
+  const ordemTrilha = (x: Item) => { const k = passoDe(x.chave)!; const i = core.findIndex(t => t.k === k); return i >= 0 ? i : 100 + EXTRAS.indexOf(k); };
+  const trilha = pronta === true ? itens.filter(daTrilha).sort((a, b) => ordemTrilha(a) - ordemTrilha(b)) : [];
+  const passo = trilha[0];
+  const lista = itens.filter(x => !daTrilha(x));
+
+  // comemora quando um passo da trilha fica pronto (só os que ela fez agora, não os de antes)
+  const kFeitos = `doonly_trilha_feitos_${uid}`;
+  const feitosChave = feitos.map(t => t.k).join(",");
+  useEffect(() => {
+    if (!uid || pronta !== true) return;
+    try {
+      const antes = localStorage.getItem(kFeitos);
+      localStorage.setItem(kFeitos, feitosChave);
+      if (antes === null) return;
+      const novos = feitos.filter(t => !antes.split(",").includes(t.k));
+      if (!novos.length) return;
+      avisar(feitos.length === core.length ? "Você completou todos os passos. Sua loja está pronta para crescer! 🎉" : `Passo concluído: ${novos[0].nome}. Boa! 🎉`, { tipo: "ok", duracao: 5000 });
+    } catch { /* sem armazenamento: sem comemoração */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uid, pronta, feitosChave]);
+
+  if (!lista.length && !passo) return null;
+  const mostrar = aberto ? lista : lista.slice(0, VISIVEIS);
+  const resto = lista.length - VISIVEIS;
   const ir = (x: Item) => x.aoTocar ? x.aoTocar() : navigate(x.link, x.estado ? { state: x.estado } : undefined);
   const adiar = (x: Item, dias: number | "nunca") => {
     try {
@@ -267,11 +335,30 @@ export default function PraFazer() {
     setMenu(null); setMexeu(n => n + 1);
     avisar(dias === "nunca" ? "Pronto, não aparece mais neste aparelho." : dias === 1 ? "Volta amanhã." : "Volta daqui a uma semana.", { tipo: "ok" });
   };
+  // o "Agora não" (7 dias, amanhã, não lembrar mais): o mesmo menu na lista e no passo da trilha
+  const agoraNao = (x: Item) => (
+    <div className="pf-nao-w">
+      <button type="button" className="pf-nao" aria-haspopup="menu" aria-expanded={menu === x.chave} onClick={() => setMenu(m => m === x.chave ? null : x.chave)}>Agora não <CaretDown size={14} weight="bold" aria-hidden="true" /></button>
+      {menu === x.chave && (
+        <div className="pf-menu" role="menu">
+          <button type="button" role="menuitem" onClick={() => adiar(x, 7)}><Clock size={20} aria-hidden="true" /><span><b>Lembrar em 7 dias</b><small>Volta daqui a uma semana</small></span></button>
+          <button type="button" role="menuitem" onClick={() => adiar(x, 1)}><Clock size={20} aria-hidden="true" /><span><b>Lembrar amanhã</b><small>Volta amanhã cedo</small></span></button>
+          <button type="button" role="menuitem" onClick={() => adiar(x, "nunca")}><BellSlash size={20} aria-hidden="true" /><span><b>Não lembrar mais</b><small>Some deste aparelho</small></span></button>
+        </div>
+      )}
+    </div>
+  );
+  const kPasso = passo ? passoDe(passo.chave)! : "";
+  const nomePasso = (k: string) => TRILHA.find(t => t.k === k)?.nome;
+  // a lista embaixo do passo: os feitos (✓) e os que faltam, sem repetir o passo de agora
+  const proximos = core.filter(t => t.k !== kPasso);
   return (
-    <section className="pf" aria-label="Seus próximos passos" ref={raiz}>
+    <div className="pf-grupo" ref={raiz}>
+    {lista.length > 0 && (
+    <section className="pf" aria-label="Pra fazer">
       <div className="pf-cab">
-        <b className="pf-t">Seus próximos passos</b>
-        <span className="pf-n" aria-label={`${itens.length} ${itens.length === 1 ? "item" : "itens"}`}>{itens.length}</span>
+        <b className="pf-t">Pra fazer</b>
+        <span className="pf-n" aria-label={`${lista.length} ${lista.length === 1 ? "item" : "itens"}`}>{lista.length}</span>
       </div>
       <ul className="pf-lista">
         {mostrar.map(x => (
@@ -289,18 +376,7 @@ export default function PraFazer() {
                   <button type="button" className="pf-nao" onClick={() => adiar(x, "nunca")}>Não quero</button>
                 ) : x.revisar ? (
                   <button type="button" className="pf-nao" onClick={() => navigate(x.link, { state: x.revisar })}>{x.rotuloRevisar || "Revisar"}</button>
-                ) : x.fechar ? (
-                  <div className="pf-nao-w">
-                    <button type="button" className="pf-nao" aria-haspopup="menu" aria-expanded={menu === x.chave} onClick={() => setMenu(m => m === x.chave ? null : x.chave)}>Agora não <CaretDown size={14} weight="bold" aria-hidden="true" /></button>
-                    {menu === x.chave && (
-                      <div className="pf-menu" role="menu">
-                        <button type="button" role="menuitem" onClick={() => adiar(x, 7)}><Clock size={20} aria-hidden="true" /><span><b>Lembrar em 7 dias</b><small>Volta daqui a uma semana</small></span></button>
-                        <button type="button" role="menuitem" onClick={() => adiar(x, 1)}><Clock size={20} aria-hidden="true" /><span><b>Lembrar amanhã</b><small>Volta amanhã cedo</small></span></button>
-                        <button type="button" role="menuitem" onClick={() => adiar(x, "nunca")}><BellSlash size={20} aria-hidden="true" /><span><b>Não lembrar mais</b><small>Some deste aparelho</small></span></button>
-                      </div>
-                    )}
-                  </div>
-                ) : null}
+                ) : x.fechar ? agoraNao(x) : null}
                 <button type="button" className="pf-bt" disabled={x.aoTocar && x.chave === "ativar_notificacoes" ? push.loading : false} onClick={() => ir(x)}>{x.acao}</button>
               </div>
             </div>
@@ -308,7 +384,7 @@ export default function PraFazer() {
         ))}
       </ul>
       {cel && (() => {
-        const x = itens.find(i => i.chave === como);
+        const x = [...lista, ...(passo ? [passo] : [])].find(i => i.chave === como);
         const c = x?.comoFunciona;
         return (
           <Janela aberta={!!(x && c)} aoFechar={() => setComo(null)} titulo={c?.nome || ""} tipo="conteudo" umaAcao
@@ -322,8 +398,41 @@ export default function PraFazer() {
           {aberto ? "Ver menos" : `Ver mais ${resto}`}
         </button>
       )}
-      <style>{CSS}</style>
     </section>
+    )}
+    {passo && (
+    <section className="pf pf-trilha" aria-label="Seu próximo passo">
+      <div className="pf-cab">
+        <b className="pf-t">Seu próximo passo</b>
+        <span className="pf-prog">Vender mais · {feitos.length} de {core.length}</span>
+      </div>
+      <div className="pf-barra" role="progressbar" aria-valuemin={0} aria-valuemax={core.length} aria-valuenow={feitos.length} aria-label={`${feitos.length} de ${core.length} passos feitos`}>
+        <i style={{ width: `${Math.round((feitos.length / Math.max(core.length, 1)) * 100)}%` }} />
+      </div>
+      <div className="pf-passo">
+        <span className="pf-ic" aria-hidden="true"><passo.Ic size={22} weight="bold" /></span>
+        <div className="pf-tx">
+          <b>{nomePasso(kPasso) || passo.t}</b>
+          <p>{TRILHA.find(t => t.k === kPasso)?.txt || passo.s}{passo.comoFunciona && <> <button type="button" className="pf-como" aria-expanded={como === passo.chave} onClick={() => setComo(c => c === passo.chave ? null : passo.chave)}>Como funciona <Info size={14} weight="bold" aria-hidden="true" /></button></>}</p>
+          {!cel && como === passo.chave && passo.comoFunciona && <ConteudoComo c={passo.comoFunciona} rotulo={passo.t} className="pf-cf" />}
+          <div className="pf-bts pf-bts--passo">
+            <button type="button" className="pf-bt pf-bt--cheio" onClick={() => ir(passo)}>{passo.acao}</button>
+            {passo.naoQuero ? <button type="button" className="pf-nao" onClick={() => adiar(passo, "nunca")}>Não quero</button> : agoraNao(passo)}
+          </div>
+        </div>
+      </div>
+      {proximos.length > 0 && (
+        <ul className="pf-proximos">
+          {proximos.map(t => {
+            const ok = feitos.some(f => f.k === t.k);
+            return <li key={t.k} className={ok ? "ok" : undefined}><span aria-hidden="true">{ok ? <Check size={14} weight="bold" /> : <i />}</span>{t.nome}<em className="pf-sr">{ok ? " (feito)" : " (falta)"}</em></li>;
+          })}
+        </ul>
+      )}
+    </section>
+    )}
+    <style>{CSS}</style>
+    </div>
   );
 }
 
@@ -363,5 +472,24 @@ const CSS = `
   .pf-menu small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--ui-texto-2); }
   .pf-bt { flex: none; min-height: 40px; margin: 0; padding: 0 16px; border-radius: 10px; background: var(--ui-branco); border: 1.5px solid var(--ui-rosa); color: var(--ui-rosa-escuro); font-family: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
   .pf-bt--pagar { border-color: transparent; background: #FEF2F2; color: #B42318; }
+  /* (11/11) os dois cartões juntos: "Pra fazer" (urgente e rápido) e "Seu próximo passo" (a trilha) */
+  .pf-grupo { display: flex; flex-direction: column; gap: 12px; }
+  .pf-cab { min-width: 0; }
+  .pf-prog { margin-left: auto; flex: none; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; }
+  .pf-trilha { padding-bottom: 12px; }
+  .pf-trilha .pf-t { white-space: nowrap; }
+  .pf-barra { height: 6px; margin: 10px 0 12px; border-radius: 6px; background: #F1ECEE; overflow: hidden; }
+  .pf-barra i { display: block; height: 100%; border-radius: 6px; background: var(--ui-rosa); transition: width .4s ease; }
+  .pf-passo { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border: 1px solid var(--ui-borda); border-radius: 14px; background: #FCFAFB; }
+  .pf-passo .pf-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--ui-branco); border: 1px solid var(--ui-borda); color: var(--ui-rosa-escuro); }
+  .pf-passo .pf-cf { margin-left: -52px; }
+  .pf-bts--passo { justify-content: flex-start; }
+  .pf-bt--cheio { background: var(--ui-rosa); border-color: var(--ui-rosa); color: #fff; }
+  .pf-proximos { margin: 10px 0 0; padding: 0 2px; list-style: none; }
+  .pf-proximos li { display: flex; align-items: center; gap: 10px; min-height: 30px; font-size: 13.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pf-proximos li.ok { color: var(--ui-texto); }
+  .pf-proximos li > span { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: #1F8A4C; }
+  .pf-proximos li > span i { width: 12px; height: 12px; border: 1.5px solid #CFC5C9; border-radius: 50%; }
+  .pf-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .pf-ver { display: block; width: 100%; min-height: 44px; margin: 0; border: 0; border-top: 1px solid var(--ui-linha, #F3ECEF); background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
 `;

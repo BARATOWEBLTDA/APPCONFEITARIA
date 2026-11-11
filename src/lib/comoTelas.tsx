@@ -22,7 +22,7 @@ export const COMO_INICIO_CEL: Como = {
     [MagnifyingGlass, <><b>Buscar:</b> encontre qualquer tela ou ação, como pix, cupom ou horário.</>],
     [ListChecks, <><b>Acesso rápido:</b> as telas mais usadas, sempre à mão.</>],
     [CalendarBlank, <><b>Próximas entregas:</b> escolha um dia para ver apenas os pedidos dele.</>],
-    [ListChecks, <><b>Seus próximos passos:</b> pendências da loja, com o botão para resolver na hora.</>],
+    [ListChecks, <><b>Pra fazer e Seu próximo passo:</b> o urgente e o que faz a loja vender mais.</>],
   ],
 };
 
@@ -33,7 +33,7 @@ export const COMO_INICIO: Como = {
   dicas: [
     [ChartLineUp, <><b>Números do topo:</b> recebido no mês, pedidos dos últimos 7 dias, entregas de hoje e ticket médio.</>],
     [CalendarBlank, <><b>Próximas entregas:</b> pedidos dos próximos dias, com horário e valor.</>],
-    [ListChecks, <><b>Seus próximos passos:</b> pendências da loja, com o botão para resolver na hora.</>],
+    [ListChecks, <><b>Pra fazer e Seu próximo passo:</b> o urgente e o que faz a loja vender mais.</>],
     [MagnifyingGlass, <><b>Buscar</b> (Ctrl + K): encontre qualquer tela ou ação, como pix, cupom ou horário.</>],
   ],
 };
@@ -53,7 +53,8 @@ export const TOUR_INICIO_CEL: PassoTour[] = [
   { el: ".ini-busca", titulo: "Buscar", texto: "Digite o que procura, como \"pix\", \"cupom\" ou \"horário\", e vá direto para a tela certa." },
   { el: ".ini-section--nav", titulo: "Acesso rápido", texto: "Atalhos para as telas mais usadas. As demais ficam no Menu, na barra inferior." },
   { el: ".ini-section--dia .sd-sem || .ini-section--dia", titulo: "Próximas entregas", texto: "Os próximos dias, com quantos pedidos tem em cada um. Escolha um dia para ver só os pedidos dele." },
-  { el: ".ini-falta .pf", titulo: "Seus próximos passos", texto: "Pendências da sua loja, com o botão para resolver na hora. Se preferir deixar para depois, use Agora não." },
+  { el: ".ini-falta .pf:not(.pf-trilha)", titulo: "Pra fazer", texto: "O que é urgente na sua loja, com o botão para resolver na hora. Se preferir deixar para depois, use Agora não." },
+  { el: ".ini-falta .pf-trilha", titulo: "Seu próximo passo", texto: "Um passo por vez para vender mais. A barra mostra quanto você já fez." },
   { el: ".bn-novo-c", titulo: "Nova venda", texto: "Registre uma venda ou encomenda a qualquer momento. O botão aparece em todas as telas.", redondo: true },
 ];
 
@@ -62,7 +63,8 @@ export const TOUR_INICIO_PC: PassoTour[] = [
   { el: ".ini-at-pc", titulo: "Ações rápidas", texto: "O que você faz toda hora, a um clique: nova venda, orçamento, produto e lançamentos no financeiro." },
   { el: ".ini-link-topo .lj-link", titulo: "Seu cardápio", texto: "O link da sua loja. Mande no WhatsApp, copie ou mostre o QR Code para o cliente pedir." },
   { el: ".dkg-entregas", titulo: "Próximas entregas", texto: "Pedidos dos próximos dias. Clique em um pedido para ver os detalhes." },
-  { el: ".dkg-fazer .pf", titulo: "Seus próximos passos", texto: "Pendências da sua loja, com o botão para resolver na hora." },
+  { el: ".dkg-fazer .pf:not(.pf-trilha)", titulo: "Pra fazer", texto: "O que é urgente na sua loja, com o botão para resolver na hora." },
+  { el: ".dkg-fazer .pf-trilha", titulo: "Seu próximo passo", texto: "Um passo por vez para vender mais. A barra mostra quanto você já fez." },
   { el: ".dkg-kpis .ini-dk-kpis", titulo: "Seus números", texto: "Recebido no mês, pedidos dos últimos 7 dias, entregas de hoje e ticket médio." },
   { el: ".cab-busca", titulo: "Buscar", texto: "Encontre qualquer tela ou ação do sistema. Atalho: Ctrl + K." },
   { el: ".sb-pausar", titulo: "Sua loja", texto: "Mostra se a loja está aberta e permite pausar ou retomar os pedidos pelo cardápio." },

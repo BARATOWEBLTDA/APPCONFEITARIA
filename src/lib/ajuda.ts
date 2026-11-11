@@ -156,7 +156,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
         { n: 2, linhas: [{ t: 'Buscar no app', tipo: 'campo' }] },
         { n: 3, titulo: 'Acesso rápido', linhas: [{ t: 'Agenda,A receber,Clientes,Financeiro,Ficha técnica,Lucratividade', tipo: 'grade' }] },
         { n: 4, titulo: 'Próximas entregas', linhas: [{ t: 'Hoje,Qua,Qui,Sex', tipo: 'dias' }, { t: 'Beatriz · 14:00', tipo: 'linha' }] },
-        { n: 5, titulo: 'Seus próximos passos', linhas: [{ t: 'Conta vencida', tipo: 'linha' }, { t: 'Avisos bloqueados', tipo: 'linha' }] },
+        { n: 5, titulo: 'Pra fazer', linhas: [{ t: 'Conta vencida', tipo: 'linha' }, { t: 'Avisos bloqueados', tipo: 'linha' }] },
         { n: 6, escuro: true, linhas: [{ t: 'Início,Pedidos,+,Minha loja,Menu', tipo: 'nav' }] },
       ],
       partes: [
@@ -164,7 +164,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
         { titulo: 'Buscar', texto: 'Digite o que procura, como pix, cupom ou horário, e vá direto para a tela.', el: '.ini-busca' },
         { titulo: 'Acesso rápido', texto: 'As 6 telas mais usadas no dia a dia. As outras ficam em Menu, no menu de baixo.', el: '.ini-section--nav' },
         { titulo: 'Próximas entregas', texto: 'Os próximos dias e as entregas de cada um. Toque num dia para ver só os pedidos dele.', el: '.ini-section--dia' },
-        { titulo: 'Seus próximos passos', texto: 'Pendências da loja, como uma conta vencida, com o botão para resolver na hora.', el: '.ini-falta .pf' },
+        { titulo: 'Pra fazer', texto: 'O que é urgente, como uma conta vencida, com o botão para resolver na hora.', el: '.ini-falta .pf:not(.pf-trilha)' },
         { titulo: 'Menu de baixo', texto: 'Aparece em todas as telas. O + do meio registra uma venda.', el: '.bottom-nav-pill' },
       ],
     },
@@ -177,9 +177,10 @@ export const ARTIGOS: ArtigoAjuda[] = [
         ],
       },
       {
-        titulo: 'Seus próximos passos',
+        titulo: 'Pra fazer e Seu próximo passo',
         texto: [
-          'O app olha a sua loja e lista o que vale resolver: uma conta vencida, os avisos do celular bloqueados, uma queda nas vendas. Cada item tem o botão para resolver na hora.',
+          'O **Pra fazer** lista o que é urgente: uma conta vencida, os avisos do celular bloqueados, uma queda nas vendas. Cada item tem o botão para resolver na hora.',
+          'O **Seu próximo passo** mostra um passo por vez para vender mais: divulgar o cardápio, pôr fotos, fazer a ficha técnica… A barra mostra quanto você já fez.',
           'Não quer resolver agora? Toque em **Agora não** e escolha: lembrar amanhã, em 7 dias ou não lembrar mais.',
         ],
       },
