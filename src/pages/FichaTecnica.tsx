@@ -15,9 +15,9 @@ import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
 import DooInfoModal from "@/components/DooInfoModal";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_FICHA, TOUR_FICHA } from "@/lib/comoTelas";
-import { Botao, BotaoIcone, Campo, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar, BotaoLimpar, BotaoTirar } from "@/components/base";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
-import { Camera, CaretDown, CaretRight, Check, FilePdf, WhatsappLogo, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, X, ListBullets, SquaresFour } from "@phosphor-icons/react";
+import { Camera, CaretDown, CaretRight, Check, FilePdf, WhatsappLogo, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, ListBullets, SquaresFour } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
 import "./clientes.css";
 import "./fichaLista.css";
@@ -776,7 +776,7 @@ export default function FichaTecnica() {
                     </button>
                     </span>
                     <span className="fd-c fd-c-x">
-                    <BotaoIcone rotulo={`Tirar ${ins.nome} da ficha`} variante="limpo" onClick={() => removeInsumo(f.insumo_id)}><X size={18} weight="bold" /></BotaoIcone>
+                    <BotaoTirar rotulo={`Tirar ${ins.nome} da ficha`} onClick={() => removeInsumo(f.insumo_id)} />
                     </span>
                   </div>
                 );
@@ -1127,7 +1127,7 @@ export default function FichaTecnica() {
             <label className="cl9-busca">
               <MagnifyingGlass size={20} weight="bold" />
               <input type="search" placeholder="Buscar produto" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar produto" autoComplete="off" />
-              {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
+              {busca && <BotaoLimpar onClick={() => setBusca("")} />}
             </label>
             {/* (24/10) filtro padrão do app: abre na lateral */}
             <BotaoFiltro className="fl-filtro" ativos={filtro === "todos" ? 0 : 1} onClick={() => setFiltroAberto(true)} />

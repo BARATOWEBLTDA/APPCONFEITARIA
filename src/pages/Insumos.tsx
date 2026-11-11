@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Broom, CaretRight, Cherries, Cookie, CookingPot, Drop, Egg, ForkKnife, Grains, MagnifyingGlass, Package, Plus, Sparkle, Tag, WarningCircle, X } from "@phosphor-icons/react";
+import { Broom, CaretRight, Cherries, Cookie, CookingPot, Drop, Egg, ForkKnife, Grains, MagnifyingGlass, Package, Plus, Sparkle, Tag, WarningCircle } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { explicarErro } from "@/lib/erros";
 import QuickAddInsumo, { InsumoQuick, custoNaReceita, descreverCompra, formatarCusto, rotuloCategoria } from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_INGREDIENTES, TOUR_INGREDIENTES } from "@/lib/comoTelas";
-import { Botao, TelaVazia, avisar, confirmar } from "@/components/base";
+import { Botao, TelaVazia, avisar, confirmar, BotaoLimpar } from "@/components/base";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import AbasFicha from "@/components/ficha/AbasFicha";
 import { Mascote } from "@/components/marca/Mascote";
@@ -190,7 +190,7 @@ export default function Insumos() {
               <label className="cl9-busca">
                 <MagnifyingGlass size={20} weight="bold" />
                 <input type="search" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar ingrediente" autoComplete="off" />
-                {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
+                {busca && <BotaoLimpar onClick={() => setBusca("")} />}
               </label>
               {/* (24/10) filtro padrão do app: abre na lateral */}
               {chips.length > 1 && <BotaoFiltro className="ig-filtro" ativos={filtroCategoria === "Todos" ? 0 : 1} onClick={() => setFiltroAberto(true)} />}

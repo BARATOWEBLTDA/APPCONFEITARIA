@@ -1,9 +1,10 @@
+import { BotaoFechar } from "@/components/base";
 import CampoData from '@/components/CampoData'
 import { useSobreposicao } from "@/components/base/useSobreposicao";
 import { useEffect, useRef, useState } from "react";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import { createPortal } from "react-dom";
-import { Wallet, PencilSimple, X } from "@phosphor-icons/react";
+import { Wallet, PencilSimple } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { registrarEtapa } from "@/lib/historicoPedido";
 import { registrarPagamento, normalizarForma } from "@/lib/pagamentos";
@@ -140,7 +141,7 @@ export default function FinalizarPedidoSheet({ pedido, novoStatus, novoStatusLab
             <b className="fps-t">{aguardandoPagamento ? "O cliente pagou?" : "Finalizar pedido"}</b>
             <small className="fps-s">Pedido #{pedido.numero ?? "—"}{pedido.cliente_nome ? ` · ${pedido.cliente_nome}` : ""} · {novoStatusLabel}</small>
           </div>
-          <button type="button" className="fps-x" onClick={fechar} aria-label="Fechar" disabled={salvando}><X size={18} weight="bold" /></button>
+          <BotaoFechar className="fps-x" onClick={fechar} disabled={salvando} />
         </div>
 
         <div className="fps-res">

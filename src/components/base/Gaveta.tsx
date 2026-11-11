@@ -1,11 +1,10 @@
 import { useId, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { X } from '@phosphor-icons/react'
-import { BotaoIcone } from './Botao'
 import { Titulo } from './Titulo'
 import { useFase, useSobreposicao } from './useSobreposicao'
 import './base.css'
+import { BotaoFechar } from './BotoesX'
 
 /**
  * Gaveta do Doonly (07/10 · guia v2): entra pela direita e ocupa a altura toda.
@@ -32,7 +31,7 @@ export function Gaveta({ aberta, aoFechar, titulo, children, rodape }: PropsGave
       <div ref={caixa} tabIndex={-1} className="ui-gaveta" role="dialog" aria-modal="true" aria-labelledby={idTitulo} onClick={e => e.stopPropagation()}>
         <div className="ui-gaveta-cab">
           <Titulo nivel="janela" id={idTitulo}>{titulo}</Titulo>
-          <BotaoIcone rotulo="Fechar" onClick={aoFechar}><X size={20} weight="bold" /></BotaoIcone>
+          <BotaoFechar onClick={aoFechar} />
         </div>
         <div className="ui-gaveta-corpo">{children}</div>
         {rodape ? <div className="ui-gaveta-pe">{rodape}</div> : null}

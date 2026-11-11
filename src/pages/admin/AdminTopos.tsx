@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { registrar } from "@/lib/adminPerfil";
 import { Cake, Crop, FileZip, Sparkle, Image as ImageIcon, PencilSimple, Plus, Trash, UploadSimple, WarningCircle, X } from "@phosphor-icons/react";
-import { Botao, BotaoIcone, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIcone, Campo, Janela, Titulo, avisar, confirmar, BotaoTirar } from "@/components/base";
 import { paraWebp } from "@/lib/imagemLeve";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import {
@@ -294,11 +294,11 @@ export default function AdminTopos() {
                 <div className="atp-arqs">
                   {form.arquivos.map(a => (
                     <div key={a.caminho} className="atp-arq"><em>{a.formato}</em><span>{a.nome}</span><small>{tamanhoTexto(a.tamanho)}</small>
-                      <BotaoIcone rotulo="Tirar" variante="limpo" tamanho="p" onClick={() => tirarArquivo(a)}><X size={14} /></BotaoIcone></div>
+                      <BotaoTirar onClick={() => tirarArquivo(a)} /></div>
                   ))}
                   {form.novos.map((f, i) => (
                     <div key={`n${i}`} className="atp-arq novo"><em>{formatoDe(f.name)}</em><span>{f.name}</span><small>{tamanhoTexto(f.size)}</small>
-                      <BotaoIcone rotulo="Tirar" variante="limpo" tamanho="p" onClick={() => setForm({ ...form, novos: form.novos.filter((_, k) => k !== i) })}><X size={14} /></BotaoIcone></div>
+                      <BotaoTirar onClick={() => setForm({ ...form, novos: form.novos.filter((_, k) => k !== i) })} /></div>
                   ))}
                   <button type="button" className="atp-add" onClick={() => arqRef.current?.click()}><UploadSimple size={18} weight="bold" /><span>Adicionar arquivos<small>PNG, PDF, JPG ou Studio · até 50 MB cada</small></span></button>
                   <input ref={arqRef} type="file" accept={ACEITA_ARQUIVOS} multiple hidden onChange={e => { const fs = Array.from(e.target.files || []); e.target.value = ""; if (fs.length) setForm({ ...form, novos: [...form.novos, ...fs] }); }} />

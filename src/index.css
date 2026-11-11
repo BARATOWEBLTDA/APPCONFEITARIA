@@ -102,3 +102,7 @@ p, h1, h2, h3, small, .ui-janela-t { text-wrap: pretty; }
 .cf-ajuda-bt::after { content: ""; position: absolute; inset: -8px; }
 .selo-teste-cel, .pf-chip { position: relative; }
 .selo-teste-cel::after, .pf-chip::after { content: ""; position: absolute; inset: -4px 0; }
+
+/* (11/11) gráficos: o toque no gráfico deixava uma moldura preta grossa em volta (o foco do recharts) */
+.recharts-wrapper, .recharts-wrapper:focus, .recharts-surface:focus, .recharts-wrapper *:focus { outline: none; }
+.recharts-wrapper { -webkit-tap-highlight-color: transparent; }

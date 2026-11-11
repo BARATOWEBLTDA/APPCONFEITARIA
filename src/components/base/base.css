@@ -71,6 +71,13 @@
 .ui-bti:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
 .ui-bti:disabled { opacity: .45; cursor: not-allowed; }
 
+/* (11/11) os X do app (BotoesX.tsx): um padrão só. "button.ui-x" ganha das regras de "busca button" de cada tela */
+button.ui-x { width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--ui-raio); background: transparent; color: var(--ui-texto-2); }
+button.ui-x--limpar, button.ui-x--tirar { width: 36px; height: 36px; border-radius: var(--ui-raio-p); }
+button.ui-x--limpar::after, button.ui-x--tirar::after { content: ""; position: absolute; inset: -4px; }
+button.ui-x--tirar { color: var(--ui-texto-3); }
+@media (hover: hover) { button.ui-x:hover:not(:disabled) { background: var(--ui-cinza); color: var(--ui-texto); filter: none; } }
+
 /* carregando (o único movimento que fica em repetição) */
 .ui-gira { display: inline-block; flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid currentColor; border-right-color: transparent; animation: uiGira .7s linear infinite; }
 @keyframes uiGira { to { transform: rotate(360deg); } }

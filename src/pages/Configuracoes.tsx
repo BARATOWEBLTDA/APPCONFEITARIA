@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { digitosTelefone } from "@/lib/telefone";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, WhatsappLogo, Bug, Lightbulb, SignOut, User, WarningCircle, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, WhatsappLogo, Bug, Lightbulb, SignOut, User, WarningCircle, MagnifyingGlass } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -9,7 +9,7 @@ import { explicarErro, erroDeConexao, SEM_INTERNET } from "@/lib/erros";
 import { mascaraTelefone } from "@/lib/telefone";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_CONFIGURACOES, TOUR_CONFIGURACOES } from "@/lib/comoTelas";
-import { Botao, Campo, Janela, TelaVazia, avisar, informar } from "@/components/base";
+import { Botao, Campo, Janela, TelaVazia, avisar, informar, BotaoLimpar } from "@/components/base";
 import { fotoDaLoja, refreshProfile, sairDaConta } from "@/hooks/useProfile";
 import { useRecorte } from "@/components/ui/useRecorte";
 import TermosModal from "@/components/TermosModal";
@@ -282,7 +282,7 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
           {largo && <label className="cf9-busca">
             <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
             <input type="search" placeholder="Horário, pix, senha, custos…" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar nas configurações" autoComplete="off" />
-            {busca && <button type="button" className="ui-busca-x" aria-label="Limpar a busca" onClick={() => setBusca('')}><X size={18} weight="bold" /></button>}
+            {busca && <BotaoLimpar className="ui-busca-x" onClick={() => setBusca('')} />}
           </label>}
           {busca.trim() ? (() => {
             const q = semAcento(busca.trim());

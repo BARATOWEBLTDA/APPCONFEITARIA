@@ -1,7 +1,6 @@
 import { useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { X } from "@phosphor-icons/react";
-import { Botao, BotaoIcone } from "@/components/base";
+import { Botao, BotaoFechar } from "@/components/base";
 import { useSobreposicao } from "@/components/base/useSobreposicao";
 import "@/components/base/base.css";
 
@@ -36,7 +35,7 @@ export default function DooInfoModal({ open, onClose, image, imageAlt = "", titl
     <div className="ui-veu ui-veu--centro" onClick={onClose}>
       <div ref={caixa} tabIndex={-1} className="ui-janela ui-janela--aviso dim" role="dialog" aria-modal="true" aria-label={typeof title === "string" ? undefined : ariaLabel} aria-labelledby={typeof title === "string" ? id : undefined} onClick={e => e.stopPropagation()}>
         <span className="ui-janela-alca" aria-hidden="true" />
-        <BotaoIcone rotulo="Fechar" variante="limpo" className="dim-x" onClick={onClose}><X size={20} weight="bold" /></BotaoIcone>
+        <BotaoFechar className="dim-x" onClick={onClose} />
         <div className="ui-janela-corpo">
           <img className="dim-img" src={image} alt={imageAlt} onError={e => { e.currentTarget.style.display = "none"; }} />
           <h2 className="ui-janela-t" id={id}>{title}</h2>

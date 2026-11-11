@@ -16,7 +16,7 @@ import { buscarTudo } from "@/lib/buscarTudo";
 import { erroDeConexao } from "@/lib/erros";
 import { faltaNoBanco } from "@/lib/pagamentos";
 import { gerarContasFixas } from "@/lib/contasFixas";
-import { Botao, CaixasEscolha, MenuMais, TelaVazia, confirmar, avisar as avisarBase } from "@/components/base";
+import { Botao, CaixasEscolha, MenuMais, TelaVazia, confirmar, avisar as avisarBase, BotaoLimpar } from "@/components/base";
 
 /**
  * Financeiro · Passo 5 (03/10) — Contas a pagar.
@@ -165,7 +165,7 @@ export default function FinanceiroAPagar() {
             {/* (24/10) filtro padrão do app: botão que abre na lateral (antes as abas Atrasadas/Semana/Mês/Todas) */}
             {/* (24/10) a mesma ordem das outras telas: busca, filtro e o botão de cadastrar */}
             <label className="fap-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" aria-label="Buscar conta" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} />
-              {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={16} weight="bold" /></button>}</label>
+              {busca && <BotaoLimpar onClick={() => setBusca("")} />}</label>
             <BotaoFiltro className="fap-filtro" ativos={filtro === "mes" ? 0 : 1} onClick={() => setFiltroAberto(true)} />
             <Botao icone={<Plus size={18} weight="bold" />} onClick={() => setNova(true)} className="fap-nova-bt">Nova conta</Botao>
           </div>

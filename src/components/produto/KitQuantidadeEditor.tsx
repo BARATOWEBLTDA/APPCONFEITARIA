@@ -1,8 +1,8 @@
 import { pluralSabor } from "@/lib/kitTexto";
-import { CaixasEscolha } from "@/components/base";
+import { CaixasEscolha, BotaoTirar } from "@/components/base";
 import { useState } from "react";
 import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
-import { Cookie, ForkKnife, PencilSimple, X } from "@phosphor-icons/react";
+import { Cookie, ForkKnife, PencilSimple } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import {
   KIT_VAZIO, KitQtdConfig, erroKit, kitsValidos, novoId, presetKit,
@@ -130,7 +130,7 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
         {k.sabores.map(s => s.nome.trim() && (
           <div key={s.id} className="esc-tab-l" role="row">
             <span role="cell" className="esc-tab-nm">{s.nome}</span>
-            <span role="cell"><button type="button" className="esc-op-x" onClick={() => set({ sabores: k.sabores.filter(x => x.id !== s.id) })} aria-label={`Tirar ${s.nome}`}><X size={16} weight="bold" /></button></span>
+            <span role="cell"><BotaoTirar className="esc-op-x" rotulo={`Tirar ${s.nome}`} onClick={() => set({ sabores: k.sabores.filter(x => x.id !== s.id) })} /></span>
           </div>
         ))}
         <div className="esc-tab-add kq-addrow">
@@ -159,7 +159,7 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
                   <span data-falta={`kit-${x.id}`} className={`kq-box kq-box--rs${x.preco > 0 ? " ok" : " falta"}`}>R$ <input inputMode="numeric" value={textoBRL(x.preco)} placeholder="0,00" aria-label="Preço do kit"
                     onChange={e => set({ kits: k.kits.map(y => y.id === x.id ? { ...y, preco: lerBRL(mascaraBRL(e.target.value)) } : y) })} /></span>
                 )}
-                <button type="button" onClick={() => set({ kits: k.kits.filter(y => y.id !== x.id) })} aria-label="Remover kit"><X size={16} weight="bold" /></button>
+                <BotaoTirar rotulo="Tirar o kit" onClick={() => set({ kits: k.kits.filter(y => y.id !== x.id) })} />
               </li>
             ))}
           </ul>

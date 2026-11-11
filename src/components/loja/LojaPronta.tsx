@@ -1,6 +1,7 @@
+import { BotaoFechar } from "@/components/base";
 import { useNavigate } from 'react-router-dom'
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
-import { Eye, ShareNetwork, X } from '@phosphor-icons/react'
+import { Eye, ShareNetwork } from '@phosphor-icons/react'
 import { getCardapioUrl, type Profile } from '@/hooks/useProfile'
 import './loja.css'
 
@@ -23,7 +24,7 @@ export function LojaProntaCartao({ profile, onFechar }: { profile: Profile | nul
         <b>Cardápio no ar!</b>
         <small>Mande o link para os clientes</small>
       </div>
-      <button type="button" className="lpc-x" onClick={onFechar} aria-label="Fechar"><X size={20} weight="bold" /></button>
+      <BotaoFechar className="lpc-x" onClick={onFechar} />
       <div className="lpc-bts">
         <button type="button" className="lpc-b lpc-b--pri" onClick={compartilhar}><ShareNetwork size={18} weight="bold" aria-hidden="true" />Compartilhar</button>
         <button type="button" className="lpc-b" onClick={() => navigate('/cardapio-preview')}><Eye size={18} weight="bold" aria-hidden="true" />Ver cardápio</button>

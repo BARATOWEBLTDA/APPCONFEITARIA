@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import Destaque from "@/components/Destaque";
 import { useProfile } from "@/hooks/useProfile";
-import { CaretDown, Check, GearSix, Info, Plus, Sparkle, X } from "@phosphor-icons/react";
+import { CaretDown, Check, GearSix, Info, Plus, Sparkle } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
-import { Botao, CaixasEscolha, Janela } from "@/components/base";
+import { Botao, CaixasEscolha, Janela, BotaoTirar } from "@/components/base";
 import { lerPredefs, gravarPredefs, chaveTam, type PredefRend } from "@/lib/predefRendimento";
 import { ProductModal } from "@/components/cart/ProductModal";
 import { CartProvider } from "@/context/CartContext";
@@ -385,7 +385,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
                   </label>
                 </span>
               )}
-              <span role="cell"><button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button></span>
+              <span role="cell"><BotaoTirar className="esc-op-x" rotulo={`Tirar ${o.nome}`} onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} /></span>
             </div>
           ))}
           {/* (14/10) cadastrar outra opção: última linha da própria tabela */}
@@ -544,7 +544,7 @@ function CartaoTamanho({ form, setForm }: { form: FormEscolhas; setForm: Props["
               <li key={o.id} className="esc-op">
                 <span className="esc-op-nm">{o.nome}</span>
                 <span className="esc-op-kg falta">sem peso</span>
-                <button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button>
+                <BotaoTirar className="esc-op-x" rotulo={`Tirar ${o.nome}`} onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} />
               </li>
             ))}
           </ul>
@@ -586,7 +586,7 @@ function CartaoTamanho({ form, setForm }: { form: FormEscolhas; setForm: Props["
               {/* a ordem é automática (P, M, G… e os números): ao sair do campo, a lista se arruma */}
               <input className="esc-op-in" value={o.nome} onChange={e => renomear(o.id, e.target.value)} onBlur={() => set({ opcoes: ordenarTamanhos(g.opcoes) })} aria-label={`Nome do tamanho ${i + 1}`} />
               {temRend && <span className="esc-op-rd">{nServe ? `${nServe} ${unRend}` : "—"}</span>}
-              <button type="button" className="esc-op-x" onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} aria-label={`Tirar ${o.nome}`}><X size={16} weight="bold" /></button>
+              <BotaoTirar className="esc-op-x" rotulo={`Tirar ${o.nome}`} onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} />
             </li>
             ); })}
         </ul>

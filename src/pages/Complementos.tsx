@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { CTA_PRO } from "@/lib/beneficiosPro";
 import { useNavigate } from "react-router-dom";
 import { Sparkle, Image as ImagemIc } from "@phosphor-icons/react";
-import { Calculator, Camera, Check, Crown, Eye, Storefront, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Calculator, Camera, Check, Crown, Eye, Storefront, TextT, Info, MagnifyingGlass, Package, PencilSimple, Plus, Trash, WarningCircle } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { formatarNomeItem, parecefrase } from "@/lib/nomeItem";
@@ -12,7 +12,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_COMPLEMENTOS, TOUR_COMPLEMENTOS } from "@/lib/comoTelas";
 import mascoteCoroa from "@/assets/mascote-coroa.webp";
 import { createPortal } from "react-dom";
-import { Botao, BotaoIA, Campo, MenuMais, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIA, Campo, MenuMais, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar, BotaoLimpar, BotaoTirar } from "@/components/base";
 import { usePlano } from "@/hooks/usePlano";
 import { LIMITE_COMPLEMENTOS_GRATIS } from "@/lib/limitesPlano";
 import RecursoPro from "@/components/billing/RecursoPro";
@@ -391,7 +391,7 @@ export default function Complementos() {
                 <label className="pz-busca">
                   <MagnifyingGlass size={20} weight="bold" />
                   <input type="search" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar adicional" autoComplete="off" />
-                  {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
+                  {busca && <BotaoLimpar onClick={() => setBusca("")} />}
                 </label>
                 <Botao className="guia-novo-complemento" icone={<Plus size={20} weight="bold" />} onClick={() => abrir(null)}>Novo</Botao>
               </div>
@@ -405,7 +405,7 @@ export default function Complementos() {
                 <label className="pz-busca pz-busca--pc">
                   <MagnifyingGlass size={20} weight="bold" />
                   <input type="search" placeholder="Buscar adicional" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar adicional" autoComplete="off" />
-                  {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></button>}
+                  {busca && <BotaoLimpar onClick={() => setBusca("")} />}
                 </label>
               )}
               {filtrados.length === 0 ? (
@@ -511,7 +511,7 @@ export default function Complementos() {
             <div className="pz-sugnome" role="status">
               <span>Fica melhor no cardápio: <b>{sugNome}</b></span>
               <button type="button" onClick={() => { setForm(f => ({ ...f, nome: sugNome })); nomeConferido.current = sugNome; setSugNome(null); }}>Usar</button>
-              <button type="button" className="pz-sugnome-x" onClick={() => setSugNome(null)} aria-label="Deixar como está"><X size={14} weight="bold" /></button>
+              <BotaoTirar className="pz-sugnome-x" rotulo="Deixar como está" onClick={() => setSugNome(null)} />
             </div>
           )}
           </div>

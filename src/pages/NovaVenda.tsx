@@ -27,7 +27,7 @@ import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
 import { Bank, CalendarBlank, CalendarDots, Check, CheckCircle, Clock, CreditCard, Info, Lightning, MagnifyingGlass, Minus, Money, Package, PencilSimple, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
 import HeroVazio from '@/components/HeroVazio'
-import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
+import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, TelaVazia, Titulo, avisar, confirmar, BotaoLimpar } from '@/components/base'
 import { historicoAssentado } from '@/components/base/useSobreposicao'
 import { dataLonga, itemComQtd, nomeDeProduto, recebidoPedido, rs, saldoPedido, telefoneBonito } from '@/components/pedidos/pedidoTexto'
 import { pesoLivre } from '@/lib/itemPedido'
@@ -1029,7 +1029,7 @@ export default function NovaVenda() {
                   <div className="ui-campo-c nv3-cbusca">
                     <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
                     <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar cliente pelo nome ou telefone" placeholder="Nome ou telefone" value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
-                    {buscaCliente && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBuscaCliente('')}><X size={20} weight="bold" /></BotaoIcone>}
+                    {buscaCliente && <BotaoLimpar rotulo="Limpar a busca" onClick={() => setBuscaCliente('')} />}
                   </div>
                   <button type="button" className="nv3-cnovo" onClick={() => { tirarCliente(); setModoNovoCli(true) }}>
                     <Plus size={16} weight="bold" aria-hidden="true" />Novo<span className="nv3-so-pc">cliente</span>

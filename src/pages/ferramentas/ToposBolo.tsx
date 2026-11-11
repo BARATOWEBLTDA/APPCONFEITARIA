@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArrowSquareOut, ShareNetwork, CaretLeft, CaretRight, Crown, SquaresFour, DownloadSimple, Images, MagnifyingGlass, WarningCircle, X } from "@phosphor-icons/react";
+import { ArrowSquareOut, ShareNetwork, CaretLeft, CaretRight, Crown, SquaresFour, DownloadSimple, Images, MagnifyingGlass, WarningCircle } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Botao, BotaoIcone, Janela, TelaVazia, avisar } from "@/components/base";
+import { Botao, Janela, TelaVazia, avisar, BotaoLimpar } from "@/components/base";
 import { ConvitePro } from "@/components/billing/RecursoPro";
 import { useProfile } from "@/hooks/useProfile";
 import { baixarArquivo, infoFormato, carregarCategorias, carregarTopos, tamanhoTexto, type ArquivoTopo, type CategoriaTopo, type Topo } from "@/lib/toposBolo";
@@ -99,7 +99,7 @@ export default function ToposBolo() {
             <div className="ui-campo-c tb-busca">
               <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
               <input type="search" inputMode="search" autoComplete="off" aria-label="Buscar topo" placeholder="Buscar topo" value={busca} onChange={e => setBusca(e.target.value)} />
-              {busca && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca("")}><X size={18} weight="bold" /></BotaoIcone>}
+              {busca && <BotaoLimpar rotulo="Limpar a busca" onClick={() => setBusca("")} />}
             </div>
             {/* (09/11) temas em bolinhas, estilo destaques do Instagram: passa de lado; o tema marcado ganha o anel */}
             <div className="tb-dest" role="tablist" aria-label="Temas">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useRecorte } from "@/components/ui/useRecorte";
-import { Camera, CaretDown, Check, Image as ImagemIc, MagnifyingGlass, Package, Sparkle, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { Camera, CaretDown, Check, Image as ImagemIc, MagnifyingGlass, Package, Sparkle, Trash, WarningCircle } from "@phosphor-icons/react";
 import { parseNumBR } from "@/lib/numeroBR";
 import { CATEGORIAS_INSUMO, categoriaPeloNome, normalizarCategoria } from "@/lib/categoriasInsumo";
 import SelectDoonly from "@/components/base/SelectDoonly";
@@ -11,7 +11,7 @@ const reais = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 
 import { supabase } from "@/lib/supabase";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { apiFetch } from "@/lib/apiFetch";
-import { Botao, BotaoIcone, Campo, Janela, Titulo, avisar, confirmar } from "@/components/base";
+import { Botao, Campo, Janela, Titulo, avisar, confirmar, BotaoFechar } from "@/components/base";
 import "@/pages/clientes.css";
 import "./ingredientes.css";
 
@@ -688,7 +688,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     <div className="ig-emb">
       <div className="ig-emb-cab">
         <Titulo nivel="janela">{isEditing ? "Editar ingrediente" : "Novo ingrediente"}</Titulo>
-        <BotaoIcone rotulo="Fechar" variante="limpo" onClick={pedirFechar}><X size={20} weight="bold" /></BotaoIcone>
+        <BotaoFechar onClick={pedirFechar} />
       </div>
       {corpo}
       <Botao cheio carregando={saving} onClick={handleSalvar}>{isEditing ? "Salvar" : "Cadastrar ingrediente"}</Botao>

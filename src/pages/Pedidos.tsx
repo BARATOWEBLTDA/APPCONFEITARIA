@@ -3,10 +3,10 @@ import { COMO_PEDIDOS, TOUR_PEDIDOS } from "@/lib/comoTelas";
 import { compartilharTexto } from "@/lib/compartilharCardapio";
 import { montarMensagem, dadosDoPedido } from '@/lib/mensagens'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
-import { Cake, CalendarDots, CaretDown, Funnel, Kanban, Lightning, ListBullets, MagnifyingGlass, Plus, Receipt, WarningCircle, X } from '@phosphor-icons/react'
+import { Cake, CalendarDots, CaretDown, Funnel, Kanban, Lightning, ListBullets, MagnifyingGlass, Plus, Receipt, WarningCircle } from '@phosphor-icons/react'
 import HeroVazio from '@/components/HeroVazio'
 import AppPageHeader from '@/components/AppPageHeader'
-import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar, confirmar } from '@/components/base'
+import { Botao, BotaoIcone, Janela, TelaVazia, Titulo, avisar, confirmar, BotaoLimpar } from '@/components/base'
 import FinalizarPedidoSheet from '@/components/pedidos/FinalizarPedidoSheet'
 import FiltroLateral, { STATUS_PADRAO, bateData } from '@/components/pedidos/FiltroPedidos'
 import { LinhaCompacta, LinhaPedido } from '@/components/pedidos/CartaoPedido'
@@ -657,7 +657,7 @@ export default function Pedidos() {
                 <div className="ui-campo-c pd-busca" onClick={e => { if (e.target === e.currentTarget) e.currentTarget.querySelector('input')?.focus() }}>
                   <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
                   <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} />
-                  {busca && <BotaoIcone className="pd-busca-x" variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca('')}><X size={20} weight="bold" /></BotaoIcone>}
+                  {busca && <BotaoLimpar className="pd-busca-x" rotulo="Limpar a busca" onClick={() => setBusca('')} />}
                 </div>
                 <span className="pd-filtro">
                   <BotaoIcone rotulo={nFiltros ? `Filtros (${nFiltros} ligados)` : 'Filtros'} className={nFiltros ? 'ligado' : ''} onClick={() => setShowFiltro(true)}><Funnel size={20} weight={nFiltros ? 'fill' : 'bold'} /></BotaoIcone>

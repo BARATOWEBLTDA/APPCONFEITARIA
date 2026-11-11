@@ -1,5 +1,6 @@
+import { BotaoLimpar } from "@/components/base";
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { MagnifyingGlass, List, Check, X } from '@phosphor-icons/react'
+import { MagnifyingGlass, List, Check } from '@phosphor-icons/react'
 import { Produto } from '@/types/database'
 import { EmptyState } from './EmptyState'
 import { montarSecoes, SecaoCardapio, LinhaProduto } from './ItensCardapio'
@@ -94,7 +95,7 @@ export function ProductList({ produtos, corBotao = '#E85A8C', searchTerm, onSear
         <div className="cl-busca">
           <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
           <input type="search" placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" value={searchTerm} onChange={e => onSearchChange(e.target.value)} />
-          {searchTerm && <button type="button" aria-label="Limpar a busca" onClick={() => onSearchChange('')}><X size={18} weight="bold" /></button>}
+          {searchTerm && <BotaoLimpar onClick={() => onSearchChange('')} />}
         </div>
         {temAbas && (
           <div ref={menuRef} className="ic-abas" style={{ position: 'relative' }}>

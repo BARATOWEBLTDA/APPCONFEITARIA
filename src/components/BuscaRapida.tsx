@@ -1,11 +1,7 @@
+import { BotaoFechar } from "@/components/base";
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  MagnifyingGlass, X, House, ClipboardText, Plus, CalendarBlank, Sparkle, Cake, Tag, Stack, Basket, ListChecks, Users,
-  ShoppingBag, Palette, Storefront, ArrowSquareOut, CurrencyDollar, ArrowsDownUp, HandCoins, CalendarCheck, Receipt, ChartLineUp,
-  Coins, CreditCard, Buildings, Newspaper, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb, FileText,
-  WhatsappLogo, PauseCircle, PixLogo, Clock, Truck, MapPin, Money, WarningCircle, BellRinging, Wrench, DeviceMobile, Eye, Hourglass,
-} from "@phosphor-icons/react";
+import { MagnifyingGlass, House, ClipboardText, Plus, CalendarBlank, Sparkle, Cake, Tag, Stack, Basket, ListChecks, Users, ShoppingBag, Palette, Storefront, ArrowSquareOut, CurrencyDollar, ArrowsDownUp, HandCoins, CalendarCheck, Receipt, ChartLineUp, Coins, CreditCard, Buildings, Newspaper, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb, FileText, WhatsappLogo, PauseCircle, PixLogo, Clock, Truck, MapPin, Money, WarningCircle, BellRinging, Wrench, DeviceMobile, Eye, Hourglass } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { Ticket, Target, Scales, Sliders } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
@@ -175,7 +171,7 @@ export default function BuscaRapida() {
           <input ref={inputRef} type="search" value={q} onChange={e => setQ(e.target.value)} onKeyDown={aoTeclar}
             placeholder="Buscar tela ou o que fazer…" aria-label="Buscar tela ou o que você quer fazer" autoComplete="off"
             role="combobox" aria-expanded="true" aria-controls="br-lista" aria-activedescendant={lista[sel] ? `br-i-${sel}` : undefined} />
-          <button type="button" className="br-fechar" onClick={() => setAberta(false)} aria-label="Fechar a busca"><X size={18} weight="bold" /></button>
+          <BotaoFechar rotulo="Fechar a busca" className="br-fechar" onClick={() => setAberta(false)} />
         </div>
         <div className="br-lista" id="br-lista" role="listbox" ref={listaRef}>
           {lista.length === 0 && <p className="br-nada">Nada encontrado para “{q}”</p>}

@@ -1,3 +1,4 @@
+import { BotaoFechar } from "@/components/base";
 import { Suspense, useState, useEffect } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -5,11 +6,7 @@ import { NomeDoonly } from "@/components/marca/Mascote";
 import { perfilAtual, escolherPerfil, EVENTO_PERFIL, type PerfilAdmin } from "@/lib/adminPerfil";
 import EscolherPerfil, { AvatarAdmin } from "./EscolherPerfil";
 import { guardarDestinoDoLogin } from "@/lib/destinoLogin";
-import {
-  ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images,
-  Lightbulb, Target, Cake,
-  ArrowLeft, SignOut, DotsThreeOutline, CaretRight, X, ClockCounterClockwise, ArrowsLeftRight,
-} from "@phosphor-icons/react";
+import { ChartLine, UsersThree, Newspaper, PenNib, Image as ImageIcon, Images, Lightbulb, Target, Cake, ArrowLeft, SignOut, DotsThreeOutline, CaretRight, ClockCounterClockwise, ArrowsLeftRight } from "@phosphor-icons/react";
 
 interface MenuItem {
   path: string;
@@ -232,7 +229,7 @@ export default function AdminLayout() {
             <div className="adm-sheet-grab" />
             <div className="adm-sheet-hdr">
               <b>Mais</b>
-              <button className="adm-sheet-x" onClick={() => setMenuOpen(false)} aria-label="Fechar"><X size={14} weight="bold" /></button>
+              <BotaoFechar className="adm-sheet-x" onClick={() => setMenuOpen(false)} />
             </div>
             {MAIS_ITEMS.map(item => (
               <button
@@ -329,7 +326,6 @@ export default function AdminLayout() {
         .adm-sheet-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 8px; }
         .adm-sheet-hdr b { font-size: 18px; font-weight: 600; }
         .adm-sheet-x { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); cursor: pointer; }
-        .adm-sheet-x svg { width: 20px; height: 20px; }
         .adm-sheet-it { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 4px 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-3); font-family: inherit; text-align: left; cursor: pointer; }
         .adm-sheet-it:active, .adm-sheet-it.on { background: var(--ui-linha); }
         .adm-sheet-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--ui-linha); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-2); } /* (10/11) caixinha branca */

@@ -4,12 +4,12 @@ import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
-import { ArrowUp, ArrowDown, MagnifyingGlass, DownloadSimple, ArrowSquareOut, ArrowCounterClockwise, WarningCircle, CaretLeft, CaretRight, X } from "@phosphor-icons/react";
+import { ArrowUp, ArrowDown, MagnifyingGlass, DownloadSimple, ArrowSquareOut, ArrowCounterClockwise, WarningCircle, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import CampoData from "@/components/CampoData";
 import GavetaFiltro, { BotaoFiltro, filtrosAtivos } from "@/components/base/GavetaFiltro";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_TRANSACOES, TOUR_TRANSACOES } from "@/lib/comoTelas";
-import { Botao, TelaVazia, avisar as avisarBase } from "@/components/base";
+import { Botao, TelaVazia, avisar as avisarBase, BotaoLimpar } from "@/components/base";
 import { erroDeConexao } from "@/lib/erros";
 import { MESES, iso as isoData, periodoDoDia, periodoDoMes, periodoHoje, periodoInicial, rotuloPeriodo, type Periodo } from "@/components/financeiro/PeriodoFiltro";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
@@ -205,7 +205,7 @@ export default function FinanceiroTransacoes() {
         </div>
 
         <div className="tx-bb">
-          <label className="tx-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" aria-label="Buscar no extrato" placeholder="Buscar no extrato" value={busca} onChange={e => setBusca(e.target.value)} />{busca && <button type="button" className="ui-busca-x" aria-label="Limpar a busca" onClick={() => setBusca('')}><X size={18} weight="bold" /></button>}</label>
+          <label className="tx-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" aria-label="Buscar no extrato" placeholder="Buscar no extrato" value={busca} onChange={e => setBusca(e.target.value)} />{busca && <BotaoLimpar className="ui-busca-x" onClick={() => setBusca('')} />}</label>
           <BotaoFiltro ativos={ativos} onClick={() => setFiltroAberto(true)} />
         </div>
 

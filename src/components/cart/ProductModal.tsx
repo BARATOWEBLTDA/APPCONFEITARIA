@@ -1,3 +1,4 @@
+import { BotaoFechar } from "@/components/base";
 import { seloEntrega } from "@/lib/entregaProduto";
 import { unidadePreco } from '@/lib/formaVenda'
 import KitPicker from '@/components/cardapio/KitPicker'
@@ -8,7 +9,7 @@ import { r2 } from '@/lib/moeda'
 import { kitAtivo, calcularKit, selecaoInicial, kitUnico, kitsValidos, palavraKit, type KitSelecao } from '@/lib/kitQuantidade'
 import { Fragment, useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowLeft, CalendarBlank, Camera, CaretLeft, CaretRight, Check, Fire, Lightning, Minus, Plus, X } from '@phosphor-icons/react'
+import { ArrowLeft, CalendarBlank, Camera, CaretLeft, CaretRight, Check, Fire, Lightning, Minus, Plus } from '@phosphor-icons/react'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 import './productModal.css'
 import { useCart } from '@/hooks/useCart'
@@ -680,7 +681,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       <div className="pm-info">
         <div className="pm-tit"><h2>{nome}</h2>
           {/* (20/10) computador: o X ao lado do nome (sai a faixa de cima que repetia o nome) */}
-          <button type="button" className="pm-x-pc" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button></div>
+          <BotaoFechar className="pm-x-pc" onClick={onClose} /></div>
         {product.descricao && <p className="pm-desc">{product.descricao}</p>}
         {/* (6.103) rendimento do produto sem tamanhos (com tamanhos, cada um mostra o seu "serve até…") */}
         {!(product as { grupo_tamanhos?: { ativo?: boolean } | null }).grupo_tamanhos?.ativo && String((product as { rendimento_qtd?: string | null }).rendimento_qtd || '').trim() && <p className="pm-rende">Rendimento: {String((product as { rendimento_qtd?: string | null }).rendimento_qtd).trim()}</p>}
@@ -809,7 +810,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
         <div className={`pm-barra${barra ? ' on' : ''}`}>
           <button type="button" className="pm-bt" aria-label="Voltar" onClick={onClose}><ArrowLeft size={22} weight="bold" /></button>
           <b>{nome}</b>
-          <button type="button" className="pm-bt pm-bt-x" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button>
+          <BotaoFechar className="pm-bt pm-bt-x" onClick={onClose} />
         </div>
 
         {images.length > 0 && (

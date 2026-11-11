@@ -11,9 +11,9 @@ import { digitosTelefone, digitosAoDigitar, linkWhatsApp } from "@/lib/telefone"
 import { useProfile, isPro, perfilAtual } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_CLIENTES, TOUR_CLIENTES } from "@/lib/comoTelas";
-import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar } from "@/components/base";
+import { Botao, Campo, CampoArea, Janela, TelaVazia, avisar, confirmar, BotaoLimpar } from "@/components/base";
 import { ConvitePro } from "@/components/billing/RecursoPro";
-import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, Crown, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle, X } from "@phosphor-icons/react";
+import { AddressBook, Cake, CalendarBlank, Camera, CaretDown, Check, CaretRight, Crown, MagnifyingGlass, Plus, Trash, UsersThree, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import "./clientes.css";
@@ -671,7 +671,7 @@ export default function Clientes() {
           <Campo rotulo="Aniversário" opcional readOnly placeholder="Escolher a data" value={completo.data_nascimento ? rotuloNascimento(completo.data_nascimento) : ""}
             icone={<CalendarBlank size={20} weight="bold" />} onClick={() => setNiverAberto(true)}
             dica="Avisamos antes, para mandar os parabéns." />
-          {completo.data_nascimento && <button type="button" className="cl9-f-limpar" aria-label="Tirar o aniversário" onClick={() => setCompleto(f => ({ ...f, data_nascimento: "" }))}><X size={18} weight="bold" /></button>}
+          {completo.data_nascimento && <BotaoLimpar className="cl9-f-limpar" rotulo="Tirar o aniversário" onClick={() => setCompleto(f => ({ ...f, data_nascimento: "" }))} />}
         </div>
         {niverAberto && <DataNascimentoSheet valor={completo.data_nascimento || ""} onEscolher={v => setCompleto(f => ({ ...f, data_nascimento: v }))} onClose={() => setNiverAberto(false)} />}
 
@@ -830,7 +830,7 @@ export default function Clientes() {
                 <label className="cl9-busca">
                   <MagnifyingGlass size={20} weight="bold" />
                   <input type="search" placeholder="Buscar" value={search} onChange={e => setSearch(e.target.value)} aria-label="Buscar cliente" autoComplete="off" />
-                  {search && <button type="button" aria-label="Limpar a busca" onClick={() => setSearch("")}><X size={18} weight="bold" /></button>}
+                  {search && <BotaoLimpar onClick={() => setSearch("")} />}
                 </label>
                 {/* (24/10) filtro padrão do app: botão ao lado da busca, abre na lateral */}
                 <BotaoFiltro className="cl9-filtro" ativos={filtroChip === "todos" ? 0 : 1} onClick={() => setFiltroAberto(true)} />

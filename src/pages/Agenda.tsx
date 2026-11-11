@@ -3,7 +3,7 @@ import { abrirConvitePro } from "@/components/billing/RecursoPro";
 import { COMO_AGENDA, TOUR_AGENDA } from "@/lib/comoTelas";
 import { montarMensagem, dadosDoPedido } from "@/lib/mensagens";
 import { useNavigate, useNavigationType } from "react-router-dom";
-import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Printer, Trash, WarningCircle, X } from "@phosphor-icons/react";
+import { CalendarBlank, CaretLeft, CaretRight, Check, Copy, FilePdf, Funnel, MagnifyingGlass, Package, PencilSimple, Printer, Trash, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { pedidoAtrasado, STATUS_AINDA_NAO_PRONTO, STATUS_PODE_FICAR_PRONTO } from "@/lib/pedidoStatus";
 import { duplicarPedido as duplicarPedidoLib } from "@/lib/duplicarPedido";
@@ -23,7 +23,7 @@ import { registrarEtapa } from "@/lib/historicoPedido";
 import { avisarDesfeito, avisarMudanca } from "@/lib/avisoPedido";
 import AppPageHeader from "@/components/AppPageHeader";
 import CalendarioSheet from "@/components/CalendarioSheet";
-import { Botao, BotaoIcone, Linha, MenuMais, TelaVazia, Titulo, avisar, confirmar, type ItemMenuMais } from "@/components/base";
+import { Botao, BotaoIcone, Linha, MenuMais, TelaVazia, Titulo, avisar, confirmar, type ItemMenuMais, BotaoLimpar } from "@/components/base";
 import { formaDoItem, grupoDoStatus, nomeDaSituacao, nomeDeGente, nomeDoItem, precisaAceitar, recebidoPedido, rs, saldoPedido, situacaoDe, telefoneValido } from "@/components/pedidos/pedidoTexto";
 import { NomeComQtd } from "@/components/pedidos/CartaoPedido";
 import FiltroLateral, { SITUACOES_FILTRO, STATUS_PADRAO } from "@/components/pedidos/FiltroPedidos";
@@ -565,7 +565,7 @@ export default function Agenda() {
         <div className="ui-campo-c ag3-busca" onClick={e => { if (e.target === e.currentTarget) (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus(); }}>
           <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
           <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar cliente ou número" value={busca} onChange={e => { setBusca(e.target.value); setResAberto(true); }} onFocus={() => setResAberto(true)} />
-          {busca && <BotaoIcone variante="limpo" tamanho="p" rotulo="Limpar a busca" onClick={() => setBusca("")}><X size={20} weight="bold" /></BotaoIcone>}
+          {busca && <BotaoLimpar rotulo="Limpar a busca" onClick={() => setBusca("")} />}
         </div>
         <BotaoIcone className={"ag3-filtro" + (filtrosDesligados > 0 ? " on" : "")} rotulo={filtrosDesligados > 0 ? `Filtrar por situação (${filtrosDesligados} escondida${filtrosDesligados > 1 ? "s" : ""})` : "Filtrar por situação"} onClick={() => setFiltroAberto(true)}>
           <Funnel size={20} weight={filtrosDesligados > 0 ? "fill" : "bold"} />

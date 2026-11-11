@@ -6,11 +6,11 @@ import EstiloFinanceiro from "@/components/financeiro/EstiloFinanceiro";
 import { mascaraBRL, textoBRL } from "@/lib/moeda";
 import Folha from "@/components/financeiro/Folha";
 import { useNavigate } from "react-router-dom";
-import { CalendarBlank, CheckCircle, ArrowSquareOut, MagnifyingGlass, Wallet, WarningCircle, X } from "@phosphor-icons/react";
+import { CalendarBlank, CheckCircle, ArrowSquareOut, MagnifyingGlass, Wallet, WarningCircle } from "@phosphor-icons/react";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_A_RECEBER, TOUR_A_RECEBER } from "@/lib/comoTelas";
-import { Botao, TelaVazia, avisar as avisarBase } from "@/components/base";
+import { Botao, TelaVazia, avisar as avisarBase, BotaoLimpar } from "@/components/base";
 import { erroDeConexao } from "@/lib/erros";
 import { supabase } from "@/lib/supabase";
 import { carregarAReceber, isoDia, type ItemReceber } from "@/lib/contasReceber";
@@ -122,7 +122,7 @@ export default function FinanceiroAReceber() {
         {!carregando && itens.length > 0 && (
           <div className="far-bb">
             <label className="far-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" aria-label="Buscar cliente ou número do pedido" placeholder="Buscar cliente ou número" value={busca} onChange={e => setBusca(e.target.value)} />
-              {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca("")}><X size={16} weight="bold" /></button>}</label>
+              {busca && <BotaoLimpar onClick={() => setBusca("")} />}</label>
             <BotaoFiltro className="far-filtro" ativos={mostrar === "todos" ? 0 : 1} onClick={() => setFiltroAberto(true)} />
           </div>
         )}

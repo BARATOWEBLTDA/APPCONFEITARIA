@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef } from 'react'
 import Cropper from 'react-easy-crop'
 import type { Area } from 'react-easy-crop'
-import { MagnifyingGlassMinus, MagnifyingGlassPlus, X } from '@phosphor-icons/react'
-import { Botao, BotaoIcone, avisar } from '@/components/base'
+import { MagnifyingGlassMinus, MagnifyingGlassPlus } from '@phosphor-icons/react'
+import { Botao, BotaoIcone, avisar, BotaoFechar } from '@/components/base'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 import './imageCropper.css'
 
@@ -99,7 +99,7 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
             <h2 id="rf-titulo">{titulo || (cropShape === 'round' ? 'Ajustar a foto' : 'Ajustar a foto do produto')}</h2>
             <p>{encaixar ? 'Arraste para posicionar. Afaste para caber a imagem inteira.' : 'Arraste para posicionar. Aproxime com os dedos ou com a barra.'}</p>
           </div>
-          <BotaoIcone rotulo="Fechar sem salvar" variante="limpo" onClick={cancelar} disabled={loading}><X size={20} weight="bold" /></BotaoIcone>
+          <BotaoFechar rotulo="Fechar sem salvar" onClick={cancelar} disabled={loading} />
         </div>
 
         <div className="rf-area">

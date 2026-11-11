@@ -6,7 +6,7 @@ import { SeloVerificado } from '@/components/cardapio/SeloVerificado'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getCardapioByCodigo, getCardapioBySlug } from '@/services/cardapio'
 import { supabase } from '@/lib/supabase'
-import { Botao } from '@/components/base'
+import { Botao, BotaoFechar, BotaoLimpar } from '@/components/base'
 import { Mascote, NomeDoonly } from '@/components/marca/Mascote'
 import './naoEncontrada.css'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
@@ -27,7 +27,7 @@ import { DesignSettings, Configuracoes, Produto } from '@/types/database'
 import type { CartItem } from '@/types/cart'
 import { PerfilTab } from '@/components/cardapio/PerfilTab'
 import { PedidosTab } from '@/components/cardapio/PedidosTab'
-import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, X, Lightning, CalendarBlank, Minus, Plus, Trash, FileText, CaretRight } from '@phosphor-icons/react'
+import { MapPin, House, MagnifyingGlass, ShoppingBag, Storefront, User, Lightning, CalendarBlank, Minus, Plus, Trash, FileText, CaretRight } from '@phosphor-icons/react'
 import { lerCliente } from '@/components/cardapio/contaCliente'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { SobreLoja } from '@/components/cardapio/SobreLoja'
@@ -133,7 +133,7 @@ function DeskNav({ design, config, isPro = false }: { design: DesignSettings; co
           <div className="cp-conta" role="dialog" aria-modal="true" aria-label="Minha conta">
             <div className="cp-conta-topo">
               <h2 className="cp-conta-t">Minha conta</h2>
-              <button type="button" className="cp-conta-x" aria-label="Fechar" onClick={() => setAba('inicio')}><X size={20} weight="bold" /></button>
+              <BotaoFechar className="cp-conta-x" onClick={() => setAba('inicio')} />
             </div>
             {/* (14/10) abas com a linha embaixo, iguais às do "Sobre nós", na cor do topo */}
             <div className="cp-conta-abas" role="tablist">
@@ -584,7 +584,7 @@ function CardapioContent() {
           <div className="cp-busca">
             <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
             <input type="search" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" />
-            {searchTerm && <button type="button" aria-label="Limpar a busca" onClick={() => setSearchTerm('')}><X size={18} weight="bold" /></button>}
+            {searchTerm && <BotaoLimpar onClick={() => setSearchTerm('')} />}
           </div>
           {/* (20/10) só aparece quando a loja tem os dois tipos */}
           {temPronta && temEncomenda && (

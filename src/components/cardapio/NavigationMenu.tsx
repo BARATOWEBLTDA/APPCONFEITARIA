@@ -20,7 +20,7 @@ import type { ExtraEscolhido } from '@/lib/kitTexto'
 import type { HorarioLoja } from '@/lib/agendaCardapio'
 import { contarItens, detalhesItem, qtdItem, semMeioEmoji, valorLinha } from '@/lib/itemSacola'
 import { r2, somarReais } from '@/lib/moeda'
-import { Campo, CampoArea, avisar } from '@/components/base'
+import { Campo, CampoArea, avisar, BotaoFechar, BotaoTirar } from '@/components/base'
 import { esquecerCupomEscolhido, lerCupomEscolhido, textoDesconto, type CupomVitrine } from '@/lib/cupons'
 import { useSobreposicao } from '@/components/base/useSobreposicao'
 import { explicarErro } from '@/lib/erros'
@@ -1066,9 +1066,9 @@ function CartContent({
     <div className="sc-topo">
       {step === 'finalizar'
         ? (direto
-          ? <button type="button" className="sc-bt" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button>
+          ? <BotaoFechar className="sc-bt" onClick={onClose} />
           : <button type="button" className="sc-bt" aria-label="Voltar para a sacola" onClick={() => { setStep('cart'); setFeErro('') }}><ArrowLeft size={22} weight="bold" /></button>)
-        : <button type="button" className="sc-bt" aria-label="Fechar" onClick={onClose}><X size={22} weight="bold" /></button>}
+        : <BotaoFechar className="sc-bt" onClick={onClose} />}
       <span><b>{step === 'finalizar' ? 'Finalizar pedido' : 'Sacola'}</b>{nomeLoja && <small>{nomeLoja}</small>}</span>
       <span />
     </div>
@@ -1303,7 +1303,7 @@ function CartContent({
                       <small>{carregando ? 'Carregando…' : foto ? 'Foto anexada' : `${it.pedeReferencia !== 'Foto de referência' ? `${it.pedeReferencia} · ` : ''}Enviar uma foto`}</small>
                     </span>
                     {foto
-                      ? <button type="button" className="sc-ref-x" aria-label={`Tirar a foto de ${it.name}`} onClick={ev => { ev.preventDefault(); updateFotoReferencia?.(linha, null) }}><X size={18} weight="bold" /></button>
+                      ? <BotaoTirar className="sc-ref-x" rotulo={`Tirar a foto de ${it.name}`} onClick={ev => { ev.preventDefault(); updateFotoReferencia?.(linha, null) }} />
                       : <span className="sc-ref-bt" style={{ color: accent }}>Enviar</span>}
                     <input type="file" accept="image/*" hidden onChange={ev => { void enviarRef(linha, ev) }} />
                   </label>

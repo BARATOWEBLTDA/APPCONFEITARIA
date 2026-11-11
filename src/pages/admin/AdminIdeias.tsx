@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { registrar } from "@/lib/adminPerfil";
-import { MagnifyingGlass, EnvelopeSimple, Lightbulb, X, ChatCircleText } from "@phosphor-icons/react";
+import { MagnifyingGlass, EnvelopeSimple, Lightbulb, ChatCircleText } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
-import { BotaoIcone, TelaVazia, avisar } from "@/components/base";
+import { TelaVazia, avisar, BotaoLimpar } from "@/components/base";
 
 /**
  * Admin → Ideias: tudo que chega em public.sugestoes
@@ -204,9 +204,7 @@ export default function AdminIdeias() {
             <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
             <input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar ideia" aria-label="Buscar ideia" />
             {busca && (
-              <BotaoIcone rotulo="Limpar busca" variante="limpo" tamanho="p" onClick={() => setBusca("")}>
-                <X size={18} weight="bold" />
-              </BotaoIcone>
+              <BotaoLimpar rotulo="Limpar busca" onClick={() => setBusca("")} />
             )}
           </label>
           <select className="ai-sel" value={area} onChange={e => setArea(e.target.value)} aria-label="Área">

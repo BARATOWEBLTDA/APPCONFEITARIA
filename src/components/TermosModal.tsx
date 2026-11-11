@@ -9,8 +9,7 @@
  */
 import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X } from '@phosphor-icons/react'
-import { Botao, BotaoIcone, Titulo } from '@/components/base'
+import { Botao, Titulo, BotaoFechar } from '@/components/base'
 import { useFase, useSobreposicao } from '@/components/base/useSobreposicao'
 import { DocLegal } from '@/components/legal/DocLegal'
 import PaginaLegal from '@/components/legal/PaginaLegal'
@@ -68,7 +67,7 @@ export default function TermosModal({ open, onClose, initialTab = 'termos', pagi
         <span className="lg-janela-alca" aria-hidden="true" />
         <div className="lg-janela-cab">
           <Titulo nivel="janela" id={idTitulo}>{d.titulo}</Titulo>
-          <BotaoIcone rotulo="Fechar" variante="limpo" onClick={onClose}><X size={20} weight="bold" /></BotaoIcone>
+          <BotaoFechar onClick={onClose} />
         </div>
         <div className="lg-janela-abas">
           <div className="lg-abas" role="tablist" aria-label="Documentos">

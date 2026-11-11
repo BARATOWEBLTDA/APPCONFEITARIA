@@ -30,7 +30,7 @@
 /* nome, descrição, preço */
 .pm-info { padding: 20px 16px 16px; }
 .pm-tit { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.pm-x-pc { display: none; }
+button.pm-x-pc { display: none; }
 .pm-off { align-self: center; padding: 3px 9px; border-radius: 999px; background: #EAF7EE; color: #16803C; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .pm-preco strong.pm-preco-promo { color: #16803C; }
 .pm-preco .pm-apartir { flex-basis: 100%; margin-bottom: -6px; font-size: 13.5px; color: var(--ui-texto-2); }
@@ -118,8 +118,8 @@
   .pm-lado-desc { margin: 6px 2px 0; font-size: 15px; line-height: 1.6; color: var(--ui-texto-2); white-space: pre-line; }
   .pm-lado .pm-aviso { margin-top: 2px; background: var(--ui-branco); border: 1px solid #F0E6EA; }
   /* (21/10) a descrição e o prazo voltaram pra direita, embaixo do preço (a coluna da direita ficava vazia) */
-  .pm-x-pc { display: flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px; margin: -4px -8px 0 0; padding: 0; border: 0; border-radius: 12px; background: #F7F2F4; color: var(--ui-texto); cursor: pointer; }
-  .pm-x-pc:hover { background: #F0E8EC; }
+  /* (11/11) X no padrão do app (BotaoFechar): sem fundo, X 20 cinza */
+  button.pm-x-pc { display: inline-flex; margin: -6px -10px 0 0; }
   .pm-info h2 { font-size: 26px; }
   .pm-preco strong { font-size: 22px; }
   /* (20/10) a foto no formato dela (4:3), no topo, sem as faixas borradas em cima e embaixo */

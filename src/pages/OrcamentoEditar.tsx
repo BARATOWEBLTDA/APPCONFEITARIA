@@ -6,14 +6,14 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowsClockwise, CalendarBlank, CaretDown, Check, CheckCircle, Clock, Copy, UserPlus, UsersThree, FilePdf, MagnifyingGlass, MapPin, Minus, Package, PencilSimpleLine, Phone, Plus, Storefront, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, CalendarBlank, CaretDown, Check, CheckCircle, Clock, Copy, UserPlus, UsersThree, FilePdf, MagnifyingGlass, MapPin, Minus, Package, PencilSimpleLine, Phone, Plus, Storefront, Trash, WarningCircle } from '@phosphor-icons/react'
 import { CartaoPro } from '@/components/billing/RecursoPro'
 import AppPageHeader from '@/components/AppPageHeader'
 import CampoData from '@/components/CampoData'
 import CalendarioMes from '@/components/CalendarioMes'
 import HorarioSheet from '@/components/HorarioSheet'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
-import { Botao, CaixasEscolha, Campo, CampoArea, Janela, MenuMais, TelaVazia, avisar, confirmar } from '@/components/base'
+import { Botao, CaixasEscolha, Campo, CampoArea, Janela, MenuMais, TelaVazia, avisar, confirmar, BotaoLimpar } from '@/components/base'
 import { supabase } from '@/lib/supabase'
 import { explicarErro } from '@/lib/erros'
 import { useProfile, type Profile } from '@/hooks/useProfile'
@@ -738,7 +738,7 @@ export default function OrcamentoEditar() {
 
     <Janela aberta={escolher} aoFechar={() => setEscolher(false)} tipo="conteudo" titulo="Produtos do cardápio" className="orc-esc-janela">
       <div className="orc-esc">
-        <label className="orc-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" placeholder="Buscar produto" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar produto" />{busca && <button type="button" className="ui-busca-x" aria-label="Limpar a busca" onClick={() => setBusca('')}><X size={18} weight="bold" /></button>}</label>
+        <label className="orc-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" placeholder="Buscar produto" value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar produto" />{busca && <BotaoLimpar className="ui-busca-x" onClick={() => setBusca('')} />}</label>
         <div className="orc-esc-l">
           {/* (6.99) item sob medida também pela lista */}
           {(o.itens || []).length > 0 && !busca.trim() && (
@@ -788,7 +788,7 @@ export default function OrcamentoEditar() {
     {/* (6.62) cliente da lista: busca parada em cima e só a lista rola */}
     <Janela aberta={cliJanela === 'lista'} aoFechar={() => setCliJanela(null)} tipo="conteudo" titulo="Seus clientes" className="orc-esc-janela">
       <div className="orc-esc">
-        <label className="orc-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" placeholder="Buscar nome ou telefone" value={buscaCli} onChange={e => setBuscaCli(e.target.value)} aria-label="Buscar cliente" />{buscaCli && <button type="button" className="ui-busca-x" aria-label="Limpar a busca" onClick={() => setBuscaCli('')}><X size={18} weight="bold" /></button>}</label>
+        <label className="orc-busca"><MagnifyingGlass size={20} weight="bold" /><input type="search" placeholder="Buscar nome ou telefone" value={buscaCli} onChange={e => setBuscaCli(e.target.value)} aria-label="Buscar cliente" />{buscaCli && <BotaoLimpar className="ui-busca-x" onClick={() => setBuscaCli('')} />}</label>
         <div className="orc-esc-l">
           {listaClientes.map(c => (
             <button key={c.id} type="button" className="orc-esc-it" onClick={() => usarCliente(c)}>

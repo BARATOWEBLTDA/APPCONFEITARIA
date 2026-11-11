@@ -1,11 +1,10 @@
 /**
  * (25/10) Central de Ajuda (/ajuda e /ajuda/tema/:tema): os assuntos em cartões, a busca e a lista de artigos de cada assunto.
  */
+import { BotaoLimpar } from "@/components/base";
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  Bug, CalendarCheck, CaretRight, Lightbulb, ChartLineUp, Crown, CurrencyDollar, FileText, MagnifyingGlass, Notebook, Sparkle, Storefront, X,
-} from '@phosphor-icons/react'
+import { Bug, CalendarCheck, CaretRight, Lightbulb, ChartLineUp, Crown, CurrencyDollar, FileText, MagnifyingGlass, Notebook, Sparkle, Storefront } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import AppPageHeader from '@/components/AppPageHeader'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
@@ -92,7 +91,7 @@ export default function Ajuda() {
       <label className="ca-busca">
         <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
         <input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar na ajuda" aria-label="Buscar na ajuda" />
-        {busca && <button type="button" aria-label="Limpar a busca" onClick={() => setBusca('')}><X size={18} weight="bold" /></button>}
+        {busca && <BotaoLimpar onClick={() => setBusca('')} />}
       </label>
 
       {busca.trim() ? (

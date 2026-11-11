@@ -3,8 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import PainelLoja, { type AcaoLoja } from "./PainelLoja";
 import { registrar, nomeConta } from "@/lib/adminPerfil";
 import { supabase } from "@/lib/supabase";
-import { Plus, MagnifyingGlass, X, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight, EnvelopeSimple } from "@phosphor-icons/react";
-import { Botao, BotaoIcone, Campo, Janela, TelaVazia, avisar, confirmar, informar } from "@/components/base";
+import { Plus, MagnifyingGlass, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight, EnvelopeSimple } from "@phosphor-icons/react";
+import { Botao, BotaoIcone, Campo, Janela, TelaVazia, avisar, confirmar, informar, BotaoLimpar } from "@/components/base";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { explicarErro } from "@/lib/erros";
 
@@ -328,9 +328,7 @@ export default function AdminUsuarios() {
           <MagnifyingGlass size={20} weight="bold" aria-hidden="true" />
           <input type="search" placeholder="Nome, loja, e-mail ou telefone" aria-label="Buscar por nome, loja, e-mail ou telefone" value={search} onChange={e => setSearch(e.target.value)} />
           {search && (
-            <BotaoIcone rotulo="Limpar busca" variante="limpo" tamanho="p" onClick={() => setSearch("")}>
-              <X size={18} weight="bold" />
-            </BotaoIcone>
+            <BotaoLimpar rotulo="Limpar busca" onClick={() => setSearch("")} />
           )}
         </label>
           <label className="au-ordem">

@@ -3,6 +3,7 @@
  *   import { Botao, Campo, Titulo, Cartao, Linha, TelaVazia, Janela, Gaveta, avisar, confirmar } from '@/components/base'
  */
 export { Botao, BotaoIcone } from './Botao'
+export { BotaoFechar, BotaoLimpar, BotaoTirar } from './BotoesX'
 export type { VarianteBotao, TamanhoBotao } from './Botao'
 export { Campo, CampoArea } from './Campo'
 export { Titulo } from './Titulo'

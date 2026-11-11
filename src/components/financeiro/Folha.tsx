@@ -1,8 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import type React from "react";
 import { createPortal } from "react-dom";
-import { X } from "@phosphor-icons/react";
-import { BotaoIcone, Titulo, confirmar } from "@/components/base";
+import { Titulo, confirmar, BotaoFechar } from "@/components/base";
 import { useSobreposicao } from "@/components/base/useSobreposicao";
 import "@/components/base/base.css";
 import "./folha.css";
@@ -54,7 +53,7 @@ export default function Folha({ titulo, sub, onClose, children, acoes, umaAcao =
         <span className="ui-janela-alca" aria-hidden="true" />
         <div className="ui-janela-cab">
           <Titulo nivel="janela" id={id}>{titulo}</Titulo>
-          <BotaoIcone rotulo="Fechar" variante="limpo" onClick={onClose}><X size={20} weight="bold" /></BotaoIcone>
+          <BotaoFechar onClick={onClose} />
         </div>
         <div className="ui-janela-corpo">
           {sub && <p className="fo-s">{sub}</p>}

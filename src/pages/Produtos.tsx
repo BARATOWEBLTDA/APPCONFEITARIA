@@ -41,7 +41,7 @@ import Categorias from "@/pages/Categorias";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_PRODUTOS, TOUR_PRODUTOS } from "@/lib/comoTelas";
 import { ArrowLeft as ArrowLeftIc, Camera, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Lightning, CalendarBlank, Star, CaretRight } from "@phosphor-icons/react";
-import { Botao, BotaoIcone, CaixasEscolha, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar } from "@/components/base";
+import { Botao, BotaoIcone, CaixasEscolha, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar, BotaoTirar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
 import "./produtosLista.css";
@@ -2450,7 +2450,7 @@ export default function Produtos() {
                         <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary)" }}>{item.nome}</span>
                         <span style={{ fontSize: "0.8rem", color: "var(--primary)", marginLeft: "8px", fontWeight: 500 }}>× {item.quantidade}</span>
                       </div>
-                      <button onClick={() => setForm(f => ({ ...f, kit_itens: (f.kit_itens || []).filter((_, idx) => idx !== i) }))} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--error)", fontSize: "1.1rem", padding: 0 }}>×</button>
+                      <BotaoTirar rotulo="Tirar do kit" onClick={() => setForm(f => ({ ...f, kit_itens: (f.kit_itens || []).filter((_, idx) => idx !== i) }))} />
                     </div>
                   ))}
 

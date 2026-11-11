@@ -2,11 +2,12 @@ import { useEffect, useId, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { createRoot } from 'react-dom/client'
-import { ArrowCounterClockwise, CheckCircle, Info, WarningCircle, X, XCircle } from '@phosphor-icons/react'
-import { Botao, BotaoIcone } from './Botao'
+import { ArrowCounterClockwise, CheckCircle, Info, WarningCircle, XCircle } from '@phosphor-icons/react'
+import { Botao } from './Botao'
 import { Titulo } from './Titulo'
 import { historicoAssentado, useFase, useSobreposicao } from './useSobreposicao'
 import './base.css'
+import { BotaoFechar } from './BotoesX'
 
 /**
  * Janela do Doonly (07/10 · guia v2, A9 e C · Janelas).
@@ -72,7 +73,7 @@ export function Janela({ aberta, aoFechar, titulo, tipo = 'aviso', texto, icone,
           <>
             <div className="ui-janela-cab">
               <Titulo nivel="janela" id={idTitulo}>{titulo}</Titulo>
-              <BotaoIcone rotulo="Fechar" variante="limpo" onClick={aoFechar}><X size={20} weight="bold" /></BotaoIcone>
+              <BotaoFechar onClick={aoFechar} />
             </div>
             <div className="ui-janela-corpo">{children}</div>
           </>
