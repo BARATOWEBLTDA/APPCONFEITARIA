@@ -245,10 +245,15 @@ export default function AdminLayout() {
               </button>
             ))}
             <div className="adm-sheet-sep" />
-            <div className="adm-sheet-foot">
-              <button onClick={() => navigate("/inicio")}><ArrowLeft size={20} weight="bold" /> Voltar ao app</button>
-              <button className="danger" onClick={handleLogout}><SignOut size={20} weight="bold" /> Sair</button>
-            </div>
+            {/* (10/11) Voltar e Sair em linha, como no app (antes botões cinza e rosa lavado) */}
+            <button className="adm-sheet-it" onClick={() => navigate("/inicio")}>
+              <span className="adm-sheet-ic"><ArrowLeft size={20} weight="bold" /></span>
+              <span className="adm-sheet-l">Voltar ao app</span>
+            </button>
+            <button className="adm-sheet-it adm-sheet-it--sair" onClick={handleLogout}>
+              <span className="adm-sheet-ic"><SignOut size={20} weight="bold" /></span>
+              <span className="adm-sheet-l">Sair</span>
+            </button>
           </div>
         </div>
       )}
@@ -324,11 +329,13 @@ export default function AdminLayout() {
         .adm-sheet-hdr b { font-size: 18px; font-weight: 600; }
         .adm-sheet-x { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-2); cursor: pointer; }
         .adm-sheet-x svg { width: 20px; height: 20px; }
-        .adm-sheet-it { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-3); font-family: inherit; text-align: left; cursor: pointer; }
+        .adm-sheet-it { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 4px 8px; border: 0; border-radius: var(--ui-raio); background: none; color: var(--ui-texto-3); font-family: inherit; text-align: left; cursor: pointer; }
         .adm-sheet-it:active, .adm-sheet-it.on { background: var(--ui-linha); }
-        .adm-sheet-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-texto-2); }
-        .adm-sheet-it.on .adm-sheet-ic { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); }
-        .adm-sheet-l { flex: 1; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
+        .adm-sheet-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--ui-linha); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto-2); } /* (10/11) caixinha branca */
+        .adm-sheet-it--sair .adm-sheet-ic { border-color: #F3D3D3; color: var(--ui-vermelho, #C62828); }
+        .adm-sheet-it--sair .adm-sheet-l { color: var(--ui-vermelho, #C62828); }
+        .adm-sheet-it.on .adm-sheet-ic { color: var(--ui-rosa-escuro); }
+        .adm-sheet-l { flex: 1; font-size: 15px; font-weight: 500; color: var(--ui-texto); }
         .adm-sheet-sep { height: 1px; margin: 8px 6px; background: var(--ui-linha); }
         .adm-sheet-foot { display: flex; gap: 8px; padding: 4px 6px 2px; }
         .adm-sheet-foot button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }

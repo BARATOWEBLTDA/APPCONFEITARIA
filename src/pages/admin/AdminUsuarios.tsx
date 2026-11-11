@@ -601,6 +601,8 @@ export default function AdminUsuarios() {
         .au-tag--admin { color: var(--ui-rosa-escuro); }
 
         /* computador: tabela (os botões ficam nos detalhes, ao clicar na linha) */
+        /* (10/11) no celular o "até 30/11" sai da linha (cortava o "Entrou em"); ele continua na ficha da loja */
+        @media (max-width: 899px) { .au-ate { display: none; } }
         @media (min-width: 900px) {
           .au-card { padding: 16px; }
           .au-cab, .au-l { display: grid; grid-template-columns: minmax(0, 2.6fr) minmax(0, 1.2fr) 132px 76px 76px 118px 24px; align-items: center; column-gap: 12px; }
@@ -624,7 +626,7 @@ export default function AdminUsuarios() {
         .au-j-apoio { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--ui-texto-2); overflow-wrap: anywhere; }
         .au-atalhos { display: flex; gap: 8px; flex-wrap: wrap; margin-top: -4px; }
         .au-atalhos button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); /* (10/11) caixa, sem pílula */ background: var(--ui-branco); color: var(--ui-texto-2); font-size: 14px; font-weight: 600; cursor: pointer; }
-        .au-atalhos button[aria-pressed="true"] { border-color: var(--ui-vinho); background: var(--ui-vinho); color: var(--ui-branco); }
+        .au-atalhos button[aria-pressed="true"] { border-color: var(--ui-texto); background: var(--ui-fundo); color: var(--ui-texto); }
       `}</style>
       <PainelLoja id={lojaAberta} aoFechar={() => setLojaAberta(null)} rev={rev} acoes={acoesDa(users.find(u => u.id === lojaAberta))} />
     </div>

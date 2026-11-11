@@ -339,6 +339,8 @@ export default function AdminIdeias() {
         .ai-recado textarea { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--ui-borda); border-radius: 10px; font-family: inherit; font-size: 14px; resize: vertical; }
         .ai-recado button { flex: none; min-height: 38px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
         .ai-recado button:disabled { opacity: .5; cursor: default; }
+        /* (10/11) no celular o campo ocupa a largura e o botão vai embaixo (o texto do campo era cortado) */
+        @media (max-width: 599px) { .ai-recado { flex-direction: column; align-items: stretch; } .ai-recado button { min-height: 44px; } }
         .ai-resp { margin: 10px 0 0; padding: 8px 10px; border-radius: 10px; background: #FFF5F9; font-size: 13.5px; }
         .ai-resp button { margin-left: 6px; border: 0; background: none; color: var(--ui-rosa-escuro); font-family: inherit; font-weight: 600; cursor: pointer; }
         .ai-card--implementada .ai-t, .ai-card--recusada .ai-t { color: var(--ui-texto-2); }

@@ -15,6 +15,8 @@ button.atp-cat { padding: 4px 12px 4px 4px; }
 .atp-cat-img { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; overflow: hidden; border-radius: 8px; background: #F3F1F2; color: #8A7B80; }
 .atp-cat-img img { width: 100%; height: 100%; object-fit: cover; }
 .atp-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--space-3); }
+/* (10/11) no celular, 2 topos por linha (antes um cartão enorme por linha) */
+@media (max-width: 599px) { .atp-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); } }
 .atp-it { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 8px; border: 1px solid #ECE7E9; border-radius: 14px; }
 .atp-it.off { opacity: .55; }
 .atp-it > b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; font-weight: 500; }

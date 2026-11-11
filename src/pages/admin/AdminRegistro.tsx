@@ -154,6 +154,8 @@ export default function AdminRegistro() {
         .rg-filtro { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
         .rg-filtro button { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 8px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-texto-2); cursor: pointer; }
         .rg-filtro button:first-child { padding-left: 14px; }
+        /* (10/11) no celular sem as bolinhas: os 4 filtros cabem numa linha (o Marcos descia sozinho) */
+        @media (max-width: 599px) { .rg-filtro { flex-wrap: nowrap; gap: 6px; } .rg-filtro button { flex: 1 1 auto; justify-content: center; padding: 0 10px; } .rg-filtro button:first-child { padding-left: 10px; } .rg-filtro button > * { display: none; } }
         .rg-filtro button.on { border-color: var(--ui-texto); background: var(--ui-fundo); color: var(--ui-texto); } /* (10/11) caixa, sem pílula */
         .rg-card { padding: 16px 18px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
         .rg-carr { margin: 12px 0 0; font-size: 14px; color: var(--ui-texto-3); text-align: center; }
