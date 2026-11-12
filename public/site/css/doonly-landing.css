@@ -2877,3 +2877,20 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-celular::before { content: none !important; }
 /* (12/11) cardápio embaixo da barra de status: canto reto em cima (o arredondado deixava pontas pretas ao rolar) */
 .dl-root .dl-rolando { border-radius: 0 0 calc(var(--dl-cel-l) * .123) calc(var(--dl-cel-l) * .123) !important; }
+/* (12/11) barra de status transparente, como num app: a capa vai até o topo, atrás da hora.
+   Hora e ícones brancos sobre a foto da capa; escuros quando o cardápio desce (mesmo tempo da rolagem) */
+.dl-root .dl-celular__status { background: transparent; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+  animation: dl-status-cor 60s linear .3s infinite alternate; }
+.dl-root .dl-celular__status svg { filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, .3)); animation: dl-status-sombra 60s linear .3s infinite alternate; }
+@keyframes dl-status-cor { 0%, 10% { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .35); } 10.8%, 100% { color: #1B1418; text-shadow: none; } }
+@keyframes dl-status-sombra { 0%, 10% { filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, .3)); } 10.8%, 100% { filter: none; } }
+.dl-root .dl-rolando { top: var(--dl-tela-y) !important; height: var(--dl-tela-a) !important; border-radius: calc(var(--dl-cel-l) * .123) !important; }
+@media (prefers-reduced-motion: reduce) { .dl-root .dl-celular__status, .dl-root .dl-celular__status svg { animation: none; } }
+/* barra de status: transparente sobre a capa; quando o cardápio desce, ganha o fundo da página (como o Safari faz) */
+.dl-root .dl-celular__status { animation-name: dl-status-cor2 !important; }
+@keyframes dl-status-cor2 {
+  0%, 9.2% { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .35); background-color: rgba(247, 245, 246, 0); }
+  9.8%, 100% { color: #1B1418; text-shadow: none; background-color: rgba(247, 245, 246, 1); }
+}
+.dl-root .dl-celular__status svg { animation-name: dl-status-sombra2 !important; }
+@keyframes dl-status-sombra2 { 0%, 9.2% { filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, .3)); } 9.8%, 100% { filter: none; } }
