@@ -2828,3 +2828,6 @@ body:has(.dl-root) { margin: 0; }
    0 0 0 1px rgba(255,255,255,.18),
    40px 60px 50px -10px rgba(0,0,0,.75), 14px 22px 22px rgba(0,0,0,.45) !important; }
 }
+/* (11/11) cantos do celular como os do iPhone (menos arredondados) */
+.dl-root { --dl-tela-raio: 10.26% / 4.74%; }
+.dl-root .dl-celular__corpo { border-radius: 13.5% / 6.56% !important; }

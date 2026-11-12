@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 438 884" width="438" height="884" fill="none">
+  <!--
+    Moldura do celular — Doonly Landing
+    Área da tela (transparente): x=24 y=20 largura=390 altura=844 raio=40
+    Se trocar esta moldura por outra, ajuste as variáveis dl-tela-x, dl-tela-y, dl-tela-l, dl-tela-a e dl-tela-raio no landing.css.
+  -->
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="438" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8A7A80"/>
+      <stop offset=".035" stop-color="#4A3C41"/>
+      <stop offset=".1" stop-color="#2A2024"/>
+      <stop offset=".5" stop-color="#1B1316"/>
+      <stop offset=".9" stop-color="#2A2024"/>
+      <stop offset=".965" stop-color="#54464B"/>
+      <stop offset="1" stop-color="#9C8C92"/>
+    </linearGradient>
+    <linearGradient id="metalV" x1="0" y1="0" x2="0" y2="884" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".34"/>
+      <stop offset=".06" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset=".94" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity=".2"/>
+    </linearGradient>
+    <linearGradient id="botao" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7C6C72"/>
+      <stop offset="1" stop-color="#2E2428"/>
+    </linearGradient>
+    <linearGradient id="botaoD" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2E2428"/>
+      <stop offset="1" stop-color="#8E7E84"/>
+    </linearGradient>
+    <linearGradient id="reflexo" x1="24" y1="20" x2="300" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".16"/>
+      <stop offset=".42" stop-color="#FFFFFF" stop-opacity=".03"/>
+      <stop offset=".6" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="lente" cx=".35" cy=".35" r=".8">
+      <stop offset="0" stop-color="#2B3550"/>
+      <stop offset=".55" stop-color="#0E1220"/>
+      <stop offset="1" stop-color="#05060B"/>
+    </radialGradient>
+    <mask id="furo" maskUnits="userSpaceOnUse" x="0" y="0" width="438" height="884">
+      <rect width="438" height="884" fill="#fff"/>
+      <rect x="24" y="20" width="390" height="844" rx="40" fill="#000"/>
+    </mask>
+    <clipPath id="tela">
+      <rect x="24" y="20" width="390" height="844" rx="40"/>
+    </clipPath>
+  </defs>
+
+  <!-- botões laterais -->
+  <rect x="0.5" y="172" width="5" height="32" rx="2" fill="url(#botao)"/>
+  <rect x="0.5" y="236" width="5" height="60" rx="2" fill="url(#botao)"/>
+  <rect x="0.5" y="310" width="5" height="60" rx="2" fill="url(#botao)"/>
+  <rect x="432.5" y="262" width="5" height="96" rx="2" fill="url(#botaoD)"/>
+
+  <g mask="url(#furo)">
+    <!-- aro de metal -->
+    <rect x="4" y="0" width="430" height="884" rx="58" fill="url(#metal)"/>
+    <rect x="4" y="0" width="430" height="884" rx="58" fill="url(#metalV)"/>
+    <rect x="5" y="1" width="428" height="882" rx="57" stroke="#FFFFFF" stroke-opacity=".22"/>
+    <!-- linhas de antena -->
+    <rect x="96" y="0" width="3" height="5" fill="#000" fill-opacity=".28"/>
+    <rect x="339" y="879" width="3" height="5" fill="#000" fill-opacity=".28"/>
+    <!-- borda preta em volta da tela -->
+    <rect x="9.5" y="5.5" width="419" height="873" rx="52.5" fill="#070405"/>
+    <rect x="9.5" y="5.5" width="419" height="873" rx="52.5" stroke="#000" stroke-opacity=".6"/>
+    <rect x="12" y="8" width="414" height="868" rx="50" stroke="#FFFFFF" stroke-opacity=".06"/>
+  </g>
+
+  <!-- brilho do vidro por cima do print -->
+  <g clip-path="url(#tela)">
+    <path d="M24 20h260L24 560z" fill="url(#reflexo)"/>
+  </g>
+  <rect x="24.5" y="20.5" width="389" height="843" rx="39.5" stroke="#000" stroke-opacity=".35"/>
+
+  <!-- ilha da câmera -->
+  <rect x="158" y="33" width="122" height="35" rx="17.5" fill="#050304"/>
+  <circle cx="253" cy="50.5" r="6.5" fill="url(#lente)"/>
+  <circle cx="251.5" cy="49" r="1.6" fill="#5C6C9C" fill-opacity=".6"/>
+</svg>
