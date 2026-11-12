@@ -2964,3 +2964,5 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-demo * { animation: none !important; }
   .dl-root .dl-demo__chat, .dl-root .dl-demo__t2, .dl-root .dl-demo__t3, .dl-root .dl-demo__t4, .dl-root .dl-demo__t5, .dl-root .dl-demo__ok, .dl-root .dl-demo__dedo { display: none; }
 }
+/* (12/11) a história só começa quando o celular aparece na tela (e pausa se ele sair) */
+.dl-root .dl-demo:not(.dl-demo--rodando) * { animation-play-state: paused !important; }

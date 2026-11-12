@@ -246,3 +246,13 @@
 })();
 
 
+
+/* (12/11) celular da abertura: a animação começa quando ele aparece na tela e pausa quando sai */
+(function () {
+  var demo = document.querySelector('.dl-root .dl-demo');
+  if (!demo) { return; }
+  if (!('IntersectionObserver' in window)) { demo.classList.add('dl-demo--rodando'); return; }
+  new IntersectionObserver(function (itens) {
+    demo.classList.toggle('dl-demo--rodando', itens[0].isIntersecting);
+  }, { threshold: 0.5 }).observe(demo);
+})();
