@@ -2806,3 +2806,12 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-traco, .dl-root .dl-hero svg.dl-traco, .dl-root [class*="dl-seta-dec"] { display: none !important; }
   .dl-root .dl-hero .dl-subtitulo { max-width: 34em; margin-inline: auto; text-wrap: balance; }
 }
+/* (11/11) celular e tablet: o celular da abertura mostra o cardápio rolando (igual ao computador), com o aviso de Pedido novo por cima */
+@media (max-width: 1023px) {
+  .dl-root .dl-celular__tela:not(.dl-celular__tela--pc) { display: none !important; }
+  .dl-root .dl-celular__tela--pc { display: block !important; }
+  .dl-root .dl-rolando { object-fit: cover; object-position: 50% 0%; animation: dl-rola-cardapio 50s linear .3s infinite alternate; }
+  .dl-root .dl-rolando__nav { display: block; position: absolute; z-index: 1; left: var(--dl-tela-x); width: var(--dl-tela-l); top: calc(var(--dl-tela-y) + var(--dl-tela-a)); height: auto; max-width: none; transform: translateY(-100%); border-radius: 0 0 var(--dl-tela-raio) var(--dl-tela-raio); }
+  .dl-root .dl-celular__moldura { z-index: 2; }
+}
+@media (max-width: 1023px) and (prefers-reduced-motion: reduce) { .dl-root .dl-rolando { animation: none; } }
