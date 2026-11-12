@@ -2973,7 +2973,7 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-demo__digita span { animation-duration: 1s !important; }
 .dl-root .dl-demo__t1 { overflow: hidden; }
 .dl-root .dl-demo__longo { position: absolute; left: 0; top: 0; width: 100%; height: auto; max-width: none; animation-name: dl-d2-rola; }
-@keyframes dl-d2-rola { 0%, 28.46% { transform: translateY(0); } 45.38%, 100% { transform: translateY(-22.6%); } }
+@keyframes dl-d2-rola { 0%, 28.46% { transform: translateY(0); } 45.38%, 100% { transform: translateY(-45.2%); } }
 .dl-root .dl-demo__nav { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; max-width: none; }
 .dl-root .dl-demo__barra { position: absolute; left: 0; width: 100%; height: auto; max-width: none; bottom: 8.5%; animation-name: dl-d2-barra; }
 @keyframes dl-d2-barra { 0%, 64.23% { opacity: 0; transform: translateY(100%); } 65.77%, 96.15% { opacity: 1; transform: none; } 98.46%, 100% { opacity: 0; } }
@@ -3036,7 +3036,7 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-demo__t1 { animation-name: dl-d5-t1; }
 @keyframes dl-d5-t1 { 0%, 14.313% { transform: translateY(100%); opacity: 1; } 15.474%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
 .dl-root .dl-demo__longo { animation-name: dl-d5-rola; animation-timing-function: linear; }
-@keyframes dl-d5-rola { 0%, 16.634% { transform: translateY(0); animation-timing-function: ease-in-out; } 20.503%, 22.437% { transform: translateY(-7.5%); animation-timing-function: ease-in-out; } 25.919% { transform: translateY(-18%); animation-timing-function: ease-out; } 28.240%, 100% { transform: translateY(-22.6%); } }
+@keyframes dl-d5-rola { 0%, 16.634% { transform: translateY(0); animation-timing-function: ease-in-out; } 20.503%, 22.437% { transform: translateY(-15%); animation-timing-function: ease-in-out; } 25.919% { transform: translateY(-36%); animation-timing-function: ease-out; } 28.240%, 100% { transform: translateY(-45.2%); } }
 /* página do bolo */
 .dl-root .dl-demo__bolo { overflow: hidden; background: #fff; animation-name: dl-d5-bolo; }
 @keyframes dl-d5-bolo { 0%, 30.561% { transform: translateX(100%); opacity: 1; } 31.625%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
@@ -3119,7 +3119,7 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-celular .dl-rolando, .dl-root .dl-celular .dl-rolando__nav { display: block !important; }
   .dl-root .dl-celular .dl-rolando { top: calc(var(--dl-tela-y) + 5.85%) !important; height: calc(var(--dl-tela-a) - 5.85%) !important;
     border-radius: 0 0 calc(var(--dl-cel-l) * .123) calc(var(--dl-cel-l) * .123) !important; object-fit: cover; object-position: 50% 0%;
-    animation: dl-rola-pc 140s ease-in-out 1.5s infinite alternate !important; }
+    overflow: hidden; }
   .dl-root .dl-celular .dl-rolando__nav { position: absolute; z-index: 1; left: var(--dl-tela-x); width: var(--dl-tela-l); top: calc(var(--dl-tela-y) + var(--dl-tela-a)); height: auto; max-width: none; transform: translateY(-100%); }
 }
 @keyframes dl-rola-pc { 0%, 4% { object-position: 50% 0%; } 96%, 100% { object-position: 50% 100%; } }
@@ -3166,3 +3166,10 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-celular .dl-rolando { top: var(--dl-tela-y) !important; height: var(--dl-tela-a) !important; border-radius: calc(var(--dl-cel-l) * .123) !important; }
 }
 .dl-root .dl-demo__r, .dl-root .dl-demo__bolo { box-shadow: 0 -12.36cqw 0 #fff; }
+
+/* ═══ (12/11) mais leve: o cardápio longo virou 2 pedaços (cada um abaixo do limite de 8.192 px dos celulares), mesma nitidez;
+   o celular só baixa o pedaço de cima (é o que a animação mostra); no computador a fita rola por transform (sem redesenhar a imagem) ═══ */
+.dl-root .dl-rolando__fita { position: absolute; left: 0; top: 0; width: 100%; will-change: transform; animation: dl-rola-pc2 140s ease-in-out 1.5s infinite alternate; }
+.dl-root .dl-rolando__fita img { display: block; width: 100%; height: auto; max-width: none; }
+@keyframes dl-rola-pc2 { 0%, 4% { transform: translateY(0); } 96%, 100% { transform: translateY(var(--dl-fim, -85.5%)); } }
+@media (prefers-reduced-motion: reduce) { .dl-root .dl-rolando__fita { animation: none; } }
