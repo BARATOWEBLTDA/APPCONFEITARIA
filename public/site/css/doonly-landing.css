@@ -2894,3 +2894,73 @@ body:has(.dl-root) { margin: 0; }
 }
 .dl-root .dl-celular__status svg { animation-name: dl-status-sombra2 !important; }
 @keyframes dl-status-sombra2 { 0%, 9.2% { filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, .3)); } 9.8%, 100% { filter: none; } }
+
+/* ═══ (12/11) abertura: o celular mostra a história (20 s, em loop) — a cliente pede no chat, recebe o link,
+   abre o cardápio, escolhe o bolo, coloca na sacola e envia o pedido. Telas reais do app; o chat é desenho próprio. ═══ */
+.dl-root .dl-celular .dl-rolando, .dl-root .dl-celular .dl-rolando__nav, .dl-root .dl-celular .dl-celular__tela:not(.dl-rolando) { display: none !important; }
+.dl-root .dl-celular__status { animation: none !important; background: #F7F5F6 !important; color: #1B1418 !important; text-shadow: none !important; }
+.dl-root .dl-celular__status svg { animation: none !important; filter: none !important; }
+.dl-root .dl-demo { position: absolute; z-index: 0; left: var(--dl-tela-x); width: var(--dl-tela-l); top: calc(var(--dl-tela-y) + 5.85%); height: calc(var(--dl-tela-a) - 5.85%);
+  overflow: hidden; border-radius: 0 0 calc(var(--dl-cel-l) * .123) calc(var(--dl-cel-l) * .123); background: #F7F5F6; container-type: size; font-family: -apple-system, "SF Pro Text", "Geist", system-ui, sans-serif; }
+.dl-root .dl-demo * { animation-duration: 20s; animation-iteration-count: infinite; animation-timing-function: ease; animation-fill-mode: both; }
+/* chat */
+.dl-root .dl-demo__chat { position: absolute; inset: 0; display: flex; flex-direction: column; background: #EFE6DD; }
+.dl-root .dl-demo__topo { display: flex; align-items: center; gap: 2.6cqw; padding: 2.4cqw 3cqw; background: #F7F5F6; border-bottom: 1px solid #E5DEE1; color: #1B1418; }
+.dl-root .dl-demo__volta { font-size: 8cqw; line-height: 1; color: #1B1418; }
+.dl-root .dl-demo__topo img { width: 9.5cqw; height: 9.5cqw; border-radius: 50%; }
+.dl-root .dl-demo__topo > span:last-child { margin-right: auto; text-align: left; }
+.dl-root .dl-demo__topo b { display: block; font-size: 4cqw; font-weight: 600; }
+.dl-root .dl-demo__topo small { display: block; font-size: 3.1cqw; color: #6F6469; }
+.dl-root .dl-demo__msgs { flex: 1; display: flex; flex-direction: column; gap: 2.4cqw; padding: 5cqw 3.4cqw; }
+.dl-root .dl-demo__b { position: relative; max-width: 78%; margin: 0; padding: 2.2cqw 3cqw; border-radius: 3cqw; background: #fff; color: #1B1418; font-size: 3.7cqw; line-height: 1.35; box-shadow: 0 1px .5px rgba(0, 0, 0, .12); }
+.dl-root .dl-demo__b i { display: block; margin-top: .8cqw; text-align: right; font-style: normal; font-size: 2.6cqw; color: #8A8186; }
+.dl-root .dl-demo__b--eu { align-self: flex-end; background: #D9FDD3; border-top-right-radius: .8cqw; }
+.dl-root .dl-demo__m2 { align-self: flex-start; border-top-left-radius: .8cqw; }
+.dl-root .dl-demo__link { display: block; margin: 2cqw 0 1.4cqw; overflow: hidden; border-radius: 2cqw; background: #F3F0F1; }
+.dl-root .dl-demo__link img { display: block; width: 100%; aspect-ratio: 2.6; object-fit: cover; }
+.dl-root .dl-demo__link b { display: block; padding: 1.6cqw 2.4cqw 0; font-size: 3.4cqw; font-weight: 600; }
+.dl-root .dl-demo__link small { display: block; padding: .4cqw 2.4cqw 1.8cqw; font-size: 2.8cqw; color: #8A8186; }
+.dl-root .dl-demo__m2 u { color: #1F7AE0; text-decoration: none; font-size: 3.4cqw; }
+.dl-root .dl-demo__digita { display: flex; gap: 1.2cqw; align-self: flex-start; padding: 3cqw 3.6cqw; }
+.dl-root .dl-demo__digita span { width: 1.8cqw; height: 1.8cqw; border-radius: 50%; background: #9A9095; animation-name: dl-demo-ponto; animation-duration: 1s !important; animation-timing-function: ease-in-out; }
+.dl-root .dl-demo__digita span:nth-child(2) { animation-delay: .15s; } .dl-root .dl-demo__digita span:nth-child(3) { animation-delay: .3s; }
+@keyframes dl-demo-ponto { 0%, 100% { opacity: .35; transform: none; } 50% { opacity: 1; transform: translateY(-.8cqw); } }
+.dl-root .dl-demo__digitar { margin: 0 2.6cqw 3cqw; padding: 2.8cqw 4cqw; border-radius: 999px; background: #fff; color: #9A9095; font-size: 3.6cqw; }
+.dl-root .dl-demo__m1 { animation-name: dl-d-m1; }
+@keyframes dl-d-m1 { 0%, 4% { opacity: 0; transform: translateY(3cqw) scale(.96); } 6%, 96% { opacity: 1; transform: none; } 99%, 100% { opacity: 0; } }
+.dl-root .dl-demo__digita { animation-name: dl-d-dig; }
+@keyframes dl-d-dig { 0%, 10% { opacity: 0; display: flex; } 11%, 16% { opacity: 1; } 17%, 100% { opacity: 0; height: 0; padding: 0; margin: 0; } }
+.dl-root .dl-demo__m2 { animation-name: dl-d-m2; }
+@keyframes dl-d-m2 { 0%, 16.5% { opacity: 0; transform: translateY(3cqw) scale(.96); } 18.5%, 96% { opacity: 1; transform: none; } 99%, 100% { opacity: 0; } }
+/* telas do app */
+.dl-root .dl-demo__tela { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; max-width: none; }
+.dl-root .dl-demo__t1 { animation-name: dl-d-t1; }
+@keyframes dl-d-t1 { 0%, 27% { transform: translateY(100%); } 30%, 95% { transform: none; opacity: 1; } 98%, 100% { transform: none; opacity: 0; } }
+.dl-root .dl-demo__t2 { animation-name: dl-d-t2; }
+@keyframes dl-d-t2 { 0%, 40% { transform: translateX(100%); opacity: 1; } 43%, 49% { transform: none; opacity: 1; } 51%, 100% { transform: none; opacity: 0; } }
+.dl-root .dl-demo__t3 { animation-name: dl-d-t3; }
+@keyframes dl-d-t3 { 0%, 48.5% { opacity: 0; transform: translateY(8%); } 51%, 58.5% { opacity: 1; transform: none; } 60%, 100% { opacity: 0; } }
+.dl-root .dl-demo__t4 { animation-name: dl-d-t4; }
+@keyframes dl-d-t4 { 0%, 58.5% { opacity: 0; } 60%, 68.5% { opacity: 1; } 70%, 100% { opacity: 0; } }
+.dl-root .dl-demo__t5 { animation-name: dl-d-t5; }
+@keyframes dl-d-t5 { 0%, 67% { transform: translateY(100%); opacity: 1; } 70%, 95% { transform: none; opacity: 1; } 98%, 100% { opacity: 0; } }
+/* pedido enviado */
+.dl-root .dl-demo__ok { position: absolute; left: 5cqw; right: 5cqw; top: 50%; display: flex; flex-direction: column; align-items: center; gap: 1.6cqw; padding: 7cqw 5cqw 6cqw; border-radius: 5cqw; background: #fff; text-align: center; color: #1B1418; box-shadow: 0 0 0 100vmax rgba(20, 13, 26, .45), 0 10cqw 20cqw -6cqw rgba(0, 0, 0, .5); animation-name: dl-d-ok; }
+.dl-root .dl-demo__ok-ic { display: grid; place-items: center; width: 14cqw; height: 14cqw; margin-bottom: 1cqw; border-radius: 50%; background: #1E8E4A; color: #fff; font-size: 7.5cqw; font-weight: 700; }
+.dl-root .dl-demo__ok b { font-size: 5cqw; font-weight: 700; }
+.dl-root .dl-demo__ok small { font-size: 3.4cqw; line-height: 1.4; color: #6F6469; }
+@keyframes dl-d-ok { 0%, 77% { opacity: 0; transform: translateY(-40%) scale(.9); } 79.5%, 94% { opacity: 1; transform: translateY(-50%) scale(1); } 97%, 100% { opacity: 0; transform: translateY(-50%) scale(1); } }
+/* o dedo que toca */
+.dl-root .dl-demo__dedo { position: absolute; z-index: 5; width: 11cqw; height: 11cqw; margin: -5.5cqw 0 0 -5.5cqw; border-radius: 50%; background: rgba(255, 255, 255, .55); border: .6cqw solid rgba(255, 255, 255, .95); box-shadow: 0 1cqw 4cqw rgba(0, 0, 0, .35); animation-name: dl-d-dedo; }
+@keyframes dl-d-dedo {
+  0%, 21% { opacity: 0; left: 48%; top: 36%; transform: scale(1); }
+  23% { opacity: 1; left: 44%; top: 31%; transform: scale(1); } 25% { transform: scale(.75); } 26.5% { opacity: 0; left: 44%; top: 31%; transform: scale(1); }
+  34% { opacity: 0; left: 40%; top: 74%; } 36% { opacity: 1; left: 37.7%; top: 71.5%; transform: scale(1); } 38% { transform: scale(.75); } 39.5% { opacity: 0; left: 37.7%; top: 71.5%; transform: scale(1); }
+  53% { opacity: 0; left: 52%; top: 90%; } 55% { opacity: 1; left: 50%; top: 95%; transform: scale(1); } 57% { transform: scale(.75); } 58.5% { opacity: 0; left: 50%; top: 95%; transform: scale(1); }
+  63% { opacity: 0; left: 52%; top: 84%; } 65% { opacity: 1; left: 50%; top: 88%; transform: scale(1); } 67% { transform: scale(.75); } 68.5% { opacity: 0; left: 50%; top: 88%; transform: scale(1); }
+  72% { opacity: 0; left: 76%; top: 90%; } 74% { opacity: 1; left: 79.2%; top: 94.1%; transform: scale(1); } 76% { transform: scale(.75); } 77.5%, 100% { opacity: 0; left: 79.2%; top: 94.1%; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dl-root .dl-demo * { animation: none !important; }
+  .dl-root .dl-demo__chat, .dl-root .dl-demo__t2, .dl-root .dl-demo__t3, .dl-root .dl-demo__t4, .dl-root .dl-demo__t5, .dl-root .dl-demo__ok, .dl-root .dl-demo__dedo { display: none; }
+}
