@@ -3492,3 +3492,8 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-final { padding-block: clamp(56px, 6vw, 88px) !important; }
 @media (max-width: 899px) { .dl-root .dl-rodape.dl-rodape--linha { padding-bottom: 84px !important; } }
 .dl-root .dl-final .dl-final__titulo { font-size: clamp(1.5rem, 1rem + 2vw, 2.5rem) !important; } .dl-root .dl-final .dl-final__titulo .dl-h2__rosa { display: block; } .dl-root .dl-final { padding-block: clamp(44px, 5vw, 72px) !important; }
+/* (12/11) scroll mais leve: a lateral do celular deixa de ser 10 camadas 3D (pesavam a cada quadro) e vira uma borda desenhada;
+   a barra de status fica translúcida sem o desfoque (o desfoque era recalculado a cada quadro com o cardápio rolando) */
+.dl-root .dl-celular__inclinado { transform-style: flat !important; }
+.dl-root .dl-celular__corpo { box-shadow: 1.2px 0 0 #7E7278, 2.6px .2px 0 #6A5F65, 4.2px .4px 0 #5A4F55, 6px .6px 0 #4A4045, 7.5px .8px 0 #3A3035, 8px 1px 1px rgba(0, 0, 0, .55) !important; }
+.dl-root .dl-celular__status { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: rgba(247, 245, 246, .9) !important; }
