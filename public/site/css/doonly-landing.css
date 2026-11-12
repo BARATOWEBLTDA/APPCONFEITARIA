@@ -3376,3 +3376,4 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-fixa__btn .dl-ico { width: 20px; height: 20px; }
 }
 @media (prefers-reduced-motion: reduce) { .dl-root .dl-fixa { transition: none; } }
+.dl-root .dl-semtaxa__ck--coracao { background: #F42C7A; } .dl-root .dl-semtaxa__ck--coracao .dl-ico { width: 12px; height: 12px; }
