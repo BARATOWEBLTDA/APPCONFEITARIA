@@ -27,7 +27,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - uses: android-actions/setup-android@v3
+      # o Android SDK já vem instalado na máquina do GitHub (ANDROID_HOME); só aceita as licenças
+      - run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
       - run: npm ci
       - run: npx cap sync android
       - name: Chave da Play Store
