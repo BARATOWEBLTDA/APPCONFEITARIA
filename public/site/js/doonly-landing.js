@@ -256,3 +256,13 @@
     demo.classList.toggle('dl-demo--rodando', itens[0].isIntersecting);
   }, { threshold: 0.5 }).observe(demo);
 })();
+
+/* (12/11) celular: barra fixa com o botão depois que a pessoa passa do topo (some no fim da página, onde já tem o botão grande) */
+(function(){
+  var barra=document.querySelector('.dl-root .dl-fixa'); var hero=document.querySelector('.dl-root .dl-hero'); var fim=document.querySelector('.dl-root .dl-final');
+  if(!barra||!hero||!('IntersectionObserver' in window)) return;
+  var passou=false, noFim=false;
+  function att(){ barra.classList.toggle('dl-fixa--on', passou && !noFim); }
+  new IntersectionObserver(function(es){ passou=!es[0].isIntersecting && es[0].boundingClientRect.top<0; att(); },{threshold:0}).observe(hero);
+  if(fim) new IntersectionObserver(function(es){ noFim=es[0].isIntersecting; att(); },{threshold:0}).observe(fim);
+})();

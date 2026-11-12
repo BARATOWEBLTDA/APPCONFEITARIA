@@ -3340,3 +3340,39 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-cardapio .dl-btn--vinho:hover { background: linear-gradient(135deg, #FFFFFF 0%, #FFD6E6 40%, #FF9FC5 100%); color: #8F0B40; }
 @media (max-width: 899px) { .dl-root .dl-cardapio .dl-vantagens { gap: 16px; } }
 @media (max-width: 380px) { .dl-root .dl-cardapio .dl-vantagens { padding: 14px 12px; } .dl-root .dl-cardapio .dl-vantagens__item { gap: 10px; } .dl-root .dl-cardapio .dl-vantagens__texto { font-size: .78rem; } .dl-root .dl-cardapio .dl-vantagens__titulo { font-size: .9375rem; } }
+
+/* ═══ (12/11) conversão: "Sem taxa por pedido" no topo, bloco "A gente monta seu cardápio com você" e barra fixa no celular ═══ */
+.dl-root .dl-semtaxa { display: inline-flex; align-items: center; gap: 10px; margin: 18px 0 0; padding: 9px 16px 9px 10px; border-radius: 999px; background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .12); color: rgba(255, 246, 238, .86); font-size: .9375rem; line-height: 1.2; white-space: nowrap; }
+.dl-root .dl-semtaxa b { color: #fff; font-weight: 700; }
+.dl-root .dl-semtaxa__ck { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #1FB866; color: #fff; }
+.dl-root .dl-semtaxa__ck .dl-ico { width: 13px; height: 13px; }
+@media (max-width: 899px) { .dl-root .dl-hero__texto { text-align: center; } .dl-root .dl-semtaxa { font-size: .875rem; } }
+@media (max-width: 420px) { .dl-root .dl-semtaxa__mais { display: none; } }
+/* a gente monta */
+.dl-root .dl-monta { padding-block: clamp(56px, 7vw, 104px); }
+.dl-root .dl-monta__cartao { display: grid; gap: 28px; align-items: center; padding: clamp(24px, 4vw, 52px); border-radius: 28px; background: #fff; border: 1px solid var(--dl-borda); }
+.dl-root .dl-monta .dl-h2__rosa { display: inline; }
+.dl-root .dl-monta__passos { display: grid; gap: 10px; margin: 22px 0 0; padding: 0; list-style: none; counter-reset: none; }
+.dl-root .dl-monta__passos li { display: flex; align-items: center; gap: 12px; margin: 0; color: var(--dl-vinho-escuro); font-size: 1rem; font-weight: 600; white-space: nowrap; }
+.dl-root .dl-monta__passos span { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--dl-rosa-nevoa); color: var(--dl-rosa-escuro); font-size: .875rem; font-weight: 800; }
+.dl-root .dl-monta__btn { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px; padding: 15px 24px; border-radius: 14px; background: #1FB866; color: #fff; font-size: 1.0625rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.dl-root .dl-monta__btn:hover { background: #179A55; }
+.dl-root .dl-monta__btn .dl-ico { width: 22px; height: 22px; }
+.dl-root .dl-monta__pessoa { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 28px 20px; border-radius: 22px; background: var(--dl-rosa-nevoa); }
+.dl-root .dl-monta__foto { position: relative; display: grid; place-items: center; width: 112px; height: 112px; overflow: hidden; border-radius: 50%; border: 4px solid #fff; background: #E0457B; color: #fff; font-size: 2.6rem; font-weight: 700; }
+.dl-root .dl-monta__foto img { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; }
+.dl-root .dl-monta__nome { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; color: var(--dl-vinho-escuro); font-size: 1.25rem; font-weight: 700; }
+.dl-root .dl-monta__cargo { margin-top: 2px; color: var(--dl-rosa-escuro); font-size: .875rem; font-weight: 600; }
+.dl-root .dl-monta__nota { max-width: 260px; margin-top: 14px; color: var(--dl-texto-2); font-size: .8125rem; line-height: 1.45; }
+@media (min-width: 900px) { .dl-root .dl-monta__cartao { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 48px; } }
+@media (max-width: 899px) { .dl-root .dl-monta__texto { text-align: center; } .dl-root .dl-monta__passos { justify-content: center; width: fit-content; margin-inline: auto; } }
+@media (max-width: 380px) { .dl-root .dl-monta__passos li { font-size: .875rem; } .dl-root .dl-monta__btn { padding: 14px 18px; font-size: 1rem; } }
+/* barra fixa (só celular) */
+.dl-root .dl-fixa { display: none; }
+@media (max-width: 899px) {
+  .dl-root .dl-fixa { display: block; position: fixed; z-index: 50; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(11, 7, 16, .92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-top: 1px solid rgba(255, 255, 255, .08); transform: translateY(110%); transition: transform .3s ease; }
+  .dl-root .dl-fixa--on { transform: none; }
+  .dl-root .dl-fixa__btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 50px; border-radius: 14px; background: #F42C7A; color: #fff; font-size: 1.0625rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .dl-root .dl-fixa__btn .dl-ico { width: 20px; height: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .dl-root .dl-fixa { transition: none; } }
