@@ -245,18 +245,4 @@
   });
 })();
 
-/* (11/11) barra da Black Friday: depois da data (data-ate) volta sozinha para o texto normal */
-(function () {
-  var barra = document.querySelector('.dl-root [data-dl-barra]');
-  if (!barra) { return; }
-  var ate = Date.parse(barra.getAttribute('data-ate') || '');
-  if (!isNaN(ate) && Date.now() >= ate) {
-    var black = barra.querySelector('.dl-barra__black'), normal = barra.querySelector('.dl-barra__normal');
-    if (black) { black.hidden = true; }
-    if (normal) { normal.hidden = false; }
-    var tag = barra.querySelector('.dl-barra__tag'), btB = barra.querySelector('.dl-barra__bt-black'), btN = barra.querySelector('.dl-barra__bt-normal');
-    if (tag) { tag.hidden = true; }
-    if (btB) { btB.hidden = true; }
-    if (btN) { btN.hidden = false; }
-  }
-})();
+

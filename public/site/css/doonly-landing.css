@@ -2764,3 +2764,18 @@ body:has(.dl-root) { margin: 0; }
 @keyframes dl-tag-anda { from { background-position: 0% 50%; } to { background-position: 150% 50%; } }
 @media (prefers-reduced-motion: reduce) { .dl-root .dl-barra__tag { animation: none; } }
 .dl-root .dl-barra__prazo { font-weight: 500; color: rgba(255, 248, 250, .7); }
+
+/* ═══ (11/11) barra do topo: bandeira do Brasil + frase (no computador com Criar conta e Entrar no canto; no celular só a frase) ═══ */
+.dl-root .dl-barra__linha { display: grid; grid-template-columns: 1fr auto 1fr; }
+.dl-root .dl-barra__lado { display: flex; }
+.dl-root .dl-barra__acoes { justify-content: flex-end; }
+.dl-root .dl-barra__marca { display: inline-flex; align-items: center; gap: 10px; margin: 0; color: #fff; font-size: .9375rem; font-weight: 700; white-space: nowrap; }
+.dl-root .dl-barra__bandeira { flex: none; display: block; }
+@media (max-width: 899px) {
+  .dl-root .dl-barra { display: block !important; }
+  .dl-root .dl-barra__linha { grid-template-columns: 1fr; justify-items: center; min-height: 48px; }
+  .dl-root .dl-barra__lado { display: none; }
+  .dl-root .dl-barra__marca { font-size: .875rem; gap: 8px; }
+  .dl-root .dl-hero { padding-top: 56px !important; }
+}
+@media (max-width: 380px) { .dl-root .dl-barra__marca { font-size: .8125rem; } }
