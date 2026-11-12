@@ -2758,3 +2758,9 @@ body:has(.dl-root) { margin: 0; }
 @media (max-width: 374px) { .dl-root .dl-hero .dl-subtitulo { font-size: 15.5px; } }
 /* (11/11) celular: mais respiro entre o topo da tela e o título */
 @media (max-width: 899px) { .dl-root .dl-hero { padding-top: 76px !important; } }
+/* (11/11) etiqueta BLACK DOONLY: texto no centro certinho e degradê andando devagar */
+.dl-root .dl-barra__tag { display: inline-flex; align-items: center; justify-content: center; height: 26px; padding: 0 12px; line-height: 1; font-size: .75rem;
+  background: linear-gradient(90deg, #F42C7A, #FF7DAE, #FFD6E6, #FF7DAE, #F42C7A); background-size: 300% 100%; animation: dl-tag-anda 6s linear infinite; }
+@keyframes dl-tag-anda { from { background-position: 0% 50%; } to { background-position: 150% 50%; } }
+@media (prefers-reduced-motion: reduce) { .dl-root .dl-barra__tag { animation: none; } }
+.dl-root .dl-barra__prazo { font-weight: 500; color: rgba(255, 248, 250, .7); }
