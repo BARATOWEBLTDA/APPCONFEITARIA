@@ -6,6 +6,8 @@
  * ttq.instance(id). Assim, se a mesma aba abrir o app e depois um cardápio, um não recebe os eventos do outro.
  * (19/10) Meta no cardápio · (04/11 · 6.20) Google e TikTok · (04/11 · 6.21) pixels do app e os dois donos.
  */
+import { noAppDaLoja } from "@/lib/plataforma";
+
 type Fbq = ((...args: unknown[]) => void) & { callMethod?: (...args: unknown[]) => void; queue: unknown[][]; push: Fbq; loaded: boolean; version: string };
 type Gtag = (...args: unknown[]) => void;
 type TtqFila = unknown[] & Record<string, unknown>;
@@ -78,7 +80,8 @@ function garantirTikTok() {
 
 /** liga um pixel para um dono e já conta a visita da tela atual */
 export function ligarPixel(p: Plataforma, codigo: unknown, dono: DonoPixel, contarVisita = true) {
-  if (typeof window === "undefined" || !codigoValido(p, codigo)) return;
+  // (12/11) no app da Play Store nenhum pixel roda (Segurança dos dados: sem ID de publicidade e sem compartilhar com a Meta)
+  if (typeof window === "undefined" || noAppDaLoja || !codigoValido(p, codigo)) return;
   const id = limparCodigo(p, codigo as string);
   if (ligados[dono][p].has(id)) return;
   try {

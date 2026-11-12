@@ -7,7 +7,7 @@
  */
 const MINIMO = 0 // (25/10) sem espera fixa: some assim que a primeira tela está pronta (antes 1,5 s)
 /** Páginas de leitura abertas direto pelo link (Termos, Privacidade): saem assim que carregam, sem o tempo mínimo */
-const SEM_MINIMO = /^\/(termos|privacidade)\/?$/
+const SEM_MINIMO = /^\/(termos|privacidade|excluir-conta)\/?$/
 const LIMITE = 8000
 let fechando = false
 

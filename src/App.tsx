@@ -50,7 +50,7 @@ if (typeof window !== "undefined") {
   const loja = rota.match(/^\/c\/([^/]+)/);
   if (loja) { void import("@/pages/CardapioPublico").catch(() => {}); anteciparCardapio(decodeURIComponent(loja[1]).toLowerCase()); }
   if (/^\/(login|cadastro)\/?$/.test(rota) || (rota === "/" && !temSessaoGuardada())) void carregarAuth().catch(() => {});
-  else if (!/^\/(c|o|orcamento|cardapio|admin|termos|privacidade|esqueci-senha|reset-password|redefinir-senha|nova-senha|alterar-senha)(\/|$)/.test(rota)) {
+  else if (!/^\/(c|o|orcamento|cardapio|admin|termos|privacidade|excluir-conta|esqueci-senha|reset-password|redefinir-senha|nova-senha|alterar-senha)(\/|$)/.test(rota)) {
     if (temSessaoGuardada()) { void carregarLayout().catch(() => {}); if (/^\/(inicio)?\/?$/.test(rota)) void carregarInicio().catch(() => {}); }
     else void carregarAuth().catch(() => {});
   }
@@ -58,6 +58,7 @@ if (typeof window !== "undefined") {
 const EsqueciSenha = lazy(() => import("@/pages/EsqueciSenha"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const Termos = lazy(() => import("@/pages/Termos"));
+const ExcluirConta = lazy(() => import("@/pages/ExcluirConta"));
 const Privacidade = lazy(() => import("@/pages/Privacidade"));
 const Pedidos = lazy(() => import("@/pages/Pedidos"));
 const EditarPedido = lazy(() => import("@/pages/EditarPedido"));
@@ -519,7 +520,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   // (26/10) quem está logado no app: baixa as outras telas em segundo plano (cardápio do cliente e orçamento público não)
-  useEffect(() => { if (temSessaoGuardada() && !/^\/(c|o|orcamento|topo|admin|termos|privacidade)(\/|$)/.test(window.location.pathname)) preCarregarTelas(); }, []);
+  useEffect(() => { if (temSessaoGuardada() && !/^\/(c|o|orcamento|topo|admin|termos|privacidade|excluir-conta)(\/|$)/.test(window.location.pathname)) preCarregarTelas(); }, []);
   // (07/10) a abertura agora é uma tela só, no index.html; quem tira ela do ar é o src/lib/abertura.ts
   return (
     <NotificationProvider>
@@ -531,6 +532,7 @@ export default function App() {
         <Route path="/cadastro" element={<Auth />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/privacidade" element={<Privacidade />} />
+        <Route path="/excluir-conta" element={<ExcluirConta />} />
         {/* Rota pública do cardápio — nova estrutura: /c/[codigo]/[slug?] */}
         <Route path="/c/:codigo" element={<><FaixaComoCliente /><CardapioPublico /></>} />
         <Route path="/c/:codigo/:slug" element={<><FaixaComoCliente /><CardapioPublico /></>} />

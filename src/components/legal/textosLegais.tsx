@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
  * usado pela página (/termos, /privacidade) e pela janela que abre no login e nas Configurações.
  * Pra mudar um texto, mude aqui.
  */
-export type DocLegalId = 'termos' | 'privacidade'
+export type DocLegalId = 'termos' | 'privacidade' | 'exclusao'
 export type SecaoLegal = { titulo: string; corpo: ReactNode }
 export type DocLegalDados = { titulo: string; curto: string; atualizado: string; intro: ReactNode; secoes: SecaoLegal[] }
 
@@ -112,10 +112,10 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
   privacidade: {
     titulo: 'Política de privacidade',
     curto: 'Privacidade',
-    atualizado: 'Última atualização: junho de 2026',
+    atualizado: 'Última atualização: novembro de 2026',
     intro: (
       <>
-        <p>A <strong>Doonly Tecnologia Ltda</strong> leva sua privacidade a sério. Esta política explica como coletamos, usamos e protegemos suas informações ao usar o Doonly.</p>
+        <p>A <strong>Doonly Tecnologia Ltda</strong> leva sua privacidade a sério. Esta política explica como coletamos, usamos e protegemos suas informações ao usar o Doonly, no site (doonly.com.br) e no app para Android (Doonly: App para Confeitaria, no Google Play).</p>
       </>
     ),
     secoes: [
@@ -123,9 +123,12 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         titulo: 'Dados que coletamos',
         corpo: (
           <>
-        <p><strong>Dados de cadastro:</strong> nome, e-mail e senha ao criar sua conta.</p>
-        <p><strong>Dados do negócio:</strong> nome da loja, telefone, endereço, fotos, descrições de produtos e configurações do cardápio.</p>
-        <p><strong>Dados de uso:</strong> informações sobre como você usa a plataforma para melhorarmos o serviço.</p>
+        <p><strong>Dados de cadastro:</strong> nome, e-mail e senha ao criar sua conta (ou os dados básicos da sua Conta Google, se entrar com o Google).</p>
+        <p><strong>Dados do negócio:</strong> nome da loja, telefone e WhatsApp, endereço, logo, fotos e descrições de produtos e configurações do cardápio.</p>
+        <p><strong>Dados que você cadastra sobre seus clientes:</strong> nome, telefone, endereço de entrega, data de aniversário e pedidos. Você é responsável por esses dados; nós só os guardamos para você usar no app.</p>
+        <p><strong>Assinatura:</strong> o plano, a situação e o histórico de pagamento da assinatura PRO. Os dados do cartão ficam com quem processa o pagamento (Google Play ou Hotmart) e não chegam até nós.</p>
+        <p><strong>Dados de uso e diagnóstico:</strong> informações sobre como você usa a plataforma e registros de erros, para melhorarmos o serviço.</p>
+        <p>O app para Android não acessa sua localização, contatos, câmera ou microfone sem você escolher usar um recurso que precise disso (por exemplo, enviar uma foto de produto).</p>
           </>
         ),
       },
@@ -150,6 +153,8 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         <p>Não vendemos seus dados pessoais. Podemos compartilhá-los apenas com:</p>
         <ul>
         <li><strong>Provedores de serviço:</strong> como Supabase (banco de dados) e Vercel (hospedagem), que nos ajudam a operar a plataforma</li>
+        <li><strong>Pagamentos:</strong> Google Play (com o RevenueCat, que confirma a assinatura) e Hotmart, apenas para processar a assinatura</li>
+        <li><strong>Inteligência artificial:</strong> OpenAI e Anthropic, que recebem só o texto ou a foto que você envia para a Doo ou para os topos de bolo, para gerar a resposta</li>
         <li><strong>Autoridades legais:</strong> quando exigido por lei</li>
         </ul>
           </>
@@ -190,7 +195,8 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         titulo: 'Cookies',
         corpo: (
           <>
-        <p>Usamos cookies essenciais para manter sua sessão ativa. Não usamos cookies de rastreamento ou publicidade.</p>
+        <p>Usamos cookies essenciais para manter sua sessão ativa. No site, usamos também o Pixel da Meta (Facebook) para medir nossos anúncios. O app para Android não usa Pixel nem ID de publicidade.</p>
+        <p>Se você colocar o seu próprio Pixel no cardápio, ele roda só no seu cardápio público e segue as regras da plataforma que você escolheu.</p>
           </>
         ),
       },
@@ -199,6 +205,7 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         corpo: (
           <>
         <p>Mantemos seus dados enquanto sua conta estiver ativa. Após o encerramento da conta, os dados são removidos em até 90 dias, exceto quando a retenção for exigida por lei.</p>
+        <p>Para excluir sua conta, use <strong>Minha conta › Excluir a conta</strong> no app ou veja o passo a passo em <a href="https://doonly.com.br/excluir-conta">doonly.com.br/excluir-conta</a>.</p>
           </>
         ),
       },
@@ -223,6 +230,87 @@ export const DOCS_LEGAIS: Record<DocLegalId, DocLegalDados> = {
         corpo: (
           <>
         <p>Dúvidas sobre privacidade? Entre em contato: <a href="mailto:contato@doonly.com.br">contato@doonly.com.br</a></p>
+          </>
+        ),
+      },
+    ],
+  },
+  exclusao: {
+    titulo: 'Excluir sua conta',
+    curto: 'Excluir conta',
+    atualizado: 'Última atualização: novembro de 2026',
+    intro: (
+      <>
+        <p>Aqui você vê como pedir a exclusão da sua conta no <strong>Doonly</strong> (site doonly.com.br e app <strong>Doonly: App para Confeitaria</strong>, no Google Play) e o que acontece com os seus dados.</p>
+      </>
+    ),
+    secoes: [
+      {
+        titulo: 'Pelo app ou pelo site',
+        corpo: (
+          <>
+        <ol>
+        <li>Entre na sua conta no app ou em <a href="https://doonly.com.br/login">doonly.com.br</a>.</li>
+        <li>Abra <strong>Minha conta</strong>.</li>
+        <li>No fim da tela, toque em <strong>Excluir a conta</strong>.</li>
+        <li>Digite <strong>EXCLUIR</strong> e confirme.</li>
+        </ol>
+        <p>Você recebe a confirmação no e-mail da conta quando a exclusão for concluída.</p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Sem acesso à conta',
+        corpo: (
+          <>
+        <p>Envie um e-mail para <a href="mailto:contato@doonly.com.br?subject=Excluir%20minha%20conta">contato@doonly.com.br</a> com o assunto <strong>Excluir minha conta</strong>, de preferência do mesmo e-mail cadastrado. Se for de outro e-mail, vamos pedir uma confirmação de que a conta é sua antes de excluir.</p>
+          </>
+        ),
+      },
+      {
+        titulo: 'O que é apagado',
+        corpo: (
+          <>
+        <ul>
+        <li>Sua conta, seu perfil e os dados da loja</li>
+        <li>Cardápio, produtos, fotos, cupons e banners</li>
+        <li>Clientes, pedidos, orçamentos e agenda</li>
+        <li>Financeiro, contas, fichas técnicas e ingredientes</li>
+        <li>Conversas com a Doo e topos de bolo criados</li>
+        </ul>
+        <p>O link do seu cardápio para de funcionar.</p>
+          </>
+        ),
+      },
+      {
+        titulo: 'O que pode ser mantido',
+        corpo: (
+          <>
+        <p>Os registros de pagamento da assinatura podem ser guardados pelo prazo exigido pela lei fiscal e depois são apagados. Eles não ficam ligados a nenhum dado da sua loja.</p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Prazo',
+        corpo: (
+          <>
+        <p>A exclusão é concluída em até 90 dias depois do pedido. Depois disso, não é possível recuperar os dados.</p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Assinatura PRO',
+        corpo: (
+          <>
+        <p>Excluir a conta não cancela a cobrança sozinho. Antes, cancele a assinatura onde você assinou: no <strong>Google Play › Pagamentos e assinaturas › Assinaturas</strong> ou na <strong>Hotmart</strong>.</p>
+          </>
+        ),
+      },
+      {
+        titulo: 'Contato',
+        corpo: (
+          <>
+        <p>Dúvidas? Fale com a gente: <a href="mailto:contato@doonly.com.br">contato@doonly.com.br</a></p>
           </>
         ),
       },

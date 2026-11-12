@@ -41,7 +41,7 @@ export default function PaginaLegal({ doc, camada }: { doc: DocLegalId; camada?:
     else if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) navegar(-1)
     else navegar('/login')
   }
-  const outro: DocLegalId = doc === 'termos' ? 'privacidade' : 'termos'
+  const outro: DocLegalId = doc === 'privacidade' ? 'termos' : 'privacidade'
   const irPara = (i: number) => document.getElementById(`pg-${doc}-${i}`)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
 
   return (
@@ -80,8 +80,8 @@ export default function PaginaLegal({ doc, camada }: { doc: DocLegalId; camada?:
       <footer className="lg-pe">
         <span>© {new Date().getFullYear()} Doonly</span>
         {camada
-          ? <button type="button" className="lg-pe-link" onClick={() => camada.aoTrocar(outro)}>{doc === 'termos' ? 'Ler a Política de privacidade' : 'Ler os Termos de uso'}</button>
-          : <Link className="lg-pe-link" to={`/${outro}`} replace>{doc === 'termos' ? 'Ler a Política de privacidade' : 'Ler os Termos de uso'}</Link>}
+          ? <button type="button" className="lg-pe-link" onClick={() => camada.aoTrocar(outro)}>{outro === 'privacidade' ? 'Ler a Política de privacidade' : 'Ler os Termos de uso'}</button>
+          : <Link className="lg-pe-link" to={`/${outro}`} replace>{outro === 'privacidade' ? 'Ler a Política de privacidade' : 'Ler os Termos de uso'}</Link>}
       </footer>
     </div>
   )
