@@ -2696,3 +2696,14 @@ body:has(.dl-root) { margin: 0; }
 @media (max-width: 400px) { .dl-root .dl-barra__black .dl-barra__txt > :not(b) { } }
 .dl-root .dl-barra__so-cel { display: none; }
 @media (max-width: 600px) { .dl-root .dl-barra__so-pc { display: none; } .dl-root .dl-barra__so-cel { display: inline; } }
+/* (11/11) topo sem a logo: no computador fica só o "Entrar" à direita; no celular o topo some (não sobra nada nele) */
+.dl-root .dl-cabecalho .dl-logo { display: none; }
+.dl-root .dl-cabecalho__linha { justify-content: flex-end; }
+@media (max-width: 899px) { .dl-root .dl-cabecalho { display: none; } }
+@media (max-width: 380px) {
+  .dl-root .dl-barra { gap: 6px; padding-inline: 8px; font-size: .78rem; }
+  .dl-root .dl-barra__black { gap: 6px; }
+  .dl-root .dl-barra__tag { font-size: .625rem; padding: 3px 5px; letter-spacing: .03em; }
+  .dl-root .dl-barra__bt { padding: 5px 8px; }
+  .dl-root .dl-barra__bt span { display: none; }
+}
