@@ -3112,3 +3112,15 @@ body:has(.dl-root) { margin: 0; }
   100% { opacity: 0; left: 50%; top: 95%; }
 }
 @media (prefers-reduced-motion: reduce) { .dl-root .dl-demo__r, .dl-root .dl-demo__bolo, .dl-root .dl-demo__r { display: none; } }
+
+/* ═══ (12/11) computador: o celular mostra só o cardápio rolando bem devagar (a história do chat fica só no celular) ═══ */
+@media (min-width: 1024px) {
+  .dl-root .dl-celular .dl-demo { display: none !important; }
+  .dl-root .dl-celular .dl-rolando, .dl-root .dl-celular .dl-rolando__nav { display: block !important; }
+  .dl-root .dl-celular .dl-rolando { top: calc(var(--dl-tela-y) + 5.85%) !important; height: calc(var(--dl-tela-a) - 5.85%) !important;
+    border-radius: 0 0 calc(var(--dl-cel-l) * .123) calc(var(--dl-cel-l) * .123) !important; object-fit: cover; object-position: 50% 0%;
+    animation: dl-rola-pc 140s ease-in-out 1.5s infinite alternate !important; }
+  .dl-root .dl-celular .dl-rolando__nav { position: absolute; z-index: 1; left: var(--dl-tela-x); width: var(--dl-tela-l); top: calc(var(--dl-tela-y) + var(--dl-tela-a)); height: auto; max-width: none; transform: translateY(-100%); }
+}
+@keyframes dl-rola-pc { 0%, 4% { object-position: 50% 0%; } 96%, 100% { object-position: 50% 100%; } }
+@media (min-width: 1024px) and (prefers-reduced-motion: reduce) { .dl-root .dl-celular .dl-rolando { animation: none !important; } }
