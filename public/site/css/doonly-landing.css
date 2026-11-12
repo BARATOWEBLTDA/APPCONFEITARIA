@@ -3326,3 +3326,10 @@ body:has(.dl-root) { margin: 0; }
 @media (min-width: 1024px) { .dl-root .dl-funcs3 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 430px) { .dl-root .dl-funcs3__item { gap: 8px; padding: 13px 8px; font-size: .875rem; } .dl-root .dl-funcs3__ck { width: 20px; height: 20px; } }
 @media (max-width: 359px) { .dl-root .dl-funcs3__item { font-size: .78rem; padding-inline: 6px; } }
+/* (12/11) benefícios do cardápio com check branco (pink no meio), sem os ícones */
+.dl-root .dl-cardapio .dl-vantagens__icone--ck { width: 28px; height: 28px; min-width: 28px; border-radius: 50%; background: #fff !important; color: #F42C7A !important; box-shadow: none !important; }
+.dl-root .dl-cardapio .dl-vantagens__icone--ck .dl-ico { width: 15px; height: 15px; }
+.dl-root .dl-cardapio .dl-vantagens__item { align-items: center; }
+.dl-root .dl-cardapio .dl-vantagens__titulo, .dl-root .dl-cardapio .dl-vantagens__texto { white-space: nowrap; }
+@media (hover: hover) { .dl-root .dl-cardapio .dl-vantagens__item:hover [class*="__ic"] { box-shadow: none !important; } }
+@media (min-width: 900px) and (max-width: 1339px) { .dl-root .dl-cardapio .dl-vantagens { grid-template-columns: minmax(0, 1fr); } }
