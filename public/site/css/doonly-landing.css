@@ -3006,73 +3006,104 @@ body:has(.dl-root) { margin: 0; }
 /* dedo visível também sobre fundo branco */
 .dl-root .dl-demo__dedo { background: rgba(70, 50, 62, .28); border-color: rgba(255, 255, 255, .95); box-shadow: 0 0 0 .4cqw rgba(70, 50, 62, .35), 0 1cqw 4cqw rgba(0, 0, 0, .3); }
 
-/* ═══ (12/11) história v4 (46.6 s): chat → cardápio completo descendo devagar → página do bolo rolando de verdade
-   (2 kg e topo de bolo + R$ 15, sem recheio) → sacola → finalizar (retirada, sáb 14/11 às 10:00, Pix) → tela real de "Pedido enviado!" ═══ */
-.dl-root .dl-demo * { animation-duration: 46.6s; }
+/* ═══ (12/11) história v5 (51.7 s): conversa mais real (prévia do link como a do WhatsApp: logo, nome, descrição e site),
+   cardápio completo, página do bolo rolando (2 kg + topo), sacola, retirada sáb 14/11 10:00, Pix, nome e WhatsApp sendo digitados, "Pedido enviado!" ═══ */
+.dl-root .dl-demo * { animation-duration: 51.7s; }
 .dl-root .dl-demo__digita span { animation-duration: 1s !important; }
 .dl-root .dl-demo__barra, .dl-root .dl-demo__ok, .dl-root .dl-demo__t2, .dl-root .dl-demo__t3, .dl-root .dl-demo__t4, .dl-root .dl-demo__t5 { display: none !important; }
-.dl-root .dl-demo__m1 { animation-name: dl-d4-m1; }
-@keyframes dl-d4-m1 { 0%, 1.931% { opacity: 0; transform: translateY(3cqw) scale(.96); } 3.004%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__digita { animation-name: dl-d4-dig; }
-@keyframes dl-d4-dig { 0%, 5.365% { opacity: 0; } 6.009%, 9.013% { opacity: 1; } 9.442%, 100% { opacity: 0; height: 0; padding: 0; margin: 0; } }
-.dl-root .dl-demo__m2 { animation-name: dl-d4-m2; }
-@keyframes dl-d4-m2 { 0%, 9.227% { opacity: 0; transform: translateY(3cqw) scale(.96); } 10.300%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__t1 { animation-name: dl-d4-t1; }
-@keyframes dl-d4-t1 { 0%, 13.734% { transform: translateY(100%); opacity: 1; } 15.021%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__longo { animation-name: dl-d4-rola; animation-timing-function: linear; }
-@keyframes dl-d4-rola { 0%, 16.309% { transform: translateY(0); animation-timing-function: ease-in-out; } 20.601%, 22.747% { transform: translateY(-7.5%); animation-timing-function: ease-in-out; } 26.609% { transform: translateY(-18%); animation-timing-function: ease-out; } 29.185%, 100% { transform: translateY(-22.6%); } }
-/* página do bolo: o conteúdo rola por baixo do cabeçalho e do botão, como no app */
-.dl-root .dl-demo__bolo { overflow: hidden; background: #fff; animation-name: dl-d4-bolo; }
-@keyframes dl-d4-bolo { 0%, 31.760% { transform: translateX(100%); opacity: 1; } 32.940%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
+/* conversa */
+.dl-root .dl-demo__msgs { justify-content: flex-end; gap: 1.8cqw; padding: 3cqw 3.4cqw 3.4cqw; }
+.dl-root .dl-demo__dia { align-self: center; margin-bottom: 1.4cqw; padding: .9cqw 2.6cqw; border-radius: 2cqw; background: #fff; color: #6F6469; font-size: 2.9cqw; box-shadow: 0 1px .5px rgba(0,0,0,.08); animation-name: dl-d5-dia; }
+@keyframes dl-d5-dia { 0%, 1.161% { opacity: 0; } 1.934%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__b { font-size: 3.55cqw; }
+.dl-root .dl-demo__m2 { max-width: 84%; }
+.dl-root .dl-demo__link { display: flex; align-items: stretch; gap: 0; margin: 1.8cqw 0 1.2cqw; overflow: hidden; border-radius: 1.8cqw; background: #F1EDEE; }
+.dl-root .dl-demo__link img { flex: none; width: 19cqw; height: auto; aspect-ratio: 1; object-fit: cover; }
+.dl-root .dl-demo__link > span { display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: 1.6cqw 2.4cqw; }
+.dl-root .dl-demo__link b { padding: 0; font-size: 3.3cqw; font-weight: 600; }
+.dl-root .dl-demo__link small { padding: .4cqw 0 0; font-size: 2.8cqw; line-height: 1.3; color: #5E5459; }
+.dl-root .dl-demo__link em { padding-top: .6cqw; font-style: normal; font-size: 2.6cqw; color: #8A8186; }
+.dl-root .dl-demo__m2 u { font-size: 3.2cqw; word-break: break-all; }
+.dl-root .dl-demo__m1 { animation-name: dl-d5-m1; }
+@keyframes dl-d5-m1 { 0%, 1.741% { opacity: 0; transform: translateY(3cqw) scale(.96); } 2.708%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__digita { animation-name: dl-d5-dig; }
+@keyframes dl-d5-dig { 0%, 4.449% { opacity: 0; height: 0; padding: 0; margin: 0; } 4.836%, 8.317% { opacity: 1; height: auto; padding: 3cqw 3.6cqw; } 8.607%, 100% { opacity: 0; height: 0; padding: 0; margin: 0; } }
+.dl-root .dl-demo__m2 { animation-name: dl-d5-m2; }
+@keyframes dl-d5-m2 { 0%, 8.511% { opacity: 0; transform: translateY(3cqw) scale(.96); display: none; } 8.530% { display: block; opacity: 0; } 9.478%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__m3 { animation-name: dl-d5-m3; }
+@keyframes dl-d5-m3 { 0%, 10.832% { opacity: 0; transform: translateY(3cqw) scale(.96); display: none; } 10.851% { display: block; opacity: 0; } 11.605%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+/* cardápio */
+.dl-root .dl-demo__t1 { animation-name: dl-d5-t1; }
+@keyframes dl-d5-t1 { 0%, 14.313% { transform: translateY(100%); opacity: 1; } 15.474%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__longo { animation-name: dl-d5-rola; animation-timing-function: linear; }
+@keyframes dl-d5-rola { 0%, 16.634% { transform: translateY(0); animation-timing-function: ease-in-out; } 20.503%, 22.437% { transform: translateY(-7.5%); animation-timing-function: ease-in-out; } 25.919% { transform: translateY(-18%); animation-timing-function: ease-out; } 28.240%, 100% { transform: translateY(-22.6%); } }
+/* página do bolo */
+.dl-root .dl-demo__bolo { overflow: hidden; background: #fff; animation-name: dl-d5-bolo; }
+@keyframes dl-d5-bolo { 0%, 30.561% { transform: translateX(100%); opacity: 1; } 31.625%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
 .dl-root .dl-demo__bolo-rolo { position: absolute; left: 0; top: 0; width: 100%; height: 90.08%; overflow: hidden; }
-.dl-root .dl-demo__bolo-rolo img { position: absolute; left: 0; top: 0; width: 100%; height: auto; max-width: none; animation-name: dl-d4-brola; }
-@keyframes dl-d4-brola { 0%, 35.622% { transform: translateY(0); } 41.202%, 100% { transform: translateY(-37.61%); } }
-.dl-root .dl-demo__bolo-rolo .dl-demo__bs1 { animation-name: dl-d4-brola, dl-d4-bs1; animation-duration: 46.6s, 46.6s; }
-.dl-root .dl-demo__bolo-rolo .dl-demo__bs2 { animation-name: dl-d4-brola, dl-d4-bs2; animation-duration: 46.6s, 46.6s; }
-@keyframes dl-d4-bs1 { 0%, 43.026% { opacity: 0; } 43.562%, 100% { opacity: 1; } }
-@keyframes dl-d4-bs2 { 0%, 46.459% { opacity: 0; } 46.996%, 100% { opacity: 1; } }
-.dl-root .dl-demo__bcab { position: absolute; left: 0; top: 0; width: 100%; height: auto; max-width: none; animation-name: dl-d4-bcab; }
-@keyframes dl-d4-bcab { 0%, 37.124% { opacity: 0; } 37.983%, 100% { opacity: 1; } }
+.dl-root .dl-demo__bolo-rolo img { position: absolute; left: 0; top: 0; width: 100%; height: auto; max-width: none; animation-name: dl-d5-brola; }
+@keyframes dl-d5-brola { 0%, 34.043% { transform: translateY(0); } 39.072%, 100% { transform: translateY(-37.61%); } }
+.dl-root .dl-demo__bolo-rolo .dl-demo__bs1 { animation-name: dl-d5-brola, dl-d5-bs1; animation-duration: 51.7s, 51.7s; }
+.dl-root .dl-demo__bolo-rolo .dl-demo__bs2 { animation-name: dl-d5-brola, dl-d5-bs2; animation-duration: 51.7s, 51.7s; }
+@keyframes dl-d5-bs1 { 0%, 40.716% { opacity: 0; } 41.199%, 100% { opacity: 1; } }
+@keyframes dl-d5-bs2 { 0%, 43.810% { opacity: 0; } 44.294%, 100% { opacity: 1; } }
+.dl-root .dl-demo__bcab { position: absolute; left: 0; top: 0; width: 100%; height: auto; max-width: none; animation-name: dl-d5-bcab; }
+@keyframes dl-d5-bcab { 0%, 35.397% { opacity: 0; } 36.170%, 100% { opacity: 1; } }
 .dl-root .dl-demo__bpe { position: absolute; left: 0; bottom: 0; width: 100%; height: 9.92%; background: #fff; }
 .dl-root .dl-demo__bpe img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; }
-.dl-root .dl-demo__bp1 { animation-name: dl-d4-bs1; }
-.dl-root .dl-demo__bp2 { animation-name: dl-d4-bs2; }
-.dl-root .dl-demo__r0 { animation-name: dl-d4-r0; }
-@keyframes dl-d4-r0 { 0%, 50.644% { opacity: 0; transform: none; } 51.824%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__r1 { animation-name: dl-d4-r1; }
-@keyframes dl-d4-r1 { 0%, 54.506% { transform: translateY(100%); opacity: 1; } 55.687%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__r2 { animation-name: dl-d4-r2; }
-@keyframes dl-d4-r2 { 0%, 59.227% { transform: translateX(100%); opacity: 1; } 60.408%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__r3 { animation-name: dl-d4-r3; }
-@keyframes dl-d4-r3 { 0%, 65.665% { opacity: 0; transform: none; } 66.845%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__r4 { animation-name: dl-d4-r4; }
-@keyframes dl-d4-r4 { 0%, 69.742% { opacity: 0; transform: none; } 70.923%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__r5 { animation-name: dl-d4-r5; }
-@keyframes dl-d4-r5 { 0%, 73.176% { opacity: 0; transform: none; } 74.356%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__r6 { animation-name: dl-d4-r6; }
-@keyframes dl-d4-r6 { 0%, 76.609% { opacity: 0; transform: none; } 77.790%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__r7 { animation-name: dl-d4-r7; }
-@keyframes dl-d4-r7 { 0%, 80.258% { opacity: 0; transform: none; } 81.438%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__r8 { animation-name: dl-d4-r8; }
-@keyframes dl-d4-r8 { 0%, 82.403% { opacity: 0; transform: translateY(5%); } 83.584%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__r9 { animation-name: dl-d4-r9; }
-@keyframes dl-d4-r9 { 0%, 86.695% { transform: translateY(100%); opacity: 1; } 87.876%, 97.854% { opacity: 1; transform: none; } 99.142%, 100% { opacity: 0; transform: none; } }
-.dl-root .dl-demo__dedo { animation-name: dl-d4-dedo; }
-@keyframes dl-d4-dedo {
-  0%, 11.159% { opacity: 0; left: 47%; top: 35%; transform: scale(1); } 11.803% { opacity: 1; left: 44%; top: 31%; transform: scale(1); } 12.446% { opacity: 1; left: 44%; top: 31%; transform: scale(.75); } 13.090% { opacity: 0; left: 44%; top: 31%; transform: scale(1); }
-  29.185% { opacity: 0; left: 75%; top: 63%; transform: scale(1); } 29.828% { opacity: 1; left: 72%; top: 59%; transform: scale(1); } 30.472% { opacity: 1; left: 72%; top: 59%; transform: scale(.75); } 31.116% { opacity: 0; left: 72%; top: 59%; transform: scale(1); }
-  41.631% { opacity: 0; left: 53%; top: 54.4%; transform: scale(1); } 42.275% { opacity: 1; left: 50%; top: 50.4%; transform: scale(1); } 42.918% { opacity: 1; left: 50%; top: 50.4%; transform: scale(.75); } 43.562% { opacity: 0; left: 50%; top: 50.4%; transform: scale(1); }
-  45.064% { opacity: 0; left: 53%; top: 80.8%; transform: scale(1); } 45.708% { opacity: 1; left: 50%; top: 76.8%; transform: scale(1); } 46.352% { opacity: 1; left: 50%; top: 76.8%; transform: scale(.75); } 46.996% { opacity: 0; left: 50%; top: 76.8%; transform: scale(1); }
-  48.069% { opacity: 0; left: 53%; top: 99%; transform: scale(1); } 48.712% { opacity: 1; left: 50%; top: 95%; transform: scale(1); } 49.356% { opacity: 1; left: 50%; top: 95%; transform: scale(.75); } 50.000% { opacity: 0; left: 50%; top: 95%; transform: scale(1); }
-  51.717% { opacity: 0; left: 53%; top: 90.8%; transform: scale(1); } 52.361% { opacity: 1; left: 50%; top: 86.8%; transform: scale(1); } 53.004% { opacity: 1; left: 50%; top: 86.8%; transform: scale(.75); } 53.648% { opacity: 0; left: 50%; top: 86.8%; transform: scale(1); }
-  56.438% { opacity: 0; left: 82.2%; top: 98.1%; transform: scale(1); } 57.082% { opacity: 1; left: 79.2%; top: 94.1%; transform: scale(1); } 57.725% { opacity: 1; left: 79.2%; top: 94.1%; transform: scale(.75); } 58.369% { opacity: 0; left: 79.2%; top: 94.1%; transform: scale(1); }
-  60.300% { opacity: 0; left: 29.6%; top: 28%; transform: scale(1); } 60.944% { opacity: 1; left: 26.6%; top: 24%; transform: scale(1); } 61.588% { opacity: 1; left: 26.6%; top: 24%; transform: scale(.75); } 62.232% { opacity: 0; left: 26.6%; top: 24%; transform: scale(1); }
-  62.876% { opacity: 0; left: 29.5%; top: 49.3%; transform: scale(1); } 63.519% { opacity: 1; left: 26.5%; top: 45.3%; transform: scale(1); } 64.163% { opacity: 1; left: 26.5%; top: 45.3%; transform: scale(.75); } 64.807% { opacity: 0; left: 26.5%; top: 45.3%; transform: scale(1); }
-  67.167% { opacity: 0; left: 92.6%; top: 67.7%; transform: scale(1); } 67.811% { opacity: 1; left: 89.6%; top: 63.7%; transform: scale(1); } 68.455% { opacity: 1; left: 89.6%; top: 63.7%; transform: scale(.75); } 69.099% { opacity: 0; left: 89.6%; top: 63.7%; transform: scale(1); }
-  70.386% { opacity: 0; left: 53%; top: 98.4%; transform: scale(1); } 71.030% { opacity: 1; left: 50%; top: 94.4%; transform: scale(1); } 71.674% { opacity: 1; left: 50%; top: 94.4%; transform: scale(.75); } 72.318% { opacity: 0; left: 50%; top: 94.4%; transform: scale(1); }
-  73.820% { opacity: 0; left: 53%; top: 83.4%; transform: scale(1); } 74.464% { opacity: 1; left: 50%; top: 79.4%; transform: scale(1); } 75.107% { opacity: 1; left: 50%; top: 79.4%; transform: scale(.75); } 75.751% { opacity: 0; left: 50%; top: 79.4%; transform: scale(1); }
-  77.468% { opacity: 0; left: 53%; top: 67.8%; transform: scale(1); } 78.112% { opacity: 1; left: 50%; top: 63.8%; transform: scale(1); } 78.755% { opacity: 1; left: 50%; top: 63.8%; transform: scale(.75); } 79.399% { opacity: 0; left: 50%; top: 63.8%; transform: scale(1); }
-  83.906% { opacity: 0; left: 53%; top: 99%; transform: scale(1); } 84.549% { opacity: 1; left: 50%; top: 95%; transform: scale(1); } 85.193% { opacity: 1; left: 50%; top: 95%; transform: scale(.75); } 85.837% { opacity: 0; left: 50%; top: 95%; transform: scale(1); }
+.dl-root .dl-demo__bp1 { animation-name: dl-d5-bs1; }
+.dl-root .dl-demo__bp2 { animation-name: dl-d5-bs2; }
+/* nome e WhatsApp sendo digitados (por cima da tela com os campos vazios) */
+.dl-root .dl-demo__tecla { position: absolute; z-index: 3; display: flex; align-items: center; padding-left: 3.3cqw; box-sizing: border-box; border: 1px solid #E85A8C; border-radius: 2.6cqw; background: #fff; color: #2A1E26; font: 400 4.1cqw/1 Poppins, "Geist", system-ui, sans-serif; opacity: 0; }
+.dl-root .dl-demo__tecla span { display: inline-block; white-space: nowrap; overflow: hidden; border-right: .4cqw solid #E85A8C; padding-right: .3cqw; }
+.dl-root .dl-demo__tecla--nome { animation-name: dl-d5-tn; }
+.dl-root .dl-demo__tecla--nome span { animation-name: dl-d5-tn-txt; animation-timing-function: steps(12, end); }
+@keyframes dl-d5-tn { 0%, 77.660% { opacity: 0; } 77.756%, 80.851% { opacity: 1; border-color: #E85A8C; } 80.948%, 84.816% { opacity: 1; border-color: #E6E1E3; } 84.913%, 100% { opacity: 0; } }
+@keyframes dl-d5-tn-txt { 0%, 77.950% { max-width: 0; } 80.271% { max-width: 60cqw; border-right-color: #E85A8C; } 80.851%, 100% { max-width: 60cqw; border-right-color: transparent; } }
+.dl-root .dl-demo__tecla--fone { animation-name: dl-d5-tf; }
+.dl-root .dl-demo__tecla--fone span { animation-name: dl-d5-tf-txt; animation-timing-function: steps(15, end); }
+@keyframes dl-d5-tf { 0%, 80.948% { opacity: 0; } 81.044%, 84.816% { opacity: 1; } 84.913%, 100% { opacity: 0; } }
+@keyframes dl-d5-tf-txt { 0%, 81.238% { max-width: 0; } 83.946%, 100% { max-width: 60cqw; } }
+.dl-root .dl-demo__r0 { animation-name: dl-d5-r0; }
+@keyframes dl-d5-r0 { 0%, 47.582% { opacity: 0; transform: none; } 48.646%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r1 { animation-name: dl-d5-r1; }
+@keyframes dl-d5-r1 { 0%, 51.064% { transform: translateY(100%); opacity: 1; } 52.128%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r2 { animation-name: dl-d5-r2; }
+@keyframes dl-d5-r2 { 0%, 55.319% { transform: translateX(100%); opacity: 1; } 56.383%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r3 { animation-name: dl-d5-r3; }
+@keyframes dl-d5-r3 { 0%, 61.122% { opacity: 0; transform: none; } 62.186%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r4 { animation-name: dl-d5-r4; }
+@keyframes dl-d5-r4 { 0%, 64.797% { opacity: 0; transform: none; } 65.861%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r5 { animation-name: dl-d5-r5; }
+@keyframes dl-d5-r5 { 0%, 67.892% { opacity: 0; transform: none; } 68.956%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r6 { animation-name: dl-d5-r6; }
+@keyframes dl-d5-r6 { 0%, 70.986% { opacity: 0; transform: none; } 72.050%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r7 { animation-name: dl-d5-r7; }
+@keyframes dl-d5-r7 { 0%, 74.275% { opacity: 0; transform: none; } 75.338%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r8 { animation-name: dl-d5-r8; }
+@keyframes dl-d5-r8 { 0%, 76.209% { opacity: 0; transform: translateY(5%); } 77.273%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r9 { animation-name: dl-d5-r9; }
+@keyframes dl-d5-r9 { 0%, 84.720% { opacity: 0; transform: none; } 85.783%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r10 { animation-name: dl-d5-r10; }
+@keyframes dl-d5-r10 { 0%, 88.008% { transform: translateY(100%); opacity: 1; } 89.072%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__dedo { animation-name: dl-d5-dedo; }
+@keyframes dl-d5-dedo {
+  0%, 11.605% { opacity: 0; left: 43.0%; top: 78.0%; transform: scale(1); } 12.186% { opacity: 1; left: 40.0%; top: 74.0%; transform: scale(1); } 12.766% { opacity: 1; left: 40.0%; top: 74.0%; transform: scale(.75); } 13.346% { opacity: 0; left: 40.0%; top: 74.0%; transform: scale(1); }
+  28.240% { opacity: 0; left: 75.0%; top: 63.0%; transform: scale(1); } 28.820% { opacity: 1; left: 72.0%; top: 59.0%; transform: scale(1); } 29.400% { opacity: 1; left: 72.0%; top: 59.0%; transform: scale(.75); } 29.981% { opacity: 0; left: 72.0%; top: 59.0%; transform: scale(1); }
+  39.458% { opacity: 0; left: 53.0%; top: 54.4%; transform: scale(1); } 40.039% { opacity: 1; left: 50.0%; top: 50.4%; transform: scale(1); } 40.619% { opacity: 1; left: 50.0%; top: 50.4%; transform: scale(.75); } 41.199% { opacity: 0; left: 50.0%; top: 50.4%; transform: scale(1); }
+  42.553% { opacity: 0; left: 53.0%; top: 80.8%; transform: scale(1); } 43.133% { opacity: 1; left: 50.0%; top: 76.8%; transform: scale(1); } 43.714% { opacity: 1; left: 50.0%; top: 76.8%; transform: scale(.75); } 44.294% { opacity: 0; left: 50.0%; top: 76.8%; transform: scale(1); }
+  45.261% { opacity: 0; left: 53.0%; top: 99.0%; transform: scale(1); } 45.841% { opacity: 1; left: 50.0%; top: 95.0%; transform: scale(1); } 46.422% { opacity: 1; left: 50.0%; top: 95.0%; transform: scale(.75); } 47.002% { opacity: 0; left: 50.0%; top: 95.0%; transform: scale(1); }
+  48.549% { opacity: 0; left: 53.0%; top: 90.8%; transform: scale(1); } 49.130% { opacity: 1; left: 50.0%; top: 86.8%; transform: scale(1); } 49.710% { opacity: 1; left: 50.0%; top: 86.8%; transform: scale(.75); } 50.290% { opacity: 0; left: 50.0%; top: 86.8%; transform: scale(1); }
+  52.805% { opacity: 0; left: 82.2%; top: 98.1%; transform: scale(1); } 53.385% { opacity: 1; left: 79.2%; top: 94.1%; transform: scale(1); } 53.965% { opacity: 1; left: 79.2%; top: 94.1%; transform: scale(.75); } 54.545% { opacity: 0; left: 79.2%; top: 94.1%; transform: scale(1); }
+  56.286% { opacity: 0; left: 29.6%; top: 28.0%; transform: scale(1); } 56.867% { opacity: 1; left: 26.6%; top: 24.0%; transform: scale(1); } 57.447% { opacity: 1; left: 26.6%; top: 24.0%; transform: scale(.75); } 58.027% { opacity: 0; left: 26.6%; top: 24.0%; transform: scale(1); }
+  58.607% { opacity: 0; left: 29.5%; top: 49.3%; transform: scale(1); } 59.188% { opacity: 1; left: 26.5%; top: 45.3%; transform: scale(1); } 59.768% { opacity: 1; left: 26.5%; top: 45.3%; transform: scale(.75); } 60.348% { opacity: 0; left: 26.5%; top: 45.3%; transform: scale(1); }
+  62.476% { opacity: 0; left: 92.6%; top: 67.7%; transform: scale(1); } 63.056% { opacity: 1; left: 89.6%; top: 63.7%; transform: scale(1); } 63.636% { opacity: 1; left: 89.6%; top: 63.7%; transform: scale(.75); } 64.217% { opacity: 0; left: 89.6%; top: 63.7%; transform: scale(1); }
+  65.377% { opacity: 0; left: 53.0%; top: 98.4%; transform: scale(1); } 65.957% { opacity: 1; left: 50.0%; top: 94.4%; transform: scale(1); } 66.538% { opacity: 1; left: 50.0%; top: 94.4%; transform: scale(.75); } 67.118% { opacity: 0; left: 50.0%; top: 94.4%; transform: scale(1); }
+  68.472% { opacity: 0; left: 53.0%; top: 83.4%; transform: scale(1); } 69.052% { opacity: 1; left: 50.0%; top: 79.4%; transform: scale(1); } 69.632% { opacity: 1; left: 50.0%; top: 79.4%; transform: scale(.75); } 70.213% { opacity: 0; left: 50.0%; top: 79.4%; transform: scale(1); }
+  71.760% { opacity: 0; left: 53.0%; top: 67.8%; transform: scale(1); } 72.340% { opacity: 1; left: 50.0%; top: 63.8%; transform: scale(1); } 72.921% { opacity: 1; left: 50.0%; top: 63.8%; transform: scale(.75); } 73.501% { opacity: 0; left: 50.0%; top: 63.8%; transform: scale(1); }
+  76.402% { opacity: 0; left: 53.0%; top: 33.8%; transform: scale(1); } 76.983% { opacity: 1; left: 50.0%; top: 29.8%; transform: scale(1); } 77.563% { opacity: 1; left: 50.0%; top: 29.8%; transform: scale(.75); } 78.143% { opacity: 0; left: 50.0%; top: 29.8%; transform: scale(1); }
+  79.691% { opacity: 0; left: 53.0%; top: 44.6%; transform: scale(1); } 80.271% { opacity: 1; left: 50.0%; top: 40.6%; transform: scale(1); } 80.851% { opacity: 1; left: 50.0%; top: 40.6%; transform: scale(.75); } 81.431% { opacity: 0; left: 50.0%; top: 40.6%; transform: scale(1); }
+  85.493% { opacity: 0; left: 53.0%; top: 99.0%; transform: scale(1); } 86.074% { opacity: 1; left: 50.0%; top: 95.0%; transform: scale(1); } 86.654% { opacity: 1; left: 50.0%; top: 95.0%; transform: scale(.75); } 87.234% { opacity: 0; left: 50.0%; top: 95.0%; transform: scale(1); }
   100% { opacity: 0; left: 50%; top: 95%; }
 }
-@media (prefers-reduced-motion: reduce) { .dl-root .dl-demo__r, .dl-root .dl-demo__bolo { display: none; } }
+@media (prefers-reduced-motion: reduce) { .dl-root .dl-demo__r, .dl-root .dl-demo__bolo, .dl-root .dl-demo__tecla { display: none; } }
