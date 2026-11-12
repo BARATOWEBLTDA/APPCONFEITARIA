@@ -2870,3 +2870,8 @@ body:has(.dl-root) { margin: 0; }
 }
 /* computador: o celular um pouco mais para a direita, tampando menos o notebook */
 @media (min-width: 1024px) { .dl-root .dl-celular { right: -4% !important; } }
+/* (12/11) fundo da abertura sem faixas/ruído: sai a luz vinho do canto de cima (era ela que fazia os degraus no topo); fica só a luz magenta larga embaixo à direita */
+.dl-root.dl-escuro .dl-hero__fundo { background: radial-gradient(90% 75% at 100% 100%, rgba(170, 18, 86, .34), rgba(170, 18, 86, 0) 72%), #0B0710 !important; }
+.dl-root.dl-escuro .dl-hero__fundo::after { content: none !important; }
+.dl-root .dl-palco__arco, .dl-root .dl-palco__sombra { display: none !important; }
+.dl-root .dl-celular::before { content: none !important; }
