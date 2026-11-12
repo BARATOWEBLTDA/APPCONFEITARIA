@@ -3333,3 +3333,10 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-cardapio .dl-vantagens__titulo, .dl-root .dl-cardapio .dl-vantagens__texto { white-space: nowrap; }
 @media (hover: hover) { .dl-root .dl-cardapio .dl-vantagens__item:hover [class*="__ic"] { box-shadow: none !important; } }
 @media (min-width: 900px) and (max-width: 1339px) { .dl-root .dl-cardapio .dl-vantagens { grid-template-columns: minmax(0, 1fr); } }
+/* (12/11) benefícios do cardápio num painel rosa mais claro; botão mais perto, branco com degradê rosa; sem a nota "Incluído no plano Grátis" */
+.dl-root .dl-cardapio .dl-vantagens { padding: clamp(18px, 2.2vw, 28px); border-radius: 24px; background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .22); }
+.dl-root .dl-cardapio__acao { margin-top: clamp(18px, 2vw, 24px) !important; }
+.dl-root .dl-cardapio .dl-btn--vinho { background: linear-gradient(135deg, #FFFFFF 0%, #FFE3EE 45%, #FFB3D1 100%); color: #B0104F; border: 0; }
+.dl-root .dl-cardapio .dl-btn--vinho:hover { background: linear-gradient(135deg, #FFFFFF 0%, #FFD6E6 40%, #FF9FC5 100%); color: #8F0B40; }
+@media (max-width: 899px) { .dl-root .dl-cardapio .dl-vantagens { gap: 16px; } }
+@media (max-width: 380px) { .dl-root .dl-cardapio .dl-vantagens { padding: 14px 12px; } .dl-root .dl-cardapio .dl-vantagens__item { gap: 10px; } .dl-root .dl-cardapio .dl-vantagens__texto { font-size: .78rem; } .dl-root .dl-cardapio .dl-vantagens__titulo { font-size: .9375rem; } }
