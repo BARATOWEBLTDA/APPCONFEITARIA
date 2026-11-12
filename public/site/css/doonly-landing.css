@@ -2784,3 +2784,25 @@ body:has(.dl-root) { margin: 0; }
 /* (11/11) computador: a barra (coroa + frase + botões) fica presa no topo ao rolar; no celular ela sobe com a página */
 @media (min-width: 900px) { .dl-root .dl-barra { position: sticky; top: 0; z-index: 70; } }
 @media (max-width: 345px) { .dl-root .dl-barra__marca { font-size: .74rem; gap: 6px; } .dl-root .dl-barra__coroa { width: 22px; } .dl-root .dl-barra__linha { padding-inline: 6px; } }
+
+/* ═══ (11/11) celular da abertura (celular e tablet): tela nova, reto e no centro, um aviso de "Pedido novo"; sem cartões, confetes e fileira de ícones ═══ */
+.dl-root .dl-aviso-cel { display: none; }
+@media (max-width: 1023px) {
+  .dl-root .dl-cartoes, .dl-root .dl-confeitos, .dl-root .dl-hero__extra { display: none !important; }
+  .dl-root .dl-celular__inclinado { transform: none !important; animation: none !important; }
+  .dl-root .dl-celular { --dl-cel-l: min(66vw, 270px) !important; margin: 0 auto !important; left: auto !important; transform: none !important; }
+  .dl-root .dl-palco { position: relative; display: flex !important; justify-content: center; padding-bottom: 8px; }
+  .dl-root .dl-hero { padding-bottom: 40px !important; }
+  .dl-root .dl-aviso-cel { position: absolute; z-index: 5; top: 16%; right: max(4%, calc(50% - 190px)); display: flex; align-items: center; gap: 10px; width: min(78vw, 300px); padding: 10px 12px; border-radius: 16px; background: rgba(255, 255, 255, .97); box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .7); color: #201625; font-family: var(--dl-fonte); animation: dl-aviso-chega .6s var(--dl-suave) 1s both; }
+  .dl-root .dl-aviso-cel img { flex: none; width: 34px; height: 34px; border-radius: 9px; }
+  .dl-root .dl-aviso-cel__tx { min-width: 0; }
+  .dl-root .dl-aviso-cel b { display: block; font-size: 13px; font-weight: 700; }
+  .dl-root .dl-aviso-cel__tx span { display: block; font-size: 12px; color: #675E6A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dl-root .dl-aviso-cel i { align-self: flex-start; margin-left: auto; font-style: normal; font-size: 11px; color: #8A808C; }
+}
+@keyframes dl-aviso-chega { from { opacity: 0; transform: translateY(-14px) scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .dl-root .dl-aviso-cel { animation: none; } }
+@media (max-width: 1023px) {
+  .dl-root .dl-traco, .dl-root .dl-hero svg.dl-traco, .dl-root [class*="dl-seta-dec"] { display: none !important; }
+  .dl-root .dl-hero .dl-subtitulo { max-width: 34em; margin-inline: auto; text-wrap: balance; }
+}
