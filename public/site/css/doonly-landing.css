@@ -2756,3 +2756,5 @@ body:has(.dl-root) { margin: 0; }
 @media (max-width: 899px) { .dl-root .dl-barra { display: none !important; } }
 /* (11/11) subtítulo novo: 4 linhas no celular, também no de 360px */
 @media (max-width: 374px) { .dl-root .dl-hero .dl-subtitulo { font-size: 15.5px; } }
+/* (11/11) celular: mais respiro entre o topo da tela e o título */
+@media (max-width: 899px) { .dl-root .dl-hero { padding-top: 76px !important; } }
