@@ -3188,3 +3188,5 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-par__hoje, .dl-root .dl-par__doonly { align-items: center; }
 .dl-root .dl-par__ic { margin-top: 0; }
 .dl-root .dl-ponte__texto em { background: none; } /* (12/11) sem a linha de destaque */
+/* (12/11) no celular "Precificação com ficha técnica" (cabe numa linha) */
+@media (max-width: 600px) { .dl-root .dl-so-pc { display: none; } }
