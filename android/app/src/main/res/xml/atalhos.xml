@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- (12/11) segurar o ícone do Doonly: atalhos para as telas mais usadas -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="novo_pedido" android:enabled="true" android:icon="@drawable/atalho_novo_pedido"
+        android:shortcutShortLabel="@string/atalho_novo_pedido" android:shortcutLongLabel="@string/atalho_novo_pedido">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="br.com.doonly.app"
+            android:targetClass="br.com.doonly.app.MainActivity" android:data="br.com.doonly.app://abrir/pedidos/novo" />
+    </shortcut>
+    <shortcut android:shortcutId="agenda" android:enabled="true" android:icon="@drawable/atalho_agenda"
+        android:shortcutShortLabel="@string/atalho_agenda" android:shortcutLongLabel="@string/atalho_agenda">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="br.com.doonly.app"
+            android:targetClass="br.com.doonly.app.MainActivity" android:data="br.com.doonly.app://abrir/agenda" />
+    </shortcut>
+    <shortcut android:shortcutId="pedidos" android:enabled="true" android:icon="@drawable/atalho_pedidos"
+        android:shortcutShortLabel="@string/atalho_pedidos" android:shortcutLongLabel="@string/atalho_pedidos">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="br.com.doonly.app"
+            android:targetClass="br.com.doonly.app.MainActivity" android:data="br.com.doonly.app://abrir/pedidos" />
+    </shortcut>
+</shortcuts>

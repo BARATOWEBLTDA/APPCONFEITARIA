@@ -4,4 +4,7 @@
     <string name="title_activity_main">Doonly</string>
     <string name="package_name">br.com.doonly.app</string>
     <string name="custom_url_scheme">br.com.doonly.app</string>
+    <string name="atalho_novo_pedido">Novo pedido</string>
+    <string name="atalho_agenda">Agenda</string>
+    <string name="atalho_pedidos">Pedidos</string>
 </resources>

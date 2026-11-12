@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { noAppDaLoja } from "@/lib/plataforma";
+import { entrarComGoogleNoApp } from "@/lib/nativoApp";
 
 /**
  * Login com Google SEM sair do app (02/10).
@@ -52,10 +54,17 @@ type Props = {
 
 export default function BotaoGoogle({ modo = "continue_with", textoReserva, destino = "/inicio", desativado = false }: Props) {
   const caixa = useRef<HTMLDivElement>(null);
-  const [usarReserva, setUsarReserva] = useState(!CLIENT_ID || typeof crypto?.subtle === "undefined");
+  // (12/11) no app da Play Store o Google bloqueia o login dentro do app: vai pelo navegador do sistema e volta pro app
+  const [usarReserva, setUsarReserva] = useState(noAppDaLoja || !CLIENT_ID || typeof crypto?.subtle === "undefined");
   const [entrando, setEntrando] = useState(false);
 
   const entrarPeloJeitoAntigo = async () => {
+    if (noAppDaLoja) {
+      setEntrando(true);
+      try { await entrarComGoogleNoApp(destino); } catch (e) { console.error("Login Google no app:", e); }
+      setEntrando(false);
+      return;
+    }
     await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin + destino } });
   };
 

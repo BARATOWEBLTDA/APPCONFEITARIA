@@ -16,7 +16,11 @@
     </style>
 
 
+    <!-- (12/11) abertura do app: fundo rosa do Doonly com o mascote (Android 12+ usa o ícone; antes, a imagem splash) -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <item name="windowSplashScreenBackground">@color/doonly_splash</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>

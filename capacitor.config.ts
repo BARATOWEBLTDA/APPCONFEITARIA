@@ -20,6 +20,11 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: false,
   },
+  plugins: {
+    // (12/11) a abertura rosa fica até a primeira tela do site aparecer (src/lib/abertura.ts chama SplashScreen.hide)
+    SplashScreen: { launchAutoHide: true, launchShowDuration: 8000, backgroundColor: "#E164A0", showSpinner: false, androidScaleType: "CENTER_CROP" },
+    PushNotifications: { presentationOptions: ["badge", "sound", "alert"] },
+  },
 };
 
 export default config;

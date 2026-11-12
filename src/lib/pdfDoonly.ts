@@ -191,8 +191,10 @@ if(document.readyState==="complete")vai();else window.addEventListener("load",va
  */
 const compartilharPdf = (titulo: string) => `(function(){
 var b=document.getElementById("bt-share"),pr=document.getElementById("bt-print");if(!b)return;
-var pode=false;try{pode=!!((window.__querCompartilhar||(window.matchMedia&&matchMedia("(pointer: coarse)").matches))&&navigator.canShare&&navigator.canShare({files:[new File(["x"],"a.pdf",{type:"application/pdf"})]}))}catch(e){}
-if(!pode){if(window.__querCompartilhar){var d0=document.getElementById("bt-dica");if(d0){d0.textContent="Salve o PDF e envie pelo WhatsApp Web (anexar documento)";d0.style.display=""}}return;}window.__compartilha=true;b.style.display="";var dc=document.getElementById("bt-dica");if(dc)dc.style.display="";b.parentNode.className+=" dois";if(pr)pr.textContent="Imprimir";
+var app=false;try{app=!!(window.parent&&window.parent!==window&&window.parent.__doonlyApp)}catch(e){}
+var nav=app?window.parent.navigator:navigator;
+var pode=false;try{pode=app||!!((window.__querCompartilhar||(window.matchMedia&&matchMedia("(pointer: coarse)").matches))&&navigator.canShare&&navigator.canShare({files:[new File(["x"],"a.pdf",{type:"application/pdf"})]}))}catch(e){}
+if(!pode){if(window.__querCompartilhar){var d0=document.getElementById("bt-dica");if(d0){d0.textContent="Salve o PDF e envie pelo WhatsApp Web (anexar documento)";d0.style.display=""}}return;}window.__compartilha=true;b.style.display="";var dc=document.getElementById("bt-dica");if(dc)dc.style.display="";if(app){if(pr)pr.style.display="none";if(dc)dc.textContent="Toque em Enviar PDF: WhatsApp, salvar no celular ou imprimir"}else{b.parentNode.className+=" dois";if(pr)pr.textContent="Imprimir"}
 var nome=${JSON.stringify(titulo.replace(/[\\/:*?"<>|]+/g, " ").trim() || "Documento").replace(/</g, "\\u003c")}+".pdf",arq=null;
 function pronto(f){arq=f;b.disabled=false;b.textContent="Enviar PDF"}
 function falhou(){b.textContent="Não deu para montar o PDF";b.disabled=true;window.__compartilha=false}
@@ -200,7 +202,7 @@ function monta(){var el=document.querySelector(".pg");var fn=document.fonts&&doc
 fn.then(function(){return window.html2pdf().set({margin:[8,6,10,6],filename:nome,image:{type:"jpeg",quality:.95},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css","legacy"],avoid:[".card:not(.tab)","tr",".kpis"]}}).from(el).outputPdf("blob")})
 .then(function(bl){pronto(new File([bl],nome,{type:"application/pdf"}))},falhou)}
 var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";s.onload=monta;s.onerror=falhou;document.head.appendChild(s);
-b.onclick=function(){if(!arq)return;navigator.share({files:[arq],title:nome.replace(/\.pdf$/,"")}).catch(function(){})};
+b.onclick=function(){if(!arq)return;nav.share({files:[arq],title:nome.replace(/\.pdf$/,"")}).catch(function(){})};
 })();`;
 
 const MARGEM = `font-family: "Poppins", sans-serif; font-size: 8px; font-weight: 400; color: #8A7F84;`;

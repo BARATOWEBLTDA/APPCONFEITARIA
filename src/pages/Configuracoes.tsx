@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { digitosTelefone } from "@/lib/telefone";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, WhatsappLogo, Bug, Lightbulb, SignOut, User, WarningCircle, MagnifyingGlass, ShieldCheck } from "@phosphor-icons/react";
+import { Bell, CaretRight, Crown, DownloadSimple, DeviceMobile, ArrowsClockwise, FileText, WhatsappLogo, Bug, Lightbulb, SignOut, Fingerprint, User, WarningCircle, MagnifyingGlass, ShieldCheck } from "@phosphor-icons/react";
 import { isStandalone, getInstallPrompt, promptInstall } from "@/lib/installPrompt";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -19,6 +19,8 @@ import { VERSAO_APP } from "@/lib/versao";
 import { recarregarLimpo } from "@/lib/recarregarLimpo";
 import JanelaSair from "@/components/JanelaSair";
 import "./configuracoes.css";
+import { noAppDaLoja } from "@/lib/plataforma";
+import { digitalLigada, digitalDisponivel, alternarDigital } from "@/lib/nativoApp";
 
 /**
  * Configurações (09/10 · 3.55, no padrão do guia). Um layout só pro celular e pro computador:
@@ -125,6 +127,9 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
   const [excluirOpen, setExcluirOpen] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
   const [excluindo, setExcluindo] = useState(false);
+  const [temDigital, setTemDigital] = useState(false);
+  const [comDigital, setComDigital] = useState(() => digitalLigada());
+  useEffect(() => { if (noAppDaLoja) void digitalDisponivel().then(setTemDigital); }, []);
 
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
@@ -329,6 +334,9 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
             {verApp && <div className="cf9-grupo">
             {largo && <h2 className="cf9-sec">App</h2>}
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
+            {/* (12/11) só no app da Play Store: abrir o app com a digital */}
+            {temDigital && <ItemConfig icone={<Fingerprint size={20} weight="bold" />} nome="Entrar com a digital" apoio={comDigital ? "Ligado: pede ao abrir o app" : "Desligado"} destaque={comDigital}
+              onClick={async () => { const ok = await alternarDigital(); setComDigital(ok); if (ok) avisar("Pronto! O app vai pedir a digital ao abrir."); }} />}
             {/* (10/11) saiu do Menu do celular: é uma configuração que ela ajusta uma vez */}
             {/* (10/11) Instalar e Atualizar viraram 1 linha; sem o app instalado, a frase convida a instalar */}
             <ItemConfig icone={<DeviceMobile size={20} weight="bold" />} nome={largo ? "Sobre o app" : "Atualizar o app"}

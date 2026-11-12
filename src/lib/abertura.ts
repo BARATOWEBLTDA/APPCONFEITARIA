@@ -14,6 +14,8 @@ let fechando = false
 function fechar() {
   if (fechando) return
   fechando = true
+  // (12/11) app da Play Store: a abertura rosa nativa some junto
+  if (/DoonlyApp/.test(navigator.userAgent || '')) import('./nativoApp').then(m => m.esconderSplash()).catch(() => {})
   const el = document.getElementById('abertura')
   if (!el) return
   el.classList.add('saindo')

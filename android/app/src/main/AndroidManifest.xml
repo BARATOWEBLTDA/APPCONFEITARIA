@@ -18,6 +18,32 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- (12/11) volta do login com o Google e atalhos do ícone: br.com.doonly.app://login e br.com.doonly.app://abrir/... -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="br.com.doonly.app" />
+            </intent-filter>
+
+            <!-- (12/11) links do doonly.com.br abrem no app (confirmado pelo /.well-known/assetlinks.json do site) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="doonly.com.br" />
+                <data android:pathPrefix="/inicio" />
+                <data android:pathPrefix="/pedidos" />
+                <data android:pathPrefix="/agenda" />
+                <data android:pathPrefix="/orcamentos" />
+                <data android:pathPrefix="/notificacoes" />
+                <data android:pathPrefix="/financeiro" />
+                <data android:pathPrefix="/clientes" />
+                <data android:pathPrefix="/topo" />
+            </intent-filter>
+
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/atalhos" />
         </activity>
 
         <!-- (12/11) avisos do Firebase: ícone branco e canal "Pedidos" (criado pelo app ao abrir) -->

@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { definirNumeroNoIcone } from "@/lib/nativoApp";
 import { TOQUES, alertaPedidoHabilitado, toqueEscolhido, tocarToque } from "@/hooks/useSom";
 
 const CHAVE_VISTO = "doonly_pedidos_visto_em";
@@ -33,6 +34,9 @@ export default function AlertaPedidoNovo({ uid }: { uid?: string | null }) {
   const [naoVistos, setNaoVistos] = useState(0);
   const vivo = useRef(true);
   const ultimoNaoVistos = useRef(0);
+
+  // (12/11) app da Play Store: o mesmo número aparece no ícone do app
+  useEffect(() => { definirNumeroNoIcone(naoVistos); }, [naoVistos]);
 
   // abriu Pedidos: tudo o que chegou até agora conta como visto
   useEffect(() => { if (naTelaPedidos) { void marcarVisto(uid); setNaoVistos(0); } }, [naTelaPedidos, pathname, uid]);

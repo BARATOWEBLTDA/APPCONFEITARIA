@@ -50,6 +50,8 @@ export async function promptInstall(): Promise<boolean> {
 /** Já está rodando como app instalado? */
 export function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
+  // (12/11) o app da Play Store já é o app instalado: nunca convida a instalar
+  if (/DoonlyApp/.test(navigator.userAgent || "")) return true;
   return window.matchMedia?.("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 }
 

@@ -48,6 +48,8 @@ createRoot(document.getElementById('root')!).render(
 
 // Abertura: some quando a primeira tela está pronta (sem espera fixa)
 iniciarAbertura()
+// (12/11) app da Play Store: links, atalhos do ícone e volta do login com o Google (no site nada disso carrega)
+if (typeof navigator !== 'undefined' && /DoonlyApp/.test(navigator.userAgent || '')) import('./lib/nativoApp').then(m => m.iniciarNativo()).catch(() => {})
 
 // iPhone: barras de botões sobem junto com o teclado
 iniciarMedidaDoTeclado()
