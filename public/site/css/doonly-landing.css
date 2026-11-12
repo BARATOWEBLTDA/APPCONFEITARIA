@@ -2781,3 +2781,6 @@ body:has(.dl-root) { margin: 0; }
 @media (max-width: 380px) { .dl-root .dl-barra__marca { font-size: .8125rem; } }
 .dl-root .dl-barra__coroa { flex: none; display: block; width: 30px; height: auto; }
 @media (max-width: 899px) { .dl-root .dl-barra__coroa { width: 26px; } }
+/* (11/11) computador: a barra (coroa + frase + botões) fica presa no topo ao rolar; no celular ela sobe com a página */
+@media (min-width: 900px) { .dl-root .dl-barra { position: sticky; top: 0; z-index: 70; } }
+@media (max-width: 345px) { .dl-root .dl-barra__marca { font-size: .74rem; gap: 6px; } .dl-root .dl-barra__coroa { width: 22px; } .dl-root .dl-barra__linha { padding-inline: 6px; } }
