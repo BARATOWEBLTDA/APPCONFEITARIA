@@ -254,5 +254,9 @@
     var black = barra.querySelector('.dl-barra__black'), normal = barra.querySelector('.dl-barra__normal');
     if (black) { black.hidden = true; }
     if (normal) { normal.hidden = false; }
+    var tag = barra.querySelector('.dl-barra__tag'), btB = barra.querySelector('.dl-barra__bt-black'), btN = barra.querySelector('.dl-barra__bt-normal');
+    if (tag) { tag.hidden = true; }
+    if (btB) { btB.hidden = true; }
+    if (btN) { btN.hidden = false; }
   }
 })();

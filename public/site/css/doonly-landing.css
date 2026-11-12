@@ -2707,3 +2707,45 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-barra__bt { padding: 5px 8px; }
   .dl-root .dl-barra__bt span { display: none; }
 }
+
+/* ═══ (11/11) barra da Black no estilo do Dora: mais alta, oferta no meio, "Aproveitar agora" + "Entrar" no canto; o topo de baixo sai ═══ */
+.dl-root .dl-cabecalho { display: none !important; }
+.dl-root .dl-barra { display: block; min-height: 0; padding: 0; }
+.dl-root .dl-barra__linha { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; }
+.dl-root .dl-barra__black, .dl-root .dl-barra__normal { flex: 1; justify-content: center; min-width: 0; }
+.dl-root .dl-barra__black b { color: #FF7DAE; }
+.dl-root .dl-barra__acoes { display: inline-flex; align-items: center; gap: 18px; }
+.dl-root .dl-barra__bt { gap: 8px; padding: 10px 16px; font-size: .9375rem; border-radius: 10px; }
+.dl-root .dl-barra__bt [hidden], .dl-root .dl-barra__tag[hidden] { display: none; }
+.dl-root .dl-barra__entrar { display: inline-flex; align-items: center; gap: 8px; padding-left: 18px; border-left: 1px solid rgba(255, 255, 255, .14); color: rgba(255, 248, 250, .85); font-weight: 500; font-size: .9375rem; text-decoration: none; white-space: nowrap; }
+.dl-root .dl-barra__entrar:hover { color: #fff; }
+.dl-root .dl-barra__txt { font-size: .9375rem; }
+@media (max-width: 899px) {
+  .dl-root .dl-barra__linha { min-height: 56px; gap: 8px; padding-inline: 12px; }
+  .dl-root .dl-barra__entrar { display: none; }
+  .dl-root .dl-barra__txt { font-size: .8125rem; }
+  .dl-root .dl-barra__bt { padding: 8px 12px; font-size: .8125rem; }
+}
+@media (max-width: 380px) {
+  .dl-root .dl-barra__linha { gap: 6px; padding-inline: 8px; }
+  .dl-root .dl-barra__txt { font-size: .75rem; }
+  .dl-root .dl-barra__bt { padding: 7px 9px; font-size: .75rem; }
+  .dl-root .dl-barra__bt .dl-ico { display: none; }
+}
+/* a abertura deixa de descontar a altura do topo que saiu */
+.dl-root .dl-hero { padding-top: clamp(40px, 6vw, 88px) !important; }
+.dl-root .dl-hero { margin-top: 0 !important; }
+@media (max-width: 380px) { .dl-root .dl-barra__bt span { display: inline; } .dl-root .dl-barra__bt [hidden], .dl-root .dl-barra__bt .dl-barra__so-pc { display: none; } }
+@media (max-width: 380px) {
+  .dl-root .dl-barra__linha { gap: 8px; padding-inline: 8px; }
+  .dl-root .dl-barra__tag { font-size: .5625rem; padding: 3px 5px; letter-spacing: .02em; }
+  .dl-root .dl-barra__txt { font-size: .6875rem; }
+  .dl-root .dl-barra__bt { padding: 7px 8px; font-size: .6875rem; }
+}
+@media (max-width: 600px) and (min-width: 381px) {
+  .dl-root .dl-barra__linha { gap: 10px; padding-inline: 12px; }
+  .dl-root .dl-barra__tag { font-size: .625rem; padding: 3px 6px; letter-spacing: .03em; }
+  .dl-root .dl-barra__txt { font-size: .75rem; }
+  .dl-root .dl-barra__bt { padding: 8px 10px; font-size: .75rem; }
+}
+@media (max-width: 600px) { .dl-root .dl-barra__bt .dl-ico { display: none; } }
