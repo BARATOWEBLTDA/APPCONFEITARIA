@@ -1,0 +1,58 @@
+# (12/11) Gera o app Android do Doonly (Capacitor).
+#  - doonly-teste.apk: para instalar direto no celular e testar (sempre).
+#  - doonly-playstore.aab: para enviar na Play Store (quando os segredos da chave estão configurados no GitHub).
+# Roda sozinho quando muda algo do app Android, ou pelo botão "Run workflow" na aba Actions.
+name: App Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "android/**"
+      - "capacitor.config.ts"
+      - "capacitor-web/**"
+      - ".github/workflows/android.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npx cap sync android
+      - name: Chave da Play Store
+        env:
+          KEYSTORE_B64: ${{ secrets.DOONLY_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/doonly-upload.jks"
+            echo "DOONLY_KEYSTORE=$RUNNER_TEMP/doonly-upload.jks" >> "$GITHUB_ENV"
+          fi
+      - name: Gerar APK de teste e AAB da Play Store
+        working-directory: android
+        env:
+          DOONLY_KEYSTORE_SENHA: ${{ secrets.DOONLY_KEYSTORE_SENHA }}
+          DOONLY_KEY_ALIAS: ${{ secrets.DOONLY_KEY_ALIAS }}
+          DOONLY_KEY_SENHA: ${{ secrets.DOONLY_KEY_SENHA }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          if [ -n "$DOONLY_KEYSTORE" ]; then ./gradlew bundleRelease; fi
+      - run: |
+          mkdir -p saida
+          cp android/app/build/outputs/apk/debug/app-debug.apk saida/doonly-teste.apk
+          if [ -f android/app/build/outputs/bundle/release/app-release.aab ]; then cp android/app/build/outputs/bundle/release/app-release.aab saida/doonly-playstore.aab; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doonly-android-${{ github.run_number }}
+          path: saida/

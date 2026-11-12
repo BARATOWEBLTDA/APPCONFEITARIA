@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Crown, Lock, CaretDown, CaretRight, Check } from "@phosphor-icons/react";
 import { BENEFICIOS, CTA_PRO, DIAS_TESTE, PRECO_PRO, SELO_TESTE } from "@/lib/beneficiosPro";
+import { noAppDaLoja } from "@/lib/plataforma";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Titulo } from "@/components/base";
@@ -119,7 +120,7 @@ export default function Assinar() {
           <div>
             <h1>Sua confeitaria mais lucrativa e organizada</h1>
             <p>Ferramentas que vendem, calculam e organizam por você.</p>
-            <span className="pro9-selo">{SELO_TESTE} para testar</span>
+            {!noAppDaLoja && <span className="pro9-selo">{SELO_TESTE} para testar</span>}
           </div>
         </section>
 
@@ -127,6 +128,12 @@ export default function Assinar() {
         <div className="pro9-grade">
           {/* (21/10) celular: a oferta (preço) sobe pra logo depois do topo, antes da lista */}
           <aside className="pro9-lado">
+            {noAppDaLoja ? (
+              <section className="cl9-card pro9-oferta">
+                <b className="pro9-oferta-t">Plano PRO</b>
+                <p className="pro9-oferta-s">A assinatura do PRO não está disponível pelo app. Se você já é PRO, tudo fica liberado aqui automaticamente.</p>
+              </section>
+            ) : (
             <section className="cl9-card pro9-oferta">
               <span className="pro9-desc">Hoje você não paga nada</span>
               <b className="pro9-oferta-t">Plano PRO mensal</b>
@@ -135,7 +142,8 @@ export default function Assinar() {
               <Botao cheio icone={<Crown size={20} weight="fill" />} onClick={assinarNaHotmart}>{CTA_PRO}</Botao>
               <p className="pro9-seg"><Lock size={14} weight="bold" /> Pagamento seguro pela Hotmart</p>
             </section>
-            {computador && duvidas}
+            )}
+            {computador && !noAppDaLoja && duvidas}
           </aside>
 
           <section className="cl9-card pro9-lista">
@@ -148,13 +156,13 @@ export default function Assinar() {
               </div>
             ))}
           </section>
-          {!computador && duvidas}
+          {!computador && !noAppDaLoja && duvidas}
         </div>
       </div>
       )}
 
       {/* Celular: botão fixo pra assinar sem rolar até o fim */}
-      {!isPro && (
+      {!isPro && !noAppDaLoja && (
         <div className="pro9-fixo">
           <span><small>Depois, {PRECO_CHEIO}/mês</small><b>{SELO_TESTE}</b></span>
           <Botao onClick={assinarNaHotmart}>Testar grátis</Botao>

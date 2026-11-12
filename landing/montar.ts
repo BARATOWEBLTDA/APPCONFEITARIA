@@ -37,7 +37,8 @@ fbq('track', 'PageView');
 /* app instalado no celular (o iPhone guarda o endereço de quando instalou) ou quem já está logada: vai direto para o app */
 (function(){try{var app=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 var logada=Object.keys(localStorage).some(function(k){return k.indexOf('sb-')===0&&k.indexOf('auth-token')>0&&localStorage.getItem(k)});
-if((app||logada)&&!/[?&]site=1/.test(location.search))location.replace('/inicio'+location.search+location.hash);}catch(e){}})();
+var loja=/DoonlyApp/.test(navigator.userAgent);
+if((app||logada||loja)&&!/[?&]site=1/.test(location.search))location.replace('/inicio'+location.search+location.hash);}catch(e){}})();
 </script>
 <title>${TITULO}</title>
 ${head}

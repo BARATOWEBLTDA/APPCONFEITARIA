@@ -1,3 +1,4 @@
+import { noAppDaLoja } from "@/lib/plataforma";
 import { COMO_ASSINATURA, TOUR_ASSINATURA } from "@/lib/comoTelas";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -121,11 +122,13 @@ export default function MinhaAssinatura() {
             <span className="mas-op-tx"><b>Dúvidas ou cancelamento</b><small>WhatsApp da equipe Doonly</small></span>
             <CaretRight size={18} weight="bold" className="mas-op-s" aria-hidden="true" />
           </button>
+          {!noAppDaLoja && (
           <a className="mas-op" href={HOTMART_COMPRAS} target="_blank" rel="noopener noreferrer">
             <span className="mas-op-ic"><Receipt size={20} weight="fill" /></span>
             <span className="mas-op-tx"><b>Pagamentos e recibos</b><small>Área de compras da Hotmart</small></span>
             <CaretRight size={18} weight="bold" className="mas-op-s" aria-hidden="true" />
           </a>
+          )}
         </section>
       </div>
       <style>{`
