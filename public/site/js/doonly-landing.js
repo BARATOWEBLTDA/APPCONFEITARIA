@@ -178,7 +178,7 @@
   var box=document.querySelector('.dl-rola2'); var fonte=document.querySelector('.dl-rolando'); var navF=document.querySelector('.dl-rolando__nav');
   if(!box||!fonte) return;
   var img=box.querySelector('.dl-rola2__img'), topo=box.querySelector('.dl-rola2__topo'), nav=box.querySelector('.dl-rola2__nav');
-  img.src=fonte.currentSrc||fonte.src; if(navF) nav.src=navF.src;
+  var fImg=fonte.tagName==='IMG'?fonte:fonte.querySelector('img'); img.src=fImg?(fImg.currentSrc||fImg.src):''; if(navF) nav.src=navF.src;
   var anim=null, parado=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches, visivel=false;
   function monta(){
     if(!img.naturalWidth||!box.clientWidth) return;

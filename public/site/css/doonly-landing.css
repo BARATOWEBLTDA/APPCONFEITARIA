@@ -3215,3 +3215,17 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-recursos .dl-func:hover .dl-func__ic { box-shadow: none; }
 }
 .dl-root .dl-recursos .dl-passo4__tela { background: transparent; } /* (12/11) mesmo fundo do cartão atrás das animações */
+
+/* ═══ (12/11) "Um cardápio lindo, pronto para vender" em rosa chiclete do Doonly, com a passagem do escuro ondulada ═══ */
+.dl-root .dl-secao--rosa.dl-cardapio { background: #F42C7A !important; color: #fff; padding-top: calc(clamp(72px, 9.5vw, 148px) + clamp(28px, 4vw, 56px)); }
+.dl-root .dl-onda { position: absolute; z-index: 1; left: 0; top: -1px; width: 100%; height: clamp(32px, 5vw, 80px); fill: #0B0710; pointer-events: none; }
+.dl-root .dl-cardapio .dl-h2 { color: #fff; }
+.dl-root .dl-cardapio .dl-h2__vinho { color: #3D0820; }
+.dl-root .dl-secao--rosa.dl-cardapio .dl-olho { color: rgba(255, 255, 255, .88); }
+.dl-root .dl-secao--rosa.dl-cardapio .dl-lead { color: rgba(255, 255, 255, .92); }
+.dl-root .dl-cardapio .dl-vantagens__titulo { color: #fff; }
+.dl-root .dl-cardapio .dl-vantagens__texto { color: rgba(255, 255, 255, .84); }
+.dl-root .dl-cardapio .dl-vantagens__icone { background: rgba(255, 255, 255, .16); color: #fff; border-color: transparent; box-shadow: none; }
+.dl-root .dl-cardapio__acao .dl-nota, .dl-root .dl-cardapio__acao .dl-nota .dl-ico { color: #fff; }
+.dl-root .dl-cardapio .dl-btn--vinho { background: #fff; color: #C8125C; border-color: #fff; box-shadow: none; }
+.dl-root .dl-cardapio .dl-btn--vinho:hover { background: #FFE6F0; color: #A80E4D; }
