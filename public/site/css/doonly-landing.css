@@ -3316,3 +3316,13 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-bolos__preco s { display: inline; } .dl-root .dl-bolos__preco b { font-size: .9375rem; }
 }
 @media (max-width: 340px) { .dl-root .dl-bolos__preco s { display: none; } .dl-root .dl-bolos__desc { font-size: .75rem; } }
+/* (12/11) mascote parado (sem o efeito de balançar) */
+.dl-root .dl-recursos__mascote { animation: none !important; transform: none !important; }
+/* (12/11) funcionalidades: lista com check, sem os ícones */
+.dl-root .dl-funcs3 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 1000px; margin: 0 auto; padding: 6px; list-style: none; border: 1px solid rgba(255, 255, 255, .08); border-radius: 22px; background: #1A1220; }
+.dl-root .dl-funcs3__item { display: flex; align-items: center; gap: 10px; min-width: 0; margin: 0; padding: 14px 12px; color: #FFF6EE; font-size: .9375rem; font-weight: 600; line-height: 1.2; white-space: nowrap; }
+.dl-root .dl-funcs3__ck { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #F42C7A; color: #fff; }
+@media (min-width: 760px) { .dl-root .dl-funcs3 { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 10px 14px; } .dl-root .dl-funcs3__item { padding: 16px 14px; font-size: 1rem; } }
+@media (min-width: 1024px) { .dl-root .dl-funcs3 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 430px) { .dl-root .dl-funcs3__item { gap: 8px; padding: 13px 8px; font-size: .875rem; } .dl-root .dl-funcs3__ck { width: 20px; height: 20px; } }
+@media (max-width: 359px) { .dl-root .dl-funcs3__item { font-size: .78rem; padding-inline: 6px; } }
