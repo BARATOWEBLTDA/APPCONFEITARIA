@@ -1704,7 +1704,7 @@ body:has(.dl-root.dl-escuro) { background: #140D1A; }
 }
 .dl-root .dl-financeiro__visual .dl-fone { z-index: 1; --dl-fone-l: clamp(210px, 23vw, 310px); margin-bottom: 8px; }
 
-.dl-root .dl-demo {
+.dl-root .dl-fin {
   position: relative;
   z-index: 2;
   width: 100%;
@@ -1716,22 +1716,22 @@ body:has(.dl-root.dl-escuro) { background: #140D1A; }
   box-shadow: 0 30px 50px -28px rgba(var(--dl-vinho-rgb), .5);
   color: var(--dl-texto);
 }
-.dl-root .dl-demo__topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 6px; }
-.dl-root .dl-demo__topo strong { color: var(--dl-vinho-escuro); font-size: 1rem; font-weight: 700; letter-spacing: -.01em; }
-.dl-root .dl-demo__etiqueta { padding: 4px 9px; border-radius: 999px; background: var(--dl-vinho-escuro); color: #fff; font-size: .625rem; font-weight: 700; letter-spacing: .1em; line-height: 1.2; text-transform: uppercase; }
-.dl-root .dl-demo__linhas li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #F5F0F2; }
-.dl-root .dl-demo__bola { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--dl-rosa-claro); }
-.dl-root .dl-demo__linhas i { flex: 1; height: 7px; border-radius: 4px; background: #EFE4E8; }
-.dl-root .dl-demo__estado { flex: none; padding: 5px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; line-height: 1.2; }
-.dl-root .dl-demo__estado--ok { background: #DCFCE7; color: #15803D; }
-.dl-root .dl-demo__estado--meio { background: #FEF3C7; color: #B45309; }
-.dl-root .dl-demo__estado--falta { background: var(--dl-rosa-claro); color: var(--dl-rosa-escuro); }
-.dl-root .dl-demo__receita { margin: 0 0 4px; color: var(--dl-texto-2); font-size: .875rem; font-weight: 600; }
-.dl-root .dl-demo__ingredientes li { display: grid; grid-template-columns: minmax(0, 1fr) auto 44px; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid #F5F0F2; font-size: .875rem; line-height: 1.2; }
-.dl-root .dl-demo__ingredientes em { color: var(--dl-vinho-escuro); font-style: normal; font-weight: 600; }
-.dl-root .dl-demo__ingredientes i { height: 7px; border-radius: 4px; background: #EFE4E8; }
-.dl-root .dl-demo__total { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 0; padding-top: 12px; border-top: 1.5px dashed #EBC3CF; color: var(--dl-vinho-escuro); font-size: .9375rem; font-weight: 700; }
-.dl-root .dl-demo__total i { width: 72px; height: 12px; border-radius: 6px; background: var(--dl-rosa); }
+.dl-root .dl-fin__topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 6px; }
+.dl-root .dl-fin__topo strong { color: var(--dl-vinho-escuro); font-size: 1rem; font-weight: 700; letter-spacing: -.01em; }
+.dl-root .dl-fin__etiqueta { padding: 4px 9px; border-radius: 999px; background: var(--dl-vinho-escuro); color: #fff; font-size: .625rem; font-weight: 700; letter-spacing: .1em; line-height: 1.2; text-transform: uppercase; }
+.dl-root .dl-fin__linhas li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #F5F0F2; }
+.dl-root .dl-fin__bola { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--dl-rosa-claro); }
+.dl-root .dl-fin__linhas i { flex: 1; height: 7px; border-radius: 4px; background: #EFE4E8; }
+.dl-root .dl-fin__estado { flex: none; padding: 5px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; line-height: 1.2; }
+.dl-root .dl-fin__estado--ok { background: #DCFCE7; color: #15803D; }
+.dl-root .dl-fin__estado--meio { background: #FEF3C7; color: #B45309; }
+.dl-root .dl-fin__estado--falta { background: var(--dl-rosa-claro); color: var(--dl-rosa-escuro); }
+.dl-root .dl-fin__receita { margin: 0 0 4px; color: var(--dl-texto-2); font-size: .875rem; font-weight: 600; }
+.dl-root .dl-fin__ingredientes li { display: grid; grid-template-columns: minmax(0, 1fr) auto 44px; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid #F5F0F2; font-size: .875rem; line-height: 1.2; }
+.dl-root .dl-fin__ingredientes em { color: var(--dl-vinho-escuro); font-style: normal; font-weight: 600; }
+.dl-root .dl-fin__ingredientes i { height: 7px; border-radius: 4px; background: #EFE4E8; }
+.dl-root .dl-fin__total { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 0; padding-top: 12px; border-top: 1.5px dashed #EBC3CF; color: var(--dl-vinho-escuro); font-size: .9375rem; font-weight: 700; }
+.dl-root .dl-fin__total i { width: 72px; height: 12px; border-radius: 6px; background: var(--dl-rosa); }
 
 .dl-root .dl-trio { display: grid; gap: clamp(18px, 2vw, 26px); margin: clamp(28px, 3vw, 44px) 0 0; padding: 0; list-style: none; }
 .dl-root .dl-trio__item { display: flex; align-items: flex-start; gap: 16px; }
@@ -1744,9 +1744,9 @@ body:has(.dl-root.dl-escuro) { background: #140D1A; }
   .dl-root .dl-financeiro__visual { display: grid; place-items: center; min-height: clamp(520px, 54vw, 700px); padding: 0; }
   .dl-root .dl-financeiro__painel { inset: 7% 12%; height: auto; }
   .dl-root .dl-financeiro__visual .dl-fone { margin: 0; }
-  .dl-root .dl-demo { position: absolute; width: clamp(220px, 22vw, 290px); }
-  .dl-root .dl-demo--receber { left: -2%; top: 30%; transform: rotate(-3deg); }
-  .dl-root .dl-demo--ficha { right: -2%; bottom: 6%; transform: rotate(2.5deg); }
+  .dl-root .dl-fin { position: absolute; width: clamp(220px, 22vw, 290px); }
+  .dl-root .dl-fin--receber { left: -2%; top: 30%; transform: rotate(-3deg); }
+  .dl-root .dl-fin--ficha { right: -2%; bottom: 6%; transform: rotate(2.5deg); }
 }
 @media (min-width: 1024px) {
   .dl-root .dl-financeiro__grade { grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr); }
@@ -2039,12 +2039,12 @@ body:has(.dl-root.dl-escuro) { background: #140D1A; }
 }
 
 /* (26/10) cartões com números de verdade no lugar das barrinhas, e a seção de Orçamentos */
-.dl-root .dl-demo__bola { display: grid; place-items: center; color: var(--dl-rosa-escuro); font-size: .6875rem; font-weight: 700; }
-.dl-root .dl-demo__nome { flex: 1; min-width: 0; display: grid; color: var(--dl-vinho-escuro); font-size: .875rem; font-weight: 600; line-height: 1.2; white-space: nowrap; }
-.dl-root .dl-demo__nome small { color: var(--dl-texto-2); font-size: .75rem; font-weight: 500; }
-.dl-root .dl-demo__ingredientes li { grid-template-columns: minmax(0, 1fr) auto auto; }
-.dl-root .dl-demo__ingredientes b { color: var(--dl-vinho-escuro); font-weight: 600; white-space: nowrap; }
-.dl-root .dl-demo__total b { color: #15803D; font-weight: 700; }
+.dl-root .dl-fin__bola { display: grid; place-items: center; color: var(--dl-rosa-escuro); font-size: .6875rem; font-weight: 700; }
+.dl-root .dl-fin__nome { flex: 1; min-width: 0; display: grid; color: var(--dl-vinho-escuro); font-size: .875rem; font-weight: 600; line-height: 1.2; white-space: nowrap; }
+.dl-root .dl-fin__nome small { color: var(--dl-texto-2); font-size: .75rem; font-weight: 500; }
+.dl-root .dl-fin__ingredientes li { grid-template-columns: minmax(0, 1fr) auto auto; }
+.dl-root .dl-fin__ingredientes b { color: var(--dl-vinho-escuro); font-weight: 600; white-space: nowrap; }
+.dl-root .dl-fin__total b { color: #15803D; font-weight: 700; }
 .dl-root .dl-lembrete__textos em { color: var(--dl-texto-2); font-size: .8125rem; font-style: normal; font-weight: 500; white-space: nowrap; }
 .dl-root .dl-lembrete__icone--ok { background: #DCFCE7; color: #15803D; }
 .dl-root .dl-recurso__pro { margin-left: 4px; color: var(--dl-rosa-escuro); font-size: .6875rem; font-weight: 800; letter-spacing: .08em; }
@@ -2402,7 +2402,7 @@ html.dl-sem-rolagem { overflow: hidden; overscroll-behavior: none; }
 @media (max-width: 599px) { .dl-root .dl-funcs__titulo, .dl-root .dl-recursos .dl-cabeca { text-align: center; } }
 
 /* financeiro sem o celular: os dois cartões de exemplo ficam soltos */
-.dl-root .dl-financeiro__visual .dl-demo { position: relative; inset: auto; transform: none; width: 100%; max-width: 380px; margin: 0 auto; }
+.dl-root .dl-financeiro__visual .dl-fin { position: relative; inset: auto; transform: none; width: 100%; max-width: 380px; margin: 0 auto; }
 .dl-root .dl-financeiro__visual { display: grid; gap: 16px; align-content: center; justify-items: center; min-height: 0; }
 
 @media (max-width: 639px) {
@@ -2493,7 +2493,7 @@ html.dl-sem-rolagem { overflow: hidden; overscroll-behavior: none; }
 .dl-root .dl-secao--rosa.dl-cardapio .dl-lead{color:#5E4A43}
 
 /* (03/11) financeiro: exemplo da ficha com mão de obra e preço, pra conta do lucro fechar */
-.dl-root .dl-demo__resumo{border-top:1px dashed #F1D3E0;margin-top:6px;padding-top:4px}
+.dl-root .dl-fin__resumo{border-top:1px dashed #F1D3E0;margin-top:6px;padding-top:4px}
 
 /* ═══ (03/11) cards: realce ao passar o mouse (sem "levantar": eles não são clicáveis) ═══ */
 @media (hover: hover) {
@@ -3377,3 +3377,14 @@ body:has(.dl-root) { margin: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .dl-root .dl-fixa { transition: none; } }
 .dl-root .dl-semtaxa__ck--coracao { background: #F42C7A; } .dl-root .dl-semtaxa__ck--coracao .dl-ico { width: 12px; height: 12px; }
+/* (12/11) funcionalidades com nomes completos: 1 coluna no celular, 2 no tablet, 3 no computador */
+.dl-root .dl-funcs3 { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 640px) { .dl-root .dl-funcs3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .dl-root .dl-funcs3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 639px) { .dl-root .dl-funcs3__item { padding: 12px 10px; font-size: .9375rem; } }
+@media (max-width: 359px) { .dl-root .dl-funcs3__item { font-size: .8125rem; } }
+/* (12/11) "a gente monta": só texto e botão, centralizado; sem palavra sozinha na última linha */
+.dl-root .dl-monta__cartao { grid-template-columns: minmax(0, 1fr) !important; text-align: center; }
+.dl-root .dl-monta__texto { max-width: 640px; margin-inline: auto; }
+.dl-root .dl-monta .dl-lead { text-wrap: balance; }
+.dl-root .dl-cardapio .dl-vantagens { margin-bottom: 0; }

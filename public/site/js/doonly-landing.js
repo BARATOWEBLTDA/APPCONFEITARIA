@@ -171,7 +171,8 @@
   var io=new IntersectionObserver(function(es){es.forEach(function(e){var x=e.target;
     if(e.isIntersecting){ if(x.preload==='none'){x.preload='auto';} var p=x.play(); if(p&&p.catch)p.catch(function(){}); } else { x.pause(); }
   });},{threshold:.35});
-  v.forEach(function(x){io.observe(x);});
+  /* (12/11) mais devagar pra dar tempo de entender (o 1º é o mais rápido) */
+  v.forEach(function(x,i){ var r=i===0?0.6:0.75; x.defaultPlaybackRate=r; x.playbackRate=r; x.addEventListener('play',function(){ x.playbackRate=r; }); io.observe(x);});
 })();
 
 (function(){
