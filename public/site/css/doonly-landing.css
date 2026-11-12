@@ -2841,3 +2841,32 @@ body:has(.dl-root) { margin: 0; }
 }
 /* barra de baixo do cardápio: canto arredondado em px (em % ficava quadrado, a barra é larga e baixa) */
 .dl-root .dl-rolando__nav { border-radius: 0 0 calc(var(--dl-cel-l) * .105) calc(var(--dl-cel-l) * .105) !important; }
+
+/* ═══ (12/11) celular "tela infinita": borda bem fina, barra de status, lateral 3D de verdade e sombra oval no chão ═══ */
+.dl-root { --dl-tela-x: 2.283%; --dl-tela-y: .679%; --dl-tela-l: 95.434%; --dl-tela-a: 98.643%; --dl-tela-raio: 12.92% / 6.193%; }
+.dl-root .dl-celular__corpo { border-radius: 13.95% / 6.79% !important; box-shadow: none !important; }
+.dl-root .dl-rolando__nav { border-radius: 0 0 calc(var(--dl-cel-l) * .123) calc(var(--dl-cel-l) * .123) !important; }
+/* lateral: 10 lâminas do mesmo formato atrás do celular, em 3D (a espessura acompanha a inclinação) */
+.dl-root .dl-celular__inclinado { transform-style: preserve-3d; }
+.dl-root .dl-celular__lados { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; }
+.dl-root .dl-celular__lado { position: absolute; top: 0; bottom: 0; left: .913%; right: .913%; border-radius: 13.95% / 6.79%;
+  background: linear-gradient(90deg, #8A7E84, #5A4F55 12%, #4A4045 50%, #5A4F55 88%, #8A7E84); transform: translateZ(calc(var(--n) * -1.6px)); }
+.dl-root .dl-celular__lado:last-child { box-shadow: 0 0 0 .5px rgba(0, 0, 0, .6); }
+/* sombra no chão: oval suave embaixo do celular */
+.dl-root .dl-celular__chao { position: absolute; z-index: -1; left: 8%; right: 0; bottom: -2%; height: 10%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, .7), rgba(0, 0, 0, .35) 45%, rgba(0, 0, 0, 0)); filter: blur(6px); transform: translateX(6%); }
+/* barra de status (hora, sinal, wi-fi, bateria) por cima do cardápio */
+.dl-root .dl-celular__status { position: absolute; z-index: 1; left: var(--dl-tela-x); width: var(--dl-tela-l); top: var(--dl-tela-y); height: 5.85%;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 calc(var(--dl-cel-l) * .085) 0 calc(var(--dl-cel-l) * .1);
+  border-radius: calc(var(--dl-cel-l) * .123) calc(var(--dl-cel-l) * .123) 0 0; background: #fff; color: #1B1418; font: 600 calc(var(--dl-cel-l) * .043)/1 -apple-system, "SF Pro Text", "Geist", system-ui, sans-serif; }
+.dl-root .dl-celular__status svg { width: calc(var(--dl-cel-l) * .2); height: auto; }
+.dl-root .dl-celular__tela--pc { padding-top: 0; }
+/* o cardápio rola embaixo da barra de status e começa no topo (capa, logo e nome), parado um instante */
+.dl-root .dl-rolando { top: calc(var(--dl-tela-y) + 5.85%) !important; height: calc(var(--dl-tela-a) - 5.85%) !important; animation-name: dl-rola-cardapio2 !important; animation-duration: 60s !important; }
+@keyframes dl-rola-cardapio2 { 0%, 8% { object-position: 50% 0%; } 94%, 100% { object-position: 50% 100%; } }
+@media (max-width: 1023px) {
+  .dl-root .dl-celular { perspective: 1000px; }
+  .dl-root.dl-escuro .dl-celular__corpo { box-shadow: none !important; }
+}
+/* computador: o celular um pouco mais para a direita, tampando menos o notebook */
+@media (min-width: 1024px) { .dl-root .dl-celular { right: -4% !important; } }
