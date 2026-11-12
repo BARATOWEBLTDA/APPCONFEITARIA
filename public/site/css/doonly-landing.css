@@ -3214,3 +3214,4 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-recursos .dl-func:hover { background-color: #21172A; }
   .dl-root .dl-recursos .dl-func:hover .dl-func__ic { box-shadow: none; }
 }
+.dl-root .dl-recursos .dl-passo4__tela { background: transparent; } /* (12/11) mesmo fundo do cartão atrás das animações */
