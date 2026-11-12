@@ -3,6 +3,9 @@ import { supabase } from "@/lib/supabase";
 import { Crown, Lock, CaretDown, CaretRight, Check } from "@phosphor-icons/react";
 import { BENEFICIOS, CTA_PRO, DIAS_TESTE, PRECO_PRO, SELO_TESTE } from "@/lib/beneficiosPro";
 import { noAppDaLoja } from "@/lib/plataforma";
+import { lojaPagamentoPronto, iniciarLoja, ofertaPro, assinarPelaLoja, restaurarCompra, cancelouCompra, type OfertaLoja } from "@/lib/lojaPagamento";
+import { refreshProfile } from "@/hooks/useProfile";
+import { avisar } from "@/components/base";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Titulo } from "@/components/base";
@@ -54,6 +57,29 @@ export default function Assinar() {
   // precisa ser o mesmo da conta, porque é por ele que o webhook liga o PRO sozinho.
   const [emailConta, setEmailConta] = useState("");
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setEmailConta(data.user?.email || "")).catch(() => {}); }, []);
+  // (12/11) app da loja: assinatura pelo Google (tela nativa do Google Play), via RevenueCat
+  const [oferta, setOferta] = useState<OfertaLoja | null>(null);
+  const [comprando, setComprando] = useState(false);
+  useEffect(() => {
+    if (!lojaPagamentoPronto) return;
+    supabase.auth.getUser().then(async ({ data }) => { if (!data.user) return; await iniciarLoja(data.user.id); setOferta(await ofertaPro()); }).catch(() => {});
+  }, []);
+  const esperarPro = async () => { for (let i = 0; i < 10; i++) { await refreshProfile(); await new Promise(r => setTimeout(r, 2000)); } };
+  const assinarPeloGoogle = async () => {
+    if (comprando) return;
+    setComprando(true);
+    try {
+      const ok = await assinarPelaLoja();
+      if (ok) { avisar("Pronto! Seu PRO está ativo", { tipo: "ok" }); void esperarPro(); }
+    } catch (e) {
+      if (!cancelouCompra(e)) avisar("Não deu para assinar agora", { tipo: "erro", detalhe: "Confira a internet e tente de novo" });
+    }
+    setComprando(false);
+  };
+  const restaurar = async () => {
+    try { const ok = await restaurarCompra(); avisar(ok ? "Assinatura encontrada. Seu PRO está ativo" : "Nenhuma assinatura encontrada nesta conta do Google", { tipo: ok ? "ok" : "erro" }); if (ok) void esperarPro(); }
+    catch { avisar("Não deu para conferir agora", { tipo: "erro" }); }
+  };
   const assinarNaHotmart = () => {
     void eventoDoApp("InitiateCheckout", { value: VALOR_PRO, content_name: "Doonly PRO" }); // (6.21) pixels do app
     const u = new URL(CHECKOUT_HOTMART);
@@ -120,7 +146,7 @@ export default function Assinar() {
           <div>
             <h1>Sua confeitaria mais lucrativa e organizada</h1>
             <p>Ferramentas que vendem, calculam e organizam por você.</p>
-            {!noAppDaLoja && <span className="pro9-selo">{SELO_TESTE} para testar</span>}
+            {(!noAppDaLoja || lojaPagamentoPronto) && <span className="pro9-selo">{SELO_TESTE} para testar</span>}
           </div>
         </section>
 
@@ -128,7 +154,7 @@ export default function Assinar() {
         <div className="pro9-grade">
           {/* (21/10) celular: a oferta (preço) sobe pra logo depois do topo, antes da lista */}
           <aside className="pro9-lado">
-            {noAppDaLoja ? (
+            {noAppDaLoja && !lojaPagamentoPronto ? (
               <section className="cl9-card pro9-oferta">
                 <b className="pro9-oferta-t">Plano PRO</b>
                 <p className="pro9-oferta-s">A assinatura do PRO não está disponível pelo app. Se você já é PRO, tudo fica liberado aqui automaticamente.</p>
@@ -138,9 +164,10 @@ export default function Assinar() {
               <span className="pro9-desc">Hoje você não paga nada</span>
               <b className="pro9-oferta-t">Plano PRO mensal</b>
               <div className="pro9-preco"><b>Grátis</b><small>por {DIAS_TESTE} dias</small></div>
-              <p className="pro9-oferta-s">Depois, {PRECO_CHEIO} por mês (menos de R$ 1 por dia). Cancele antes do {DIAS_TESTE + 1}º dia e não paga nada.</p>
-              <Botao cheio icone={<Crown size={20} weight="fill" />} onClick={assinarNaHotmart}>{CTA_PRO}</Botao>
-              <p className="pro9-seg"><Lock size={14} weight="bold" /> Pagamento seguro pela Hotmart</p>
+              <p className="pro9-oferta-s">Depois, {lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO} por mês (menos de R$ 1 por dia). Cancele antes do {DIAS_TESTE + 1}º dia e não paga nada.</p>
+              <Botao cheio carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO}</Botao>
+              <p className="pro9-seg"><Lock size={14} weight="bold" /> {lojaPagamentoPronto ? "Pagamento seguro pelo Google Play" : "Pagamento seguro pela Hotmart"}</p>
+              {lojaPagamentoPronto && <button type="button" className="pro9-restaurar" onClick={restaurar}>Já assinei: restaurar compra</button>}
             </section>
             )}
             {computador && !noAppDaLoja && duvidas}
@@ -162,10 +189,10 @@ export default function Assinar() {
       )}
 
       {/* Celular: botão fixo pra assinar sem rolar até o fim */}
-      {!isPro && !noAppDaLoja && (
+      {!isPro && (!noAppDaLoja || lojaPagamentoPronto) && (
         <div className="pro9-fixo">
           <span><small>Depois, {PRECO_CHEIO}/mês</small><b>{SELO_TESTE}</b></span>
-          <Botao onClick={assinarNaHotmart}>Testar grátis</Botao>
+          <Botao carregando={comprando} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>Testar grátis</Botao>
         </div>
       )}
     </>

@@ -98,3 +98,4 @@ button.pro9-l2-i { cursor: pointer; }
 @media (min-width: 901px) { .pro9 .pro9-faq { margin-right: 72px; } } /* o balão da Doo não cobre a seta das dúvidas */
 /* (6.154) na coluna do lado, as dúvidas ficam da largura do cartão do plano (o balão da Doo fica embaixo, longe delas) */
 @media (min-width: 901px) { .pro9 .pro9-lado .pro9-faq { margin-right: 0; } }
+.pro9-restaurar { display: block; margin: 10px auto 0; padding: 4px; border: 0; background: none; color: var(--ui-texto-2); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
