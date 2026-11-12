@@ -3278,3 +3278,41 @@ body:has(.dl-root) { margin: 0; }
 @media (max-width: 599px) { .dl-root .dl-benef__item { grid-template-columns: 42px minmax(0, 1fr); gap: 14px; padding: 18px; } .dl-root .dl-benef__ic { width: 42px; height: 42px; } .dl-root .dl-benef__titulo { font-size: 1.03rem; } }
 @media (max-width: 380px) { .dl-root .dl-benef__titulo { font-size: .96rem; } }
 @media (max-width: 420px) { .dl-root .dl-funcs2 { gap: 8px; } .dl-root .dl-funcs2__item { padding: 16px 4px 14px; } .dl-root .dl-funcs2__nome { font-size: .8125rem; } }
+
+/* ═══ (12/11) seção rosa: no lugar do celular animado, 3 telas em camadas (topo do cardápio, produtos, bolo com 2 kg escolhido) e os bolos com descrição ═══ */
+.dl-root .dl-cardapio__visual--camadas { display: block; min-height: 0 !important; width: 100%; max-width: 600px; margin-inline: auto; }
+.dl-root .dl-camadas { position: relative; width: 100%; aspect-ratio: 1 / 1.13; }
+.dl-root .dl-camadas__img { position: absolute; width: 44%; height: auto; max-width: none; aspect-ratio: 600 / 1300; border-radius: 22px; background: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .55), 0 28px 50px -26px rgba(80, 0, 30, .6); }
+.dl-root .dl-camadas__img--1 { left: 2%; top: 0; transform: rotate(-4deg); }
+.dl-root .dl-camadas__img--2 { left: 28%; top: 6%; transform: rotate(-.5deg); }
+.dl-root .dl-camadas__img--3 { left: 54%; top: 12%; transform: rotate(3.5deg); }
+.dl-root .dl-bolos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0 0; padding: 0; list-style: none; }
+.dl-root .dl-bolos__item { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 8px 8px 12px; border-radius: 18px; background: #fff; box-shadow: 0 18px 34px -22px rgba(80, 0, 30, .55); }
+.dl-root .dl-bolos__foto { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; }
+.dl-root .dl-bolos__nome, .dl-root .dl-bolos__desc, .dl-root .dl-bolos__preco { display: block; padding-inline: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-root .dl-bolos__nome { margin-top: 9px; color: #1B0A12; font-size: .9375rem; font-weight: 700; line-height: 1.2; }
+.dl-root .dl-bolos__desc { margin-top: 3px; color: #6B5A60; font-size: .8125rem; line-height: 1.3; }
+.dl-root .dl-bolos__preco { margin-top: 6px; line-height: 1.2; }
+.dl-root .dl-bolos__preco s { color: #9C8F8A; font-size: .75rem; }
+.dl-root .dl-bolos__preco b { color: #1F9D55; font-size: .9375rem; font-weight: 700; }
+@media (max-width: 559px) {
+  .dl-root .dl-camadas__img { border-radius: 16px; }
+  .dl-root .dl-bolos { gap: 8px; }
+  .dl-root .dl-bolos__item { padding: 6px 6px 10px; border-radius: 14px; }
+  .dl-root .dl-bolos__foto { border-radius: 10px; }
+  .dl-root .dl-bolos__nome { font-size: .8125rem; }
+  .dl-root .dl-bolos__desc { font-size: .6875rem; }
+  .dl-root .dl-bolos__preco s { display: none; }
+  .dl-root .dl-bolos__preco b { font-size: .8125rem; }
+}
+.dl-root .dl-so-cel { display: none; }
+@media (max-width: 600px) { .dl-root .dl-so-cel { display: inline; } }
+/* onde os cartões ficariam estreitos, mostra 2 bolos (texto inteiro numa linha) */
+@media (max-width: 600px), (min-width: 900px) and (max-width: 1339px) {
+  .dl-root .dl-bolos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dl-root .dl-bolos__item:nth-child(3) { display: none; }
+  .dl-root .dl-bolos__nome { font-size: .9375rem; } .dl-root .dl-bolos__desc { font-size: .8125rem; }
+  .dl-root .dl-bolos__preco s { display: inline; } .dl-root .dl-bolos__preco b { font-size: .9375rem; }
+}
+@media (max-width: 340px) { .dl-root .dl-bolos__preco s { display: none; } .dl-root .dl-bolos__desc { font-size: .75rem; } }
