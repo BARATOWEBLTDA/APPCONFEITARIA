@@ -3482,3 +3482,13 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-final__texto { max-width: 760px; margin-inline: auto; }
 .dl-root .dl-ficha__lista em { white-space: nowrap; }
 @media (max-width: 599px) { .dl-root .dl-comece .dl-h2, .dl-root .dl-comece .dl-h2__rosa { white-space: nowrap; } .dl-root .dl-comece .dl-h2 { font-size: min(2rem, 7.6vw); } .dl-root .dl-livre__titulo { font-size: min(1rem, 4.3vw); white-space: nowrap; } }
+/* (12/11) rodapé numa linha só e mais baixo; final menor (só o título) */
+.dl-root .dl-rodape.dl-rodape--linha { padding-block: 18px !important; }
+.dl-root .dl-rodape__uma { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 24px; }
+.dl-root .dl-rodape__copy { margin: 0; color: rgba(255, 246, 238, .6); font-size: .8125rem; white-space: nowrap; }
+.dl-root .dl-rodape--linha .dl-rodape__links { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.dl-root .dl-rodape--linha .dl-rodape__link { min-height: 28px; font-size: .8125rem; color: rgba(255, 246, 238, .75); }
+@media (max-width: 699px) { .dl-root .dl-rodape__uma, .dl-root .dl-rodape--linha .dl-rodape__links { justify-content: center; text-align: center; } .dl-root .dl-rodape--linha .dl-rodape__links { gap: 0 16px; } }
+.dl-root .dl-final { padding-block: clamp(56px, 6vw, 88px) !important; }
+@media (max-width: 899px) { .dl-root .dl-rodape.dl-rodape--linha { padding-bottom: 84px !important; } }
+.dl-root .dl-final .dl-final__titulo { font-size: clamp(1.5rem, 1rem + 2vw, 2.5rem) !important; } .dl-root .dl-final .dl-final__titulo .dl-h2__rosa { display: block; } .dl-root .dl-final { padding-block: clamp(44px, 5vw, 72px) !important; }
