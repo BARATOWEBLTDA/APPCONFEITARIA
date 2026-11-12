@@ -3190,3 +3190,27 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-ponte__texto em { background: none; } /* (12/11) sem a linha de destaque */
 /* (12/11) no celular "Precificação com ficha técnica" (cabe numa linha) */
 @media (max-width: 600px) { .dl-root .dl-so-pc { display: none; } }
+
+/* ═══ (12/11) "O Doonly cuida do resto" em fundo escuro, com o mascote acenando na passagem da seção clara para a escura ═══ */
+.dl-root .dl-secao.dl-recursos { position: relative; padding-top: clamp(92px, 7vw, 104px); }
+.dl-root .dl-recursos__mascote { position: absolute; z-index: 2; left: 50%; top: 0; width: clamp(112px, 10vw, 148px); height: auto; transform: translate(-50%, -56%); pointer-events: none; }
+.dl-root .dl-secao.dl-dores { padding-bottom: clamp(88px, 8vw, 116px); }
+.dl-root .dl-secao.dl-recursos { overflow-x: clip; overflow-y: visible; z-index: 2; }
+.dl-root .dl-recursos .dl-h2 { color: #FFF6EE; }
+.dl-root .dl-recursos .dl-passo4 { background: #1A1220; border-color: rgba(255, 255, 255, .08); box-shadow: none; }
+.dl-root .dl-recursos .dl-passo4__num, .dl-root .dl-recursos .dl-passo4__pro { color: #FF6FA5; }
+.dl-root .dl-recursos .dl-passo4__titulo { color: #FFF6EE; }
+.dl-root .dl-recursos .dl-passo4__texto { color: rgba(255, 246, 238, .66); }
+.dl-root .dl-recursos .dl-passo4__tela { background: rgba(255, 111, 165, .08); }
+.dl-root .dl-recursos .dl-funcs__titulo { color: #FFF6EE; }
+.dl-root .dl-recursos .dl-funcs__lista { background: #1A1220; border-color: rgba(255, 255, 255, .08); }
+.dl-root .dl-recursos .dl-func { border-color: rgba(255, 255, 255, .08) !important; }
+.dl-root .dl-recursos .dl-func__ic { background: rgba(255, 111, 165, .12); color: #FF7AAE; }
+.dl-root .dl-recursos .dl-func__titulo { color: #FFF6EE; }
+.dl-root .dl-recursos .dl-func__titulo small, .dl-root .dl-recursos .dl-func__pro { color: #FF6FA5; }
+.dl-root .dl-recursos .dl-func__texto { color: rgba(255, 246, 238, .66); }
+@media (hover: hover) {
+  .dl-root .dl-recursos .dl-passo4:hover { border-color: rgba(255, 255, 255, .16); box-shadow: none; }
+  .dl-root .dl-recursos .dl-func:hover { background-color: #21172A; }
+  .dl-root .dl-recursos .dl-func:hover .dl-func__ic { box-shadow: none; }
+}
