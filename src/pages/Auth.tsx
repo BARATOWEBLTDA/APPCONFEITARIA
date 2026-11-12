@@ -16,6 +16,7 @@ import { Eye, EyeSlash, Check, ArrowRight } from "@phosphor-icons/react";
 // (6.158) a página de vendas agora fica na raiz (doonly.com.br); o ?site=1 mostra ela mesmo para quem já tem conta
 const SITE_VENDAS = "/?site=1";
 import { destinoDepoisDoLogin } from "@/lib/destinoLogin";
+import { noAppDaLoja } from "@/lib/plataforma";
 
 // ───────────────────────────────────────────────────────────────
 // Links de download do app (desktop ≥1200px)
@@ -510,7 +511,8 @@ export default function Auth() {
         <p className="auth-marca-sub">{showCadastro ? 'Leva menos de 1 minuto.' : 'Pedidos, agenda e financeiro.'}</p>
         </div>
         {/* (29/10 · 4.78) vitrine: leva pra página de vendas (abre em outra aba, o login continua aqui). (4.81) Só no login: no cadastro ela já decidiu */}
-{!showCadastro && (
+{/* (12/11) no app da Play Store não aparece (a página de vendas fala de assinatura pela Hotmart) */}
+{!showCadastro && !noAppDaLoja && (
         <a className="auth-vit" href={SITE_VENDAS} target="_blank" rel="noopener noreferrer">
           <span className="auth-vit-fotos" aria-hidden="true">
             <img src="/login/cardapio.webp" alt="" /><img src="/login/pedidos.webp" alt="" /><img src="/login/receber.webp" alt="" />
@@ -830,7 +832,7 @@ export default function Auth() {
       )}
 
       {/* (29/10 · 4.79) celular e tablet em pé: o atalho pra página de vendas fica embaixo do cartão (no computador está no lado rosa) */}
-{!showCadastro && (
+{!showCadastro && !noAppDaLoja && (
       <a className="auth-vit2" href={SITE_VENDAS} target="_blank" rel="noopener noreferrer">
         <span className="auth-vit-fotos" aria-hidden="true">
           <img src="/login/cardapio.webp" alt="" /><img src="/login/pedidos.webp" alt="" /><img src="/login/receber.webp" alt="" />
