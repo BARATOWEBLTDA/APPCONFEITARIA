@@ -3475,3 +3475,10 @@ body:has(.dl-root) { margin: 0; }
 @media (max-width: 639px) { .dl-root .dl-livre__lista { width: fit-content; margin-inline: auto; } }
 @media (max-width: 359px) { .dl-root .dl-livre__lista li { font-size: .8125rem; } }
 @media (max-width: 599px) { .dl-root .dl-fichasec__grade { padding: 22px 12px 12px; } .dl-root .dl-fichasec .dl-ficha { padding: 12px; } }
+/* (12/11) comece: lista e depois o botão; final só com título e texto */
+.dl-root .dl-comece .dl-livre { margin-top: clamp(28px, 3vw, 40px); }
+.dl-root .dl-comece__acao { margin-top: clamp(24px, 3vw, 36px) !important; }
+.dl-root .dl-final__grade { grid-template-columns: minmax(0, 1fr) !important; text-align: center; }
+.dl-root .dl-final__texto { max-width: 760px; margin-inline: auto; }
+.dl-root .dl-ficha__lista em { white-space: nowrap; }
+@media (max-width: 599px) { .dl-root .dl-comece .dl-h2, .dl-root .dl-comece .dl-h2__rosa { white-space: nowrap; } .dl-root .dl-comece .dl-h2 { font-size: min(2rem, 7.6vw); } .dl-root .dl-livre__titulo { font-size: min(1rem, 4.3vw); white-space: nowrap; } }

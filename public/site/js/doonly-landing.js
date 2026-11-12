@@ -267,5 +267,5 @@
   new IntersectionObserver(function(es){ passou=!es[0].isIntersecting && es[0].boundingClientRect.top<0; att(); },{threshold:0}).observe(hero);
   var vis=new Map();
   var obs=new IntersectionObserver(function(es){ es.forEach(function(e){ vis.set(e.target,e.isIntersecting); }); noFim=false; vis.forEach(function(v){ if(v) noFim=true; }); att(); },{threshold:0});
-  [fim, document.querySelector('.dl-root .dl-comece__acao')].forEach(function(el){ if(el) obs.observe(el); });
+  [document.querySelector('.dl-root .dl-comece__acao')].forEach(function(el){ if(el) obs.observe(el); });
 })();
