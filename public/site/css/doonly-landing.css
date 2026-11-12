@@ -2831,3 +2831,13 @@ body:has(.dl-root) { margin: 0; }
 /* (11/11) cantos do celular como os do iPhone (menos arredondados) */
 .dl-root { --dl-tela-raio: 10.26% / 4.74%; }
 .dl-root .dl-celular__corpo { border-radius: 13.5% / 6.56% !important; }
+/* (12/11) moldura nova (desenho próprio, bordas finas como os celulares atuais): tela em x=16 y=12 406×860 raio 46 */
+.dl-root { --dl-tela-x: 3.653%; --dl-tela-y: 1.357%; --dl-tela-l: 92.694%; --dl-tela-a: 97.285%; --dl-tela-raio: 11.33% / 5.349%; }
+.dl-root .dl-celular__corpo { border-radius: 13.95% / 6.79% !important; }
+@media (max-width:1023px){
+ .dl-root.dl-escuro .dl-celular__corpo{ box-shadow:
+   1.5px .6px 0 #A89CA2, 3px 1.2px 0 #8C8087, 4.5px 1.8px 0 #74686E, 6px 2.4px 0 #5E5358, 7.5px 3px 0 #4B4146, 9px 3.6px 0 #3B3237, 10.5px 4.2px 0 #2E262A, 12px 4.8px 0 #221C1F, 13.5px 5.4px 0 #171215,
+   40px 60px 50px -10px rgba(0,0,0,.75), 14px 22px 22px rgba(0,0,0,.45) !important; }
+}
+/* barra de baixo do cardápio: canto arredondado em px (em % ficava quadrado, a barra é larga e baixa) */
+.dl-root .dl-rolando__nav { border-radius: 0 0 calc(var(--dl-cel-l) * .105) calc(var(--dl-cel-l) * .105) !important; }
