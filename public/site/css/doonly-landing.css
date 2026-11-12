@@ -3253,3 +3253,28 @@ body:has(.dl-root) { margin: 0; }
   58% { transform: translateY(-16px) rotate(-2deg); } 66% { transform: translateY(0) scale(1.04, .95); } 72% { transform: translateY(-5px); } 78% { transform: none; }
 }
 @media (prefers-reduced-motion: reduce) { .dl-root .dl-recursos__mascote { animation: none; } }
+
+/* ═══ (12/11) funcionalidades em grade (ícone + nome) e os benefícios numa seção própria ═══ */
+.dl-root .dl-funcs2 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 1080px; margin: 0 auto; padding: 0; list-style: none; }
+.dl-root .dl-funcs2__item { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0; padding: 18px 8px 16px; border: 1px solid rgba(255, 255, 255, .08); border-radius: 18px; background: #1A1220; text-align: center; }
+.dl-root .dl-funcs2__ic { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; background: rgba(255, 111, 165, .12); color: #FF7AAE; }
+.dl-root .dl-funcs2__ic .dl-ico { width: 22px; height: 22px; }
+.dl-root .dl-funcs2__nome { color: #FFF6EE; font-size: .875rem; font-weight: 600; line-height: 1.2; white-space: nowrap; }
+@media (min-width: 640px) { .dl-root .dl-funcs2 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; } .dl-root .dl-funcs2__nome { font-size: .9375rem; } }
+@media (min-width: 1024px) { .dl-root .dl-funcs2 { grid-template-columns: repeat(6, minmax(0, 1fr)); } .dl-root .dl-funcs2__item { padding: 22px 10px 20px; } }
+@media (max-width: 359px) { .dl-root .dl-funcs2__nome { font-size: .8125rem; } }
+@media (hover: hover) { .dl-root .dl-funcs2__item { transition: border-color .2s ease; } .dl-root .dl-funcs2__item:hover { border-color: rgba(255, 255, 255, .18); } }
+/* benefícios */
+.dl-root .dl-benef { display: grid; gap: 14px; max-width: 1080px; margin: clamp(32px, 4vw, 52px) auto 0; padding: 0; list-style: none; }
+.dl-root .dl-benef__item { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 16px; align-items: start; margin: 0; padding: 22px; border: 1px solid var(--dl-borda); border-radius: 22px; background: #fff; }
+.dl-root .dl-benef__ic { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; border: 1px solid var(--dl-borda); background: #fff; color: var(--dl-rosa-escuro); }
+.dl-root .dl-benef__ic .dl-ico { width: 22px; height: 22px; }
+.dl-root .dl-benef__titulo { margin: 2px 0 0; color: var(--dl-vinho-escuro); font-size: 1.125rem; font-weight: 700; line-height: 1.25; }
+.dl-root .dl-benef__texto { margin: 6px 0 0; color: var(--dl-texto-2); font-size: .9375rem; line-height: 1.5; }
+@media (min-width: 760px) { .dl-root .dl-benef { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; } .dl-root .dl-benef__item { padding: 26px; } }
+/* a onda do rosa agora nasce da seção clara de benefícios */
+.dl-root .dl-onda { fill: var(--dl-fundo); }
+.dl-root .dl-benef__titulo { text-wrap: nowrap; white-space: nowrap; }
+@media (max-width: 599px) { .dl-root .dl-benef__item { grid-template-columns: 42px minmax(0, 1fr); gap: 14px; padding: 18px; } .dl-root .dl-benef__ic { width: 42px; height: 42px; } .dl-root .dl-benef__titulo { font-size: 1.03rem; } }
+@media (max-width: 380px) { .dl-root .dl-benef__titulo { font-size: .96rem; } }
+@media (max-width: 420px) { .dl-root .dl-funcs2 { gap: 8px; } .dl-root .dl-funcs2__item { padding: 16px 4px 14px; } .dl-root .dl-funcs2__nome { font-size: .8125rem; } }
