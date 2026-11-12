@@ -31,6 +31,12 @@ jobs:
       - run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
       - run: npm ci
       - run: npx cap sync android
+      # (12/11) avisos: o google-services.json do Firebase fica no segredo FIREBASE_GOOGLE_SERVICES (não vai pro repositório)
+      - name: Firebase (avisos)
+        env:
+          GS_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES }}
+        run: |
+          if [ -n "$GS_JSON" ]; then printf '%s' "$GS_JSON" > android/app/google-services.json; else echo "sem FIREBASE_GOOGLE_SERVICES: app sem avisos"; fi
       - name: Chave da Play Store
         env:
           KEYSTORE_B64: ${{ secrets.DOONLY_KEYSTORE_B64 }}
