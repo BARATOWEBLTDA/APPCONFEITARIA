@@ -2815,3 +2815,16 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-celular__moldura { z-index: 2; }
 }
 @media (max-width: 1023px) and (prefers-reduced-motion: reduce) { .dl-root .dl-rolando { animation: none; } }
+
+/* (11/11) celular da abertura (celular/tablet): mais largo, inclinado em 3D com lateral grossa e sombra no chão; sem a notificação */
+@media (max-width:1023px){
+ .dl-root .dl-aviso-cel{display:none !important}
+ .dl-root .dl-celular{ --dl-cel-l: min(76vw, 310px) !important; }
+ .dl-root .dl-celular::before{ content:none !important; }
+ .dl-root .dl-palco{ perspective: 1000px; }
+ .dl-root .dl-celular__inclinado{ transform: rotateY(-22deg) rotateX(6deg) rotateZ(4deg) !important; transform-origin: 50% 50%; }
+ .dl-root.dl-escuro .dl-celular__corpo{ box-shadow:
+   1.5px .6px 0 #D9C8D0, 3px 1.2px 0 #BBA8B1, 4.5px 1.8px 0 #9E8A94, 6px 2.4px 0 #84717A, 7.5px 3px 0 #6C5B63, 9px 3.6px 0 #574850, 10.5px 4.2px 0 #45383F, 12px 4.8px 0 #342A30, 13.5px 5.4px 0 #241C21,
+   0 0 0 1px rgba(255,255,255,.18),
+   40px 60px 50px -10px rgba(0,0,0,.75), 14px 22px 22px rgba(0,0,0,.45) !important; }
+}
