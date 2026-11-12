@@ -3454,3 +3454,24 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-doochat__dia { align-self: center; padding: 1cqw 3cqw; border-radius: 2cqw; background: #fff; color: #8A7A80; font-size: 2.9cqw; }
 .dl-root .dl-doochat__oi { margin: 0; }
 @media (max-width: 350px) { .dl-root .dl-doolista li { font-size: .74rem; gap: 6px; } .dl-root .dl-doolista__ck { width: 18px; height: 18px; } .dl-root .dl-doo .dl-h2 { font-size: 6.4vw; } }
+
+/* ═══ (12/11) financeiro só com texto; ficha técnica numa seção própria; "Comece grátis" no lugar dos planos ═══ */
+.dl-root .dl-financeiro__grade--so-texto { display: block !important; max-width: 1000px; }
+.dl-root .dl-financeiro__grade--so-texto .dl-cabeca { max-width: 760px; margin-inline: auto; text-align: center; }
+.dl-root .dl-financeiro__grade--so-texto .dl-trio { display: grid; gap: 18px 28px; margin-top: clamp(28px, 3vw, 40px); }
+@media (min-width: 760px) { .dl-root .dl-financeiro__grade--so-texto .dl-trio { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dl-root .dl-fichasec__grade { display: grid; gap: clamp(28px, 4vw, 64px); align-items: center; padding: clamp(24px, 4vw, 56px); border-radius: 28px; background: #FFF8FA; border: 1px solid #F3E4EA; }
+@media (min-width: 900px) { .dl-root .dl-fichasec__grade { grid-template-columns: minmax(0, 1fr) minmax(0, 420px); } }
+@media (max-width: 899px) { .dl-root .dl-fichasec__texto { text-align: center; } }
+.dl-root .dl-fichasec .dl-ficha { transform: none; }
+.dl-root .dl-comece__acao { display: flex; justify-content: center; margin-top: clamp(22px, 2.6vw, 32px); }
+.dl-root .dl-livre { max-width: 1000px; margin: clamp(36px, 4vw, 56px) auto 0; padding: clamp(22px, 3vw, 36px); border-radius: 24px; background: #FFF8FA; border: 1px solid #F3E4EA; }
+.dl-root .dl-livre__titulo { margin: 0 0 16px; color: var(--dl-vinho-escuro); font-size: 1.125rem; font-weight: 700; text-align: center; }
+.dl-root .dl-livre__lista { display: grid; gap: 12px 24px; margin: 0; padding: 0; list-style: none; }
+.dl-root .dl-livre__lista li { display: flex; align-items: center; gap: 10px; margin: 0; color: var(--dl-vinho-escuro); font-size: .9375rem; font-weight: 500; white-space: nowrap; }
+.dl-root .dl-livre__ck { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #F42C7A; color: #fff; }
+@media (min-width: 640px) { .dl-root .dl-livre__lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .dl-root .dl-livre__lista { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 639px) { .dl-root .dl-livre__lista { width: fit-content; margin-inline: auto; } }
+@media (max-width: 359px) { .dl-root .dl-livre__lista li { font-size: .8125rem; } }
+@media (max-width: 599px) { .dl-root .dl-fichasec__grade { padding: 22px 12px 12px; } .dl-root .dl-fichasec .dl-ficha { padding: 12px; } }
