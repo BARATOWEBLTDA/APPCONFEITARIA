@@ -2875,3 +2875,5 @@ body:has(.dl-root) { margin: 0; }
 .dl-root.dl-escuro .dl-hero__fundo::after { content: none !important; }
 .dl-root .dl-palco__arco, .dl-root .dl-palco__sombra { display: none !important; }
 .dl-root .dl-celular::before { content: none !important; }
+/* (12/11) cardápio embaixo da barra de status: canto reto em cima (o arredondado deixava pontas pretas ao rolar) */
+.dl-root .dl-rolando { border-radius: 0 0 calc(var(--dl-cel-l) * .123) calc(var(--dl-cel-l) * .123) !important; }
