@@ -3173,3 +3173,7 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-rolando__fita img { display: block; width: 100%; height: auto; max-width: none; }
 @keyframes dl-rola-pc2 { 0%, 4% { transform: translateY(0); } 96%, 100% { transform: translateY(var(--dl-fim, -85.5%)); } }
 @media (prefers-reduced-motion: reduce) { .dl-root .dl-rolando__fita { animation: none; } }
+/* (12/11) o cardápio longo começa abaixo da barra de status (como antes), só passa por baixo dela quando rola;
+   assim ele casa com as telas do app que vêm depois e o menu de baixo fica no lugar */
+.dl-root .dl-demo__longo { top: 12.36cqw; }
+.dl-root .dl-demo__r1, .dl-root .dl-demo__r18 { box-shadow: none; } /* as telas que sobem de baixo: a faixa branca delas cobria o menu do cardápio */
