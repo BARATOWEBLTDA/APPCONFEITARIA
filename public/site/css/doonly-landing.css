@@ -2749,3 +2749,5 @@ body:has(.dl-root) { margin: 0; }
   .dl-root .dl-barra__bt { padding: 8px 10px; font-size: .75rem; }
 }
 @media (max-width: 600px) { .dl-root .dl-barra__bt .dl-ico { display: none; } }
+/* (11/11) etiqueta BLACK DOONLY no degradê da headline (rosa forte → rosa claro) */
+.dl-root .dl-barra__tag { background: linear-gradient(90deg, #F42C7A 0%, #FF7DAE 55%, #FFD6E6 100%); color: #140D1A; }
