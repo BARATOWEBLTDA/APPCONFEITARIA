@@ -3187,3 +3187,4 @@ body:has(.dl-root) { margin: 0; }
 /* (12/11) o X e o check centralizados com o bloco (rótulo + frase), não grudados no topo */
 .dl-root .dl-par__hoje, .dl-root .dl-par__doonly { align-items: center; }
 .dl-root .dl-par__ic { margin-top: 0; }
+.dl-root .dl-ponte__texto em { background: none; } /* (12/11) sem a linha de destaque */
