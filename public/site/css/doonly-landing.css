@@ -2689,3 +2689,10 @@ body:has(.dl-root) { margin: 0; }
 }
 /* (11/11) topo sem o botão "Criar conta grátis": o botão fica só na barra preta (fica o "Entrar") */
 .dl-root .dl-cabecalho .dl-menu__acoes .dl-btn, .dl-root .dl-cabecalho__cta-celular { display: none !important; }
+.dl-root .dl-barra__black, .dl-root .dl-barra__normal { display: inline-flex; align-items: center; gap: 12px; }
+.dl-root .dl-barra__black[hidden], .dl-root .dl-barra__normal[hidden] { display: none; }
+.dl-root .dl-barra__black b { color: #FF7DAE; }
+@media (max-width: 600px) { .dl-root .dl-barra__black, .dl-root .dl-barra__normal { gap: 8px; } }
+@media (max-width: 400px) { .dl-root .dl-barra__black .dl-barra__txt > :not(b) { } }
+.dl-root .dl-barra__so-cel { display: none; }
+@media (max-width: 600px) { .dl-root .dl-barra__so-pc { display: none; } .dl-root .dl-barra__so-cel { display: inline; } }
