@@ -1,4 +1,4 @@
-# (12/11) Gera o app Android do Doonly (Capacitor).
+# (12/11) Gera o app Android do Doonly (Capacitor). Chave da Play Store configurada nos segredos.
 #  - doonly-teste.apk: para instalar direto no celular e testar (sempre).
 #  - doonly-playstore.aab: para enviar na Play Store (quando os segredos da chave estão configurados no GitHub).
 # Roda sozinho quando muda algo do app Android, ou pelo botão "Run workflow" na aba Actions.
