@@ -3053,17 +3053,6 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-demo__bpe img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; }
 .dl-root .dl-demo__bp1 { animation-name: dl-d5-bs1; }
 .dl-root .dl-demo__bp2 { animation-name: dl-d5-bs2; }
-/* nome e WhatsApp sendo digitados (por cima da tela com os campos vazios) */
-.dl-root .dl-demo__tecla { position: absolute; z-index: 3; display: flex; align-items: center; padding-left: 3.3cqw; box-sizing: border-box; border: 1px solid #E85A8C; border-radius: 2.6cqw; background: #fff; color: #2A1E26; font: 400 4.1cqw/1 Poppins, "Geist", system-ui, sans-serif; opacity: 0; }
-.dl-root .dl-demo__tecla span { display: inline-block; white-space: nowrap; overflow: hidden; border-right: .4cqw solid #E85A8C; padding-right: .3cqw; }
-.dl-root .dl-demo__tecla--nome { animation-name: dl-d5-tn; }
-.dl-root .dl-demo__tecla--nome span { animation-name: dl-d5-tn-txt; animation-timing-function: steps(12, end); }
-@keyframes dl-d5-tn { 0%, 77.660% { opacity: 0; } 77.756%, 80.851% { opacity: 1; border-color: #E85A8C; } 80.948%, 84.816% { opacity: 1; border-color: #E6E1E3; } 84.913%, 100% { opacity: 0; } }
-@keyframes dl-d5-tn-txt { 0%, 77.950% { max-width: 0; } 80.271% { max-width: 60cqw; border-right-color: #E85A8C; } 80.851%, 100% { max-width: 60cqw; border-right-color: transparent; } }
-.dl-root .dl-demo__tecla--fone { animation-name: dl-d5-tf; }
-.dl-root .dl-demo__tecla--fone span { animation-name: dl-d5-tf-txt; animation-timing-function: steps(15, end); }
-@keyframes dl-d5-tf { 0%, 80.948% { opacity: 0; } 81.044%, 84.816% { opacity: 1; } 84.913%, 100% { opacity: 0; } }
-@keyframes dl-d5-tf-txt { 0%, 81.238% { max-width: 0; } 83.946%, 100% { max-width: 60cqw; } }
 .dl-root .dl-demo__r0 { animation-name: dl-d5-r0; }
 @keyframes dl-d5-r0 { 0%, 47.582% { opacity: 0; transform: none; } 48.646%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
 .dl-root .dl-demo__r1 { animation-name: dl-d5-r1; }
@@ -3083,9 +3072,25 @@ body:has(.dl-root) { margin: 0; }
 .dl-root .dl-demo__r8 { animation-name: dl-d5-r8; }
 @keyframes dl-d5-r8 { 0%, 76.209% { opacity: 0; transform: translateY(5%); } 77.273%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
 .dl-root .dl-demo__r9 { animation-name: dl-d5-r9; }
-@keyframes dl-d5-r9 { 0%, 84.720% { opacity: 0; transform: none; } 85.783%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+@keyframes dl-d5-r9 { 0%, 77.853% { opacity: 0; transform: none; } 77.950%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
 .dl-root .dl-demo__r10 { animation-name: dl-d5-r10; }
-@keyframes dl-d5-r10 { 0%, 88.008% { transform: translateY(100%); opacity: 1; } 89.072%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+@keyframes dl-d5-r10 { 0%, 78.433% { opacity: 0; transform: none; } 78.530%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r11 { animation-name: dl-d5-r11; }
+@keyframes dl-d5-r11 { 0%, 79.014% { opacity: 0; transform: none; } 79.110%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r12 { animation-name: dl-d5-r12; }
+@keyframes dl-d5-r12 { 0%, 79.594% { opacity: 0; transform: none; } 79.691%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r13 { animation-name: dl-d5-r13; }
+@keyframes dl-d5-r13 { 0%, 81.141% { opacity: 0; transform: none; } 81.238%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r14 { animation-name: dl-d5-r14; }
+@keyframes dl-d5-r14 { 0%, 81.915% { opacity: 0; transform: none; } 82.012%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r15 { animation-name: dl-d5-r15; }
+@keyframes dl-d5-r15 { 0%, 82.689% { opacity: 0; transform: none; } 82.785%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r16 { animation-name: dl-d5-r16; }
+@keyframes dl-d5-r16 { 0%, 83.462% { opacity: 0; transform: none; } 83.559%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r17 { animation-name: dl-d5-r17; }
+@keyframes dl-d5-r17 { 0%, 84.720% { opacity: 0; transform: none; } 85.783%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
+.dl-root .dl-demo__r18 { animation-name: dl-d5-r18; }
+@keyframes dl-d5-r18 { 0%, 88.008% { transform: translateY(100%); opacity: 1; } 89.072%, 98.066% { opacity: 1; transform: none; } 99.226%, 100% { opacity: 0; transform: none; } }
 .dl-root .dl-demo__dedo { animation-name: dl-d5-dedo; }
 @keyframes dl-d5-dedo {
   0%, 11.605% { opacity: 0; left: 43.0%; top: 78.0%; transform: scale(1); } 12.186% { opacity: 1; left: 40.0%; top: 74.0%; transform: scale(1); } 12.766% { opacity: 1; left: 40.0%; top: 74.0%; transform: scale(.75); } 13.346% { opacity: 0; left: 40.0%; top: 74.0%; transform: scale(1); }
@@ -3106,4 +3111,4 @@ body:has(.dl-root) { margin: 0; }
   85.493% { opacity: 0; left: 53.0%; top: 99.0%; transform: scale(1); } 86.074% { opacity: 1; left: 50.0%; top: 95.0%; transform: scale(1); } 86.654% { opacity: 1; left: 50.0%; top: 95.0%; transform: scale(.75); } 87.234% { opacity: 0; left: 50.0%; top: 95.0%; transform: scale(1); }
   100% { opacity: 0; left: 50%; top: 95%; }
 }
-@media (prefers-reduced-motion: reduce) { .dl-root .dl-demo__r, .dl-root .dl-demo__bolo, .dl-root .dl-demo__tecla { display: none; } }
+@media (prefers-reduced-motion: reduce) { .dl-root .dl-demo__r, .dl-root .dl-demo__bolo, .dl-root .dl-demo__r { display: none; } }
