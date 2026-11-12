@@ -3177,3 +3177,5 @@ body:has(.dl-root) { margin: 0; }
    assim ele casa com as telas do app que vêm depois e o menu de baixo fica no lugar */
 .dl-root .dl-demo__longo { top: 12.36cqw; }
 .dl-root .dl-demo__r1, .dl-root .dl-demo__r18 { box-shadow: none; } /* as telas que sobem de baixo: a faixa branca delas cobria o menu do cardápio */
+/* (12/11) computador: a subheadline um pouco mais afastada do mockup */
+@media (min-width: 1024px) { .dl-root .dl-hero .dl-subtitulo { padding-right: 40px; } }
