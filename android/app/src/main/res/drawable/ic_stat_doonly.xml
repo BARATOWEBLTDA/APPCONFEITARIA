@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- (12/11) ícone pequeno dos avisos (barra de status): silhueta branca de um cupcake -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M12,2.5c0.9,0 1.6,0.6 1.8,1.4C16.9,4.4 19.5,7 19.5,10.2c0,0.5 -0.4,0.8 -0.8,0.8H5.3c-0.4,0 -0.8,-0.3 -0.8,-0.8C4.5,7 7.1,4.4 10.2,3.9C10.4,3.1 11.1,2.5 12,2.5z" />
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M5.2,12.5h13.6l-1.6,8c-0.1,0.6 -0.6,1 -1.2,1H8c-0.6,0 -1.1,-0.4 -1.2,-1L5.2,12.5z" />
+</vector>

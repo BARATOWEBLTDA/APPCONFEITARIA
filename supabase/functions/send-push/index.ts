@@ -18,6 +18,57 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
 
+// ── (12/11) Firebase (app da Play Store): aparelhos com endereço "fcm:<token>" ──
+// Secret FCM_CONTA_SERVICO = o JSON da conta de serviço do Firebase (Configurações do projeto › Contas de serviço).
+type ContaFcm = { project_id: string; client_email: string; private_key: string };
+let acessoFcm: { token: string; ate: number } | null = null;
+const b64url = (b: ArrayBuffer | Uint8Array | string) => {
+  const bytes = typeof b === "string" ? new TextEncoder().encode(b) : new Uint8Array(b as ArrayBuffer);
+  let s = ""; bytes.forEach(x => s += String.fromCharCode(x));
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+};
+function contaFcm(): ContaFcm | null {
+  try { const c = JSON.parse(Deno.env.get("FCM_CONTA_SERVICO") || ""); return c?.project_id && c?.client_email && c?.private_key ? c : null; } catch { return null; }
+}
+async function tokenFcm(c: ContaFcm): Promise<string> {
+  if (acessoFcm && acessoFcm.ate > Date.now() + 60000) return acessoFcm.token;
+  const agora = Math.floor(Date.now() / 1000);
+  const cab = b64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
+  const corpo = b64url(JSON.stringify({ iss: c.client_email, scope: "https://www.googleapis.com/auth/firebase.messaging", aud: "https://oauth2.googleapis.com/token", iat: agora, exp: agora + 3600 }));
+  const pem = c.private_key.replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
+  const der = Uint8Array.from(atob(pem), ch => ch.charCodeAt(0));
+  const chave = await crypto.subtle.importKey("pkcs8", der, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const ass = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", chave, new TextEncoder().encode(`${cab}.${corpo}`));
+  const r = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: `${cab}.${corpo}.${b64url(ass)}` }),
+  });
+  const j = await r.json();
+  if (!j.access_token) throw new Error("Firebase recusou a conta de serviço: " + JSON.stringify(j).slice(0, 200));
+  acessoFcm = { token: j.access_token, ate: Date.now() + (Number(j.expires_in) || 3600) * 1000 };
+  return acessoFcm.token;
+}
+/** "sent" | "expired" (token não vale mais: apagar) | "failed" */
+async function enviarFcm(token: string, a: { title: string; body: string; url: string; image?: string; tag?: string }): Promise<"sent" | "expired" | "failed"> {
+  const c = contaFcm();
+  if (!c) { console.error("FCM_CONTA_SERVICO não configurada"); return "failed"; }
+  const imagem = a.image && /^https:\/\//.test(a.image) ? a.image : undefined;
+  const r = await fetch(`https://fcm.googleapis.com/v1/projects/${c.project_id}/messages:send`, {
+    method: "POST", headers: { Authorization: `Bearer ${await tokenFcm(c)}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ message: {
+      token,
+      notification: { title: a.title, body: a.body, ...(imagem ? { image: imagem } : {}) },
+      data: { url: a.url || "/" },
+      android: { priority: "HIGH", notification: { channel_id: "pedidos", sound: "default", icon: "ic_stat_doonly", color: "#E2437E", ...(a.tag ? { tag: a.tag } : {}) } },
+    } }),
+  });
+  if (r.ok) return "sent";
+  const t = await r.text();
+  if (r.status === 404 || /UNREGISTERED|registration-token-not-registered/.test(t)) { console.warn("FCM token inválido:", r.status, t.slice(0, 200)); return "expired"; }
+  console.error("FCM falhou:", r.status, t.slice(0, 300));
+  return "failed";
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -113,6 +164,11 @@ serve(async (req) => {
     // Envia para todos os subscribers em paralelo
     const results = await Promise.allSettled(
       subscriptions.map(async (sub) => {
+        if (String(sub.endpoint).startsWith("fcm:")) {
+          const r = await enviarFcm(String(sub.endpoint).slice(4), { title: titulo, body: mensagem || "", url: url || "/", image: imagem_url || undefined, tag: tag || "doonly-notification" }).catch(() => "failed" as const);
+          if (r === "expired") { await adminClient.from("push_subscriptions").delete().eq("id", sub.id); return { id: sub.id, status: "expired_removed" }; }
+          return { id: sub.id, status: r === "sent" ? "sent" : "failed" };
+        }
         const pushSubscription = {
           endpoint: sub.endpoint,
           keys: {

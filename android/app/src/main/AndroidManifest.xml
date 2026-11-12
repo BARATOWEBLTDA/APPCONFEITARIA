@@ -20,6 +20,11 @@
             </intent-filter>
         </activity>
 
+        <!-- (12/11) avisos do Firebase: ícone branco e canal "Pedidos" (criado pelo app ao abrir) -->
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_doonly" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/doonly_aviso" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="pedidos" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

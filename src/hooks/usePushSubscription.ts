@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { pushNativoDisponivel, permissaoNativa, pedirPermissaoNativa, obterToken, tokenGuardado, desligarNativo, PREFIXO_FCM } from '@/lib/pushNativo'
 
 // ─────────────────────────────────────────────────────────────
 // usePushSubscription — gerencia Web Push no browser
@@ -43,6 +44,15 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
  * Chamar ANTES de sair (apagar a linha precisa da conta ainda aberta). Nunca lança.
  */
 export async function desfazerPushDesteAparelho(): Promise<void> {
+  // (12/11) app da Play Store: o aparelho é o token do Firebase
+  if (pushNativoDisponivel) {
+    const t = tokenGuardado()
+    if (!t) return
+    try { localStorage.setItem(MARCA_REATIVAR, '1') } catch { /* sem armazenamento */ }
+    try { await supabase.from('push_subscriptions').delete().eq('endpoint', PREFIXO_FCM + t) } catch { /* sem internet */ }
+    await desligarNativo()
+    return
+  }
   try {
     if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
     const reg = await navigator.serviceWorker.getRegistration('/sw.js')
@@ -76,6 +86,7 @@ async function salvarAparelho(userId: string, endpoint: string, p256dh: string, 
  */
 export async function reativarPushSeSaiu(): Promise<void> {
   try {
+    if (pushNativoDisponivel) { await religarNativo(); return }
     if (localStorage.getItem(MARCA_REATIVAR) !== '1') return
     if (!VAPID_PUBLIC_KEY || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return
     if (Notification.permission !== 'granted') { localStorage.removeItem(MARCA_REATIVAR); return }
@@ -92,6 +103,21 @@ export async function reativarPushSeSaiu(): Promise<void> {
   } catch (e) { console.warn('[Doonly] não deu para religar os avisos:', e) }
 }
 
+/** (12/11) app da loja: com a permissão dada, guarda (ou atualiza) o token deste aparelho na conta aberta. Nunca lança. */
+const MARCA_DESLIGOU = 'doonly_push_desligado'
+const desligouAqui = () => { try { return localStorage.getItem(MARCA_DESLIGOU) === '1' } catch { return false } }
+async function religarNativo(): Promise<boolean> {
+  try {
+    if (desligouAqui() || (await permissaoNativa()) !== 'granted') return false
+    const t = await obterToken()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!t || !user) return false
+    const { error } = await salvarAparelho(user.id, PREFIXO_FCM + t, 'fcm', 'fcm')
+    if (!error) { try { localStorage.removeItem(MARCA_REATIVAR) } catch { /* segue */ } }
+    return !error
+  } catch { return false }
+}
+
 export function usePushSubscription() {
   const [isSupported, setIsSupported] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)
@@ -102,6 +128,13 @@ export function usePushSubscription() {
   // Checa suporte e estado atual
   useEffect(() => {
     const check = async () => {
+      if (pushNativoDisponivel) {
+        setIsSupported(true)
+        const perm = await permissaoNativa()
+        setPermission(perm)
+        if (perm === 'granted') setIsSubscribed(await religarNativo())
+        return
+      }
       // Verifica suporte do browser
       if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
         setIsSupported(false)
@@ -136,6 +169,17 @@ export function usePushSubscription() {
   }, [])
 
   const subscribe = useCallback(async () => {
+    if (pushNativoDisponivel) {
+      setLoading(true); setError(null)
+      try { localStorage.removeItem(MARCA_DESLIGOU) } catch { /* segue */ }
+      const perm = await pedirPermissaoNativa()
+      setPermission(perm)
+      if (perm !== 'granted') { setLoading(false); return false }
+      const ok = await religarNativo()
+      if (!ok) setError('Não deu para ativar os avisos agora. Tente de novo em instantes.')
+      setIsSubscribed(ok); setLoading(false)
+      return ok
+    }
     if (!isSupported) {
       setError('Este navegador não recebe notificações.')
       return false
@@ -206,6 +250,14 @@ export function usePushSubscription() {
 
   const unsubscribe = useCallback(async () => {
     setLoading(true)
+    if (pushNativoDisponivel) {
+      const t = tokenGuardado()
+      try { if (t) await supabase.from('push_subscriptions').delete().eq('endpoint', PREFIXO_FCM + t) } catch { /* segue */ }
+      await desligarNativo()
+      try { localStorage.setItem(MARCA_DESLIGOU, '1') } catch { /* segue */ }
+      setIsSubscribed(false); setLoading(false)
+      return
+    }
     try {
       const reg = await navigator.serviceWorker.getRegistration('/sw.js')
       if (reg) {

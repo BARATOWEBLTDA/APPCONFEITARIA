@@ -35,6 +35,7 @@ import { MarcosDaAssinatura } from "@/components/PixelsDoApp";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import AlertaPedidoNovo from "@/components/AlertaPedidoNovo";
 import { reativarPushSeSaiu } from "@/hooks/usePushSubscription";
+import { ouvirToqueNoAviso } from "@/lib/pushNativo";
 import { usePlano } from "@/hooks/usePlano";
 import { usePedidosParaAceitar } from "@/hooks/usePedidosParaAceitar";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
@@ -121,7 +122,7 @@ export default function Layout() {
   const { isPro } = usePlano();
   const [grupoAberto, setGrupoAberto] = useState<string | null>(null);
   // (11/10) saiu e entrou de novo neste aparelho: os avisos de pedido voltam a ligar sozinhos
-  useEffect(() => { if (!emModoSuporte) void reativarPushSeSaiu(); }, []); // (11/11) nunca registra o navegador do suporte como aparelho dela
+  useEffect(() => { ouvirToqueNoAviso(); if (!emModoSuporte) void reativarPushSeSaiu(); }, []); // (11/11) nunca registra o navegador do suporte como aparelho dela
   // (03/11) o painel admin vê quem está com o app aberto agora (só a hora do último acesso)
   useEffect(() => { if (profile?.id && !emModoSuporte) ligarAcessoOnline(); }, [profile?.id]);
   const {
