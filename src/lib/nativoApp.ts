@@ -227,6 +227,9 @@ async function travarComDigital(): Promise<void> {
 }
 
 export async function iniciarDigital(): Promise<void> {
+  // (12/11) desligado (congelava o app): limpa quem chegou a ligar, pra não travar na abertura
+  try { localStorage.removeItem(CHAVE_DIGITAL); } catch { /* segue */ }
+  return;
   if (!noAppDaLoja) return;
   let saiuEm = 0;
   try {

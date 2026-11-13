@@ -128,7 +128,8 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
   const [excluirConfirm, setExcluirConfirm] = useState("");
   const [excluindo, setExcluindo] = useState(false);
   // (12/11) a checagem do leitor de digital só acontece no toque (ao abrir a tela ela travava o app em alguns celulares)
-  const temDigital = noAppDaLoja;
+  // (12/11) desligado: o componente da digital (@aparajita/capacitor-biometric-auth) congelava o app no Android. Volta com outro.
+  const temDigital = false && noAppDaLoja;
   const [comDigital, setComDigital] = useState(() => digitalLigada());
 
   const [senhaAtual, setSenhaAtual] = useState("");
