@@ -7,6 +7,48 @@ import type { JSONContent } from "@tiptap/react";
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, TelaVazia, Titulo, avisar, confirmar } from "@/components/base";
 import { explicarErro } from "@/lib/erros";
 import "./admin-noticias.css";
+import { paraWebp } from "@/lib/imagemLeve";
+
+/**
+ * (13/11) Imagens das novidades sempre leves: antes de subir, viram WebP na medida certa
+ * (capa até 1400 px, ícone 256 px, imagem da notificação 1200 px). PNG de 3 MB vira uns 120 KB, sem perder qualidade na tela.
+ * Se o navegador não conseguir converter, sobe o arquivo original (nada trava).
+ */
+async function subirLeve(prefixo: string, file: File, larguraMax: number): Promise<string> {
+  let corpo: Blob = file;
+  let ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  if (!/gif|svg/.test(ext)) {
+    try { corpo = await paraWebp(file, larguraMax, 0.86); ext = "webp"; } catch { /* sobe o original */ }
+  }
+  const fileName = `${prefixo}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+  const { error } = await supabase.storage.from("noticias-capas").upload(fileName, corpo, { cacheControl: "31536000", contentType: corpo.type || undefined });
+  if (error) throw error;
+  return supabase.storage.from("noticias-capas").getPublicUrl(fileName).data.publicUrl;
+}
+
+/** (13/11) As novidades que já existem com imagem pesada (PNG/JPG): converte uma vez, ao abrir esta tela, e troca o endereço */
+async function deixarAntigasLeves(rows: Noticia[]): Promise<number> {
+  let feitas = 0;
+  for (const n of rows) {
+    const mudar: Record<string, string> = {};
+    for (const [campo, larg] of [["imagem_capa", 1400], ["icone_url", 256]] as const) {
+      const url = String((n as unknown as Record<string, unknown>)[campo] || "");
+      if (!url || !/\/noticias-capas\//.test(url) || /\.(webp|gif|svg)(\?|$)/i.test(url)) continue;
+      try {
+        const r = await fetch(url); if (!r.ok) continue;
+        const original = await r.blob();
+        const leve = await paraWebp(original, larg, 0.86);
+        if (leve.size >= original.size) continue; // já estava leve
+        mudar[campo] = await subirLeve(campo === "icone_url" ? "icone" : "capa", new File([leve], "x.webp", { type: "image/webp" }), larg);
+      } catch { /* segue para a próxima */ }
+    }
+    if (Object.keys(mudar).length) {
+      const { error } = await supabase.from("admin_noticias").update(mudar).eq("id", n.id);
+      if (!error) feitas++;
+    }
+  }
+  return feitas;
+}
 
 interface Noticia {
   id: string;
@@ -70,13 +112,21 @@ export default function AdminNoticias() {
   const notifImgRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ emoji: "📢", titulo: "", descricao: "", conteudo: null as JSONContent | null, imagem_capa: "", icone_url: "", autor: "Equipe Doonly", autor_id: "", categoria: "", cta_texto: "", cta_url: "", ativo: true, fixada: false, likes_base: 0 });
 
+  const otimizou = useRef(false);
   useEffect(() => { load(); loadAutores(); }, []);
 
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase.from("admin_noticias").select("*").order("fixada", { ascending: false }).order("ordem", { ascending: false }).order("publicado_em", { ascending: false });
     if (error) avisar(explicarErro(error, "Não deu para carregar as novidades. Atualize a página."), { tipo: "erro" });
-    else setRows(data as Noticia[]);
+    else {
+      setRows(data as Noticia[]);
+      // uma vez por abertura: converte as imagens pesadas que já estavam no ar
+      if (!otimizou.current) {
+        otimizou.current = true;
+        void deixarAntigasLeves(data as Noticia[]).then(q => { if (q > 0) { avisar(`${q} novidade${q > 1 ? "s ficaram" : " ficou"} com as imagens mais leves.`, { tipo: "ok" }); void load(); } });
+      }
+    }
     setLoading(false);
   };
 
@@ -117,12 +167,8 @@ export default function AdminNoticias() {
     if (!file) return;
     setUploadingCapa(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `capa-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
-      const { error } = await supabase.storage.from("noticias-capas").upload(fileName, file, { cacheControl: "3600" });
-      if (error) throw error;
-      const { data } = supabase.storage.from("noticias-capas").getPublicUrl(fileName);
-      setForm(f => ({ ...f, imagem_capa: data.publicUrl }));
+      const url = await subirLeve("capa", file, 1400);
+      setForm(f => ({ ...f, imagem_capa: url }));
     } catch (err) { showMsg("Erro upload: " + (err as Error).message, "err"); }
     setUploadingCapa(false);
     e.target.value = "";
@@ -133,12 +179,8 @@ export default function AdminNoticias() {
     if (!file) return;
     setUploadingIcone(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
-      const fileName = `icone-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
-      const { error } = await supabase.storage.from("noticias-capas").upload(fileName, file, { cacheControl: "3600" });
-      if (error) throw error;
-      const { data } = supabase.storage.from("noticias-capas").getPublicUrl(fileName);
-      setForm(f => ({ ...f, icone_url: data.publicUrl }));
+      const url = await subirLeve("icone", file, 256);
+      setForm(f => ({ ...f, icone_url: url }));
     } catch (err) { showMsg("Erro upload: " + (err as Error).message, "err"); }
     setUploadingIcone(false);
     e.target.value = "";
@@ -149,12 +191,8 @@ export default function AdminNoticias() {
     if (!file) return;
     setUploadingNotifImg(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
-      const { error } = await supabase.storage.from("noticias-capas").upload(fileName, file, { cacheControl: "3600" });
-      if (error) throw error;
-      const { data } = supabase.storage.from("noticias-capas").getPublicUrl(fileName);
-      setNotif(n => ({ ...n, imagemModo: "custom", imagemUrl: data.publicUrl }));
+      const url = await subirLeve("notif", file, 1200);
+      setNotif(n => ({ ...n, imagemModo: "custom", imagemUrl: url }));
     } catch (err) { showMsg("Erro upload: " + (err as Error).message, "err"); }
     setUploadingNotifImg(false);
     e.target.value = "";

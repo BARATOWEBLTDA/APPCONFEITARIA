@@ -119,11 +119,16 @@ export default function RichEditor({ content, onChange }: Props) {
   const uploadArquivo = async (file: File, tipo: "imagem" | "audio" | "arquivo"): Promise<string | null> => {
     setUploading(tipo);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
+      let ext = file.name.split(".").pop()?.toLowerCase() || "bin";
+      // (13/11) foto dentro do texto da novidade também vai leve (WebP até 1400 px); gif e svg ficam como estão
+      let corpo: Blob = file;
+      if (tipo === "imagem" && !/gif|svg/.test(ext)) {
+        try { const { paraWebp } = await import("@/lib/imagemLeve"); corpo = await paraWebp(file, 1400, 0.86); ext = "webp"; } catch { /* sobe o original */ }
+      }
       const fileName = `${tipo}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error } = await supabase.storage
         .from("noticias-anexos")
-        .upload(fileName, file, { cacheControl: "3600", upsert: false });
+        .upload(fileName, corpo, { cacheControl: "31536000", upsert: false, contentType: corpo.type || undefined });
       if (error) throw error;
       const { data } = supabase.storage.from("noticias-anexos").getPublicUrl(fileName);
       return data.publicUrl;
