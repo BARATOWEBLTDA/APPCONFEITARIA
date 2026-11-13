@@ -126,6 +126,8 @@ export default function PraFazer() {
   const pronta = useLojaPronta(uid);
   const { updates } = useAtualizacoes();
   const [avisos, setAvisos] = useState<AvisoCadastro[]>([]);
+  // (12/11) a lista de passos já veio do banco? Antes de chegar, todos pareciam feitos e a comemoração aparecia a cada login
+  const [avisosLidos, setAvisosLidos] = useState(false);
   const [suportePend, setSuportePend] = useState<string | null>(null);
   const [suporteQuem, setSuporteQuem] = useState<string | null>(null);
   const [janelaSuporte, setJanelaSuporte] = useState(false);
@@ -186,13 +188,13 @@ export default function PraFazer() {
     lerAvisosCadastro(uid).then(l0 => {
       if (!vivo) return;
       const l = pronta === true ? l0 : l0.filter(a => a.chave.startsWith("conta_") || a.chave.startsWith("conferir_whatsapp"));
-      setAvisos(l); notificarAvisosCadastro(l);
+      setAvisos(l); setAvisosLidos(pronta === true); notificarAvisosCadastro(l);
     }).catch(() => {});
     return () => { vivo = false; };
   }, [uid, pronta, voltou]);
 
   // (11/11) cardápio que nunca teve visita: o "Divulgar" já entra na trilha (o aviso de sempre só vem depois de 7 dias)
-  const [semVisita, setSemVisita] = useState(false);
+  const [semVisita, setSemVisita] = useState<boolean | null>(null); // null: ainda lendo
   useEffect(() => {
     if (!uid || pronta !== true) return;
     let vivo = true;
@@ -336,7 +338,7 @@ export default function PraFazer() {
   const kFeitos = `doonly_trilha_feitos_${uid}`;
   const feitosChave = feitos.map(t => t.k).join(",");
   useEffect(() => {
-    if (!uid || pronta !== true) return;
+    if (!uid || pronta !== true || !avisosLidos || semVisita === null) return;
     try {
       const antes = localStorage.getItem(kFeitos);
       localStorage.setItem(kFeitos, feitosChave);
@@ -346,7 +348,7 @@ export default function PraFazer() {
       avisar(feitos.length === core.length ? "Você completou todos os passos. Sua loja está pronta para crescer! 🎉" : `Passo concluído: ${novos[0].nome}. Boa! 🎉`, { tipo: "ok", duracao: 5000 });
     } catch { /* sem armazenamento: sem comemoração */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uid, pronta, feitosChave]);
+  }, [uid, pronta, feitosChave, avisosLidos, semVisita]);
 
   if (!lista.length && !passo) return null;
   const mostrar = aberto ? lista : lista.slice(0, VISIVEIS);
