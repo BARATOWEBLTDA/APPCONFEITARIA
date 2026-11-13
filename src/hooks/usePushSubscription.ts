@@ -106,7 +106,13 @@ export async function reativarPushSeSaiu(): Promise<void> {
 /** (12/11) app da loja: com a permissão dada, guarda (ou atualiza) o token deste aparelho na conta aberta. Nunca lança. */
 const MARCA_DESLIGOU = 'doonly_push_desligado'
 const desligouAqui = () => { try { return localStorage.getItem(MARCA_DESLIGOU) === '1' } catch { return false } }
-async function religarNativo(): Promise<boolean> {
+// (12/11) uma vez por abertura do app: antes cada tela que usa os avisos registrava de novo no Firebase
+let religando: Promise<boolean> | null = null
+function religarNativo(): Promise<boolean> {
+  if (!religando) religando = religarNativoAgora().then(ok => { if (!ok) religando = null; return ok })
+  return religando
+}
+async function religarNativoAgora(): Promise<boolean> {
   try {
     if (desligouAqui() || (await permissaoNativa()) !== 'granted') return false
     const t = await obterToken()
@@ -119,8 +125,10 @@ async function religarNativo(): Promise<boolean> {
 }
 
 export function usePushSubscription() {
-  const [isSupported, setIsSupported] = useState(false)
-  const [isSubscribed, setIsSubscribed] = useState(false)
+  // (12/11) app da loja: já começa com o estado deste aparelho (antes começava "desligado" e, um instante depois, "ligado":
+  // o passo de Ativar notificações piscava e a comemoração "Você completou todos os passos" aparecia de novo a cada tela)
+  const [isSupported, setIsSupported] = useState(pushNativoDisponivel)
+  const [isSubscribed, setIsSubscribed] = useState(() => pushNativoDisponivel && !desligouAqui() && !!tokenGuardado())
   const [permission, setPermission] = useState<NotificationPermission>('default')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -133,6 +141,7 @@ export function usePushSubscription() {
         const perm = await permissaoNativa()
         setPermission(perm)
         if (perm === 'granted') setIsSubscribed(await religarNativo())
+        else setIsSubscribed(false)
         return
       }
       // Verifica suporte do browser
@@ -175,6 +184,7 @@ export function usePushSubscription() {
       const perm = await pedirPermissaoNativa()
       setPermission(perm)
       if (perm !== 'granted') { setLoading(false); return false }
+      religando = null
       const ok = await religarNativo()
       if (!ok) setError('Não deu para ativar os avisos agora. Tente de novo em instantes.')
       setIsSubscribed(ok); setLoading(false)
@@ -254,6 +264,7 @@ export function usePushSubscription() {
       const t = tokenGuardado()
       try { if (t) await supabase.from('push_subscriptions').delete().eq('endpoint', PREFIXO_FCM + t) } catch { /* segue */ }
       await desligarNativo()
+      religando = null
       try { localStorage.setItem(MARCA_DESLIGOU, '1') } catch { /* segue */ }
       setIsSubscribed(false); setLoading(false)
       return

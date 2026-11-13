@@ -127,9 +127,9 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
   const [excluirOpen, setExcluirOpen] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
   const [excluindo, setExcluindo] = useState(false);
-  const [temDigital, setTemDigital] = useState(false);
+  // (12/11) a checagem do leitor de digital só acontece no toque (ao abrir a tela ela travava o app em alguns celulares)
+  const temDigital = noAppDaLoja;
   const [comDigital, setComDigital] = useState(() => digitalLigada());
-  useEffect(() => { if (noAppDaLoja) void digitalDisponivel().then(setTemDigital); }, []);
 
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
@@ -336,7 +336,10 @@ export default function Configuracoes({ secao = "app" }: { secao?: "conta" | "ap
             <ItemConfig icone={<Bell size={20} weight="bold" />} nome="Notificações e sons" apoio="Avisos e sons do app" onClick={() => navigate("/configuracoes/notificacoes")} />
             {/* (12/11) só no app da Play Store: abrir o app com a digital */}
             {temDigital && <ItemConfig icone={<Fingerprint size={20} weight="bold" />} nome="Entrar com a digital" apoio={comDigital ? "Ligado: pede ao abrir o app" : "Desligado"} destaque={comDigital}
-              onClick={async () => { const ok = await alternarDigital(); setComDigital(ok); if (ok) avisar("Pronto! O app vai pedir a digital ao abrir."); }} />}
+              onClick={async () => {
+                if (!comDigital && !(await digitalDisponivel())) { avisar("Este celular não tem digital nem senha de tela configurada.", { tipo: "erro" }); return; }
+                const ok = await alternarDigital(); setComDigital(ok); if (ok) avisar("Pronto! O app vai pedir a digital ao abrir.");
+              }} />}
             {/* (10/11) saiu do Menu do celular: é uma configuração que ela ajusta uma vez */}
             {/* (10/11) Instalar e Atualizar viraram 1 linha; sem o app instalado, a frase convida a instalar */}
             <ItemConfig icone={<DeviceMobile size={20} weight="bold" />} nome={largo ? "Sobre o app" : "Atualizar o app"}
