@@ -36,6 +36,8 @@ export default function CompletarCadastro({ user, nomeInicial, lojaInicial = "",
     const { error } = await supabase.from("profiles").upsert(dados, { onConflict: "id" });
     if (error) { setErro("Não foi possível salvar agora. Confira a internet e tente de novo."); setSalvando(false); return; }
     supabase.auth.updateUser({ data: { nome: nome.trim(), nome_loja: loja.trim(), telefone: tel } }).then(() => {}, () => {});
+    // (13/11) cadastro pelo Google também conta como "Concluir inscrição" nos pixels do Doonly (antes só o cadastro por e-mail contava)
+    if (!lojaInicial && !telefoneInicial) void import("@/lib/pixelsApp").then(m => m.eventoDoApp("CompleteRegistration", { content_name: "Cadastro Doonly", metodo: "google" })).catch(() => {});
     await refreshProfile?.();
     onPronto();
   };
