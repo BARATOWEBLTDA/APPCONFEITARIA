@@ -86,7 +86,15 @@ async function salvarAparelho(userId: string, endpoint: string, p256dh: string, 
  */
 export async function reativarPushSeSaiu(): Promise<void> {
   try {
-    if (pushNativoDisponivel) { await religarNativo(); return }
+    if (pushNativoDisponivel) {
+      // (12/11) app da Play Store: na primeira abertura com a conta aberta, o próprio Android pergunta "Permitir notificações?"
+      // (uma vez só por aparelho: se ela disser não, fica o caminho por Configurações › Notificações e sons)
+      if (!desligouAqui() && !jaPerguntou() && (await permissaoNativa()) === 'default') {
+        marcarPerguntou()
+        if ((await pedirPermissaoNativa()) !== 'granted') return
+      }
+      await religarNativo(); return
+    }
     if (localStorage.getItem(MARCA_REATIVAR) !== '1') return
     if (!VAPID_PUBLIC_KEY || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return
     if (Notification.permission !== 'granted') { localStorage.removeItem(MARCA_REATIVAR); return }
@@ -105,6 +113,9 @@ export async function reativarPushSeSaiu(): Promise<void> {
 
 /** (12/11) app da loja: com a permissão dada, guarda (ou atualiza) o token deste aparelho na conta aberta. Nunca lança. */
 const MARCA_DESLIGOU = 'doonly_push_desligado'
+const MARCA_PERGUNTOU = 'doonly_push_perguntou'
+const jaPerguntou = () => { try { return localStorage.getItem(MARCA_PERGUNTOU) === '1' } catch { return true } }
+const marcarPerguntou = () => { try { localStorage.setItem(MARCA_PERGUNTOU, '1') } catch { /* segue */ } }
 const desligouAqui = () => { try { return localStorage.getItem(MARCA_DESLIGOU) === '1' } catch { return false } }
 // (12/11) uma vez por abertura do app: antes cada tela que usa os avisos registrava de novo no Firebase
 let religando: Promise<boolean> | null = null
