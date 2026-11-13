@@ -17,6 +17,20 @@ const NAO_E_NOME = new Set([
   'doonly', 'gmail', 'hotmail', 'email', 'xpto',
 ])
 
+// (13/11) palavras de loja/empresa: conta do Google com nome de negócio ("Cardapio Web", "Maria Doces", "Ju Cakes")
+// não vira saudação ("Quase lá, Cardapio!"); em qualquer palavra do nome, não só na primeira
+const DE_LOJA = new Set([
+  'cardapio', 'cardapios', 'menu', 'delivery', 'web', 'app', 'site', 'online', 'digital', 'oficial', 'contato', 'suporte', 'vendas',
+  'comercial', 'empresa', 'ltda', 'mei', 'eireli', 'loja', 'lojas', 'store', 'shop', 'confeitaria', 'confeitarias', 'doceria', 'docerias',
+  'doce', 'doces', 'bolo', 'bolos', 'cake', 'cakes', 'cupcake', 'cupcakes', 'atelie', 'studio', 'gourmet', 'sweet', 'sweets', 'padaria',
+  'cafe', 'cafeteria', 'brigaderia', 'brigadeiro', 'brigadeiros', 'salgados', 'salgaderia', 'festa', 'festas', 'buffet', 'encomendas',
+  'artesanal', 'artesanais', 'confeitos', 'chocolates', 'chocolateria', 'pudim', 'tortas', 'torta', 'bakery', 'patisserie',
+])
+/** O nome parece de loja/empresa (pra sugerir no "Nome da confeitaria" e não usar como nome de pessoa) */
+export function pareceNomeDeLoja(nomeCompleto?: string | null): boolean {
+  return String(nomeCompleto || '').trim().split(/\s+/).some(p => DE_LOJA.has(limpar(p)))
+}
+
 // ofensas e palavrões: palavra inteira (curtas, que aparecem dentro de nomes reais, ficam só aqui)
 const OFENSA_INTEIRA = new Set([
   'cu', 'pau', 'rola', 'puta', 'puto', 'burro', 'burra', 'corno', 'corna', 'bunda', 'peido', 'lixo', 'feio', 'feia', 'bicha',
@@ -31,6 +45,7 @@ const OFENSA_DENTRO = [
 ]
 
 export function nomeApresentavel(nomeCompleto?: string | null): string {
+  if (pareceNomeDeLoja(nomeCompleto)) return ''
   const primeiro = String(nomeCompleto || '').trim().split(/\s+/)[0] || ''
   if (primeiro.length < 2 || primeiro.length > 20) return ''
   // só letras (com acento), hífen e apóstrofo: número, símbolo e emoji ficam de fora
