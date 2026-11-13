@@ -192,12 +192,31 @@ export function usePushSubscription() {
     if (pushNativoDisponivel) {
       setLoading(true); setError(null)
       try { localStorage.removeItem(MARCA_DESLIGOU) } catch { /* segue */ }
+      // (12/11) app antigo (sem o Firebase dentro): a caixa não fazia nada. Agora explica.
+      const { Capacitor } = await import('@capacitor/core')
+      if (!Capacitor.isPluginAvailable('PushNotifications')) {
+        setLoading(false)
+        const { informar } = await import('@/components/base')
+        informar({ titulo: 'Atualize o app', icone: 'info', texto: 'Esta versão do Doonly ainda não recebe notificações. Abra a Play Store, procure o Doonly e toque em Atualizar.' })
+        return false
+      }
       const perm = await pedirPermissaoNativa()
       setPermission(perm)
-      if (perm !== 'granted') { setLoading(false); return false }
+      if (perm !== 'granted') {
+        setLoading(false)
+        if (perm === 'denied') {
+          const { informar } = await import('@/components/base')
+          informar({ titulo: 'Notificações bloqueadas', icone: 'alerta', texto: 'Para ativar: abra as Configurações do celular, toque em Apps, depois em Doonly e Notificações, e ligue a chave.' })
+        }
+        return false
+      }
       religando = null
       const ok = await religarNativo()
-      if (!ok) setError('Não deu para ativar os avisos agora. Tente de novo em instantes.')
+      if (!ok) {
+        setError('Não deu para ativar os avisos agora. Tente de novo em instantes.')
+        const { avisar } = await import('@/components/base')
+        avisar('Não deu para ativar as notificações agora. Tente de novo em instantes.', { tipo: 'erro' })
+      }
       setIsSubscribed(ok); setLoading(false)
       return ok
     }
