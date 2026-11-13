@@ -8,6 +8,7 @@ import { Botao, avisar } from "@/components/base";
 import AppPageHeader from "@/components/AppPageHeader";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { precisaInstalarNoIphone, ehIphone } from "@/lib/notifications";
+import { noAppDaLoja } from "@/lib/plataforma";
 import {
   sonsHabilitados, setSonsHabilitados,
   somPedidoHabilitado, setSomPedidoHabilitado, somAvisosHabilitado, setSomAvisosHabilitado, OPCOES_SOM, somEscolhido, setSomEscolhido, ouvirOpcao, type GrupoSom,
@@ -111,7 +112,7 @@ export default function NotificacoesSons() {
     pushDescClass = "ns-desc ns-desc--warn";
   } else if (permission === "denied") {
     // (22/10) B7: no celular (Android) não existe "cadeado da barra de endereço": passos certos e em laranja (atenção, não erro)
-    const celular = !ehIphone() && typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches;
+    const celular = noAppDaLoja || (!ehIphone() && typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches);
     pushDesc = ehIphone()
       ? "Notificações desligadas. Ligue em Ajustes → Notificações → Doonly."
       : celular ? (
@@ -119,7 +120,7 @@ export default function NotificacoesSons() {
           Bloqueadas neste celular.
           <ol className="ns-passos">
             <li>1. Abra as <b>Configurações</b> do celular</li>
-            <li>2. <b>Apps</b> › <b>Doonly</b> (ou <b>Chrome</b>)</li>
+            <li>2. <b>Apps</b> › <b>Doonly</b>{noAppDaLoja ? null : <> (ou <b>Chrome</b>)</>}</li>
             <li>3. <b>Notificações</b> › ligue a chave</li>
           </ol>
         </>

@@ -61,6 +61,7 @@ export async function iniciarNativo(): Promise<void> {
   if (!noAppDaLoja || iniciado) return;
   iniciado = true;
   prepararCompartilharNoApp();
+  prepararDownloadsNoApp();
   void iniciarDigital();
   try {
     const { App } = await import("@capacitor/app");
@@ -96,6 +97,9 @@ const blobParaBase64 = (b: Blob) => new Promise<string>((ok, falhou) => {
 const nomeSeguro = (n: string) => (n || "arquivo").replace(/[\\/:*?"<>|]+/g, " ").trim() || "arquivo";
 
 async function compartilharNoApp(d: ShareData): Promise<void> {
+  // sem o plugin nativo (app antigo): o Share "da web" chamaria este mesmo navigator.share, num laço sem fim
+  const { Capacitor } = await import("@capacitor/core");
+  if (!Capacitor.isPluginAvailable("Share")) throw new Error("compartilhar indisponível nesta versão do app");
   const { Share } = await import("@capacitor/share");
   const arquivos = (d.files || []) as File[];
   let files: string[] | undefined;
@@ -231,4 +235,41 @@ export async function iniciarDigital(): Promise<void> {
     App.addListener("resume", () => { if (saiuEm && Date.now() - saiuEm > FORA_MS) void travarComDigital(); });
   } catch { /* segue */ }
   void travarComDigital();
+}
+
+// ── (12/11) Downloads no app ──
+// O WebView do Android ignora <a download> (QR Code, imagem do cupom, topo de bolo, PDF da Doo): nada acontecia.
+// No app, todo download vira a janela de compartilhar do Android, com "Salvar", Drive, WhatsApp…
+async function baixarNoApp(href: string, nome: string): Promise<void> {
+  try {
+    const r = await fetch(href);
+    const blob = await r.blob();
+    const arquivo = new File([blob], nomeSeguro(nome || href.split("/").pop()?.split("?")[0] || "arquivo"), { type: blob.type || "application/octet-stream" });
+    await compartilharNoApp({ files: [arquivo], title: arquivo.name });
+  } catch (e) {
+    if ((e as Error)?.name === "AbortError") return;
+    console.warn("[Doonly] download no app:", e);
+    import("@/components/base").then(({ avisar }) => avisar("Não deu para salvar o arquivo. Tente de novo.", { tipo: "erro" })).catch(() => {});
+  }
+}
+
+function prepararDownloadsNoApp(): void {
+  const ehDownload = (el: EventTarget | null): el is HTMLAnchorElement =>
+    el instanceof HTMLAnchorElement && el.hasAttribute("download") && !!el.href;
+  const proto = HTMLAnchorElement.prototype;
+  const clickOriginal = proto.click;
+  proto.click = function (this: HTMLAnchorElement) {
+    if (ehDownload(this)) { void baixarNoApp(this.href, this.download); return; }
+    return clickOriginal.call(this);
+  };
+  const dispatchOriginal = proto.dispatchEvent;
+  proto.dispatchEvent = function (this: HTMLAnchorElement, ev: Event) {
+    if (ev.type === "click" && ehDownload(this)) { void baixarNoApp(this.href, this.download); return false; }
+    return dispatchOriginal.call(this, ev);
+  };
+  // link de download tocado pela pessoa (dentro da página)
+  document.addEventListener("click", (ev) => {
+    const a = (ev.target as Element | null)?.closest?.("a[download]") as HTMLAnchorElement | null;
+    if (a && a.href) { ev.preventDefault(); void baixarNoApp(a.href, a.download); }
+  }, true);
 }

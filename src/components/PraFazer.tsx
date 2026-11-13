@@ -7,6 +7,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
 import { useAoVoltar } from "@/hooks/useAoVoltar";
 import { precisaInstalarNoIphone, ehIphone } from "@/lib/notifications";
+import { noAppDaLoja } from "@/lib/plataforma";
 import { getInstallPrompt, isStandalone, onInstallChange, promptInstall } from "@/lib/installPrompt";
 import { lerAvisosCadastro, notificarAvisosCadastro, type AvisoCadastro } from "@/lib/avisosCadastro";
 import { avisoDoPro } from "@/lib/notificacoesUsuario";
@@ -203,7 +204,9 @@ export default function PraFazer() {
   // (18/10) notificações: enquanto não estiverem ligadas neste aparelho, é o primeiro passo (toque já pede a permissão)
   const push = usePushSubscription();
   // (6.66) ativa ali mesmo, sem abrir a tela de Notificações: ligou → aviso de teste; bloqueado → explica como liberar
-  const comoLiberar = () => informar({ titulo: "Notificações bloqueadas", icone: "alerta", texto: ehIphone()
+  const comoLiberar = () => informar({ titulo: "Notificações bloqueadas", icone: "alerta", texto: noAppDaLoja
+    ? "Para ativar: abra as Configurações do celular, toque em Apps, depois em Doonly e Notificações, e ligue a chave."
+    : ehIphone()
     ? "Para ligar: abra Ajustes, depois Notificações, Doonly e Permitir Notificações."
     : "Para ativar: toque no cadeado ao lado do endereço do site, vá em Notificações e escolha “Permitir”. Depois toque em Ativar de novo." });
   const ativarNotif = async () => {
@@ -215,7 +218,8 @@ export default function PraFazer() {
       void avisoDeTesteNaLista();
       avisar("Notificações ligadas. Um aviso de teste chega em alguns segundos.", { tipo: "ok", duracao: 6000 });
     }
-    else if (Notification.permission === "denied") comoLiberar();
+    else if (noAppDaLoja) { const { permissaoNativa } = await import("@/lib/pushNativo"); if ((await permissaoNativa()) === "denied") comoLiberar(); }
+    else if (typeof Notification !== "undefined" && Notification.permission === "denied") comoLiberar();
   };
   // (23/10) sem "Agora não": enquanto os avisos não estiverem ligados, o pedido continua aqui (é o que garante que a novidade chega)
   const itemNotif: Item[] = uid && precisaInstalarNoIphone() ? [{
