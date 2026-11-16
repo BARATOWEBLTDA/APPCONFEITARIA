@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import PainelLoja, { type AcaoLoja } from "./PainelLoja";
 import { registrar, nomeConta, perfilAtual } from "@/lib/adminPerfil";
 import { supabase } from "@/lib/supabase";
-import { Plus, MagnifyingGlass, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight, EnvelopeSimple, ShieldCheck } from "@phosphor-icons/react";
+import { Plus, MagnifyingGlass, Crown, Lock, LockOpen, Trash, Users, UserPlus, CaretLeft, CaretRight, EnvelopeSimple, ShieldCheck, WhatsappLogo, CheckCircle, Phone } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, Campo, Janela, TelaVazia, avisar, confirmar, informar, BotaoLimpar } from "@/components/base";
 import { buscarTudo } from "@/lib/buscarTudo";
 import { explicarErro } from "@/lib/erros";
@@ -19,7 +19,9 @@ type Metricas = {
   ultimo_pedido_em: string | null; produtos: number; clientes: number; orcamentos: number;
 };
 type Ordem = "cadastro" | "acesso" | "pedidos" | "produtos" | "clientes";
-type Ver = "todas" | "online" | "pro" | "gratis" | "bloq";
+type Ver = "todas" | "semcontato" | "online" | "pro" | "gratis" | "bloq";
+/** (16/11) primeiro contato: quem já foi chamado no WhatsApp (compartilhado entre os 3 admins) */
+type Contato = { nome: string | null; em: string };
 /** (03/11) a lista vem em páginas de 50: com centenas de contas a página ficava enorme e pesada */
 const POR_PAGINA = 50;
 /** 1 … 4 5 6 … 10: no máximo 7 botões (cabe no celular) */
@@ -58,10 +60,33 @@ export default function AdminUsuarios() {
   const [ordem, setOrdem] = useState<Ordem>("acesso");
   // ?ver=online: o "Ver todas online" do Painel abre a lista já filtrada
   const [params] = useSearchParams();
-  const [ver, setVer] = useState<Ver>(() => (["online", "pro", "gratis", "bloq"].includes(params.get("ver") || "") ? params.get("ver") as Ver : "todas"));
+  const [ver, setVer] = useState<Ver>(() => (["semcontato", "online", "pro", "gratis", "bloq"].includes(params.get("ver") || "") ? params.get("ver") as Ver : "todas"));
   const [pagina, setPagina] = useState(1);
   useEffect(() => { setPagina(1); }, [search, ordem, ver]);
   const [lojaAberta, setLojaAberta] = useState<string | null>(null);
+  // (16/11) primeiro contato no WhatsApp: mapa loja_id → quem chamou e quando (compartilhado entre os 3 admins)
+  const [contatos, setContatos] = useState<Map<string, Contato>>(new Map());
+  const carregarContatos = async () => {
+    const { data } = await supabase.from("admin_primeiro_contato").select("loja_id, chamado_por_nome, chamado_em");
+    if (data) setContatos(new Map(data.map(r => [r.loja_id as string, { nome: r.chamado_por_nome as string | null, em: r.chamado_em as string }])));
+  };
+  useEffect(() => { carregarContatos(); }, []);
+  // marca/desmarca "já chamei" (a presença da linha = chamei). Otimista: atualiza a tela na hora.
+  const alternarContato = async (u: UsuarioAdmin) => {
+    const jaChamado = contatos.has(u.id);
+    const p = perfilAtual();
+    setContatos(m => { const n = new Map(m); if (jaChamado) n.delete(u.id); else n.set(u.id, { nome: p?.nome ?? "Admin", em: new Date().toISOString() }); return n; });
+    if (jaChamado) {
+      const { error } = await supabase.from("admin_primeiro_contato").delete().eq("loja_id", u.id);
+      if (error) { avisar(explicarErro(error, "Não deu para desmarcar. Tente de novo."), { tipo: "erro" }); carregarContatos(); return; }
+      registrar(`desmarcou o primeiro contato com ${nomeConta(u)}`, { tipo: "outro", alvo_id: u.id });
+    } else {
+      const { error } = await supabase.from("admin_primeiro_contato").insert({ loja_id: u.id, chamado_por_id: p?.id ?? null, chamado_por_nome: p?.nome ?? "Admin" });
+      if (error) { avisar(explicarErro(error, "Não deu para marcar. Tente de novo."), { tipo: "erro" }); carregarContatos(); return; }
+      registrar(`fez o primeiro contato com ${nomeConta(u)}`, { tipo: "outro", alvo_id: u.id });
+    }
+  };
+  const foneWa = (tel?: string | null) => { const f = (tel || "").replace(/\D/g, ""); return f.length >= 10 ? `https://wa.me/${f.length <= 11 ? "55" + f : f}` : ""; };
   const [rev, setRev] = useState(0);
   // (04/11) os botões saíram da linha: ficam nos detalhes da conta
   const acoesDa = (u?: UsuarioAdmin): AcaoLoja[] | undefined => {
@@ -322,11 +347,11 @@ export default function AdminUsuarios() {
   const proAtivo = (u: UsuarioAdmin) => u.plano === "pro" && (!u.pro_expira_em || new Date(u.pro_expira_em).getTime() > agora);
   const estaOnline = (u: UsuarioAdmin) => { const v = vistoEm(u); return !!v && agora - new Date(v).getTime() < ONLINE_MS; };
   const passa: Record<Ver, (u: UsuarioAdmin) => boolean> = {
-    todas: () => true, online: estaOnline, pro: proAtivo, gratis: u => !proAtivo(u), bloq: u => !!u.banned_until,
+    todas: () => true, semcontato: u => !u.is_admin && !contatos.has(u.id), online: estaOnline, pro: proAtivo, gratis: u => !proAtivo(u), bloq: u => !!u.banned_until,
   };
   const qtd = (v: Ver) => users.filter(passa[v]).length;
   const VERES: { v: Ver; t: string }[] = [
-    { v: "todas", t: "Todas" }, { v: "online", t: "Online agora" }, { v: "pro", t: "PRO" }, { v: "gratis", t: "Grátis" }, { v: "bloq", t: "Bloqueadas" },
+    { v: "todas", t: "Todas" }, { v: "semcontato", t: "Falta chamar" }, { v: "online", t: "Online agora" }, { v: "pro", t: "PRO" }, { v: "gratis", t: "Grátis" }, { v: "bloq", t: "Bloqueadas" },
   ];
   const filtered = users.filter(passa[ver]).filter(u => !q || [u.nome, u.nome_loja, u.email, u.telefone].some(x => String(x || "").toLowerCase().includes(q)))
     .sort((a, b) => {
@@ -405,6 +430,7 @@ export default function AdminUsuarios() {
               <span role="columnheader" className="au-num">Produtos</span>
               <span role="columnheader" className="au-num">Clientes</span>
               <span role="columnheader">Último acesso</span>
+              <span role="columnheader">Contato</span>
               <span aria-hidden="true" />
             </div>
             {filtered.slice((pagAtual - 1) * POR_PAGINA, pagAtual * POR_PAGINA).map(u => {
@@ -416,6 +442,8 @@ export default function AdminUsuarios() {
               // (04/11) PRO "pra sempre" (vencimento daqui a décadas) vira Vitalício
               const vitalicio = !!u.pro_expira_em && new Date(u.pro_expira_em).getFullYear() - new Date().getFullYear() > 50;
               const abrir = () => setLojaAberta(u.id);
+              const wa = foneWa(u.telefone);
+              const contato = contatos.get(u.id);
               return (
                 <div key={u.id} className="au-l" role="row" tabIndex={0} title="Ver detalhes da conta"
                   onClick={abrir} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(); } }}>
@@ -443,6 +471,17 @@ export default function AdminUsuarios() {
                   <span className="au-c au-c--n au-num" role="cell"><b>{(u.produtos || 0).toLocaleString("pt-BR")}</b></span>
                   <span className="au-c au-c--n au-num" role="cell"><b>{(u.clientes || 0).toLocaleString("pt-BR")}</b></span>
                   <span className={`au-c au-c--visto${online ? " on" : ""}`} role="cell" title={visto ? new Date(visto).toLocaleString("pt-BR") : undefined}>{textoVisto(visto, agora)}</span>
+                  {!u.is_admin && (
+                    <span className="au-contato" role="cell" onClick={e => e.stopPropagation()}>
+                      {wa
+                        ? <a className="au-wa" href={wa} target="_blank" rel="noopener noreferrer" aria-label="Chamar no WhatsApp" title="Chamar no WhatsApp"><WhatsappLogo size={18} weight="fill" /></a>
+                        : <span className="au-wa au-wa--no" title="Sem WhatsApp cadastrado"><Phone size={15} weight="bold" /></span>}
+                      <button type="button" className={`au-chamei${contato ? " on" : ""}`} onClick={() => alternarContato(u)}
+                        title={contato ? `Chamado por ${contato.nome || "Admin"} em ${new Date(contato.em).toLocaleDateString("pt-BR")} · toque para desmarcar` : "Marcar que você já chamou"}>
+                        {contato ? <><CheckCircle size={16} weight="fill" aria-hidden="true" /> Chamado</> : "Chamei"}
+                      </button>
+                    </span>
+                  )}
                   <span className="au-seta" aria-hidden="true"><CaretRight size={18} weight="bold" /></span>
                 </div>
               );
@@ -606,6 +645,14 @@ export default function AdminUsuarios() {
         .au-on-txt { display: inline-flex; align-items: center; gap: 6px; }
         .au-on-txt i { width: 8px; height: 8px; border-radius: 50%; background: var(--ui-verde); }
         .au-seta { flex: none; display: flex; color: var(--ui-texto-3); }
+        /* (16/11) primeiro contato: chamar no WhatsApp + marcar que já chamei */
+        .au-contato { flex: none; display: flex; align-items: center; gap: 6px; }
+        .au-wa { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #25A244; color: #fff; text-decoration: none; }
+        .au-wa:hover { background: #1E8C3A; }
+        .au-wa--no { background: var(--ui-cinza); color: var(--ui-texto-3); cursor: not-allowed; }
+        .au-chamei { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 34px; padding: 0 12px; border: 1px solid var(--ui-borda-campo); border-radius: 999px; background: var(--ui-branco); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); white-space: nowrap; cursor: pointer; }
+        .au-chamei:hover { border-color: var(--ui-rosa); color: var(--ui-rosa-escuro); }
+        .au-chamei.on { border-color: transparent; background: #E8F6EC; color: #1E8C3A; }
         .au-filtros { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
         .au-filtros .au-busca { flex: 1 1 100%; min-width: 0; max-width: none; box-sizing: border-box; }
         .au-filtros .au-ordem { flex: 1 1 0; min-width: 0; flex-direction: column; align-items: stretch; gap: 4px; }
@@ -636,7 +683,7 @@ export default function AdminUsuarios() {
         @media (max-width: 899px) { .au-ate { display: none; } }
         @media (min-width: 900px) {
           .au-card { padding: 16px; }
-          .au-cab, .au-l { display: grid; grid-template-columns: minmax(0, 2.6fr) minmax(0, 1.2fr) 132px 76px 76px 118px 24px; align-items: center; column-gap: 12px; }
+          .au-cab, .au-l { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) 92px 64px 64px 108px 152px 24px; align-items: center; column-gap: 12px; }
           .au-cab { margin-top: 12px; padding: 10px 12px; border-radius: var(--ui-raio-p); background: var(--ui-cinza); font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
           .au-l { min-height: 72px; padding: 10px 12px; border-top: 0; border-bottom: 1px solid var(--ui-linha); border-radius: 0; }
           .au-l:last-of-type { border-bottom: 0; }
