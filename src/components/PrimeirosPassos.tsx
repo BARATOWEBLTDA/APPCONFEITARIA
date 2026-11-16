@@ -268,10 +268,10 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
     { feito: estado.pagamento, ic: I(Wallet), t: "Pagamento", s: "Como o cliente paga", pq: "Diga se aceita Pix, cartão ou dinheiro.", abrir: () => abrirPasso("pagamento") },
     { feito: estado.entrega, ic: I(Moped), t: "Entrega", s: "Retirada e taxa de entrega", pq: "Diga se o cliente busca, se você entrega e quanto cobra pela entrega.", abrir: () => abrirPasso("entrega") },
     { feito: estado.caixa, ic: I(Coins), t: "Saldo do caixa", s: "Quanto tem em caixa hoje", pq: "Assim o app mostra quanto dinheiro você tem de verdade, todo dia.", abrir: () => setFolha("caixa") },
-    { feito: estado.produto, ic: I(Basket), t: "Primeiro produto", s: "", pq: "Com o primeiro doce cadastrado, o cardápio já pode receber pedidos.", abrir: () => navigate("/produtos") },
+    { feito: estado.produto, ic: I(Basket), t: "Primeiro produto", s: "", pq: "Com o primeiro produto cadastrado, o cardápio já pode receber pedidos.", abrir: () => navigate("/produtos") },
   ];
   const ultimoQueFalta = passos.filter(p => !p.feito).length === 1;
-  passos[passos.length - 1].s = ultimoQueFalta ? "Falta só isso" : "Seu primeiro doce";
+  passos[passos.length - 1].s = ultimoQueFalta ? "Falta só isso" : "Seu primeiro produto";
   const feitos = passos.filter(p => p.feito).length;
   const atual = passos.findIndex(p => !p.feito);
   const colunas = largo && local === "inicio";
@@ -915,7 +915,7 @@ const TITULO_PASSO: Record<string, string> = {
   "Pagamento": "Como o cliente paga?",
   "Entrega": "Busca ou entrega?",
   "Saldo do caixa": "Quanto tem no caixa?",
-  "Primeiro produto": "Seu primeiro doce",
+  "Primeiro produto": "Seu primeiro produto",
 };
 
 /** (6.126) o Doo de cada passo: no computador ao lado do passo da vez; no celular, já montado no banner do topo */

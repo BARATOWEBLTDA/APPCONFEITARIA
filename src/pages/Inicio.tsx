@@ -1270,7 +1270,9 @@ export default function Inicio() {
       <style>{`
         .ini-root {
           font-family: var(--font-base);
-          padding: 0 var(--space-3) 6rem;
+          /* (16/11) a folga de baixo soma a barra de gestos do sistema: no app da loja (APK) o último
+             bloco (o banner) encostava no menu; env vale 0 na web, então não muda nada lá */
+          padding: 0 var(--space-3) calc(6rem + env(safe-area-inset-bottom, 0px));
           display: flex; flex-direction: column;
           max-width: 980px; margin: 0 auto;
           position: relative;
