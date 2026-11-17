@@ -17,7 +17,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_FICHA, TOUR_FICHA } from "@/lib/comoTelas";
 import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar, BotaoLimpar, BotaoTirar } from "@/components/base";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
-import { Camera, CaretDown, CaretRight, Check, FilePdf, WhatsappLogo, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, ListBullets, SquaresFour } from "@phosphor-icons/react";
+import { Camera, CaretDown, CaretRight, Check, FilePdf, WhatsappLogo, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, ListBullets, SquaresFour, Sparkle } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
 import "./clientes.css";
 import "./fichaLista.css";
@@ -706,13 +706,15 @@ export default function FichaTecnica() {
       <div className="cl9 fd">
         {(!maoConta || cvConta == null) && (
           <div className="fd-aviso-custos" role="note">
-            <WarningCircle size={20} weight="bold" aria-hidden="true" />
-            <span><b>Para o custo sair certo</b><small>Cadastre {!maoConta && cvConta == null ? "sua mão de obra e os custos invisíveis (gás, luz e perdas)" : !maoConta ? "sua mão de obra" : "os custos invisíveis (gás, luz e perdas)"} em Custos.</small></span>
-            <span className="fd-aviso-bts">
+            <div className="fd-aviso-top">
+              <WarningCircle size={20} weight="bold" aria-hidden="true" />
+              <span><b>Para o custo sair certo</b><small>Cadastre {!maoConta && cvConta == null ? "sua mão de obra e os custos invisíveis (gás, luz e perdas)" : !maoConta ? "sua mão de obra" : "os custos invisíveis (gás, luz e perdas)"} em Custos.</small></span>
+            </div>
+            <div className="fd-aviso-bts">
+              <Botao variante="secundario" tamanho="p" className="fd-bt-cadastrar" onClick={() => navigate("/custos", { state: { abrir: !maoConta ? "mao" : "invisiveis" } })}>Cadastrar</Botao>
               {/* (6.102) PRO: a Doo pergunta e configura pela conversa */}
-              {isProFicha && <Botao variante="secundario" tamanho="m" onClick={() => abrirDooIA("Quero configurar minha mão de obra e os custos invisíveis")}>Pedir à Doo</Botao>}
-              <Botao variante="secundario" tamanho="m" onClick={() => navigate("/custos", { state: { abrir: !maoConta ? "mao" : "invisiveis" } })}>Cadastrar</Botao>
-            </span>
+              {isProFicha && <Botao variante="link" tamanho="p" className="fd-bt-doo" icone={<Sparkle size={15} weight="fill" />} onClick={() => abrirDooIA("Quero configurar minha mão de obra e os custos invisíveis")}>Pedir à Doo</Botao>}
+            </div>
           </div>
         )}
         <div className="fd-grade">

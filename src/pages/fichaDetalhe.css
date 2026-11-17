@@ -175,14 +175,18 @@
 .fd-conta > .fd-pix span:last-child { font-size: 13px; font-weight: 600; color: var(--ui-verde); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* (04/11 · 6.20) aviso: falta a mão de obra ou os custos invisíveis (saíram da ficha, ficam em Custos) */
-.fd-aviso-custos { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; padding: 12px 14px; border: 1px solid #F5D9A8; border-radius: var(--ui-raio-cartao); background: #FFF8EC; color: #9A5B07; }
-.fd-aviso-custos > svg { flex: none; }
-.fd-aviso-custos > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.fd-aviso-custos { display: flex; flex-direction: column; gap: 10px; margin: 0 0 12px; padding: 12px 14px; border: 1px solid #F5D9A8; border-radius: var(--ui-raio-cartao); background: #FFF8EC; color: #9A5B07; }
+.fd-aviso-top { display: flex; align-items: flex-start; gap: 12px; }
+.fd-aviso-top > svg { flex: none; margin-top: 1px; }
+.fd-aviso-top > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .fd-aviso-custos b { font-size: 14px; font-weight: 600; color: #7A4706; }
 .fd-aviso-custos small { font-size: 13px; line-height: 1.4; color: #8A5A16; }
-@media (max-width: 599px) { .fd-aviso-custos { flex-wrap: wrap; } .fd-aviso-custos .ui-bt { width: 100%; } }
-/* (6.102) aviso dos custos: Pedir à Doo (PRO) e Cadastrar */
-.fd-aviso-bts { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+/* (17/11) aviso dos custos: botões embaixo do texto — "Cadastrar" âmbar compacto + "Pedir à Doo" como link */
+.fd-aviso-bts { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-left: 32px; }
+.fd-bt-cadastrar.ui-bt--secundario { background: #A8640F; color: #fff; border: 0; padding: 0 18px; }
+.fd-bt-cadastrar.ui-bt--secundario:hover { background: #8A520C; }
+.fd-bt-doo.ui-bt--link { color: #9A5B07; padding-left: 0; padding-right: 0; }
+@media (max-width: 599px) { .fd-aviso-bts { padding-left: 0; } }
 
 /* (6.183) a receita rende N unidades: o custo e o lucro são de 1 unidade */
 .fd-rende { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); }
