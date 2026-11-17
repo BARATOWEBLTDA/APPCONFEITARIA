@@ -25,7 +25,8 @@
 .cm1-content { position: relative; z-index: 2; margin-top: -24px; padding: 20px 16px 4px; border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; }
 .cm1-logo { position: absolute; z-index: 6; top: -60px; right: 16px; width: 106px; height: 106px; padding: 2px; border: 4px solid; border-radius: 50%; background: var(--ui-branco); box-shadow: 0 0 0 4px var(--cm1-fundo, #F7F4F5), 0 6px 18px rgba(44,18,25,.18); overflow: hidden; }
 .cm1-logo img, .cm1-logo span { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; font-size: 36px; font-weight: 600; }
-.cm1-nome { display: flex; align-items: center; margin: 0; padding-right: 118px; font-size: 22px; font-weight: 600; line-height: 1.25; letter-spacing: 0; }
+/* (17/11) sem flex: o selo flui inline e cola no fim do nome (com flex ele centralizava no meio das 2 linhas, longe) */
+.cm1-nome { display: block; margin: 0; padding-right: 118px; font-size: 22px; font-weight: 600; line-height: 1.25; letter-spacing: 0; }
 .cm1-nome .selo-verif { margin-left: 6px; }
 .cm1-descricao { margin: 6px 0 0; font-size: 15px; line-height: 1.45; color: var(--ui-texto-2); }
 

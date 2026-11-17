@@ -8,6 +8,15 @@ import type { ProdutoEntrega } from '@/lib/entregaProduto'
 import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
 import { ddmm, fechadoEm, hojeBr, lerFechados } from '@/lib/diasFechados'
 import './cardapioModelo1.css'
+
+// (17/11) nome + selo verificado: a última palavra e o selo ficam juntos (nowrap), pra ele colar no fim do nome
+// e, se precisar quebrar, quebrar junto — nunca sobrar sozinho numa linha (igual Instagram).
+function NomeComSelo({ nome, tamanho }: { nome: string; tamanho: number }) {
+  const corte = nome.trimEnd().lastIndexOf(' ')
+  const inicio = corte > 0 ? nome.slice(0, corte + 1) : ''
+  const ultima = corte > 0 ? nome.slice(corte + 1) : nome
+  return <>{inicio}<span style={{ whiteSpace: 'nowrap' }}>{ultima}<SeloVerificado tamanho={tamanho} /></span></>
+}
 import { Vouchers } from './Vouchers'
 import { topoEscurecido } from '@/lib/coresCardapio'
 
@@ -124,7 +133,9 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
         </div>
 
         <h1 className="cm1-nome" style={{ color: corNome }}>
-          {design.nome_loja || 'Minha Confeitaria'}{verificada && <SeloVerificado tamanho={22} />}
+          {verificada
+            ? <NomeComSelo nome={design.nome_loja || 'Minha Confeitaria'} tamanho={22} />
+            : (design.nome_loja || 'Minha Confeitaria')}
         </h1>
         {/* (20/10) embaixo do nome: "● Aberto agora · até 18:00" à esquerda e "Sobre a loja ›" à direita.
             Sem horário cadastrado, a cidade fica no lugar do status (abre o mapa). */}

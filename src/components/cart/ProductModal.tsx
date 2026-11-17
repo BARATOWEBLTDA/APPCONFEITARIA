@@ -664,7 +664,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       }
       if (disputaPreco && gTamanho && (opTamanho || gTamanho.min_selecionavel > 0)) {
         if (regraSabor === 'preco_sabor') return comPromo(v)
-        if (regraSabor === 'tamanho_base_sabor_adicional') return `+ ${comPromo(v)}`
+        if (regraSabor === 'tamanho_base_sabor_adicional') return `+ ${formatCurrency(v)}`
         return '' // "o preço vem do tamanho": o sabor não muda o preço
       }
       return comPromo(v)
@@ -672,7 +672,9 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     // tamanho e sabor com preço próprio não somam adicional no total
     // (6.157) valor por unidade (no peso livre, por kg — igual ao preço do topo, "por kg"); antes o por_kg mostrava × os kg
     const ad = calcularAdicionalOpcao(op, ctxOpcao)
-    return ad > 0 ? `+ ${comPromo(ad)}` : ''
+    // (17/11) o adicional é mostrado CHEIO (igual entra no total): o desconto da promoção vale só no preço base,
+    // então mostrar o adicional com desconto (comPromo) dava um "+R$ 8,33" que não batia com o total.
+    return ad > 0 ? `+ ${formatCurrency(ad)}` : ''
   }
   const emFatias = (product as ProdutoModal)?.grupo_tamanhos?.rendimento_unidade === 'fatias'
   // O que todo grupo recebe igual (o componente Grupo fica fora daqui pra não ser remontado a cada toque)
