@@ -18,6 +18,9 @@ type Loja = {
   pedidos: number; pedidos_hoje: number; pedidos_30d: number; cardapio_30d: number; cardapio_total: number; vendido_30d: number;
   ultimo_pedido_em: string | null; por_mes: { mes: string; n: number }[]; mais_vendidos: { nome: string; qtd: number }[];
   produtos: number; clientes: number; orcamentos: number;
+  // (16/11) uso real: dias ativos e tempo logado (do heartbeat) + datas do que ela criou
+  dias_ativos_7?: number; dias_ativos_30?: number; minutos_30?: number; minutos_total?: number;
+  primeiro_produto_em?: string | null; ultimo_produto_em?: string | null;
 };
 
 const ONLINE_MS = 2 * 60_000;
@@ -101,6 +104,25 @@ export default function PainelLoja({ id, aoFechar, acoes, rev = 0 }: { id: strin
               {insta && <a href={`https://instagram.com/${encodeURIComponent(insta)}`} target="_blank" rel="noopener noreferrer"><InstagramLogo size={18} weight="bold" aria-hidden="true" />Instagram</a>}
             </div>
 
+            {(() => {
+              const d7 = l.dias_ativos_7 ?? 0, d30 = l.dias_ativos_30 ?? 0, min30 = l.minutos_30 ?? 0, minTot = l.minutos_total ?? 0;
+              const cadDias = l.criado_em ? Math.floor((agora - new Date(l.criado_em).getTime()) / 86_400_000) : 0;
+              const st = d7 >= 3 ? { t: "Usando bastante", c: "ok" } : d7 >= 1 ? { t: "Usando pouco", c: "meio" } : cadDias >= 2 ? { t: "Não está usando", c: "ruim" } : { t: "Começando agora", c: "novo" };
+              const minDia = d30 > 0 ? Math.round(min30 / d30) : 0;
+              const temDados = minTot > 0 || d30 > 0;
+              return <>
+                <h3 className="pl-h">Está usando?</h3>
+                <div className={`pl-uso pl-uso--${st.c}`}>
+                  <b>{st.t}</b>
+                  <small>{temDados ? `Ativa em ${d7} ${d7 === 1 ? "dia" : "dias"} dos últimos 7 · ${d30} dos últimos 30` : "O tempo de uso começa a contar agora (antes o app não guardava)."}</small>
+                </div>
+                <div className="pl-nums">
+                  <div><b>{temDados ? `${minDia} min` : "—"}</b><small>Por dia ativo (30d)</small></div>
+                  <div><b>{minTot > 0 ? `${minTot.toLocaleString("pt-BR")} min` : "—"}</b><small>Tempo total no app</small></div>
+                </div>
+              </>;
+            })()}
+
             <h3 className="pl-h">Últimos 30 dias</h3>
             <div className="pl-nums">
               <div className="pl-num-gr"><b>{brl(l.vendido_30d)}</b><small>Vendido em pedidos</small></div>
@@ -139,6 +161,8 @@ export default function PainelLoja({ id, aoFechar, acoes, rev = 0 }: { id: strin
               <div><dt>E-mail</dt><dd>{l.email ? <a href={`mailto:${l.email}`}>{l.email}</a> : "—"}</dd></div>
               <div><dt>Telefone</dt><dd>{l.telefone || "—"}</dd></div>
               <div><dt>Cadastro</dt><dd>{data(l.criado_em)}</dd></div>
+              <div><dt>1º produto</dt><dd>{data(l.primeiro_produto_em)}</dd></div>
+              <div><dt>Último produto</dt><dd>{data(l.ultimo_produto_em)}</dd></div>
               <div><dt>Último pedido</dt><dd>{data(l.ultimo_pedido_em)}</dd></div>
               {proAtivo && l.pro_desde && <div><dt>PRO desde</dt><dd>{data(l.pro_desde)}</dd></div>}
               {proAtivo && <div><dt>PRO vence em</dt><dd>{!l.pro_expira_em ? "Sem vencimento" : new Date(l.pro_expira_em).getFullYear() - new Date(agora).getFullYear() > 50 ? "Vitalício" : data(l.pro_expira_em)}</dd></div>}
@@ -186,6 +210,13 @@ export default function PainelLoja({ id, aoFechar, acoes, rev = 0 }: { id: strin
         .pl-links a:hover { border-color: var(--ui-rosa); color: var(--ui-rosa-escuro); }
         .pl-h span { font-weight: 500; }
         .pl-h { margin: 18px 0 6px; font-size: 13px; font-weight: 600; color: var(--ui-texto-3); text-transform: none; }
+        .pl-uso { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: var(--ui-raio); border: 1px solid var(--ui-borda); background: var(--ui-branco); margin-bottom: 8px; }
+        .pl-uso b { font-size: 16px; font-weight: 600; }
+        .pl-uso small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
+        .pl-uso--ok { border-color: #BFE6CC; background: #E8F6EC; } .pl-uso--ok b { color: var(--ui-verde); }
+        .pl-uso--meio { border-color: #F3DCB0; background: #FDF3E2; } .pl-uso--meio b { color: var(--ui-laranja); }
+        .pl-uso--ruim { border-color: #F3B4B4; background: #FDEDED; } .pl-uso--ruim b { color: var(--ui-vermelho, #B91C1C); }
+        .pl-uso--novo { border-color: var(--ui-borda); background: var(--ui-cinza); } .pl-uso--novo b { color: var(--ui-texto-2); }
         .pl-nums { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
         .pl-num-gr { grid-column: 1 / -1; }
         .pl-num-gr b { font-size: 22px !important; color: var(--ui-verde) !important; }

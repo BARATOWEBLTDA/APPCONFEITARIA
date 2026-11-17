@@ -78,7 +78,7 @@ export function faixaDaLoja(config: Configuracoes | null, produtos: ProdutoEntre
   if (entrega && retirada) itens.push({ Ic: Truck, v: 'Entrega', t: 'e retirada' }) // (27/10) igual aos outros quadrinhos: o valor em negrito e o apoio pequeno (antes parecia uma frase quebrada)
   else if (entrega) itens.push({ Ic: Truck, v: 'Realiza', t: 'entregas' })
   else if (retirada) itens.push({ Ic: Storefront, v: 'Retirada', t: 'no local' })
-  const prazos = produtos.map(p => String(p?.antecedencia || '')).filter(a => horasAntecedencia(a) > 0).sort((x, y) => horasAntecedencia(x) - horasAntecedencia(y))
+  const prazos = produtos.filter(p => p?.pronta_entrega !== true).map(p => String(p?.antecedencia || '')).filter(a => horasAntecedencia(a) > 0).sort((x, y) => horasAntecedencia(x) - horasAntecedencia(y)) // (17/11) pronta entrega não entra no prazo de encomenda, mesmo com antecedência antiga no cadastro
   if (prazos.length) itens.push({ Ic: CalendarBlank, v: 'Encomendas', t: `pedir ${rotuloAntecedencia(prazos[0])} antes` }) // (11/11) antes "2 dias / encomendas", que não dizia o que fazer
   // (6.181) fechada hoje (férias ou feriado): não promete pronta entrega "Hoje"
   const fechadaHoje = !!(c.horario && typeof c.horario === 'object' && fechadoEm(hojeBr(), lerFechados((c.horario as { fechados?: unknown }).fechados)))

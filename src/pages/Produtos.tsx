@@ -1205,6 +1205,8 @@ export default function Produtos() {
       ...ajustePromo,
       preco_normal: precoBase,
       tipo_produto: tipoProduto,
+      // (17/11) pronta entrega não guarda antecedência: evita salvar os dois campos juntos (o cardápio mostrava "Encomenda")
+      antecedencia: form.pronta_entrega === true ? null : form.antecedencia,
       updated_at: new Date().toISOString(),
     };
     let produtoId = form.id;
@@ -1625,7 +1627,7 @@ export default function Produtos() {
                 <div className="prod-card-tags prod-card-tags--dir">
                 </div>
                 {/* (6.34) Encomenda / Pronta entrega: selo no canto da foto (mesma regra do cardápio: encomenda = tem antecedência) */}
-                <span className={`prod-card-tipo${p.antecedencia ? "" : " pronta"}`}>{p.antecedencia ? "Encomenda" : "Pronta entrega"}</span>
+                <span className={`prod-card-tipo${(p.pronta_entrega !== true && p.antecedencia) ? "" : " pronta"}`}>{(p.pronta_entrega !== true && p.antecedencia) ? "Encomenda" : "Pronta entrega"}</span>
                 <div className="prod-card-tags prod-card-tags--esq">
                   {catInvalida && <div className="prod-card-semcat">Sem categoria</div>}
                   {(p.tamanhos_disponiveis && p.tamanhos_disponiveis.length > 0) && (
@@ -1658,7 +1660,7 @@ export default function Produtos() {
                         <button type="button" role="switch" aria-checked={p.disponivel !== false} aria-label={`Mostrar ${p.nome} no cardápio`}
                           className="pl-chave pl-lin-chave" onClick={e => { e.stopPropagation(); void alternarNoCardapio(p); }}><span /></button>
                       </div>
-                      <p className="pl-lin-tipo">{p.antecedencia ? "Encomenda" : "Pronta entrega"}</p>
+                      <p className="pl-lin-tipo">{(p.pronta_entrega !== true && p.antecedencia) ? "Encomenda" : "Pronta entrega"}</p>
                       {/* (04/11 · 6.34) o lucro saiu daqui: fica só na Ficha técnica */}
                     </div>
                   );

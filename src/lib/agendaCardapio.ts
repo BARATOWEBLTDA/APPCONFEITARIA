@@ -80,8 +80,9 @@ export function antecedenciaHoras(itensIds: string[], info: Record<string, InfoE
   for (const id of itensIds) {
     const p = info?.[id];
     let h = 0;
-    if (p?.ant && horasAntecedencia(p.ant) > 0) h = horasAntecedencia(p.ant); // (24/10) aceita o prazo personalizado ("10d")
-    else if (p?.pronta === true) h = 0;
+    // (17/11) pronta entrega marcada vence uma antecedência antiga: produto de pronta não pede agendamento
+    if (p?.pronta === true) h = 0;
+    else if (p?.ant && horasAntecedencia(p.ant) > 0) h = horasAntecedencia(p.ant); // (24/10) aceita o prazo personalizado ("10d")
     else h = 0; // 02/10: o agendamento é definido no produto (o prazo geral da loja saiu de Entrega e pagamento)
     maior = Math.max(maior, h);
   }

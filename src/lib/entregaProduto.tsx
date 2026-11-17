@@ -43,9 +43,12 @@ export type SeloEntrega =
 export type ProdutoEntrega = { id?: string; antecedencia?: string | null; pronta_entrega?: boolean | null };
 
 export function seloEntrega(produto: ProdutoEntrega | null | undefined): SeloEntrega | null {
+  // (17/11) "Pronta entrega" marcada vence uma antecedência antiga que tenha sobrado no cadastro.
+  // Sem isso, um produto de pronta entrega aparecia como "Encomenda" no cardápio (e o checkout
+  // pedia agendamento) só porque o campo antecedencia continuou preenchido no banco.
+  if (produto?.pronta_entrega === true) return { tipo: "pronta" };
   const ant = produto?.antecedencia as string | undefined;
   if (ant && horasAntecedencia(ant) > 0) return { tipo: "encomenda", prazo: rotuloAntecedencia(ant) };
-  if (produto?.pronta_entrega === true) return { tipo: "pronta" };
   return null;
 }
 
