@@ -55,12 +55,14 @@ export function ProductList({ produtos, corBotao = '#E85A8C', searchTerm, onSear
 
   // a aba acompanha a seção que está na tela
   useEffect(() => {
-    if (busca || secoes.length < 2) return
+    // (17/11) só as seções com aba (nome): no trecho "sem categoria" (sem aba) a última categoria continua marcada
+    const nomeadas = secoes.filter(s => s.nome)
+    if (busca || nomeadas.length < 2) return
     const medir = () => {
       if (Date.now() < travaAte.current) return
       const topo = (presaRef.current?.getBoundingClientRect().height || 0) + 24
-      let atual = secoes[0].id
-      for (const s of secoes) {
+      let atual = nomeadas[0].id
+      for (const s of nomeadas) {
         const el = document.getElementById(s.id)
         if (el && el.getBoundingClientRect().top <= topo) atual = s.id
       }

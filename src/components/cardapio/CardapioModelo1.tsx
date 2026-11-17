@@ -153,7 +153,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
           <ul className="cm1-faixa" aria-label="Como a loja atende">
             {faixa.map(({ Ic, v, t, ok }) => (
               <li key={t}>
-                <b className={ok ? 'ok' : undefined}><Ic size={16} weight="bold" color={ok ? '#16803C' : corIcone} aria-hidden="true" />{v}</b>
+                <b className={ok ? 'ok' : undefined}><Ic size={14} weight="bold" color={ok ? '#16803C' : corIcone} aria-hidden="true" />{v}</b>
                 <small>{t}</small>
               </li>
             ))}

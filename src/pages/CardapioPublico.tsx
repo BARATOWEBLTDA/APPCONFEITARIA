@@ -607,7 +607,7 @@ function CardapioContent() {
                 <h2 className="ic-h2">{filteredProdutos.length === 1 ? '1 produto' : `${filteredProdutos.length} produtos`}</h2>
                 <div className="ic-lista">{filteredProdutos.map((p: Produto) => <LinhaProduto key={p.id} produto={p} cor={cor} pc />)}</div>
               </section>
-            ) : montarSecoes(filteredProdutos, selectedCategory ? [selectedCategory] : (!design.ocultar_categorias ? categorias.map((c: CategoriaMenu) => c.name).filter((n: string) => n !== 'Todos') : []), !design.ocultar_categorias)
+            ) : montarSecoes(filteredProdutos, selectedCategory ? [selectedCategory] : (!design.ocultar_categorias ? categorias.map((c: CategoriaMenu) => c.name).filter((n: string) => n !== 'Todos') : []), !design.ocultar_categorias, { minPromo: 3 })
                 .map(sec => <SecaoCardapio key={sec.id} secao={sec} cor={cor} pc />)
           ) : (
             <div className="cp-nada"><MagnifyingGlass size={32} aria-hidden="true" />

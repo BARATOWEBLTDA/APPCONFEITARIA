@@ -6,7 +6,6 @@ import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { seloEntrega } from '@/lib/entregaProduto'
 import { unidadePreco } from '@/lib/formaVenda'
 import { miniDaFoto } from '@/lib/fotoMini'
-import { MIN_PRODUTOS_SECOES } from '@/lib/cardapioSecoes'
 import { tamanhosEsgotados, descontoCardapio, precoCardapioComPromocao, ehCentoLivre } from '@/lib/precoCardapio'
 import type { ProdutoPrecoJson } from '@/lib/precoCardapio'
 // (o cartão antigo ProductCard saiu; o CSS dele continua carregando por aqui, na mesma ordem)
@@ -133,16 +132,19 @@ export type Secao = { id: string; nome: string; tipo: 'destaque' | 'promo' | 'li
  * na aba Bolos não achava o bolo em promoção). Sem categoria vai pra "Outros produtos"
  * (ou "Todos os produtos" quando a loja não usa categorias).
  */
-export function montarSecoes(produtos: Produto[], categorias: string[], agrupar: boolean): Secao[] {
+export function montarSecoes(produtos: Produto[], categorias: string[], agrupar: boolean, opts: { minPromo?: number; minDestaque?: number } = {}): Secao[] {
+  // (17/11) Destaques e Promoções aparecem a partir de um número de produtos (não mais exigindo 6 no total):
+  // Destaques a partir de 2 (máx 6); Promoções a partir de 2 no celular e 3 no computador (minPromo vem de quem chama).
+  const minPromo = opts.minPromo ?? 2
+  const minDestaque = opts.minDestaque ?? 2
   // (11/10) "em promoção" é ter desconto de verdade no cardápio: promoção antiga em valor num produto
   // com tamanhos de preço fixo não dá desconto, então o produto fica na categoria dele
   const emPromocao = (p: Produto) => descontoCardapio(p) > 0
   // (27/10) Destaques: até 6, marcados pela confeiteira; o que está em destaque não se repete em Promoções
-  // (11/11) loja com menos de 6 produtos: sem Destaques e Promoções (o mesmo produto aparecia duas vezes na mesma tela);
-  // a promoção continua com o preço riscado dentro da categoria
-  const poucos = produtos.length < MIN_PRODUTOS_SECOES
-  const destaques = poucos ? [] : produtos.filter(p => (p as Produto & { destaque?: boolean }).destaque === true).slice(0, 6)
-  const promo = poucos ? [] : produtos.filter(p => emPromocao(p) && !destaques.includes(p))
+  const destaquesTodos = produtos.filter(p => (p as Produto & { destaque?: boolean }).destaque === true).slice(0, 6)
+  const destaques = destaquesTodos.length >= minDestaque ? destaquesTodos : []
+  const promoTodos = produtos.filter(p => emPromocao(p) && !destaques.includes(p))
+  const promo = promoTodos.length >= minPromo ? promoTodos : []
   const resto = produtos
   const secoes: Secao[] = []
   if (destaques.length) secoes.push({ id: 'sec-destaques', nome: 'Destaques', tipo: 'destaque', produtos: destaques })
@@ -168,7 +170,10 @@ export function SecaoCardapio({ secao, cor, pc = false }: { secao: Secao; cor: s
       {secao.nome && <h2 className="ic-h2">{secao.nome}{secao.tipo === 'destaque' && <Star size={20} weight="fill" className="ic-h2-estrela" aria-hidden="true" />}{secao.tipo === 'lista' && <small>{secao.produtos.length === 1 ? '1 produto' : `${secao.produtos.length} produtos`}</small>}</h2>}
       {/* (27/10) celular: Destaques numa fileira que desliza · (6.33) Promoções em cartões quadrados, 2 por linha; computador: grade */}
       {secao.tipo === 'destaque'
-        ? <div className="ic-grade ic-fila ic-fila--dq">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc={pc} grande />)}</div>
+        ? (pc
+            ? <div className="ic-grade ic-fila ic-fila--dq">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc grande />)}</div>
+            /* (17/11) celular: Destaques em quadradinhos 2 por linha, igual às Promoções (antes era a fileira que deslizava) */
+            : <div className="ic-grade ic-grade--promo">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} />)}</div>)
         : secao.tipo === 'promo'
         ? <div className="ic-grade ic-grade--promo">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc={pc} />)}</div>
         : <div className="ic-lista">{secao.produtos.map(p => <LinhaProduto key={p.id} produto={p} cor={cor} pc={pc} />)}</div>}
