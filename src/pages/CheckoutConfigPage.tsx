@@ -116,18 +116,23 @@ function CampoTaxa({ valor, aoMudar, rotulo, className = '' }: { valor: string; 
 }
 
 /**
- * (17/11) Campo do pedido mínimo: vazio = "Sem mínimo" (caixinha cinza encostada à direita).
- * Tocar na caixinha foca o campo pra digitar; com valor, a caixinha some.
+ * (17/11) Campo do pedido mínimo, no mesmo padrão do "Grátis" da taxa: caixinha com check à direita.
+ * Marcada ("Sem mínimo"): o campo fica cinza e a caixinha verde. Desmarca pra digitar o valor.
  */
 function CampoMinimo({ valor, aoMudar, rotulo }: { valor: string; aoMudar: (v: string) => void; rotulo: string }) {
-  const vazio = valor.trim() === ''
   const campo = useRef<HTMLInputElement>(null)
+  const [editando, setEditando] = useState(valor.trim() !== '')
+  const semMinimo = !editando && valor.trim() === ''
   return (
-    <div className={`ep-tx ep-tx--min${vazio ? ' ep-tx--vazio' : ''}`}>
+    <div className={`ep-tx ep-tx--min${semMinimo ? ' ep-tx--sem' : ''}`}>
       <em aria-hidden="true">R$</em>
-      <input ref={campo} inputMode="numeric" autoComplete="off" placeholder={vazio ? '' : '0,00'} aria-label={rotulo} value={valor}
-        onChange={e => aoMudar(mascaraReais(e.target.value))} />
-      {vazio && <button type="button" tabIndex={-1} aria-hidden="true" onClick={() => campo.current?.focus()}>Sem mínimo</button>}
+      <input ref={campo} inputMode="numeric" autoComplete="off" placeholder="0,00" aria-label={rotulo} value={valor} disabled={semMinimo}
+        onChange={e => aoMudar(mascaraReais(e.target.value))}
+        onBlur={() => { if (valor.trim() === '') setEditando(false) }} />
+      <button type="button" role="checkbox" aria-checked={semMinimo} aria-label={`${rotulo}: sem mínimo`}
+        onClick={() => { if (semMinimo) { setEditando(true); window.setTimeout(() => campo.current?.focus(), 0) } else { aoMudar(''); setEditando(false) } }}>
+        <i aria-hidden="true">{semMinimo && <Check size={11} weight="bold" />}</i>Sem mínimo
+      </button>
     </div>
   )
 }

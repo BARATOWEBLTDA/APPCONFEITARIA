@@ -212,10 +212,12 @@
 /* (29/10 · 5.15) "Grátis" encostado na borda do campo: ocupa a ponta direita inteira, sem espaço */
 .ep-tx { padding-right: 0; overflow: hidden; }
 .ep-tx button { align-self: stretch; height: auto; margin: 0; padding: 0 12px 0 10px; border-radius: 0; }
-/* (17/11) Pedido mínimo: a caixinha "Sem mínimo" reaproveita o cinza da "Grátis"; campo vazio fica apagadinho */
+/* (17/11) Pedido mínimo: a caixinha "Sem mínimo" é igual ao "Grátis" — marcada fica verde com check */
 .ep-minimo { margin-top: 12px; }
-.ep-tx--vazio { background: #F7F4F5; border-color: #E8E3E5; }
-.ep-tx--vazio em { color: #B5AAAE; }
+.ep-tx--sem { background: #F3F1F2; border-color: #E8E3E5; }
+.ep-tx--sem em, .ep-tx--sem input { color: #B5AAAE; }
+.ep-tx--sem button { border: 0; background: #DCF3E4; color: #15803D; }
+.ep-tx--sem button i { border-color: #15803D; background: #15803D; }
 
 /* (29/10 · 5.18) "Montar as faixas para mim": caixa cinza com valor do km, até onde e taxa mínima */
 .ep-montar { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px 14px; border-radius: 14px; background: #F7F4F5; }
