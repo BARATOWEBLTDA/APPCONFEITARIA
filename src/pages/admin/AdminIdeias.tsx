@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { registrar } from "@/lib/adminPerfil";
-import { MagnifyingGlass, EnvelopeSimple, Lightbulb, ChatCircleText } from "@phosphor-icons/react";
+import { MagnifyingGlass, EnvelopeSimple, Lightbulb, ChatCircleText, Trash, WarningCircle } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { TelaVazia, avisar, BotaoLimpar } from "@/components/base";
 
@@ -29,6 +29,7 @@ interface Ideia {
   status: string | null;
   resposta?: string | null;
   tela_origem: string | null;
+  tipo: string | null;
   created_at: string;
 }
 
@@ -96,7 +97,7 @@ export default function AdminIdeias() {
     setErro(null);
     const { data, error } = await supabase
       .from("sugestoes")
-      .select("id, user_id, nome, telefone, email, titulo, descricao, area, impacto, status, resposta, tela_origem, created_at")
+      .select("id, user_id, nome, telefone, email, titulo, descricao, area, impacto, status, resposta, tela_origem, tipo, created_at")
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) {
@@ -121,6 +122,43 @@ export default function AdminIdeias() {
   useEffect(() => { carregar(); }, []);
 
   const mostrarToast = (m: string, tipo: "ok" | "erro" = "ok") => avisar(m, { tipo });
+
+  // (17/11) Exclusão de conta pedida pela confeiteira: apaga tudo (dados + arquivos + login) com PIN de confirmação.
+  const [pinAberto, setPinAberto] = useState<string | null>(null);
+  const [pin, setPin] = useState("");
+  const [excluindoConta, setExcluindoConta] = useState<string | null>(null);
+
+  const excluirContaDeVez = async (ideia: Ideia) => {
+    if (!ideia.user_id) { mostrarToast("Esse pedido não tem conta vinculada.", "erro"); return; }
+    setExcluindoConta(ideia.id);
+    try {
+      const { data, error } = await supabase.rpc("admin_excluir_conta", { p_user_id: ideia.user_id, p_pin: pin.trim() });
+      if (error) {
+        const m = error.message || "";
+        mostrarToast(
+          /pin_invalido/.test(m) ? "PIN incorreto." :
+          /nao_autorizado/.test(m) ? "Sem permissão de admin." :
+          /nao_pode_apagar_admin/.test(m) ? "Não dá para apagar a conta do admin." :
+          "Não deu para excluir agora. Tente de novo.", "erro");
+        setExcluindoConta(null);
+        return;
+      }
+      // remove os arquivos do storage pela Storage API (best-effort; se sobrar órfão, não trava)
+      const arquivos = ((data as { storage?: { bucket: string; name: string }[] } | null)?.storage) || [];
+      const porBucket: Record<string, string[]> = {};
+      for (const a of arquivos) { (porBucket[a.bucket] ||= []).push(a.name); }
+      for (const [bucket, nomes] of Object.entries(porBucket)) {
+        try { await supabase.storage.from(bucket).remove(nomes); } catch { /* arquivo órfão, segue o jogo */ }
+      }
+      void registrar(`excluiu a conta de ${ideia.email || ideia.nome || ideia.user_id}`, { tipo: "exclusao", alvo_id: ideia.id });
+      setIdeias(prev => prev.filter(i => i.user_id !== ideia.user_id)); // some o pedido (e outros da mesma conta)
+      setPinAberto(null); setPin("");
+      mostrarToast("Conta e todos os dados excluídos.");
+    } catch {
+      mostrarToast("Não deu para excluir agora. Tente de novo.", "erro");
+    }
+    setExcluindoConta(null);
+  };
 
   const mudarStatus = async (ideia: Ideia, novo: Status) => {
     if (novo === statusDe(ideia)) return;
@@ -259,6 +297,16 @@ export default function AdminIdeias() {
                       </div>
                     </div>
                   )}
+                  {pinAberto === i.id && (
+                    <div className="ai-excluir">
+                      <p><WarningCircle size={16} weight="bold" aria-hidden="true" /> Isso apaga <b>a conta e todos os dados</b> de {i.email || i.nome || "esta confeiteira"}. Não dá para desfazer.</p>
+                      <div className="ai-excluir-l">
+                        <input type="password" inputMode="numeric" autoComplete="off" placeholder="PIN de confirmação" value={pin} onChange={e => setPin(e.target.value)} aria-label="PIN de confirmação" />
+                        <button type="button" className="ai-bt" onClick={() => { setPinAberto(null); setPin(""); }} disabled={excluindoConta === i.id}>Cancelar</button>
+                        <button type="button" className="ai-bt ai-bt--perigo" disabled={excluindoConta === i.id || !pin.trim()} onClick={() => void excluirContaDeVez(i)}>{excluindoConta === i.id ? "Excluindo…" : "Excluir de vez"}</button>
+                      </div>
+                    </div>
+                  )}
                   <div className="ai-pe">
                     <label className="ai-sit"><span>Situação</span>
                       <select className="ai-st" value={st} disabled={salvando === i.id} onChange={e => mudarStatus(i, e.target.value as Status)} aria-label="Situação da ideia">
@@ -267,6 +315,9 @@ export default function AdminIdeias() {
                     </label>
                     {i.user_id && !i.resposta?.trim() && abertoRecado !== i.id && (
                       <button type="button" className="ai-bt" onClick={() => setAbertoRecado(i.id)}><ChatCircleText size={18} weight="bold" aria-hidden="true" /> Responder</button>
+                    )}
+                    {i.tipo === "exclusao_conta" && i.user_id && pinAberto !== i.id && (
+                      <button type="button" className="ai-bt ai-bt--perigo" onClick={() => { setPin(""); setPinAberto(i.id); }} disabled={excluindoConta === i.id}><Trash size={18} weight="bold" aria-hidden="true" /> Excluir conta</button>
                     )}
                     {wa ? (
                       <a className="ai-bt ai-bt--wa" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp de ${i.nome || "quem enviou"}`}><IconeWhatsApp size={18} /> WhatsApp</a>
@@ -363,6 +414,16 @@ export default function AdminIdeias() {
         .ai-bt--cheio:hover { background: var(--ui-rosa-botao, #CC2E66); filter: brightness(.95); }
         .ai-bt--cheio:disabled { opacity: .5; cursor: default; }
         .ai-bt--wa { color: var(--ui-verde); }
+        .ai-bt--perigo { color: #B42318; border-color: #F1C4C0; }
+        .ai-bt--perigo:hover { background: #FDECEC; }
+        .ai-bt--perigo:disabled { opacity: .5; cursor: default; }
+        .ai-excluir { margin-top: 10px; padding: 12px 14px; border-radius: var(--ui-raio-cartao); background: #FDECEC; border: 1px solid #F1C4C0; }
+        .ai-excluir p { display: flex; align-items: flex-start; gap: 6px; margin: 0 0 10px; font-size: 13.5px; line-height: 1.45; color: #9B1C1C; }
+        .ai-excluir p svg { flex: none; margin-top: 2px; }
+        .ai-excluir-l { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .ai-excluir-l input { flex: 1; min-width: 140px; height: 44px; padding: 0 12px; border: 1.5px solid #E6DADF; border-radius: var(--ui-raio-botao, var(--ui-raio)); background: var(--ui-branco); font-size: 15px; font-family: inherit; color: var(--ui-texto); }
+        .ai-excluir-l .ai-bt--perigo { border-color: transparent; background: #C0362C; color: #fff; }
+        .ai-excluir-l .ai-bt--perigo:hover { background: #C0362C; filter: brightness(.95); }
 
         @media (max-width: 900px) {
           .ai-stats { display: flex; gap: 8px; overflow-x: auto; margin: 16px -16px 12px; padding: 0 16px; scrollbar-width: none; }
