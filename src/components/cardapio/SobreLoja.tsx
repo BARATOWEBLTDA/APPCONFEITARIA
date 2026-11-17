@@ -113,7 +113,7 @@ export function SobreLoja({ aberta, fechar, design, config, abaInicial = 'sobre'
                 <h3>Como receber</h3>
                 <ul className="sl-lista">
                   {retira && <li className="sl-ic"><Package size={22} weight="duotone" aria-hidden="true" /><span>Retirada na loja{cfg.endereco_retirada && cfg.mostrar_localizacao ? <small>{cfg.endereco_retirada}</small> : null}</span></li>}
-                  {entregaPropria && <li className="sl-ic"><Moped size={22} weight="duotone" aria-hidden="true" /><span>Entrega<small>{taxa}</small></span></li>}
+                  {entregaPropria && <li className="sl-ic"><Moped size={22} weight="duotone" aria-hidden="true" /><span>Entrega<small>{taxa}</small>{Number(cfg.pedido_minimo_entrega) > 0 && <small>Pedido mínimo de {formatCurrency(Number(cfg.pedido_minimo_entrega))}</small>}</span></li>}
                   {!entregaPropria && entregaOutra && <li className="sl-ic"><Moped size={22} weight="duotone" aria-hidden="true" /><span>Entrega<small>Taxa combinada pelo WhatsApp</small></span></li>}
                 </ul>
               </div>

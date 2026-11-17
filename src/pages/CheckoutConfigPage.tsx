@@ -115,6 +115,23 @@ function CampoTaxa({ valor, aoMudar, rotulo, className = '' }: { valor: string; 
   )
 }
 
+/**
+ * (17/11) Campo do pedido mínimo: vazio = "Sem mínimo" (caixinha cinza encostada à direita).
+ * Tocar na caixinha foca o campo pra digitar; com valor, a caixinha some.
+ */
+function CampoMinimo({ valor, aoMudar, rotulo }: { valor: string; aoMudar: (v: string) => void; rotulo: string }) {
+  const vazio = valor.trim() === ''
+  const campo = useRef<HTMLInputElement>(null)
+  return (
+    <div className={`ep-tx ep-tx--min${vazio ? ' ep-tx--vazio' : ''}`}>
+      <em aria-hidden="true">R$</em>
+      <input ref={campo} inputMode="numeric" autoComplete="off" placeholder={vazio ? '' : '0,00'} aria-label={rotulo} value={valor}
+        onChange={e => aoMudar(mascaraReais(e.target.value))} />
+      {vazio && <button type="button" tabIndex={-1} aria-hidden="true" onClick={() => campo.current?.focus()}>Sem mínimo</button>}
+    </div>
+  )
+}
+
 const semAcento = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
 
 // (31/10 · 5.84) fora do componente: criados dentro dele, eram refeitos a cada desenho da tela
@@ -145,6 +162,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const [formasPagamento, setFormasPagamento] = useState<string[]>(['pix'])
   const [formasEntrega, setFormasEntrega] = useState<string[]>(['retirada'])
   const [valorEntregaPropria, setValorEntregaPropria] = useState('')
+  const [pedidoMinimo, setPedidoMinimo] = useState('') // (17/11) pedido mínimo só pra entrega (vazio = sem mínimo)
   const [entregaPorBairro, setEntregaPorBairro] = useState<{ bairro: string; valor: string }[]>([])
   // (28/10 · 4.49) taxa por raio (km) e por cidade. novasColunas = o banco já tem os campos (SQL entrega_por_raio_cidade)
   const [modoEntrega, setModoEntrega] = useState<ModoEntrega>('fixa')
@@ -191,7 +209,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
       const user = session?.user
       if (!user) { setErroCarga(true); return }
       setUserId(user.id)
-      const { data, error } = await supabase.from('profiles').select('formas_pagamento, formas_entrega, valor_entrega_propria, entrega_por_bairro, endereco_retirada, horario_retirada, exibir_campo_troco, cupons_desconto, aceita_agendamento, prazo_minimo_horas, pix_online, pix_chave, pix_nome, pix_cidade, pix_modo, pix_sinal_pct, pagar_na_retirada, nome_loja, endereco').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('formas_pagamento, formas_entrega, valor_entrega_propria, pedido_minimo_entrega, entrega_por_bairro, endereco_retirada, horario_retirada, exibir_campo_troco, cupons_desconto, aceita_agendamento, prazo_minimo_horas, pix_online, pix_chave, pix_nome, pix_cidade, pix_modo, pix_sinal_pct, pagar_na_retirada, nome_loja, endereco').eq('id', user.id).single()
       if (error || !data) { setErroCarga(true); return }
       // (13/10) abriu e viu como o cliente vai pagar e receber: conta como o passo "Pagamento e entrega" (salva sozinho)
       // (30/10 · 5.21) dentro do passo a passo não marca sozinho: lá o passo só conta ao tocar em "Salvar"
@@ -204,6 +222,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         setFormasPagamento(primeiraVez && (!fp.length || (fp.length === 1 && fp[0] === 'pix')) ? PAGAMENTOS.map(p => p.key) : fp)
         setFormasEntrega(data.formas_entrega || ['retirada'])
         setValorEntregaPropria(reaisParaCampo(data.valor_entrega_propria) || (data.valor_entrega_propria != null ? '0,00' : ''))
+        setPedidoMinimo(Number(data.pedido_minimo_entrega) > 0 ? reaisParaCampo(data.pedido_minimo_entrega) : '') // (17/11) 0/null = sem mínimo
         setEntregaPorBairro((data.entrega_por_bairro || []).map((b: { bairro: string; valor?: number | string | null }) => ({ bairro: b.bairro, valor: reaisParaCampo(b.valor) || '0,00' })))
         {
           const temBairros = Array.isArray(data.entrega_por_bairro) && data.entrega_por_bairro.length > 0
@@ -266,12 +285,12 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   }, [tentativa])
 
   // 09/10: não salva (nem mostra "Salvo") só por ter aberto a tela; salva depois que algo muda
-  const foto = JSON.stringify([modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada])
+  const foto = JSON.stringify([modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, formasPagamento, formasEntrega, valorEntregaPropria, pedidoMinimo, entregaPorBairro, enderecoRetirada, horarioRetirada, exibirCampoTroco, cupons, aceitaAgendamento, prazoMinimo, pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada])
   const salvoRef = useRef<string | null>(null)
   useEffect(() => { if (!loading) salvoRef.current = foto }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
   // 10/10: o que está na tela agora (o salvamento sempre grava o mais novo, inclusive ao sair da tela)
   const pixTela = { pixOnline, pixTipo, pixChave, pixNome, pixCidade, pixModo, pixPct, pixRetirada }
-  const telaRef = useRef({ userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela, area: { modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, novasColunas } })
+  const telaRef = useRef({ userId, formasPagamento, formasEntrega, valorEntregaPropria, pedidoMinimo, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela, area: { modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, novasColunas } })
   const pendenteRef = useRef(false)
 
   /**
@@ -295,6 +314,8 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
         formas_entrega: t.formasEntrega,
         // (04/11 · 6.20) taxa vazia NÃO é grátis: fica sem valor (null) e o cardápio mostra "a combinar". Grátis só com o Grátis marcado (0,00).
         valor_entrega_propria: t.valorEntregaPropria.trim() ? numBR(t.valorEntregaPropria) : null,
+        // (17/11) pedido mínimo só pra entrega: vazio ou 0 = sem mínimo (null)
+        pedido_minimo_entrega: t.pedidoMinimo.trim() && (numBR(t.pedidoMinimo) || 0) > 0 ? numBR(t.pedidoMinimo) : null,
         // bairro sem valor não vai pro cardápio (antes entrava como grátis)
         entrega_por_bairro: t.entregaPorBairro.filter(b => b.valor.trim()).map(b => ({ bairro: b.bairro.trim(), valor: Math.max(0, numBR(b.valor) || 0) }))
           .filter((b, i, l) => b.bairro && l.findIndex(x => x.bairro.toLowerCase() === b.bairro.toLowerCase()) === i),
@@ -365,7 +386,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   // Roda a cada mudança, antes dos efeitos de baixo: deixa nas refs o que está na tela agora
   const estadoRef = useRef('')
   useEffect(() => {
-    telaRef.current = { userId, formasPagamento, formasEntrega, valorEntregaPropria, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela, area: { modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, novasColunas } }
+    telaRef.current = { userId, formasPagamento, formasEntrega, valorEntregaPropria, pedidoMinimo, entregaPorBairro, exibirCampoTroco, cupons, pix: pixTela, area: { modoEntrega, raios, cidades, foraEntrega, foraValor, lojaPonto, novasColunas } }
     salvarTudoRef.current = salvarTudo
     if (onEstado && !loading) {
       const e: EstadoEntregaPagamento = { formasPagamento, formasEntrega, taxa: numBR(valorEntregaPropria), porBairro: entregaPorBairro.filter(b => b.bairro.trim()).length, taxaOk, modo: modoEntrega,
@@ -744,6 +765,12 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
                   <Botao variante="link" className="ep-add" icone={<Plus size={16} weight="bold" />} onClick={() => setEntregaPorBairro(prev => [...prev, { bairro: '', valor: '' }])}>Adicionar bairro</Botao>
                 </div>
               )}
+              {/* (17/11) Pedido mínimo só pra entrega — vale pra qualquer forma de cobrar; vazio = sem mínimo */}
+              <div className="ui-campo ep-minimo">
+                <span className="ui-campo-r"><span>Pedido mínimo para entrega</span></span>
+                <CampoMinimo rotulo="Pedido mínimo para entrega" valor={pedidoMinimo} aoMudar={setPedidoMinimo} />
+                <small className="ep-dica">Vale só na entrega. Na retirada não tem mínimo.</small>
+              </div>
             </div>
   )
   const formAberto = editandoIndex !== null

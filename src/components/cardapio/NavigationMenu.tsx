@@ -5,7 +5,7 @@ import { montarMensagem as montarMensagemModelo } from '@/lib/mensagens'
 import { CalendarioSheet, HorariosSheet } from '@/components/cardapio/AgendaSheets'
 import { agoraLoja, antecedenciaHoras, calcularRegras, deIso, horarioPermitido, primeiraData } from '@/lib/agendaCardapio'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Cake, Camera, CalendarBlank, CaretRight, Check, ImageSquare, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, X } from '@phosphor-icons/react'
+import { ArrowLeft, Cake, Camera, CalendarBlank, CaretRight, Check, ImageSquare, ChatCircleDots, Clock, CreditCard, Money, PixLogo, Plus, ClipboardText, House, ShoppingBag as Sacola, Storefront, Tag, Truck, User, WarningCircle, X } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import IconeWhatsApp from '@/components/IconeWhatsApp'
 import { useCart } from '@/hooks/useCart'
@@ -117,6 +117,8 @@ interface CheckoutConfig {
   formas_pagamento: string[]
   formas_entrega: string[]
   valor_entrega_propria: number
+  /** (17/11) pedido mínimo só pra entrega; null/0 = sem mínimo */
+  pedido_minimo_entrega?: number | null
   entrega_por_bairro: { bairro: string; valor: number }[]
   /** (28/10 · 4.49) jeito de cobrar a entrega: única, por bairro, por raio (km) ou por cidade */
   entrega_modo?: 'fixa' | 'bairro' | 'raio' | 'cidade' | 'combinar'
@@ -144,6 +146,7 @@ const DEFAULT_CONFIG: CheckoutConfig = {
   formas_pagamento: ['pix', 'dinheiro', 'credito', 'debito'],
   formas_entrega: ['retirada', 'entrega_propria'],
   valor_entrega_propria: 0,
+  pedido_minimo_entrega: null,
   entrega_por_bairro: [],
   endereco_retirada: '',
   horario_retirada: '',
@@ -312,6 +315,9 @@ function CartContent({
   const regras = useMemo(() => calcularRegras(agoraLoja(), config.horario, horasAnt), [config.horario, horasAnt, step, relogio])
   const primeiraDisp = useMemo(() => primeiraData(config.horario, regras.minimo), [config.horario, regras])
   const ehEntrega = !!formaEntrega && formaEntrega !== 'retirada'
+  // (17/11) pedido mínimo só pra entrega (retirada nunca tem mínimo); conta sobre o subtotal dos produtos
+  const minimoEntrega = ehEntrega && Number(config.pedido_minimo_entrega) > 0 ? Number(config.pedido_minimo_entrega) : 0
+  const faltaMinimo = minimoEntrega > 0 && totalPrice < minimoEntrega - 0.001
   useEffect(() => {
     if (step !== 'finalizar') return
     if (!formaEntrega) setFormaEntrega(opsEntrega.ret ? 'retirada' : (opsEntrega.ent || 'retirada'))
@@ -326,6 +332,8 @@ function CartContent({
   const enviarFinalizar = async () => {
     if (enviando || enviandoRef.current || enviandoPedido) return
     if (config.loja_pausada) { avisar('A loja pausou os pedidos por enquanto. Chame no WhatsApp para combinar.', { tipo: 'erro' }); return }
+    // (17/11) pedido mínimo de entrega: trava e rola até a escolha de entrega/retirada
+    if (faltaMinimo) { avisar(`Faltam ${formatCurrency(minimoEntrega - totalPrice)} para o pedido mínimo de entrega.`, { tipo: 'erro' }); irPara(refEndereco); setTreme(true); setTimeout(() => setTreme(false), 400); return }
     let falta: typeof feErro = ''
     // (11/10) confere a data e a hora com o relógio de AGORA (a tela pode ter ficado aberta um tempão):
     // precisa estar dentro do expediente e respeitar a antecedência a partir deste momento
@@ -722,6 +730,7 @@ function CartContent({
       if (/data_invalida/.test(msg)) return avisar('Esse dia ou horário não está disponível. Escolha outra data e envie de novo.', { tipo: 'erro' })
       if (/loja_em_preparacao/.test(msg)) return avisar('Esta loja ainda está preparando o cardápio. Volte em breve.', { tipo: 'erro' })
       if (/entrega_fora_area/.test(msg)) return avisar('Esse endereço está fora da área de entrega da loja. Confira o endereço ou escolha retirar.', { tipo: 'erro' })
+      if (/pedido_abaixo_minimo/.test(msg)) return avisar('O pedido ficou abaixo do mínimo para entrega. Adicione mais itens ou escolha retirar.', { tipo: 'erro' })
       if (/entrega_invalida/.test(msg)) return avisar('A forma de entrega mudou na loja. Escolha de novo como receber e envie.', { tipo: 'erro' })
       if (/item_invalido/.test(msg)) return avisar('Um produto da sacola mudou ou saiu do cardápio. Confira a sacola e envie de novo.', { tipo: 'erro' })
       avisar(explicarErro(err, 'Não deu para enviar o pedido. Tente de novo.'), { tipo: 'erro' })
@@ -1413,8 +1422,14 @@ function CartContent({
       </div>
 
       <footer className="sc-pe">
-        <button type="button" className={`sc-bt-pri cheio${treme ? ' treme' : ''}`} style={{ background: accent }} disabled={enviando} onClick={enviarFinalizar}>
-          <span>{enviando ? 'Enviando…' : pixOnline ? 'Ir para o pagamento' : 'Enviar pedido'}</span><b>{formatCurrency(pagarAgora)}</b>
+        {faltaMinimo && (
+          <div className="sc-minimo" role="status">
+            <WarningCircle size={18} weight="bold" aria-hidden="true" />
+            <span>Faltam <b>{formatCurrency(minimoEntrega - totalPrice)}</b> para o pedido mínimo de entrega ({formatCurrency(minimoEntrega)})</span>
+          </div>
+        )}
+        <button type="button" className={`sc-bt-pri cheio${treme ? ' treme' : ''}`} style={{ background: accent }} disabled={enviando || faltaMinimo} onClick={enviarFinalizar}>
+          <span>{enviando ? 'Enviando…' : faltaMinimo ? 'Pedido mínimo não atingido' : pixOnline ? 'Ir para o pagamento' : 'Enviar pedido'}</span>{!faltaMinimo && <b>{formatCurrency(pagarAgora)}</b>}
         </button>
       </footer>
 

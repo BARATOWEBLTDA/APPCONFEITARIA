@@ -44,6 +44,7 @@ type PerfilLoja = {
   formas_pagamento?: string[] | null
   formas_entrega?: string[] | null
   valor_entrega_propria?: number | null
+  pedido_minimo_entrega?: number | null
   entrega_modo?: string | null
   entrega_por_bairro?: { bairro: string; valor: number }[] | null
   entrega_por_raio?: { km: number; valor: number }[] | null
@@ -238,6 +239,8 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
     formas_pagamento: profile.formas_pagamento || ['pix'],
     formas_entrega: profile.formas_entrega || ['retirada'],
     valor_entrega_propria: profile.valor_entrega_propria || 0,
+    // (17/11) pedido mínimo só pra entrega (null = sem mínimo)
+    pedido_minimo_entrega: profile.pedido_minimo_entrega ?? null,
     // (04/11 · 6.20) taxa única sem valor (nunca definida) = a combinar, não grátis
     entrega_por_bairro: modoDaLoja(profile) === 'bairro' ? (profile.entrega_por_bairro || []) : [],
     // (28/10 · 4.49) raio e cidade. Nesses modos a lista de bairros não vale (o cardápio olha a lista pra pedir o bairro)

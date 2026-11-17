@@ -86,6 +86,7 @@ export interface Configuracoes {
   formas_pagamento?: string[]
   formas_entrega?: string[]
   valor_entrega_propria?: number
+  pedido_minimo_entrega?: number | null
   entrega_por_bairro?: { bairro: string; valor: number }[]
   endereco_retirada?: string
   horario_retirada?: string

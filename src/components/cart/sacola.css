@@ -61,7 +61,11 @@
 .sc-valores .t em { font-weight: 600; }
 
 /* rodapé */
-.sc-pe { flex: none; display: flex; align-items: center; gap: 12px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--ui-branco); box-shadow: 0 -1px 0 var(--ui-borda-campo), 0 -8px 24px rgba(44,18,25,.06); }
+.sc-pe { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--ui-branco); box-shadow: 0 -1px 0 var(--ui-borda-campo), 0 -8px 24px rgba(44,18,25,.06); }
+/* (17/11) aviso do pedido mínimo de entrega: linha inteira, acima do botão. O valor não quebra (white-space: nowrap) pra não cortar feio. */
+.sc-minimo { order: -1; flex-basis: 100%; display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--ui-laranja-fundo); color: var(--ui-laranja); font-size: 13px; font-weight: 600; line-height: 1.35; text-wrap: balance; }
+.sc-minimo svg { flex: none; }
+.sc-minimo b { font-weight: 700; white-space: nowrap; }
 .sc-pe-tot { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .sc-pe-tot small { font-size: 13px; color: var(--ui-texto-2); }
 .sc-pe-tot b { font-size: 18px; font-weight: 600; }
