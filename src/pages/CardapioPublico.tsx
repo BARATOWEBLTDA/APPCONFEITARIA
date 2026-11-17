@@ -282,6 +282,9 @@ function CardapioContent() {
   }, [config?.loja_pausada])
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [isPro, setIsPro] = useState(false)
+  const [recursos, setRecursos] = useState<string[]>([]) // (17/11) recursos liberados (PRO ou avulsos do admin)
+  const temSelo = recursos.includes('selo_verificado') // (17/11) selo de loja verificada
+  const temOrcamento = recursos.includes('orcamentos') // (17/11) pedir orçamento no cardápio
   const [cardapioModelo, setCardapioModelo] = useState('modelo1')
   const [, setCategoryImages] = useState<{[key:string]:string}>({})
   const [categoriasList, setCategoriasList] = useState<string[]>([])
@@ -323,7 +326,7 @@ function CardapioContent() {
     setLoading(true)
     const fetchFn = isRotaNova ? getCardapioByCodigo : getCardapioBySlug
 
-    fetchFn(chave.toLowerCase()).then(({ design, config, produtos, isPro, categoryImages, categoriasList, slugCanonico, codigoPublico, cardapioModelo: modelo }) => {
+    fetchFn(chave.toLowerCase()).then(({ design, config, produtos, isPro, recursos, categoryImages, categoriasList, slugCanonico, codigoPublico, cardapioModelo: modelo }) => {
       if (!design) { setError('Verifique o link e tente novamente.'); setLoading(false); return }
       // (19/10) Pixel do Facebook da loja (Marketing)
       iniciarPixel(design.facebook_pixel_id)
@@ -343,7 +346,7 @@ function CardapioContent() {
       }
 
       setDesign(design); setConfig(config); setProdutos(produtos); definirProdutosDaLoja(produtos || [])
-      setIsPro(isPro || false); void modelo; setCardapioModelo('modelo1') /* (18/10) só o Clássico por enquanto */; setCategoryImages(categoryImages || {})
+      setIsPro(isPro || false); setRecursos(recursos || []); void modelo; setCardapioModelo('modelo1') /* (18/10) só o Clássico por enquanto */; setCategoryImages(categoryImages || {})
       setCategoriasList(categoriasList || [])
       // 10/10: a loja fica guardada nesta aba (lojaAtual); o localStorage segue gravado, só de reserva
       const checkoutConfig = config ? {
@@ -370,7 +373,7 @@ function CardapioContent() {
         horario: config.horario || null,
         antecedencias: Object.fromEntries((produtos || []).map((p: Produto & { antecedencia?: string | null; pronta_entrega?: boolean | null }) => [p.id, { ant: p.antecedencia || null, pronta: p.pronta_entrega ?? null }])),
       } : null
-      definirLojaAtual({ userId: design.user_id || '', whatsapp: config?.telefone || '', nome: design.nome_loja || '', checkout: checkoutConfig, logo: design.logo_url || null, verificada: !!isPro })
+      definirLojaAtual({ userId: design.user_id || '', whatsapp: config?.telefone || '', nome: design.nome_loja || '', checkout: checkoutConfig, logo: design.logo_url || null, verificada: temSelo })
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
       if (design?.user_id) {
@@ -506,12 +509,12 @@ function CardapioContent() {
       <div className="min-h-screen relative" style={{ backgroundColor: '#F7F4F5' }}>
         {/* Caixa dos banners: some quando a loja não tem banner */}
         <style>{`.cp-banner-wrap { margin-top: 16px; } .cp-banner-wrap:empty { display: none; }`}</style>
-        <NavigationMenu celular corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} corTopo={corDoTopo(design)} logoUrl={design.logo_url} sugestoes={produtos} verificada={isPro} />
+        <NavigationMenu celular corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} corTopo={corDoTopo(design)} logoUrl={design.logo_url} sugestoes={produtos} verificada={temSelo} />
         <SobreLoja aberta={sobreAberta} fechar={() => { setSobreAberta(false); setSobreAba('sobre') }} design={design} config={config} abaInicial={sobreAba} />
 
         {cardapioModelo === 'modelo1' ? (
           <>
-            <CardapioModelo1 design={design} config={config} verificada={isPro} produtos={produtos} aoAbrirSobre={() => setSobreAberta(true)} />
+            <CardapioModelo1 design={design} config={config} verificada={temSelo} produtos={produtos} aoAbrirSobre={() => setSobreAberta(true)} />
             <div className="cp-banner-wrap">
               <BannerAd bannerUrl={design.banner_url || design.banner1_url || design.banner2_url || design.banner3_url} isPro={isPro} /* (6.79) um banner só, sem carrossel */ />
             </div>
@@ -523,7 +526,7 @@ function CardapioContent() {
               backgroundImage: 'linear-gradient(160deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.14) 100%), radial-gradient(circle at 20% 50%, rgba(255,255,255,0.16) 1.2px, transparent 1.3px), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.16) 1.2px, transparent 1.3px), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.16) 1.8px, transparent 1.9px)',
               backgroundSize: '100% 100%, 60px 60px, 80px 80px, 40px 40px',
               backgroundColor: corDoTopo(design) }} />
-            <Logo verificada={isPro} logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={corNomeCelular(design.cor_nome)} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars}  aoAbrirSobre={() => setSobreAberta(true)} />
+            <Logo verificada={temSelo} logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={corNomeCelular(design.cor_nome)} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars}  aoAbrirSobre={() => setSobreAberta(true)} />
             <div className="cp-banner-wrap">
               <BannerAd bannerUrl={design.banner_url || design.banner1_url || design.banner2_url || design.banner3_url} isPro={isPro} /* (6.79) um banner só, sem carrossel */ />
             </div>
@@ -552,7 +555,7 @@ function CardapioContent() {
               telefone={config?.telefone}
             />
           ) : <EmptyState telefone={config?.telefone} />}
-          {isPro && isRotaNova && <PedirOrcamento codigo={codigo} cor={design.cor_botao || design.cor_borda || '#E85A8C'} />}
+          {temOrcamento && isRotaNova && <PedirOrcamento codigo={codigo} cor={design.cor_botao || design.cor_borda || '#E85A8C'} />}
         </div>
         <Footer textoRodape={design.texto_rodape} />
       </div>
@@ -564,8 +567,8 @@ function CardapioContent() {
   const cor = design.cor_botao || design.cor_borda || '#E85A8C'
   return (
     <div className="cp-pc">
-      <NavigationMenu celular={false} corBotao={cor} corTopo={corDoTopo(design)} logoUrl={design.logo_url} sugestoes={produtos} verificada={isPro} />
-      <DeskNav isPro={isPro} design={design} config={config} />
+      <NavigationMenu celular={false} corBotao={cor} corTopo={corDoTopo(design)} logoUrl={design.logo_url} sugestoes={produtos} verificada={temSelo} />
+      <DeskNav isPro={temSelo} design={design} config={config} />
 
       <div className="cp-corpo">
         {!design.ocultar_categorias && categorias.length > 1 && (
@@ -624,7 +627,7 @@ function CardapioContent() {
           {/* (20/10) cupons da loja (até 2), entre o banner e a sacola */}
           {(config?.cupons_vitrine?.length || 0) > 0 && <div className="cp-vouchers"><Vouchers cupons={config!.cupons_vitrine!} cor={design?.cor_botao && !/^#?f{3,6}$/i.test(design.cor_botao) ? design.cor_botao : '#EC4899'} /></div>}
           <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
-          {isPro && isRotaNova && <PedirOrcamento codigo={codigo} cor={cor} pc />}
+          {temOrcamento && isRotaNova && <PedirOrcamento codigo={codigo} cor={cor} pc />}
           {/* 10/10: saiu o aviso de "Programa de fidelidade" (a fidelidade ainda não existe no app) */}
         </aside>
       </div>

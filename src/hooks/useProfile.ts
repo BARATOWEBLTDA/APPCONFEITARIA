@@ -29,6 +29,10 @@ export interface Profile {
   pro_desde?: string | null; // (21/10) quando o PRO ligou pela primeira vez
   /** Mensagens do WhatsApp personalizadas (09/10 · 3.59). Chave → texto. Vazio = padrão. */
   mensagens_whatsapp?: Record<string, string> | null;
+  /** (17/11) Liberações avulsas definidas pelo admin: a conta ganha esses recursos mesmo no grátis. */
+  recursos_extras?: string[] | null;
+  /** (17/11) Limite de produtos no grátis definido pelo admin para esta conta. Vazio = padrão (10). */
+  limite_produtos_gratis?: number | null;
 }
 
 // ─── Cache localStorage ────────────────────────────────────────────

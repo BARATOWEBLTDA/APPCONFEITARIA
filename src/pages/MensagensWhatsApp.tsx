@@ -67,7 +67,7 @@ export default function MensagensWhatsApp() {
   const posicao = useRef<{ ini: number; fim: number } | null>(null); // onde estava o cursor (sem tocar no campo, vai pro fim)
 
   // (31/10 · 5.84) mensagens do seu jeito é recurso PRO: no grátis vale o texto padrão do app
-  const { isPro, loading: carregandoPlano } = usePlano();
+  const { temRecurso, loading: carregandoPlano } = usePlano(); const isPro = temRecurso("mensagens"); // (17/11) PRO ou liberado avulso pelo admin
   const [proAberto, setProAberto] = useState(false);
   const abrir = (m: Modelo) => { if (!carregandoPlano && !isPro) { setProAberto(true); return; } posicao.current = null; setEditando(m); setTexto(salvas[m.chave]?.trim() ? salvas[m.chave] : m.padrao); };
   const fechar = () => setEditando(null);

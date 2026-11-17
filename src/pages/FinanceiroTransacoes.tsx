@@ -69,7 +69,7 @@ export default function FinanceiroTransacoes() {
   const [busca, setBusca] = useState("");
   const [verEstornados, setVerEstornados] = useState(false);
   const [aberto, setAberto] = useState<MovExtrato | null>(null);
-  const { isPro } = usePlano();
+  const { temRecurso } = usePlano(); const isPro = temRecurso("planilha"); // (17/11) baixar planilha: PRO ou liberado avulso
   const { profile } = useProfile();
   // (27/10) o mesmo aviso do Financeiro: lançamento com data antes do caixa não muda o saldo
   const inicioCaixa = (profile as PerfilCaixa)?.caixa_inicio_em ? isoDe(new Date((profile as PerfilCaixa).caixa_inicio_em)) : null;

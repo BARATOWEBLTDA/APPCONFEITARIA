@@ -98,7 +98,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
   const [bannerTopoUrl, setBannerTopoUrl] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
-  const { isPro } = usePlano();
+  const { isPro, temRecurso } = usePlano(); const premium = temRecurso("cardapio_premium"); // (17/11) cores/modelo Premium: PRO ou liberado avulso
   // (18/10) Por enquanto só existe o Clássico (logo no canto direito). Novos modelos vêm depois.
   const [, setCardapioModelo] = useState("modelo1");
 
@@ -351,7 +351,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
     { campo: "cor_borda", n: 2, rotulo: "Borda da logo", apoio: "O círculo em volta da logo", valor: corBorda, set: setCorBorda },
     { campo: "cor_nome", n: 3, rotulo: "Nome da loja", apoio: "A cor do nome embaixo do topo", valor: corNome, set: setCorNome },
   ];
-  const corAtual = (campo: CampoCor, valor: string) => corDoItem(campo, valor, isPro);
+  const corAtual = (campo: CampoCor, valor: string) => corDoItem(campo, valor, premium);
 
   if (erroCarga) return (
     <>
@@ -490,12 +490,12 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
               <div className="ap-crot"><span className="ap-crot-tx"><b>{it.rotulo}</b><small>{it.apoio}</small></span><i className="ap-crot-cor" style={{ background: atual }} aria-hidden="true" /></div>
               <div className="ap-prontas" role="radiogroup" aria-label={it.rotulo}>
                 {/* (30/10 · 5.24) 4 cores de graça numa linha; na de baixo, as 4 do PRO (no grátis com cadeado) e o "+" */}
-                {(isPro ? (["gratis", "pro"] as const) : (["gratis"] as const)).map(grupo => (
+                {(premium ? (["gratis", "pro"] as const) : (["gratis"] as const)).map(grupo => (
                   <div key={grupo} className={`ap-prontas-l${grupo === "pro" ? " ap-prontas-l--pro" : ""}`}>
 
                     {(grupo === "gratis" ? PRONTAS : PRONTAS_PRO)[it.campo].map(p => {
                       const on = atual === p.cor;
-                      const travada = grupo === "pro" && !isPro;
+                      const travada = grupo === "pro" && !premium;
                       return (
                         <button key={p.cor} type="button" role="radio" aria-checked={on} aria-label={travada ? `${p.nome}, no plano PRO` : p.nome} title={p.nome}
                           className={`${on ? "on" : ""}${travada ? " ap-cor-pro" : ""}`} style={{ background: p.cor }}
@@ -507,7 +507,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
                         </button>
                       );
                     })}
-                    {grupo === "pro" && (isPro ? (
+                    {grupo === "pro" && (premium ? (
                   <button type="button" className={`ap-outra${!pronta ? " on" : ""}`} aria-label="Outra cor" aria-expanded={aberta} style={!pronta ? { background: atual } : undefined}
                     onClick={() => setActivePicker(aberta ? null : it.campo)}><Plus size={16} weight="bold" aria-hidden="true" /></button>
                 ) : (
@@ -517,7 +517,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
                   </div>
                 ))}
               </div>
-              {isPro && aberta && (
+              {premium && aberta && (
                 <div className="ap-picker">
                   <HexColorPicker color={it.valor} onChange={v => { setHexDigitando(null); handleColorChange(it.campo, v, it.set); }} style={{ width: "100%", height: 168 }} />
                   <div className="ap-picker-pe">

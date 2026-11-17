@@ -6,7 +6,6 @@ import { abrirConvitePro } from "@/components/billing/RecursoPro";
 import { horasAntecedencia } from "@/lib/entregaProduto";
 import { explicarErro } from "@/lib/erros";
 import LimitePlano from "@/components/billing/LimitePlano";
-import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
 import { useLocation, useNavigate } from "react-router-dom";
 import Destaque from "@/components/Destaque";
 import { faltaKit } from "@/components/produto/KitQuantidadeEditor";
@@ -497,7 +496,7 @@ export default function Produtos() {
   const img2Ref = useRef<HTMLInputElement>(null);
   const img3Ref = useRef<HTMLInputElement>(null);
   const img4Ref = useRef<HTMLInputElement>(null); // (21/10) PRO: até 4 fotos por produto
-  const { isPro } = usePlano();
+  const { isPro, limiteProdutos } = usePlano(); // (17/11) limiteProdutos: padrão 10, o admin pode subir por conta
   const { profile } = useProfile();
 
   // (04/11 · 6.20) veio do "Escrever" do Seus próximos passos: abre o produto já na descrição, com o balão da IA
@@ -658,7 +657,7 @@ export default function Produtos() {
 
   // (27/10) Grátis: até 10 produtos NO CARDÁPIO ao mesmo tempo (os guardados fora do cardápio não contam)
   const ativosNoCardapio = produtos.filter(p => p.disponivel !== false).length;
-  const passouDoLimite = (novos = 1) => !isPro && ativosNoCardapio + novos > LIMITE_PRODUTOS_GRATIS;
+  const passouDoLimite = (novos = 1) => !isPro && ativosNoCardapio + novos > limiteProdutos;
   const openNovo = () => {
     fichaLida.current = null; fichaPedida.current = null;
     abertura.current++; setGerandoDesc(null); setUploading(false);
@@ -1443,7 +1442,7 @@ export default function Produtos() {
 
   return (
     <>
-      {limiteAberto && <LimitePlano tipo="produtos" limite={LIMITE_PRODUTOS_GRATIS} onClose={() => setLimiteAberto(false)} />}
+      {limiteAberto && <LimitePlano tipo="produtos" limite={limiteProdutos} onClose={() => setLimiteAberto(false)} />}
     <AppPageHeader
       title="Produtos" voltar="/cardapio"
       // (10/11) sem produto ainda, a tela já explica tudo: o (i) só aparece depois do 1º produto

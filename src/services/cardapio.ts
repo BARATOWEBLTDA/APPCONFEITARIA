@@ -1,5 +1,6 @@
 import { modoDaLoja } from '@/lib/taxaEntrega'
 import { cupomDisponivel } from '@/lib/cupons'
+import { RECURSOS_PRO } from '@/lib/recursos'
 import { COR_BOTOES, corDoItem } from '@/lib/coresCardapio'
 import { supabase } from '@/lib/supabase'
 import { fotoDaLoja } from '@/hooks/useProfile'
@@ -66,6 +67,7 @@ type PerfilLoja = {
   loja_pausada?: boolean | null
   facebook?: string | null
   dias_fechados?: unknown
+  recursos_extras?: string[] | null
 }
 type ErroBanco = { code?: string; message?: string } | null
 
@@ -74,6 +76,8 @@ export interface CardapioData {
   config: Configuracoes | null
   produtos: Produto[]
   isPro: boolean
+  /** (17/11) recursos liberados pra conta (PRO = todos; senão as liberações avulsas do admin) */
+  recursos: string[]
   categoryImages: { [key: string]: string }
   categoriasList: string[]
   /** Slug canônico esperado — 'cardapio' pra free, slug_personalizado pra PRO */
@@ -89,6 +93,7 @@ const EMPTY_RESULT: CardapioData = {
   config: null,
   produtos: [],
   isPro: false,
+  recursos: [],
   categoryImages: {},
   categoriasList: [],
   slugCanonico: 'cardapio',
@@ -174,6 +179,10 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
 
   const expira = profile.pro_expira_em ? new Date(profile.pro_expira_em) : null
   const isPro = profile.plano === 'pro' && (!expira || expira > new Date())
+  // (17/11) liberações avulsas definidas pelo admin: a conta ganha o recurso mesmo no grátis
+  const extras = Array.isArray(profile.recursos_extras) ? profile.recursos_extras : []
+  const temR = (chave: string) => isPro || extras.includes(chave)
+  const recursos = isPro ? RECURSOS_PRO.map(r => r.chave as string) : extras
 
   // Slug canônico: se PRO e tem slug_personalizado, usa. Senão, 'cardapio' fixo.
   const slugCanonico = isPro && profile.slug_personalizado
@@ -183,9 +192,9 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
   // (18/10) Três cores, todas no topo: borda da logo, nome e faixa do topo (grátis: as prontas; PRO: qualquer uma).
   // Botões e ícones ficam sempre no rosa do Doonly.
   // (31/10 · 5.84) o tema de Natal saiu do código (já não ligava desde a 5.46)
-  const borda = corDoItem('cor_borda', profile.cor_borda, isPro)
-  const nome = corDoItem('cor_nome', profile.cor_nome, isPro)
-  const topo = corDoItem('cor_navbar', profile.cor_navbar, isPro)
+  const borda = corDoItem('cor_borda', profile.cor_borda, temR('cardapio_premium'))
+  const nome = corDoItem('cor_nome', profile.cor_nome, temR('cardapio_premium'))
+  const topo = corDoItem('cor_navbar', profile.cor_navbar, temR('cardapio_premium'))
 
   const design: DesignSettings = {
     user_id: userId,
@@ -208,10 +217,10 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
     cor_sacola: COR_BOTOES,
     cor_rodape: COR_BOTOES,
     ocultar_categorias: profile.ocultar_categorias || false,
-    facebook_pixel_id: isPro ? profile.facebook_pixel_id || '' : '', // (19/10) Marketing › Pixel do Facebook · (31/10 · 5.84) só no PRO
+    facebook_pixel_id: temR('pixel') ? profile.facebook_pixel_id || '' : '', // (19/10) Marketing › Pixel do Facebook · (31/10 · 5.84) só no PRO · (17/11) ou liberado avulso
     // (04/11 · 6.20) Pixel do Google e do TikTok (também só no PRO)
-    google_tag_id: isPro ? (profile as { google_tag_id?: string | null }).google_tag_id || '' : '',
-    tiktok_pixel_id: isPro ? (profile as { tiktok_pixel_id?: string | null }).tiktok_pixel_id || '' : '',
+    google_tag_id: temR('pixel') ? (profile as { google_tag_id?: string | null }).google_tag_id || '' : '',
+    tiktok_pixel_id: temR('pixel') ? (profile as { tiktok_pixel_id?: string | null }).tiktok_pixel_id || '' : '',
     // (6.147) false = a loja ainda não terminou os Primeiros passos (o link mostra "Cardápio em preparação")
     cardapio_liberado: (profile as { cardapio_liberado?: boolean | null }).cardapio_liberado !== false,
   }
@@ -241,8 +250,8 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
     exibir_campo_troco: profile.exibir_campo_troco !== false,
     cupons_desconto: [],
     // Cupons são recurso PRO (liberado pra loja grátis enquanto testa: lib/cupons)
-    tem_cupom: cupomDisponivel(isPro) && (temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c) => c?.ativo))),
-    cupons_vitrine: cupomDisponivel(isPro) && Array.isArray(rVitrine?.data) ? rVitrine.data : [],
+    tem_cupom: cupomDisponivel(temR('cupons')) && (temCupom === true || (Array.isArray(profile.cupons_desconto) && profile.cupons_desconto.some((c) => c?.ativo))),
+    cupons_vitrine: cupomDisponivel(temR('cupons')) && Array.isArray(rVitrine?.data) ? rVitrine.data : [],
     aceita_agendamento: profile.aceita_agendamento !== false,
     // (20/10) Pix pelo cardápio: só quando a loja ligou, aceita Pix e preencheu chave, nome e cidade
     // (27/10) chave salva errada (ex.: celular na aba CPF) não liga o Pix: a cliente combina o pagamento no WhatsApp
@@ -251,7 +260,7 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
       ? { chave: profile.pix_chave, nome: profile.pix_nome, cidade: profile.pix_cidade, modo: ['sinal', 'total'].includes(profile.pix_modo) ? profile.pix_modo : 'escolha', pct: Number(profile.pix_sinal_pct) || 50, retirada: profile.pagar_na_retirada === true }
       : null,
     prazo_minimo_horas: profile.prazo_minimo_horas ?? 24,
-    msg_pedido: isPro ? profile.mensagens_whatsapp?.pedido_cardapio || null : null, // (31/10 · 5.84) texto próprio só no PRO
+    msg_pedido: temR('mensagens') ? profile.mensagens_whatsapp?.pedido_cardapio || null : null, // (31/10 · 5.84) texto próprio só no PRO · (17/11) ou liberado avulso
     instagram: profile.instagram || null,
     loja_pausada: profile.loja_pausada === true,
     facebook: profile.facebook || null,
@@ -262,6 +271,7 @@ async function fetchByUserId(userId: string, profile: PerfilLoja): Promise<Carda
     config,
     produtos: produtos || [],
     isPro,
+    recursos,
     categoryImages,
     categoriasList,
     slugCanonico,

@@ -58,7 +58,7 @@ export default function OrcamentoEditar() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { profile } = useProfile()
-  const { isPro } = usePlano()
+  const { temRecurso } = usePlano(); const isPro = temRecurso("orcamentos") // (17/11) PRO ou liberado avulso pelo admin
   const [o, setO] = useState<Orcamento | null>(null)
   const [erro, setErro] = useState('')
   const [etapa, setEtapa] = useState<number>(1)

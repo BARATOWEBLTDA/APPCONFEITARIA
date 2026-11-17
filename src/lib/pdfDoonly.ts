@@ -53,10 +53,10 @@ export function lojaPublica(l: { nome?: string | null; logo?: string | null; con
 /** Dados da loja pro cabeçalho: logo da Aparência → foto do perfil → inicial. */
 export async function buscarLoja(): Promise<Loja> {
   const { data: { user } } = await supabase.auth.getUser();
-  let p: { nome?: string | null; nome_loja?: string | null; telefone?: string | null; instagram?: string | null; endereco?: string | { cidade?: string; estado?: string } | null; logo_url?: string | null; foto_url?: string | null; plano?: string | null; pro_expira_em?: string | null } | null = null;
+  let p: { nome?: string | null; nome_loja?: string | null; telefone?: string | null; instagram?: string | null; endereco?: string | { cidade?: string; estado?: string } | null; logo_url?: string | null; foto_url?: string | null; plano?: string | null; pro_expira_em?: string | null; recursos_extras?: string[] | null } | null = null;
   if (user) {
     const { data, error } = await supabase.from("profiles")
-      .select("nome, nome_loja, telefone, instagram, endereco, logo_url, foto_url, plano, pro_expira_em").eq("id", user.id).maybeSingle();
+      .select("nome, nome_loja, telefone, instagram, endereco, logo_url, foto_url, plano, pro_expira_em, recursos_extras").eq("id", user.id).maybeSingle();
     // (27/10) não leu o perfil: para com o aviso de "tente de novo" (antes o PDF de uma conta PRO saía com a marca do Doonly)
     if (error || !data) throw error || new Error("perfil não carregou");
     p = data;
@@ -69,7 +69,8 @@ export async function buscarLoja(): Promise<Loja> {
     // (03/11) contato numa linha só: WhatsApp · @instagram · cidade
     nome, contato: [telBR(p?.telefone), arrobaInstagram(p?.instagram), cidade].filter(Boolean).join(" · "),
     logo: fotoDaLoja(p) || null, inicial: nome.charAt(0).toUpperCase() || "D",
-    isPro: p?.plano === "pro" && (!expira || expira > new Date()),
+    // (17/11) PDF sem marca: PRO ou liberado avulso pelo admin (recursos_extras)
+    isPro: (p?.plano === "pro" && (!expira || expira > new Date())) || (Array.isArray(p?.recursos_extras) && p.recursos_extras.includes("pdf_sem_marca")),
   };
 }
 

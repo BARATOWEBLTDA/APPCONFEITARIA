@@ -116,7 +116,7 @@ export default function Complementos() {
   const [iaAviso, setIaAviso] = useState(""); // (30/10 · 5.41) limite da IA ou erro: aparece embaixo do botão, não no aviso do topo // (30/10 · 5.35) "Quis dizer: Topo de Bolo?"
   const nomeConferido = useRef("");
   // (27/10) plano grátis: até 3 complementos (decisão de 25/10)
-  const { isPro, loading: carregandoPlano } = usePlano();
+  const { temRecurso, loading: carregandoPlano } = usePlano(); const isPro = temRecurso("adicionais"); // (17/11) PRO ou liberado avulso pelo admin
   const [limiteAberto, setLimiteAberto] = useState(false);
   const passouDoLimite = () => !isPro && items.length >= LIMITE_COMPLEMENTOS_GRATIS;
 

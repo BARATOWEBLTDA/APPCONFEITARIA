@@ -40,7 +40,7 @@ const PLATAFORMAS: Plataforma[] = [
 
 function CartaoPixel({ p, salvo, onSalvo }: { p: Plataforma; salvo: string; onSalvo: () => Promise<void> }) {
   const { profile } = useProfile();
-  const { isPro, loading: carregandoPlano } = usePlano();
+  const { temRecurso, loading: carregandoPlano } = usePlano(); const isPro = temRecurso("pixel"); // (17/11) PRO ou liberado avulso pelo admin
   const [v, setV] = useState(salvo);
   const [tentou, setTentou] = useState(false);
   const [salvando, setSalvando] = useState(false);
@@ -85,7 +85,7 @@ function CartaoPixel({ p, salvo, onSalvo }: { p: Plataforma; salvo: string; onSa
 
 export default function Pixel() {
   const { profile } = useProfile();
-  const { isPro, loading: carregandoPlano } = usePlano(); // (6.118) grátis: o convite do PRO no topo, como nas outras telas do PRO
+  const { temRecurso, loading: carregandoPlano } = usePlano(); const isPro = temRecurso("pixel"); // (17/11) PRO ou liberado avulso pelo admin // (6.118) grátis: o convite do PRO no topo, como nas outras telas do PRO
   const pf = (profile || {}) as Partial<Record<Plataforma["coluna"], string | null>>;
   return (
     <>

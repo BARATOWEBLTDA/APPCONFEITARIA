@@ -37,7 +37,7 @@ function useComputador() {
 export default function Orcamentos() {
   const navigate = useNavigate()
   const { profile } = useProfile()
-  const { isPro, loading: carregandoPlano } = usePlano()
+  const { temRecurso, loading: carregandoPlano } = usePlano(); const isPro = temRecurso("orcamentos") // (17/11) PRO ou liberado avulso pelo admin
   const [lista, setLista] = useState<Orcamento[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')

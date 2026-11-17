@@ -42,7 +42,7 @@ const CSS_AMOSTRA = `
 
 /** (27/10) Lucratividade é do PRO: a conta grátis vê o convite em cima de um relatório de exemplo borrado */
 export default function Lucratividade() {
-  const { isPro, loading } = usePlano();
+  const { temRecurso, loading } = usePlano(); const isPro = temRecurso("lucratividade"); // (17/11) PRO ou liberado avulso pelo admin
   const navigate = useNavigate();
   if (loading) return null;
   if (isPro) return <LucratividadeTela />;

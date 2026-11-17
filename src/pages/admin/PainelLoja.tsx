@@ -7,7 +7,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import { Gaveta, Botao } from "@/components/base";
 import { explicarErro } from "@/lib/erros";
-import { Crown, WhatsappLogo, InstagramLogo, Storefront, ArrowSquareOut } from "@phosphor-icons/react";
+import { Crown, WhatsappLogo, InstagramLogo, Storefront, ArrowSquareOut, Check } from "@phosphor-icons/react";
+import { RECURSOS_PRO } from "@/lib/recursos";
 
 type Loja = {
   id: string; nome: string | null; nome_loja: string | null; email: string | null; telefone: string | null; instagram: string | null;
@@ -21,6 +22,8 @@ type Loja = {
   // (16/11) uso real: dias ativos e tempo logado (do heartbeat) + datas do que ela criou
   dias_ativos_7?: number; dias_ativos_30?: number; minutos_30?: number; minutos_total?: number;
   primeiro_produto_em?: string | null; ultimo_produto_em?: string | null;
+  // (17/11) liberações avulsas definidas pelo admin
+  limite_produtos_gratis?: number | null; recursos_extras?: string[] | null;
 };
 
 const ONLINE_MS = 2 * 60_000;
@@ -47,18 +50,37 @@ export default function PainelLoja({ id, aoFechar, acoes, rev = 0 }: { id: strin
   const [loja, setLoja] = useState<Loja | null>(null);
   const [erro, setErro] = useState("");
   const [agora, setAgora] = useState(() => Date.now());
+  // (17/11) liberações avulsas: limite de produtos e recursos liberados pra essa conta
+  const [lib, setLib] = useState<{ limite: string; recursos: string[] }>({ limite: "", recursos: [] });
+  const [libMsg, setLibMsg] = useState<"" | "salvando" | "ok" | "erro">("");
 
   useEffect(() => {
     if (!id) return;
     let vivo = true;
-    setErro(""); setAgora(Date.now());
+    setErro(""); setAgora(Date.now()); setLibMsg("");
     supabase.rpc("admin_loja", { uid: id }).then(({ data: d, error }) => {
       if (!vivo) return;
       if (error || !d) setErro(explicarErro(error, "Não deu para abrir os detalhes dessa loja. Tente de novo."));
-      else setLoja(d as Loja);
+      else {
+        const ll = d as Loja;
+        setLoja(ll);
+        setLib({ limite: ll.limite_produtos_gratis ? String(ll.limite_produtos_gratis) : "", recursos: Array.isArray(ll.recursos_extras) ? ll.recursos_extras : [] });
+      }
     });
     return () => { vivo = false; };
   }, [id, rev]);
+
+  // (17/11) salva limite + recursos de uma vez (função só de admin no banco)
+  async function salvarLib(next: { limite: string; recursos: string[] }) {
+    if (!id) return;
+    setLib(next); setLibMsg("salvando");
+    const lim = next.limite.trim() === "" ? null : Math.max(0, Math.floor(Number(next.limite) || 0));
+    const { error } = await supabase.rpc("admin_salvar_liberacoes", { p_uid: id, p_limite: lim, p_recursos: next.recursos });
+    setLibMsg(error ? "erro" : "ok");
+    if (!error) window.setTimeout(() => setLibMsg(m => (m === "ok" ? "" : m)), 1500);
+  }
+  const alternarRecurso = (chave: string) =>
+    salvarLib({ ...lib, recursos: lib.recursos.includes(chave) ? lib.recursos.filter(c => c !== chave) : [...lib.recursos, chave] });
 
   const l = loja;
   const proAtivo = !!l && l.plano === "pro" && (!l.pro_expira_em || new Date(l.pro_expira_em).getTime() > agora);
@@ -172,6 +194,30 @@ export default function PainelLoja({ id, aoFechar, acoes, rev = 0 }: { id: strin
               {l.indicou > 0 && <div><dt>Indicou</dt><dd>{n(l.indicou)} {l.indicou === 1 ? "conta" : "contas"}</dd></div>}
             </dl>
 
+            <h3 className="pl-h">Liberações no grátis</h3>
+            {proAtivo && <p className="pl-lib-nota">Conta PRO — já tem todos os recursos. Estas liberações valem se o PRO sair.</p>}
+            <div className="pl-lib">
+              <div className="pl-lib-lim">
+                <span className="pl-lib-lim-tx"><b>Produtos no grátis</b><small>Padrão 10 · deixe vazio para o padrão</small></span>
+                <input type="text" inputMode="numeric" placeholder="10" value={lib.limite} aria-label="Limite de produtos no grátis"
+                  onChange={e => setLib(l => ({ ...l, limite: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
+                  onBlur={() => salvarLib(lib)}
+                  onKeyDown={e => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }} />
+              </div>
+              <div className="pl-lib-recs">
+                {RECURSOS_PRO.map(r => {
+                  const on = lib.recursos.includes(r.chave);
+                  return (
+                    <button key={r.chave} type="button" role="checkbox" aria-checked={on} className={`pl-lib-rec${on ? " on" : ""}`} onClick={() => alternarRecurso(r.chave)}>
+                      <i aria-hidden="true">{on && <Check size={13} weight="bold" />}</i>
+                      <span><b>{r.titulo}</b><small>{r.descricao}</small></span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className={`pl-lib-msg pl-lib-msg--${libMsg || "none"}`} role="status">{libMsg === "salvando" ? "Salvando…" : libMsg === "ok" ? "Salvo" : libMsg === "erro" ? "Não deu para salvar" : ""}</p>
+            </div>
+
             {acoes && acoes.length > 0 && <>
               <h3 className="pl-h">Gerenciar conta</h3>
               <div className="pl-acoes">
@@ -253,6 +299,26 @@ export default function PainelLoja({ id, aoFechar, acoes, rev = 0 }: { id: strin
         .pl-acao--perigo .pl-acao-tx b { color: var(--ui-vermelho); }
         .pl-acao-tx small { font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
         .pl-dl dd { min-width: 0; margin: 0; font-size: 14px; font-weight: 500; color: var(--ui-texto); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pl-lib { display: flex; flex-direction: column; gap: 8px; }
+        .pl-lib-nota { margin: 0 0 2px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
+        .pl-lib-lim { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); }
+        .pl-lib-lim-tx { min-width: 0; display: flex; flex-direction: column; }
+        .pl-lib-lim-tx b { font-size: 14.5px; font-weight: 500; color: var(--ui-texto); }
+        .pl-lib-lim-tx small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
+        .pl-lib-lim input { flex: none; width: 64px; height: 40px; text-align: center; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-fundo); font-size: 16px; font-weight: 600; color: var(--ui-texto); font-family: inherit; }
+        .pl-lib-lim input:focus { outline: none; border-color: var(--ui-rosa); background: var(--ui-branco); }
+        .pl-lib-recs { border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); overflow: hidden; }
+        .pl-lib-rec { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 8px 12px; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+        .pl-lib-rec + .pl-lib-rec { border-top: 1px solid var(--ui-linha); }
+        .pl-lib-rec:hover { background: var(--ui-fundo); }
+        .pl-lib-rec > i { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1.5px solid var(--ui-borda); border-radius: 6px; background: var(--ui-branco); color: #fff; }
+        .pl-lib-rec.on > i { background: var(--ui-rosa); border-color: var(--ui-rosa); }
+        .pl-lib-rec > span { min-width: 0; display: flex; flex-direction: column; }
+        .pl-lib-rec b { font-size: 14.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pl-lib-rec small { font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pl-lib-msg { margin: 0; min-height: 16px; font-size: 12.5px; font-weight: 500; color: var(--ui-texto-2); }
+        .pl-lib-msg--ok { color: var(--ui-verde); }
+        .pl-lib-msg--erro { color: var(--ui-vermelho, #B91C1C); }
       `}</style>
     </Gaveta>
   );

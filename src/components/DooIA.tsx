@@ -659,7 +659,7 @@ function formatText(text: string): string {
 }
 
 export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
-  const { isPro, loading: carregandoPlano } = usePlano()
+  const { temRecurso, loading: carregandoPlano } = usePlano(); const isPro = temRecurso("doo_ia_plus") // (17/11) PRO ou liberado avulso pelo admin
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')

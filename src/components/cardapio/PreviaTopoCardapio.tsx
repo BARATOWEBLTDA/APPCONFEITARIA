@@ -26,7 +26,7 @@ const clara = (hex: string) => {
 
 /** semDescricao: texto cinza no lugar da descrição enquanto ela não escreveu (só na tela da descrição) */
 export default function PreviaTopoCardapio({ d, onLogo, enviando = false, semDescricao }: { d: DadosPrevia; onLogo?: () => void; enviando?: boolean; semDescricao?: string }) {
-  const { isPro } = usePlano(); // (27/10) o selo de verificada é do PRO (a prévia mostrava para todos)
+  const { temRecurso } = usePlano(); const isPro = temRecurso("selo_verificado"); // (17/11) selo: PRO ou liberado avulso
   // mesmas regras do CardapioModelo1
   const borda = d.cor_borda || "#E85A8C";
   const faixa = topoEscurecido(!ehBranco(d.cor_navbar) ? d.cor_navbar! : (!ehBranco(d.cor_borda) ? d.cor_borda! : "#BF6B84"));

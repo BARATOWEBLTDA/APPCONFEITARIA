@@ -134,7 +134,7 @@ export default function CheckoutConfigPage({ embutido = false, parte = "tudo", s
   const navigate = useNavigate()
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
   const voltarPara = (useLocation().state as { de?: string } | null)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio"
-  const { isPro, loading: carregandoPlano } = usePlano()
+  const { temRecurso, loading: carregandoPlano } = usePlano(); const isPro = temRecurso("cupons") // (17/11) PRO ou liberado avulso pelo admin
   const { profile } = useProfile()
   const [imagemCupom, setImagemCupom] = useState<DadosImagemCupom | null>(null)
   const [loading, setLoading] = useState(true)
