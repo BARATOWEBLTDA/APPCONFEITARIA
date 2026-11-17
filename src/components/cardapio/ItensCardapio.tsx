@@ -140,15 +140,18 @@ export function montarSecoes(produtos: Produto[], categorias: string[], agrupar:
   // (11/10) "em promoção" é ter desconto de verdade no cardápio: promoção antiga em valor num produto
   // com tamanhos de preço fixo não dá desconto, então o produto fica na categoria dele
   const emPromocao = (p: Produto) => descontoCardapio(p) > 0
-  // (27/10) Destaques: até 6, marcados pela confeiteira; o que está em destaque não se repete em Promoções
-  const destaquesTodos = produtos.filter(p => (p as Produto & { destaque?: boolean }).destaque === true).slice(0, 6)
+  // (17/11) a seção Promoções fica escondida (o Bruno pediu): o código continua aqui, só não renderiza.
+  // O produto em promoção continua aparecendo na categoria dele, com o preço riscado.
+  const MOSTRAR_PROMOCOES = false
+  // (27/10) Destaques: até 8 (17/11), marcados pela confeiteira; o que está em destaque não se repete em Promoções
+  const destaquesTodos = produtos.filter(p => (p as Produto & { destaque?: boolean }).destaque === true).slice(0, 8)
   const destaques = destaquesTodos.length >= minDestaque ? destaquesTodos : []
   const promoTodos = produtos.filter(p => emPromocao(p) && !destaques.includes(p))
   const promo = promoTodos.length >= minPromo ? promoTodos : []
   const resto = produtos
   const secoes: Secao[] = []
   if (destaques.length) secoes.push({ id: 'sec-destaques', nome: 'Destaques', tipo: 'destaque', produtos: destaques })
-  if (promo.length) secoes.push({ id: 'sec-promocoes', nome: 'Promoções', tipo: 'promo', produtos: promo })
+  if (MOSTRAR_PROMOCOES && promo.length) secoes.push({ id: 'sec-promocoes', nome: 'Promoções', tipo: 'promo', produtos: promo })
   if (!agrupar || categorias.length === 0) {
     if (resto.length) secoes.push({ id: 'sec-todos', nome: promo.length || destaques.length ? 'Todos os produtos' : 'Cardápio', tipo: 'lista', produtos: resto })
     return secoes
@@ -168,12 +171,9 @@ export function SecaoCardapio({ secao, cor, pc = false }: { secao: Secao; cor: s
     <section id={secao.id} className={`ic-sec${pc ? ' ic-sec--pc' : ''}`}>
       {/* (24/10) o título diz quantos produtos tem a categoria; uma linha separa uma categoria da outra (CSS) */}
       {secao.nome && <h2 className="ic-h2">{secao.nome}{secao.tipo === 'destaque' && <Star size={20} weight="fill" className="ic-h2-estrela" aria-hidden="true" />}{secao.tipo === 'lista' && <small>{secao.produtos.length === 1 ? '1 produto' : `${secao.produtos.length} produtos`}</small>}</h2>}
-      {/* (27/10) celular: Destaques numa fileira que desliza · (6.33) Promoções em cartões quadrados, 2 por linha; computador: grade */}
+      {/* (17/11) Destaques em quadradinhos: 2 por linha no celular, 4 por linha no computador (igual às Promoções) · Promoções escondidas (ver montarSecoes) */}
       {secao.tipo === 'destaque'
-        ? (pc
-            ? <div className="ic-grade ic-fila ic-fila--dq">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc grande />)}</div>
-            /* (17/11) celular: Destaques em quadradinhos 2 por linha, igual às Promoções (antes era a fileira que deslizava) */
-            : <div className="ic-grade ic-grade--promo">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} />)}</div>)
+        ? <div className="ic-grade ic-grade--promo ic-grade--dq">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc={pc} />)}</div>
         : secao.tipo === 'promo'
         ? <div className="ic-grade ic-grade--promo">{secao.produtos.map(p => <CartaoPromo key={p.id} produto={p} cor={cor} pc={pc} />)}</div>
         : <div className="ic-lista">{secao.produtos.map(p => <LinhaProduto key={p.id} produto={p} cor={cor} pc={pc} />)}</div>}

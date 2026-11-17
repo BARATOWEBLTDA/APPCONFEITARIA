@@ -894,7 +894,7 @@ export default function Produtos() {
   };
 
   // (17/10) Liga/desliga do cartão: um toque tira ou põe no cardápio, sem abrir o produto
-  const MAX_DESTAQUES = 6;
+  const MAX_DESTAQUES = 8;
   const qtdDestaques = (semId?: string) => produtos.filter(x => x.destaque === true && x.id !== semId).length;
   // no cadastro aberto não tem o "Ver destaques" (fecharia a tela e perderia o que ela mexeu)
   const avisarLimiteDestaques = (comAcao = true) => avisar(`Já tem ${MAX_DESTAQUES} destaques`, {
