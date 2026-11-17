@@ -16,7 +16,7 @@ function arrumarDesc(bruta: string): string {
   return t.length > 170 ? t.slice(0, 167).trimEnd() + "…" : t;
 }
 
-async function lerLoja(codigo: string): Promise<{ nome: string; desc: string } | null> {
+async function lerLoja(codigo: string): Promise<{ nome: string; desc: string; imagem: string } | null> {
   const e = env();
   const url = e.SUPABASE_URL || e.VITE_SUPABASE_URL;
   const anon = e.SUPABASE_ANON_KEY || e.VITE_SUPABASE_ANON_KEY;
@@ -28,12 +28,13 @@ async function lerLoja(codigo: string): Promise<{ nome: string; desc: string } |
     let p: any = r.ok ? await r.json() : null;
     if (Array.isArray(p)) p = p[0];
     if (!p) {
-      const r2 = await fetch(`${url}/rest/v1/profiles?select=nome_loja,descricao_loja&codigo_publico=eq.${encodeURIComponent(codigo)}&limit=1`, { headers: h });
+      const r2 = await fetch(`${url}/rest/v1/profiles?select=nome_loja,descricao_loja,logo_url,foto_url&codigo_publico=eq.${encodeURIComponent(codigo)}&limit=1`, { headers: h });
       const l = r2.ok ? await r2.json() : [];
       p = Array.isArray(l) ? l[0] : null;
     }
     if (!p) return null;
-    return { nome: String(p.nome_loja || "Cardápio"), desc: arrumarDesc(p.descricao_loja) };
+    const img = String(p.logo_url || p.foto_url || "").split(",")[0].trim();
+    return { nome: String(p.nome_loja || "Cardápio"), desc: arrumarDesc(p.descricao_loja), imagem: /^https:\/\//.test(img) ? img : "" };
   } catch { return null; }
 }
 
@@ -44,8 +45,7 @@ export default async function handler(req: Request) {
   const loja = await lerLoja(codigo);
   const nome = loja?.nome || "Cardápio";
   const desc = loja?.desc || DESC_PADRAO;
-  // cartão 1200×630 gerado com a logo + nome da loja (api/og-card); se falhar, ele mesmo cai no og-bolo.png
-  const imagem = `${BASE}/api/og-card?c=${encodeURIComponent(codigo)}`;
+  const imagem = loja?.imagem || `${BASE}/og-bolo.png`;
   const link = `${BASE}/c/${encodeURIComponent(codigo)}/${caminho}`;
   const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <title>${esc(nome)}</title>
@@ -55,13 +55,10 @@ export default async function handler(req: Request) {
 <meta property="og:title" content="${esc(nome)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:image" content="${esc(imagem)}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:alt" content="${esc(nome)} · Cardápio online">
+<meta property="og:image:alt" content="${esc(nome)}">
 <meta property="og:url" content="${esc(link)}">
 <meta property="og:locale" content="pt_BR">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${esc(nome)}">
 <meta name="twitter:description" content="${esc(desc)}">
 <meta name="twitter:image" content="${esc(imagem)}">
