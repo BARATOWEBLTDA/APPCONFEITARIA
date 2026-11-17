@@ -408,8 +408,10 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
     // (11/10) centavos por uma conta só (r2 + comDesconto), a mesma do cartão e do preço ao lado de cada opção.
     // Antes era toFixed aqui e Math.round lá: 0,5 kg de R$ 31,99 dava R$ 16,00 no cartão e R$ 15,99 no botão.
+    // (17/11) o desconto da promoção vale SÓ no preço do bolo; os adicionais (recheio, massa, cobertura, sabor, topo…)
+    // entram com o valor cheio. Antes o desconto caía no total (bolo + adicionais), e um recheio de R$ 15 virava ~R$ 10.
     const subtotal = r2(baseEfetivo + adicionaisTotal)
-    const final = r2(comDesconto(r2(baseEfetivo + adicionaisTotal - extrasPorUnidade), descPct) + extrasPorUnidade)
+    const final = r2(comDesconto(baseEfetivo, descPct) + adicionaisTotal)
     const desconto = r2(subtotal - final)
 
     return {
