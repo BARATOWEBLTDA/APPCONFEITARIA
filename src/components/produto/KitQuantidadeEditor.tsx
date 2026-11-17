@@ -218,6 +218,8 @@ const CSS = `
   .kq-v2 .kq-lbl { margin: 22px 0 10px; font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); }
   .kq-v2 .kq-lbl:first-child { margin-top: 4px; }
   .kq-v2 .kq-lista { margin: 0; padding: 0; list-style: none; border: 1px solid var(--ui-borda); border-radius: 12px; overflow: hidden; background: var(--ui-branco); }
+  /* (17/11) a caixa do kit colava nas caixinhas "Pacotes prontos / Ele escolhe"; dá um respiro entre os dois grupos */
+  .kq-v2 .ui-cx + .kq-lista { margin-top: 10px; }
   .kq-v2 .kq-lista > li { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 6px 0 14px; font-size: 15px; }
   .kq-v2 .kq-lista > li + li { border-top: 1px solid var(--ui-linha); }
   .kq-v2 .kq-lista > li > span:first-child { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
