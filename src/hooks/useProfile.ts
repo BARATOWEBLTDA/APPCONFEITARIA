@@ -33,6 +33,11 @@ export interface Profile {
   recursos_extras?: string[] | null;
   /** (17/11) Limite de produtos no grátis definido pelo admin para esta conta. Vazio = padrão (10). */
   limite_produtos_gratis?: number | null;
+  /** (18/11) Banners de promoção do cardápio (banner_url é o 1º; banner1–3 são PRO). Serve pra saber se ela já tem banner. */
+  banner_url?: string | null;
+  banner1_url?: string | null;
+  banner2_url?: string | null;
+  banner3_url?: string | null;
 }
 
 // ─── Cache localStorage ────────────────────────────────────────────

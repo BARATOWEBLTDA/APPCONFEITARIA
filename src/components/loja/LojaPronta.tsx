@@ -19,10 +19,13 @@ export function LojaProntaCartao({ profile, onFechar }: { profile: Profile | nul
   const compartilhar = () => { void compartilharCardapio(link, profile?.nome_loja) } // (16/10) nativo; no computador copia
 
   // (18/11) "Mas ainda dá pra melhorar": próximos passos anexados no cartão do cardápio no ar
-  const melhorar: { ic: ReactNode; t: string; s: string; pro?: boolean; ir: () => void }[] = [
+  // (18/11) "Criar um banner" some quando ela já tem algum banner de promoção (banner_url ou os 3 do PRO)
+  const temBanner = !!(profile?.banner_url || profile?.banner1_url || profile?.banner2_url || profile?.banner3_url)
+  type Melhoria = { ic: ReactNode; t: string; s: string; pro?: boolean; ir: () => void }
+  const melhorar: Melhoria[] = [
     { ic: <Basket size={20} weight="regular" />, t: "Cadastrar mais produtos", s: "Quanto mais opções, mais pedidos", ir: () => navigate('/produtos') },
     { ic: <Camera size={20} weight="regular" />, t: "Caprichar nas fotos", s: "Foto boa vende mais", ir: () => navigate('/produtos') },
-    { ic: <ImageSquare size={20} weight="regular" />, t: "Criar um banner", s: "Destaque promoções no topo do cardápio", ir: () => navigate('/cardapio-config') },
+    ...(temBanner ? [] : [{ ic: <ImageSquare size={20} weight="regular" />, t: "Criar um banner", s: "Destaque promoções no topo do cardápio", ir: () => navigate('/cardapio-config') }]),
     { ic: <InstagramLogo size={20} weight="regular" />, t: "Divulgar seu cardápio", s: "Bio do Insta, status do WhatsApp", ir: compartilhar },
     { ic: <Sparkle size={20} weight="regular" />, t: "Ativar a Doo IA", s: "Responda clientes no automático", pro: true, ir: () => abrirDooIA() },
   ]
