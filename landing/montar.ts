@@ -96,7 +96,7 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
   // (18/11) abertura /testes: mockup igual ao tutorial do app visto no PC — notebook com o Início (fixo) + celular com o cardápio
   const BV_HERO = `<style>
 #inicio .dl-note, #inicio .dl-celular, #inicio .dl-palco__sombra, #inicio .dl-palco__arco, #inicio .dl-confeitos{display:none !important;}
-#inicio .dl-palco{display:flex; align-items:center; justify-content:center; min-height:0;}
+#inicio .dl-palco{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-height:0;}
 #inicio .bv-dup-wrap{position:relative; display:block; width:100%; max-width:560px; margin:0 auto; padding:24px 44px 40px 0; perspective:2200px;}
 #inicio .bv-dup{position:relative; transform:rotateY(-9deg) rotateX(3deg); transform-style:preserve-3d;}
 #inicio .bv-nb{display:block; width:100%;}
@@ -115,6 +115,13 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
 @media (prefers-reduced-motion:reduce){ #inicio .bv-cel-print{animation:none;} }
 #inicio .bv-cel-menu{position:absolute; left:0; right:0; bottom:0; width:100%; z-index:2;}
 @media (max-width:640px){ #inicio .bv-dup-wrap{max-width:380px; padding:18px 34px 30px 0;} #inicio .bv-cel--mini{width:132px; right:-18px; bottom:-20px;} #inicio .bv-cel--mini .bv-cel-tela{height:248px;} }
+#inicio .tt-prova{display:flex; flex-direction:column; align-items:center; gap:9px; margin:18px auto 0; max-width:440px;}
+#inicio .tt-prova__logos{display:flex; align-items:center; padding-left:10px;}
+#inicio .tt-prova__logo, #inicio .tt-prova__mais{width:42px; height:42px; border-radius:50%; margin-left:-10px; border:2px solid #fff; background:#fff; overflow:hidden; flex:none; box-shadow:0 3px 10px rgba(0,0,0,.3);}
+#inicio .tt-prova__logo img{width:100%; height:100%; object-fit:cover; display:block;}
+#inicio .tt-prova__mais{display:flex; align-items:center; justify-content:center; background:#E85A8C; color:#fff; font-size:13px; font-weight:600;}
+#inicio .tt-prova__txt{margin:0; font-size:14.5px; line-height:1.4; color:rgba(255,255,255,.85); text-align:center;}
+#inicio .tt-prova__txt b{color:#fff; font-weight:600;}
 </style>
 <div class="bv-dup-wrap">
   <div class="bv-dup">
@@ -129,6 +136,17 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
       <div class="bv-cel-tela"><div class="bv-cel-rolo"><img class="bv-cel-print" src="/tutorial/cardapio-exemplo.jpg?v=3" alt="Cardápio digital no celular"></div><img class="bv-cel-menu" src="/tutorial/cardapio-exemplo-nav.jpg?v=3" alt=""></div>
     </div>
   </div>
+</div>
+<div class="tt-prova">
+  <div class="tt-prova__logos">
+    <span class="tt-prova__logo"><img src="https://epixsranjplmltzmdsbo.supabase.co/storage/v1/object/public/products/logos/8e2f0c80-beba-443b-b06c-3fb70b63cb85-1794930140218.jpg?t=1794930140906" alt="Confeitos Da Jana" loading="lazy"></span>
+    <span class="tt-prova__logo"><img src="https://epixsranjplmltzmdsbo.supabase.co/storage/v1/object/public/products/logos/38c7623f-e84f-4863-8453-65f15208b945-1794856742581.jpg?t=1794856743322" alt="Bessoni Cakes" loading="lazy"></span>
+    <span class="tt-prova__logo"><img src="https://epixsranjplmltzmdsbo.supabase.co/storage/v1/object/public/products/logos/a1a84f2e-2a50-4f07-834c-9013c45375d6-1794950962883.jpg?t=1794950963799" alt="Doce Magia" loading="lazy"></span>
+    <span class="tt-prova__logo"><img src="https://epixsranjplmltzmdsbo.supabase.co/storage/v1/object/public/products/logos/f02eca90-5c14-48b8-9ace-d7d7559822a4-1794876883601.jpg?t=1794876884392" alt="Itallo Bolos" loading="lazy"></span>
+    <span class="tt-prova__logo"><img src="https://epixsranjplmltzmdsbo.supabase.co/storage/v1/object/public/products/logos/8b1f6afd-e6ea-4326-b0f8-c8e583376546-1794940089380.jpg?t=1794940090129" alt="Delicias Da Eli" loading="lazy"></span>
+    <span class="tt-prova__mais">+60</span>
+  </div>
+  <p class="tt-prova__txt"><b>+ de 60 confeitarias</b> já estão usando o Doonly</p>
 </div>`
   const corpoTestes = corpo
     .replace('<div class="dl-palco__sombra" aria-hidden="true"></div>', BV_HERO + '\n\t\t\t<div class="dl-palco__sombra" aria-hidden="true"></div>')
