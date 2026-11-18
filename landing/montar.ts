@@ -125,6 +125,8 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
 #inicio .tt-prova__mais{display:flex; align-items:center; justify-content:center; background:#E85A8C; color:#fff; font-size:13px; font-weight:600;}
 #inicio .tt-prova__txt{margin:0; font-size:14.5px; line-height:1.4; color:rgba(255,255,255,.85); text-align:center;}
 #inicio .tt-prova__txt b{color:#fff; font-weight:600;}
+#inicio{padding-bottom:30px;}
+#inicio + .dl-secao{padding-top:36px !important;}
 </style>
 <div class="bv-dup-wrap">
   <div class="bv-dup">
@@ -149,7 +151,7 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
     <span class="tt-prova__logo"><img src="https://epixsranjplmltzmdsbo.supabase.co/storage/v1/object/public/products/logos/8b1f6afd-e6ea-4326-b0f8-c8e583376546-1794940089380.jpg?t=1794940090129" alt="Delicias Da Eli" loading="lazy"></span>
     <span class="tt-prova__mais">+${Math.floor(CONFEITARIAS / 1000)}K</span>
   </div>
-  <p class="tt-prova__txt"><b>+ de ${milhar(CONFEITARIAS)} confeitarias</b> já estão usando o Doonly</p>
+  <p class="tt-prova__txt"><b>+ de ${milhar(CONFEITARIAS)} confeitarias</b> já organizam o dia a dia com o Doonly</p>
 </div>`
   const corpoTestes = corpo
     .replace('<div class="dl-palco__sombra" aria-hidden="true"></div>', BV_HERO + '\n\t\t\t<div class="dl-palco__sombra" aria-hidden="true"></div>')
