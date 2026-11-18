@@ -146,10 +146,14 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
   </div>
 </section>
 `
-  const corpoTestes = corpoPro
+  // (18/11) abertura nova (mockup notebook+celular do tutorial + logos das confeitarias) — vale pra raiz e pra PRO
+  const comAbertura = (body: string) => body.replace('<div class="dl-palco__sombra" aria-hidden="true"></div>', BV_HERO + '\n\t\t\t<div class="dl-palco__sombra" aria-hidden="true"></div>')
+  // extras só da versão PRO: seção "a gente faz por você" + o texto de 7 dias no "Comece agora"
+  const comExtrasPro = (body: string) => body
     .replace('<section class="dl-secao dl-secao--branca dl-comece" id="comece"', SECAO_EQUIPE + '<section class="dl-secao dl-secao--branca dl-comece" id="comece"')
-    .replace('<div class="dl-palco__sombra" aria-hidden="true"></div>', BV_HERO + '\n\t\t\t<div class="dl-palco__sombra" aria-hidden="true"></div>')
     .replace('<h2 class="dl-h2" id="dl-comece-titulo">Comece agora. <span class="dl-h2__rosa">Teste o PRO grátis.</span></h2>', '<h2 class="dl-h2" id="dl-comece-titulo">Comece agora. <span class="dl-h2__rosa">Teste o PRO grátis.</span></h2><p class="tt-comece-sub">São <b>7 dias grátis</b> para testar todas as funcionalidades do Doonly</p>')
+  const corpoRaiz = comAbertura(corpo)                       // raiz (grátis) + abertura nova
+  const corpoProFinal = comExtrasPro(comAbertura(corpoPro))  // PRO completa (a antiga /testes)
   const pixel = `<script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 ${PIXELS.map(id => `fbq('init', '${id}');`).join('\n')}
@@ -183,7 +187,7 @@ ${corpoPagina}
 </body>
 </html>
 `
-  fs.writeFileSync(app, fazerHtml(corpo))                       // raiz: doonly.com.br (cadastro grátis)
-  fs.writeFileSync(path.join(dist, 'pro.html'), fazerHtml(corpoPro)) // doonly.com.br/pro (checkout do PRO)
-  fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoTestes, true)) // doonly.com.br/testes (rascunho, sem redirect)
+  fs.writeFileSync(app, fazerHtml(corpoRaiz))                        // raiz: doonly.com.br (cadastro grátis) + abertura nova
+  fs.writeFileSync(path.join(dist, 'pro.html'), fazerHtml(corpoProFinal)) // doonly.com.br/pro: versão PRO completa (a antiga /testes)
+  fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
 }
