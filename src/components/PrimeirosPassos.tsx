@@ -19,7 +19,6 @@ import { atualizarPontoDaLoja } from "@/lib/taxaEntrega";
 import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk, type EstadoPassos } from "@/lib/primeirosPassos";
 
 import { Botao, BotaoIA, avisar } from "@/components/base";
-import { LojaProntaCartao } from "@/components/loja/LojaPronta";
 import { mascaraTelefone, telefoneCompleto, digitosTelefone } from "@/lib/telefone";
 import PreviaTopoCardapio, { type DadosPrevia } from "@/components/cardapio/PreviaTopoCardapio";
 import { PreviaSobreHorario } from "@/components/cardapio/SobreLoja";
@@ -203,8 +202,6 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
   // No Cardápio digital o cartão some quando está tudo pronto (a tela mostra o cartão do link)
   // (teste 18/11) no Início o cartão "Cardápio no ar" aparece pra TODO mundo com cardápio pronto (não só quem acabou de terminar os passos); some só se a pessoa fechar no X
   if (completo && (local === "cardapio" || fechado)) return null;
-
-  const fechar = () => { try { localStorage.setItem(kFechado, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } setFechado(true); };
   // "Salvar": fecha e volta para o Início (6.142: no celular também; antes abria o próximo passo sozinho).
   // "Fazer depois": pula este (fica pendente) e segue pro próximo, sem voltar nele nesta sequência.
   const seguir = (pular: boolean, patch?: Record<string, unknown>) => {
@@ -241,15 +238,14 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
   if (completo) {
     return (
       <>
-        {/* (16/10) cartão pequeno: antes ocupava quase a tela toda · (30/10 · 5.46) no computador não aparece: o "Seu link de vendas" fica no topo do Início (antes os dois apareciam) */}
-        {largo ? null : <LojaProntaCartao profile={profile} onFechar={fechar} />}
+        {/* (18/11) o cartão "Cardápio no ar" saiu do Início: o cardápio agora fica só na Minha loja */}
         {festa && (
           <Janelinha titulo="Tudo pronto!" onClose={() => setFesta(false)}
             acoes={<><Botao variante="secundario" onClick={() => setFesta(false)}>Fechar</Botao><Botao cheio onClick={() => { setFesta(false); window.open(getCardapioUrl(profile), "_blank", "noopener"); }}>Ver meu cardápio</Botao></>}>
             <div className="pp-festa">
               <img src="/marca/leve/doo-pronto.webp" alt="" aria-hidden="true" />
               <b>Seu cardápio está no ar!</b>
-              <p>Agora é só mandar o link para os seus clientes. Ele fica sempre à mão no cartão do Início.</p>
+              <p>Agora é só mandar o link para os seus clientes. Ele fica sempre à mão na aba Minha loja.</p>
             </div>
           </Janelinha>
         )}

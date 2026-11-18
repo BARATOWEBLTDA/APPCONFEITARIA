@@ -1,6 +1,5 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import { resumoItens, type Pedido } from "@/components/pedidos/pedidoTexto";
-import { usePlaceholderVivo } from "@/hooks/usePlaceholderVivo";
 import { SELO_TESTE } from "@/lib/beneficiosPro";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
@@ -22,8 +21,7 @@ import { minutosDoDia, separarEntregasDeHoje } from "@/components/inicio/entrega
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { TelaVazia, informar } from "@/components/base";
 import MenuConta from "@/components/MenuConta";
-import { abrirDooIA } from "@/components/MenuContaItens";
-import { ArrowRight as SetaDoo, Plus as MaisIc, ArrowCircleDown, ArrowCircleUp, Crown } from "@phosphor-icons/react";
+import { Plus as MaisIc, ArrowCircleDown, ArrowCircleUp, Crown } from "@phosphor-icons/react";
 import { useNotifications } from "@/context/NotificationContext";
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
@@ -102,8 +100,6 @@ function Variacao({ atual, anterior, quando }: { atual: number; anterior: number
   );
 }
 
-/** (6.116) exemplos curtos (cabem no campo do celular) do que a Doo faz de verdade */
-const EXEMPLOS_DOO = ["Me passa uma receita", "Quanto cobrar num bolo?", "Quanto lucrei esse mês?", "O pedido #12 ficou pronto", "Monta minha ficha técnica", "Cria a logo da minha loja"];
 
 export default function Inicio() {
   const navigate = useNavigate();
@@ -159,10 +155,6 @@ export default function Inicio() {
     cardapioPublicado: false,
     loading: true,
   });
-  const [perguntaDoo, setPerguntaDoo] = useState("") // (6.91) o campo da Doo no topo do Início
-  // (6.116) o texto do campo da Doo ganha vida: de vez em quando digita um exemplo do que dá para pedir
-  const [dooFoco, setDooFoco] = useState(false);
-  const placeholderDoo = usePlaceholderVivo("Pergunte algo à Doo", EXEMPLOS_DOO, { parado: dooFoco || !!perguntaDoo });
   const [menuOpen, setMenuOpen] = useState(false);
   const fotoRef = useRef<HTMLButtonElement>(null); // o menu da conta abre embaixo da foto
   // (16/10) sino com as não lidas no topo do celular (antes só pela foto › Notificações, sem aviso nenhum)
@@ -1041,14 +1033,7 @@ export default function Inicio() {
         </button>
       </section>
 
-      {/* (6.91) celular: a Doo logo no topo do Início, num campo de perguntar (escreveu e enviou, a conversa abre com a pergunta) */}
-      {!computador && (
-        <form className="ini-section ini-section--doo" onSubmit={e => { e.preventDefault(); const t = perguntaDoo.trim(); setPerguntaDoo(""); (document.activeElement as HTMLElement | null)?.blur(); abrirDooIA(t); }}>
-          <img src="/Sistema/doo.webp" alt="" aria-hidden="true" />
-          <input type="search" name="pergunta-doo" value={perguntaDoo} onChange={e => setPerguntaDoo(e.target.value)} placeholder={placeholderDoo} onFocus={() => setDooFoco(true)} onBlur={() => setDooFoco(false)} aria-label="Pergunte qualquer coisa à Doo" enterKeyHint="send" autoComplete="off" />
-          <button type="submit" aria-label="Enviar para a Doo"><SetaDoo size={18} weight="bold" /></button>
-        </form>
-      )}
+      {/* (18/11) o campo "Pergunte à Doo" saiu do Início (a Doo abre pelo Menu, busca e Assistente) */}
 
       {/* (16/10) celular: pedido novo pra aceitar e atrasados no topo, logo embaixo do "Olá" (antes uma faixa embaixo do Acesso rápido) */}
       {!loading && !erroCarga && (pedidosNovos.length > 0 || counts.pedidosAtrasados > 0) && (
@@ -1701,14 +1686,6 @@ export default function Inicio() {
         @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 4; } } /* (22/10) e depois das Próximas entregas (o dia vem antes das tarefas) */
         .ini-main > .ini-mobile-banner { order: 9; margin-top: var(--space-3); } /* (6.83) o banner é a última coisa do Início no celular */ /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
         .ini-section--novos { order: -1; }
-        .ini-root form.ini-section.ini-section--doo { order: -2; display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px; margin-top: var(--space-3) !important; padding: 6px 6px 6px 8px !important; min-height: 0 !important; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
-        .ini-root form.ini-section--doo:focus-within { border-color: #F3B3CA; }
-        .ini-section--doo img { flex: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; object-position: top center; background: #FCE7F3; }
-        .ini-section--doo input { flex: 1; min-width: 0; height: 40px; border: 0; outline: 0; background: none; font-family: var(--font-base); font-size: 16px; color: var(--ui-texto); }
-        .ini-section--doo input::placeholder { color: var(--ui-texto-3); }
-        .ini-section--doo input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
-        .ini-section--doo input { -webkit-appearance: none; appearance: none; }
-        .ini-section--doo button { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; cursor: pointer; }
         .ini-root .ini-section.ini-section--novos { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--novos { display: none; } }
 
