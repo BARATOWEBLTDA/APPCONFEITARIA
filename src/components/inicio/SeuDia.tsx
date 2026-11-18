@@ -77,7 +77,7 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
     if (iso === hoje) return "Hoje";
     if (iso === amanha) return "Amanhã";
     const d = new Date(iso + "T12:00:00");
-    return `${["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][d.getDay()]}, ${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`;
+    return `${["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][d.getDay()]}, ${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })}`;
   };
   const linhaHora = (e: EntregaResumo) => {
     const h = hhmm(e.hora);
