@@ -38,6 +38,10 @@
       "destination": "/pro.html"
     },
     {
+      "source": "/testes",
+      "destination": "/testes.html"
+    },
+    {
       "source": "/((?!assets/).*)",
       "destination": "/app.html"
     }
