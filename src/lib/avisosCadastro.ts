@@ -13,7 +13,8 @@ export type AvisoCadastro = {
   /** abrir: a tela abre direto no que resolve · destacar: o balão em cima do lugar de tocar (04/11 · 6.20) */
   estado?: { abrir?: string; destacar?: { alvo: string; titulo: string; texto: string; acao?: string } };
   icone: "custos" | "maquininha" | "ficha" | "caixa" | "conta" | "entrega" | "descricao" | "banner" | "cupom" | "complemento" | "cliente" | "whatsapp"
-    | "receber" | "pausa" | "orcamento" | "divulgar" | "pix" | "categoria" | "feriado" | "ferias";
+    | "receber" | "pausa" | "orcamento" | "divulgar" | "pix" | "categoria" | "feriado" | "ferias"
+    | "capa" | "instagram" | "destaque" | "rendimento" | "promocao";
   /** (6.179) feriado chegando: "Vou fechar" marca o dia como fechado; "Abre normal" some */
   feriado?: { data: string; nome: string };
   /** (6.182) pagamento atrasado: "Já recebi" registra o que falta (pergunta antes) */
@@ -34,8 +35,10 @@ export type AvisoCadastro = {
 type PerfilAvisos = {
   formas_pagamento?: string[] | null; formas_entrega?: string[] | null; entrega_modo?: string | null; valor_entrega_propria?: number | null;
   entrega_por_bairro?: unknown[] | null; caixa_inicio_em?: string | null; banner_url?: string | null; banner1_url?: string | null; banner_topo_url?: string | null;
+  instagram?: string | null;
 };
-type ProdutoAvisos = { id: string; nome: string | null; descricao: string | null; produto_insumos: { id: string }[] | null };
+type ProdutoAvisos = { id: string; nome: string | null; descricao: string | null; produto_insumos: { id: string }[] | null;
+  destaque?: boolean | null; rendimento_qtd?: string | null; rendimento_peso?: string | null; promocao?: boolean | null };
 
 const diaISO = (somar = 0) => { const d = new Date(); d.setDate(d.getDate() + somar); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 
@@ -44,7 +47,7 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
     supabase.from("custos_fixos").select("id").eq("user_id", uid).limit(1),
     supabase.from("custos_variaveis").select("*").eq("user_id", uid),
     supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
-    supabase.from("produtos").select("id, nome, descricao, produto_insumos(id)").eq("user_id", uid).eq("disponivel", true),
+    supabase.from("produtos").select("id, nome, descricao, destaque, rendimento_qtd, rendimento_peso, promocao, produto_insumos(id)").eq("user_id", uid).eq("disponivel", true),
     // (15/10) também as que vencem hoje e as atrasadas (antes só as de amanhã)
     supabase.from("contas_pagar").select("id, descricao, vencimento, valor").eq("user_id", uid).eq("status", "pendente").lte("vencimento", diaISO(1)).order("vencimento"),
     // (04/11 · 6.20) mão de obra, complementos, clientes e o WhatsApp conferido
@@ -132,6 +135,23 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
   if (temProduto && !nClientes.error && !(nClientes.count || 0)) l.push({ chave: "falta_cliente", icone: "cliente", semNotificar: true, titulo: "Cadastre sua primeira cliente",
     texto: "Com as clientes no app, você manda parabéns no aniversário e vê o que cada uma comprou.", link: "/clientes", nivel: "normal", curto: { t: "Primeira cliente", s: "Aniversário e histórico" },
     estado: { destacar: { alvo: ".guia-novo-cliente", titulo: "Cadastre a cliente aqui", texto: "Nome e WhatsApp já bastam. Quem pede pelo cardápio entra sozinha.", acao: "Cadastrar cliente" } } });
+  // (18/11) cardápio bonito e completo: capa, Instagram, destaques, rendimento e promoção (os campos já existem no banco)
+  const prods = !produtos.error ? ((produtos.data as ProdutoAvisos[]) || []) : [];
+  if (pf && !String(pf.banner_topo_url || "").trim()) l.push({ chave: "falta_capa", icone: "capa", semNotificar: true, nivel: "normal",
+    titulo: "Coloque uma capa atrás da logo", texto: "Uma foto no topo do cardápio, atrás da logo, deixa a loja com cara profissional.",
+    link: "/cardapio-design", curto: { t: "Capa atrás da logo", s: "Foto no topo do cardápio" } });
+  if (pf && !String(pf.instagram || "").trim()) l.push({ chave: "falta_instagram", icone: "instagram", semNotificar: true, nivel: "normal",
+    titulo: "Coloque seu Instagram no cardápio", texto: "O cliente acha seu Instagram direto no cardápio e te segue.",
+    link: "/cardapio-design", curto: { t: "Instagram no cardápio", s: "Pra cliente te seguir" } });
+  if (temProduto && !prods.some(p => p.destaque)) l.push({ chave: "falta_destaque", icone: "destaque", semNotificar: true, nivel: "normal",
+    titulo: "Coloque produtos em destaque", texto: "Escolha até 8 produtos pra aparecerem no topo do cardápio e chamarem o olho.",
+    link: "/produtos", curto: { t: "Produtos em destaque", s: "Até 8 no topo do cardápio" } });
+  if (temProduto && prods.some(p => !String(p.rendimento_qtd || p.rendimento_peso || "").trim())) l.push({ chave: "falta_rendimento", icone: "rendimento", semNotificar: true, nivel: "normal",
+    titulo: "Diga quantas pessoas cada produto serve", texto: "O rendimento (serve X pessoas) ajuda o cliente a escolher e evita pergunta no WhatsApp.",
+    link: "/produtos", curto: { t: "Rendimento dos produtos", s: "Serve quantas pessoas" } });
+  if (temProduto && !prods.some(p => p.promocao)) l.push({ chave: "falta_promocao", icone: "promocao", semNotificar: true, nivel: "normal",
+    titulo: "Coloque um produto em promoção", texto: "Um preço \"de/por\" no cardápio chama atenção e aumenta os pedidos.",
+    link: "/produtos", curto: { t: "Produto em promoção", s: "Preço de/por chama o olho" } });
   // (04/11 · 6.20) o WhatsApp que recebe os pedidos: pede pra conferir (volta se o número mudar)
   // (6.177) número com +55 na frente também sai formatado (antes aparecia "5541999990000")
   const tel0 = String((pf as { telefone?: string | null } | null)?.telefone || "").replace(/\D/g, "");

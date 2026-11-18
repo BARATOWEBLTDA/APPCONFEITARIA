@@ -1,7 +1,7 @@
 import { avisoDeTesteNaLista } from "@/lib/notifConfeiteira";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Basket, Bell, DeviceMobile, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo, PauseCircle, ShareNetwork, QrCode, SquaresFour, CalendarX, Island } from "@phosphor-icons/react";
+import { Basket, Bell, DeviceMobile, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo, PauseCircle, ShareNetwork, QrCode, SquaresFour, CalendarX, Island, InstagramLogo, Star, UsersThree, Tag } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
@@ -43,10 +43,12 @@ type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; 
 
 /** (21/10) o botão de cada linha diz o que fazer */
 const ACAO: Record<AvisoCadastro["icone"], string> = { custos: "Definir", maquininha: "Definir", ficha: "Fazer", caixa: "Informar", conta: "Pagar", entrega: "Definir", descricao: "Escrever", banner: "Colocar", cupom: "Criar", complemento: "Criar", cliente: "Cadastrar", whatsapp: "Está certo",
-  receber: "Já recebi", pausa: "Ver loja", orcamento: "Abrir", divulgar: "Divulgar", pix: "Ligar", categoria: "Criar", feriado: "Vou fechar", ferias: "Ver" };
+  receber: "Já recebi", pausa: "Ver loja", orcamento: "Abrir", divulgar: "Divulgar", pix: "Ligar", categoria: "Criar", feriado: "Vou fechar", ferias: "Ver",
+  capa: "Colocar", instagram: "Colocar", destaque: "Escolher", rendimento: "Preencher", promocao: "Criar" };
 const ACAO_NOVIDADE: Record<string, string> = { "aniversarios": "Ver", "produtos-sem-foto": "Pôr foto", "clientes-sumidos": "Chamar" };
 const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquininha: CreditCard, ficha: ClipboardText, caixa: Coins, conta: CalendarCheck, entrega: Truck, descricao: TextAlignLeft, banner: ImageSquare, cupom: Ticket, complemento: Stack, cliente: UserPlus, whatsapp: WhatsappLogo,
-  receber: Coins, pausa: PauseCircle, orcamento: ClipboardText, divulgar: ShareNetwork, pix: QrCode, categoria: SquaresFour, feriado: CalendarX, ferias: Island };
+  receber: Coins, pausa: PauseCircle, orcamento: ClipboardText, divulgar: ShareNetwork, pix: QrCode, categoria: SquaresFour, feriado: CalendarX, ferias: Island,
+  capa: ImageSquare, instagram: InstagramLogo, destaque: Star, rendimento: UsersThree, promocao: Tag };
 const DIA = 86400000;
 const PESO = { urgente: 0, atencao: 1, normal: 2 };
 const VISIVEIS = 3;
@@ -106,18 +108,22 @@ const TEXTO_NOVIDADE: Record<string, string> = {
  * feito = o aviso não aparece mais. Nomes curtos (cabem numa linha no celular).
  */
 const TRILHA: { k: string; nome: string; txt: string }[] = [
-  { k: "divulgar_cardapio", nome: "Divulgar o link do cardápio", txt: "Mande o link no WhatsApp e no Instagram." },
   { k: "produtos-sem-foto", nome: "Foto em todos os produtos", txt: "Produto com foto vende mais no cardápio." },
-  { k: "falta_descricao", nome: "Descrição dos produtos", txt: "Conte o sabor e o tamanho. Ajuda a decidir." },
-  { k: "falta_ficha_tecnica", nome: "Ficha técnica dos produtos", txt: "Mostra o custo e o lucro de cada produto." },
-  { k: "falta_custos", nome: "Custos e taxa da maquininha", txt: "Com eles, o app mostra o seu lucro real." },
+  { k: "falta_descricao", nome: "Descrição em todos os produtos", txt: "Conte o sabor e o tamanho. Ajuda a decidir." },
+  { k: "falta_banner", nome: "Banner de promoção", txt: "Anuncie a promoção da semana no topo do cardápio." },
+  { k: "falta_capa", nome: "Capa atrás da logo", txt: "Uma foto no topo deixa a loja mais profissional." },
+  { k: "falta_instagram", nome: "Instagram no cardápio", txt: "O cliente te acha e te segue pelo cardápio." },
+  { k: "falta_destaque", nome: "Produtos em destaque", txt: "Escolha até 8 pra aparecerem no topo do cardápio." },
+  { k: "falta_rendimento", nome: "Rendimento dos produtos", txt: "Diga quantas pessoas cada bolo serve." },
+  { k: "falta_promocao", nome: "Produtos em promoção", txt: "Um preço de/por chama atenção e vende mais." },
   { k: "ligar_pix_cardapio", nome: "Pix pelo cardápio", txt: "A cliente paga ao pedir e você recebe antes." },
+  { k: "divulgar_cardapio", nome: "Divulgar o link do cardápio", txt: "Mande o link no WhatsApp e no Instagram." },
 ];
-/** passos a mais (não contam no "X de 6"): aparecem depois dos principais */
-const EXTRAS = ["falta_banner", "criar_categorias", "falta_complemento", "falta_cupom", "falta_cliente"];
-/** qual passo da trilha um aviso representa (a mão de obra entra junto com os custos) */
+/** passos a mais (não contam no total): aparecem depois dos principais */
+const EXTRAS = ["criar_categorias", "falta_complemento", "falta_cupom", "falta_cliente"];
+/** qual passo da trilha um aviso representa */
 const passoDe = (chave: string): string | null =>
-  chave === "falta_mao_obra" ? "falta_custos" : TRILHA.some(t => t.k === chave) || EXTRAS.includes(chave) ? chave : null;
+  TRILHA.some(t => t.k === chave) || EXTRAS.includes(chave) ? chave : null;
 
 export default function PraFazer() {
   const navigate = useNavigate();
@@ -431,7 +437,7 @@ export default function PraFazer() {
     <section className="pf pf-trilha" aria-label="Seu próximo passo">
       <div className="pf-cab">
         <b className="pf-t">Seu próximo passo</b>
-        <span className="pf-prog">Vender mais · {feitos.length} de {core.length}</span>
+        <span className="pf-prog">Cardápio completo · {feitos.length} de {core.length}</span>
       </div>
       <div className="pf-barra" role="progressbar" aria-valuemin={0} aria-valuemax={core.length} aria-valuenow={feitos.length} aria-label={`${feitos.length} de ${core.length} passos feitos`}>
         <i style={{ width: `${Math.round((feitos.length / Math.max(core.length, 1)) * 100)}%` }} />
