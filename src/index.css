@@ -106,3 +106,9 @@ p, h1, h2, h3, small, .ui-janela-t { text-wrap: pretty; }
 /* (11/11) gráficos: o toque no gráfico deixava uma moldura preta grossa em volta (o foco do recharts) */
 .recharts-wrapper, .recharts-wrapper:focus, .recharts-surface:focus, .recharts-wrapper *:focus { outline: none; }
 .recharts-wrapper { -webkit-tap-highlight-color: transparent; }
+
+/* (18/11) BUG mobile: o tour (driver.js, z-index ~10000) ficava ATRÁS de barras/sheets do app (z-index até 10300).
+   Sobe o tour acima de tudo pra o fundo escurecer certo e o balão/recorte não ficarem por trás das coisas. */
+.driver-overlay, svg.driver-overlay { z-index: 2000000 !important; }
+.driver-active-element { z-index: 2000001 !important; }
+.driver-popover { z-index: 2000002 !important; }
