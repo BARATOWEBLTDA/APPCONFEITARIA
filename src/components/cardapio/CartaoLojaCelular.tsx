@@ -11,6 +11,7 @@ import { avisar } from "@/components/base";
 import { explicarErro } from "@/lib/erros";
 import { situacaoLoja } from "@/lib/agendaCardapio";
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
+import { MelhorarCardapio } from "@/components/loja/LojaPronta";
 import { marcarCompartilhado, lerPassos, passosCompletos, type EstadoPassos } from "@/lib/primeirosPassos";
 import { horarioComFechados } from '@/lib/diasFechados'
 
@@ -159,6 +160,8 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
         <button type="button" className="clc-b" onClick={() => navigate("/cardapio-preview")}><Eye size={17} weight="bold" aria-hidden="true" /><span>Ver</span></button>
         <button type="button" className="clc-b" onClick={baixarQr} disabled={!qr}><QrCode size={17} weight="bold" aria-hidden="true" /><span>QR Code</span></button>
       </div>}
+      {/* (18/11) "Mas ainda dá pra melhorar" grudado dentro do cartão (veio do Início) */}
+      {!travado && <MelhorarCardapio profile={profile} />}
       <style>{CSS}</style>
     </section>
   );

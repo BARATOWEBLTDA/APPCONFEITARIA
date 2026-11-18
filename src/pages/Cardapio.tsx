@@ -62,14 +62,7 @@ export default function Cardapio() {
       <VisaoGeralDesktop profile={profile} linkCardapio={linkCardapio} publicado={publicado} onShare={handleShare} />
     ) : (
     <div className="cardapio-hub">
-      {/* (10/11) só no celular: um banner no topo explica a tela (quebra a lista de só texto) */}
-      <div className="ml-banner">
-        <span className="ml-banner-tx">
-          <b>Sua loja no Doonly</b>
-          <small>Aqui você ajusta tudo que o cliente vê no seu cardápio.</small>
-        </span>
-        <img src="/marca/leve/doo-loja.webp" alt="" aria-hidden="true" />
-      </div>
+      {/* (18/11) o banner "Sua loja no Doonly" saiu: o cartão do cardápio já abre a tela */}
       {/* (23/10) sem o cartão de Primeiros passos (ele fica no Início): o que falta aparece como "Falta" em cada linha.
           No topo, o cartão da loja: situação, chave de pausar, Compartilhar, Ver e QR Code */}
       {publicado && linkCardapio ? <CartaoLojaCelular link={linkCardapio} /> : (
