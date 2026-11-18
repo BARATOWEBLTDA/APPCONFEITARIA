@@ -77,6 +77,8 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
 #inicio .tt-prova__txt b{color:#fff; font-weight:600; white-space:nowrap;}
 #inicio{padding-bottom:30px;}
 #inicio + .dl-secao{padding-top:36px !important;}
+#comece .tt-comece-sub{margin:10px auto 0; max-width:520px; font-size:16px; line-height:1.4; color:#6B4C57; text-align:center; text-wrap:balance;}
+#comece .tt-comece-sub b{color:#D13E68; font-weight:600;}
 </style>
 <div class="bv-dup-wrap">
   <div class="bv-dup">
@@ -103,8 +105,9 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
   </div>
   <p class="tt-prova__txt"><b>+ de ${milhar(CONFEITARIAS)} confeitarias</b> já organizam o dia a dia com o Doonly</p>
 </div>`
-  const corpoTestes = corpo
+  const corpoTestes = corpoPro
     .replace('<div class="dl-palco__sombra" aria-hidden="true"></div>', BV_HERO + '\n\t\t\t<div class="dl-palco__sombra" aria-hidden="true"></div>')
+    .replace('<h2 class="dl-h2" id="dl-comece-titulo">Comece agora. <span class="dl-h2__rosa">Teste o PRO grátis.</span></h2>', '<h2 class="dl-h2" id="dl-comece-titulo">Comece agora. <span class="dl-h2__rosa">Teste o PRO grátis.</span></h2><p class="tt-comece-sub">São <b>7 dias grátis</b> para testar todas as funcionalidades do Doonly</p>')
   const pixel = `<script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 ${PIXELS.map(id => `fbq('init', '${id}');`).join('\n')}
