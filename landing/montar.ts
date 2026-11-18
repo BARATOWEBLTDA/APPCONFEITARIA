@@ -110,8 +110,10 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
 #inicio .bv-cel--mini .bv-cel-entalhe{position:absolute; top:8px; left:50%; z-index:2; width:44px; height:12px; transform:translateX(-50%); border-radius:8px; background:#000;}
 #inicio .bv-cel--mini .bv-cel-tela{position:relative; height:318px; border-radius:24px; overflow:hidden; background:#3A1A25;}
 #inicio .bv-cel-rolo{height:100%; overflow:hidden;}
-#inicio .bv-cel-print{display:block; width:100%; height:auto;}
-#inicio .bv-cel-menu{position:absolute; left:0; right:0; bottom:0; width:100%;}
+#inicio .bv-cel-print{display:block; width:100%; height:100%; object-fit:cover; object-position:50% 0%; animation:tt-rola-card 24s linear 1s infinite alternate;}
+@keyframes tt-rola-card{0%,4%{object-position:50% 0%;} 96%,100%{object-position:50% 100%;}}
+@media (prefers-reduced-motion:reduce){ #inicio .bv-cel-print{animation:none;} }
+#inicio .bv-cel-menu{position:absolute; left:0; right:0; bottom:0; width:100%; z-index:2;}
 @media (max-width:640px){ #inicio .bv-dup-wrap{max-width:380px; padding:18px 34px 30px 0;} #inicio .bv-cel--mini{width:132px; right:-18px; bottom:-20px;} #inicio .bv-cel--mini .bv-cel-tela{height:248px;} }
 </style>
 <div class="bv-dup-wrap">
