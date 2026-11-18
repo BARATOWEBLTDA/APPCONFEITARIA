@@ -105,7 +105,50 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
   </div>
   <p class="tt-prova__txt"><b>+ de ${milhar(CONFEITARIAS)} confeitarias</b> já organizam o dia a dia com o Doonly</p>
 </div>`
+  // (18/11) seção "a equipe faz por você" (cardápio + logo + banners) — gancho de economia de tempo, antes do "Comece agora"
+  const SECAO_EQUIPE = `<style>
+#equipe-faz{background:linear-gradient(180deg,#FFF1F6 0%,#FBE2EC 100%); padding:64px 20px;}
+#equipe-faz .dl-container{max-width:1040px; margin:0 auto;}
+#equipe-faz .tt-eq-olho{font-size:13px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#D13E68; text-align:center; margin:0 0 10px;}
+#equipe-faz .dl-h2{text-align:center;}
+#equipe-faz .tt-eq-sub{max-width:600px; margin:12px auto 0; font-size:16px; line-height:1.55; color:#7A5560; text-align:center; text-wrap:balance;}
+#equipe-faz .tt-eq-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:36px 0 0;}
+#equipe-faz .tt-eq-card{background:#fff; border:1px solid #F3D3E0; border-radius:18px; padding:26px 22px; box-shadow:0 18px 44px -30px rgba(110,27,54,.4);}
+#equipe-faz .tt-eq-ic{display:flex; align-items:center; justify-content:center; width:50px; height:50px; border-radius:14px; background:#FCE3EE; color:#D13E68; margin:0 0 14px;}
+#equipe-faz .tt-eq-ic svg{width:26px; height:26px;}
+#equipe-faz .tt-eq-card h3{margin:0 0 7px; font-size:18px; font-weight:600; color:#4E0F25;}
+#equipe-faz .tt-eq-card p{margin:0; font-size:14.5px; line-height:1.5; color:#6B5059;}
+#equipe-faz .tt-eq-acao{display:flex; justify-content:center; margin:34px 0 0;}
+@media (max-width:760px){ #equipe-faz{padding:48px 18px;} #equipe-faz .tt-eq-grid{grid-template-columns:1fr; gap:14px;} }
+</style>
+<section class="dl-secao alignfull" id="equipe-faz" aria-labelledby="tt-eq-t">
+  <div class="dl-container">
+    <p class="tt-eq-olho">Sem tempo pra montar?</p>
+    <h2 class="dl-h2" id="tt-eq-t">Deixa que <span class="dl-h2__rosa">a gente faz por você</span></h2>
+    <p class="tt-eq-sub">Você manda as fotos e os preços. A equipe do Doonly monta tudo — do cardápio à identidade da sua loja — pra você começar a vender sem perder tempo.</p>
+    <div class="tt-eq-grid">
+      <div class="tt-eq-card">
+        <span class="tt-eq-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18M4.5 9 6 4.5A2 2 0 0 1 7.9 3h8.2a2 2 0 0 1 1.9 1.5L19.5 9M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/></svg></span>
+        <h3>Cardápio montado pela equipe</h3>
+        <p>A gente cadastra seus produtos com foto, preço, sabores e tamanhos. Você só revisa e publica.</p>
+      </div>
+      <div class="tt-eq-card">
+        <span class="tt-eq-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/></svg></span>
+        <h3>Logo profissional</h3>
+        <p>Uma identidade bonita pra sua confeitaria, feita pra combinar com a cara da sua loja.</p>
+      </div>
+      <div class="tt-eq-card">
+        <span class="tt-eq-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>
+        <h3>Banners prontos pra divulgar</h3>
+        <p>Artes de promoções e datas especiais pro topo do seu cardápio e pras suas redes.</p>
+      </div>
+    </div>
+    <div class="tt-eq-acao"><a class="dl-btn dl-btn--primario dl-btn--grande" href="${HOTMART_PRO}"><span>Testar o PRO grátis por 7 dias</span><svg class="dl-ico dl-btn__seta" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a></div>
+  </div>
+</section>
+`
   const corpoTestes = corpoPro
+    .replace('<section class="dl-secao dl-secao--branca dl-comece" id="comece"', SECAO_EQUIPE + '<section class="dl-secao dl-secao--branca dl-comece" id="comece"')
     .replace('<div class="dl-palco__sombra" aria-hidden="true"></div>', BV_HERO + '\n\t\t\t<div class="dl-palco__sombra" aria-hidden="true"></div>')
     .replace('<h2 class="dl-h2" id="dl-comece-titulo">Comece agora. <span class="dl-h2__rosa">Teste o PRO grátis.</span></h2>', '<h2 class="dl-h2" id="dl-comece-titulo">Comece agora. <span class="dl-h2__rosa">Teste o PRO grátis.</span></h2><p class="tt-comece-sub">São <b>7 dias grátis</b> para testar todas as funcionalidades do Doonly</p>')
   const pixel = `<script>
