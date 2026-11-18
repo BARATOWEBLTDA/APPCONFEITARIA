@@ -46,56 +46,6 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
   let corpoPro = corpoBase
     .replace(/href="[^"]*" data-dl-url="cadastro"/g, `href="${HOTMART_PRO}" data-dl-url="cadastro"`)
   for (const [de, para] of TROCAS_PRO) corpoPro = corpoPro.split(de).join(para)
-  // (17/11) /testes: clone da landing com a seção nova "Veja como o Doonly pode te ajudar" (rascunho, uma função por vez)
-  const SECAO_TESTES = `<style>
-.tt-sec{padding:56px 20px 64px; background:#fff; color:#3A2930; font-family:'Geist',system-ui,sans-serif;}
-.tt-sec *{box-sizing:border-box;}
-.tt-wrap{max-width:1040px; margin:0 auto;}
-.tt-cab{text-align:center; max-width:640px; margin:0 auto 40px;}
-.tt-olho{font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#D13E68; margin:0 0 10px;}
-.tt-h2{font-size:clamp(26px,5vw,38px); font-weight:700; line-height:1.12; margin:0 0 12px; color:#4E0F25; letter-spacing:-.01em;}
-.tt-h2 b{color:#E8577F;}
-.tt-sub{font-size:16px; line-height:1.55; color:#8C6B77; margin:0;}
-.tt-rec{display:flex; gap:40px; align-items:center; background:#fff; border:1px solid #F3DCE4; border-radius:22px; padding:28px; box-shadow:0 18px 50px -30px rgba(110,27,54,.35);}
-.tt-rec__tela{flex:none; width:272px;}
-.tt-rec__moldura{border-radius:26px; background:#120a0e; padding:8px; box-shadow:0 16px 40px -22px rgba(0,0,0,.6);}
-.tt-rec__moldura img{display:block; width:100%; border-radius:19px;}
-.tt-rec__tx{flex:1; min-width:0;}
-.tt-tag{display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:#D13E68; background:#FBEAE1; padding:6px 12px; border-radius:9px; margin:0 0 14px;}
-.tt-tag svg{width:16px; height:16px;}
-.tt-rec__h3{font-size:24px; font-weight:700; line-height:1.15; margin:0 0 10px; color:#4E0F25; letter-spacing:-.01em;}
-.tt-rec__p{font-size:16px; line-height:1.6; color:#5A444C; margin:0 0 18px;}
-.tt-lista{list-style:none; margin:0; padding:0; display:grid; gap:11px;}
-.tt-lista li{display:flex; gap:10px; align-items:flex-start; font-size:14.5px; line-height:1.45; color:#3A2930;}
-.tt-lista__ck{flex:none; width:22px; height:22px; border-radius:7px; background:#E8577F; color:#fff; display:flex; align-items:center; justify-content:center; margin-top:1px;}
-.tt-lista__ck svg{width:13px; height:13px;}
-.tt-nota{max-width:1040px; margin:26px auto 0; font-size:13px; color:#8C6B77; text-align:center; border-top:1px dashed #F3DCE4; padding-top:16px;}
-@media (max-width:760px){.tt-rec{flex-direction:column; gap:22px; padding:20px; text-align:center;} .tt-rec__tela{width:230px;} .tt-tag{margin-left:auto; margin-right:auto;} .tt-lista li{text-align:left;}}
-</style>
-<section class="tt-sec dl-secao alignfull" id="recursos-detalhe" aria-labelledby="tt-h2">
-  <div class="tt-wrap">
-    <div class="tt-cab">
-      <p class="tt-olho">Tudo num app só</p>
-      <h2 class="tt-h2" id="tt-h2">Veja como o Doonly <b>pode te ajudar</b></h2>
-      <p class="tt-sub">Cada recurso, por dentro — com a tela real do app, do jeitinho que você vai usar.</p>
-    </div>
-    <div class="tt-rec">
-      <div class="tt-rec__tela"><div class="tt-rec__moldura"><img src="/site/media/cardapio-a-6b059457.webp" alt="Tela do cardápio digital do Doonly com os produtos, fotos e preços" loading="lazy"></div></div>
-      <div class="tt-rec__tx">
-        <span class="tt-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg> Cardápio digital</span>
-        <h3 class="tt-rec__h3">Sua loja aberta 24h, sem você responder no WhatsApp</h3>
-        <p class="tt-rec__p">A cliente escolhe o bolo, o sabor e a data no seu cardápio e já paga no Pix — sem parar a sua produção pra responder preço e disponibilidade. O pedido chega organizado, pronto pra você só aceitar.</p>
-        <ul class="tt-lista">
-          <li><span class="tt-lista__ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span>Link e QR Code pra pôr na bio, no WhatsApp ou impresso</span></li>
-          <li><span class="tt-lista__ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span>Fotos, sabores, tamanhos e adicionais em cada produto</span></li>
-          <li><span class="tt-lista__ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span>Pagamento no Pix na hora do pedido</span></li>
-        </ul>
-      </div>
-    </div>
-    <p class="tt-nota">Rascunho · 1ª funcionalidade (Cardápio digital). As próximas entram uma a uma, cada uma com o print real da tela.</p>
-  </div>
-</section>
-`
   // (18/11) abertura /testes: mockup igual ao tutorial do app visto no PC — notebook com o Início (fixo) + celular com o cardápio
   const BV_HERO = `<style>
 #inicio .dl-note, #inicio .dl-celular, #inicio .dl-palco__sombra, #inicio .dl-palco__arco, #inicio .dl-confeitos{display:none !important;}
@@ -155,10 +105,6 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
 </div>`
   const corpoTestes = corpo
     .replace('<div class="dl-palco__sombra" aria-hidden="true"></div>', BV_HERO + '\n\t\t\t<div class="dl-palco__sombra" aria-hidden="true"></div>')
-    .replace(
-      '<section class="dl-secao dl-secao--clara dl-beneficios" id="beneficios"',
-      SECAO_TESTES + '<section class="dl-secao dl-secao--clara dl-beneficios" id="beneficios"'
-    )
   const pixel = `<script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 ${PIXELS.map(id => `fbq('init', '${id}');`).join('\n')}
