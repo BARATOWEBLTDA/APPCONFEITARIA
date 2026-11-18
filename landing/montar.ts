@@ -10,6 +10,9 @@ import path from 'node:path'
 const TITULO = 'Doonly · O app da sua confeitaria, do pedido ao lucro'
 const PIXELS = ['993511453142629', '1001203303966677']
 const MIDIA = '/site/media/'
+// (18/11) prova social: nº de confeitarias (base do banco antigo do Bruno). Subir de 50 em 50 quando crescer.
+const CONFEITARIAS = 9741
+const milhar = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 // (17/11) /pro: mesma landing, mas o CTA vai direto pro checkout do PRO na Hotmart (7 dias grátis), o mesmo
 // link do botão "Testar grátis por 7 dias" do app. sck=lp-pro só marca a origem dessa campanha pra você separar.
 const HOTMART_PRO = 'https://pay.hotmart.com/M107866310B?off=elyrqwi7&checkoutMode=10&sck=lp-pro'
@@ -144,9 +147,9 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
     <span class="tt-prova__logo"><img src="https://epixsranjplmltzmdsbo.supabase.co/storage/v1/object/public/products/logos/a1a84f2e-2a50-4f07-834c-9013c45375d6-1794950962883.jpg?t=1794950963799" alt="Doce Magia" loading="lazy"></span>
     <span class="tt-prova__logo"><img src="https://epixsranjplmltzmdsbo.supabase.co/storage/v1/object/public/products/logos/f02eca90-5c14-48b8-9ace-d7d7559822a4-1794876883601.jpg?t=1794876884392" alt="Itallo Bolos" loading="lazy"></span>
     <span class="tt-prova__logo"><img src="https://epixsranjplmltzmdsbo.supabase.co/storage/v1/object/public/products/logos/8b1f6afd-e6ea-4326-b0f8-c8e583376546-1794940089380.jpg?t=1794940090129" alt="Delicias Da Eli" loading="lazy"></span>
-    <span class="tt-prova__mais">+60</span>
+    <span class="tt-prova__mais">+${Math.floor(CONFEITARIAS / 1000)}K</span>
   </div>
-  <p class="tt-prova__txt"><b>+ de 60 confeitarias</b> já estão usando o Doonly</p>
+  <p class="tt-prova__txt"><b>+ de ${milhar(CONFEITARIAS)} confeitarias</b> já estão usando o Doonly</p>
 </div>`
   const corpoTestes = corpo
     .replace('<div class="dl-palco__sombra" aria-hidden="true"></div>', BV_HERO + '\n\t\t\t<div class="dl-palco__sombra" aria-hidden="true"></div>')
