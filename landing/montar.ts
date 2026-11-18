@@ -107,19 +107,19 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
 </div>`
   // (18/11) seção "a equipe faz por você" (cardápio + logo + banners) — gancho de economia de tempo, antes do "Comece agora"
   const SECAO_EQUIPE = `<style>
-#equipe-faz{background:linear-gradient(180deg,#FFF1F6 0%,#FBE2EC 100%); padding:64px 20px;}
-#equipe-faz .dl-container{max-width:1040px; margin:0 auto;}
-#equipe-faz .tt-eq-olho{font-size:13px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#D13E68; text-align:center; margin:0 0 10px;}
+#equipe-faz{background:#FDEFF4; padding:66px 20px;}
+#equipe-faz .dl-container{max-width:1000px; margin:0 auto;}
+#equipe-faz .tt-eq-olho{font-size:13px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:#D9739A; text-align:center; margin:0 0 12px;}
 #equipe-faz .dl-h2{text-align:center;}
-#equipe-faz .tt-eq-sub{max-width:600px; margin:12px auto 0; font-size:16px; line-height:1.55; color:#7A5560; text-align:center; text-wrap:balance;}
-#equipe-faz .tt-eq-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:36px 0 0;}
-#equipe-faz .tt-eq-card{background:#fff; border:1px solid #F3D3E0; border-radius:18px; padding:26px 22px; box-shadow:0 18px 44px -30px rgba(110,27,54,.4);}
-#equipe-faz .tt-eq-ic{display:flex; align-items:center; justify-content:center; width:50px; height:50px; border-radius:14px; background:#FCE3EE; color:#D13E68; margin:0 0 14px;}
+#equipe-faz .tt-eq-sub{max-width:560px; margin:14px auto 0; font-size:16px; line-height:1.6; color:#8A6B76; text-align:center; text-wrap:balance;}
+#equipe-faz .tt-eq-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:42px 0 0;}
+#equipe-faz .tt-eq-card{background:#fff; border:1px solid #F2DBE4; border-radius:20px; padding:32px 24px; text-align:center;}
+#equipe-faz .tt-eq-ic{display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; border:1.5px solid #F0C9D8; background:#fff; color:#E85A8C; margin:0 auto 16px;}
 #equipe-faz .tt-eq-ic svg{width:26px; height:26px;}
-#equipe-faz .tt-eq-card h3{margin:0 0 7px; font-size:18px; font-weight:600; color:#4E0F25;}
-#equipe-faz .tt-eq-card p{margin:0; font-size:14.5px; line-height:1.5; color:#6B5059;}
-#equipe-faz .tt-eq-acao{display:flex; justify-content:center; margin:34px 0 0;}
-@media (max-width:760px){ #equipe-faz{padding:48px 18px;} #equipe-faz .tt-eq-grid{grid-template-columns:1fr; gap:14px;} }
+#equipe-faz .tt-eq-card h3{margin:0 0 8px; font-size:18px; font-weight:500; color:#5A1230;}
+#equipe-faz .tt-eq-card p{margin:0; font-size:14.5px; line-height:1.55; color:#8A6B76;}
+#equipe-faz .tt-eq-acao{display:flex; justify-content:center; margin:40px 0 0;}
+@media (max-width:760px){ #equipe-faz{padding:50px 18px;} #equipe-faz .tt-eq-grid{grid-template-columns:1fr; gap:12px;} #equipe-faz .tt-eq-card{padding:26px 22px;} }
 </style>
 <section class="dl-secao alignfull" id="equipe-faz" aria-labelledby="tt-eq-t">
   <div class="dl-container">
