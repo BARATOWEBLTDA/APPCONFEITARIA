@@ -168,23 +168,23 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
 }
 
 const CSS = `
-  .clc { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--ui-raio-cartao, 18px); color: var(--ui-branco);
-    background: radial-gradient(120% 90% at 100% 0%, rgba(122, 38, 64, .75), rgba(122, 38, 64, 0) 60%), linear-gradient(160deg, #3A2219, var(--ui-vinho-escuro, #22130E));
-    box-shadow: 0 12px 26px -14px rgba(34, 19, 14, .8); font-family: var(--font-base); text-align: left; }
+  .clc { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--ui-raio-cartao, 18px); color: var(--ui-texto);
+    background: var(--ui-branco, #fff); border: 1px solid var(--ui-borda, #ECE1E6);
+    box-shadow: var(--ui-sombra-cartao, 0 10px 24px -18px rgba(80, 40, 55, .4)); font-family: var(--font-base); text-align: left; }
   .clc-loja { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .clc-logo { flex: none; width: 52px; height: 52px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #fff; box-shadow: 0 0 0 2px #F7C6D9; color: #8A3A2E; font-size: 17px; font-weight: 600; }
   .clc-logo img { width: 100%; height: 100%; object-fit: cover; }
   .clc-nome { min-width: 0; display: flex; flex-direction: column; }
   .clc-nome b { font-size: 17px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .clc-nome small { font-size: 12.5px; color: rgba(255, 255, 255, .7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .clc-sit { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
+  .clc-nome small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clc-sit { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 14px; background: #FBF3F7; box-shadow: inset 0 0 0 1px var(--ui-borda, #ECE1E6); }
   .clc-st { min-width: 0; display: flex; flex-direction: column; }
   .clc-st b { display: flex; align-items: center; gap: 7px; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .clc-st small { padding-left: 15px; font-size: 12.5px; color: rgba(255, 255, 255, .72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clc-st small { padding-left: 15px; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .clc-st i { flex: none; width: 8px; height: 8px; border-radius: 50%; }
-  .clc-st--aberto b { color: #86EFAC; } .clc-st--aberto i { background: #4ADE80; animation: clcPisca 1.6s ease-in-out infinite; }
-  .clc-st--fechado b { color: #FCD34D; } .clc-st--fechado i { background: #FBBF24; }
-  .clc-st--pausa b { color: #FCA5A5; } .clc-st--pausa i { background: #F87171; }
+  .clc-st--aberto b { color: #15803D; } .clc-st--aberto i { background: #22C55E; animation: clcPisca 1.6s ease-in-out infinite; }
+  .clc-st--fechado b { color: #B45309; } .clc-st--fechado i { background: #F59E0B; }
+  .clc-st--pausa b { color: #DC2626; } .clc-st--pausa i { background: #EF4444; }
   .clc-atalho { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 10px 14px 10px 10px; border: 1px solid #ECE7E9; border-radius: 16px; background: var(--ui-branco, #fff); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .clc-atalho-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-branco); color: var(--ui-rosa-botao, #CC2E66); box-shadow: inset 0 0 0 1px #ECE7E9; }
   .clc-atalho-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
@@ -192,25 +192,25 @@ const CSS = `
   .clc-atalho-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .clc-atalho > svg { flex: none; color: var(--ui-rosa-botao, #CC2E66); }
   /* (10/11) cardápio bloqueado: quanto falta (barra) e o botão do próximo passo */
-  .clc-prog { padding: 12px; border-radius: 14px; background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
+  .clc-prog { padding: 12px; border-radius: 14px; background: #FFF7ED; box-shadow: inset 0 0 0 1px #FBE3C4; }
   .clc-prog-l1 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .clc-prog-l1 b { min-width: 0; font-size: 14.5px; font-weight: 500; color: #FCD34D; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .clc-prog-l1 span { flex: none; font-size: 12.5px; color: rgba(255, 255, 255, .72); }
-  .clc-barra { height: 6px; margin: 9px 0 7px; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, .14); }
-  .clc-barra i { display: block; height: 100%; border-radius: inherit; background: #FCD34D; transition: width .3s ease-out; }
-  .clc-prog small { display: block; font-size: 12.5px; color: rgba(255, 255, 255, .72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clc-prog-l1 b { min-width: 0; font-size: 14.5px; font-weight: 500; color: #B45309; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clc-prog-l1 span { flex: none; font-size: 12.5px; color: var(--ui-texto-2); }
+  .clc-barra { height: 6px; margin: 9px 0 7px; overflow: hidden; border-radius: 999px; background: #FBE3C4; }
+  .clc-barra i { display: block; height: 100%; border-radius: inherit; background: #F59E0B; transition: width .3s ease-out; }
+  .clc-prog small { display: block; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .clc--travado .clc-enviar { font-weight: 500; font-size: 15px; }
   @keyframes clcPisca { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-  .clc-chave { flex: none; position: relative; width: 48px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .22); cursor: pointer; transition: background-color .15s linear; }
+  .clc-chave { flex: none; position: relative; width: 48px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: #E2D7DC; cursor: pointer; transition: background-color .15s linear; }
   .clc-chave span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .15s ease-out; }
   .clc-chave[aria-checked="true"] { background: #15803D; }
   .clc-chave[aria-checked="true"] span { transform: translateX(20px); }
   .clc-chave:disabled { opacity: .6; }
-  .clc-chave:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 2px; }
-  .clc-enviar { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; margin: 0; border: 0; border-radius: 14px; background: var(--ui-branco); color: var(--ui-texto); font: 600 15.5px var(--font-base); white-space: nowrap; cursor: pointer; }
-  .clc-enviar svg { color: var(--ui-rosa, #E85A8C); }
+  .clc-chave:focus-visible { outline: 3px solid rgba(204, 46, 102, .4); outline-offset: 2px; }
+  .clc-enviar { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; margin: 0; border: 0; border-radius: 14px; background: var(--ui-rosa-botao, #CC2E66); color: #fff; font: 600 15.5px var(--font-base); white-space: nowrap; cursor: pointer; }
+  .clc-enviar svg { color: #fff; }
   .clc-bts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .clc-b { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; padding: 0 6px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, .1); color: var(--ui-branco); font: 500 13.5px var(--font-base); white-space: nowrap; cursor: pointer; }
+  .clc-b { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; padding: 0 6px; border: 1px solid var(--ui-borda, #ECE1E6); border-radius: 12px; background: #FAF4F7; color: var(--ui-texto); font: 500 13.5px var(--font-base); white-space: nowrap; cursor: pointer; }
   .clc-b span { overflow: hidden; text-overflow: ellipsis; }
   .clc-b:disabled { opacity: .5; }
   @media (max-width: 380px) { .clc { padding: 14px; } .clc-bts { gap: 6px; } .clc-b { gap: 4px; padding: 0 2px; font-size: 13px; } }

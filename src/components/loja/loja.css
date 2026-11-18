@@ -180,5 +180,5 @@
 .lpc-mel-pro { display: inline-block; margin-left: 6px; font-size: 10px; font-weight: 600; font-style: normal; color: #fff; background: #E8B34A; border-radius: 5px; padding: 1px 6px; vertical-align: 1px; }
 .lpc-mel-tx small { font-size: 12px; line-height: 1.35; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lpc-mel-cv { flex: none; color: var(--ui-texto-3); }
-/* (18/11) a lista "melhorar" dentro do cartão escuro da Minha loja: painel branco encaixado */
-.lpc-mel--card { background: var(--ui-branco); border-radius: 14px; padding: 6px 14px 8px; }
+/* (18/11) a lista "melhorar" encosta direto no cartão claro da Minha loja, só com um divisor em cima */
+.lpc-mel--card { margin-top: 2px; padding: 8px 2px 0; border-top: 1px solid var(--ui-borda); }
