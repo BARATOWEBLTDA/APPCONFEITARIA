@@ -143,7 +143,6 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
         <p>Artes de promoções e datas especiais pro topo do seu cardápio e pras suas redes.</p>
       </div>
     </div>
-    <div class="tt-eq-acao"><a class="dl-btn dl-btn--primario dl-btn--grande" href="${HOTMART_PRO}"><span>Testar o PRO grátis por 7 dias</span><svg class="dl-ico dl-btn__seta" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a></div>
   </div>
 </section>
 `
