@@ -2,8 +2,7 @@ import { type ReactNode } from 'react'
 import { BotaoFechar } from "@/components/base";
 import { useNavigate } from 'react-router-dom'
 import { compartilharCardapio } from "@/lib/compartilharCardapio";
-import { Eye, ShareNetwork, Basket, Camera, ImageSquare, InstagramLogo, Sparkle, CaretRight } from '@phosphor-icons/react'
-import { abrirDooIA } from "@/components/MenuContaItens";
+import { Eye, ShareNetwork, Basket, Camera, ImageSquare, InstagramLogo, CaretRight } from '@phosphor-icons/react'
 import { getCardapioUrl, type Profile } from '@/hooks/useProfile'
 import './loja.css'
 
@@ -27,7 +26,6 @@ export function LojaProntaCartao({ profile, onFechar }: { profile: Profile | nul
     { ic: <Camera size={20} weight="regular" />, t: "Caprichar nas fotos", s: "Foto boa vende mais", ir: () => navigate('/produtos') },
     ...(temBanner ? [] : [{ ic: <ImageSquare size={20} weight="regular" />, t: "Criar um banner", s: "Destaque promoções no topo do cardápio", ir: () => navigate('/cardapio-config') }]),
     { ic: <InstagramLogo size={20} weight="regular" />, t: "Divulgar seu cardápio", s: "Bio do Insta, status do WhatsApp", ir: compartilhar },
-    { ic: <Sparkle size={20} weight="regular" />, t: "Ativar a Doo IA", s: "Responda clientes no automático", pro: true, ir: () => abrirDooIA() },
   ]
 
   return (

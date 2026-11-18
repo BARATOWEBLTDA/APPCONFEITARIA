@@ -164,7 +164,7 @@
 .lpc-topo b, .lpc-topo small { position: relative; display: block; max-width: 66%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lpc-topo b { font-size: 18px; font-weight: 600; line-height: 1.3; color: var(--ui-texto); }
 .lpc-topo small { margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); }
-.lpc--doo .lpc-x { background: rgba(255, 255, 255, .7); }
+.lpc--doo .lpc-x { top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255, 255, 255, .72); }
 .lpc--doo .lpc-bts { margin: 0; padding: 12px 14px 4px; }
 @media (max-width: 380px) { .lpc-topo b { font-size: 17px; } }
 
