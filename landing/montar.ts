@@ -45,7 +45,7 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
   for (const [de, para] of TROCAS_PRO) corpoPro = corpoPro.split(de).join(para)
   // (17/11) /testes: clone da landing com a seção nova "Veja como o Doonly pode te ajudar" (rascunho, uma função por vez)
   const SECAO_TESTES = `<style>
-.tt-sec{padding:56px 20px 64px; background:#FFF7F1; color:#3A2930; font-family:'Geist',system-ui,sans-serif;}
+.tt-sec{padding:56px 20px 64px; background:#fff; color:#3A2930; font-family:'Geist',system-ui,sans-serif;}
 .tt-sec *{box-sizing:border-box;}
 .tt-wrap{max-width:1040px; margin:0 auto;}
 .tt-cab{text-align:center; max-width:640px; margin:0 auto 40px;}
