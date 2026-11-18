@@ -201,7 +201,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
   if (!uid || !estado) return null;
 
   // No Cardápio digital o cartão some quando está tudo pronto (a tela mostra o cartão do link)
-  if (completo && (local === "cardapio" || fechado || !jaViuIncompleto)) return null;
+  // (teste 18/11) no Início o cartão "Cardápio no ar" aparece pra TODO mundo com cardápio pronto (não só quem acabou de terminar os passos); some só se a pessoa fechar no X
+  if (completo && (local === "cardapio" || fechado)) return null;
 
   const fechar = () => { try { localStorage.setItem(kFechado, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } setFechado(true); };
   // "Salvar": fecha e volta para o Início (6.142: no celular também; antes abria o próximo passo sozinho).
