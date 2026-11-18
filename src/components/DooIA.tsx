@@ -12,7 +12,6 @@ import { ACOES_DOO, CAMPOS_LOJA_DOO, normalizarAcaoDoo, regrasAcoesDoo, type Aca
 import { listarInsumosResumo, normalizarRascunho, normalizarFotoInsumo, type InsumoResumo, type RascunhoInsumo, type RascunhoFotoInsumo } from '@/lib/insumosDoo'
 import { supabase } from '@/lib/supabase'
 import { usePlano } from '@/hooks/usePlano'
-import { ConvitePro } from '@/components/billing/RecursoPro'
 import { apiFetch } from "@/lib/apiFetch";
 import { resumoDoNegocio } from "@/lib/resumoDoo";
 import { avisar, confirmar, Botao, Campo, CaixasEscolha, Janela } from '@/components/base'
@@ -659,7 +658,7 @@ function formatText(text: string): string {
 }
 
 export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
-  const { temRecurso, loading: carregandoPlano } = usePlano(); const isPro = temRecurso("doo_ia_plus") // (17/11) PRO ou liberado avulso pelo admin
+  const { temRecurso } = usePlano(); const isPro = temRecurso("doo_ia_plus") // (17/11) PRO ou liberado avulso pelo admin
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -1149,8 +1148,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
   const showSuggestions = messages.length === 0 && !loading
 
-  // (6.81) a Doo é só do PRO: no grátis, abrir mostra o convite do PRO
-  if (open && !isPro && !carregandoPlano) return <ConvitePro recurso="doo" onClose={handleClose} />
+  // (18/11) a Doo conversa no grátis (texto, até 100/dia pelo banco) e mexe no cardápio; criar imagem continua PRO (barrado no envio, com aviso na conversa)
 
   return (
     <>
