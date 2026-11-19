@@ -185,14 +185,16 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
     if (uid && estado && !completo && !jaViuIncompleto) { try { localStorage.setItem(kIncompleto, "1"); } catch { /* sem localStorage (aba anônima): segue sem lembrar */ } setJaViuIncompleto(true); }
   }, [uid, estado, completo, jaViuIncompleto, kIncompleto]);
 
-  // (6.137) computador: terminou o último passo agora (nesta visita) → comemora com o Doo, uma vez
+  // (19/11) "Tudo pronto!": abre no Início, uma vez por conta neste aparelho, para quem passou pelos passos aqui e terminou.
+  // Vale também quando o último passo foi feito em outra tela (o primeiro produto é cadastrado em Produtos, que mostra
+  // o "Primeiro produto cadastrado!" dela): o aviso espera a volta para o Início, então os dois nunca aparecem juntos.
   const [festa, setFesta] = useState(false);
-  const antes = useRef<boolean | null>(null);
   useEffect(() => {
-    if (!estado) return;
-    if (antes.current === false && completo && local === "inicio") setFesta(true); // (19/11) no celular também
-    antes.current = completo;
-  }, [estado, completo, largo, local]);
+    if (!uid || !estado || !completo || local !== "inicio" || !jaViuIncompleto || fechado) return;
+    const k = `doonly_tudo_pronto_${uid}`;
+    try { if (localStorage.getItem(k) === "1") return; localStorage.setItem(k, "1"); } catch { return; /* sem localStorage: não arrisca abrir toda vez */ }
+    setFesta(true);
+  }, [uid, estado, completo, local, jaViuIncompleto, fechado]);
 
   // (6.141) computador: tocar num passo da lista mostra ele no bloco grande (com o Doo dele); a janela só abre no botão
   const [escolhido, setEscolhido] = useState<number | null>(null);

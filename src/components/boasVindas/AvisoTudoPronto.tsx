@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Check, X } from "@phosphor-icons/react";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
+import { useSobreposicao } from "@/components/base/useSobreposicao";
 import { WHATSAPP_EQUIPE } from "@/components/billing/EquipeMonta";
 import "./avisoTudoPronto.css";
 
@@ -15,12 +16,9 @@ const FAZEMOS = ["Banners para sua loja", "Descrições profissionais", "Melhora
 const CORES = ["#F5C76B", "#FFE3A6", "#FF8FB8", "#E0A93B"];
 
 export default function AvisoTudoPronto({ nome, loja, aoFechar }: { nome?: string | null; loja?: string | null; aoFechar: () => void }) {
-  useEffect(() => {
-    const tecla = (e: KeyboardEvent) => { if (e.key === "Escape") aoFechar(); };
-    document.addEventListener("keydown", tecla);
-    const antes = document.body.style.overflow; document.body.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", tecla); document.body.style.overflow = antes; };
-  }, [aoFechar]);
+  // a mesma trava das janelas do app: o fundo não rola, Esc e o voltar do Android fecham, o foco fica na janela
+  const caixa = useRef<HTMLDivElement>(null);
+  useSobreposicao(true, aoFechar, caixa);
   // confete: fora da faixa do título (não passa por cima do texto), sempre nos mesmos lugares
   const confete = useMemo(() => {
     let x = 5; const r = () => { x = (x * 16807) % 2147483647; return x / 2147483647; };
@@ -40,7 +38,7 @@ export default function AvisoTudoPronto({ nome, loja, aoFechar }: { nome?: strin
   };
   return createPortal(
     <div className="ui-veu ui-veu--centro atp-veu" onClick={e => { if (e.target === e.currentTarget) aoFechar(); }}>
-      <div className="ui-janela ui-janela--conteudo atp" role="dialog" aria-modal="true" aria-labelledby="atp-t">
+      <div ref={caixa} tabIndex={-1} className="ui-janela ui-janela--conteudo atp" role="dialog" aria-modal="true" aria-labelledby="atp-t">
         <div className="atp-topo">
           {confete.map((c, i) => <i key={i} style={c} aria-hidden="true" />)}
           <button type="button" className="atp-x" aria-label="Fechar" onClick={aoFechar}><X size={20} weight="bold" /></button>
