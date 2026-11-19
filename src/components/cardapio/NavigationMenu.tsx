@@ -1388,9 +1388,9 @@ function CartContent({
         <section ref={refDados}>
           <Cab t="Seus dados" sub="Para a loja falar com você" obr ok={okDados} falta={feErro === 'dados' ? 'Preencha o seu nome e o WhatsApp' : undefined} />
           <div className="sc-campos">
-            <Campo rotulo="Nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Como você se chama?" autoComplete="name"
+            <Campo rotulo="Nome" value={nome} onChange={e => setNome(e.target.value)} placeholder="Como você se chama?" name="cliente-nome-off" autoComplete="off" autoCorrect="off" spellCheck={false}
               erro={feErro === 'dados' && !nomeValido(nome) ? (nome.trim() ? 'Escreva o seu nome' : 'Falta o seu nome') : undefined} />
-            <Campo rotulo="WhatsApp" value={telefone} inputMode="tel" autoComplete="tel" placeholder="(41) 9 9999-0000"
+            <Campo rotulo="WhatsApp" value={telefone} inputMode="tel" name="cliente-zap-off" autoComplete="off" autoCorrect="off" spellCheck={false} placeholder="(41) 9 9999-0000"
               erro={feErro === 'dados' && telefone.replace(/\D/g, '').length < 10 ? 'Coloque o número com DDD' : undefined}
               onChange={e => { const d = digitosAoDigitar(e.target.value); setTelefone(d.length > 6 ? `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}` : d.length > 2 ? `(${d.slice(0, 2)}) ${d.slice(2)}` : d) }} />
           </div>
