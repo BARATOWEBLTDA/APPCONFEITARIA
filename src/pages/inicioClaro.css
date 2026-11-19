@@ -17,6 +17,8 @@
   html body .ini-root .ini-hero { position: sticky !important; top: 0 !important; z-index: 40 !important; }
   html body .ini-root .ini-profile-wrapper { display: none !important; }
   html body .ini-root .ini-hero-greeting .ini-plan-tag { display: none !important; }
+  /* (19/11) a etiqueta da Black que vira (versão do computador) também some aqui: no celular fica só a do canto */
+  html body .ini-root .ini-hero-greeting .ini-selo-vira { display: none !important; }
   html body .ini-root .ini-hero-acoes { gap: 8px !important; }
   html body .ini-root .ini-hero-ac { width: 44px !important; height: 44px !important; background: #F2EFF0 !important; color: var(--ui-texto) !important; }
   html body .ini-root .ini-hero-ac:active { background: #E8E3E5 !important; }
