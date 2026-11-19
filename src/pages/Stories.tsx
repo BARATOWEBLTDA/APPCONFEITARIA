@@ -60,13 +60,13 @@ export default function Stories() {
   const [apagar, setApagar] = useState<Story | null>(null);
   const conferindo = useRef(new Set<string>());
   // (19/11) igual ao Instagram: tocou em Publicar, a janela fecha e o story já aparece na lista "Enviando…"
-  const [envio, setEnvio] = useState<{ nome: string; previa: string; video: boolean; pct: number } | null>(null);
+  const [envio, setEnvio] = useState<{ nome: string; previa: string; video: boolean; pct: number; fase: "preparando" | "enviando" } | null>(null);
 
   const enviar = async (arq: File, seg: number, dias: number, prod: string) => {
     if (!uid || envio) return;
     const video = arq.type.startsWith("video/");
     const previa = video ? "" : URL.createObjectURL(arq);
-    setEnvio({ nome: (prod && produtos.find(p => p.id === prod)?.nome) || (video ? "Vídeo" : "Foto"), previa, video, pct: 0 });
+    setEnvio({ nome: (prod && produtos.find(p => p.id === prod)?.nome) || (video ? "Vídeo" : "Foto"), previa, video, pct: 0, fase: "enviando" });
     const expira_em = new Date(Date.now() + dias * 86400000).toISOString();
     const fim = (msg?: string) => { if (previa) URL.revokeObjectURL(previa); setEnvio(null); if (msg) avisar(msg, { tipo: "erro" }); };
     try {
@@ -81,14 +81,27 @@ export default function Stories() {
         if (error) return fim("Não deu para publicar. Tente de novo.");
         fim(); avisar("Story publicado", { tipo: "ok" }); void carregar(); return;
       }
-      const { ok, d } = await api({ acao: "criar" });
+      // prepara o endereço de envio e, ao mesmo tempo, reduz o vídeo no aparelho para subir mais rápido.
+      // Vídeo que já é leve (menos de 8 Mbps) sobe como está; se o aparelho não conseguir reduzir, também.
+      const pesado = seg > 0 && (arq.size * 8) / seg > 8_000_000;
+      if (pesado) setEnvio(x => x ? { ...x, fase: "preparando" } : x);
+      const reduzir = async (): Promise<Blob> => {
+        if (!pesado) return arq;
+        try {
+          const { prepararVideoStory } = await import("@/lib/prepararVideoStory");
+          const b = await prepararVideoStory(arq, pct => setEnvio(x => x ? { ...x, pct } : x));
+          return b.size < arq.size ? b : arq;
+        } catch { return arq; }
+      };
+      const [{ ok, d }, pronto] = await Promise.all([api({ acao: "criar" }), reduzir()]);
       if (!ok) return fim(d.message || "Não deu para preparar o envio. Tente de novo.");
+      setEnvio(x => x ? { ...x, fase: "enviando", pct: 0 } : x);
       await new Promise<void>((resolve, reject) => {
-        new tus.Upload(arq, {
+        new tus.Upload(pronto, {
           endpoint: "https://video.bunnycdn.com/tusupload",
           retryDelays: [0, 3000, 5000, 10000, 20000],
           headers: { AuthorizationSignature: d.assinatura, AuthorizationExpire: String(d.expira), VideoId: d.videoId, LibraryId: String(d.libraryId) },
-          metadata: { filetype: arq.type, title: `story-${uid}-${Date.now()}` }, // o título começa com o id da conta: é como o servidor sabe de quem é o vídeo
+          metadata: { filetype: pronto.type || arq.type, title: `story-${uid}-${Date.now()}` }, // o título começa com o id da conta: é como o servidor sabe de quem é o vídeo
           onError: e => reject(e),
           onProgress: (enviado, total) => setEnvio(x => x ? { ...x, pct: total ? Math.round((enviado / total) * 100) : 0 } : x),
           onSuccess: () => resolve(),
@@ -124,13 +137,19 @@ export default function Stories() {
     void supabase.from("produtos").select("id, nome").eq("user_id", uid).eq("disponivel", true).order("nome").then(({ data }) => setProdutos((data || []) as Prod[]));
   }, [uid]);
 
-  // vídeo ainda convertendo: pergunta ao Bunny de 5 em 5 segundos até ficar pronto
+  // vídeo ainda convertendo: pergunta ao Bunny logo em seguida e depois de 2 em 2 segundos, até ficar pronto
   useEffect(() => {
     for (const s of lista) {
       if (s.tipo !== "video" || s.pronto || !s.video_id || conferindo.current.has(s.id)) continue;
       conferindo.current.add(s.id);
       let n = 0;
-      const t = window.setInterval(async () => {
+      let ocupado = false;
+      const conferir = async () => {
+        if (ocupado) return; // a resposta anterior ainda não chegou
+        ocupado = true;
+        try { await passo(); } finally { ocupado = false; }
+      };
+      const passo = async () => {
         n++;
         const { ok, sumiu, d } = await api({ acao: "status", videoId: s.video_id }).catch(() => ({ ok: false, sumiu: false, d: {} as Record<string, any> }));
         // story apagado aqui, ou vídeo que não existe mais no Bunny: para de perguntar
@@ -146,11 +165,13 @@ export default function Stories() {
           avisar("Seu story já está no cardápio", { tipo: "ok" });
         } else if (ok && !d.falhou && Number(d.progresso) > 0) {
           setLista(l => l.map(x => x.id === s.id ? { ...x, progresso: Number(d.progresso) } as Story : x));
-        } else if ((ok && d.falhou) || n > 180) {
+        } else if ((ok && d.falhou) || n > 450) {
           window.clearInterval(t);
           if (ok && d.falhou) avisar("Não deu para converter esse vídeo. Apague e envie de novo.", { tipo: "erro" });
         }
-      }, 5000);
+      };
+      const t = window.setInterval(() => void conferir(), 2000);
+      window.setTimeout(() => void conferir(), 600);
     }
   }, [lista, uid]);
 
@@ -189,7 +210,7 @@ export default function Stories() {
                     <span className="sto-ft sto-ft--env">{envio.previa ? <img src={envio.previa} alt="" /> : <Play size={22} weight="fill" />}<i className="sto-gira" aria-hidden="true" /></span>
                     <span className="sto-tx">
                       <b>{envio.nome}</b>
-                      <small>{envio.video ? `Enviando… ${envio.pct}%` : "Enviando…"}</small>
+                      <small>{envio.video ? `${envio.fase === "preparando" ? "Preparando…" : "Enviando…"} ${envio.pct}%` : "Enviando…"}</small>
                       <span className="sto-barra" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={envio.pct}><i style={{ width: `${envio.video ? envio.pct : 60}%` }} /></span>
                     </span>
                   </li>

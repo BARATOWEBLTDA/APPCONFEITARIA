@@ -43,6 +43,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "leaflet": "^1.9.4",
+    "mediabunny": "^1.66.1",
     "qrcode": "^1.5.4",
     "react": "^19.2.6",
     "react-colorful": "^5.7.0",
