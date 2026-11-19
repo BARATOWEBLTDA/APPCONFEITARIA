@@ -59,6 +59,48 @@ export default function Stories() {
   const [postar, setPostar] = useState(false);
   const [apagar, setApagar] = useState<Story | null>(null);
   const conferindo = useRef(new Set<string>());
+  // (19/11) igual ao Instagram: tocou em Publicar, a janela fecha e o story já aparece na lista "Enviando…"
+  const [envio, setEnvio] = useState<{ nome: string; previa: string; video: boolean; pct: number } | null>(null);
+
+  const enviar = async (arq: File, seg: number, dias: number, prod: string) => {
+    if (!uid || envio) return;
+    const video = arq.type.startsWith("video/");
+    const previa = video ? "" : URL.createObjectURL(arq);
+    setEnvio({ nome: (prod && produtos.find(p => p.id === prod)?.nome) || (video ? "Vídeo" : "Foto"), previa, video, pct: 0 });
+    const expira_em = new Date(Date.now() + dias * 86400000).toISOString();
+    const fim = (msg?: string) => { if (previa) URL.revokeObjectURL(previa); setEnvio(null); if (msg) avisar(msg, { tipo: "erro" }); };
+    try {
+      if (!video) {
+        const blob = await reduzirFoto(arq);
+        if (!blob) return fim("Não deu para ler essa foto. Tente outra.");
+        const caminho = `${uid}/stories/${Date.now()}.jpg`;
+        const up = await supabase.storage.from("products").upload(caminho, blob, { contentType: "image/jpeg", upsert: false });
+        if (up.error) return fim("Não deu para enviar a foto. Confira a internet e tente de novo.");
+        const foto_url = supabase.storage.from("products").getPublicUrl(caminho).data.publicUrl;
+        const { error } = await supabase.from("stories").insert({ user_id: uid, tipo: "foto", foto_url, produto_id: prod || null, duracao: STORY_SEGUNDOS_FOTO, pronto: true, expira_em });
+        if (error) return fim("Não deu para publicar. Tente de novo.");
+        fim(); avisar("Story publicado", { tipo: "ok" }); void carregar(); return;
+      }
+      const { ok, d } = await api({ acao: "criar" });
+      if (!ok) return fim(d.message || "Não deu para preparar o envio. Tente de novo.");
+      await new Promise<void>((resolve, reject) => {
+        new tus.Upload(arq, {
+          endpoint: "https://video.bunnycdn.com/tusupload",
+          retryDelays: [0, 3000, 5000, 10000, 20000],
+          headers: { AuthorizationSignature: d.assinatura, AuthorizationExpire: String(d.expira), VideoId: d.videoId, LibraryId: String(d.libraryId) },
+          metadata: { filetype: arq.type, title: `story-${uid}-${Date.now()}` }, // o título começa com o id da conta: é como o servidor sabe de quem é o vídeo
+          onError: e => reject(e),
+          onProgress: (enviado, total) => setEnvio(x => x ? { ...x, pct: total ? Math.round((enviado / total) * 100) : 0 } : x),
+          onSuccess: () => resolve(),
+        }).start();
+      });
+      const { error } = await supabase.from("stories").insert({ user_id: uid, tipo: "video", video_id: d.videoId, produto_id: prod || null, duracao: Math.min(seg || 15, STORY_MAX_SEGUNDOS + 1), pronto: false, expira_em });
+      if (error) { await api({ acao: "apagar", videoId: d.videoId }).catch(() => null); return fim("Não deu para publicar. Tente de novo."); }
+      fim(); void carregar();
+    } catch {
+      fim("O envio parou. Confira a internet e tente de novo.");
+    }
+  };
 
   const carregar = useCallback(async () => {
     if (!uid) return;
@@ -98,7 +140,7 @@ export default function Stories() {
           avisar("Seu story já está no cardápio", { tipo: "ok" });
         } else if (ok && !d.falhou && Number(d.progresso) > 0) {
           setLista(l => l.map(x => x.id === s.id ? { ...x, progresso: Number(d.progresso) } as Story : x));
-        } else if ((ok && d.falhou) || n > 60) {
+        } else if ((ok && d.falhou) || n > 180) {
           window.clearInterval(t);
           if (ok && d.falhou) avisar("Não deu para converter esse vídeo. Apague e envie de novo.", { tipo: "erro" });
         }
@@ -125,7 +167,7 @@ export default function Stories() {
       <div className="sto">
         {!isPro && !carregandoPlano ? <CartaoPro recurso="stories" /> : (
           <>
-            {!carregando && lista.length === 0 && (
+            {!carregando && lista.length === 0 && !envio && (
               <div className="sto-vazio">
                 <img src="/marca/leve/acenando.webp" alt="" aria-hidden="true" width={150} height={175} />
                 <span className="sto-eb">Vamos começar</span>
@@ -133,16 +175,27 @@ export default function Stories() {
                 <p>Mostre o bolo do dia, uma promoção ou os bastidores. A cliente vê ao tocar na logo do cardápio.</p>
               </div>
             )}
-            {lista.length > 0 && (
+            {(lista.length > 0 || envio) && (
               <ul className="sto-lista">
+                {envio && (
+                  <li>
+                    <span className="sto-ft sto-ft--env">{envio.previa ? <img src={envio.previa} alt="" /> : <Play size={22} weight="fill" />}<i className="sto-gira" aria-hidden="true" /></span>
+                    <span className="sto-tx">
+                      <b>{envio.nome}</b>
+                      <small>{envio.video ? `Enviando… ${envio.pct}%` : "Enviando…"}</small>
+                      <span className="sto-barra" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={envio.pct}><i style={{ width: `${envio.video ? envio.pct : 60}%` }} /></span>
+                    </span>
+                  </li>
+                )}
                 {lista.map(s => (
                   <li key={s.id}>
-                    <span className="sto-ft">
-                      {s.tipo === "video" ? (s.pronto && s.video_id ? <img src={urlCapaStory(s.video_id)} alt="" /> : <Play size={22} weight="fill" />) : (s.foto_url ? <img src={s.foto_url} alt="" /> : <ImageIc size={22} weight="bold" />)}
+                    <span className={`sto-ft${s.pronto ? "" : " sto-ft--env"}`}>
+                      {s.tipo === "video" ? (s.pronto && s.video_id ? <img src={urlCapaStory(s.video_id)} alt="" /> : <><Play size={22} weight="fill" /><i className="sto-gira" aria-hidden="true" /></>) : (s.foto_url ? <img src={s.foto_url} alt="" /> : <ImageIc size={22} weight="bold" />)}
                     </span>
                     <span className="sto-tx">
                       <b>{nomeProd(s.produto_id) || (s.tipo === "video" ? "Vídeo" : "Foto")}</b>
-                      <small>{s.pronto ? saiDoAr(s.expira_em || "") : `Convertendo o vídeo… ${(s as Story & { progresso?: number }).progresso ? `${(s as Story & { progresso?: number }).progresso}%` : ""}`}</small>
+                      <small>{s.pronto ? saiDoAr(s.expira_em || "") : `Preparando em alta qualidade… ${(s as Story & { progresso?: number }).progresso ? `${(s as Story & { progresso?: number }).progresso}%` : ""}`}</small>
+                      {!s.pronto && <span className="sto-barra" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={(s as Story & { progresso?: number }).progresso || 0}><i style={{ width: `${Math.max(8, (s as Story & { progresso?: number }).progresso || 0)}%` }} /></span>}
                       <small className="sto-vw"><Eye size={14} weight="bold" aria-hidden="true" />{s.views === 1 ? "1 pessoa viu" : `${s.views || 0} pessoas viram`}</small>
                     </span>
                     <button type="button" className="sto-del" aria-label="Apagar este story" onClick={() => setApagar(s)}><Trash size={20} weight="bold" /></button>
@@ -152,7 +205,7 @@ export default function Stories() {
             )}
             {!carregando && (
               <div className="sto-acao">
-                <Botao cheio icone={<Plus size={20} weight="bold" />} disabled={cheio} onClick={() => setPostar(true)}>Postar story</Botao>
+                <Botao cheio icone={<Plus size={20} weight="bold" />} disabled={cheio || !!envio} onClick={() => setPostar(true)}>Postar story</Botao>
                 {cheio && <p className="sto-dica">Você já tem {STORY_MAX_ATIVOS} stories no ar. Apague um para postar outro.</p>}
               </div>
             )}
@@ -160,7 +213,7 @@ export default function Stories() {
         )}
       </div>
 
-      {postar && <JanelaPostar uid={uid} produtos={produtos} aoFechar={() => setPostar(false)} aoPostar={() => { setPostar(false); void carregar(); }} />}
+      {postar && <JanelaPostar produtos={produtos} aoFechar={() => setPostar(false)} aoPublicar={(arq, seg, dias, prod) => { setPostar(false); void enviar(arq, seg, dias, prod); }} />}
 
       <Janela aberta={!!apagar} aoFechar={() => setApagar(null)} titulo="Apagar este story?" texto="Ele sai do cardápio na hora."
         acoes={<><Botao variante="secundario" onClick={() => setApagar(null)}>Voltar</Botao><Botao variante="perigo" onClick={() => void confirmarApagar()}>Apagar</Botao></>} />
@@ -188,7 +241,11 @@ export default function Stories() {
         .sto-up b { max-width: 100%; font-weight: 500; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sto-lbl { margin: 16px 0 6px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
         .sto-sel { width: 100%; min-height: 48px; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 15px; color: var(--ui-texto); }
-        .sto-barra { height: 6px; margin-top: 14px; border-radius: 3px; background: var(--ui-cinza); overflow: hidden; }
+        .sto-barra { display: block; height: 4px; margin-top: 4px; border-radius: 2px; background: var(--ui-cinza); overflow: hidden; }
+        .sto-ft--env { position: relative; }
+        .sto-ft--env img { opacity: .5; }
+        .sto-gira { position: absolute; width: 26px; height: 26px; border: 3px solid rgba(0,0,0,.12); border-top-color: var(--ui-rosa-botao, #CC2E66); border-radius: 50%; animation: sto-gira .8s linear infinite; }
+        @keyframes sto-gira { to { transform: rotate(360deg); } }
         .sto-barra i { display: block; height: 100%; background: var(--ui-rosa-botao, #CC2E66); transition: width .2s; }
         .sto-pct { margin: 6px 0 0; font-size: 13px; text-align: center; color: var(--ui-texto-2); }
       `}</style>
@@ -196,13 +253,12 @@ export default function Stories() {
   );
 }
 
-function JanelaPostar({ uid, produtos, aoFechar, aoPostar }: { uid: string; produtos: Prod[]; aoFechar: () => void; aoPostar: () => void }) {
+function JanelaPostar({ produtos, aoFechar, aoPublicar }: { produtos: Prod[]; aoFechar: () => void; aoPublicar: (arq: File, seg: number, dias: number, prod: string) => void }) {
   const [arq, setArq] = useState<File | null>(null);
   const [seg, setSeg] = useState(0);
   const [dias, setDias] = useState<"1" | "2" | "3">("1");
   const [prod, setProd] = useState("");
-  const [enviando, setEnviando] = useState(false);
-  const [pct, setPct] = useState(0);
+  const enviando = false;
   const campo = useRef<HTMLInputElement>(null);
   const ehVideo = !!arq && arq.type.startsWith("video/");
 
@@ -216,44 +272,7 @@ function JanelaPostar({ uid, produtos, aoFechar, aoPostar }: { uid: string; prod
     } else if (f.type.startsWith("image/")) { setSeg(STORY_SEGUNDOS_FOTO); setArq(f); }
     else avisar("Escolha um vídeo ou uma foto.", { tipo: "erro" });
   };
-
-  const publicar = async () => {
-    if (!arq || !uid || enviando) return;
-    setEnviando(true); setPct(0);
-    const expira_em = new Date(Date.now() + Number(dias) * 86400000).toISOString();
-    const falhou = (msg: string) => { setEnviando(false); avisar(msg, { tipo: "erro" }); };
-    try {
-      if (!ehVideo) {
-        const blob = await reduzirFoto(arq);
-        if (!blob) return falhou("Não deu para ler essa foto. Tente outra.");
-        const caminho = `${uid}/stories/${Date.now()}.jpg`;
-        const up = await supabase.storage.from("products").upload(caminho, blob, { contentType: "image/jpeg", upsert: false });
-        if (up.error) return falhou("Não deu para enviar a foto. Confira a internet e tente de novo.");
-        const foto_url = supabase.storage.from("products").getPublicUrl(caminho).data.publicUrl;
-        const { error } = await supabase.from("stories").insert({ user_id: uid, tipo: "foto", foto_url, produto_id: prod || null, duracao: STORY_SEGUNDOS_FOTO, pronto: true, expira_em });
-        if (error) return falhou("Não deu para publicar. Tente de novo.");
-        avisar("Story publicado", { tipo: "ok" }); aoPostar(); return;
-      }
-      const { ok, d } = await api({ acao: "criar" });
-      if (!ok) return falhou(d.message || "Não deu para preparar o envio. Tente de novo.");
-      await new Promise<void>((resolve, reject) => {
-        new tus.Upload(arq, {
-          endpoint: "https://video.bunnycdn.com/tusupload",
-          retryDelays: [0, 3000, 5000, 10000, 20000],
-          headers: { AuthorizationSignature: d.assinatura, AuthorizationExpire: String(d.expira), VideoId: d.videoId, LibraryId: String(d.libraryId) },
-          metadata: { filetype: arq.type, title: `story-${uid}-${Date.now()}` }, // o título começa com o id da conta: é como o servidor sabe de quem é o vídeo
-          onError: e => reject(e),
-          onProgress: (enviado, total) => setPct(total ? Math.round((enviado / total) * 100) : 0),
-          onSuccess: () => resolve(),
-        }).start();
-      });
-      const { error } = await supabase.from("stories").insert({ user_id: uid, tipo: "video", video_id: d.videoId, produto_id: prod || null, duracao: Math.min(seg || 15, STORY_MAX_SEGUNDOS + 1), pronto: false, expira_em });
-      if (error) { await api({ acao: "apagar", videoId: d.videoId }).catch(() => null); return falhou("Não deu para publicar. Tente de novo."); }
-      avisar("Vídeo enviado. Em instantes ele aparece no cardápio.", { tipo: "ok" }); aoPostar();
-    } catch {
-      falhou("O envio parou. Confira a internet e tente de novo.");
-    }
-  };
+  const publicar = async () => { if (arq) aoPublicar(arq, seg, Number(dias), prod); };
 
   return (
     <Janela aberta aoFechar={aoFechar} titulo="Postar story" tipo="conteudo" travada={enviando}
@@ -275,7 +294,6 @@ function JanelaPostar({ uid, produtos, aoFechar, aoPostar }: { uid: string; prod
         <option value="">Sem botão</option>
         {produtos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
       </select>
-      {enviando && ehVideo && (<><div className="sto-barra" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}><i style={{ width: `${pct}%` }} /></div><p className="sto-pct">Enviando {pct}%</p></>)}
     </Janela>
   );
 }
