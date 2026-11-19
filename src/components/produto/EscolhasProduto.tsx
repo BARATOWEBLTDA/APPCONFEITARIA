@@ -610,8 +610,12 @@ function CartaoQuantidade({ kit, onKitChange }: { kit: KitQtdConfig; onKitChange
 }
 
 /* ── (14/10) Rendimento: uma linha na janela do tamanho que abre a sua própria janela, com predefinições por nome ── */
+// (19/11) a linha "Rendimento" do resumo da edição pede para a janela do rendimento já abrir ao chegar nos tamanhos
+let abrirRendAoEntrar = false;
+export function pedirRendimento() { abrirRendAoEntrar = true; }
+
 function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void; nomeProduto?: string }) {
-  const [aberta, setAberta] = useState(false);
+  const [aberta, setAberta] = useState(() => { const v = abrirRendAoEntrar; abrirRendAoEntrar = false; return v; });
   const comNum = g.opcoes.filter(o => numeroServe(o.serve));
   const un = String(g.opcoes.map(o => String(o.serve || "").match(/^\s*\d+\s*([^\d\s].*)$/)?.[1]).find(Boolean) || g.rendimento_unidade || "pessoas").trim();
   const ok = comNum.length > 0;
@@ -760,6 +764,38 @@ function JanelaRendimento({ g, set, onFechar, nomeProduto = "" }: { g: GrupoTam;
           onChange={e => setNomeAviso(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarComoPredefEGravar(); } }} aria-label="Nome da predefinição" />
         {predefs.some(p => norm(p.nome) === norm(nomeAviso.trim())) && nomeAviso.trim() && <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Já existe uma com esse nome: ela será substituída.</p></div>}
       </Janela>
+    </Janela>
+  );
+}
+
+
+/** (19/11) Rendimento de produto sem tamanhos: a mesma janela (unidade + "serve até"), com um número só.
+ *  Guarda o texto que o cardápio mostra ("10 pessoas"). */
+export function JanelaRendimentoSimples({ valor, onSalvar, onFechar }: { valor: string; onSalvar: (v: string) => void; onFechar: () => void }) {
+  const [un, setUn] = useState(() => (/fatia/i.test(valor) ? "fatias" : /unidade/i.test(valor) ? "unidades" : "pessoas"));
+  const [num, setNum] = useState(() => valor.match(/\d+/)?.[0] || "");
+  return (
+    <Janela aberta aoFechar={onFechar} titulo="Rendimento" texto="O cliente vê no cardápio quanto o produto serve." tipo="conteudo"
+      acoes={<><Botao variante="secundario" onClick={onFechar}>Voltar</Botao><Botao onClick={() => { onSalvar(num ? `${num} ${un}` : ""); onFechar(); }}>Salvar rendimento</Botao></>}>
+      <div className="esc esc-jan esc-rend" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
+        <p className="esc-lbl">Conta em</p>
+        <div className="esc-seg esc-seg--3" role="radiogroup" aria-label="Unidade do rendimento">
+          {[["fatias", "Fatias"], ["pessoas", "Pessoas"], ["unidades", "Unidades"]].map(([v, l]) => (
+            <button key={v} type="button" role="radio" aria-checked={un === v} className={un === v ? "on" : ""} onClick={() => setUn(v)}>{l}</button>
+          ))}
+        </div>
+        <p className="esc-lbl">Quanto o produto serve</p>
+        <ul className="esc-ops esc-rend-lista">
+          <li className="esc-rend-li">
+            <span className="esc-op-nm">Este produto</span>
+            <span className="esc-rend-campo">serve até
+              <input inputMode="numeric" placeholder="definir" value={num} aria-label={`Quantas ${un} serve`}
+                onChange={e => setNum(e.target.value.replace(/\D/g, "").slice(0, 4))} />
+              <em>{un}</em>
+            </span>
+          </li>
+        </ul>
+      </div>
     </Janela>
   );
 }

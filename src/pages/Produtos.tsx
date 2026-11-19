@@ -15,7 +15,7 @@ import { categoriaSugerida, tipoPeloNome, ehBoloNoPote, type TipoProduto as Tipo
 import { avisarPassos, lerPassos, passosCompletos, useLojaPronta } from "@/lib/primeirosPassos";
 import RevisaoProduto, { ResumoProduto } from "@/components/produto/RevisaoProduto";
 import ResumoEdicao from "@/components/produto/ResumoEdicao";
-import EscolhasProduto, { escolhasAtivas, faltaDaEscolha } from "@/components/produto/EscolhasProduto";
+import EscolhasProduto, { escolhasAtivas, faltaDaEscolha, pedirRendimento, JanelaRendimentoSimples } from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, type KitQtdConfig, type KitFechado } from "@/lib/kitQuantidade";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
 import { precoCardapioComPromocao, precosDosSabores, ehCentoLivre } from "@/lib/precoCardapio";
@@ -426,7 +426,9 @@ export default function Produtos() {
   // (14/10) edição em resumo: guarda o produto como está salvo, pra saber se mudou algo e pra desfazer no "Voltar"
   const formSalvo = useRef<Produto | null>(null);
   const NOME_SECAO: Record<string, string> = { info: "Nome e descrição", opcoes: "Escolhas", fotos: "Fotos", preco: "Preço e promoção", entrega: "Cardápio e entrega" };
-  useEffect(() => { setEscTela(0); }, [editTab]); // trocar de aba volta a lista das escolhas
+  const manterEscTela = useRef(false); // (19/11) a linha Rendimento do resumo entra direto na tela dos tamanhos
+  const [rendeSimples, setRendeSimples] = useState(false);
+  useEffect(() => { if (manterEscTela.current) { manterEscTela.current = false; return; } setEscTela(0); }, [editTab]); // trocar de aba volta a lista das escolhas
   // Tela de sucesso depois de publicar um produto novo
   const [sucesso, setSucesso] = useState<null | { id?: string; nome: string; imagem?: string; primeiro: boolean; fora?: boolean; pronta?: boolean | null; semExtras?: boolean }>(null);
   const [form, setForm] = useState<Produto>(EMPTY);
@@ -1756,7 +1758,16 @@ export default function Produtos() {
             {/* (14/10) edição: abre num resumo com "Editar" em cada parte (as abas saíram) */}
             {form.id && editTab === "resumo" && (
               <div className="prod-modal-body">
-                <ResumoEdicao form={form} isPro={isPro} onEditar={(t: Parameters<React.ComponentProps<typeof ResumoEdicao>["onEditar"]>[0]) => setEditTab(t)} />
+                <ResumoEdicao form={form} isPro={isPro} onEditar={(t: Parameters<React.ComponentProps<typeof ResumoEdicao>["onEditar"]>[0]) => {
+                  if (t !== "rendimento") { setEditTab(t); return; }
+                  // (19/11) Rendimento abre direto: com tamanhos, a tela dos tamanhos já com a janela do rendimento; sem tamanhos, a janela simples
+                  const gt = form.grupo_tamanhos;
+                  const i = escolhasAtivas(form as Parameters<typeof escolhasAtivas>[0]).indexOf("tamanho");
+                  if (gt?.ativo && (gt.opcoes?.length || 0) > 0 && i >= 0) { pedirRendimento(); manterEscTela.current = true; setEscTela(i + 1); setEditTab("opcoes"); }
+                  else setRendeSimples(true);
+                }} />
+                {rendeSimples && <JanelaRendimentoSimples valor={String((form as Produto & { rendimento_qtd?: string | null }).rendimento_qtd || "")}
+                  onSalvar={v => setForm(f => ({ ...f, rendimento_qtd: v } as Produto))} onFechar={() => setRendeSimples(false)} />}
               </div>
             )}
 

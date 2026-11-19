@@ -11,7 +11,7 @@ import "./escolhas.css";
  * (14/10) Editar produto: abre num resumo. No topo, o produto como aparece no cardápio;
  * embaixo, cada parte com o que já está cadastrado e um "Editar" que abre só aquela parte.
  */
-type Parte = "info" | "opcoes" | "fotos" | "preco" | "entrega";
+type Parte = "info" | "opcoes" | "fotos" | "preco" | "entrega" | "rendimento";
 const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", quantidade: "Quantidade" };
 // (14/10) singular / plural pra "3 tamanhos cadastrados"
 const NOME: Record<string, [string, string]> = { tamanho: ["tamanho", "tamanhos"], massa: ["massa", "massas"], recheio: ["recheio", "recheios"], cobertura: ["cobertura", "coberturas"], sabor: ["sabor", "sabores"], quantidade: ["quantidade", "quantidades"] };
@@ -48,7 +48,7 @@ export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: 
     : !String(form.descricao || "").trim() ? "Falta a descrição" : `Em ${form.categoria}, com descrição`;
 
   const rendeTexto = String((form as { rendimento_qtd?: string | null }).rendimento_qtd || "").trim();
-  const rendimento = gt?.ativo && gt?.opcoes?.length ? "Definido em cada tamanho" : rendeTexto || "Defina pelos tamanhos";
+  const rendimento = gt?.ativo && gt?.opcoes?.length ? "Definido em cada tamanho" : rendeTexto || "Quantas pessoas ou fatias serve";
 
   const linha = (parte: Parte, icone: ReactNode, nome: string, apoio: string, falta = false) => (
     <li className="red-it">
@@ -76,8 +76,8 @@ export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: 
       <ul className="red-lista">
         {linha("info", <PencilSimple size={18} weight="bold" />, "Nome e descrição", textoInfo, !form.categoria)}
         {linha("opcoes", <ListChecks size={18} weight="bold" />, "Escolhas", tamanhosEsgotados(form) ? "Tudo esgotado no momento" : escolhas, tamanhosEsgotados(form))}
-        {/* (19/11) rendimento: abre as Escolhas, onde cada tamanho tem o seu "serve até…" (antes era um campo solto em Nome e descrição) */}
-        {linha("opcoes", <UsersThree size={18} weight="bold" />, "Rendimento", rendimento)}
+        {/* (19/11) rendimento: abre direto a janela do rendimento (com tamanhos, a de cada tamanho; sem tamanhos, a simples) */}
+        {linha("rendimento", <UsersThree size={18} weight="bold" />, "Rendimento", rendimento)}
         {linha("fotos", <ImageIc size={18} weight="bold" />, "Fotos", textoFotos, !fotos.length)}
         {linha("preco", <CurrencyCircleDollar size={18} weight="bold" />, "Preço e promoção", preco, !!faltaPreco)}
         {linha("entrega", <Storefront size={18} weight="bold" />, "Cardápio e entrega", entrega, semEntrega)}
