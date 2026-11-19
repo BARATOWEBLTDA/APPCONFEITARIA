@@ -266,10 +266,6 @@ export default function Stories() {
                     </div>
                   ))}
                 </div>
-                <div className="sto-acao">
-                  <Botao variante="secundario" cheio disabled={prontos.length === 0} onClick={() => setVer(0)}>Ver como fica</Botao>
-                  <p className="sto-dica">Cada story some sozinho em 1 a 3 dias.</p>
-                </div>
               </>
             )}
             {!carregando && lista.length === 0 && !envio && (
@@ -319,7 +315,6 @@ export default function Stories() {
         .sto-sobre button { min-height: 32px; margin: 0; padding: 0 8px; border: 0; border-radius: 999px; background: #fff; color: #22130E; font-family: inherit; font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer; }
         .sto-del { position: absolute; top: 6px; right: 6px; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; cursor: pointer; }
         .sto-acao { margin-top: 16px; }
-        .sto-dica { margin: 10px 0 0; font-size: 13px; text-align: center; color: var(--ui-texto-2); }
         .sto-up { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 96px; margin: 0; padding: 12px; border: 1.5px dashed var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 15px; color: var(--ui-texto-2); cursor: pointer; }
         .sto-up b { max-width: 100%; font-weight: 500; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sto-lbl { margin: 16px 0 6px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
