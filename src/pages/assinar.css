@@ -303,6 +303,8 @@ button.pro9-l2-i { cursor: pointer; }
 .pro12-balao { position: absolute; right: 186px; top: -31px; display: flex; flex-direction: column; justify-content: center; height: 62px; padding: 0 18px; border-radius: 14px; background: #2E1C15; box-shadow: inset 0 0 0 1.5px rgba(245, 199, 107, .7), 0 8px 20px rgba(0, 0, 0, .35); white-space: nowrap; opacity: 0; transform: translateX(14px); transition: opacity .45s ease, transform .45s ease; }
 .pro12-balao::after { content: ""; position: absolute; right: -7px; top: 24px; width: 14px; height: 14px; background: #2E1C15; box-shadow: inset -1.5px 1.5px 0 rgba(245, 199, 107, .7); transform: rotate(45deg); }
 .pro12-orb.on .pro12-balao { opacity: 1; transform: none; }
+.pro12-balao { width: max-content; max-width: none; }
+.pro12-balao b, .pro12-balao small { display: block; white-space: nowrap !important; line-height: 1.35; }
 .pro12-balao b { font-size: 16px; font-weight: 500; color: #fff; }
 .pro12-balao small { font-size: 13px; color: #F5C76B; }
 .pro12-logo { position: absolute; left: -52px; top: -52px; width: 104px; height: 104px; overflow: hidden; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #F5C76B, 0 0 30px rgba(245, 199, 107, .6); }
