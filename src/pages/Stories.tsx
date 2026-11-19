@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import * as tus from "tus-js-client";
-import { Eye, Image as ImageIc, Play, Plus, Trash, UploadSimple, X } from "@phosphor-icons/react";
+import { Eye, Image as ImageIc, Images, Play, Plus, Trash, VideoCamera, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, CaixasEscolha, Janela, avisar } from "@/components/base";
 import { CartaoPro } from "@/components/billing/RecursoPro";
@@ -63,16 +63,17 @@ export default function Stories() {
   const conferindo = useRef(new Set<string>());
   // (19/11) igual ao Instagram: tocou em Publicar, a janela fecha e o story já aparece na lista "Enviando…"
   // Se o envio falha, o story continua na vaga como "Não enviado", com "Tentar de novo" (guarda o arquivo escolhido).
-  type Envio = { previa: string; video: boolean; pct: number; fase: "preparando" | "enviando" | "falhou"; arq: File; seg: number; dias: number; prod: string };
+  type Envio = { previa: string; video: boolean; pct: number; fase: "preparando" | "enviando" | "falhou"; arq: File; seg: number; dias: number; prod: string; inicio?: number };
   const [envio, setEnvio] = useState<Envio | null>(null);
   const [ver, setVer] = useState<number | null>(null); // "Ver como fica": abre o visualizador neste story
 
-  const enviar = async (arq: File, seg: number, dias: number, prod: string) => {
+  /** inicio: segundo em que o trecho começa, quando o vídeo passou do limite e a confeiteira escolheu o corte */
+  const enviar = async (arq: File, seg: number, dias: number, prod: string, inicio?: number) => {
     if (!uid || (envio && envio.fase !== "falhou")) return;
     const video = arq.type.startsWith("video/");
     if (envio?.previa) URL.revokeObjectURL(envio.previa);
     const previa = video ? "" : URL.createObjectURL(arq);
-    setEnvio({ previa, video, pct: 0, fase: "enviando", arq, seg, dias, prod });
+    setEnvio({ previa, video, pct: 0, fase: "enviando", arq, seg, dias, prod, inicio });
     const expira_em = new Date(Date.now() + dias * 86400000).toISOString();
     // fim(): terminou (ou não adianta tentar de novo) · falhou(): fica na vaga para tentar de novo
     const fim = (msg?: string) => { if (previa) URL.revokeObjectURL(previa); setEnvio(null); if (msg) avisar(msg, { tipo: "erro" }); };
@@ -92,17 +93,20 @@ export default function Stories() {
       }
       // prepara o endereço de envio e, ao mesmo tempo, reduz o vídeo no aparelho para subir mais rápido.
       // Vídeo que já é leve (menos de 8 Mbps) sobe como está; se o aparelho não conseguir reduzir, também.
-      const pesado = seg > 0 && (arq.size * 8) / seg > 8_000_000;
+      const corte = inicio != null ? { inicio, fim: inicio + seg } : undefined;
+      const pesado = !!corte || (seg > 0 && (arq.size * 8) / seg > 8_000_000);
       if (pesado) setEnvio(x => x ? { ...x, fase: "preparando" } : x);
       const reduzir = async (): Promise<Blob> => {
         if (!pesado) return arq;
         try {
           const { prepararVideoStory } = await import("@/lib/prepararVideoStory");
-          const b = await prepararVideoStory(arq, pct => setEnvio(x => x ? { ...x, pct } : x));
-          return b.size < arq.size ? b : arq;
-        } catch { return arq; }
+          const b = await prepararVideoStory(arq, pct => setEnvio(x => x ? { ...x, pct } : x), corte);
+          return corte || b.size < arq.size ? b : arq;
+        } catch (e) { if (corte) throw e; return arq; } // sem conseguir cortar não dá para subir o vídeo inteiro: fica "Não enviado"
       };
-      const [{ ok, d }, pronto] = await Promise.all([api({ acao: "criar" }), reduzir()]);
+      // com corte, corta primeiro: se o aparelho não conseguir, nem chega a abrir um vídeo no Bunny
+      const cortado = corte ? await reduzir() : null;
+      const [{ ok, d }, pronto] = await Promise.all([api({ acao: "criar" }), cortado ? Promise.resolve(cortado) : reduzir()]);
       // limite de stories ou conta sem PRO: tentar de novo não resolve, então sai da vaga com o aviso
       if (!ok) return d.error === "limite" || d.error === "so_pro" ? fim(d.message) : falhou();
       criado = String(d.videoId);
@@ -244,7 +248,7 @@ export default function Stories() {
                         {envio.fase === "falhou" ? (
                           <span className="sto-sobre sto-sobre--falhou">
                             <b>Não enviado</b>
-                            <button type="button" onClick={() => void enviar(envio.arq, envio.seg, envio.dias, envio.prod)}>Tentar de novo</button>
+                            <button type="button" onClick={() => void enviar(envio.arq, envio.seg, envio.dias, envio.prod, envio.inicio)}>Tentar de novo</button>
                           </span>
                         ) : (
                           <span className="sto-sobre" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={envio.pct}>
@@ -284,7 +288,7 @@ export default function Stories() {
         </Suspense>
       )}
 
-      {postar && <JanelaPostar produtos={produtos} aoFechar={() => setPostar(false)} aoPublicar={(arq, seg, dias, prod) => { setPostar(false); void enviar(arq, seg, dias, prod); }} />}
+      {postar && <JanelaPostar produtos={produtos} aoFechar={() => setPostar(false)} aoPublicar={(arq, seg, dias, prod, inicio) => { setPostar(false); void enviar(arq, seg, dias, prod, inicio); }} />}
 
       <Janela aberta={!!apagar} aoFechar={() => setApagar(null)} titulo="Apagar este story?" texto="Ele sai do cardápio na hora."
         acoes={<><Botao variante="secundario" onClick={() => setApagar(null)}>Voltar</Botao><Botao variante="perigo" onClick={() => void confirmarApagar()}>Apagar</Botao></>} />
@@ -317,6 +321,14 @@ export default function Stories() {
         .sto-acao { margin-top: 16px; }
         .sto-up { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 96px; margin: 0; padding: 12px; border: 1.5px dashed var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 15px; color: var(--ui-texto-2); cursor: pointer; }
         .sto-up b { max-width: 100%; font-weight: 500; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sto-esc { display: flex; gap: 10px; }
+        .sto-esc .sto-up { flex: 1; min-width: 0; }
+        .sto-up b { white-space: nowrap; }
+        .sto-arq { margin: 8px 0 0; font-size: 13px; text-align: center; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sto-corte { margin-top: 12px; }
+        .sto-corte video { display: block; width: 100%; max-height: 220px; border-radius: 12px; background: #000; object-fit: contain; }
+        .sto-corte input[type=range] { width: 100%; margin: 0; accent-color: var(--ui-rosa-botao, #CC2E66); }
+        .sto-corte small { display: block; margin-top: 4px; font-size: 13px; text-align: center; color: var(--ui-texto-2); white-space: nowrap; }
         .sto-lbl { margin: 16px 0 6px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
         .sto-sel { width: 100%; min-height: 48px; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 15px; color: var(--ui-texto); }
         .sto-gira { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: sto-gira .8s linear infinite; }
@@ -339,36 +351,61 @@ function CapaVideo({ src }: { src: string }) {
   return <img src={tentativa ? `${src}?t=${tentativa}` : src} alt="" onError={() => setFalhou(true)} />;
 }
 
-function JanelaPostar({ produtos, aoFechar, aoPublicar }: { produtos: Prod[]; aoFechar: () => void; aoPublicar: (arq: File, seg: number, dias: number, prod: string) => void }) {
+const mmss = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+
+/** vídeo maior que o limite: a confeiteira arrasta a barra e escolhe qual trecho vai ao ar (a prévia toca só ele) */
+function CorteVideo({ url, duracao, inicio, aoMudar }: { url: string; duracao: number; inicio: number; aoMudar: (n: number) => void }) {
+  const v = useRef<HTMLVideoElement>(null);
+  const fim = inicio + STORY_MAX_SEGUNDOS;
+  useEffect(() => { const el = v.current; if (el) { el.currentTime = inicio; el.play().catch(() => {}); } }, [inicio]);
+  return (
+    <div className="sto-corte">
+      <video ref={v} src={url} muted playsInline onTimeUpdate={e => { const el = e.currentTarget; if (el.currentTime >= fim || el.currentTime < inicio - 0.5) el.currentTime = inicio; }} />
+      <p className="sto-lbl">Escolha o trecho de {tempoStory(STORY_MAX_SEGUNDOS)}</p>
+      <input type="range" min={0} max={Math.max(0, Math.floor(duracao - STORY_MAX_SEGUNDOS))} step={1} value={inicio} onChange={e => aoMudar(Number(e.target.value))} aria-label="Onde o trecho começa" />
+      <small>De {mmss(inicio)} até {mmss(fim)} · o vídeo tem {mmss(duracao)}</small>
+    </div>
+  );
+}
+
+function JanelaPostar({ produtos, aoFechar, aoPublicar }: { produtos: Prod[]; aoFechar: () => void; aoPublicar: (arq: File, seg: number, dias: number, prod: string, inicio?: number) => void }) {
   const [arq, setArq] = useState<File | null>(null);
   const [seg, setSeg] = useState(0);
+  const [inicio, setInicio] = useState(0);
+  const [urlVideo, setUrlVideo] = useState("");
   const [dias, setDias] = useState<"1" | "2" | "3">("1");
   const [prod, setProd] = useState("");
-  const enviando = false;
-  const campo = useRef<HTMLInputElement>(null);
+  const galeria = useRef<HTMLInputElement>(null);
+  const camera = useRef<HTMLInputElement>(null);
   const ehVideo = !!arq && arq.type.startsWith("video/");
+  const longo = ehVideo && seg > STORY_MAX_SEGUNDOS + 1;
+  // "Gravar agora" abre a câmera do celular; no computador esse recurso não existe, então o botão não aparece
+  const temCamera = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
+  useEffect(() => () => { if (urlVideo) URL.revokeObjectURL(urlVideo); }, [urlVideo]);
 
   const escolher = async (f: File | undefined) => {
     if (!f) return;
     if (f.type.startsWith("video/")) {
       if (f.size > MAX_VIDEO_MB * 1024 * 1024) { avisar("Vídeo pesado demais, escolha outro", { tipo: "erro" }); return; }
       const d = await duracaoDoVideo(f);
-      if (d > STORY_MAX_SEGUNDOS + 1) { avisar(`Vídeo longo: o limite é ${tempoStory(STORY_MAX_SEGUNDOS)}`, { tipo: "erro" }); return; }
-      setSeg(d); setArq(f);
-    } else if (f.type.startsWith("image/")) { setSeg(STORY_SEGUNDOS_FOTO); setArq(f); }
+      setInicio(0); setSeg(d); setArq(f);
+      setUrlVideo(d > STORY_MAX_SEGUNDOS + 1 ? URL.createObjectURL(f) : ""); // passou do limite: abre o corte em vez de recusar
+    } else if (f.type.startsWith("image/")) { setUrlVideo(""); setSeg(STORY_SEGUNDOS_FOTO); setArq(f); }
     else avisar("Escolha um vídeo ou uma foto", { tipo: "erro" });
   };
-  const publicar = async () => { if (arq) aoPublicar(arq, seg, Number(dias), prod); };
+  const publicar = () => { if (arq) aoPublicar(arq, longo ? STORY_MAX_SEGUNDOS : seg, Number(dias), prod, longo ? inicio : undefined); };
 
   return (
-    <Janela aberta aoFechar={aoFechar} titulo="Postar story" tipo="conteudo" travada={enviando}
-      acoes={<><Botao variante="secundario" onClick={aoFechar} disabled={enviando}>Voltar</Botao><Botao carregando={enviando} disabled={!arq} onClick={() => void publicar()}>Publicar</Botao></>}>
-      <input ref={campo} type="file" accept="video/*,image/*" hidden onChange={e => { void escolher(e.target.files?.[0]); e.target.value = ""; }} />
-      <button type="button" className="sto-up" disabled={enviando} onClick={() => campo.current?.click()}>
-        <UploadSimple size={24} weight="bold" aria-hidden="true" />
-        {arq ? <b>{arq.name}</b> : <span>Escolher vídeo ou foto</span>}
-        <small>{arq ? (ehVideo ? tempoStory(seg) : "Foto") : `Vídeo de até ${tempoStory(STORY_MAX_SEGUNDOS)}`}</small>
-      </button>
+    <Janela aberta aoFechar={aoFechar} titulo="Postar story" tipo="conteudo"
+      acoes={<><Botao variante="secundario" onClick={aoFechar}>Voltar</Botao><Botao disabled={!arq} onClick={publicar}>Publicar</Botao></>}>
+      <input ref={galeria} type="file" accept="video/*,image/*" hidden onChange={e => { void escolher(e.target.files?.[0]); e.target.value = ""; }} />
+      <input ref={camera} type="file" accept="video/*" capture="environment" hidden onChange={e => { void escolher(e.target.files?.[0]); e.target.value = ""; }} />
+      <div className="sto-esc">
+        {temCamera && <button type="button" className="sto-up" onClick={() => camera.current?.click()}><VideoCamera size={24} weight="bold" aria-hidden="true" /><b>Gravar agora</b></button>}
+        <button type="button" className="sto-up" onClick={() => galeria.current?.click()}><Images size={24} weight="bold" aria-hidden="true" /><b>{temCamera ? "Galeria" : "Escolher vídeo ou foto"}</b></button>
+      </div>
+      <p className="sto-arq">{arq ? `${ehVideo ? (longo ? "Vídeo longo, escolha o trecho" : `Vídeo de ${tempoStory(seg)}`) : "Foto"} · pronto para publicar` : `Vídeo de até ${tempoStory(STORY_MAX_SEGUNDOS)} ou foto`}</p>
+      {longo && urlVideo && <CorteVideo url={urlVideo} duracao={seg} inicio={inicio} aoMudar={setInicio} />}
       <p className="sto-lbl">Fica no ar por</p>
       <CaixasEscolha<"1" | "2" | "3"> rotulo="Por quanto tempo fica no ar" valor={dias} onMudar={setDias} opcoes={[
         { v: "1", t: "1 dia", sub: "Bom para o bolo do dia" },
@@ -376,7 +413,7 @@ function JanelaPostar({ produtos, aoFechar, aoPublicar }: { produtos: Prod[]; ao
         { v: "3", t: "3 dias", sub: "Para uma promoção" },
       ]} />
       <p className="sto-lbl">Produto do botão (opcional)</p>
-      <select className="sto-sel" value={prod} onChange={e => setProd(e.target.value)} disabled={enviando} aria-label="Produto que o botão do story abre">
+      <select className="sto-sel" value={prod} onChange={e => setProd(e.target.value)} aria-label="Produto que o botão do story abre">
         <option value="">Sem botão</option>
         {produtos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
       </select>

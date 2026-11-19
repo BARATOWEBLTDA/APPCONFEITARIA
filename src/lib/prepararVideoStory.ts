@@ -9,7 +9,8 @@ const LADO_MENOR_MAX = 1080;
 /** bitrate de vídeo conforme o tamanho final: 1080p ≈ 6 Mbps, 720p ≈ 4 Mbps (acima do que o Bunny entrega) */
 const bitrateDe = (ladoMenor: number) => (ladoMenor >= 1000 ? 6_000_000 : ladoMenor >= 700 ? 4_000_000 : 2_500_000);
 
-export async function prepararVideoStory(arq: File, aoProgresso: (pct: number) => void): Promise<Blob> {
+/** corte: quando o vídeo passa do limite, sobe só o trecho escolhido (segundos de início e fim no vídeo original) */
+export async function prepararVideoStory(arq: File, aoProgresso: (pct: number) => void, corte?: { inicio: number; fim: number }): Promise<Blob> {
   const input = new Input({ source: new BlobSource(arq), formats: ALL_FORMATS });
   const trilha = await input.getPrimaryVideoTrack();
   if (!trilha) throw new Error("sem_video");
@@ -19,6 +20,7 @@ export async function prepararVideoStory(arq: File, aoProgresso: (pct: number) =
   const output = new Output({ format: new Mp4OutputFormat({ fastStart: "in-memory" }), target: new BufferTarget() });
   const conversao = await Conversion.init({
     input, output,
+    ...(corte ? { trim: { start: corte.inicio, end: corte.fim } } : {}),
     video: {
       ...(menor > LADO_MENOR_MAX ? (w <= h ? { width: LADO_MENOR_MAX } : { height: LADO_MENOR_MAX }) : {}),
       codec: "avc", bitrate: bitrateDe(final), frameRate: 30, forceTranscode: true,
