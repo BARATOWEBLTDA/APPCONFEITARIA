@@ -98,7 +98,9 @@ export default function SeuDia({ carregando, erro, aoTentar, proximas, hoje, sem
   grupos.forEach(g => { g.total = Math.max(g.itens.length, (semana || []).filter(e => e.data === g.data && falta(e)).length); });
 
   // 4.29: sem etiquetas (pedido do dono): só o título, o link da Agenda e os pedidos
-  const nadaMarcado = !doDia && lista.length === 0;
+  // (19/11) sem nenhuma entrega na semana, a mensagem é a mesma com ou sem dia escolhido
+  // (antes, ao tocar num dia e voltar, trocava para "Nada marcado para o dia 19 · Ver todas")
+  const nadaMarcado = lista.length === 0 && (!doDia || (semana || []).length === 0);
 
   return (
     <div className="sd">
