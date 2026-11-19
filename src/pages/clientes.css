@@ -177,7 +177,7 @@
 .cp9-tags .cl9-tag { margin-top: 0; }
 .cp9-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 12px; font-style: normal; font-weight: 600; }
 .cp9-acoes { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.cp9-acoes > :last-child { grid-column: 1 / -1; }
+.cp9-acoes > .cp9-nv { grid-column: 1 / -1; }
 .cp9-zap { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: var(--ui-raio-botao); background: var(--ui-verde-fundo); color: var(--ui-verde); font-size: 15px; font-weight: 600; text-decoration: none; }
 .cp9-dado, .cp9-obs { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-top: 1px solid var(--ui-linha); }
 .cp9 .ui-tit + .cp9-dado { border-top: 0; padding-top: 4px; }
@@ -216,14 +216,14 @@
 .cp9-mais { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin: 8px 0 0; border: 0; border-radius: var(--ui-raio); background: var(--ui-cinza); color: var(--ui-cinza-texto); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 @media (min-width: 600px) {
   .cp9-acoes { grid-template-columns: 1fr 1fr 1.3fr; }
-  .cp9-acoes > :last-child { grid-column: auto; }
+  .cp9-acoes > .cp9-nv { grid-column: auto; }
   .cp9-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 1000px) {
   .cp9 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); align-items: start; gap: 16px; }
   .cp9-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
   .cp9-acoes { grid-template-columns: 1fr 1fr; }
-  .cp9-acoes > :last-child { grid-column: 1 / -1; }
+  .cp9-acoes > .cp9-nv { grid-column: 1 / -1; }
   .cp9-nums b { font-size: 22px; }
 }
 .cp9-zap--off { background: var(--ui-cinza); color: var(--ui-texto-3); }
@@ -283,3 +283,10 @@
 .cl9-hero-acoes .ui-bt { flex: 1 1 0; min-width: 0; white-space: nowrap; padding-left: 10px; padding-right: 10px; }
 .cl9-so-pc { display: none; }
 @media (min-width: 640px) { .cl9-so-pc { display: inline; } .cl9-hero-acoes { max-width: 520px; } .cl9-hero-t { font-size: 2.5rem; } }
+
+/* (19/11) dados do cliente dentro do cartão do topo */
+.cp9-dd { grid-column: 1 / -1; min-width: 0; }
+.cp9-dd .cp9-dado:first-child { border-top: 1px solid var(--ui-linha); }
+.cp9-dd .cp9-falta { padding-top: 10px; border-top: 1px solid var(--ui-linha); }
+.cp9-vermais { display: block; min-height: 40px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-rosa-escuro); cursor: pointer; }
+.cp9-acoes:not(:has(.cp9-nv)) { grid-template-columns: 1fr 1fr; }

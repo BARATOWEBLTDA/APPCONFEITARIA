@@ -103,6 +103,7 @@ export default function ClientePerfil() {
   const [erroCarregar, setErroCarregar] = useState(""); // não deu pra carregar: mostra o erro com "Tentar de novo"
   const [tentativa, setTentativa] = useState(0);
   const [todos, setTodos] = useState(false);
+  const [maisDados, setMaisDados] = useState(false); // (19/11) dados no cartão do topo: os principais e um "Ver mais"
   const [uploadingFoto, setUploadingFoto] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -249,45 +250,47 @@ export default function ClientePerfil() {
                 : <span className="cp9-zap cp9-zap--off">Sem WhatsApp</span>}
               <Botao variante="secundario" tamanho="m" icone={<PencilSimple size={20} weight="bold" />} onClick={editar}>Editar</Botao>
               {/* (19/11) sem pedidos, o botão de baixo ("Nova venda para Ana") já faz isso: aqui só quando ela já tem pedidos */}
-              {pedidos.length > 0 && <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Nova venda</Botao>}
+              {pedidos.length > 0 && <Botao className="cp9-nv" tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Nova venda</Botao>}
+            </div>
+            {/* (19/11) os dados vieram do cartão lá de baixo: aqui os principais (endereço e aniversário) e o resto no "Ver mais" */}
+            <div className="cp9-dd">
+              {!temDados ? (
+                <p className="cp9-falta">{zap ? "Só tem o nome e o WhatsApp." : "Só tem o nome."}
+                  <button type="button" onClick={editar}>Completar cadastro</button></p>
+              ) : (<>
+                {temEndereco && (
+                  <div className="cp9-dado"><MapPin size={20} weight="bold" />
+                    <span><small>Endereço</small>{rua && <b>{rua}</b>}{lugar && <em>{lugar}</em>}</span>
+                    {(rua || cliente.cidade) && <a href={mapa} target="_blank" rel="noopener noreferrer" className="cp9-link">Ver no mapa</a>}
+                  </div>
+                )}
+                {niver && (
+                  <div className="cp9-dado"><Cake size={20} weight="bold" />
+                    <span><small>Aniversário</small><b>{niver.rotulo}</b><em>{niver.quando}{niver.idade ? ` · faz ${niver.idade} anos` : ""}</em></span>
+                  </div>
+                )}
+                {maisDados && cliente.email && <div className="cp9-dado"><Envelope size={20} weight="bold" /><span><small>E-mail</small><b>{cliente.email}</b></span></div>}
+                {maisDados && cliente.cpf_cnpj && <div className="cp9-dado"><IdentificationCard size={20} weight="bold" /><span><small>{cliente.cpf_cnpj.replace(/\D/g, "").length > 11 ? "CNPJ" : "CPF"}</small><b>{cliente.cpf_cnpj}</b></span></div>}
+                {maisDados && cliente.observacoes && <div className="cp9-obs"><NotePencil size={20} weight="bold" /><span><small>Observações</small><b>{cliente.observacoes}</b></span></div>}
+                {(cliente.email || cliente.cpf_cnpj || cliente.observacoes) && (
+                  <button type="button" className="cp9-vermais" aria-expanded={maisDados} onClick={() => setMaisDados(v => !v)}>{maisDados ? "Ver menos" : "Ver mais"}</button>
+                )}
+              </>)}
             </div>
           </section>
 
-          {/* dados */}
-          <section className="cl9-card cp9-dados cp9-o4">
-            <Titulo>Dados</Titulo>
-            {!temDados ? (
-              <p className="cp9-falta">{zap ? "Só tem o nome e o WhatsApp." : "Só tem o nome."} Com o aniversário e o endereço, fica mais fácil lembrar de {primeiro} e fazer entregas.
-                <button type="button" onClick={editar}>Completar cadastro</button></p>
-            ) : (<>
-              {temEndereco && (
-                <div className="cp9-dado"><MapPin size={22} weight="bold" />
-                  <span><small>Endereço</small>{rua && <b>{rua}</b>}{lugar && <em>{lugar}</em>}</span>
-                  {(rua || cliente.cidade) && <a href={mapa} target="_blank" rel="noopener noreferrer" className="cp9-link">Ver no mapa</a>}
-                </div>
-              )}
-              {niver && (
-                <div className="cp9-dado"><Cake size={22} weight="bold" />
-                  <span><small>Aniversário</small><b>{niver.rotulo}</b><em>{niver.quando}{niver.idade ? ` · faz ${niver.idade} anos` : ""}</em></span>
-                </div>
-              )}
-              {cliente.email && <div className="cp9-dado"><Envelope size={22} weight="bold" /><span><small>E-mail</small><b>{cliente.email}</b></span></div>}
-              {cliente.cpf_cnpj && <div className="cp9-dado"><IdentificationCard size={22} weight="bold" /><span><small>{cliente.cpf_cnpj.replace(/\D/g, "").length > 11 ? "CNPJ" : "CPF"}</small><b>{cliente.cpf_cnpj}</b></span></div>}
-              {cliente.observacoes && <div className="cp9-obs"><NotePencil size={22} weight="bold" /><span><small>Observações</small><b>{cliente.observacoes}</b></span></div>}
-            </>)}
-          </section>
         </div>
 
         <div className="cp9-col">
-          {/* números */}
-          <section className="cl9-card cp9-o2">
+          {/* números (19/11: só quando já tem pedido; zerado não diz nada) */}
+          {pedidos.length > 0 && <section className="cl9-card cp9-o2">
             <div className="cp9-nums">
               <div><small>Pedidos</small><b>{validos.length}</b></div>
               <div><small>Total gasto</small><b>{brl(totalGasto)}</b></div>
               <div><small>Ticket médio</small><b>{validos.length ? brl(ticket) : "—"}</b></div>
               <div><small>Última compra</small><b>{ultima ? haQuanto(ultima.created_at || ultima.data_pedido || new Date().toISOString()) : "—"}</b></div>
             </div>
-          </section>
+          </section>}
 
           {/* pedidos */}
           <section className="cl9-card cp9-o3">
