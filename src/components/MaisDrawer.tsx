@@ -12,8 +12,6 @@ import { ShareNetwork, Scales, FlagBanner } from "@phosphor-icons/react";
 import { indicarDoonly } from "@/lib/indicarDoonly";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { usePlano } from "@/hooks/usePlano";
-import { abrirDooIA } from "@/components/MenuContaItens";
-import { CaretRight as SetaDoo } from "@phosphor-icons/react";
 import "./maisDrawer.css";
 
 /**
@@ -116,12 +114,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
 
         <div className="mais-corpo">
           {/* (6.184) a busca saiu do Menu (o Bruno: "nem era pra ela estar aí"); continua no Início */}
-          {/* (6.87) a Doo volta ao Menu do celular, em destaque no topo (no computador ela é o balão do canto) */}
-          <button type="button" className="mais-doo" onClick={() => { onClose(); abrirDooIA(); }}>
-            <img src="/Sistema/doo.webp" alt="" />
-            <span className="mais-doo-tx"><b>Doo</b><small>Sua assistente na confeitaria</small></span>
-            <SetaDoo size={18} weight="bold" aria-hidden="true" />
-          </button>
+          {/* (19/11) a Doo saiu do Menu do celular (continua no Início) */}
           {GRUPOS.map(grupo => (
             <section key={grupo.label} className="mais-grupo" aria-label={grupo.label}>
               <h3 className="mais-grupo-t">{grupo.label}</h3>
