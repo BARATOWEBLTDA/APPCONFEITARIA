@@ -47,7 +47,7 @@ export const RECURSOS_PRO = {
   fichaPdf: { nome: "Ficha técnica em PDF", texto: "Baixe a ficha do produto com ingredientes, custo e preço pra imprimir ou guardar.", frase: ["Receita", "no papel!"],
     beneficios: [[FilePdf, "PDF pronto", "Pra imprimir ou mandar"], [Receipt, "Custo detalhado", "Ingrediente por ingrediente"], [CurrencyCircleDollar, "Preço sugerido", "Com o seu lucro"]] },
   doo: { nome: "A Doo", texto: "A sua assistente: calcula preço, monta pedido, cria legenda e responde dúvidas da confeitaria.", frase: ["Ajuda", "na hora!"],
-    beneficios: [[Robot, "150 mensagens por dia", "Pergunte o que precisar"], [CurrencyCircleDollar, "Preço e pedido", "Ela calcula e monta pra você"], [Sparkle, "Cria imagens", "Legendas e artes pra divulgar"]] },
+    beneficios: [[Robot, "500 mensagens por dia", "Pergunte o que precisar"], [CurrencyCircleDollar, "Preço e pedido", "Ela calcula e monta pra você"], [Sparkle, "Cria imagens", "Legendas e artes pra divulgar"]] },
   dooFotos: { nome: "Fotos e imagens na Doo", texto: "No grátis a Doo conversa por texto. No PRO ela também lê as suas fotos e cria imagens prontas para a loja.", frase: ["Foto e", "imagem!"],
     beneficios: [[Images, "Mande fotos", "Ela analisa e responde"], [Sparkle, "Cria imagens", "Topo de bolo, logo e banner"], [Robot, "Sem limite", "Pergunte o que precisar"]] },
   stories: { nome: "Stories", texto: "Poste vídeos curtos e fotos no topo do cardápio. A cliente toca na logo e assiste, como nos stories do Instagram.", frase: ["Mostre o", "bolo do dia!"],

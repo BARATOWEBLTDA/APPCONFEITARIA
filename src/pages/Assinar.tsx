@@ -58,7 +58,7 @@ function Orbita({ logo, baixo = false }: { logo: string; baixo?: boolean }) {
   const atual = ((passo % 8) + 8) % 8;
   const [, nome, frase] = SO_PRO[ORBITA[atual]];
   return (
-    <div className={`pro12-orb${aceso ? " on" : ""}`} onMouseEnter={() => { parado.current = true; }} onMouseLeave={() => { parado.current = false; }}>
+    <div className={`pro12-orb${aceso ? " on" : ""}`} onPointerEnter={e => { if (e.pointerType === "mouse") parado.current = true; }} onPointerLeave={() => { parado.current = false; }}>
       <i className="pro12-luz" aria-hidden="true" />
       <i className="pro12-anel" aria-hidden="true" />
       <div className="pro12-roda" style={{ transform: `rotate(${giro}deg)` }} aria-hidden="true">

@@ -5,7 +5,7 @@ import { PlayCircle, FileText, Ticket, Stack, ChartLineUp, ChatCircleText, Megap
 export const LIMITES: [string, string, string][] = [
   ["Fotos por produto", "1", "Até 4"],
   ["Cores da loja", "4", "Todas"],
-  ["Doo IA", "10 por mês", "150 por dia"],
+  ["Doo IA", "100 por dia", "500 por dia"],
   ["Link da loja", "Um código", "Seu nome"],
   ["Cardápio", "Com marca", "Sem marca"],
   ["PDFs", "Com marca", "Sem marca"],

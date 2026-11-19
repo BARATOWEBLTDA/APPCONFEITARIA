@@ -1524,7 +1524,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
           '**Novo pedido** pela conversa.',
           '**Criar receita** com as quantidades.',
         ] }],
-        dica: 'A Doo é do **PRO**: até 150 mensagens por dia, com imagens.',
+        dica: 'No **PRO** a Doo vai até 500 mensagens por dia e cria imagens.',
       },
     ],
     relacionadas: [

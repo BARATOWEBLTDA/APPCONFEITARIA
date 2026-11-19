@@ -26,7 +26,7 @@ export const RECURSOS_PRO: { chave: RecursoChave; titulo: string; descricao: str
   { chave: "orcamentos", titulo: "Orçamentos", descricao: "Fluxo de orçamento no cardápio" },
   { chave: "planilha", titulo: "Baixar a planilha", descricao: "Exportar pedidos em Excel" },
   { chave: "pdf_sem_marca", titulo: "PDF sem a marca", descricao: "PDF sem o rodapé do Doonly" },
-  { chave: "doo_ia_plus", titulo: "Doo IA turbinada", descricao: "150 por dia e imagens" },
+  { chave: "doo_ia_plus", titulo: "Doo IA turbinada", descricao: "500 por dia e imagens" },
   { chave: "selo_verificado", titulo: "Selo de loja verificada", descricao: "Selo no cardápio" },
   { chave: "cardapio_premium", titulo: "Cardápio Premium", descricao: "Cores e modelo Premium" },
 ];
