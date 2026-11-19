@@ -122,8 +122,10 @@ button.pro9-l2-i { cursor: pointer; }
 }
 .pro10-s { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: #D9C9C2; }
 /* o chocolate some aos poucos na cor da página (sem o risco) */
-.pro10-corpo { max-width: 560px; margin: 0 auto; padding-bottom: 150px; }
-@media (min-width: 901px) { .pro10-corpo { padding-bottom: 0; } }
+/* (19/11) celular: o cartão "7 dias grátis" saiu (a barra fixa já tem o botão); sobra só o espaço da barra */
+.pro10-corpo { max-width: 560px; margin: 0 auto; padding-bottom: 96px; }
+@media (max-width: 999px) { .pro10-plano--teste { display: none; } }
+@media (min-width: 1000px) { .pro10-corpo { padding-bottom: 0; } }
 .pro10-corpo > .pro9 { margin-top: 12px; }
 
 /* comparação: nome · Grátis · PRO, cada linha numa só */
@@ -165,3 +167,6 @@ button.pro9-l2-i { cursor: pointer; }
   .pro10-t { font-size: 48px; }
   .pro10-corpo { margin-top: 16px; }
 }
+
+.pro10-restaurar--cel { display: block; margin: 12px auto 0; color: var(--ui-texto-2); }
+@media (min-width: 1000px) { .pro10-restaurar--cel { display: none; } }

@@ -180,7 +180,7 @@ export default function Assinar() {
               <p className="pro10-plano-s">A assinatura do PRO não está disponível pelo app. Se você já é PRO, tudo fica liberado aqui automaticamente.</p>
             </section>
           ) : (
-            <section className="pro10-plano">
+            <section className="pro10-plano pro10-plano--teste">
               <b className="pro10-plano-t">{SELO_TESTE}</b>
               <p className="pro10-plano-s">depois {lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO} por mês</p>
               <Botao cheio carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO}</Botao>
@@ -188,6 +188,8 @@ export default function Assinar() {
               {lojaPagamentoPronto && <button type="button" className="pro10-restaurar" onClick={restaurar}>Já assinei: restaurar compra</button>}
             </section>
           )}
+          {/* (19/11) no celular o cartão do plano não aparece: o "restaurar compra" do app fica aqui */}
+          {lojaPagamentoPronto && <button type="button" className="pro10-restaurar pro10-restaurar--cel" onClick={restaurar}>Já assinei: restaurar compra</button>}
         </div>
       </div>
       )}
