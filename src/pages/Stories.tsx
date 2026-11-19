@@ -21,7 +21,7 @@ const MAX_VIDEO_MB = 150;
 const api = async (corpo: Record<string, unknown>) => {
   const r = await apiFetch("/api/story", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
   const d = await r.json().catch(() => ({}));
-  return { ok: r.ok, d: d as Record<string, any> };
+  return { ok: r.ok, sumiu: r.status === 404, d: d as Record<string, any> };
 };
 
 /** quantos segundos tem o vídeo escolhido */
@@ -132,7 +132,13 @@ export default function Stories() {
       let n = 0;
       const t = window.setInterval(async () => {
         n++;
-        const { ok, d } = await api({ acao: "status", videoId: s.video_id }).catch(() => ({ ok: false, d: {} as Record<string, any> }));
+        const { ok, sumiu, d } = await api({ acao: "status", videoId: s.video_id }).catch(() => ({ ok: false, sumiu: false, d: {} as Record<string, any> }));
+        // story apagado aqui, ou vídeo que não existe mais no Bunny: para de perguntar
+        if (!conferindo.current.has(s.id) || sumiu) {
+          window.clearInterval(t);
+          if (sumiu && conferindo.current.has(s.id)) avisar("Esse vídeo não foi encontrado. Apague e envie de novo.", { tipo: "erro" });
+          return;
+        }
         if (ok && d.pronto) {
           window.clearInterval(t);
           await supabase.from("stories").update({ pronto: true, ...(d.duracao ? { duracao: Math.min(Number(d.duracao), STORY_MAX_SEGUNDOS + 1) } : {}) }).eq("id", s.id).eq("user_id", uid);
@@ -154,6 +160,7 @@ export default function Stories() {
     if (s.tipo === "video" && s.video_id) await api({ acao: "apagar", videoId: s.video_id }).catch(() => null);
     const { error } = await supabase.from("stories").delete().eq("id", s.id).eq("user_id", uid);
     if (error) { avisar("Não deu para apagar. Tente de novo.", { tipo: "erro" }); return; }
+    conferindo.current.delete(s.id);
     setLista(l => l.filter(x => x.id !== s.id));
   };
 
