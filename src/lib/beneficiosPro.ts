@@ -36,23 +36,12 @@ export const BENEFICIOS: Beneficio[] = [
 export const DIAS_TESTE = 7;
 
 /**
- * (19/11) Teste entre duas ofertas do PRO dentro do app (a página de vendas não entra nisso):
- *   "teste7" = 7 dias grátis (a de sempre) · "real1" = Black Friday, primeiro mês por R$ 1.
- * Cada aparelho é sorteado uma vez e fica sempre com a mesma oferta. No app da loja (Google Play) vale a de sempre.
- * Para encerrar o teste e deixar todo mundo numa oferta só, é trocar o sorteio por um valor fixo aqui.
+ * (19/11) Oferta do PRO dentro do app (a página de vendas tem a dela): Black Friday, primeiro mês por R$ 1,
+ * para todo mundo que é grátis. "teste7" (7 dias grátis) continua existindo para o app da loja (Google Play),
+ * onde o pagamento é do Google, e para voltar a ela depois da Black: é só trocar o valor aqui.
  */
 export type OfertaPro = "teste7" | "real1";
-const sortearOferta = (): OfertaPro => {
-  try {
-    const k = "doonly_oferta_pro";
-    const v = localStorage.getItem(k);
-    if (v === "teste7" || v === "real1") return v;
-    const nova: OfertaPro = Math.random() < 0.5 ? "teste7" : "real1";
-    localStorage.setItem(k, nova);
-    return nova;
-  } catch { return "teste7"; }
-};
-export const OFERTA_PRO: OfertaPro = noAppDaLoja ? "teste7" : sortearOferta();
+export const OFERTA_PRO: OfertaPro = noAppDaLoja ? "teste7" : "real1";
 const BLACK = OFERTA_PRO === "real1";
 /** Checkout do Doonly PRO na Hotmart; o sck só marca de qual oferta do app veio a venda (relatório da Hotmart) */
 export const CHECKOUT_HOTMART = BLACK
