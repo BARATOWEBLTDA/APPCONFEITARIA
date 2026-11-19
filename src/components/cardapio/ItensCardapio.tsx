@@ -63,7 +63,7 @@ function PrecoPromo({ produto }: { produto: Produto; cor?: string }) {
 function useAbrir(produto: Produto) {
   const [aberto, setAberto] = useState(false)
   const props = {
-    role: 'button' as const, tabIndex: 0, 'aria-label': produto.nome,
+    role: 'button' as const, tabIndex: 0, 'aria-label': produto.nome, 'data-prod': String(produto.id),
     onClick: () => setAberto(true),
     onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setAberto(true) } },
   }

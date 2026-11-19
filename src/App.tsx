@@ -98,6 +98,7 @@ const OrcamentoEditar = lazy(() => import("@/pages/OrcamentoEditar"));
 const OrcamentoPedir = lazy(() => import("@/pages/OrcamentoPedir"));
 const OrcamentoVer = lazy(() => import("@/pages/OrcamentoVer"));
 const Cupons = lazy(() => import("@/pages/Cupons"));
+const Stories = lazy(() => import("@/pages/Stories")); // (19/11) stories do cardápio
 const Pixel = lazy(() => import("@/pages/Pixel"));
 const ClientePerfil = lazy(() => import("@/pages/ClientePerfil"));
 const CardapioDesign = lazy(() => import("@/pages/CardapioDesign"));
@@ -617,6 +618,7 @@ export default function App() {
           <Route path="/marketing" element={<IrDoMarketing />} />
           <Route path="/divulgar" element={<Divulgar />} />
           <Route path="/cupons" element={<Cupons />} />
+          <Route path="/stories" element={<Stories />} />
           <Route path="/pixel" element={<Pixel />} />
           <Route path="/arquivos" element={<Navigate to="/" replace />} />
           <Route path="/configuracoes" element={<Configuracoes />} />

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
+import type { Story } from '@/lib/stories'
 import { trocarFaviconPelaLoja, voltarFaviconDoApp } from '@/lib/faviconLoja'
 import { iniciarPixel, iniciarGoogle, iniciarTikTok } from '@/lib/facebookPixel'
 import { explicarErro } from '@/lib/erros'
@@ -20,6 +21,7 @@ import { definirLojaAtual, definirProdutosDaLoja } from '@/components/cardapio/l
 import { EmptyState } from '@/components/cardapio/EmptyState'
 import { Footer } from '@/components/cardapio/Footer'
 import { CardapioModelo1, getStatusLoja } from '@/components/cardapio/CardapioModelo1'
+const StoriesViewer = lazy(() => import('@/components/cardapio/StoriesViewer')) // (19/11) só baixa quando a cliente toca na logo
 import { Vouchers } from '@/components/cardapio/Vouchers'
 import { unidadeItem } from '@/components/cart/CartItemComponent'
 import { CartProvider } from '@/context/CartContext'
@@ -307,6 +309,23 @@ function CardapioContent() {
   const [filtroEntrega, setFiltroEntrega] = useState<'tudo' | 'pronta' | 'encomenda'>('tudo')
   const [favorites, setFavorites] = useState<string[]>([])
   const [sobreAberta, setSobreAberta] = useState(false) // (4.25) Sobre a loja no celular
+  // (19/11) stories da loja: carrega os que estão no ar; a logo ganha o aro e abre o visualizador
+  const [stories, setStories] = useState<Story[]>([])
+  const [storiesAbertos, setStoriesAbertos] = useState(false)
+  const lojaStories = design?.user_id || ''
+  useEffect(() => {
+    if (!lojaStories) return
+    let vivo = true
+    void supabase.rpc('cardapio_stories', { p_loja: lojaStories }).then(({ data, error }) => { if (vivo && !error && Array.isArray(data)) setStories(data as Story[]) }, () => {})
+    return () => { vivo = false }
+  }, [lojaStories])
+  const verProdutoDoStory = (id: string) => {
+    setStoriesAbertos(false)
+    window.setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(`[data-prod="${id}"]`)
+      if (el) { el.scrollIntoView({ block: 'center' }); el.click() }
+    }, 120)
+  }
   const [sobreAba, setSobreAba] = useState<'sobre' | 'horario'>('sobre')
   // (21/10) "Horário e pagamento" na Minha conta (celular) abre o Sobre a loja
   useEffect(() => {
@@ -514,7 +533,14 @@ function CardapioContent() {
 
         {cardapioModelo === 'modelo1' ? (
           <>
-            <CardapioModelo1 design={design} config={config} verificada={temSelo} produtos={produtos} aoAbrirSobre={() => setSobreAberta(true)} />
+            <CardapioModelo1 design={design} config={config} verificada={temSelo} produtos={produtos} aoAbrirSobre={() => setSobreAberta(true)} aoTocarLogo={stories.length > 0 ? () => setStoriesAbertos(true) : undefined} />
+            {storiesAbertos && stories.length > 0 && (
+              <Suspense fallback={null}>
+                <StoriesViewer stories={stories} loja={design.nome_loja || 'Loja'} logo={design.logo_url ? String(design.logo_url).split(',')[0] : null}
+                  aoFechar={() => setStoriesAbertos(false)} aoVerProduto={verProdutoDoStory}
+                  nomeProduto={id => produtos.find(p => String(p.id) === id)?.nome || null} />
+              </Suspense>
+            )}
             <div className="cp-banner-wrap">
               <BannerAd bannerUrl={design.banner_url || design.banner1_url || design.banner2_url || design.banner3_url} isPro={isPro} /* (6.79) um banner só, sem carrossel */ />
             </div>

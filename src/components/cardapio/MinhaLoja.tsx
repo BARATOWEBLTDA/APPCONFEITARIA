@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cake, CaretRight, ChartLineUp, ChatCircleText, Crown, LockSimple, PaintBrush, Stack, Target, Ticket } from "@phosphor-icons/react";
+import { Cake, CaretRight, ChartLineUp, ChatCircleText, Crown, LockSimple, PaintBrush, PlayCircle, Stack, Target, Ticket } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { useRecorte } from "@/components/ui/useRecorte";
@@ -102,6 +102,7 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
       <section className="dl-emb" aria-label={pro ? "Vender mais" : "Venda mais com o PRO"}>
         <h2 className="dl-emb-t ml-pro-t">{!pro && <Crown size={18} weight="fill" aria-hidden="true" />}{pro ? "Vender mais" : "Venda mais com o PRO"}</h2>
         <div className="dl-lista-c">
+          {linha(PlayCircle, "Stories", "Vídeos curtos no cardápio", "/stories", false, !pro)}
           {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos", false, !pro)}
           {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons", false, !pro)}
           {linhaMensagens}
