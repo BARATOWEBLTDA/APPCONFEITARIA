@@ -272,3 +272,14 @@
 
 /* (6.116) celular pequeno: o botão do aniversário mais justo, para o nome caber */
 @media (max-width: 380px) { .cl9-j-l .cl9-parabens { padding: 0 10px; gap: 5px; font-size: 13.5px; } .cl9-j-l .cl9-j-quem { gap: 10px; } }
+
+/* (19/11) sem clientes: no estilo da tela vazia de Produtos (mascote grande, título grande, botões lado a lado) */
+.cl9-hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 8px 32px; }
+.cl9-hero img { width: 180px; height: auto; margin-bottom: 20px; }
+.cl9-hero-eb { font-size: 14px; font-weight: 600; color: #B02C5F; line-height: 1; }
+.cl9-hero-t { margin: 6px 0 0; font-size: 2rem; font-weight: 500; letter-spacing: -.03em; line-height: 1.1; color: var(--ui-texto); }
+.cl9-hero-x { margin: 12px 0 0; max-width: 440px; font-size: 16px; line-height: 1.55; color: var(--ui-texto-2); }
+.cl9-hero-acoes { display: flex; flex-wrap: nowrap; justify-content: center; gap: 8px; width: 100%; max-width: 420px; margin-top: 20px; }
+.cl9-hero-acoes .ui-bt { flex: 1 1 0; min-width: 0; white-space: nowrap; padding-left: 10px; padding-right: 10px; }
+.cl9-so-pc { display: none; }
+@media (min-width: 640px) { .cl9-so-pc { display: inline; } .cl9-hero-acoes { max-width: 520px; } .cl9-hero-t { font-size: 2.5rem; } }

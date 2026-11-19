@@ -745,13 +745,16 @@ export default function Clientes() {
 
       {/* ═══ Sem clientes ═══ */}
       {clientes.length === 0 ? (
-        <div className="cl9">
-          <TelaVazia caixa icone={<UsersThree size={30} />} titulo="Nenhum cliente ainda"
-            texto="Quem pede pelo cardápio entra aqui sozinho. Você também pode cadastrar quem compra pelo WhatsApp ou no balcão."
-            acao={<div className="cl9-vz-acoes">
-              <Botao className="guia-novo-cliente" icone={<Plus size={20} weight="bold" />} onClick={() => openNew()}>Cadastrar cliente</Botao>
-              {suportaContatos && <Botao variante="secundario" icone={<AddressBook size={20} weight="bold" />} onClick={importarContatos}>Importar dos contatos<i className="cl9-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</i></Botao>}
-            </div>} />
+        // (19/11) tela vazia no estilo da de Produtos: mascote grande, título grande e os dois botões lado a lado
+        <div className="cl9 cl9-hero">
+          <img src="/marca/leve/acenando.webp" alt="" aria-hidden="true" width={180} height={210} />
+          <span className="cl9-hero-eb">Vamos começar</span>
+          <h1 className="cl9-hero-t">Cadastre seu<br />primeiro cliente</h1>
+          <p className="cl9-hero-x">Quem pede pelo cardápio entra aqui sozinho. Você também pode cadastrar quem compra pelo WhatsApp ou no balcão.</p>
+          <div className="cl9-hero-acoes">
+            <Botao className="guia-novo-cliente" icone={<Plus size={20} weight="bold" />} onClick={() => openNew()}>Cadastrar<span className="cl9-so-pc"> cliente</span></Botao>
+            {suportaContatos && <Botao variante="secundario" icone={<AddressBook size={20} weight="bold" />} onClick={importarContatos}>Importar<span className="cl9-so-pc"> dos contatos</span><i className="cl9-pro"><Crown size={12} weight="fill" aria-hidden="true" />PRO</i></Botao>}
+          </div>
         </div>
       ) : (() => {
         // ── Números do topo (calculados dos pedidos que já vêm com cada cliente) ──
