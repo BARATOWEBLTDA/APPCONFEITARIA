@@ -162,7 +162,6 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
       if (!montado.current) return;
       if (document.querySelector('[role="dialog"][aria-modal="true"]') && tentativas++ < 40) { window.setTimeout(mostrar, 500); return; }
       atRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
-      window.setTimeout(() => { if (montado.current) setSpot(true); }, 350);
     };
     window.setTimeout(mostrar, 300);
   }, [local, estado]);

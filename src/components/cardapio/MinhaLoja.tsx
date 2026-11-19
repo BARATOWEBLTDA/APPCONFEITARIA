@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cake, CaretRight, ChartLineUp, ChatCircleText, PaintBrush, Stack, Target, Ticket } from "@phosphor-icons/react";
+import { Cake, CaretRight, ChartLineUp, ChatCircleText, Crown, PaintBrush, Stack, Target, Ticket } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import { avisar } from "@/components/base";
+import { avisar, Botao } from "@/components/base";
+import { CTA_PRO } from "@/lib/beneficiosPro";
 import { useRecorte } from "@/components/ui/useRecorte";
 import DadosLoja from "@/pages/DadosLoja";
 
@@ -63,12 +64,10 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
     </button>
   );
   // (23/10) sem o cartão de Primeiros passos aqui: o que falta aparece como "Falta" na própria linha
-  const linha = (Ic: typeof Cake, titulo: string, sub: string, rota: string, falta = false, soPro = false) => (
+  const linha = (Ic: typeof Cake, titulo: string, sub: string, rota: string, falta = false) => (
     <button type="button" className="dl-li" onClick={() => navigate(rota)}>
       <span className="dl-li-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
       <span className="dl-li-tx"><b>{titulo}</b><small className={falta ? "falta" : ""}>{sub}</small></span>
-      {/* (6.146) recurso do PRO: a etiqueta avisa antes de tocar (igual ao Menu) */}
-      {soPro && !pro && <em className="dl-li-st pro">PRO</em>}
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
   );
@@ -91,19 +90,26 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
         <div className="dl-lista-c">
           {/* (10/11) só a frase do que tem dentro (o que falta fica com os Primeiros passos) */}
           {linha(Cake, "Produtos", "Preço, foto e sabores", "/produtos")}
-          {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos", false, true)}
         </div>
       </section>
-      <DadosLoja embutido extras={{ antes: linhaAparencia, depois: linhaMensagens }} />
-      {/* (10/11) ordem por prioridade: o que vende, a loja, como vende e, por último, divulgar e acompanhar */}
-      {/* (10/11) Cupons e Pixel vieram do Menu (Divulgar): os dois só funcionam no cardápio */}
-      <section className="dl-emb" aria-label="Divulgar e acompanhar">
-        <h2 className="dl-emb-t">Divulgar e acompanhar</h2>
+      <DadosLoja embutido extras={{ antes: linhaAparencia }} />
+      {/* (19/11) o que é do PRO fica junto num bloco só, no fim (antes ficava espalhado, com a etiqueta PRO em cada linha) */}
+      <section className="dl-emb" aria-label="Acompanhar">
+        <h2 className="dl-emb-t">Acompanhar</h2>
         <div className="dl-lista-c">
           {linha(ChartLineUp, "Métricas", "Visitas e mais pedidos", "/cardapio-metricas")}
-          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons", false, true)}
-          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel", false, true)}
         </div>
+      </section>
+      <section className="dl-emb" aria-label={pro ? "Vender mais" : "Venda mais com o PRO"}>
+        <h2 className="dl-emb-t ml-pro-t">{!pro && <Crown size={18} weight="fill" aria-hidden="true" />}{pro ? "Vender mais" : "Venda mais com o PRO"}</h2>
+        <div className="dl-lista-c">
+          {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos")}
+          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons")}
+          {linhaMensagens}
+          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel")}
+        </div>
+        {!pro && <Botao cheio icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao>}
+        <style>{`.ml-pro-t { display: flex; align-items: center; gap: 6px; } .ml-pro-t svg { flex: none; color: #E0A93B; }`}</style>
       </section>
     </>
   );

@@ -48,6 +48,8 @@ export const RECURSOS_PRO = {
     beneficios: [[FilePdf, "PDF pronto", "Pra imprimir ou mandar"], [Receipt, "Custo detalhado", "Ingrediente por ingrediente"], [CurrencyCircleDollar, "Preço sugerido", "Com o seu lucro"]] },
   doo: { nome: "A Doo", texto: "A sua assistente: calcula preço, monta pedido, cria legenda e responde dúvidas da confeitaria.", frase: ["Ajuda", "na hora!"],
     beneficios: [[Robot, "150 mensagens por dia", "Pergunte o que precisar"], [CurrencyCircleDollar, "Preço e pedido", "Ela calcula e monta pra você"], [Sparkle, "Cria imagens", "Legendas e artes pra divulgar"]] },
+  dooFotos: { nome: "Fotos e imagens na Doo", texto: "No grátis a Doo conversa por texto. No PRO ela também lê as suas fotos e cria imagens prontas para a loja.", frase: ["Foto e", "imagem!"],
+    beneficios: [[Images, "Mande fotos", "Ela analisa e responde"], [Sparkle, "Cria imagens", "Topo de bolo, logo e banner"], [Robot, "Sem limite", "Pergunte o que precisar"]] },
   cupons: { nome: "Cupom de desconto", texto: "Crie cupons pra trazer cliente nova e fazer quem já comprou voltar.", frase: ["Desconto", "que vende!"],
     beneficios: [[Ticket, "Cupom com seu código", "Ex.: NATAL10"], [Percent, "Em % ou em reais", "Com validade e mínimo"], [ShareNetwork, "Divulgue no WhatsApp", "A cliente usa no cardápio"]] },
   // (6.110) convites que faltavam (antes eram aviso solto ou iam direto para a página do PRO)

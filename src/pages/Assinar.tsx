@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Crown, Lock, CaretDown, CaretLeft, CaretRight, Check, X } from "@phosphor-icons/react";
+import { Crown, Lock, CaretLeft, CaretRight, Check, X } from "@phosphor-icons/react";
 import { BENEFICIOS, CTA_PRO, DIAS_TESTE, PRECO_PRO, SELO_TESTE } from "@/lib/beneficiosPro";
 import { noAppDaLoja } from "@/lib/plataforma";
 import { lojaPagamentoPronto, iniciarLoja, ofertaPro, assinarPelaLoja, restaurarCompra, cancelouCompra, type OfertaLoja } from "@/lib/lojaPagamento";
@@ -29,11 +29,6 @@ import "./assinar.css";
 // (31/10 · 5.97) o PRO começa com 7 dias grátis (a Hotmart pede o cartão e só cobra no 8º dia); saiu o desconto do 1º mês
 const PRECO_CHEIO = PRECO_PRO;
 
-const DUVIDAS: [string, string][] = [
-  ["Quando sou cobrada?", `Só no ${DIAS_TESTE + 1}º dia. Nos ${DIAS_TESTE} primeiros dias você não paga nada.`],
-  ["E os meus dados?", "Continuam salvos, mesmo se você voltar para o plano grátis."],
-  ["Como pago?", "Pela Hotmart, um site seguro de pagamentos. Use o mesmo e-mail da sua conta: assim o PRO liga sozinho."],
-];
 /** (19/11) Comparação Grátis × PRO: nome, o que o grátis tem (null = X), o que o PRO tem (null = visto) e a linha pequena de cada um */
 const COMPARA: [string, string | null, string | null, string?, string?][] = [
   ["Produtos no cardápio", "10", "Sem limite"],
@@ -69,7 +64,6 @@ export default function Assinar() {
   const emTeste = (profile as PerfilAssinatura)?.assinatura_status === "teste";
   const folga = (profile as PerfilAssinatura)?.assinatura_origem === "hotmart" ? (emTeste ? 1 : 3) : 0;
   const cobranca = proExpiraEm ? new Date(proExpiraEm.getTime() - folga * 86400000) : null;
-  const [aberta, setAberta] = useState<number | null>(null);
   const ir = (destino: string | null) => { if (!destino) return; if (destino === "doo") abrirDooIA(); else if (destino === "equipe") pedirMontagem(profile?.nome as string | undefined, profile?.nome_loja as string | undefined); else navigate(destino); };
 
   // Checkout da Hotmart (02/10). O e-mail e o nome da conta já vão preenchidos: o e-mail da compra
@@ -108,18 +102,6 @@ export default function Assinar() {
     window.open(u.toString(), "_blank");
   };
 
-  const duvidas = (
-    <section className="cl9-card pro9-faq">
-      <Titulo>Dúvidas</Titulo>
-      {/* (21/10) celular: fechadas, abre ao tocar · computador: as 3 lado a lado, abertas */}
-      {DUVIDAS.map(([q, r], i) => (
-        <div key={q} className={`pro9-q${aberta === i ? " on" : ""}`}>
-          <button type="button" aria-expanded={aberta === i} onClick={() => setAberta(a => a === i ? null : i)}><b>{q}</b><CaretDown size={18} weight="bold" aria-hidden="true" /></button>
-          <p>{r}</p>
-        </div>
-      ))}
-    </section>
-  );
 
   return (
     <>
@@ -156,7 +138,6 @@ export default function Assinar() {
               })}
             </div>
           </section>
-          {duvidas}
         </div>
       ) : (
       <div className="pro10">
@@ -207,7 +188,6 @@ export default function Assinar() {
               {lojaPagamentoPronto && <button type="button" className="pro10-restaurar" onClick={restaurar}>Já assinei: restaurar compra</button>}
             </section>
           )}
-          {!noAppDaLoja && <div className="pro9">{duvidas}</div>}
         </div>
       </div>
       )}

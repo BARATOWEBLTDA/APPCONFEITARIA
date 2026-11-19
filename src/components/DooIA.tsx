@@ -591,7 +591,7 @@ function getErrorMessage(errorType: string, status?: number, caso: 'foto' | 'ima
   }
   // (4.23) limite diário de uso da Doo
   // (27/10) grátis: 10 mensagens por mês
-  if (errorType === 'limite_mensal') return 'A Doo é do plano PRO. Teste grátis por 7 dias.'
+  if (errorType === 'limite_mensal') return 'Você usou as mensagens do plano grátis. Teste o PRO grátis por 7 dias para continuar.'
   if (errorType === 'limite_diario') return caso === 'imagem' ? 'Você chegou ao limite de imagens de hoje. Amanhã libera de novo.' : 'Você chegou ao limite de mensagens de hoje. Amanhã libera de novo.'
   if (status === 429 || errorType === 'rate_limit_error') return 'Muitas mensagens em seguida. Aguarde um momento e tente novamente.'
   // (11/10) só o erro de plano mostra o "Assine o PRO" (outro 403 cai no aviso genérico)
@@ -660,6 +660,7 @@ function formatText(text: string): string {
 
 export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
   const { temRecurso, loading: carregandoPlano } = usePlano(); const isPro = temRecurso("doo_ia_plus") // (17/11) PRO ou liberado avulso pelo admin
+  const [convFotos, setConvFotos] = useState(false) // (19/11) grátis: foto e imagem são do PRO
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -835,6 +836,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) return
+    if (!isPro) { setConvFotos(true); return }
     let pronta: { base64: string; mediaType: string }
     try {
       pronta = await reduzirFoto(file)
@@ -1028,6 +1030,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         // (27/10) no grátis a Doo conversa, mas criar imagem é do PRO (não chama a API nem gasta mensagem)
         setLoading(false)
         setMessages(prev => [...prev, { role: 'assistant', content: 'Criar imagens é do plano PRO. No grátis eu ajudo com receitas, preços, legendas e pedidos. Quer que eu escreva uma legenda para esse post?' }])
+        setConvFotos(true)
       // (6.104) pedido de imagem vai sempre pela conversa: a Doo entende o tema, o nome e a idade e pergunta o que faltar
       //         (antes ia direto para o gerador e o texto do pedido inteiro virava o nome no topo)
       } else {
@@ -1079,6 +1082,11 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               : (!texto || falaDeImagem) ? `Oi${nomeConfeiteira ? `, ${nomeConfeiteira}` : ''}! Em que posso ajudar?` : texto
             setMessages(prev => [...prev, { role: 'assistant', content: resposta }])
             setLoading(false)
+            return
+          }
+          if (acaoBruta && acaoBruta.acao === 'imagem' && !isPro) {
+            setMessages(prev => [...prev, { role: 'assistant', content: 'Criar imagens é do plano PRO. No grátis eu ajudo com receitas, preços, legendas e pedidos.' }])
+            setLoading(false); setConvFotos(true)
             return
           }
           if (acaoBruta && acaoBruta.acao === 'imagem') {
@@ -1149,11 +1157,11 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
   const showSuggestions = messages.length === 0 && !loading
 
-  // (6.81) a Doo é só do PRO: no grátis, abrir mostra o convite do PRO
-  if (open && !isPro && !carregandoPlano) return <ConvitePro recurso="doo" onClose={handleClose} />
+  // (19/11) a Doo abre nos dois planos: no grátis só texto; foto e imagem mostram o convite do PRO
 
   return (
     <>
+      {convFotos && <ConvitePro recurso="dooFotos" onClose={() => setConvFotos(false)} />}
       <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }} />
 
@@ -1348,7 +1356,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               </div>
             )}
             <div className="dz-inb">
-              <button type="button" className="dz-ib" onClick={() => fileRef.current?.click()} aria-label="Enviar uma foto" title="Enviar uma foto"><ImageSquare size={20} weight="bold" /></button>
+              <button type="button" className="dz-ib" onClick={() => { if (!isPro && !carregandoPlano) { setConvFotos(true); return } fileRef.current?.click() }} aria-label="Enviar uma foto" title="Enviar uma foto"><ImageSquare size={20} weight="bold" /></button>
               {/* (6.93) campo de texto de várias linhas (textarea): o navegador nunca oferece "senhas salvas" nele, como fazia no <input> */}
               <textarea
                 ref={inputRef}

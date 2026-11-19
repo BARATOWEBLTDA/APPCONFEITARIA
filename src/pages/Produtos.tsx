@@ -1456,7 +1456,7 @@ export default function Produtos() {
       infoTip={<>Clique em <strong>"Novo produto"</strong> para cadastrar. Depois é só compartilhar seu cardápio com os clientes.</>}
     />
     {/* (10/11) celular: Categorias saiu da Minha loja e virou aba aqui */}
-    <AbasCel rotulo="Produtos e categorias" abas={[{ to: "/produtos", nome: "Produtos", end: true }, { to: "/categorias", nome: "Categorias" }]} />
+    {produtos.length > 0 && <AbasCel rotulo="Produtos e categorias" abas={[{ to: "/produtos", nome: "Produtos", end: true }, { to: "/categorias", nome: "Categorias" }]} />}
     {cropSrc && (
       <ImageCropper
         imageSrc={cropSrc}
@@ -1558,7 +1558,7 @@ export default function Produtos() {
             <span className="prod-hero-eyebrow">Vamos começar</span>
             <h1 className="prod-hero-title">Cadastre seu<br/>primeiro produto</h1>
             <p className="prod-hero-desc">
-              Cada doce cadastrado vira um item no seu cardápio, com foto e&nbsp;preço.
+              Cada produto cadastrado vira um item no seu cardápio, com foto e&nbsp;preço.
             </p>
             <div className="prod-hero-actions">
               <button className="prod-hero-btn-primary" onClick={openNovo}>

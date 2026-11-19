@@ -7,7 +7,7 @@ import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
 import PraFazer from "@/components/PraFazer";
 import AppPageHeader from "@/components/AppPageHeader";
-import { COMO_INICIO, COMO_INICIO_CEL, TOUR_INICIO_CEL, TOUR_INICIO_PC, TOUR_PRIMEIRA_VEZ_CEL } from "@/lib/comoTelas";
+import { COMO_INICIO, COMO_INICIO_CEL, TOUR_INICIO_CEL, TOUR_INICIO_PC } from "@/lib/comoTelas";
 import { BotaoAjuda } from "@/components/como/ComoFunciona";
 import { fazerTour, contarPassos } from "@/components/como/tour";
 import { abrirBuscaRapida } from "@/components/BuscaRapida";
@@ -746,23 +746,7 @@ export default function Inicio() {
   })();
 
   // (6.59) Acesso rápido: o mesmo no celular (grade) e no computador (faixa embaixo dos Primeiros passos)
-  // (6.146) celular, conta nova: depois do tutorial, os balões mostram por onde começar (uma vez só)
-  useEffect(() => {
-    if (computador) return;
-    let pedido = false;
-    try { pedido = sessionStorage.getItem("doonly_tour_primeira_vez") === "1"; } catch { /* sem storage */ }
-    if (!pedido) return;
-    let tentativas = 0, vivo = true;
-    const tentar = () => {
-      if (!vivo) return;
-      const pronto = !!document.querySelector(".ppb-at") && !document.querySelector('[role="dialog"][aria-modal="true"]');
-      if (!pronto && tentativas++ < 30) { window.setTimeout(tentar, 500); return; }
-      try { sessionStorage.removeItem("doonly_tour_primeira_vez"); } catch { /* sem storage */ }
-      if (pronto) { window.scrollTo(0, 0); void fazerTour(TOUR_PRIMEIRA_VEZ_CEL); }
-    };
-    const t = window.setTimeout(tentar, 900);
-    return () => { vivo = false; window.clearTimeout(t); };
-  }, [computador]);
+  // (19/11) o tour de balões depois do tutorial saiu (pedido do Bruno)
   // (6.144) computador: enquanto os Primeiros passos não acabam, o Início mostra só eles, no centro (foco total)
   // (6.160) guardado por conta; sem nada guardado (1º acesso ou outra conta) a tela espera os Primeiros passos dizerem
   // se faltam passos, em vez de mostrar o Início inteiro e sumir logo depois
