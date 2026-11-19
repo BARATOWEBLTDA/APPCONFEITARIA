@@ -1,5 +1,6 @@
 import type React from 'react'
-import { CLASSE_SELO, CTA_PRO, SELO_TESTE } from "@/lib/beneficiosPro";
+import SeloOferta from "@/components/billing/SeloOferta";
+import { SELO_OFERTA } from "@/lib/beneficiosPro";
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -166,9 +167,7 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
               <Crown size={13} weight="fill" aria-hidden="true" />PRO
             </button>
           ) : !carregandoPlano && (
-            <button type="button" className={`selo-teste-cel${CLASSE_SELO}`} onClick={() => navigate('/assinar')} aria-label={CTA_PRO}>
-              <Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}
-            </button>
+            <SeloOferta aoTocar={() => navigate('/assinar')} />
           ))}
           <button type="button" className={`cab-cel-ac${notifCount > 0 ? ' sino-tem' : ''}`} onClick={() => navigate('/notificacoes')} aria-label={notifCount > 0 ? `Notificações, ${notifCount} não lida${notifCount > 1 ? 's' : ''}` : 'Notificações'}>
             <span key={toque} className={`sino-ic${toque ? ' sino-toca' : ''}`}><Bell size={21} weight={notifCount > 0 ? 'fill' : 'regular'} /></span>
@@ -183,7 +182,7 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
           <a className="cab-ver-cardapio" href={linkCardapio} target="_blank" rel="noopener noreferrer"><ArrowSquareOut size={12} weight="bold" aria-hidden="true" />Ver cardápio</a>
         )}
         {!carregandoPlano && !isPro && (
-          <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}</button>
+          <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />{SELO_OFERTA}</button>
         )}
         {/* (09/11) computador: o sino saiu do menu da esquerda e fica aqui, entre o PRO e a foto */}
         <div ref={sino} className="cab-sino-caixa">
