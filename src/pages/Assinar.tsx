@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Crown, Lock, CaretLeft, CaretRight, Check, X } from "@phosphor-icons/react";
-import { BENEFICIOS, CTA_PRO, DIAS_TESTE, PRECO_PRO, SELO_TESTE } from "@/lib/beneficiosPro";
+import { BENEFICIOS, CHECKOUT_HOTMART, CTA_PRO, CTA_PRO_CURTO, DIAS_TESTE, PRECO_PRO, SELO_OFERTA } from "@/lib/beneficiosPro";
 import { noAppDaLoja } from "@/lib/plataforma";
 import { lojaPagamentoPronto, iniciarLoja, ofertaPro, assinarPelaLoja, restaurarCompra, cancelouCompra, type OfertaLoja } from "@/lib/lojaPagamento";
 import { refreshProfile } from "@/hooks/useProfile";
@@ -51,8 +51,7 @@ const COMPARA: [string, string | null, string | null, string?, string?][] = [
 ];
 const dataBR = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
 
-/** Checkout do Doonly PRO na Hotmart (com os 7 dias grátis) */
-const CHECKOUT_HOTMART = "https://pay.hotmart.com/M107866310B?off=elyrqwi7&checkoutMode=10"; // (6.80) oferta com 7 dias grátis
+// (19/11) o link do checkout vem de beneficiosPro (são duas ofertas em teste: 7 dias grátis e Black Friday por R$ 1)
 
 export default function Assinar() {
   const navigate = useNavigate();
@@ -181,7 +180,7 @@ export default function Assinar() {
             </section>
           ) : (
             <section className="pro10-plano pro10-plano--teste">
-              <b className="pro10-plano-t">{SELO_TESTE}</b>
+              <b className="pro10-plano-t">{SELO_OFERTA}</b>
               <p className="pro10-plano-s">depois {lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO} por mês</p>
               <Botao cheio carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO}</Botao>
               <p className="pro10-seg"><Lock size={14} weight="bold" /> {lojaPagamentoPronto ? "Pagamento seguro pelo Google Play" : "Pagamento seguro pela Hotmart"}</p>
@@ -197,8 +196,8 @@ export default function Assinar() {
       {/* Celular: botão fixo pra assinar sem rolar até o fim */}
       {!isPro && (!noAppDaLoja || lojaPagamentoPronto) && (
         <div className="pro9-fixo">
-          <span><small>Depois, {PRECO_CHEIO}/mês</small><b>{SELO_TESTE}</b></span>
-          <Botao carregando={comprando} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>Testar grátis</Botao>
+          <span><small>Depois, {PRECO_CHEIO}/mês</small><b>{SELO_OFERTA}</b></span>
+          <Botao carregando={comprando} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO_CURTO}</Botao>
         </div>
       )}
     </>

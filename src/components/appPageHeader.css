@@ -193,3 +193,6 @@
 html body .sino-tem.sino-tem { background: #FFF5F9 !important; box-shadow: inset 0 0 0 1px #F3C6D8 !important; color: var(--ui-rosa-botao, #CC2E66) !important; }
 @media (prefers-reduced-motion: reduce) { .sino-toca, .sino-pop { animation: none; } }
 .cab-sino-caixa { position: relative; display: none; } @media (min-width: 901px) { .cab-sino-caixa { display: block; } }
+
+/* (19/11) oferta de Black Friday do PRO: a etiqueta do topo fica preta (Início e cabeçalho das telas) */
+.selo-teste-cel.selo-black, .ini-root .ini-plan-tag.selo-black { background: #111 !important; border-color: #111 !important; color: #fff !important; }

@@ -1,7 +1,7 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import { resumoItens, type Pedido } from "@/components/pedidos/pedidoTexto";
 import { usePlaceholderVivo } from "@/hooks/usePlaceholderVivo";
-import { SELO_TESTE } from "@/lib/beneficiosPro";
+import { CLASSE_SELO, CTA_PRO, SELO_TESTE } from "@/lib/beneficiosPro";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
 import { LinkDeVendas } from "@/components/loja/LinkDeVendas";
@@ -862,7 +862,7 @@ export default function Inicio() {
               <Crown size={13} weight="fill" aria-hidden="true" />PRO
             </button>
           ) : (
-            <button type="button" className="selo-teste-cel" onClick={() => navigate("/assinar")} aria-label="Testar o PRO grátis por 7 dias">
+            <button type="button" className={`selo-teste-cel${CLASSE_SELO}`} onClick={() => navigate("/assinar")} aria-label={CTA_PRO}>
               <Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}
             </button>
           ))}
@@ -898,9 +898,9 @@ export default function Inicio() {
               ) : (
                 <button
                   type="button"
-                  className="ini-plan-tag ini-plan-tag--pc ini-plan-tag--upgrade"
+                  className={`ini-plan-tag ini-plan-tag--pc ini-plan-tag--upgrade${CLASSE_SELO}`}
                   onClick={() => navigate("/assinar")}
-                  aria-label="Testar o PRO grátis por 7 dias"
+                  aria-label={CTA_PRO}
                 >
                   <img src="/coroa.webp" alt="" className="ini-plan-coroa" aria-hidden="true" />
                   <span>{SELO_TESTE}</span>
@@ -921,9 +921,9 @@ export default function Inicio() {
                 ) : (
                   <button
                     type="button"
-                    className="ini-plan-tag ini-plan-tag--mob ini-plan-tag--upgrade"
+                    className={`ini-plan-tag ini-plan-tag--mob ini-plan-tag--upgrade${CLASSE_SELO}`}
                     onClick={() => navigate("/assinar")}
-                    aria-label="Testar o PRO grátis por 7 dias"
+                    aria-label={CTA_PRO}
                   >
                     <img src="/coroa.webp" alt="" className="ini-plan-coroa" aria-hidden="true" />
                     <span>{SELO_TESTE}</span>

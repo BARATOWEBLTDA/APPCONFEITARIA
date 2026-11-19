@@ -1,5 +1,5 @@
 import type React from 'react'
-import { SELO_TESTE } from "@/lib/beneficiosPro";
+import { CLASSE_SELO, CTA_PRO, SELO_TESTE } from "@/lib/beneficiosPro";
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -166,7 +166,7 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
               <Crown size={13} weight="fill" aria-hidden="true" />PRO
             </button>
           ) : !carregandoPlano && (
-            <button type="button" className="selo-teste-cel" onClick={() => navigate('/assinar')} aria-label="Testar o PRO grátis por 7 dias">
+            <button type="button" className={`selo-teste-cel${CLASSE_SELO}`} onClick={() => navigate('/assinar')} aria-label={CTA_PRO}>
               <Crown size={13} weight="fill" aria-hidden="true" />{SELO_TESTE}
             </button>
           ))}

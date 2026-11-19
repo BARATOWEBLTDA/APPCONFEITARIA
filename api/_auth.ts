@@ -101,7 +101,7 @@ export async function devolverCota(req: Request, ticket: string | undefined): Pr
 export function respostaLimite(limite: number | undefined, headers: Record<string, string> = {}, periodo: "dia" | "mes" = "dia"): Response {
   // (27/10) grátis da Doo: 10 mensagens por mês
   // (6.81) a Doo IA é só do PRO
-  if (periodo === "mes") return respostaJson({ error: "limite_mensal", message: "A Doo IA é do plano PRO. Teste grátis por 7 dias." }, 429, headers);
+  if (periodo === "mes") return respostaJson({ error: "limite_mensal", message: "A Doo IA é do plano PRO." }, 429, headers);
   return respostaJson({ error: "limite_diario", message: limite ? `Você chegou ao limite de ${limite} usos de hoje. Amanhã libera de novo.` : "Esse recurso é do plano PRO." }, 429, headers);
 }
 

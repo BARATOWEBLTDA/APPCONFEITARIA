@@ -34,6 +34,39 @@ export const BENEFICIOS: Beneficio[] = [
 /** (31/10 · 5.97) O PRO começa com 7 dias grátis na Hotmart (pede o cartão e só cobra no 8º dia).
  *  Um texto só para o botão em todo o app, e o selo curto onde o botão não cabe. */
 export const DIAS_TESTE = 7;
-export const CTA_PRO = noAppDaLoja && !lojaPagamentoPronto ? "Conhecer o PRO" : `Testar grátis por ${DIAS_TESTE} dias`;
-export const SELO_TESTE = `${DIAS_TESTE} dias grátis`;
+
+/**
+ * (19/11) Teste entre duas ofertas do PRO dentro do app (a página de vendas não entra nisso):
+ *   "teste7" = 7 dias grátis (a de sempre) · "real1" = Black Friday, primeiro mês por R$ 1.
+ * Cada aparelho é sorteado uma vez e fica sempre com a mesma oferta. No app da loja (Google Play) vale a de sempre.
+ * Para encerrar o teste e deixar todo mundo numa oferta só, é trocar o sorteio por um valor fixo aqui.
+ */
+export type OfertaPro = "teste7" | "real1";
+const sortearOferta = (): OfertaPro => {
+  try {
+    const k = "doonly_oferta_pro";
+    const v = localStorage.getItem(k);
+    if (v === "teste7" || v === "real1") return v;
+    const nova: OfertaPro = Math.random() < 0.5 ? "teste7" : "real1";
+    localStorage.setItem(k, nova);
+    return nova;
+  } catch { return "teste7"; }
+};
+export const OFERTA_PRO: OfertaPro = noAppDaLoja ? "teste7" : sortearOferta();
+const BLACK = OFERTA_PRO === "real1";
+/** Checkout do Doonly PRO na Hotmart; o sck só marca de qual oferta do app veio a venda (relatório da Hotmart) */
+export const CHECKOUT_HOTMART = BLACK
+  ? "https://pay.hotmart.com/M107866310B?off=8ba1tara&checkoutMode=10&sck=app-r1"
+  : "https://pay.hotmart.com/M107866310B?off=elyrqwi7&checkoutMode=10&sck=app-7d";
+/** texto do botão do PRO em todo o app */
+export const CTA_PRO = noAppDaLoja && !lojaPagamentoPronto ? "Conhecer o PRO" : BLACK ? "Primeiro mês por R$ 1" : `Testar grátis por ${DIAS_TESTE} dias`;
+/** botão curto (barra fixa da tela do PRO no celular) */
+export const CTA_PRO_CURTO = BLACK ? "Assinar por R$ 1" : "Testar grátis";
+/** etiqueta pequena do topo (Início e cabeçalho): na Black ela é preta, com a classe abaixo */
+export const SELO_TESTE = BLACK ? "Black Friday" : `${DIAS_TESTE} dias grátis`;
+export const CLASSE_SELO = BLACK ? " selo-black" : "";
+/** a oferta escrita na tela do PRO */
+export const SELO_OFERTA = BLACK ? "Black Friday: 1º mês por R$ 1" : `${DIAS_TESTE} dias grátis`;
+/** frase para avisos (Doo, limites) */
+export const CHAMADA_PRO = BLACK ? "Na Black Friday o primeiro mês do PRO sai por R$ 1." : `Teste o PRO grátis por ${DIAS_TESTE} dias.`;
 export const PRECO_PRO = "R$ 29,90";

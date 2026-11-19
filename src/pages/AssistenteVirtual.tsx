@@ -1,4 +1,5 @@
 import { COMO_DOO, TOUR_DOO } from "@/lib/comoTelas";
+import { CTA_PRO } from "@/lib/beneficiosPro";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
@@ -47,7 +48,7 @@ export default function AssistenteVirtual() {
         </div>
         <button type="button" className="av-cta" onClick={() => abrirDooIA()}>Conversar com a Doo</button>
         {!isPro && (
-          <p className="av-sub">Fotos e imagens são do PRO. <button type="button" className="av-link" onClick={() => navigate("/assinar")}>Testar grátis por 7 dias</button></p>
+          <p className="av-sub">Fotos e imagens são do PRO. <button type="button" className="av-link" onClick={() => navigate("/assinar")}>{CTA_PRO}</button></p>
         )}
         <p className="av-aviso">A Doo pode errar: confira os valores.</p>
       </div>

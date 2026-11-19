@@ -1542,7 +1542,7 @@ export const ARTIGOS: ArtigoAjuda[] = [
       {
         id: 'plano',
         titulo: 'Minha assinatura',
-        texto: ['Em **Menu**, toque em **Assinatura**. No plano grátis, ela mostra o que o PRO libera e o botão **Testar grátis por 7 dias**.', 'O teste pede o cartão na Hotmart, mas só cobra no **8º dia**. Cancelou antes, não paga nada. Depois, R$ 29,90 por mês, sem fidelidade.'],
+        texto: ['Em **Menu**, toque em **Assinatura**. No plano grátis, ela mostra o que o PRO libera e o botão para assinar, com a oferta do momento.', 'O pagamento é feito na Hotmart. Depois do período da oferta, R$ 29,90 por mês.'],
         imagens: [{ src: '/ajuda/assinatura.webp', alt: 'Plano PRO ativo com a próxima cobrança', marcas: [
           'A **próxima cobrança**.',
           'O que está **liberado**.',
