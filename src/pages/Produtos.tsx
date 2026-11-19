@@ -1209,6 +1209,9 @@ export default function Produtos() {
       tipo_produto: tipoProduto,
       // (17/11) pronta entrega não guarda antecedência: evita salvar os dois campos juntos (o cardápio mostrava "Encomenda")
       antecedencia: form.pronta_entrega === true ? null : form.antecedencia,
+      // (19/11) sempre grava o tipo: produto novo abria com "Sob encomenda" marcado, mas o campo ia vazio e o banco
+      // gravava o padrão dele (pronta entrega). Resultado: prazo salvo, selo "Pronta entrega" e o cardápio sem pedir o prazo.
+      pronta_entrega: form.pronta_entrega === true,
       updated_at: new Date().toISOString(),
     };
     let produtoId = form.id;
