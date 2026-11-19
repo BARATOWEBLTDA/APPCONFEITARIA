@@ -431,7 +431,8 @@ export default function PraFazer() {
     <section className="pf pf-trilha" aria-label="Seu próximo passo">
       <div className="pf-cab">
         <b className="pf-t">Seu próximo passo</b>
-        <span className="pf-prog">Vender mais · {feitos.length} de {core.length}</span>
+        {/* (19/11) sem o "X de Y": a trilha tem mais passos do que o número mostrava */}
+        <span className="pf-prog">Vender mais</span>
       </div>
       <div className="pf-barra" role="progressbar" aria-valuemin={0} aria-valuemax={core.length} aria-valuenow={feitos.length} aria-label={`${feitos.length} de ${core.length} passos feitos`}>
         <i style={{ width: `${Math.round((feitos.length / Math.max(core.length, 1)) * 100)}%` }} />
