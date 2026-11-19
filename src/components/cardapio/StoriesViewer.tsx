@@ -25,14 +25,27 @@ function VideoStory({ story, action, isPaused }: { story: Story; action: Acao; i
     action("pause", true); // a barrinha só anda quando o vídeo começa
     const url = urlVideoStory(story.video_id);
     let hls: Hls | null = null;
-    if (v.canPlayType("application/vnd.apple.mpegurl")) v.src = url;
-    else if (Hls.isSupported()) { hls = new Hls({ maxBufferLength: 10 }); hls.loadSource(url); hls.attachMedia(v); hls.on(Hls.Events.ERROR, (_e, d) => { if (d.fatal) action("next"); }); }
+    const tocar = () => { v.play().catch(() => { v.muted = true; v.play().catch(() => {}); }); }; // sem permissão para som: começa mudo
+    // (19/11) hls.js primeiro. O Chrome novo diz que toca HLS sozinho, mas trava carregando; o player próprio do
+    // navegador fica só para quem não tem hls.js (iPhone antigo, onde o Safari toca HLS de verdade).
+    if (Hls.isSupported()) {
+      hls = new Hls({ maxBufferLength: 10 });
+      let consertos = 0;
+      hls.on(Hls.Events.MANIFEST_PARSED, tocar);
+      hls.on(Hls.Events.ERROR, (_e, d) => {
+        console.warn("[stories] vídeo:", d.type, d.details, d.response?.code ?? "", d.fatal ? "(fatal)" : "");
+        if (!d.fatal) return;
+        // uma segunda chance antes de pular: recarrega (rede) ou reinicia o decodificador (mídia)
+        if (consertos++ < 1) { if (d.type === Hls.ErrorTypes.MEDIA_ERROR) hls?.recoverMediaError(); else hls?.startLoad(); return; }
+        action("next");
+      });
+      hls.loadSource(url); hls.attachMedia(v);
+    } else if (v.canPlayType("application/vnd.apple.mpegurl")) { v.src = url; tocar(); }
     else { action("next"); return; }
     const aoTocar = () => { setCarregado(true); action("play", true); };
-    const aoErro = () => action("next");
+    const aoErro = () => { if (hls) return; console.warn("[stories] vídeo: erro do player", v.error?.code, v.error?.message); action("next"); };
     v.addEventListener("playing", aoTocar);
     v.addEventListener("error", aoErro);
-    v.play().catch(() => { v.muted = true; v.play().catch(() => {}); }); // sem permissão para som: começa mudo
     return () => { v.removeEventListener("playing", aoTocar); v.removeEventListener("error", aoErro); hls?.destroy(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [story.video_id]);
