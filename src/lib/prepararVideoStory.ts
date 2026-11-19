@@ -22,8 +22,10 @@ export async function prepararVideoStory(arq: File, aoProgresso: (pct: number) =
       ...(menor > LADO_MENOR_MAX ? (w <= h ? { width: LADO_MENOR_MAX } : { height: LADO_MENOR_MAX }) : {}),
       codec: "avc", bitrate: bitrateDe(final), frameRate: 30, forceTranscode: true,
     },
-    audio: { codec: "aac", bitrate: 128_000 },
+    // o som não é mexido: a trilha original (AAC, em todo celular) é copiada como está
   });
+  // se o aparelho não conseguir manter o som, não converte: quem chamou sobe o vídeo original
+  if (conversao.discardedTracks.some(d => d.track.type === "audio")) throw new Error("sem_som");
   if (!conversao.isValid || !conversao.utilizedTracks.some(t => t.type === "video")) throw new Error("nao_converte");
   conversao.onProgress = p => aoProgresso(Math.min(99, Math.round(p * 100)));
   await conversao.execute();
