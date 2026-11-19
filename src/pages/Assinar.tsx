@@ -172,7 +172,6 @@ export default function Assinar() {
           <h1 className="pro10-t">Libere tudo <br className="pro10-br" />do Doonly</h1>
           <p className="pro10-s">O Doonly grátis já é bom.<br />O PRO é muito melhor.</p>
         </section>
-        <div className="pro10-some" aria-hidden="true" />
 
         <div className="pro10-corpo">
           <section className="pro10-tab" aria-label="Grátis e PRO lado a lado">
