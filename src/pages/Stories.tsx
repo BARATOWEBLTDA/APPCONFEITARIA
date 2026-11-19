@@ -205,6 +205,8 @@ export default function Stories() {
   const nomeProd = (id: string | null) => (id ? produtos.find(p => p.id === id)?.nome : null) || null;
   // o visualizador mostra do mais antigo para o mais novo, como no cardápio
   const prontos = lista.filter(s => s.pronto).slice().reverse();
+  const cheio = lista.length + (envio ? 1 : 0) >= STORY_MAX_ATIVOS;
+  const proximoASair = prontos.map(s => s.expira_em || "").filter(Boolean).sort()[0] || "";
 
   return (
     <>
@@ -223,7 +225,12 @@ export default function Stories() {
             )}
             {(lista.length > 0 || envio) && (
               <>
-                <div className="sto-topo"><span>No ar agora</span><small>{lista.length} de {STORY_MAX_ATIVOS}</small></div>
+                <div className="sto-topo">
+                  <span>No ar agora</span><small>{lista.length} de {STORY_MAX_ATIVOS}</small>
+                  {/* computador: o botão de postar fica no canto, do tamanho do texto (no celular a vaga vazia já é o botão) */}
+                  <span className="sto-topo-bt"><Botao icone={<Plus size={18} weight="bold" />} disabled={cheio} onClick={() => setPostar(true)}>Postar story</Botao></span>
+                </div>
+                <div className="sto-cols">
                 <div className="sto-grade">
                   {lista.map((s, i) => {
                     const pct = (s as Story & { progresso?: number }).progresso || 0;
@@ -270,6 +277,14 @@ export default function Stories() {
                     </div>
                   ))}
                 </div>
+                {/* computador: resumo na outra coluna, no topo */}
+                <aside className="sto-resumo" aria-label="Resumo dos stories">
+                  <b>Resumo</b>
+                  <p><span>No ar</span><em>{lista.length} de {STORY_MAX_ATIVOS}</em></p>
+                  <p><span>Visualizações</span><em>{lista.reduce((n, x) => n + (x.views || 0), 0)}</em></p>
+                  {proximoASair && <p><span>Próximo a sair</span><em>{saiCurto(proximoASair).replace(/^Sai /, "")}</em></p>}
+                </aside>
+                </div>
               </>
             )}
             {!carregando && lista.length === 0 && !envio && (
@@ -303,6 +318,20 @@ export default function Stories() {
         .sto-topo { display: flex; align-items: baseline; justify-content: space-between; margin: 4px 2px 10px; }
         .sto-topo span { font-size: 16px; font-weight: 500; color: var(--ui-texto); }
         .sto-topo small { font-size: 14px; color: var(--ui-texto-2); }
+        .sto-topo-bt, .sto-resumo { display: none; }
+        /* (19/11) computador: capas no tamanho de celular (as 3 vagas na tela), botão no canto e resumo na outra coluna */
+        @media (min-width: 1100px) {
+          .sto { max-width: 980px; }
+          .sto-topo { align-items: center; justify-content: flex-start; gap: 10px; margin-bottom: 16px; }
+          .sto-topo-bt { display: block; margin-left: auto; }
+          .sto-cols { display: grid; grid-template-columns: auto minmax(0, 300px); gap: 40px; justify-content: space-between; align-items: start; }
+          .sto-cols .sto-grade { grid-template-columns: repeat(3, 180px); gap: 16px; }
+          .sto-resumo { display: block; padding: 20px; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); }
+          .sto-resumo b { display: block; margin-bottom: 8px; font-size: 16px; font-weight: 500; color: var(--ui-texto); }
+          .sto-resumo p { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding: 10px 0; border-top: 1px solid var(--ui-linha); font-size: 14px; color: var(--ui-texto-2); }
+          .sto-resumo p:first-of-type { border-top: 0; }
+          .sto-resumo em { font-style: normal; color: var(--ui-texto); white-space: nowrap; }
+        }
         .sto-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
         .sto-vaga { position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
         .sto-vaga > small { font-size: 12px; text-align: center; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
