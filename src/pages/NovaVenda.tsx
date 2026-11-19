@@ -833,12 +833,15 @@ export default function NovaVenda() {
               <p className="nv3-ok-tot"><span>Total</span><b>{rs(pc.total)}</b></p>
             </div>
             <div className="nv3-ok-bts">
-              <Botao cheio onClick={() => navigate(`/pedidos/${pc.id}/editar`)}>Abrir o pedido</Botao>
+              {/* (19/11) Nova venda e Abrir o pedido na mesma linha */}
+              <div className="nv3-ok-par">
+                <Botao variante="secundario" icone={<Plus size={20} weight="bold" />} onClick={resetVenda}>Nova venda</Botao>
+                <Botao onClick={() => navigate(`/pedidos/${pc.id}/editar`)}>Abrir o pedido</Botao>
+              </div>
               {digitosTelefone(pc.clienteTelefone || '').length >= 10 && (
                 <Botao cheio variante="secundario" icone={<IconeWhatsApp size={20} />}
                   onClick={() => { const l = linkWhatsApp(pc.clienteTelefone, montarMensagem('sobre_pedido', dadosDoPedido(pc.bruto || {}, toTitleCase(pc.clienteNome || '').split(' ')[0]))); if (l) window.open(l, '_blank', 'noopener') }}>Enviar no WhatsApp</Botao>
               )}
-              <Botao cheio variante="secundario" icone={<Plus size={20} weight="bold" />} onClick={resetVenda}>Nova venda</Botao>
               <Botao variante="link" onClick={exportarPdf}>Baixar PDF</Botao>
             </div>
           </section>
