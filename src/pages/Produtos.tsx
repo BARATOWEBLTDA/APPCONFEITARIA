@@ -15,6 +15,7 @@ import { categoriaSugerida, tipoPeloNome, ehBoloNoPote, type TipoProduto as Tipo
 import { avisarPassos, lerPassos, passosCompletos, useLojaPronta } from "@/lib/primeirosPassos";
 import RevisaoProduto, { ResumoProduto } from "@/components/produto/RevisaoProduto";
 import ResumoEdicao from "@/components/produto/ResumoEdicao";
+import ArrumarCategorias, { type ProdutoSemCat } from "@/components/produto/ArrumarCategorias";
 import EscolhasProduto, { escolhasAtivas, faltaDaEscolha, pedirRendimento, JanelaRendimentoSimples } from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, type KitQtdConfig, type KitFechado } from "@/lib/kitQuantidade";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
@@ -463,6 +464,7 @@ export default function Produtos() {
   const [catsFiltro, setCatsFiltro] = useState<string[] | null>(null); // (24/10) null = todas as categorias
   const [filtroProdAberto, setFiltroProdAberto] = useState(false);
   const [filtroOrfaos, setFiltroOrfaos] = useState(false);
+  const [arrumar, setArrumar] = useState<ProdutoSemCat[] | null>(null); // (19/11) janela "Arrumar" dos produtos sem categoria (Doo ou um por um)
   // (27/10) Destaques do cardápio: até 6 (o banco também confere)
   const [soDestaques, setSoDestaques] = useState(false);
   const [novaCategoria, setNovaCategoria] = useState("");
@@ -1469,6 +1471,11 @@ export default function Produtos() {
       />
     )}
     <div className="prod-root">
+      {/* (19/11) fora do aviso: a janela continua aberta mesmo quando o último produto ganha categoria */}
+      {arrumar && userId && <ArrumarCategorias produtos={arrumar} categorias={categorias} userId={userId}
+        onProduto={(id, categoria) => setProdutos(l => l.map(p => String(p.id) === id ? { ...p, categoria } : p))}
+        onCategoria={nome => setCategorias(prev => (prev.includes(nome) ? prev : [...prev, nome].sort()))}
+        onFechar={() => setArrumar(null)} />}
 
 
       {/* ── Tabs — só quando tem produtos ── */}
@@ -1530,7 +1537,7 @@ export default function Produtos() {
             {filtroOrfaos
               ? <p>Mostrando só os <b>{orfaos.length} sem categoria.</b> Abra cada um e escolha uma categoria.</p>
               : <p><b>{orfaos.length} produto{orfaos.length !== 1 ? "s" : ""} sem categoria.</b> No cardápio {orfaos.length !== 1 ? "eles aparecem" : "ele aparece"} no fim da lista, em Outros.</p>}
-            <Botao variante="link" onClick={() => setFiltroOrfaos(v => !v)}>{filtroOrfaos ? "Ver todos" : "Arrumar"}</Botao>
+            <Botao variante="link" onClick={() => { if (filtroOrfaos) setFiltroOrfaos(false); else setArrumar(orfaos.map(p => ({ id: String(p.id), nome: p.nome, descricao: p.descricao, imagem_url: p.imagem_url }))); }}>{filtroOrfaos ? "Ver todos" : "Arrumar"}</Botao>
           </div>
         );
       })()}
