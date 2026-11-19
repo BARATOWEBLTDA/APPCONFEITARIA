@@ -381,6 +381,17 @@ export default function PraFazer() {
   const proximos = core.filter(t => t.k !== kPasso);
   return (
     <div className="pf-grupo" ref={raiz}>
+    {/* (19/11) a janela do "Como funciona" fica fora da lista: antes, sem nada no "Pra fazer", o (i) do próximo passo não abria */}
+      {cel && (() => {
+        const x = [...lista, ...(passo ? [passo] : [])].find(i => i.chave === como);
+        const c = x?.comoFunciona;
+        return (
+          <Janela aberta={!!(x && c)} aoFechar={() => setComo(null)} titulo={c?.nome || ""} tipo="conteudo" umaAcao
+            acoes={x && c ? <Botao cheio onClick={() => { setComo(null); ir(x); }}>{c.acao || x.acao}</Botao> : undefined}>
+            {c && <div className="pf-cf-folha"><ConteudoComo c={c} rotulo={c.nome || ""} className="pf-cf" /></div>}
+          </Janela>
+        );
+      })()}
     {lista.length > 0 && (
     <section className="pf" aria-label="Pra fazer">
       <div className="pf-cab">
@@ -410,16 +421,6 @@ export default function PraFazer() {
           </li>
         ))}
       </ul>
-      {cel && (() => {
-        const x = [...lista, ...(passo ? [passo] : [])].find(i => i.chave === como);
-        const c = x?.comoFunciona;
-        return (
-          <Janela aberta={!!(x && c)} aoFechar={() => setComo(null)} titulo={c?.nome || ""} tipo="conteudo" umaAcao
-            acoes={x && c ? <Botao cheio onClick={() => { setComo(null); ir(x); }}>{c.acao || x.acao}</Botao> : undefined}>
-            {c && <div className="pf-cf-folha"><ConteudoComo c={c} rotulo={c.nome || ""} className="pf-cf" /></div>}
-          </Janela>
-        );
-      })()}
       {resto > 0 && (
         <button type="button" className="pf-ver" onClick={() => setAberto(a => !a)} aria-expanded={aberto}>
           {aberto ? "Ver menos" : `Ver mais ${resto}`}
