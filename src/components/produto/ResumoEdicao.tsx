@@ -1,6 +1,6 @@
 import { rotuloAntecedencia } from "@/lib/entregaProduto";
 import type { ReactNode } from "react";
-import { Cake, CurrencyCircleDollar, Image as ImageIc, ListChecks, PencilSimple, Storefront } from "@phosphor-icons/react";
+import { Cake, CurrencyCircleDollar, Image as ImageIc, ListChecks, PencilSimple, Storefront, UsersThree } from "@phosphor-icons/react";
 import { precoCardapioComPromocao, tamanhosEsgotados } from "@/lib/precoCardapio";
 import { textoBRL } from "@/lib/moeda";
 import { escolhasAtivas, type FormEscolhas } from "@/components/produto/EscolhasProduto";
@@ -47,6 +47,9 @@ export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: 
   const textoInfo = !form.categoria ? "Falta escolher a categoria"
     : !String(form.descricao || "").trim() ? "Falta a descrição" : `Em ${form.categoria}, com descrição`;
 
+  const rendeTexto = String((form as { rendimento_qtd?: string | null }).rendimento_qtd || "").trim();
+  const rendimento = gt?.ativo && gt?.opcoes?.length ? "Definido em cada tamanho" : rendeTexto || "Defina pelos tamanhos";
+
   const linha = (parte: Parte, icone: ReactNode, nome: string, apoio: string, falta = false) => (
     <li className="red-it">
       <button type="button" className="red-bt" onClick={() => onEditar(parte)}>
@@ -73,6 +76,8 @@ export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: 
       <ul className="red-lista">
         {linha("info", <PencilSimple size={18} weight="bold" />, "Nome e descrição", textoInfo, !form.categoria)}
         {linha("opcoes", <ListChecks size={18} weight="bold" />, "Escolhas", tamanhosEsgotados(form) ? "Tudo esgotado no momento" : escolhas, tamanhosEsgotados(form))}
+        {/* (19/11) rendimento: abre as Escolhas, onde cada tamanho tem o seu "serve até…" (antes era um campo solto em Nome e descrição) */}
+        {linha("opcoes", <UsersThree size={18} weight="bold" />, "Rendimento", rendimento)}
         {linha("fotos", <ImageIc size={18} weight="bold" />, "Fotos", textoFotos, !fotos.length)}
         {linha("preco", <CurrencyCircleDollar size={18} weight="bold" />, "Preço e promoção", preco, !!faltaPreco)}
         {linha("entrega", <Storefront size={18} weight="bold" />, "Cardápio e entrega", entrega, semEntrega)}

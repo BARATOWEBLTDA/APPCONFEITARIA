@@ -1849,16 +1849,7 @@ export default function Produtos() {
                       </button>
                   </div>
                 </div>
-                {/* (6.103) rendimento: o cliente vê no cardápio. Com tamanhos, cada tamanho já tem o seu ("serve até…") */}
-                {/* (6.154) no cadastro novo o rendimento fica na tela dos tamanhos (com o balão); aqui só na edição de produto sem tamanhos */}
-                {!!form.id && !(form as Produto & { grupo_tamanhos?: { ativo?: boolean } }).grupo_tamanhos?.ativo && (
-                  <div className="prod-field">
-                    <label className="prod-field-label-novo" htmlFor="prod-rende-input">Rendimento <small className="prod-rende-dica">o cliente vê no cardápio</small></label>
-                    <input id="prod-rende-input" type="text" maxLength={60} placeholder="Ex.: serve 10 pessoas, 20 fatias"
-                      value={String((form as Produto & { rendimento_qtd?: string | null }).rendimento_qtd || "")}
-                      onChange={e => setForm(f => ({ ...f, rendimento_qtd: e.target.value } as Produto))} />
-                  </div>
-                )}
+                {/* (19/11) o rendimento saiu daqui (era uma linha solta): fica na tela dos tamanhos, aberta pela linha "Rendimento" do resumo */}
                 {/* 2. Categoria */}
                 <div className="prod-field" id="prod-categoria-campo">
                   <label className="prod-field-label-novo">Categoria <ReqTag /></label>
