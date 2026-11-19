@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import React, { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { Crown, Lock, CaretLeft, CaretRight, Check, X, PlayCircle, FileText, Ticket, Stack, ChartLineUp, ChatCircleText, Megaphone, AddressBook, Cake, Camera, SealCheck, Images, MicrosoftExcelLogo, Printer, FilePdf, HandHeart, type Icon } from "@phosphor-icons/react";
 import { BENEFICIOS, CHECKOUT_HOTMART, CTA_PRO, CTA_PRO_CURTO, OFERTA_PRO, PRECO_PRO, SELO_OFERTA } from "@/lib/beneficiosPro";
@@ -59,9 +59,9 @@ const SO_PRO: [Icon, string, string][] = [
 ];
 /** (19/11) computador: os recursos que giram em volta da logo (índices de SO_PRO) */
 const ORBITA = [0, 2, 1, 4, 6, 5, 3, 10];
-const RAIO = 128;
+const LOGO_PADRAO = "/pro-logo-padrao.webp";
 /** A roda anda um recurso, para, destaca o que ficou à esquerda da logo e mostra para que serve */
-function Orbita({ logo, iniciais }: { logo: string; iniciais: string }) {
+function Orbita({ logo, baixo = false }: { logo: string; baixo?: boolean }) {
   const [passo, setPasso] = useState(0);
   const [aceso, setAceso] = useState(false);
   const parado = useRef(false);
@@ -81,7 +81,7 @@ function Orbita({ logo, iniciais }: { logo: string; iniciais: string }) {
     })();
     return () => { vivo = false; esperas.forEach(clearTimeout); };
   }, []);
-  const giro = 270 - 45 * passo;
+  const giro = (baixo ? 180 : 270) - 45 * passo; // celular: o destaque para embaixo da logo; computador: à esquerda
   const atual = ((passo % 8) + 8) % 8;
   const [, nome, frase] = SO_PRO[ORBITA[atual]];
   return (
@@ -90,14 +90,21 @@ function Orbita({ logo, iniciais }: { logo: string; iniciais: string }) {
       <i className="pro12-anel" aria-hidden="true" />
       <div className="pro12-roda" style={{ transform: `rotate(${giro}deg)` }} aria-hidden="true">
         {ORBITA.map((n, i) => { const Ic = SO_PRO[n][0]; return (
-          <span className="pro12-ch" key={n} style={{ transform: `rotate(${i * 45}deg) translateY(-${RAIO}px)` }}>
+          <span className="pro12-ch" key={n} style={{ transform: `rotate(${i * 45}deg) translateY(calc(var(--raio) * -1))` }}>
             <span className={`pro12-chi${i === atual ? " atual" : ""}`} style={{ transform: `rotate(${-(i * 45 + giro)}deg)` }}><Ic size={22} weight="bold" /></span>
           </span>
         ); })}
       </div>
-      <div className="pro12-balao" aria-live="polite"><b>{nome}</b><small>{frase}</small></div>
-      <div className="pro12-logo">{logo ? <img src={logo} alt="" /> : <span>{iniciais}</span>}</div>
-      <img className="pro12-coroa" src="/pro-coroa.webp" alt="" width={96} height={48} />
+      {baixo ? <i className="pro13-fio" aria-hidden="true" /> : <div className="pro12-balao" aria-live="polite"><b>{nome}</b><small>{frase}</small></div>}
+      {/* sem logo: entra o mascote do Doonly, que já vem de coroa (por isso a coroa de cima some) */}
+      <div className="pro12-logo"><img src={logo || LOGO_PADRAO} alt="" /></div>
+      {logo && <img className="pro12-coroa" src="/pro-coroa.webp" alt="" width={96} height={48} />}
+      {baixo && (
+        <div className="pro13-tx">
+          <div aria-live="polite"><b>{nome}</b><small>{frase}</small></div>
+          <p aria-hidden="true">{ORBITA.map((n, i) => <i key={n} className={i === atual ? "on" : ""} />)}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -179,8 +186,6 @@ export default function Assinar() {
   const podeAssinar = !noAppDaLoja || lojaPagamentoPronto;
   const precoDepois = lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO;
   const logo = fotoDaLoja(profile);
-  const nomeLoja = String(profile?.nome_loja || "").trim();
-  const iniciais = nomeLoja.split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join("").toUpperCase() || "D";
   const assinarNaHotmart = () => {
     void eventoDoApp("InitiateCheckout", { value: VALOR_PRO, content_name: "Doonly PRO" }); // (6.21) pixels do app
     const u = new URL(CHECKOUT_HOTMART);
@@ -274,7 +279,7 @@ export default function Assinar() {
               </div>
             ) : <p className="pro12-s">A assinatura do PRO não está disponível pelo app. Se você já é PRO, tudo fica liberado aqui automaticamente.</p>}
           </div>
-          <Orbita logo={logo} iniciais={iniciais} />
+          <Orbita logo={logo} />
         </section>
         <div className="pro12-baixo">
           {secRecs}
@@ -297,27 +302,30 @@ export default function Assinar() {
       ) : (
       <div className="pro10">
         {/* (19/11) tela nova do PRO: topo chocolate de ponta a ponta (cobre o cabeçalho no celular), comparação Grátis × PRO e o cartão do plano */}
-        <section className="pro10-topo">
+        <section className="pro10-topo pro13-topo">
+          {brilhos.map((b, i) => <i className="pro12-sp" key={i} style={b} aria-hidden="true" />)}
           {!computador && (
             <div className="pro10-barra">
               <button type="button" className="pro10-voltar" aria-label="Voltar" onClick={() => voltarOuIr(navigate)}><CaretLeft size={22} weight="bold" /></button>
               <span>Doonly PRO</span>
+              {OFERTA_PRO === "real1" && <em className="pro12-tag pro13-tag">Black Doonly</em>}
             </div>
           )}
-          <div className="pro11-logo">
-            <img className="pro11-coroa" src="/pro-coroa.webp" alt="" width={78} height={39} />
-            {logo ? <img className="pro11-foto" src={logo} alt="" /> : <span>{iniciais}</span>}
-          </div>
-          <h1 className="pro10-t">Libere tudo <br className="pro10-br" />do Doonly</h1>
-          <p className="pro10-s">O Doonly grátis já é bom.<br />O PRO é muito melhor.</p>
+          {/* (19/11) celular: os recursos giram em volta da logo; o que para embaixo fica em destaque, com o nome e para que serve */}
+          <div className="pro13-palco"><Orbita logo={logo} baixo /></div>
+          <h1 className="pro10-t pro13-t">Libere tudo do Doonly</h1>
         </section>
 
         <div className="pro10-corpo pro11-corpo">
           {/* (19/11) o cartão preto e dourado agora é a oferta: só a frase e o selo (o cartão de sócia e o bloco preto saíram) */}
-          <section className="pro11-socio" ref={cartao}>
-            <b>{noAppDaLoja && !lojaPagamentoPronto ? "Doonly PRO" : SELO_OFERTA}</b>
-            <em>{OFERTA_PRO === "real1" ? "Black Doonly" : "PRO"}</em>
-          </section>
+          {podeAssinar ? (
+            <button type="button" className="pro11-socio pro13-of" ref={cartao as React.RefObject<HTMLButtonElement>} disabled={comprando} onClick={virar}>
+              <b>{SELO_OFERTA}</b>
+              <em>Virar PRO</em>
+            </button>
+          ) : (
+            <section className="pro11-socio" ref={cartao}><b>Doonly PRO</b><em>PRO</em></section>
+          )}
           {(!noAppDaLoja || lojaPagamentoPronto) && (
             <div className="pro11-oferta-pc">
               <Botao carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={virar}>{CTA_PRO}</Botao>

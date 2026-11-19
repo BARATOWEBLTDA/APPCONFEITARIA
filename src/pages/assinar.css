@@ -291,7 +291,7 @@ button.pro9-l2-i { cursor: pointer; }
 .pro12-bt::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, .65) 50%, transparent 60%); background-size: 260% 100%; animation: pro12-br 5s ease-in-out infinite; }
 @keyframes pro12-br { 0%, 60% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
 /* a roda dos recursos */
-.pro12-orb { position: absolute; right: calc(var(--p12) + 250px); top: 172px; width: 0; height: 0; }
+.pro12-orb { --raio: 128px; position: absolute; right: calc(var(--p12) + 250px); top: 172px; width: 0; height: 0; }
 .pro12-luz { position: absolute; left: -190px; top: -190px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(245, 199, 107, .34), rgba(245, 199, 107, .08) 45%, transparent 68%); animation: pro12-luz 4s ease-in-out infinite; }
 @keyframes pro12-luz { 0%, 100% { transform: scale(.9); opacity: .7; } 50% { transform: scale(1.08); opacity: 1; } }
 .pro12-anel { position: absolute; left: -128px; top: -128px; width: 256px; height: 256px; border-radius: 50%; border: 1.5px dashed rgba(245, 199, 107, .32); }
@@ -333,3 +333,35 @@ button.pro9-l2-i { cursor: pointer; }
 .pro12-cta-bt:hover { filter: brightness(1.25); }
 .pro12-restaurar { margin: 0 auto; color: var(--ui-texto-2); }
 @media (prefers-reduced-motion: reduce) { .pro12-sp, .pro12-tag, .pro12-bt::after, .pro12-luz, .pro12-coroa { animation: none; } .pro12-roda, .pro12-chi, .pro12-balao { transition: none; } }
+/* ══ (19/11) PRO no celular: a roda dos recursos em volta da logo, com o destaque embaixo e o texto trocando ══ */
+.pro13-topo { position: relative; overflow: hidden; padding-bottom: 64px; background: radial-gradient(120% 70% at 50% 36%, #3A2218 0%, var(--chocolate-escuro, #22130E) 62%); }
+.pro13-topo > * { position: relative; }
+.pro13-topo > .pro12-sp { position: absolute; }
+.pro13-tag { margin-left: auto; font-style: normal; font-size: 12px; padding: 4px 10px; }
+.pro13-palco { height: 392px; }
+.pro13-palco .pro12-orb { --raio: 114px; right: auto; left: 50%; top: 152px; }
+.pro13-palco .pro12-anel { left: -114px; top: -114px; width: 228px; height: 228px; }
+.pro13-palco .pro12-luz { left: -170px; top: -170px; width: 340px; height: 340px; }
+.pro13-palco .pro12-ch { left: -21px; top: -21px; width: 42px; height: 42px; }
+.pro13-palco .pro12-chi { width: 42px; height: 42px; border-radius: 12px; }
+.pro13-palco .pro12-chi svg { width: 20px; height: 20px; }
+.pro13-palco .pro12-logo { left: -46px; top: -46px; width: 92px; height: 92px; }
+/* a coroa menor e mais baixa: sobra espaço entre ela e o ícone que passa em cima */
+.pro13-palco .pro12-coroa { left: -36px; top: -76px; width: 72px; }
+.pro13-fio { position: absolute; left: -1px; top: 142px; width: 2px; height: 20px; background: linear-gradient(#F5C76B, transparent); opacity: 0; transition: opacity .45s ease; }
+.pro12-orb.on .pro13-fio { opacity: 1; }
+.pro13-tx { position: absolute; left: -50vw; width: 100vw; top: 170px; text-align: center; white-space: nowrap; }
+.pro13-tx > div { opacity: 0; transform: translateY(-8px); transition: opacity .45s ease, transform .45s ease; }
+.pro12-orb.on .pro13-tx > div { opacity: 1; transform: none; }
+.pro13-tx b { display: block; font-size: 18px; font-weight: 500; line-height: 1.35; color: #fff; }
+.pro13-tx small { display: block; font-size: 14px; line-height: 1.4; color: #F5C76B; }
+.pro13-tx p { display: flex; justify-content: center; gap: 6px; margin: 12px 0 0; }
+.pro13-tx p i { width: 6px; height: 6px; border-radius: 3px; background: rgba(245, 199, 107, .3); transition: width .45s ease, background .45s ease; }
+.pro13-tx p i.on { width: 18px; background: #F5C76B; }
+.pro10 .pro13-t { margin: 0; font-size: clamp(24px, 7.8vw, 30px); line-height: 1; white-space: nowrap; }
+.pro13-of { width: 100%; border: 0; font: inherit; text-align: left; cursor: pointer; }
+.pro13-of:active { filter: brightness(1.15); }
+@media (max-width: 345px) { .pro13-palco .pro12-orb { --raio: 104px; } .pro13-palco .pro12-anel { left: -104px; top: -104px; width: 208px; height: 208px; } .pro13-fio { top: 132px; } .pro13-tx { top: 160px; } .pro13-palco { height: 380px; } .pro13-tx b { font-size: 16px; } .pro13-tx small { font-size: 13px; } }
+/* 901 a 999 px: o topo é um bloco arredondado dentro da página (o texto usa a largura do bloco, não a da tela) */
+@media (min-width: 901px) { .pro13-tx { left: -280px; width: 560px; } }
+@media (prefers-reduced-motion: reduce) { .pro13-tx > div, .pro13-fio { transition: none; } }
