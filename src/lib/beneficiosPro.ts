@@ -50,12 +50,12 @@ export const CHECKOUT_HOTMART = BLACK
 /** texto do botão do PRO em todo o app */
 export const CTA_PRO = noAppDaLoja && !lojaPagamentoPronto ? "Conhecer o PRO" : BLACK ? "Primeiro mês por R$ 1" : `Testar grátis por ${DIAS_TESTE} dias`;
 /** botão curto (barra fixa da tela do PRO no celular) */
-export const CTA_PRO_CURTO = BLACK ? "Assinar por R$ 1" : "Testar grátis";
+export const CTA_PRO_CURTO = BLACK ? "Virar PRO" : "Testar grátis";
 /** etiqueta pequena do topo (Início e cabeçalho): na Black ela é preta, com a classe abaixo */
 export const SELO_TESTE = BLACK ? "Black Friday" : `${DIAS_TESTE} dias grátis`;
 export const CLASSE_SELO = BLACK ? " selo-black" : "";
 /** a oferta escrita na tela do PRO */
-export const SELO_OFERTA = BLACK ? "Black Friday: 1º mês por R$ 1" : `${DIAS_TESTE} dias grátis`;
+export const SELO_OFERTA = BLACK ? "1º mês apenas R$ 1,00" : `${DIAS_TESTE} dias grátis`;
 /** frase para avisos (Doo, limites) */
 export const CHAMADA_PRO = BLACK ? "Na Black Friday o primeiro mês do PRO sai por R$ 1." : `Teste o PRO grátis por ${DIAS_TESTE} dias.`;
 export const PRECO_PRO = "R$ 29,90";

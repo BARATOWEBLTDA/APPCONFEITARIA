@@ -197,7 +197,7 @@ export default function Assinar() {
       {!isPro && (!noAppDaLoja || lojaPagamentoPronto) && (
         <div className="pro9-fixo">
           <span><small>Depois, {PRECO_CHEIO}/mês</small><b>{SELO_OFERTA}</b></span>
-          <Botao carregando={comprando} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO_CURTO}</Botao>
+          <Botao className="pro9-fixo-bt" carregando={comprando} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO_CURTO}</Botao>
         </div>
       )}
     </>

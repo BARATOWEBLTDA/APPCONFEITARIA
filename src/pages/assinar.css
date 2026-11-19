@@ -27,8 +27,12 @@
 .pro9-fixo { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--ui-borda); background: var(--ui-branco); box-shadow: 0 -4px 16px rgba(31, 7, 17, .08); }
 .pro9-fixo > span { flex: 1; min-width: 0; }
 .pro9-fixo small { display: block; font-size: 13px; color: var(--ui-texto-2); }
-.pro9-fixo b { display: block; font-size: 20px; font-weight: 600; }
-.pro9-fixo .ui-bt { flex: none; min-width: 170px; }
+.pro9-fixo b { display: block; font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pro9-fixo small { white-space: nowrap; }
+/* (19/11) botão preto em degradê, só do tamanho do texto: sobra espaço para a oferta caber numa linha */
+.pro9-fixo .ui-bt { flex: none; min-width: 118px; }
+.pro9-fixo .ui-bt.pro9-fixo-bt { background: linear-gradient(135deg, #3B3B3F 0%, #111 55%, #000 100%); border-color: #000; color: #fff; box-shadow: none; }
+.pro9-fixo .ui-bt.pro9-fixo-bt:active { background: #000; }
 @media (min-width: 1000px) {
   .pro9 { padding-bottom: 40px; }
   .pro9-grade { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
@@ -115,7 +119,7 @@ button.pro9-l2-i { cursor: pointer; }
 .pro10-voltar:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 2px; }
 .pro10-coroa { display: block; width: 104px; height: auto; margin: 14px auto 0; }
 .pro10-t {
-  margin: 8px 0 0; font-family: "Baloo 2", var(--font-base); font-weight: 800; font-size: clamp(38px, 12.5vw, 52px); line-height: 1.02; letter-spacing: -.01em;
+  margin: 8px 0 0; font-family: "Baloo 2", var(--font-base); font-weight: 800; font-size: clamp(30px, 9.5vw, 40px); line-height: .92; letter-spacing: -.01em;
   background: linear-gradient(90deg, #F5C76B, #FF8FB8, #FFE3A6, #F5C76B); background-size: 200% 100%;
   -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
   animation: pro10-anda 4s linear infinite;
@@ -164,7 +168,7 @@ button.pro9-l2-i { cursor: pointer; }
   .pro10 { max-width: 1180px; margin: 0 auto; padding: 24px 32px 48px; }
   .pro10-topo { width: auto; margin: 0; padding: 28px 24px 32px; border-radius: var(--ui-raio-cartao); }
   .pro10-br { display: none; }
-  .pro10-t { font-size: 48px; }
+  .pro10-t { font-size: 40px; }
   .pro10-corpo { margin-top: 16px; }
 }
 
