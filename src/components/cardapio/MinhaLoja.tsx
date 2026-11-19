@@ -92,8 +92,10 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
   );
   const blocoPro = (
     <section className={`dl-emb${pro ? "" : " ml-suave"}`} aria-label={pro ? "Vender mais" : "Venda mais com o PRO"}>
-      <h2 className="dl-emb-t ml-pro-t">{!pro && <Crown size={18} weight="fill" aria-hidden="true" />}<span>{pro ? "Vender mais" : "Venda mais com o PRO"}</span></h2>
+      {/* PRO: título fora do cartão, como nos outros blocos. Grátis: o título com a coroa vai dentro do cartão, como cabeçalho da vitrine */}
+      {pro && <h2 className="dl-emb-t">Vender mais</h2>}
       <div className="dl-lista-c">
+        {!pro && <h2 className="ml-cab"><Crown size={18} weight="fill" aria-hidden="true" /><span>Venda mais com o PRO</span></h2>}
         {pro ? (<>
           {linha(PlayCircle, "Stories", resumoStories, "/stories")}
           {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos")}
@@ -109,13 +111,14 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
         </>)}
       </div>
       <style>{`
-        .ml-pro-t { display: flex; align-items: center; gap: 6px; } .ml-pro-t svg { flex: none; color: #E0A93B; }
+        .ml-cab { display: flex; align-items: center; gap: 6px; margin: 0; padding: 14px 14px 12px; border-bottom: 1px solid var(--ui-linha); font-size: 16px; font-weight: 600; line-height: 1.3; }
+        .ml-cab svg { flex: none; color: #E0A93B; }
         .ml-coroa { color: #E0A93B; opacity: .85; }
         .ml-suave .dl-li-tx b { color: #8A7E84; font-weight: 500; } .ml-suave .dl-li-tx small { color: #A2979C; } .ml-suave .dl-li-ic { opacity: .4; }
         /* título do PRO: degradê do dourado da coroa ao rosa, andando devagar (o único ponto vivo do bloco) */
-        .ml-suave .ml-pro-t span { background: linear-gradient(90deg, #E0A93B, #CC2E66, #E85A8C, #E0A93B); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ml-corre 6s linear infinite; }
+        .ml-cab span { background: linear-gradient(90deg, #E0A93B, #CC2E66, #E85A8C, #E0A93B); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ml-corre 6s linear infinite; }
         @keyframes ml-corre { to { background-position: 200% 0; } }
-        @media (prefers-reduced-motion: reduce) { .ml-suave .ml-pro-t span { animation: none; } }
+        @media (prefers-reduced-motion: reduce) { .ml-cab span { animation: none; } }
       `}</style>
     </section>
   );
