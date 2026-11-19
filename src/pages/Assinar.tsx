@@ -313,14 +313,15 @@ export default function Assinar() {
           )}
           {/* (19/11) celular: os recursos giram em volta da logo; o que para embaixo fica em destaque, com o nome e para que serve */}
           <div className="pro13-palco"><Orbita logo={logo} baixo /></div>
-          <h1 className="pro10-t pro13-t">Libere tudo do Doonly</h1>
+          {/* (19/11) celular: o título foi para dentro da caixa preta (a oferta já está na barra fixa); sem assinatura pelo app, ele continua aqui */}
+          {!podeAssinar && <h1 className="pro10-t pro13-t">Libere tudo do Doonly</h1>}
         </section>
 
         <div className="pro10-corpo pro11-corpo">
           {/* (19/11) o cartão preto e dourado agora é a oferta: só a frase e o selo (o cartão de sócia e o bloco preto saíram) */}
           {podeAssinar ? (
             <button type="button" className="pro11-socio pro13-of" ref={cartao as React.RefObject<HTMLButtonElement>} disabled={comprando} onClick={virar}>
-              <b>{SELO_OFERTA}</b>
+              <h1 className="pro10-t pro13-t pro13-t2">Libere tudo do Doonly</h1>
               <em>Virar PRO</em>
             </button>
           ) : (

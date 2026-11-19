@@ -365,3 +365,7 @@ button.pro9-l2-i { cursor: pointer; }
 /* 901 a 999 px: o topo é um bloco arredondado dentro da página (o texto usa a largura do bloco, não a da tela) */
 @media (min-width: 901px) { .pro13-tx { left: -280px; width: 560px; } }
 @media (prefers-reduced-motion: reduce) { .pro13-tx > div, .pro13-fio { transition: none; } }
+/* (19/11) celular: "Libere tudo do Doonly" dentro da caixa preta, no lugar da oferta (que já está na barra fixa) */
+.pro10 .pro13-t2 { grid-area: n; overflow: visible; font-size: clamp(15px, 5vw, 20px); line-height: 1.1; text-align: left; }
+.pro13-of { padding-top: 20px; padding-bottom: 20px; }
+@media (max-width: 345px) { .pro13-of em { display: none; } .pro13-of { grid-template-columns: minmax(0, 1fr); } .pro10 .pro13-t2 { text-align: center; font-size: 22px; } }
