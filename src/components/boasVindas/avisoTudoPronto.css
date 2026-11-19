@@ -1,0 +1,30 @@
+/* (19/11) Aviso "Tudo pronto!" de quem terminou os 8 passos: topo marrom e dourado, lista da equipe e WhatsApp em degradê */
+.ui-janela.atp { overflow-x: hidden; overflow-y: auto; max-height: 96dvh; padding: 0; }
+.atp-topo { position: relative; overflow: hidden; padding: 26px 20px 22px; text-align: center; color: #fff; background: radial-gradient(90% 80% at 50% 38%, #4A2A1C 0%, var(--chocolate-escuro, #22130E) 70%); }
+.atp-topo > i { position: absolute; border-radius: 2px; opacity: .8; animation: atp-cai 4s ease-in-out infinite; }
+@keyframes atp-cai { 0%, 100% { translate: 0 -5px; opacity: .45; } 50% { translate: 0 6px; opacity: .95; } }
+.atp-x { position: absolute; top: 10px; right: 10px; z-index: 1; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 12px; background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer; }
+.atp-x:focus-visible, .atp-wa:focus-visible, .atp-nao:focus-visible { outline: 3px solid rgba(245, 199, 107, .8); outline-offset: 2px; }
+.atp-doo { position: relative; width: 116px; height: 116px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle, #5B3626, #2E1C15); box-shadow: 0 0 0 3px #F5C76B, 0 0 44px rgba(245, 199, 107, .6); animation: atp-entra .7s cubic-bezier(.3, 1.5, .5, 1) backwards; }
+.atp-doo img { position: absolute; left: -10px; top: -22px; width: 136px; max-width: none; height: auto; }
+@keyframes atp-entra { from { transform: scale(.5); } to { transform: none; } }
+.atp-topo h2 { position: relative; margin: 14px 0 0; font-family: "Baloo 2", var(--font-base); font-weight: 800; font-size: 44px; line-height: 1; white-space: nowrap; background: linear-gradient(90deg, #F5C76B, #FF8FB8, #FFE3A6, #F5C76B); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: atp-anda 4s linear infinite; }
+@keyframes atp-anda { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
+.atp-topo p { position: relative; margin: 6px 0 0; font-size: 15px; color: #E6D8D0; white-space: nowrap; }
+.atp-corpo { padding: 18px 20px 0; text-align: left; }
+.atp-ch { margin: 0 0 10px; font-size: 16px; font-weight: 500; line-height: 1.4; color: var(--ui-texto); white-space: nowrap; }
+.atp-ch b { font-weight: 600; }
+.atp-lista { display: grid; grid-template-columns: 1fr; column-gap: 16px; }
+.atp-lista div { display: flex; align-items: center; gap: 10px; min-height: 36px; font-size: 14.5px; color: var(--ui-texto); white-space: nowrap; }
+.atp-lista div:last-child { color: var(--ui-texto-2); }
+.atp-lista span { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #FFE9A8, #E0A93B); color: #22130E; }
+.atp-pe { display: flex; flex-direction: column; gap: 4px; padding: 16px 20px calc(18px + env(safe-area-inset-bottom, 0px)); }
+.atp-wa { display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; padding: 0 12px; border: 0; border-radius: 14px; background: linear-gradient(135deg, #3EE07A 0%, #25D366 40%, #128C7E 100%); color: #fff; font-family: inherit; font-size: 16px; font-weight: 500; white-space: nowrap; box-shadow: 0 8px 20px rgba(37, 211, 102, .35); cursor: pointer; transition: filter .15s, transform .15s; }
+.atp-wa:active { transform: scale(.98); filter: brightness(.95); }
+.atp-nao { height: 42px; border: 0; background: none; font-family: inherit; font-size: 14.5px; color: var(--ui-texto-2); cursor: pointer; }
+@media (hover: hover) { .atp-wa:hover { filter: brightness(1.06); } }
+@media (max-width: 359px) { .atp-topo h2 { font-size: 38px; } .atp-topo p { font-size: 13.5px; } .atp-ch { font-size: 14.5px; } .atp-wa { font-size: 14.5px; gap: 8px; } }
+@media (min-width: 640px) { .atp-lista { grid-template-columns: 1fr 1fr; } .atp-lista div { min-height: 40px; } .atp-pe { padding-bottom: 20px; } }
+@media (prefers-reduced-motion: reduce) { .atp-topo > i, .atp-doo, .atp-topo h2 { animation: none; } }
+/* celular baixo: tudo um pouco menor para o botão aparecer sem rolar */
+@media (max-height: 720px) { .atp-topo { padding: 18px 20px 16px; } .atp-doo { width: 88px; height: 88px; } .atp-doo img { left: -8px; top: -17px; width: 104px; } .atp-topo h2 { margin-top: 10px; font-size: 36px; } .atp-lista div { min-height: 32px; } .atp-corpo { padding-top: 14px; } .atp-pe { padding-top: 12px; } }

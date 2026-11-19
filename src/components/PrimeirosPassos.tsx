@@ -20,6 +20,7 @@ import { lerPassos, passosCompletos, avisarPassos, atualizarPerfil, marcarLogoOk
 
 import { Botao, BotaoIA, avisar } from "@/components/base";
 import { LojaProntaCartao } from "@/components/loja/LojaPronta";
+import AvisoTudoPronto from "@/components/boasVindas/AvisoTudoPronto";
 import { mascaraTelefone, telefoneCompleto, digitosTelefone } from "@/lib/telefone";
 import PreviaTopoCardapio, { type DadosPrevia } from "@/components/cardapio/PreviaTopoCardapio";
 import { PreviaSobreHorario } from "@/components/cardapio/SobreLoja";
@@ -189,7 +190,7 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
   const antes = useRef<boolean | null>(null);
   useEffect(() => {
     if (!estado) return;
-    if (antes.current === false && completo && largo && local === "inicio") setFesta(true);
+    if (antes.current === false && completo && local === "inicio") setFesta(true); // (19/11) no celular também
     antes.current = completo;
   }, [estado, completo, largo, local]);
 
@@ -241,16 +242,8 @@ export default function PrimeirosPassos({ local = "inicio", onEstado, todosAbert
       <>
         {/* (16/10) cartão pequeno: antes ocupava quase a tela toda · (30/10 · 5.46) no computador não aparece: o "Seu link de vendas" fica no topo do Início (antes os dois apareciam) */}
         {largo ? null : <LojaProntaCartao profile={profile} onFechar={fechar} />}
-        {festa && (
-          <Janelinha titulo="Tudo pronto!" onClose={() => setFesta(false)}
-            acoes={<><Botao variante="secundario" onClick={() => setFesta(false)}>Fechar</Botao><Botao cheio onClick={() => { setFesta(false); window.open(getCardapioUrl(profile), "_blank", "noopener"); }}>Ver meu cardápio</Botao></>}>
-            <div className="pp-festa">
-              <img src="/marca/leve/doo-pronto.webp" alt="" aria-hidden="true" />
-              <b>Seu cardápio está no ar!</b>
-              <p>Agora é só mandar o link para os seus clientes. Ele fica sempre à mão no cartão do Início.</p>
-            </div>
-          </Janelinha>
-        )}
+        {/* (19/11) aviso na tela: o app está liberado e a equipe cadastra a confeitaria, sem custo */}
+        {festa && <AvisoTudoPronto nome={profile?.nome as string | undefined} loja={profile?.nome_loja as string | undefined} aoFechar={() => setFesta(false)} />}
         <style>{CSS}</style>
       </>
     );
