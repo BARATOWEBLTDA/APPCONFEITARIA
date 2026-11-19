@@ -1,7 +1,7 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import { resumoItens, type Pedido } from "@/components/pedidos/pedidoTexto";
 import { usePlaceholderVivo } from "@/hooks/usePlaceholderVivo";
-import { CLASSE_SELO, CTA_PRO, SELO_OFERTA, SELO_TESTE } from "@/lib/beneficiosPro";
+import { CLASSE_SELO, CTA_PRO, OFERTA_PRO, SELO_OFERTA, SELO_TESTE } from "@/lib/beneficiosPro";
 import SeloOferta from "@/components/billing/SeloOferta";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
@@ -895,6 +895,10 @@ export default function Inicio() {
                   <span>PRO</span>
                 </span>
               ) : (
+                OFERTA_PRO === "real1" ? (
+                  /* (19/11) Black Friday: a mesma etiqueta que vira, também no computador */
+                  <span className="ini-plan-tag--pc ini-selo-vira"><SeloOferta pc aoTocar={() => navigate("/assinar")} /></span>
+                ) : (
                 <button
                   type="button"
                   className={`ini-plan-tag ini-plan-tag--pc ini-plan-tag--upgrade${CLASSE_SELO}`}
@@ -904,6 +908,7 @@ export default function Inicio() {
                   <img src="/coroa.webp" alt="" className="ini-plan-coroa" aria-hidden="true" />
                   <span>{SELO_OFERTA}</span>
                 </button>
+                )
               )
             )}
           </h1>

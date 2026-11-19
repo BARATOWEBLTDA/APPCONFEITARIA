@@ -218,3 +218,12 @@ html body .sino-tem.sino-tem { background: #FFF5F9 !important; box-shadow: inset
 }
 /* quem pediu menos movimento no celular vê a oferta parada, no lado do preço */
 @media (prefers-reduced-motion: reduce) { .selo-vira-in { animation: none; transform: rotateX(180deg); } .selo-face--a > span, .selo-face--b { animation: none; } }
+
+/* (19/11) a etiqueta que vira também no computador: no cabeçalho das telas (menor, como o botão que ela substitui) e na saudação do Início */
+.cab .selo-vira--pc { display: none; }
+@media (min-width: 901px) {
+  .cab .selo-vira--pc { display: block; width: 132px; height: 26px; }
+  .cab .selo-vira--pc .selo-face { font-size: 12px; border-radius: 6px; gap: 4px; }
+  .cab .selo-vira--pc .selo-face svg { width: 12px; height: 12px; }
+}
+.ini-selo-vira { align-items: center; flex: none; }

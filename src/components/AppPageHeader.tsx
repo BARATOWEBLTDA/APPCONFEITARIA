@@ -1,6 +1,6 @@
 import type React from 'react'
 import SeloOferta from "@/components/billing/SeloOferta";
-import { SELO_OFERTA } from "@/lib/beneficiosPro";
+import { OFERTA_PRO, SELO_OFERTA } from "@/lib/beneficiosPro";
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -182,7 +182,9 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
           <a className="cab-ver-cardapio" href={linkCardapio} target="_blank" rel="noopener noreferrer"><ArrowSquareOut size={12} weight="bold" aria-hidden="true" />Ver cardápio</a>
         )}
         {!carregandoPlano && !isPro && (
-          <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />{SELO_OFERTA}</button>
+          OFERTA_PRO === "real1"
+            ? <SeloOferta pc aoTocar={() => navigate('/assinar')} />
+            : <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />{SELO_OFERTA}</button>
         )}
         {/* (09/11) computador: o sino saiu do menu da esquerda e fica aqui, entre o PRO e a foto */}
         <div ref={sino} className="cab-sino-caixa">
