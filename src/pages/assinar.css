@@ -33,6 +33,8 @@
 .pro9-fixo .ui-bt { flex: none; min-width: 118px; }
 .pro9-fixo .ui-bt.pro9-fixo-bt { background: linear-gradient(135deg, #3B3B3F 0%, #111 55%, #000 100%); border-color: #000; color: #fff; box-shadow: none; }
 .pro9-fixo .ui-bt.pro9-fixo-bt:active { background: #000; }
+/* celular estreito (320 px): a oferta continua inteira numa linha */
+@media (max-width: 345px) { .pro9-fixo { gap: 8px; padding-left: 12px; padding-right: 12px; } .pro9-fixo b { font-size: 14.5px; } .pro9-fixo small { font-size: 12px; } .pro9-fixo .ui-bt { min-width: 100px; padding-left: 12px; padding-right: 12px; } }
 @media (min-width: 1000px) {
   .pro9 { padding-bottom: 40px; }
   .pro9-grade { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
