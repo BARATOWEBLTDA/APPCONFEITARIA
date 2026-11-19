@@ -203,13 +203,14 @@ html body .sino-tem.sino-tem { background: #FFF5F9 !important; box-shadow: inset
 .selo-face { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: var(--ui-raio-p); font-size: 12.5px; font-weight: 600; white-space: nowrap; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .selo-face--a { background: #111; color: #fff; }
 .selo-face--a svg { flex: none; color: #F5C76B; }
-/* brilho dourado que percorre "Black Friday" devagar (4 s), uma vez a cada aparição */
+/* brilho dourado que percorre "Black Friday" devagar: vai (uns 4 s) e volta (uns 4 s) */
 .selo-face--a > span { background: linear-gradient(90deg, #fff 0, #fff 40%, #F5C76B 50%, #fff 60%, #fff 100%); background-size: 300% 100%; background-position: 100% 0; -webkit-background-clip: text; background-clip: text; color: transparent; animation: selo-brilho 20s infinite; }
 /* lado do preço: dourado em degradê (ouro escuro nas pontas, claro no meio), com um brilho lento depois que assenta */
 .selo-face--b { transform: rotateX(180deg); color: #22130E; background: linear-gradient(110deg, #C48A1E 0%, #F5C76B 28%, #FFF3C4 50%, #F5C76B 72%, #C48A1E 100%); background-size: 240% 100%; background-position: 100% 0; animation: selo-ouro 20s infinite; }
 .selo-face--b svg { flex: none; color: #22130E; }
-@keyframes selo-brilho { 0%, 5% { background-position: 100% 0; } 25%, 100% { background-position: 0 0; } }
-@keyframes selo-ouro { 0%, 55% { background-position: 100% 0; } 80%, 100% { background-position: 0 0; } }
+/* (19/11) o brilho vai até o fim da palavra, volta e só então a etiqueta vira (antes passava uma vez e ficava parada) */
+@keyframes selo-brilho { 0%, 3% { background-position: 100% 0; } 22% { background-position: 0 0; } 41%, 100% { background-position: 100% 0; } }
+@keyframes selo-ouro { 0%, 53% { background-position: 100% 0; } 72% { background-position: 0 0; } 91%, 100% { background-position: 100% 0; } }
 @keyframes selo-gira {
   0%, 46% { transform: rotateX(0); animation-timing-function: cubic-bezier(.55, 0, .3, 1.45); }
   50%, 96% { transform: rotateX(180deg); animation-timing-function: cubic-bezier(.55, 0, .3, 1.45); }
