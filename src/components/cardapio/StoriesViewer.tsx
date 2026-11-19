@@ -1,14 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Stories from "react-insta-stories";
-import Hls from "hls.js";
 import { SpeakerHigh, SpeakerSlash, X } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import { type Story, haQuanto, urlVideoStory, urlCapaStory, STORY_SEGUNDOS_FOTO } from "@/lib/stories";
+import { type Story, haQuanto, urlVideoStory, STORY_SEGUNDOS_FOTO } from "@/lib/stories";
 
 /**
  * (19/11) Stories do cardápio em tela cheia. As barrinhas, o toque nos lados (volta / próximo) e o segurar
  * para pausar vêm da biblioteca react-insta-stories; o cabeçalho com a logo e o botão do produto são nossos.
- * O vídeo vem do Bunny Stream em HLS (hls.js; no iPhone o Safari toca direto).
+ * O vídeo é um MP4 leve guardado no Supabase, que todo celular toca direto.
  */
 type Acao = (a: "play" | "pause" | "next" | "previous", semBuffer?: boolean) => void;
 /** som ligado/desligado: por contexto, para trocar sem a biblioteca recriar (e reiniciar) o vídeo */
@@ -23,17 +22,13 @@ function VideoStory({ story, action, isPaused }: { story: Story; action: Acao; i
     const v = ref.current;
     if (!v || !story.video_id) return;
     action("pause", true); // a barrinha só anda quando o vídeo começa
-    const url = urlVideoStory(story.video_id);
-    let hls: Hls | null = null;
-    if (v.canPlayType("application/vnd.apple.mpegurl")) v.src = url;
-    else if (Hls.isSupported()) { hls = new Hls({ maxBufferLength: 10 }); hls.loadSource(url); hls.attachMedia(v); hls.on(Hls.Events.ERROR, (_e, d) => { if (d.fatal) action("next"); }); }
-    else { action("next"); return; }
+    v.src = urlVideoStory(story.video_id);
     const aoTocar = () => { setCarregado(true); action("play", true); };
     const aoErro = () => action("next");
     v.addEventListener("playing", aoTocar);
     v.addEventListener("error", aoErro);
     v.play().catch(() => { v.muted = true; v.play().catch(() => {}); }); // sem permissão para som: começa mudo
-    return () => { v.removeEventListener("playing", aoTocar); v.removeEventListener("error", aoErro); hls?.destroy(); };
+    return () => { v.removeEventListener("playing", aoTocar); v.removeEventListener("error", aoErro); v.removeAttribute("src"); v.load(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [story.video_id]);
 
@@ -42,7 +37,7 @@ function VideoStory({ story, action, isPaused }: { story: Story; action: Acao; i
 
   return (
     <div className="stv-midia">
-      <video ref={ref} playsInline muted={mudo} poster={story.video_id ? urlCapaStory(story.video_id) : undefined} />
+      <video ref={ref} playsInline muted={mudo} poster={story.foto_url || undefined} preload="auto" />
       {!carregado && <span className="stv-carregando" aria-label="Carregando" />}
     </div>
   );

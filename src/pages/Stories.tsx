@@ -1,7 +1,8 @@
 // ── Stories.tsx ──────────────────────────────────────────────────────────────
 // (19/11) Stories do cardápio: a confeiteira posta um vídeo curto (até 30 s) ou uma foto, escolhe por
 // quantos dias fica no ar (1 a 3) e, se quiser, o produto que o botão do story abre. Recurso do PRO.
-// O vídeo vai do celular direto para o Bunny Stream (envio em partes, retoma se a internet cair).
+// O vídeo é convertido no próprio aparelho (até 1080p, leve) e sobe para o Supabase em partes (retoma se a
+// internet cair). Como já sobe pronto, aparece no cardápio assim que o envio termina.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as tus from "tus-js-client";
@@ -10,18 +11,38 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, CaixasEscolha, Janela, avisar } from "@/components/base";
 import { CartaoPro } from "@/components/billing/RecursoPro";
 import { supabase } from "@/lib/supabase";
-import { apiFetch } from "@/lib/apiFetch";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
-import { type Story, STORY_MAX_ATIVOS, STORY_MAX_SEGUNDOS, STORY_SEGUNDOS_FOTO, saiDoAr, urlCapaStory } from "@/lib/stories";
+import { type Story, STORIES_BUCKET, STORY_MAX_ATIVOS, STORY_MAX_SEGUNDOS, STORY_SEGUNDOS_FOTO, arquivosDoStory, saiDoAr } from "@/lib/stories";
 
 type Prod = { id: string; nome: string };
 const MAX_VIDEO_MB = 150;
+/** limite de cada arquivo no Supabase */
+const MAX_ENVIO_MB = 50;
 
-const api = async (corpo: Record<string, unknown>) => {
-  const r = await apiFetch("/api/story", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
-  const d = await r.json().catch(() => ({}));
-  return { ok: r.ok, sumiu: r.status === 404, d: d as Record<string, any> };
+/** apaga do Supabase os arquivos de um story de vídeo (os de teste antigos, do Bunny, não têm arquivo aqui) */
+const apagarArquivos = async (s: Story) => {
+  if (s.tipo === "video" && s.video_id && s.video_id.includes("/")) await supabase.storage.from(STORIES_BUCKET).remove(arquivosDoStory(s.video_id)).then(() => {}, () => {});
+};
+
+/** envia em partes, com porcentagem; retoma sozinho se a internet oscilar */
+const subirVideo = async (blob: Blob, caminho: string, aoProgresso: (pct: number) => void) => {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) throw new Error("sem_sessao");
+  await new Promise<void>((resolve, reject) => {
+    new tus.Upload(blob, {
+      endpoint: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/upload/resumable`,
+      retryDelays: [0, 3000, 5000, 10000, 20000],
+      headers: { authorization: `Bearer ${token}`, "x-upsert": "false" },
+      uploadDataDuringCreation: true, removeFingerprintOnSuccess: true,
+      chunkSize: 6 * 1024 * 1024, // tamanho de parte exigido pelo Supabase
+      metadata: { bucketName: STORIES_BUCKET, objectName: caminho, contentType: blob.type || "video/mp4", cacheControl: "604800" },
+      onError: e => reject(e),
+      onProgress: (enviado, total) => aoProgresso(total ? Math.round((enviado / total) * 100) : 0),
+      onSuccess: () => resolve(),
+    }).start();
+  });
 };
 
 /** quantos segundos tem o vídeo escolhido */
@@ -58,15 +79,14 @@ export default function Stories() {
   const [produtos, setProdutos] = useState<Prod[]>([]);
   const [postar, setPostar] = useState(false);
   const [apagar, setApagar] = useState<Story | null>(null);
-  const conferindo = useRef(new Set<string>());
   // (19/11) igual ao Instagram: tocou em Publicar, a janela fecha e o story já aparece na lista "Enviando…"
-  const [envio, setEnvio] = useState<{ nome: string; previa: string; video: boolean; pct: number } | null>(null);
+  const [envio, setEnvio] = useState<{ nome: string; previa: string; video: boolean; pct: number; fase: "preparando" | "enviando" } | null>(null);
 
   const enviar = async (arq: File, seg: number, dias: number, prod: string) => {
     if (!uid || envio) return;
     const video = arq.type.startsWith("video/");
     const previa = video ? "" : URL.createObjectURL(arq);
-    setEnvio({ nome: (prod && produtos.find(p => p.id === prod)?.nome) || (video ? "Vídeo" : "Foto"), previa, video, pct: 0 });
+    setEnvio({ nome: (prod && produtos.find(p => p.id === prod)?.nome) || (video ? "Vídeo" : "Foto"), previa, video, pct: 0, fase: video ? "preparando" : "enviando" });
     const expira_em = new Date(Date.now() + dias * 86400000).toISOString();
     const fim = (msg?: string) => { if (previa) URL.revokeObjectURL(previa); setEnvio(null); if (msg) avisar(msg, { tipo: "erro" }); };
     try {
@@ -81,22 +101,32 @@ export default function Stories() {
         if (error) return fim("Não deu para publicar. Tente de novo.");
         fim(); avisar("Story publicado", { tipo: "ok" }); void carregar(); return;
       }
-      const { ok, d } = await api({ acao: "criar" });
-      if (!ok) return fim(d.message || "Não deu para preparar o envio. Tente de novo.");
-      await new Promise<void>((resolve, reject) => {
-        new tus.Upload(arq, {
-          endpoint: "https://video.bunnycdn.com/tusupload",
-          retryDelays: [0, 3000, 5000, 10000, 20000],
-          headers: { AuthorizationSignature: d.assinatura, AuthorizationExpire: String(d.expira), VideoId: d.videoId, LibraryId: String(d.libraryId) },
-          metadata: { filetype: arq.type, title: `story-${uid}-${Date.now()}` }, // o título começa com o id da conta: é como o servidor sabe de quem é o vídeo
-          onError: e => reject(e),
-          onProgress: (enviado, total) => setEnvio(x => x ? { ...x, pct: total ? Math.round((enviado / total) * 100) : 0 } : x),
-          onSuccess: () => resolve(),
-        }).start();
-      });
-      const { error } = await supabase.from("stories").insert({ user_id: uid, tipo: "video", video_id: d.videoId, produto_id: prod || null, duracao: Math.min(seg || 15, STORY_MAX_SEGUNDOS + 1), pronto: false, expira_em });
-      if (error) { await api({ acao: "apagar", videoId: d.videoId }).catch(() => null); return fim("Não deu para publicar. Tente de novo."); }
-      fim(); void carregar();
+      // 1) converte no aparelho; se o navegador não conseguir, sobe o original quando ele já é MP4/MOV leve
+      let pronto: Blob;
+      try {
+        const { prepararVideoStory } = await import("@/lib/prepararVideoStory");
+        pronto = await prepararVideoStory(arq, pct => setEnvio(x => x ? { ...x, pct } : x));
+      } catch {
+        if (!/mp4|quicktime/i.test(arq.type)) return fim("Este aparelho não conseguiu preparar o vídeo. Tente gravar de novo ou usar outro vídeo.");
+        pronto = arq;
+      }
+      if (pronto.size > MAX_ENVIO_MB * 1024 * 1024) return fim(`O vídeo ficou com mais de ${MAX_ENVIO_MB} MB. Escolha um mais curto.`);
+      // 2) envia
+      setEnvio(x => x ? { ...x, fase: "enviando", pct: 0 } : x);
+      const caminho = `${uid}/${Date.now()}.${pronto.type.includes("quicktime") ? "mov" : "mp4"}`;
+      await subirVideo(pronto, caminho, pct => setEnvio(x => x ? { ...x, pct } : x));
+      // 3) capa (a foto que aparece enquanto o vídeo carrega)
+      let foto_url: string | null = null;
+      const { capaDoVideo } = await import("@/lib/prepararVideoStory");
+      const capa = await capaDoVideo(pronto);
+      if (capa) {
+        const caminhoCapa = arquivosDoStory(caminho)[1];
+        const up = await supabase.storage.from(STORIES_BUCKET).upload(caminhoCapa, capa, { contentType: "image/jpeg", upsert: false, cacheControl: "604800" });
+        if (!up.error) foto_url = supabase.storage.from(STORIES_BUCKET).getPublicUrl(caminhoCapa).data.publicUrl;
+      }
+      const { error } = await supabase.from("stories").insert({ user_id: uid, tipo: "video", video_id: caminho, foto_url, produto_id: prod || null, duracao: Math.min(seg || 15, STORY_MAX_SEGUNDOS + 1), pronto: true, expira_em });
+      if (error) { await supabase.storage.from(STORIES_BUCKET).remove(arquivosDoStory(caminho)).then(() => {}, () => {}); return fim("Não deu para publicar. Tente de novo."); }
+      fim(); avisar("Seu story já está no cardápio", { tipo: "ok" }); void carregar();
     } catch {
       fim("O envio parou. Confira a internet e tente de novo.");
     }
@@ -108,12 +138,13 @@ export default function Stories() {
     if (error) { setCarregando(false); return; }
     const todos = (data || []) as Story[];
     const agora = Date.now();
-    const vencidos = todos.filter(s => new Date(s.expira_em || 0).getTime() <= agora);
+    // sai da lista o que venceu e os vídeos de teste antigos, que ficaram no Bunny e não tocam mais
+    const vencidos = todos.filter(s => new Date(s.expira_em || 0).getTime() <= agora || (s.tipo === "video" && !String(s.video_id || "").includes("/")));
     setLista(todos.filter(s => !vencidos.includes(s)));
     setCarregando(false);
-    // faxina: o que venceu sai do Bunny (para de ocupar espaço) e da lista
+    // faxina: o que venceu sai do armazenamento (para de ocupar espaço) e da lista
     for (const s of vencidos) {
-      if (s.tipo === "video" && s.video_id) await api({ acao: "apagar", videoId: s.video_id }).catch(() => null);
+      await apagarArquivos(s);
       await supabase.from("stories").delete().eq("id", s.id).eq("user_id", uid);
     }
   }, [uid]);
@@ -124,43 +155,12 @@ export default function Stories() {
     void supabase.from("produtos").select("id, nome").eq("user_id", uid).eq("disponivel", true).order("nome").then(({ data }) => setProdutos((data || []) as Prod[]));
   }, [uid]);
 
-  // vídeo ainda convertendo: pergunta ao Bunny de 5 em 5 segundos até ficar pronto
-  useEffect(() => {
-    for (const s of lista) {
-      if (s.tipo !== "video" || s.pronto || !s.video_id || conferindo.current.has(s.id)) continue;
-      conferindo.current.add(s.id);
-      let n = 0;
-      const t = window.setInterval(async () => {
-        n++;
-        const { ok, sumiu, d } = await api({ acao: "status", videoId: s.video_id }).catch(() => ({ ok: false, sumiu: false, d: {} as Record<string, any> }));
-        // story apagado aqui, ou vídeo que não existe mais no Bunny: para de perguntar
-        if (!conferindo.current.has(s.id) || sumiu) {
-          window.clearInterval(t);
-          if (sumiu && conferindo.current.has(s.id)) avisar("Esse vídeo não foi encontrado. Apague e envie de novo.", { tipo: "erro" });
-          return;
-        }
-        if (ok && d.pronto) {
-          window.clearInterval(t);
-          await supabase.from("stories").update({ pronto: true, ...(d.duracao ? { duracao: Math.min(Number(d.duracao), STORY_MAX_SEGUNDOS + 1) } : {}) }).eq("id", s.id).eq("user_id", uid);
-          setLista(l => l.map(x => x.id === s.id ? { ...x, pronto: true } : x));
-          avisar("Seu story já está no cardápio", { tipo: "ok" });
-        } else if (ok && !d.falhou && Number(d.progresso) > 0) {
-          setLista(l => l.map(x => x.id === s.id ? { ...x, progresso: Number(d.progresso) } as Story : x));
-        } else if ((ok && d.falhou) || n > 180) {
-          window.clearInterval(t);
-          if (ok && d.falhou) avisar("Não deu para converter esse vídeo. Apague e envie de novo.", { tipo: "erro" });
-        }
-      }, 5000);
-    }
-  }, [lista, uid]);
-
   const confirmarApagar = async () => {
     const s = apagar; if (!s) return;
     setApagar(null);
-    if (s.tipo === "video" && s.video_id) await api({ acao: "apagar", videoId: s.video_id }).catch(() => null);
     const { error } = await supabase.from("stories").delete().eq("id", s.id).eq("user_id", uid);
     if (error) { avisar("Não deu para apagar. Tente de novo.", { tipo: "erro" }); return; }
-    conferindo.current.delete(s.id);
+    await apagarArquivos(s);
     setLista(l => l.filter(x => x.id !== s.id));
   };
 
@@ -189,20 +189,19 @@ export default function Stories() {
                     <span className="sto-ft sto-ft--env">{envio.previa ? <img src={envio.previa} alt="" /> : <Play size={22} weight="fill" />}<i className="sto-gira" aria-hidden="true" /></span>
                     <span className="sto-tx">
                       <b>{envio.nome}</b>
-                      <small>{envio.video ? `Enviando… ${envio.pct}%` : "Enviando…"}</small>
+                      <small>{envio.video ? `${envio.fase === "preparando" ? "Preparando o vídeo…" : "Enviando…"} ${envio.pct}%` : "Enviando…"}</small>
                       <span className="sto-barra" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={envio.pct}><i style={{ width: `${envio.video ? envio.pct : 60}%` }} /></span>
                     </span>
                   </li>
                 )}
                 {lista.map(s => (
                   <li key={s.id}>
-                    <span className={`sto-ft${s.pronto ? "" : " sto-ft--env"}`}>
-                      {s.tipo === "video" ? (s.pronto && s.video_id ? <img src={urlCapaStory(s.video_id)} alt="" /> : <><Play size={22} weight="fill" /><i className="sto-gira" aria-hidden="true" /></>) : (s.foto_url ? <img src={s.foto_url} alt="" /> : <ImageIc size={22} weight="bold" />)}
+                    <span className="sto-ft">
+                      {s.foto_url ? <img src={s.foto_url} alt="" /> : s.tipo === "video" ? <Play size={22} weight="fill" /> : <ImageIc size={22} weight="bold" />}
                     </span>
                     <span className="sto-tx">
                       <b>{nomeProd(s.produto_id) || (s.tipo === "video" ? "Vídeo" : "Foto")}</b>
-                      <small>{s.pronto ? saiDoAr(s.expira_em || "") : `Preparando em alta qualidade… ${(s as Story & { progresso?: number }).progresso ? `${(s as Story & { progresso?: number }).progresso}%` : ""}`}</small>
-                      {!s.pronto && <span className="sto-barra" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={(s as Story & { progresso?: number }).progresso || 0}><i style={{ width: `${Math.max(8, (s as Story & { progresso?: number }).progresso || 0)}%` }} /></span>}
+                      <small>{saiDoAr(s.expira_em || "")}</small>
                       <small className="sto-vw"><Eye size={14} weight="bold" aria-hidden="true" />{s.views === 1 ? "1 pessoa viu" : `${s.views || 0} pessoas viram`}</small>
                     </span>
                     <button type="button" className="sto-del" aria-label="Apagar este story" onClick={() => setApagar(s)}><Trash size={20} weight="bold" /></button>

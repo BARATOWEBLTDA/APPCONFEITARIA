@@ -1,5 +1,8 @@
-// (19/11) Stories do cardápio: vídeos curtos (ou fotos) que somem em 1 a 3 dias. Vídeo fica no Bunny Stream.
-export const STORIES_CDN = (import.meta.env.VITE_BUNNY_STREAM_CDN_HOST as string | undefined) || "vz-a30005ae-9d4.b-cdn.net";
+// (19/11) Stories do cardápio: vídeos curtos (ou fotos) que somem em 1 a 3 dias.
+// O vídeo é convertido no aparelho e fica no Supabase (bucket "stories"), em {id da conta}/{arquivo}.mp4.
+import { supabase } from "@/lib/supabase";
+
+export const STORIES_BUCKET = "stories";
 export const STORY_MAX_SEGUNDOS = 30;
 export const STORY_MAX_ATIVOS = 3;
 export const STORY_SEGUNDOS_FOTO = 6;
@@ -10,8 +13,10 @@ export type Story = {
   pronto?: boolean; views?: number; expira_em?: string;
 };
 
-export const urlVideoStory = (videoId: string) => `https://${STORIES_CDN}/${videoId}/playlist.m3u8`;
-export const urlCapaStory = (videoId: string) => `https://${STORIES_CDN}/${videoId}/thumbnail.jpg`;
+/** `video_id` guarda o caminho do arquivo no bucket */
+export const urlVideoStory = (caminho: string) => supabase.storage.from(STORIES_BUCKET).getPublicUrl(caminho).data.publicUrl;
+/** arquivos de um story de vídeo (o vídeo e a capa, que tem o mesmo nome em .jpg) */
+export const arquivosDoStory = (caminho: string) => [caminho, caminho.replace(/\.[a-z0-9]+$/i, ".jpg")];
 
 /** "há 3 h", "há 2 dias" */
 export function haQuanto(iso: string): string {
