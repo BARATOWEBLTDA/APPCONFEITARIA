@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { Crown, Lock, CaretLeft, CaretRight, Check, X, PlayCircle, FileText, Ticket, Stack, ChartLineUp, ChatCircleText, Megaphone, AddressBook, Cake, Camera, SealCheck, Images, MicrosoftExcelLogo, Printer, FilePdf, HandHeart, type Icon } from "@phosphor-icons/react";
 import { BENEFICIOS, CHECKOUT_HOTMART, CTA_PRO, CTA_PRO_CURTO, OFERTA_PRO, PRECO_PRO, SELO_OFERTA } from "@/lib/beneficiosPro";
@@ -57,6 +57,50 @@ const SO_PRO: [Icon, string, string][] = [
   [FilePdf, "Ficha técnica em PDF", "Custo e receita para guardar"],
   [HandHeart, "Montamos seu cardápio", "A equipe Doonly faz para você"],
 ];
+/** (19/11) computador: os recursos que giram em volta da logo (índices de SO_PRO) */
+const ORBITA = [0, 2, 1, 4, 6, 5, 3, 10];
+const RAIO = 128;
+/** A roda anda um recurso, para, destaca o que ficou à esquerda da logo e mostra para que serve */
+function Orbita({ logo, iniciais }: { logo: string; iniciais: string }) {
+  const [passo, setPasso] = useState(0);
+  const [aceso, setAceso] = useState(false);
+  const parado = useRef(false);
+  useEffect(() => {
+    let vivo = true; const esperas: number[] = [];
+    const espera = (ms: number) => new Promise<void>(r => { esperas.push(window.setTimeout(r, ms)); });
+    (async () => {
+      await espera(900); if (vivo) setAceso(true);
+      while (vivo) {
+        await espera(4500);
+        while (vivo && parado.current) await espera(300);
+        if (!vivo) break;
+        setAceso(false); await espera(450); if (!vivo) break;
+        setPasso(p => p + 1); await espera(1300); if (!vivo) break;
+        setAceso(true);
+      }
+    })();
+    return () => { vivo = false; esperas.forEach(clearTimeout); };
+  }, []);
+  const giro = 270 - 45 * passo;
+  const atual = ((passo % 8) + 8) % 8;
+  const [, nome, frase] = SO_PRO[ORBITA[atual]];
+  return (
+    <div className={`pro12-orb${aceso ? " on" : ""}`} onMouseEnter={() => { parado.current = true; }} onMouseLeave={() => { parado.current = false; }}>
+      <i className="pro12-luz" aria-hidden="true" />
+      <i className="pro12-anel" aria-hidden="true" />
+      <div className="pro12-roda" style={{ transform: `rotate(${giro}deg)` }} aria-hidden="true">
+        {ORBITA.map((n, i) => { const Ic = SO_PRO[n][0]; return (
+          <span className="pro12-ch" key={n} style={{ transform: `rotate(${i * 45}deg) translateY(-${RAIO}px)` }}>
+            <span className={`pro12-chi${i === atual ? " atual" : ""}`} style={{ transform: `rotate(${-(i * 45 + giro)}deg)` }}><Ic size={22} weight="bold" /></span>
+          </span>
+        ); })}
+      </div>
+      <div className="pro12-balao" aria-live="polite"><b>{nome}</b><small>{frase}</small></div>
+      <div className="pro12-logo">{logo ? <img src={logo} alt="" /> : <span>{iniciais}</span>}</div>
+      <img className="pro12-coroa" src="/pro-coroa.webp" alt="" width={96} height={48} />
+    </div>
+  );
+}
 const VALOR_MES = 29.9;
 const reais = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 /** confete dourado saindo do botão (some sozinho; nada com "reduzir movimento") */
@@ -83,6 +127,10 @@ export default function Assinar() {
   // (21/10) computador: sem o voltar no topo (o menu da esquerda já leva de volta)
   const [computador, setComputador] = useState(() => window.matchMedia("(min-width: 901px)").matches);
   useEffect(() => { const mq = window.matchMedia("(min-width: 901px)"); const f = () => setComputador(mq.matches); mq.addEventListener("change", f); return () => mq.removeEventListener("change", f); }, []);
+  // (19/11) tela larga (1000 px ou mais): a faixa vai de ponta a ponta e o cabeçalho do app some, só nesta página
+  const [largo, setLargo] = useState(() => window.matchMedia("(min-width: 1000px)").matches);
+  useEffect(() => { const mq = window.matchMedia("(min-width: 1000px)"); const f = () => setLargo(mq.matches); mq.addEventListener("change", f); return () => mq.removeEventListener("change", f); }, []);
+  const brilhos = useMemo(() => { let x = 7; const r = () => { x = (x * 16807) % 2147483647; return x / 2147483647; }; return Array.from({ length: 44 }, () => { const d = [3, 4, 6][Math.floor(r() * 3)]; const t = 2 + Math.floor(r() * 4); return { left: `${(1 + r() * 98).toFixed(1)}%`, top: `${(8 + r() * 88).toFixed(1)}%`, width: t, height: t, animationDuration: `${d}s`, animationDelay: `-${(r() * d).toFixed(2)}s` }; }); }, []);
   const emTeste = (profile as PerfilAssinatura)?.assinatura_status === "teste";
   const folga = (profile as PerfilAssinatura)?.assinatura_origem === "hotmart" ? (emTeste ? 1 : 3) : 0;
   const cobranca = proExpiraEm ? new Date(proExpiraEm.getTime() - folga * 86400000) : null;
@@ -115,17 +163,6 @@ export default function Assinar() {
     try { const ok = await restaurarCompra(); avisar(ok ? "Assinatura encontrada. Seu PRO está ativo" : "Nenhuma assinatura encontrada nesta conta do Google", { tipo: ok ? "ok" : "erro" }); if (ok) void esperarPro(); }
     catch { avisar("Não deu para conferir agora", { tipo: "erro" }); }
   };
-  // (19/11) "Um pedido paga o PRO": o pedido médio dos últimos 90 dias (só aparece com 3 pedidos ou mais e se pagar a mensalidade)
-  const [pedidoMedio, setPedidoMedio] = useState<number | null>(null);
-  useEffect(() => {
-    if (isPro || !profile?.id) return;
-    const desde = new Date(Date.now() - 90 * 86400000).toISOString();
-    supabase.from("pedidos").select("valor_total").eq("user_id", profile.id).neq("status", "cancelado").gte("created_at", desde).limit(500)
-      .then(({ data }) => {
-        const v = (data || []).map(p => Number(p.valor_total) || 0).filter(n => n > 0);
-        if (v.length >= 3) { const m = v.reduce((a, b) => a + b, 0) / v.length; if (m >= VALOR_MES) setPedidoMedio(m); }
-      }, () => {});
-  }, [isPro, profile?.id]);
   // o cartão de sócia inclina com o celular (onde o aparelho deixa sem pedir permissão)
   const cartao = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -138,12 +175,13 @@ export default function Assinar() {
     window.addEventListener("deviceorientation", f);
     return () => window.removeEventListener("deviceorientation", f);
   }, [isPro]);
-  const botaoFixo = useRef<HTMLDivElement>(null);
+  const virar = (e: MouseEvent<HTMLElement>) => { confete(e.currentTarget); if (lojaPagamentoPronto) void assinarPeloGoogle(); else assinarNaHotmart(); };
+  const podeAssinar = !noAppDaLoja || lojaPagamentoPronto;
+  const precoDepois = lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO;
   const logo = fotoDaLoja(profile);
   const nomeLoja = String(profile?.nome_loja || "").trim();
   const iniciais = nomeLoja.split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join("").toUpperCase() || "D";
   const assinarNaHotmart = () => {
-    confete(botaoFixo.current);
     void eventoDoApp("InitiateCheckout", { value: VALOR_PRO, content_name: "Doonly PRO" }); // (6.21) pixels do app
     const u = new URL(CHECKOUT_HOTMART);
     const email = emailConta || (profile as PerfilAssinatura)?.email || "";
@@ -153,9 +191,39 @@ export default function Assinar() {
   };
 
 
+  const secRecs = (
+          <section className="pro11-sec pro11-sec--recs">
+            <h2>Recursos só do PRO</h2>
+            <div className="pro11-recs">
+              {SO_PRO.map(([Ic, nome, frase]) => (
+                <div className="pro11-r" key={nome}>
+                  <span className="pro11-r-ic" aria-hidden="true"><Ic size={22} weight="bold" /></span>
+                  <span className="pro11-r-tx"><b>{nome}</b><small>{frase}</small></span>
+                  <Crown size={16} weight="fill" className="pro11-r-cr" aria-hidden="true" />
+                </div>
+              ))}
+            </div>
+          </section>
+  );
+  const secLim = (
+          <section className="pro11-sec pro11-sec--lim">
+            <h2>Limites que o PRO tira</h2>
+            <div className="pro11-tab" role="table" aria-label="Grátis e PRO">
+              <div className="pro11-l pro11-l--cab" role="row"><span role="columnheader" /><span role="columnheader">Grátis</span><span role="columnheader">PRO</span></div>
+              {([["Produtos", String(limiteProdutos), "Sem limite"], ...LIMITES] as [string, string, string][]).map(([nome, hoje, pro]) => (
+                <div className="pro11-l" key={nome} role="row">
+                  <b role="cell">{nome}</b>
+                  <span className="pro11-l-x" role="cell"><X size={13} weight="bold" aria-hidden="true" />{hoje}</span>
+                  <span className="pro11-l-v" role="cell"><Check size={14} weight="bold" aria-hidden="true" />{pro}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+  );
+
   return (
     <>
-      {(isPro || computador) && <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo para sua confeitaria vender mais"} onBack={computador ? undefined : () => voltarOuIr(navigate)} />}
+      {(isPro || (computador && !largo)) && <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo para sua confeitaria vender mais"} onBack={computador ? undefined : () => voltarOuIr(navigate)} />}
       {isPro ? (
         /* ══ (21/10) Quem já é PRO: o status primeiro, a lista compacta e as dúvidas ══ */
         <div className="cl9 pro9 pro9--pro">
@@ -190,6 +258,43 @@ export default function Assinar() {
           </section>
         </div>
       ) : (
+      largo ? (
+      <div className="pro10 pro12">
+        {/* (19/11) computador: faixa de ponta a ponta com a oferta e o botão; embaixo os recursos e, ao lado, os limites e um convite discreto */}
+        <section className="pro12-bn">
+          {brilhos.map((b, i) => <i className="pro12-sp" key={i} style={b} aria-hidden="true" />)}
+          <div className="pro12-es">
+            {OFERTA_PRO === "real1" && <span className="pro12-tag">Black Doonly</span>}
+            <h1 className="pro10-t pro12-t">Libere tudo do Doonly</h1>
+            <p className="pro12-s">O Doonly grátis já é bom. O PRO é muito melhor.</p>
+            {podeAssinar ? (
+              <div className="pro12-of">
+                <span><b>{SELO_OFERTA}</b><small>Depois, {precoDepois} por mês</small></span>
+                <button type="button" className="pro12-bt" disabled={comprando} onClick={virar}><Crown size={18} weight="fill" aria-hidden="true" />Virar PRO</button>
+              </div>
+            ) : <p className="pro12-s">A assinatura do PRO não está disponível pelo app. Se você já é PRO, tudo fica liberado aqui automaticamente.</p>}
+          </div>
+          <Orbita logo={logo} iniciais={iniciais} />
+        </section>
+        <div className="pro12-baixo">
+          {secRecs}
+          <div className="pro12-dir">
+            {secLim}
+            {podeAssinar && (
+              <section className="pro12-cta">
+                <span>
+                  <b>{OFERTA_PRO === "real1" ? "Apenas R$ 1 no primeiro mês" : SELO_OFERTA}</b>
+                  <small>Depois, {precoDepois} por mês.</small>
+                  <small>{!lojaPagamentoPronto && "Menos de R$ 1 por dia. "}Cancele quando quiser.</small>
+                </span>
+                <button type="button" className="pro12-cta-bt" disabled={comprando} onClick={virar}>Virar PRO</button>
+              </section>
+            )}
+            {lojaPagamentoPronto && <button type="button" className="pro10-restaurar pro12-restaurar" onClick={restaurar}>Já assinei: restaurar compra</button>}
+          </div>
+        </div>
+      </div>
+      ) : (
       <div className="pro10">
         {/* (19/11) tela nova do PRO: topo chocolate de ponta a ponta (cobre o cabeçalho no celular), comparação Grátis × PRO e o cartão do plano */}
         <section className="pro10-topo">
@@ -215,45 +320,13 @@ export default function Assinar() {
           </section>
           {(!noAppDaLoja || lojaPagamentoPronto) && (
             <div className="pro11-oferta-pc">
-              <Botao carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO}</Botao>
+              <Botao carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={virar}>{CTA_PRO}</Botao>
               <span><Lock size={14} weight="bold" /> Depois, {lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO} por mês</span>
             </div>
           )}
 
-          {pedidoMedio !== null && (
-            <section className="pro11-conta">
-              <h2>Um pedido paga o PRO</h2>
-              <div><span><small>Seu pedido médio</small><b>{reais(pedidoMedio)}</b></span><span><small>PRO por mês</small><b>{PRECO_CHEIO}</b></span></div>
-              <p>Um pedido a mais no mês já paga.</p>
-            </section>
-          )}
-
-          <section className="pro11-sec pro11-sec--recs">
-            <h2>Recursos só do PRO</h2>
-            <div className="pro11-recs">
-              {SO_PRO.map(([Ic, nome, frase]) => (
-                <div className="pro11-r" key={nome}>
-                  <span className="pro11-r-ic" aria-hidden="true"><Ic size={22} weight="bold" /></span>
-                  <span className="pro11-r-tx"><b>{nome}</b><small>{frase}</small></span>
-                  <Crown size={16} weight="fill" className="pro11-r-cr" aria-hidden="true" />
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="pro11-sec pro11-sec--lim">
-            <h2>Limites que o PRO tira</h2>
-            <div className="pro11-tab" role="table" aria-label="Grátis e PRO">
-              <div className="pro11-l pro11-l--cab" role="row"><span role="columnheader" /><span role="columnheader">Grátis</span><span role="columnheader">PRO</span></div>
-              {([["Produtos", String(limiteProdutos), "Sem limite"], ...LIMITES] as [string, string, string][]).map(([nome, hoje, pro]) => (
-                <div className="pro11-l" key={nome} role="row">
-                  <b role="cell">{nome}</b>
-                  <span className="pro11-l-x" role="cell"><X size={13} weight="bold" aria-hidden="true" />{hoje}</span>
-                  <span className="pro11-l-v" role="cell"><Check size={14} weight="bold" aria-hidden="true" />{pro}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+          {secRecs}
+          {secLim}
 
           {noAppDaLoja && !lojaPagamentoPronto && (
             <section className="pro10-plano">
@@ -265,13 +338,13 @@ export default function Assinar() {
           {lojaPagamentoPronto && <button type="button" className="pro10-restaurar pro10-restaurar--cel" onClick={restaurar}>Já assinei: restaurar compra</button>}
         </div>
       </div>
-      )}
+      ))}
 
       {/* Celular: botão fixo pra assinar sem rolar até o fim */}
       {!isPro && (!noAppDaLoja || lojaPagamentoPronto) && (
-        <div className="pro9-fixo" ref={botaoFixo}>
+        <div className="pro9-fixo">
           <span><small>Depois, {PRECO_CHEIO}/mês</small><b>{SELO_OFERTA}</b></span>
-          <Botao className="pro9-fixo-bt" carregando={comprando} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO_CURTO}</Botao>
+          <Botao className="pro9-fixo-bt" carregando={comprando} onClick={virar}>{CTA_PRO_CURTO}</Botao>
         </div>
       )}
     </>
