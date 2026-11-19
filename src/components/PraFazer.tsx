@@ -224,11 +224,8 @@ export default function PraFazer() {
     else if (typeof Notification !== "undefined" && Notification.permission === "denied") comoLiberar();
   };
   // (23/10) sem "Agora não": enquanto os avisos não estiverem ligados, o pedido continua aqui (é o que garante que a novidade chega)
-  const itemNotif: Item[] = uid && precisaInstalarNoIphone() ? [{
-    chave: "instalar_iphone", nivel: "atencao", Ic: Bell, ordem: -100, acao: "Ver como", link: "/configuracoes/notificacoes", fechar: false,
-    t: "Instale o Doonly no iPhone", s: "Para receber os avisos de pedido",
-    txt: "No iPhone, os avisos só chegam com o Doonly instalado na tela de início.",
-  }] : uid && push.isSupported && !push.isSubscribed ? [{
+  // (19/11) saiu o aviso "Instale o Doonly no iPhone" (pedido do Bruno)
+  const itemNotif: Item[] = uid && push.isSupported && !push.isSubscribed ? [{
     chave: "ativar_notificacoes", nivel: "atencao", Ic: Bell, ordem: -100, acao: push.permission === "denied" ? "Liberar" : "Ativar", link: "/configuracoes/notificacoes", fechar: false,
     t: push.permission === "denied" ? "Notificações bloqueadas" : "Ativar notificações",
     s: push.permission === "denied" ? "Libere para ver pedido novo" : "Para não perder nenhum pedido",
@@ -332,7 +329,9 @@ export default function PraFazer() {
   const ordemTrilha = (x: Item) => { const k = passoDe(x.chave)!; const i = core.findIndex(t => t.k === k); return i >= 0 ? i : 100 + EXTRAS.indexOf(k); };
   const trilha = pronta === true ? itens.filter(daTrilha).sort((a, b) => ordemTrilha(a) - ordemTrilha(b)) : [];
   const passo = trilha[0];
-  const lista = itens.filter(x => !daTrilha(x));
+  // (19/11) o "Seu próximo passo" entrou no "Pra fazer": o passo da vez vira mais um item da lista (um por vez, no fim)
+  const infoPasso = passo ? TRILHA.find(t => t.k === passoDe(passo.chave)) : undefined;
+  const lista = [...itens.filter(x => !daTrilha(x)), ...(passo ? [{ ...passo, t: infoPasso?.nome || passo.t, s: infoPasso?.txt || passo.s, txt: infoPasso?.txt || passo.txt }] : [])];
 
   // comemora quando um passo da trilha fica pronto (só os que ela fez agora, não os de antes)
   const kFeitos = `doonly_trilha_feitos_${uid}`;
@@ -350,7 +349,7 @@ export default function PraFazer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uid, pronta, feitosChave, avisosLidos, semVisita]);
 
-  if (!lista.length && !passo) return null;
+  if (!lista.length) return null;
   const mostrar = aberto ? lista : lista.slice(0, VISIVEIS);
   const resto = lista.length - VISIVEIS;
   const ir = (x: Item) => x.aoTocar ? x.aoTocar() : navigate(x.link, x.estado ? { state: x.estado } : undefined);
@@ -387,7 +386,7 @@ export default function PraFazer() {
     <div className="pf-grupo" ref={raiz}>
     {/* (19/11) a janela do "Como funciona" fica fora da lista: antes, sem nada no "Pra fazer", o (i) do próximo passo não abria */}
       {cel && (() => {
-        const x = [...lista, ...(passo ? [passo] : [])].find(i => i.chave === como);
+        const x = lista.find(i => i.chave === como);
         const c = x?.comoFunciona;
         return (
           <Janela aberta={!!(x && c)} aoFechar={() => setComo(null)} titulo={c?.nome || ""} tipo="conteudo" umaAcao
@@ -429,38 +428,6 @@ export default function PraFazer() {
         <button type="button" className="pf-ver" onClick={() => setAberto(a => !a)} aria-expanded={aberto}>
           {aberto ? "Ver menos" : `Ver mais ${resto}`}
         </button>
-      )}
-    </section>
-    )}
-    {passo && (
-    <section className="pf pf-trilha" aria-label="Seu próximo passo">
-      <div className="pf-cab">
-        <b className="pf-t">Seu próximo passo</b>
-        {/* (19/11) sem o "X de Y": a trilha tem mais passos do que o número mostrava */}
-        <span className="pf-prog">Vender mais</span>
-      </div>
-      <div className="pf-barra" role="progressbar" aria-valuemin={0} aria-valuemax={core.length} aria-valuenow={feitos.length} aria-label={`${feitos.length} de ${core.length} passos feitos`}>
-        <i style={{ width: `${Math.round((feitos.length / Math.max(core.length, 1)) * 100)}%` }} />
-      </div>
-      <div className="pf-passo">
-        <span className="pf-ic" aria-hidden="true"><passo.Ic size={22} weight="bold" /></span>
-        <div className="pf-tx">
-          <b>{nomePasso(kPasso) || passo.t}</b>
-          <p>{TRILHA.find(t => t.k === kPasso)?.txt || passo.s}{passo.comoFunciona && <> <button type="button" className="pf-como" aria-expanded={como === passo.chave} onClick={() => setComo(c => c === passo.chave ? null : passo.chave)}>Como funciona <Info size={14} weight="bold" aria-hidden="true" /></button></>}</p>
-          {!cel && como === passo.chave && passo.comoFunciona && <ConteudoComo c={passo.comoFunciona} rotulo={passo.t} className="pf-cf" />}
-          <div className="pf-bts pf-bts--passo">
-            <button type="button" className="pf-bt pf-bt--cheio" onClick={() => ir(passo)}>{passo.acao}</button>
-            {passo.naoQuero ? <button type="button" className="pf-nao" onClick={() => adiar(passo, "nunca")}>Não quero</button> : agoraNao(passo)}
-          </div>
-        </div>
-      </div>
-      {proximos.length > 0 && (
-        <ul className="pf-proximos">
-          {proximos.map(t => {
-            const ok = feitos.some(f => f.k === t.k);
-            return <li key={t.k} className={ok ? "ok" : undefined}><span aria-hidden="true">{ok ? <Check size={14} weight="bold" /> : <i />}</span>{t.nome}<em className="pf-sr">{ok ? " (feito)" : " (falta)"}</em></li>;
-          })}
-        </ul>
       )}
     </section>
     )}
