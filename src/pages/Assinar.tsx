@@ -32,8 +32,8 @@ const PRECO_CHEIO = PRECO_PRO;
 /** (19/11) Limites do grátis que o PRO tira: nome, como é hoje e como fica no PRO (o de produtos usa o limite da conta) */
 const LIMITES: [string, string, string][] = [
   ["Fotos por produto", "1", "Até 4"],
+  ["Cores da loja", "4", "Todas"],
   ["Doo IA", "10 por mês", "150 por dia"],
-  ["Cores da loja", "4 prontas", "Qualquer cor"],
   ["Link da loja", "Um código", "Seu nome"],
   ["Cardápio", "Com marca", "Sem marca"],
   ["PDFs", "Com marca", "Sem marca"],
@@ -228,7 +228,7 @@ export default function Assinar() {
             </section>
           )}
 
-          <section className="pro11-sec">
+          <section className="pro11-sec pro11-sec--recs">
             <h2>Recursos só do PRO</h2>
             <div className="pro11-recs">
               {SO_PRO.map(([Ic, nome, frase]) => (
@@ -241,14 +241,15 @@ export default function Assinar() {
             </div>
           </section>
 
-          <section className="pro11-sec">
+          <section className="pro11-sec pro11-sec--lim">
             <h2>Limites que o PRO tira</h2>
-            <div className="pro11-recs">
+            <div className="pro11-tab" role="table" aria-label="Grátis e PRO">
+              <div className="pro11-l pro11-l--cab" role="row"><span role="columnheader" /><span role="columnheader">Grátis</span><span role="columnheader">PRO</span></div>
               {([["Produtos", String(limiteProdutos), "Sem limite"], ...LIMITES] as [string, string, string][]).map(([nome, hoje, pro]) => (
-                <div className="pro11-l" key={nome}>
-                  <b>{nome}</b>
-                  <span className="pro11-l-x"><X size={13} weight="bold" aria-label="No grátis" role="img" />{hoje}</span>
-                  <span className="pro11-l-v"><Check size={14} weight="bold" aria-label="No PRO" role="img" />{pro}</span>
+                <div className="pro11-l" key={nome} role="row">
+                  <b role="cell">{nome}</b>
+                  <span className="pro11-l-x" role="cell"><X size={13} weight="bold" aria-hidden="true" />{hoje}</span>
+                  <span className="pro11-l-v" role="cell"><Check size={14} weight="bold" aria-hidden="true" />{pro}</span>
                 </div>
               ))}
             </div>

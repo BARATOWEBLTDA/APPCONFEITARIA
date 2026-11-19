@@ -242,3 +242,28 @@ button.pro9-l2-i { cursor: pointer; }
 .pro11-l-x { color: var(--ui-texto-2); } .pro11-l-x svg { color: #C9A9AE; }
 .pro11-l-v { font-weight: 500; } .pro11-l-v svg { color: #2E9B5B; }
 @media (max-width: 359px) { .pro11-l { grid-template-columns: minmax(0, 1fr) 78px 92px; column-gap: 5px; font-size: 11.5px; padding: 6px 10px; } .pro11-l b { font-size: 11.5px; } .pro11-socio b { font-size: 15px; } .pro11-socio em { font-size: 12px; padding: 4px 8px; } }
+/* (19/11) limites em tabela de verdade: cabeçalho Grátis × PRO e linhas dos quatro lados */
+.pro11-tab { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: 12px; background: var(--ui-branco); }
+.pro11-tab .pro11-l { grid-template-columns: minmax(0, 1fr) 110px 118px; column-gap: 0; min-height: 44px; padding: 0; align-items: stretch; }
+.pro11-tab .pro11-l > * { display: flex; align-items: center; gap: 5px; padding: 0 10px; min-width: 0; }
+.pro11-tab .pro11-l > * + * { border-left: 1px solid var(--ui-borda); }
+.pro11-tab .pro11-l + .pro11-l { border-top: 1px solid var(--ui-borda); }
+.pro11-tab .pro11-l > b { padding-left: 12px; }
+.pro11-tab .pro11-l-v { background: #FFFBF1; }
+.pro11-l--cab { min-height: 38px !important; font-size: 12.5px; color: var(--ui-texto-2); background: var(--ui-cinza); }
+.pro11-l--cab > span:last-child { background: #22130E; color: #F5C76B; font-weight: 600; letter-spacing: .04em; }
+@media (max-width: 359px) { .pro11-tab .pro11-l { grid-template-columns: minmax(0, 1fr) 94px 100px; } .pro11-tab .pro11-l > * { padding: 0 7px; gap: 3px; } }
+/* (19/11) computador: duas colunas. Recursos à esquerda (em 2 colunas), oferta com o botão e a tabela de limites à direita */
+@media (min-width: 1000px) {
+  .pro10-topo:has(.pro11-logo) { padding-bottom: 32px; }
+  .pro10-corpo.pro11-corpo { max-width: none; margin-top: 16px; display: grid; grid-template-columns: minmax(0, 1fr) 372px; column-gap: 20px; row-gap: 14px; align-items: start; }
+  .pro11-corpo > * { grid-column: 2; }
+  .pro11-corpo > .pro11-sec--recs { grid-column: 1; grid-row: 1 / span 8; }
+  .pro11-sec h2 { margin-top: 0; }
+  .pro11-recs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .pro11-recs .pro11-r { min-width: 0; }
+  .pro11-recs .pro11-r:nth-child(2) { border-top: 0; }
+  .pro11-recs .pro11-r:nth-child(odd) { border-right: 1px solid var(--ui-linha, var(--ui-borda)); }
+  .pro11-socio { padding: 20px 18px; }
+  .pro11-oferta-pc { margin-top: 0; padding: 16px; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); }
+  .pro11-oferta-pc .ui-bt { width: 100%; }
+}
