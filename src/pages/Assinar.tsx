@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { Crown, Lock, CaretLeft, CaretRight, Check, X, PlayCircle, FileText, Ticket, Stack, ChartLineUp, ChatCircleText, Megaphone, AddressBook, Cake, Camera, SealCheck, Images, MicrosoftExcelLogo, Printer, FilePdf, HandHeart, type Icon } from "@phosphor-icons/react";
-import { BENEFICIOS, CHECKOUT_HOTMART, CTA_PRO, CTA_PRO_CURTO, OFERTA_PRO, PRECO_PRO, SELO_OFERTA } from "@/lib/beneficiosPro";
+import { CHECKOUT_HOTMART, CTA_PRO, CTA_PRO_CURTO, OFERTA_PRO, PRECO_PRO, SELO_OFERTA } from "@/lib/beneficiosPro";
 import { noAppDaLoja } from "@/lib/plataforma";
 import { lojaPagamentoPronto, iniciarLoja, ofertaPro, assinarPelaLoja, restaurarCompra, cancelouCompra, type OfertaLoja } from "@/lib/lojaPagamento";
 import { refreshProfile } from "@/hooks/useProfile";
@@ -108,6 +108,13 @@ function Orbita({ logo, baixo = false }: { logo: string; baixo?: boolean }) {
     </div>
   );
 }
+/** (19/11) quem já é PRO: para onde cada recurso leva ("doo" abre a Doo, "equipe" chama a equipe no WhatsApp) */
+const DESTINO: Record<string, string> = {
+  "Stories": "/stories", "Orçamentos": "/orcamentos", "Cupons de desconto": "/cupons", "Adicionais": "/complementos", "Lucro por produto": "/lucratividade",
+  "Mensagens do WhatsApp": "/configuracoes/mensagens", "Pixel": "/pixel", "Importar contatos": "/clientes", "Topos, logo e banners com IA": "doo", "Doo com fotos": "doo",
+  "Selo de loja verificada": "/cardapio-design", "Banners prontos do PRO": "/cardapio-design", "Planilha do financeiro": "/financeiro/transacoes", "Imprimir a agenda do dia": "/agenda",
+  "Ficha técnica em PDF": "/ficha-tecnica", "Montamos seu cardápio": "equipe",
+};
 const VALOR_MES = 29.9;
 const reais = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 /** confete dourado saindo do botão (some sozinho; nada com "reduzir movimento") */
@@ -123,7 +130,7 @@ function confete(de: HTMLElement | null) {
   }
   document.body.appendChild(caixa); setTimeout(() => caixa.remove(), 1500);
 }
-const dataBR = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+const dataBR = (d: Date) => d.toLocaleDateString("pt-BR"); // (19/11) com o ano
 
 // (19/11) o link do checkout vem de beneficiosPro (são duas ofertas em teste: 7 dias grátis e Black Friday por R$ 1)
 
@@ -228,39 +235,47 @@ export default function Assinar() {
 
   return (
     <>
-      {(isPro || (computador && !largo)) && <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo para sua confeitaria vender mais"} onBack={computador ? undefined : () => voltarOuIr(navigate)} />}
+      {(isPro ? computador : (computador && !largo)) && <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo para sua confeitaria vender mais"} onBack={computador ? undefined : () => voltarOuIr(navigate)} />}
       {isPro ? (
-        /* ══ (21/10) Quem já é PRO: o status primeiro, a lista compacta e as dúvidas ══ */
-        <div className="cl9 pro9 pro9--pro">
-          <section className="pro9-st">
-            <span className="pro9-st-ic" aria-hidden="true"><Crown size={24} weight="fill" /></span>
-            <span className="pro9-st-tx">
-              <b>Você é PRO</b>
-              <small>
-                {/* (31/10 · 5.97) nos 7 dias grátis: "Teste grátis" e a 1ª cobrança (sem a folga que o webhook dá) */}
-                <span className="pro9-pc">{emTeste ? "Teste grátis · " : "Ativo · "}</span>{cobranca ? `${emTeste ? "1ª cobrança" : "Renova"} em ${dataBR(cobranca)} · ` : ""}{PRECO_CHEIO}<span className="pro9-pc"> por mês</span>
-              </small>
-            </span>
-            <button type="button" className="pro9-st-bt" onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</button>
+        /* ══ (19/11) Quem já é PRO: topo simples (sem a roda), "Tudo liberado" e os mesmos recursos, agora como atalhos ══ */
+        <div className="pro10 pro14">
+          <section className="pro10-topo pro14-topo">
+            {!computador && (
+              <div className="pro10-barra">
+                <button type="button" className="pro10-voltar" aria-label="Voltar" onClick={() => voltarOuIr(navigate)}><CaretLeft size={22} weight="bold" /></button>
+                <span>Doonly PRO</span>
+              </div>
+            )}
+            <div className="pro14-logo"><img src={logo || "/pro-logo-padrao.webp"} alt="" />{logo && <img className="pro14-coroa" src="/pro-coroa.webp" alt="" width={60} height={30} />}</div>
+            <h1 className="pro10-t pro14-t">Você é PRO</h1>
+            <p className="pro10-s pro14-s">{emTeste ? "Teste grátis" : "Ativo"}{cobranca ? ` · ${emTeste ? "1ª cobrança" : "renova"} em ${dataBR(cobranca)}` : ""}</p>
           </section>
-          <button type="button" className="pro9-st-bt2" onClick={() => navigate("/minha-assinatura")}>Ver minha assinatura</button>
-          <EquipeMonta />
-
-          <section className="cl9-card pro9-lista2">
-            <Titulo>O que o PRO te dá</Titulo>
-            <div className="pro9-l2">
-              {BENEFICIOS.map(([Ic, , , t, d, para]) => {
-                const conteudo = (<>
-                  <span className="pro9-ic"><Ic size={20} weight="duotone" /></span>
-                  <span className="pro9-l2-tx"><b>{t}</b><small>{d}</small></span>
-                  {para ? <CaretRight size={16} weight="bold" className="pro9-seta" aria-hidden="true" /> : <span className="pro9-visto" role="img" aria-label="Incluso"><Check size={12} weight="bold" /></span>}
-                </>);
-                return para
-                  ? <button key={t} type="button" className="pro9-l2-i" onClick={() => ir(para)}>{conteudo}</button>
-                  : <div key={t} className="pro9-l2-i">{conteudo}</div>;
-              })}
-            </div>
-          </section>
+          <div className="pro10-corpo pro11-corpo pro14-corpo">
+            <button type="button" className="pro11-socio pro13-of" onClick={() => navigate("/minha-assinatura")}>
+              <h2 className="pro10-t pro13-t pro13-t2">Tudo liberado</h2>
+              <em>Minha assinatura</em>
+            </button>
+            <section className="pro11-sec">
+              <h2>Seus recursos do PRO</h2>
+              <div className="pro11-recs">
+                {SO_PRO.map(([Ic, nome, frase]) => (
+                  <button type="button" className="pro11-r pro14-r" key={nome} onClick={() => ir(DESTINO[nome] || null)}>
+                    <span className="pro11-r-ic" aria-hidden="true"><Ic size={22} weight="bold" /></span>
+                    <span className="pro11-r-tx"><b>{nome}</b><small>{frase}</small></span>
+                    <CaretRight size={16} weight="bold" className="pro14-seta" aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+            </section>
+            <section className="pro11-sec">
+              <h2>Seus limites agora</h2>
+              <div className="pro11-recs">
+                {([["Produtos", "", "Sem limite"], ...LIMITES] as [string, string, string][]).map(([nome, , pro]) => (
+                  <div className="pro14-lm" key={nome}><span>{nome}</span><b><Check size={14} weight="bold" aria-hidden="true" />{pro}</b></div>
+                ))}
+              </div>
+            </section>
+          </div>
         </div>
       ) : (
       largo ? (

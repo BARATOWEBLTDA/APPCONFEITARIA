@@ -4,16 +4,16 @@ import { COMO_ASSINATURA, TOUR_ASSINATURA } from "@/lib/comoTelas";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
-import { CaretRight, Check, Crown, HandHeart, Receipt } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, Crown, HandHeart, Receipt } from "@phosphor-icons/react";
 import { pedirMontagem } from "@/components/billing/EquipeMonta";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
-import { useProfile, refreshProfile, type Profile } from "@/hooks/useProfile";
+import { useProfile, refreshProfile, fotoDaLoja, type Profile } from "@/hooks/useProfile";
+import "./assinar.css";
 
 /** O perfil com os dados da assinatura (Hotmart) */
 type PerfilAssinatura = (Profile & { assinatura_status?: string | null; assinatura_origem?: string | null; email?: string | null; hotmart_transacao?: string | null; hotmart_assinante?: string | null }) | null;
-import { BENEFICIOS } from "@/lib/beneficiosPro";
 import { voltarOuIr } from "@/lib/voltar"; // 11/10: seta de voltar que funciona com a tela aberta direto
 
 /**
@@ -25,7 +25,6 @@ const WHATSAPP_EQUIPE = "5511978414991";
 const VALOR = "R$ 29,90";
 /** Área do comprador da Hotmart: compras, assinaturas e recibos */
 const HOTMART_COMPRAS = "https://consumer.hotmart.com/purchase";
-const LIBERADO = ["Doo, sua assistente", "Lucro de cada produto", "Cupons e banners no cardápio", "A equipe Doonly monta seu cardápio"];
 const dataBR = (d: Date) => d.toLocaleDateString("pt-BR");
 // (31/10 · 5.84) com o ano quando não é o deste ano (antes "27/09" podia ser de qualquer ano)
 const diaMes = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}${d.getFullYear() !== new Date().getFullYear() ? "/" + d.getFullYear() : ""}`;
@@ -79,96 +78,79 @@ export default function MinhaAssinatura() {
   // (27/10) conta grátis ou PRO vencido: vai para a página do PRO (antes a tela ficava em branco)
   if (!isPro) return carregandoPlano ? <div className="mas-root"><AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" /></div> : <Navigate to="/assinar" replace />;
 
+  // (19/11) tela refeita no estilo da página do PRO: topo simples com a logo e a coroa, cartão preto e dourado e linhas limpas
+  const logo = fotoDaLoja(profile);
+  const nomeLoja = String(profile?.nome_loja || "").trim();
+  // primeiro mês (ainda sem renovação): a oferta de entrada já foi paga; o valor cheio só vale a partir da próxima cobrança
+  const primeiroMes = !emTeste && !pelaEquipe && !cancelada && !atrasada && !!assinanteDesde && !!cobranca && cobranca.getTime() - assinanteDesde.getTime() < 35 * 86400000;
+  const quando = (d: Date) => `${dataBR(d)} · ${dias === 0 ? "hoje" : dias === 1 ? "amanhã" : `em ${dias} dias`}`;
+  const selo = emTeste ? "Teste grátis" : cancelada ? "Cancelada" : atrasada ? "Pagamento atrasado" : "Ativo";
+
   return (
     <div className="mas-root">
-      <AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" onBack={computador ? undefined : () => voltarOuIr(navigate, "/minha-conta")} infoComo={COMO_ASSINATURA} infoTour={TOUR_ASSINATURA} />
-      <div className="mas-wrap">
-        <div className="mas-col">
-          <section className="mas-c">
-            <div className="mas-top">
-              <span className="mas-cr"><Crown size={24} weight="fill" aria-hidden="true" /></span>
-              <b>Doonly PRO</b>
-              <span className={`mas-at${emTeste || cancelada || atrasada ? " mas-at--teste" : ""}`}>{emTeste ? "Teste grátis" : cancelada ? "Cancelada" : atrasada ? "Pagamento atrasado" : "Ativo"}</span>
-            </div>
-            <p className="mas-v">{emTeste ? <>Grátis <small>até {cobranca ? diaMes(new Date(cobranca.getTime() - 86400000)) : "o 7º dia"}</small></> : pelaEquipe ? <>PRO <small>liberado pela equipe</small></> : <>{VALOR} <small>por mês</small></>}</p>
-            {assinanteDesde && <div className="mas-l">Assinante desde<b>{dataBR(assinanteDesde)}</b></div>}
-            {pelaEquipe ? (
-              <div className="mas-l">PRO até<b>{semFim || !ate ? "Sem vencimento" : ate}</b></div>
-            ) : cancelada ? (<>
-              <div className="mas-l">Pagamento<b>Cancelado na Hotmart</b></div>
-              <div className="mas-l">PRO até<b>{ate || "o fim do mês pago"}</b></div>
-            </>) : (<>
-              <div className="mas-l">Pagamento<b>{atrasada ? "Atrasado na Hotmart" : emTeste ? `Hotmart, ${VALOR} por mês` : "Hotmart, todo mês"}</b></div>
-              <div className="mas-l">{emTeste ? "Primeira cobrança" : atrasada ? "PRO até" : "Próxima cobrança"}<b>{atrasada ? (ate || "Veja na Hotmart") : cobranca && semFim ? "Sem vencimento" : cobranca ? `${diaMes(cobranca)} · ${dias === 0 ? "hoje" : dias === 1 ? "amanhã" : `em ${dias} dias`}` : "Veja na Hotmart"}</b></div>
-            </>)}
-          </section>
-
-          <section className="mas-c">
-            <p className="mas-h">O que está liberado</p>
-            {LIBERADO.map(t => <div key={t} className="mas-li"><i aria-hidden="true"><Check size={12} weight="bold" /></i>{t}</div>)}
-            <button type="button" className="mas-lk" onClick={() => navigate("/assinar")}>Ver os {BENEFICIOS.length} recursos <CaretRight size={14} weight="bold" aria-hidden="true" /></button>
-          </section>
-        </div>
-
-        <section className="mas-c">
-          <p className="mas-h">Precisa de algo?</p>
-          {/* (6.81) a equipe Doonly monta o cardápio (produtos, logo e banners) */}
-          <button type="button" className="mas-op" onClick={() => pedirMontagem(profile?.nome as string | undefined, profile?.nome_loja as string | undefined)}>
-            <span className="mas-op-ic"><HandHeart size={20} weight="fill" /></span>
-            <span className="mas-op-tx"><b>Montar meu cardápio</b><small>A equipe cadastra produtos, logo e banners</small></span>
-            <CaretRight size={18} weight="bold" className="mas-op-s" aria-hidden="true" />
-          </button>
-          <button type="button" className="mas-op" onClick={whats}>
-            <span className="mas-op-ic"><IconeWhatsApp size={20} /></span>
-            <span className="mas-op-tx"><b>Dúvidas ou cancelamento</b><small>WhatsApp da equipe Doonly</small></span>
-            <CaretRight size={18} weight="bold" className="mas-op-s" aria-hidden="true" />
-          </button>
-          {!noAppDaLoja ? (
-          <a className="mas-op" href={HOTMART_COMPRAS} target="_blank" rel="noopener noreferrer">
-            <span className="mas-op-ic"><Receipt size={20} weight="fill" /></span>
-            <span className="mas-op-tx"><b>Pagamentos e recibos</b><small>Área de compras da Hotmart</small></span>
-            <CaretRight size={18} weight="bold" className="mas-op-s" aria-hidden="true" />
-          </a>
-          ) : (
-          <a className="mas-op" href={LINK_ASSINATURAS_GOOGLE} target="_blank" rel="noopener noreferrer">
-            <span className="mas-op-ic"><Receipt size={20} weight="fill" /></span>
-            <span className="mas-op-tx"><b>Assinatura no Google Play</b><small>Pagamentos, recibos e cancelamento</small></span>
-            <CaretRight size={18} weight="bold" className="mas-op-s" aria-hidden="true" />
-          </a>
-          )}
+      {computador && <AppPageHeader title="Minha assinatura" subtitle="Seu plano PRO" infoComo={COMO_ASSINATURA} infoTour={TOUR_ASSINATURA} />}
+      <div className="pro10 pro14">
+      <section className="pro10-topo pro14-topo">
+        {!computador && (
+          <div className="pro10-barra">
+            <button type="button" className="pro10-voltar" aria-label="Voltar" onClick={() => voltarOuIr(navigate, "/minha-conta")}><CaretLeft size={22} weight="bold" /></button>
+            <span>Minha assinatura</span>
+          </div>
+        )}
+        <div className="pro14-logo"><img src={logo || "/pro-logo-padrao.webp"} alt="" />{logo && <img className="pro14-coroa" src="/pro-coroa.webp" alt="" width={60} height={30} />}</div>
+        <h1 className="pro10-t pro14-t">{nomeLoja ? `${nomeLoja} é PRO` : "Você é PRO"}</h1>
+        {assinanteDesde && <p className="pro10-s pro14-s">Assinante desde {dataBR(assinanteDesde)}</p>}
+      </section>
+      <div className="pro10-corpo pro11-corpo pro14-corpo">
+        <section className="pro14-cartao">
+          <small>Doonly PRO</small>
+          <b>{emTeste ? <>Grátis <span>até {cobranca ? dataBR(new Date(cobranca.getTime() - 86400000)) : "o 7º dia"}</span></> : pelaEquipe ? <>PRO <span>liberado pela equipe</span></> : primeiroMes ? <>1º mês <span>depois {VALOR} por mês</span></> : <>{VALOR} <span>por mês</span></>}</b>
+          <em className={`pro14-st${emTeste || cancelada || atrasada ? " pro14-st--aviso" : ""}`}>{selo}</em>
+        </section>
+        <section className="pro14-linhas">
+          {pelaEquipe ? (
+            <div>PRO até<b>{semFim || !proExpiraEm ? "Sem vencimento" : dataBR(proExpiraEm)}</b></div>
+          ) : cancelada ? (<>
+            <div>Pagamento<b>Cancelado na Hotmart</b></div>
+            <div>PRO até<b>{proExpiraEm ? dataBR(proExpiraEm) : "o fim do mês pago"}</b></div>
+          </>) : (<>
+            <div>{emTeste ? "Primeira cobrança" : atrasada ? "PRO até" : "Próxima cobrança"}<b>{atrasada ? (proExpiraEm ? dataBR(proExpiraEm) : "Veja na Hotmart") : cobranca && semFim ? "Sem vencimento" : cobranca ? quando(cobranca) : "Veja na Hotmart"}</b></div>
+            <div>Pagamento<b>{atrasada ? "Atrasado na Hotmart" : emTeste || primeiroMes ? `Hotmart, ${VALOR} por mês` : "Hotmart, todo mês"}</b></div>
+          </>)}
+        </section>
+        <section className="pro11-sec">
+          <h2>O que está liberado</h2>
+          <div className="pro11-recs">
+            <button type="button" className="pro11-r pro14-r" onClick={() => navigate("/assinar")}>
+              <span className="pro11-r-ic" aria-hidden="true"><Crown size={20} weight="fill" /></span>
+              <span className="pro11-r-tx"><b>16 recursos e 7 limites a menos</b><small>Veja tudo o que o PRO te dá</small></span>
+              <CaretRight size={16} weight="bold" className="pro14-seta" aria-hidden="true" />
+            </button>
+          </div>
+        </section>
+        <section className="pro11-sec">
+          <h2>Precisa de algo?</h2>
+          <div className="pro11-recs">
+            {/* (6.81) a equipe Doonly monta o cardápio: abre o WhatsApp do suporte com a mensagem pronta */}
+            <button type="button" className="pro11-r pro14-r" onClick={() => pedirMontagem(profile?.nome as string | undefined, profile?.nome_loja as string | undefined)}>
+              <span className="pro11-r-ic" aria-hidden="true"><HandHeart size={20} weight="bold" /></span>
+              <span className="pro11-r-tx"><b>Montar meu cardápio</b><small>A equipe cadastra produtos, logo e banners</small></span>
+              <CaretRight size={16} weight="bold" className="pro14-seta" aria-hidden="true" />
+            </button>
+            <button type="button" className="pro11-r pro14-r" onClick={whats}>
+              <span className="pro11-r-ic" aria-hidden="true"><IconeWhatsApp size={20} /></span>
+              <span className="pro11-r-tx"><b>Falar com a equipe</b><small>WhatsApp do Doonly</small></span>
+              <CaretRight size={16} weight="bold" className="pro14-seta" aria-hidden="true" />
+            </button>
+            <a className="pro11-r pro14-r" href={noAppDaLoja ? LINK_ASSINATURAS_GOOGLE : HOTMART_COMPRAS} target="_blank" rel="noopener noreferrer">
+              <span className="pro11-r-ic" aria-hidden="true"><Receipt size={20} weight="bold" /></span>
+              <span className="pro11-r-tx"><b>{noAppDaLoja ? "Assinatura no Google Play" : "Pagamentos e recibos"}</b><small>{noAppDaLoja ? "Pagamentos e recibos" : "Área de compras da Hotmart"}</small></span>
+              <CaretRight size={16} weight="bold" className="pro14-seta" aria-hidden="true" />
+            </a>
+          </div>
         </section>
       </div>
-      <style>{`
-        .mas-root { font-family: var(--font-base); color: var(--ui-texto); }
-        .mas-wrap { display: flex; flex-direction: column; gap: 14px; max-width: 560px; margin: 0 auto; padding: 16px 16px 100px; }
-        .mas-col { display: flex; flex-direction: column; gap: 14px; }
-        .mas-c { padding: 16px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
-        .mas-top { display: flex; align-items: center; gap: 12px; }
-        .mas-cr { flex: none; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 14px; background: var(--chocolate); color: #F5C76B; }
-        .mas-top b { flex: 1; font-size: 17px; font-weight: 600; }
-        .mas-at--teste { background: #FDF2E2 !important; color: #A15C07 !important; }
-        .mas-at { padding: 4px 10px; border-radius: 6px; background: #E7F6EC; color: #166534; font-size: 13px; font-weight: 600; }
-        .mas-v { margin: 14px 0 6px; font-size: 28px; font-weight: 600; color: var(--ui-texto); }
-        .mas-v small { font-size: 15px; font-weight: 500; color: var(--ui-texto-2); }
-        .mas-l { display: flex; justify-content: space-between; gap: 10px; padding: 11px 0; border-top: 1px solid var(--ui-linha); font-size: 14.5px; color: var(--ui-texto-2); }
-        .mas-l b { font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
-        .mas-h { margin: 0 0 8px; font-size: 15px; font-weight: 600; color: var(--ui-texto); }
-        .mas-li { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 14.5px; }
-        .mas-li i { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #E7F6EC; color: #15803D; }
-        .mas-lk { display: inline-flex; align-items: center; gap: 2px; min-height: 40px; margin: 2px 0 -8px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ui-rosa-escuro); cursor: pointer; }
-        .mas-op { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 12px 0; border: 0; border-top: 1px solid var(--ui-linha); background: none; font-family: inherit; text-align: left; color: var(--ui-texto); text-decoration: none; cursor: pointer; }
-        .mas-h + .mas-op { border-top: 0; }
-        .mas-op-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; background: var(--ui-ic-fundo); color: var(--ui-ic-cor); }
-        .mas-op-tx { flex: 1; min-width: 0; }
-        .mas-op-tx b, .mas-op-tx small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-        .mas-op-tx b { font-size: 15px; font-weight: 600; }
-        .mas-op-tx small { margin-top: 2px; font-size: 13px; color: var(--ui-texto-2); }
-        .mas-op-s { flex: none; color: var(--ui-texto-3); }
-        @media (min-width: 901px) {
-          .mas-wrap { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; gap: 20px; max-width: 1066px; padding: 24px 0 40px; }
-          .mas-col { gap: 20px; }
-        }
-      `}</style>
+      </div>
     </div>
   );
 }
