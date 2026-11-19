@@ -13,7 +13,7 @@ export type AvisoCadastro = {
   /** abrir: a tela abre direto no que resolve · destacar: o balão em cima do lugar de tocar (04/11 · 6.20) */
   estado?: { abrir?: string; destacar?: { alvo: string; titulo: string; texto: string; acao?: string } };
   icone: "custos" | "maquininha" | "ficha" | "caixa" | "conta" | "entrega" | "descricao" | "banner" | "cupom" | "complemento" | "cliente" | "whatsapp"
-    | "receber" | "pausa" | "orcamento" | "divulgar" | "pix" | "categoria" | "feriado" | "ferias";
+    | "receber" | "pausa" | "orcamento" | "divulgar" | "pix" | "categoria" | "feriado" | "ferias" | "destaque" | "promocao";
   /** (6.179) feriado chegando: "Vou fechar" marca o dia como fechado; "Abre normal" some */
   feriado?: { data: string; nome: string };
   /** (6.182) pagamento atrasado: "Já recebi" registra o que falta (pergunta antes) */
@@ -44,7 +44,7 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
     supabase.from("custos_fixos").select("id").eq("user_id", uid).limit(1),
     supabase.from("custos_variaveis").select("*").eq("user_id", uid),
     supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
-    supabase.from("produtos").select("id, nome, descricao, produto_insumos(id)").eq("user_id", uid).eq("disponivel", true),
+    supabase.from("produtos").select("id, nome, descricao, destaque, promocao, produto_insumos(id)").eq("user_id", uid).eq("disponivel", true),
     // (15/10) também as que vencem hoje e as atrasadas (antes só as de amanhã)
     supabase.from("contas_pagar").select("id, descricao, vencimento, valor").eq("user_id", uid).eq("status", "pendente").lte("vencimento", diaISO(1)).order("vencimento"),
     // (04/11 · 6.20) mão de obra, complementos, clientes e o WhatsApp conferido
@@ -129,6 +129,12 @@ export async function lerAvisosCadastro(uid: string): Promise<AvisoCadastro[]> {
   if (ehPro && temProduto && !nComplementos.error && !(nComplementos.count || 0)) l.push({ chave: "falta_complemento", icone: "complemento", semNotificar: true, titulo: "Cadastre adicionais",
     texto: "Topo de bolo, velas e escrita: o cliente marca no produto e cada pedido vale mais.", link: "/complementos", nivel: "normal", curto: { t: "Adicionais", s: "Topo, velas e escrita" },
     estado: { destacar: { alvo: ".guia-novo-complemento", titulo: "Crie o primeiro adicional", texto: "Por exemplo: Topo de bolo, com a foto da ideia que o cliente manda.", acao: "Criar adicional" } } });
+  // (19/11) destaques e promoção: o que mais chama atenção no cardápio (pedido do Bruno)
+  const ativosAv = !produtos.error ? ((produtos.data as (ProdutoAvisos & { destaque?: boolean | null; promocao?: boolean | null })[]) || []) : [];
+  if (ativosAv.length >= 2 && !ativosAv.some(p => p.destaque === true)) l.push({ chave: "falta_destaque", icone: "destaque", semNotificar: true, titulo: "Escolha seus destaques",
+    texto: "Marque até 8 produtos com a estrela. Eles aparecem primeiro no cardápio, com foto grande.", link: "/produtos", nivel: "normal", curto: { t: "Produtos em destaque", s: "Até 8, no topo do cardápio" } });
+  if (ativosAv.length >= 1 && !ativosAv.some(p => p.promocao === true)) l.push({ chave: "falta_promocao", icone: "promocao", semNotificar: true, titulo: "Ative uma promoção",
+    texto: "O preço antigo aparece riscado ao lado do novo. Abra um produto e toque em Preço e promoção.", link: "/produtos", nivel: "normal", curto: { t: "Promoção com preço riscado", s: "Chama a atenção no cardápio" } });
   if (temProduto && !nClientes.error && !(nClientes.count || 0)) l.push({ chave: "falta_cliente", icone: "cliente", semNotificar: true, titulo: "Cadastre sua primeira cliente",
     texto: "Com as clientes no app, você manda parabéns no aniversário e vê o que cada uma comprou.", link: "/clientes", nivel: "normal", curto: { t: "Primeira cliente", s: "Aniversário e histórico" },
     estado: { destacar: { alvo: ".guia-novo-cliente", titulo: "Cadastre a cliente aqui", texto: "Nome e WhatsApp já bastam. Quem pede pelo cardápio entra sozinha.", acao: "Cadastrar cliente" } } });

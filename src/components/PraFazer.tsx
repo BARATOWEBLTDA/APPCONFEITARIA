@@ -1,7 +1,7 @@
 import { avisoDeTesteNaLista } from "@/lib/notifConfeiteira";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Basket, Bell, DeviceMobile, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo, PauseCircle, ShareNetwork, QrCode, SquaresFour, CalendarX, Island } from "@phosphor-icons/react";
+import { Basket, Bell, DeviceMobile, BellSlash, Crown, Buildings, CalendarCheck, CaretDown, ChartLineUp, Check, ClipboardText, Clock, Coins, CreditCard, ImageSquare, Info, ListChecks, MapPin, Storefront, TextAlignLeft, Truck, WarningCircle, Ticket, Stack, UserPlus, WhatsappLogo, PauseCircle, ShareNetwork, QrCode, SquaresFour, CalendarX, Island, Star, Tag } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { useLojaPronta } from "@/lib/primeirosPassos";
@@ -43,10 +43,10 @@ type Item = { chave: string; nivel: "urgente" | "atencao" | "normal"; Ic: Icon; 
 
 /** (21/10) o botão de cada linha diz o que fazer */
 const ACAO: Record<AvisoCadastro["icone"], string> = { custos: "Definir", maquininha: "Definir", ficha: "Fazer", caixa: "Informar", conta: "Pagar", entrega: "Definir", descricao: "Escrever", banner: "Colocar", cupom: "Criar", complemento: "Criar", cliente: "Cadastrar", whatsapp: "Está certo",
-  receber: "Já recebi", pausa: "Ver loja", orcamento: "Abrir", divulgar: "Divulgar", pix: "Ligar", categoria: "Criar", feriado: "Vou fechar", ferias: "Ver" };
+  receber: "Já recebi", pausa: "Ver loja", orcamento: "Abrir", divulgar: "Divulgar", pix: "Ligar", categoria: "Criar", feriado: "Vou fechar", ferias: "Ver", destaque: "Escolher", promocao: "Ativar" };
 const ACAO_NOVIDADE: Record<string, string> = { "aniversarios": "Ver", "produtos-sem-foto": "Pôr foto", "clientes-sumidos": "Chamar" };
 const ICONE: Record<AvisoCadastro["icone"], Icon> = { custos: Buildings, maquininha: CreditCard, ficha: ClipboardText, caixa: Coins, conta: CalendarCheck, entrega: Truck, descricao: TextAlignLeft, banner: ImageSquare, cupom: Ticket, complemento: Stack, cliente: UserPlus, whatsapp: WhatsappLogo,
-  receber: Coins, pausa: PauseCircle, orcamento: ClipboardText, divulgar: ShareNetwork, pix: QrCode, categoria: SquaresFour, feriado: CalendarX, ferias: Island };
+  receber: Coins, pausa: PauseCircle, orcamento: ClipboardText, divulgar: ShareNetwork, pix: QrCode, categoria: SquaresFour, feriado: CalendarX, ferias: Island, destaque: Star, promocao: Tag };
 const DIA = 86400000;
 const PESO = { urgente: 0, atencao: 1, normal: 2 };
 const VISIVEIS = 3;
