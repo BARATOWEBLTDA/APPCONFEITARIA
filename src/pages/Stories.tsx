@@ -218,7 +218,7 @@ export default function Stories() {
                 {lista.map(s => (
                   <li key={s.id}>
                     <span className={`sto-ft${s.pronto ? "" : " sto-ft--env"}`}>
-                      {s.tipo === "video" ? (s.pronto && s.video_id ? <img src={urlCapaStory(s.video_id)} alt="" /> : <><Play size={22} weight="fill" /><i className="sto-gira" aria-hidden="true" /></>) : (s.foto_url ? <img src={s.foto_url} alt="" /> : <ImageIc size={22} weight="bold" />)}
+                      {s.tipo === "video" ? (s.pronto && s.video_id ? <CapaVideo src={urlCapaStory(s.video_id)} /> : <><Play size={22} weight="fill" /><i className="sto-gira" aria-hidden="true" /></>) : (s.foto_url ? <img src={s.foto_url} alt="" /> : <ImageIc size={22} weight="bold" />)}
                     </span>
                     <span className="sto-tx">
                       <b>{nomeProd(s.produto_id) || (s.tipo === "video" ? "Vídeo" : "Foto")}</b>
@@ -279,6 +279,19 @@ export default function Stories() {
       `}</style>
     </>
   );
+}
+
+/** capa do vídeo; enquanto o Bunny ainda não gerou a imagem, mostra o ícone de vídeo e tenta de novo */
+function CapaVideo({ src }: { src: string }) {
+  const [tentativa, setTentativa] = useState(0);
+  const [falhou, setFalhou] = useState(false);
+  useEffect(() => {
+    if (!falhou || tentativa >= 6) return;
+    const t = window.setTimeout(() => { setFalhou(false); setTentativa(n => n + 1); }, 5000);
+    return () => window.clearTimeout(t);
+  }, [falhou, tentativa]);
+  if (falhou) return <Play size={22} weight="fill" />;
+  return <img src={tentativa ? `${src}?t=${tentativa}` : src} alt="" onError={() => setFalhou(true)} />;
 }
 
 function JanelaPostar({ produtos, aoFechar, aoPublicar }: { produtos: Prod[]; aoFechar: () => void; aoPublicar: (arq: File, seg: number, dias: number, prod: string) => void }) {
