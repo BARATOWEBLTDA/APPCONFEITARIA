@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Crown, Lock, CaretLeft, CaretRight, Check, PlayCircle, FileText, Ticket, Stack, ChartLineUp, ChatCircleText, Megaphone, AddressBook, Cake, Camera, SealCheck, Images, MicrosoftExcelLogo, Printer, FilePdf, HandHeart, type Icon } from "@phosphor-icons/react";
+import { Crown, Lock, CaretLeft, CaretRight, Check, X, PlayCircle, FileText, Ticket, Stack, ChartLineUp, ChatCircleText, Megaphone, AddressBook, Cake, Camera, SealCheck, Images, MicrosoftExcelLogo, Printer, FilePdf, HandHeart, type Icon } from "@phosphor-icons/react";
 import { BENEFICIOS, CHECKOUT_HOTMART, CTA_PRO, CTA_PRO_CURTO, OFERTA_PRO, PRECO_PRO, SELO_OFERTA } from "@/lib/beneficiosPro";
 import { noAppDaLoja } from "@/lib/plataforma";
 import { lojaPagamentoPronto, iniciarLoja, ofertaPro, assinarPelaLoja, restaurarCompra, cancelouCompra, type OfertaLoja } from "@/lib/lojaPagamento";
@@ -32,7 +32,7 @@ const PRECO_CHEIO = PRECO_PRO;
 /** (19/11) Limites do grátis que o PRO tira: nome, como é hoje e como fica no PRO (o de produtos usa o limite da conta) */
 const LIMITES: [string, string, string][] = [
   ["Fotos por produto", "1", "Até 4"],
-  ["Mensagens da Doo", "10 por mês", "150 por dia"],
+  ["Doo IA", "10 por mês", "150 por dia"],
   ["Cores da loja", "4 prontas", "Qualquer cor"],
   ["Link da loja", "Um código", "Seu nome"],
   ["Cardápio", "Com marca", "Sem marca"],
@@ -208,24 +208,16 @@ export default function Assinar() {
         </section>
 
         <div className="pro10-corpo pro11-corpo">
+          {/* (19/11) o cartão preto e dourado agora é a oferta: só a frase e o selo (o cartão de sócia e o bloco preto saíram) */}
           <section className="pro11-socio" ref={cartao}>
-            <span className="pro11-socio-c" aria-hidden="true"><Crown size={22} weight="fill" /></span>
-            <b>{nomeLoja || "Sua confeitaria"}</b>
-            <small>Confeitaria PRO</small>
-            <em>PRO</em>
+            <b>{noAppDaLoja && !lojaPagamentoPronto ? "Doonly PRO" : SELO_OFERTA}</b>
+            <em>{OFERTA_PRO === "real1" ? "Black Doonly" : "PRO"}</em>
           </section>
-
           {(!noAppDaLoja || lojaPagamentoPronto) && (
-            <section className="pro11-oferta">
-              {OFERTA_PRO === "real1" && <small>Black Friday</small>}
-              <b>{SELO_OFERTA}</b>
-              <p>Depois, {lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO} por mês</p>
-              {/* (19/11) computador: sem a barra fixa, o botão fica aqui (o cartão grande do fim da tela saiu) */}
-              <div className="pro11-oferta-pc">
-                <Botao carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO}</Botao>
-                <span><Lock size={14} weight="bold" /> {lojaPagamentoPronto ? "Pagamento seguro pelo Google Play" : "Pagamento seguro pela Hotmart"}</span>
-              </div>
-            </section>
+            <div className="pro11-oferta-pc">
+              <Botao carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO}</Botao>
+              <span><Lock size={14} weight="bold" /> Depois, {lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO} por mês</span>
+            </div>
           )}
 
           {pedidoMedio !== null && (
@@ -237,19 +229,6 @@ export default function Assinar() {
           )}
 
           <section className="pro11-sec">
-            <h2>Limites que o PRO tira</h2>
-            <div className="pro11-lim">
-              {([["Produtos no cardápio", String(limiteProdutos), "Sem limite"], ...LIMITES] as [string, string, string][]).map(([nome, hoje, pro], i) => (
-                <div className={`pro11-q${i === 0 ? " pro11-q--larga" : ""}`} key={nome}>
-                  <b>{nome}</b>
-                  <p><span>Hoje</span><i>{hoje}</i></p>
-                  <p className="pro11-q-pro"><span><Crown size={13} weight="fill" aria-hidden="true" />No PRO</span><i>{pro}</i></p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="pro11-sec">
             <h2>Recursos só do PRO</h2>
             <div className="pro11-recs">
               {SO_PRO.map(([Ic, nome, frase]) => (
@@ -257,6 +236,19 @@ export default function Assinar() {
                   <span className="pro11-r-ic" aria-hidden="true"><Ic size={22} weight="bold" /></span>
                   <span className="pro11-r-tx"><b>{nome}</b><small>{frase}</small></span>
                   <Crown size={16} weight="fill" className="pro11-r-cr" aria-hidden="true" />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="pro11-sec">
+            <h2>Limites que o PRO tira</h2>
+            <div className="pro11-recs">
+              {([["Produtos", String(limiteProdutos), "Sem limite"], ...LIMITES] as [string, string, string][]).map(([nome, hoje, pro]) => (
+                <div className="pro11-l" key={nome}>
+                  <b>{nome}</b>
+                  <span className="pro11-l-x"><X size={13} weight="bold" aria-label="No grátis" role="img" />{hoje}</span>
+                  <span className="pro11-l-v"><Check size={14} weight="bold" aria-label="No PRO" role="img" />{pro}</span>
                 </div>
               ))}
             </div>
