@@ -1828,6 +1828,7 @@ export default function Produtos() {
                             const data = await res.json();
                             if (abertura.current !== vez) return;
                             if (data?.error === "limite_diario") { avisar(data.message || "Você chegou ao limite de hoje. Amanhã libera de novo.", { tipo: "info" }); return; }
+                            if (data?.error === "sem_dados") { avisar("A IA não entendeu o nome do produto. Escreva o nome de verdade e tente de novo.", { tipo: "info" }); return; }
                             const desc = data.content?.[0]?.text?.trim() || "";
                             if (desc) setForm(f => ({ ...f, descricao: desc }));
                             else avisar("Não deu para gerar a descrição. Tente de novo.", { tipo: "erro" });
