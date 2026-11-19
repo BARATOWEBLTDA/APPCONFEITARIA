@@ -248,7 +248,8 @@ export default function ClientePerfil() {
                 ? <a className="cp9-zap" href={zap} target="_blank" rel="noopener noreferrer"><IconeWhatsApp size={20} />WhatsApp</a>
                 : <span className="cp9-zap cp9-zap--off">Sem WhatsApp</span>}
               <Botao variante="secundario" tamanho="m" icone={<PencilSimple size={20} weight="bold" />} onClick={editar}>Editar</Botao>
-              <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Nova venda</Botao>
+              {/* (19/11) sem pedidos, o botão de baixo ("Nova venda para Ana") já faz isso: aqui só quando ela já tem pedidos */}
+              {pedidos.length > 0 && <Botao tamanho="m" icone={<Plus size={20} weight="bold" />} onClick={novoPedido}>Nova venda</Botao>}
             </div>
           </section>
 
