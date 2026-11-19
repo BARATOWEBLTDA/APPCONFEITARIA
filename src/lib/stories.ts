@@ -42,3 +42,8 @@ export function saiDoAr(iso: string): string {
   if (dias === 1) return `Sai do ar amanhã às ${hora}`;
   return `Sai do ar em ${dias} dias`;
 }
+
+/** versão curta para caber embaixo da capa: "Sai hoje 14:00" / "Sai amanhã 11:19" / "Sai em 2 dias" */
+export function saiCurto(iso: string): string {
+  return saiDoAr(iso).replace("Sai do ar ", "Sai ").replace(" às ", " ").replace("Já saiu do ar", "Saiu do ar");
+}

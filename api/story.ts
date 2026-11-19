@@ -26,7 +26,7 @@ export default async function handler(req: Request) {
   const lib = e.BUNNY_STREAM_LIBRARY_ID || "";
   const chave = e.BUNNY_STREAM_API_KEY || "";
   const cdn = e.BUNNY_STREAM_CDN_HOST || "";
-  if (!lib || !chave || !cdn) return respostaJson({ error: "sem_config", message: "O serviço de vídeo ainda não está configurado." }, 503);
+  if (!lib || !chave || !cdn) return respostaJson({ error: "sem_config", message: "Vídeo indisponível agora, tente já já" }, 503);
 
   const cru = await lerCorpo(req, 4000);
   let corpo: { acao?: string; videoId?: string } = {};
@@ -59,11 +59,11 @@ export default async function handler(req: Request) {
         const r = await fetch(`${url}/rest/v1/stories?user_id=eq.${usuario.id}&expira_em=gt.${encodeURIComponent(new Date().toISOString())}&select=id`, {
           headers: { apikey: anon, Authorization: `Bearer ${token}` },
         });
-        if (r.ok) { const l = await r.json(); if (Array.isArray(l) && l.length >= MAX_ATIVOS) return respostaJson({ error: "limite", message: `Você já tem ${MAX_ATIVOS} stories no ar. Apague um para postar outro.` }, 409); }
+        if (r.ok) { const l = await r.json(); if (Array.isArray(l) && l.length >= MAX_ATIVOS) return respostaJson({ error: "limite", message: `Limite de ${MAX_ATIVOS} stories, apague um antes` }, 409); }
       }
 
       const r = await fetch(base, { method: "POST", headers: cab, body: JSON.stringify({ title: `${prefixo}${Date.now()}` }) });
-      if (!r.ok) return respostaJson({ error: "bunny", message: "Não deu para preparar o envio do vídeo." }, 502);
+      if (!r.ok) return respostaJson({ error: "bunny", message: "Vídeo indisponível agora, tente já já" }, 502);
       const v = await r.json();
       const videoId = String(v?.guid || "");
       if (!videoId) return respostaJson({ error: "bunny" }, 502);
@@ -94,6 +94,6 @@ export default async function handler(req: Request) {
 
     return respostaJson({ error: "acao_invalida" }, 400);
   } catch {
-    return respostaJson({ error: "bunny", message: "O serviço de vídeo não respondeu. Tente de novo." }, 502);
+    return respostaJson({ error: "bunny", message: "Vídeo indisponível agora, tente já já" }, 502);
   }
 }

@@ -3,17 +3,19 @@
 // quantos dias fica no ar (1 a 3) e, se quiser, o produto que o botão do story abre. Recurso do PRO.
 // O vídeo vai do celular direto para o Bunny Stream (envio em partes, retoma se a internet cair).
 // ─────────────────────────────────────────────────────────────────────────────
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import * as tus from "tus-js-client";
-import { Eye, Image as ImageIc, Play, Plus, Trash, UploadSimple } from "@phosphor-icons/react";
+import { Eye, Image as ImageIc, Play, Plus, Trash, UploadSimple, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, CaixasEscolha, Janela, avisar } from "@/components/base";
 import { CartaoPro } from "@/components/billing/RecursoPro";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, fotoDaLoja } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
-import { type Story, STORY_MAX_ATIVOS, STORY_MAX_SEGUNDOS, STORY_SEGUNDOS_FOTO, saiDoAr, tempoStory, urlCapaStory } from "@/lib/stories";
+import { type Story, STORY_MAX_ATIVOS, STORY_MAX_SEGUNDOS, STORY_SEGUNDOS_FOTO, saiCurto, tempoStory, urlCapaStory } from "@/lib/stories";
+
+const StoriesViewer = lazy(() => import("@/components/cardapio/StoriesViewer"));
 
 type Prod = { id: string; nome: string };
 const MAX_VIDEO_MB = 500; // 2 minutos de câmera chegam a 400 MB; o vídeo é reduzido no aparelho antes de subir
@@ -60,26 +62,33 @@ export default function Stories() {
   const [apagar, setApagar] = useState<Story | null>(null);
   const conferindo = useRef(new Set<string>());
   // (19/11) igual ao Instagram: tocou em Publicar, a janela fecha e o story já aparece na lista "Enviando…"
-  const [envio, setEnvio] = useState<{ nome: string; previa: string; video: boolean; pct: number; fase: "preparando" | "enviando" } | null>(null);
+  // Se o envio falha, o story continua na vaga como "Não enviado", com "Tentar de novo" (guarda o arquivo escolhido).
+  type Envio = { previa: string; video: boolean; pct: number; fase: "preparando" | "enviando" | "falhou"; arq: File; seg: number; dias: number; prod: string };
+  const [envio, setEnvio] = useState<Envio | null>(null);
+  const [ver, setVer] = useState<number | null>(null); // "Ver como fica": abre o visualizador neste story
 
   const enviar = async (arq: File, seg: number, dias: number, prod: string) => {
-    if (!uid || envio) return;
+    if (!uid || (envio && envio.fase !== "falhou")) return;
     const video = arq.type.startsWith("video/");
+    if (envio?.previa) URL.revokeObjectURL(envio.previa);
     const previa = video ? "" : URL.createObjectURL(arq);
-    setEnvio({ nome: (prod && produtos.find(p => p.id === prod)?.nome) || (video ? "Vídeo" : "Foto"), previa, video, pct: 0, fase: "enviando" });
+    setEnvio({ previa, video, pct: 0, fase: "enviando", arq, seg, dias, prod });
     const expira_em = new Date(Date.now() + dias * 86400000).toISOString();
+    // fim(): terminou (ou não adianta tentar de novo) · falhou(): fica na vaga para tentar de novo
     const fim = (msg?: string) => { if (previa) URL.revokeObjectURL(previa); setEnvio(null); if (msg) avisar(msg, { tipo: "erro" }); };
+    const falhou = () => setEnvio(x => x ? { ...x, fase: "falhou" } : x);
+    let criado = ""; // vídeo já aberto no Bunny: se o envio falhar, ele é apagado para não ficar perdido lá
     try {
       if (!video) {
         const blob = await reduzirFoto(arq);
-        if (!blob) return fim("Não deu para ler essa foto. Tente outra.");
+        if (!blob) return fim("Não deu para abrir a foto, tente outra");
         const caminho = `${uid}/stories/${Date.now()}.jpg`;
         const up = await supabase.storage.from("products").upload(caminho, blob, { contentType: "image/jpeg", upsert: false });
-        if (up.error) return fim("Não deu para enviar a foto. Confira a internet e tente de novo.");
+        if (up.error) return falhou();
         const foto_url = supabase.storage.from("products").getPublicUrl(caminho).data.publicUrl;
         const { error } = await supabase.from("stories").insert({ user_id: uid, tipo: "foto", foto_url, produto_id: prod || null, duracao: STORY_SEGUNDOS_FOTO, pronto: true, expira_em });
-        if (error) return fim("Não deu para publicar. Tente de novo.");
-        fim(); avisar("Story publicado", { tipo: "ok" }); void carregar(); return;
+        if (error) return falhou();
+        fim(); avisar("Seu story está no cardápio", { tipo: "ok" }); void carregar(); return;
       }
       // prepara o endereço de envio e, ao mesmo tempo, reduz o vídeo no aparelho para subir mais rápido.
       // Vídeo que já é leve (menos de 8 Mbps) sobe como está; se o aparelho não conseguir reduzir, também.
@@ -94,7 +103,9 @@ export default function Stories() {
         } catch { return arq; }
       };
       const [{ ok, d }, pronto] = await Promise.all([api({ acao: "criar" }), reduzir()]);
-      if (!ok) return fim(d.message || "Não deu para preparar o envio. Tente de novo.");
+      // limite de stories ou conta sem PRO: tentar de novo não resolve, então sai da vaga com o aviso
+      if (!ok) return d.error === "limite" || d.error === "so_pro" ? fim(d.message) : falhou();
+      criado = String(d.videoId);
       setEnvio(x => x ? { ...x, fase: "enviando", pct: 0 } : x);
       await new Promise<void>((resolve, reject) => {
         new tus.Upload(pronto, {
@@ -108,10 +119,12 @@ export default function Stories() {
         }).start();
       });
       const { error } = await supabase.from("stories").insert({ user_id: uid, tipo: "video", video_id: d.videoId, produto_id: prod || null, duracao: Math.min(seg || 15, STORY_MAX_SEGUNDOS + 1), pronto: false, expira_em });
-      if (error) { await api({ acao: "apagar", videoId: d.videoId }).catch(() => null); return fim("Não deu para publicar. Tente de novo."); }
+      if (error) { await api({ acao: "apagar", videoId: d.videoId }).catch(() => null); return falhou(); }
+      criado = "";
       fim(); void carregar();
     } catch {
-      fim("O envio parou. Confira a internet e tente de novo.");
+      if (criado) void api({ acao: "apagar", videoId: criado }).catch(() => null);
+      falhou();
     }
   };
 
@@ -155,19 +168,19 @@ export default function Stories() {
         // story apagado aqui, ou vídeo que não existe mais no Bunny: para de perguntar
         if (!conferindo.current.has(s.id) || sumiu) {
           window.clearInterval(t);
-          if (sumiu && conferindo.current.has(s.id)) avisar("Esse vídeo não foi encontrado. Apague e envie de novo.", { tipo: "erro" });
+          if (sumiu && conferindo.current.has(s.id)) avisar("Vídeo não ficou pronto, envie de novo", { tipo: "erro" });
           return;
         }
         if (ok && d.pronto) {
           window.clearInterval(t);
           await supabase.from("stories").update({ pronto: true, ...(d.duracao ? { duracao: Math.min(Number(d.duracao), STORY_MAX_SEGUNDOS + 1) } : {}) }).eq("id", s.id).eq("user_id", uid);
           setLista(l => l.map(x => x.id === s.id ? { ...x, pronto: true } : x));
-          avisar("Seu story já está no cardápio", { tipo: "ok" });
+          avisar("Seu story está no cardápio", { tipo: "ok" });
         } else if (ok && !d.falhou && Number(d.progresso) > 0) {
           setLista(l => l.map(x => x.id === s.id ? { ...x, progresso: Number(d.progresso) } as Story : x));
         } else if ((ok && d.falhou) || n > 450) {
           window.clearInterval(t);
-          if (ok && d.falhou) avisar("Não deu para converter esse vídeo. Apague e envie de novo.", { tipo: "erro" });
+          if (ok && d.falhou) avisar("Vídeo não ficou pronto, envie de novo", { tipo: "erro" });
         }
       };
       const t = window.setInterval(() => void conferir(), 2000);
@@ -180,13 +193,14 @@ export default function Stories() {
     setApagar(null);
     if (s.tipo === "video" && s.video_id) await api({ acao: "apagar", videoId: s.video_id }).catch(() => null);
     const { error } = await supabase.from("stories").delete().eq("id", s.id).eq("user_id", uid);
-    if (error) { avisar("Não deu para apagar. Tente de novo.", { tipo: "erro" }); return; }
+    if (error) { avisar("Não deu para apagar, tente de novo", { tipo: "erro" }); return; }
     conferindo.current.delete(s.id);
     setLista(l => l.filter(x => x.id !== s.id));
   };
 
   const nomeProd = (id: string | null) => (id ? produtos.find(p => p.id === id)?.nome : null) || null;
-  const cheio = lista.length >= STORY_MAX_ATIVOS;
+  // o visualizador mostra do mais antigo para o mais novo, como no cardápio
+  const prontos = lista.filter(s => s.pronto).slice().reverse();
 
   return (
     <>
@@ -204,42 +218,75 @@ export default function Stories() {
               </div>
             )}
             {(lista.length > 0 || envio) && (
-              <ul className="sto-lista">
-                {envio && (
-                  <li>
-                    <span className="sto-ft sto-ft--env">{envio.previa ? <img src={envio.previa} alt="" /> : <Play size={22} weight="fill" />}<i className="sto-gira" aria-hidden="true" /></span>
-                    <span className="sto-tx">
-                      <b>{envio.nome}</b>
-                      <small>{envio.video ? `${envio.fase === "preparando" ? "Preparando…" : "Enviando…"} ${envio.pct}%` : "Enviando…"}</small>
-                      <span className="sto-barra" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={envio.pct}><i style={{ width: `${envio.video ? envio.pct : 60}%` }} /></span>
-                    </span>
-                  </li>
-                )}
-                {lista.map(s => (
-                  <li key={s.id}>
-                    <span className={`sto-ft${s.pronto ? "" : " sto-ft--env"}`}>
-                      {s.tipo === "video" ? (s.pronto && s.video_id ? <CapaVideo src={urlCapaStory(s.video_id)} /> : <><Play size={22} weight="fill" /><i className="sto-gira" aria-hidden="true" /></>) : (s.foto_url ? <img src={s.foto_url} alt="" /> : <ImageIc size={22} weight="bold" />)}
-                    </span>
-                    <span className="sto-tx">
-                      <b>{nomeProd(s.produto_id) || (s.tipo === "video" ? "Vídeo" : "Foto")}</b>
-                      <small>{s.pronto ? saiDoAr(s.expira_em || "") : `Processando…${(s as Story & { progresso?: number }).progresso ? ` ${(s as Story & { progresso?: number }).progresso}%` : ""}`}</small>
-                      {!s.pronto && <span className="sto-barra" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={(s as Story & { progresso?: number }).progresso || 0}><i style={{ width: `${Math.max(8, (s as Story & { progresso?: number }).progresso || 0)}%` }} /></span>}
-                      {s.pronto && <small className="sto-vw"><Eye size={14} weight="bold" aria-hidden="true" />{s.views === 1 ? "1 pessoa viu" : `${s.views || 0} pessoas viram`}</small>}
-                    </span>
-                    <button type="button" className="sto-del" aria-label="Apagar este story" onClick={() => setApagar(s)}><Trash size={20} weight="bold" /></button>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <div className="sto-topo"><span>No ar agora</span><small>{lista.length} de {STORY_MAX_ATIVOS}</small></div>
+                <div className="sto-grade">
+                  {lista.map((s, i) => {
+                    const pct = (s as Story & { progresso?: number }).progresso || 0;
+                    const iPronto = prontos.findIndex(x => x.id === s.id);
+                    return (
+                      <div className="sto-vaga" key={s.id}>
+                        <button type="button" className="sto-capa" disabled={!s.pronto} aria-label={`Ver o story ${i + 1} como a cliente vê`} onClick={() => setVer(Math.max(0, iPronto))}>
+                          {s.tipo === "video" ? (s.pronto && s.video_id ? <CapaVideo src={urlCapaStory(s.video_id)} /> : <Play size={24} weight="fill" />) : (s.foto_url ? <img src={s.foto_url} alt="" /> : <ImageIc size={24} weight="bold" />)}
+                          {s.pronto
+                            ? <span className="sto-vw"><Eye size={14} weight="bold" aria-hidden="true" />{s.views || 0}</span>
+                            : <span className="sto-sobre"><i className="sto-gira" aria-hidden="true" /><b>Processando…</b>{pct > 0 && <em>{pct}%</em>}</span>}
+                        </button>
+                        <button type="button" className="sto-del" aria-label="Apagar este story" onClick={() => setApagar(s)}><Trash size={16} weight="bold" /></button>
+                        <small>{s.pronto ? saiCurto(s.expira_em || "") : "Quase lá"}</small>
+                      </div>
+                    );
+                  })}
+                  {envio && (
+                    <div className="sto-vaga">
+                      <div className="sto-capa">
+                        {envio.previa ? <img src={envio.previa} alt="" /> : <Play size={24} weight="fill" />}
+                        {envio.fase === "falhou" ? (
+                          <span className="sto-sobre sto-sobre--falhou">
+                            <b>Não enviado</b>
+                            <button type="button" onClick={() => void enviar(envio.arq, envio.seg, envio.dias, envio.prod)}>Tentar de novo</button>
+                          </span>
+                        ) : (
+                          <span className="sto-sobre" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={envio.pct}>
+                            <i className="sto-gira" aria-hidden="true" />
+                            <b>{envio.fase === "preparando" ? "Preparando…" : "Enviando…"}</b>{envio.video && <em>{envio.pct}%</em>}
+                          </span>
+                        )}
+                      </div>
+                      {envio.fase === "falhou" && <button type="button" className="sto-del" aria-label="Desistir deste story" onClick={() => { if (envio.previa) URL.revokeObjectURL(envio.previa); setEnvio(null); }}><X size={16} weight="bold" /></button>}
+                      <small>{envio.fase === "falhou" ? "Confira a internet" : "Não feche o app"}</small>
+                    </div>
+                  )}
+                  {Array.from({ length: Math.max(0, STORY_MAX_ATIVOS - lista.length - (envio ? 1 : 0)) }, (_, i) => (
+                    <div className="sto-vaga" key={`vaga${i}`}>
+                      {i === 0 && !envio
+                        ? <button type="button" className="sto-capa sto-capa--nova" onClick={() => setPostar(true)}><Plus size={24} weight="bold" aria-hidden="true" /><b>Postar</b></button>
+                        : <div className="sto-capa sto-capa--livre" aria-hidden="true" />}
+                      <small>&nbsp;</small>
+                    </div>
+                  ))}
+                </div>
+                <div className="sto-acao">
+                  <Botao variante="secundario" cheio disabled={prontos.length === 0} onClick={() => setVer(0)}>Ver como fica</Botao>
+                  <p className="sto-dica">Cada story some sozinho em 1 a 3 dias.</p>
+                </div>
+              </>
             )}
-            {!carregando && (
+            {!carregando && lista.length === 0 && !envio && (
               <div className="sto-acao">
-                <Botao cheio icone={<Plus size={20} weight="bold" />} disabled={cheio || !!envio} onClick={() => setPostar(true)}>Postar story</Botao>
-                {cheio && <p className="sto-dica">Você já tem {STORY_MAX_ATIVOS} stories no ar. Apague um para postar outro.</p>}
+                <Botao cheio icone={<Plus size={20} weight="bold" />} onClick={() => setPostar(true)}>Postar story</Botao>
               </div>
             )}
           </>
         )}
       </div>
+
+      {ver !== null && prontos.length > 0 && (
+        <Suspense fallback={null}>
+          <StoriesViewer stories={prontos} inicio={Math.min(ver, prontos.length - 1)} semContar loja={profile?.nome_loja || "Sua loja"} logo={fotoDaLoja(profile) || null}
+            aoFechar={() => setVer(null)} aoVerProduto={() => setVer(null)} nomeProduto={nomeProd} />
+        </Suspense>
+      )}
 
       {postar && <JanelaPostar produtos={produtos} aoFechar={() => setPostar(false)} aoPublicar={(arq, seg, dias, prod) => { setPostar(false); void enviar(arq, seg, dias, prod); }} />}
 
@@ -253,29 +300,32 @@ export default function Stories() {
         .sto-eb { font-size: 14px; font-weight: 600; color: #B02C5F; line-height: 1; }
         .sto-vazio h1 { margin: 6px 0 0; font-size: 2rem; font-weight: 500; letter-spacing: -.03em; line-height: 1.1; color: var(--ui-texto); }
         .sto-vazio p { margin: 12px 0 0; max-width: 420px; font-size: 16px; line-height: 1.55; color: var(--ui-texto-2); }
-        .sto-lista { list-style: none; margin: 0; padding: 0; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); overflow: hidden; }
-        .sto-lista li { display: flex; align-items: center; gap: 12px; padding: 12px; border-top: 1px solid var(--ui-linha); }
-        .sto-lista li:first-child { border-top: 0; }
-        .sto-ft { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 64px; border-radius: 10px; overflow: hidden; background: var(--ui-cinza); color: var(--ui-texto-2); }
-        .sto-ft img { width: 100%; height: 100%; object-fit: cover; }
-        .sto-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-        .sto-tx b { font-size: 15px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sto-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sto-vw { display: flex; align-items: center; gap: 4px; }
-        .sto-del { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0; padding: 0; border: 0; border-radius: 12px; background: none; color: var(--ui-texto-2); cursor: pointer; }
+        .sto-topo { display: flex; align-items: baseline; justify-content: space-between; margin: 4px 2px 10px; }
+        .sto-topo span { font-size: 16px; font-weight: 500; color: var(--ui-texto); }
+        .sto-topo small { font-size: 14px; color: var(--ui-texto-2); }
+        .sto-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+        .sto-vaga { position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+        .sto-vaga > small { font-size: 12px; text-align: center; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sto-capa { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; aspect-ratio: 9 / 16; margin: 0; padding: 0; border: 0; border-radius: 14px; overflow: hidden; background: var(--ui-cinza); color: var(--ui-texto-2); font-family: inherit; cursor: pointer; }
+        .sto-capa:disabled { cursor: default; }
+        .sto-capa > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .sto-capa--nova { border: 1.5px dashed var(--ui-borda); background: var(--ui-branco); color: var(--ui-rosa-botao, #CC2E66); }
+        .sto-capa--nova b { font-size: 14px; font-weight: 500; }
+        .sto-capa--livre { border: 1.5px dashed var(--ui-linha); background: none; cursor: default; }
+        .sto-vw { position: absolute; left: 6px; bottom: 6px; display: flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; background: rgba(0,0,0,.55); color: #fff; font-size: 12px; }
+        .sto-sobre { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 6px; background: rgba(34,19,14,.6); color: #fff; text-align: center; }
+        .sto-sobre b { font-size: 12px; font-weight: 500; white-space: nowrap; }
+        .sto-sobre em { margin-top: -6px; font-size: 12px; font-style: normal; opacity: .85; }
+        .sto-sobre button { min-height: 32px; margin: 0; padding: 0 8px; border: 0; border-radius: 999px; background: #fff; color: #22130E; font-family: inherit; font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer; }
+        .sto-del { position: absolute; top: 6px; right: 6px; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; cursor: pointer; }
         .sto-acao { margin-top: 16px; }
-        .sto-dica { margin: 8px 0 0; font-size: 13px; text-align: center; color: var(--ui-texto-2); }
+        .sto-dica { margin: 10px 0 0; font-size: 13px; text-align: center; color: var(--ui-texto-2); }
         .sto-up { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 96px; margin: 0; padding: 12px; border: 1.5px dashed var(--ui-borda); border-radius: 12px; background: var(--ui-branco); font-family: inherit; font-size: 15px; color: var(--ui-texto-2); cursor: pointer; }
         .sto-up b { max-width: 100%; font-weight: 500; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sto-lbl { margin: 16px 0 6px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
         .sto-sel { width: 100%; min-height: 48px; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); font-family: inherit; font-size: 15px; color: var(--ui-texto); }
-        .sto-barra { display: block; height: 4px; margin-top: 4px; border-radius: 2px; background: var(--ui-cinza); overflow: hidden; }
-        .sto-ft--env { position: relative; }
-        .sto-ft--env img { opacity: .5; }
-        .sto-gira { position: absolute; width: 26px; height: 26px; border: 3px solid rgba(0,0,0,.12); border-top-color: var(--ui-rosa-botao, #CC2E66); border-radius: 50%; animation: sto-gira .8s linear infinite; }
+        .sto-gira { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: sto-gira .8s linear infinite; }
         @keyframes sto-gira { to { transform: rotate(360deg); } }
-        .sto-barra i { display: block; height: 100%; background: var(--ui-rosa-botao, #CC2E66); transition: width .2s; }
-        .sto-pct { margin: 6px 0 0; font-size: 13px; text-align: center; color: var(--ui-texto-2); }
       `}</style>
     </>
   );
@@ -290,7 +340,7 @@ function CapaVideo({ src }: { src: string }) {
     const t = window.setTimeout(() => { setFalhou(false); setTentativa(n => n + 1); }, 5000);
     return () => window.clearTimeout(t);
   }, [falhou, tentativa]);
-  if (falhou) return <Play size={22} weight="fill" />;
+  if (falhou) return <Play size={24} weight="fill" />;
   return <img src={tentativa ? `${src}?t=${tentativa}` : src} alt="" onError={() => setFalhou(true)} />;
 }
 
@@ -306,12 +356,12 @@ function JanelaPostar({ produtos, aoFechar, aoPublicar }: { produtos: Prod[]; ao
   const escolher = async (f: File | undefined) => {
     if (!f) return;
     if (f.type.startsWith("video/")) {
-      if (f.size > MAX_VIDEO_MB * 1024 * 1024) { avisar(`O vídeo passa de ${MAX_VIDEO_MB} MB. Escolha um menor.`, { tipo: "erro" }); return; }
+      if (f.size > MAX_VIDEO_MB * 1024 * 1024) { avisar("Vídeo pesado demais, escolha outro", { tipo: "erro" }); return; }
       const d = await duracaoDoVideo(f);
-      if (d > STORY_MAX_SEGUNDOS + 1) { avisar(`O vídeo tem ${tempoStory(d)}. O limite é ${tempoStory(STORY_MAX_SEGUNDOS)}.`, { tipo: "erro" }); return; }
+      if (d > STORY_MAX_SEGUNDOS + 1) { avisar(`Vídeo longo: o limite é ${tempoStory(STORY_MAX_SEGUNDOS)}`, { tipo: "erro" }); return; }
       setSeg(d); setArq(f);
     } else if (f.type.startsWith("image/")) { setSeg(STORY_SEGUNDOS_FOTO); setArq(f); }
-    else avisar("Escolha um vídeo ou uma foto.", { tipo: "erro" });
+    else avisar("Escolha um vídeo ou uma foto", { tipo: "erro" });
   };
   const publicar = async () => { if (arq) aoPublicar(arq, seg, Number(dias), prod); };
 

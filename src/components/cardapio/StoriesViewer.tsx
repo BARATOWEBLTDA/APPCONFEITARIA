@@ -52,11 +52,13 @@ function FotoStory({ story }: { story: Story }) {
   return <div className="stv-midia"><img src={story.foto_url || ""} alt="" /></div>;
 }
 
-export default function StoriesViewer({ stories, loja, logo, aoFechar, aoVerProduto, nomeProduto }: {
+export default function StoriesViewer({ stories, loja, logo, aoFechar, aoVerProduto, nomeProduto, inicio = 0, semContar = false }: {
   stories: Story[]; loja: string; logo?: string | null; aoFechar: () => void;
+  /** story em que abre · semContar: prévia da própria confeiteira, não soma visualização */
+  inicio?: number; semContar?: boolean;
   aoVerProduto: (produtoId: string) => void; nomeProduto: (produtoId: string) => string | null;
 }) {
-  const [i, setI] = useState(0);
+  const [i, setI] = useState(inicio);
   const [mudo, setMudo] = useState(false);
   const atual = stories[i];
 
@@ -64,21 +66,22 @@ export default function StoriesViewer({ stories, loja, logo, aoFechar, aoVerProd
   useEffect(() => {
     const antes = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    document.body.classList.add("stv-aberto"); // esconde a faixa "Você está vendo como cliente", que cobria o topo do story
     const tecla = (e: KeyboardEvent) => { if (e.key === "Escape") aoFechar(); };
     window.addEventListener("keydown", tecla);
-    return () => { document.body.style.overflow = antes; window.removeEventListener("keydown", tecla); };
+    return () => { document.body.style.overflow = antes; document.body.classList.remove("stv-aberto"); window.removeEventListener("keydown", tecla); };
   }, [aoFechar]);
 
   // conta a visualização uma vez por story em cada visita
   useEffect(() => {
-    if (!atual) return;
+    if (!atual || semContar) return;
     try {
       const k = `doonly_story_visto_${atual.id}`;
       if (sessionStorage.getItem(k)) return;
       sessionStorage.setItem(k, "1");
     } catch { /* sem armazenamento: conta assim mesmo */ }
     void supabase.rpc("story_viu", { p_id: atual.id }).then(() => {}, () => {});
-  }, [atual]);
+  }, [atual, semContar]);
 
   const lista = useMemo(() => stories.map(s => ({
     duration: Math.max(3, Math.round((s.tipo === "video" ? Number(s.duracao) || 15 : STORY_SEGUNDOS_FOTO))) * 1000,
@@ -93,7 +96,7 @@ export default function StoriesViewer({ stories, loja, logo, aoFechar, aoVerProd
     <div className="stv" role="dialog" aria-modal="true" aria-label={`Stories de ${loja}`}>
       <div className="stv-caixa">
         <MudoCtx.Provider value={mudo}>
-          <Stories stories={lista as never} width="100%" height="100%" defaultInterval={6000} keyboardNavigation
+          <Stories stories={lista as never} currentIndex={inicio} width="100%" height="100%" defaultInterval={6000} keyboardNavigation
             onStoryStart={(n: number) => setI(n)} onAllStoriesEnd={aoFechar}
             storyContainerStyles={{ background: "#000" }} progressContainerStyles={{ padding: "10px 8px 0", filter: "none" }} />
         </MudoCtx.Provider>
@@ -112,6 +115,7 @@ export default function StoriesViewer({ stories, loja, logo, aoFechar, aoVerProd
         )}
       </div>
       <style>{`
+        body.stv-aberto .cp-cc { display: none; }
         .stv { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: #000; font-family: var(--font-base); }
         .stv-caixa { position: relative; width: 100%; height: 100%; max-width: 480px; overflow: hidden; background: #000; }
         @media (min-width: 640px) { .stv { background: rgba(0,0,0,.92); } .stv-caixa { height: min(100%, 860px); border-radius: 16px; } }
