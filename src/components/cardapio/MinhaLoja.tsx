@@ -111,7 +111,7 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
         </>)}
       </div>
       <style>{`
-        .ml-cab { display: flex; align-items: center; gap: 6px; margin: 0; padding: 14px 14px 12px; border-bottom: 1px solid var(--ui-linha); font-size: 16px; font-weight: 600; line-height: 1.3; }
+        .ml-cab { display: flex; align-items: center; gap: 6px; margin: 0; padding: 14px 14px 4px; font-size: 16px; font-weight: 600; line-height: 1.3; }
         .ml-cab svg { flex: none; color: #E0A93B; }
         .ml-coroa { color: #E0A93B; opacity: .85; }
         .ml-suave .dl-li-tx b { color: #8A7E84; font-weight: 500; } .ml-suave .dl-li-tx small { color: #A2979C; } .ml-suave .dl-li-ic { opacity: .4; }
