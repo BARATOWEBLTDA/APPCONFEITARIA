@@ -176,3 +176,54 @@ button.pro9-l2-i { cursor: pointer; }
 
 .pro10-restaurar--cel { display: block; margin: 12px auto 0; color: var(--ui-texto-2); }
 @media (min-width: 1000px) { .pro10-restaurar--cel { display: none; } }
+
+/* ══ (19/11) Tela nova do PRO: a logo da loja com a coroa, cartão de sócia, a oferta no alto, a conta do pedido, os limites e os recursos ══ */
+.pro10-topo:has(.pro11-logo) { padding-bottom: 64px; }
+.pro11-logo { position: relative; width: 84px; height: 84px; margin: 36px auto 8px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #F5C76B, 0 0 28px rgba(245, 199, 107, .55); }
+.pro11-logo span { font-size: 28px; font-weight: 600; color: #22130E; }
+.pro11-foto { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.pro11-coroa { position: absolute; top: -34px; left: 50%; width: 78px; height: auto; transform: translateX(-50%) rotate(-6deg); animation: pro11-pousa .9s cubic-bezier(.3, 1.5, .5, 1) .15s both; }
+@keyframes pro11-pousa { from { opacity: 0; transform: translate(-50%, -46px) rotate(-24deg) scale(1.25); } to { opacity: 1; transform: translateX(-50%) rotate(-6deg); } }
+.pro11-corpo { position: relative; display: flex; flex-direction: column; gap: 14px; margin-top: -48px; }
+.pro11-socio { position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "c n e" "c s e"; align-items: center; column-gap: 12px; padding: 16px 18px; border-radius: 16px; background: linear-gradient(120deg, #2B2B2F 0%, #111 45%, #000 100%); box-shadow: inset 0 0 0 1.5px #C9962B, 0 10px 24px rgba(0, 0, 0, .25); color: #fff; transition: transform .15s ease-out; will-change: transform; }
+.pro11-socio::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 35%, rgba(255, 236, 180, .22) 50%, transparent 65%); background-size: 250% 100%; background-position: var(--brilho, 120%) 0; animation: pro11-brilho 6s ease-in-out infinite; }
+@keyframes pro11-brilho { 0%, 60% { background-position: 120% 0; } 80%, 100% { background-position: -20% 0; } }
+.pro11-socio-c { grid-area: c; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #FFF3C4, #E0A93B); color: #22130E; }
+.pro11-socio b { grid-area: n; font-size: 18px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pro11-socio small { grid-area: s; font-size: 13px; color: #F5C76B; }
+.pro11-socio em { grid-area: e; font-style: normal; font-size: 13px; font-weight: 600; letter-spacing: .06em; padding: 4px 10px; border-radius: 6px; background: linear-gradient(110deg, #C48A1E, #F5C76B 40%, #FFF3C4 55%, #F5C76B 70%, #C48A1E); color: #22130E; }
+.pro11-oferta { padding: 16px; border-radius: 16px; background: #111; color: #fff; text-align: center; }
+.pro11-oferta small { font-size: 13px; color: #F5C76B; }
+.pro11-oferta b { display: block; margin-top: 2px; font-size: 22px; font-weight: 600; white-space: nowrap; }
+.pro11-oferta p { margin: 2px 0 0; font-size: 13px; color: #BDB5B8; }
+.pro11-conta { padding: 16px; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); }
+.pro11-conta h2, .pro11-sec h2 { margin: 0 0 12px; font-size: 16px; font-weight: 600; color: var(--ui-texto); }
+.pro11-sec h2 { margin: 4px 4px 10px; }
+.pro11-conta > div { display: flex; gap: 10px; }
+.pro11-conta > div span { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 10px 12px; border-radius: 12px; background: var(--ui-cinza); }
+.pro11-conta small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+.pro11-conta b { font-size: 20px; font-weight: 600; white-space: nowrap; }
+.pro11-conta p { margin: 12px 0 0; font-size: 14px; color: var(--ui-texto-2); text-align: center; }
+.pro11-lim { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pro11-q { min-width: 0; padding: 13px 12px; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); white-space: nowrap; }
+.pro11-q--larga { grid-column: 1 / -1; }
+.pro11-q b { display: block; margin-bottom: 9px; font-size: 13.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
+.pro11-q p { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin: 0; padding: 6px 0; font-size: 12.5px; color: var(--ui-texto-2); }
+.pro11-q p i { font-style: normal; }
+.pro11-q-pro { border-top: 1px solid var(--ui-borda); padding-bottom: 0 !important; }
+.pro11-q-pro span { display: flex; align-items: center; gap: 4px; color: #B8862B; }
+.pro11-q-pro i { color: var(--ui-texto); font-weight: 500; font-size: 13px; }
+.pro11-recs { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
+.pro11-r { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; }
+.pro11-r + .pro11-r { border-top: 1px solid var(--ui-linha, var(--ui-borda)); }
+.pro11-r-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); }
+.pro11-r-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pro11-r-tx b { font-size: 15px; font-weight: 500; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pro11-r-tx small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pro11-r-cr { flex: none; color: #E0A93B; }
+.pro11-conf { position: fixed; z-index: 9999; width: 0; height: 0; pointer-events: none; }
+.pro11-conf i { position: absolute; width: 8px; height: 12px; border-radius: 2px; animation: pro11-conf 1.2s cubic-bezier(.2, .7, .3, 1) both; }
+@keyframes pro11-conf { from { opacity: 1; transform: translate(0, 0) rotate(0); } 70% { opacity: 1; } to { opacity: 0; transform: translate(var(--x), calc(var(--y) + 120px)) rotate(var(--g)); } }
+@media (max-width: 345px) { .pro11-q { padding: 11px 9px; } .pro11-q p { font-size: 11.5px; } .pro11-q-pro i { font-size: 12px; } .pro11-oferta b { font-size: 19px; } }
+@media (min-width: 901px) { .pro10-topo:has(.pro11-logo) { padding-bottom: 72px; } }
+@media (prefers-reduced-motion: reduce) { .pro11-coroa, .pro11-socio::after { animation: none; } }
