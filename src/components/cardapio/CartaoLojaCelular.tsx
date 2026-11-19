@@ -116,8 +116,16 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   };
   // (10/11) cardápio bloqueado: o checklist completo já está no Início; aqui fica só um atalho (no estilo do atalho da Doo no Menu)
   if (travado) return (
-    <button type="button" className="clc-atalho" onClick={irPara}>
-      <span className="clc-atalho-ic" aria-hidden="true"><LockSimple size={20} weight="bold" /></span>
+    <button type="button" className="clc-atalho clc-atalho--viva" onClick={irPara}>
+      {/* (19/11) o anel em volta do cadeado enche conforme os passos feitos (125,66 = a volta inteira do círculo de raio 20) */}
+      <span className="clc-atalho-ic clc-atalho-ic--anel" aria-hidden="true">
+        <svg className="clc-anel" width="44" height="44" viewBox="0 0 44 44">
+          <defs><linearGradient id="clc-anel-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#F5C76B" /><stop offset="1" stopColor="#CC2E66" /></linearGradient></defs>
+          <circle cx="22" cy="22" r="20" fill="none" stroke="#F1E8EC" strokeWidth="3" />
+          {feitos > 0 && <circle cx="22" cy="22" r="20" fill="none" stroke="url(#clc-anel-g)" strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(125.66 * feitos / ORDEM_PASSOS.length).toFixed(1)} 125.66`} />}
+        </svg>
+        <LockSimple size={18} weight="bold" />
+      </span>
       <span className="clc-atalho-tx">
         <b>Liberar meu cardápio</b>
         <small>{passos ? `${faltando.length === 1 ? "Falta 1 passo" : `Faltam ${faltando.length} passos`} · ${feitos} de ${ORDEM_PASSOS.length} feitos` : "Termine a configuração da loja"}</small>
@@ -184,6 +192,12 @@ const CSS = `
   .clc-st--pausa b { color: #FCA5A5; } .clc-st--pausa i { background: #F87171; }
   .clc-atalho { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 10px 14px 10px 10px; border: 1px solid #ECE7E9; border-radius: 16px; background: var(--ui-branco, #fff); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .clc-atalho-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-branco); color: var(--ui-rosa-botao, #CC2E66); box-shadow: inset 0 0 0 1px #ECE7E9; }
+  /* (19/11) borda em degradê que anda devagar: é o que mais importa na tela enquanto a loja não abre */
+  .clc-atalho--viva { border: 2px solid transparent; padding: 9px 13px 9px 9px; background: linear-gradient(var(--ui-branco, #fff), var(--ui-branco, #fff)) padding-box, linear-gradient(90deg, #CC2E66, #F5C76B, #E85A8C, #CC2E66) border-box; background-size: 100% 100%, 200% 100%; animation: clc-corre 5s linear infinite; }
+  @keyframes clc-corre { to { background-position: 0 0, 200% 0; } }
+  @media (prefers-reduced-motion: reduce) { .clc-atalho--viva { animation: none; } }
+  .clc-atalho-ic--anel { position: relative; box-shadow: none; }
+  .clc-anel { position: absolute; inset: 0; transform: rotate(-90deg); }
   .clc-atalho-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .clc-atalho-tx b { font-size: 15px; font-weight: 500; }
   .clc-atalho-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

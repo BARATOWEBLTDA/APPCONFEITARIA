@@ -94,7 +94,7 @@ const SUB_FIXO: Partial<Record<string, string>> = {
   pix: "Pix direto no cardápio", ent: "Retirada e taxa de entrega",
 };
 
-export default function DadosLoja({ embutido = false, extras }: { embutido?: boolean; extras?: { antes?: ReactNode; depois?: ReactNode } } = {}) {
+export default function DadosLoja({ embutido = false, extras }: { embutido?: boolean; extras?: { antes?: ReactNode; depois?: ReactNode; titulo?: string; entre?: ReactNode } } = {}) {
   const navigate = useNavigate();
   const { profile: perfilVivo } = useProfile(); // (6.179) resumo das férias (atualiza quando a parte salva)
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
@@ -697,10 +697,11 @@ export default function DadosLoja({ embutido = false, extras }: { embutido?: boo
     };
     return (
       <>
-        <section className="dl-emb ml-cliente" aria-label="A loja para o cliente">
-          <h2 className="dl-emb-t">A loja para o cliente</h2>
+        <section className="dl-emb ml-cliente" aria-label={extras?.titulo || "A loja para o cliente"}>
+          <h2 className="dl-emb-t">{extras?.titulo || "A loja para o cliente"}</h2>
           <div className="dl-lista-c">{extras?.antes}{linhaEmb("loja", "Sobre a loja")}{extras?.depois}</div>
         </section>
+        {extras?.entre}
         <section className="dl-emb ml-vende" aria-label="Como você vende">
           <h2 className="dl-emb-t">Como você vende</h2>
           <div className="dl-lista-c">{linhaEmb("horario")}{linhaEmb("ent")}{linhaEmb("pag")}{linhaEmb("pix")}</div>

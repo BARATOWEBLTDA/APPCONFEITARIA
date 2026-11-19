@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cake, CaretRight, ChartLineUp, Crown, LockSimple, PaintBrush, PlayCircle, Stack, Target, Ticket } from "@phosphor-icons/react";
+import { Cake, CaretRight, ChartLineUp, Crown, FileText, LockSimple, PaintBrush, PlayCircle, Stack, Target, Ticket } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { useRecorte } from "@/components/ui/useRecorte";
@@ -71,37 +71,57 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
     </button>
   );
 
+  // linha da vitrine do PRO (conta grátis): coroa no lugar do cadeado, a frase diz o que ela ganha e o ícone fica apagado
+  const linhaVitrine = (Ic: typeof Cake, titulo: string, beneficio: string, rota: string) => (
+    <button type="button" className="dl-li ml-vit" onClick={() => navigate(rota)}>
+      <span className="dl-li-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
+      <span className="dl-li-tx"><b>{titulo}</b><small>{beneficio}</small></span>
+      <Crown size={18} weight="fill" className="dl-li-seta ml-coroa" aria-label="Recurso do PRO" />
+    </button>
+  );
+  const blocoPro = (
+    <section className={`dl-emb${pro ? "" : " ml-suave"}`} aria-label={pro ? "Vender mais" : "Venda mais com o PRO"}>
+      <h2 className="dl-emb-t ml-pro-t">{!pro && <Crown size={18} weight="fill" aria-hidden="true" />}<span>{pro ? "Vender mais" : "Venda mais com o PRO"}</span></h2>
+      <div className="dl-lista-c">
+        {pro ? (<>
+          {linha(PlayCircle, "Stories", "Vídeos curtos no cardápio", "/stories")}
+          {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos")}
+          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons")}
+          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel")}
+        </>) : (<>
+          {linhaVitrine(PlayCircle, "Stories", "Mostre o bolo do dia em vídeo", "/stories")}
+          {linhaVitrine(FileText, "Orçamentos", "Feche festas com proposta pronta", "/orcamentos")}
+          {linhaVitrine(Stack, "Adicionais", "Venda topo, vela e extras", "/complementos")}
+          {linhaVitrine(Ticket, "Cupons", "Traga a cliente de volta", "/cupons")}
+          {linhaVitrine(Target, "Pixel", "Anuncie para quem viu a loja", "/pixel")}
+        </>)}
+      </div>
+      <style>{`
+        .ml-pro-t { display: flex; align-items: center; gap: 6px; } .ml-pro-t svg { flex: none; color: #E0A93B; }
+        .ml-coroa { color: #E0A93B; opacity: .85; }
+        .ml-suave .dl-li-tx b { color: #8A7E84; font-weight: 500; } .ml-suave .dl-li-tx small { color: #A2979C; } .ml-suave .dl-li-ic { opacity: .4; }
+        /* título do PRO: degradê do dourado da coroa ao rosa, andando devagar (o único ponto vivo do bloco) */
+        .ml-suave .ml-pro-t span { background: linear-gradient(90deg, #E0A93B, #CC2E66, #E85A8C, #E0A93B); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ml-corre 6s linear infinite; }
+        @keyframes ml-corre { to { background-position: 200% 0; } }
+        @media (prefers-reduced-motion: reduce) { .ml-suave .ml-pro-t span { animation: none; } }
+      `}</style>
+    </section>
+  );
+
   return (
     <>
       {recorte.janela}
       {/* (6.170) métricas do cardápio (visitas, pedidos e mais pedidos) numa tela própria */}
       {/* (6.59) o que o cliente vê vem primeiro: produtos logo abaixo do cartão de compartilhar */}
-      <section className="dl-emb ml-produtos" aria-label="O que você vende">
-        <h2 className="dl-emb-t">O que você vende</h2>
-        <div className="dl-lista-c">
-          {/* (10/11) só a frase do que tem dentro (o que falta fica com os Primeiros passos) */}
-          {linha(Cake, "Produtos", "Preço, foto e sabores", "/produtos")}
-        </div>
-      </section>
-      {/* (19/11) "Vender mais" logo depois de Produtos: Stories e Cupons ficavam escondidos no fim da tela */}
-      <section className="dl-emb" aria-label={pro ? "Vender mais" : "Venda mais com o PRO"}>
-        <h2 className="dl-emb-t ml-pro-t">{!pro && <Crown size={18} weight="fill" aria-hidden="true" />}{pro ? "Vender mais" : "Venda mais com o PRO"}</h2>
-        <div className="dl-lista-c">
-          {linha(PlayCircle, "Stories", "Vídeos curtos no cardápio", "/stories", false, !pro)}
-          {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos", false, !pro)}
-          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons", false, !pro)}
-          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel", false, !pro)}
-        </div>
-        <style>{`.ml-pro-t { display: flex; align-items: center; gap: 6px; } .ml-pro-t svg { flex: none; color: #E0A93B; } .ml-trava { color: #B9AEB3; }`}</style>
-      </section>
-      <DadosLoja embutido extras={{ antes: linhaAparencia }} />
-      {/* (19/11) o que é do PRO fica junto num bloco só, no fim (antes ficava espalhado, com a etiqueta PRO em cada linha) */}
-      <section className="dl-emb" aria-label="Acompanhar">
-        <h2 className="dl-emb-t">Acompanhar</h2>
-        <div className="dl-lista-c">
-          {linha(ChartLineUp, "Métricas", "Visitas e mais pedidos", "/cardapio-metricas")}
-        </div>
-      </section>
+      {/* (19/11) Minha loja em 3 blocos: "Seu cardápio" (o que a cliente vê + Métricas), "Como você vende" e o bloco do PRO.
+          Grátis: o bloco do PRO é a vitrine, por último e apagado. PRO: é atalho de trabalho, em segundo e com as cores normais. */}
+      <DadosLoja embutido extras={{
+        titulo: "Seu cardápio",
+        antes: <>{linha(Cake, "Produtos", "Preço, foto e sabores", "/produtos")}{linhaAparencia}</>,
+        depois: linha(ChartLineUp, "Métricas", "Visitas e mais pedidos", "/cardapio-metricas"),
+        entre: pro ? blocoPro : null,
+      }} />
+      {!pro && blocoPro}
     </>
   );
 }
