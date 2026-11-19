@@ -433,3 +433,6 @@
 
 /* (11/11) sem recado: só o link */
 .tpd-recado-pe--vz { padding-top: 8px; }
+
+/* (19/11) Trocar e Editar lado a lado no título do cartão do cliente */
+.tpd-cli-acoes { display: inline-flex; align-items: center; gap: 14px; white-space: nowrap; }

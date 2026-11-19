@@ -1466,7 +1466,11 @@ export default function EditarPedido() {
 
   const cartaoCliente = (onde: string) => (
     <section className={`ep2-card tpd-card tpd-cli-card ${onde}`}>
-      <Titulo acao={clienteNome.trim() ? <Botao variante="link" icone={<ArrowsLeftRight size={16} weight="bold" />} onClick={() => setModalCliente(true)}>Trocar</Botao> : undefined}>Cliente</Titulo>
+      {/* (19/11) "Editar" ao lado do "Trocar": abre o cadastro do cliente (telefone, endereço, aniversário) e volta para o pedido */}
+      <Titulo acao={clienteNome.trim() ? <span className="tpd-cli-acoes">
+        <Botao variante="link" icone={<ArrowsLeftRight size={16} weight="bold" />} onClick={() => setModalCliente(true)}>Trocar</Botao>
+        {clienteId && <Botao variante="link" icone={<PencilSimple size={16} weight="bold" />} onClick={() => navigate(`/clientes?edit=${clienteId}&volta=${encodeURIComponent(`/pedidos/${id}/editar`)}`)}>Editar</Botao>}
+      </span> : undefined}>Cliente</Titulo>
       {!clienteNome.trim() ? (
         <div className="tpd-cli-vz">
           <p>Este pedido ainda não tem cliente.</p>
@@ -1491,9 +1495,6 @@ export default function EditarPedido() {
         {/* (6.74) os números do cliente e o "Ver perfil" ficam na ficha do cliente */}
         {aniversario && (
           <p className="tpd-aniv"><Cake size={20} weight="bold" aria-hidden="true" /><span><b>Aniversário {aniversario.dias === 0 ? 'hoje' : `dia ${aniversario.data}`}</b>{aniversario.dias === 0 ? '!' : ` · daqui a ${aniversario.dias} ${aniversario.dias === 1 ? 'dia' : 'dias'}.`} Que tal um mimo no pedido?</span></p>
-        )}
-        {!telDigitos && (
-          <Botao className="tpd-mt" variante="suave" tamanho="m" cheio icone={<Plus size={20} weight="bold" />} onClick={() => clienteId ? navigate(`/clientes/${clienteId}`) : setModalCliente(true)}>Adicionar telefone</Botao>
         )}
       </>)}
     </section>

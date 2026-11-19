@@ -196,7 +196,7 @@ export default function Clientes() {
   // Editar aberto pela página da cliente: ao fechar ou salvar, volta pra ela (08/10 · 3.34)
   const voltarPerfil = useRef<string | null>(null);
   // (espera a janela fechar: ao fechar, ela tira do histórico a entrada que colocou pro voltar do Android)
-  const talvezVoltar = () => { const v = voltarPerfil.current; voltarPerfil.current = null; if (v) setTimeout(() => navigate(`/clientes/${v}`, { replace: true }), 350); };
+  const talvezVoltar = () => { const v = voltarPerfil.current; voltarPerfil.current = null; if (v) setTimeout(() => navigate(v.startsWith("/") ? v : `/clientes/${v}`, { replace: true }), 350); };
 
   // ── Init ──────────────────────────────────────────────────────────────────
 
@@ -206,7 +206,7 @@ export default function Clientes() {
     if (editId && clientes.length > 0) {
       const cliente = clientes.find(c => c.id === editId);
       if (cliente) {
-        voltarPerfil.current = searchParams.get("volta") === "1" ? cliente.id : null;
+        { const vp = searchParams.get("volta") || ""; voltarPerfil.current = vp === "1" ? cliente.id : vp.startsWith("/pedidos/") ? vp : null; } // (19/11) editar pelo pedido volta para o pedido
         openEdit(cliente);
         // Remove params depois de abrir
         setSearchParams({}, { replace: true });
