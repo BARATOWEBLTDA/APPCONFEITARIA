@@ -220,6 +220,11 @@ export default function Assinar() {
               {OFERTA_PRO === "real1" && <small>Black Friday</small>}
               <b>{SELO_OFERTA}</b>
               <p>Depois, {lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO} por mês</p>
+              {/* (19/11) computador: sem a barra fixa, o botão fica aqui (o cartão grande do fim da tela saiu) */}
+              <div className="pro11-oferta-pc">
+                <Botao carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO}</Botao>
+                <span><Lock size={14} weight="bold" /> {lojaPagamentoPronto ? "Pagamento seguro pelo Google Play" : "Pagamento seguro pela Hotmart"}</span>
+              </div>
             </section>
           )}
 
@@ -257,18 +262,10 @@ export default function Assinar() {
             </div>
           </section>
 
-          {noAppDaLoja && !lojaPagamentoPronto ? (
+          {noAppDaLoja && !lojaPagamentoPronto && (
             <section className="pro10-plano">
               <b className="pro10-plano-t">Plano PRO</b>
               <p className="pro10-plano-s">A assinatura do PRO não está disponível pelo app. Se você já é PRO, tudo fica liberado aqui automaticamente.</p>
-            </section>
-          ) : (
-            <section className="pro10-plano pro10-plano--teste">
-              <b className="pro10-plano-t">{SELO_OFERTA}</b>
-              <p className="pro10-plano-s">depois {lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO} por mês</p>
-              <Botao cheio carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO}</Botao>
-              <p className="pro10-seg"><Lock size={14} weight="bold" /> {lojaPagamentoPronto ? "Pagamento seguro pelo Google Play" : "Pagamento seguro pela Hotmart"}</p>
-              {lojaPagamentoPronto && <button type="button" className="pro10-restaurar" onClick={restaurar}>Já assinei: restaurar compra</button>}
             </section>
           )}
           {/* (19/11) no celular o cartão do plano não aparece: o "restaurar compra" do app fica aqui */}
