@@ -96,6 +96,8 @@ export default function Stories() {
           await supabase.from("stories").update({ pronto: true, ...(d.duracao ? { duracao: Math.min(Number(d.duracao), STORY_MAX_SEGUNDOS + 1) } : {}) }).eq("id", s.id).eq("user_id", uid);
           setLista(l => l.map(x => x.id === s.id ? { ...x, pronto: true } : x));
           avisar("Seu story já está no cardápio", { tipo: "ok" });
+        } else if (ok && !d.falhou && Number(d.progresso) > 0) {
+          setLista(l => l.map(x => x.id === s.id ? { ...x, progresso: Number(d.progresso) } as Story : x));
         } else if ((ok && d.falhou) || n > 60) {
           window.clearInterval(t);
           if (ok && d.falhou) avisar("Não deu para converter esse vídeo. Apague e envie de novo.", { tipo: "erro" });
@@ -140,7 +142,7 @@ export default function Stories() {
                     </span>
                     <span className="sto-tx">
                       <b>{nomeProd(s.produto_id) || (s.tipo === "video" ? "Vídeo" : "Foto")}</b>
-                      <small>{s.pronto ? saiDoAr(s.expira_em || "") : "Convertendo o vídeo…"}</small>
+                      <small>{s.pronto ? saiDoAr(s.expira_em || "") : `Convertendo o vídeo… ${(s as Story & { progresso?: number }).progresso ? `${(s as Story & { progresso?: number }).progresso}%` : ""}`}</small>
                       <small className="sto-vw"><Eye size={14} weight="bold" aria-hidden="true" />{s.views === 1 ? "1 pessoa viu" : `${s.views || 0} pessoas viram`}</small>
                     </span>
                     <button type="button" className="sto-del" aria-label="Apagar este story" onClick={() => setApagar(s)}><Trash size={20} weight="bold" /></button>

@@ -76,8 +76,12 @@ export default async function handler(req: Request) {
       const m = await meuVideo(String(corpo.videoId || ""));
       if (!m.ok) return respostaJson({ error: "nao_encontrado" }, 404);
       const st = Number(m.dados?.status);
-      // 4 = terminou de converter · 5 e 6 = falhou
-      return respostaJson({ pronto: st === 4, falhou: st === 5 || st === 6, duracao: Number(m.dados?.length) || 0, cdn }, 200);
+      // 4 = terminou de converter · 5 e 6 = falhou · 7 e 8 = pronto no modo "na hora" (JIT) do Bunny
+      // (19/11) também vale como pronto quando já existe ao menos uma qualidade convertida: o vídeo já toca,
+      // e as qualidades maiores chegam depois. Esperar todas deixava minutos em "Convertendo".
+      const resolucoes = String(m.dados?.availableResolutions || "").trim();
+      const pronto = st === 4 || st === 7 || st === 8 || (st === 3 && resolucoes.length > 0) || Number(m.dados?.encodeProgress) >= 100;
+      return respostaJson({ pronto, falhou: st === 5 || st === 6, duracao: Number(m.dados?.length) || 0, status: st, progresso: Number(m.dados?.encodeProgress) || 0, cdn }, 200);
     }
 
     if (corpo.acao === "apagar") {
