@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { supabase } from "@/lib/supabase";
-import { Crown, Lock, CaretLeft, CaretRight, Check, X, PlayCircle, FileText, Ticket, Stack, ChartLineUp, ChatCircleText, Megaphone, AddressBook, Cake, Camera, SealCheck, Images, MicrosoftExcelLogo, Printer, FilePdf, HandHeart, type Icon } from "@phosphor-icons/react";
+import { Crown, Lock, CaretLeft, Check, X } from "@phosphor-icons/react";
+import { LIMITES, SO_PRO } from "@/lib/recursosPro";
 import { CHECKOUT_HOTMART, CTA_PRO, CTA_PRO_CURTO, OFERTA_PRO, PRECO_PRO, SELO_OFERTA } from "@/lib/beneficiosPro";
 import { noAppDaLoja } from "@/lib/plataforma";
 import { lojaPagamentoPronto, iniciarLoja, ofertaPro, assinarPelaLoja, restaurarCompra, cancelouCompra, type OfertaLoja } from "@/lib/lojaPagamento";
 import { refreshProfile } from "@/hooks/useProfile";
 import { avisar } from "@/components/base";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Titulo } from "@/components/base";
 import { usePlano } from "@/hooks/usePlano";
@@ -29,34 +30,6 @@ import "./assinar.css";
 // (31/10 · 5.97) o PRO começa com 7 dias grátis (a Hotmart pede o cartão e só cobra no 8º dia); saiu o desconto do 1º mês
 const PRECO_CHEIO = PRECO_PRO;
 
-/** (19/11) Limites do grátis que o PRO tira: nome, como é hoje e como fica no PRO (o de produtos usa o limite da conta) */
-const LIMITES: [string, string, string][] = [
-  ["Fotos por produto", "1", "Até 4"],
-  ["Cores da loja", "4", "Todas"],
-  ["Doo IA", "10 por mês", "150 por dia"],
-  ["Link da loja", "Um código", "Seu nome"],
-  ["Cardápio", "Com marca", "Sem marca"],
-  ["PDFs", "Com marca", "Sem marca"],
-];
-/** (19/11) O que só existe no PRO (varredura das travas do app): ícone, nome e a frase do benefício */
-const SO_PRO: [Icon, string, string][] = [
-  [PlayCircle, "Stories", "Mostre o bolo do dia em vídeo"],
-  [FileText, "Orçamentos", "Feche festas com proposta pronta"],
-  [Ticket, "Cupons de desconto", "Traga a cliente de volta"],
-  [Stack, "Adicionais", "Venda topo, vela e extras"],
-  [ChartLineUp, "Lucro por produto", "Saiba o que mais dá dinheiro"],
-  [ChatCircleText, "Mensagens do WhatsApp", "Troque os textos pelo seu jeito"],
-  [Megaphone, "Pixel", "Anuncie no Meta, Google e TikTok"],
-  [AddressBook, "Importar contatos", "Traga as clientes da agenda"],
-  [Cake, "Topos, logo e banners com IA", "A Doo cria para você"],
-  [Camera, "Doo com fotos", "Mande a foto e ela cadastra"],
-  [SealCheck, "Selo de loja verificada", "Mais confiança para comprar"],
-  [Images, "Banners prontos do PRO", "Escolha e coloque no cardápio"],
-  [MicrosoftExcelLogo, "Planilha do financeiro", "Baixe tudo em Excel"],
-  [Printer, "Imprimir a agenda do dia", "As entregas no papel"],
-  [FilePdf, "Ficha técnica em PDF", "Custo e receita para guardar"],
-  [HandHeart, "Montamos seu cardápio", "A equipe Doonly faz para você"],
-];
 /** (19/11) computador: os recursos que giram em volta da logo (índices de SO_PRO) */
 const ORBITA = [0, 2, 1, 4, 6, 5, 3, 10];
 const LOGO_PADRAO = "/pro-logo-padrao.webp";
@@ -108,13 +81,6 @@ function Orbita({ logo, baixo = false }: { logo: string; baixo?: boolean }) {
     </div>
   );
 }
-/** (19/11) quem já é PRO: para onde cada recurso leva ("doo" abre a Doo, "equipe" chama a equipe no WhatsApp) */
-const DESTINO: Record<string, string> = {
-  "Stories": "/stories", "Orçamentos": "/orcamentos", "Cupons de desconto": "/cupons", "Adicionais": "/complementos", "Lucro por produto": "/lucratividade",
-  "Mensagens do WhatsApp": "/configuracoes/mensagens", "Pixel": "/pixel", "Importar contatos": "/clientes", "Topos, logo e banners com IA": "doo", "Doo com fotos": "doo",
-  "Selo de loja verificada": "/cardapio-design", "Banners prontos do PRO": "/cardapio-design", "Planilha do financeiro": "/financeiro/transacoes", "Imprimir a agenda do dia": "/agenda",
-  "Ficha técnica em PDF": "/ficha-tecnica", "Montamos seu cardápio": "equipe",
-};
 const VALOR_MES = 29.9;
 const reais = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 /** confete dourado saindo do botão (some sozinho; nada com "reduzir movimento") */
@@ -235,48 +201,10 @@ export default function Assinar() {
 
   return (
     <>
-      {(isPro ? computador : (computador && !largo)) && <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo para sua confeitaria vender mais"} onBack={computador ? undefined : () => voltarOuIr(navigate)} />}
+      {!isPro && computador && !largo && <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo para sua confeitaria vender mais"} onBack={computador ? undefined : () => voltarOuIr(navigate)} />}
       {isPro ? (
-        /* ══ (19/11) Quem já é PRO: topo simples (sem a roda), "Tudo liberado" e os mesmos recursos, agora como atalhos ══ */
-        <div className="pro10 pro14">
-          <section className="pro10-topo pro14-topo">
-            {!computador && (
-              <div className="pro10-barra">
-                <button type="button" className="pro10-voltar" aria-label="Voltar" onClick={() => voltarOuIr(navigate)}><CaretLeft size={22} weight="bold" /></button>
-                <span>Doonly PRO</span>
-              </div>
-            )}
-            <div className="pro14-logo"><img src={logo || "/pro-logo-padrao.webp"} alt="" />{logo && <img className="pro14-coroa" src="/pro-coroa.webp" alt="" width={60} height={30} />}</div>
-            <h1 className="pro10-t pro14-t">Você é PRO</h1>
-            <p className="pro10-s pro14-s">{emTeste ? "Teste grátis" : "Ativo"}{cobranca ? ` · ${emTeste ? "1ª cobrança" : "renova"} em ${dataBR(cobranca)}` : ""}</p>
-          </section>
-          <div className="pro10-corpo pro11-corpo pro14-corpo">
-            <button type="button" className="pro11-socio pro13-of" onClick={() => navigate("/minha-assinatura")}>
-              <h2 className="pro10-t pro13-t pro13-t2">Tudo liberado</h2>
-              <em>Minha assinatura</em>
-            </button>
-            <section className="pro11-sec">
-              <h2>Seus recursos do PRO</h2>
-              <div className="pro11-recs">
-                {SO_PRO.map(([Ic, nome, frase]) => (
-                  <button type="button" className="pro11-r pro14-r" key={nome} onClick={() => ir(DESTINO[nome] || null)}>
-                    <span className="pro11-r-ic" aria-hidden="true"><Ic size={22} weight="bold" /></span>
-                    <span className="pro11-r-tx"><b>{nome}</b><small>{frase}</small></span>
-                    <CaretRight size={16} weight="bold" className="pro14-seta" aria-hidden="true" />
-                  </button>
-                ))}
-              </div>
-            </section>
-            <section className="pro11-sec">
-              <h2>Seus limites agora</h2>
-              <div className="pro11-recs">
-                {([["Produtos", "", "Sem limite"], ...LIMITES] as [string, string, string][]).map(([nome, , pro]) => (
-                  <div className="pro14-lm" key={nome}><span>{nome}</span><b><Check size={14} weight="bold" aria-hidden="true" />{pro}</b></div>
-                ))}
-              </div>
-            </section>
-          </div>
-        </div>
+        /* (19/11) quem já é PRO tem uma tela só: a Minha assinatura (assinatura, recursos e limites juntos) */
+        <Navigate to="/minha-assinatura" replace />
       ) : (
       largo ? (
       <div className="pro10 pro12">

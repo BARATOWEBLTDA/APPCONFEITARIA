@@ -4,7 +4,9 @@ import { COMO_ASSINATURA, TOUR_ASSINATURA } from "@/lib/comoTelas";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import AppPageHeader from "@/components/AppPageHeader";
-import { CaretLeft, CaretRight, Crown, HandHeart, Receipt } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, Check, HandHeart, Receipt } from "@phosphor-icons/react";
+import { LIMITES, SO_PRO, DESTINO } from "@/lib/recursosPro";
+import { abrirDooIA } from "@/components/MenuContaItens";
 import { pedirMontagem } from "@/components/billing/EquipeMonta";
 import IconeWhatsApp from "@/components/IconeWhatsApp";
 import { supabase } from "@/lib/supabase";
@@ -84,6 +86,8 @@ export default function MinhaAssinatura() {
   // primeiro mês (ainda sem renovação): a oferta de entrada já foi paga; o valor cheio só vale a partir da próxima cobrança
   const primeiroMes = !emTeste && !pelaEquipe && !cancelada && !atrasada && !!assinanteDesde && !!cobranca && cobranca.getTime() - assinanteDesde.getTime() < 35 * 86400000;
   const quando = (d: Date) => `${dataBR(d)} · ${dias === 0 ? "hoje" : dias === 1 ? "amanhã" : `em ${dias} dias`}`;
+  // os atalhos dos recursos: "doo" abre a Doo, "equipe" chama a equipe no WhatsApp, o resto é uma tela do app
+  const ir = (d?: string) => { if (!d) return; if (d === "doo") abrirDooIA(); else if (d === "equipe") pedirMontagem(profile?.nome as string | undefined, profile?.nome_loja as string | undefined); else navigate(d); };
   const selo = emTeste ? "Teste grátis" : cancelada ? "Cancelada" : atrasada ? "Pagamento atrasado" : "Ativo";
 
   return (
@@ -119,13 +123,23 @@ export default function MinhaAssinatura() {
           </>)}
         </section>
         <section className="pro11-sec">
-          <h2>O que está liberado</h2>
+          <h2>Seus recursos do PRO</h2>
           <div className="pro11-recs">
-            <button type="button" className="pro11-r pro14-r" onClick={() => navigate("/assinar")}>
-              <span className="pro11-r-ic" aria-hidden="true"><Crown size={20} weight="fill" /></span>
-              <span className="pro11-r-tx"><b>16 recursos e 7 limites a menos</b><small>Veja tudo o que o PRO te dá</small></span>
-              <CaretRight size={16} weight="bold" className="pro14-seta" aria-hidden="true" />
-            </button>
+            {SO_PRO.map(([Ic, nome, frase]) => (
+              <button type="button" className="pro11-r pro14-r" key={nome} onClick={() => ir(DESTINO[nome])}>
+                <span className="pro11-r-ic" aria-hidden="true"><Ic size={22} weight="bold" /></span>
+                <span className="pro11-r-tx"><b>{nome}</b><small>{frase}</small></span>
+                <CaretRight size={16} weight="bold" className="pro14-seta" aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+        </section>
+        <section className="pro11-sec">
+          <h2>Seus limites agora</h2>
+          <div className="pro11-recs">
+            {([["Produtos", "", "Sem limite"], ...LIMITES] as [string, string, string][]).map(([nome, , pro]) => (
+              <div className="pro14-lm" key={nome}><span>{nome}</span><b><Check size={14} weight="bold" aria-hidden="true" />{pro}</b></div>
+            ))}
           </div>
         </section>
         <section className="pro11-sec">
