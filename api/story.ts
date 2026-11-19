@@ -80,7 +80,8 @@ export default async function handler(req: Request) {
       // (19/11) o story só vai para o cardápio com a melhor qualidade pronta: 1080p convertido, ou a conversão
       // inteira terminada (vídeo original menor que 1080p). Pedido do Bruno: nada de versão feia aparecendo antes.
       const resolucoes = String(m.dados?.availableResolutions || "").toLowerCase().split(",").map((x: string) => x.trim());
-      const pronto = st === 4 || resolucoes.includes("1080p");
+      // 8 = Just-in-Time: as listas do vídeo já existem e ele toca na hora, em todas as qualidades (conversão Premium)
+      const pronto = st === 4 || st === 8 || resolucoes.includes("1080p");
       return respostaJson({ pronto, falhou: st === 5 || st === 6, duracao: Number(m.dados?.length) || 0, status: st, progresso: Number(m.dados?.encodeProgress) || 0, cdn }, 200);
     }
 

@@ -201,9 +201,9 @@ export default function Stories() {
                     </span>
                     <span className="sto-tx">
                       <b>{nomeProd(s.produto_id) || (s.tipo === "video" ? "Vídeo" : "Foto")}</b>
-                      <small>{s.pronto ? saiDoAr(s.expira_em || "") : `Preparando em alta qualidade… ${(s as Story & { progresso?: number }).progresso ? `${(s as Story & { progresso?: number }).progresso}%` : ""}`}</small>
+                      <small>{s.pronto ? saiDoAr(s.expira_em || "") : `Processando…${(s as Story & { progresso?: number }).progresso ? ` ${(s as Story & { progresso?: number }).progresso}%` : ""}`}</small>
                       {!s.pronto && <span className="sto-barra" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={(s as Story & { progresso?: number }).progresso || 0}><i style={{ width: `${Math.max(8, (s as Story & { progresso?: number }).progresso || 0)}%` }} /></span>}
-                      <small className="sto-vw"><Eye size={14} weight="bold" aria-hidden="true" />{s.views === 1 ? "1 pessoa viu" : `${s.views || 0} pessoas viram`}</small>
+                      {s.pronto && <small className="sto-vw"><Eye size={14} weight="bold" aria-hidden="true" />{s.views === 1 ? "1 pessoa viu" : `${s.views || 0} pessoas viram`}</small>}
                     </span>
                     <button type="button" className="sto-del" aria-label="Apagar este story" onClick={() => setApagar(s)}><Trash size={20} weight="bold" /></button>
                   </li>
