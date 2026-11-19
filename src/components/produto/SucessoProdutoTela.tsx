@@ -1,6 +1,6 @@
 /**
- * (14/10) Sucesso depois de publicar um produto novo: um AVISO rosa por cima do app (antes era uma tela inteira).
- * Texto branco, check em cima, "Próximos passos" conforme o que falta no produto (no máximo 2),
+ * (14/10) Sucesso depois de publicar um produto novo: um aviso por cima do app (19/11: cartão branco, sem o check).
+ * "Próximos passos" conforme o que falta no produto (no máximo 2),
  * "Cadastrar outro produto" e "Fechar". No primeiro produto, confete por cima.
  */
 interface Props {
@@ -25,10 +25,10 @@ interface Props {
 }
 
 import { useEffect, type ReactNode } from "react";
-import { Cake, Calculator, CaretRight, Check, Image as ImageIc, PencilSimple, Plus, Storefront } from "@phosphor-icons/react";
+import { Cake, Calculator, CaretRight, Image as ImageIc, PencilSimple, Plus, Storefront } from "@phosphor-icons/react";
 import { tocarSom } from "@/hooks/useSom";
 
-const CORES_CONF = ["#FCD34D", "#86EFAC", "#93C5FD", "#FFFFFF", "#C4B5FD", "#FDBA74"];
+const CORES_CONF = ["#FCD34D", "#86EFAC", "#93C5FD", "#F9A8D4", "#C4B5FD", "#FDBA74"];
 // [left %, cor, atraso s, duração s, giro graus]
 const CONFETE: [number, string, number, number, number][] = Array.from({ length: 34 }, (_, i) => [
   (i * 37) % 100, CORES_CONF[i % CORES_CONF.length], (i % 9) * 0.22, 2.6 + (i % 5) * 0.35, (i % 2 ? 1 : -1) * (360 + (i % 4) * 140),
@@ -56,7 +56,6 @@ export default function SucessoProdutoTela(p: Props) {
       )}
       {/* (30/10 · 5.27) no PC: check ao lado do título (mais baixo e mais largo) e textos mais curtos */}
       <div className="spa-topo">
-        <div className="spa-ok" aria-hidden="true"><Check size={30} weight="bold" /></div>
         <div>
           <h2 className="spa-t" id="spa-t">{p.primeiro ? "Primeiro produto cadastrado!" : "Produto cadastrado"}</h2>
           <p className="spa-x">
@@ -83,48 +82,42 @@ export default function SucessoProdutoTela(p: Props) {
       </>)}
 
       <div className="spa-acoes">
-        <button type="button" className="spa-b1" onClick={p.onOutro}><Plus size={18} weight="bold" aria-hidden="true" />Cadastrar outro produto</button>
         <button type="button" className="spa-fe" onClick={p.onFechar}>Fechar</button>
+        <button type="button" className="spa-b1" onClick={p.onOutro}><Plus size={18} weight="bold" aria-hidden="true" />Cadastrar outro<span className="spa-pc"> produto</span></button>
       </div>
 
       <style>{`
-        .spa { position: relative; width: 100%; max-width: 400px; margin: 0 auto; padding: 26px 18px 12px; border-radius: 20px; background: var(--ui-rosa-botao, #CC2E66); color: #fff; text-align: center; font-family: var(--font-base); box-shadow: 0 20px 50px rgba(0,0,0,.3); overflow: hidden; animation: spa-pop .3s cubic-bezier(.2,1.3,.4,1) both; }
+        /* (19/11) cartão branco, no padrão das janelas do app (antes rosa, com um check grande em cima); Fechar e Cadastrar outro na mesma linha */
+        .spa { position: relative; width: 100%; max-width: 400px; margin: 0 auto; padding: 22px 16px 16px; border-radius: 20px; background: var(--ui-branco, #fff); color: var(--ui-texto); text-align: left; font-family: var(--font-base); box-shadow: 0 20px 50px rgba(0,0,0,.3); overflow: hidden; animation: spa-pop .3s cubic-bezier(.2,1.3,.4,1) both; }
         @keyframes spa-pop { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .spa-ok { display: flex; align-items: center; justify-content: center; width: 62px; height: 62px; margin: 0 auto 14px; border-radius: 50%; background: #fff; color: var(--ui-rosa-escuro); box-shadow: 0 0 0 8px rgba(255,255,255,.22); }
-        .spa-t { margin: 0 0 6px; font-size: 20px; font-weight: 600; line-height: 1.25; color: #fff; }
-        .spa-x { margin: 0 0 18px; font-size: 15px; line-height: 1.5; color: rgba(255,255,255,.95); text-wrap: pretty; }
-        .spa-x b { color: #fff; font-weight: 600; }
-        .spa-pp { margin: 0 0 8px; text-align: left; font-size: 13px; font-weight: 500; color: #fff; }
-        .spa-passos { margin-bottom: 12px; border-radius: 12px; background: rgba(255,255,255,.14); overflow: hidden; text-align: left; }
-        .spa-ps { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin: 0; padding: 10px 12px; border: 0; background: none; font-family: inherit; text-align: left; color: #fff; cursor: pointer; }
-        .spa-ps + .spa-ps { border-top: 1px solid rgba(255,255,255,.2); }
-        @media (hover: hover) { .spa-ps:hover { background: rgba(255,255,255,.08); } }
-        .spa-pi { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: #fff; color: var(--ui-rosa-escuro); }
+        .spa-t { margin: 0 0 4px; font-size: 19px; font-weight: 500; line-height: 1.25; color: var(--ui-texto); }
+        .spa-x { margin: 0 0 16px; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); text-wrap: pretty; }
+        .spa-x b { color: var(--ui-texto); font-weight: 500; }
+        .spa-pp { margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
+        .spa-passos { margin-bottom: 16px; border: 1px solid var(--ui-borda); border-radius: 12px; overflow: hidden; }
+        .spa-ps { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; margin: 0; padding: 10px 12px; border: 0; background: none; font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+        .spa-ps + .spa-ps { border-top: 1px solid var(--ui-linha); }
+        .spa-ps > svg { flex: none; color: var(--ui-texto-2); }
+        @media (hover: hover) { .spa-ps:hover { background: var(--ui-cinza); } }
+        .spa-pi { flex: none; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco, #fff); color: var(--ui-texto); }
         .spa-pt { flex: 1; min-width: 0; }
-        .spa-pt b { display: block; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .spa-pt small { display: block; font-size: 12.5px; color: rgba(255,255,255,.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .spa-b1 { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; margin: 0; border: 0; border-radius: var(--ui-raio-botao); background: #fff; color: var(--ui-rosa-escuro); font-family: inherit; font-size: 15.5px; font-weight: 600; box-shadow: none; cursor: pointer; white-space: nowrap; }
-        .spa-b1:active { transform: translateY(2px); box-shadow: none; }
-        .spa-fe { display: block; width: 100%; min-height: 44px; margin: 6px 0 0; border: 0; background: none; font-family: inherit; font-size: 15px; font-weight: 500; color: rgba(255,255,255,.92); cursor: pointer; }
+        .spa-pt b { display: block; font-size: 14.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .spa-pt small { display: block; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .spa-acoes { display: flex; align-items: center; gap: 8px; }
+        .spa-b1 { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin: 0; padding: 0 12px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-rosa-botao, #CC2E66); color: #fff; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+        .spa-fe { flex: none; min-height: 48px; margin: 0; padding: 0 18px; border: 0; border-radius: var(--ui-raio-botao); background: var(--ui-cinza); font-family: inherit; font-size: 15px; font-weight: 500; color: var(--ui-texto); cursor: pointer; white-space: nowrap; }
+        .spa-pc { display: none; }
         .spa-confete { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
         .spa-confete i { position: absolute; top: -20px; width: 8px; height: 13px; border-radius: 2px; opacity: 0; animation: spa-cai 3s linear forwards; }
         @keyframes spa-cai { 0% { opacity: 0; transform: translateY(0) rotate(0deg); } 8% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(560px) rotate(var(--gira)); } }
         @media (prefers-reduced-motion: reduce) { .spa-confete { display: none; } .spa { animation: none; } }
         .spa > *:not(.spa-confete) { position: relative; }
-        @media (max-width: 639px) { .spa { padding-left: 14px; padding-right: 14px; } .spa-ps { gap: 10px; padding: 10px; } .spa-ps > svg { margin-left: -4px; } } /* (30/10) o texto dos passos cabe numa linha no celular */
-        /* (30/10 · 5.27) PC: mais larga e baixa. Check ao lado do título, passos na largura toda e os botões numa linha, no canto */
         @media (min-width: 640px) {
-          .spa { max-width: 580px; padding: 24px 24px 20px; text-align: left; }
-          .spa-topo { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
-          .spa-ok { width: 52px; height: 52px; margin: 0 0 0 4px; flex: none; box-shadow: 0 0 0 6px rgba(255,255,255,.22); }
-          .spa-ok svg { width: 26px; height: 26px; }
-          .spa-t { margin: 0 0 2px; }
-          .spa-x { margin: 0; }
-          .spa-ps { min-height: 54px; padding: 8px 12px; }
-          .spa-passos { margin-bottom: 18px; }
-          .spa-acoes { display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: center; gap: 8px; }
-          .spa-b1 { width: auto; min-height: 44px; padding: 0 22px; font-size: 15px; }
-          .spa-fe { width: auto; min-height: 44px; margin: 0; padding: 0 18px; }
+          .spa { max-width: 520px; padding: 24px; }
+          .spa-pc { display: inline; }
+          .spa-acoes { justify-content: flex-end; }
+          .spa-b1 { flex: none; min-height: 44px; padding: 0 22px; }
+          .spa-fe { min-height: 44px; }
         }
       `}</style>
     </div>

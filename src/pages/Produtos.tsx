@@ -1708,7 +1708,7 @@ export default function Produtos() {
                 onFoto={() => abrirParteDoNovo("fotos")}
                 onDescricao={() => abrirParteDoNovo("info")}
                 lojaPronta={sucesso.pronta ?? lojaPronta}
-                semExtras={sucesso.semExtras}
+                semExtras={sucesso.semExtras && isPro /* (19/11) adicionais são do PRO: não sugerir no grátis */}
                 onExtras={() => { irDepoisDeFechar.current = () => { navigate("/complementos"); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }}
                 onTerminarLoja={() => { irDepoisDeFechar.current = () => { navigate("/"); setTimeout(() => window.scrollTo(0, 0), 0); }; fecharModal(); }} />
             ) : (<>
