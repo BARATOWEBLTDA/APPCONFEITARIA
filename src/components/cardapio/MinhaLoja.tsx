@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Cake, CaretRight, ChartLineUp, ChatCircleText, Crown, LockSimple, PaintBrush, Stack, Target, Ticket } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import { avisar, Botao } from "@/components/base";
-import { CTA_PRO } from "@/lib/beneficiosPro";
+import { avisar } from "@/components/base";
 import { useRecorte } from "@/components/ui/useRecorte";
 import DadosLoja from "@/pages/DadosLoja";
 
@@ -55,10 +54,10 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
     avisar("Logo atualizada.");
   }, { aspect: 1, forma: "round" });
 
-  const img = vis?.logo || vis?.foto;
   const linhaAparencia = (
     <button type="button" className="dl-li" onClick={() => navigate("/cardapio-design")}>
-      {img ? <img className="dl-li-img" src={img} alt="" /> : <span className="dl-li-ic" aria-hidden="true"><PaintBrush size={20} weight="bold" /></span>}
+      {/* (19/11) sempre o ícone (antes a logo entrava no lugar dele) */}
+      <span className="dl-li-ic" aria-hidden="true"><PaintBrush size={20} weight="bold" /></span>
       <span className="dl-li-tx"><b>Aparência</b><small>Logo, foto do topo e cores</small></span>
       <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
     </button>
@@ -107,9 +106,8 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
           {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons", false, !pro)}
           {linhaMensagens}
           {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel", false, !pro)}
-          {!pro && <div className="ml-pro-bt"><Botao cheio tamanho="m" icone={<Crown size={18} weight="fill" />} onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao></div>}
         </div>
-        <style>{`.ml-pro-t { display: flex; align-items: center; gap: 6px; } .ml-pro-t svg { flex: none; color: #E0A93B; } .ml-pro-bt { padding: 12px; border-top: 1px solid var(--ui-linha); } .ml-trava { color: #B9AEB3; }`}</style>
+        <style>{`.ml-pro-t { display: flex; align-items: center; gap: 6px; } .ml-pro-t svg { flex: none; color: #E0A93B; } .ml-trava { color: #B9AEB3; }`}</style>
       </section>
     </>
   );

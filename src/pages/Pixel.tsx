@@ -93,7 +93,8 @@ export default function Pixel() {
         infoContent={<><p>O pixel conta para o <strong>Meta</strong> (Facebook e Instagram), o <strong>Google</strong> e o <strong>TikTok</strong> quem visitou o seu cardápio e quem fez pedido.</p><p>Com isso os anúncios chegam em quem tem mais chance de comprar, e você vê quanto cada anúncio vendeu.</p></>} />
       <div className="pxl">
         {!isPro && !carregandoPlano && <div className="pxl-pro"><CartaoPro recurso="pixel" /></div>}
-        {PLATAFORMAS.map(p => <CartaoPixel key={p.coluna} p={p} salvo={String(pf[p.coluna] || "")} onSalvo={async () => { await refreshProfile(); }} />)}
+        {/* (19/11) grátis: só o convite do PRO, sem os campos (antes dava para digitar o código e só barrava no Salvar) */}
+        {(isPro || carregandoPlano) && PLATAFORMAS.map(p => <CartaoPixel key={p.coluna} p={p} salvo={String(pf[p.coluna] || "")} onSalvo={async () => { await refreshProfile(); }} />)}
         <section className="pxl-card pxl-ev">
           <b className="pxl-ev-t">O que o pixel registra</b>
           {["Visita ao cardápio", "Produto colocado na sacola", "Começou a finalizar o pedido", "Pedido enviado, com o valor"].map(t => (
