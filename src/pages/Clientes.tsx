@@ -450,7 +450,7 @@ export default function Clientes() {
   const fecharForm = () => { aberturaForm.current++; setEnviandoFoto(false); setShowForm(false); setEditando(null); setTimeout(() => setCompleto(emptyCompleto), 250); talvezVoltar(); };
   const tryCloseForm = async () => {
     if (!hasFormData()) { setShowForm(false); talvezVoltar(); return; }
-    const ok = await confirmar({ titulo: editando ? "Sair sem salvar?" : "Descartar o cadastro?", texto: editando ? "As mudanças que você fez neste cliente vão se perder." : "O que você preencheu vai se perder.", rotulo: editando ? "Sair sem salvar" : "Descartar", rotuloVoltar: "Continuar editando", perigo: true, icone: "alerta" });
+    const ok = await confirmar({ titulo: editando ? "Sair sem salvar?" : "Descartar o cadastro?", texto: editando ? "As mudanças que você fez neste cliente vão se perder." : "O que você preencheu vai se perder.", rotulo: editando ? "Sair sem salvar" : "Descartar", rotuloVoltar: "Voltar", perigo: true, icone: "nenhum" });
     if (ok) fecharForm();
   };
   // Cadastrar/Salvar: mostra embaixo de cada campo o que falta (antes o botão ficava apagado sem dizer por quê)
@@ -503,7 +503,7 @@ export default function Clientes() {
   const tryCloseImport = async () => {
     if (importing) return;
     if (!importSheet?.some(c => c.selecionado)) { setImportSheet(null); return; }
-    const ok = await confirmar({ titulo: "Sair sem importar?", texto: "Os contatos que você marcou não vão ser cadastrados.", rotulo: "Sair sem importar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta" });
+    const ok = await confirmar({ titulo: "Sair sem importar?", texto: "Os contatos que você marcou não vão ser cadastrados.", rotulo: "Sair sem importar", rotuloVoltar: "Voltar", perigo: true, icone: "nenhum" });
     if (ok) setImportSheet(null);
   };
 

@@ -29,7 +29,7 @@ export default function Folha({ titulo, sub, onClose, children, acoes, umaAcao =
     if (perguntando.current) return;
     if (mexeu.current && comoAbriu.current !== null && lerCampos() !== comoAbriu.current) {
       perguntando.current = true;
-      const ok = await confirmar({ titulo: "Descartar o que você digitou?", texto: "O que você preencheu vai se perder.", rotulo: "Descartar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta" });
+      const ok = await confirmar({ titulo: "Descartar o que você digitou?", texto: "O que você preencheu vai se perder.", rotulo: "Descartar", rotuloVoltar: "Voltar", perigo: true, icone: "nenhum" });
       perguntando.current = false;
       if (!ok) return;
     }

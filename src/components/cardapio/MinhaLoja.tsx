@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cake, CaretRight, ChartLineUp, Crown, FileText, LockSimple, PaintBrush, PlayCircle, Stack, Target, Ticket } from "@phosphor-icons/react";
+import { Cake, CaretRight, ChartLineUp, ChatCircleText, Crown, FileText, LockSimple, PaintBrush, PlayCircle, Stack, Target, Ticket } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { useRecorte } from "@/components/ui/useRecorte";
@@ -71,6 +71,17 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
     </button>
   );
 
+  // (19/11) conta PRO: a linha do Stories mostra o que está no ar agora, como as outras linhas mostram o valor atual
+  const [noAr, setNoAr] = useState<{ n: number; views: number } | null>(null);
+  useEffect(() => {
+    if (!uid || !pro) return;
+    let vivo = true;
+    void supabase.from("stories").select("views").eq("user_id", uid).gt("expira_em", new Date().toISOString()).then(({ data, error }) => {
+      if (vivo && !error && data) setNoAr({ n: data.length, views: data.reduce((t, x) => t + (Number((x as { views?: number }).views) || 0), 0) });
+    }, () => {});
+    return () => { vivo = false; };
+  }, [uid, pro]);
+  const resumoStories = !noAr ? "Vídeos curtos no cardápio" : noAr.n === 0 ? "Nenhum no ar" : `${noAr.n} no ar · ${noAr.views} ${noAr.views === 1 ? "visualização" : "visualizações"}`;
   // linha da vitrine do PRO (conta grátis): coroa no lugar do cadeado, a frase diz o que ela ganha e o ícone fica apagado
   const linhaVitrine = (Ic: typeof Cake, titulo: string, beneficio: string, rota: string) => (
     <button type="button" className="dl-li ml-vit" onClick={() => navigate(rota)}>
@@ -84,7 +95,7 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
       <h2 className="dl-emb-t ml-pro-t">{!pro && <Crown size={18} weight="fill" aria-hidden="true" />}<span>{pro ? "Vender mais" : "Venda mais com o PRO"}</span></h2>
       <div className="dl-lista-c">
         {pro ? (<>
-          {linha(PlayCircle, "Stories", "Vídeos curtos no cardápio", "/stories")}
+          {linha(PlayCircle, "Stories", resumoStories, "/stories")}
           {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos")}
           {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons")}
           {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel")}
@@ -93,6 +104,7 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
           {linhaVitrine(FileText, "Orçamentos", "Feche festas com proposta pronta", "/orcamentos")}
           {linhaVitrine(Stack, "Adicionais", "Venda topo, vela e extras", "/complementos")}
           {linhaVitrine(Ticket, "Cupons", "Traga a cliente de volta", "/cupons")}
+          {linhaVitrine(ChatCircleText, "Mensagens do WhatsApp", "Textos prontos, é só enviar", "/configuracoes/mensagens")}
           {linhaVitrine(Target, "Pixel", "Anuncie para quem viu a loja", "/pixel")}
         </>)}
       </div>

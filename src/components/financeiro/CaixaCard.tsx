@@ -119,7 +119,7 @@ export function SaldoSheet({ atual, uid, onClose, onSalvo }: { atual: number | n
     if (perguntando.current) return;
     if (txt !== comoAbriu.current) {
       perguntando.current = true;
-      const ok = await confirmar({ titulo: "Descartar o que você digitou?", texto: "O saldo que você digitou não vai ser salvo.", rotulo: "Descartar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta" });
+      const ok = await confirmar({ titulo: "Descartar o que você digitou?", texto: "O saldo que você digitou não vai ser salvo.", rotulo: "Descartar", rotuloVoltar: "Voltar", perigo: true, icone: "nenhum" });
       perguntando.current = false;
       if (!ok) return;
     }

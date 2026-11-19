@@ -484,7 +484,7 @@ export default function FichaTecnica() {
     if (saving) return;
     // 11/10: com mudanças sem salvar, pergunta antes (a seta de voltar fechava e perdia tudo calada)
     if (mudouFicha()) {
-      const ok = await confirmar({ titulo: "Descartar as alterações?", texto: "O que você mudou na ficha técnica não foi salvo.", rotulo: "Descartar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta" });
+      const ok = await confirmar({ titulo: "Descartar as alterações?", texto: "O que você mudou na ficha técnica não foi salvo.", rotulo: "Descartar", rotuloVoltar: "Voltar", perigo: true, icone: "nenhum" });
       if (!ok) return;
     }
     retrato.current = null;

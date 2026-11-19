@@ -458,7 +458,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       const ok = await confirmar({
         titulo: isEditing ? "Sair sem salvar?" : "Descartar o cadastro?",
         texto: isEditing ? "As mudanças que você fez neste ingrediente vão se perder." : "O que você preencheu vai se perder.",
-        rotulo: isEditing ? "Sair sem salvar" : "Descartar", rotuloVoltar: "Voltar", perigo: true, icone: "alerta",
+        rotulo: isEditing ? "Sair sem salvar" : "Descartar", rotuloVoltar: "Voltar", perigo: true, icone: "nenhum",
       });
       if (!ok) return;
     }

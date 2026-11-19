@@ -799,7 +799,7 @@ export default function Produtos() {
     const vez = abertura.current;
     const ok = await confirmar({
       titulo: form.id ? "Descartar as alterações?" : "Descartar o cadastro?", texto: "O que você preencheu vai se perder.",
-      rotulo: "Descartar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta",
+      rotulo: "Descartar", rotuloVoltar: "Voltar", perigo: true, icone: "nenhum",
     });
     perguntandoDescartar.current = false;
     if (!ok || abertura.current !== vez) return;
@@ -810,7 +810,7 @@ export default function Produtos() {
   const voltarDaSecao = async () => {
     if (editTab === "opcoes" && escTela > 0) { setEscTela(0); return; }
     if (editMudou()) {
-      const ok = await confirmar({ titulo: "Descartar as alterações?", texto: "O que você mudou aqui não vai ser salvo.", rotulo: "Descartar", rotuloVoltar: "Continuar", perigo: true, icone: "alerta" });
+      const ok = await confirmar({ titulo: "Descartar as alterações?", texto: "O que você mudou aqui não vai ser salvo.", rotulo: "Descartar", rotuloVoltar: "Voltar", perigo: true, icone: "nenhum" });
       if (!ok) return;
       setForm(formSalvo.current);
     }

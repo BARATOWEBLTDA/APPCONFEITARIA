@@ -577,6 +577,17 @@ const ERROS_ANTIGOS = new Set([
 const ehErroLocal = (m: Message | undefined): boolean => !!m && m.role === 'assistant' && (!!m.erro || ERROS_ANTIGOS.has(m.content))
 
 /** A nota que o app escreve no fim da mensagem pra IA saber o que aconteceu com o cartão (não aparece na tela). */
+// (19/11) botões de escolha: quando a pergunta da Doo tem poucas respostas possíveis, ela termina com a linha
+// "[opções: A | B | C]"; o app esconde essa linha e mostra as opções como botões embaixo da resposta.
+const OPCOES_DOO = /\n*\[op[cç][oõ]es:\s*([^\]\n]+)\]/i
+const opcoesDe = (t: string): string[] => (OPCOES_DOO.exec(t)?.[1] || '').split('|').map(x => x.trim()).filter(x => x && x.length <= 40).slice(0, 4)
+const semMarcas = (t: string): string => t.replace(OPCOES_DOO, '').replace(NOTA_DO_APP, '')
+const REGRA_OPCOES = `
+
+BOTÕES DE ESCOLHA
+Quando você terminar a resposta com uma pergunta em que a confeiteira escolhe entre 2 a 4 respostas curtas (sim ou não, um tamanho, um sabor, um estilo, uma das alternativas que você ofereceu), escreva na ÚLTIMA linha, sozinha:
+[opções: Opção 1 | Opção 2 | Opção 3]
+Cada opção com no máximo 4 palavras, escrita do jeito que ela responderia. Não use em perguntas abertas (nome, quantidade, data, valor, texto livre). O app transforma essa linha em botões: não fale dela no texto e não repita as opções em lista.`
 const NOTA_DO_APP = /\n\n\[(O app confirmou|A confeiteira cancelou|A confeiteira abriu)[^\]]*\]$/
 
 const PEDE_NOVA_CONVERSA = 'Comece uma nova conversa e tente de novo.'
@@ -1051,7 +1062,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system: buildSystemPrompt(nomeConfeiteira) + negocio + regrasInsumo(insRef.current) + regrasPedido(catalogoParaDoo(catRef.current)) + regrasAcoesDoo(lojaRef.current),
+            system: buildSystemPrompt(nomeConfeiteira) + negocio + regrasInsumo(insRef.current) + regrasPedido(catalogoParaDoo(catRef.current)) + regrasAcoesDoo(lojaRef.current) + REGRA_OPCOES,
             messages: historyForApi.map(m => ({ role: m.role, content: buildContent(m) }))
           })
         })
@@ -1241,10 +1252,10 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               <div key={i} className={`dz-m ${msg.role === 'user' ? 'dz-m--eu' : 'dz-m--doo'}`}>
                 {msg.role === 'assistant' && <img src="/Sistema/doo.webp" alt="" className="dz-mav" />}
                 <div className="dz-mc">
-                  {(msg.content.replace(NOTA_DO_APP, '').trim() || msg.attachmentPreview || msg.imageUrl) && <div className="dz-bd">
+                  {(semMarcas(msg.content).trim() || msg.attachmentPreview || msg.imageUrl) && <div className="dz-bd">
                     {msg.attachmentPreview && <img src={msg.attachmentPreview} alt="Referência" className="dz-anexo" />}
                     {msg.imageUrl && <img src={msg.imageUrl} alt="Imagem gerada" className="dz-gerada" />}
-                    <span dangerouslySetInnerHTML={{ __html: formatText(msg.content.replace(NOTA_DO_APP, '')) }} />
+                    <span dangerouslySetInnerHTML={{ __html: formatText(semMarcas(msg.content)) }} />
                   </div>}
                   {msg.cortada && <p className="dz-corte">A resposta ficou longa e foi cortada. Peça para continuar.</p>}
                   {/* (11/10) "Editar" levou o rascunho pra Nova venda: o cartão fica resolvido (antes continuava pendente e,
@@ -1301,9 +1312,15 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                         }
                       }} />
                   )}
-                  {msg.role === 'assistant' && !msg.isImage && !!msg.content.replace(NOTA_DO_APP, '').trim() && (
+                  {/* botões de escolha: só na última resposta, e somem quando ela responde */}
+                  {msg.role === 'assistant' && i === messages.length - 1 && !loading && opcoesDe(msg.content).length > 1 && (
+                    <div className="dz-ops">
+                      {opcoesDe(msg.content).map(o => <button key={o} type="button" onClick={() => void sendMessage(o)}>{o}</button>)}
+                    </div>
+                  )}
+                  {msg.role === 'assistant' && !msg.isImage && !!semMarcas(msg.content).trim() && (
                     <div className="dz-acs">
-                      <button type="button" onClick={() => copyMessage(msg.content.replace(NOTA_DO_APP, ''), i)} className={copiedId === i ? 'ok' : ''}>
+                      <button type="button" onClick={() => copyMessage(semMarcas(msg.content), i)} className={copiedId === i ? 'ok' : ''}>
                         {copiedId === i ? <><Check size={16} weight="bold" />Copiado</> : <><Copy size={16} weight="bold" />Copiar</>}
                       </button>
                       {ehReceita(msg.content) && <>
@@ -1530,6 +1547,9 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
         .dz-bd strong { font-weight: 600; }
         .dz-anexo { width: 100%; max-height: 180px; object-fit: cover; border-radius: var(--ui-raio); margin-bottom: 8px; display: block; }
         .dz-gerada { width: 100%; border-radius: var(--ui-raio); margin-bottom: 8px; display: block; }
+        .dz-ops { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .dz-ops button { min-height: 40px; margin: 0; padding: 0 14px; border: 1px solid var(--ui-borda, #EADFE4); border-radius: 999px; background: var(--ui-branco, #fff); color: var(--ui-texto, #231A1D); font-family: inherit; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; }
+        .dz-ops button:active { background: #F7F1F3; }
         .dz-acs { display: flex; gap: 6px; margin-top: 6px; }
         .dz-acs button { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--ui-texto-2, #6B5D64); background: none; border: none; padding: 0 8px; margin-left: -8px; border-radius: var(--ui-raio-p); cursor: pointer; }
         .dz-acs button::after { content: ""; position: absolute; inset: -4px 0; }

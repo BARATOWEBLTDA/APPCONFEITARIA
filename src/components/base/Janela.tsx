@@ -87,10 +87,12 @@ export function Janela({ aberta, aoFechar, titulo, tipo = 'aviso', texto, icone,
 
 /* ───────── confirmar() e informar(): no lugar do confirm() e do alert() do navegador ───────── */
 
-export type IconeJanela = 'info' | 'alerta' | 'erro' | 'ok' | 'estorno'
+export type IconeJanela = 'info' | 'alerta' | 'erro' | 'ok' | 'estorno' | 'nenhum'
 const ICONES: Record<IconeJanela, { el: ReactNode; tom: TomJanela }> = {
   info: { el: <Info size={32} />, tom: 'rosa' },
   alerta: { el: <WarningCircle size={32} />, tom: 'laranja' },
+  // (19/11) sem ícone: perguntas simples de sair ou descartar (o círculo amarelo grande pesava a janela)
+  nenhum: { el: null, tom: 'laranja' },
   erro: { el: <XCircle size={32} />, tom: 'vermelho' },
   ok: { el: <CheckCircle size={32} />, tom: 'verde' },
   estorno: { el: <ArrowCounterClockwise size={32} />, tom: 'vermelho' },

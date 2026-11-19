@@ -255,7 +255,7 @@ export default function PraFazer() {
 
   // (11/11) "Divulgue seu cardápio" entra na trilha desde o começo (o aviso só aparecia depois de uma semana sem visitas)
   const itemDivulgar: Item[] = uid && pronta === true && semVisita && !avisos.some(a => a.chave === "divulgar_cardapio") ? [{
-    chave: "divulgar_cardapio", nivel: "normal", Ic: ShareNetwork, ordem: 50, acao: "Divulgar", link: "/divulgar", fechar: true,
+    chave: "divulgar_cardapio", nivel: "normal", Ic: ShareNetwork, ordem: 50, acao: "Divulgar", link: "/cardapio", fechar: true,
     t: "Divulgue seu cardápio", s: "Mande o link para as clientes",
     txt: "Mande o link no WhatsApp e no Instagram. É assim que chegam os primeiros pedidos.",
   }] : [];
