@@ -43,7 +43,9 @@ export function visitaDoApp(caminho: string) {
 /** evento do app (espera os pixels carregarem; sem pixel ligado, não faz nada) */
 export async function eventoDoApp(nome: EventoPixel, dados?: Record<string, unknown>) {
   await carregarPixelsDoApp();
-  eventoDoDono("app", nome, dados);
+  // (18/11) a Meta exige value > 0 no CompleteRegistration; valor nominal de um cadastro (lead). Dá pra sobrescrever passando value.
+  const extra = nome === "CompleteRegistration" ? { value: 1, ...dados } : dados;
+  eventoDoDono("app", nome, extra);
 }
 
 /** teste grátis / assinatura: manda uma vez só por conta */
