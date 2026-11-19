@@ -99,3 +99,70 @@ button.pro9-l2-i { cursor: pointer; }
 /* (6.154) na coluna do lado, as dúvidas ficam da largura do cartão do plano (o balão da Doo fica embaixo, longe delas) */
 @media (min-width: 901px) { .pro9 .pro9-lado .pro9-faq { margin-right: 0; } }
 .pro9-restaurar { display: block; margin: 10px auto 0; padding: 4px; border: 0; background: none; color: var(--ui-texto-2); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
+
+/* ═══ (19/11) Tela nova do PRO (quem ainda é grátis) ═══
+   Topo chocolate de ponta a ponta que some na cor da página, comparação Grátis × PRO e o cartão do plano. */
+@font-face { font-family: "Baloo 2"; font-weight: 800; font-style: normal; font-display: swap; src: url("/fonts/Baloo2-800.woff2") format("woff2"); }
+@keyframes pro10-anda { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
+.pro10 { font-family: var(--font-base); color: var(--ui-texto); text-align: left; }
+.pro10-topo {
+  box-sizing: border-box; text-align: center; background: var(--chocolate-escuro, #22130E); color: #fff;
+  width: 100vw; margin: calc(-1 * (var(--pad-page-top, 1.5rem) + env(safe-area-inset-top, 0px))) calc(50% - 50vw) 0;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 4px;
+}
+.pro10-barra { display: flex; align-items: center; gap: 4px; min-height: 48px; font-size: 16px; font-weight: 500; }
+.pro10-voltar { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: 0 0 0 -10px; padding: 0; border: 0; border-radius: 12px; background: none; color: inherit; cursor: pointer; }
+.pro10-voltar:focus-visible { outline: 3px solid rgba(255, 255, 255, .75); outline-offset: 2px; }
+.pro10-coroa { display: block; width: 104px; height: auto; margin: 14px auto 0; }
+.pro10-t {
+  margin: 8px 0 0; font-family: "Baloo 2", var(--font-base); font-weight: 800; font-size: clamp(38px, 12.5vw, 52px); line-height: 1.02; letter-spacing: -.01em;
+  background: linear-gradient(90deg, #F5C76B, #FF8FB8, #FFE3A6, #F5C76B); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  animation: pro10-anda 4s linear infinite;
+}
+.pro10-s { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: #D9C9C2; }
+/* o chocolate some aos poucos na cor da página (sem o risco) */
+.pro10-some { width: 100vw; height: 96px; margin: 0 calc(50% - 50vw); background: linear-gradient(180deg, #22130E 0%, #5A3A30 30%, #A98A80 58%, #DCCFCB 80%, #F1F2F2 100%); }
+.pro10-corpo { max-width: 560px; margin: 0 auto; padding-bottom: 0; }
+.pro10-corpo > .pro9 { margin-top: 12px; }
+
+/* comparação: nome · Grátis · PRO, cada linha numa só */
+.pro10-tab { overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
+.pro10-l { display: grid; grid-template-columns: minmax(0, 1fr) 76px 96px; align-items: stretch; border-top: 1px solid var(--ui-linha); font-size: 13px; }
+.pro10-l:first-child { border-top: 0; }
+.pro10-l > span { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 46px; padding: 6px 2px; text-align: center; line-height: 1.2; white-space: nowrap; }
+.pro10-l > .pro10-n { align-items: flex-start; padding-left: 12px; text-align: left; }
+.pro10-n { font-size: clamp(10.5px, 3.2vw, 14px); letter-spacing: -.015em; display: block !important; align-self: center; min-height: 0 !important; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pro10-g { color: var(--ui-texto-2); }
+.pro10-p { background: #FBF3EE; font-weight: 500; }
+.pro10-l small { display: block; margin-top: 1px; font-size: 12px; font-weight: 400; color: var(--ui-texto-2); }
+.pro10-cab > span { min-height: 42px; }
+.pro10-cab .pro10-p { background: var(--chocolate-escuro, #22130E); }
+.pro10-rgb {
+  font-family: "Baloo 2", var(--font-base); font-weight: 800; font-size: 19px; letter-spacing: .04em;
+  background: linear-gradient(90deg, #FF4D6D, #FFB03A, #F5E663, #4ADE80, #38BDF8, #A78BFA, #FF4D6D); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  animation: pro10-anda 3s linear infinite;
+}
+.pro10-x { color: #B9AEB3; }
+.pro10-v { color: var(--ui-verde, #15803D); }
+
+/* cartão do plano */
+.pro10-plano { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 12px; padding: 20px 16px 16px; border-radius: var(--ui-raio-cartao); background: var(--chocolate-escuro, #22130E); color: #fff; text-align: center; }
+.pro10-plano-t { font-family: "Baloo 2", var(--font-base); font-weight: 800; font-size: 34px; line-height: 1.05; }
+.pro10-plano-s { margin: 0 0 10px; font-size: 15px; line-height: 1.45; color: #D9C9C2; }
+.pro10-plano .ui-bt { width: 100%; }
+.pro10-seg { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 10px 0 0; font-size: 13px; color: #D9C9C2; }
+.pro10-restaurar { margin: 8px auto 0; padding: 4px; border: 0; background: none; color: #D9C9C2; font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
+@media (max-width: 389px) { .pro10-l { grid-template-columns: minmax(0, 1fr) 72px 88px; font-size: 12px; } }
+@media (max-width: 359px) { .pro10-l { grid-template-columns: minmax(0, 1fr) 66px 78px; font-size: 11px; } .pro10-l > .pro10-n { padding-left: 8px; } .pro10-l small { font-size: 11px; } }
+@media (prefers-reduced-motion: reduce) { .pro10-t, .pro10-rgb { animation: none; } }
+/* computador: o cabeçalho normal continua; o topo vira um bloco arredondado, com o título numa linha só */
+@media (min-width: 901px) {
+  .pro10 { max-width: 1180px; margin: 0 auto; padding: 24px 32px 48px; }
+  .pro10-topo { width: auto; margin: 0; padding: 28px 24px 32px; border-radius: var(--ui-raio-cartao); }
+  .pro10-some { display: none; }
+  .pro10-br { display: none; }
+  .pro10-t { font-size: 48px; }
+  .pro10-corpo { margin-top: 16px; }
+}

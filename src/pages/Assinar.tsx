@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Crown, Lock, CaretDown, CaretRight, Check } from "@phosphor-icons/react";
+import { Crown, Lock, CaretDown, CaretLeft, CaretRight, Check, X } from "@phosphor-icons/react";
 import { BENEFICIOS, CTA_PRO, DIAS_TESTE, PRECO_PRO, SELO_TESTE } from "@/lib/beneficiosPro";
 import { noAppDaLoja } from "@/lib/plataforma";
 import { lojaPagamentoPronto, iniciarLoja, ofertaPro, assinarPelaLoja, restaurarCompra, cancelouCompra, type OfertaLoja } from "@/lib/lojaPagamento";
@@ -30,10 +30,29 @@ import "./assinar.css";
 const PRECO_CHEIO = PRECO_PRO;
 
 const DUVIDAS: [string, string][] = [
-  ["Quando sou cobrada?", `Só no ${DIAS_TESTE + 1}º dia. A Hotmart pede o cartão, mas cancelando antes você não paga nada.`],
-  ["Posso cancelar?", "Sim, quando quiser, sem multa."],
+  ["Quando sou cobrada?", `Só no ${DIAS_TESTE + 1}º dia. Nos ${DIAS_TESTE} primeiros dias você não paga nada.`],
   ["E os meus dados?", "Continuam salvos, mesmo se você voltar para o plano grátis."],
   ["Como pago?", "Pela Hotmart, um site seguro de pagamentos. Use o mesmo e-mail da sua conta: assim o PRO liga sozinho."],
+];
+/** (19/11) Comparação Grátis × PRO: nome, o que o grátis tem (null = X), o que o PRO tem (null = visto) e a linha pequena de cada um */
+const COMPARA: [string, string | null, string | null, string?, string?][] = [
+  ["Produtos no cardápio", "10", "Sem limite"],
+  ["Doo IA", "Só texto", "Texto e fotos", "limitado", "ilimitado"],
+  ["Orçamentos dinâmicos", null, null],
+  ["Montamos seu cardápio", null, null],
+  ["Lucro por produto", null, null],
+  ["Cupons de desconto", null, "Sem limite"],
+  ["Adicionais", null, null],
+  ["Modelo do cardápio", "Clássico", "Premium"],
+  ["Mensagens personalizadas", null, null],
+  ["Pixel", null, null],
+  ["Selo de loja verificada", null, null],
+  ["Marca d'água", "Com marca", "Sem marca"],
+  ["Importar contatos", null, null],
+  ["Banners no cardápio", "1", "Até 4"],
+  ["Fotos por produto", "1", "Até 4"],
+  ["Link personalizado", null, null],
+  ["Planilha e PDFs", null, null],
 ];
 const dataBR = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
 
@@ -104,7 +123,7 @@ export default function Assinar() {
 
   return (
     <>
-      <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo para sua confeitaria vender mais"} onBack={computador ? undefined : () => voltarOuIr(navigate)} />
+      {(isPro || computador) && <AppPageHeader title="Doonly PRO" subtitle={isPro ? "Você já é PRO" : "Tudo para sua confeitaria vender mais"} onBack={computador ? undefined : () => voltarOuIr(navigate)} />}
       {isPro ? (
         /* ══ (21/10) Quem já é PRO: o status primeiro, a lista compacta e as dúvidas ══ */
         <div className="cl9 pro9 pro9--pro">
@@ -140,50 +159,56 @@ export default function Assinar() {
           {duvidas}
         </div>
       ) : (
-      <div className="cl9 pro9">
-        <section className="pro9-hero">
-          <img src="/pro.webp" alt="" />
-          <div>
-            <h1>Sua confeitaria mais lucrativa e organizada</h1>
-            <p>Ferramentas que vendem, calculam e organizam por você.</p>
-            {(!noAppDaLoja || lojaPagamentoPronto) && <span className="pro9-selo">{SELO_TESTE} para testar</span>}
-          </div>
+      <div className="pro10">
+        {/* (19/11) tela nova do PRO: topo chocolate de ponta a ponta (cobre o cabeçalho no celular), comparação Grátis × PRO e o cartão do plano */}
+        <section className="pro10-topo">
+          {!computador && (
+            <div className="pro10-barra">
+              <button type="button" className="pro10-voltar" aria-label="Voltar" onClick={() => voltarOuIr(navigate)}><CaretLeft size={22} weight="bold" /></button>
+              <span>Doonly PRO</span>
+            </div>
+          )}
+          <img className="pro10-coroa" src="/pro-coroa.webp" alt="" width={104} height={52} />
+          <h1 className="pro10-t">Libere tudo <br className="pro10-br" />do Doonly</h1>
+          <p className="pro10-s">O Doonly grátis já é bom.<br />O PRO é muito melhor.</p>
         </section>
+        <div className="pro10-some" aria-hidden="true" />
 
-        <EquipeMonta className="pro9-eqm" semBotao />
-        <div className="pro9-grade">
-          {/* (21/10) celular: a oferta (preço) sobe pra logo depois do topo, antes da lista */}
-          <aside className="pro9-lado">
-            {noAppDaLoja && !lojaPagamentoPronto ? (
-              <section className="cl9-card pro9-oferta">
-                <b className="pro9-oferta-t">Plano PRO</b>
-                <p className="pro9-oferta-s">A assinatura do PRO não está disponível pelo app. Se você já é PRO, tudo fica liberado aqui automaticamente.</p>
-              </section>
-            ) : (
-            <section className="cl9-card pro9-oferta">
-              <span className="pro9-desc">Hoje você não paga nada</span>
-              <b className="pro9-oferta-t">Plano PRO mensal</b>
-              <div className="pro9-preco"><b>Grátis</b><small>por {DIAS_TESTE} dias</small></div>
-              <p className="pro9-oferta-s">Depois, {lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO} por mês (menos de R$ 1 por dia). Cancele antes do {DIAS_TESTE + 1}º dia e não paga nada.</p>
-              <Botao cheio carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO}</Botao>
-              <p className="pro9-seg"><Lock size={14} weight="bold" /> {lojaPagamentoPronto ? "Pagamento seguro pelo Google Play" : "Pagamento seguro pela Hotmart"}</p>
-              {lojaPagamentoPronto && <button type="button" className="pro9-restaurar" onClick={restaurar}>Já assinei: restaurar compra</button>}
-            </section>
-            )}
-            {computador && !noAppDaLoja && duvidas}
-          </aside>
-
-          <section className="cl9-card pro9-lista">
-            <Titulo>O que o PRO libera</Titulo>
-            {/* (6.108) a equipe que monta já está no cartão de cima; no celular, o título curto (o longo quebrava em 2 linhas) */}
-            {BENEFICIOS.filter(b => b[5] !== "equipe").map(([Ic, t, d, curto]) => (
-              <div className="pro9-li" key={t}>
-                <span className="pro9-ic"><Ic size={22} weight="duotone" /></span>
-                <span><b>{computador ? t : curto}</b><small>{d}</small></span>
+        <div className="pro10-corpo">
+          <section className="pro10-tab" aria-label="Grátis e PRO lado a lado">
+            <div className="pro10-l pro10-cab" aria-hidden="true">
+              <span />
+              <span className="pro10-g">Grátis</span>
+              <span className="pro10-p"><b className="pro10-rgb">PRO</b></span>
+            </div>
+            {COMPARA.map(([nome, gratis, pro, gSub, pSub]) => (
+              <div className="pro10-l" key={nome}>
+                <span className="pro10-n">{nome}</span>
+                <span className="pro10-g">
+                  {gratis === null ? <X size={16} weight="bold" className="pro10-x" role="img" aria-label="Não tem no grátis" /> : <>{gratis}{gSub && <small>{gSub}</small>}</>}
+                </span>
+                <span className="pro10-p">
+                  {pro === null ? <Check size={17} weight="bold" className="pro10-v" role="img" aria-label="Incluso no PRO" /> : <>{pro}{pSub && <small>{pSub}</small>}</>}
+                </span>
               </div>
             ))}
           </section>
-          {!computador && !noAppDaLoja && duvidas}
+
+          {noAppDaLoja && !lojaPagamentoPronto ? (
+            <section className="pro10-plano">
+              <b className="pro10-plano-t">Plano PRO</b>
+              <p className="pro10-plano-s">A assinatura do PRO não está disponível pelo app. Se você já é PRO, tudo fica liberado aqui automaticamente.</p>
+            </section>
+          ) : (
+            <section className="pro10-plano">
+              <b className="pro10-plano-t">{SELO_TESTE}</b>
+              <p className="pro10-plano-s">depois {lojaPagamentoPronto && oferta ? oferta.preco : PRECO_CHEIO} por mês</p>
+              <Botao cheio carregando={comprando} disabled={comprando} icone={<Crown size={20} weight="fill" />} onClick={lojaPagamentoPronto ? assinarPeloGoogle : assinarNaHotmart}>{CTA_PRO}</Botao>
+              <p className="pro10-seg"><Lock size={14} weight="bold" /> {lojaPagamentoPronto ? "Pagamento seguro pelo Google Play" : "Pagamento seguro pela Hotmart"}</p>
+              {lojaPagamentoPronto && <button type="button" className="pro10-restaurar" onClick={restaurar}>Já assinei: restaurar compra</button>}
+            </section>
+          )}
+          {!noAppDaLoja && <div className="pro9">{duvidas}</div>}
         </div>
       </div>
       )}
