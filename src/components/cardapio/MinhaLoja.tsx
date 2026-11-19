@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cake, CaretRight, ChartLineUp, ChatCircleText, Crown, LockSimple, PaintBrush, PlayCircle, Stack, Target, Ticket } from "@phosphor-icons/react";
+import { Cake, CaretRight, ChartLineUp, Crown, LockSimple, PaintBrush, PlayCircle, Stack, Target, Ticket } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar } from "@/components/base";
 import { useRecorte } from "@/components/ui/useRecorte";
@@ -70,14 +70,6 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
       {trava ? <LockSimple size={16} weight="bold" className="dl-li-seta ml-trava" aria-hidden="true" /> : <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />}
     </button>
   );
-  // (10/11) Mensagens do WhatsApp saiu de Configurações: é a voz da loja com o cliente
-  const linhaMensagens = (
-    <button type="button" className="dl-li" onClick={() => navigate("/configuracoes/mensagens", { state: { de: "/cardapio" } })}>
-      <span className="dl-li-ic" aria-hidden="true"><ChatCircleText size={20} weight="bold" /></span>
-      <span className="dl-li-tx"><b>Mensagens do WhatsApp</b><small>Textos prontos para o cliente</small></span>
-      {!pro ? <LockSimple size={16} weight="bold" className="dl-li-seta ml-trava" aria-hidden="true" /> : <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />}
-    </button>
-  );
 
   return (
     <>
@@ -91,6 +83,17 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
           {linha(Cake, "Produtos", "Preço, foto e sabores", "/produtos")}
         </div>
       </section>
+      {/* (19/11) "Vender mais" logo depois de Produtos: Stories e Cupons ficavam escondidos no fim da tela */}
+      <section className="dl-emb" aria-label={pro ? "Vender mais" : "Venda mais com o PRO"}>
+        <h2 className="dl-emb-t ml-pro-t">{!pro && <Crown size={18} weight="fill" aria-hidden="true" />}{pro ? "Vender mais" : "Venda mais com o PRO"}</h2>
+        <div className="dl-lista-c">
+          {linha(PlayCircle, "Stories", "Vídeos curtos no cardápio", "/stories", false, !pro)}
+          {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos", false, !pro)}
+          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons", false, !pro)}
+          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel", false, !pro)}
+        </div>
+        <style>{`.ml-pro-t { display: flex; align-items: center; gap: 6px; } .ml-pro-t svg { flex: none; color: #E0A93B; } .ml-trava { color: #B9AEB3; }`}</style>
+      </section>
       <DadosLoja embutido extras={{ antes: linhaAparencia }} />
       {/* (19/11) o que é do PRO fica junto num bloco só, no fim (antes ficava espalhado, com a etiqueta PRO em cada linha) */}
       <section className="dl-emb" aria-label="Acompanhar">
@@ -98,17 +101,6 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
         <div className="dl-lista-c">
           {linha(ChartLineUp, "Métricas", "Visitas e mais pedidos", "/cardapio-metricas")}
         </div>
-      </section>
-      <section className="dl-emb" aria-label={pro ? "Vender mais" : "Venda mais com o PRO"}>
-        <h2 className="dl-emb-t ml-pro-t">{!pro && <Crown size={18} weight="fill" aria-hidden="true" />}{pro ? "Vender mais" : "Venda mais com o PRO"}</h2>
-        <div className="dl-lista-c">
-          {linha(PlayCircle, "Stories", "Vídeos curtos no cardápio", "/stories", false, !pro)}
-          {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos", false, !pro)}
-          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons", false, !pro)}
-          {linhaMensagens}
-          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel", false, !pro)}
-        </div>
-        <style>{`.ml-pro-t { display: flex; align-items: center; gap: 6px; } .ml-pro-t svg { flex: none; color: #E0A93B; } .ml-trava { color: #B9AEB3; }`}</style>
       </section>
     </>
   );

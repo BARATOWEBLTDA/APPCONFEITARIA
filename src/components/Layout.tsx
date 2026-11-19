@@ -27,7 +27,7 @@ import { ClipboardText, ChartBar, Stack, Palette, Storefront, ArrowSquareOut, Ar
   Receipt, Sparkle, Crown, FileText,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target, X, Wrench, Scales, Sliders, FlagBanner } from "@phosphor-icons/react";
+import { Ticket, Target, X, Wrench, Scales, Sliders, FlagBanner, PlayCircle, ChatCircleText } from "@phosphor-icons/react";
 import { ligarAcessoOnline } from "@/lib/acessoOnline";
 import { ConviteProGlobal } from "@/components/billing/RecursoPro";
 import DestaqueDaNavegacao from "@/components/guia/DestaqueDaNavegacao";
@@ -260,10 +260,12 @@ export default function Layout() {
             <SubitemMenu to="/ficha-tecnica" icone={ClipboardText}>Ficha técnica</SubitemMenu>
           </GrupoMenu>
           {/* (13/10) as telas do Cardápio digital viraram um grupo do menu · (6.59) Cupons e Pixel entraram aqui: divulgam o cardápio */}
-          <GrupoMenu id="cardapio" aberto={grupoAberto === "cardapio"} onAbrir={setGrupoAberto} rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO.filter(r => !ROTAS_CATALOGO.includes(r)), "/cardapio-preview", "/cupons", "/pixel"]} recolhido={recolhido}>
+          <GrupoMenu id="cardapio" aberto={grupoAberto === "cardapio"} onAbrir={setGrupoAberto} rotulo="Cardápio digital" icone={ShoppingBag} tour="cardapio" rotas={[...ROTAS_CARDAPIO.filter(r => !ROTAS_CATALOGO.includes(r)), "/cardapio-preview", "/cupons", "/pixel", "/stories", "/cardapio-metricas"]} recolhido={recolhido}>
             <SubitemMenu to="/cardapio" end icone={ChartBar}>Visão geral</SubitemMenu>
             <SubitemMenu to="/cardapio-design" icone={Palette}>Aparência</SubitemMenu>
             <SubitemMenu to="/cardapio-config" icone={Storefront}>Dados da loja</SubitemMenu>
+            <SubitemMenu to="/stories" icone={PlayCircle}>Stories</SubitemMenu>
+            <SubitemMenu to="/cardapio-metricas" icone={ChartLineUp}>Métricas</SubitemMenu>
             <SubitemMenu to="/cupons" icone={Ticket}>Cupons</SubitemMenu>
             <SubitemMenu to="/pixel" icone={Target}>Pixel</SubitemMenu>
             {linkCardapio && <a className="nav-subitem" href={linkCardapio} target="_blank" rel="noopener noreferrer"><span className="nav-subicon" aria-hidden="true"><ArrowSquareOut size={16} weight="bold" /></span>Ver meu cardápio</a>}
@@ -285,6 +287,7 @@ export default function Layout() {
           {/* (04/11 · 6.42) a Doo saiu do menu: no computador ela é o balão flutuante no canto (doo-fab) */}
           <GrupoMenu id="conta" aberto={grupoAberto === "conta"} onAbrir={setGrupoAberto} rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar"]} recolhido={recolhido}>
             <SubitemMenu to="/configuracoes" end icone={Gear}>Configurações</SubitemMenu>
+            <SubitemMenu to="/configuracoes/mensagens" icone={ChatCircleText}>Mensagens</SubitemMenu>
             <SubitemMenu to={isPro ? "/minha-assinatura" : "/assinar"} icone={Crown} tambem={["/assinar", "/minha-assinatura"]}>Minha assinatura</SubitemMenu>
           </GrupoMenu>
           {/* (19/10) Notificações (já está em Configurações) e Conquistas (escondida nas Configurações) saíram do menu. */}

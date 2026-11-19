@@ -8,7 +8,7 @@ import {
   Calculator, Sliders,
 } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { ShareNetwork, Scales, FlagBanner } from "@phosphor-icons/react";
+import { ShareNetwork, Scales, FlagBanner, ChatCircleText } from "@phosphor-icons/react";
 import { indicarDoonly } from "@/lib/indicarDoonly";
 import { useFase, useSobreposicao } from "@/components/base/useSobreposicao";
 import { usePlano } from "@/hooks/usePlano";
@@ -46,6 +46,8 @@ const GRUPOS: Grupo[] = [
       { label: "Financeiro",   desc: "Caixa, contas e lucro",          path: "/financeiro", Icone: CurrencyDollar },
       { label: "Clientes",     desc: "Quem já comprou com você",       path: "/clientes",   Icone: Users },
       { label: "Orçamentos",   desc: "Propostas para aprovar", path: "/orcamentos", Icone: FileText, pro: true },
+      // (19/11) veio da Minha loja: texto pronto para a cliente é rotina de atendimento
+      { label: "Mensagens",    desc: "Textos prontos do WhatsApp",     path: "/configuracoes/mensagens", Icone: ChatCircleText, pro: true },
     ],
   },
   {

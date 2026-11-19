@@ -57,7 +57,7 @@ export default function MensagensWhatsApp() {
   const navigate = useNavigate();
   // (18/10) aberta pela aba Cardápio: o voltar leva pra lá (senão, pra Configurações)
   // (10/11) Mensagens agora mora na Minha loja: o voltar vai pra lá (de onde mais ela abre)
-  const voltarPara = (useLocation().state as { de?: string } | null)?.de || "/cardapio";
+  const voltarPara = (useLocation().state as { de?: string } | null)?.de || "/inicio"; // (19/11) agora abre pelo Menu (antes pela Minha loja)
   const { profile } = useProfile();
   const salvas = profile?.mensagens_whatsapp || {};
   const [editando, setEditando] = useState<Modelo | null>(null);

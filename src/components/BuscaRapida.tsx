@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import { MagnifyingGlass, House, ClipboardText, Plus, CalendarBlank, Sparkle, Cake, Tag, Stack, Basket, ListChecks, Users, ShoppingBag, Palette, Storefront, ArrowSquareOut, CurrencyDollar, ArrowsDownUp, HandCoins, CalendarCheck, Receipt, ChartLineUp, Coins, CreditCard, Buildings, Newspaper, Gear, Crown, SpeakerHigh, ChatCircleText, Bug, Lightbulb, FileText, WhatsappLogo, PauseCircle, PixLogo, Clock, Truck, MapPin, Money, WarningCircle, BellRinging, Wrench, DeviceMobile, Eye, Hourglass } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
-import { Ticket, Target, Scales, Sliders } from "@phosphor-icons/react";
+import { Ticket, Target, Scales, Sliders, PlayCircle, FlagBanner, ShieldCheck } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { useSobreposicao } from "@/components/base/useSobreposicao";
@@ -80,7 +80,7 @@ export default function BuscaRapida() {
       { g: DIA, t: "Orçamentos", ic: FileText, rota: "/orcamentos", pro: true, chaves: "orcamento proposta aprovar festa casamento evento" },
       { g: DIA, t: "Clientes", ic: Users, rota: "/clientes", chaves: "cliente aniversario contatos importar historico" },
       { g: DIA, t: "Mensagens do WhatsApp", ic: ChatCircleText, rota: "/configuracoes/mensagens", chaves: "mensagem whatsapp zap whats texto pronto recado aniversario parabens" },
-      { g: DIA, t: "Doo", ic: Sparkle, fazer: () => abrirDooIA(), pro: true, chaves: "assistente ia inteligencia artificial perguntar topo bolo legenda instagram calcular preco imagem arte logo" },
+      { g: DIA, t: "Doo", ic: Sparkle, fazer: () => abrirDooIA(), chaves: "assistente ia inteligencia artificial perguntar topo bolo legenda instagram calcular preco imagem arte logo" },
       { g: PROD, t: "Produtos", ic: Cake, rota: "/produtos", chaves: "produto bolo doce salgado preco foto esgotado tamanho destaque promocao" },
       { g: PROD, t: "Novo produto", ic: Plus, rota: "/produtos", estado: { abrirCadastro: true }, chaves: "cadastrar produto criar" },
       { g: PROD, t: "Categorias", ic: Tag, rota: "/categorias", chaves: "categoria ordem cardapio secao grupo" },
@@ -88,6 +88,7 @@ export default function BuscaRapida() {
       { g: PROD, t: "Ingredientes", ic: Basket, rota: "/insumos", chaves: "insumo ingrediente materia prima compra mercado embalagem preco" },
       { g: PROD, t: "Ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", chaves: "receita custo lucro margem preco sugerido rendimento" },
       { g: PROD, t: "Conversor de medidas", ic: Scales, rota: "/ferramentas/medidas", chaves: "ferramentas xicara colher gramas converter medida peso" },
+      { g: PROD, t: "Topos de bolo", ic: FlagBanner, rota: "/ferramentas/topos", chaves: "ferramentas topo topper imprimir arte pronto recortar papel festa" },
       { g: PROD, t: "Simulador de preço", ic: Sliders, rota: "/ferramentas/simulador", chaves: "ferramentas simular preco lucro margem quanto cobrar calculadora" },
       { g: PROD, t: "Produtos sem ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", estado: { abrir: "sem-ficha" }, chaves: "falta ficha" },
       { g: PROD, t: "Custos", ic: Receipt, rota: "/custos", chaves: "custo fixos variaveis despesa gasto aluguel luz gas" },
@@ -102,6 +103,7 @@ export default function BuscaRapida() {
         { g: LOJA, t: "Copiar o link do cardápio", ic: ShoppingBag, fazer: () => { void navigator.clipboard?.writeText(link); }, chaves: "link copiar compartilhar divulgar" },
       ] : []),
       { g: LOJA, t: "Ver como fica", ic: Eye, rota: "/cardapio-preview", chaves: "previa visualizar cliente" },
+      { g: LOJA, t: "Stories", ic: PlayCircle, rota: "/stories", pro: true, chaves: "story storie video videos foto gravar postar instagram reels novidade do dia" },
       { g: LOJA, t: "Aparência", ic: Palette, rota: "/cardapio-design", chaves: "logo cores cor banner capa foto topo visual" },
       { g: LOJA, t: "Métricas do cardápio", ic: ChartLineUp, rota: "/cardapio-metricas", chaves: "metricas visitas acessos quantas pessoas desempenho mais pedidos vendidos conversao estatisticas" },
       { g: LOJA, t: "Dados da loja", ic: Storefront, rota: "/cardapio-config", estado: { abrir: "loja" }, chaves: "nome descricao sobre whatsapp telefone" },
@@ -124,6 +126,7 @@ export default function BuscaRapida() {
       { g: DIV, t: "Pixel", ic: Target, rota: "/pixel", pro: true, chaves: "facebook instagram meta google tiktok anuncio" },
       { g: CONTA, t: isPro ? "Minha assinatura" : "Assinar o PRO", ic: Crown, rota: isPro ? "/minha-assinatura" : "/assinar", chaves: "plano pro assinatura pagamento mensalidade cancelar testar gratis" },
       { g: CONTA, t: "Configurações", ic: Gear, rota: "/configuracoes", chaves: "conta senha email foto perfil sair atualizar versao excluir termos privacidade" },
+      { g: CONTA, t: "Acessos do suporte", ic: ShieldCheck, rota: "/acessos-suporte", chaves: "suporte equipe acesso entrar na conta autorizar permitir ajuda" },
       { g: CONTA, t: "Notificações e sons", ic: BellRinging, rota: "/configuracoes/notificacoes", chaves: "notificacao som aviso alerta push celular toque" },
       ...(!isStandalone() ? [{ g: CONTA, t: "Instalar o app", ic: DeviceMobile, fazer: () => { if (getInstallPrompt()) void promptInstall(); else navigate("/configuracoes"); }, chaves: "instalar app tela inicial atalho" }] : []),
       { g: CONTA, t: "Falar com o suporte", ic: WhatsappLogo, fazer: zap, chaves: "suporte atendimento whatsapp ajuda falar" },
