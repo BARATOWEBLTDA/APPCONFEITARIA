@@ -355,9 +355,13 @@ export default function PraFazer() {
   const resto = lista.length - VISIVEIS;
   const ir = (x: Item) => x.aoTocar ? x.aoTocar() : navigate(x.link, x.estado ? { state: x.estado } : undefined);
   const adiar = (x: Item, dias: number | "nunca") => {
+    // (19/11) um passo da trilha pode juntar dois avisos (custos + mão de obra): adia todos do mesmo passo.
+    // Antes adiava um só, o outro entrava no lugar com o mesmo nome e parecia que o "Lembrar" não funcionava.
+    const k = passoDe(x.chave);
+    const chaves = k ? Array.from(new Set([x.chave, ...brutos.filter(i => passoDe(i.chave) === k).map(i => i.chave)])) : [x.chave];
     try {
-      if (dias === "nunca") localStorage.setItem(kAte(x.chave), "nunca");
-      else { const d = new Date(); d.setDate(d.getDate() + dias); d.setHours(5, 0, 0, 0); localStorage.setItem(kAte(x.chave), String(d.getTime())); }
+      const d = new Date(); if (dias !== "nunca") { d.setDate(d.getDate() + dias); d.setHours(5, 0, 0, 0); }
+      for (const c of chaves) localStorage.setItem(kAte(c), dias === "nunca" ? "nunca" : String(d.getTime()));
     } catch { /* sem armazenamento */ }
     setMenu(null); setMexeu(n => n + 1);
     avisar(dias === "nunca" ? "Pronto, não aparece mais neste aparelho." : dias === 1 ? "Volta amanhã." : "Volta daqui a uma semana.", { tipo: "ok" });
