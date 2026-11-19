@@ -13,10 +13,10 @@ import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/apiFetch";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
-import { type Story, STORY_MAX_ATIVOS, STORY_MAX_SEGUNDOS, STORY_SEGUNDOS_FOTO, saiDoAr, urlCapaStory } from "@/lib/stories";
+import { type Story, STORY_MAX_ATIVOS, STORY_MAX_SEGUNDOS, STORY_SEGUNDOS_FOTO, saiDoAr, tempoStory, urlCapaStory } from "@/lib/stories";
 
 type Prod = { id: string; nome: string };
-const MAX_VIDEO_MB = 150;
+const MAX_VIDEO_MB = 500; // 2 minutos de câmera chegam a 400 MB; o vídeo é reduzido no aparelho antes de subir
 
 const api = async (corpo: Record<string, unknown>) => {
   const r = await apiFetch("/api/story", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
@@ -191,7 +191,7 @@ export default function Stories() {
   return (
     <>
       <AppPageHeader title="Stories" voltar="/cardapio" subtitle="Vídeos curtos e fotos no topo do seu cardápio"
-        infoContent={<><p>Poste um vídeo de até {STORY_MAX_SEGUNDOS} segundos ou uma foto. A logo do seu cardápio ganha um aro colorido e a cliente toca para assistir.</p><p>Cada story fica no ar de 1 a 3 dias e depois some sozinho. Dá para ter até {STORY_MAX_ATIVOS} no ar ao mesmo tempo.</p></>} />
+        infoContent={<><p>Poste um vídeo de até {tempoStory(STORY_MAX_SEGUNDOS)} ou uma foto. A logo do seu cardápio ganha um aro colorido e a cliente toca para assistir.</p><p>Cada story fica no ar de 1 a 3 dias e depois some sozinho. Dá para ter até {STORY_MAX_ATIVOS} no ar ao mesmo tempo.</p></>} />
       <div className="sto">
         {!isPro && !carregandoPlano ? <CartaoPro recurso="stories" /> : (
           <>
@@ -308,7 +308,7 @@ function JanelaPostar({ produtos, aoFechar, aoPublicar }: { produtos: Prod[]; ao
     if (f.type.startsWith("video/")) {
       if (f.size > MAX_VIDEO_MB * 1024 * 1024) { avisar(`O vídeo passa de ${MAX_VIDEO_MB} MB. Escolha um menor.`, { tipo: "erro" }); return; }
       const d = await duracaoDoVideo(f);
-      if (d > STORY_MAX_SEGUNDOS + 1) { avisar(`O vídeo tem ${Math.round(d)} segundos. O limite é ${STORY_MAX_SEGUNDOS}.`, { tipo: "erro" }); return; }
+      if (d > STORY_MAX_SEGUNDOS + 1) { avisar(`O vídeo tem ${tempoStory(d)}. O limite é ${tempoStory(STORY_MAX_SEGUNDOS)}.`, { tipo: "erro" }); return; }
       setSeg(d); setArq(f);
     } else if (f.type.startsWith("image/")) { setSeg(STORY_SEGUNDOS_FOTO); setArq(f); }
     else avisar("Escolha um vídeo ou uma foto.", { tipo: "erro" });
@@ -322,7 +322,7 @@ function JanelaPostar({ produtos, aoFechar, aoPublicar }: { produtos: Prod[]; ao
       <button type="button" className="sto-up" disabled={enviando} onClick={() => campo.current?.click()}>
         <UploadSimple size={24} weight="bold" aria-hidden="true" />
         {arq ? <b>{arq.name}</b> : <span>Escolher vídeo ou foto</span>}
-        <small>{arq ? (ehVideo ? `${Math.round(seg)} segundos` : "Foto") : `Vídeo de até ${STORY_MAX_SEGUNDOS} segundos`}</small>
+        <small>{arq ? (ehVideo ? tempoStory(seg) : "Foto") : `Vídeo de até ${tempoStory(STORY_MAX_SEGUNDOS)}`}</small>
       </button>
       <p className="sto-lbl">Fica no ar por</p>
       <CaixasEscolha<"1" | "2" | "3"> rotulo="Por quanto tempo fica no ar" valor={dias} onMudar={setDias} opcoes={[

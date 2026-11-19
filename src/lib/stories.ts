@@ -1,6 +1,13 @@
 // (19/11) Stories do cardápio: vídeos curtos (ou fotos) que somem em 1 a 3 dias. Vídeo fica no Bunny Stream.
 export const STORIES_CDN = (import.meta.env.VITE_BUNNY_STREAM_CDN_HOST as string | undefined) || "vz-a30005ae-9d4.b-cdn.net";
-export const STORY_MAX_SEGUNDOS = 30;
+export const STORY_MAX_SEGUNDOS = 120;
+/** "45 segundos", "1 min 30 s", "2 minutos" */
+export const tempoStory = (seg: number) => {
+  const s = Math.round(seg);
+  if (s < 60) return `${s} segundos`;
+  const m = Math.floor(s / 60), r = s % 60;
+  return r ? `${m} min ${r} s` : m === 1 ? "1 minuto" : `${m} minutos`;
+};
 export const STORY_MAX_ATIVOS = 3;
 export const STORY_SEGUNDOS_FOTO = 6;
 
