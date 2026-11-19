@@ -229,12 +229,12 @@ button.pro9-l2-i { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .pro11-coroa, .pro11-socio::after { animation: none; } }
 /* (19/11) o botão dentro da oferta só existe no computador (no celular é a barra fixa) */
 .pro11-oferta-pc { display: none; }
-@media (min-width: 1000px) { .pro11-oferta-pc { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 14px; } .pro11-oferta-pc span { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #BDB5B8; } }
+@media (min-width: 1000px) { .pro11-oferta-pc { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 14px; } .pro11-oferta-pc > span { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #BDB5B8; } }
 /* (19/11) o cartão preto virou a oferta (frase + selo "Black Doonly"); os limites em lista, com X no grátis e visto no PRO */
 .pro11-socio { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "n e"; padding: 18px 16px; }
 .pro11-socio b { font-size: 17px; }
 .pro11-socio em { white-space: nowrap; letter-spacing: .02em; }
-.pro11-oferta-pc span { color: var(--ui-texto-2) !important; }
+.pro11-oferta-pc > span { color: var(--ui-texto-2) !important; }
 .pro11-l { display: grid; grid-template-columns: minmax(0, 1fr) 88px 104px; align-items: center; column-gap: 8px; min-height: 48px; padding: 6px 12px; font-size: 13px; white-space: nowrap; }
 .pro11-l + .pro11-l { border-top: 1px solid var(--ui-linha, var(--ui-borda)); }
 .pro11-l b { font-weight: 400; font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
@@ -266,4 +266,5 @@ button.pro9-l2-i { cursor: pointer; }
   .pro11-socio { padding: 20px 18px; }
   .pro11-oferta-pc { margin-top: 0; padding: 16px; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); }
   .pro11-oferta-pc .ui-bt { width: 100%; }
+  .pro11-tab .pro11-l { grid-template-columns: minmax(0, 1fr) 118px 122px; }
 }
