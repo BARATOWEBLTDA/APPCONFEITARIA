@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cake, CaretRight, ChartLineUp, ChatCircleText, Crown, PaintBrush, Stack, Target, Ticket } from "@phosphor-icons/react";
+import { Cake, CaretRight, ChartLineUp, ChatCircleText, Crown, LockSimple, PaintBrush, Stack, Target, Ticket } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { avisar, Botao } from "@/components/base";
 import { CTA_PRO } from "@/lib/beneficiosPro";
@@ -64,11 +64,11 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
     </button>
   );
   // (23/10) sem o cartão de Primeiros passos aqui: o que falta aparece como "Falta" na própria linha
-  const linha = (Ic: typeof Cake, titulo: string, sub: string, rota: string, falta = false) => (
+  const linha = (Ic: typeof Cake, titulo: string, sub: string, rota: string, falta = false, trava = false) => (
     <button type="button" className="dl-li" onClick={() => navigate(rota)}>
       <span className="dl-li-ic" aria-hidden="true"><Ic size={20} weight="bold" /></span>
       <span className="dl-li-tx"><b>{titulo}</b><small className={falta ? "falta" : ""}>{sub}</small></span>
-      <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
+      {trava ? <LockSimple size={16} weight="bold" className="dl-li-seta ml-trava" aria-hidden="true" /> : <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />}
     </button>
   );
   // (10/11) Mensagens do WhatsApp saiu de Configurações: é a voz da loja com o cliente
@@ -76,7 +76,7 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
     <button type="button" className="dl-li" onClick={() => navigate("/configuracoes/mensagens", { state: { de: "/cardapio" } })}>
       <span className="dl-li-ic" aria-hidden="true"><ChatCircleText size={20} weight="bold" /></span>
       <span className="dl-li-tx"><b>Mensagens do WhatsApp</b><small>Textos prontos para o cliente</small></span>
-      <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />
+      {!pro ? <LockSimple size={16} weight="bold" className="dl-li-seta ml-trava" aria-hidden="true" /> : <CaretRight size={16} weight="bold" className="dl-li-seta" aria-hidden="true" />}
     </button>
   );
 
@@ -103,13 +103,13 @@ export default function MinhaLoja({ uid, pro = true }: { uid?: string; pro?: boo
       <section className="dl-emb" aria-label={pro ? "Vender mais" : "Venda mais com o PRO"}>
         <h2 className="dl-emb-t ml-pro-t">{!pro && <Crown size={18} weight="fill" aria-hidden="true" />}{pro ? "Vender mais" : "Venda mais com o PRO"}</h2>
         <div className="dl-lista-c">
-          {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos")}
-          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons")}
+          {linha(Stack, "Adicionais", "Topo, velas e outros extras", "/complementos", false, !pro)}
+          {linha(Ticket, "Cupons", "Descontos pra vender mais", "/cupons", false, !pro)}
           {linhaMensagens}
-          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel")}
+          {linha(Target, "Pixel", "Meta, Google e TikTok", "/pixel", false, !pro)}
+          {!pro && <div className="ml-pro-bt"><Botao cheio tamanho="m" icone={<Crown size={18} weight="fill" />} onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao></div>}
         </div>
-        {!pro && <Botao cheio icone={<Crown size={20} weight="fill" />} onClick={() => navigate("/assinar")}>{CTA_PRO}</Botao>}
-        <style>{`.ml-pro-t { display: flex; align-items: center; gap: 6px; } .ml-pro-t svg { flex: none; color: #E0A93B; }`}</style>
+        <style>{`.ml-pro-t { display: flex; align-items: center; gap: 6px; } .ml-pro-t svg { flex: none; color: #E0A93B; } .ml-pro-bt { padding: 12px; border-top: 1px solid var(--ui-linha); } .ml-trava { color: #B9AEB3; }`}</style>
       </section>
     </>
   );
