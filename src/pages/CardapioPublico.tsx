@@ -319,6 +319,17 @@ function CardapioContent() {
     void supabase.rpc('cardapio_stories', { p_loja: lojaStories }).then(({ data, error }) => { if (vivo && !error && Array.isArray(data)) setStories(data as Story[]) }, () => {})
     return () => { vivo = false }
   }, [lojaStories])
+  // (19/11) com story no ar, adianta o que dá enquanto a cliente olha o cardápio: o código do visualizador e o
+  // começo do primeiro vídeo. Espera 2 segundos para não disputar a internet com as fotos dos produtos.
+  useEffect(() => {
+    if (stories.length === 0) return
+    const t = window.setTimeout(() => {
+      void import('@/components/cardapio/StoriesViewer').catch(() => {})
+      const primeiro = stories.find(s => s.tipo === 'video' && s.video_id)
+      if (primeiro?.video_id) void import('@/lib/stories').then(m => m.aquecerStory(primeiro.video_id!))
+    }, 2000)
+    return () => window.clearTimeout(t)
+  }, [stories])
   const verProdutoDoStory = (id: string) => {
     setStoriesAbertos(false)
     window.setTimeout(() => {

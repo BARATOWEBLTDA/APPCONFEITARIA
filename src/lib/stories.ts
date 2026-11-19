@@ -47,3 +47,25 @@ export function saiDoAr(iso: string): string {
 export function saiCurto(iso: string): string {
   return saiDoAr(iso).replace("Sai do ar ", "Sai ").replace(" às ", " ").replace("Já saiu do ar", "Saiu do ar");
 }
+
+/**
+ * (19/11) Adianta o primeiro story enquanto a cliente ainda está olhando o cardápio: abre a conexão com o servidor
+ * de vídeo e baixa a lista do vídeo e o primeiro trecho dele (poucos segundos). Ao tocar na logo, o começo já está
+ * no cache do navegador. Não baixa o vídeo inteiro, para não gastar a internet de quem não vai assistir, e não
+ * baixa nada com "economia de dados" ligada ou em rede lenta.
+ */
+export async function aquecerStory(videoId: string): Promise<void> {
+  try {
+    const rede = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (rede?.saveData || /2g/.test(rede?.effectiveType || "")) return;
+    const mestre = urlVideoStory(videoId);
+    const linhas = (t: string) => t.split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("#"));
+    const t1 = await (await fetch(mestre)).text();
+    const variante = linhas(t1)[0]; // a primeira qualidade da lista é a que o player pede primeiro
+    if (!variante) return;
+    const urlVariante = new URL(variante, mestre).href;
+    const t2 = await (await fetch(urlVariante)).text();
+    const trecho = linhas(t2)[0];
+    if (trecho) await fetch(new URL(trecho, urlVariante).href).then(r => r.blob());
+  } catch { /* é só um adianto: se falhar, o story carrega na hora do toque, como antes */ }
+}
