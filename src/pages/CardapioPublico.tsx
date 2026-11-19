@@ -1,5 +1,8 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
-import type { Story } from '@/lib/stories'
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
+import { type Story, todosStoriesVistos } from '@/lib/stories'
+import { precoDoCartao } from '@/components/cardapio/ItensCardapio'
+import { miniDaFoto } from '@/lib/fotoMini'
+import { formatCurrency as fmtBRL } from '@/utils/helpers'
 import { trocarFaviconPelaLoja, voltarFaviconDoApp } from '@/lib/faviconLoja'
 import { iniciarPixel, iniciarGoogle, iniciarTikTok } from '@/lib/facebookPixel'
 import { explicarErro } from '@/lib/erros'
@@ -332,11 +335,22 @@ function CardapioContent() {
   }, [stories])
   const verProdutoDoStory = (id: string) => {
     setStoriesAbertos(false)
+    // espera o story sair do histórico do navegador (o "voltar") antes de abrir o produto
     window.setTimeout(() => {
       const el = document.querySelector<HTMLElement>(`[data-prod="${id}"]`)
       if (el) { el.scrollIntoView({ block: 'center' }); el.click() }
-    }, 120)
+    }, 300)
   }
+  // cartão do produto no story: foto pequena, nome e preço como aparecem no cardápio
+  const produtoDoStory = (id: string) => {
+    const p = produtos.find(x => String(x.id) === id)
+    if (!p) return null
+    const { final, unidade, aPartir } = precoDoCartao(p)
+    const preco = final > 0 ? `${aPartir ? 'a partir de ' : ''}${fmtBRL(final)}${unidade ? ` ${unidade}` : ''}` : null
+    return { nome: p.nome, foto: miniDaFoto(p.imagem_url?.split(',')[0]?.trim() || null), preco }
+  }
+  // aro da logo: colorido com story novo, cinza quando a cliente já viu todos (confere de novo ao fechar o story)
+  const storiesVistos = useMemo(() => todosStoriesVistos(stories), [stories, storiesAbertos]) // eslint-disable-line react-hooks/exhaustive-deps
   const [sobreAba, setSobreAba] = useState<'sobre' | 'horario'>('sobre')
   // (21/10) "Horário e pagamento" na Minha conta (celular) abre o Sobre a loja
   useEffect(() => {
@@ -544,12 +558,12 @@ function CardapioContent() {
 
         {cardapioModelo === 'modelo1' ? (
           <>
-            <CardapioModelo1 design={design} config={config} verificada={temSelo} produtos={produtos} aoAbrirSobre={() => setSobreAberta(true)} aoTocarLogo={stories.length > 0 ? () => setStoriesAbertos(true) : undefined} />
+            <CardapioModelo1 design={design} config={config} verificada={temSelo} produtos={produtos} aoAbrirSobre={() => setSobreAberta(true)} aoTocarLogo={stories.length > 0 ? () => setStoriesAbertos(true) : undefined} storiesVistos={storiesVistos} />
             {storiesAbertos && stories.length > 0 && (
               <Suspense fallback={null}>
                 <StoriesViewer stories={stories} loja={design.nome_loja || 'Loja'} logo={design.logo_url ? String(design.logo_url).split(',')[0] : null}
                   aoFechar={() => setStoriesAbertos(false)} aoVerProduto={verProdutoDoStory}
-                  nomeProduto={id => produtos.find(p => String(p.id) === id)?.nome || null} />
+                  produtoDe={produtoDoStory} />
               </Suspense>
             )}
             <div className="cp-banner-wrap">

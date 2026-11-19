@@ -284,7 +284,7 @@ export default function Stories() {
       {ver !== null && prontos.length > 0 && (
         <Suspense fallback={null}>
           <StoriesViewer stories={prontos} inicio={Math.min(ver, prontos.length - 1)} semContar loja={profile?.nome_loja || "Sua loja"} logo={fotoDaLoja(profile) || null}
-            aoFechar={() => setVer(null)} aoVerProduto={() => setVer(null)} nomeProduto={nomeProd} />
+            aoFechar={() => setVer(null)} aoVerProduto={() => setVer(null)} produtoDe={id => { const n = nomeProd(id); return n ? { nome: n } : null; }} />
         </Suspense>
       )}
 

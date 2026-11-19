@@ -95,7 +95,7 @@ export function faixaDaLoja(config: Configuracoes | null, produtos: ProdutoEntre
   return itens
 }
 
-export function CardapioModelo1({ design, config, verificada = false, produtos = [], aoAbrirSobre, aoTocarLogo }: CardapioModeloProps & { aoAbrirSobre?: () => void; aoTocarLogo?: () => void }) {
+export function CardapioModelo1({ design, config, verificada = false, produtos = [], aoAbrirSobre, aoTocarLogo, storiesVistos = false }: CardapioModeloProps & { aoAbrirSobre?: () => void; aoTocarLogo?: () => void; storiesVistos?: boolean }) {
   const [modalEndereco, setModalEndereco] = useState(false)
   const accent = design.cor_borda || '#E85A8C' // (18/10) borda da logo
   const ehBranco = (c?: string | null) => !c || ['#fff', '#ffffff', '#fefefe', 'white', 'transparent'].includes(c.trim().toLowerCase())
@@ -127,7 +127,7 @@ export function CardapioModelo1({ design, config, verificada = false, produtos =
 
       <div className="cm1-content" style={{ background: fundo, ['--cm1-fundo']: fundo } as React.CSSProperties}>
         {/* (19/11) com story no ar, a logo vira botão e ganha o aro colorido */}
-        <div className={`cm1-logo${aoTocarLogo ? ' cm1-logo--story' : ''}`} style={{ borderColor: accent }}
+        <div className={`cm1-logo${aoTocarLogo ? ` cm1-logo--story${storiesVistos ? ' cm1-logo--visto' : ''}` : ''}`} style={{ borderColor: accent }}
           {...(aoTocarLogo ? { role: 'button', tabIndex: 0, 'aria-label': 'Ver os stories da loja', onClick: aoTocarLogo, onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); aoTocarLogo() } } } : {})}>
           {design.logo_url
             ? <img src={design.logo_url} alt={design.nome_loja || ''} />

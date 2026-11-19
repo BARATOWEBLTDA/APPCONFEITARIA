@@ -69,3 +69,12 @@ export async function aquecerStory(videoId: string): Promise<void> {
     if (trecho) await fetch(new URL(trecho, urlVariante).href).then(r => r.blob());
   } catch { /* é só um adianto: se falhar, o story carrega na hora do toque, como antes */ }
 }
+
+// (19/11) stories já assistidos neste aparelho: o aro da logo fica cinza quando a cliente já viu todos,
+// e volta a ficar colorido quando a loja posta um novo.
+const CHAVE_VISTOS = "doonly_stories_vistos";
+const lerVistos = (): string[] => { try { const l = JSON.parse(localStorage.getItem(CHAVE_VISTOS) || "[]"); return Array.isArray(l) ? l.map(String) : []; } catch { return []; } };
+export function marcarStoryVisto(id: string) {
+  try { const l = lerVistos(); if (!l.includes(id)) localStorage.setItem(CHAVE_VISTOS, JSON.stringify([...l, id].slice(-80))); } catch { /* sem armazenamento: o aro só não muda */ }
+}
+export const todosStoriesVistos = (stories: { id: string }[]) => { const l = lerVistos(); return stories.length > 0 && stories.every(s => l.includes(s.id)); };

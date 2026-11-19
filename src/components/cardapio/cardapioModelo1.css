@@ -90,3 +90,5 @@
 /* (19/11) logo com story no ar: aro colorido e toque para assistir */
 .cm1-logo.cm1-logo--story { border-color: transparent !important; background: linear-gradient(var(--ui-branco), var(--ui-branco)) padding-box, linear-gradient(45deg, #F5C76B, #E8476F, #B93A65) border-box; cursor: pointer; }
 .cm1-logo.cm1-logo--story:active { transform: scale(.97); }
+/* (19/11) a cliente já viu todos os stories: aro cinza, como no Instagram */
+.cm1-logo.cm1-logo--story.cm1-logo--visto { background: linear-gradient(var(--ui-branco), var(--ui-branco)) padding-box, linear-gradient(#C9C2BD, #C9C2BD) border-box; }
