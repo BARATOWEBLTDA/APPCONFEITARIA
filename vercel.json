@@ -42,6 +42,10 @@
       "destination": "/testes.html"
     },
     {
+      "source": "/aparelhos",
+      "destination": "/aparelhos.html"
+    },
+    {
       "source": "/((?!assets/).*)",
       "destination": "/app.html"
     }

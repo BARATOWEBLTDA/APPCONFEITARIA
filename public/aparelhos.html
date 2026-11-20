@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Doonly em vários aparelhos</title>
+<!-- (20/11) Página de conferência: o app de verdade rodando lado a lado em vários tamanhos de tela.
+     Só funciona no mesmo endereço do app (o app não deixa ser aberto em moldura por outros sites). Não aparece em menu nenhum. -->
+<style>
+@font-face { font-family: Poppins; font-weight: 400; src: url(/fonts/Poppins-400.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: Poppins; font-weight: 500; src: url(/fonts/Poppins-500.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: Poppins; font-weight: 600; src: url(/fonts/Poppins-600.woff2) format("woff2"); font-display: swap; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font-family: Poppins, system-ui, sans-serif; background: #F3F1F2; color: #2B1F24; display: flex; flex-direction: column; }
+.barra { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 16px; background: #fff; border-bottom: 1px solid #E8E3E5; }
+.barra h1 { margin: 0 6px 0 0; font-size: 15px; font-weight: 600; white-space: nowrap; }
+.end { flex: 1 1 260px; display: flex; align-items: center; height: 38px; min-width: 0; border: 1.5px solid #DDD5D9; border-radius: 10px; background: #fff; overflow: hidden; }
+.end span { padding: 0 2px 0 12px; font-size: 13px; color: #776B71; white-space: nowrap; }
+.end input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; font: inherit; font-size: 14px; color: inherit; background: none; }
+.end button { height: 100%; padding: 0 14px; border: 0; border-left: 1.5px solid #DDD5D9; background: #FAF8F9; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.atalhos, .quais { display: flex; flex-wrap: wrap; gap: 6px; }
+.atalhos button, .quais label { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: 1px solid #E0D9DC; border-radius: 8px; background: #fff; font: inherit; font-size: 12.5px; color: #4B3A42; cursor: pointer; white-space: nowrap; }
+.quais label:has(input:checked) { border-color: #2B1F24; background: #F3F1F2; color: #2B1F24; }
+.quais input { display: none; }
+.zoom { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #776B71; white-space: nowrap; }
+.zoom input { width: 110px; accent-color: #4B3A42; }
+.sinc { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: #4B3A42; white-space: nowrap; cursor: pointer; }
+.sinc input { accent-color: #4B3A42; }
+.palco { flex: 1; overflow: auto; padding: 22px 22px 40px; }
+.fila { display: flex; align-items: flex-start; gap: 26px; width: max-content; margin: 0 auto; }
+.ap { flex: none; }
+.ap-nome { margin: 0 0 8px; text-align: center; font-size: 12.5px; color: #776B71; white-space: nowrap; }
+.ap-nome b { font-weight: 600; color: #2B1F24; }
+.ap-caixa { position: relative; }
+.ap-corpo { position: absolute; left: 0; top: 0; transform-origin: 0 0; padding: 10px; border: 1px solid #D9D2D6; border-radius: 44px; background: #fff; box-shadow: 0 10px 30px rgba(43, 31, 36, .08); }
+.ap-corpo.pc { border-radius: 16px; padding: 8px; }
+.ap-corpo iframe { display: block; border: 0; border-radius: 35px; background: #fff; }
+.ap-corpo.pc iframe { border-radius: 9px; }
+.aviso { max-width: 520px; margin: 60px auto; padding: 18px 20px; border: 1px solid #E8E3E5; border-radius: 14px; background: #fff; font-size: 14px; line-height: 1.5; text-align: center; }
+</style>
+</head>
+<body>
+<div class="barra">
+  <h1>Doonly em vários aparelhos</h1>
+  <form class="end" id="f">
+    <span id="dominio"></span>
+    <input id="rota" value="/inicio" spellcheck="false" autocomplete="off" aria-label="Tela do app">
+    <button>Abrir</button>
+  </form>
+  <div class="atalhos" id="atalhos"></div>
+  <div class="quais" id="quais"></div>
+  <label class="sinc"><input type="checkbox" id="sinc" checked> Andar juntos</label>
+  <label class="zoom">Tamanho <input type="range" id="zoom" min="35" max="100" value="70"> <span id="zoomv">70%</span></label>
+</div>
+<div class="palco"><div class="fila" id="fila"></div></div>
+<script>
+(function () {
+  var APARELHOS = [
+    { id: "p320", nome: "Celular pequeno", l: 320, a: 568, on: true },
+    { id: "p360", nome: "Android comum", l: 360, a: 780, on: true },
+    { id: "p390", nome: "iPhone", l: 390, a: 844, on: true },
+    { id: "p430", nome: "Celular grande", l: 430, a: 932, on: false },
+    { id: "pc", nome: "Computador", l: 1280, a: 800, on: false, pc: true }
+  ];
+  var ATALHOS = [["Início", "/inicio"], ["Pedidos", "/pedidos"], ["Produtos", "/produtos"], ["Minha loja", "/cardapio"], ["Aparência", "/cardapio-design"]];
+  var $ = function (i) { return document.getElementById(i); };
+  var guardado = {}; try { guardado = JSON.parse(localStorage.getItem("doonly-aparelhos") || "{}"); } catch (e) {}
+  var rota = new URLSearchParams(location.search).get("tela") || guardado.rota || "/inicio";
+  var zoom = guardado.zoom || 70;
+  APARELHOS.forEach(function (a) { if (guardado.on && a.id in guardado.on) a.on = guardado.on[a.id]; });
+  $("dominio").textContent = location.host; $("rota").value = rota; $("zoom").value = zoom; $("zoomv").textContent = zoom + "%";
+
+  function guardar() { var on = {}; APARELHOS.forEach(function (a) { on[a.id] = a.on; }); try { localStorage.setItem("doonly-aparelhos", JSON.stringify({ rota: rota, zoom: zoom, on: on })); } catch (e) {} }
+  function limpa(r) { r = (r || "/").trim(); try { if (/^https?:/i.test(r)) { var u = new URL(r); r = u.pathname + u.search; } } catch (e) {} if (r.charAt(0) !== "/") r = "/" + r; if (/^\/aparelhos/.test(r)) r = "/inicio"; return r; }
+
+  function montar() {
+    var fila = $("fila"); fila.innerHTML = "";
+    APARELHOS.filter(function (a) { return a.on; }).forEach(function (a) {
+      var borda = a.pc ? 9 : 11, e = zoom / 100;
+      var d = document.createElement("div"); d.className = "ap";
+      d.innerHTML = '<p class="ap-nome"><b>' + a.nome + "</b> · " + a.l + " × " + a.a + '</p><div class="ap-caixa" style="width:' + Math.round((a.l + borda * 2) * e) + "px;height:" + Math.round((a.a + borda * 2) * e) + 'px"><div class="ap-corpo' + (a.pc ? " pc" : "") + '" style="transform:scale(' + e + ')"><iframe title="' + a.nome + '" width="' + a.l + '" height="' + a.a + '"></iframe></div></div>';
+      d.querySelector("iframe").src = rota; fila.appendChild(d);
+    });
+    if (!fila.children.length) fila.innerHTML = '<p class="aviso">Marque pelo menos um aparelho na barra de cima.</p>';
+    guardar();
+  }
+  function ir(r) { rota = limpa(r); $("rota").value = rota; ultima = rota; document.querySelectorAll("iframe").forEach(function (f) { f.src = rota; }); guardar(); }
+
+  ATALHOS.forEach(function (x) { var b = document.createElement("button"); b.type = "button"; b.textContent = x[0]; b.onclick = function () { ir(x[1]); }; $("atalhos").appendChild(b); });
+  APARELHOS.forEach(function (a) { var l = document.createElement("label"); l.innerHTML = '<input type="checkbox"' + (a.on ? " checked" : "") + "> " + a.nome; l.querySelector("input").onchange = function (ev) { a.on = ev.target.checked; montar(); }; $("quais").appendChild(l); });
+  $("f").onsubmit = function (ev) { ev.preventDefault(); ir($("rota").value); };
+  $("zoom").oninput = function () { zoom = Number(this.value); $("zoomv").textContent = zoom + "%"; montar(); };
+
+  // "Andar juntos": você navega em um aparelho e os outros vão para a mesma tela (sem recarregar)
+  var ultima = rota;
+  setInterval(function () {
+    if (!$("sinc").checked) return;
+    var quadros = [].slice.call(document.querySelectorAll("iframe")), mudou = null;
+    quadros.forEach(function (f) { try { var p = f.contentWindow.location.pathname + f.contentWindow.location.search; if (f.contentWindow.location.href !== "about:blank" && p !== ultima && !mudou) mudou = { f: f, p: p }; } catch (e) {} });
+    if (!mudou) return;
+    ultima = rota = mudou.p; $("rota").value = rota; guardar();
+    quadros.forEach(function (f) { if (f === mudou.f) return; try { var w = f.contentWindow; if (w.location.pathname + w.location.search === rota) return; w.history.pushState({}, "", rota); w.dispatchEvent(new PopStateEvent("popstate")); } catch (e) { f.src = rota; } });
+  }, 500);
+
+  montar();
+})();
+</script>
+</body>
+</html>
