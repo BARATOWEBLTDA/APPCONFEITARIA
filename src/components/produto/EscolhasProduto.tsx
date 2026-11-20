@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Destaque from "@/components/Destaque";
 import { useProfile } from "@/hooks/useProfile";
-import { CaretDown, Check, GearSix, Info, Plus, Sparkle } from "@phosphor-icons/react";
+import { CaretDown, Check, GearSix, Plus, Scales, Sparkle, Tag } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
@@ -42,10 +42,13 @@ const CAMPO: Record<"massa" | "recheio" | "cobertura" | "sabor", CampoGrupo> = {
   massa: "grupo_massas", recheio: "grupo_recheios", cobertura: "grupo_coberturas", sabor: "grupo_sabores",
 };
 const ROTULO: Record<Chave, string> = {
-  tamanho: "Tamanho", quantidade: "Quantidade", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor",
+  tamanho: "Tamanho", quantidade: "Kit", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", // (20/11) "Quantidade" virou "Kit"
 };
+// (20/11) linha curta só onde a palavra confunde
+const APOIO: Partial<Record<Chave, string>> = { sabor: "Para docinhos, tortas e brigadeiros", quantidade: "Ex.: cento, meio cento, 25 unidades" };
 const PLURAL: Record<string, string> = { massa: "massas", recheio: "recheios", cobertura: "coberturas", sabor: "sabores" };
-const NOVA: Record<string, string> = { massa: "Outra massa…", recheio: "Outro recheio…", cobertura: "Outra cobertura…", sabor: "Outro sabor…" };
+const NOVA: Record<string, string> = { massa: "Nome da massa…", recheio: "Nome do recheio…", cobertura: "Nome da cobertura…", sabor: "Nome do sabor…" };
+const QUANTAS: Record<string, string> = { massa: "Quantas o cliente escolhe", recheio: "Quantos o cliente escolhe", cobertura: "Quantas o cliente escolhe", sabor: "Quantos o cliente escolhe" };
 const SUGESTOES: Record<string, string[]> = {
   massa: ["Branca", "Chocolate", "Red velvet", "Cenoura", "Nozes", "Coco"],
   recheio: ["Ninho", "Brigadeiro", "Doce de leite", "Morango", "Nutella", "Prestígio", "Maracujá", "Abacaxi"],
@@ -189,15 +192,15 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
       onKitChange({ ...presetKit(tipo === "salgados" || /salgad/.test(norm(form.categoria)) ? "salgados" : "docinhos", kit), ativo: true });
     } else if (c === "tamanho") {
       setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || {}), ativo: true, min: 1, max: 1, distribuicao: "nenhuma",
-        opcoes: f.grupo_tamanhos?.opcoes?.length ? f.grupo_tamanhos.opcoes : (f.forma_venda === "kg" ? opcoesDePesos(PESOS_KG) : opcoesDeNomes(PMG)),
+        // (20/11) começa vazio: ela digita os tamanhos (os modelos P·M·G e Aro ficam como atalho na tela)
+        opcoes: f.grupo_tamanhos?.opcoes?.length ? f.grupo_tamanhos.opcoes : [],
         modo_preco_tamanho: f.forma_venda === "kg" ? "por_peso" : (f.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? "preco_fixo" : (f.grupo_tamanhos?.modo_preco_tamanho || "preco_fixo")) } }));
     } else {
       const campo = CAMPO[c];
       setForm(f => {
         const g: Grupo = { ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], ...(f[campo] || {}) };
-        // começa já com as 2 primeiras sugestões (é só tirar ou pôr): menos digitação
-        const sug = sugestoesDaChave(c, tipo, f.categoria);
-        const opcoes = g.opcoes.length ? g.opcoes : sug.slice(0, 2).map(n => ({ id: uid(), nome: n, adicional: 0 }));
+        // (20/11) começa vazio, sem opções prontas: ela cadastra as dela
+        const opcoes = g.opcoes;
         return { ...f, [campo]: { ...g, ativo: true, min: g.opcoes.length ? g.min : 1, max: g.opcoes.length ? g.max : (c === "recheio" ? 2 : 1), opcoes } };
       });
     }
@@ -207,18 +210,28 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
     else if (c === "tamanho") setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || {}), ativo: false } }));
     else setForm(f => ({ ...f, [CAMPO[c as "massa"]]: { ...(f[CAMPO[c as "massa"]] || {}), ativo: false } }));
   };
-  const alternar = (c: Chave) => { if (bloqueada(c)) return; if (ativa(c)) desligar(c); else ligar(c); };
+  const alternar = (c: Chave) => {
+    if (bloqueada(c)) return;
+    if (ativa(c)) { desligar(c); return; }
+    ligar(c);
+    // (20/11) na edição, marcar já abre a tela daquela escolha para cadastrar as opções
+    if (edicao && setTela) setTela(TODAS_ESCOLHAS.filter(x => x === c || ativa(x)).indexOf(c) + 1);
+  };
+  // (20/11) um (i) só: o do topo da tela abre esta explicação
+  useEffect(() => {
+    const abrir = () => setExplicar(true);
+    window.addEventListener("doonly:esc-info", abrir);
+    return () => window.removeEventListener("doonly:esc-info", abrir);
+  }, []);
 
   // ── Tela de uma escolha (Tamanho 1 de 2…) ──
   const atual = tela > 0 ? ativas[tela - 1] : null;
   if (atual) {
     return (
       <div className="esc esc-tela" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
-        {edicao && setTela && <button type="button" className="esc-voltar-lista" onClick={() => setTela(0)}>‹ Todas as escolhas</button>}
-        {/* (14/10) no cadastro novo o header rosa já diz o passo ("3 de 5 · Tamanho") */}
-        {edicao && <h2 className="esc-h">{ROTULO[atual]}</h2>}
+        {/* (20/11) o topo já diz qual é a escolha e a seta volta para a lista (saíram o link rosa e o título repetido) */}
         {atual === "quantidade" ? (kit ? <CartaoQuantidade kit={kit} onKitChange={onKitChange} /> : null)
-          : atual === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} />
+          : atual === "tamanho" ? <CartaoTamanho form={form} setForm={setForm} edicao={edicao} />
           : <CartaoGrupo chave={atual} form={form} setForm={setForm} outros={outros} />}
       </div>
     );
@@ -235,10 +248,10 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
           <span className="esc-tx">
             <b>{ROTULO[c]}</b>
             {/* (14/10) sem texto de exemplo: só o motivo da trava e, na edição, o que já foi cadastrado */}
-            {(trava || (on && edicao)) && <small className={f && edicao ? "esc-falta" : undefined}>
-              {trava ? (c === "tamanho" ? "Não junta com Quantidade" : c === "quantidade" ? "Não junta com Tamanho" : "Os sabores ficam na Quantidade")
+            {(trava || (on && edicao)) ? <small className={f && edicao ? "esc-falta" : undefined}>
+              {trava ? (c === "tamanho" ? "Não junta com Kit" : c === "quantidade" ? "Não junta com Tamanho" : "Os sabores ficam no Kit")
                 : f ? faltaCurta(f.msg) : resumo(c, form)}
-            </small>}
+            </small> : APOIO[c] ? <small>{APOIO[c]}</small> : null}
           </span>
         </button>
         {on && edicao && setTela && <button type="button" className="esc-chk-ed" onClick={() => setTela(ativas.indexOf(c) + 1)}>Editar</button>}
@@ -247,9 +260,7 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
   };
   return (
     <div className="esc">
-      <h2 className="esc-h esc-h--info">O que o cliente escolhe?
-        <button type="button" className="esc-info" onClick={() => setExplicar(true)} aria-label="O que é isso?"><Info size={20} weight="bold" /></button>
-      </h2>
+      <h2 className="esc-h">O que o cliente escolhe?</h2>
       <Janela aberta={explicar} aoFechar={() => setExplicar(false)} titulo="O que o cliente escolhe" tipo="conteudo"
         acoes={<><Botao variante="secundario" onClick={() => setExplicar(false)}>Entendi</Botao><Botao onClick={() => { setExplicar(false); setVerPrevia(true); }}>Ver no cardápio</Botao></>}>
         <div className="esc-exp">
@@ -267,11 +278,11 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
           <ProductModal isOpen previa onClose={() => setVerPrevia(false)} onAdicionar={() => setVerPrevia(false)} product={EXEMPLO_PRODUTO as unknown as Produto} />
         </CartProvider>
       )}
-      <p className="esc-s">Marque o que vale{nome ? <> para o <b>{nome}</b></> : null}. {edicao ? "Use Editar para mudar." : "Você cadastra cada um em seguida."}</p>
+      <p className="esc-s esc-s--1">Marque o que vale{nome ? <> para o <b>{nome}</b></> : null}.</p>
       <ul className="esc-chks" role="group" aria-label="Escolhas">
         {TODAS_ESCOLHAS.map(linha)}
       </ul>
-      {(ativas.length === 0 || !edicao) && <p className={`esc-nota${ativas.length === 0 ? " esc-nota--forte" : ""}`}>{ativas.length === 0 ? "Sem marcar, o cliente só diz quantos quer." : `${ativas.length} ${ativas.length === 1 ? "escolha marcada" : "escolhas marcadas"}. ${edicao ? "" : "Continue para cadastrar."}`}</p>}
+      {(ativas.length === 0 || !edicao) && <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>{ativas.length === 0 ? "Sem marcar, o cliente só diz quantos quer." : `${ativas.length} ${ativas.length === 1 ? "escolha marcada" : "escolhas marcadas"}. ${edicao ? "" : "Continue para cadastrar."}`}</p></div>}
     </div>
   );
 }
@@ -362,19 +373,15 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
           <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
             <p><b>Preço de cada sabor: no último passo</b>Aqui você só cadastra os sabores. No passo Preço, coloca quanto custa cada um.</p></div>
         );
-        const EX: Record<string, string> = { recheio: "Nutella", massa: "Red velvet", cobertura: "Pasta americana", sabor: "Pistache" };
-        const precos = ((form.grupo_tamanhos?.ativo ? form.grupo_tamanhos.opcoes : []) || []).map((o) => Number(o.preco) || 0).filter((v: number) => v > 0);
-        const base = precos.length ? Math.min(...precos) : Number(form.preco_normal) > 0 ? Number(form.preco_normal) : 80;
-        const nomeP = String(form.nome || "").trim().split(/\s+/)[0]?.toLowerCase() || "bolo";
         return (
           <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
-            <p><b>Sem valor, já vem no preço.</b>Só coloque valor no que custa a mais para o cliente.
-              <span className="esc-aviso-ex">Ex.: {EX[chave]} +{"\u00A0"}R${"\u00A0"}8,00 → {nomeP} de R${"\u00A0"}{textoBRL(base)} sai por <em>R${"\u00A0"}{textoBRL(base + 8)}</em></span></p></div>
+            <p><b>Sem valor, já vem no preço.</b>Só coloque valor no que custa a mais.</p></div>
         );
       })()}
       {(
         <div className={`esc-tab${precoProprio ? " esc-tab--1" : ""}`} role="table" aria-label={`Opções de ${chave}`}>
-          <div className="esc-tab-l esc-tab-h" role="row"><span role="columnheader">{ROTULO[chave]}</span>{!precoProprio && <span role="columnheader">Custa a mais</span>}<span role="columnheader" aria-label="Tirar" /></div>
+          {/* (20/11) o cabeçalho só aparece depois da primeira opção */}
+          {g.opcoes.length > 0 && <div className="esc-tab-l esc-tab-h" role="row"><span role="columnheader">{ROTULO[chave]}</span>{!precoProprio && <span role="columnheader">Custa a mais</span>}<span role="columnheader" aria-label="Tirar" /></div>}
           {g.opcoes.map(o => (
             <div key={o.id} className="esc-tab-l" role="row">
               <span role="cell" className="esc-tab-nm">{o.nome}</span>
@@ -399,16 +406,15 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
       {/* (14/10) regras no "Avançado" (como o Rendimento): a tela abre direto nas opções */}
       <button type="button" className="esc-rend-linha esc-av-linha" onClick={() => setAvancado(true)}>
         <span className="esc-av-ic" aria-hidden="true"><GearSix size={20} weight="bold" /></span>
-        <span className="esc-tx"><b>Avançado</b>
+        <span className="esc-tx"><b>{QUANTAS[chave]}</b>
           <small>{quantosAtual === 1 ? "Escolhe 1" : quantosAtual >= 99 ? "À vontade" : `Escolhe até ${quantosAtual}`} · {g.min >= 1 ? "Obrigatório" : "Opcional"}{g.sabor_tem_preco_proprio ? " · Preço por sabor" : ""}</small></span>
         <span className="esc-rend-bt">Editar</span>
       </button>
-      <Janela aberta={avancado} aoFechar={() => setAvancado(false)} titulo="Avançado" tipo="conteudo" umaAcao
+      <Janela aberta={avancado} aoFechar={() => setAvancado(false)} titulo={QUANTAS[chave]} tipo="conteudo" umaAcao
         acoes={<Botao onClick={() => setAvancado(false)}>Pronto</Botao>}>
         <div className="esc esc-jan">
           <div className="esc-corpo">
-      <p className="esc-lbl">Quantos o cliente escolhe</p>
-            <div className="esc-seg" role="radiogroup" aria-label="Quantos o cliente escolhe">
+            <div className="esc-seg" role="radiogroup" aria-label={QUANTAS[chave]}>
               {QUANTOS.map(([r, v]) => (
                 <button key={r} type="button" role="radio" aria-checked={quantosAtual === v} className={quantosAtual === v ? "on" : ""}
                   onClick={() => set({ max: v, min: g.min >= 1 ? 1 : 0 })}>{r}</button>
@@ -444,7 +450,9 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
 }
 
 /* ── Tamanho: modelos prontos e a lista (o preço de cada um fica no passo Preço) ── */
-function CartaoTamanho({ form, setForm }: { form: FormEscolhas; setForm: Props["setForm"] }) {
+function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; setForm: Props["setForm"]; edicao?: boolean }) {
+  // (20/11) na edição o Rendimento tem a sua linha no resumo: aqui ele só aparece quando ela veio de lá
+  const [mostraRend] = useState(() => !edicao || abrirRendAoEntrar);
   const g: GrupoTam = { ativo: true, min: 1, max: 1, opcoes: [], ...(form.grupo_tamanhos || {}) };
   const porPeso = g.modo_preco_tamanho === "por_peso";
   const [novo, setNovo] = useState("");
@@ -484,22 +492,22 @@ function CartaoTamanho({ form, setForm }: { form: FormEscolhas; setForm: Props["
   return (
     <div className="esc-corpo">
       <p className="esc-lbl">Como é o preço</p>
-      {/* (29/10 · 5.04) caixinhas com o que cada uma faz (antes: seletor de 2 partes) */}
-      <CaixasEscolha rotulo="Como é o preço dos tamanhos" valor={porPeso ? "peso" : "fixo"} opcoes={[
-        { v: "fixo", t: "Preço fixo", sub: "Cada tamanho com o seu preço (P, M, G…)" },
-        { v: "peso", t: "Por quilo", sub: "Um preço do kg, e o cliente escolhe o peso" },
+      {/* (20/11) dois quadrados no padrão da Nova venda */}
+      <Quadrados rotulo="Como é o preço dos tamanhos" valor={porPeso ? "peso" : "fixo"} opcoes={[
+        { v: "fixo", t: "Preço fixo", sub: "Um valor por tamanho", Ic: Tag },
+        { v: "peso", t: "Por quilo", sub: "Valor pelo peso", Ic: Scales },
       ]} onMudar={v => {
         if (v === "fixo") {
             // (13/10) os pesos (1 kg, 1,5 kg…) não servem de tamanho no preço fixo: a lista volta vazia e aparecem os modelos
             const soPesos = g.opcoes.length > 0 && g.opcoes.every(o => Number(o.peso_kg) > 0 && norm(o.nome) === norm(nomePeso(Number(o.peso_kg))));
-            set({ modo_preco_tamanho: "preco_fixo", ...(soPesos || !g.opcoes.length ? { opcoes: opcoesDeNomes(PMG) } : {}) });
+            set({ modo_preco_tamanho: "preco_fixo", ...(soPesos || !g.opcoes.length ? { opcoes: [] } : {}) }); // (20/11) volta vazio (os modelos ficam de atalho)
             setForm(f => ({ ...f, forma_venda: f.forma_venda === "kg" ? "unidade" : f.forma_venda }));
                   } else {
             // (14/10) Pequeno/Médio/Grande não têm peso: no por quilo ficam só os que têm (ex.: "1,5 kg"); sem nenhum, vêm os pesos padrão
             const comPeso = g.opcoes.map(o => ({ ...o, peso_kg: Number(o.peso_kg) > 0 ? o.peso_kg : pesoDoNome(o.nome) })).filter(o => Number(o.peso_kg) > 0);
             // (14/10) vindo do preço fixo, o "preço" guardado era o do menor tamanho: não serve de preço do kg (a edição salvava R$ 40,00 o kg sem perguntar)
             const eraFixo = (g.modo_preco_tamanho || "preco_fixo") !== "por_peso";
-            set({ modo_preco_tamanho: "por_peso", opcoes: comPeso.length ? comPeso : opcoesDePesos(PESOS_KG) }); setForm(f => ({ ...f, forma_venda: "kg", ...(eraFixo ? { preco_normal: 0, preco_promocional: 0 } : {}) }));
+            set({ modo_preco_tamanho: "por_peso", opcoes: comPeso }); // (20/11) sem pesos marcados de antemão setForm(f => ({ ...f, forma_venda: "kg", ...(eraFixo ? { preco_normal: 0, preco_promocional: 0 } : {}) }));
                   }
       }} />
 
@@ -549,22 +557,12 @@ function CartaoTamanho({ form, setForm }: { form: FormEscolhas; setForm: Props["
             ))}
           </ul>
         )}
-        <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />
-        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>O preço do kg você coloca no último passo.</p></div>
+        {mostraRend && <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />}
+        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Os valores você coloca em Preço e promoção.</p></div>
       </>)}
 
-      {!porPeso && g.opcoes.length === 0 && (<>
-        <p className="esc-lbl">Comece por um modelo</p>
-        <div className="esc-modelos">
-          {MODELOS_UN.map(m => (
-              <button key={m.nome} type="button" className="esc-modelo" onClick={() => usarModeloUn(m.itens)}>
-                <span className="esc-bolas" aria-hidden="true">{m.itens.map((_, i) => <i key={i} style={{ height: 10 + i * 8 }} />)}</span>
-                <b>{m.itens.join(" · ")}</b><small>{m.nome}</small>
-              </button>))}
-        </div>
-      </>)}
-
-      {!porPeso && g.opcoes.length > 0 && (<>
+      {!porPeso && (<>
+        <p className="esc-lbl">Quais tamanhos você vende?</p>
         {(() => {
           // (15/10) só troca um modelo pelo outro (P/M/G ⇄ Aro): lista própria não aparece aqui, pra não apagar sem querer.
           // A troca mantém o rendimento de cada posição.
@@ -576,7 +574,7 @@ function CartaoTamanho({ form, setForm }: { form: FormEscolhas; setForm: Props["
               <button type="button" onClick={() => set({ opcoes: opcoesDeNomes(outro).map((o, i) => ({ ...o, preco: g.opcoes[i]?.preco || 0, serve: g.opcoes[i]?.serve })) })}>{eAro ? "Pequeno · Médio · Grande" : "Aro 15 · 20 · 25"}</button>
             </p>
           ); })()}
-        <ul className={`esc-ops${temRend ? " esc-ops--rend" : ""}`}>
+        {g.opcoes.length > 0 && <ul className={`esc-ops${temRend ? " esc-ops--rend" : ""}`}>
           {/* (15/10) com rendimento: tabela Tamanho | Rendimento, igual à do quilo (pra mudar, "Editar" no rendimento) */}
           {temRend && <li className="esc-op esc-op-cab" aria-hidden="true"><span>Tamanho</span><span>Rendimento</span><span /></li>}
           {g.opcoes.map((o, i) => {
@@ -589,13 +587,42 @@ function CartaoTamanho({ form, setForm }: { form: FormEscolhas; setForm: Props["
               <BotaoTirar className="esc-op-x" rotulo={`Tirar ${o.nome}`} onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} />
             </li>
             ); })}
-        </ul>
+        </ul>}
         <div className="esc-nova esc-nova--1">
-          <input placeholder="Outro tamanho…" value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />
+          <input placeholder={g.opcoes.length ? "Outro tamanho…" : "Nome do tamanho…"} value={novo} onChange={e => setNovo(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} aria-label="Outro tamanho" />
           <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={add} disabled={!novo.trim()}>Cadastrar</button>
         </div>
-        <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />
+        {mostraRend && g.opcoes.length > 0 && <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />}
+        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Os valores você coloca em Preço e promoção.</p></div>
       </>)}
+      {!porPeso && g.opcoes.length === 0 && (<>
+        <p className="esc-lbl">Ou comece por um modelo</p>
+        <div className="esc-modelos">
+          {MODELOS_UN.map(m => (
+              <button key={m.nome} type="button" className="esc-modelo" onClick={() => usarModeloUn(m.itens)}>
+                <span className="esc-bolas" aria-hidden="true">{m.itens.map((_, i) => <i key={i} style={{ height: 10 + i * 8 }} />)}</span>
+                <b>{m.itens.join(" · ")}</b><small>{m.nome}</small>
+              </button>))}
+        </div>
+      </>)}
+
+    </div>
+  );
+}
+
+/** (20/11) dois quadrados lado a lado, no padrão da Nova venda (ícone, bolinha, título e uma linha) */
+function Quadrados({ rotulo, valor, opcoes, onMudar }: { rotulo: string; valor: string; opcoes: { v: string; t: string; sub: string; Ic: typeof Tag }[]; onMudar: (v: string) => void }) {
+  return (
+    <div className="esc-quad" role="radiogroup" aria-label={rotulo}>
+      {opcoes.map(o => {
+        const on = valor === o.v;
+        return (
+          <button key={o.v} type="button" role="radio" aria-checked={on} className={on ? "on" : undefined} onClick={() => { if (!on) onMudar(o.v); }}>
+            <span className="esc-quad-topo"><o.Ic size={22} weight={on ? "fill" : "regular"} aria-hidden="true" /><i aria-hidden="true" /></span>
+            <b>{o.t}</b><small>{o.sub}</small>
+          </button>
+        );
+      })}
     </div>
   );
 }

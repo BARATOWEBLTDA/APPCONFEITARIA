@@ -1742,7 +1742,7 @@ export default function Produtos() {
               const nEsc = ativasH.length;
               const total = 6 + nEsc; // (14/10) + a Revisão no fim · (30/10) + Cardápio e entrega
               const atual = wizardStep <= 2 ? 1 : wizardStep === 3 ? 2 + escTela : wizardStep === 4 ? 3 + nEsc : wizardStep === 5 ? 4 + nEsc + (entTela ? 1 : 0) : 6 + nEsc;
-              const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", quantidade: "Quantidade" };
+              const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", quantidade: "Kit" };
               const escAtual = wizardStep === 3 && escTela > 0 ? ativasH[escTela - 1] : null;
               const nomePasso = wizardStep <= 2 ? "Sobre o produto" : wizardStep === 3 ? (escAtual ? ROT[escAtual] : "Escolhas") : wizardStep === 4 ? "Fotos" : wizardStep === 5 ? (entTela ? "Cardápio e entrega" : "Preço") : "Revisão";
               const foto = (form.imagem_url || "").split(",").map(x => x.trim()).filter(Boolean)[0];
@@ -1755,8 +1755,8 @@ export default function Produtos() {
                 {!form.id && <span className="pcab-foto" aria-hidden="true">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="bold" />}</span>}
                 <div className="pcab-txt">
                   <div className="pcab-linha">
-                    <h2 className="pcab-t">{form.id ? (editTab === "resumo" ? "Editar produto" : NOME_SECAO[editTab] || "Editar produto") : "Novo produto"}</h2>
-                    <button type="button" className="pcab-i" onClick={() => setInfoPasso(true)} aria-label="Sobre este passo" aria-haspopup="dialog"><Info size={20} weight="bold" aria-hidden="true" /></button>
+                    <h2 className="pcab-t">{form.id ? (editTab === "resumo" ? "Editar produto" : editTab === "opcoes" && escTela > 0 && ativasH[escTela - 1] ? ROT[ativasH[escTela - 1]] : NOME_SECAO[editTab] || "Editar produto") : "Novo produto"}</h2>
+                    <button type="button" className="pcab-i" onClick={() => { if (escTela === 0 && ((wizardStep === 3 && !form.id) || (form.id && editTab === "opcoes"))) window.dispatchEvent(new Event("doonly:esc-info")); else setInfoPasso(true); }} aria-label="Sobre este passo" aria-haspopup="dialog"><Info size={20} weight="bold" aria-hidden="true" /></button>
                   </div>
                   {/* (20/11) na edição o topo fica só com o título (sem a fotinho e sem o nome repetido) */}
                   {!form.id && <p className="pcab-s" aria-label={`Passo ${atual} de ${total}: ${nomePasso}`}>{`${atual} de ${total} · ${nomePasso}`}</p>}

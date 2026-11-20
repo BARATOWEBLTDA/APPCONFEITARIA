@@ -438,3 +438,22 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .esc-exp-ex { padding: 10px 12px; border-radius: 12px; background: #FBF6F8; font-size: 14px; }
 .esc-exp ul { margin: 0; padding-left: 18px; color: var(--ui-texto-2); font-size: 14px; }
 .esc-exp li + li { margin-top: 4px; }
+
+/* ═══ (20/11) revisão do celular ═══ */
+.esc { min-width: 0; max-width: 100%; }
+.esc-tela, .esc-corpo { min-width: 0; max-width: 100%; overflow-x: clip; }
+.esc-s.esc-s--1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.esc-aviso.esc-aviso--nota p { align-self: center; }
+/* dois quadrados (padrão da Nova venda) */
+.esc-quad { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 4px; }
+.esc-quad > button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; margin: 0; padding: 12px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.esc-quad > button.on { border-color: var(--ui-texto); }
+.esc-quad-topo { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 6px; color: var(--ui-texto-2); }
+.esc-quad > button.on .esc-quad-topo { color: var(--ui-texto); }
+.esc-quad-topo i { width: 20px; height: 20px; border: 1.5px solid var(--ui-borda-campo); border-radius: 50%; background: var(--ui-branco); }
+.esc-quad > button.on .esc-quad-topo i { border: 6px solid var(--ui-texto); }
+.esc-quad b { font-size: 15px; font-weight: 500; white-space: nowrap; }
+.esc-quad small { max-width: 100%; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.esc-quad > button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 2px; }
+/* modelos de tamanho em caixa normal (sem o tracejado) */
+.esc-modelo { border: 1px solid var(--ui-borda); }
