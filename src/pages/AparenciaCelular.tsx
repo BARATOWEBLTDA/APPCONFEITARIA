@@ -6,13 +6,14 @@
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { HexColorPicker } from "react-colorful";
-import { ArrowCounterClockwise, BatteryFull, Camera, CaretRight, CellSignalFull, Check, Crown, Images, LockSimple, PencilSimple, Plus, Sparkle, WifiHigh, X } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, BatteryFull, Camera, CaretRight, CellSignalFull, Check, Crown, Images, LockSimple, PencilSimple, Plus, Question, Sparkle, WifiHigh, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, CampoArea, Janela } from "@/components/base";
 import { abrirConvitePro } from "@/components/billing/RecursoPro";
 import { getStatusLoja } from "@/components/cardapio/CardapioModelo1";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import NomeNoLink from "@/components/loja/NomeNoLink";
+import Destaque, { jaViuDestaque, marcarDestaque } from "@/components/Destaque";
 import { useProfile } from "@/hooks/useProfile";
 import { COR_BOTOES, PADRAO, PRONTAS, PRONTAS_PRO, topoEscurecido, type CampoCor } from "@/lib/coresCardapio";
 import "@/components/cardapio/cardapioModelo1.css";
@@ -67,6 +68,22 @@ export default function AparenciaCelular(p: Props) {
   const [editDesc, setEditDesc] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
 
+  // (20/11) primeira vez na tela: pergunta se quer ajuda e, se sim, mostra onde se toca em cada coisa (depois ela segue sozinha)
+  const [ajuda, setAjuda] = useState<"pergunta" | number | null>(null);
+  useEffect(() => {
+    if (jaViuDestaque("aparencia-nova")) return;
+    const t = window.setTimeout(() => { marcarDestaque("aparencia-nova"); setAjuda("pergunta"); }, 600);
+    return () => window.clearTimeout(t);
+  }, []);
+  const passos: { alvo: string; titulo: string; texto: string }[] = [
+    { alvo: ".apn-url", titulo: "O link do seu cardápio", texto: p.isPro ? "É o endereço que você manda para os clientes. Toque no lápis para mudar o fim dele." : "É o endereço que você manda para os clientes. No PRO, ele leva o nome da sua loja." },
+    { alvo: ".apn-rel", titulo: "Foto do topo", texto: "Toque na câmera para pôr uma foto atrás do nome da loja." },
+    { alvo: ".apn-logo", titulo: "Sua logo", texto: "Toque na logo para escolher ou trocar a imagem." },
+    { alvo: p.descricao ? ".apn-desc" : ".apn-desc-vazia", titulo: "Descrição da loja", texto: p.descricao ? "Toque no lápis para contar o que você faz." : "Toque aqui e conte em uma frase o que você faz." },
+    { alvo: p.banner ? ".apn-banner" : ".apn-slot", titulo: "Banner de promoção", texto: "Para promoções e datas especiais. Pode ser uma foto sua ou um banner pronto." },
+    { alvo: ".apn-ctl", titulo: "Cores", texto: "Escolha a cor da faixa, da borda da logo e do nome. Tudo salva na hora." },
+  ];
+
   const cor = (c: CampoCor) => p.cores.find(x => x.campo === c)!;
   const atual = cor(aba);
   const prontas = p.premium ? [...PRONTAS[aba], ...PRONTAS_PRO[aba]] : PRONTAS[aba];
@@ -101,6 +118,8 @@ export default function AparenciaCelular(p: Props) {
       {p.janelas}
       <AppPageHeader title="Aparência" onBack={p.voltar} />
       <div className="apn">
+        {/* rever a ajuda quando quiser (no lugar do "i" das outras telas) */}
+        <button type="button" className="apn-ajuda-bt" aria-label="Ver a ajuda desta tela" onClick={() => setAjuda(0)}><Question size={20} weight="bold" /></button>
         <div className="apn-cw">
           <i className="apn-b1" aria-hidden="true" /><i className="apn-b2" aria-hidden="true" /><i className="apn-b3" aria-hidden="true" />
           <div className="apn-cel">
@@ -194,6 +213,16 @@ export default function AparenciaCelular(p: Props) {
           {aba === "cor_navbar" && !!p.fotoTopo && <p className="apn-dica">A faixa aparece quando o topo está sem foto.</p>}
         </div>
       </div>
+
+      <Janela aberta={ajuda === "pergunta"} aoFechar={() => setAjuda(null)} tipo="conteudo" titulo="Primeira vez aqui?"
+        acoes={<><Botao variante="secundario" onClick={() => setAjuda(null)}>Agora não</Botao><Botao onClick={() => setAjuda(0)}>Quero ajuda</Botao></>}>
+        <p className="apn-ajuda-tx">Quer uma ajudinha para personalizar o seu cardápio? Eu mostro onde tocar em cada coisa.</p>
+      </Janela>
+      {typeof ajuda === "number" && (
+        <Destaque key={ajuda} alvo={passos[ajuda].alvo} titulo={passos[ajuda].titulo} texto={passos[ajuda].texto}
+          passo={`${ajuda + 1} de ${passos.length}`} acao={ajuda === passos.length - 1 ? "Concluir" : "Próximo"} naoTexto="Sair"
+          aoAcao={() => setAjuda(ajuda === passos.length - 1 ? null : ajuda + 1)} aoFechar={() => setAjuda(null)} />
+      )}
 
       {/* outra cor (PRO) */}
       <Janela aberta={outraCor && p.premium} aoFechar={() => { setOutraCor(false); setHex(null); }} tipo="conteudo" titulo={`Cor: ${ABAS.find(a => a.campo === aba)!.aba.toLowerCase()}`}
