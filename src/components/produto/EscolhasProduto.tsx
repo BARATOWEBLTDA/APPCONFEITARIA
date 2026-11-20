@@ -542,7 +542,7 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
           </ul>
         )}
         {mostraRend && <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />}
-        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Os valores você coloca em Preço e promoção.</p></div>
+        <div className="esc-aviso esc-aviso--nota esc-aviso--1"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Os valores você coloca em Preço e promoção.</p></div>
       </>)}
 
       {!porPeso && (<>
@@ -577,7 +577,7 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
           <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={add} disabled={!novo.trim()}>Cadastrar</button>
         </div>
         {mostraRend && g.opcoes.length > 0 && <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />}
-        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Os valores você coloca em Preço e promoção.</p></div>
+        <div className="esc-aviso esc-aviso--nota esc-aviso--1"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Os valores você coloca em Preço e promoção.</p></div>
       </>)}
       {!porPeso && g.opcoes.length === 0 && (<>
         <p className="esc-lbl">Ou comece por um modelo</p>
@@ -748,7 +748,7 @@ function JanelaRendimento({ g, set, onFechar, nomeProduto = "" }: { g: GrupoTam;
           ))}
         </ul>
 
-        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>No cardápio aparece “Serve até 10{"\u00A0"}{un}”.</p></div>
+        <div className="esc-aviso esc-aviso--nota esc-aviso--1"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>No cardápio aparece “Serve até 10{"\u00A0"}{un}”.</p></div>
       </div>
       {/* tocar fora ou no X só fecha a pergunta (volta pro rendimento, sem salvar nada) */}
       <Janela aberta={perguntar} aoFechar={() => setPerguntar(false)} titulo="Salvar como predefinição?" tipo="aviso"
@@ -786,7 +786,7 @@ export function JanelaRendimentoSimples({ valor, onSalvar, onFechar }: { valor: 
             onChange={e => setNum(e.target.value.replace(/\D/g, "").slice(0, 4))} />
           <em>{un}</em>
         </label>
-        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>No cardápio aparece “Serve até {num || "10"} {un}”.</p></div>
+        <div className="esc-aviso esc-aviso--nota esc-aviso--1"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>No cardápio aparece “Serve até {num || "10"} {un}”.</p></div>
       </div>
     </Janela>
   );

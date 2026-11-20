@@ -444,6 +444,8 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .esc-tela, .esc-corpo { min-width: 0; max-width: 100%; overflow-x: clip; }
 .esc-s.esc-s--1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .esc-aviso.esc-aviso--nota p { align-self: center; }
+/* (20/11) aviso de uma linha só: encolhe um pouco em tela estreita em vez de quebrar */
+.esc-aviso.esc-aviso--1 p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-size: min(13px, 3.3vw); }
 /* dois quadrados (padrão da Nova venda) */
 .esc-quad { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 4px; }
 .esc-quad > button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; margin: 0; padding: 12px; border: 1.5px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }

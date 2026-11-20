@@ -446,6 +446,8 @@
 .tpj-txt--1 { margin-bottom: 12px; }
 .tpj-motivos2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 8px; }
 .tpj-motivos2 .tpj-cat { min-width: 0; padding: 0 6px; font-size: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* (20/11) motivo escolhido no padrão do app: cinza escuro com fundo cinza claro, sem rosa */
+.tpj-motivos2 .tpj-cat[aria-pressed="true"] { border-color: var(--ui-texto); background: #F3F1F2; color: var(--ui-texto); }
 .tpj-aviso { margin: 0 0 12px; }
 @media (max-width: 900px) {
   /* a ficha do pedido numa folha só: as partes separadas por linha fina, sem caixa em cada uma */
@@ -464,6 +466,9 @@
   .ep2.tpd .tpd-it-tx { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; align-items: start; }
   .ep2.tpd .tpd-it-tx > b { grid-column: 1 / -1; }
   .ep2.tpd .tpd-it-preco { grid-column: 2; grid-row: 2; display: block; text-align: right; }
+  /* (20/11) item sem escolhas: o preço sobe pra linha do nome (não fica sozinho embaixo) */
+  .ep2.tpd .tpd-it-tx:not(:has(.tpd-it-esc)) > b { grid-column: 1; }
+  .ep2.tpd .tpd-it-tx:not(:has(.tpd-it-esc)) > .tpd-it-preco { grid-row: 1; }
   .ep2.tpd .tpd-it-preco > span { display: block; font-size: 12px; color: var(--ui-texto-2); white-space: nowrap; }
   .ep2.tpd .tpd-it-preco > span:empty { display: none; }
   .ep2.tpd .tpd-it-esc--pc { display: block; grid-column: 1; grid-row: 2; margin: 0; }

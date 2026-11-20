@@ -65,8 +65,10 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
         // 10/10: quando falta menos que o passo, o "+" soma só o que falta (kit de 30 com passo 25 travava em 25).
         // O "−" tira primeiro essa sobra e depois volta a descer de passo em passo.
         const falta = c.alvo - c.soma
-        const mais = Math.min(passo, falta)
-        const menos = q % passo > 0 ? q % passo : Math.min(passo, q)
+        // (20/11) kit de um sabor só ("O cliente pode misturar sabores? Não"): um toque já enche o kit com o sabor (e o "−" esvazia)
+        const umSo = (kit.max_sabores || 1) === 1
+        const mais = umSo ? falta : Math.min(passo, falta)
+        const menos = umSo ? q : q % passo > 0 ? q % passo : Math.min(passo, q)
         const podeMais = falta > 0 && (q > 0 || c.usados < (kit.max_sabores || 1))
         return (
           <div className="kp-sabor" key={s.id}>

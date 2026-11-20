@@ -1791,7 +1791,16 @@ export default function Produtos() {
                   else setRendeSimples(true);
                 }} />
                 {rendeSimples && <JanelaRendimentoSimples valor={String((form as Produto & { rendimento_qtd?: string | null }).rendimento_qtd || "")}
-                  onSalvar={v => setForm(f => ({ ...f, rendimento_qtd: v } as Produto))} onFechar={() => setRendeSimples(false)} />}
+                  onSalvar={async v => {
+                    // (20/11) grava na hora: o resumo só tem "Fechar", e antes o rendimento se perdia (o app perguntava "Descartar as alterações?")
+                    const antes = (form as Produto & { rendimento_qtd?: string | null }).rendimento_qtd || "";
+                    setForm(f => ({ ...f, rendimento_qtd: v } as Produto));
+                    const { error } = await supabase.from("produtos").update({ rendimento_qtd: v }).eq("id", form.id);
+                    if (error) { setForm(f => ({ ...f, rendimento_qtd: antes } as Produto)); showToast("error", "Não deu certo", explicarErro(error)); return; }
+                    if (formSalvo.current) formSalvo.current = { ...formSalvo.current, rendimento_qtd: v } as Produto;
+                    setProdutos(l => l.map(x => (x.id === form.id ? ({ ...x, rendimento_qtd: v } as Produto) : x)));
+                    showToast("success", "Rendimento salvo", v ? `Serve até ${v}` : "Sem rendimento no cardápio");
+                  }} onFechar={() => setRendeSimples(false)} />}
               </div>
             )}
 

@@ -67,7 +67,7 @@ export function resumoRevisao(form: FormRevisao) {
 
   // o que o cliente escolhe
   const escolhas: string[] = [];
-  if (kitAtivo(kit)) escolhas.push("quantidade", `até ${kit!.max_sabores}\u00A0${kit!.max_sabores === 1 ? "sabor" : "sabores"}`);
+  if (kitAtivo(kit)) escolhas.push("kit", kit!.max_sabores === 1 ? "um sabor por pedido" : `até ${kit!.max_sabores}\u00A0sabores`); // (20/11) "Quantidade" virou "Kit"
   if (temTam) escolhas.push("tamanho");
   GRUPOS.forEach(([campo, um, varios]) => {
     const g = form[campo] as G | undefined;

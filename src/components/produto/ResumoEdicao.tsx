@@ -12,7 +12,7 @@ import "./escolhas.css";
  * embaixo, cada parte com o que já está cadastrado e um "Editar" que abre só aquela parte.
  */
 type Parte = "info" | "opcoes" | "fotos" | "preco" | "entrega" | "rendimento";
-const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", quantidade: "Quantidade" };
+const ROT: Record<string, string> = { tamanho: "Tamanho", massa: "Massa", recheio: "Recheio", cobertura: "Cobertura", sabor: "Sabor", quantidade: "Kit" };
 // (14/10) singular / plural pra "3 tamanhos cadastrados"
 const NOME: Record<string, [string, string]> = { tamanho: ["tamanho", "tamanhos"], massa: ["massa", "massas"], recheio: ["recheio", "recheios"], cobertura: ["cobertura", "coberturas"], sabor: ["sabor", "sabores"], quantidade: ["quantidade", "quantidades"] };
 const GRUPO: Record<string, "grupo_tamanhos" | "grupo_massas" | "grupo_recheios" | "grupo_coberturas" | "grupo_sabores"> = { tamanho: "grupo_tamanhos", massa: "grupo_massas", recheio: "grupo_recheios", cobertura: "grupo_coberturas", sabor: "grupo_sabores" };
@@ -30,7 +30,7 @@ export default function ResumoEdicao({ form, isPro = false, onEditar }: { form: 
   const escolhas = !ativas.length ? "Sem escolhas, preço único"
     : ativas.length === 1 && qtdDe(ativas[0]) > 0
       ? (() => { const c = ativas[0], n = qtdDe(c), fem = c === "massa" || c === "cobertura"; return `${n} ${NOME[c][n === 1 ? 0 : 1]} ${fem ? "cadastrada" : "cadastrado"}${n === 1 ? "" : "s"}`; })()
-      : ativas.length === 1 ? (ativas[0] === "quantidade" ? "Vende por quantidade" : `${ROT[ativas[0]]}, sem opções ainda`)
+      : ativas.length === 1 ? (ativas[0] === "quantidade" ? "Vende em kit" : `${ROT[ativas[0]]}, sem opções ainda`)
       : `${ativas.length} escolhas: ${ativas.map(c => ROT[c].toLowerCase()).join(", ")}`;
   const faltaPreco = r.avisos.find(a => /^Falta o preço/.test(a));
   const promo = !!form.promocao && (form.tipo_promocao === "percentual" ? Number(form.desconto_percentual) > 0 : Number(form.preco_promocional) > 0);
