@@ -81,7 +81,7 @@ export default function AparenciaCelular(p: Props) {
     { alvo: ".apn-rel .apn-rb--d", titulo: "Ponha uma foto de capa", texto: "Toque na câmera e escolha a foto." },
     { alvo: ".apn-logo", titulo: "Aqui vai a sua logo", texto: "Toque nela para escolher ou trocar.", folga: 4 },
     { alvo: p.descricao ? ".apn-dp" : ".apn-desc-vazia", titulo: "Conte o que você faz", texto: p.descricao ? "Toque no lápis e escreva uma frase." : "Toque aqui e escreva uma frase." },
-    { alvo: p.banner ? ".apn-banner" : ".apn-slot", titulo: "Divulgue uma promoção", texto: "Pode ser uma foto sua ou um banner pronto." },
+    { alvo: p.banner ? ".apn-banner" : ".apn-slot", titulo: "Divulgue uma promoção", texto: "Uma foto sua ou um banner pronto." },
     { alvo: ".apn-ctl", titulo: "Escolha as suas cores", texto: "Faixa, borda da logo e nome.", folga: 4 },
   ];
 
