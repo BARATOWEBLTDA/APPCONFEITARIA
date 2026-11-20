@@ -1187,13 +1187,18 @@ export default function Produtos() {
 
     // (14/10) SKU: só vai quando tem; se o banco ainda não tem a coluna (SQL 4.36), salva sem ele e avisa
     // (6.156) apagou o SKU na edição: grava vazio (antes o código antigo ficava no banco)
+    // (20/11) sem código: cria sozinho a partir da categoria (ou do nome), sem repetir na loja
+    if (!String(formLimpo.sku || "").trim() && String(formLimpo.nome || "").trim()) {
+      const pre = (String(formLimpo.categoria || formLimpo.nome || "PRD").normalize("NFD").replace(/[^A-Za-z]/g, "").slice(0, 3) || "PRD").toUpperCase().padEnd(3, "X");
+      formLimpo.sku = skuLivre(pre, skusDe(produtos.filter(x => x.id !== form.id)));
+    }
     if (!String(formLimpo.sku || "").trim()) { if (form.id && (produtos.find(x => x.id === form.id) as Produto & { sku?: string | null } | undefined)?.sku) formLimpo.sku = null; else delete formLimpo.sku; }
     else {
       // (21/10) o SKU não pode repetir na loja
       formLimpo.sku = String(formLimpo.sku).trim().toUpperCase();
       const dono = produtos.find((p: Produto) => p.id !== form.id && String(p.sku || "").trim().toUpperCase() === formLimpo.sku);
       if (dono) {
-        showToast("error", "Esse SKU já está em uso", `O código ${formLimpo.sku} já está no produto "${dono.nome}". Escreva outro ou use Gerar.`);
+        showToast("error", "Esse código já está em uso", `O código ${formLimpo.sku} já está no produto "${dono.nome}". Escreva outro.`);
         setSaving(false);
         return;
       }
@@ -1220,7 +1225,7 @@ export default function Produtos() {
       if (estavaFora && payload.disponivel !== false && passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
       let { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
       if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload; void _s; ({ error } = await supabase.from("produtos").update(sem).eq("id", form.id)); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
-      if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou use Gerar."); setSaving(false); return; }
+      if (error && skuRepetido(error)) { showToast("error", "Esse código já está em uso", "Esse código já está em outro produto. Escreva outro."); setSaving(false); return; }
       if (error && /limite_destaques/.test(`${error.message} ${error.hint || ""}`)) { avisarLimiteDestaques(false); setSaving(false); return; }
       if (error) {
         console.error("Erro ao atualizar produto:", error);
@@ -1232,7 +1237,7 @@ export default function Produtos() {
       if (payload.disponivel !== false && passouDoLimite()) { setSaving(false); setLimiteAberto(true); return; }
       let { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
       if (error && semColunaSku(error)) { const { sku: _s, ...sem } = payload; void _s; ({ data: novo, error } = await supabase.from("produtos").insert({ ...sem, user_id: userId }).select("id").single()); if (!error) avisar("Salvo. O SKU fica guardado depois que o SQL 4.36 rodar.", { tipo: "info" }); }
-      if (error && skuRepetido(error)) { showToast("error", "Esse SKU já está em uso", "Esse código já está em outro produto. Escreva outro ou use Gerar."); setSaving(false); return; }
+      if (error && skuRepetido(error)) { showToast("error", "Esse código já está em uso", "Esse código já está em outro produto. Escreva outro."); setSaving(false); return; }
       if (error && /limite_destaques/.test(`${error.message} ${error.hint || ""}`)) { avisarLimiteDestaques(false); setSaving(false); return; }
       if (error) {
         console.error("Erro ao criar produto:", error);
@@ -1747,13 +1752,14 @@ export default function Produtos() {
                   <button type="button" className="pcab-bt" onClick={form.id ? voltarDaSecao : voltarPassoCadastro} aria-label="Voltar"><ArrowLeftIc size={22} weight="bold" aria-hidden="true" /></button>
                 )}
                 {/* numa parte da edição o título é maior ("Cardápio e entrega"): fica só a seta, sem a foto */}
-                {!(form.id && editTab !== "resumo") && <span className="pcab-foto" aria-hidden="true">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="bold" />}</span>}
+                {!form.id && <span className="pcab-foto" aria-hidden="true">{foto ? <img src={foto} alt="" /> : <Cake size={22} weight="bold" />}</span>}
                 <div className="pcab-txt">
                   <div className="pcab-linha">
                     <h2 className="pcab-t">{form.id ? (editTab === "resumo" ? "Editar produto" : NOME_SECAO[editTab] || "Editar produto") : "Novo produto"}</h2>
                     <button type="button" className="pcab-i" onClick={() => setInfoPasso(true)} aria-label="Sobre este passo" aria-haspopup="dialog"><Info size={20} weight="bold" aria-hidden="true" /></button>
                   </div>
-                  <p className="pcab-s" aria-label={form.id ? undefined : `Passo ${atual} de ${total}: ${nomePasso}`}>{form.id ? (form.nome || "Produto") : `${atual} de ${total} · ${nomePasso}`}</p>
+                  {/* (20/11) na edição o topo fica só com o título (sem a fotinho e sem o nome repetido) */}
+                  {!form.id && <p className="pcab-s" aria-label={`Passo ${atual} de ${total}: ${nomePasso}`}>{`${atual} de ${total} · ${nomePasso}`}</p>}
                 </div>
                 <button type="button" className="pcab-bt" onClick={handleTryClose} aria-label="Fechar"><XIc size={22} weight="bold" aria-hidden="true" /></button>
                 {!form.id && <div className="pcab-barra" aria-hidden="true"><i style={{ width: `${Math.round((atual / total) * 100)}%` }} /></div>}
@@ -1934,16 +1940,12 @@ export default function Produtos() {
                     <p className="prod-cat-auto">Escolhida pelo nome e pela descrição</p>
                   )}
                 </div>
-                {/* (14/10) SKU: código pra organizar os produtos (opcional), com "Gerar" · (27/10) só na edição: no cadastro novo era um termo técnico logo no 1º passo */}
+                {/* (20/11) "Código do produto": criado sozinho ao salvar (sem o botão Gerar); dá para trocar à mão */}
                 {form.id && <div className="prod-field">
-                  <label className="prod-field-label-novo" htmlFor="prod-sku-input">SKU <OptTag /></label>
-                  <div className="prod-sku">
-                    <input id="prod-sku-input" placeholder="Ex.: BOL-0427" value={form.sku || ""} maxLength={24} autoCapitalize="characters"
+                  <label className="prod-field-label-novo" htmlFor="prod-sku-input">Código do produto <OptTag /></label>
+                  <div className="prod-sku prod-sku--so">
+                    <input id="prod-sku-input" placeholder="Criado sozinho ao salvar" value={form.sku || ""} maxLength={24} autoCapitalize="characters"
                       onChange={e => setForm(f => ({ ...f, sku: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") }))} />
-                    <button type="button" onClick={() => {
-                      const pre = (String(form.categoria || form.nome || "PRD").normalize("NFD").replace(/[^A-Za-z]/g, "").slice(0, 3) || "PRD").toUpperCase().padEnd(3, "X");
-                      setForm(f => ({ ...f, sku: skuLivre(pre, skusDe(produtos)) }));
-                    }}>Gerar</button>
                   </div>
                 </div>}
               </div>
@@ -1984,7 +1986,7 @@ export default function Produtos() {
                         <button type="button" className="prod-foto-pri-vazia" onClick={() => escolher(0)} disabled={uploading}>
                           {uploading ? <span className="prod-spinner" /> : <>
                             <span className="prod-foto-pri-ic" aria-hidden="true"><Camera size={28} weight="bold" /></span>
-                            <b>Tirar foto ou escolher da galeria</b>
+                            <b>Tirar ou escolher a foto</b>
                             <small>É a que aparece no cardápio</small>
                           </>}
                         </button>

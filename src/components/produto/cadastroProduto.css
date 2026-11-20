@@ -436,3 +436,18 @@ body .prod-modal--novo .prod-opc:has(> .prod-selo-rec) { position: relative; ove
   body .prod-modal--novo .prod-rev .prev-fotos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
   body .prod-modal--novo .prod-rev > .prod-section { margin: 0 !important; padding-top: 0 !important; border-top: 0 !important; } /* os dois títulos na mesma linha */
 }
+
+/* ═══ (20/11) revisão do celular ═══ */
+body .prod-modal--novo .prod-sku--so { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 900px) {
+  /* Fotos: as fotos 2, 3 e 4 em coluna ao lado da principal; as 6 dicas aparecem sem rolar */
+  .prod-section.prod-fotos { display: grid; grid-template-columns: minmax(0, 1fr) 78px; column-gap: 10px; align-items: stretch; justify-items: stretch; }
+  .prod-fotos > .prod-foto-pri { grid-column: 1; grid-row: 1; width: 100%; }
+  .prod-fotos > .prod-foto-acoes { grid-column: 1; grid-row: 2; }
+  .prod-fotos > .prod-foto-extras { grid-column: 2; grid-row: 1; flex-direction: column; justify-content: stretch; gap: 8px; margin: 0; }
+  .prod-fotos .prod-foto-ex { flex: 1; width: 100%; height: auto; min-height: 0; }
+  .prod-fotos > .prod-dicas-cx { grid-column: 1 / -1; grid-row: 3; }
+  .prod-fotos .prod-dicas-t { margin-top: 14px; }
+  .prod-foto-pri-vazia b { font-size: 14.5px; white-space: nowrap; }
+  .prod-foto-pri-vazia small { white-space: nowrap; }
+}
