@@ -42,6 +42,26 @@ function useAgora(ligado: boolean) {
   return agora
 }
 
+/** (20/11) há quanto tempo o pedido espera o aceite: "Esperando há 12 dias" */
+function esperandoHa(iso: string, agora: Date): string {
+  const c = new Date(iso)
+  if (isNaN(c.getTime())) return 'Novo pedido'
+  const min = Math.floor((agora.getTime() - c.getTime()) / 60000)
+  if (min < 1) return 'Chegou agora'
+  if (min < 60) return `Esperando há ${min} min`
+  if (min < 1440) return `Esperando há ${Math.floor(min / 60)} h`
+  const dias = Math.floor(min / 1440)
+  return `Esperando há ${dias} ${dias === 1 ? 'dia' : 'dias'}`
+}
+
+/** (20/11) embaixo do "Esperando há…": quando chegou, sem repetir o tempo ("Chegou hoje às 14:10", "Chegou 08/11 às 14:17") */
+function chegouQuando(iso: string, agora: Date): string {
+  const t = chegouHa(iso, agora)
+  if (!/^Chegou (há|agora)/.test(t)) return t
+  const c = new Date(iso)
+  return `Chegou hoje às ${String(c.getHours()).padStart(2, '0')}:${String(c.getMinutes()).padStart(2, '0')}`
+}
+
 const parar = (fn: () => void) => (e: MouseEvent) => { e.stopPropagation(); fn() }
 const teclaAbre = (fn: () => void) => (e: KeyboardEvent<HTMLElement>) => {
   if (e.target !== e.currentTarget) return
@@ -147,9 +167,13 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
   const falta = saldoPedido(p)
   const entrega = p.tipo_entrega === 'entrega'
   const cancelado = grupoDoStatus(p.status) === 'cancelado'
+  const textoPg = textoPagamento(p, falta).texto
+  const nadaPago = !cancelado && textoPg.startsWith('Falta ') && Math.abs(falta - Number(p.valor_total || 0)) < 0.01
+  const pagoTudo = !cancelado && textoPg === 'Pago'
   // dentro do grupo do dia, basta a hora; atrasado e concluído mostram a data
   // (01/11 · 5.98) data curta ("Ontem às 15:00", "Sex, 30/10 às 15:00"): a longa ("30 de outubro às 15:…") cortava no notebook
-  const quando = atr || comDia ? dataCurta(p.data_entrega, p.horario_entrega) : (horaCurta(p.horario_entrega) || 'Sem hora')
+  // (20/11) pedido para aceitar também mostra o dia (antes só a hora: não dava para saber para quando era)
+  const quando = atr || comDia || aceitar ? dataCurta(p.data_entrega, p.horario_entrega) : (horaCurta(p.horario_entrega) || 'Sem hora')
   return (
     <div className={`pdl${aceitar ? ' aceitar' : ''}`} role="row" tabIndex={0} aria-label={`Pedido #${p.numero || ''} de ${nomeCliente(p)}`} onClick={() => aoAbrir(p)} onKeyDown={teclaAbre(() => aoAbrir(p))}>
       <div className="pdl-quem" role="cell">
@@ -159,10 +183,11 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
           <p className="pdc-res">{resumoItens(p)}</p>
         </div>
       </div>
-      <p className={`pdl-cel${sit.tom ? ` t-${sit.tom}` : ''}`} role="cell"><b>{sit.nome}</b>{aceitar && p.created_at && <small>{chegouHa(p.created_at, agora)}</small>}</p>
+      <p className={`pdl-cel${sit.tom ? ` t-${sit.tom}` : ''}`} role="cell"><b>{aceitar && p.created_at ? esperandoHa(p.created_at, agora) : sit.nome}</b>{aceitar && p.created_at && <small>{chegouQuando(p.created_at, agora)}</small>}</p>
       <p className={`pdl-cel ${cancelado ? '' : `t-${textoPagamento(p, falta).tom}`}`} role="cell">
-        <b>{cancelado ? '—' : textoPagamento(p, falta).texto}</b>
-        <small>de {rs(p.valor_total)}</small>
+        {/* (20/11) nada pago: "A receber R$ 75,00" (antes "Falta R$ 75,00 de R$ 75,00"); pago: "Pago R$ 90,00" */}
+        <b>{cancelado ? '—' : nadaPago ? 'A receber' : textoPagamento(p, falta).texto}</b>
+        <small>{nadaPago || pagoTudo ? rs(p.valor_total) : `de ${rs(p.valor_total)}`}</small>
       </p>
       <p className={`pdl-cel${atr ? ' t-vermelho' : ''}`} role="cell">
         <b>{quando}</b>
@@ -170,8 +195,7 @@ export function LinhaPedido({ p, aoAbrir, aoAvancar, aoMenu, aoEndereco, mudando
       </p>
       <div className="pdl-acao" role="cell">
         {aceitar && aoRecusar && <Botao className="pd-recusar" variante="secundario" tamanho="p" disabled={mudando} onClick={parar(() => aoRecusar(p))}>Recusar</Botao>}
-        {/* (6.99) computador: "Ver" à vista na linha (no pedido novo a linha já tem Recusar e Aceitar) */}
-        {!aceitar && <Botao className="pd-ver" variante="secundario" tamanho="p" onClick={parar(() => aoAbrir(p))}>Ver</Botao>}
+        {/* (20/11) o "Ver" saiu: a linha inteira já abre o pedido */}
         {acao && <Botao className={aceitar ? undefined : `pd-passo${passoDeDepois(p) ? ' pd-passo--depois' : ''}`} tamanho="p" carregando={mudando} onClick={parar(() => aoAvancar(p))}>{acao.rotulo}</Botao>}
       </div>
       <div role="cell">

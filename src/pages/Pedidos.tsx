@@ -676,7 +676,7 @@ export default function Pedidos() {
               <div className="pd-busca-l">
                 <div className="ui-campo-c pd-busca" onClick={e => { if (e.target === e.currentTarget) e.currentTarget.querySelector('input')?.focus() }}>
                   <span className="ui-campo-ic" aria-hidden="true"><MagnifyingGlass size={20} weight="bold" /></span>
-                  <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder="Buscar" value={busca} onChange={e => setBusca(e.target.value)} />
+                  <input type="search" inputMode="search" enterKeyHint="search" autoComplete="off" aria-label="Buscar pedido por cliente ou número" placeholder={typeof window !== "undefined" && window.matchMedia("(min-width: 901px)").matches ? "Buscar pedido, cliente ou número" : "Buscar"} value={busca} onChange={e => setBusca(e.target.value)} />
                   {busca && <BotaoLimpar className="pd-busca-x" rotulo="Limpar a busca" onClick={() => setBusca('')} />}
                 </div>
                 <span className="pd-filtro">
@@ -755,7 +755,9 @@ export default function Pedidos() {
               <div className="pd-grupos">
                 {grupos.map(g => g.chave === 'depois' || g.chave === 'antigos' ? <BotaoMais key={g.chave} g={g} /> : (
                   <section key={g.chave} className="pd-grupo" aria-label={g.titulo}>
-                    <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined} apoio={g.chave === 'aceitar' ? (!g.itens.every(p => p.origem === 'cardapio') ? 'Aceite para entrar na sua agenda.' : g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite para entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite para entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>
+                    <Titulo contagem={g.itens.length} tom={g.chave === 'atrasado' ? 'vermelho' : undefined}
+                      acao={!/^(concluidos|cancelados|c-|c\d|csem)/.test(g.chave) && g.itens.length > 0 ? <span className="pd-grupo-tot">Total {g.itens.reduce((t, p) => t + Number(p.valor_total || 0), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span> : undefined}
+                      apoio={g.chave === 'aceitar' ? (!g.itens.every(p => p.origem === 'cardapio') ? 'Aceite para entrar na sua agenda.' : g.itens.length === 1 ? 'Chegou pelo cardápio. Aceite para entrar na sua agenda.' : 'Chegaram pelo cardápio. Aceite para entrar na sua agenda.') : undefined}>{g.titulo}</Titulo>
                     <div className="pdl-tabela" role="table">{g.itens.map(p => <LinhaPedido key={p.id} {...props(p)} comDia={g.chave === 'concluidos' || g.chave === 'semdata' || g.chave === 'antes'} />)}</div>
                   </section>
                 ))}
