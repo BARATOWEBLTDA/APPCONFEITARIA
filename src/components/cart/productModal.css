@@ -124,7 +124,7 @@ button.pm-x-pc { display: none; }
   .pm-preco strong { font-size: 22px; }
   /* (20/10) a foto no formato dela (4:3), no topo, sem as faixas borradas em cima e embaixo */
   /* (21/10) volta pro 4:3, o formato das fotos do cadastro (no quadrado sobravam faixas borradas e a foto ficava menor) */
-  .pm-ft-pc { position: relative; flex: none; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--ui-raio-cartao); overflow: hidden; background: #F3EEF0; }
+  .pm-ft-pc { position: relative; flex: none; width: 100%; aspect-ratio: 1; border-radius: var(--ui-raio-cartao); overflow: hidden; background: #F3EEF0; }
   .pm-ft-pc img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .8s ease; }
   .pm-ft-pc img.on { opacity: 1; }
   /* (20/10) zoom ao passar o mouse: a foto aumenta no próprio quadro e segue o cursor */
@@ -174,7 +174,8 @@ button.pm-x-pc { display: none; }
 
 /* (20/10) computador: foto do produto inteira (contain) com o fundo borrado */
 @media (min-width: 768px) {
-  .pm-ft-pc img:not(.pm-ft-fundo) { object-fit: contain; }
+  /* (20/11) quadro quadrado e foto preenchendo: a foto nova (1:1) aparece inteira; a antiga (4:3) perde só as laterais, como no celular */
+  .pm-ft-pc img:not(.pm-ft-fundo) { object-fit: cover; }
   .pm-ft-pc img.pm-ft-fundo { inset: -8%; width: 116%; height: 116%; object-fit: cover; filter: blur(22px) saturate(1.1); opacity: .55; }
 }
 
@@ -202,7 +203,7 @@ button.pm-x-pc { display: none; }
   .pm-tambem-l button { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; overflow: hidden; border: 1px solid #F0E6EA; border-radius: 12px; background: var(--ui-branco); font-family: inherit; text-align: left; cursor: pointer; transition: box-shadow .15s, transform .15s; }
   .pm-tambem-l button:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40, 20, 25, .1); }
   .pm-tambem-l button:focus-visible { outline: 3px solid var(--pm-cor, var(--ui-rosa)); outline-offset: 2px; }
-  .pm-tambem-ft { position: relative; display: block; overflow: hidden; aspect-ratio: 4 / 3; background: #F3EEF0; }
+  .pm-tambem-ft { position: relative; display: block; overflow: hidden; aspect-ratio: 1; background: #F3EEF0; }
   .pm-tambem-ft img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
   .pm-tambem-tx { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 10px; }
   .pm-tambem-tx b { overflow: hidden; font-size: 13.5px; font-weight: 600; color: var(--ui-texto); white-space: nowrap; text-overflow: ellipsis; }

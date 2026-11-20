@@ -172,3 +172,8 @@
 .ic-sec:not(.ic-sec--pc) .ic-grade--promo:has(> .ic-cp:only-child) { grid-template-columns: minmax(0, 1fr); }
 .ic-sec:not(.ic-sec--pc) .ic-fila--dq > .ic-cp:only-child .ic-cp-ft,
 .ic-sec:not(.ic-sec--pc) .ic-grade--promo > .ic-cp:only-child .ic-cp-ft { aspect-ratio: 16 / 10; }
+
+/* (20/11) computador: foto do cartão quadrada e preenchendo o quadro, igual ao recorte do cadastro (1:1) e ao celular */
+.ic-sec--pc .ic-cp-ft { aspect-ratio: 1; }
+.ic-sec--pc .ic-cp-ft img.ic-fundo { display: none; }
+.ic-sec--pc .ic-cp-ft img.ic-inteira { object-fit: cover; }
