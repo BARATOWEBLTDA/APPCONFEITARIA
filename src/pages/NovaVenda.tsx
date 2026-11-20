@@ -25,7 +25,7 @@ import AppPageHeader from '@/components/AppPageHeader'
 import { COMO_NOVA_VENDA, TOUR_NOVA_VENDA } from "@/lib/comoTelas";
 import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
-import { Bank, CalendarBlank, CalendarDots, Check, CheckCircle, Clock, CreditCard, Info, Lightning, MagnifyingGlass, Minus, Money, Package, PencilSimple, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
+import { Bank, CaretLeft, CalendarBlank, CalendarDots, Check, CheckCircle, Clock, CreditCard, Info, Lightning, MagnifyingGlass, Minus, Money, Package, PencilSimple, Plus, QrCode, Storefront, Trash, Truck, UserPlus, WarningCircle, X } from '@phosphor-icons/react'
 import HeroVazio from '@/components/HeroVazio'
 import { Botao, BotaoIcone, Campo, CampoArea, Janela, Linha, TelaVazia, Titulo, avisar, confirmar, BotaoLimpar } from '@/components/base'
 import { historicoAssentado } from '@/components/base/useSobreposicao'
@@ -174,6 +174,7 @@ const toTitleCase = (str: string): string => {
 
 // ── Etapas ────────────────────────────────────────────────────────────────
 // (o passo 1 se chama "Venda" por dentro; na tela aparece como "Produtos")
+const PASSOS_PC = ['Produtos', 'Cliente', 'Entrega', 'Pagamento', 'Situação'] // (20/11) nomes dos passos na barra do computador
 const ETAPAS_ENCOMENDA = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
 const ETAPAS_PRONTA    = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
 
@@ -792,6 +793,13 @@ export default function NovaVenda() {
   // subtítulo (10/10): no passo 1 explica a escolha; depois mostra o tipo escolhido; no fim, que a venda foi registrada
   const subtituloTopo = sucessoAberto ? 'Venda registrada' : etapa === 1 && clienteId && clienteNome.trim() ? `Venda para ${toTitleCase(clienteNome.trim().split(/\s+/)[0])}` : etapa === 1 || !tipo ? 'Encomenda ou pronta entrega' : tipo === 'pronta_entrega' ? 'Pronta entrega' : 'Encomenda'
   // (16/10) a seta do topo volta um passo (no primeiro, pergunta antes de cancelar), igual ao "Voltar" de baixo
+  // (20/11) resumo do computador: lápis nas linhas de passos já feitos (leva direto ao passo)
+  const lapis = (passo: number, preenchido: boolean) => passo < etapa && preenchido
+    ? <button type="button" className="nv3-lado-ed" aria-label={`Alterar ${PASSOS_PC[passo - 1].toLowerCase()}`} onClick={() => irParaPasso(passo)}><PencilSimple size={14} weight="bold" aria-hidden="true" /></button>
+    : null
+  // (20/11) "Continuar" com cara de apagado enquanto falta algo (o clique continua mostrando o que falta)
+  const faltaAgora = oQueFalta()
+  const faltaPagamento = etapaLabelAtual === 'Pagamento' && faltaAgora ? (/quanto ele já pagou/.test(faltaAgora) ? 'escrever quanto ele já pagou' : 'escolher quanto já entrou') : ''
   // (01/11 · 5.98) computador: no 1º passo sem a seta de voltar (é uma tela do menu, como as outras); do 2º passo em diante ela volta o passo
   const semVoltarPc = !sucessoAberto && etapa <= 1 && typeof window !== 'undefined' && window.matchMedia('(min-width: 901px)').matches
   const cabecalho = <AppPageHeader title="Nova venda" subtitle={subtituloTopo} infoComo={produtos.length === 0 ? undefined : COMO_NOVA_VENDA} infoTour={produtos.length === 0 ? undefined : TOUR_NOVA_VENDA} onBack={semVoltarPc ? undefined : sucessoAberto ? () => navigate('/pedidos') : voltarEtapa} />
@@ -930,7 +938,19 @@ export default function NovaVenda() {
     {cabecalho}
 
     <div className="nv3">
-      {/* (30/10 · 5.62) a barra de passos saiu (pedido do Bruno): o resumo e os botões já guiam */}
+      {/* (20/11) computador: os passos no topo voltaram (só lá; no celular continuam fora). Passo já feito é clicável. */}
+      <ol className="nv3-passos" aria-label="Passos da venda">
+        {PASSOS_PC.map((nome, i) => {
+          const n = i + 1, feito = n < etapa, agora = n === etapa
+          return (
+            <li key={nome} className={feito ? 'feito' : agora ? 'agora' : ''} aria-current={agora ? 'step' : undefined}>
+              {feito
+                ? <button type="button" onClick={() => irParaPasso(n)}><i aria-hidden="true"><Check size={13} weight="bold" /></i>{nome}</button>
+                : <span><i aria-hidden="true">{n}</i>{nome}</span>}
+            </li>
+          )
+        })}
+      </ol>
 
       {/* (21/10) no computador: os passos à esquerda e o resumo da venda fixo à direita */}
       <div className="nv3-grade">
@@ -1013,16 +1033,18 @@ export default function NovaVenda() {
       {/* ═══ PASSO 2: cliente (opcional) ═══ */}
       {etapaLabelAtual === 'Cliente' && (
         <>
-          <section className="nv3-card">
+          <section className="nv3-card nv3-card--rel">
             <Titulo>Para quem é?</Titulo>
             {modoNovoCli ? (
               <>
+                {/* (20/11) computador: voltar para a lista é um botão no canto do cartão */}
+                <button type="button" className="nv3-lista-pc" onClick={() => { setModoNovoCli(false); setClienteNome(''); setClienteTelefone('') }}><CaretLeft size={14} weight="bold" aria-hidden="true" />Escolher da lista</button>
                 <div className="nv3-cols">
                   <Campo className="nv3-larga" rotulo="Nome do cliente" placeholder="Ex.: Mariana Albuquerque" autoComplete="off" value={clienteNome} onChange={e => setClienteNome(e.target.value)} />
                   <Campo className="nv3-larga" rotulo="Telefone ou WhatsApp" opcional type="tel" inputMode="tel" placeholder="(41) 99999-0000" value={clienteTelefone} onChange={e => setClienteTelefone(e.target.value)} />
                 </div>
                 <p className="nv3-dica">Ele fica salvo nos seus clientes quando você registrar a venda.</p>
-                <Botao variante="link" icone={<X size={16} weight="bold" />} onClick={() => { setModoNovoCli(false); setClienteNome(''); setClienteTelefone('') }}>Voltar para a lista</Botao>
+                <Botao variante="link" className="nv3-lista-cel" icone={<X size={16} weight="bold" />} onClick={() => { setModoNovoCli(false); setClienteNome(''); setClienteTelefone('') }}>Voltar para a lista</Botao>
               </>
             ) : (
               <>
@@ -1100,7 +1122,8 @@ export default function NovaVenda() {
                 <span className="nv3-tipo-ic" aria-hidden="true"><Truck size={24} weight={ehEntrega ? 'fill' : 'bold'} /></span><span className="nv3-tipo-tx"><b>Entrega</b><small>Você vai entregar</small></span><i className="nv3-tipo-r" aria-hidden="true" />
               </button>
             </div>
-            {ehEntrega && !celular && <div className="nv3-mapa"><MapaEndereco busca={buscaMapa} soCidade={!buscaMapa?.rua} selo="" /></div>}
+            {/* (20/11) computador: o mapa só entra depois da rua preenchida (antes mostrava a cidade inteira e empurrava os campos) */}
+            {ehEntrega && !celular && !!buscaMapa?.rua && <div className="nv3-mapa"><MapaEndereco busca={buscaMapa} soCidade={!buscaMapa?.rua} selo="" /></div>}
             {prontaRetirada && (
               <>
                 <p className="nv3-sub">O cliente já levou?</p>
@@ -1335,24 +1358,27 @@ export default function NovaVenda() {
             </div>
           )}
         <div className="nv3-lado-inf">
-          <p><span>Tipo</span><b className={tipo ? '' : 'falta'}>{tipo === 'pronta_entrega' ? 'Pronta entrega' : tipo === 'encomenda' ? 'Encomenda' : 'Falta escolher'}</b></p>
-          <p><span>Cliente</span><b className={etapa < 2 && !clienteId ? 'falta' : ''}>{etapa < 2 && !clienteId ? 'Falta escolher' : nomeDaCliente}</b></p>
+          <p><span>Tipo</span><b className={tipo ? '' : 'falta'}>{tipo === 'pronta_entrega' ? 'Pronta entrega' : tipo === 'encomenda' ? 'Encomenda' : 'Falta escolher'}{lapis(1, !!tipo)}</b></p>
+          <p><span>Cliente</span><b className={etapa < 2 && !clienteId ? 'falta' : ''}>{etapa < 2 && !clienteId ? 'Falta escolher' : nomeDaCliente}{lapis(2, true)}</b></p>
           <p><span>{ehEntrega ? 'Entrega' : 'Retirada'}</span><b className={etapa < 3 || ((tipo === 'encomenda' || buscaDepois) && !dataEntrega) ? 'falta' : ''}>{
             etapa < 3 ? 'Falta escolher'
             : tipo === 'encomenda' || buscaDepois ? (dataEntrega ? dataLonga(dataEntrega, horarioEntrega) : 'Falta escolher')
-            : jaLevou ? 'Já levou' : ehEntrega ? 'Entrega' : 'Retirada'}</b></p>
+            : jaLevou ? 'Já levou' : ehEntrega ? 'Entrega' : 'Retirada'}{lapis(3, true)}</b></p>
           {/* (23/10) igual a Cliente e Entrega: antes de chegar no passo Pagamento, "Falta escolher". A pronta entrega já vem
               marcada como paga no passo, e o resumo mostrava "Pago · Pix" logo depois de escolher o tipo, sem ela ter escolhido nada */}
-          <p><span>Pagamento</span><b className={!pagamentoNoResumo ? 'falta' : situacaoPag === 'total' ? 'ok' : 'lar'}>{pagamentoNoResumo ? textoPagamento : 'Falta escolher'}</b></p>
+          <p><span>Pagamento</span><b className={!pagamentoNoResumo ? 'falta' : situacaoPag === 'total' ? 'ok' : 'lar'}>{pagamentoNoResumo ? textoPagamento : 'Falta escolher'}{lapis(4, pagamentoNoResumo)}</b></p>
         </div>
         <p className="nv3-lado-tot"><span>Total</span><b>{rs(total)}</b></p>
         {pagamentoNoResumo && situacaoPag !== 'total' && itens.length > 0 && <p className="nv3-lado-falta"><span>Falta receber</span><b>{rs(falta)}</b></p>}
         <div className="nv3-lado-bts">
           {isUltima
             ? <Botao cheio onClick={finalizarVenda} carregando={salvando}>Registrar venda</Botao>
-            : <Botao cheio onClick={proximaEtapa} disabled={etapa === 1 && itens.length === 0}>Continuar</Botao>}
+            : <Botao cheio className={faltaAgora && etapa > 1 ? 'nv3-apagado' : ''} onClick={proximaEtapa} disabled={etapa === 1 && itens.length === 0}>Continuar</Botao>}
           <Botao cheio variante="secundario" onClick={voltarEtapa} disabled={salvando}>{etapa === 1 ? 'Cancelar' : 'Voltar'}</Botao>
         </div>
+        {faltaPagamento && (
+          <p className="nv3-lado-ajuda"><Info size={18} weight="bold" aria-hidden="true" />Falta: {faltaPagamento}</p>
+        )}
         {faltasEntrega.length > 0 && (
           <p className="nv3-lado-ajuda"><Info size={18} weight="bold" aria-hidden="true" />Falta: {faltasEntrega.join(' e ')}</p>
         )}

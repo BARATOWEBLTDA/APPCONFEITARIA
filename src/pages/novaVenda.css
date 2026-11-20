@@ -366,3 +366,25 @@ button.nv3-tab-l:active .nv3-radio, .nv3-tab-outro.on .nv3-radio { border: 6px s
 /* (19/11) Nova venda e Abrir o pedido lado a lado */
 .nv3-ok-par { display: flex; gap: 8px; }
 .nv3-ok-par .ui-bt { flex: 1 1 0; min-width: 0; white-space: nowrap; padding-left: 8px; padding-right: 8px; }
+
+/* (20/11) computador: passos no topo, "Escolher da lista" no canto, lápis no resumo e "Continuar" apagado enquanto falta algo */
+.nv3-passos, .nv3-lista-pc, .nv3-lado-ed { display: none; }
+@media (min-width: 901px) {
+  .nv3-passos { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; padding: 0; list-style: none; font-size: 13.5px; font-weight: 500; color: var(--ui-texto-3); white-space: nowrap; }
+  .nv3-passos li { display: flex; align-items: center; gap: 10px; }
+  .nv3-passos li + li::before { content: ""; width: 40px; height: 1px; background: var(--ui-borda); }
+  .nv3-passos li > span, .nv3-passos li > button { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; }
+  .nv3-passos li > button { cursor: pointer; border-radius: 8px; }
+  .nv3-passos li > button:hover { color: var(--ui-texto); }
+  .nv3-passos li > button:focus-visible { outline: 3px solid rgba(var(--ui-rosa-rgb), .45); outline-offset: 3px; }
+  .nv3-passos i { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 1px solid var(--ui-borda); border-radius: 50%; background: var(--ui-branco); font-style: normal; font-size: 12.5px; color: var(--ui-texto-2); }
+  .nv3-passos .feito { color: var(--ui-texto-2); } .nv3-passos .feito i { background: #F0EEEF; border-color: #F0EEEF; color: var(--ui-texto); }
+  .nv3-passos .agora { color: var(--ui-texto); } .nv3-passos .agora i { background: var(--ui-escolha, #3B3236); border-color: var(--ui-escolha, #3B3236); color: #fff; }
+  .nv3-card--rel { position: relative; }
+  .nv3-lista-pc { position: absolute; top: 12px; right: 16px; display: inline-flex; align-items: center; gap: 6px; height: 36px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); font: 500 13.5px var(--font-base); color: var(--ui-texto); cursor: pointer; }
+  .nv3-lista-pc:hover { background: #FAF7F8; }
+  .nv3-lista-cel { display: none !important; }
+  .nv3-lado-ed { display: inline-flex; align-items: center; justify-content: center; vertical-align: -3px; width: 22px; height: 22px; margin: 0 -4px 0 4px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--ui-texto-3); cursor: pointer; }
+  .nv3-lado-ed:hover { background: #F0EEEF; color: var(--ui-texto); }
+  .ui-bt.nv3-apagado { opacity: .45; box-shadow: none; }
+}
