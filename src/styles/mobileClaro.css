@@ -96,7 +96,6 @@ html body .fd-res .fd-var + .fd-leg { margin-top: 12px; }
 @media (max-width: 400px) { html body .fd-per-chips button { padding: 0 4px !important; font-size: 14px !important; } }
 
 /* (31/10 · 5.84) toques pequenos ganham área de 44 px sem mudar o desenho: chave "Pausar os pedidos" e os links de texto */
-.clc-chave::after { content: ""; position: absolute; inset: -8px -4px; }
 .tpd-cli-perfil, .fap-mostrando button, .ap-exp button { position: relative; }
 .tpd-cli-perfil::after, .fap-mostrando button::after, .ap-exp button::after { content: ""; position: absolute; inset: -12px -6px; }
 

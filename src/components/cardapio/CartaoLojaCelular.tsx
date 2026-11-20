@@ -95,18 +95,15 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
   };
 
   const tom = pausada ? "pausa" : sit && !sit.aberto ? "fechado" : "aberto";
-  const titulo = pausada ? "Pedidos pausados" : sit && !sit.aberto ? "Fechado agora" : "Recebendo pedidos";
-  const sub = pausada ? "O cardápio avisa os clientes" : sit ? sit.txt.replace(/^Aberto agora · /, "Aberto · ").replace(/^Fechado · /, "").replace(/^./, c => c.toUpperCase()) : "Toque na chave para pausar";
+  const linha = pausada ? "Pedidos pausados" : sit ? sit.txt.replace(/^Aberto agora · fecha às /, "Aberto · fecha ").replace(" hoje às ", " ").replace(" às ", " ") : "Recebendo pedidos";
   const nome = (profile.nome_loja || "Minha loja").trim();
   const iniciais = nome.split(/\s+/).slice(0, 2).map(p => p.charAt(0).toUpperCase()).join("");
   const foto = fotoDaLoja(profile as PerfilLoja);
-  const linkCurto = link.replace(/^https?:\/\/(www\.)?/, "");
 
   const travado = liberado === false;
   // enquanto não sabe se está liberado, não mostra nenhum dos dois cartões
   if (liberado === null) return null;
   const faltando = passos ? ORDEM_PASSOS.filter(k => !passos[k]) : [];
-  const proximo = faltando[0];
   const feitos = ORDEM_PASSOS.length - faltando.length;
   // o produto abre a tela de Produtos; os outros abrem a janelinha do passo no Início
   // (10/11) vai pro Início e mostra o balão em volta do passo da vez (o checklist de verdade fica lá)
@@ -134,62 +131,57 @@ export default function CartaoLojaCelular({ link }: { link: string }) {
       <style>{CSS}</style>
     </button>
   );
+  // (20/11) cartão branco e mais baixo: a situação fica embaixo do nome e a chave virou um botão com nome
   return (
-    <section className={`clc${travado ? " clc--travado" : ""}`} aria-label="Seu cardápio">
-      <div className="clc-loja">
+    <section className="clc" aria-label="Seu cardápio">
+      <div className="clc-topo">
         <span className="clc-logo" aria-hidden="true">{foto ? <img src={foto} alt="" /> : iniciais}</span>
-        <span className="clc-nome"><b>{nome}</b><small>{linkCurto}</small></span>
+        <span className="clc-nome"><b>{nome}</b><small className={`clc-st clc-st--${tom}`}><i aria-hidden="true" /><span>{linha}</span></small></span>
+        <button type="button" className="clc-pausa" disabled={salvando} onClick={alternar} aria-label={pausada ? "Voltar a receber pedidos" : "Pausar os pedidos"}>
+          {pausada ? <><span className="clc-l">Voltar a receber</span><span className="clc-c">Reabrir</span></> : <><span className="clc-l">Pausar pedidos</span><span className="clc-c">Pausar</span></>}
+        </button>
       </div>
-      {travado ? (
-        <>
-          <div className="clc-prog">
-            <div className="clc-prog-l1">
-              <b>{faltando.length === 1 ? "Falta 1 passo pra liberar" : `Faltam ${faltando.length || ""} passos pra liberar`.replace("  ", " ")}</b>
-              {passos && <span>{feitos} de {ORDEM_PASSOS.length}</span>}
-            </div>
-            <div className="clc-barra" role="progressbar" aria-valuemin={0} aria-valuemax={ORDEM_PASSOS.length} aria-valuenow={feitos} aria-label={`${feitos} de ${ORDEM_PASSOS.length} passos feitos`}><i style={{ width: `${(feitos / ORDEM_PASSOS.length) * 100}%` }} /></div>
-            <small>Depois disso o cardápio já recebe pedidos</small>
-          </div>
-          <button type="button" className="clc-enviar" onClick={irPara}>
-            {proximo ? `Próximo: ${ROTULO_PASSO[proximo]}` : "Configurar a loja"}<ArrowRight size={17} weight="bold" aria-hidden="true" />
-          </button>
-        </>
-      ) : (<>
-      <div className="clc-sit">
-        <span className={`clc-st clc-st--${tom}`}><b><i aria-hidden="true" />{titulo}</b><small>{sub}</small></span>
-        <button type="button" role="switch" aria-checked={!pausada} aria-label={pausada ? "Abrir a loja" : "Pausar os pedidos"}
-          className="clc-chave" disabled={salvando} onClick={alternar}><span /></button>
+      <button type="button" className="clc-enviar" onClick={compartilhar}><ShareNetwork size={19} weight="bold" aria-hidden="true" />Divulgar meu cardápio</button>
+      <div className="clc-bts">
+        <button type="button" className="clc-b" onClick={copiar}><Copy size={16} aria-hidden="true" /><span className="clc-l2">Copiar link</span><span className="clc-c2">Copiar</span></button>
+        <button type="button" className="clc-b" onClick={() => navigate("/cardapio-preview")}><Eye size={16} aria-hidden="true" /><span>Ver</span></button>
+        <button type="button" className="clc-b" onClick={baixarQr} disabled={!qr}><QrCode size={16} aria-hidden="true" /><span>QR Code</span></button>
       </div>
-      <button type="button" className="clc-enviar" onClick={compartilhar}><ShareNetwork size={20} weight="bold" aria-hidden="true" />Enviar meu cardápio</button>
-      </>)}
-      {!travado && <div className="clc-bts">
-        <button type="button" className="clc-b" onClick={copiar}><Copy size={17} weight="bold" aria-hidden="true" /><span>Copiar</span></button>
-        <button type="button" className="clc-b" onClick={() => navigate("/cardapio-preview")}><Eye size={17} weight="bold" aria-hidden="true" /><span>Ver</span></button>
-        <button type="button" className="clc-b" onClick={baixarQr} disabled={!qr}><QrCode size={17} weight="bold" aria-hidden="true" /><span>QR Code</span></button>
-      </div>}
       <style>{CSS}</style>
     </section>
   );
 }
 
 const CSS = `
-  .clc { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--ui-raio-cartao, 18px); color: var(--ui-branco);
-    background: radial-gradient(120% 90% at 100% 0%, rgba(122, 38, 64, .75), rgba(122, 38, 64, 0) 60%), linear-gradient(160deg, #3A2219, var(--ui-vinho-escuro, #22130E));
-    box-shadow: 0 12px 26px -14px rgba(34, 19, 14, .8); font-family: var(--font-base); text-align: left; }
-  .clc-loja { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .clc-logo { flex: none; width: 52px; height: 52px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #fff; box-shadow: 0 0 0 2px #F7C6D9; color: #8A3A2E; font-size: 17px; font-weight: 600; }
+  .clc { display: flex; flex-direction: column; gap: 12px; padding: 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao, 16px); background: var(--ui-branco); color: var(--ui-texto); font-family: var(--font-base); text-align: left; }
+  .clc-topo { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .clc-logo { flex: none; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--ui-cinza); color: var(--ui-cinza-texto); font-size: 14px; font-weight: 500; }
   .clc-logo img { width: 100%; height: 100%; object-fit: cover; }
-  .clc-nome { min-width: 0; display: flex; flex-direction: column; }
-  .clc-nome b { font-size: 17px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .clc-nome small { font-size: 12.5px; color: rgba(255, 255, 255, .7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .clc-sit { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
-  .clc-st { min-width: 0; display: flex; flex-direction: column; }
-  .clc-st b { display: flex; align-items: center; gap: 7px; font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .clc-st small { padding-left: 15px; font-size: 12.5px; color: rgba(255, 255, 255, .72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .clc-st i { flex: none; width: 8px; height: 8px; border-radius: 50%; }
-  .clc-st--aberto b { color: #86EFAC; } .clc-st--aberto i { background: #4ADE80; animation: clcPisca 1.6s ease-in-out infinite; }
-  .clc-st--fechado b { color: #FCD34D; } .clc-st--fechado i { background: #FBBF24; }
-  .clc-st--pausa b { color: #FCA5A5; } .clc-st--pausa i { background: #F87171; }
+  .clc-nome { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .clc-nome b { font-size: 15.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clc-st { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; white-space: nowrap; }
+  .clc-st span { overflow: hidden; text-overflow: ellipsis; }
+  .clc-st i { flex: none; width: 7px; height: 7px; border-radius: 50%; }
+  .clc-st--aberto { color: #15803D; } .clc-st--aberto i { background: #22C55E; animation: clcPisca 1.6s ease-in-out infinite; }
+  .clc-st--fechado { color: #B45309; } .clc-st--fechado i { background: #F59E0B; }
+  .clc-st--pausa { color: #B91C1C; } .clc-st--pausa i { background: #EF4444; }
+  @keyframes clcPisca { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  .clc-pausa { position: relative; flex: none; height: 34px; margin: 0; padding: 0 12px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); color: var(--ui-cinza-texto); font: 500 13px var(--font-base); white-space: nowrap; cursor: pointer; }
+  .clc-pausa::after { content: ""; position: absolute; inset: -5px 0; }
+  .clc-pausa:disabled { opacity: .6; }
+  .clc-c, .clc-c2 { display: none; }
+  @media (max-width: 430px) { .clc-l { display: none; } .clc-c { display: inline; } }
+  /* (20/11) o único botão da tela que traz venda: degradê rosa com um brilho que passa devagar */
+  .clc-enviar { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; margin: 0; border: 0; border-radius: var(--ui-raio-botao, 13px); background: linear-gradient(100deg, var(--ui-rosa-botao, #CC2E66), #E4558B 55%, var(--ui-rosa-botao, #CC2E66)); color: #fff; font: 500 15px var(--font-base); white-space: nowrap; cursor: pointer; }
+  .clc-enviar::after { content: ""; position: absolute; top: 0; bottom: 0; left: -45%; width: 30%; background: linear-gradient(100deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .26), rgba(255, 255, 255, 0)); transform: skewX(-18deg); animation: clcBrilho 5s ease-in-out infinite; pointer-events: none; }
+  @keyframes clcBrilho { 0%, 72% { left: -45%; } 100% { left: 120%; } }
+  .clc-bts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: -4px; }
+  .clc-b { position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; height: 36px; margin: 0; padding: 0 4px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); color: var(--ui-cinza-texto); font: 500 13px var(--font-base); white-space: nowrap; cursor: pointer; }
+  .clc-b::after { content: ""; position: absolute; inset: -4px 0; }
+  .clc-b span { overflow: hidden; text-overflow: ellipsis; }
+  .clc-b:disabled { opacity: .5; }
+  @media (max-width: 380px) { .clc-l2 { display: none; } .clc-c2 { display: inline; } .clc-bts { gap: 6px; } .clc-b { gap: 4px; font-size: 12.5px; } }
+  @media (prefers-reduced-motion: reduce) { .clc-st--aberto i, .clc-enviar::after { animation: none; } .clc-enviar::after { display: none; } }
   .clc-atalho { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; padding: 10px 14px 10px 10px; border: 1px solid #ECE7E9; border-radius: 16px; background: var(--ui-branco, #fff); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .clc-atalho-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ui-branco); color: var(--ui-rosa-botao, #CC2E66); box-shadow: inset 0 0 0 1px #ECE7E9; }
   /* (19/11) borda em degradê que anda devagar: é o que mais importa na tela enquanto a loja não abre */
@@ -202,28 +194,4 @@ const CSS = `
   .clc-atalho-tx b { font-size: 15px; font-weight: 500; }
   .clc-atalho-tx small { font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .clc-atalho > svg { flex: none; color: var(--ui-rosa-botao, #CC2E66); }
-  /* (10/11) cardápio bloqueado: quanto falta (barra) e o botão do próximo passo */
-  .clc-prog { padding: 12px; border-radius: 14px; background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
-  .clc-prog-l1 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .clc-prog-l1 b { min-width: 0; font-size: 14.5px; font-weight: 500; color: #FCD34D; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .clc-prog-l1 span { flex: none; font-size: 12.5px; color: rgba(255, 255, 255, .72); }
-  .clc-barra { height: 6px; margin: 9px 0 7px; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, .14); }
-  .clc-barra i { display: block; height: 100%; border-radius: inherit; background: #FCD34D; transition: width .3s ease-out; }
-  .clc-prog small { display: block; font-size: 12.5px; color: rgba(255, 255, 255, .72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .clc--travado .clc-enviar { font-weight: 500; font-size: 15px; }
-  @keyframes clcPisca { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-  .clc-chave { flex: none; position: relative; width: 48px; height: 28px; margin: 0; padding: 0; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .22); cursor: pointer; transition: background-color .15s linear; }
-  .clc-chave span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .15s ease-out; }
-  .clc-chave[aria-checked="true"] { background: #15803D; }
-  .clc-chave[aria-checked="true"] span { transform: translateX(20px); }
-  .clc-chave:disabled { opacity: .6; }
-  .clc-chave:focus-visible { outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 2px; }
-  .clc-enviar { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; margin: 0; border: 0; border-radius: 14px; background: var(--ui-branco); color: var(--ui-texto); font: 600 15.5px var(--font-base); white-space: nowrap; cursor: pointer; }
-  .clc-enviar svg { color: var(--ui-rosa, #E85A8C); }
-  .clc-bts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .clc-b { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; padding: 0 6px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, .1); color: var(--ui-branco); font: 500 13.5px var(--font-base); white-space: nowrap; cursor: pointer; }
-  .clc-b span { overflow: hidden; text-overflow: ellipsis; }
-  .clc-b:disabled { opacity: .5; }
-  @media (max-width: 380px) { .clc { padding: 14px; } .clc-bts { gap: 6px; } .clc-b { gap: 4px; padding: 0 2px; font-size: 13px; } }
-  @media (prefers-reduced-motion: reduce) { .clc-st--aberto i { animation: none; } }
 `;
