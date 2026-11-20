@@ -241,3 +241,20 @@
 /* (6.140) sem produto: o Doo pensando com a caixa no lugar do ícone do bolo */
 .pd-sem-produto .ui-vazia-ic { width: auto; height: auto; margin-bottom: 4px; border-radius: 0; background: none; box-shadow: none; }
 .pd-sem-produto .ui-vazia-ic img { display: block; width: 180px; height: auto; }
+
+/* (20/11) celular: três abas com linha em cima, embaixo e entre elas */
+.pdk-abas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; border-top: 1px solid var(--ui-borda); border-bottom: 1px solid var(--ui-borda); }
+.pdk-aba { flex: none; min-width: 0; margin: 0; padding: 0 4px; border-bottom: 0; font-weight: 400; white-space: nowrap; }
+.pdk-aba + .pdk-aba { border-left: 1px solid var(--ui-borda); }
+.pdk-aba[aria-selected="true"] { font-weight: 500; box-shadow: inset 0 -2px 0 var(--ui-texto); }
+/* (20/11) lista sem pedido para fazer: bolinha verde piscando */
+.pdk-espera { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 56px 16px; text-align: center; }
+.pdk-espera-luz { position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-bottom: 8px; }
+.pdk-espera-luz i { width: 14px; height: 14px; border-radius: 50%; background: #22C55E; }
+.pdk-espera-luz::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: rgba(34, 197, 94, .28); animation: pdkOnda 1.8s ease-out infinite; }
+@keyframes pdkOnda { 0% { transform: scale(.32); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+.pdk-espera b { font-size: 16px; font-weight: 500; color: var(--ui-texto); }
+.pdk-espera p { margin: 0; font-size: 13.5px; color: var(--ui-texto-2); }
+.pdk-espera.off .pdk-espera-luz i { background: #A8A0A4; }
+.pdk-espera.off .pdk-espera-luz::before { display: none; }
+@media (prefers-reduced-motion: reduce) { .pdk-espera-luz::before { animation: none; opacity: .6; transform: scale(.7); } }

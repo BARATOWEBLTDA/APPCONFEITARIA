@@ -40,15 +40,32 @@ import '@/components/pedidos/pedidos.css'
  * (3.14) Pedidos pra aceitar ficam no topo, em destaque. Toda mudança de situação mostra um aviso curto; entregue também toca um som.
  */
 const MEDIDA_COMPUTADOR = '(min-width: 901px)'
-type Sit = 'aceitar' | 'agenda' | 'prontos' | 'concluidos'
-const SITS: { k: Sit; nome: string; curto?: string }[] = [
-  { k: 'aceitar', nome: 'Para aceitar', curto: 'Novos' }, { k: 'agenda', nome: 'Agendados' }, { k: 'prontos', nome: 'Prontos' }, { k: 'concluidos', nome: 'Concluídos' },
+// (20/11) três abas no celular: "A fazer" junta os novos e os agendados
+type Sit = 'fazer' | 'prontos' | 'concluidos'
+const SITS: { k: Sit; nome: string }[] = [
+  { k: 'fazer', nome: 'A fazer' }, { k: 'prontos', nome: 'Prontos' }, { k: 'concluidos', nome: 'Concluídos' },
 ]
 /** Em que aba do celular o pedido fica: em produção fica em Agendados; esperando o Pix fica em Novos (6.04) */
 /** (6.04) pedido do cardápio esperando o Pix: é pedido novo (o Início e o número no menu contam junto com os pra aceitar) */
 const esperaPix = (p: Pedido) => grupoDoStatus(p.status) === 'aguardando_pagamento'
-const sitDe = (p: Pedido): Sit => terminou(p) ? 'concluidos' : precisaAceitar(p) || esperaPix(p) ? 'aceitar'
-  : ['finalizado', 'aguardando_retirada', 'em_entrega'].includes(grupoDoStatus(p.status)) ? 'prontos' : 'agenda'
+const sitDe = (p: Pedido): Sit => terminou(p) ? 'concluidos'
+  : ['finalizado', 'aguardando_retirada', 'em_entrega'].includes(grupoDoStatus(p.status)) ? 'prontos' : 'fazer'
+/** (20/11) celular sem pedido para fazer: mostra que a tela está viva e atualizando (ideia do Bruno), sem botão de compartilhar */
+function Aguardando() {
+  const [online, setOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine !== false)
+  useEffect(() => {
+    const on = () => setOnline(true), off = () => setOnline(false)
+    window.addEventListener('online', on); window.addEventListener('offline', off)
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) }
+  }, [])
+  return (
+    <div className={`pdk-espera${online ? '' : ' off'}`} role="status">
+      <span className="pdk-espera-luz" aria-hidden="true"><i /></span>
+      <b>{online ? 'Aguardando pedidos' : 'Sem internet'}</b>
+      <p>{online ? 'Atualiza sozinho a cada minuto' : 'Os pedidos voltam a aparecer quando a conexão voltar'}</p>
+    </div>
+  )
+}
 const MEDIDA_TABLET = '(min-width: 768px)'
 
 /**
@@ -101,7 +118,7 @@ export default function Pedidos() {
   const [filtroAtrasados, setFiltroAtrasados] = useState(params.get('filtro') === 'atrasados')
 
   // (22/10) celular: abas por situação (Pra aceitar, Agendados, Prontos, Concluídos). null = escolhe sozinho
-  const [sit, setSit] = useState<Sit | null>(params.get('filtro') === 'aguardando' ? 'aceitar' : null)
+  const [sit, setSit] = useState<Sit | null>(params.get('filtro') === 'aguardando' ? 'fazer' : null)
   const [busca, setBusca] = useState('')
   const [aba, setAba] = useState<'encomenda' | 'pronta_entrega'>('encomenda')
   const [modo, setModo] = useState<'lista' | 'quadro'>('lista')
@@ -559,17 +576,20 @@ export default function Pedidos() {
       g.sort((a, b) => Number(b.chave === 'c-hoje') - Number(a.chave === 'c-hoje'))
     }
     if (fimFora > 0) g.push({ chave: 'antigos', titulo: 'Ver mais antigos', itens: [] })
+    // (20/11) celular: o atrasado vem logo depois dos pedidos novos, antes de tudo o que está em dia
+    if (cel) { const i = g.findIndex(x => x.chave === 'atrasado'); if (i > 0) { const [atr] = g.splice(i, 1); const j = g.findIndex(x => x.chave !== 'aceitar' && x.chave !== 'pix'); g.splice(j < 0 ? g.length : j, 0, atr) } }
     return g
   }, [hoje, abreTudo, verDepois, diasConcluidos])
   const grupos = useMemo(() => agrupar(pedidosFiltrados), [agrupar, pedidosFiltrados])
   // celular: quantos em cada aba, a aba escolhida (ou a primeira com pedido) e os grupos dela
   const nSit = useMemo(() => {
-    const n: Record<Sit, number> = { aceitar: 0, agenda: 0, prontos: 0, concluidos: 0 }
+    const n: Record<Sit, number> = { fazer: 0, prontos: 0, concluidos: 0 }
     // (6.03) Concluídos mostra só os entregues de hoje: o total de sempre só cresce e não diz nada
     pedidosFiltrados.forEach(p => { const s = sitDe(p); if (s !== 'concluidos') n[s]++; else if (grupoDoStatus(p.status) === 'entregue' && String(p.data_entrega || '').slice(0, 10) === hoje) n.concluidos++ })
     return n
   }, [pedidosFiltrados, hoje])
-  const sitAtual: Sit = sit ?? (nSit.aceitar > 0 ? 'aceitar' : nSit.agenda > 0 || nSit.prontos === 0 ? 'agenda' : 'prontos')
+  const nNovos = useMemo(() => pedidosFiltrados.filter(p => !terminou(p) && (precisaAceitar(p) || esperaPix(p))).length, [pedidosFiltrados])
+  const sitAtual: Sit = sit ?? (nSit.fazer > 0 || nSit.prontos === 0 ? 'fazer' : 'prontos')
   const gruposCel = useMemo(() => agrupar(pedidosFiltrados.filter(p => sitDe(p) === sitAtual), true), [agrupar, pedidosFiltrados, sitAtual])
   // (6.09) celular: buscou ou filtrou e a aba aberta ficou vazia? vai pra primeira aba que tem o resultado
   // (antes o filtro achava o pedido, mas ele ficava escondido em outra aba)
@@ -579,7 +599,7 @@ export default function Pedidos() {
     const antes = filtroAntes.current
     filtroAntes.current = agora
     if (computador || antes === null || antes === agora) return
-    const n: Record<Sit, number> = { aceitar: 0, agenda: 0, prontos: 0, concluidos: 0 }
+    const n: Record<Sit, number> = { fazer: 0, prontos: 0, concluidos: 0 }
     pedidosFiltrados.forEach(p => { n[sitDe(p)]++ })
     if (n[sitAtual] > 0) return
     const alvo = SITS.find(t => n[t.k] > 0)
@@ -677,8 +697,8 @@ export default function Pedidos() {
             {!computador && !quadro && !filtroAtrasados && pedidos.length > 0 && (
               <div className="pdk-abas" role="tablist" aria-label="Situação dos pedidos">
                 {SITS.map(t => (
-                  <button key={t.k} type="button" role="tab" aria-selected={sitAtual === t.k} className={`pdk-aba${t.k === 'aceitar' && nSit.aceitar > 0 ? ' alerta' : ''}`} onClick={() => { setSit(t.k); window.scrollTo(0, 0) }}>
-                    <span className="pdk-aba-t">{t.curto ? <><span className="pdk-aba-l">{t.nome}</span><span className="pdk-aba-c">{t.curto}</span></> : t.nome}</span>{nSit[t.k] > 0 && <i>{nSit[t.k]}</i>}
+                  <button key={t.k} type="button" role="tab" aria-selected={sitAtual === t.k} className={`pdk-aba${t.k === 'fazer' && nNovos > 0 ? ' alerta' : ''}`} onClick={() => { setSit(t.k); window.scrollTo(0, 0) }}>
+                    <span className="pdk-aba-t">{t.nome}</span>{nSit[t.k] > 0 && <i>{nSit[t.k]}</i>}
                   </button>
                 ))}
               </div>
@@ -695,6 +715,7 @@ export default function Pedidos() {
             )}
 
             {pedidos.length === 0 ? (
+              !computador && cardapioLiberado !== false ? <Aguardando /> :
               <TelaVazia icone={<Receipt size={30} />} titulo="Nenhum pedido ainda" texto="Quando chegar uma encomenda, ela aparece aqui."
                 acao={cardapioLiberado === false
                   ? <Botao variante="link" onClick={() => { try { sessionStorage.setItem('doonly_pp_balao', '1') } catch { /* sem sessionStorage */ } navigate('/inicio') }}>Liberar meu cardápio</Botao>
@@ -709,8 +730,8 @@ export default function Pedidos() {
             ) : !computador ? (
               /* (22/10) celular: a aba da situação, em linhas compactas; dentro de Agendados e Prontos, separado por dia */
               gruposCel.length === 0 ? (
-                <TelaVazia icone={<Receipt size={30} />} titulo={sitAtual === 'aceitar' ? 'Nenhum pedido para aceitar' : sitAtual === 'prontos' ? 'Nenhum pedido pronto' : sitAtual === 'concluidos' ? 'Nenhum pedido concluído' : 'Nenhum pedido agendado'}
-                  texto={sitAtual === 'aceitar' ? 'Os pedidos do cardápio aparecem aqui para você aceitar.' : 'Quando tiver, eles aparecem aqui.'} />
+                sitAtual === 'fazer' ? <Aguardando /> :
+                <TelaVazia icone={<Receipt size={30} />} titulo={sitAtual === 'prontos' ? 'Nenhum pedido pronto' : 'Nenhum pedido concluído'} texto="Quando tiver, eles aparecem aqui." />
               ) : (
               <div className="pd-grupos pdk-grupos">
                 {gruposCel.map(g => {

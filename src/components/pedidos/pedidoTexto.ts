@@ -96,8 +96,9 @@ export function situacaoDe(p: Pedido): { nome: string; tom?: Tom } {
  * Pedido de retirada que já está em "Pronto" (antigo) segue direto pra Entregar.
  */
 export const VERBOS = {
-  receber: 'Recebi', aceitar: 'Aceitar', produzir: 'Produzir', pronto: 'Finalizar',
-  saiu: 'Enviar', entregue: 'Entregar', retirado: 'Entregar',
+  // (20/11) nomes que dizem o que aconteceu: "Ficou pronto", "Saiu para entrega" e "Cliente retirou"
+  receber: 'Recebi', aceitar: 'Aceitar', produzir: 'Produzir', pronto: 'Ficou pronto',
+  saiu: 'Saiu para entrega', entregue: 'Entregar', retirado: 'Cliente retirou',
 } as const
 export function proximoPasso(status: string, tipoEntrega?: string | null, origem?: string | null): { rotulo: string; proximo: string; pago?: boolean } | null {
   const g = grupoDoStatus(status)
