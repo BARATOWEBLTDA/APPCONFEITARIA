@@ -56,7 +56,7 @@ export default function CustosDoMes({ recebido, fixos, mostrarVazio = false, com
         <div className="cdm-tx">
           <small>Custos fixos pagos este mês</small>
           <b>{pago}%</b>
-          <span>o esperado até hoje era {esperado}%</span>
+          {!vazio && <span>o esperado até hoje era {esperado}%</span>}
         </div>
       </div>
       <p className="cdm-p">

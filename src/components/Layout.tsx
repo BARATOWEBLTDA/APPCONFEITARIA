@@ -137,7 +137,7 @@ export default function Layout() {
   const [recolhido, setRecolhido] = useState(() => { try { return localStorage.getItem("doonly_menu_recolhido") === "1"; } catch { return false; } });
   const alternarRecolhido = () => setRecolhido(r => { const n = !r; try { localStorage.setItem("doonly_menu_recolhido", n ? "1" : "0"); } catch { /* sem localStorage: só não lembra */ } return n; });
   useEffect(() => {
-    document.documentElement.style.setProperty("--sidebar-w", recolhido ? "72px" : "236px");
+    document.documentElement.style.setProperty("--sidebar-w", recolhido ? "72px" : "252px");
   }, [recolhido]);
   // classe do app da confeiteira (cores do texto em index.css)
   useEffect(() => {
@@ -548,7 +548,7 @@ export default function Layout() {
 
         /* (07/10 · 2.95) Menu lateral no padrão do guia: itens de 44px, ícone de 20px (cheio e rosa na tela atual),
            foco visível pelo teclado e fundo vinho (o grafite antigo saiu). */
-        .sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; min-height: 0; overflow-y: auto; margin-right: -8px; padding-right: 8px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.22) transparent; }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; margin-right: -8px; padding-right: 8px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.22) transparent; }
         /* (10/10) Sombra no fim do menu: avisa que tem mais itens para baixo quando a tela é baixa */
         .sidebar-nav::after { content: ""; position: sticky; bottom: 0; flex-shrink: 0; min-height: 28px; margin-top: -28px; background: linear-gradient(to bottom, transparent, var(--sidebar-bg)); pointer-events: none; }
         @media (max-height: 820px) {
