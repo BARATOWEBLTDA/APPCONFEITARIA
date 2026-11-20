@@ -2846,7 +2846,7 @@ export default function Produtos() {
                         </span>
                         <span>
                           <div className="prod-preview-menu-title">Ficha técnica (PDF)</div>
-                          <div className="prod-preview-menu-sub">Baixa o PDF completo do produto</div>
+                          <div className="prod-preview-menu-sub">Baixa o PDF do produto</div>
                         </span>
                       </button>
                       <button
@@ -2887,7 +2887,7 @@ export default function Produtos() {
                         </span>
                         <span>
                           <div className="prod-preview-menu-title">Duplicar</div>
-                          <div className="prod-preview-menu-sub">Cria cópia idêntica (fica despublicada)</div>
+                          <div className="prod-preview-menu-sub">Cria uma cópia fora do cardápio</div>
                         </span>
                       </button>
                       <button

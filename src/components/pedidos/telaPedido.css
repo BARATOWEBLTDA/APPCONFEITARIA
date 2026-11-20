@@ -442,6 +442,8 @@
 .tpd-pt.t-amarelo { background: #EAB308; }
 .tpd-qo-1, .tpd-adic-cel, .tpd-pix-nao { display: none; }
 .tpd-pix-nao { width: 100%; min-height: 44px; margin: 4px 0 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 13.5px; color: var(--ui-rosa-escuro); cursor: pointer; }
+/* (20/11) respiro entre a caixa do Pix e o resto dos pagamentos, quando ela toca em "Não recebi o Pix" */
+.ep2-pix + .ep2-vazio, .ep2-pix + .ep2-pg { margin-top: 12px; }
 /* janela Cancelar: motivos em botões iguais, dois por linha; cabe sem rolar */
 .tpj-txt--1 { margin-bottom: 12px; }
 .tpj-motivos2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 8px; }

@@ -704,7 +704,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
 
       {kitCfg && (
         <section ref={el => { secoes.current['kit'] = el }} className={`pm-g${faltou === 'kit' ? ' falta' : ''}`}>
-          <header className="pm-g-cab"><span><b>{kitCfg.modo === 'livre' ? 'Quantidade e sabores' : 'Monte o seu kit'}</b><small>{faltou === 'kit' ? 'Complete o kit para continuar' : `Até ${kitCfg.max_sabores || 1} ${(kitCfg.max_sabores || 1) === 1 ? 'sabor' : 'sabores'}, de ${Math.max(1, kitCfg.passo_sabor || 1)} em ${Math.max(1, kitCfg.passo_sabor || 1)}`}</small></span>
+          <header className="pm-g-cab"><span><b>{kitCfg.modo === 'livre' ? 'Quantidade e sabores' : 'Monte o seu kit'}</b><small>{faltou === 'kit' ? 'Complete o kit para continuar' : (kitCfg.max_sabores || 1) === 1 ? 'Escolha um sabor' : `Até ${kitCfg.max_sabores} sabores${(kitCfg.passo_sabor || 0) > 1 ? `, de ${kitCfg.passo_sabor} em ${kitCfg.passo_sabor}` : ''}`}</small></span>
             {/* (21/10) "Obrigatório" discreto no kit: o botão de baixo já não deixa avançar sem montar */}
             <span className="pm-g-dir">{kitInfo?.completo ? <i className="pm-ok"><Check size={14} weight="bold" /></i> : <i className="pm-obr pm-obr--leve">Obrigatório</i>}</span></header>
           <div className="pm-kit"><KitPicker kit={kitCfg} sel={kitSel} onChange={setKitSel} desconto={descPct} /></div>

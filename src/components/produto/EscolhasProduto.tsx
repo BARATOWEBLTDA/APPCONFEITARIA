@@ -181,7 +181,10 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
 
   const ligar = (c: Chave) => {
     if (c === "quantidade") {
-      onKitChange({ ...presetKit(tipo === "salgados" || /salgad/.test(norm(form.categoria)) ? "salgados" : "docinhos", kit), ativo: true });
+      { // (20/11) o kit também começa vazio: uma linha em branco pra ela digitar, sem 50 e 100 prontos
+        const base = presetKit(tipo === "salgados" || /salgad/.test(norm(form.categoria)) ? "salgados" : "docinhos", kit);
+        onKitChange({ ...base, kits: base.modo === "fechado" ? [{ id: Math.random().toString(36).slice(2, 10), qtd: 0, preco: 0 }] : base.kits, ativo: true });
+      }
     } else if (c === "tamanho") {
       setForm(f => ({ ...f, grupo_tamanhos: { ...(f.grupo_tamanhos || {}), ativo: true, min: 1, max: 1, distribuicao: "nenhuma",
         // (20/11) começa vazio: ela digita os tamanhos (os modelos P·M·G e Aro ficam como atalho na tela)

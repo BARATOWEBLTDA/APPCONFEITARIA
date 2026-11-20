@@ -12,7 +12,8 @@ interface Props { kit: KitQtdConfig; sel: KitSelecao; onChange: (s: KitSelecao) 
 
 export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
   const c = calcularKit(kit, sel)
-  const passo = Math.max(1, kit.passo_sabor || 1)
+  // (20/11) sem "Mínimo por sabor": em kit de 20 ou mais o cliente soma de 5 em 5 (de 1 em 1 dava 100 toques num cento)
+  const passo = (kit.passo_sabor || 0) > 1 ? kit.passo_sabor : c.alvo >= 20 ? 5 : 1
   const kits = kitsValidos(kit)
   const l = kit.livre
   const pct = c.alvo > 0 ? Math.min(100, (c.soma / c.alvo) * 100) : 0
@@ -77,7 +78,7 @@ export default function KitPicker({ kit, sel, onChange, desconto = 0 }: Props) {
               <button type="button" aria-label={`Menos ${s.nome}`} disabled={q <= 0} onClick={() => setQtd(s.id, q - menos)}>−</button>
               <b>{q} un</b>
               {/* (21/10) o botão mostra de quanto ele soma */}
-              <button type="button" className="kp-mais" aria-label={`Mais ${mais > 0 ? mais : passo} de ${s.nome}`} disabled={!podeMais} onClick={() => setQtd(s.id, q + mais)}>+{mais > 0 ? mais : passo}</button>
+              <button type="button" className="kp-mais" aria-label={`Mais ${mais > 0 ? mais : umSo ? c.alvo : passo} de ${s.nome}`} disabled={!podeMais} onClick={() => setQtd(s.id, q + mais)}>+{mais > 0 ? mais : umSo ? c.alvo : passo}</button>
             </div>
           </div>
         )

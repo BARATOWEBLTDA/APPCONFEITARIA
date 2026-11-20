@@ -145,7 +145,7 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
       <Quadrados rotulo="Como você vende" valor={k.modo === "livre" ? "livre" : "fechado"} opcoes={[
         { v: "fechado", t: "Kits fechados", sub: "50 ou 100 unidades", Ic: Package },
         { v: "livre", t: "Quantidade livre", sub: "Cliente diz quantos", Ic: PlusMinus },
-      ]} onMudar={v => v === "livre" ? set({ modo: "livre", livre: { ...k.livre, max: Math.max(k.livre.max || 0, (k.livre.min || 0) * 10, 4000) } }) : set({ modo: "fechado", kits: k.kits.length ? k.kits : [{ id: novoId(), qtd: 50, preco: 0 }, { id: novoId(), qtd: 100, preco: 0 }] })} />
+      ]} onMudar={v => v === "livre" ? set({ modo: "livre", livre: { ...k.livre, max: Math.max(k.livre.max || 0, (k.livre.min || 0) * 10, 4000) } }) : set({ modo: "fechado", kits: k.kits.length ? k.kits : [{ id: novoId(), qtd: 0, preco: 0 }] })} />
       {k.modo === "fechado" ? (
         <>
           <ul className="kq-lista">
