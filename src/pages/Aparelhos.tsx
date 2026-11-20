@@ -20,7 +20,7 @@ const APARELHOS: Aparelho[] = [
   { id: "t820", nome: "Tablet (iPad)", l: 820, a: 1180, on: false, tipo: "tb" },
   { id: "pc", nome: "Computador", l: 1280, a: 800, on: false, tipo: "pc" },
 ];
-const ATALHOS: [string, string][] = [["Início", "/inicio"], ["Pedidos", "/pedidos"], ["Produtos", "/produtos"], ["Minha loja", "/cardapio"], ["Aparência", "/cardapio-design"]];
+const ATALHOS: [string, string][] = [["Início", "/inicio"], ["Pedidos", "/pedidos"], ["Produtos", "/produtos"], ["Minha loja", "/cardapio"], ["Aparência", "/cardapio-design"], ["Aparência nova", "/aparencia-nova"]];
 const CHAVE = "doonly-aparelhos-2";
 
 const limpa = (r: string) => {

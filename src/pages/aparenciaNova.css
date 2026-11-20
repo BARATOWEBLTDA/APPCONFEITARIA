@@ -1,0 +1,79 @@
+/* (20/11) Aparência nova, só no celular: o cardápio dentro de um celular claro, e as cores presas embaixo. */
+.apn { padding: 6px 16px 0; }
+.apn-cw { position: relative; }
+.apn-cw > i { position: absolute; width: 2.5px; border-radius: 2px; background: #D5CBD0; }
+.apn-b1 { left: -3.5px; top: 86px; height: 24px; } .apn-b2 { left: -3.5px; top: 120px; height: 42px; } .apn-b3 { right: -3.5px; top: 108px; height: 60px; }
+.apn-cel { position: relative; overflow: hidden; border: 5px solid #fff; border-bottom: 0; border-radius: 38px 38px 0 0; background: #F7F4F5; box-shadow: 0 0 0 1px #D5CBD0; padding-bottom: 112px; /* o último item rola até aparecer acima do painel de cores */ }
+.apn-topo-cel { background: #fff; }
+.apn-sb { position: relative; display: flex; align-items: center; justify-content: space-between; height: 26px; padding: 5px 24px 0; font-size: 12px; font-weight: 500; color: #2C1219; }
+.apn-ilha { position: absolute; left: 50%; top: 7px; width: 62px; height: 15px; margin-left: -31px; border-radius: 10px; background: #2C1219; }
+.apn-sbi { display: flex; align-items: center; gap: 4px; }
+/* o link, como barra de navegador */
+.apn-url { display: flex; align-items: center; gap: 6px; height: 38px; margin: 8px 10px 0; padding: 0 4px 0 11px; border-radius: 19px; background: var(--ui-cinza); }
+.apn-topo-cel { padding-bottom: 10px; }
+.apn-cad { flex: none; display: flex; color: var(--ui-texto-3); }
+.apn-url em { flex: 1; min-width: 0; font-style: normal; font-size: min(13px, 3.25vw); letter-spacing: -.1px; color: var(--ui-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.apn-url em b { font-weight: 500; color: var(--ui-rosa-escuro); }
+.apn-url button { flex: none; display: flex; align-items: center; justify-content: center; gap: 4px; width: 30px; height: 30px; margin: 0; padding: 0; border: 0; border-radius: 15px; background: #fff; color: var(--ui-cinza-texto); font: 500 12px var(--font-base); white-space: nowrap; cursor: pointer; }
+.apn-url .apn-up { width: auto; padding: 0 8px; }
+.apn-url .apn-up svg { color: #C99A2E; }
+/* botões redondos em cima das imagens (tirar e trocar) */
+.apn-rel { position: relative; }
+.apn-rb { position: absolute; z-index: 7; top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; width: 36px; height: 36px; margin: 0; padding: 0; border: 0; border-radius: 18px; background: rgba(255, 255, 255, .94); color: var(--ui-texto); box-shadow: 0 2px 8px rgba(44, 18, 25, .18); font: 500 13px var(--font-base); white-space: nowrap; cursor: pointer; }
+.apn-rb--e { left: 8px; } .apn-rb--d { right: 8px; }
+.apn-rb--tx { width: auto; padding: 0 12px; }
+.apn-rb:disabled { opacity: .6; }
+.apn-gira { position: absolute; z-index: 6; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, .55); }
+/* topo de verdade do cardápio */
+.apn-card.cm1-root { min-height: 0; background: none; }
+.apn .apn-conteudo { background: #F7F4F5; --cm1-fundo: #F7F4F5; padding-bottom: 6px; }
+.apn .apn-logo { display: flex; align-items: center; justify-content: center; margin: 0; overflow: hidden; font-family: inherit; cursor: pointer; }
+.apn .apn-logo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.apn .apn-logo > b { font-size: 38px; font-weight: 500; color: var(--ui-texto-2); }
+.apn-lc { position: absolute; z-index: 8; top: 20px; right: 14px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; background: var(--ui-rosa); color: #fff; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.apn-selo { display: inline-flex; margin-left: 6px; vertical-align: -3px; }
+.apn .apn-sobre { display: inline-flex; align-items: center; gap: 2px; font-weight: 600; }
+.apn .apn-desc { overflow-wrap: anywhere; }
+.apn-dp { display: inline-flex; vertical-align: -6px; width: 28px; height: 28px; margin: 0 0 0 2px; padding: 0; border: 1px solid var(--ui-borda); border-radius: 50%; background: #fff; color: var(--ui-texto); align-items: center; justify-content: center; cursor: pointer; }
+.apn-desc-vazia { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 40px; margin: 10px 0 0; padding: 0; border: 1.5px dashed var(--ui-borda-campo); border-radius: var(--ui-raio); background: #fff; color: var(--ui-texto); font: 400 14px var(--font-base); white-space: nowrap; cursor: pointer; }
+/* banner */
+.apn-banner { position: relative; overflow: hidden; margin: 10px 16px 0; border: 1px solid var(--ui-borda); border-radius: 12px; line-height: 0; }
+.apn-banner img { width: 100%; display: block; }
+.apn .apn-slot { display: flex; width: calc(100% - 32px); height: 76px; min-height: 0; margin: 10px 16px 0; gap: 2px; aspect-ratio: auto; border-radius: var(--ui-raio-cartao); color: var(--ui-texto); }
+.apn .apn-slot b { display: flex; align-items: center; gap: 6px; font-size: 14.5px; font-weight: 500; white-space: nowrap; }
+.apn .apn-slot small { font-size: 12.5px; white-space: nowrap; }
+/* produtos de exemplo: só ilustração */
+.apn-prod { pointer-events: none; margin-top: 8px; padding: 0 10px; }
+.apn-prod .ic-ln { cursor: default; }
+.apn-prod .ic-ln:first-child { border-top: 0; }
+.apn-ex { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 12px; color: #9A8E94; background: #F3EEF0; }
+/* cores: presas logo acima do menu de baixo */
+.apn-ctl { position: sticky; z-index: 20; bottom: calc(var(--apn-nav, 76px) + 8px); margin: -96px 0 0; overflow: hidden; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: #fff; box-shadow: 0 6px 20px rgba(44, 18, 25, .10); }
+.apn-abas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--ui-borda); }
+.apn-abas button { height: 40px; margin: 0; padding: 0; border: 0; background: #fff; color: var(--ui-texto-2); font: 400 13.5px var(--font-base); white-space: nowrap; cursor: pointer; }
+.apn-abas button + button { border-left: 1px solid var(--ui-borda); }
+.apn-abas button.on { color: var(--ui-texto); font-weight: 500; box-shadow: inset 0 -2px 0 var(--ui-texto); }
+.apn-cores { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; }
+.apn-cores > button { flex: none; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin: 0; padding: 0; border: 0; border-radius: 50%; color: #fff; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ui-borda); cursor: pointer; }
+.apn-cores > button.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ui-texto); }
+.apn-cores > .apn-mais { background: #fff; color: var(--ui-texto-2); box-shadow: none; border: 1.5px dashed var(--ui-borda-campo); }
+.apn-cores > .apn-mais.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ui-texto); }
+.apn-cores--g { justify-content: flex-start; gap: 8px; }
+.apn-cores > .apn-mc { flex: none; width: auto; height: 32px; min-height: 0; margin: 0 0 0 auto; padding: 0 8px; gap: 6px; border-radius: 10px; box-shadow: none; font-size: 13.5px; color: var(--ui-texto); white-space: nowrap; }
+.apn-dica { margin: -4px 0 0; padding: 0 14px 10px; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 380px) { .apn-cores--g > button { width: 28px; height: 28px; } .apn-cores > .apn-mc { font-size: 12.5px; gap: 5px; padding: 0 7px; } .apn-cores > .apn-mc span { padding: 2px 5px; font-size: 11px; } }
+@media (max-width: 350px) {
+  .apn { padding: 6px 10px 0; }
+  .apn-cores { padding: 12px 10px; } .apn-cores > button, .apn-cores--g > button { width: 25px; height: 25px; } .apn-cores--g { gap: 6px; }
+  .apn-cores > .apn-mc { gap: 4px; padding: 0 6px; font-size: 12px; } .apn-abas button { font-size: 12.5px; }
+  .apn-url { margin: 8px 8px 0; padding-left: 9px; gap: 5px; } .apn-url em { font-size: 10.5px; }
+  .apn .apn-slot { width: calc(100% - 20px); margin: 10px 10px 0; } .apn .apn-slot b { font-size: 13px; } .apn .apn-slot small { font-size: 12px; }
+  .apn-banner { margin: 10px 10px 0; }
+}
+/* janelas */
+.apn-picker { margin: 0; }
+.apn-ops { display: flex; flex-direction: column; gap: 8px; }
+.apn-ops button { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 12px; align-items: center; margin: 0; padding: 10px 12px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: #fff; text-align: left; font-family: var(--font-base); color: var(--ui-texto); cursor: pointer; }
+.apn-ops button > span { grid-row: 1 / 3; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--ui-borda); border-radius: 12px; background: #fff; color: var(--ui-texto); }
+.apn-ops button b { font-size: 15px; font-weight: 500; white-space: nowrap; }
+.apn-ops button small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; }

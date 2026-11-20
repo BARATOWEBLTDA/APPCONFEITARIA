@@ -22,6 +22,7 @@ import { lerBannersProntos, CATEGORIAS_BANNER, CATEGORIA_CAPA_NATAL, type Banner
 import { COR_BOTOES, PADRAO, PRONTAS, PRONTAS_PRO, corDoItem, topoEscurecido, type CampoCor } from "@/lib/coresCardapio";
 import NomeNoLink from "@/components/loja/NomeNoLink";
 import "./aparencia.css";
+import AparenciaCelular from "./AparenciaCelular";
 
 /**
  * Aparência do cardápio (08/10 · 3.25, no padrão do guia).
@@ -45,7 +46,11 @@ function ProSlot({ n }: { n: number }) {
 export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliacoesCard }: { identityCard?: React.ReactNode; avaliacoesCard?: React.ReactNode } = {}) {
   const navigate = useNavigate();
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
-  const voltarPara = (useLocation().state as { de?: string } | null)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
+  const local = useLocation();
+  const voltarPara = (local.state as { de?: string } | null)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
+  // (20/11) Aparência nova (só celular), por enquanto num endereço separado para conferir antes de trocar a de sempre
+  const nova = local.pathname === "/aparencia-nova" && typeof window !== "undefined" && window.matchMedia("(max-width: 899px)").matches; // no computador, o endereço abre a Aparência de sempre
+  const [descricao, setDescricao] = useState("");
   const [loading, setLoading] = useState(true);
   const [erroCarga, setErroCarga] = useState(false); // (27/10) leitura falhou: não abre com o padrão (gravaria por cima do que ela tinha)
   const [tentativaCarga, setTentativaCarga] = useState(0);
@@ -132,6 +137,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
         setHideStars(!!(data as PerfilDesign).hide_stars);
         setAvaliacaoMedia(Number((data as PerfilDesign).avaliacao_media) || 5.0);
         setNomeLoja(data.nome_loja || "");
+        setDescricao(String((data as { descricao_loja?: string | null }).descricao_loja || "").trim());
         try { const e: { cidade?: string } | null = typeof (data as PerfilDesign).endereco === "string" ? JSON.parse((data as PerfilDesign).endereco as string) : (data as PerfilDesign).endereco as { cidade?: string } | null; setCidade(String(e?.cidade || "").trim()); } catch { setCidade(""); }
         setHorario((data as PerfilDesign).horario ?? null);
         setBannerUrl(data.banner_url || "");
@@ -352,6 +358,71 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
   ];
   const corAtual = (campo: CampoCor, valor: string) => corDoItem(campo, valor, premium);
 
+  const janelaGaleria = (
+    <>
+      {/* (17/10) galeria de banners prontos */}
+      <Janela aberta={galeria.aberta} aoFechar={() => setGaleria(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Banners prontos" className="ui-janela--produtos ap-gal-janela">
+        {/* (20/11) saiu o "Colocar no banner 1 2 3 4": o cardápio mostra um banner só desde a 6.79 */}
+        {galeria.lista === null ? (
+          <div className="ap-gal-vazio"><span className="ui-gira" aria-label="Carregando" /></div>
+        ) : galeria.erro || galeria.lista.length === 0 ? (
+          <p className="ap-gal-vazio">{galeria.erro ? "Não deu para abrir a galeria agora. Tente de novo." : "Ainda não há banners prontos. Em breve teremos novidades."}</p>
+        ) : (() => {
+          const cats = CATEGORIAS_BANNER.filter(c => galeria.lista!.some(b => b.categoria === c));
+          const lista = galeria.lista!.filter(b => !galeria.cat || b.categoria === galeria.cat);
+          return (
+            <>
+              {cats.length > 1 && (
+                <div className="ap-gal-cats" role="group" aria-label="Categorias">
+                  <button type="button" aria-pressed={!galeria.cat} onClick={() => setGaleria(g => ({ ...g, cat: "" }))}>Todos</button>
+                  {cats.map(c => <button key={c} type="button" aria-pressed={galeria.cat === c} onClick={() => setGaleria(g => ({ ...g, cat: c }))}>{c}</button>)}
+                </div>
+              )}
+              <div className="ap-gal-lista">
+                {lista.map(b => {
+                  const bloqueado = b.so_pro && !isPro;
+                  return (
+                    <button key={b.id} type="button" className={`ap-gal-it${bloqueado ? " bloq" : ""}`} onClick={() => usarDaGaleria(b)} disabled={!!usandoGaleria}>
+                      <img src={b.imagem_url} alt={b.titulo} decoding="async" />
+                      {bannerValues.includes(b.imagem_url) && <span className="ap-gal-uso"><Check size={13} weight="bold" aria-hidden="true" />Em uso</span>}
+                      {bloqueado && <span className="ap-gal-pro"><Crown size={13} weight="fill" aria-hidden="true" />PRO</span>}
+                      {usandoGaleria === b.id && <span className="ap-gal-gira"><span className="ui-gira" aria-label="Salvando" /></span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          );
+        })()}
+      </Janela>
+    </>
+  );
+
+  if (nova && !erroCarga && !loading) return (
+    <AparenciaCelular
+      voltar={() => navigate(voltarPara)} isPro={isPro} premium={premium}
+      nomeLoja={nomeLoja} logo={logoUrl || fotoPerfil} fotoTopo={bannerTopoUrl} banner={bannerUrl} horario={horario}
+      descricao={descricao}
+      salvarDescricao={async texto => { const ok = await gravar({ descricao_loja: texto || null }); if (ok) { setDescricao(texto); showSuccess(); } return ok; }}
+      enviando={uploading}
+      cores={itensCor.map(it => ({ campo: it.campo, valor: corAtual(it.campo, it.valor), mudar: (c: string) => handleColorChange(it.campo, c, it.set) }))}
+      escolherLogo={() => !uploading && logoRef.current?.click()}
+      escolherTopo={() => !uploading && bannerTopoRef.current?.click()}
+      tirarTopo={handleRemoveBannerTopo}
+      escolherBanner={() => { if (uploading) return; bannerIdx.current = 0; bannerRefs[0].current?.click(); }}
+      tirarBanner={() => handleRemoveBanner(0)}
+      abrirGaleria={abrirGaleria}
+      janelas={<>
+        {cropSrc && <ImageCropper imageSrc={cropSrc} cropShape="round" aspect={1} onCancel={() => setCropSrc(null)} onCropDone={handleLogoCropDone} />}
+        {recorteTopo.janela}{recorteBanner.janela}
+        <input ref={logoRef} type="file" accept="image/*" hidden onChange={handleLogoUpload} />
+        <input ref={bannerTopoRef} type="file" accept="image/*" hidden onChange={recorteTopo.escolher} />
+        <input ref={bannerRefs[0]} type="file" accept="image/*" hidden onChange={e => { bannerIdx.current = 0; recorteBanner.escolher(e); }} />
+        {janelaGaleria}
+      </>}
+    />
+  );
+
   if (erroCarga) return (
     <>
       {!identityCard && <AppPageHeader title="Aparência" subtitle="Logo, banners e cores" onBack={() => navigate(voltarPara)} />}
@@ -545,48 +616,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
       </div>
 
 
-      {/* (17/10) galeria de banners prontos */}
-      <Janela aberta={galeria.aberta} aoFechar={() => setGaleria(g => ({ ...g, aberta: false }))} tipo="conteudo" titulo="Banners prontos" className="ui-janela--produtos ap-gal-janela">
-        {isPro && (
-          <div className="ap-gal-slots" role="radiogroup" aria-label="Onde colocar">
-            <span>Colocar no banner</span>
-            {[0, 1, 2, 3].map(i => (
-              <button key={i} type="button" role="radio" aria-checked={galeria.slot === i} aria-label={`Banner ${i + 1}`} className={galeria.slot === i ? "on" : ""} onClick={() => setGaleria(g => ({ ...g, slot: i }))}>{i + 1}</button>
-            ))}
-          </div>
-        )}
-        {galeria.lista === null ? (
-          <div className="ap-gal-vazio"><span className="ui-gira" aria-label="Carregando" /></div>
-        ) : galeria.erro || galeria.lista.length === 0 ? (
-          <p className="ap-gal-vazio">{galeria.erro ? "Não deu para abrir a galeria agora. Tente de novo." : "Ainda não há banners prontos. Em breve teremos novidades."}</p>
-        ) : (() => {
-          const cats = CATEGORIAS_BANNER.filter(c => galeria.lista!.some(b => b.categoria === c));
-          const lista = galeria.lista!.filter(b => !galeria.cat || b.categoria === galeria.cat);
-          return (
-            <>
-              {cats.length > 1 && (
-                <div className="ap-gal-cats" role="group" aria-label="Categorias">
-                  <button type="button" aria-pressed={!galeria.cat} onClick={() => setGaleria(g => ({ ...g, cat: "" }))}>Todos</button>
-                  {cats.map(c => <button key={c} type="button" aria-pressed={galeria.cat === c} onClick={() => setGaleria(g => ({ ...g, cat: c }))}>{c}</button>)}
-                </div>
-              )}
-              <div className="ap-gal-lista">
-                {lista.map(b => {
-                  const bloqueado = b.so_pro && !isPro;
-                  return (
-                    <button key={b.id} type="button" className={`ap-gal-it${bloqueado ? " bloq" : ""}`} onClick={() => usarDaGaleria(b)} disabled={!!usandoGaleria}>
-                      <img src={b.imagem_url} alt={b.titulo} decoding="async" />
-                      {bannerValues.includes(b.imagem_url) && <span className="ap-gal-uso"><Check size={13} weight="bold" aria-hidden="true" />Em uso</span>}
-                      {bloqueado && <span className="ap-gal-pro"><Crown size={13} weight="fill" aria-hidden="true" />PRO</span>}
-                      {usandoGaleria === b.id && <span className="ap-gal-gira"><span className="ui-gira" aria-label="Salvando" /></span>}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          );
-        })()}
-      </Janela>
+      {janelaGaleria}
 
 
       {/* (30/10 · 5.46) "Ver como fica": o topo do cardápio do jeito que o cliente vê (foto, logo e as cores escolhidas) */}
