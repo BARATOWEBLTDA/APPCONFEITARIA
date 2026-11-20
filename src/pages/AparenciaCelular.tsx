@@ -9,7 +9,7 @@ import { createPortal } from "react-dom";
 import { HexColorPicker } from "react-colorful";
 import { ArrowCounterClockwise, BatteryFull, Info, Camera, CaretRight, CellSignalFull, Check, Crown, Images, LockSimple, PencilSimple, Plus, Sparkle, WifiHigh, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
-import { Botao, BotaoIcone, CampoArea, Janela } from "@/components/base";
+import { Botao, BotaoIcone, CampoArea, Janela, confirmar } from "@/components/base";
 import { abrirConvitePro } from "@/components/billing/RecursoPro";
 import { getStatusLoja } from "@/components/cardapio/CardapioModelo1";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
@@ -119,6 +119,17 @@ export default function AparenciaCelular(p: Props) {
   const [topo, setTopo] = useState<Element | null>(null);
   useEffect(() => { setTopo(document.querySelector(".cab .cab-linha")); }, []);
 
+  // (20/11) o X pergunta antes de tirar (um toque sem querer apagava a foto do cardápio na hora)
+  const tirar = async (qual: "topo" | "banner") => {
+    const ok = await confirmar({
+      titulo: qual === "topo" ? "Tirar a foto do topo?" : "Tirar o banner?",
+      texto: qual === "topo" ? "O topo do cardápio volta a mostrar a cor da faixa." : "Ele some do cardápio. Você pode pôr outro quando quiser.",
+      rotulo: "Tirar", rotuloVoltar: "Voltar",
+    });
+    if (!ok) return;
+    if (qual === "topo") p.tirarTopo(); else p.tirarBanner();
+  };
+
   const gravarDescricao = async () => {
     if (editDesc === null || salvando) return;
     setSalvando(true);
@@ -156,7 +167,7 @@ export default function AparenciaCelular(p: Props) {
                     : <div className="cm1-hero-faixa" style={{ backgroundColor: faixa }}><span className="cm1-hero-pontos" /></div>}
                 </div>
                 {p.enviando === "banner-topo" && <span className="apn-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
-                {p.fotoTopo && <button type="button" className="apn-rb apn-rb--e" aria-label="Tirar a foto do topo" disabled={ocupado} onClick={p.tirarTopo}><X size={16} weight="bold" /></button>}
+                {p.fotoTopo && <button type="button" className="apn-rb apn-rb--e" aria-label="Tirar a foto do topo" disabled={ocupado} onClick={() => tirar("topo")}><X size={16} weight="bold" /></button>}
                 <button type="button" className={`apn-rb apn-rb--d${p.fotoTopo ? "" : " apn-rb--tx"}`} aria-label={p.fotoTopo ? "Trocar a foto do topo" : "Adicionar foto do topo"} disabled={ocupado} onClick={p.escolherTopo}>
                   <Camera size={17} weight="bold" />{!p.fotoTopo && <span>Foto do topo</span>}
                 </button>
@@ -190,7 +201,7 @@ export default function AparenciaCelular(p: Props) {
               <div className="apn-banner">
                 <img src={p.banner} alt="Banner de promoção" />
                 {p.enviando === "banner0" && <span className="apn-gira"><span className="ui-gira" aria-label="Enviando" /></span>}
-                <button type="button" className="apn-rb apn-rb--e" aria-label="Tirar o banner" disabled={ocupado} onClick={p.tirarBanner}><X size={16} weight="bold" /></button>
+                <button type="button" className="apn-rb apn-rb--e" aria-label="Tirar o banner" disabled={ocupado} onClick={() => tirar("banner")}><X size={16} weight="bold" /></button>
                 <button type="button" className="apn-rb apn-rb--d" aria-label="Trocar o banner" disabled={ocupado} onClick={() => setMenuBanner(true)}><Camera size={17} weight="bold" /></button>
               </div>
             ) : (
