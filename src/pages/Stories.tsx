@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import * as tus from "tus-js-client";
-import { Eye, Image as ImageIc, Images, Play, Plus, Trash, VideoCamera, X } from "@phosphor-icons/react";
+import { Clock, Eye, Image as ImageIc, Images, Play, Plus, Trash, VideoCamera, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, CaixasEscolha, Janela, avisar } from "@/components/base";
 import { CartaoPro } from "@/components/billing/RecursoPro";
@@ -205,6 +205,16 @@ export default function Stories() {
   const nomeProd = (id: string | null) => (id ? produtos.find(p => p.id === id)?.nome : null) || null;
   // o visualizador mostra do mais antigo para o mais novo, como no cardápio
   const prontos = lista.filter(s => s.pronto).slice().reverse();
+  // (19/11) quanto falta para cada story sair do ar, em horas e minutos (atualiza sozinho a cada meio minuto)
+  const [agora, setAgora] = useState(() => Date.now());
+  useEffect(() => { const t = window.setInterval(() => setAgora(Date.now()), 30000); return () => window.clearInterval(t); }, []);
+  const falta = (iso: string): string => {
+    const ms = new Date(iso).getTime() - agora;
+    if (!iso || Number.isNaN(ms)) return "";
+    if (ms <= 0) return "Saindo do ar";
+    const min = Math.floor(ms / 60000), h = Math.floor(min / 60);
+    return h > 0 ? `${h}h ${String(min % 60).padStart(2, "0")}min` : min > 0 ? `${min} min` : "menos de 1 min";
+  };
   const cheio = lista.length + (envio ? 1 : 0) >= STORY_MAX_ATIVOS;
   const proximoASair = prontos.map(s => s.expira_em || "").filter(Boolean).sort()[0] || "";
 
@@ -228,7 +238,13 @@ export default function Stories() {
                 <div className="sto-topo">
                   <span>No ar agora</span><small>{lista.length} de {STORY_MAX_ATIVOS}</small>
                   {/* computador: o botão de postar fica no canto, do tamanho do texto (no celular a vaga vazia já é o botão) */}
-                  <span className="sto-topo-bt"><Botao icone={<Plus size={18} weight="bold" />} disabled={cheio} onClick={() => setPostar(true)}>Postar story</Botao></span>
+                  <span className="sto-topo-bt"><Botao tamanho="m" icone={<Plus size={18} weight="bold" />} disabled={cheio} onClick={() => setPostar(true)}>Postar story</Botao></span>
+                </div>
+                {/* (19/11) computador: os números numa faixa só, na largura das capas (o cartão "Resumo" solto no canto saiu) */}
+                <div className="sto-nums" aria-label="Resumo dos stories">
+                  <p><span>No ar</span><b>{lista.length} de {STORY_MAX_ATIVOS}</b></p>
+                  <p><span>Visualizações</span><b>{lista.reduce((n, x) => n + (x.views || 0), 0)}</b></p>
+                  <p><span>Próximo a sair</span><b>{proximoASair ? falta(proximoASair) : "Nenhum"}</b></p>
                 </div>
                 <div className="sto-cols">
                 <div className="sto-grade">
@@ -244,7 +260,7 @@ export default function Stories() {
                             : <span className="sto-sobre"><i className="sto-gira" aria-hidden="true" /><b>Processando…</b>{pct > 0 && <em>{pct}%</em>}</span>}
                         </button>
                         <button type="button" className="sto-del" aria-label="Apagar este story" onClick={() => setApagar(s)}><Trash size={16} weight="bold" /></button>
-                        <small>{s.pronto ? saiCurto(s.expira_em || "") : "Quase lá"}</small>
+                        <small>{s.pronto ? <><Clock size={13} weight="bold" aria-hidden="true" /><span className="sto-sai">Sai em </span>{falta(s.expira_em || "")}</> : "Quase lá"}</small>
                       </div>
                     );
                   })}
@@ -277,13 +293,6 @@ export default function Stories() {
                     </div>
                   ))}
                 </div>
-                {/* computador: resumo na outra coluna, no topo */}
-                <aside className="sto-resumo" aria-label="Resumo dos stories">
-                  <b>Resumo</b>
-                  <p><span>No ar</span><em>{lista.length} de {STORY_MAX_ATIVOS}</em></p>
-                  <p><span>Visualizações</span><em>{lista.reduce((n, x) => n + (x.views || 0), 0)}</em></p>
-                  {proximoASair && <p><span>Próximo a sair</span><em>{saiCurto(proximoASair).replace(/^Sai /, "")}</em></p>}
-                </aside>
                 </div>
               </>
             )}
@@ -318,29 +327,33 @@ export default function Stories() {
         .sto-topo { display: flex; align-items: baseline; justify-content: space-between; margin: 4px 2px 10px; }
         .sto-topo span { font-size: 16px; font-weight: 500; color: var(--ui-texto); }
         .sto-topo small { font-size: 14px; color: var(--ui-texto-2); }
-        .sto-topo-bt, .sto-resumo { display: none; }
-        /* (19/11) computador: capas no tamanho de celular (as 3 vagas na tela), botão no canto e resumo na outra coluna */
-        @media (min-width: 1100px) {
-          .sto { max-width: 980px; }
-          .sto-topo { align-items: center; justify-content: flex-start; gap: 10px; margin-bottom: 16px; }
-          .sto-topo-bt { display: block; margin-left: auto; }
-          .sto-cols { display: grid; grid-template-columns: auto minmax(0, 300px); gap: 40px; justify-content: space-between; align-items: start; }
-          .sto-cols .sto-grade { grid-template-columns: repeat(3, 180px); gap: 16px; }
-          .sto-resumo { display: block; padding: 20px; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); }
-          .sto-resumo b { display: block; margin-bottom: 8px; font-size: 16px; font-weight: 500; color: var(--ui-texto); }
-          .sto-resumo p { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding: 10px 0; border-top: 1px solid var(--ui-linha); font-size: 14px; color: var(--ui-texto-2); }
-          .sto-resumo p:first-of-type { border-top: 0; }
-          .sto-resumo em { font-style: normal; color: var(--ui-texto); white-space: nowrap; }
-        }
+        .sto-topo-bt, .sto-nums, .sto-sai { display: none; }
         .sto-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
         .sto-vaga { position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-        .sto-vaga > small { font-size: 12px; text-align: center; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sto-vaga > small { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 12px; text-align: center; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; }
+        /* (19/11) computador: um bloco só, no centro. Título e botão na mesma linha, a faixa dos números e as 3 capas, tudo na mesma largura */
+        @media (min-width: 1100px) {
+          /* a largura vai nos blocos de dentro: a regra geral do computador fixa a página em 1.200 px */
+          .sto-topo, .sto-nums, .sto-cols { max-width: 760px; margin-left: auto; margin-right: auto; }
+          .sto-topo { align-items: center; justify-content: flex-start; gap: 10px; margin-top: 8px; margin-bottom: 16px; }
+          .sto-topo span { font-size: 18px; }
+          .sto-topo-bt { display: block; margin-left: auto; }
+          .sto-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 20px; border: 1px solid var(--ui-borda); border-radius: 16px; background: var(--ui-branco); }
+          .sto-nums p { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 14px 20px; white-space: nowrap; }
+          .sto-nums p + p { border-left: 1px solid var(--ui-linha, var(--ui-borda)); }
+          .sto-nums span { font-size: 13px; color: var(--ui-texto-2); }
+          .sto-nums b { font-size: 20px; font-weight: 500; color: var(--ui-texto); }
+          .sto-cols .sto-grade { gap: 20px; }
+          .sto-vaga > small { font-size: 13px; }
+          .sto-sai { display: inline; }
+          .sto-capa { border-radius: 16px; }
+        }
         .sto-capa { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; aspect-ratio: 9 / 16; margin: 0; padding: 0; border: 0; border-radius: 14px; overflow: hidden; background: var(--ui-cinza); color: var(--ui-texto-2); font-family: inherit; cursor: pointer; }
         .sto-capa:disabled { cursor: default; }
         .sto-capa > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
         .sto-capa--nova { border: 1.5px dashed var(--ui-borda); background: var(--ui-branco); color: var(--ui-rosa-botao, #CC2E66); }
         .sto-capa--nova b { font-size: 14px; font-weight: 500; }
-        .sto-capa--livre { border: 1.5px dashed var(--ui-linha); background: none; cursor: default; }
+        .sto-capa--livre { border: 1.5px dashed var(--ui-borda); background: none; cursor: default; }
         .sto-vw { position: absolute; left: 6px; bottom: 6px; display: flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; background: rgba(0,0,0,.55); color: #fff; font-size: 12px; }
         .sto-sobre { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 6px; background: rgba(34,19,14,.6); color: #fff; text-align: center; }
         .sto-sobre b { font-size: 12px; font-weight: 500; white-space: nowrap; }
