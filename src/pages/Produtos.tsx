@@ -39,7 +39,7 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import Categorias from "@/pages/Categorias";
 import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_PRODUTOS, TOUR_PRODUTOS } from "@/lib/comoTelas";
-import { ArrowLeft as ArrowLeftIc, Camera, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Lightning, CalendarBlank, Star, CaretRight } from "@phosphor-icons/react";
+import { ArrowLeft as ArrowLeftIc, Camera, Check as CheckIc, ListChecks, MagnifyingGlass, PencilSimple, Plus as PlusIc, WarningCircle, Trash, X as XIc, DotsThreeVertical, Cake, Crown, Info, Sun, FrameCorners, Crop, TextTSlash, ArrowsClockwise, SealPercent, Seal, Prohibit, Lightning, CalendarBlank, Star, CaretRight } from "@phosphor-icons/react";
 import { Botao, BotaoIcone, CaixasEscolha, Janela, Linha as LinhaUi, TelaVazia, Titulo as TituloUi, avisar, confirmar, BotaoTirar } from "@/components/base";
 import { historicoAssentado, useSobreposicao } from "@/components/base/useSobreposicao";
 import { sufixoVenda } from "@/lib/formaVenda";
@@ -1394,6 +1394,8 @@ export default function Produtos() {
         lista.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
         break;
     }
+    // (20/11) os destaques ficam sempre no topo da lista (a ordem escolhida vale dentro de cada grupo)
+    lista.sort((a, b) => Number(b.destaque === true) - Number(a.destaque === true));
     return lista;
   })();
   const todasCategorias = Array.from(new Set([...categorias, ...produtos.map(p => p.categoria).filter(Boolean)])).sort();
@@ -1539,7 +1541,7 @@ export default function Produtos() {
             <WarningCircle size={20} weight="bold" aria-hidden="true" />
             {filtroOrfaos
               ? <p>Mostrando só os <b>{orfaos.length} sem categoria.</b> Abra cada um e escolha uma categoria.</p>
-              : <p><b>{orfaos.length} produto{orfaos.length !== 1 ? "s" : ""} sem categoria.</b> No cardápio {orfaos.length !== 1 ? "eles aparecem" : "ele aparece"} no fim da lista, em Outros.</p>}
+              : <p className="pl-aviso-1"><b>{orfaos.length} produto{orfaos.length !== 1 ? "s" : ""} sem categoria</b><span className="pl-aviso-mais">. No cardápio {orfaos.length !== 1 ? "eles aparecem" : "ele aparece"} no fim da lista, em Outros.</span></p>}
             <Botao variante="link" onClick={() => { if (filtroOrfaos) setFiltroOrfaos(false); else setArrumar(orfaos.map(p => ({ id: String(p.id), nome: p.nome, descricao: p.descricao, imagem_url: p.imagem_url }))); }}>{filtroOrfaos ? "Ver todos" : "Arrumar"}</Botao>
           </div>
         );
@@ -1660,12 +1662,17 @@ export default function Produtos() {
                         {pl.aPartir && <small>a partir de</small>}
                         <b className={promo ? "promo" : ""}>R$&nbsp;{formatPreco(pl.final)}</b>
                         {unid && <small>{unid}</small>}
-                        {promo && (
-                          <button type="button" className="pl-cupom" aria-label="Esse produto está em promoção atualmente"
-                            onClick={e => { e.stopPropagation(); setDicaPromo(d => d === p.id ? null : (p.id || null)); }}>
-                            <SealPercent size={18} weight="regular" aria-hidden="true" />
-                          </button>
-                        )}
+                        {/* (20/11) selos alinhados ao lado do preço, sempre na mesma ordem: destaque (dourado), promoção (verde) e fora do cardápio (vermelho) */}
+                        <span className="pl-selos">
+                          {p.destaque === true && <span className="pl-selo pl-selo--dq" role="img" aria-label="Em destaque" title="Em destaque"><Seal size={20} aria-hidden="true" /><Star size={9} weight="fill" aria-hidden="true" /></span>}
+                          {promo && (
+                            <button type="button" className="pl-cupom pl-selo" aria-label="Esse produto está em promoção atualmente"
+                              onClick={e => { e.stopPropagation(); setDicaPromo(d => d === p.id ? null : (p.id || null)); }}>
+                              <SealPercent size={20} weight="regular" aria-hidden="true" />
+                            </button>
+                          )}
+                          {p.disponivel === false && <span className="pl-selo pl-selo--fora" role="img" aria-label="Fora do cardápio" title="Fora do cardápio"><Seal size={20} aria-hidden="true" /><Prohibit size={10} weight="bold" aria-hidden="true" /></span>}
+                        </span>
                         {dicaPromo === p.id && <span className="pl-dica" role="status">Esse produto está em promoção atualmente</span>}
                         <button type="button" role="switch" aria-checked={p.disponivel !== false} aria-label={`Mostrar ${p.nome} no cardápio`}
                           className="pl-chave pl-lin-chave" onClick={e => { e.stopPropagation(); void alternarNoCardapio(p); }}><span /></button>

@@ -160,3 +160,22 @@ body .prod-card-img { position: relative; }
 .prod-card-tipo { position: absolute; left: var(--space-2); bottom: var(--space-2); z-index: 2; padding: 3px 8px; border-radius: 999px; background: rgba(44, 18, 25, .78); font-size: 11.5px; font-weight: 600; line-height: 1.3; color: #fff; white-space: nowrap; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
 .prod-card-tipo.pronta { background: rgba(21, 128, 61, .88); }
 @media (max-width: 767px) { .prod-card-tipo { display: none; } }
+
+/* ═══ (20/11) revisão do celular ═══ */
+@media (max-width: 767px) {
+  /* aviso "sem categoria" em uma linha */
+  .pl-aviso-mais { display: none; }
+  .pl-aviso .pl-aviso-1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+  /* a estrela sai do nome e vira selo ao lado do preço */
+  .prod-card-nome--dq::before { display: none; }
+  .pl-selos { display: inline-flex; align-items: center; gap: 3px; margin-left: 3px; }
+  .pl-selo { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 24px; }
+  .pl-selo > svg + svg { position: absolute; }
+  .pl-selo--dq { color: #E0A12E; }
+  .pl-selo--fora { color: #DC2626; }
+  .pl-cupom.pl-selo { width: 22px; color: #3FAE6F; }
+}
+/* (20/11) prévia do produto: o menu "Mais" abria cortado em cima, com o X por cima das opções */
+.prod-preview-modal:has(.prod-preview-menu) { min-height: min(92vh, 560px); }
+.prod-preview-modal:has(.prod-preview-menu) .prod-preview-close { visibility: hidden; }
+body .prod-preview-menu { max-height: calc(92vh - 120px); overflow-y: auto; }
