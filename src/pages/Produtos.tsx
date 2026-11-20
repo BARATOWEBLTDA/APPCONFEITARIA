@@ -2319,7 +2319,7 @@ export default function Produtos() {
                   {/* o título "Qual o preço?" já diz; só o por quilo precisa do rótulo */}
                   {/* (14/10) produto sem tamanho: título como nos outros passos (antes começava direto no "Preço cheio") */}
                   {!form.id && !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes?.length || 0) > 0) && !precosDosSabores(form) && <p className="prod-section-label prod-section-label--novo">Qual é o preço?</p>}
-                  {form.id && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && <p className="prod-section-label prod-section-label--novo">Preço por kg</p>}
+                  {form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && <p className="prod-section-label prod-section-label--novo">Preço por kg</p>}
                   {/* (14/10) no cadastro novo o preço do kg vem aqui no fim (igual ao preço fixo): preço, tabela dos pesos e promoção */}
                   {!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (() => {
                     const kgCheio = Number(form.preco_normal) || 0;
@@ -2359,6 +2359,19 @@ export default function Produtos() {
                   })()}
                   {/* (14/10) preço cheio e promocional lado a lado; "Vendido por" embaixo, numa linha só dele */}
                   {/* (14/10) preço pelo sabor: sem preço cheio; o preço de cada sabor vem na tabela abaixo */}
+                  {/* (20/11) "Vendido por" vem primeiro e o título do preço segue o que está escolhido */}
+                  {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && (<>
+                    <div className="prod-field prod-vendido">
+                      <label>Vendido por</label>
+                      <select className="prod-vendido-s" value={form.forma_venda} aria-label="Vendido por"
+                          onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}>
+                          {[["unidade", "Por unidade"], ["kg", "Por quilo (kg)"], ["fatia", "Por fatia"], ["cento", "Por cento"], ["caixa", "Por caixa"]]
+                            .concat(["unidade", "kg", "fatia", "cento", "caixa"].includes(form.forma_venda) ? [] : [[form.forma_venda, FORMAS_VENDA.find(x => x.value === form.forma_venda)?.label || form.forma_venda]])
+                            .map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                        </select>
+                    </div>
+                    {form.id && !precosDosSabores(form) && <p className="prod-section-label prod-section-label--novo prod-lbl-vend">{({ unidade: "Preço por unidade", kg: "Preço por kg", fatia: "Preço por fatia", cento: "Preço do cento", caixa: "Preço por caixa" } as Record<string, string>)[form.forma_venda] || "Preço"}</p>}
+                  </>)}
                   {precosDosSabores(form) ? null : <div className={`prod-row-2${simplesNovo ? " prod-row-1" : ""}`}>
                     {!(!form.id && form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && <div className="prod-field">
                       <label>Preço cheio</label>
@@ -2399,17 +2412,6 @@ export default function Produtos() {
                       })()}
                     </div>}
                   </div>}
-                  {!(form.grupo_tamanhos?.ativo && form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") && (
-                    <div className="prod-field" style={{ marginTop: 14 }}>
-                      <label>Vendido por</label>
-                      <select className="prod-vendido-s" value={form.forma_venda} aria-label="Vendido por"
-                          onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}>
-                          {[["unidade", "Por unidade"], ["kg", "Por quilo (kg)"], ["fatia", "Por fatia"], ["cento", "Por cento"], ["caixa", "Por caixa"]]
-                            .concat(["unidade", "kg", "fatia", "cento", "caixa"].includes(form.forma_venda) ? [] : [[form.forma_venda, FORMAS_VENDA.find(x => x.value === form.forma_venda)?.label || form.forma_venda]])
-                            .map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                        </select>
-                    </div>
-                  )}
                   {/* (24/10) produto simples: a promoção no mesmo jeito do kg, dos tamanhos e do kit (pergunta + caixinha + preço) */}
                   {simplesNovo && (() => {
                     const pp = Number(form.preco_promocional) || 0, cheio = Number(form.preco_normal) || 0;
@@ -2555,6 +2557,8 @@ export default function Produtos() {
 
               {/* (19/10) computador, passo Preço: a prévia do cardápio ao vivo na coluna da direita (no celular ela fica só na Revisão) */}
               {wizardStep === 5 && !form.id && <div className="prod-prev-col"><PreviaCardapio form={form} /></div>}
+              {/* (20/11) edição do preço: a prévia do produto (foto, descrição, preço e preço riscado), ideia do Bruno */}
+              {form.id && editTab === "preco" && <div className="prod-section prod-prev-ed"><PreviaCardapio form={form} /></div>}
               {/* (13/10) Revisão: como o cliente vê, pedido de exemplo e o que falta */}
               {/* (14/10) a prévia e, por último (colado no Publicar), o que falta arrumar */}
               {/* (14/10) passo 6 · Revisão: a prévia no topo, todas as informações e, por último, o que falta arrumar */}

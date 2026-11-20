@@ -451,3 +451,9 @@ body .prod-modal--novo .prod-sku--so { grid-template-columns: minmax(0, 1fr); }
   .prod-foto-pri-vazia b { font-size: 14.5px; white-space: nowrap; }
   .prod-foto-pri-vazia small { white-space: nowrap; }
 }
+
+/* (20/11) Preço e promoção: rótulos escuros no padrão, o R$ igual nos dois campos e o "Vendido por" em cima */
+body .prod-modal--novo .prod-field > label { color: var(--ui-texto); }
+body .prod-modal--novo .prod-preco-input--promo:not(:focus-within):not(.prod-promo-tem) span { color: var(--ui-texto-2) !important; }
+body .prod-modal--novo .prod-vendido { margin-bottom: 14px; }
+body .prod-modal--novo .prod-prev-ed { margin-top: 4px; }
