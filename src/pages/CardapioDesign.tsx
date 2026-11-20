@@ -48,10 +48,8 @@ export default function CardapioDesign({ identityCard, avaliacoesCard: _avaliaco
   // (15/10) aberta por Configurações: o voltar leva de volta pra lá (senão, pro Cardápio)
   const local = useLocation();
   const voltarPara = (local.state as { de?: string } | null)?.de === "/configuracoes" ? "/configuracoes" : "/cardapio";
-  // (20/11) Aparência nova (só celular), por enquanto num endereço separado para conferir antes de trocar a de sempre
-  // na prévia da Vercel (branch de testes) a Aparência do menu já abre a nova, para conferir pelo caminho normal; em doonly.com.br só pelo endereço separado
-  const naPrevia = typeof window !== "undefined" && /\.vercel\.app$/.test(window.location.hostname);
-  const nova = (local.pathname === "/aparencia-nova" || naPrevia) && typeof window !== "undefined" && window.matchMedia("(max-width: 899px)").matches; // no computador, o endereço abre a Aparência de sempre
+  // (20/11) aprovada: no celular a Aparência é a tela nova (o cardápio dentro do celular); no computador continua a de sempre
+  const nova = typeof window !== "undefined" && window.matchMedia("(max-width: 899px)").matches;
   const [descricao, setDescricao] = useState("");
   const [loading, setLoading] = useState(true);
   const [erroCarga, setErroCarga] = useState(false); // (27/10) leitura falhou: não abre com o padrão (gravaria por cima do que ela tinha)

@@ -614,7 +614,7 @@ export default function App() {
           <Route path="/cardapio-resumo" element={<Navigate to="/cardapio" replace />} />{/* (27/10) tela sem uso: vai para Minha loja */}
           <Route path="/cardapio-preview" element={<CardapioPrevia />} />
           <Route path="/cardapio-design" element={<CardapioDesign />} />
-          <Route path="/aparencia-nova" element={<CardapioDesign />} />{/* (20/11) Aparência nova do celular, em endereço separado até ser aprovada */}
+          <Route path="/aparencia-nova" element={<CardapioDesign />} />{/* (20/11) endereço usado na conferência; abre a mesma Aparência */}
           <Route path="/checkout-config" element={<IrParaEntrega />} />
           <Route path="/estoque" element={<Navigate to="/inicio" replace />} />{/* (24/10) Estoque saiu dos planos */}
           {/* (04/11 · 6.20) Marketing foi escondido: Cupons e Pixel viraram telas próprias */}
