@@ -120,7 +120,12 @@ export default function Aparelhos() {
             <div className="apv-linha">{APARELHOS.map(a => <button type="button" key={a.id} aria-pressed={!!on[a.id]} onClick={() => setOn(o => ({ ...o, [a.id]: !o[a.id] }))}>{a.nome}</button>)}</div>
             <label className="apv-sinc"><input type="checkbox" checked={juntos} onChange={x => setJuntos(x.target.checked)} /> Andar juntos</label>
             <label className="apv-zoom">Tamanho <input type="range" min={25} max={100} value={zoom} onChange={x => setZoom(Number(x.target.value))} /> <span>{zoom}%</span></label>
-            <button type="button" className="apv-sair" onClick={() => { void supabase.auth.signOut({ scope: "local" }); }}>Sair</button>
+            {/* (20/11) as "primeiras visitas" ficam guardadas no navegador (não no banco): este botão apaga e recarrega, para rever guias e tutoriais */}
+            <button type="button" className="apv-sair" onClick={() => {
+              try { Object.keys(localStorage).filter(k => /^doonly_(destaque_|tutorial_)/.test(k)).forEach(k => localStorage.removeItem(k)); } catch { /* sem acesso: segue */ }
+              setCarga(c => c + 1);
+            }}>Zerar primeiras visitas</button>
+            <button type="button" className="apv-sair apv-sair--2" onClick={() => { void supabase.auth.signOut({ scope: "local" }); }}>Sair</button>
           </div>
           <div className="apv-palco" ref={palco}>
             {ligados.length === 0 ? <p className="apv-aviso">Marque pelo menos um aparelho na barra de cima.</p> : (
@@ -180,6 +185,7 @@ const CSS = `
 .apv-sinc input, .apv-zoom input { accent-color: #4B3A42; }
 .apv-zoom input { width: 110px; }
 .apv-sair { margin-left: auto; }
+.apv-sair--2 { margin-left: 0; }
 .apv-palco { flex: 1; overflow: auto; padding: 22px 22px 40px; }
 .apv-fila { display: flex; align-items: flex-start; gap: 26px; width: max-content; margin: 0 auto; }
 .apv-ap { flex: none; }
