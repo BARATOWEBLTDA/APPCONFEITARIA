@@ -45,7 +45,8 @@ export default async function handler(req: Request) {
   const loja = await lerLoja(codigo);
   const nome = loja?.nome || "Cardápio";
   const desc = loja?.desc || DESC_PADRAO;
-  const imagem = loja?.imagem || `${BASE}/og-bolo.png`;
+  // (19/11) a logo passa pela /api/og-img, que entrega uma versão leve: o WhatsApp não mostra imagem de prévia pesada
+  const imagem = loja?.imagem ? `${BASE}/api/og-img?c=${encodeURIComponent(codigo)}` : `${BASE}/og-bolo.png`;
   const link = `${BASE}/c/${encodeURIComponent(codigo)}/${caminho}`;
   const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <title>${esc(nome)}</title>
@@ -55,7 +56,7 @@ export default async function handler(req: Request) {
 <meta property="og:title" content="${esc(nome)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:image" content="${esc(imagem)}">
-<meta property="og:image:alt" content="${esc(nome)}">
+${loja?.imagem ? '<meta property="og:image:type" content="image/jpeg">\n<meta property="og:image:width" content="600">\n<meta property="og:image:height" content="600">\n' : ""}<meta property="og:image:alt" content="${esc(nome)}">
 <meta property="og:url" content="${esc(link)}">
 <meta property="og:locale" content="pt_BR">
 <meta name="twitter:card" content="summary">
