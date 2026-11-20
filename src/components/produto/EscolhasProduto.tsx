@@ -3,6 +3,7 @@ import Destaque from "@/components/Destaque";
 import { useProfile } from "@/hooks/useProfile";
 import { CaretDown, Check, GearSix, Plus, Scales, Sparkle, Tag } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
+import Quadrados from "@/components/produto/Quadrados";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
 import { Botao, CaixasEscolha, Janela, BotaoTirar } from "@/components/base";
@@ -606,23 +607,6 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
         </div>
       </>)}
 
-    </div>
-  );
-}
-
-/** (20/11) dois quadrados lado a lado, no padrão da Nova venda (ícone, bolinha, título e uma linha) */
-function Quadrados({ rotulo, valor, opcoes, onMudar }: { rotulo: string; valor: string; opcoes: { v: string; t: string; sub: string; Ic: typeof Tag }[]; onMudar: (v: string) => void }) {
-  return (
-    <div className="esc-quad" role="radiogroup" aria-label={rotulo}>
-      {opcoes.map(o => {
-        const on = valor === o.v;
-        return (
-          <button key={o.v} type="button" role="radio" aria-checked={on} className={on ? "on" : undefined} onClick={() => { if (!on) onMudar(o.v); }}>
-            <span className="esc-quad-topo"><o.Ic size={22} weight={on ? "fill" : "regular"} aria-hidden="true" /><i aria-hidden="true" /></span>
-            <b>{o.t}</b><small>{o.sub}</small>
-          </button>
-        );
-      })}
     </div>
   );
 }

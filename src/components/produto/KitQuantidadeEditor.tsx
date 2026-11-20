@@ -1,8 +1,9 @@
 import { pluralSabor } from "@/lib/kitTexto";
-import { CaixasEscolha, BotaoTirar } from "@/components/base";
+import { BotaoTirar } from "@/components/base";
+import Quadrados from "@/components/produto/Quadrados";
 import { useState } from "react";
 import { mascaraBRL, lerBRL, textoBRL } from "@/lib/moeda";
-import { Cookie, ForkKnife, PencilSimple } from "@phosphor-icons/react";
+import { Cookie, ForkKnife, Package, PencilSimple, PlusMinus } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import {
   KIT_VAZIO, KitQtdConfig, erroKit, kitsValidos, novoId, presetKit,
@@ -114,8 +115,7 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
   const exA = Math.min(kitEx, Math.max(passoS, Math.floor(kitEx / 2 / passoS) * passoS)), exB = kitEx - exA;
   const kitQuebrado = k.modo === "fechado" ? k.kits.find(x => x.qtd > 0 && x.qtd % passoS !== 0)?.qtd : undefined;
   const livreQuebrado = k.modo === "livre" && k.livre.min > 0 && k.livre.passo > 0 && (k.livre.min % passoS !== 0 || k.livre.passo % passoS !== 0);
-  // 11/10: no modo livre, (máximo − mínimo) que não é múltiplo do passo
-  const maxQuebrado = k.modo === "livre" && k.livre.min > 0 && k.livre.passo > 0 && k.livre.max > k.livre.min && (k.livre.max - k.livre.min) % k.livre.passo !== 0;
+  const mistura = k.max_sabores !== 1; // (20/11) "O cliente pode misturar sabores?"
 
   // (14/10) no padrão das outras escolhas: títulos de seção, lista com linhas, sem cartões numerados.
   // Sem preço aqui (semPreco): os preços dos kits ficam no passo Preço.
@@ -124,7 +124,7 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
       <p className="kq-lbl">{k.modo === "livre" ? "Sabores" : "Sabores do kit"}</p>
       {/* (14/10) no padrão das outras escolhas: aviso cinza + tabela com cabeçalho e "Cadastrar" na última linha (sem os botões de sugestão nem o "Trocar o modelo") */}
       <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
-        <p>{k.modo === "livre" ? "Os sabores que o cliente pode misturar. O preço do cento fica no último passo." : "Os sabores que o cliente pode misturar no kit. O preço de cada kit fica no último passo."}</p></div>
+        <p>Os sabores que o cliente pode escolher. Os valores você coloca em Preço e promoção.</p></div>
       <div className="esc-tab esc-tab--1" role="table" aria-label="Sabores do kit">
         {sabores.length > 0 && <div className="esc-tab-l esc-tab-h" role="row"><span role="columnheader">Sabor</span><span role="columnheader" aria-label="Tirar" /></div>}
         {k.sabores.map(s => s.nome.trim() && (
@@ -134,18 +134,18 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
           </div>
         ))}
         <div className="esc-tab-add kq-addrow">
-          <input placeholder="Outro sabor…" value={novoSabor} aria-label="Outro sabor"
+          <input placeholder={sabores.length ? "Outro sabor…" : "Nome do sabor…"} value={novoSabor} aria-label="Outro sabor"
             onChange={e => setNovoSabor(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSabor(novoSabor); } }} />
           <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={() => addSabor(novoSabor)} disabled={!novoSabor.trim()}>Cadastrar</button>
         </div>
       </div>
 
-      <p className="kq-lbl">Como o cliente compra</p>
-      {/* (29/10 · 5.04) caixinhas com o que cada uma faz (antes: seletor de 2 partes + uma dica embaixo) */}
-      <CaixasEscolha rotulo="Como o cliente compra" valor={k.modo === "livre" ? "livre" : "fechado"} opcoes={[
-        { v: "fechado", t: "Pacotes prontos", sub: "Kit de 50, de 100… cada um com o seu preço" },
-        { v: "livre", t: "Ele escolhe", sub: "Quantos quiser, entre um mínimo e um máximo" },
-      ]} onMudar={v => v === "livre" ? set({ modo: "livre" }) : set({ modo: "fechado", kits: k.kits.length ? k.kits : [{ id: novoId(), qtd: 50, preco: 0 }, { id: novoId(), qtd: 100, preco: 0 }] })} />
+      {/* (20/11) nomes claros em dois quadrados (antes "Pacotes prontos" / "Ele escolhe") */}
+      <p className="kq-lbl">Como você vende</p>
+      <Quadrados rotulo="Como você vende" valor={k.modo === "livre" ? "livre" : "fechado"} opcoes={[
+        { v: "fechado", t: "Kits fechados", sub: "50 ou 100 unidades", Ic: Package },
+        { v: "livre", t: "Quantidade livre", sub: "Cliente diz quantos", Ic: PlusMinus },
+      ]} onMudar={v => v === "livre" ? set({ modo: "livre", livre: { ...k.livre, max: Math.max(k.livre.max || 0, (k.livre.min || 0) * 10, 4000) } }) : set({ modo: "fechado", kits: k.kits.length ? k.kits : [{ id: novoId(), qtd: 50, preco: 0 }, { id: novoId(), qtd: 100, preco: 0 }] })} />
       {k.modo === "fechado" ? (
         <>
           <ul className="kq-lista">
@@ -167,25 +167,29 @@ export default function KitQuantidadeEditor({ kit, onChange, semPreco = false }:
         </>
       ) : (
         <ul className="kq-lista">
-          <li className="kq-reg"><span>Mínimo</span><input className="kq-box" inputMode="numeric" value={k.livre.min || ""} aria-label="Mínimo" onChange={e => set({ livre: { ...k.livre, min: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
-          <li className="kq-reg"><span>Máximo</span><input className="kq-box" inputMode="numeric" value={k.livre.max || ""} aria-label="Máximo" onChange={e => set({ livre: { ...k.livre, max: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
-          <li className="kq-reg"><span>De quanto em quanto</span><input className="kq-box" inputMode="numeric" value={k.livre.passo || ""} aria-label="De quanto em quanto" onChange={e => set({ livre: { ...k.livre, passo: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
+          <li className="kq-reg"><span>Pedido mínimo</span><input className="kq-box" inputMode="numeric" value={k.livre.min || ""} aria-label="Mínimo" onChange={e => { const min = Math.round(num(e.target.value)); set({ livre: { ...k.livre, min, max: Math.max(k.livre.max || 0, min * 10, 4000) } }); }} /><em>un.</em></li>
+          <li className="kq-reg"><span>Aumenta a cada</span><input className="kq-box" inputMode="numeric" value={k.livre.passo || ""} aria-label="De quanto em quanto" onChange={e => set({ livre: { ...k.livre, passo: Math.round(num(e.target.value)) } })} /><em>un.</em></li>
           {!semPreco && (
             <li className="kq-reg"><span>Preço do cento</span><span className={`kq-box kq-box--rs${k.livre.preco_cento > 0 ? " ok" : " falta"}`}>R$ <input inputMode="numeric" value={textoBRL(k.livre.preco_cento)} placeholder="0,00" aria-label="Preço do cento"
               onChange={e => set({ livre: { ...k.livre, preco_cento: lerBRL(mascaraBRL(e.target.value)) } })} /></span></li>
           )}
         </ul>
       )}
-      {maxQuebrado && <p className="kq-dica">O máximo de {k.livre.max} não fecha de {k.livre.passo} em {k.livre.passo}. O último passo vai até o máximo.</p>}
-
-      <p className="kq-lbl">Como ele pode montar</p>
-      <ul className="kq-lista">
-        <li className="kq-reg"><span>{k.modo === "livre" ? "Sabores por pedido" : "Sabores no mesmo kit"}</span><input className="kq-box" inputMode="numeric" value={k.max_sabores || ""} aria-label="Máximo de sabores" onChange={e => set({ max_sabores: Math.round(num(e.target.value)) })} /><em>no máx.</em></li>
-        <li className="kq-reg"><span>Cada sabor vem de</span><input className="kq-box" inputMode="numeric" value={k.passo_sabor || ""} aria-label="De quanto em quanto cada sabor" onChange={e => set({ passo_sabor: Math.round(num(e.target.value)) })} /><em>em {k.passo_sabor || "–"}</em></li>
-      </ul>
-      <div className="esc-aviso kq-nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>{k.modo === "livre" ? `Exemplo com ${kitEx} unidades: ` : `Exemplo no kit de ${kitEx}: `}{exB > 0 && <><b className="kq-ex">{exA} {pluralSabor(ex1, exA)} + {exB} {pluralSabor(ex2, exB)}</b>, ou </>}{kitEx} de um sabor só.
-        {kitQuebrado ? ` O kit de ${kitQuebrado} não fecha de ${passoS} em ${passoS}: o último passo completa o que faltar.` : livreQuebrado ? ` Nem toda quantidade fecha de ${passoS} em ${passoS}: o último passo completa o que faltar.` : ""}
-        {semPreco ? (k.modo === "livre" ? " O preço do cento você coloca no último passo." : " O preço dos kits você coloca no último passo.") : ""}</p></div>
+      {/* (20/11) pergunta direta: com "Não", os dois campos de baixo somem */}
+      <p className="kq-lbl">O cliente pode misturar sabores?</p>
+      <div className="esc-seg esc-seg--2 kq-simnao" role="radiogroup" aria-label="O cliente pode misturar sabores?">
+        <button type="button" role="radio" aria-checked={!mistura} className={!mistura ? "on" : ""} onClick={() => set({ max_sabores: 1, passo_sabor: Math.max(1, k.passo_sabor || 1) })}>Não</button>
+        <button type="button" role="radio" aria-checked={mistura} className={mistura ? "on" : ""} onClick={() => { if (!mistura) set({ max_sabores: 2, passo_sabor: k.passo_sabor > 1 ? k.passo_sabor : 25 }); }}>Sim</button>
+      </div>
+      {mistura && (
+        <ul className="kq-lista">
+          <li className="kq-reg"><span>Até quantos sabores</span><input className="kq-box" inputMode="numeric" value={k.max_sabores || ""} aria-label="Máximo de sabores" onChange={e => set({ max_sabores: Math.round(num(e.target.value)) })} /></li>
+          {/* pode ficar vazio: sem mínimo, o cliente divide do jeito que quiser */}
+          <li className="kq-reg"><span>Mínimo por sabor</span><input className="kq-box" inputMode="numeric" value={k.passo_sabor > 1 ? k.passo_sabor : ""} placeholder="Sem" aria-label="De quanto em quanto cada sabor" onChange={e => set({ passo_sabor: Math.max(1, Math.round(num(e.target.value)) || 1) })} /></li>
+        </ul>
+      )}
+      <div className="esc-aviso kq-nota kq-nota--1"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>{k.modo === "livre" ? `Em ${kitEx}: ` : `No kit de ${kitEx}: `}{mistura && exB > 0 ? <b className="kq-ex">{exA} {pluralSabor(ex1, exA)} + {exB} {pluralSabor(ex2, exB)}</b> : <b className="kq-ex">{kitEx} de um sabor só</b>}.
+        {mistura && kitQuebrado ? ` O kit de ${kitQuebrado} não fecha de ${passoS} em ${passoS}: o último passo completa o que faltar.` : mistura && livreQuebrado ? ` Nem toda quantidade fecha de ${passoS} em ${passoS}: o último passo completa o que faltar.` : ""}</p></div>
       <style>{CSS}</style>
     </div>
   );
