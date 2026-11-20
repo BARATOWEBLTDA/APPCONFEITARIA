@@ -20,7 +20,8 @@ export default function GuiaAparencia({ passos, aoFechar }: { passos: PassoGuia[
     let vivo = true;
     const medir = () => {
       const el = document.querySelector<HTMLElement>(passo.alvo);
-      if (!el || !vivo) return;
+      if (!vivo) return;
+      if (!el) { setC(null); return; }
       const b = el.getBoundingClientRect();
       const f = passo.folga ?? 6;
       const raio = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 12;
@@ -45,6 +46,12 @@ export default function GuiaAparencia({ passos, aoFechar }: { passos: PassoGuia[
   }, [aoFechar]);
 
   const seguir = () => (ultimo ? aoFechar() : setI(i + 1));
+  // o lugar deste passo não está na tela (mudou enquanto o guia estava aberto): pula para o próximo em vez de travar
+  useEffect(() => {
+    if (c) return;
+    const t = window.setTimeout(() => { if (document.querySelector(passo.alvo)) return; if (i === passos.length - 1) aoFechar(); else setI(i + 1); }, 700);
+    return () => window.clearTimeout(t);
+  }, [c, i, passo.alvo, passos.length, aoFechar]);
   if (!c) return null;
 
   const alto = window.innerHeight, largo = window.innerWidth;

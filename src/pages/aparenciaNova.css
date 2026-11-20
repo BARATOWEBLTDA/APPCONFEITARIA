@@ -1,5 +1,5 @@
 /* (20/11) Aparência nova, só no celular: o cardápio dentro de um celular claro, e as cores presas embaixo. */
-.apn { padding: 6px 16px 0; }
+.apn { max-width: 462px; margin: 0 auto; padding: 6px 16px 0; } /* em tablet o celular não estica: fica no tamanho de um celular grande, no meio */
 .apn-cw { position: relative; }
 .apn-cw > i { position: absolute; width: 2.5px; border-radius: 2px; background: #D5CBD0; }
 .apn-b1 { left: -3.5px; top: 86px; height: 24px; } .apn-b2 { left: -3.5px; top: 120px; height: 42px; } .apn-b3 { right: -3.5px; top: 108px; height: 60px; }
@@ -79,5 +79,3 @@
 .apn-ops button small { font-size: 13px; color: var(--ui-texto-2); white-space: nowrap; }
 /* ajuda da primeira vez */
 .apn-ajuda-tx { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ui-texto-2); }
-.apn { position: relative; }
-.apn-ajuda-bt { position: absolute; z-index: 101; top: -50px; right: 12px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ui-texto-2); cursor: pointer; }

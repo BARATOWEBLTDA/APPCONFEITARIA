@@ -5,8 +5,9 @@
  * Os dados e as gravações são os mesmos da Aparência de sempre (CardapioDesign): aqui é só o desenho.
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { HexColorPicker } from "react-colorful";
-import { ArrowCounterClockwise, BatteryFull, Camera, CaretRight, CellSignalFull, Check, Crown, Images, LockSimple, PencilSimple, Plus, Question, Sparkle, WifiHigh, X } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, BatteryFull, Info, Camera, CaretRight, CellSignalFull, Check, Crown, Images, LockSimple, PencilSimple, Plus, Sparkle, WifiHigh, X } from "@phosphor-icons/react";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, BotaoIcone, CampoArea, Janela } from "@/components/base";
 import { abrirConvitePro } from "@/components/billing/RecursoPro";
@@ -15,7 +16,8 @@ import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import NomeNoLink from "@/components/loja/NomeNoLink";
 import { jaViuDestaque, marcarDestaque } from "@/components/Destaque";
 import GuiaAparencia, { type PassoGuia } from "./GuiaAparencia";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, refreshProfile } from "@/hooks/useProfile";
+import { usePlano } from "@/hooks/usePlano";
 import { COR_BOTOES, PADRAO, PRONTAS, PRONTAS_PRO, topoEscurecido, type CampoCor } from "@/lib/coresCardapio";
 import "@/components/cardapio/cardapioModelo1.css";
 import "@/components/cardapio/itensCardapio.css";
@@ -59,7 +61,8 @@ export default function AparenciaCelular(p: Props) {
   const { profile } = useProfile();
   const codigo = String(profile?.codigo_publico || "");
   const slug = String(profile?.slug_personalizado || "") || "cardapio";
-  const selo = p.isPro;
+  const { temRecurso } = usePlano();
+  const selo = temRecurso("selo_verificado"); // a mesma regra do cardápio de verdade
 
   const [aba, setAba] = useState<CampoCor>("cor_borda");
   const [outraCor, setOutraCor] = useState(false);
@@ -73,7 +76,13 @@ export default function AparenciaCelular(p: Props) {
   const [ajuda, setAjuda] = useState<"pergunta" | number | null>(null);
   useEffect(() => {
     if (jaViuDestaque("aparencia-nova")) return;
-    const t = window.setTimeout(() => { marcarDestaque("aparencia-nova"); setAjuda("pergunta"); }, 600);
+    let t = 0, n = 0;
+    // espera outra janela aberta (boas-vindas do PRO, avisos) fechar antes de perguntar
+    const ver = () => {
+      if (document.querySelector('[role="dialog"][aria-modal="true"]') && n++ < 40) { t = window.setTimeout(ver, 500); return; }
+      marcarDestaque("aparencia-nova"); setAjuda("pergunta");
+    };
+    t = window.setTimeout(ver, 600);
     return () => window.clearTimeout(t);
   }, []);
   const passos: PassoGuia[] = [
@@ -90,7 +99,7 @@ export default function AparenciaCelular(p: Props) {
   const prontas = p.premium ? [...PRONTAS[aba], ...PRONTAS_PRO[aba]] : PRONTAS[aba];
   const ePronta = prontas.some(x => x.cor === atual.valor);
 
-  const status = getStatusLoja(p.horario || null);
+  const status = (profile as { loja_pausada?: boolean | null } | null)?.loja_pausada ? { aberto: false, msg: "Pedidos pausados", curto: "Pedidos pausados" } : getStatusLoja(p.horario || null);
   const faixa = topoEscurecido(cor("cor_navbar").valor);
   const ocupado = !!p.enviando;
 
@@ -106,21 +115,24 @@ export default function AparenciaCelular(p: Props) {
     return () => window.removeEventListener("resize", medir);
   }, []);
 
+  // o "i" de rever a ajuda entra no topo da tela, no mesmo lugar do "i" das outras telas
+  const [topo, setTopo] = useState<Element | null>(null);
+  useEffect(() => { setTopo(document.querySelector(".cab .cab-linha")); }, []);
+
   const gravarDescricao = async () => {
     if (editDesc === null || salvando) return;
     setSalvando(true);
     const ok = await p.salvarDescricao(editDesc.trim());
     setSalvando(false);
-    if (ok) setEditDesc(null);
+    if (ok) { setEditDesc(null); void refreshProfile(); }
   };
 
   return (
     <>
       {p.janelas}
       <AppPageHeader title="Aparência" onBack={p.voltar} />
+      {topo && createPortal(<span className="cab-ajuda"><button type="button" className="cab-i" aria-label="Ver a ajuda desta tela" onClick={() => setAjuda(0)}><Info size={20} weight="bold" aria-hidden="true" /></button></span>, topo)}
       <div className="apn">
-        {/* rever a ajuda quando quiser (no lugar do "i" das outras telas) */}
-        <button type="button" className="apn-ajuda-bt" aria-label="Ver a ajuda desta tela" onClick={() => setAjuda(0)}><Question size={20} weight="bold" /></button>
         <div className="apn-cw">
           <i className="apn-b1" aria-hidden="true" /><i className="apn-b2" aria-hidden="true" /><i className="apn-b3" aria-hidden="true" />
           <div className="apn-cel">
@@ -129,7 +141,7 @@ export default function AparenciaCelular(p: Props) {
               {/* o link, como numa barra de navegador */}
               <div className="apn-url">
                 <span className="apn-cad" aria-hidden="true"><LockSimple size={13} weight="fill" /></span>
-                <em>doonly.com.br/c/{codigo}/{p.isPro ? <b>{slug}</b> : slug}</em>
+                <em>{codigo ? <>doonly.com.br/c/{codigo}/{p.isPro ? <b>{slug}</b> : slug}</> : "doonly.com.br"}</em>
                 {p.isPro
                   ? <button type="button" aria-label="Mudar o fim do link" onClick={() => setVerLink(true)}><PencilSimple size={15} weight="bold" /></button>
                   : <button type="button" className="apn-up" aria-label="Link com o nome da loja, no plano PRO" onClick={() => abrirConvitePro("link")}><Crown size={13} weight="fill" />PRO</button>}
@@ -156,9 +168,9 @@ export default function AparenciaCelular(p: Props) {
                     : <b>{(p.nomeLoja || "?").trim().charAt(0).toUpperCase()}</b>}
                 </button>
                 <i className="apn-lc" aria-hidden="true"><Camera size={13} weight="bold" /></i>
-                <h1 className="cm1-nome" style={{ color: cor("cor_nome").valor }}>
+                <div className="cm1-nome" style={{ color: cor("cor_nome").valor }}>
                   {p.nomeLoja || "Nome da sua loja"}{selo && <span className="apn-selo"><SeloVerificado tamanho={20} /></span>}
-                </h1>
+                </div>
                 <div className="cm1-sl">
                   {status ? (
                     <span className={`cm1-sl-st${status.aberto ? " aberto" : ""}`}>
