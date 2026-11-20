@@ -939,7 +939,7 @@ export default function NovaVenda() {
 
     <div className="nv3">
       {/* (20/11) computador: os passos no topo voltaram (só lá; no celular continuam fora). Passo já feito é clicável. */}
-      <ol className="nv3-passos" aria-label="Passos da venda">
+      <ol className="nv3-etapas" aria-label="Passos da venda">
         {PASSOS_PC.map((nome, i) => {
           const n = i + 1, feito = n < etapa, agora = n === etapa
           return (
