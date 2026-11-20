@@ -54,9 +54,9 @@ export default function CustosDoMes({ recebido, fixos, mostrarVazio = false, com
           <circle cx={m.x} cy={m.y} r="3.2" fill="var(--ui-branco)" stroke="var(--ui-texto-2)" strokeWidth="1.6" />
         </svg>
         <div className="cdm-tx">
-          <small>Entradas × custos fixos</small>
+          <small>Custos fixos pagos este mês</small>
           <b>{pago}%</b>
-          <span>esperado hoje: {esperado}%</span>
+          <span>o esperado até hoje era {esperado}%</span>
         </div>
       </div>
       <p className="cdm-p">

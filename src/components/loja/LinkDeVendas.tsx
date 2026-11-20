@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
-import { textoCardapio } from '@/lib/compartilharCardapio'
-import { Copy, Check, Eye, QrCode } from '@phosphor-icons/react'
-import IconeWhatsApp from '@/components/IconeWhatsApp'
+import { compartilharCardapio, textoCardapio } from '@/lib/compartilharCardapio'
+import { Copy, Check, Eye, QrCode, ShareNetwork } from '@phosphor-icons/react'
+import { situacaoDaLoja, horaTexto } from '@/lib/agendaCardapio'
+import { horarioComFechados } from '@/lib/diasFechados'
 import { useProfile, getCardapioUrl, fotoDaLoja } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
 import { avisar } from '@/components/base'
@@ -51,7 +52,21 @@ export function LinkDeVendas() {
     const a = document.createElement('a'); a.href = qr; a.download = `qrcode-cardapio-${profile?.codigo_publico || 'doonly'}.png`; a.click()
   }
 
-  const zap = `https://wa.me/?text=${encodeURIComponent(textoCardapio(link, profile?.nome_loja))}` // (6.82) o mesmo texto do Compartilhar
+  // onde o computador não tem a janela de compartilhar, abre o WhatsApp com a mensagem pronta (como era antes)
+  const compartilhar = async () => {
+    if (!('share' in navigator)) { window.open(`https://wa.me/?text=${encodeURIComponent(textoCardapio(link, profile?.nome_loja))}`, '_blank', 'noopener,noreferrer'); marcarCompartilhado(profile.id); return }
+    if (await compartilharCardapio(link, profile?.nome_loja)) marcarCompartilhado(profile.id)
+  }
+  // (20/11) a mesma situação que o menu da esquerda mostra (antes aqui dizia sempre "No ar")
+  const pl = profile as typeof profile & { loja_pausada?: boolean | null; horario?: unknown; dias_fechados?: unknown }
+  const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
+  const st = situacaoDaLoja(horarioComFechados(pl.horario, pl.dias_fechados))
+  const tom = pl.loja_pausada === true ? 'pausada' : !st || st.aberto ? 'aberta' : 'fechada'
+  const situacao = pl.loja_pausada === true ? 'Pedidos pausados'
+    : !st ? 'Recebendo pedidos'
+    : st.aberto ? `Aberta · fecha ${horaTexto(st.fecha)}`
+    : !st.abre ? 'Fechada'
+    : `Fechada · abre ${st.abre.dias === 0 ? horaTexto(st.abre.minutos) : st.abre.dias === 1 ? 'amanhã' : st.abre.dias > 6 && st.abre.data ? `dia ${st.abre.data.slice(8, 10)}/${st.abre.data.slice(5, 7)}` : DIAS[st.abre.diaSemana]}`
   const nome = (profile.nome_loja || 'Minha loja').trim()
   const iniciais = nome.split(/\s+/).slice(0, 2).map(p => p.charAt(0).toUpperCase()).join('')
   const foto = fotoDaLoja(profile)
@@ -67,12 +82,12 @@ export function LinkDeVendas() {
           <span className="ldv-logo" aria-hidden="true">{foto ? <img src={foto} alt="" /> : iniciais}</span>
           <span className="ldv-nome">
             <b>{nome}</b>
-            <small><i aria-hidden="true" />No ar · <span title={link}>{linkCurto}</span></small>
+            <small><i className={tom} aria-hidden="true" />{situacao} · <span title={link}>{linkCurto}</span></small>
           </span>
         </div>
-        <a className="ldv-zap" href={zap} target="_blank" rel="noopener noreferrer" onClick={() => marcarCompartilhado(profile.id)}>
-          <IconeWhatsApp size={20} />Mandar no WhatsApp
-        </a>
+        <button type="button" className="ldv-zap" onClick={compartilhar}>
+          <ShareNetwork size={19} weight="bold" aria-hidden="true" />Divulgar meu cardápio
+        </button>
         <div className="ldv-bts">
           <button type="button" className="ldv-b" onClick={copiar}>{copiado ? <Check size={17} weight="bold" aria-hidden="true" /> : <Copy size={17} weight="bold" aria-hidden="true" />}{copiado ? 'Copiado' : <><span className="ldv-longo">Copiar link</span><span className="ldv-curto">Copiar</span></>}</button>
           <a className="ldv-b" href={link} target="_blank" rel="noopener noreferrer"><Eye size={17} weight="bold" aria-hidden="true" />Ver</a>

@@ -1,6 +1,5 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import { resumoItens, type Pedido } from "@/components/pedidos/pedidoTexto";
-import { usePlaceholderVivo } from "@/hooks/usePlaceholderVivo";
 import { CLASSE_SELO, CTA_PRO, ETIQUETA_BLACK, ETIQUETA_SEM_TOQUE, SELO_OFERTA, SELO_TESTE } from "@/lib/beneficiosPro";
 import SeloOferta from "@/components/billing/SeloOferta";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
@@ -24,7 +23,11 @@ import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
 import { TelaVazia, informar } from "@/components/base";
 import MenuConta from "@/components/MenuConta";
 import { abrirDooIA } from "@/components/MenuContaItens";
-import { ArrowRight as SetaDoo, Plus as MaisIc, ArrowCircleDown, ArrowCircleUp, Crown } from "@phosphor-icons/react";
+import { abrirConvitePro } from "@/components/billing/RecursoPro";
+import { LIMITE_PRODUTOS_GRATIS } from "@/lib/limitesPlano";
+import { situacaoDaLoja } from "@/lib/agendaCardapio";
+import { horarioComFechados } from "@/lib/diasFechados";
+import { Plus as MaisIc, ArrowCircleDown, ArrowCircleUp, Crown } from "@phosphor-icons/react";
 import { useNotifications } from "@/context/NotificationContext";
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
@@ -104,7 +107,6 @@ function Variacao({ atual, anterior, quando }: { atual: number; anterior: number
 }
 
 /** (6.116) exemplos curtos (cabem no campo do celular) do que a Doo faz de verdade */
-const EXEMPLOS_DOO = ["Me passa uma receita", "Quanto cobrar num bolo?", "Quanto lucrei esse mês?", "O pedido #12 ficou pronto", "Monta minha ficha técnica", "Cria a logo da minha loja"];
 
 export default function Inicio() {
   const navigate = useNavigate();
@@ -160,10 +162,8 @@ export default function Inicio() {
     cardapioPublicado: false,
     loading: true,
   });
-  const [perguntaDoo, setPerguntaDoo] = useState("") // (6.91) o campo da Doo no topo do Início
-  // (6.116) o texto do campo da Doo ganha vida: de vez em quando digita um exemplo do que dá para pedir
-  const [dooFoco, setDooFoco] = useState(false);
-  const placeholderDoo = usePlaceholderVivo("Pergunte algo à Doo", EXEMPLOS_DOO, { parado: dooFoco || !!perguntaDoo });
+  // (20/11) quantos produtos a conta tem (a linha do limite, só no grátis)
+  const [qtdProdutos, setQtdProdutos] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const fotoRef = useRef<HTMLButtonElement>(null); // o menu da conta abre embaixo da foto
   // (16/10) sino com as não lidas no topo do celular (antes só pela foto › Notificações, sem aviso nenhum)
@@ -408,6 +408,18 @@ export default function Inicio() {
     return new Date(profile.pro_expira_em) > new Date();
   })();
 
+  const limiteProdutos = typeof profile?.limite_produtos_gratis === "number" && profile.limite_produtos_gratis > 0 ? profile.limite_produtos_gratis : LIMITE_PRODUTOS_GRATIS;
+  // (20/11) a situação da loja no quadro do celular: a mesma do menu do computador, em versão curta
+  const lojaAgora = (() => {
+    const pl = profile as (typeof profile & { loja_pausada?: boolean | null; horario?: unknown; dias_fechados?: unknown }) | null;
+    if (pl?.loja_pausada === true) return { tom: "pausada", txt: "Pausada" };
+    const st = pl ? situacaoDaLoja(horarioComFechados(pl.horario, pl.dias_fechados)) : null;
+    if (!st) return { tom: "aberta", txt: "No ar" };
+    const h = (min: number) => { const m = min % 60; return `${Math.floor(min / 60) % 24}h${m ? String(m).padStart(2, "0") : ""}`; };
+    if (st.aberto) return { tom: "aberta", txt: `Aberta · até ${h(st.fecha)}` };
+    return { tom: "fechada", txt: st.abre && st.abre.dias === 0 ? `Fechada · abre ${h(st.abre.minutos)}` : "Fechada agora" };
+  })();
+
   const hojeFormatado = () => {
     const d = new Date();
     // (09/11) celular: dia da semana curto ("Seg, 9 de novembro") pra caber numa linha ao lado do "7 dias grátis"
@@ -463,6 +475,7 @@ export default function Inicio() {
         supabase.from("produtos").select("id", { count: "exact", head: true }).eq("user_id", profile.id),
         supabase.from("clientes").select("id", { count: "exact", head: true }).eq("user_id", profile.id),
       ]);
+      setQtdProdutos(typeof prodRes.count === "number" ? prodRes.count : null);
       setOnboarding({
         produtosCount: prodRes.count || 0,
         clientesCount: cliRes.count || 0,
@@ -1028,15 +1041,22 @@ export default function Inicio() {
         <button type="button" className="ini-busca" onClick={abrirBuscaRapida}>
           <MagnifyingGlass size={20} aria-hidden="true" /><span>Buscar no app</span>
         </button>
+        {/* (20/11) a Doo entrou na barra da busca: uma barra só no topo (antes eram duas, uma embaixo da outra) */}
+        <button type="button" className="ini-busca-doo" onClick={() => abrirDooIA("")} aria-label="Perguntar à Doo">
+          <img src="/Sistema/doo.webp" alt="" aria-hidden="true" />Doo
+        </button>
       </section>
 
-      {/* (6.91) celular: a Doo logo no topo do Início, num campo de perguntar (escreveu e enviou, a conversa abre com a pergunta) */}
-      {!computador && (
-        <form className="ini-section ini-section--doo" onSubmit={e => { e.preventDefault(); const t = perguntaDoo.trim(); setPerguntaDoo(""); (document.activeElement as HTMLElement | null)?.blur(); abrirDooIA(t); }}>
-          <img src="/Sistema/doo.webp" alt="" aria-hidden="true" />
-          <input type="search" name="pergunta-doo" value={perguntaDoo} onChange={e => setPerguntaDoo(e.target.value)} placeholder={placeholderDoo} onFocus={() => setDooFoco(true)} onBlur={() => setDooFoco(false)} aria-label="Pergunte qualquer coisa à Doo" enterKeyHint="send" autoComplete="off" />
-          <button type="submit" aria-label="Enviar para a Doo"><SetaDoo size={18} weight="bold" /></button>
-        </form>
+      {/* (20/11) celular: o que entrou no mês e a situação da loja (antes só o computador mostrava) */}
+      {!erroCarga && (
+        <section className="ini-section ini-faixa">
+          <button type="button" onClick={() => navigate("/financeiro")}>
+            <small>Recebido no mês</small><b>{formatCurrency(counts.recebidoMes)}</b>
+          </button>
+          <button type="button" onClick={() => navigate("/cardapio")}>
+            <small>Sua loja</small><b><i className={`ini-faixa-luz ${lojaAgora.tom}`} aria-hidden="true" />{lojaAgora.txt}</b>
+          </button>
+        </section>
       )}
 
       {/* (16/10) celular: pedido novo pra aceitar e atrasados no topo, logo embaixo do "Olá" (antes uma faixa embaixo do Acesso rápido) */}
@@ -1092,6 +1112,13 @@ export default function Inicio() {
       <style>{"@media (min-width: 901px) { .ini-main .ini-section--nav { display: none !important; } } .ini-falta:empty { display: none !important; }"}</style>
       <section className="ini-section ini-section--nav">
         {/* Título da grade — muda de "Acesso rápido" pra "Explorar" durante onboarding */}
+        {/* (20/11) grátis: quantos produtos já usou do limite */}
+        {!isPro && qtdProdutos !== null && (
+          <button type="button" className="ini-limite" disabled={ETIQUETA_SEM_TOQUE} onClick={() => abrirConvitePro("produtos")}>
+            <span><b>{Math.min(qtdProdutos, limiteProdutos)} de {limiteProdutos} produtos</b><i aria-hidden="true"><u style={{ width: `${Math.min(100, Math.round((qtdProdutos / limiteProdutos) * 100))}%` }} /></i></span>
+            <em><Crown size={15} weight="fill" aria-hidden="true" />Sem limite no PRO{!ETIQUETA_SEM_TOQUE && <CaretRight size={13} weight="bold" aria-hidden="true" />}</em>
+          </button>
+        )}
         <h2 className="ini-section-title">
           Acesso rápido{/* (27/10) um nome só (antes virava "Explorar" na conta nova) */}
         </h2>
@@ -1684,20 +1711,32 @@ export default function Inicio() {
         .ini-pp:empty { display: none; }
 
         .ini-section--nav     { order: 2; }
-        .ini-section--busca   { order: 3; }
-        .ini-root .ini-section.ini-section--busca { margin-top: var(--space-3) !important; }
         /* (22/10) celular: o Para fazer vem logo depois do Acesso rápido (antes ficava em cima dele) */
         @media (max-width: 900px) { .ini-main > .ini-section.ini-falta { order: 4; } } /* (22/10) e depois das Próximas entregas (o dia vem antes das tarefas) */
         .ini-main > .ini-mobile-banner { order: 9; margin-top: var(--space-3); } /* (6.83) o banner é a última coisa do Início no celular */ /* (18/10) depois das Próximas entregas (o calendário vem logo após o Acesso rápido) */
         .ini-section--novos { order: -1; }
-        .ini-root form.ini-section.ini-section--doo { order: -2; display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px; margin-top: var(--space-3) !important; padding: 6px 6px 6px 8px !important; min-height: 0 !important; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); box-shadow: var(--ui-sombra-cartao); }
-        .ini-root form.ini-section--doo:focus-within { border-color: #F3B3CA; }
-        .ini-section--doo img { flex: none; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; object-position: top center; background: #FCE7F3; }
-        .ini-section--doo input { flex: 1; min-width: 0; height: 40px; border: 0; outline: 0; background: none; font-family: var(--font-base); font-size: 16px; color: var(--ui-texto); }
-        .ini-section--doo input::placeholder { color: var(--ui-texto-3); }
-        .ini-section--doo input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
-        .ini-section--doo input { -webkit-appearance: none; appearance: none; }
-        .ini-section--doo button { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--ui-rosa-botao, #CC2E66); color: #fff; cursor: pointer; }
+        .ini-root .ini-section.ini-section--busca { order: -3; position: relative; }
+        .ini-root .ini-section--busca .ini-busca { padding-right: 96px; }
+        .ini-busca-doo { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 6px; height: 36px; margin: 0; padding: 0 12px 0 4px; border: 0; border-radius: 18px; background: #F7F4F5; font: 500 13.5px var(--font-base); color: var(--ui-texto); white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .ini-busca-doo img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; object-position: top center; background: #FCE7F3; }
+        .ini-busca-doo:active { background: #EFEAEC; }
+        .ini-root .ini-section.ini-faixa { order: -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: var(--space-3) !important; }
+        @media (min-width: 901px) { .ini-root .ini-section.ini-faixa { display: none; } }
+        .ini-faixa button { display: block; min-width: 0; margin: 0; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); font-family: var(--font-base); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .ini-faixa small { display: block; font-size: 12.5px; color: var(--ui-texto-2); white-space: nowrap; }
+        .ini-faixa b { display: flex; align-items: center; gap: 6px; margin-top: 2px; font-size: 16px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; }
+        .ini-faixa-luz { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #15803D; }
+        .ini-faixa-luz.fechada { background: #9A8F94; } .ini-faixa-luz.pausada { background: #C2410C; }
+        @media (max-width: 379px) { .ini-faixa button { padding: 12px 10px; } .ini-faixa b { gap: 5px; font-size: 14.5px; } }
+        @media (max-width: 339px) { .ini-root .ini-section.ini-faixa { gap: 8px; } .ini-faixa button { padding: 10px 8px; } .ini-faixa b { font-size: 13.5px; } }
+        .ini-limite { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 12px; width: 100%; margin: 0 0 22px; padding: 12px 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); font-family: var(--font-base); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .ini-limite:disabled { cursor: default; opacity: 1; }
+        .ini-limite b { display: block; font-size: 14.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; }
+        .ini-limite i { display: block; height: 5px; margin-top: 8px; border-radius: 3px; background: #EFEAEC; overflow: hidden; }
+        .ini-limite u { display: block; height: 100%; border-radius: 3px; background: #4B3A42; }
+        .ini-limite em { display: flex; align-items: center; gap: 6px; font-style: normal; font-size: 13.5px; font-weight: 500; color: var(--ui-texto); white-space: nowrap; }
+        .ini-limite em svg:first-child { color: #C99A2E; }
+        @media (max-width: 359px) { .ini-limite { padding: 10px 8px; column-gap: 6px; } .ini-limite b, .ini-limite em { font-size: 12.5px; } .ini-limite em { gap: 4px; } }
         .ini-root .ini-section.ini-section--novos { margin-top: var(--space-3) !important; }
         @media (min-width: 901px) { .ini-section--novos { display: none; } }
 
@@ -2172,7 +2211,7 @@ export default function Inicio() {
           .ini-dk-kpi { background: var(--ui-branco); border-radius: var(--ui-raio-cartao); padding: 16px; box-shadow: 0 8px 22px rgba(60,20,35,.08); border: 1px solid #F3ECEF; }
           .ini-dk-kpi--dest { background: linear-gradient(150deg, #22130E, #5A3626); border-color: transparent; }
           .ini-dk-kh { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ui-texto-2); }
-          .ini-dk-kh span { width: 30px; height: 30px; border-radius: 9px; background: #FCE7F3; color: var(--ui-rosa-escuro); display: flex; align-items: center; justify-content: center; }
+          .ini-dk-kh span { width: 30px; height: 30px; border-radius: 9px; background: var(--ui-branco); border: 1px solid var(--ui-borda); color: var(--ui-texto-2); display: flex; align-items: center; justify-content: center; }
           .ini-dk-kpi--dest .ini-dk-kh { color: rgba(255,255,255,.8); } .ini-dk-kpi--dest .ini-dk-kh span { background: rgba(255,255,255,.15); color: var(--ui-branco); }
           .ini-dk-kpi b { display: block; font-size: 26px; font-weight: 600; margin-top: 10px; color: var(--ui-texto); }
           .ini-dk-kpi--dest b { color: var(--ui-branco); }
