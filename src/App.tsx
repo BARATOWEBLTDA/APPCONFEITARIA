@@ -56,6 +56,7 @@ if (typeof window !== "undefined") {
   }
 }
 const EsqueciSenha = lazy(() => import("@/pages/EsqueciSenha"));
+const Aparelhos = lazy(() => import("@/pages/Aparelhos")); // (20/11) conferência interna: o app em vários tamanhos de tela
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const Termos = lazy(() => import("@/pages/Termos"));
 const ExcluirConta = lazy(() => import("@/pages/ExcluirConta"));
@@ -530,6 +531,7 @@ export default function App() {
       <Suspense fallback={null}>
       <Routes>
         <Route path="/login" element={<Auth />} />
+        <Route path="/aparelhos" element={<Aparelhos />} />
         <Route path="/cadastro" element={<Auth />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/privacidade" element={<Privacidade />} />
