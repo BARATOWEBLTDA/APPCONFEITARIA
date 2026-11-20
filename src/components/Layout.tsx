@@ -560,14 +560,15 @@ export default function Layout() {
           .sidebar-nav { gap: 0; }
         }
         .nav-icon { display: flex; align-items: center; flex-shrink: 0; }
+        .nav-icon svg { width: 22px; height: 22px; } /* (20/11) menu maior: texto 15,5, ícone 22, item 48 (notebook: 15 e 42) */
         .nav-rotulo { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .nav-seta { flex-shrink: 0; opacity: 0.6; transition: transform var(--dur-normal) var(--ease-out); }
 
         .nav-item, .nav-item--group {
           all: unset; box-sizing: border-box;
-          display: flex; align-items: center; gap: 10px;
-          min-height: 44px; padding: 0 12px; border-radius: var(--ui-raio);
-          font-family: var(--font-base); font-size: 14.5px; font-weight: 400; line-height: 1.2; /* (6.69) normal: 400 como no celular; só a tela aberta fica em 600 */
+          display: flex; align-items: center; gap: 12px;
+          min-height: 48px; padding: 0 12px; border-radius: var(--ui-raio);
+          font-family: var(--font-base); font-size: 15.5px; font-weight: 400; line-height: 1.2; /* (6.69) normal: 400 como no celular; só a tela aberta fica em 600 */
           color: rgba(255,255,255,0.82); text-decoration: none; cursor: pointer;
           transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear;
           -webkit-tap-highlight-color: transparent;
@@ -616,7 +617,7 @@ export default function Layout() {
         .sb-topo-bts { display: flex; align-items: center; gap: 6px; flex: none; }
         /* (31/10 · 5.98) notebook (até 820 px de altura): itens um pouco mais baixos, para o menu caber com um grupo aberto */
         @media (max-height: 820px) {
-          .sidebar:not(.x) .nav-item, .sidebar:not(.x) .nav-item--group { min-height: 40px; }
+          .sidebar:not(.x) .nav-item, .sidebar:not(.x) .nav-item--group { min-height: 42px; font-size: 15px; }
           .sidebar:not(.x) .nav-grupo .nav-group-body .nav-subitem { min-height: 34px; }
         }
         .sb-pe-l { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
