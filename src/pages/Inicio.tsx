@@ -1,7 +1,7 @@
 // Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import { resumoItens, type Pedido } from "@/components/pedidos/pedidoTexto";
 import { usePlaceholderVivo } from "@/hooks/usePlaceholderVivo";
-import { CLASSE_SELO, CTA_PRO, OFERTA_PRO, SELO_OFERTA, SELO_TESTE } from "@/lib/beneficiosPro";
+import { CLASSE_SELO, CTA_PRO, ETIQUETA_BLACK, ETIQUETA_SEM_TOQUE, SELO_OFERTA, SELO_TESTE } from "@/lib/beneficiosPro";
 import SeloOferta from "@/components/billing/SeloOferta";
 import { nomeCurtoLoja } from "@/lib/nomeCurtoLoja";
 import PrimeirosPassos from "@/components/PrimeirosPassos";
@@ -895,7 +895,7 @@ export default function Inicio() {
                   <span>PRO</span>
                 </span>
               ) : (
-                OFERTA_PRO === "real1" ? (
+                ETIQUETA_BLACK ? (
                   /* (19/11) Black Friday: a mesma etiqueta que vira, também no computador */
                   <span className="ini-plan-tag--pc ini-selo-vira"><SeloOferta pc aoTocar={() => navigate("/assinar")} /></span>
                 ) : (
@@ -926,8 +926,9 @@ export default function Inicio() {
                   <button
                     type="button"
                     className={`ini-plan-tag ini-plan-tag--mob ini-plan-tag--upgrade${CLASSE_SELO}`}
-                    onClick={() => navigate("/assinar")}
-                    aria-label={CTA_PRO}
+                    onClick={ETIQUETA_SEM_TOQUE ? undefined : () => navigate("/assinar")}
+                    tabIndex={ETIQUETA_SEM_TOQUE ? -1 : undefined} style={ETIQUETA_SEM_TOQUE ? { cursor: "default" } : undefined}
+                    aria-label={ETIQUETA_SEM_TOQUE ? SELO_TESTE : CTA_PRO}
                   >
                     <img src="/coroa.webp" alt="" className="ini-plan-coroa" aria-hidden="true" />
                     <span>{SELO_TESTE}</span>

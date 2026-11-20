@@ -1,6 +1,6 @@
 import type React from 'react'
 import SeloOferta from "@/components/billing/SeloOferta";
-import { OFERTA_PRO, SELO_OFERTA } from "@/lib/beneficiosPro";
+import { ETIQUETA_BLACK, SELO_OFERTA } from "@/lib/beneficiosPro";
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -182,7 +182,7 @@ export function LogoDaLoja({ className = '' }: { className?: string }) {
           <a className="cab-ver-cardapio" href={linkCardapio} target="_blank" rel="noopener noreferrer"><ArrowSquareOut size={12} weight="bold" aria-hidden="true" />Ver cardápio</a>
         )}
         {!carregandoPlano && !isPro && (
-          OFERTA_PRO === "real1"
+          ETIQUETA_BLACK
             ? <SeloOferta pc aoTocar={() => navigate('/assinar')} />
             : <button type="button" className="cab-seja-pro" onClick={() => navigate('/assinar')}><Crown size={13} weight="fill" aria-hidden="true" />{SELO_OFERTA}</button>
         )}

@@ -52,8 +52,12 @@ export const CTA_PRO = noAppDaLoja && !lojaPagamentoPronto ? "Conhecer o PRO" : 
 /** botão curto (barra fixa da tela do PRO no celular) */
 export const CTA_PRO_CURTO = BLACK ? "Virar PRO" : "Testar grátis";
 /** etiqueta pequena do topo (Início e cabeçalho): na Black ela é preta, com a classe abaixo */
-export const SELO_TESTE = BLACK ? "Black Friday" : `${DIAS_TESTE} dias grátis`;
-export const CLASSE_SELO = BLACK ? " selo-black" : "";
+/** (20/11) no app da loja (Android) a etiqueta da Black aparece igual à da web, só que parada: sem toque e sem link de compra
+ *  (o pagamento do Google está desligado e a venda pela Hotmart não entra no app). Decisão do Bruno, com o app em teste fechado. */
+export const ETIQUETA_BLACK = BLACK || noAppDaLoja;
+export const ETIQUETA_SEM_TOQUE = noAppDaLoja;
+export const SELO_TESTE = ETIQUETA_BLACK ? "Black Friday" : `${DIAS_TESTE} dias grátis`;
+export const CLASSE_SELO = ETIQUETA_BLACK ? " selo-black" : "";
 /** a oferta escrita na tela do PRO */
 export const SELO_OFERTA = BLACK ? "1º mês apenas R$ 1,00" : `${DIAS_TESTE} dias grátis`;
 /** frase para avisos (Doo, limites) */
