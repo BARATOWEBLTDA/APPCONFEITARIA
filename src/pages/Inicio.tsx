@@ -20,7 +20,7 @@ import CustosDoMes from "@/components/inicio/CustosDoMes";
 import Destaque, { jaViuDestaque, marcarDestaque } from "@/components/Destaque";
 import { minutosDoDia, separarEntregasDeHoje } from "@/components/inicio/entregasDeHoje";
 import { useAoVoltar, useDiaAtual } from "@/hooks/useAoVoltar";
-import { TelaVazia, informar } from "@/components/base";
+import { Botao, TelaVazia, informar } from "@/components/base";
 import MenuConta from "@/components/MenuConta";
 import { abrirDooIA } from "@/components/MenuContaItens";
 import { abrirConvitePro } from "@/components/billing/RecursoPro";
@@ -1225,7 +1225,11 @@ export default function Inicio() {
             ) : loading && proximasEntregas.length === 0 ? (
               <p className="ini-dk-vazio">Carregando…</p>
             ) : proximasEntregas.length === 0 ? (
-              <p className="ini-dk-vazio">{counts.pedidosPendentes > 0 ? `Nada marcado. Aceite ${counts.pedidosPendentes === 1 ? "o pedido" : `os ${counts.pedidosPendentes} pedidos`} para ${counts.pedidosPendentes === 1 ? "ele entrar" : "eles entrarem"} aqui.` : "Nada marcado. Os pedidos aceitos aparecem aqui."}</p>
+              /* (20/11) vazio com ícone, frase e botão (antes era uma frase e o resto do cartão em branco) */
+              <TelaVazia compacta className="dkg-entregas-vz" icone={<CalendarDots size={30} />} titulo="Nenhuma entrega marcada" texto="Os pedidos aceitos aparecem aqui."
+                acao={counts.pedidosPendentes > 0
+                  ? <Botao onClick={() => navigate("/pedidos?filtro=aguardando")}>{counts.pedidosPendentes === 1 ? "Ver o pedido para aceitar" : `Ver os ${counts.pedidosPendentes} pedidos para aceitar`}</Botao>
+                  : <Botao variante="secundario" onClick={() => navigate("/vendas/novo")}>Nova venda</Botao>} />
             ) : proximasEntregas.map(e => {
               const d = new Date(e.data + "T12:00:00");
               const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
@@ -2289,7 +2293,8 @@ export default function Inicio() {
         .ini-dkg:not(:has(> .dkg-custos)) > .dkg-graf, .ini-dkg:has(> .dkg-fazer:empty) > .dkg-entregas { grid-column: 1 / -1; }
         .ini-dkg .dkg-graf .ini-chart-card { max-width: none; margin: 0; }
         /* próximas entregas maior */
-        .ini-dkg .dkg-entregas { padding: 18px 20px; }
+        .ini-dkg .dkg-entregas { padding: 18px 20px; display: flex; flex-direction: column; }
+        .ini-dkg .dkg-entregas-vz { flex: 1; justify-content: center; }
         .ini-dkg .dkg-entregas .ini-dk-ct { font-size: 17px; }
         .ini-dkg .dkg-entregas .ini-dk-en { padding: 12px 0; gap: 14px; }
         .ini-dkg .dkg-entregas .ini-dk-dt { width: 56px; height: 56px; }
