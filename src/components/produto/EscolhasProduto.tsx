@@ -6,7 +6,7 @@ import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidad
 import Quadrados from "@/components/produto/Quadrados";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
 import { mascaraBRL, lerBRL, textoBRL, selecionarValorAoFocar } from "@/lib/moeda";
-import { Botao, CaixasEscolha, Janela, BotaoTirar } from "@/components/base";
+import { Botao, Janela, BotaoTirar } from "@/components/base";
 import { lerPredefs, gravarPredefs, chaveTam, type PredefRend } from "@/lib/predefRendimento";
 import { ProductModal } from "@/components/cart/ProductModal";
 import { CartProvider } from "@/context/CartContext";
@@ -50,14 +50,6 @@ const APOIO: Partial<Record<Chave, string>> = { sabor: "Para docinhos, tortas e 
 const PLURAL: Record<string, string> = { massa: "massas", recheio: "recheios", cobertura: "coberturas", sabor: "sabores" };
 const NOVA: Record<string, string> = { massa: "Nome da massa…", recheio: "Nome do recheio…", cobertura: "Nome da cobertura…", sabor: "Nome do sabor…" };
 const QUANTAS: Record<string, string> = { massa: "Quantas o cliente escolhe", recheio: "Quantos o cliente escolhe", cobertura: "Quantas o cliente escolhe", sabor: "Quantos o cliente escolhe" };
-const SUGESTOES: Record<string, string[]> = {
-  massa: ["Branca", "Chocolate", "Red velvet", "Cenoura", "Nozes", "Coco"],
-  recheio: ["Ninho", "Brigadeiro", "Doce de leite", "Morango", "Nutella", "Prestígio", "Maracujá", "Abacaxi"],
-  cobertura: ["Chantilly", "Ganache", "Pasta americana", "Buttercream", "Glacê"],
-  sabor_doce: ["Brigadeiro", "Beijinho", "Ninho", "Casadinho", "Paçoca", "Churros"],
-  sabor_salgado: ["Coxinha", "Risole", "Kibe", "Bolinha de queijo", "Enroladinho", "Esfiha"],
-  sabor_sobremesa: ["Chocolate", "Ninho", "Morango", "Maracujá", "Limão", "Doce de leite"],
-};
 const QUANTOS: [string, number][] = [["Um", 1], ["Até 2", 2], ["Até 3", 3], ["À vontade", 99]];
 
 // Tamanho: modelos prontos (um toque monta a escada)
@@ -72,7 +64,6 @@ const PMG = ["Pequeno", "Médio", "Grande"];
 const ARO = ["Aro 15", "Aro 20", "Aro 25"];
 const TITULO_GRUPO: Record<string, string> = { massa: "Massas", recheio: "Recheios", cobertura: "Coberturas", sabor: "Sabores" };
 const opcoesDeNomes = (nomes: string[]) => nomes.map(n => ({ id: uid(), nome: n, preco: 0 }));
-const opcoesDePesos = (pesos: number[]) => [...pesos].sort((a, b) => a - b).map(kg => ({ id: uid(), nome: nomePeso(kg), preco: 0, peso_kg: kg }));
 
 /** (13/10) ordem natural dos tamanhos: letras (PP, P, M, G, GG…), depois números (aro, serve, kg). O resto fica no fim, na ordem em que entrou. */
 const ORDEM_LETRA: Record<string, number> = { mini: 0.5, pp: 1, p: 2, pequeno: 2, m: 3, medio: 3, g: 4, grande: 4, gg: 5, xg: 6, familia: 7 };
@@ -288,14 +279,6 @@ export default function EscolhasProduto({ form, setForm, tipo, onKitChange, outr
   );
 }
 
-function sugestoesDaChave(c: Chave, tipo: string | null | undefined, categoria: string): string[] {
-  if (c === "sabor") {
-    const n = norm(`${tipo || ""} ${categoria || ""}`);
-    return /salgad/.test(n) ? SUGESTOES.sabor_salgado : /sobremesa|pudi|mousse|pote/.test(n) ? SUGESTOES.sabor_sobremesa : SUGESTOES.sabor_doce;
-  }
-  return SUGESTOES[c] || [];
-}
-
 /** a frase do que falta, curta pra caber numa linha no celular */
 function faltaCurta(msg: string): string {
   const m = msg.match(/preço do kit de (\d+)/);
@@ -508,7 +491,7 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
             const comPeso = g.opcoes.map(o => ({ ...o, peso_kg: Number(o.peso_kg) > 0 ? o.peso_kg : pesoDoNome(o.nome) })).filter(o => Number(o.peso_kg) > 0);
             // (14/10) vindo do preço fixo, o "preço" guardado era o do menor tamanho: não serve de preço do kg (a edição salvava R$ 40,00 o kg sem perguntar)
             const eraFixo = (g.modo_preco_tamanho || "preco_fixo") !== "por_peso";
-            set({ modo_preco_tamanho: "por_peso", opcoes: comPeso }); // (20/11) sem pesos marcados de antemão setForm(f => ({ ...f, forma_venda: "kg", ...(eraFixo ? { preco_normal: 0, preco_promocional: 0 } : {}) }));
+            set({ modo_preco_tamanho: "por_peso", opcoes: comPeso }); /* (20/11) sem pesos marcados de antemão */ setForm(f => ({ ...f, forma_venda: "kg", ...(eraFixo ? { preco_normal: 0, preco_promocional: 0 } : {}) }));
                   }
       }} />
 

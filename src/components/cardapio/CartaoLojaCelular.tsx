@@ -25,10 +25,6 @@ import { horarioComFechados } from '@/lib/diasFechados'
  */
 // (10/11) mesma ordem dos Primeiros passos; o rótulo vai no botão "Próximo: …" (cabe numa linha no celular)
 const ORDEM_PASSOS = ["logo", "descricao", "endereco", "horario", "pagamento", "entrega", "caixa", "produto"] as const;
-const ROTULO_PASSO: Record<typeof ORDEM_PASSOS[number], string> = {
-  logo: "colocar a logo", descricao: "falar da sua loja", endereco: "pôr o endereço", horario: "definir o horário",
-  pagamento: "formas de pagamento", entrega: "configurar a entrega", caixa: "saldo do caixa", produto: "cadastrar 1º produto",
-};
 
 // (10/11) o último estado lido fica guardado: ao voltar pra Minha loja o cartão certo aparece na hora
 // (antes o cartão escuro "Sua loja está ativa" piscava até os passos chegarem)
