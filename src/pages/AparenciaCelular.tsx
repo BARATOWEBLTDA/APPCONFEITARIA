@@ -13,7 +13,8 @@ import { abrirConvitePro } from "@/components/billing/RecursoPro";
 import { getStatusLoja } from "@/components/cardapio/CardapioModelo1";
 import { SeloVerificado } from "@/components/cardapio/SeloVerificado";
 import NomeNoLink from "@/components/loja/NomeNoLink";
-import Destaque, { jaViuDestaque, marcarDestaque } from "@/components/Destaque";
+import { jaViuDestaque, marcarDestaque } from "@/components/Destaque";
+import GuiaAparencia, { type PassoGuia } from "./GuiaAparencia";
 import { useProfile } from "@/hooks/useProfile";
 import { COR_BOTOES, PADRAO, PRONTAS, PRONTAS_PRO, topoEscurecido, type CampoCor } from "@/lib/coresCardapio";
 import "@/components/cardapio/cardapioModelo1.css";
@@ -75,13 +76,13 @@ export default function AparenciaCelular(p: Props) {
     const t = window.setTimeout(() => { marcarDestaque("aparencia-nova"); setAjuda("pergunta"); }, 600);
     return () => window.clearTimeout(t);
   }, []);
-  const passos: { alvo: string; titulo: string; texto: string }[] = [
-    { alvo: ".apn-url", titulo: "O link do seu cardápio", texto: p.isPro ? "É o endereço que você manda para os clientes. Toque no lápis para mudar o fim dele." : "É o endereço que você manda para os clientes. No PRO, ele leva o nome da sua loja." },
-    { alvo: ".apn-rel", titulo: "Foto do topo", texto: "Toque na câmera para pôr uma foto atrás do nome da loja." },
-    { alvo: ".apn-logo", titulo: "Sua logo", texto: "Toque na logo para escolher ou trocar a imagem." },
-    { alvo: p.descricao ? ".apn-desc" : ".apn-desc-vazia", titulo: "Descrição da loja", texto: p.descricao ? "Toque no lápis para contar o que você faz." : "Toque aqui e conte em uma frase o que você faz." },
-    { alvo: p.banner ? ".apn-banner" : ".apn-slot", titulo: "Banner de promoção", texto: "Para promoções e datas especiais. Pode ser uma foto sua ou um banner pronto." },
-    { alvo: ".apn-ctl", titulo: "Cores", texto: "Escolha a cor da faixa, da borda da logo e do nome. Tudo salva na hora." },
+  const passos: PassoGuia[] = [
+    { alvo: ".apn-url", titulo: "Esse é o seu link", texto: p.isPro ? "O lápis muda o fim dele." : "É ele que você manda para os clientes." },
+    { alvo: ".apn-rel .apn-rb--d", titulo: "Ponha uma foto de capa", texto: "Toque na câmera e escolha a foto." },
+    { alvo: ".apn-logo", titulo: "Aqui vai a sua logo", texto: "Toque nela para escolher ou trocar.", folga: 4 },
+    { alvo: p.descricao ? ".apn-dp" : ".apn-desc-vazia", titulo: "Conte o que você faz", texto: p.descricao ? "Toque no lápis e escreva uma frase." : "Toque aqui e escreva uma frase." },
+    { alvo: p.banner ? ".apn-banner" : ".apn-slot", titulo: "Divulgue uma promoção", texto: "Pode ser uma foto sua ou um banner pronto." },
+    { alvo: ".apn-ctl", titulo: "Escolha as suas cores", texto: "Faixa, borda da logo e nome.", folga: 4 },
   ];
 
   const cor = (c: CampoCor) => p.cores.find(x => x.campo === c)!;
@@ -218,11 +219,7 @@ export default function AparenciaCelular(p: Props) {
         acoes={<><Botao variante="secundario" onClick={() => setAjuda(null)}>Agora não</Botao><Botao onClick={() => setAjuda(0)}>Quero ajuda</Botao></>}>
         <p className="apn-ajuda-tx">Quer uma ajudinha para personalizar o seu cardápio? Eu mostro onde tocar em cada coisa.</p>
       </Janela>
-      {typeof ajuda === "number" && (
-        <Destaque key={ajuda} alvo={passos[ajuda].alvo} titulo={passos[ajuda].titulo} texto={passos[ajuda].texto}
-          passo={`${ajuda + 1} de ${passos.length}`} acao={ajuda === passos.length - 1 ? "Concluir" : "Próximo"} naoTexto="Sair"
-          aoAcao={() => setAjuda(ajuda === passos.length - 1 ? null : ajuda + 1)} aoFechar={() => setAjuda(null)} />
-      )}
+      {typeof ajuda === "number" && <GuiaAparencia passos={passos} aoFechar={() => setAjuda(null)} />}
 
       {/* outra cor (PRO) */}
       <Janela aberta={outraCor && p.premium} aoFechar={() => { setOutraCor(false); setHex(null); }} tipo="conteudo" titulo={`Cor: ${ABAS.find(a => a.campo === aba)!.aba.toLowerCase()}`}
