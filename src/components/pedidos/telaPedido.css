@@ -436,3 +436,50 @@
 
 /* (19/11) Trocar e Editar lado a lado no título do cartão do cliente */
 .tpd-cli-acoes { display: inline-flex; align-items: center; gap: 14px; white-space: nowrap; }
+
+/* ═══ (20/11) revisão do celular ═══ */
+.ui-bt.tpd-acao--escuro { --bt-fundo: var(--ui-cinza-texto); --bt-cor: var(--ui-branco); --bt-sombra: var(--ui-texto); }
+.tpd-pt.t-amarelo { background: #EAB308; }
+.tpd-qo-1, .tpd-adic-cel, .tpd-pix-nao { display: none; }
+.tpd-pix-nao { width: 100%; min-height: 44px; margin: 4px 0 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 13.5px; color: var(--ui-rosa-escuro); cursor: pointer; }
+/* janela Cancelar: motivos em botões iguais, dois por linha; cabe sem rolar */
+.tpj-txt--1 { margin-bottom: 12px; }
+.tpj-motivos2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 8px; }
+.tpj-motivos2 .tpj-cat { min-width: 0; padding: 0 6px; font-size: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tpj-aviso { margin: 0 0 12px; }
+@media (max-width: 900px) {
+  /* a ficha do pedido numa folha só: as partes separadas por linha fina, sem caixa em cada uma */
+  .ep-wrap.ep2.tpd .ep2-grid { gap: 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); background: var(--ui-branco); }
+  .ep-wrap.ep2.tpd .ep2-grid .ep2-col, .ep-wrap.ep2.tpd .ep2-grid .ep2-sec { gap: 0; }
+  .ep-wrap.ep2.tpd .ep2-grid .ep2-card { margin: 0; padding: 14px 0; border: 0; border-top: 1px solid var(--ui-borda); border-radius: 0; background: none; box-shadow: none; }
+  .ep-wrap.ep2.tpd .ep2-grid .tpd-sec-itens > .tpd-cli-card { border-top: 0; }
+  /* cliente em uma linha, sem a bolinha com a letra */
+  .ep2.tpd .tpd-ini { display: none; }
+  .ep2.tpd .tpd-cli-tx { display: block; line-height: 1.45; }
+  .ep2.tpd .tpd-cli-tx > b { display: inline; font-weight: 500; white-space: normal; }
+  .ep2.tpd .tpd-cli-tx > span { display: inline-block; vertical-align: bottom; white-space: nowrap; }
+  .ep2.tpd .tpd-cli-tx > span::before { content: "·"; margin: 0 6px; color: var(--ui-texto-3); }
+  .ep2.tpd .tpd-cli-tx > small { display: block; }
+  /* item: escolhas ao lado da foto, preço na mesma linha e adicional em texto */
+  .ep2.tpd .tpd-it-tx { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; align-items: start; }
+  .ep2.tpd .tpd-it-tx > b { grid-column: 1 / -1; }
+  .ep2.tpd .tpd-it-preco { grid-column: 2; grid-row: 2; display: block; text-align: right; }
+  .ep2.tpd .tpd-it-preco > span { display: block; font-size: 12px; color: var(--ui-texto-2); white-space: nowrap; }
+  .ep2.tpd .tpd-it-preco > span:empty { display: none; }
+  .ep2.tpd .tpd-it-esc--pc { display: block; grid-column: 1; grid-row: 2; margin: 0; }
+  .ep2.tpd .tpd-it-esc--pc .ui-linha, .ep2.tpd .tpd-adic-cel .ui-linha { margin: 0; font-size: 13px; }
+  .ep2.tpd .tpd-adic-pc { display: none; }
+  .ep2.tpd .tpd-adic-cel { display: block; grid-column: 1 / -1; grid-row: 3; margin: 0; }
+  .ep2.tpd .tpd-adic-cel .ui-linha > b { white-space: normal; }
+  /* quando e onde em uma linha */
+  .ep2.tpd .tpd-qo-l { display: none; }
+  .ep2.tpd .tpd-qo-1 { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; margin: 0; padding: 0; border: 0; background: none; font-family: inherit; font-size: 15px; color: var(--ui-texto); text-align: left; white-space: nowrap; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ep2.tpd .tpd-qo-1 span:last-child { overflow: hidden; text-overflow: ellipsis; }
+  .ep2.tpd .tpd-qo-1 i { font-style: normal; color: var(--ui-texto-3); }
+  .ep2.tpd .tpd-qo-1 .av { color: #B45309; }
+  .ep2.tpd .tpd-pix-nao { display: block; }
+  /* etapas: os nomes não encostam mais um no outro */
+  .tpd-passos li { font-size: 11.5px; }
+  .tpd-passos li span { padding: 0 2px; }
+}
+@media (max-width: 380px) { .tpd-passos li { font-size: 11px; } .tpj-motivos2 .tpj-cat { font-size: 13px; } }

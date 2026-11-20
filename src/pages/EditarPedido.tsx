@@ -338,6 +338,8 @@ export default function EditarPedido() {
   // ── Cancelar pedido (Fase 8) ──────────────────────────────────────────
   const [cancelarAberto, setCancelarAberto] = useState(false)
   const [motivoCancelamento, setMotivoCancelamento] = useState('')
+  const [outroMotivo, setOutroMotivo] = useState(false) // (20/11) "Outro motivo" abre o campo de escrever
+  const [pixNaoVeio, setPixNaoVeio] = useState(false) // (20/11) celular: mostra o resto dos pagamentos quando o Pix não chegou
   const [mostrarMotivoCliente, setMostrarMotivoCliente] = useState(false)
   const [cancelando, setCancelando] = useState(false)
 
@@ -760,7 +762,7 @@ export default function EditarPedido() {
         abrirCancelarRef.current = false
         if (p.status !== 'cancelado') {
           try { await lendoPag } catch { /* a janela trata pagamentos que falharam */ }
-          if (!cancelado) { setDevolverSinal(null); setCancelarAberto(true) }
+          if (!cancelado) { setDevolverSinal(null); setOutroMotivo(false); setCancelarAberto(true) }
         }
       }
     })()
@@ -1302,7 +1304,8 @@ export default function EditarPedido() {
   // o recebimento é registrado na parte de Pagamentos, logo abaixo.
   const proximaEtapa: { s: string; l: string } | null = (() => {
     const a = proximoPasso(statusPedido, tipoEntrega, pedido?.origem)
-    return a ? { s: a.proximo, l: a.rotulo } : null
+    // (20/11) nesta tela o primeiro passo diz o que acontece: "Começar a produzir"
+    return a ? { s: a.proximo, l: a.proximo === 'em_producao' ? 'Começar a produzir' : a.rotulo } : null
   })()
   // (11/10) Devolve se gravou. Antes qualquer erro virava só um aviso no console e a tela dizia "Quem retirou foi salvo".
   //   'ok' gravou · 'sem-coluna' o banco ainda não tem o campo (segue sem ele) · 'erro' não gravou (internet etc.)
@@ -1505,7 +1508,7 @@ export default function EditarPedido() {
     { Ic: Clock, t: 'Acompanhar pedido', sub: 'O histórico do pedido', aoTocar: () => setTimelineAberto(true) },
     { Ic: Printer, t: 'PDF do pedido', sub: 'Enviar ao cliente ou imprimir', aoTocar: () => handleExportarPDF() },
     ...(statusPedido !== 'cancelado' ? [{ Ic: Package, t: 'Mudar a etapa', sub: 'Voltar ou pular uma etapa', aoTocar: () => setEtapasAberto(true) }] : []),
-    ...(statusPedido !== 'cancelado' ? [{ Ic: Prohibit, t: 'Cancelar pedido', sub: 'Fica guardado como cancelado', perigo: true, aoTocar: () => { setDevolverSinal(null); setCancelarAberto(true) } }] : []),
+    ...(statusPedido !== 'cancelado' ? [{ Ic: Prohibit, t: 'Cancelar pedido', sub: 'Fica guardado como cancelado', perigo: true, aoTocar: () => { setDevolverSinal(null); setOutroMotivo(false); setCancelarAberto(true) } }] : []),
     { Ic: Trash, t: 'Excluir pedido', sub: 'Apaga de vez', perigo: true, aoTocar: () => excluirPedido() },
   ]
 
@@ -1528,7 +1531,7 @@ export default function EditarPedido() {
                 <button type="button" className="tpd-ret-bt" onClick={() => { setQuemRetirou(pedido.retirado_por || ''); setDepoisRetirada('editar'); setRetiradaAberta(true) }}>{pedido.retirado_por ? 'Mudar' : 'Informar'}</button>
               </Linha>
             )}
-            {atrasadoHoje && <p className="tpd-aviso atr">A data de entrega já passou.</p>}
+            {atrasadoHoje && <p className="tpd-aviso atr">{tipoEntrega === 'retirada' ? 'A data de retirada já passou.' : 'A data de entrega já passou.'}</p>}
             {novoPedido && <p className="tpd-aviso">Aceite para entrar na sua agenda.</p>}
           </div>
           <MenuMais rotulo="Mais ações" className="tpd-mais" itens={itensMenu} />
@@ -1545,7 +1548,7 @@ export default function EditarPedido() {
         )}
         {/* (28/10) no computador os três pontinhos ficam no canto, ao lado do botão da etapa (no celular continuam junto do texto) */}
         <div className="tpd-sit-acao">
-          {proximaEtapa ? <Botao className="tpd-acao" cheio carregando={mudandoEtapa} onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l}</Botao>
+          {proximaEtapa ? <Botao className={`tpd-acao${proximaEtapa.s === 'em_producao' ? ' tpd-acao--escuro' : ''}`} cheio carregando={mudandoEtapa} onClick={() => irParaEtapa(proximaEtapa.s)}>{proximaEtapa.l}</Botao>
             : grupoAtual === 'entregue' ? <p className="tpd-fim"><Check size={16} weight="bold" /> {tipoEntrega === 'retirada' ? 'Pedido retirado' : 'Pedido entregue'}</p> : null}
           <MenuMais rotulo="Mais ações" className="tpd-mais-pc" itens={itensMenu} />
         </div>
@@ -1603,12 +1606,12 @@ export default function EditarPedido() {
                             <span className="tpd-it-preco"><span>{q !== 1 ? `${formatMoney(it.valor_unitario || 0)} ${porUnidade(it, eKit)}` : ''}</span><b>{formatMoney(valorDaLinha(it))}</b></span>
                             {/* (28/10) computador: as escolhas (sabores etc.) ficam logo embaixo do nome, no lugar do preço */}
                             {campos.length > 0 && <div className="tpd-it-esc tpd-it-esc--pc">{campos.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>}
-                            {adicionais && <div className="tpd-it-esc--pc">{adicionais}</div>}
+                            {adicionais && <div className="tpd-it-esc--pc tpd-adic-pc">{adicionais}</div>}
+                            {/* (20/11) celular: o adicional em texto, na mesma lista das escolhas (sem pílula) */}
+                            {extras.length > 0 && <div className="tpd-it-esc tpd-adic-cel"><Linha rotulo={extras.length > 1 ? 'Adicionais' : 'Adicional'}>{extras.map(e => nomeExtra(e)).join(', ')}</Linha></div>}
                           </div>
                           <BotaoIcone rotulo={`Opções de ${it.nome_produto}`} variante="limpo" tamanho="p" onClick={() => setItemMenu(idx)}><DotsThree size={20} weight="bold" /></BotaoIcone>
                         </div>
-                        {campos.length > 0 && <div className="tpd-it-esc tpd-it-esc--cel">{campos.map(([k, v]) => <Linha key={k} rotulo={k}>{v}</Linha>)}</div>}
-                        {adicionais && <div className="tpd-it-esc--cel">{adicionais}</div>}
                         {(fotoRef || obs) && (
                           <div className="tpd-recado">
                             {fotoRef && (
@@ -1653,6 +1656,11 @@ export default function EditarPedido() {
               {/* (11/11) resumo do combinado (antes: as caixas de Entrega/Retirada e os campos ficavam sempre abertos) */}
               {!quandoAberto ? (
                 <div className="tpd-qo">
+                  {/* (20/11) celular: tudo em uma linha */}
+                  <button type="button" className="tpd-qo-1" onClick={() => setQuandoAberto(true)}>
+                    <span>{tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada na loja'}</span><i aria-hidden="true">·</i>
+                    <span className={dataEntrega ? undefined : 'av'}>{dataEntrega ? `${diaPorExtenso(dataEntrega)}${horarioEntrega ? ` às ${horarioEntrega.slice(0, 5)}` : ''}` : 'Sem data'}</span>
+                  </button>
                   <button type="button" className="tpd-qo-l" onClick={() => setQuandoAberto(true)}>
                     <span className="tpd-qo-ic" aria-hidden="true">{tipoEntrega === 'entrega' ? <Truck size={20} weight="bold" /> : <Storefront size={20} weight="bold" />}</span>
                     <span className="tpd-qo-tx"><b>{tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada na loja'}</b><small>{tipoEntrega === 'entrega' ? 'Leva até o cliente' : 'A cliente busca'}</small></span>
@@ -1789,9 +1797,12 @@ export default function EditarPedido() {
               const px = pixDoPedido(pedido as PedidoTexto)
               if (!px) return null
               return px.estado === 'conferir'
-                ? <div className="ep2-pix"><p><b>{px.tipo === 'sinal' ? 'Sinal no Pix a conferir' : 'Pix a conferir'}</b><b>{formatMoney(px.valor)}</b></p><small>Confira no app do banco e confirme.</small><Botao tamanho="m" cheio carregando={confirmandoPix} onClick={confirmarPixDoCardapio}>Confirmar Pix</Botao></div>
+                ? <><div className="ep2-pix"><p><b>{px.tipo === 'sinal' ? 'Sinal no Pix a conferir' : 'Pix a conferir'}</b><b>{formatMoney(px.valor)}</b></p><small>Confira no app do banco e confirme.</small><Botao tamanho="m" cheio carregando={confirmandoPix} onClick={confirmarPixDoCardapio}>Confirmar Pix</Botao></div>
+                  {/* (20/11) celular: enquanto o Pix espera a conferência, o resto dos pagamentos fica guardado atrás deste link */}
+                  {cel && !pixNaoVeio && <button type="button" className="tpd-pix-nao" onClick={() => setPixNaoVeio(true)}>Não recebi o Pix</button>}</>
                 : <div className="ep2-pix"><p><b>Aguardando Pix</b></p><small>O cliente ainda não pagou pelo cardápio.</small></div>
             })()}
+            {!(cel && !pixNaoVeio && pixDoPedido(pedido as PedidoTexto)?.estado === 'conferir') && <>
             {pagamentosFalhou ? (
               <p className="ep2-vazio">Não deu para carregar os recebimentos. Recebido até agora: <b>{formatMoney(recebidoAtual)}</b>. <button type="button" className="ep2-lk" onClick={() => carregarPagamentos(pedido.id)}>Tentar de novo</button></p>
             ) : pagamentosOk ? (pagamentos.length === 0 ? <p className="ep2-vazio">Nenhum recebimento ainda.</p> : pagamentos.map(g => (
@@ -1824,6 +1835,7 @@ export default function EditarPedido() {
                 <p className="tpd-amais">{pagamentosOk && !pagamentosFalhou ? 'Estorne o recebimento acima e registre o valor certo.' : 'Confira o que foi recebido neste pedido.'}{alteracoes > 0 ? ' Antes, salve as alterações.' : ''}</p>
               </div>
             ) : <p className="tpd-quitado"><Check size={16} weight="bold" /> Pedido pago</p>)}
+            </>}
           </div>
 
           {/* salvar (computador) */}
@@ -1889,7 +1901,7 @@ export default function EditarPedido() {
           {/* (6.78) só as etapas que existem para este tipo: retirada não tem "Saiu para entrega"; entrega não tem "Pronto para retirar" */}
           {SITUACOES.filter(x => x.chave !== 'cancelado' && !(tipoEntrega === 'retirada' && x.chave === 'em_entrega') && !(tipoEntrega !== 'retirada' && x.chave === 'aguardando_retirada') && !(tipoEntrega === 'retirada' && x.chave === 'finalizado')).map(x => (
             <button key={x.chave} type="button" className={`tpd-mi${x.chave === grupoAtual ? ' sel' : ''}`} aria-current={x.chave === grupoAtual ? 'true' : undefined} onClick={() => { setEtapasAberto(false); irParaEtapa(x.chave) }}>
-              <span className={`tpd-pt t-${x.tom || 'cinza'}`} aria-hidden="true" />{nomeDaSituacao(x.chave, tipoEntrega)}{x.chave === grupoAtual && <em>atual</em>}
+              <span className={`tpd-pt t-${x.chave === 'aguardando_pagamento' ? 'amarelo' : x.tom || 'cinza'}`} aria-hidden="true" />{nomeDaSituacao(x.chave, tipoEntrega)}{x.chave === grupoAtual && <em>atual</em>}
             </button>
           ))}
         </div>
@@ -1994,7 +2006,8 @@ export default function EditarPedido() {
 
       {/* ═══ CANCELAR PEDIDO (3.16: janela padrão) ═══ */}
       {(() => {
-        const motivos = ['Sem ingredientes para produzir', 'Não deu para entregar na data', 'Fora da área de entrega', 'Pagamento não confirmado', 'O cliente desistiu']
+        // (20/11) botões iguais, dois por linha, com nome curto; o cliente recebe a frase inteira
+        const motivos: [string, string][] = [['Sem ingredientes', 'Sem ingredientes para produzir'], ['Não deu na data', 'Não deu para entregar na data'], ['Fora da área', 'Fora da área de entrega'], ['Sem pagamento', 'Pagamento não confirmado'], ['Cliente desistiu', 'O cliente desistiu']]
         const temMotivo = !!motivoCancelamento.trim()
         return (
           <Janela
@@ -2005,18 +2018,21 @@ export default function EditarPedido() {
               <Botao variante="perigo" onClick={handleConfirmarCancelamento} carregando={cancelando}>Cancelar pedido</Botao>
             </>}
           >
-            <p className="tpj-txt">Ele sai da agenda e não conta no faturamento. {recebidoAtual > 0.009 ? `Você já recebeu ${formatMoney(recebidoAtual)} deste pedido.` : 'Nenhum pagamento foi registrado.'}</p>
+            <p className="tpj-txt tpj-txt--1">Sai da agenda e não conta no faturamento.{recebidoAtual > 0.009 ? ` Você já recebeu ${formatMoney(recebidoAtual)}.` : ''}</p>
             <div className="ui-campo tpj-bloco">
               <span className="ui-campo-r"><span>Motivo</span><small>opcional</small></span>
-              <div className="tpj-cats tpj-motivos" role="group" aria-label="Motivos mais comuns">
-                {motivos.map(m => <button key={m} type="button" className="tpj-cat" aria-pressed={motivoCancelamento === m} onClick={() => setMotivoCancelamento(motivoCancelamento === m ? '' : m)}>{m}</button>)}
+              <div className="tpj-motivos2" role="group" aria-label="Motivos mais comuns">
+                {motivos.map(([curto, frase]) => <button key={curto} type="button" className="tpj-cat" aria-pressed={!outroMotivo && motivoCancelamento === frase} onClick={() => { setOutroMotivo(false); setMotivoCancelamento(!outroMotivo && motivoCancelamento === frase ? '' : frase) }}>{curto}</button>)}
+                <button type="button" className="tpj-cat" aria-pressed={outroMotivo} onClick={() => { setMotivoCancelamento(''); setOutroMotivo(v => !v) }}>Outro motivo</button>
               </div>
-              <div className="ui-campo-c"><textarea rows={2} aria-label="Motivo do cancelamento" placeholder="Escreva o motivo ou escolha um acima" value={motivoCancelamento} onChange={e => setMotivoCancelamento(e.target.value)} /></div>
+              {outroMotivo && <div className="ui-campo-c"><textarea rows={2} aria-label="Motivo do cancelamento" placeholder="Escreva o motivo" value={motivoCancelamento} onChange={e => setMotivoCancelamento(e.target.value)} autoFocus /></div>}
             </div>
-            <label className={`tpj-chave${temMotivo ? '' : ' off'}`}>
-              <span><b>Mostrar o motivo para o cliente</b><small>{temMotivo ? 'Ele vê o motivo no acompanhamento do pedido.' : 'Escreva ou escolha um motivo para ligar.'}</small></span>
-              <input type="checkbox" role="switch" checked={mostrarMotivoCliente && temMotivo} disabled={!temMotivo} onChange={e => setMostrarMotivoCliente(e.target.checked)} className="tpj-esc" /><i className="tpj-sw" aria-hidden="true" />
-            </label>
+            {temMotivo && (
+              <label className="tpj-chave">
+                <span><b>Mostrar o motivo para o cliente</b><small>Ele vê no acompanhamento do pedido.</small></span>
+                <input type="checkbox" role="switch" checked={mostrarMotivoCliente} onChange={e => setMostrarMotivoCliente(e.target.checked)} className="tpj-esc" /><i className="tpj-sw" aria-hidden="true" />
+              </label>
+            )}
             {recebidoAtual > 0.009 && pagamentosOk && (
               <div className="ui-campo tpj-bloco" role="radiogroup" aria-label="O que aconteceu com o dinheiro">
                 <span className="ui-campo-r"><span>O que aconteceu com os {formatMoney(recebidoAtual)}?</span></span>
@@ -2046,12 +2062,7 @@ export default function EditarPedido() {
         const quando = (iso: string) => { const d = new Date(iso); return dataLonga(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`) }
         return (
           <Janela aberta={timelineAberto} aoFechar={() => setTimelineAberto(false)} tipo="conteudo" titulo="Acompanhar pedido">
-            <div className="tpj-resumo">
-              <Linha rotulo="Pedido">#{pedido?.numero || '—'}{clienteNome ? ` · ${toTitleCase(clienteNome.trim())}` : ''}</Linha>
-              <Linha rotulo="Situação" tom={situacao.tom}>{situacao.nome}</Linha>
-              <Linha rotulo={tipoEntrega === 'entrega' ? 'Entrega' : 'Retirada'} tom={atrasadoHoje ? 'vermelho' : undefined}>{cel ? dataCurta(dataEntrega, horarioEntrega) : dataLonga(dataEntrega, horarioEntrega)}</Linha>
-              {atrasadoHoje && <p className="tpd-aviso atr">A data de entrega já passou.</p>}
-            </div>
+            {atrasadoHoje && <p className="tpd-aviso atr tpj-aviso">{tipoEntrega === 'retirada' ? 'A data de retirada já passou.' : 'A data de entrega já passou.'}</p>}
             {historicoCarregando ? (
               <p className="tpd-carregando" role="status"><span className="ui-gira" aria-hidden="true" />Carregando o histórico…</p>
             ) : statusPedido === 'cancelado' ? (
@@ -2063,7 +2074,7 @@ export default function EditarPedido() {
                   return (
                     <li key={passo} className={`${feito ? 'feito' : ''}${atual ? ' atual' : ''}`} aria-current={atual ? 'step' : undefined}>
                       <i aria-hidden="true">{feito && <Check size={14} weight="bold" />}</i>
-                      <span><b>{NOME_PASSO[passo] || passo}</b>{d ? <small>{quando(d)}</small> : atual ? <small>Situação de agora</small> : feito ? <small>Sem horário registrado</small> : null}{passo === 'entregue' && tipoEntrega === 'retirada' && pedido?.retirado_por && <small>Retirado por {pedido.retirado_por}</small>}</span>
+                      <span><b>{NOME_PASSO[passo] || passo}</b>{feito && d ? <small>{quando(d)}</small> : atual ? <small>Situação de agora</small> : feito ? <small>Sem horário registrado</small> : null}{passo === 'entregue' && tipoEntrega === 'retirada' && pedido?.retirado_por && <small>Retirado por {pedido.retirado_por}</small>}</span>
                     </li>
                   )
                 })}
