@@ -30,6 +30,7 @@ body { font-family: Poppins, system-ui, sans-serif; background: #F3F1F2; color: 
 .sinc input { accent-color: #4B3A42; }
 .palco { flex: 1; overflow: auto; padding: 22px 22px 40px; }
 .fila { display: flex; align-items: flex-start; gap: 26px; width: max-content; margin: 0 auto; }
+@media (max-width: 700px) { .barra h1 { width: 100%; } .palco { padding: 16px 12px 30px; } }
 .ap { flex: none; }
 .ap-nome { margin: 0 0 8px; text-align: center; font-size: 12.5px; color: #776B71; white-space: nowrap; }
 .ap-nome b { font-weight: 600; color: #2B1F24; }
@@ -38,6 +39,8 @@ body { font-family: Poppins, system-ui, sans-serif; background: #F3F1F2; color: 
 .ap-corpo.pc { border-radius: 16px; padding: 8px; }
 .ap-corpo iframe { display: block; border: 0; border-radius: 35px; background: #fff; }
 .ap-corpo.pc iframe { border-radius: 9px; }
+.ap-corpo.tb { border-radius: 34px; padding: 14px; }
+.ap-corpo.tb iframe { border-radius: 20px; }
 .aviso { max-width: 520px; margin: 60px auto; padding: 18px 20px; border: 1px solid #E8E3E5; border-radius: 14px; background: #fff; font-size: 14px; line-height: 1.5; text-align: center; }
 </style>
 </head>
@@ -52,35 +55,40 @@ body { font-family: Poppins, system-ui, sans-serif; background: #F3F1F2; color: 
   <div class="atalhos" id="atalhos"></div>
   <div class="quais" id="quais"></div>
   <label class="sinc"><input type="checkbox" id="sinc" checked> Andar juntos</label>
-  <label class="zoom">Tamanho <input type="range" id="zoom" min="35" max="100" value="70"> <span id="zoomv">70%</span></label>
+  <label class="zoom">Tamanho <input type="range" id="zoom" min="25" max="100" value="55"> <span id="zoomv">55%</span></label>
 </div>
 <div class="palco"><div class="fila" id="fila"></div></div>
 <script>
 (function () {
+  // do menor para o maior (largura × altura da tela, na medida que o app enxerga)
   var APARELHOS = [
     { id: "p320", nome: "Celular pequeno", l: 320, a: 568, on: true },
-    { id: "p360", nome: "Android comum", l: 360, a: 780, on: true },
-    { id: "p390", nome: "iPhone", l: 390, a: 844, on: true },
-    { id: "p430", nome: "Celular grande", l: 430, a: 932, on: false },
+    { id: "p360", nome: "Galaxy A / S", l: 360, a: 780, on: true },
+    { id: "p375", nome: "iPhone SE", l: 375, a: 667, on: true },
+    { id: "p390", nome: "iPhone 14 / 15", l: 390, a: 844, on: true },
+    { id: "p412", nome: "Pixel / Galaxy Ultra", l: 412, a: 915, on: true },
+    { id: "p430", nome: "iPhone Pro Max", l: 430, a: 932, on: true },
+    { id: "t768", nome: "Tablet (iPad mini)", l: 768, a: 1024, on: true, tb: true },
+    { id: "t820", nome: "Tablet (iPad)", l: 820, a: 1180, on: false, tb: true },
     { id: "pc", nome: "Computador", l: 1280, a: 800, on: false, pc: true }
   ];
   var ATALHOS = [["Início", "/inicio"], ["Pedidos", "/pedidos"], ["Produtos", "/produtos"], ["Minha loja", "/cardapio"], ["Aparência", "/cardapio-design"]];
   var $ = function (i) { return document.getElementById(i); };
-  var guardado = {}; try { guardado = JSON.parse(localStorage.getItem("doonly-aparelhos") || "{}"); } catch (e) {}
+  var guardado = {}; try { guardado = JSON.parse(localStorage.getItem("doonly-aparelhos-2") || "{}"); } catch (e) {}
   var rota = new URLSearchParams(location.search).get("tela") || guardado.rota || "/inicio";
-  var zoom = guardado.zoom || 70;
+  var zoom = guardado.zoom || 55;
   APARELHOS.forEach(function (a) { if (guardado.on && a.id in guardado.on) a.on = guardado.on[a.id]; });
   $("dominio").textContent = location.host; $("rota").value = rota; $("zoom").value = zoom; $("zoomv").textContent = zoom + "%";
 
-  function guardar() { var on = {}; APARELHOS.forEach(function (a) { on[a.id] = a.on; }); try { localStorage.setItem("doonly-aparelhos", JSON.stringify({ rota: rota, zoom: zoom, on: on })); } catch (e) {} }
+  function guardar() { var on = {}; APARELHOS.forEach(function (a) { on[a.id] = a.on; }); try { localStorage.setItem("doonly-aparelhos-2", JSON.stringify({ rota: rota, zoom: zoom, on: on })); } catch (e) {} }
   function limpa(r) { r = (r || "/").trim(); try { if (/^https?:/i.test(r)) { var u = new URL(r); r = u.pathname + u.search; } } catch (e) {} if (r.charAt(0) !== "/") r = "/" + r; if (/^\/aparelhos/.test(r)) r = "/inicio"; return r; }
 
   function montar() {
     var fila = $("fila"); fila.innerHTML = "";
     APARELHOS.filter(function (a) { return a.on; }).forEach(function (a) {
-      var borda = a.pc ? 9 : 11, e = zoom / 100;
+      var borda = a.pc ? 9 : a.tb ? 15 : 11, e = zoom / 100;
       var d = document.createElement("div"); d.className = "ap";
-      d.innerHTML = '<p class="ap-nome"><b>' + a.nome + "</b> · " + a.l + " × " + a.a + '</p><div class="ap-caixa" style="width:' + Math.round((a.l + borda * 2) * e) + "px;height:" + Math.round((a.a + borda * 2) * e) + 'px"><div class="ap-corpo' + (a.pc ? " pc" : "") + '" style="transform:scale(' + e + ')"><iframe title="' + a.nome + '" width="' + a.l + '" height="' + a.a + '"></iframe></div></div>';
+      d.innerHTML = '<p class="ap-nome"><b>' + a.nome + "</b> · " + a.l + " × " + a.a + '</p><div class="ap-caixa" style="width:' + Math.round((a.l + borda * 2) * e) + "px;height:" + Math.round((a.a + borda * 2) * e) + 'px"><div class="ap-corpo' + (a.pc ? " pc" : a.tb ? " tb" : "") + '" style="transform:scale(' + e + ')"><iframe title="' + a.nome + '" width="' + a.l + '" height="' + a.a + '"></iframe></div></div>';
       d.querySelector("iframe").src = rota; fila.appendChild(d);
     });
     if (!fila.children.length) fila.innerHTML = '<p class="aviso">Marque pelo menos um aparelho na barra de cima.</p>';
