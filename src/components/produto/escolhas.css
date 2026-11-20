@@ -461,3 +461,9 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .esc-modelo { border: 1px solid var(--ui-borda); }
 .kq-simnao { margin-bottom: 10px; }
 .kq-nota--1 p { align-self: center; }
+/* (20/11) Rendimento do produto sem tamanhos: uma linha só */
+.esc-rend-1 { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 12px 8px 14px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); font-size: 15px; }
+.esc-rend-1 > span { flex: 1; min-width: 0; font-weight: 500; white-space: nowrap; }
+.esc-rend-1 input { flex: none; width: 92px; height: 44px; padding: 0 8px; border: 1.5px solid var(--ui-borda-campo); border-radius: 8px; background: #fff; font-family: inherit; font-size: 16px; text-align: center; color: var(--ui-texto); }
+.esc-rend-1 input:focus { outline: none; border-color: var(--ui-rosa); }
+.esc-rend-1 em { flex: none; font-style: normal; color: var(--ui-texto-2); white-space: nowrap; }

@@ -788,7 +788,8 @@ export function JanelaRendimentoSimples({ valor, onSalvar, onFechar }: { valor: 
   return (
     <Janela aberta aoFechar={onFechar} titulo="Rendimento" texto="O cliente vê no cardápio quanto o produto serve." tipo="conteudo"
       acoes={<><Botao variante="secundario" onClick={onFechar}>Voltar</Botao><Botao onClick={() => { onSalvar(num ? `${num} ${un}` : ""); onFechar(); }}>Salvar rendimento</Botao></>}>
-      <div className="esc esc-jan esc-rend" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
+      {/* (20/11) janela do tamanho do conteúdo, uma linha só ("Serve até [campo] fatias") e como aparece no cardápio */}
+      <div className="esc esc-jan-auto esc-rend" onFocusCapture={selecionarValorAoFocar} onClickCapture={selecionarValorAoFocar}>
         <p className="esc-lbl">Conta em</p>
         <div className="esc-seg esc-seg--3" role="radiogroup" aria-label="Unidade do rendimento">
           {[["fatias", "Fatias"], ["pessoas", "Pessoas"], ["unidades", "Unidades"]].map(([v, l]) => (
@@ -796,16 +797,13 @@ export function JanelaRendimentoSimples({ valor, onSalvar, onFechar }: { valor: 
           ))}
         </div>
         <p className="esc-lbl">Quanto o produto serve</p>
-        <ul className="esc-ops esc-rend-lista">
-          <li className="esc-rend-li">
-            <span className="esc-op-nm">Este produto</span>
-            <span className="esc-rend-campo">serve até
-              <input inputMode="numeric" placeholder="definir" value={num} aria-label={`Quantas ${un} serve`}
-                onChange={e => setNum(e.target.value.replace(/\D/g, "").slice(0, 4))} />
-              <em>{un}</em>
-            </span>
-          </li>
-        </ul>
+        <label className="esc-rend-1">
+          <span>Serve até</span>
+          <input inputMode="numeric" placeholder="definir" value={num} aria-label={`Quantas ${un} serve`}
+            onChange={e => setNum(e.target.value.replace(/\D/g, "").slice(0, 4))} />
+          <em>{un}</em>
+        </label>
+        <div className="esc-aviso esc-aviso--nota"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>No cardápio aparece “Serve até {num || "10"} {un}”.</p></div>
       </div>
     </Janela>
   );

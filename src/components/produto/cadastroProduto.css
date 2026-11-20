@@ -457,3 +457,8 @@ body .prod-modal--novo .prod-field > label { color: var(--ui-texto); }
 body .prod-modal--novo .prod-preco-input--promo:not(:focus-within):not(.prod-promo-tem) span { color: var(--ui-texto-2) !important; }
 body .prod-modal--novo .prod-vendido { margin-bottom: 14px; }
 body .prod-modal--novo .prod-prev-ed { margin-top: 4px; }
+
+/* (20/11) Cardápio e entrega: caixinha marcada em cinza escuro e menos vazio entre as partes */
+body .prod-modal--novo .prod-sec-ent .prod-opc.on > i { border-color: var(--ui-cinza-texto); background: var(--ui-cinza-texto); }
+body .prod-modal--novo .prod-sec-ent .prod-section-label.prod-lbl-sep { margin-top: 18px !important; }
+body .prod-modal--novo .prod-sec-ent .esc-quad { margin-bottom: 0; }

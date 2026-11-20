@@ -16,6 +16,7 @@ import { avisarPassos, lerPassos, passosCompletos, useLojaPronta } from "@/lib/p
 import RevisaoProduto, { ResumoProduto } from "@/components/produto/RevisaoProduto";
 import ResumoEdicao from "@/components/produto/ResumoEdicao";
 import ArrumarCategorias, { type ProdutoSemCat } from "@/components/produto/ArrumarCategorias";
+import Quadrados from "@/components/produto/Quadrados";
 import EscolhasProduto, { escolhasAtivas, faltaDaEscolha, pedirRendimento, JanelaRendimentoSimples } from "@/components/produto/EscolhasProduto";
 import { kitAtivo, precoMinKit, type KitQtdConfig, type KitFechado } from "@/lib/kitQuantidade";
 import SucessoProdutoTela from "@/components/produto/SucessoProdutoTela";
@@ -310,14 +311,14 @@ function PrazoEncomenda({ valor, aoMudar }: { valor: string | null; aoMudar: (v:
   const mudarDias = (n: number) => aoMudar(`${Math.min(60, Math.max(1, n))}d`);
   return (
     <div className="prod-field" style={{ marginTop: 12 }}>
-      <label>Quantos dias antes?</label>
-      <div className="prod-prazo" role="radiogroup" aria-label="Quantos dias antes">
+      <label>Com quanto tempo de antecedência?</label>
+      <div className="prod-prazo" role="radiogroup" aria-label="Com quanto tempo de antecedência">
         {PRINC.map(p => (
           <button key={p.v} type="button" role="radio" aria-checked={!perso && valor === p.v} className={!perso && valor === p.v ? "on" : ""}
             onClick={() => { setPerso(false); aoMudar(p.v); }}>{p.r}</button>
         ))}
         <button type="button" role="radio" aria-checked={perso} className={perso ? "on" : ""}
-          onClick={() => { setPerso(true); if (principal || !valor) mudarDias(principal ? Math.max(4, dias) : 4); }}>Personalizado</button>
+          onClick={() => { setPerso(true); if (principal || !valor) mudarDias(principal ? Math.max(4, dias) : 4); }}>Outro prazo</button>
       </div>
       {perso && (
         <div className="prod-prazo-n">
@@ -2525,12 +2526,11 @@ export default function Produtos() {
                     <p className="prod-section-label prod-section-label--novo">Como você vende</p>
                     {/* (22/10) celular: escolha única Pronta entrega | Sob encomenda (antes eram duas caixinhas e dava pra desmarcar as duas, B6) */}
                     <div className="prod-so-cel">
-                      <div className="prod-tipo" role="radiogroup" aria-label="Como você vende este produto">
-                        <button type="button" role="radio" aria-checked={form.pronta_entrega === true} className={form.pronta_entrega === true ? "on" : ""}
-                          onClick={() => setForm(f => ({ ...f, pronta_entrega: true, antecedencia: null }))}><span className="prod-tipo-ic" aria-hidden="true"><Lightning size={22} weight="fill" /></span><b>Pronta entrega</b><small>Tem feito, sai na hora</small></button>
-                        <button type="button" role="radio" aria-checked={form.pronta_entrega !== true} className={form.pronta_entrega !== true ? "on" : ""}
-                          onClick={() => setForm(f => ({ ...f, pronta_entrega: false, antecedencia: f.pronta_entrega || !f.antecedencia ? "48h" : f.antecedencia }))}><span className="prod-tipo-ic" aria-hidden="true"><CalendarBlank size={22} weight="fill" /></span><b>Sob encomenda</b><small>O cliente pede antes</small></button>
-                      </div>
+                      {/* (20/11) dois quadrados no padrão da Nova venda */}
+                      <Quadrados rotulo="Como você vende este produto" valor={form.pronta_entrega === true ? "pronta" : "encomenda"} opcoes={[
+                        { v: "pronta", t: "Pronta entrega", sub: "Tem feito, sai na hora", Ic: Lightning },
+                        { v: "encomenda", t: "Sob encomenda", sub: "O cliente pede antes", Ic: CalendarBlank },
+                      ]} onMudar={v => v === "pronta" ? setForm(f => ({ ...f, pronta_entrega: true, antecedencia: null })) : setForm(f => ({ ...f, pronta_entrega: false, antecedencia: f.pronta_entrega || !f.antecedencia ? "48h" : f.antecedencia }))} />
                       {form.pronta_entrega !== true && <PrazoEncomenda valor={form.antecedencia ?? null} aoMudar={v => setForm(f => ({ ...f, antecedencia: v }))} />}
                     </div>
                     <div className="prod-so-pc">
@@ -2543,7 +2543,8 @@ export default function Produtos() {
                     <div className="prod-opcs">
                       {op(form.disponivel !== false, "Mostrar no cardápio", form.disponivel !== false ? "Os clientes veem e podem pedir" : "Fica guardado só para você", () => setForm(f => ({ ...f, disponivel: f.disponivel === false, ...(f.disponivel !== false ? { destaque: false } : {}) } as Produto)))}
                       {/* (27/10) Destaques: até 6, no topo do cardápio em cartão grande */}
-                      {op(form.destaque === true, "Destacar no cardápio", (qtdDestaques(form.id) + (form.destaque === true ? 1 : 0) < 2 ? "Aparece a partir de 2 produtos em destaque" : `${qtdDestaques(form.id) + (form.destaque === true ? 1 : 0)} de ${MAX_DESTAQUES} · no topo do cardápio`), () => {
+                      {/* (20/11) texto curto, sem cortar no celular */}
+                      {op(form.destaque === true, "Destacar no cardápio", (form.destaque !== true ? "Fica no topo, em Destaques" : qtdDestaques(form.id) + 1 < 2 ? "Aparece com 2 em destaque" : `No topo · ${qtdDestaques(form.id) + 1} de ${MAX_DESTAQUES} destaques`), () => {
                         const ligar = form.destaque !== true;
                         if (ligar && form.disponivel === false) { avisar("Mostre o produto no cardápio para poder destacar.", { tipo: "erro" }); return; }
                         if (ligar && qtdDestaques(form.id) >= MAX_DESTAQUES) { avisarLimiteDestaques(false); return; }
