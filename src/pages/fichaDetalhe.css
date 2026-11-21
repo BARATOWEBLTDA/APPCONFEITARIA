@@ -196,6 +196,14 @@
 .fd-rende-c { flex: none; display: flex; align-items: stretch; width: 108px; height: 40px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); overflow: hidden; }
 .fd-rende-c input { flex: 1; min-width: 0; padding: 0 8px; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 600; text-align: center; color: var(--ui-texto); }
 .fd-rende-c i { flex: none; display: flex; align-items: center; padding: 0 10px; border-left: 1px solid var(--ui-borda); background: var(--ui-cinza); font-style: normal; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); }
+/* (21/11) cada venda leva N unidades da receita + avisos */
+.fd-rende-venda { margin-top: 8px; }
+.fd-rende-sug { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 8px; padding: 10px 12px; border: 0; border-radius: 12px; background: #F5F3F4; font-family: inherit; font-size: 13.5px; color: var(--ui-texto); text-align: left; cursor: pointer; }
+.fd-rende-sug svg { flex: none; color: #B45309; }
+.fd-rende-sug span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fd-rende-sug b { flex: none; font-weight: 500; color: var(--ui-primaria, #C2185B); white-space: nowrap; }
+.fd-conta-alerta { display: flex; align-items: flex-start; gap: 6px; margin: 0 0 8px; padding: 8px 10px; border-radius: 10px; background: #FEF3C7; color: #92400E; font-size: 13px; line-height: 1.35; }
+.fd-conta-alerta svg { flex: none; margin-top: 1px; }
 .fd-conta-un { margin: 0 0 4px; font-size: 13px; color: var(--ui-texto-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* (21/11) lucro por tamanho (produtos com tamanhos de preço fixo) */

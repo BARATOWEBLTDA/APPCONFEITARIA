@@ -81,7 +81,7 @@ export async function gerarFichaProduto(produto: ProdutoFicha | null | undefined
     const foto = typeof p.imagem_url === "string" && p.imagem_url.trim() ? `<img src="${esc(p.imagem_url.trim())}" alt="">` : "";
     const tituloProduto = `<div class="prod">${foto}<div><b>${esc(p.nome || "Produto")}</b>${dados ? `<span>${dados}</span>` : ""}</div></div>`;
     const formacao = `<div class="tot">
-      ${conta.rende > 1 ? `<div><span>A receita rende ${String(conta.rende).replace(".", ",")} · conta de 1 unidade</span><b></b></div>` : ""}
+      ${Number(p.ficha_rende) > 1 ? `<div><span>A receita rende ${String(Number(p.ficha_rende)).replace(".", ",")}${Number((p as { ficha_por_venda?: number | string | null }).ficha_por_venda) > 1 ? ` · cada venda leva ${String(Number((p as { ficha_por_venda?: number | string | null }).ficha_por_venda)).replace(".", ",")}` : " · conta de 1 unidade"}</span><b></b></div>` : ""}
       <div><span>Ingredientes</span><b>${brl(cmv)}</b></div>
       ${cvPct && cv > 0.004 ? `<div><span>Custos invisíveis (${String(cvPct).replace(".", ",")}%)</span><b>${brl(cv)}</b></div>` : ""}
       ${mo ? `<div><span>Mão de obra (${tempo})</span><b>${brl(mo)}</b></div>` : ""}

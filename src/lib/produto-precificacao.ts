@@ -349,10 +349,21 @@ export type ProdutoCustoJson = PromocaoJson & {
   cv_percentual?: number | string | null; salario_desejado?: number | string | null; tempo_preparo_min?: number | string | null; horas_semanais?: number | string | null;
   /** (6.183) quantas unidades a receita da ficha rende (1 = a ficha é de 1 unidade) */
   ficha_rende?: number | string | null;
+  /** (21/11) quantas unidades da receita vão em cada venda do produto (1 = uma) */
+  ficha_por_venda?: number | string | null;
 };
 
 /** (6.183) Quantas unidades a receita rende (nunca menos que 1) */
-export const rendeDaFicha = (p: { ficha_rende?: number | string | null } | null | undefined) => { const n = Number(p?.ficha_rende); return Number.isFinite(n) && n > 1 ? n : 1; };
+export const rendeDaFicha = (p: { ficha_rende?: number | string | null; ficha_por_venda?: number | string | null } | null | undefined) => {
+  const n = Number(p?.ficha_rende); const rende = Number.isFinite(n) && n > 1 ? n : 1;
+  // (21/11) cada venda pode levar várias unidades da receita (o cento, a caixa com 12): a conta é de 1 venda
+  const v = Number(p?.ficha_por_venda); const porVenda = rende > 1 && Number.isFinite(v) && v > 1 ? v : 1;
+  return rende / porVenda;
+};
+/** (21/11) quantas unidades da receita vão em cada venda (só vale quando a receita rende mais de 1) */
+export const porVendaDaFicha = (p: { ficha_rende?: number | string | null; ficha_por_venda?: number | string | null } | null | undefined) => {
+  const v = Number(p?.ficha_por_venda); return Number(p?.ficha_rende) > 1 && Number.isFinite(v) && v > 1 ? v : 1;
+};
 
 export function calcularCustoLucro(p: ProdutoCustoJson | null | undefined, mao: MaoObraConta = null, cvConta: number | null = null, venda: CustoDaVenda | null = null) {
   const itens = (p?.produto_insumos || []).filter((x) => x?.insumos);

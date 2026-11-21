@@ -176,6 +176,7 @@ type Produto = {
   salario_desejado?: number;
   horas_semanais?: number;
   ficha_rende?: number | null;
+  ficha_por_venda?: number | null;
   produto_insumos: InsumoJoin[];
 };
 
@@ -343,7 +344,7 @@ export default function FichaTecnica() {
       if (top) window.scrollTo(0, parseInt(top || "0") * -1);
     };
   }, [showQuickAdd]);
-  const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40", ficha_rende: "1" });
+  const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40", ficha_rende: "1", ficha_por_venda: "1" });
   // (6.163) tempo de preparo em horas + minutos (antes só minutos: "2h30" virava conta de cabeça). Guarda em minutos, como antes.
   const [editandoTempo, setEditandoTempo] = useState(false); // (6.168) tempo já definido: caixa cinza com "Editar"
   const [tempoH, setTempoH] = useState("");
@@ -484,6 +485,7 @@ export default function FichaTecnica() {
       salario_desejado: maoConta ? String(maoConta.salario) : (p.salario_desejado ? String(p.salario_desejado) : ""),
       horas_semanais: maoConta ? String(maoConta.horasSemana) : (p.horas_semanais ? String(p.horas_semanais) : "40"),
       ficha_rende: String(Number(p.ficha_rende) > 1 ? Number(p.ficha_rende) : 1),
+      ficha_por_venda: String(Number(p.ficha_rende) > 1 && Number(p.ficha_por_venda) > 1 ? Number(p.ficha_por_venda) : 1),
     };
     setExtras(extrasAbertos);
     setBuscaInsumo("");
@@ -595,6 +597,8 @@ export default function FichaTecnica() {
       horas_semanais: moAtivo ? (parseNumBR(extras.horas_semanais) || 40) : 40,
       ...(tamanhosFixos(selected).length ? { ficha_fatores: Object.fromEntries(tamanhosFixos(selected).map(o => [o.id, fatorDe(fatores[o.id])]).filter(([, v]) => v !== 1)) } : {}),
       ficha_rende: podeRender(selected) ? Math.max(1, Math.min(10000, Math.round(parseNumBR(extras.ficha_rende) || 1))) : 1, // (6.183)
+      // (21/11) quantas unidades da receita vão em cada venda (só quando a receita rende mais de 1)
+      ficha_por_venda: podeRender(selected) && Math.round(parseNumBR(extras.ficha_rende) || 1) > 1 ? Math.max(1, Math.min(10000, Math.round(parseNumBR(extras.ficha_por_venda) || 1))) : 1,
       updated_at: new Date().toISOString(),
     }).eq("id", selected.id);
     if (errProd) {
@@ -645,7 +649,13 @@ export default function FichaTecnica() {
   /* DETAIL / EDIT VIEW */
   if (selected) {
     // (6.183) a receita rende várias unidades: o custo e o lucro são de 1 unidade (a tabela mostra a receita inteira)
-    const rende = podeRender(selected) ? Math.max(1, Math.round(parseNumBR(extras.ficha_rende) || 1)) : 1;
+    const rendeReceita = podeRender(selected) ? Math.max(1, Math.round(parseNumBR(extras.ficha_rende) || 1)) : 1;
+    // (21/11) cada venda pode levar várias unidades da receita (o cento, a caixa com 12): a conta passa a ser de 1 venda
+    const porVenda = rendeReceita > 1 ? Math.max(1, Math.round(parseNumBR(extras.ficha_por_venda) || 1)) : 1;
+    const rende = rendeReceita / porVenda;
+    // o nome do produto costuma dizer quantas unidades vão na venda ("100 Salgados", "Caixa com 12 brigadeiros")
+    const qtdNoNome = (() => { const m = /^\s*(\d{1,4})\b/.exec(selected.nome || "") || /\b(?:com|c\/)\s*(\d{1,4})\b/i.exec(selected.nome || ""); const n = m ? Number(m[1]) : 0; return n > 1 && n <= 10000 ? n : 0; })();
+    const sugerirPorVenda = rendeReceita > 1 && porVenda === 1 && qtdNoNome > 1 ? qtdNoNome : 0;
     const cmvReceitaLive = ficha.reduce((s, f) => s + calcCusto(f.quantidade, f.unidade_utilizada, f.insumo), 0);
     const cmvLive = cmvReceitaLive / rende;
     // 10/10: preço que o cliente paga, com promoção em valor ou em %
@@ -694,7 +704,8 @@ export default function FichaTecnica() {
     // (31/10 · 5.84) pedaços prontos (não componentes criados a cada desenho)
     const conta = (
       <div className="fd-conta">
-        {rende > 1 && <p className="fd-conta-un">Conta de 1 unidade · a receita rende {rende}</p>}
+        {ficha.length > 0 && precoLive > 0 && margemLucroLive > 90 && <p className="fd-conta-alerta"><WarningCircle size={16} weight="bold" />Margem muito alta. Confira quanto a receita rende{rendeReceita > 1 ? " e quanto vai em cada venda" : ""}.</p>}
+        {rendeReceita > 1 && <p className="fd-conta-un">{porVenda > 1 ? `Conta de 1 venda (${porVenda} un) · a receita rende ${rendeReceita}` : `Conta de 1 unidade · a receita rende ${rendeReceita}`}</p>}
         <div><span>Ingredientes</span><span>R$ {fmt(cmvLive)}</span></div>
         <div><span>Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
         <div><span>Mão de obra{tempoMin > 0 && moAtivo ? ` (${tempoMin >= 60 ? `${Math.floor(tempoMin / 60)}h${tempoMin % 60 ? String(tempoMin % 60).padStart(2, "0") : ""}` : `${tempoMin} min`})` : ""}</span><span>R$ {fmt(moLive)}</span></div>
@@ -812,14 +823,26 @@ export default function FichaTecnica() {
               })}
               {/* (6.165) adicionar é a última linha da tabela (cadastrar um novo fica dentro da lista) */}
               <button type="button" className="fd-ing-mais" onClick={abrirPicker}><Plus size={18} weight="bold" />Adicionar ingrediente</button>
-              <div className="fd-ing-tot" aria-hidden="true"><span>Total{rende > 1 ? " da receita" : ""}</span><b>R$ {fmt(cmvReceitaLive)}</b><span className="fd-so-pc" /></div>
+              <div className="fd-ing-tot" aria-hidden="true"><span>Total{rendeReceita > 1 ? " da receita" : ""}</span><b>R$ {fmt(cmvReceitaLive)}</b><span className="fd-so-pc" /></div>
               </div>
               {/* (6.183) quantas unidades a receita rende: o custo e o lucro passam a ser de 1 unidade */}
               {podeRender(selected) && (
                 <div className="fd-rende">
-                  <span className="fd-rende-t"><b>A receita rende</b><small>{rende > 1 ? `Ingredientes de 1 unidade: R$ ${fmt(cmvLive)}` : "Ex.: 30 brigadeiros, 12 fatias"}</small></span>
-                  <span className="fd-rende-c"><CampoNumero inteiro value={rende} placeholder="1" onValor={n => setExtras(e => ({ ...e, ficha_rende: String(Math.max(1, Math.round(n || 1))) }))} aria-label="Quantas unidades a receita rende" /><i>un</i></span>
+                  <span className="fd-rende-t"><b>A receita rende</b><small>{rendeReceita > 1 ? "Unidades desta receita" : "Ex.: 30 brigadeiros, 12 fatias"}</small></span>
+                  <span className="fd-rende-c"><CampoNumero inteiro value={rendeReceita} placeholder="1" onValor={n => setExtras(e => ({ ...e, ficha_rende: String(Math.max(1, Math.round(n || 1))) }))} aria-label="Quantas unidades a receita rende" /><i>un</i></span>
                 </div>
+              )}
+              {/* (21/11) quantas dessas unidades vão em cada venda: sem isso, quem vende o cento via um lucro que não existe */}
+              {podeRender(selected) && rendeReceita > 1 && (
+                <div className="fd-rende fd-rende-venda">
+                  <span className="fd-rende-t"><b>Cada venda leva</b><small>{`Por venda: R$ ${fmt(cmvLive)}`}</small></span>
+                  <span className="fd-rende-c"><CampoNumero inteiro value={porVenda} placeholder="1" onValor={n => setExtras(e => ({ ...e, ficha_por_venda: String(Math.max(1, Math.round(n || 1))) }))} aria-label="Quantas unidades da receita vão em cada venda" /><i>un</i></span>
+                </div>
+              )}
+              {sugerirPorVenda > 0 && (
+                <button type="button" className="fd-rende-sug" onClick={() => setExtras(e => ({ ...e, ficha_por_venda: String(sugerirPorVenda) }))}>
+                  <WarningCircle size={18} weight="bold" /><span>Cada venda leva {sugerirPorVenda} un?</span><b>Usar {sugerirPorVenda}</b>
+                </button>
               )}
             </>)}
           </section>
@@ -856,7 +879,7 @@ export default function FichaTecnica() {
             {tempoMin > 0 && !editandoTempo ? (
               <div className="fd-mo-conta">
                 <span><b>{tempoMin >= 60 ? `${Math.floor(tempoMin / 60)}h${tempoMin % 60 ? String(tempoMin % 60).padStart(2, "0") : ""}` : `${tempoMin} min`}</b>
-                  <small>{maoConta ? (rende > 1 ? `Na receita toda: R$ ${fmt(moReceitaLive)} · R$ ${fmt(moLive)} por unidade` : `Mão de obra nesta receita: R$ ${fmt(moLive)}`) : "Entra no custo com a mão de obra de Custos"}</small></span>
+                  <small>{maoConta ? (rende !== 1 ? `Na receita toda: R$ ${fmt(moReceitaLive)} · R$ ${fmt(moLive)} por ${porVenda > 1 ? "venda" : "unidade"}` : `Mão de obra nesta receita: R$ ${fmt(moLive)}`) : "Entra no custo com a mão de obra de Custos"}</small></span>
                 <Botao variante="secundario" tamanho="m" onClick={() => setEditandoTempo(true)}>Editar</Botao>
               </div>
             ) : (<>
@@ -869,7 +892,7 @@ export default function FichaTecnica() {
                 onChange={e => mudarTempo(tempoH, e.target.value.replace(/\D/g, "").slice(0, 3))}
                 depois={<span className="cl9-f-uf">min</span>} />
             </div>
-            <p className="ui-campo-msg fd-tempo-d">{!maoConta ? "Entra no custo quando você cadastrar a sua mão de obra em Custos." : Number(extras.tempo_preparo_min) > 0 ? (rende > 1 ? `Na receita toda: R$ ${fmt(moReceitaLive)} · R$ ${fmt(moLive)} por unidade` : `Sua mão de obra nesta receita: R$ ${fmt(moLive)}`) : "Com o tempo, o valor do seu trabalho entra no custo."}</p>
+            <p className="ui-campo-msg fd-tempo-d">{!maoConta ? "Entra no custo quando você cadastrar a sua mão de obra em Custos." : Number(extras.tempo_preparo_min) > 0 ? (rende !== 1 ? `Na receita toda: R$ ${fmt(moReceitaLive)} · R$ ${fmt(moLive)} por ${porVenda > 1 ? "venda" : "unidade"}` : `Sua mão de obra nesta receita: R$ ${fmt(moLive)}`) : "Com o tempo, o valor do seu trabalho entra no custo."}</p>
             </>)}
           </section>
 

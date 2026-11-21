@@ -138,7 +138,7 @@ function LucratividadeTela() {
       const [custo, peloPeso, extras, maoC, perfilCv, vars] = await Promise.all([
         custoPorProduto(ids), produtosPeloPeso(itens),
         // (6.182) em grupos de 30 (lista grande estourava o tamanho do endereço)
-        Promise.all(Array.from({ length: Math.ceil(ids.length / 30) }, (_, k) => supabase.from("produtos").select("id, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais, ficha_rende").in("id", ids.slice(k * 30, k * 30 + 30))))
+        Promise.all(Array.from({ length: Math.ceil(ids.length / 30) }, (_, k) => supabase.from("produtos").select("id, cv_percentual, salario_desejado, tempo_preparo_min, horas_semanais, ficha_rende, ficha_por_venda").in("id", ids.slice(k * 30, k * 30 + 30))))
           .then(rs => ({ data: rs.flatMap(r => (r.data || []) as unknown[]), error: rs.find(r => r.error)?.error || null })),
         lerMaoObraConta(user.id).catch(() => null),
         supabase.from("profiles").select("custos_invisiveis_pct").eq("id", user.id).maybeSingle(),

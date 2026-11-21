@@ -1,3 +1,4 @@
+import { rendeDaFicha } from "@/lib/produto-precificacao";
 import { ehDinheiroDaDona } from "@/lib/categoriasFinanceiro";
 import { supabase } from "@/lib/supabase";
 import { valorRecebidoPedido } from "@/lib/financeiroPedido";
@@ -129,11 +130,11 @@ export async function custoPorProduto(produtoIds: string[]): Promise<Record<stri
     .select<string, LinhaFicha>("produto_id, quantidade, unidade_utilizada, insumos(custo_unitario, unidade)").in("produto_id", bloco)
     .order("produto_id").order("insumo_id").range(de, ate))));
   // (6.183) a receita que rende várias unidades: o custo de 1 unidade é a receita dividida pelo rendimento
-  const rendes = await Promise.all(blocos.map(bloco => supabase.from("produtos").select("id, ficha_rende").in("id", bloco)));
+  const rendes = await Promise.all(blocos.map(bloco => supabase.from("produtos").select("id, ficha_rende, ficha_por_venda").in("id", bloco)));
   const falha = partes.find(p => p.error) || rendes.find(r => r.error);
   if (falha) throw falha.error;
   const rendeDe: Record<string, number> = {};
-  for (const r of rendes) for (const x of ((r.data || []) as { id: string; ficha_rende?: number | string | null }[])) rendeDe[x.id] = Number(x.ficha_rende) > 1 ? Number(x.ficha_rende) : 1;
+  for (const r of rendes) for (const x of ((r.data || []) as { id: string; ficha_rende?: number | string | null; ficha_por_venda?: number | string | null }[])) rendeDe[x.id] = rendeDaFicha(x); // (21/11) já considera quantas unidades vão em cada venda
   const linhas = partes.flatMap(p => p.data);
   const fator: Record<string, number> = { kg: 1, g: 0.001, L: 1, l: 1, ml: 0.001, un: 1, m: 1, cm: 0.01 };
   for (const f of linhas) {
