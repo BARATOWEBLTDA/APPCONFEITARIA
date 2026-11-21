@@ -275,6 +275,27 @@ ${corpoPagina}
   }
   // a barra fixa do celular some enquanto a seção da oferta está na tela (ali já tem o botão de verdade)
   corpoPro2 += `<style>.dl-root .dl-fixa.p2-some{display:none !important;}</style><script>(function(){var o=document.getElementById('comece'),f=document.querySelector('.dl-fixa');if(!o||!f||!('IntersectionObserver' in window))return;new IntersectionObserver(function(e){f.classList.toggle('p2-some',e[0].isIntersecting)}).observe(o)})()</script>`
+  // (21/11) seção "Você cuida da produção": os quatro cartões mostram funcionalidades (não mais o caminho de um pedido).
+  // Os vídeos são os mesmos, do app real; saem os números 01–04, que davam ideia de sequência.
+  {
+    const TROCAS_FUNCS: [string, string][] = [
+      ['<p class="dl-olho">Do pedido ao lucro</p>', '<p class="dl-olho">Funcionalidades</p>'],
+      ['Veja o caminho de um pedido: da escolha da cliente ao dinheiro no caixa.', 'Cardápio, pedidos, agenda e financeiro trabalhando juntos, no mesmo app.'],
+      ['>A cliente pede sozinha</h3>', '>Cardápio digital</h3>'],
+      ['Escolhe o bolo, o sabor e a data no seu cardápio, e já paga no Pix. Sem você parar a produção para responder.', 'A cliente escolhe o bolo, o sabor e a data no seu link e já paga no Pix. Sem você parar a produção para responder.'],
+      ['>Você só aceita</h3>', '>Pedidos</h3>'],
+      ['O aviso chega no celular. Um toque e o pedido vai para a produção, com tudo anotado.', 'O aviso chega no celular. Um toque para aceitar e o pedido fica organizado, com tudo anotado.'],
+      ['>Nenhuma entrega esquecida</h3>', '>Agenda</h3>'],
+      ['No dia, a agenda mostra quem vem, a que horas e o valor de cada pedido.', 'Cada dia mostra quem vem, a que horas e o valor de cada pedido. Nenhuma entrega esquecida.'],
+      ['>Entregou, está no caixa</h3>', '>Financeiro</h3>'],
+      ['Marcou como retirado, o valor já entra no financeiro. ', 'Entregou, o valor entra no caixa sozinho. Você vê quanto já recebeu e quanto falta receber.'],
+    ]
+    for (const [de, para] of TROCAS_FUNCS) {
+      if (!corpoPro2.includes(de)) throw new Error('pro2: trecho das funcionalidades não encontrado: ' + de)
+      corpoPro2 = corpoPro2.split(de).join(para)
+    }
+    corpoPro2 = corpoPro2.replace(/<span class="dl-passo4__num">\d+<\/span>/g, '')
+  }
   corpoPro2 = CSS_P2 + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
