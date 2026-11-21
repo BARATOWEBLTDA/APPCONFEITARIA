@@ -332,9 +332,9 @@ ${corpoPagina}
 .dl-root #pedidos .dl-h2{color:#FFF6EE;}
 .dl-root #pedidos .dl-lead{color:rgba(255,246,238,.78);}
 .dl-root #pedidos .p2-selo-rosa b{background:linear-gradient(135deg,#FF5C9A,#F42C7A);}
-.dl-root #pedidos .dl-vantagens{grid-template-columns:minmax(0,1fr) !important; background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1);}
-.dl-root #pedidos .dl-vantagens__item{align-items:center;}
-.dl-root #pedidos .dl-vantagens__titulo{white-space:normal; font-weight:500; color:#FFF6EE; text-wrap:balance;}
+.dl-root #pedidos .dl-vantagens{background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1);}
+.dl-root #pedidos .dl-vantagens__titulo{color:#FFF6EE;}
+.dl-root #pedidos .dl-vantagens__texto{color:rgba(255,246,238,.72);}
 .dl-root #pedidos .dl-vantagens__icone{background:#F42C7A; color:#fff;}
 .dl-root #pedidos .dl-camadas{aspect-ratio:1/1.1;}
 .dl-root #pedidos .dl-h2 .dl-h2__rosa{display:block;}
@@ -560,8 +560,12 @@ ${corpoPagina}
     // As três peças (21/11): 1) tela de celular com os avisos do Doonly (montada); 2) a tela real do pedido no app, sem o bloco do cliente; 3) o PDF real do pedido, fechado e aberto.
     const ICONE = (rosa.match(/<span class="dl-vantagens__icone dl-vantagens__icone--ck">[\s\S]*?<\/span>/) || [''])[0]
     if (!ICONE) throw new Error('pro2: ícone dos pontos não encontrado')
-    const pontosPed = ['Receba um aviso a cada novo pedido.', 'Confira data, sabores e endereço na mesma tela.', 'Acompanhe a encomenda do aceite à entrega.']
-      .map(t => `<li class="dl-vantagens__item">${ICONE}<div><h3 class="dl-vantagens__titulo">${t}</h3></div></li>`).join('')
+    const pontosPed = ([
+      ['Detalhes do pedido', 'Itens, sabores, data e endereço.'],
+      ['Status da encomenda', 'Acompanhe do aceite à entrega.'],
+      ['Pedido em PDF com sua logo', 'Envie pra cliente ou imprima.'],
+      ['Pedido manual', 'Anote o que chega pelo WhatsApp.'],
+    ] as [string, string][]).map(([t, x]) => `<li class="dl-vantagens__item">${ICONE}<div><h3 class="dl-vantagens__titulo">${t}</h3><p class="dl-vantagens__texto">${x}</p></div></li>`).join('')
     const trocaPed: [RegExp, string][] = [
       [/class="dl-secao dl-secao--rosa dl-cardapio" id="cardapio-digital" aria-labelledby="dl-cardapio-titulo"/, 'class="dl-secao dl-secao--escura dl-cardapio p2-f02" id="pedidos" aria-labelledby="p2-ped-t"'],
       [/<p class="p2-selo-rosa">[\s\S]*?<\/p>/, '<p class="p2-selo-rosa p2-selo--rosa"><b>02</b><span>Pedidos</span></p>'],
