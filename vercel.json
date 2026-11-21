@@ -38,6 +38,10 @@
       "destination": "/pro.html"
     },
     {
+      "source": "/pro2",
+      "destination": "/pro2.html"
+    },
+    {
       "source": "/testes",
       "destination": "/testes.html"
     },

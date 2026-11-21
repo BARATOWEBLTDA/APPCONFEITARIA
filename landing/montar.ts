@@ -18,6 +18,17 @@ const milhar = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 const HOTMART_PRO = 'https://pay.hotmart.com/M107866310B?off=elyrqwi7&checkoutMode=10&sck=lp-pro'
 // trocas de copy da versão /pro: a página não pode falar "grátis / criar conta" se o botão pede cartão.
 // (mais longas primeiro, pra não casar pedaço de outra)
+// (21/11) /pro2: a mesma página PRO, com a oferta da Black Friday do app (1º mês por R$ 1). É o mesmo checkout do botão
+// "Virar PRO" do app; sck=lp-pro-r1 separa essa campanha no relatório da Hotmart. A /pro (7 dias) continua igual.
+const HOTMART_PRO_R1 = 'https://pay.hotmart.com/M107866310B?off=8ba1tara&checkoutMode=10&sck=lp-pro-r1'
+const TROCAS_PRO2: [string, string][] = [
+  ['Quero testar o PRO grátis por 7 dias', 'Quero o PRO por R$ 1 no 1º mês'],
+  ['Teste o PRO grátis por 7 dias.', 'PRO por apenas R$ 1 no 1º mês.'],
+  ['Testar o PRO grátis por 7 dias', 'Quero o PRO por R$ 1'],
+  ['São <b>7 dias grátis</b> para testar todas as funcionalidades do Doonly', 'Depois, <b>R$ 29,90 por mês</b>: menos de R$ 1 por dia para usar tudo do Doonly'],
+  ['Teste o PRO grátis.', '1º mês por apenas R$ 1.'],
+  ['Testar o PRO grátis', 'PRO por R$ 1'],
+]
 const TROCAS_PRO: [string, string][] = [
   ['Comece grátis. Profissionalize sua confeitaria.', 'Teste o PRO grátis por 7 dias.'],
   ['Quero criar minha conta grátis', 'Quero testar o PRO grátis por 7 dias'],
@@ -189,5 +200,8 @@ ${corpoPagina}
 `
   fs.writeFileSync(app, fazerHtml(corpoRaiz))                        // raiz: doonly.com.br (cadastro grátis) + abertura nova
   fs.writeFileSync(path.join(dist, 'pro.html'), fazerHtml(corpoProFinal)) // doonly.com.br/pro: versão PRO completa (a antiga /testes)
+  let corpoPro2 = corpoProFinal.split(HOTMART_PRO).join(HOTMART_PRO_R1)
+  for (const [de, para] of TROCAS_PRO2) corpoPro2 = corpoPro2.split(de).join(para)
+  fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
 }
