@@ -50,7 +50,9 @@ export async function gerarFichaProduto(produto: ProdutoFicha | null | undefined
       supabase.from("custos_variaveis").select("*").eq("user_id", uid).then(r => r, () => ({ data: null } as { data: null })),
     ]) : [{ data: null }, null, { data: null }] as [{ data: null }, null, { data: null }];
     const vars = ((variaveis || []) as Parameters<typeof taxaPctDaForma>[1]);
-    const venda = { pct: taxaPctDaForma("credito", vars), fixo: fixoPorPedido(vars) };
+    // (21/11) a conta principal fica sem a taxa da maquininha; o lucro em cada forma de pagamento vem no fim
+    const venda = { pct: taxaPctDaForma("pix", vars), fixo: fixoPorPedido(vars) };
+    const pctDebito = taxaPctDaForma("debito", vars), pctCredito = taxaPctDaForma("credito", vars);
     const cvConta = (perfilCv as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct;
     // 10/10: a conta é a mesma função da tela de Produtos e da Ficha técnica (promoção em % incluída)
     const conta = calcularCustoLucro(
@@ -85,11 +87,15 @@ export async function gerarFichaProduto(produto: ProdutoFicha | null | undefined
       <div><span>Ingredientes</span><b>${brl(cmv)}</b></div>
       ${cvPct && cv > 0.004 ? `<div><span>Custos invisíveis (${String(cvPct).replace(".", ",")}%)</span><b>${brl(cv)}</b></div>` : ""}
       ${mo ? `<div><span>Mão de obra (${tempo})</span><b>${brl(mo)}</b></div>` : ""}
-      ${taxaCredito > 0.004 ? `<div><span>Taxa no crédito (${String(Math.round(venda.pct * 100) / 100).replace(".", ",")}%)</span><b>${brl(taxaCredito)}</b></div>` : ""}
+      ${taxaCredito > 0.004 ? `<div><span>Taxas e impostos (${String(Math.round(venda.pct * 100) / 100).replace(".", ",")}%)</span><b>${brl(taxaCredito)}</b></div>` : ""}
       ${fixoPedido > 0.004 ? `<div><span>Por pedido (embalagem)</span><b>${brl(fixoPedido)}</b></div>` : ""}
       <div class="tt"><span>Custo total</span><b>${brl(custo)}</b></div>
             <div><span>Preço de venda</span><b>${brl(preco)}</b></div>
       <div class="rest"><span>Lucro (${margem.toFixed(1).replace(".", ",")}%)</span><b class="${lucro < 0 ? "neg" : ""}">${brl(lucro)}</b></div>
+      ${pctCredito - venda.pct > 0.001 ? `<div class="tt"><span>Lucro por forma de pagamento</span><b></b></div>
+      <div><span>Venda no Pix ou dinheiro</span><b>${brl(lucro)}</b></div>
+      ${Math.abs(pctDebito - pctCredito) > 0.001 && Math.abs(pctDebito - venda.pct) > 0.001 ? `<div><span>Venda no débito</span><b>${brl(lucro - preco * (pctDebito - venda.pct) / 100)}</b></div>` : ""}
+      <div><span>${Math.abs(pctDebito - pctCredito) > 0.001 ? "Venda no crédito" : "Venda no cartão"}</span><b>${brl(lucro - preco * (pctCredito - venda.pct) / 100)}</b></div>` : ""}
     </div>`;
     const obs = (p.observacoes_ficha || "").trim();
     const atualizado = p.updated_at ? new Date(p.updated_at).toLocaleDateString("pt-BR") : new Date().toLocaleDateString("pt-BR");

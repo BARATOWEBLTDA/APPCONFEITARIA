@@ -369,7 +369,8 @@ export default function FichaTecnica() {
   const [cvConta, setCvConta] = useState<number | null>(null);
   // (13/10) custos da venda: taxa do crédito, taxa do Pix (impostos etc.) e o fixo por pedido
   const [venda, setVenda] = useState<{ credito: number; debito: number; pix: number; fixo: number }>({ credito: 0, debito: 0, pix: 0, fixo: 0 });
-  VENDA = { pct: venda.credito, fixo: venda.fixo };
+  // (21/11) a conta principal fica sem a taxa da maquininha: só o que incide em toda venda (imposto, comissão). O cartão aparece no fim, por forma de pagamento
+  VENDA = { pct: venda.pix, fixo: venda.fixo };
   const loadVenda = async (uid: string) => {
     const { data, error } = await supabase.from("custos_variaveis").select("*").eq("user_id", uid);
     if (error) return;
@@ -674,7 +675,7 @@ export default function FichaTecnica() {
     const moLive = moReceitaLive / rende;
 
     // (13/10) taxa da maquininha no crédito (pior caso) + embalagem por pedido
-    const taxaLive = precoLive * (venda.credito / 100);
+    const taxaLive = precoLive * (venda.pix / 100);
     const fixoLive = venda.fixo;
     const ganhoPix = precoLive * (Math.max(0, venda.credito - venda.pix) / 100);
 
@@ -709,7 +710,7 @@ export default function FichaTecnica() {
         <div><span>Ingredientes</span><span>R$ {fmt(cmvLive)}</span></div>
         <div><span>Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
         <div><span>Mão de obra{tempoMin > 0 && moAtivo ? ` (${tempoMin >= 60 ? `${Math.floor(tempoMin / 60)}h${tempoMin % 60 ? String(tempoMin % 60).padStart(2, "0") : ""}` : `${tempoMin} min`})` : ""}</span><span>R$ {fmt(moLive)}</span></div>
-        {venda.credito > 0 && <div><span>{venda.pix > 0 ? "Taxas e impostos" : "Taxa no crédito"} ({fmtPct(venda.credito)}%)</span><span>R$ {fmt(taxaLive)}</span></div>}
+        {venda.pix > 0 && <div><span>Taxas e impostos ({fmtPct(venda.pix)}%)</span><span>R$ {fmt(taxaLive)}</span></div>}
         {fixoLive > 0 && <div><span>Por pedido (embalagem)</span><span>R$ {fmt(fixoLive)}</span></div>}
         <div className="fd-t"><span>Custo total</span><span>R$ {fmt(custoTotalLive)}</span></div>
         <div className="fd-pv"><span>Preço de venda</span><span>R$ {fmt(precoLive)}</span></div>
@@ -717,9 +718,9 @@ export default function FichaTecnica() {
         {ganhoPix >= 0.01 && (() => {
           const base = cmvLive + cvLive + moLive + fixoLive;
           const lucroEm = (pct: number) => precoLive - base - precoLive * (pct / 100);
-          const linhas: [string, number][] = [["Pix ou dinheiro", lucroEm(venda.pix)]];
-          if (Math.abs(venda.debito - venda.credito) > 0.001 && Math.abs(venda.debito - venda.pix) > 0.001) linhas.push(["Débito", lucroEm(venda.debito)]);
-          linhas.push([Math.abs(venda.debito - venda.credito) > 0.001 ? "Crédito" : "Cartão", lucroEm(venda.credito)]);
+          const linhas: [string, number][] = [["Venda no Pix ou dinheiro", lucroEm(venda.pix)]];
+          if (Math.abs(venda.debito - venda.credito) > 0.001 && Math.abs(venda.debito - venda.pix) > 0.001) linhas.push(["Venda no débito", lucroEm(venda.debito)]);
+          linhas.push([Math.abs(venda.debito - venda.credito) > 0.001 ? "Venda no crédito" : "Venda no cartão", lucroEm(venda.credito)]);
           return (
             <div className="fd-formas">
               <small>Seu lucro em cada forma de pagamento</small>
@@ -869,7 +870,7 @@ export default function FichaTecnica() {
                 {tamanhosFixos(selected).map(o => {
                   const f = fatorDe(fatores[o.id]);
                   const preco = Math.round(o.preco * (1 - descontoPromocao(selected)) * 100) / 100;
-                  const custo = (cmvLive + cvLive) * f + moLive + preco * (venda.credito / 100) + fixoLive;
+                  const custo = (cmvLive + cvLive) * f + moLive + preco * (venda.pix / 100) + fixoLive;
                   const lucro = preco - custo, margem = preco > 0 ? (lucro / preco) * 100 : 0;
                   const t = margem >= 30 ? "ok" : margem >= 0 ? "atencao" : "neg";
                   return (
