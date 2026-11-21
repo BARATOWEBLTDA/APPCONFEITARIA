@@ -13,6 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: cd .github/gravar && npm init -y >/dev/null && npm i puppeteer-core@23 >/dev/null 2>&1
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
       - run: cd .github/gravar && node gravar.js
       - run: |
           cd .github/gravar
