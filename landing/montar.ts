@@ -319,6 +319,7 @@ ${corpoPagina}
 .dl-root #funcs-b .dl-passos4{margin-top:0;}
 .dl-root .dl-cardapio .dl-onda{fill:#0B0710;}
 @media (max-width:1023px){ .dl-root .dl-cardapio .dl-cardapio__grade{gap:18px;} .dl-root .dl-cardapio .dl-cabeca{margin-bottom:12px;} .dl-root .dl-cardapio .dl-vantagens{margin-top:0;} }
+.dl-root .dl-cardapio .dl-vantagens__texto{white-space:normal; text-wrap:pretty;} .dl-root .dl-cardapio .dl-vantagens__item{align-items:start;}
 .dl-root .p2-selo-rosa{display:inline-flex; align-items:center; gap:10px; margin:0 0 16px; padding:5px 16px 5px 5px; border-radius:999px; background:#FFF6EE;}
 .dl-root .p2-selo-rosa b{display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:#3A1220; color:#fff; font-size:.8125rem; font-weight:700;}
 .dl-root .p2-selo-rosa span{color:#3A1220; font-size:.8125rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;}
@@ -376,7 +377,7 @@ ${corpoPagina}
   {
     const TROCAS_FUNCS: [string, string][] = [
       ['<p class="dl-olho">Do pedido ao lucro</p>', ''],
-      ['Veja o caminho de um pedido: da escolha da cliente ao dinheiro no caixa.', 'Conheça os recursos do Doonly e veja como cada um funciona no dia a dia da sua confeitaria.'],
+      ['Veja o caminho de um pedido: da escolha da cliente ao dinheiro no caixa.', 'Conheça os recursos do app e descubra como usar cada um na sua confeitaria.'],
       ['Você cuida da produção. <span class="dl-h2__rosa">O Doonly cuida do resto.</span>', 'Veja o que o Doonly <span class="dl-h2__rosa">faz por você.</span>'],
       ['>A cliente pede sozinha</h3>', '>Cardápio que vende por você</h3>'],
       ['Escolhe o bolo, o sabor e a data no seu cardápio, e já paga no Pix. Sem você parar a produção para responder.', 'Sua loja com logo, capa, fotos, descrições, cupons e promoções. A cliente abre o link, escolhe sozinha e o pedido chega pronto.'],
@@ -478,7 +479,25 @@ ${corpoPagina}
     if (!achou) throw new Error('pro2: área rosa do cardápio não encontrada')
     const OLHO = '<p class="dl-olho">Seu cardápio digital</p>'
     if (!achou[0].includes(OLHO)) throw new Error('pro2: chamada da área rosa não encontrada')
-    const rosa = achou[0].replace(OLHO, '<p class="p2-selo-rosa"><b>01</b><span>Cardápio digital</span></p>')
+    let rosa = achou[0].replace(OLHO, '<p class="p2-selo-rosa"><b>01</b><span>Cardápio digital</span></p>')
+    // textos novos da funcionalidade 01 (21/11)
+    const PONTOS_ROSA: [string, string][] = [
+      ['Cardápio profissional', 'Pensado pra quem vende bolos, doces e salgados.'],
+      ['Banners de promoção', 'Para anunciar ofertas e datas especiais logo no topo.'],
+      ['Produtos em destaque', 'Com fotos grandes dos seus campeões de venda.'],
+      ['Cupons de desconto', 'Em reais ou em porcentagem pra incentivar a próxima compra.'],
+      ['Foto de referência', 'Que a cliente pode enviar junto com o pedido.'],
+      ['Adicionais', 'Como topo de bolo, vela e embalagem pra presente.'],
+      ['Sua marca no cardápio', 'Com sua logo, suas cores e sua capa.'],
+      ['Link e QR Code', 'Pra compartilhar no WhatsApp ou imprimir.'],
+    ]
+    let kt = 0, kx = 0
+    rosa = rosa
+      .replace('pronto para vender.', 'pronto pra vender.')
+      .replace(/(<p class="dl-lead">)[\s\S]*?(<\/p>)/, '$1Mande o link uma vez. A cliente vê as fotos e os preços, escolhe o sabor, personaliza a encomenda e envia o pedido completo, sem aquele vai e volta no WhatsApp.$2')
+      .replace(/(<h3 class="dl-vantagens__titulo">)[\s\S]*?(<\/h3>)/g, (t, a1: string, a2: string) => (kt < 8 ? a1 + PONTOS_ROSA[kt++][0] + a2 : t))
+      .replace(/(<p class="dl-vantagens__texto">)[\s\S]*?(<\/p>)/g, (t, a1: string, a2: string) => (kx < 8 ? a1 + PONTOS_ROSA[kx++][1] + a2 : t))
+    if (kt !== 8 || kx !== 8) throw new Error('pro2: esperava 8 pontos na área rosa, achei ' + kt + '/' + kx)
     corpoPro2 = corpoPro2.replace(ROSA, '')
     const CARTAO1 = /<li class="dl-passo4 p2-func"><p class="p2-func__selo"><b>01<\/b>[\s\S]*?<\/ul><\/li>/
     if (!CARTAO1.test(corpoPro2)) throw new Error('pro2: cartão 01 não encontrado')
