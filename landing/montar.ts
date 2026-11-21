@@ -224,6 +224,9 @@ ${corpoPagina}
 .p2-duvidas details[open] summary::after{content:"−";}
 .p2-duvidas p{margin:0; padding:0 2px 18px; font-size:15.5px; line-height:1.55; color:#6B4A56;}
 .dl-root .dl-barra .p2-unico{font-weight:500; background:linear-gradient(90deg,#FFFFFF 0%,#FFD3E3 55%,#FF9DC0 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;}
+.dl-root .dl-titulo.p2-titulo{font-size:clamp(2rem,8.4vw,2.5rem); line-height:1.12; letter-spacing:-.02em; text-transform:none; font-weight:700; text-wrap:balance;}
+.dl-root .dl-titulo.p2-titulo span{color:#FF5C9A; white-space:nowrap;}
+@media (min-width:900px){ .dl-root .dl-titulo.p2-titulo{font-size:clamp(2.4rem,3.5vw,3.3rem);} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -250,6 +253,15 @@ ${corpoPagina}
   const BARRA_DE = '<img class="dl-barra__coroa" src="/site/media/coroa-barra.webp" width="30" height="20" alt="" decoding="async"><span>PRO por apenas R$ 1 no 1º mês.</span>'
   if (!corpoPro2.includes(BARRA_DE)) throw new Error('pro2: barra do topo não encontrada')
   corpoPro2 = corpoPro2.replace(BARRA_DE, '<span class="p2-unico">O único app feito só para confeitaria</span>')
+  // (21/11) abertura da /pro2: título em forma de pergunta (a dor), subtítulo que responde, e sem o selo (a barra do topo já diz)
+  const H1_P2 = /<h1 class="dl-titulo" id="dl-hero-titulo">[\s\S]*?<\/h1>/
+  const SUB_P2 = /<p class="dl-subtitulo">[\s\S]*?<\/p>/
+  const SELO_P2 = /<p class="dl-semtaxa">[\s\S]*?<\/p>\n?/
+  for (const r of [H1_P2, SUB_P2, SELO_P2]) if (!r.test(corpoPro2)) throw new Error('pro2: abertura não encontrada ' + r)
+  corpoPro2 = corpoPro2
+    .replace(H1_P2, '<h1 class="dl-titulo p2-titulo" id="dl-hero-titulo">Se você fechar o WhatsApp agora, sua confeitaria <span>continua vendendo?</span></h1>')
+    .replace(SUB_P2, '<p class="dl-subtitulo">Com o Doonly, a cliente monta o pedido sozinha no seu cardápio e ele chega organizado para você aceitar. Mesmo quando você não pode responder.</p>')
+    .replace(SELO_P2, '')
   corpoPro2 = CSS_P2 + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
