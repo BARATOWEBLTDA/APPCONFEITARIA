@@ -378,6 +378,21 @@ ${corpoPagina}
 @keyframes p2-ap{from{opacity:0} to{opacity:1}}
 @keyframes p2-vira{from{transform:rotateY(180deg)} to{transform:rotateY(0deg)}}
 @keyframes p2-zoom{0%{transform:rotate(3.5deg) scale(1); z-index:6} 12%,87%{transform:rotate(0deg) scale(1.7); z-index:6} 99%{transform:rotate(3.5deg) scale(1); z-index:6} 100%{transform:rotate(3.5deg) scale(1); z-index:0}}
+/* (21/11) funcionalidade 03 Ficha técnica: fundo claro, um celular com o vídeo */
+.dl-root #ficha.dl-cardapio{background:#FFF7FA; color:#5E5158; padding-top:clamp(64px,6.6vw,112px); padding-bottom:clamp(52px,5.4vw,88px);}
+.dl-root #ficha .dl-onda{fill:#0B0710;}
+.dl-root #ficha .dl-cardapio__fundo{display:none;}
+.dl-root #ficha .dl-h2{color:#22172B;}
+.dl-root #ficha .dl-lead{color:#5E5158;}
+.dl-root #ficha .p2-selo-rosa{background:#fff; box-shadow:0 0 0 1px #EBDDE3;}
+.dl-root #ficha .p2-selo-rosa b{background:linear-gradient(135deg,#FF5C9A,#F42C7A);}
+.dl-root #ficha .dl-vantagens{background:#fff; border:1px solid #EBDDE3; box-shadow:none;}
+.dl-root #ficha .dl-vantagens__titulo{color:#22172B;}
+.dl-root #ficha .dl-vantagens__texto{color:#6B5D64;}
+.dl-root #ficha .dl-vantagens .dl-vantagens__icone{background:#F42C7A !important; color:#fff !important;}
+.dl-root #ficha .p2-fone{width:min(76%,330px); margin-inline:auto; padding:8px; border-radius:42px; background:#17111B; box-shadow:0 0 0 1.5px #3A2E40, 0 40px 70px -34px rgba(60,10,35,.55);}
+.dl-root #ficha .p2-fone__video{display:block; width:100%; max-width:none; height:auto; aspect-ratio:600/1200; border-radius:34px; box-shadow:none; background:#F4F1F2; object-fit:cover;}
+@media (max-width:1023px){ .dl-root #ficha .p2-fone{margin-block:6px 4px;} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -594,9 +609,35 @@ ${corpoPagina}
     const CARTAO2 = /<li class="dl-passo4 p2-func"><p class="p2-func__selo"><b>02<\/b>[\s\S]*?<\/ul><\/li>/
     if (!CARTAO2.test(corpoPro2)) throw new Error('pro2: cartão 02 não encontrado')
     corpoPro2 = corpoPro2.replace(CARTAO2, '')
+    // (21/11) funcionalidade 03 Ficha técnica: mesmo modelo, fundo claro, e no lugar das três telas um celular com o vídeo
+    // real do app (grade de fichas → ficha do "100 Salgados Fritos" com os valores → ingredientes → PDF). A seção antiga de
+    // ficha técnica, mais abaixo, sai; os cartões que sobram viram 04 Agenda e 05 Financeiro.
+    const pontosFic = ([
+      ['Custo real da receita', 'Ingredientes, embalagem e gás.'],
+      ['Seu tempo na conta', 'A mão de obra entra no custo.'],
+      ['Lucro por forma de pagamento', 'Pix, débito e crédito lado a lado.'],
+      ['Ficha em PDF', 'Salve ou mande pelo WhatsApp.'],
+    ] as [string, string][]).map(([t, x]) => `<li class="dl-vantagens__item">${ICONE}<div><h3 class="dl-vantagens__titulo">${t}</h3><p class="dl-vantagens__texto">${x}</p></div></li>`).join('')
+    const trocaFic: [RegExp, string][] = [
+      [/class="dl-secao dl-secao--rosa dl-cardapio" id="cardapio-digital" aria-labelledby="dl-cardapio-titulo"/, 'class="dl-secao dl-secao--clara dl-cardapio p2-f03" id="ficha" aria-labelledby="p2-fic-t"'],
+      [/<p class="p2-selo-rosa">[\s\S]*?<\/p>/, '<p class="p2-selo-rosa"><b>03</b><span>Ficha técnica</span></p>'],
+      [/<h2 class="dl-h2" id="dl-cardapio-titulo">[\s\S]*?<\/h2>/, '<h2 class="dl-h2" id="p2-fic-t">Quanto sobra em cada venda? <span class="dl-h2__rosa">Agora você sabe.</span></h2>'],
+      [/(<p class="dl-lead">)[\s\S]*?(<\/p>)/, '$1Você coloca os ingredientes, a embalagem e o seu tempo. O Doonly soma tudo e mostra o custo, o lucro e a margem de cada produto.$2'],
+      [/<ul class="dl-vantagens">[\s\S]*?<\/ul>/, `<ul class="dl-vantagens">${pontosFic}</ul>`],
+      [/<div class="dl-camadas" role="img"[\s\S]*?<\/div>/, '<div class="p2-fone"><video class="dl-passo4__video p2-fone__video" muted loop playsinline preload="none" width="600" height="1200" poster="/site/media/ficha-video.webp" aria-label="No app: a lista de fichas técnicas, a ficha dos 100 Salgados Fritos com custo e lucro, os ingredientes e o PDF"><source src="/site/media/ficha-video.webm" type="video/webm"><source src="/site/media/ficha-video.mp4" type="video/mp4"></video></div>'],
+    ]
+    let fic = rosa
+    for (const [de, para] of trocaFic) { if (!de.test(fic)) throw new Error('pro2: peça da área da ficha não encontrada: ' + de); fic = fic.replace(de, para) }
+    const FICHA_ANTIGA = /<section class="dl-secao dl-secao--branca dl-fichasec" id="ficha-tecnica"[\s\S]*?<\/section>\n?/
+    if (!FICHA_ANTIGA.test(corpoPro2)) throw new Error('pro2: seção antiga da ficha técnica não encontrada')
+    corpoPro2 = corpoPro2.replace(FICHA_ANTIGA, '')
+    for (const [de, para] of [['<b>04</b><span>Financeiro</span>', '<b>05</b><span>Financeiro</span>'], ['<b>03</b><span>Agenda</span>', '<b>04</b><span>Agenda</span>']]) {
+      if (!corpoPro2.includes(de)) throw new Error('pro2: cartão para renumerar não encontrado: ' + de)
+      corpoPro2 = corpoPro2.replace(de, para)
+    }
     const CORTE = /(<\/header>)\s*(<ol class="dl-passos4">)/
     if (!CORTE.test(corpoPro2)) throw new Error('pro2: ponto de corte das funcionalidades não encontrado')
-    corpoPro2 = corpoPro2.replace(CORTE, (_t, a: string, b: string) => `${a}\n\t</div>\n</section>\n${rosa}${ped}<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-label="Agenda e financeiro">\n\t<div class="dl-container">\n\t\t${b}`)
+    corpoPro2 = corpoPro2.replace(CORTE, (_t, a: string, b: string) => `${a}\n\t</div>\n</section>\n${rosa}${ped}${fic}<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-label="Agenda e financeiro">\n\t<div class="dl-container">\n\t\t${b}`)
   }
   corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
