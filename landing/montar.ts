@@ -262,6 +262,28 @@ ${corpoPagina}
 @media (max-width:639px){ .dl-root #funcionalidades .dl-passo4__tela{margin-inline:-18px;} .dl-root #funcionalidades .dl-passo4__video{border-radius:0;} }
 @media (min-width:1270px){ .dl-root #funcionalidades .dl-passo4__titulo{font-size:min(1.1875rem,1.3vw) !important;} }
 @media (min-width:640px){ .dl-root #funcionalidades .dl-passo4__titulo{font-size:1.1875rem;} .dl-root #funcionalidades .dl-passo4__texto{font-size:1rem;} .dl-root #funcionalidades .dl-passo4__tela{margin-inline:-10px;} }
+/* (21/11) pares "Hoje / Com o Doonly": problema apagado e riscado, solução em verde, ícones maiores */
+.dl-root .dl-dores .dl-par{border-color:#E9E1E4;}
+.dl-root .dl-dores .dl-par__hoje, .dl-root .dl-dores .dl-par__doonly{grid-template-columns:34px minmax(0,1fr); gap:12px;}
+.dl-root .dl-dores .dl-par__ic{width:34px; height:34px;}
+.dl-root .dl-dores .dl-par__ic .dl-ico{width:17px; height:17px;}
+.dl-root .dl-dores .dl-par__hoje{background:#F6F2F3;}
+.dl-root .dl-dores .dl-par__hoje .dl-par__ic{background:#C9BEC3; color:#fff;}
+.dl-root .dl-dores .dl-par__hoje .dl-par__txt{color:#8A7B82; text-decoration:line-through; text-decoration-color:rgba(138,123,130,.7);}
+.dl-root .dl-dores .dl-par__hoje .dl-par__rot{color:#9A8C92;}
+.dl-root .dl-dores .dl-par__doonly{background:#E9F8EF; border-color:#CDEBD8;}
+.dl-root .dl-dores .dl-par__doonly .dl-par__ic{background:#18A957; color:#fff;}
+.dl-root .dl-dores .dl-par__doonly .dl-par__rot{color:#12864A;}
+.dl-root .dl-dores .dl-par__doonly .dl-par__txt{color:#16241C; font-weight:600;}
+.dl-root .dl-dores .dl-par__txt{font-size:1rem;}
+@media (max-width:599px){ .dl-root .dl-dores .dl-par__txt{font-size:min(.9375rem,3.9vw); letter-spacing:-.01em; text-wrap:nowrap;} .dl-root .dl-dores .dl-par__hoje, .dl-root .dl-dores .dl-par__doonly{padding-left:14px; padding-right:10px; gap:10px;} }
+.dl-root .p2-par-cab{display:none;}
+@media (min-width:1280px){
+  .dl-root .p2-par-cab{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); margin:0 0 -4px !important; padding:0 22px; list-style:none; font-size:.75rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;}
+  .dl-root .p2-par-cab span:first-child{color:#9A8C92;} .dl-root .p2-par-cab span:last-child{color:#12864A; padding-left:22px;}
+  .dl-root .dl-dores .dl-par__rot{display:none;}
+  .dl-root .dl-dores .dl-par__txt{font-size:.9375rem;}
+}
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -356,6 +378,12 @@ ${corpoPagina}
     const PONTE = /<p class="dl-ponte">[\s\S]*?<\/p>/
     if (!PONTE.test(corpoPro2)) throw new Error('pro2: frase de passagem não encontrada')
     corpoPro2 = corpoPro2.replace(PONTE, '<p class="dl-ponte p2-ponte"><span class="dl-ponte__texto">Você não abriu uma confeitaria <em>para virar atendente.</em></span><svg class="p2-tinta" viewBox="0 0 360 44" width="360" height="44" aria-hidden="true" focusable="false"><path d="M6 20c38-7 71-9 112-8 49 1 86 6 131 4 22-1 41-4 62-9-17 7-37 12-60 14-46 4-84-2-132-3-41-1-74 2-113 8z" fill="currentColor"/><path d="M318 10c6-5 15-6 21-2 6 4 8 12 4 18-3 5-10 8-16 6-3-1-4 3-8 3-3 0-4-4-2-6 2-3-3-5-3-9 0-4 1-8 4-10z" fill="currentColor"/><circle cx="350" cy="33" r="3.2" fill="currentColor"/><circle cx="341" cy="40" r="1.7" fill="currentColor"/><circle cx="356" cy="22" r="1.4" fill="currentColor"/><circle cx="304" cy="30" r="1.3" fill="currentColor"/></svg></p>')
+  }
+  // (21/11) pares "Hoje / Com o Doonly": cabeçalho das colunas uma vez só (no computador)
+  {
+    const LISTA = '<ul class="dl-dores__lista dl-pares">'
+    if (!corpoPro2.includes(LISTA)) throw new Error('pro2: lista das dores não encontrada')
+    corpoPro2 = corpoPro2.replace(LISTA, LISTA + '<li class="p2-par-cab" aria-hidden="true"><span>Hoje</span><span>Com o Doonly</span></li>')
   }
   corpoPro2 = CSS_P2 + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
