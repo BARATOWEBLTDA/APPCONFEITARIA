@@ -325,6 +325,22 @@ ${corpoPagina}
 .dl-root .p2-selo-rosa b{display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:#3A1220; color:#fff; font-size:.8125rem; font-weight:700;}
 .dl-root .p2-selo-rosa span{color:#3A1220; font-size:.8125rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;}
 @media (min-width:1000px){ .dl-root #funcs-b .dl-passos4{grid-template-columns:repeat(3,minmax(0,1fr)) !important; max-width:1180px;} .dl-root #funcs-b .p2-func{padding:26px 24px 28px;} .dl-root #funcs-b .p2-func .dl-passo4__video{max-width:290px;} .dl-root #funcs-b .p2-func .dl-passo4__titulo{font-size:1.4rem !important;} }
+/* (21/11) funcionalidade 02 Pedidos: mesmo modelo da área rosa, em fundo escuro */
+.dl-root #pedidos.dl-cardapio{background:#0B0710; color:rgba(255,246,238,.8); padding-top:clamp(64px,6.6vw,112px); padding-bottom:clamp(48px,5vw,84px);}
+.dl-root #pedidos .dl-onda{fill:#F42C7A;}
+.dl-root #pedidos .dl-cardapio__fundo{display:none;}
+.dl-root #pedidos .dl-h2{color:#FFF6EE;}
+.dl-root #pedidos .dl-lead{color:rgba(255,246,238,.78);}
+.dl-root #pedidos .p2-selo-rosa b{background:linear-gradient(135deg,#FF5C9A,#F42C7A);}
+.dl-root #pedidos .dl-vantagens{grid-template-columns:minmax(0,1fr) !important; background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1);}
+.dl-root #pedidos .dl-vantagens__item{align-items:center;}
+.dl-root #pedidos .dl-vantagens__titulo{white-space:normal; font-weight:500; color:#FFF6EE; text-wrap:balance;}
+.dl-root #pedidos .dl-vantagens__icone{background:#F42C7A; color:#fff;}
+.dl-root #pedidos .dl-camadas{aspect-ratio:1/.75;}
+.dl-root #pedidos .dl-h2 .dl-h2__rosa{display:block;}
+@media (max-width:599px){ .dl-root #pedidos .dl-h2{font-size:min(1.75rem,6.25vw); white-space:nowrap;} }
+.dl-root #pedidos .dl-camadas__img{aspect-ratio:600/846; object-fit:cover;}
+@media (min-width:1000px){ .dl-root #funcs-b .dl-passos4{grid-template-columns:repeat(2,minmax(0,1fr)) !important; max-width:860px;} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -503,9 +519,31 @@ ${corpoPagina}
     const CARTAO1 = /<li class="dl-passo4 p2-func"><p class="p2-func__selo"><b>01<\/b>[\s\S]*?<\/ul><\/li>/
     if (!CARTAO1.test(corpoPro2)) throw new Error('pro2: cartão 01 não encontrado')
     corpoPro2 = corpoPro2.replace(CARTAO1, '')
+    // (21/11) funcionalidade 02 Pedidos, no mesmo modelo da área rosa (selo, título, texto, pontos e três telas em camadas), em fundo escuro.
+    // As três telas são quadros do vídeo real do app (video-03/04): aviso de pedido novo, pedido aberto para aceitar e os itens do pedido.
+    const ICONE = (rosa.match(/<span class="dl-vantagens__icone dl-vantagens__icone--ck">[\s\S]*?<\/span>/) || [''])[0]
+    if (!ICONE) throw new Error('pro2: ícone dos pontos não encontrado')
+    const pontosPed = ['Receba um aviso a cada novo pedido.', 'Confira data, sabores e endereço na mesma tela.', 'Acompanhe a encomenda do aceite à entrega.']
+      .map(t => `<li class="dl-vantagens__item">${ICONE}<div><h3 class="dl-vantagens__titulo">${t}</h3></div></li>`).join('')
+    const trocaPed: [RegExp, string][] = [
+      [/class="dl-secao dl-secao--rosa dl-cardapio" id="cardapio-digital" aria-labelledby="dl-cardapio-titulo"/, 'class="dl-secao dl-secao--escura dl-cardapio p2-f02" id="pedidos" aria-labelledby="p2-ped-t"'],
+      [/<p class="p2-selo-rosa">[\s\S]*?<\/p>/, '<p class="p2-selo-rosa p2-selo--rosa"><b>02</b><span>Pedidos</span></p>'],
+      [/<h2 class="dl-h2" id="dl-cardapio-titulo">[\s\S]*?<\/h2>/, '<h2 class="dl-h2" id="p2-ped-t">O pedido chega completo. <span class="dl-h2__rosa">Você só precisa aceitar.</span></h2>'],
+      [/(<p class="dl-lead">)[\s\S]*?(<\/p>)/, '$1Assim que a cliente faz o pedido pelo cardápio, o aviso chega no seu celular. Você confere os detalhes e aceita com um toque.$2'],
+      [/<ul class="dl-vantagens">[\s\S]*?<\/ul>/, `<ul class="dl-vantagens">${pontosPed}</ul>`],
+      [/aria-label="Cardápio digital da Doce Formiga:[^"]*"/, 'aria-label="Telas do app: o aviso de pedido novo, o pedido aberto para aceitar e os itens do pedido"'],
+      [/src="\/site\/media\/camada-1-[^"]*" width="600" height="1300"/, 'src="/site/media/pedidos-1.webp" width="600" height="846"'],
+      [/src="\/site\/media\/camada-2-[^"]*" width="600" height="1300"/, 'src="/site/media/pedidos-2.webp" width="600" height="846"'],
+      [/src="\/site\/media\/camada-3-[^"]*" width="600" height="1300"/, 'src="/site/media/pedidos-3.webp" width="600" height="846"'],
+    ]
+    let ped = rosa
+    for (const [de, para] of trocaPed) { if (!de.test(ped)) throw new Error('pro2: peça da área de pedidos não encontrada: ' + de); ped = ped.replace(de, para) }
+    const CARTAO2 = /<li class="dl-passo4 p2-func"><p class="p2-func__selo"><b>02<\/b>[\s\S]*?<\/ul><\/li>/
+    if (!CARTAO2.test(corpoPro2)) throw new Error('pro2: cartão 02 não encontrado')
+    corpoPro2 = corpoPro2.replace(CARTAO2, '')
     const CORTE = /(<\/header>)\s*(<ol class="dl-passos4">)/
     if (!CORTE.test(corpoPro2)) throw new Error('pro2: ponto de corte das funcionalidades não encontrado')
-    corpoPro2 = corpoPro2.replace(CORTE, (_t, a: string, b: string) => `${a}\n\t</div>\n</section>\n${rosa}<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-label="Pedidos, agenda e financeiro">\n\t<div class="dl-container">\n\t\t${b}`)
+    corpoPro2 = corpoPro2.replace(CORTE, (_t, a: string, b: string) => `${a}\n\t</div>\n</section>\n${rosa}${ped}<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-label="Agenda e financeiro">\n\t<div class="dl-container">\n\t\t${b}`)
   }
   corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
