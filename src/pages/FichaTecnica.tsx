@@ -17,7 +17,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { COMO_FICHA, TOUR_FICHA } from "@/lib/comoTelas";
 import { Botao, Campo, Janela, TelaVazia, Titulo, avisar, confirmar, BotaoLimpar, BotaoTirar } from "@/components/base";
 import GavetaFiltro, { BotaoFiltro } from "@/components/base/GavetaFiltro";
-import { Camera, CaretDown, CaretRight, Check, FilePdf, WhatsappLogo, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, ListBullets, SquaresFour, Sparkle } from "@phosphor-icons/react";
+import { Camera, CaretDown, CaretRight, Check, CheckCircle, FilePdf, WhatsappLogo, Egg, Info, MagnifyingGlass, Plus, Receipt, Trash, TrendDown, WarningCircle, ListBullets, SquaresFour, Sparkle } from "@phosphor-icons/react";
 import { Mascote } from "@/components/marca/Mascote";
 import "./clientes.css";
 import "./fichaLista.css";
@@ -282,7 +282,7 @@ export default function FichaTecnica() {
   // (04/11 · 6.23) modo quadro (cartões com foto) ou lista; no PC abre em quadro; o app lembra a escolha
   const [modo, setModoBruto] = useState<"lista" | "quadro">(() => {
     try { const v = localStorage.getItem("doonly_ficha_modo"); if (v === "lista" || v === "quadro") return v; } catch { /* sem storage */ }
-    return window.matchMedia("(min-width: 900px)").matches ? "quadro" : "lista";
+    return "quadro"; // (21/11) o celular também abre em cartões (antes só o computador)
   });
   const setModo = (m: "lista" | "quadro") => { setModoBruto(m); try { localStorage.setItem("doonly_ficha_modo", m); } catch { /* sem storage */ } };
   const [recemSalva, setRecemSalva] = useState<string | null>(null); // (04/11) a ficha que acabou de salvar, destacada na lista
@@ -1153,13 +1153,21 @@ export default function FichaTecnica() {
                 return (
                   <button key={p.id} type="button" data-ficha={p.id} className={`fq-c${recemSalva === p.id ? " fl-l--salva" : ""}`} onClick={() => abrirFicha(p)}>
                     <span className={`fq-foto${foto ? "" : " fq-foto--sem"}`}>{foto ? <img src={foto} alt="" loading="lazy" /> : <Mascote pose="acenando" className="fq-masc" />}</span>
+                    {/* (21/11) cartão no modelo de precificação: situação, preço de venda em destaque e os quatro números (pedido do Bruno) */}
                     <span className="fq-in">
                       <b className="fq-n" title={p.nome}>{p.nome}</b>
-                      {c.temFicha ? (<>
-                        <span className="fq-l"><small>Custo</small><em>{reais(c.custoTotal)}</em></span>
+                      {(() => {
+                        const tom = !c.temFicha ? "sem" : tomMargem(c.margemLucro);
+                        const txt = !c.temFicha ? "Sem ficha" : c.lucro < 0 ? "Dando prejuízo" : c.margemLucro >= 30 ? "Margem boa" : "Margem baixa";
+                        return <i className={`fq-sit fq-sit--${tom}`}>{tom === "ok" ? <CheckCircle size={14} weight="fill" aria-hidden="true" /> : tom === "sem" ? null : <WarningCircle size={14} weight="fill" aria-hidden="true" />}{txt}</i>;
+                      })()}
+                      <span className="fq-preco"><small>Preço de venda</small><b>{c.preco > 0 ? reais(c.preco) : "Sem preço"}</b></span>
+                      {c.temFicha ? (<span className="fq-nums">
                         <span className="fq-l"><small>Lucro</small><em className={`fq-lucro fl-lucro--${tomMargem(c.margemLucro)}`}>{reais(c.lucro)}</em></span>
-                        <span className="fq-l"><small>Margem</small><i className={`fl-pill fl-pill--${tomMargem(c.margemLucro)}`}>{fmtPct(c.margemLucro)}%</i></span>
-                      </>) : <span className="fq-montar"><Plus size={16} weight="bold" aria-hidden="true" />Montar ficha</span>}
+                        <span className="fq-l"><small>Margem</small><em className={`fq-lucro fl-lucro--${tomMargem(c.margemLucro)}`}>{fmtPct(c.margemLucro)}%</em></span>
+                        <span className="fq-l"><small>Custo</small><em>{reais(c.custoTotal)}</em></span>
+                        <span className="fq-l"><small>CMV</small><em>{fmtPct(c.margemCmv)}%</em></span>
+                      </span>) : <span className="fq-montar"><Plus size={16} weight="bold" aria-hidden="true" />Montar ficha</span>}
                     </span>
                   </button>
                 );
