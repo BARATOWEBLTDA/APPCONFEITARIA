@@ -233,8 +233,7 @@ ${corpoPagina}
   const MEIO_P2 = `<section id="p2-meio" class="alignfull" aria-labelledby="p2-meio-t">
   <h2 id="p2-meio-t">Pare de vender no escuro. <span>Saiba quanto sobra de cada pedido.</span></h2>
   <p>Cardápio, pedidos, agenda, financeiro e ficha técnica no mesmo lugar, a partir de hoje.</p>
-  ${BT_P2('Quero o PRO por R$ 1', 'dl-btn--grande')}
-  <div><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>
+  ${BT_P2('Quero o PRO', 'dl-btn--grande')}
 </section>
 `
   const DUVIDAS_P2 = `<div class="p2-duvidas">
@@ -246,7 +245,6 @@ ${corpoPagina}
 </div>
 `
   corpoPro2 = corpoPro2
-    .replace('<b>Feito só para confeitarias</b></p>', '<b>Feito só para confeitarias</b></p>\n' + HERO_P2)
     .replace('<section class="dl-secao dl-secao--escura dl-doo" id="doo-ia"', MEIO_P2 + '<section class="dl-secao dl-secao--escura dl-doo" id="doo-ia"')
     .replace('<div class="dl-comece__acao">', DUVIDAS_P2 + '<div class="dl-comece__acao p2-fim"><span class="p2-prazo">Oferta de Black Friday · até 30/11</span>')
   // (21/11) barra do topo da /pro2: a frase de posicionamento no lugar da oferta, sem a coroa, em degradê suave
@@ -262,6 +260,21 @@ ${corpoPagina}
     .replace(H1_P2, '<h1 class="dl-titulo p2-titulo" id="dl-hero-titulo">Se você fechar o WhatsApp agora, sua confeitaria <span>continua vendendo?</span></h1>')
     .replace(SUB_P2, '<p class="dl-subtitulo">Com o Doonly, a cliente monta o pedido sozinha no seu cardápio e ele chega organizado para você aceitar. Mesmo quando você não pode responder.</p>')
     .replace(SELO_P2, '')
+  // (21/11) preço só no final: antes da seção "Comece agora" ninguém fala de valor. Os botões de cima viram "Quero o PRO"
+  // e levam até a oferta (#comece), onde o preço aparece pela primeira vez. A barra fixa do celular segue a mesma regra.
+  {
+    const semPreco = (t: string) => t
+      .replace(/href="[^"]*" data-dl-url="cadastro"( tabindex="-1")?/g, 'href="#comece"$1')
+      .split('Quero o PRO por R$ 1 no 1º mês').join('Quero o PRO')
+      .split('Quero o PRO por R$ 1').join('Quero o PRO')
+      .split('PRO por R$ 1').join('Quero o PRO')
+    const iC = corpoPro2.indexOf('<section class="dl-secao dl-secao--branca dl-comece" id="comece"')
+    const iF = corpoPro2.indexOf('<div class="dl-fixa"')
+    if (iC < 0 || iF < iC) throw new Error('pro2: seção da oferta ou barra fixa não encontrada')
+    corpoPro2 = semPreco(corpoPro2.slice(0, iC)) + corpoPro2.slice(iC, iF) + semPreco(corpoPro2.slice(iF))
+  }
+  // a barra fixa do celular some enquanto a seção da oferta está na tela (ali já tem o botão de verdade)
+  corpoPro2 += `<style>.dl-root .dl-fixa.p2-some{display:none !important;}</style><script>(function(){var o=document.getElementById('comece'),f=document.querySelector('.dl-fixa');if(!o||!f||!('IntersectionObserver' in window))return;new IntersectionObserver(function(e){f.classList.toggle('p2-some',e[0].isIntersecting)}).observe(o)})()</script>`
   corpoPro2 = CSS_P2 + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
