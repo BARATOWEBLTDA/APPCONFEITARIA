@@ -227,6 +227,14 @@ ${corpoPagina}
 .dl-root .dl-titulo.p2-titulo{font-size:clamp(2rem,8.4vw,2.5rem); line-height:1.12; letter-spacing:-.02em; text-transform:none; font-weight:700; text-wrap:balance;}
 .dl-root .dl-titulo.p2-titulo span{color:#FF5C9A; white-space:nowrap;}
 @media (min-width:900px){ .dl-root .dl-titulo.p2-titulo{font-size:clamp(2.4rem,3.5vw,3.3rem);} }
+/* degradê animado (rosa → coral, devagar) na parte destacada dos títulos */
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .dl-root .dl-h2 .dl-h2__rosa, .dl-root .dl-titulo.p2-titulo span{background:linear-gradient(90deg,#FF7DAE 0%,#F42C7A 25%,#FF8A6B 50%,#F42C7A 75%,#FF7DAE 100%); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:#F42C7A; animation:p2-degrade 7s linear infinite;}
+}
+@keyframes p2-degrade{from{background-position:0% 0}to{background-position:200% 0}}
+@media (prefers-reduced-motion:reduce){ .dl-root .dl-h2 .dl-h2__rosa, .dl-root .dl-titulo.p2-titulo span{animation:none;} }
+.dl-root #dl-recursos-titulo{font-size:clamp(1.5rem,7.1vw,1.75rem); max-width:17em; margin-inline:auto;}
+@media (min-width:600px){ .dl-root #dl-recursos-titulo{font-size:clamp(1.75rem,1.1rem + 2.6vw,3.25rem);} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -280,7 +288,8 @@ ${corpoPagina}
   {
     const TROCAS_FUNCS: [string, string][] = [
       ['<p class="dl-olho">Do pedido ao lucro</p>', '<p class="dl-olho">Funcionalidades</p>'],
-      ['Veja o caminho de um pedido: da escolha da cliente ao dinheiro no caixa.', 'Cardápio, pedidos, agenda e financeiro trabalhando juntos, no mesmo app.'],
+      ['Veja o caminho de um pedido: da escolha da cliente ao dinheiro no caixa.', 'Cardápio que recebe pedidos sozinho, aviso a cada pedido novo, agenda das entregas e financeiro com a conta pronta.'],
+      ['Você cuida da produção. <span class="dl-h2__rosa">O Doonly cuida do resto.</span>', 'O caderninho não avisa, não cobra e não faz conta. <span class="dl-h2__rosa">O Doonly faz.</span>'],
       ['>A cliente pede sozinha</h3>', '>Cardápio digital</h3>'],
       ['Escolhe o bolo, o sabor e a data no seu cardápio, e já paga no Pix. Sem você parar a produção para responder.', 'A cliente escolhe o bolo, o sabor e a data no seu link e já paga no Pix. Sem você parar a produção para responder.'],
       ['>Você só aceita</h3>', '>Pedidos</h3>'],
