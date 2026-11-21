@@ -198,6 +198,7 @@
 .fd-rende-c i { flex: none; display: flex; align-items: center; padding: 0 10px; border-left: 1px solid var(--ui-borda); background: var(--ui-cinza); font-style: normal; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); }
 /* (21/11) cada venda leva N unidades da receita + avisos */
 .fd-rende-venda { margin-top: 8px; }
+.fd-rende-t small { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.3; text-wrap: balance; }
 .fd-rende-sug { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 8px; padding: 10px 12px; border: 0; border-radius: 12px; background: #F5F3F4; font-family: inherit; font-size: 13.5px; color: var(--ui-texto); text-align: left; cursor: pointer; }
 .fd-rende-sug svg { flex: none; color: #B45309; }
 .fd-rende-sug span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -704,8 +704,8 @@ export default function FichaTecnica() {
     // (31/10 · 5.84) pedaços prontos (não componentes criados a cada desenho)
     const conta = (
       <div className="fd-conta">
-        {ficha.length > 0 && precoLive > 0 && margemLucroLive > 90 && <p className="fd-conta-alerta"><WarningCircle size={16} weight="bold" />Margem muito alta. Confira quanto a receita rende{rendeReceita > 1 ? " e quanto vai em cada venda" : ""}.</p>}
-        {rendeReceita > 1 && <p className="fd-conta-un">{porVenda > 1 ? `Conta de 1 venda (${porVenda} un) · a receita rende ${rendeReceita}` : `Conta de 1 unidade · a receita rende ${rendeReceita}`}</p>}
+        {ficha.length > 0 && precoLive > 0 && margemLucroLive > 90 && <p className="fd-conta-alerta"><WarningCircle size={16} weight="bold" />Margem muito alta. Confira as unidades da receita{rendeReceita > 1 ? " e as unidades por venda" : ""}.</p>}
+        {rendeReceita > 1 && <p className="fd-conta-un">{porVenda > 1 ? `Conta de 1 venda · ${porVenda} de ${rendeReceita} un da receita` : `Conta de 1 unidade · a receita faz ${rendeReceita}`}</p>}
         <div><span>Ingredientes</span><span>R$ {fmt(cmvLive)}</span></div>
         <div><span>Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
         <div><span>Mão de obra{tempoMin > 0 && moAtivo ? ` (${tempoMin >= 60 ? `${Math.floor(tempoMin / 60)}h${tempoMin % 60 ? String(tempoMin % 60).padStart(2, "0") : ""}` : `${tempoMin} min`})` : ""}</span><span>R$ {fmt(moLive)}</span></div>
@@ -828,20 +828,20 @@ export default function FichaTecnica() {
               {/* (6.183) quantas unidades a receita rende: o custo e o lucro passam a ser de 1 unidade */}
               {podeRender(selected) && (
                 <div className="fd-rende">
-                  <span className="fd-rende-t"><b>A receita rende</b><small>{rendeReceita > 1 ? "Unidades desta receita" : "Ex.: 30 brigadeiros, 12 fatias"}</small></span>
+                  <span className="fd-rende-t"><b>Unidades da receita</b><small>Quantas esses ingredientes fazem</small></span>
                   <span className="fd-rende-c"><CampoNumero inteiro value={rendeReceita} placeholder="1" onValor={n => setExtras(e => ({ ...e, ficha_rende: String(Math.max(1, Math.round(n || 1))) }))} aria-label="Quantas unidades a receita rende" /><i>un</i></span>
                 </div>
               )}
               {/* (21/11) quantas dessas unidades vão em cada venda: sem isso, quem vende o cento via um lucro que não existe */}
               {podeRender(selected) && rendeReceita > 1 && (
                 <div className="fd-rende fd-rende-venda">
-                  <span className="fd-rende-t"><b>Cada venda leva</b><small>{`Por venda: R$ ${fmt(cmvLive)}`}</small></span>
+                  <span className="fd-rende-t"><b>Unidades por venda</b><small>{`Quantas vão em 1 “${selected.nome}”`}</small></span>
                   <span className="fd-rende-c"><CampoNumero inteiro value={porVenda} placeholder="1" onValor={n => setExtras(e => ({ ...e, ficha_por_venda: String(Math.max(1, Math.round(n || 1))) }))} aria-label="Quantas unidades da receita vão em cada venda" /><i>un</i></span>
                 </div>
               )}
               {sugerirPorVenda > 0 && (
                 <button type="button" className="fd-rende-sug" onClick={() => setExtras(e => ({ ...e, ficha_por_venda: String(sugerirPorVenda) }))}>
-                  <WarningCircle size={18} weight="bold" /><span>Cada venda leva {sugerirPorVenda} un?</span><b>Usar {sugerirPorVenda}</b>
+                  <WarningCircle size={18} weight="bold" /><span>São {sugerirPorVenda} por venda?</span><b>Usar {sugerirPorVenda}</b>
                 </button>
               )}
             </>)}
