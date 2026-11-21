@@ -305,6 +305,20 @@ ${corpoPagina}
     }
     corpoPro2 = corpoPro2.replace(/<span class="dl-passo4__num">\d+<\/span>/g, '')
   }
+  // (21/11) cartão "Cardápio digital" da /pro2: no lugar do vídeo do pedido, o cardápio real do Doce Formiga rolando devagar.
+  // O vídeo antigo (video-01/02 e img-08) continua na pasta e na /pro: NÃO apagar.
+  {
+    const TROCAS_VIDEO: [string, string][] = [
+      ['/site/media/video-01-0517432868.webm', '/site/media/cardapio-rolando.webm'],
+      ['/site/media/video-02-165429e200.mp4', '/site/media/cardapio-rolando.mp4'],
+      ['poster="/site/media/img-08-feec6a0105.webp"', 'poster="/site/media/cardapio-rolando.webp"'],
+      ['aria-label="A cliente escolhe o Bolo Floresta Negra no cardápio, marca a retirada e paga no Pix"', 'aria-label="O cardápio digital do Doce Formiga rolando: capa, logo, cupons, destaques e a lista de bolos"'],
+    ]
+    for (const [de, para] of TROCAS_VIDEO) {
+      if (!corpoPro2.includes(de)) throw new Error('pro2: vídeo do cardápio não encontrado: ' + de)
+      corpoPro2 = corpoPro2.split(de).join(para)
+    }
+  }
   corpoPro2 = CSS_P2 + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
