@@ -317,7 +317,8 @@ ${corpoPagina}
 .dl-root .dl-secao.dl-recursos#funcionalidades{padding-bottom:clamp(34px,4vw,56px);}
 .dl-root .dl-secao.dl-recursos#funcs-b{padding-top:clamp(40px,5vw,72px);}
 .dl-root #funcs-b .dl-passos4{margin-top:0;}
-.dl-root .dl-cardapio .dl-onda{fill:#0B0710;}
+.dl-root .dl-cardapio .dl-onda{fill:#0B0710; height:clamp(16px,1.9vw,34px);}
+.dl-root #cardapio-digital.dl-cardapio{padding-top:clamp(56px,6.2vw,104px);}
 @media (max-width:1023px){ .dl-root .dl-cardapio .dl-cardapio__grade{gap:18px;} .dl-root .dl-cardapio .dl-cabeca{margin-bottom:12px;} .dl-root .dl-cardapio .dl-vantagens{margin-top:0;} }
 .dl-root .dl-cardapio .dl-vantagens__texto{white-space:normal; text-wrap:pretty;} .dl-root .dl-cardapio .dl-vantagens__item{align-items:start;}
 .dl-root .p2-selo-rosa{display:inline-flex; align-items:center; gap:10px; margin:0 0 16px; padding:5px 16px 5px 5px; border-radius:999px; background:#FFF6EE;}
