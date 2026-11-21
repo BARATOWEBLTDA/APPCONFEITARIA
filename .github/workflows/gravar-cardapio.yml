@@ -1,0 +1,23 @@
+# (21/11) Grava a tela do cardápio real (Doce Formiga) rolando, para o vídeo da página de vendas /pro2.
+# Só roda neste ramo. O resultado fica na pasta gravacao/ deste mesmo ramo.
+name: Gravar cardápio
+on:
+  push:
+    branches: [gravar-cardapio]
+    paths: [".github/gravar/**", ".github/workflows/gravar-cardapio.yml"]
+permissions:
+  contents: write
+jobs:
+  gravar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cd .github/gravar && npm init -y >/dev/null && npm i puppeteer-core@23 >/dev/null 2>&1
+      - run: cd .github/gravar && node gravar.js
+      - run: |
+          cd .github/gravar
+          ffmpeg -loglevel error -y -framerate 30 -i frames/f%05d.jpg -c:v libx264 -crf 12 -preset slow -pix_fmt yuv420p bruto.mp4
+          mkdir -p ../../gravacao && cp bruto.mp4 *.png info.json ../../gravacao/
+      - run: |
+          git config user.name "gravador" && git config user.email "gravador@users.noreply.github.com"
+          git add gravacao && git commit -qm "gravação do cardápio" && git push -q
