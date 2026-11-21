@@ -23,7 +23,7 @@
 
 /* conteúdo com a curva */
 .cm1-content { position: relative; z-index: 2; margin-top: -24px; padding: 20px 16px 4px; border-radius: var(--ui-raio-janela) var(--ui-raio-janela) 0 0; }
-.cm1-logo { position: absolute; z-index: 6; top: -60px; right: 16px; width: 106px; height: 106px; padding: 2px; border: 4px solid; border-radius: 50%; background: var(--ui-branco); box-shadow: 0 0 0 4px var(--cm1-fundo, #F7F4F5), 0 6px 18px rgba(44,18,25,.18); overflow: hidden; }
+.cm1-logo { position: absolute; z-index: 6; top: -66px; /* (21/11) 6px mais para cima: a logo cobria o "Sobre a loja" */ right: 16px; width: 106px; height: 106px; padding: 2px; border: 4px solid; border-radius: 50%; background: var(--ui-branco); box-shadow: 0 0 0 4px var(--cm1-fundo, #F7F4F5), 0 6px 18px rgba(44,18,25,.18); overflow: hidden; }
 .cm1-logo img, .cm1-logo span { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; font-size: 36px; font-weight: 600; }
 /* (17/11) sem flex: o selo flui inline e cola no fim do nome (com flex ele centralizava no meio das 2 linhas, longe) */
 .cm1-nome { display: block; margin: 0; padding-right: 118px; font-size: 22px; font-weight: 600; line-height: 1.25; letter-spacing: 0; }
@@ -45,7 +45,7 @@
 .cm1-mapa-fechar { width: 100%; min-height: 48px; margin: 0; border: 0; border-radius: var(--ui-raio); background: #F3EEF0; color: var(--ui-texto); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 
 /* (17/10) "Sobre a loja · cidade" numa linha embaixo do nome (no lugar do endereço + Sobre a loja) */
-.cm1-sl { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; margin-top: -6px; /* (20/10) mais perto do nome */ font-size: 14px; white-space: nowrap; }
+.cm1-sl { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; margin-top: 0; /* (21/11) era -6px: com nome de uma linha o "Sobre a loja" ficava embaixo da logo */ font-size: 14px; white-space: nowrap; }
 /* (20/10) status da loja embaixo do nome */
 .cm1-sl-st { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: var(--ui-texto-2); }
 .cm1-sl-st .c { display: none; }
