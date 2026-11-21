@@ -244,7 +244,7 @@ ${corpoPagina}
 @keyframes p2-faixa{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){ .p2-faixa__trilho{animation:none;} }
 .dl-root #funcionalidades .dl-cabeca{margin-top:34px;}
-.dl-root #funcionalidades .dl-cabeca .dl-lead{font-size:clamp(1rem,.9rem + .42vw,1.25rem);}
+.dl-root #funcionalidades .dl-cabeca .dl-lead{font-size:clamp(1rem,.9rem + .42vw,1.25rem); text-wrap:balance;}
 @font-face{font-family:"Tinteiro"; src:url(/site/media/homemade-apple.woff2) format("woff2"); font-weight:400; font-style:normal; font-display:swap;}
 .dl-root .dl-ponte.p2-ponte{margin-top:clamp(30px,3.4vw,48px); gap:2px;}
 .dl-root .dl-ponte.p2-ponte .dl-ponte__texto{max-width:none; font-family:"Tinteiro","Segoe Script","Bradley Hand",cursive; font-weight:400; font-size:min(1.125rem,4.5vw); line-height:1.55; letter-spacing:0; color:#2B1A3A; text-wrap:balance; transform:rotate(-1.5deg);}
@@ -366,8 +366,8 @@ ${corpoPagina}
   {
     const TROCAS_FUNCS: [string, string][] = [
       ['<p class="dl-olho">Do pedido ao lucro</p>', ''],
-      ['Veja o caminho de um pedido: da escolha da cliente ao dinheiro no caixa.', 'Cardápio que recebe pedidos sozinho, aviso a cada pedido novo, agenda das entregas e financeiro com a conta pronta.'],
-      ['Você cuida da produção. <span class="dl-h2__rosa">O Doonly cuida do resto.</span>', 'O caderninho não avisa, não cobra e não faz conta. <span class="dl-h2__rosa">O Doonly faz.</span>'],
+      ['Veja o caminho de um pedido: da escolha da cliente ao dinheiro no caixa.', 'Conheça os recursos do Doonly e veja como cada um funciona no dia a dia da sua confeitaria.'],
+      ['Você cuida da produção. <span class="dl-h2__rosa">O Doonly cuida do resto.</span>', 'Veja o que o Doonly <span class="dl-h2__rosa">faz por você.</span>'],
       ['>A cliente pede sozinha</h3>', '>Cardápio que vende por você</h3>'],
       ['Escolhe o bolo, o sabor e a data no seu cardápio, e já paga no Pix. Sem você parar a produção para responder.', 'Sua loja com logo, capa, fotos, descrições, cupons e promoções. A cliente abre o link, escolhe sozinha e o pedido chega pronto.'],
       ['>Você só aceita</h3>', '>Pedidos</h3>'],
