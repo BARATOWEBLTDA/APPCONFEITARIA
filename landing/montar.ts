@@ -313,6 +313,15 @@ ${corpoPagina}
 .dl-root .dl-dores .dl-par__ic{margin-top:2px;}
 @media (max-width:599px){ .dl-root .dl-dores .dl-par__txt{font-size:.9375rem !important;} }
 .p2-hero-acao .dl-btn .dl-ico{margin-left:2px;}
+/* (21/11) funcionalidade 01 = área rosa; cartões 02–04 em seção própria */
+.dl-root .dl-secao.dl-recursos#funcionalidades{padding-bottom:clamp(34px,4vw,56px);}
+.dl-root .dl-secao.dl-recursos#funcs-b{padding-top:clamp(40px,5vw,72px);}
+.dl-root #funcs-b .dl-passos4{margin-top:0;}
+.dl-root .dl-cardapio .dl-onda{fill:#0B0710;}
+.dl-root .p2-selo-rosa{display:inline-flex; align-items:center; gap:10px; margin:0 0 16px; padding:5px 16px 5px 5px; border-radius:999px; background:#FFF6EE;}
+.dl-root .p2-selo-rosa b{display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:#3A1220; color:#fff; font-size:.8125rem; font-weight:700;}
+.dl-root .p2-selo-rosa span{color:#3A1220; font-size:.8125rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;}
+@media (min-width:1000px){ .dl-root #funcs-b .dl-passos4{grid-template-columns:repeat(3,minmax(0,1fr)) !important; max-width:1180px;} .dl-root #funcs-b .p2-func{padding:26px 24px 28px;} .dl-root #funcs-b .p2-func .dl-passo4__video{max-width:290px;} .dl-root #funcs-b .p2-func .dl-passo4__titulo{font-size:1.4rem !important;} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -460,7 +469,24 @@ ${corpoPagina}
     corpoPro2 = corpoPro2.replace(/<p class="dl-par__txt">[\s\S]*?<\/p>/g, t => (k < PARES.length ? `<p class="dl-par__txt">${PARES[k++]}</p>` : t))
     if (k !== 10) throw new Error('pro2: esperava 10 textos nos pares, achei ' + k)
   }
-  corpoPro2 = CSS_P2 + corpoPro2
+  // (21/11) a área rosa do cardápio vira a funcionalidade 01 (com o mockup dela, parado) e sobe para logo depois do título
+  // "Veja o que o Doonly faz por você"; o cartão 01 sai, e os cartões 02–04 continuam numa seção escura logo abaixo.
+  {
+    const ROSA = /<section class="dl-secao dl-secao--rosa dl-cardapio"[\s\S]*?<\/section>\n?/
+    const achou = corpoPro2.match(ROSA)
+    if (!achou) throw new Error('pro2: área rosa do cardápio não encontrada')
+    const OLHO = '<p class="dl-olho">Seu cardápio digital</p>'
+    if (!achou[0].includes(OLHO)) throw new Error('pro2: chamada da área rosa não encontrada')
+    const rosa = achou[0].replace(OLHO, '<p class="p2-selo-rosa"><b>01</b><span>Cardápio digital</span></p>')
+    corpoPro2 = corpoPro2.replace(ROSA, '')
+    const CARTAO1 = /<li class="dl-passo4 p2-func"><p class="p2-func__selo"><b>01<\/b>[\s\S]*?<\/ul><\/li>/
+    if (!CARTAO1.test(corpoPro2)) throw new Error('pro2: cartão 01 não encontrado')
+    corpoPro2 = corpoPro2.replace(CARTAO1, '')
+    const CORTE = /(<\/header>)\s*(<ol class="dl-passos4">)/
+    if (!CORTE.test(corpoPro2)) throw new Error('pro2: ponto de corte das funcionalidades não encontrado')
+    corpoPro2 = corpoPro2.replace(CORTE, (_t, a: string, b: string) => `${a}\n\t</div>\n</section>\n${rosa}<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-label="Pedidos, agenda e financeiro">\n\t<div class="dl-container">\n\t\t${b}`)
+  }
+  corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
 }
