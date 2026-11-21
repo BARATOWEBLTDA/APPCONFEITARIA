@@ -613,16 +613,16 @@ ${corpoPagina}
     // real do app (grade de fichas → ficha do "100 Salgados Fritos" com os valores → ingredientes → PDF). A seção antiga de
     // ficha técnica, mais abaixo, sai; os cartões que sobram viram 04 Agenda e 05 Financeiro.
     const pontosFic = ([
-      ['Custo real da receita', 'Ingredientes, embalagem e gás.'],
-      ['Seu tempo na conta', 'A mão de obra entra no custo.'],
-      ['Lucro por forma de pagamento', 'Pix, débito e crédito lado a lado.'],
-      ['Ficha em PDF', 'Salve ou mande pelo WhatsApp.'],
+      ['Custo real da receita', 'Do ingrediente à sua mão de obra.'],
+      ['Margem de cada produto', 'Veja se é boa, baixa ou dá prejuízo.'],
+      ['Lucro por forma de pagamento', 'Compare Pix, débito e crédito.'],
+      ['Ficha em PDF', 'Salve ou envie pelo WhatsApp.'],
     ] as [string, string][]).map(([t, x]) => `<li class="dl-vantagens__item">${ICONE}<div><h3 class="dl-vantagens__titulo">${t}</h3><p class="dl-vantagens__texto">${x}</p></div></li>`).join('')
     const trocaFic: [RegExp, string][] = [
       [/class="dl-secao dl-secao--rosa dl-cardapio" id="cardapio-digital" aria-labelledby="dl-cardapio-titulo"/, 'class="dl-secao dl-secao--clara dl-cardapio p2-f03" id="ficha" aria-labelledby="p2-fic-t"'],
       [/<p class="p2-selo-rosa">[\s\S]*?<\/p>/, '<p class="p2-selo-rosa"><b>03</b><span>Ficha técnica</span></p>'],
       [/<h2 class="dl-h2" id="dl-cardapio-titulo">[\s\S]*?<\/h2>/, '<h2 class="dl-h2" id="p2-fic-t">Quanto sobra em cada venda? <span class="dl-h2__rosa">Agora você sabe.</span></h2>'],
-      [/(<p class="dl-lead">)[\s\S]*?(<\/p>)/, '$1Você coloca os ingredientes, a embalagem e o seu tempo. O Doonly soma tudo e mostra o custo, o lucro e a margem de cada produto.$2'],
+      [/(<p class="dl-lead">)[\s\S]*?(<\/p>)/, '$1Você informa os ingredientes, a embalagem, o gás e o tempo de preparo. O Doonly inclui sua mão de obra, as taxas e os impostos na conta e mostra o custo, o lucro e a margem de cada produto.$2'],
       [/<ul class="dl-vantagens">[\s\S]*?<\/ul>/, `<ul class="dl-vantagens">${pontosFic}</ul>`],
       [/<div class="dl-camadas" role="img"[\s\S]*?<\/div>/, '<div class="p2-fone"><video class="dl-passo4__video p2-fone__video" muted loop playsinline preload="none" width="600" height="1200" poster="/site/media/ficha-video.webp" aria-label="No app: a lista de fichas técnicas, a ficha dos 100 Salgados Fritos com custo e lucro, os ingredientes e o PDF"><source src="/site/media/ficha-video.webm" type="video/webm"><source src="/site/media/ficha-video.mp4" type="video/mp4"></video></div>'],
     ]
