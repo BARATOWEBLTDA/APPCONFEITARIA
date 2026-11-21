@@ -247,9 +247,9 @@ ${corpoPagina}
 .dl-root #funcionalidades .dl-cabeca .dl-lead{font-size:clamp(1rem,.9rem + .42vw,1.25rem);}
 @font-face{font-family:"Tinteiro"; src:url(/site/media/homemade-apple.woff2) format("woff2"); font-weight:400; font-style:normal; font-display:swap;}
 .dl-root .dl-ponte.p2-ponte{margin-top:clamp(30px,3.4vw,48px); gap:2px;}
-.dl-root .dl-ponte.p2-ponte .dl-ponte__texto{max-width:none; font-family:"Tinteiro","Segoe Script","Bradley Hand",cursive; font-weight:400; font-size:clamp(1.3rem,6.1vw,1.55rem); line-height:1.5; letter-spacing:0; color:#2B1A3A; text-wrap:balance; transform:rotate(-1.5deg);}
+.dl-root .dl-ponte.p2-ponte .dl-ponte__texto{max-width:none; font-family:"Tinteiro","Segoe Script","Bradley Hand",cursive; font-weight:400; font-size:min(1.125rem,4.5vw); line-height:1.55; letter-spacing:0; color:#2B1A3A; text-wrap:balance; transform:rotate(-1.5deg);}
 .dl-root .dl-ponte.p2-ponte em{display:block; font-style:normal; color:inherit; background:none; -webkit-text-fill-color:currentColor; animation:none;}
-.dl-root .p2-tinta{width:min(62%,300px); height:auto; margin-left:22%; color:#E0397B; transform:rotate(-2.5deg);}
+.dl-root .p2-tinta{width:min(46%,200px); height:auto; margin-left:30%; color:#E0397B; transform:rotate(-2.5deg);}
 @media (min-width:700px){ .dl-root .dl-ponte.p2-ponte .dl-ponte__texto{font-size:clamp(1.8rem,3vw,2.6rem);} .dl-root .p2-tinta{width:360px; margin-left:26%;} }
 .dl-root .dl-secao.dl-dores{padding-bottom:clamp(40px,4.4vw,60px);}
 /* (21/11) cartões das funcionalidades: celular maior, título mais solto do número, letras um pouco maiores e a descrição embaixo do celular */
