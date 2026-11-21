@@ -196,6 +196,12 @@
 .fd-rende-c { flex: none; display: flex; align-items: stretch; width: 108px; height: 40px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); overflow: hidden; }
 .fd-rende-c input { flex: 1; min-width: 0; padding: 0 8px; border: 0; outline: none; background: none; font-family: inherit; font-size: 16px; font-weight: 600; text-align: center; color: var(--ui-texto); }
 .fd-rende-c i { flex: none; display: flex; align-items: center; padding: 0 10px; border-left: 1px solid var(--ui-borda); background: var(--ui-cinza); font-style: normal; font-size: 14px; font-weight: 600; color: var(--ui-texto-2); }
+/* (21/11) lucro por forma de pagamento */
+.fd-conta .fd-formas { display: block; margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: #F5F3F4; }
+.fd-conta .fd-formas small { display: block; margin-bottom: 6px; font-size: 13px; color: var(--ui-texto-2); }
+.fd-conta .fd-formas > div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 3px 0; border: 0; font-size: 14px; color: var(--ui-texto); }
+.fd-conta .fd-formas b { font-weight: 500; white-space: nowrap; }
+.fd-conta .fd-formas b.melhor { color: #15803D; font-weight: 600; }
 /* (21/11) cada venda leva N unidades da receita + avisos */
 .fd-rende-venda { margin-top: 8px; }
 .fd-rende-t small { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.3; text-wrap: balance; }

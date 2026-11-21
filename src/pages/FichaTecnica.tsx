@@ -368,13 +368,13 @@ export default function FichaTecnica() {
   const [maoConta, setMaoConta] = useState<MaoConta>(null);
   const [cvConta, setCvConta] = useState<number | null>(null);
   // (13/10) custos da venda: taxa do crédito, taxa do Pix (impostos etc.) e o fixo por pedido
-  const [venda, setVenda] = useState<{ credito: number; pix: number; fixo: number }>({ credito: 0, pix: 0, fixo: 0 });
+  const [venda, setVenda] = useState<{ credito: number; debito: number; pix: number; fixo: number }>({ credito: 0, debito: 0, pix: 0, fixo: 0 });
   VENDA = { pct: venda.credito, fixo: venda.fixo };
   const loadVenda = async (uid: string) => {
     const { data, error } = await supabase.from("custos_variaveis").select("*").eq("user_id", uid);
     if (error) return;
     const vars = (data as Parameters<typeof taxaPctDaForma>[1]) || [];
-    setVenda({ credito: taxaPctDaForma("credito", vars), pix: taxaPctDaForma("pix", vars), fixo: fixoPorPedido(vars) });
+    setVenda({ credito: taxaPctDaForma("credito", vars), debito: taxaPctDaForma("debito", vars), pix: taxaPctDaForma("pix", vars), fixo: fixoPorPedido(vars) });
   };
   // Custos invisíveis salvos na conta (09/10): coluna nova, lida à parte pra não quebrar se o SQL ainda não rodou
   const loadCvConta = async (uid: string) => {
@@ -713,7 +713,20 @@ export default function FichaTecnica() {
         {fixoLive > 0 && <div><span>Por pedido (embalagem)</span><span>R$ {fmt(fixoLive)}</span></div>}
         <div className="fd-t"><span>Custo total</span><span>R$ {fmt(custoTotalLive)}</span></div>
         <div className="fd-pv"><span>Preço de venda</span><span>R$ {fmt(precoLive)}</span></div>
-        {ganhoPix >= 0.01 && <div className="fd-pix"><span>No Pix ou dinheiro, você ganha R$ {fmt(ganhoPix)} a mais</span></div>}
+        {/* (21/11) o lucro em cada forma de pagamento (a conta de cima é a do crédito, a pior): mostra qual compensa mais */}
+        {ganhoPix >= 0.01 && (() => {
+          const base = cmvLive + cvLive + moLive + fixoLive;
+          const lucroEm = (pct: number) => precoLive - base - precoLive * (pct / 100);
+          const linhas: [string, number][] = [["Pix ou dinheiro", lucroEm(venda.pix)]];
+          if (Math.abs(venda.debito - venda.credito) > 0.001 && Math.abs(venda.debito - venda.pix) > 0.001) linhas.push(["Débito", lucroEm(venda.debito)]);
+          linhas.push([Math.abs(venda.debito - venda.credito) > 0.001 ? "Crédito" : "Cartão", lucroEm(venda.credito)]);
+          return (
+            <div className="fd-formas">
+              <small>Seu lucro em cada forma de pagamento</small>
+              {linhas.map(([nome, v], k) => <div key={nome}><span>{nome}</span><b className={k === 0 ? "melhor" : ""}>R$ {fmt(v)}</b></div>)}
+            </div>
+          );
+        })()}
       </div>
     );
     const barra = precoLive > 0 ? (() => {
