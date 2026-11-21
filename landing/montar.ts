@@ -336,10 +336,11 @@ ${corpoPagina}
 .dl-root #pedidos .dl-vantagens__item{align-items:center;}
 .dl-root #pedidos .dl-vantagens__titulo{white-space:normal; font-weight:500; color:#FFF6EE; text-wrap:balance;}
 .dl-root #pedidos .dl-vantagens__icone{background:#F42C7A; color:#fff;}
-.dl-root #pedidos .dl-camadas{aspect-ratio:1/.75;}
+.dl-root #pedidos .dl-camadas{aspect-ratio:1/1.1;}
 .dl-root #pedidos .dl-h2 .dl-h2__rosa{display:block;}
 @media (max-width:599px){ .dl-root #pedidos .dl-h2{font-size:min(1.75rem,6.25vw); white-space:nowrap;} }
-.dl-root #pedidos .dl-camadas__img{aspect-ratio:600/846; object-fit:cover;}
+.dl-root #pedidos .dl-camadas__img{aspect-ratio:600/1300;}
+.dl-root #pedidos .dl-camadas__img--3{aspect-ratio:600/900; top:26%;}
 @media (min-width:1000px){ .dl-root #funcs-b .dl-passos4{grid-template-columns:repeat(2,minmax(0,1fr)) !important; max-width:860px;} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
@@ -520,7 +521,7 @@ ${corpoPagina}
     if (!CARTAO1.test(corpoPro2)) throw new Error('pro2: cartão 01 não encontrado')
     corpoPro2 = corpoPro2.replace(CARTAO1, '')
     // (21/11) funcionalidade 02 Pedidos, no mesmo modelo da área rosa (selo, título, texto, pontos e três telas em camadas), em fundo escuro.
-    // As três telas são quadros do vídeo real do app (video-03/04): aviso de pedido novo, pedido aberto para aceitar e os itens do pedido.
+    // As três peças (21/11): 1) tela de celular com os avisos do Doonly (montada); 2) a tela real do pedido no app, sem o bloco do cliente; 3) o PDF real do pedido, fechado e aberto.
     const ICONE = (rosa.match(/<span class="dl-vantagens__icone dl-vantagens__icone--ck">[\s\S]*?<\/span>/) || [''])[0]
     if (!ICONE) throw new Error('pro2: ícone dos pontos não encontrado')
     const pontosPed = ['Receba um aviso a cada novo pedido.', 'Confira data, sabores e endereço na mesma tela.', 'Acompanhe a encomenda do aceite à entrega.']
@@ -531,10 +532,10 @@ ${corpoPagina}
       [/<h2 class="dl-h2" id="dl-cardapio-titulo">[\s\S]*?<\/h2>/, '<h2 class="dl-h2" id="p2-ped-t">O pedido chega completo. <span class="dl-h2__rosa">Você só precisa aceitar.</span></h2>'],
       [/(<p class="dl-lead">)[\s\S]*?(<\/p>)/, '$1Assim que a cliente faz o pedido pelo cardápio, o aviso chega no seu celular. Você confere os detalhes e aceita com um toque.$2'],
       [/<ul class="dl-vantagens">[\s\S]*?<\/ul>/, `<ul class="dl-vantagens">${pontosPed}</ul>`],
-      [/aria-label="Cardápio digital da Doce Formiga:[^"]*"/, 'aria-label="Telas do app: o aviso de pedido novo, o pedido aberto para aceitar e os itens do pedido"'],
-      [/src="\/site\/media\/camada-1-[^"]*" width="600" height="1300"/, 'src="/site/media/pedidos-1.webp" width="600" height="846"'],
-      [/src="\/site\/media\/camada-2-[^"]*" width="600" height="1300"/, 'src="/site/media/pedidos-2.webp" width="600" height="846"'],
-      [/src="\/site\/media\/camada-3-[^"]*" width="600" height="1300"/, 'src="/site/media/pedidos-3.webp" width="600" height="846"'],
+      [/aria-label="Cardápio digital da Doce Formiga:[^"]*"/, 'aria-label="O aviso de pedido novo na tela do celular, o pedido aberto no app com os três itens e o pedido em PDF"'],
+      [/src="\/site\/media\/camada-1-[^"]*" width="600" height="1300"/, 'src="/site/media/pedidos-a.webp" width="600" height="1300"'],
+      [/src="\/site\/media\/camada-2-[^"]*" width="600" height="1300"/, 'src="/site/media/pedidos-b.webp" width="600" height="1300"'],
+      [/src="\/site\/media\/camada-3-[^"]*" width="600" height="1300"/, 'src="/site/media/pedidos-c.webp" width="600" height="900"'],
     ]
     let ped = rosa
     for (const [de, para] of trocaPed) { if (!de.test(ped)) throw new Error('pro2: peça da área de pedidos não encontrada: ' + de); ped = ped.replace(de, para) }
