@@ -252,6 +252,16 @@ ${corpoPagina}
 .dl-root .p2-tinta{width:min(62%,300px); height:auto; margin-left:22%; color:#E0397B; transform:rotate(-2.5deg);}
 @media (min-width:700px){ .dl-root .dl-ponte.p2-ponte .dl-ponte__texto{font-size:clamp(1.8rem,3vw,2.6rem);} .dl-root .p2-tinta{width:360px; margin-left:26%;} }
 .dl-root .dl-secao.dl-dores{padding-bottom:clamp(40px,4.4vw,60px);}
+/* (21/11) cartões das funcionalidades: celular maior, título mais solto do número, letras um pouco maiores e a descrição embaixo do celular */
+.dl-root #funcionalidades .dl-passo4{padding-bottom:20px;}
+.dl-root #funcionalidades .dl-passo4__num{order:0;}
+.dl-root #funcionalidades .dl-passo4__titulo{order:1; margin-top:14px; font-size:min(1.1875rem,5vw); white-space:nowrap;}
+.dl-root #funcionalidades .dl-passo4__tela{order:2; flex:none; margin:16px -8px 0; padding:0;}
+.dl-root #funcionalidades .dl-passo4__video{max-width:none; border-radius:16px;}
+.dl-root #funcionalidades .dl-passo4__texto{order:3; margin:16px 0 0; font-size:.9375rem; line-height:1.5;}
+@media (max-width:639px){ .dl-root #funcionalidades .dl-passo4__tela{margin-inline:-18px;} .dl-root #funcionalidades .dl-passo4__video{border-radius:0;} }
+@media (min-width:1270px){ .dl-root #funcionalidades .dl-passo4__titulo{font-size:min(1.1875rem,1.3vw) !important;} }
+@media (min-width:640px){ .dl-root #funcionalidades .dl-passo4__titulo{font-size:1.1875rem;} .dl-root #funcionalidades .dl-passo4__texto{font-size:1rem;} .dl-root #funcionalidades .dl-passo4__tela{margin-inline:-10px;} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -307,7 +317,7 @@ ${corpoPagina}
       ['<p class="dl-olho">Do pedido ao lucro</p>', ''],
       ['Veja o caminho de um pedido: da escolha da cliente ao dinheiro no caixa.', 'Cardápio que recebe pedidos sozinho, aviso a cada pedido novo, agenda das entregas e financeiro com a conta pronta.'],
       ['Você cuida da produção. <span class="dl-h2__rosa">O Doonly cuida do resto.</span>', 'O caderninho não avisa, não cobra e não faz conta. <span class="dl-h2__rosa">O Doonly faz.</span>'],
-      ['>A cliente pede sozinha</h3>', '>Cardápio digital que vende por você</h3>'],
+      ['>A cliente pede sozinha</h3>', '>Cardápio que vende por você</h3>'],
       ['Escolhe o bolo, o sabor e a data no seu cardápio, e já paga no Pix. Sem você parar a produção para responder.', 'Sua loja com logo, capa, fotos, descrições, cupons e promoções. A cliente abre o link, escolhe sozinha e o pedido chega pronto.'],
       ['>Você só aceita</h3>', '>Pedidos</h3>'],
       ['O aviso chega no celular. Um toque e o pedido vai para a produção, com tudo anotado.', 'O aviso chega no celular. Um toque para aceitar e o pedido fica organizado, com tudo anotado.'],
