@@ -245,6 +245,10 @@ ${corpoPagina}
 @media (prefers-reduced-motion:reduce){ .p2-faixa__trilho{animation:none;} }
 .dl-root #funcionalidades .dl-cabeca{margin-top:34px;}
 .dl-root #funcionalidades .dl-cabeca .dl-lead{font-size:clamp(1rem,.9rem + .42vw,1.25rem);}
+.dl-root .dl-ponte.p2-ponte{margin-top:clamp(30px,3.4vw,48px);}
+.dl-root .dl-ponte.p2-ponte .dl-ponte__texto{text-wrap:balance;}
+.dl-root .dl-ponte.p2-ponte em{display:block; background:linear-gradient(90deg,#F1769F 0%,#F42C7A 25%,#FF8A6B 50%,#F42C7A 75%,#F1769F 100%); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:p2-degrade 7s linear infinite;}
+.dl-root .dl-secao.dl-dores{padding-bottom:clamp(40px,4.4vw,60px);}
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -333,6 +337,12 @@ ${corpoPagina}
       if (!corpoPro2.includes(de)) throw new Error('pro2: vídeo do cardápio não encontrado: ' + de)
       corpoPro2 = corpoPro2.split(de).join(para)
     }
+  }
+  // (21/11) fecho da seção das dores: frase mais forte, sem a seta para baixo e com menos espaço até a faixa das funcionalidades
+  {
+    const PONTE = /<p class="dl-ponte">[\s\S]*?<\/p>/
+    if (!PONTE.test(corpoPro2)) throw new Error('pro2: frase de passagem não encontrada')
+    corpoPro2 = corpoPro2.replace(PONTE, '<p class="dl-ponte p2-ponte"><span class="dl-ponte__texto">Você não abriu uma confeitaria <em>para virar atendente.</em></span></p>')
   }
   corpoPro2 = CSS_P2 + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
