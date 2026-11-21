@@ -235,6 +235,16 @@ ${corpoPagina}
 @media (prefers-reduced-motion:reduce){ .dl-root .dl-h2 .dl-h2__rosa, .dl-root .dl-titulo.p2-titulo span{animation:none;} }
 .dl-root #dl-recursos-titulo{font-size:clamp(1.5rem,7.1vw,1.75rem); max-width:17em; margin-inline:auto;}
 @media (min-width:600px){ .dl-root #dl-recursos-titulo{font-size:clamp(1.75rem,1.1rem + 2.6vw,3.25rem);} }
+.dl-root #funcionalidades{position:relative;}
+.p2-faixa{position:absolute; top:0; left:0; right:0; overflow:hidden; padding:11px 0; background:rgba(244,44,122,.10); border-block:1px solid rgba(255,125,174,.22);}
+.p2-faixa__trilho{display:flex; width:max-content; animation:p2-faixa 46s linear infinite;}
+.p2-faixa__grupo{display:flex; align-items:center; flex:none;}
+.p2-faixa__grupo span{padding:0 18px; font-size:.8125rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase; white-space:nowrap; color:rgba(255,246,238,.9);}
+.p2-faixa__grupo i{font-style:normal; font-size:.75rem; color:#FF7DAE;}
+@keyframes p2-faixa{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){ .p2-faixa__trilho{animation:none;} }
+.dl-root #funcionalidades .dl-cabeca{margin-top:34px;}
+.dl-root #funcionalidades .dl-cabeca .dl-lead{font-size:clamp(1rem,.9rem + .42vw,1.25rem);}
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -287,11 +297,11 @@ ${corpoPagina}
   // Os vídeos são os mesmos, do app real; saem os números 01–04, que davam ideia de sequência.
   {
     const TROCAS_FUNCS: [string, string][] = [
-      ['<p class="dl-olho">Do pedido ao lucro</p>', '<p class="dl-olho">Funcionalidades</p>'],
+      ['<p class="dl-olho">Do pedido ao lucro</p>', ''],
       ['Veja o caminho de um pedido: da escolha da cliente ao dinheiro no caixa.', 'Cardápio que recebe pedidos sozinho, aviso a cada pedido novo, agenda das entregas e financeiro com a conta pronta.'],
       ['Você cuida da produção. <span class="dl-h2__rosa">O Doonly cuida do resto.</span>', 'O caderninho não avisa, não cobra e não faz conta. <span class="dl-h2__rosa">O Doonly faz.</span>'],
-      ['>A cliente pede sozinha</h3>', '>Cardápio digital</h3>'],
-      ['Escolhe o bolo, o sabor e a data no seu cardápio, e já paga no Pix. Sem você parar a produção para responder.', 'A cliente escolhe o bolo, o sabor e a data no seu link e já paga no Pix. Sem você parar a produção para responder.'],
+      ['>A cliente pede sozinha</h3>', '>Cardápio digital que vende por você</h3>'],
+      ['Escolhe o bolo, o sabor e a data no seu cardápio, e já paga no Pix. Sem você parar a produção para responder.', 'Sua loja com logo, capa, fotos, descrições, cupons e promoções. A cliente abre o link, escolhe sozinha e o pedido chega pronto.'],
       ['>Você só aceita</h3>', '>Pedidos</h3>'],
       ['O aviso chega no celular. Um toque e o pedido vai para a produção, com tudo anotado.', 'O aviso chega no celular. Um toque para aceitar e o pedido fica organizado, com tudo anotado.'],
       ['>Nenhuma entrega esquecida</h3>', '>Agenda</h3>'],
@@ -303,7 +313,12 @@ ${corpoPagina}
       if (!corpoPro2.includes(de)) throw new Error('pro2: trecho das funcionalidades não encontrado: ' + de)
       corpoPro2 = corpoPro2.split(de).join(para)
     }
-    corpoPro2 = corpoPro2.replace(/<span class="dl-passo4__num">\d+<\/span>/g, '')
+    // (21/11) os números 01–04 ficam: agora numeram as funcionalidades
+    // sai o mascote da divisa; no lugar, uma faixa com o texto passando sem parar (sai de um lado e volta do outro)
+    const MASCOTE = /<img class="dl-recursos__mascote"[^>]*>/
+    if (!MASCOTE.test(corpoPro2)) throw new Error('pro2: mascote da divisa não encontrado')
+    const FRASE = '<span>Conheça as funcionalidades do Doonly</span><i aria-hidden="true">✦</i><span>Perfeitas para confeitaria</span><i aria-hidden="true">✦</i>'
+    corpoPro2 = corpoPro2.replace(MASCOTE, `<div class="p2-faixa" role="presentation"><div class="p2-faixa__trilho"><div class="p2-faixa__grupo">${FRASE.repeat(4)}</div><div class="p2-faixa__grupo" aria-hidden="true">${FRASE.repeat(4)}</div></div></div>`)
   }
   // (21/11) cartão "Cardápio digital" da /pro2: no lugar do vídeo do pedido, o cardápio real do Doce Formiga rolando devagar.
   // O vídeo antigo (video-01/02 e img-08) continua na pasta e na /pro: NÃO apagar.
