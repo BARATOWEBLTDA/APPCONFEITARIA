@@ -305,6 +305,14 @@ ${corpoPagina}
   .dl-root #funcionalidades .p2-func .dl-passo4__titulo{font-size:1.625rem !important;}
   .dl-root #funcionalidades .p2-func .dl-passo4__texto, .dl-root #funcionalidades .p2-func__lista{width:100%; max-width:360px; margin-inline:auto;}
 }
+/* (21/11) pares com textos longos: sem risco, podem ocupar várias linhas */
+.dl-root .dl-dores .dl-par__hoje .dl-par__txt{text-decoration:none; color:#5E5158;}
+.dl-root .dl-dores .dl-par__doonly .dl-par__txt{font-weight:500;}
+.dl-root .dl-dores .dl-par__txt{text-wrap:pretty !important; white-space:normal !important; letter-spacing:0 !important; line-height:1.42;}
+.dl-root .dl-dores .dl-par__hoje, .dl-root .dl-dores .dl-par__doonly{align-items:start;}
+.dl-root .dl-dores .dl-par__ic{margin-top:2px;}
+@media (max-width:599px){ .dl-root .dl-dores .dl-par__txt{font-size:.9375rem !important;} }
+.p2-hero-acao .dl-btn .dl-ico{margin-left:2px;}
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -426,6 +434,31 @@ ${corpoPagina}
       return `<li class="dl-passo4 p2-func"><p class="p2-func__selo"><b>${num}</b><span>${f.nome}</span></p><h3 class="dl-passo4__titulo">${f.titulo}</h3>${tela}<p class="dl-passo4__texto">${f.frase}</p><ul class="p2-func__lista">${f.pontos.map(x => `<li><i>${CK}</i><span>${x}</span></li>`).join('')}</ul></li>`
     })
     if (feitos !== 4) throw new Error('pro2: esperava 4 cartões de funcionalidade, achei ' + feitos)
+  }
+  // (21/11) abertura: botão "Conheça o Doonly" entre o texto e a imagem, levando à demonstração (funcionalidades)
+  // dores: sem o parágrafo de apoio, e os cinco pares com textos novos (a fala da confeiteira × o que o Doonly faz)
+  {
+    const SUB = /(<p class="dl-subtitulo">[\s\S]*?<\/p>)/
+    if (!SUB.test(corpoPro2)) throw new Error('pro2: subtítulo da abertura não encontrado')
+    corpoPro2 = corpoPro2.replace(SUB, '$1\n<div class="p2-hero-acao"><a class="dl-btn dl-btn--primario dl-btn--medio" href="#funcionalidades"><span>Conheça o Doonly</span><svg class="dl-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a></div>')
+    const LEAD_DORES = /(<header class="dl-cabeca dl-dores__cabeca">[\s\S]*?<\/h2>)\s*<p class="dl-lead">[\s\S]*?<\/p>/
+    if (!LEAD_DORES.test(corpoPro2)) throw new Error('pro2: parágrafo das dores não encontrado')
+    corpoPro2 = corpoPro2.replace(LEAD_DORES, '$1')
+    const PARES = [
+      'Um pedido no WhatsApp, outro no Instagram. Um de boca a boca, outro por ligação.',
+      'Um só cardápio pra compartilhar e todos os pedidos organizados no app.',
+      '“Tem foto? Quanto custa? Fica pronto pra sábado?”',
+      'A cliente vê fotos, sabores, preços e prazos no cardápio. Passa menos tempo perguntando e mais tempo escolhendo o que vai pedir.',
+      '“A entrega era sexta ou sábado?” Lá vai você procurar na conversa.',
+      'Você abre a agenda e vê o que precisa entregar em cada dia da semana.',
+      '“Gastei R$ 30 nos ingredientes. Se cobrar R$ 60, lucrei R$ 30?” E a embalagem, o gás e o seu tempo?',
+      'Você coloca esses custos na ficha técnica e vê quanto realmente sobra em cada bolo.',
+      '“Passei o mês fazendo encomenda. Cadê o dinheiro?” O Pix caiu, você comprou ingredientes, pagou as contas… e perdeu a conta do que sobrou.',
+      'Você abre o caixa e vê quanto entrou das encomendas, pra onde foi o dinheiro e quanto tem ali hoje.',
+    ]
+    let k = 0
+    corpoPro2 = corpoPro2.replace(/<p class="dl-par__txt">[\s\S]*?<\/p>/g, t => (k < PARES.length ? `<p class="dl-par__txt">${PARES[k++]}</p>` : t))
+    if (k !== 10) throw new Error('pro2: esperava 10 textos nos pares, achei ' + k)
   }
   corpoPro2 = CSS_P2 + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
