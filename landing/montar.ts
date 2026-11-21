@@ -318,7 +318,7 @@ ${corpoPagina}
 .dl-root .dl-secao.dl-recursos#funcs-b{padding-top:clamp(40px,5vw,72px);}
 .dl-root #funcs-b .dl-passos4{margin-top:0;}
 .dl-root .dl-cardapio .dl-onda{fill:#0B0710; height:clamp(16px,1.9vw,34px);}
-.dl-root #cardapio-digital.dl-cardapio{padding-top:clamp(56px,6.2vw,104px);}
+.dl-root :is(#cardapio-digital,#doo).dl-cardapio{padding-top:clamp(56px,6.2vw,104px);}
 @media (max-width:1023px){ .dl-root .dl-cardapio .dl-cardapio__grade{gap:18px;} .dl-root .dl-cardapio .dl-cabeca{margin-bottom:12px;} .dl-root .dl-cardapio .dl-vantagens{margin-top:0;} }
 .dl-root .dl-cardapio .dl-vantagens__texto{white-space:normal; text-wrap:pretty;} .dl-root .dl-cardapio .dl-vantagens__item{align-items:start;}
 .dl-root .p2-selo-rosa{display:inline-flex; align-items:center; gap:10px; margin:0 0 16px; padding:5px 16px 5px 5px; border-radius:999px; background:#FFF6EE;}
@@ -379,32 +379,32 @@ ${corpoPagina}
 @keyframes p2-vira{from{transform:rotateY(180deg)} to{transform:rotateY(0deg)}}
 @keyframes p2-zoom{0%{transform:rotate(3.5deg) scale(1); z-index:6} 12%,87%{transform:rotate(0deg) scale(1.7); z-index:6} 99%{transform:rotate(3.5deg) scale(1); z-index:6} 100%{transform:rotate(3.5deg) scale(1); z-index:0}}
 /* (21/11) funcionalidade 03 Ficha técnica: fundo claro, um celular com o vídeo */
-.dl-root #ficha.dl-cardapio{background:#FFF7FA; color:#5E5158; padding-top:clamp(64px,6.6vw,112px); padding-bottom:clamp(52px,5.4vw,88px);}
-.dl-root #ficha .dl-onda{fill:#0B0710;}
-.dl-root #ficha .dl-cardapio__fundo{display:none;}
-.dl-root #ficha .dl-h2{color:#22172B;}
-.dl-root #ficha .dl-lead{color:#5E5158;}
-.dl-root #ficha .p2-selo-rosa{background:#fff; box-shadow:0 0 0 1px #EBDDE3;}
-.dl-root #ficha .p2-selo-rosa b{background:linear-gradient(135deg,#FF5C9A,#F42C7A);}
-.dl-root #ficha .dl-vantagens{background:#fff; border:1px solid #EBDDE3; box-shadow:none;}
-.dl-root #ficha .dl-vantagens__titulo{color:#22172B;}
-.dl-root #ficha .dl-vantagens__texto{color:#6B5D64;}
-.dl-root #ficha .dl-vantagens .dl-vantagens__icone{background:#F42C7A !important; color:#fff !important;}
+.dl-root :is(#ficha,#fin).dl-cardapio{background:#FFF7FA; color:#5E5158; padding-top:clamp(64px,6.6vw,112px); padding-bottom:clamp(52px,5.4vw,88px);}
+.dl-root :is(#ficha,#fin) .dl-onda{fill:#0B0710;}
+.dl-root :is(#ficha,#fin) .dl-cardapio__fundo{display:none;}
+.dl-root :is(#ficha,#fin) .dl-h2{color:#22172B;}
+.dl-root :is(#ficha,#fin) .dl-lead{color:#5E5158;}
+.dl-root :is(#ficha,#fin) .p2-selo-rosa{background:#fff; box-shadow:0 0 0 1px #EBDDE3;}
+.dl-root :is(#ficha,#fin) .p2-selo-rosa b{background:linear-gradient(135deg,#FF5C9A,#F42C7A);}
+.dl-root :is(#ficha,#fin) .dl-vantagens{background:#fff; border:1px solid #EBDDE3; box-shadow:none;}
+.dl-root :is(#ficha,#fin) .dl-vantagens__titulo{color:#22172B;}
+.dl-root :is(#ficha,#fin) .dl-vantagens__texto{color:#6B5D64;}
+.dl-root :is(#ficha,#fin) .dl-vantagens .dl-vantagens__icone{background:#F42C7A !important; color:#fff !important;}
 .dl-root #ficha .p2-fone{width:min(76%,330px); margin-inline:auto; padding:8px; border-radius:42px; background:#17111B; box-shadow:0 0 0 1.5px #3A2E40, 0 40px 70px -34px rgba(60,10,35,.55);}
 .dl-root #ficha .p2-fone__video{display:block; width:100%; max-width:none; height:auto; aspect-ratio:600/1200; border-radius:34px; box-shadow:none; background:#F4F1F2; object-fit:cover;}
 @media (max-width:1023px){ .dl-root #ficha .p2-fone{margin-block:6px 4px;} }
 /* (21/11) funcionalidade 04 Agenda */
-.dl-root #agenda.dl-cardapio{background:#0B0710; color:rgba(255,246,238,.8); padding-top:clamp(64px,6.6vw,112px); padding-bottom:clamp(48px,5vw,84px);}
-.dl-root #agenda .dl-onda{fill:#FFF7FA;}
-.dl-root #agenda .dl-cardapio__fundo{display:none;}
-.dl-root #agenda .dl-h2{color:#FFF6EE;}
-.dl-root #agenda .dl-h2 .dl-h2__rosa{display:block;}
-.dl-root #agenda .dl-lead{color:rgba(255,246,238,.78);}
-.dl-root #agenda .p2-selo-rosa b{background:linear-gradient(135deg,#FF5C9A,#F42C7A);}
-.dl-root #agenda .dl-vantagens{background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1);}
-.dl-root #agenda .dl-vantagens__titulo{color:#FFF6EE;}
-.dl-root #agenda .dl-vantagens__texto{color:rgba(255,246,238,.72);}
-.dl-root #agenda .dl-vantagens .dl-vantagens__icone{background:#F42C7A !important; color:#fff !important;}
+.dl-root :is(#agenda,#orcamentos).dl-cardapio{background:#0B0710; color:rgba(255,246,238,.8); padding-top:clamp(64px,6.6vw,112px); padding-bottom:clamp(48px,5vw,84px);}
+.dl-root :is(#agenda,#orcamentos) .dl-onda{fill:#FFF7FA;}
+.dl-root :is(#agenda,#orcamentos) .dl-cardapio__fundo{display:none;}
+.dl-root :is(#agenda,#orcamentos) .dl-h2{color:#FFF6EE;}
+.dl-root :is(#agenda,#orcamentos) .dl-h2 .dl-h2__rosa{display:block;}
+.dl-root :is(#agenda,#orcamentos) .dl-lead{color:rgba(255,246,238,.78);}
+.dl-root :is(#agenda,#orcamentos) .p2-selo-rosa b{background:linear-gradient(135deg,#FF5C9A,#F42C7A);}
+.dl-root :is(#agenda,#orcamentos) .dl-vantagens{background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1);}
+.dl-root :is(#agenda,#orcamentos) .dl-vantagens__titulo{color:#FFF6EE;}
+.dl-root :is(#agenda,#orcamentos) .dl-vantagens__texto{color:rgba(255,246,238,.72);}
+.dl-root :is(#agenda,#orcamentos) .dl-vantagens .dl-vantagens__icone{background:#F42C7A !important; color:#fff !important;}
 .dl-root #agenda .p2-ag{position:relative; width:100%; aspect-ratio:1/.86;}
 .dl-root #agenda .p2-ag img{display:block; max-width:none; height:auto;}
 .dl-root #agenda .p2-ag__cal{position:absolute; right:0; top:6%; width:62%; transform:rotate(2deg); border-radius:18px; box-shadow:0 0 0 1px rgba(255,255,255,.4),0 30px 54px -28px rgba(0,0,0,.9);}
@@ -418,7 +418,7 @@ ${corpoPagina}
 .dl-root #agenda .p2-ag__ped--2{top:35%; left:3%; transform:rotate(1.5deg);}
 .dl-root #agenda .p2-ag__ped--3{top:67%; transform:rotate(-2.5deg);}
 @media (max-width:559px){ .dl-root #agenda .p2-ag__cal, .dl-root #agenda .p2-ag__cal img{border-radius:12px;} .dl-root #agenda .p2-ag__ped{border-radius:11px;} }
-@media (max-width:599px){ .dl-root #agenda .dl-h2{font-size:min(1.75rem,6.1vw);} }
+@media (max-width:599px){ .dl-root :is(#agenda,#orcamentos) .dl-h2{font-size:min(1.75rem,6.1vw);} }
 .dl-root #agenda .p2-pronta .p2-ag__ped{opacity:0;}
 .dl-root #agenda .p2-pronta .p2-ag__cal-a{opacity:1;}
 .dl-root #agenda .p2-vai .p2-ag__cal-a{animation:p2-some .3s 1.55s ease both;}
@@ -432,6 +432,48 @@ ${corpoPagina}
 @keyframes p2-ped2{from{opacity:0; transform:translateX(34%) rotate(0deg) scale(.9)} to{opacity:1; transform:rotate(1.5deg)}}
 @keyframes p2-ped3{from{opacity:0; transform:translateX(34%) rotate(0deg) scale(.9)} to{opacity:1; transform:rotate(-2.5deg)}}
 @media (min-width:1000px){ .dl-root #funcs-b .dl-passos4{grid-template-columns:minmax(0,1fr) !important; max-width:460px;} }
+/* (21/11) funcionalidades 05 Financeiro, 06 Orçamentos e 07 Doo IA */
+.dl-root :is(#fin,#orcamentos,#doo) .dl-h2 :is(.dl-h2__rosa,.dl-h2__vinho){display:block;}
+.dl-root #doo + script + #beneficios, .dl-root #beneficios{margin-top:0;}
+.dl-root #doo .dl-onda{fill:#0B0710;}
+.dl-root :is(#fin,#orcamentos,#doo) :is(.p2-fin,.p2-orc,.p2-doo) img{display:block; max-width:none; height:auto;}
+.dl-root #fin .p2-fin{position:relative; width:100%; aspect-ratio:1/1.1;}
+.dl-root #fin .p2-note{position:absolute; left:6%; top:0; width:88%;}
+.dl-root #fin .p2-note__tela{padding:2.4% 2.4% 2.8%; background:#17111B; border-radius:14px 14px 0 0; box-shadow:0 30px 50px -30px rgba(60,10,35,.5);}
+.dl-root #fin .p2-note__tela img{width:100%; border-radius:5px;}
+.dl-root #fin .p2-note__base{width:114%; margin-left:-7%; height:0; padding-top:3%; background:linear-gradient(#E4DCE0,#BDB2B8); border-radius:0 0 16px 16px; box-shadow:0 14px 22px -14px rgba(60,10,35,.45);}
+.dl-root #fin .p2-fin__c{position:absolute; border-radius:16px; box-shadow:0 0 0 1px #EBDDE3,0 26px 44px -26px rgba(60,10,35,.5);}
+.dl-root #fin .p2-fin__c--1{left:0; top:39%; width:78%; transform:rotate(-2deg);}
+.dl-root #fin .p2-fin__c--2{right:0; top:65%; width:68%; transform:rotate(1.5deg);}
+.dl-root #fin .p2-pronta .p2-fin__c{opacity:0;}
+.dl-root #fin .p2-vai .p2-fin__c--1{animation:p2-pop1 .55s .35s cubic-bezier(.2,.8,.3,1) both;}
+.dl-root #fin .p2-vai .p2-fin__c--2{animation:p2-pop2 .55s .8s cubic-bezier(.2,.8,.3,1) both;}
+@keyframes p2-pop1{from{opacity:0; transform:translateY(14%) scale(.86)} to{opacity:1; transform:rotate(-2deg)}}
+@keyframes p2-pop2{from{opacity:0; transform:translateY(14%) scale(.86)} to{opacity:1; transform:rotate(1.5deg)}}
+.dl-root #orcamentos .p2-orc{position:relative; width:100%; aspect-ratio:1/1.1;}
+.dl-root #orcamentos .p2-orc__folha{position:absolute; left:0; top:0; width:53%; height:100%; overflow:hidden; border-radius:16px 16px 0 0; transform:rotate(-2deg); transform-origin:50% 100%; box-shadow:0 0 0 1px rgba(255,255,255,.4),0 30px 54px -28px rgba(0,0,0,.9); -webkit-mask-image:linear-gradient(#000 86%,transparent); mask-image:linear-gradient(#000 86%,transparent);}
+.dl-root #orcamentos .p2-orc__folha img{width:100%;}
+.dl-root #orcamentos .p2-orc__bt{position:absolute; right:3%; top:9%; width:41%; border-radius:999px; box-shadow:0 18px 30px -14px rgba(244,44,122,.7);}
+.dl-root #orcamentos .p2-orc__bt img{width:100%; border-radius:18% / 80%;}
+.dl-root #orcamentos .p2-orc__ok{position:absolute; right:0; top:33%; width:45%; border-radius:16px; transform:rotate(2deg); box-shadow:0 0 0 1px rgba(255,255,255,.45),0 26px 46px -24px rgba(0,0,0,.9);}
+.dl-root #orcamentos .p2-mao{position:absolute; right:8%; top:15%; width:11%; opacity:0; pointer-events:none; transform-origin:30% 10%;}
+.dl-root #orcamentos .p2-mao svg{display:block; width:100%; height:auto; filter:drop-shadow(0 4px 6px rgba(0,0,0,.45));}
+.dl-root #orcamentos .p2-mao i{position:absolute; left:14%; top:-6%; width:60%; aspect-ratio:1; border-radius:50%; border:2px solid #fff; opacity:0;}
+.dl-root #orcamentos .p2-pronta :is(.p2-orc__ok,.p2-orc__bt){opacity:0;}
+.dl-root #orcamentos .p2-vai .p2-orc__bt{animation:p2-pop0 .45s .3s cubic-bezier(.2,.8,.3,1) both;}
+.dl-root #orcamentos .p2-vai .p2-mao{animation:p2-mao 1.5s .8s ease both;}
+.dl-root #orcamentos .p2-vai .p2-mao i{animation:p2-onda .6s 1.55s ease-out both;}
+.dl-root #orcamentos .p2-vai .p2-orc__ok{animation:p2-pop3 .55s 2.1s cubic-bezier(.2,.8,.3,1) both;}
+@keyframes p2-pop0{from{opacity:0; transform:scale(.8)} to{opacity:1; transform:none}}
+@keyframes p2-pop3{from{opacity:0; transform:translateY(12%) scale(.86)} to{opacity:1; transform:rotate(2deg)}}
+.dl-root #doo .p2-doo{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; width:100%; max-width:470px; margin-inline:auto;}
+.dl-root #doo .p2-doo img{width:100%; border-radius:14px; box-shadow:0 18px 30px -20px rgba(90,0,40,.6);}
+.dl-root #doo .p2-doo__heroi{grid-column:1/-1; width:82% !important; margin:0 auto 6px; border-radius:20px !important; box-shadow:0 30px 50px -26px rgba(60,0,30,.75) !important;}
+.dl-root #doo .p2-doo img:nth-child(odd):not(.p2-doo__heroi){transform:rotate(-1.5deg);}
+.dl-root #doo .p2-doo img:nth-child(even){transform:rotate(1.5deg);}
+.dl-root #doo .p2-pronta img:not(.p2-doo__heroi){opacity:0;}
+.dl-root #doo .p2-vai img:not(.p2-doo__heroi){animation:p2-pop0 .45s cubic-bezier(.2,.8,.3,1) both; animation-delay:calc(.25s + var(--i) * .13s);}
+@media (max-width:1023px){ .dl-root :is(#fin,#orcamentos) :is(.p2-fin,.p2-orc){margin-block:6px 4px;} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -697,9 +739,49 @@ ${corpoPagina}
     const CARTAO_AG = /<li class="dl-passo4 p2-func"><p class="p2-func__selo"><b>04<\/b><span>Agenda<\/span>[\s\S]*?<\/ul><\/li>/
     if (!CARTAO_AG.test(corpoPro2)) throw new Error('pro2: cartão da agenda não encontrado')
     corpoPro2 = corpoPro2.replace(CARTAO_AG, '')
+    // (21/11) funcionalidades 05 Financeiro (clara), 06 Orçamentos (escura) e 07 Doo IA (rosa), no mesmo molde. Cada uma com um
+    // mockup diferente, sempre com recortes das telas reais do app (dados de demonstração, produtos do Doce Formiga).
+    const IMGL = (cls: string, arq: string, w: number, h: number, extra = '') => `<img class="${cls}" src="/site/media/${arq}.webp" width="${w}" height="${h}" alt="" loading="lazy" decoding="async"${extra}>`
+    const area = (tema: string, id: string, num: string, nome: string, t1: string, t2: string, lead: string, pontos: [string, string][], mock: string) => {
+      const lis = pontos.map(([t, x]) => `<li class="dl-vantagens__item">${ICONE}<div><h3 class="dl-vantagens__titulo">${t}</h3><p class="dl-vantagens__texto">${x}</p></div></li>`).join('')
+      const troca: [RegExp, string][] = [
+        [/class="dl-secao dl-secao--rosa dl-cardapio" id="cardapio-digital" aria-labelledby="dl-cardapio-titulo"/, `class="dl-secao dl-secao--${tema} dl-cardapio" id="${id}" aria-labelledby="p2-${id}-t"`],
+        [/<p class="p2-selo-rosa">[\s\S]*?<\/p>/, `<p class="p2-selo-rosa"><b>${num}</b><span>${nome}</span></p>`],
+        [/<h2 class="dl-h2" id="dl-cardapio-titulo">[\s\S]*?<\/h2>/, `<h2 class="dl-h2" id="p2-${id}-t">${t1} <span class="${tema === 'rosa' ? 'dl-h2__vinho' : 'dl-h2__rosa'}">${t2}</span></h2>`],
+        [/(<p class="dl-lead">)[\s\S]*?(<\/p>)/, `$1${lead}$2`],
+        [/<ul class="dl-vantagens">[\s\S]*?<\/ul>/, `<ul class="dl-vantagens">${lis}</ul>`],
+        [/<div class="dl-camadas" role="img"[\s\S]*?<\/div>/, mock],
+      ]
+      let h = rosa
+      for (const [de, para] of troca) { if (!de.test(h)) throw new Error(`pro2: peça da área ${id} não encontrada: ` + de); h = h.replace(de, (_m: string, g1?: unknown, g2?: unknown) => para.replace(/^\$1/, typeof g1 === 'string' ? g1 : '').replace(/\$2$/, typeof g2 === 'string' ? g2 : '')) }
+      return h
+    }
+    const fin = area('clara', 'fin', '05', 'Financeiro', 'Vendeu bastante, mas sobrou quanto?', 'O Doonly te mostra.',
+      'Cada pedido pago entra sozinho no financeiro. Você lança os gastos e vê o que entrou, o que saiu e o que sobrou no mês.',
+      [['Entradas e saídas', 'Tudo do mês num lugar só.'], ['Falta receber', 'Quem ainda te deve, e quanto.'], ['Contas a pagar', 'Com o vencimento de cada uma.'], ['Quanto sobrou', 'O que entrou menos o que saiu.']],
+      `<div class="p2-fin" role="img" aria-label="O financeiro do app no computador, com o que sobrou no mês, o que entrou, o que saiu e quem falta pagar"><div class="p2-note"><div class="p2-note__tela">${IMGL('', 'fin-pc', 1600, 1000)}</div><div class="p2-note__base"></div></div>${IMGL('p2-fin__c p2-fin__c--1', 'fin-sobrou', 900, 396)}${IMGL('p2-fin__c p2-fin__c--2', 'fin-receber', 800, 452)}</div>`)
+    const orc = area('escura', 'orcamentos', '06', 'Orçamentos', 'Orçamento de festa em minutos.', 'A cliente aprova pelo link.',
+      'A cliente pede pelo seu link, você monta a proposta com itens, valores e sinal e envia. Quando ela aprova, o orçamento vira pedido na sua agenda.',
+      [['Seu link de orçamento', 'A cliente pede por ele.'], ['Proposta com sua logo', 'Itens, fotos e valores.'], ['Sinal e validade', 'Você define as condições.'], ['Orçamento em PDF', 'Pronto para baixar e enviar.']],
+      `<div class="p2-orc" role="img" aria-label="A proposta de orçamento que a cliente recebe, o botão de aprovar e o aviso de orçamento aprovado"><div class="p2-orc__folha">${IMGL('', 'orc-proposta', 716, 1580)}</div><div class="p2-orc__bt">${IMGL('', 'orc-aprovar', 480, 107)}</div><span class="p2-mao" aria-hidden="true"><i></i>${MAO}</span>${IMGL('p2-orc__ok', 'orc-ok', 716, 612)}</div>`)
+    const doo = area('rosa', 'doo', '07', 'Doo IA', 'Sua assistente de confeitaria.', 'É só pedir para a Doo.',
+      'A Doo é a inteligência artificial do Doonly. Ela calcula preço, cria receita com as quantidades, anota pedido pela conversa e escreve a legenda do seu Instagram.',
+      [['Calcular preço', 'De bolos e doces.'], ['Criar receita', 'Com as quantidades.'], ['Novo pedido', 'Anotado pela conversa.'], ['Legenda e respostas', 'Para Instagram e clientes.']],
+      `<div class="p2-doo" role="img" aria-label="A tela da Doo no app e o que você pode pedir para ela">${IMGL('p2-doo__heroi', 'doo-hero', 716, 408)}${[1, 2, 3, 5, 6, 7].map((n, i) => IMGL('', 'doo-i' + n, 332, 249, ` style="--i:${i}"`)).join('')}</div>`)
+    const ANIMA3 = `<script>(function(){if(!('IntersectionObserver' in window)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))return;[].forEach.call(document.querySelectorAll('#fin .p2-fin,#orcamentos .p2-orc,#doo .p2-doo'),function(c){c.classList.add('p2-pronta');new IntersectionObserver(function(e,o){if(e[0].isIntersecting){o.disconnect();var im=c.querySelectorAll('img'),n=0,foi=false,vai=function(){if(foi)return;foi=true;c.classList.add('p2-vai')};for(var i=0;i<im.length;i++){im[i].loading='eager';if(!im[i].complete){n++;im[i].addEventListener('load',function(){if(--n<=0)vai()});im[i].addEventListener('error',function(){if(--n<=0)vai()})}}if(!n)vai();setTimeout(vai,2500)}},{threshold:.4}).observe(c)})})()</script>`
+    // as seções antigas do financeiro e da Doo (do molde da /pro) saem: viraram as áreas 05 e 07
+    for (const [nome, re] of [['financeiro', /<section class="dl-secao dl-secao--clara dl-financeiro" id="financeiro"[\s\S]*?<\/section>\n?/], ['doo', /<section class="dl-secao dl-secao--escura dl-doo" id="doo-ia"[\s\S]*?<\/section>\n?/]] as [string, RegExp][]) {
+      if (!re.test(corpoPro2)) throw new Error('pro2: seção antiga não encontrada: ' + nome)
+      corpoPro2 = corpoPro2.replace(re, '')
+    }
+    corpoPro2 = corpoPro2.split('href="#financeiro"').join('href="#fin"').split('href="#doo-ia"').join('href="#doo"')
     const CORTE = /(<\/header>)\s*(<ol class="dl-passos4">)/
     if (!CORTE.test(corpoPro2)) throw new Error('pro2: ponto de corte das funcionalidades não encontrado')
-    corpoPro2 = corpoPro2.replace(CORTE, (_t, a: string, b: string) => `${a}\n\t</div>\n</section>\n${rosa}${ped}${fic}${ag}<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-label="Financeiro">\n\t<div class="dl-container">\n\t\t${b}`)
+    corpoPro2 = corpoPro2.replace(CORTE, (_t, a: string, b: string) => `${a}\n\t</div>\n</section>\n${rosa}${ped}${fic}${ag}${fin}${orc}${doo}${ANIMA3}<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-label="Financeiro">\n\t<div class="dl-container">\n\t\t${b}`)
+    // (21/11) o último cartão (Financeiro) virou área: a seção dos cartões sai inteira
+    const FUNCS_B = /<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b"[\s\S]*?<\/section>\n?/
+    if (!FUNCS_B.test(corpoPro2)) throw new Error('pro2: seção dos cartões não encontrada')
+    corpoPro2 = corpoPro2.replace(FUNCS_B, '')
   }
   corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
