@@ -606,8 +606,8 @@ export default function Produtos() {
         lerMaoObraConta(uid).catch(() => null),
         supabase.from("custos_variaveis").select("*").eq("user_id", uid),
       ]);
-      // (13/10) a mesma conta da Ficha técnica: taxa do crédito (pior caso) + custo fixo por pedido
-      if (!vars.error) setVendaConta({ pct: taxaPctDaForma("credito", (vars.data as Parameters<typeof taxaPctDaForma>[1]) || []), fixo: fixoPorPedido((vars.data as Parameters<typeof taxaPctDaForma>[1]) || []) });
+      // (13/10) a mesma conta da Ficha técnica: (21/11) taxas e impostos de toda venda (a maquininha aparece por forma de pagamento na ficha) + custo fixo por pedido
+      if (!vars.error) setVendaConta({ pct: taxaPctDaForma("pix", (vars.data as Parameters<typeof taxaPctDaForma>[1]) || []), fixo: fixoPorPedido((vars.data as Parameters<typeof taxaPctDaForma>[1]) || []) });
       const v = (cv.data as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct;
       setCvConta(!cv.error && v != null ? Number(v) : null);
       setMaoConta(mao); // (16/10) fixos + salário, igual à tela Custos

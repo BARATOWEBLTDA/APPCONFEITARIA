@@ -13,7 +13,7 @@ import "./ferramentas.css";
 
 /**
  * (6.170) Simulador de preço: escolhe um produto com ficha técnica, mexe no preço e vê na hora o lucro e a margem.
- * A conta é a mesma da Ficha técnica (ingredientes + invisíveis + mão de obra + taxa do crédito + embalagem por pedido).
+ * A conta é a mesma da Ficha técnica (ingredientes + invisíveis + mão de obra + taxas e impostos de toda venda + embalagem por pedido).
  * Só a taxa da maquininha muda com o preço (é % da venda); o resto do custo é fixo.
  */
 type Prod = ProdutoCustoJson & ProdutoPrecoJson & { id: string; nome: string; imagem_url?: string | null; promocao?: boolean | null; preco_normal?: number | null };
@@ -68,7 +68,7 @@ export default function SimuladorPreco() {
       const cv = (perfil.data as { custos_invisiveis_pct?: number | null } | null)?.custos_invisiveis_pct;
       setCvConta(cv != null ? Number(cv) : null);
       const v = ((vars.data || []) as Parameters<typeof taxaPctDaForma>[1]);
-      setVenda({ pct: taxaPctDaForma("credito", v), fixo: fixoPorPedido(v) });
+      setVenda({ pct: taxaPctDaForma("pix", v), fixo: fixoPorPedido(v) });
       if (comFicha.length && !selId) escolher(comFicha[0], maoC, cv != null ? Number(cv) : null);
     } catch (e) {
       setErro(explicarErro(e, "Tente de novo em instantes."));
@@ -184,7 +184,7 @@ export default function SimuladorPreco() {
               <div className="sp-l"><span>Ingredientes</span><b>{brl(base.cmv)}</b></div>
               <div className="sp-l"><span>Custos invisíveis ({pct(base.cvPct)})</span><b>{brl(base.cv)}</b></div>
               <div className="sp-l"><span>Mão de obra{tempo ? ` (${tempo})` : ""}</span><b>{brl(base.mo)}</b></div>
-              {venda.pct > 0 && <div className="sp-l"><span>Taxa no crédito ({pct(venda.pct)})</span><b>{brl(taxaValor)}</b></div>}
+              {venda.pct > 0 && <div className="sp-l"><span>Taxas e impostos ({pct(venda.pct)})</span><b>{brl(taxaValor)}</b></div>}
               {venda.fixo > 0 && <div className="sp-l"><span>Por pedido (embalagem)</span><b>{brl(venda.fixo)}</b></div>}
               <div className="sp-l sp-t"><span>Custo total</span><b>{brl(custo)}</b></div>
               <div className="sp-l"><span>Preço que empata</span><b>{brl(empate)}</b></div>
