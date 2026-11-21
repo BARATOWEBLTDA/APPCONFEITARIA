@@ -689,7 +689,7 @@ ${corpoPagina}
       [/<h2 class="dl-h2" id="dl-cardapio-titulo">[\s\S]*?<\/h2>/, '<h2 class="dl-h2" id="p2-ag-t">Quem vem buscar? O que sai pra entrega? <span class="dl-h2__rosa">A agenda responde.</span></h2>'],
       [/(<p class="dl-lead">)[\s\S]*?(<\/p>)/, '$1Cada pedido aceito entra sozinho no dia certo. Você abre a agenda e vê as retiradas e entregas da semana, com horário, cliente e valor.$2'],
       [/<ul class="dl-vantagens">[\s\S]*?<\/ul>/, `<ul class="dl-vantagens">${pontosAg}</ul>`],
-      [/<div class="dl-camadas" role="img"[\s\S]*?<\/div>/, `<div class="p2-ag" role="img" aria-label="O calendário do app com o dia 28 escolhido e os três pedidos desse dia"><div class="p2-ag__cal">${IMG('p2-ag__cal-a', 'agenda-cal-a', 860)}${IMG('p2-ag__cal-b', 'agenda-cal-b', 860)}<span class="p2-mao" aria-hidden="true"><i></i>${MAO}</span></div>${IMG('p2-ag__ped p2-ag__ped--1', 'agenda-ped-1', 314)}${IMG('p2-ag__ped p2-ag__ped--2', 'agenda-ped-2', 314)}${IMG('p2-ag__ped p2-ag__ped--3', 'agenda-ped-3', 314)}</div>`],
+      [/<div class="dl-camadas" role="img"[\s\S]*?<\/div>/, `<div class="p2-ag" role="img" aria-label="O calendário do app com o dia 28 escolhido e os três pedidos desse dia"><div class="p2-ag__cal">${IMG('p2-ag__cal-a', 'agenda-cal-a', 860)}${IMG('p2-ag__cal-b', 'agenda-cal-b', 860)}<span class="p2-mao" aria-hidden="true"><i></i>${MAO}</span></div>${IMG('p2-ag__ped p2-ag__ped--1', 'agenda-ped-1', 314)}${IMG('p2-ag__ped p2-ag__ped--2', 'agenda-ped-2', 316)}${IMG('p2-ag__ped p2-ag__ped--3', 'agenda-ped-3', 316)}</div>`],
     ]
     let ag = rosa
     for (const [de, para] of trocaAg) { if (!de.test(ag)) throw new Error('pro2: peça da área da agenda não encontrada: ' + de); ag = ag.replace(de, para) }
