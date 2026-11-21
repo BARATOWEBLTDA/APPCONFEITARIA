@@ -296,6 +296,7 @@ ${corpoPagina}
 .dl-root #funcionalidades .p2-func__lista li{display:grid; grid-template-columns:24px minmax(0,1fr); gap:10px; align-items:center; margin:0; color:#FFF6EE; font-size:1rem; font-weight:500; line-height:1.3;}
 .dl-root #funcionalidades .p2-func__lista i{display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:#F42C7A; color:#fff;}
 @media (max-width:639px){ .dl-root #funcionalidades .p2-func .dl-passo4__tela{margin-inline:-20px;} .dl-root #funcionalidades .p2-func__lista li{font-size:min(1rem,4.1vw); white-space:nowrap;} }
+@media (max-width:345px){ .dl-root #funcionalidades .p2-func__lista li{white-space:normal;} }
 @media (min-width:640px){
   .dl-root #funcionalidades .dl-passos4{grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:22px; max-width:1000px; margin-inline:auto;}
   .dl-root #funcionalidades .p2-func{padding:28px 32px 30px;}
