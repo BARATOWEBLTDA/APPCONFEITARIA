@@ -286,9 +286,9 @@ ${corpoPagina}
 }
 /* (21/11) cartão de funcionalidade no modelo novo */
 .dl-root #funcionalidades .p2-func{padding:22px 20px 24px;}
-.dl-root #funcionalidades .p2-func__selo{align-self:center; display:inline-flex; align-items:center; gap:10px; margin:0; padding:5px 16px 5px 5px; border-radius:999px; background:rgba(255,111,165,.13);}
+.dl-root #funcionalidades .p2-func__selo{align-self:center; display:inline-flex; align-items:center; gap:10px; margin:0; padding:5px 16px 5px 5px; border-radius:999px; background:#FFF6EE;}
 .dl-root #funcionalidades .p2-func__selo b{display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#FF5C9A,#F42C7A); color:#fff; font-size:.8125rem; font-weight:700;}
-.dl-root #funcionalidades .p2-func__selo span{color:#FFF6EE; font-size:.8125rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;}
+.dl-root #funcionalidades .p2-func__selo span{color:#3A1220; font-size:.8125rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;}
 .dl-root #funcionalidades .p2-func .dl-passo4__titulo{margin:16px 0 0; text-align:center; white-space:normal; text-wrap:balance; font-size:clamp(1.375rem,6vw,1.625rem) !important; line-height:1.15; letter-spacing:-.02em;}
 .dl-root #funcionalidades .p2-func .dl-passo4__tela{margin-top:20px;}
 .dl-root #funcionalidades .p2-func .dl-passo4__texto{margin:20px 0 0; font-size:1.0625rem; line-height:1.45; color:rgba(255,246,238,.72);}
