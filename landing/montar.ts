@@ -202,6 +202,50 @@ ${corpoPagina}
   fs.writeFileSync(path.join(dist, 'pro.html'), fazerHtml(corpoProFinal)) // doonly.com.br/pro: versão PRO completa (a antiga /testes)
   let corpoPro2 = corpoProFinal.split(HOTMART_PRO).join(HOTMART_PRO_R1)
   for (const [de, para] of TROCAS_PRO2) corpoPro2 = corpoPro2.split(de).join(para)
+  // (21/11) /pro2 no formato AIDA completo: botão já na abertura, botão no meio da página (depois da ficha técnica),
+  // prazo da oferta e as dúvidas respondidas antes do botão final. Só nesta página; /pro e a raiz não mudam.
+  const BT_P2 = (texto: string, classe: string) => `<a class="dl-btn dl-btn--primario ${classe}" href="${HOTMART_PRO_R1}" data-dl-url="cadastro"><span>${texto}</span></a>`
+  const CSS_P2 = `<style>
+.p2-hero-acao{display:flex; flex-direction:column; align-items:flex-start; gap:10px; margin:22px 0 0;}
+.p2-hero-acao small{font-size:14px; line-height:1.4; color:rgba(255,255,255,.78);}
+.p2-prazo{display:inline-block; padding:5px 10px; border-radius:8px; background:#FFE9A8; color:#5A3A00; font-size:13px; font-weight:600; white-space:nowrap;}
+@media (max-width:900px){ .p2-hero-acao{align-items:center; text-align:center;} .p2-hero-acao .dl-btn{width:100%; max-width:340px;} }
+#p2-meio{padding:54px 20px; background:#160D12; text-align:center;}
+#p2-meio h2{margin:0 auto 10px; max-width:720px; font-size:clamp(24px,3.2vw,36px); line-height:1.15; font-weight:700; color:#fff;}
+#p2-meio h2 span{color:#FF5C9A;}
+#p2-meio p{margin:0 auto 24px; max-width:560px; font-size:16.5px; line-height:1.5; color:rgba(255,255,255,.78);}
+#p2-meio .p2-prazo{margin-top:16px;}
+.p2-duvidas{max-width:760px; margin:38px auto 0; text-align:left;}
+.p2-duvidas h3{margin:0 0 12px; font-size:20px; font-weight:600; color:#3A1220; text-align:center;}
+.p2-duvidas details{border-bottom:1px solid #F0DFE5;}
+.p2-duvidas summary{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px 2px; cursor:pointer; list-style:none; font-size:16.5px; font-weight:500; color:#3A1220;}
+.p2-duvidas summary::-webkit-details-marker{display:none;}
+.p2-duvidas summary::after{content:"+"; flex:none; font-size:22px; line-height:1; color:#E0397B;}
+.p2-duvidas details[open] summary::after{content:"−";}
+.p2-duvidas p{margin:0; padding:0 2px 18px; font-size:15.5px; line-height:1.55; color:#6B4A56;}
+.p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
+</style>`
+  const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
+  const MEIO_P2 = `<section id="p2-meio" class="alignfull" aria-labelledby="p2-meio-t">
+  <h2 id="p2-meio-t">Pare de vender no escuro. <span>Saiba quanto sobra de cada pedido.</span></h2>
+  <p>Cardápio, pedidos, agenda, financeiro e ficha técnica no mesmo lugar, a partir de hoje.</p>
+  ${BT_P2('Quero o PRO por R$ 1', 'dl-btn--grande')}
+  <div><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>
+</section>
+`
+  const DUVIDAS_P2 = `<div class="p2-duvidas">
+  <h3>Dúvidas antes de começar</h3>
+  <details><summary>Como funciona o R$ 1?</summary><p>Você paga R$ 1 no primeiro mês e usa tudo do Doonly PRO. A partir do segundo mês, o valor é R$ 29,90 por mês.</p></details>
+  <details><summary>Preciso instalar alguma coisa?</summary><p>Não. O Doonly funciona no celular, no computador e no tablet, direto pelo navegador. Se quiser, dá para deixar o ícone na tela do celular como um aplicativo.</p></details>
+  <details><summary>Serve para quem vende só por encomenda, pelo WhatsApp?</summary><p>Sim. Você manda o link do seu cardápio, a cliente monta o pedido sozinha e ele chega organizado para você aceitar, com data, sabores e endereço.</p></details>
+  <details><summary>Não tenho tempo de cadastrar tudo. E agora?</summary><p>A equipe do Doonly monta para você: você manda as fotos e os preços e a gente cadastra os produtos e deixa o cardápio pronto.</p></details>
+</div>
+`
+  corpoPro2 = corpoPro2
+    .replace('<b>Feito só para confeitarias</b></p>', '<b>Feito só para confeitarias</b></p>\n' + HERO_P2)
+    .replace('<section class="dl-secao dl-secao--escura dl-doo" id="doo-ia"', MEIO_P2 + '<section class="dl-secao dl-secao--escura dl-doo" id="doo-ia"')
+    .replace('<div class="dl-comece__acao">', DUVIDAS_P2 + '<div class="dl-comece__acao p2-fim"><span class="p2-prazo">Oferta de Black Friday · até 30/11</span>')
+  corpoPro2 = CSS_P2 + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
 }
