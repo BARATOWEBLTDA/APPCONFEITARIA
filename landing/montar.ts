@@ -393,6 +393,45 @@ ${corpoPagina}
 .dl-root #ficha .p2-fone{width:min(76%,330px); margin-inline:auto; padding:8px; border-radius:42px; background:#17111B; box-shadow:0 0 0 1.5px #3A2E40, 0 40px 70px -34px rgba(60,10,35,.55);}
 .dl-root #ficha .p2-fone__video{display:block; width:100%; max-width:none; height:auto; aspect-ratio:600/1200; border-radius:34px; box-shadow:none; background:#F4F1F2; object-fit:cover;}
 @media (max-width:1023px){ .dl-root #ficha .p2-fone{margin-block:6px 4px;} }
+/* (21/11) funcionalidade 04 Agenda */
+.dl-root #agenda.dl-cardapio{background:#0B0710; color:rgba(255,246,238,.8); padding-top:clamp(64px,6.6vw,112px); padding-bottom:clamp(48px,5vw,84px);}
+.dl-root #agenda .dl-onda{fill:#FFF7FA;}
+.dl-root #agenda .dl-cardapio__fundo{display:none;}
+.dl-root #agenda .dl-h2{color:#FFF6EE;}
+.dl-root #agenda .dl-h2 .dl-h2__rosa{display:block;}
+.dl-root #agenda .dl-lead{color:rgba(255,246,238,.78);}
+.dl-root #agenda .p2-selo-rosa b{background:linear-gradient(135deg,#FF5C9A,#F42C7A);}
+.dl-root #agenda .dl-vantagens{background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1);}
+.dl-root #agenda .dl-vantagens__titulo{color:#FFF6EE;}
+.dl-root #agenda .dl-vantagens__texto{color:rgba(255,246,238,.72);}
+.dl-root #agenda .dl-vantagens .dl-vantagens__icone{background:#F42C7A !important; color:#fff !important;}
+.dl-root #agenda .p2-ag{position:relative; width:100%; aspect-ratio:1/.86;}
+.dl-root #agenda .p2-ag img{display:block; max-width:none; height:auto;}
+.dl-root #agenda .p2-ag__cal{position:absolute; right:0; top:6%; width:62%; transform:rotate(2deg); border-radius:18px; box-shadow:0 0 0 1px rgba(255,255,255,.4),0 30px 54px -28px rgba(0,0,0,.9);}
+.dl-root #agenda .p2-ag__cal img{width:100%; border-radius:18px;}
+.dl-root #agenda .p2-ag__cal-a{position:absolute; inset:0; opacity:0;}
+.dl-root #agenda .p2-mao{position:absolute; left:86%; top:60%; width:17%; opacity:0; pointer-events:none; transform-origin:30% 10%;}
+.dl-root #agenda .p2-mao svg{display:block; width:100%; height:auto; filter:drop-shadow(0 4px 6px rgba(0,0,0,.45));}
+.dl-root #agenda .p2-mao i{position:absolute; left:14%; top:-6%; width:60%; aspect-ratio:1; border-radius:50%; border:2px solid #F42C7A; opacity:0;}
+.dl-root #agenda .p2-ag__ped{position:absolute; left:0; width:56%; border-radius:16px; box-shadow:0 0 0 1px rgba(255,255,255,.45),0 26px 46px -24px rgba(0,0,0,.9);}
+.dl-root #agenda .p2-ag__ped--1{top:3%; transform:rotate(-2deg);}
+.dl-root #agenda .p2-ag__ped--2{top:35%; left:3%; transform:rotate(1.5deg);}
+.dl-root #agenda .p2-ag__ped--3{top:67%; transform:rotate(-2.5deg);}
+@media (max-width:559px){ .dl-root #agenda .p2-ag__cal, .dl-root #agenda .p2-ag__cal img{border-radius:12px;} .dl-root #agenda .p2-ag__ped{border-radius:11px;} }
+@media (max-width:599px){ .dl-root #agenda .dl-h2{font-size:min(1.75rem,6.1vw);} }
+.dl-root #agenda .p2-pronta .p2-ag__ped{opacity:0;}
+.dl-root #agenda .p2-pronta .p2-ag__cal-a{opacity:1;}
+.dl-root #agenda .p2-vai .p2-ag__cal-a{animation:p2-some .3s 1.55s ease both;}
+.dl-root #agenda .p2-vai .p2-mao{animation:p2-mao 1.5s .5s ease both;}
+.dl-root #agenda .p2-vai .p2-mao i{animation:p2-onda .6s 1.25s ease-out both;}
+.dl-root #agenda .p2-vai .p2-ag__ped--1{animation:p2-ped1 .5s 2.05s cubic-bezier(.2,.8,.3,1) both;}
+.dl-root #agenda .p2-vai .p2-ag__ped--2{animation:p2-ped2 .5s 2.4s cubic-bezier(.2,.8,.3,1) both;}
+.dl-root #agenda .p2-vai .p2-ag__ped--3{animation:p2-ped3 .5s 2.75s cubic-bezier(.2,.8,.3,1) both;}
+@keyframes p2-some{from{opacity:1} to{opacity:0}}
+@keyframes p2-ped1{from{opacity:0; transform:translateX(34%) rotate(0deg) scale(.9)} to{opacity:1; transform:rotate(-2deg)}}
+@keyframes p2-ped2{from{opacity:0; transform:translateX(34%) rotate(0deg) scale(.9)} to{opacity:1; transform:rotate(1.5deg)}}
+@keyframes p2-ped3{from{opacity:0; transform:translateX(34%) rotate(0deg) scale(.9)} to{opacity:1; transform:rotate(-2.5deg)}}
+@media (min-width:1000px){ .dl-root #funcs-b .dl-passos4{grid-template-columns:minmax(0,1fr) !important; max-width:460px;} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -635,9 +674,32 @@ ${corpoPagina}
       if (!corpoPro2.includes(de)) throw new Error('pro2: cartão para renumerar não encontrado: ' + de)
       corpoPro2 = corpoPro2.replace(de, para)
     }
+    // (21/11) funcionalidade 04 Agenda: fundo escuro; o calendário real do app com o dia escolhido e, ao lado, os três pedidos
+    // do dia recortados da mesma tela. Pedidos de demonstração (nomes fictícios), produtos e fotos do Doce Formiga.
+    const pontosAg = ([
+      ['Tudo no calendário', 'Um ponto em cada dia com pedido.'],
+      ['Retirada ou entrega', 'Com horário e endereço à mão.'],
+      ['Atrasos em destaque', 'O que atrasou aparece em vermelho.'],
+      ['Busca rápida', 'Ache por cliente ou número.'],
+    ] as [string, string][]).map(([t, x]) => `<li class="dl-vantagens__item">${ICONE}<div><h3 class="dl-vantagens__titulo">${t}</h3><p class="dl-vantagens__texto">${x}</p></div></li>`).join('')
+    const IMG = (cls: string, arq: string, h: number) => `<img class="${cls}" src="/site/media/${arq}.webp" width="716" height="${h}" alt="" loading="lazy" decoding="async">`
+    const trocaAg: [RegExp, string][] = [
+      [/class="dl-secao dl-secao--rosa dl-cardapio" id="cardapio-digital" aria-labelledby="dl-cardapio-titulo"/, 'class="dl-secao dl-secao--escura dl-cardapio p2-f04" id="agenda" aria-labelledby="p2-ag-t"'],
+      [/<p class="p2-selo-rosa">[\s\S]*?<\/p>/, '<p class="p2-selo-rosa"><b>04</b><span>Agenda</span></p>'],
+      [/<h2 class="dl-h2" id="dl-cardapio-titulo">[\s\S]*?<\/h2>/, '<h2 class="dl-h2" id="p2-ag-t">Quem vem buscar? O que sai pra entrega? <span class="dl-h2__rosa">A agenda responde.</span></h2>'],
+      [/(<p class="dl-lead">)[\s\S]*?(<\/p>)/, '$1Cada pedido aceito entra sozinho no dia certo. Você abre a agenda e vê as retiradas e entregas da semana, com horário, cliente e valor.$2'],
+      [/<ul class="dl-vantagens">[\s\S]*?<\/ul>/, `<ul class="dl-vantagens">${pontosAg}</ul>`],
+      [/<div class="dl-camadas" role="img"[\s\S]*?<\/div>/, `<div class="p2-ag" role="img" aria-label="O calendário do app com o dia 28 escolhido e os três pedidos desse dia"><div class="p2-ag__cal">${IMG('p2-ag__cal-a', 'agenda-cal-a', 860)}${IMG('p2-ag__cal-b', 'agenda-cal-b', 860)}<span class="p2-mao" aria-hidden="true"><i></i>${MAO}</span></div>${IMG('p2-ag__ped p2-ag__ped--1', 'agenda-ped-1', 314)}${IMG('p2-ag__ped p2-ag__ped--2', 'agenda-ped-2', 314)}${IMG('p2-ag__ped p2-ag__ped--3', 'agenda-ped-3', 314)}</div>`],
+    ]
+    let ag = rosa
+    for (const [de, para] of trocaAg) { if (!de.test(ag)) throw new Error('pro2: peça da área da agenda não encontrada: ' + de); ag = ag.replace(de, para) }
+    ag += `<script>(function(){var c=document.querySelector('#agenda .p2-ag');if(!c||!('IntersectionObserver' in window)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))return;c.classList.add('p2-pronta');new IntersectionObserver(function(e,o){if(e[0].isIntersecting){o.disconnect();var im=c.querySelectorAll('img'),n=0,foi=false,vai=function(){if(foi)return;foi=true;c.classList.add('p2-vai')};for(var i=0;i<im.length;i++){im[i].loading='eager';if(!im[i].complete){n++;im[i].addEventListener('load',function(){if(--n<=0)vai()});im[i].addEventListener('error',function(){if(--n<=0)vai()})}}if(!n)vai();setTimeout(vai,2500)}},{threshold:.45}).observe(c)})()</script>`
+    const CARTAO_AG = /<li class="dl-passo4 p2-func"><p class="p2-func__selo"><b>04<\/b><span>Agenda<\/span>[\s\S]*?<\/ul><\/li>/
+    if (!CARTAO_AG.test(corpoPro2)) throw new Error('pro2: cartão da agenda não encontrado')
+    corpoPro2 = corpoPro2.replace(CARTAO_AG, '')
     const CORTE = /(<\/header>)\s*(<ol class="dl-passos4">)/
     if (!CORTE.test(corpoPro2)) throw new Error('pro2: ponto de corte das funcionalidades não encontrado')
-    corpoPro2 = corpoPro2.replace(CORTE, (_t, a: string, b: string) => `${a}\n\t</div>\n</section>\n${rosa}${ped}${fic}<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-label="Agenda e financeiro">\n\t<div class="dl-container">\n\t\t${b}`)
+    corpoPro2 = corpoPro2.replace(CORTE, (_t, a: string, b: string) => `${a}\n\t</div>\n</section>\n${rosa}${ped}${fic}${ag}<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-label="Financeiro">\n\t<div class="dl-container">\n\t\t${b}`)
   }
   corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
