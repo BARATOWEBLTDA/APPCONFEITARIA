@@ -284,6 +284,26 @@ ${corpoPagina}
   .dl-root .dl-dores .dl-par__rot{display:none;}
   .dl-root .dl-dores .dl-par__txt{font-size:.9375rem;}
 }
+/* (21/11) cartão de funcionalidade no modelo novo */
+.dl-root #funcionalidades .p2-func{padding:22px 20px 24px;}
+.dl-root #funcionalidades .p2-func__selo{align-self:center; display:inline-flex; align-items:center; gap:10px; margin:0; padding:5px 16px 5px 5px; border-radius:999px; background:rgba(255,111,165,.13);}
+.dl-root #funcionalidades .p2-func__selo b{display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#FF5C9A,#F42C7A); color:#fff; font-size:.8125rem; font-weight:700;}
+.dl-root #funcionalidades .p2-func__selo span{color:#FF7AAE; font-size:.8125rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;}
+.dl-root #funcionalidades .p2-func .dl-passo4__titulo{margin:16px 0 0; text-align:center; white-space:normal; text-wrap:balance; font-size:clamp(1.375rem,6vw,1.625rem) !important; line-height:1.15; letter-spacing:-.02em;}
+.dl-root #funcionalidades .p2-func .dl-passo4__tela{margin-top:20px;}
+.dl-root #funcionalidades .p2-func .dl-passo4__texto{margin:20px 0 0; font-size:1.0625rem; line-height:1.45; color:rgba(255,246,238,.72);}
+.dl-root #funcionalidades .p2-func__lista{order:4; display:grid; gap:10px; margin:16px 0 0; padding:0; list-style:none;}
+.dl-root #funcionalidades .p2-func__lista li{display:grid; grid-template-columns:24px minmax(0,1fr); gap:10px; align-items:center; margin:0; color:#FFF6EE; font-size:1rem; font-weight:500; line-height:1.3;}
+.dl-root #funcionalidades .p2-func__lista i{display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:#F42C7A; color:#fff;}
+@media (max-width:639px){ .dl-root #funcionalidades .p2-func .dl-passo4__tela{margin-inline:-20px;} .dl-root #funcionalidades .p2-func__lista li{font-size:min(1rem,4.1vw); white-space:nowrap;} }
+@media (min-width:640px){
+  .dl-root #funcionalidades .dl-passos4{grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:22px; max-width:1000px; margin-inline:auto;}
+  .dl-root #funcionalidades .p2-func{padding:28px 32px 30px;}
+  .dl-root #funcionalidades .p2-func .dl-passo4__tela{margin-inline:0; justify-content:center;}
+  .dl-root #funcionalidades .p2-func .dl-passo4__video{max-width:310px;}
+  .dl-root #funcionalidades .p2-func .dl-passo4__titulo{font-size:1.625rem !important;}
+  .dl-root #funcionalidades .p2-func .dl-passo4__texto, .dl-root #funcionalidades .p2-func__lista{width:100%; max-width:360px; margin-inline:auto;}
+}
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -384,6 +404,27 @@ ${corpoPagina}
     const LISTA = '<ul class="dl-dores__lista dl-pares">'
     if (!corpoPro2.includes(LISTA)) throw new Error('pro2: lista das dores não encontrada')
     corpoPro2 = corpoPro2.replace(LISTA, LISTA + '<li class="p2-par-cab" aria-hidden="true"><span>Hoje</span><span>Com o Doonly</span></li>')
+  }
+  // (21/11) cartões das funcionalidades no modelo: selo com número e nome em cima, título, celular no meio, frase e três pontos embaixo
+  {
+    const FUNCS = [
+      { nome: 'Cardápio digital', titulo: 'Cardápio que vende por você', frase: 'A cliente abre o link, escolhe sozinha e o pedido chega pronto.',
+        pontos: ['Logo, capa e descrição da sua loja', 'Banners, promoções e cupons', 'Tamanhos, sabores e adicionais'] },
+      { nome: 'Pedidos', titulo: 'Todo pedido chega pronto para aceitar', frase: 'O aviso chega no celular e você aceita com um toque.',
+        pontos: ['Aviso a cada pedido novo', 'Data, sabores e endereço anotados', 'Acompanhe do aceite à entrega'] },
+      { nome: 'Agenda', titulo: 'Nenhuma entrega esquecida', frase: 'Cada dia mostra quem vem, a que horas e o valor de cada pedido.',
+        pontos: ['Entregas e retiradas no calendário', 'Pedidos atrasados em destaque', 'Busca por cliente ou número'] },
+      { nome: 'Financeiro', titulo: 'Saiba quanto entrou e quanto falta', frase: 'Entregou, o valor entra no caixa sozinho.',
+        pontos: ['Quanto recebeu e quanto falta', 'Pix, dinheiro, crédito e débito', 'Sinal e saldo de cada pedido'] },
+    ]
+    const CK = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+    const CARTAO = /<li class="dl-passo4"><span class="dl-passo4__num">(\d+)<\/span><h3 class="dl-passo4__titulo">[\s\S]*?<\/h3><p class="dl-passo4__texto">[\s\S]*?<\/p>(<div class="dl-passo4__tela">[\s\S]*?<\/div>)<\/li>/g
+    let feitos = 0
+    corpoPro2 = corpoPro2.replace(CARTAO, (_t, num: string, tela: string) => {
+      const f = FUNCS[Number(num) - 1]; if (!f) return _t; feitos++
+      return `<li class="dl-passo4 p2-func"><p class="p2-func__selo"><b>${num}</b><span>${f.nome}</span></p><h3 class="dl-passo4__titulo">${f.titulo}</h3>${tela}<p class="dl-passo4__texto">${f.frase}</p><ul class="p2-func__lista">${f.pontos.map(x => `<li><i>${CK}</i><span>${x}</span></li>`).join('')}</ul></li>`
+    })
+    if (feitos !== 4) throw new Error('pro2: esperava 4 cartões de funcionalidade, achei ' + feitos)
   }
   corpoPro2 = CSS_P2 + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
