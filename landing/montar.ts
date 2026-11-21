@@ -342,6 +342,42 @@ ${corpoPagina}
 .dl-root #pedidos .dl-camadas__img{aspect-ratio:600/1300;}
 .dl-root #pedidos .dl-camadas__img--3{aspect-ratio:600/900; top:26%;}
 @media (min-width:1000px){ .dl-root #funcs-b .dl-passos4{grid-template-columns:repeat(2,minmax(0,1fr)) !important; max-width:860px;} }
+/* (21/11) mockup animado de Pedidos */
+.dl-root #pedidos .p2-anim{clip-path:inset(-46px -30px -18px -30px);}
+.dl-root #pedidos .p2-cel{background:none; overflow:visible; transform-origin:0 0;}
+.dl-root #pedidos .p2-cel__base{display:block; width:100%; height:100%; border-radius:inherit;}
+.dl-root #pedidos .p2-cel__av{position:absolute; height:auto; max-width:none; filter:drop-shadow(0 5px 8px rgba(0,0,0,.4));}
+.dl-root #pedidos .p2-cel__av1{left:3.33%; top:6.31%; width:93.33%;}
+.dl-root #pedidos .p2-cel__av2{left:4.97%; top:20.63%; width:90.07%; opacity:.94;}
+.dl-root #pedidos .p2-mao{position:absolute; left:64%; top:13%; width:20%; opacity:0; pointer-events:none; transform-origin:30% 10%;}
+.dl-root #pedidos .p2-mao svg{display:block; width:100%; height:auto; filter:drop-shadow(0 4px 6px rgba(0,0,0,.45));}
+.dl-root #pedidos .p2-mao i{position:absolute; left:14%; top:-6%; width:60%; aspect-ratio:1; border-radius:50%; border:2px solid #F42C7A; opacity:0;}
+.dl-root #pedidos .p2-pdf{background:none; box-shadow:none; overflow:visible; perspective:900px; transform-origin:100% 30%;}
+.dl-root #pedidos .p2-pdf__vira{position:relative; width:100%; height:100%; transform-style:preserve-3d;}
+.dl-root #pedidos .p2-pdf__frente, .dl-root #pedidos .p2-pdf__verso{position:absolute; max-width:none; -webkit-backface-visibility:hidden; backface-visibility:hidden;}
+.dl-root #pedidos .p2-pdf__verso{left:0; top:0; width:100%; height:100%; border-radius:22px; box-shadow:0 0 0 1px rgba(255,255,255,.55),0 28px 50px -26px rgba(0,0,0,.8);}
+.dl-root #pedidos .p2-pdf__frente{left:4%; top:36%; width:92%; height:auto; transform:rotateY(180deg); filter:drop-shadow(0 10px 16px rgba(0,0,0,.5));}
+@media (max-width:559px){ .dl-root #pedidos .p2-pdf__verso{border-radius:16px;} }
+.dl-root #pedidos .p2-pronta .p2-cel__av, .dl-root #pedidos .p2-pronta .dl-camadas__img--2, .dl-root #pedidos .p2-pronta .p2-pdf{opacity:0;}
+.dl-root #pedidos .p2-pronta .p2-pdf__vira{transform:rotateY(180deg);}
+.dl-root #pedidos .p2-vai .p2-cel{animation:p2-cel 4.3s cubic-bezier(.4,0,.2,1) both;}
+.dl-root #pedidos .p2-vai .p2-cel__av1{animation:p2-cai .55s .45s cubic-bezier(.2,.9,.3,1.2) both, p2-toque .35s 2.55s ease;}
+.dl-root #pedidos .p2-vai .p2-cel__av2{animation:p2-av2 .5s 4.1s ease both;}
+.dl-root #pedidos .p2-vai .p2-mao{animation:p2-mao 1.75s 1.75s ease both;}
+.dl-root #pedidos .p2-vai .p2-mao i{animation:p2-onda .6s 2.6s ease-out both;}
+.dl-root #pedidos .p2-vai .dl-camadas__img--2{animation:p2-tela2 .6s 4.4s ease both;}
+.dl-root #pedidos .p2-vai .p2-pdf{animation:p2-ap .45s 5s ease both, p2-zoom 3.6s 6.9s cubic-bezier(.4,0,.2,1) both;}
+.dl-root #pedidos .p2-vai .p2-pdf__vira{animation:p2-vira .85s 5.9s cubic-bezier(.4,0,.2,1) both;}
+@keyframes p2-cel{0%,14%{transform:rotate(-4deg) scale(1); z-index:6} 32%,80%{transform:rotate(0deg) scale(2.15); z-index:6} 99%{transform:rotate(-4deg) scale(1); z-index:6} 100%{transform:rotate(-4deg) scale(1); z-index:0}}
+@keyframes p2-cai{from{opacity:0; transform:translateY(-70%)} to{opacity:1; transform:none}}
+@keyframes p2-toque{50%{transform:scale(.965)}}
+@keyframes p2-av2{from{opacity:0; transform:translateY(-30%)} to{opacity:.94; transform:none}}
+@keyframes p2-mao{0%{opacity:0; transform:translate(45%,70%)} 30%{opacity:1; transform:none} 46%{opacity:1; transform:scale(.86)} 58%{opacity:1; transform:none} 82%{opacity:1; transform:none} 100%{opacity:0; transform:translate(20%,30%)}}
+@keyframes p2-onda{from{opacity:.9; transform:scale(.3)} to{opacity:0; transform:scale(1.9)}}
+@keyframes p2-tela2{from{opacity:0; transform:rotate(-.5deg) translateY(22px)} to{opacity:1; transform:rotate(-.5deg)}}
+@keyframes p2-ap{from{opacity:0} to{opacity:1}}
+@keyframes p2-vira{from{transform:rotateY(180deg)} to{transform:rotateY(0deg)}}
+@keyframes p2-zoom{0%{transform:rotate(3.5deg) scale(1); z-index:6} 20%,78%{transform:rotate(0deg) scale(1.85); z-index:6} 99%{transform:rotate(3.5deg) scale(1); z-index:6} 100%{transform:rotate(3.5deg) scale(1); z-index:0}}
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -539,6 +575,18 @@ ${corpoPagina}
     ]
     let ped = rosa
     for (const [de, para] of trocaPed) { if (!de.test(ped)) throw new Error('pro2: peça da área de pedidos não encontrada: ' + de); ped = ped.replace(de, para) }
+    // (21/11) animação do mockup de Pedidos: o aviso chega no celular, o celular aproxima para ler, uma mãozinha toca;
+    // aparecem o pedido aberto e o PDF fechado, que vira, abre, aproxima para ler e volta. Depois ficam os três parados.
+    // Sem JavaScript ou com "reduzir movimento", aparece direto o estado final.
+    const MAO = '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M24 30V13a5 5 0 0 1 10 0v15l13 3a6 6 0 0 1 4.6 6.8L49 52a8 8 0 0 1-8 7H31a8 8 0 0 1-6.400-3.200L14 41a4.2 4.2 0 0 1 6.500-5.300L24 39z" fill="#fff" stroke="#2A1830" stroke-width="3" stroke-linejoin="round"/></svg>'
+    const IMG1 = /<img class="dl-camadas__img dl-camadas__img--1"[^>]*>/
+    const IMG3 = /<img class="dl-camadas__img dl-camadas__img--3"[^>]*>/
+    if (!IMG1.test(ped) || !IMG3.test(ped)) throw new Error('pro2: telas da área de pedidos não encontradas')
+    ped = ped
+      .replace(IMG1, `<div class="dl-camadas__img dl-camadas__img--1 p2-cel"><img class="p2-cel__base" src="/site/media/pedidos-a0.webp" width="600" height="1300" alt="" loading="lazy" decoding="async"><img class="p2-cel__av p2-cel__av1" src="/site/media/pedidos-aviso1.webp" width="560" height="172" alt="" loading="lazy" decoding="async"><img class="p2-cel__av p2-cel__av2" src="/site/media/pedidos-aviso2.webp" width="560" height="172" alt="" loading="lazy" decoding="async"><span class="p2-mao" aria-hidden="true"><i></i>${MAO}</span></div>`)
+      .replace(IMG3, '<div class="dl-camadas__img dl-camadas__img--3 p2-pdf"><div class="p2-pdf__vira"><img class="p2-pdf__frente" src="/site/media/pedidos-pdf-fechado.webp" width="552" height="136" alt="" loading="lazy" decoding="async"><img class="p2-pdf__verso" src="/site/media/pedidos-c.webp" width="600" height="900" alt="" loading="lazy" decoding="async"></div></div>')
+      .replace('<div class="dl-camadas" role="img"', '<div class="dl-camadas p2-anim" role="img"')
+    ped += `<script>(function(){var c=document.querySelector('#pedidos .p2-anim');if(!c||!('IntersectionObserver' in window)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))return;c.classList.add('p2-pronta');new IntersectionObserver(function(e,o){if(e[0].isIntersecting){o.disconnect();var im=c.querySelectorAll('img'),n=0,foi=false,vai=function(){if(foi)return;foi=true;c.classList.add('p2-vai')};for(var i=0;i<im.length;i++){im[i].loading='eager';if(!im[i].complete){n++;im[i].addEventListener('load',function(){if(--n<=0)vai()});im[i].addEventListener('error',function(){if(--n<=0)vai()})}}if(!n)vai();setTimeout(vai,2500)}},{threshold:.45}).observe(c)})()</script>`
     const CARTAO2 = /<li class="dl-passo4 p2-func"><p class="p2-func__selo"><b>02<\/b>[\s\S]*?<\/ul><\/li>/
     if (!CARTAO2.test(corpoPro2)) throw new Error('pro2: cartão 02 não encontrado')
     corpoPro2 = corpoPro2.replace(CARTAO2, '')
