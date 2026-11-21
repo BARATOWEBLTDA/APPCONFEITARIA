@@ -530,21 +530,30 @@ export default function FichaTecnica() {
         unidade_utilizada: getDefaultRecipeUnit(ins),
         insumo: ins,
       }))]);
+      focarQtd(novos[0].id);
     }
     fecharPicker();
   };
 
-  const handleInsumoSalvo = (novo: InsumoQuick) => {
+  // (21/11) o cursor vai direto para a quantidade do ingrediente que acabou de entrar (antes era um toque a mais em cada um)
+  const focarQtd = (insumoId: string) => window.setTimeout(() => {
+    const el = document.querySelector<HTMLInputElement>(`.fd-ing[data-insumo="${insumoId}"] .fd-ing-qtd input`);
+    if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.focus({ preventScroll: true }); }
+  }, 350);
+  /** fechar: false no "Cadastrar e adicionar outro" (a janela continua aberta; o ingrediente já entra na ficha) */
+  const handleInsumoSalvo = (novo: InsumoQuick, fechar = true) => {
     const ins: Insumo = { id: novo.id, nome: novo.nome, unidade: novo.unidade, custo_unitario: novo.custo_unitario, imagem_url: novo.imagem_url };
-    setInsumosCadastrados(prev => [...prev, ins]);
-    setFicha(prev => [...prev, {
+    setInsumosCadastrados(prev => prev.some(x => x.id === ins.id) ? prev : [...prev, ins]);
+    setFicha(prev => prev.some(f => f.insumo_id === ins.id) ? prev : [...prev, {
       insumo_id: ins.id,
       quantidade: 0,
       unidade_utilizada: getDefaultRecipeUnit(ins),
       insumo: ins,
     }]);
+    if (!fechar) return;
     setShowQuickAdd(false);
     setQuickAddName("");
+    focarQtd(ins.id);
   };
 
   /** ficar: grava sem sair da ficha e sem aviso (6.168: antes do PDF). Devolve se gravou. */
@@ -776,7 +785,7 @@ export default function FichaTecnica() {
                 const unidades = getCompatibleUnits(ins);
                 const semQtd = !(f.quantidade > 0);
                 return (
-                  <div key={f.insumo_id} className="fd-ing">
+                  <div key={f.insumo_id} className="fd-ing" data-insumo={f.insumo_id}>
                     <button type="button" className="fd-c fd-c-nome" onClick={() => setInfoCustoAberto(f.insumo_id)} aria-label={`${ins.nome}: ver a conta do custo`}>
                     <span className="fd-ing-th">{ins.imagem_url ? <img src={ins.imagem_url} alt="" /> : ins.nome.charAt(0).toUpperCase()}</span>
                     <span className="fd-ing-nome"><b>{ins.nome}</b>{semQtd ? <small className="falta">Falta a quantidade</small> : <small>R$ {fmt(precoCheio(ins).valor)}/{precoCheio(ins).un}</small>}</span>
@@ -930,7 +939,7 @@ export default function FichaTecnica() {
 
       {/* Cadastro de ingrediente novo (o mesmo da tela Ingredientes) */}
       {showQuickAdd && (
-        <QuickAddInsumo janela aberta userId={userId} initialName={quickAddName} onSaved={handleInsumoSalvo}
+        <QuickAddInsumo janela aberta userId={userId} initialName={quickAddName} onSaved={handleInsumoSalvo} onSalvoOutro={n => { if (n) handleInsumoSalvo(n, false); }}
           onCancel={() => { setShowQuickAdd(false); setQuickAddName(""); }} />
       )}
 

@@ -231,7 +231,7 @@ export function descreverCompra(embalagem: string, qtd: number, unidade: string,
  * Cadastro e edição de ingrediente.
  * Reutilizado em /insumos (numa Janela) e dentro da ficha técnica e do cadastro de produto.
  */
-export default function QuickAddInsumo({ userId, initialName, editing, onSaved, onCancel, onDelete, janela = false, aberta = true, onSalvoOutro }: Props & { onSalvoOutro?: () => void }) {
+export default function QuickAddInsumo({ userId, initialName, editing, onSaved, onCancel, onDelete, janela = false, aberta = true, onSalvoOutro }: Props & { onSalvoOutro?: (insumo?: InsumoQuick) => void }) {
   const isEditing = !!editing;
 
   const [form, setForm] = useState<Form>(() => {
@@ -426,17 +426,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     setSaving(false);
 
     if (error || !data) { avisar("Não deu para salvar. Confira a internet e tente de novo.", { tipo: "erro" }); console.error(error); return; }
-    if (outroRef.current && !isEditing) {
-      // (04/11 · 6.20) continua aberto e limpo pra cadastrar o próximo
-      outroRef.current = false; setTentouSalvar(false); setImagens([]); setUnidadeTocadaManualmente(false);
-      setCatTocada(false);
-      setForm(f => ({ ...f, nome: "", marca: "", categoria: "", valor_compra: "", qtd_embalagem: "", imagem_url: "", varias: false, itens: "", cada_qtd: "" }));
-      avisar(`${data.nome} cadastrado. Agora o próximo.`, { tipo: "ok" });
-      window.setTimeout(() => nomeRef.current?.focus(), 50);
-      onSalvoOutro?.();
-      return;
-    }
-    onSaved({
+    const salvo: InsumoQuick = {
       id: data.id,
       nome: data.nome,
       marca: data.marca,
@@ -448,7 +438,18 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       valor_compra: data.valor_compra,
       qtd_embalagem: data.qtd_embalagem,
       itens_embalagem: data.itens_embalagem,
-    });
+    };
+    if (outroRef.current && !isEditing) {
+      // (04/11 · 6.20) continua aberto e limpo pra cadastrar o próximo
+      outroRef.current = false; setTentouSalvar(false); setImagens([]); setUnidadeTocadaManualmente(false);
+      setCatTocada(false);
+      setForm(f => ({ ...f, nome: "", marca: "", categoria: "", valor_compra: "", qtd_embalagem: "", imagem_url: "", varias: false, itens: "", cada_qtd: "" }));
+      avisar(`${data.nome} cadastrado. Agora o próximo.`, { tipo: "ok" });
+      window.setTimeout(() => nomeRef.current?.focus(), 50);
+      onSalvoOutro?.(salvo); // (21/11) leva o ingrediente: quem chamou de dentro da ficha já põe ele nela
+      return;
+    }
+    onSaved(salvo);
   };
 
   // Fechar sem salvar: pergunta antes se a pessoa já mexeu em algo
@@ -613,7 +614,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         </div>
       ) : (<>
         <div className="cl9-f-2">
-          <Campo rotulo={rotuloQtd} inputMode="decimal" placeholder={precisaQtd ? "395" : "1"} value={form.qtd_embalagem} erro={erroQtd}
+          <Campo rotulo={rotuloQtd} inputMode="decimal" placeholder={precisaQtd ? (/^(ml|l)$/i.test(form.unidade) ? "Ex.: 1000" : "Ex.: 395") : "Ex.: 1"} value={form.qtd_embalagem} erro={erroQtd}
             onChange={e => setForm(f => ({ ...f, qtd_embalagem: e.target.value }))}
             depois={<Medida valor={form.unidade} qual="qtd" aoEscolher={u => setForm(f => ({ ...f, unidade: u }))} />} />
           <Campo rotulo={emb === "Avulso" ? "Quanto pagou na embalagem" : `Quanto pagou ${EMB_FEMININAS.some(f => f.toLowerCase() === String(emb || "").toLowerCase()) ? "na" : "no"} ${String(emb || "").toLowerCase()}`} inputMode="numeric" prefixo="R$" placeholder="0,00" value={form.valor_compra} erro={erroValor}
