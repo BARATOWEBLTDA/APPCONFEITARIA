@@ -46,6 +46,7 @@ export default function Custos() {
   const [erro, setErro] = useState(false); // não deu pra carregar (11/10)
   const [editFixo, setEditFixo] = useState<CustoFixo | "novo" | null>(null);
   const [editVar, setEditVar] = useState<CustoVariavel | "novo" | null>(null);
+  const [nomeNovoVar, setNomeNovoVar] = useState(""); // (21/11) atalhos "Imposto sobre a venda" e "Comissão de plataforma"
   const [editMaq, setEditMaq] = useState(false);
   const [editMo, setEditMo] = useState(false);
   // (16/10) custos invisíveis (% sobre os ingredientes): saíram da Ficha técnica e ficam aqui, com os outros custos
@@ -157,6 +158,14 @@ export default function Custos() {
             {/* (13/10) atalho: a taxa da maquininha com o débito e o crédito separados */}
             {/* (16/10) a maquininha que falta vira uma linha como as outras (antes um botão tracejado comprido) */}
             {/* (27/10) taxa antiga com "maquininha" no nome também conta (antes pedia de novo e a taxa saía em dobro) */}
+            {/* (21/11) imposto e comissão: % de cada venda que quase toda precificação esquece; entram sozinhos no custo da ficha */}
+            {!carregando && ([["Imposto sobre a venda", /impost|simples|das\b|tribut/i, "Simples, ICMS"], ["Comissão de plataforma", /comiss|ifood|plataforma|marketplace|aplicativo/i, "iFood e apps"]] as [string, RegExp, string][])
+              .filter(([, re]) => !variaveis.some(v => re.test(v.nome || ""))).map(([nome, , sub]) => (
+              <button type="button" key={nome} className="cu-it cu-it--falta" onClick={() => { setNomeNovoVar(nome); setEditVar("novo"); }}>
+                <div className="cu-it-t"><b>{nome}</b><small>{sub} · % da venda, se você paga</small></div>
+                <CaretRight size={14} weight="bold" className="cu-it-ar" />
+              </button>
+            ))}
             {!carregando && !variaveis.some(v => v.forma || /maquin/i.test(v.nome || "")) && (
               <button type="button" className="cu-it cu-it--falta" onClick={() => setEditMaq(true)}>
                 <div className="cu-it-t"><b>Taxa da maquininha</b><small>Débito e crédito · falta cadastrar</small></div>
@@ -195,7 +204,7 @@ export default function Custos() {
       </div>
 
       {editFixo && uid && <FixoSheet uid={uid} item={editFixo === "novo" ? null : editFixo} onClose={() => setEditFixo(null)} onFeito={() => { setEditFixo(null); carregar(); }} />}
-      {editVar && uid && <VariavelSheet uid={uid} item={editVar === "novo" ? null : editVar} onClose={() => setEditVar(null)} onFeito={() => { setEditVar(null); carregar(); }} />}
+      {editVar && uid && <VariavelSheet uid={uid} item={editVar === "novo" ? null : editVar} nomeInicial={editVar === "novo" ? nomeNovoVar : ""} onClose={() => { setEditVar(null); setNomeNovoVar(""); }} onFeito={() => { setEditVar(null); setNomeNovoVar(""); carregar(); }} />}
       {editMaq && uid && <MaquininhaSheet uid={uid} onClose={() => setEditMaq(false)} onFeito={() => { setEditMaq(false); carregar(); }} />}
       {editCv && uid && <InvisiveisSheet uid={uid} atual={cv ?? 25} onClose={() => setEditCv(false)} onFeito={v => { setCv(v); setEditCv(false); }} />}
       {editMo && uid && <MaoObraSheet uid={uid} atual={mo} totalFixos={totalFixos} onClose={() => setEditMo(false)} onFeito={() => { setEditMo(false); carregar(); }} />}
@@ -293,8 +302,8 @@ function FixoSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoFi
   );
 }
 
-function VariavelSheet({ uid, item, onClose, onFeito }: { uid: string; item: CustoVariavel | null; onClose: () => void; onFeito: () => void }) {
-  const [nome, setNome] = useState(item?.nome || "");
+function VariavelSheet({ uid, item, nomeInicial = "", onClose, onFeito }: { uid: string; item: CustoVariavel | null; nomeInicial?: string; onClose: () => void; onFeito: () => void }) {
+  const [nome, setNome] = useState(item?.nome || nomeInicial);
   const [tipo, setTipo] = useState<"percentual" | "fixo">(item?.tipo || "percentual");
   const [valor, setValor] = useState(item?.tipo === "fixo" ? textoBRL(item?.valor) : txt(item?.valor));
   const [ativo, setAtivo] = useState(item ? item.ativo : true);

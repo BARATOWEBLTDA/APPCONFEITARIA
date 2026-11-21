@@ -4,7 +4,7 @@ import { useAbrirPedido } from "@/hooks/useAbrirPedido";
 import CampoNumero from "@/components/ui/CampoNumero";
 import { parseNumBR } from "@/lib/numeroBR";
 import { explicarErro } from "@/lib/erros";
-import { calcularCustoLucro, custoDaHora, lerMaoObraConta, precoQueClientePaga, type CustoDaVenda, type MaoObraConta } from "@/lib/produto-precificacao";
+import { calcularCustoLucro, custoDaHora, descontoPromocao, lerMaoObraConta, precoQueClientePaga, type CustoDaVenda, type MaoObraConta } from "@/lib/produto-precificacao";
 import { taxaPctDaForma, fixoPorPedido } from "@/lib/painelFinanceiro";
 import { qtdBaseDoKit } from "@/lib/kitQuantidade";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -161,6 +161,9 @@ type Produto = {
   categoria: string;
   forma_venda: string;
   kit_qtd?: unknown;
+  /** (21/11) tamanhos de preço fixo e quanto da receita cada um usa */
+  grupo_tamanhos?: { ativo?: boolean; modo_preco_tamanho?: string; opcoes?: { id?: string; nome?: string; preco?: number | string | null }[] } | null;
+  ficha_fatores?: Record<string, number> | null;
   created_at: string;
   rendimento_qtd?: string;
   rendimento_peso?: string;
@@ -257,6 +260,15 @@ function calcular(p: Produto, conta: MaoConta = null, cvConta: number | null = n
 }
 
 
+/** (21/11) tamanhos de preço fixo do produto (P, M, G): cada um tem o seu preço, então cada um tem o seu lucro */
+function tamanhosFixos(p: Produto | null): { id: string; nome: string; preco: number }[] {
+  const g = p?.grupo_tamanhos;
+  if (!g?.ativo || g.modo_preco_tamanho === "por_peso") return [];
+  return (g.opcoes || []).filter(o => o?.id && Number(o.preco) > 0).map(o => ({ id: String(o.id), nome: o.nome || "Tamanho", preco: Number(o.preco) }));
+}
+/** "0,5" → 0.5; vazio ou inválido = 1 receita */
+const fatorDe = (t?: string) => { const n = Number(String(t ?? "").replace(",", ".")); return Number.isFinite(n) && n > 0 ? Math.min(n, 50) : 1; };
+
 export default function FichaTecnica() {
   const { profile } = useProfile();
   const primeiroNome = (profile?.nome || "").split(" ")[0] || "Confeiteira";
@@ -348,6 +360,9 @@ export default function FichaTecnica() {
   };
   /** 90 min vira 1 h 30 min quando sai do campo */
   const [saving, setSaving] = useState(false);
+  // (21/11) produto com tamanhos de preço fixo (P, M, G): quanto da receita cada tamanho usa (texto do campo, por id do tamanho)
+  const [fatores, setFatores] = useState<Record<string, string>>({});
+  const fatoresSalvos = useRef("");
 
   const [maoConta, setMaoConta] = useState<MaoConta>(null);
   const [cvConta, setCvConta] = useState<number | null>(null);
@@ -439,12 +454,13 @@ export default function FichaTecnica() {
   const mudouFicha = () => {
     const r = retrato.current;
     if (!r) return false;
-    return r.ficha !== assinarFicha(ficha) || r.mo !== moAtivo || r.info !== infoAtivo
+    return r.ficha !== assinarFicha(ficha) || r.mo !== moAtivo || r.info !== infoAtivo || fatoresSalvos.current !== JSON.stringify(fatores)
       || (Object.keys(r.extras) as (keyof typeof extras)[]).some(k => r.extras[k] !== extras[k]);
   };
 
   const abrirFicha = (p: Produto) => {
     setSelected(p);
+    { const f: Record<string, string> = {}; Object.entries(p.ficha_fatores || {}).forEach(([k, v]) => { if (Number(v) > 0) f[k] = String(v).replace(".", ","); }); setFatores(f); fatoresSalvos.current = JSON.stringify(f); }
     setEditandoTempo(!(Number(p.tempo_preparo_min) > 0)); // sem tempo: já abre com os campos; com tempo: caixa cinza
     const fichaAberta: FichaItem[] = (p.produto_insumos || []).map(pi => {
       const insumo = pi.insumos as Insumo;
@@ -568,6 +584,7 @@ export default function FichaTecnica() {
       tempo_preparo_min: moAtivo ? (parseInt(extras.tempo_preparo_min) || 0) : 0,
       salario_desejado: moAtivo ? (parseNumBR(extras.salario_desejado) || 0) : 0,
       horas_semanais: moAtivo ? (parseNumBR(extras.horas_semanais) || 40) : 40,
+      ...(tamanhosFixos(selected).length ? { ficha_fatores: Object.fromEntries(tamanhosFixos(selected).map(o => [o.id, fatorDe(fatores[o.id])]).filter(([, v]) => v !== 1)) } : {}),
       ficha_rende: podeRender(selected) ? Math.max(1, Math.min(10000, Math.round(parseNumBR(extras.ficha_rende) || 1))) : 1, // (6.183)
       updated_at: new Date().toISOString(),
     }).eq("id", selected.id);
@@ -587,6 +604,7 @@ export default function FichaTecnica() {
       .single();
     if (data) setSelected(data as Produto);
 
+    fatoresSalvos.current = JSON.stringify(fatores);
     // salvou: o que está na tela passa a ser o ponto de partida (a seta de voltar não pergunta mais)
     retrato.current = { ficha: assinarFicha(ficha), extras: { ...extras }, mo: moAtivo, info: infoAtivo };
     setSaving(false);
@@ -671,7 +689,7 @@ export default function FichaTecnica() {
         <div><span>Ingredientes</span><span>R$ {fmt(cmvLive)}</span></div>
         <div><span>Custos invisíveis ({fmtPct(cvPct)}%)</span><span>R$ {fmt(cvLive)}</span></div>
         <div><span>Mão de obra{tempoMin > 0 && moAtivo ? ` (${tempoMin >= 60 ? `${Math.floor(tempoMin / 60)}h${tempoMin % 60 ? String(tempoMin % 60).padStart(2, "0") : ""}` : `${tempoMin} min`})` : ""}</span><span>R$ {fmt(moLive)}</span></div>
-        {venda.credito > 0 && <div><span>Taxa no crédito ({fmtPct(venda.credito)}%)</span><span>R$ {fmt(taxaLive)}</span></div>}
+        {venda.credito > 0 && <div><span>{venda.pix > 0 ? "Taxas e impostos" : "Taxa no crédito"} ({fmtPct(venda.credito)}%)</span><span>R$ {fmt(taxaLive)}</span></div>}
         {fixoLive > 0 && <div><span>Por pedido (embalagem)</span><span>R$ {fmt(fixoLive)}</span></div>}
         <div className="fd-t"><span>Custo total</span><span>R$ {fmt(custoTotalLive)}</span></div>
         <div className="fd-pv"><span>Preço de venda</span><span>R$ {fmt(precoLive)}</span></div>
@@ -796,6 +814,31 @@ export default function FichaTecnica() {
               )}
             </>)}
           </section>
+
+          {/* (21/11) produto com tamanhos de preço fixo: o lucro de cada tamanho (antes a ficha era uma só e P e G saíam com o mesmo custo) */}
+          {tamanhosFixos(selected).length > 0 && ficha.length > 0 && (
+            <section className="cl9-card fd-sec">
+              <Titulo>Lucro por tamanho</Titulo>
+              <p className="fd-dica">Quanto da receita cada tamanho usa: 0,5 é meia, 2 são duas.</p>
+              <div className="fd-tams">
+                {tamanhosFixos(selected).map(o => {
+                  const f = fatorDe(fatores[o.id]);
+                  const preco = Math.round(o.preco * (1 - descontoPromocao(selected)) * 100) / 100;
+                  const custo = (cmvLive + cvLive) * f + moLive + preco * (venda.credito / 100) + fixoLive;
+                  const lucro = preco - custo, margem = preco > 0 ? (lucro / preco) * 100 : 0;
+                  const t = margem >= 30 ? "ok" : margem >= 0 ? "atencao" : "neg";
+                  return (
+                    <div className="fd-tam" key={o.id}>
+                      <span className="fd-tam-n"><b>{o.nome}</b><small>R$ {fmt(preco)} · custo R$ {fmt(custo)}</small></span>
+                      <label className="fd-tam-f"><input inputMode="decimal" placeholder="1" aria-label={`Quanto da receita o tamanho ${o.nome} usa`} value={fatores[o.id] ?? ""}
+                        onChange={e => setFatores(x => ({ ...x, [o.id]: e.target.value.replace(/[^\d.,]/g, "").slice(0, 5) }))} /><i>×</i></label>
+                      <span className={`fd-tam-l fl-lucro--${t}`}><b>{lucro < 0 ? "−" : ""}R$ {fmt(Math.abs(lucro))}</b><small>{fmtPct(margem)}%</small></span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* (04/11 · 6.20) mão de obra e custos invisíveis saíram da ficha (ficam em Custos e entram sozinhos no custo).
               Aqui fica só o tempo da receita, que é o que a mão de obra precisa. */}
