@@ -250,7 +250,7 @@ ${corpoPagina}
 .dl-root .dl-ponte.p2-ponte .dl-ponte__texto{max-width:none; font-family:"Tinteiro","Segoe Script","Bradley Hand",cursive; font-weight:400; font-size:min(1.125rem,4.5vw); line-height:1.55; letter-spacing:0; color:#2B1A3A; text-wrap:balance; transform:rotate(-1.5deg);}
 .dl-root .dl-ponte.p2-ponte em{display:block; font-style:normal; color:inherit; background:none; -webkit-text-fill-color:currentColor; animation:none;}
 .dl-root .p2-tinta{width:min(46%,200px); height:auto; margin-left:30%; color:#E0397B; transform:rotate(-2.5deg);}
-@media (min-width:700px){ .dl-root .dl-ponte.p2-ponte .dl-ponte__texto{font-size:clamp(1.8rem,3vw,2.6rem);} .dl-root .p2-tinta{width:360px; margin-left:26%;} }
+@media (min-width:700px){ .dl-root .dl-ponte.p2-ponte .dl-ponte__texto{font-size:clamp(1.35rem,1.75vw,1.75rem);} .dl-root .p2-tinta{width:250px; margin-left:20%;} }
 .dl-root .dl-secao.dl-dores{padding-bottom:clamp(40px,4.4vw,60px);}
 /* (21/11) cartões das funcionalidades: celular maior, título mais solto do número, letras um pouco maiores e a descrição embaixo do celular */
 .dl-root #funcionalidades .dl-passo4{padding-bottom:20px;}
@@ -288,7 +288,7 @@ ${corpoPagina}
 .dl-root #funcionalidades .p2-func{padding:22px 20px 24px;}
 .dl-root #funcionalidades .p2-func__selo{align-self:center; display:inline-flex; align-items:center; gap:10px; margin:0; padding:5px 16px 5px 5px; border-radius:999px; background:rgba(255,111,165,.13);}
 .dl-root #funcionalidades .p2-func__selo b{display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#FF5C9A,#F42C7A); color:#fff; font-size:.8125rem; font-weight:700;}
-.dl-root #funcionalidades .p2-func__selo span{color:#FF7AAE; font-size:.8125rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;}
+.dl-root #funcionalidades .p2-func__selo span{color:#FFF6EE; font-size:.8125rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;}
 .dl-root #funcionalidades .p2-func .dl-passo4__titulo{margin:16px 0 0; text-align:center; white-space:normal; text-wrap:balance; font-size:clamp(1.375rem,6vw,1.625rem) !important; line-height:1.15; letter-spacing:-.02em;}
 .dl-root #funcionalidades .p2-func .dl-passo4__tela{margin-top:20px;}
 .dl-root #funcionalidades .p2-func .dl-passo4__texto{margin:20px 0 0; font-size:1.0625rem; line-height:1.45; color:rgba(255,246,238,.72);}
