@@ -245,9 +245,12 @@ ${corpoPagina}
 @media (prefers-reduced-motion:reduce){ .p2-faixa__trilho{animation:none;} }
 .dl-root #funcionalidades .dl-cabeca{margin-top:34px;}
 .dl-root #funcionalidades .dl-cabeca .dl-lead{font-size:clamp(1rem,.9rem + .42vw,1.25rem);}
-.dl-root .dl-ponte.p2-ponte{margin-top:clamp(30px,3.4vw,48px);}
-.dl-root .dl-ponte.p2-ponte .dl-ponte__texto{text-wrap:balance;}
-.dl-root .dl-ponte.p2-ponte em{display:block; background:linear-gradient(90deg,#F1769F 0%,#F42C7A 25%,#FF8A6B 50%,#F42C7A 75%,#F1769F 100%); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:p2-degrade 7s linear infinite;}
+@font-face{font-family:"Tinteiro"; src:url(/site/media/homemade-apple.woff2) format("woff2"); font-weight:400; font-style:normal; font-display:swap;}
+.dl-root .dl-ponte.p2-ponte{margin-top:clamp(30px,3.4vw,48px); gap:2px;}
+.dl-root .dl-ponte.p2-ponte .dl-ponte__texto{max-width:none; font-family:"Tinteiro","Segoe Script","Bradley Hand",cursive; font-weight:400; font-size:clamp(1.3rem,6.1vw,1.55rem); line-height:1.5; letter-spacing:0; color:#2B1A3A; text-wrap:balance; transform:rotate(-1.5deg);}
+.dl-root .dl-ponte.p2-ponte em{display:block; font-style:normal; color:inherit; background:none; -webkit-text-fill-color:currentColor; animation:none;}
+.dl-root .p2-tinta{width:min(62%,300px); height:auto; margin-left:22%; color:#E0397B; transform:rotate(-2.5deg);}
+@media (min-width:700px){ .dl-root .dl-ponte.p2-ponte .dl-ponte__texto{font-size:clamp(1.8rem,3vw,2.6rem);} .dl-root .p2-tinta{width:360px; margin-left:26%;} }
 .dl-root .dl-secao.dl-dores{padding-bottom:clamp(40px,4.4vw,60px);}
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
@@ -342,7 +345,7 @@ ${corpoPagina}
   {
     const PONTE = /<p class="dl-ponte">[\s\S]*?<\/p>/
     if (!PONTE.test(corpoPro2)) throw new Error('pro2: frase de passagem não encontrada')
-    corpoPro2 = corpoPro2.replace(PONTE, '<p class="dl-ponte p2-ponte"><span class="dl-ponte__texto">Você não abriu uma confeitaria <em>para virar atendente.</em></span></p>')
+    corpoPro2 = corpoPro2.replace(PONTE, '<p class="dl-ponte p2-ponte"><span class="dl-ponte__texto">Você não abriu uma confeitaria <em>para virar atendente.</em></span><svg class="p2-tinta" viewBox="0 0 360 44" width="360" height="44" aria-hidden="true" focusable="false"><path d="M6 20c38-7 71-9 112-8 49 1 86 6 131 4 22-1 41-4 62-9-17 7-37 12-60 14-46 4-84-2-132-3-41-1-74 2-113 8z" fill="currentColor"/><path d="M318 10c6-5 15-6 21-2 6 4 8 12 4 18-3 5-10 8-16 6-3-1-4 3-8 3-3 0-4-4-2-6 2-3-3-5-3-9 0-4 1-8 4-10z" fill="currentColor"/><circle cx="350" cy="33" r="3.2" fill="currentColor"/><circle cx="341" cy="40" r="1.7" fill="currentColor"/><circle cx="356" cy="22" r="1.4" fill="currentColor"/><circle cx="304" cy="30" r="1.3" fill="currentColor"/></svg></p>')
   }
   corpoPro2 = CSS_P2 + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
