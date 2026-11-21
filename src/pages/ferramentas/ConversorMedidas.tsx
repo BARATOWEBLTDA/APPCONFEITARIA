@@ -4,6 +4,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import { Botao, Campo, Gaveta, avisar } from "@/components/base";
 import { supabase } from "@/lib/supabase";
 import { INGREDIENTES, MEDIDAS, ML, emGramas, emMl, fotoIngrediente, ilustracaoIngrediente, gramasTexto, lerQuantidade, numeroReceita, type Ingrediente, type Medida } from "@/lib/medidas";
+import { abrirDooIA } from "@/components/MenuContaItens";
 import "./ferramentas.css";
 
 /**
@@ -72,7 +73,8 @@ export default function ConversorMedidas() {
       const n = ml / ML[m];
       return n >= 0.25 && n <= 48 ? `${numeroReceita(n)} ${nomeMedida(m, n)}` : "";
     }).filter(Boolean).slice(0, 2);
-    if (medida !== "ml") r.push(`${Math.round(ml)} ml`);
+    // (21/11) o "480 ml" só aparece para líquido: em ingrediente seco é o volume da xícara, não uma medida útil
+    if (medida !== "ml" && ing.grupo === "Líquidos") r.push(`${Math.round(ml)} ml`);
     if (deGramas || medida === "ml") r.unshift(gramasTexto(g));
     return deGramas ? r.slice(1) : r;
   }, [qtd, medida, ml, g, deGramas, mCas]);
@@ -140,11 +142,11 @@ export default function ConversorMedidas() {
           </section>
 
           <section className="fm-res" aria-live="polite">
-            <Foto i={ing} g />
+            {/* (21/11) a foto grande saiu daqui (já está no seletor): o resultado e o Copiar cabem na primeira tela */}
             <small className="fm-res-de">{frase}</small>
             <strong className={`fm-res-g${deGramas ? " fm-res-g--txt" : ""}`}>{deGramas && qtd > 0 ? "≈ " : ""}{grande}</strong>
             {outras.length > 0 && (
-              <div className="fm-res-tb"><span>Também é</span>{outras.map(o => <b key={o}>{o}</b>)}</div>
+              <p className="fm-res-tb">Também é {outras.map((o, i) => <span key={o}>{i > 0 && " ou "}<b>{o}</b></span>)}</p>
             )}
             {qtd > 0 && <button type="button" className="fm-copiar" onClick={copiar}><Copy size={16} weight="bold" aria-hidden="true" />Copiar</button>}
           </section>
@@ -180,13 +182,19 @@ export default function ConversorMedidas() {
                 <span>Adicionar “{busca.trim()}”</span>
               </button>
             )}
+            {/* (21/11) atalho para a Doo: medida ou ingrediente que não está na lista */}
+            <button type="button" className="fm-doo" onClick={() => { const t = busca.trim(); fecharLista(); abrirDooIA(t ? `Quanto pesa 1 xícara (240 ml) de ${t}? Me diga em gramas e também em colher de sopa.` : "Quero converter uma medida de receita que não está no conversor. Me pergunte qual é o ingrediente e a medida."); }}>
+              <img src="/Sistema/doo.webp" alt="" aria-hidden="true" />
+              <span>{busca.trim() && !achados.length ? "Perguntar isso à Doo" : "Não achou? Pergunte à Doo"}</span>
+              <CaretRight size={16} weight="bold" aria-hidden="true" />
+            </button>
             <div className="fm-lista">
               {achados.map(i => (
                 <button type="button" key={i.id} className={`fm-li${i.id === ing.id ? " on" : ""}`} onClick={() => { escolher(i); fecharLista(); }}>
                   <Foto i={i} /><span>{i.nome}{i.proprio && <em className="fm-seu">Seu</em>}</span><b>{gramasTexto(i.xicara)}</b>
                 </button>
               ))}
-              {!achados.length && <p className="fm-vazio">Não está na lista. Adicione acima e informe quanto pesa 1 xícara.</p>}
+              {!achados.length && <p className="fm-vazio">Não está na lista. Adicione acima e informe quanto pesa 1 xícara, ou pergunte à Doo.</p>}
             </div>
           </>
         )}

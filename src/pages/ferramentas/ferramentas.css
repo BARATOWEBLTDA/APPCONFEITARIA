@@ -20,19 +20,22 @@
 .fm-sel svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--ui-texto-2); pointer-events: none; }
 
 .fm-rap { display: flex; gap: 6px; margin-top: 12px; }
-.fm-rap button { flex: 1; min-width: 0; height: 40px; margin: 0; padding: 0; border: 0; border-radius: var(--ui-raio-p); background: var(--ui-cinza); color: var(--ui-cinza-texto); font-family: inherit; font-size: 15px; font-weight: 600; white-space: nowrap; cursor: pointer; }
-.fm-rap button.on { background: var(--ui-rosa-claro); color: var(--ui-rosa-escuro); box-shadow: inset 0 0 0 1.5px var(--ui-rosa); }
+.fm-rap button { flex: 1; min-width: 0; height: 40px; margin: 0; padding: 0; border: 0; border-radius: var(--ui-raio-p); background: var(--ui-cinza); color: var(--ui-cinza-texto); font-family: inherit; font-size: 15px; font-weight: 500; white-space: nowrap; cursor: pointer; }
+.fm-rap button.on { background: #F0EEEF; color: var(--ui-texto); box-shadow: inset 0 0 0 1.5px var(--ui-escolha, #3B3236); } /* (21/11) escolhido no padrão do app: cinza escuro */
 
 /* resultado */
 .fm-res { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 20px 16px 16px; border-radius: var(--ui-raio-cartao); text-align: center;
-  background: linear-gradient(160deg, #FFF5F9 0%, #FDE3EE 100%); border: 1px solid #F7D3E2; }
+  background: var(--ui-branco); border: 1px solid var(--ui-borda); } /* (21/11) cartão branco, sem o rosa lavado */
 .fm-res-de { max-width: 100%; font-size: 14px; color: var(--ui-texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fm-res-g { font-size: 44px; font-weight: 600; line-height: 1.1; letter-spacing: -.02em; color: var(--ui-rosa-escuro); font-variant-numeric: tabular-nums; }
+.fm-res-g { font-size: 44px; font-weight: 500; line-height: 1.1; letter-spacing: -.02em; color: var(--ui-texto); font-variant-numeric: tabular-nums; }
 .fm-res-g--txt { font-size: 34px; }
-.fm-res-tb { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin: 10px 0 0; font-size: 13px; color: var(--ui-texto-2); }
-.fm-res-tb > span { width: 100%; }
-.fm-res-tb b { padding: 5px 10px; border-radius: 999px; background: rgba(255,255,255,.75); font-weight: 600; color: var(--ui-texto); white-space: nowrap; }
-.fm-copiar { display: inline-flex; align-items: center; gap: 6px; height: 36px; margin: 10px 0 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 999px; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.fm-res-tb { max-width: 100%; margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: var(--ui-texto-2); }
+.fm-res-tb b { font-weight: 500; color: var(--ui-texto); white-space: nowrap; }
+.fm-doo { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 50px; margin: 0 0 6px; padding: 0 12px 0 8px; border: 1px solid var(--ui-borda); border-radius: var(--ui-raio); background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 14.5px; font-weight: 500; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.fm-doo img { flex: none; width: 34px; height: 34px; border-radius: 50%; object-fit: cover; object-position: top center; background: #FCE7F3; }
+.fm-doo span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fm-doo svg { flex: none; color: var(--ui-texto-3); }
+.fm-copiar { display: inline-flex; align-items: center; gap: 6px; height: 36px; margin: 10px 0 0; padding: 0 14px; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); color: var(--ui-texto); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
 
 /* fotos dos ingredientes: redondas (a ilustração da tigela, quando entra no lugar, fica sem recorte) */
 .fm-foto { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--ui-cinza); }
