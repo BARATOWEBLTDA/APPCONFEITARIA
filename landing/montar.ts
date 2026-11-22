@@ -435,6 +435,7 @@ ${corpoPagina}
 /* (21/11) funcionalidades 05 Financeiro, 06 Orçamentos e 07 Doo IA */
 .dl-root :is(#fin,#orcamentos,#doo) .dl-h2 :is(.dl-h2__rosa,.dl-h2__vinho){display:block;}
 .dl-root #doo + script + #beneficios, .dl-root #beneficios{margin-top:0;}
+.dl-root #funcs-b .dl-funcs{margin-top:0;}
 .dl-root #doo .dl-onda{fill:#0B0710;}
 .dl-root :is(#fin,#orcamentos,#doo) :is(.p2-fin,.p2-orc,.p2-doo) img{display:block; max-width:none; height:auto;}
 .dl-root #fin .p2-fin{position:relative; width:100%; aspect-ratio:1/1.1;}
@@ -781,10 +782,14 @@ ${corpoPagina}
     const CORTE = /(<\/header>)\s*(<ol class="dl-passos4">)/
     if (!CORTE.test(corpoPro2)) throw new Error('pro2: ponto de corte das funcionalidades não encontrado')
     corpoPro2 = corpoPro2.replace(CORTE, (_t, a: string, b: string) => `${a}\n\t</div>\n</section>\n${rosa}${ped}${fic}${ag}${fin}${orc}${doo}${ANIMA3}<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-label="Financeiro">\n\t<div class="dl-container">\n\t\t${b}`)
-    // (21/11) o último cartão (Financeiro) virou área: a seção dos cartões sai inteira
+    // (21/11) o último cartão (Financeiro) virou área: da seção dos cartões fica só a lista, agora com o que NÃO ganhou área própria
     const FUNCS_B = /<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b"[\s\S]*?<\/section>\n?/
-    if (!FUNCS_B.test(corpoPro2)) throw new Error('pro2: seção dos cartões não encontrada')
-    corpoPro2 = corpoPro2.replace(FUNCS_B, '')
+    const secB = corpoPro2.match(FUNCS_B)?.[0]
+    const li0 = secB?.match(/<li class="dl-funcs3__item">([\s\S]*?<\/span>)[\s\S]*?<\/li>/)
+    if (!secB || !li0) throw new Error('pro2: seção dos cartões ou lista de funcionalidades não encontrada')
+    const MAIS = ['Cadastro de clientes', 'Aviso de aniversário dos clientes', 'Cupons de desconto', 'Taxa de entrega por bairro', 'Stories no cardápio', 'Mensagens prontas de WhatsApp',
+      'Simulador de preço', 'Conversor de medidas', 'Topo de bolo com IA', 'Adicionais e complementos', 'Métricas do cardápio', 'Celular e computador']
+    corpoPro2 = corpoPro2.replace(FUNCS_B, () => `<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-labelledby="p2-mais-t">\n\t<div class="dl-container">\n\t\t<div class="dl-funcs">\n\t\t\t<h3 class="dl-funcs__titulo" id="p2-mais-t">E ainda tem muito mais</h3>\n\t\t\t<ul class="dl-funcs3">${MAIS.map(t => `<li class="dl-funcs3__item">${li0[1]}${t}</li>`).join('')}</ul>\n\t\t</div>\n\t</div>\n</section>\n`)
   }
   corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
