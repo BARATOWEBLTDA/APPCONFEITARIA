@@ -494,6 +494,7 @@ ${corpoPagina}
 .dl-root #comece .p2-compo__c--2{right:7%; top:0; width:25% !important; transform:rotate(3deg);}
 .dl-root #comece .p2-compo__c--3{left:31%; bottom:1%; width:38% !important; transform:rotate(-1.5deg);}
 @media (max-width:599px){ .dl-root #comece .p2-compo__c, .dl-root #comece .p2-compo__tela{border-radius:7px;} }
+.dl-root #comece .p2-fim{margin-bottom:clamp(30px,4vw,48px);}
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -812,6 +813,26 @@ ${corpoPagina}
     const ALVO_COMPO = /(<section class="dl-secao dl-secao--branca dl-comece" id="comece"[\s\S]*?<\/header>)/
     if (!ALVO_COMPO.test(corpoPro2)) throw new Error('pro2: cabeçalho da oferta não encontrado')
     corpoPro2 = corpoPro2.replace(ALVO_COMPO, (_m, a: string) => a + COMPO)
+    // (21/11) "a gente faz por você": copy nova (só na /pro2), botão da oferta logo depois da lista e o app Android na lista
+    const EQ = /(<section class="dl-secao alignfull" id="equipe-faz"[\s\S]*?<\/section>)/
+    const eq0 = corpoPro2.match(EQ)?.[1]
+    if (!eq0) throw new Error('pro2: seção da equipe não encontrada')
+    const trocaEq: [RegExp, string][] = [
+      [/<h2 class="dl-h2" id="tt-eq-t">[\s\S]*?<\/h2>/, '<h2 class="dl-h2" id="tt-eq-t">Você manda as fotos. <span class="dl-h2__rosa">A gente monta tudo.</span></h2>'],
+      [/<p class="tt-eq-sub">[\s\S]*?<\/p>/, '<p class="tt-eq-sub">Enquanto você cuida das encomendas, a equipe do Doonly cadastra os seus produtos e deixa a sua loja com cara de profissional. Você só revisa e começa a vender.</p>'],
+      [/<h3>Cardápio montado pela equipe<\/h3>\s*<p>[\s\S]*?<\/p>/, '<h3>Cardápio pronto</h3><p>Seus produtos cadastrados com foto, preço, sabores e tamanhos. Você só revisa e publica.</p>'],
+      [/<h3>Logo profissional<\/h3>\s*<p>[\s\S]*?<\/p>/, '<h3>Logo com a sua cara</h3><p>Uma identidade bonita para a sua confeitaria, que aparece no cardápio, nos pedidos e nos orçamentos.</p>'],
+      [/<h3>Banners prontos pra divulgar<\/h3>\s*<p>[\s\S]*?<\/p>/, '<h3>Banners para divulgar</h3><p>Artes de promoções e datas especiais para o topo do cardápio e para as suas redes.</p>'],
+    ]
+    let eq = eq0
+    for (const [de, para] of trocaEq) { if (!de.test(eq)) throw new Error('pro2: texto da seção da equipe não encontrado: ' + de); eq = eq.replace(de, () => para) }
+    corpoPro2 = corpoPro2.replace(eq0, () => eq)
+    const ACAO = /(<div class="p2-duvidas">[\s\S]*?<\/details>\s*<\/div>)\s*(<div class="dl-comece__acao p2-fim">[\s\S]*?<\/a><\/div>)/
+    if (!ACAO.test(corpoPro2)) throw new Error('pro2: botão da oferta ou dúvidas não encontrados')
+    corpoPro2 = corpoPro2.replace(ACAO, (_m, d: string, b: string) => b + d)
+    const ULT = /(<li>(<span class="dl-livre__ck"[^>]*>(?:(?!<\/li>)[\s\S])*?<\/span>)\s*<span>Celular, computador e tablet<\/span>\s*<\/li>)/
+    if (!ULT.test(corpoPro2)) throw new Error('pro2: último item da lista da oferta não encontrado')
+    corpoPro2 = corpoPro2.replace(ULT, (_m, li: string, ck: string) => `${li}<li>${ck}<span>Aplicativo para Android</span></li>`)
   }
   corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
