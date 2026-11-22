@@ -517,6 +517,7 @@ ${corpoPagina}
 .dl-root #comece .p2-duvidas summary{color:#3A1220; padding:17px 0;}
 .dl-root #comece .p2-duvidas summary::after{color:#F42C7A;}
 .dl-root #comece .p2-duvidas p{color:#5E4450; padding:0 0 18px;}
+.dl-root #comece .p2-duvidas p a{color:#C2185B; text-decoration:underline;}
 .dl-root #comece .dl-livre .p2-fim .dl-btn{border:0; color:#fff; background:linear-gradient(90deg,#FF7DAE 0%,#F42C7A 25%,#FF8A6B 50%,#F42C7A 75%,#FF7DAE 100%); background-size:200% 100%; animation:p2-bt-grad 3.5s linear infinite; box-shadow:0 16px 30px -12px rgba(244,44,122,.75);}
 @keyframes p2-bt-grad{from{background-position:0% 50%} to{background-position:200% 50%}}
 @media (prefers-reduced-motion:reduce){ .dl-root #comece .dl-livre .p2-fim .dl-btn{animation:none;} }
@@ -534,9 +535,13 @@ ${corpoPagina}
   const DUVIDAS_P2 = `<div class="p2-duvidas">
   <h3>Dúvidas antes de começar</h3>
   <details><summary>Como funciona o R$ 1?</summary><p>Você paga R$ 1 no primeiro mês e usa tudo do Doonly PRO. A partir do segundo mês, o valor é R$ 29,90 por mês.</p></details>
-  <details><summary>Preciso instalar alguma coisa?</summary><p>Não. O Doonly funciona no celular, no computador e no tablet, direto pelo navegador. Se quiser, dá para deixar o ícone na tela do celular como um aplicativo.</p></details>
+  <details><summary>Como eu garanto a oferta?</summary><p>Toque em "Quero o PRO por R$ 1" e conclua o pagamento. O acesso ao PRO é liberado na sua conta do Doonly.</p></details>
+  <details><summary>Funciona no meu celular?</summary><p>Sim. O Doonly funciona no celular, no computador e no tablet, direto pelo navegador, sem instalar nada. Se quiser, dá para deixar o ícone na tela do celular como um aplicativo.</p></details>
+  <details><summary>Preciso de computador ou impressora?</summary><p>Não. Dá para usar tudo só pelo celular. O pedido sai em PDF com a sua logo: você envia pelo WhatsApp ou imprime em qualquer impressora, se quiser.</p></details>
   <details><summary>Serve para quem vende só por encomenda, pelo WhatsApp?</summary><p>Sim. Você manda o link do seu cardápio, a cliente monta o pedido sozinha e ele chega organizado para você aceitar, com data, sabores e endereço.</p></details>
-  <details><summary>Não tenho tempo de cadastrar tudo. E agora?</summary><p>A equipe do Doonly monta para você: você manda as fotos e os preços e a gente cadastra os produtos e deixa o cardápio pronto.</p></details>
+  <details><summary>Como eu coloco os meus produtos no Doonly?</summary><p>Você cadastra cada produto com foto, preço, sabores e tamanhos. Se estiver sem tempo, a equipe do Doonly monta para você: você manda as fotos e os preços e a gente deixa o cardápio pronto.</p></details>
+  <details><summary>Posso sugerir melhorias?</summary><p>Pode. Dentro do app tem um espaço para você pedir um recurso novo ou contar o que está faltando na sua rotina.</p></details>
+  <details><summary>Meus dados ficam seguros?</summary><p>Sua conta é protegida por login e senha, e os dados da sua confeitaria e dos seus clientes são só seus. Os detalhes estão na <a href="/privacidade">Política de Privacidade</a>.</p></details>
 </div>
 `
   corpoPro2 = corpoPro2
@@ -875,6 +880,7 @@ ${corpoPagina}
     corpoPro2 = corpoPro2.replace(BARRA_BT, '$1Ver a oferta')
   }
   corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
+  fs.writeFileSync(path.join(dist, 'pro.html'), fazerHtml(corpoPro2))    // (21/11) doonly.com.br/pro passa a ser esta página nova; a /pro antiga continua em /testes
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
 }
