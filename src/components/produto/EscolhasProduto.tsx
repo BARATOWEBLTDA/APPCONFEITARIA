@@ -508,6 +508,37 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
     return kg >= 0.05 && kg <= 50 ? Math.round(kg * 1000) / 1000 : null;
   };
   const addPeso = () => { const kg = lerPeso(novo); if (!kg) return; if (!marcados.has(kg)) alternarPeso(kg); setNovo(""); setVerOutroPeso(false); setUnNovo("kg"); };
+  // (22/11) edição de um peso já cadastrado (ex.: trocar 1 kg por 1,2 kg) — toca no nome do peso pra abrir
+  const [editKg, setEditKg] = useState<{ de: number; valor: string; un: "kg" | "g" } | null>(null);
+  const lerEditKg = (): number => {
+    if (!editKg) return 0;
+    const t = String(editKg.valor).replace(",", ".").trim();
+    const v = Number(t);
+    if (!(v > 0)) return 0;
+    const kg = editKg.un === "g" ? v / 1000 : v;
+    return kg >= 0.05 && kg <= 50 ? Math.round(kg * 1000) / 1000 : 0;
+  };
+  const abrirEdicaoPeso = (kg: number) => {
+    const emGramas = kg < 1 && kg > 0; // (22/11) peso < 1 kg mostra em g por padrão
+    setEditKg({ de: kg, valor: emGramas ? String(Math.round(kg * 1000)) : String(kg).replace(".", ","), un: emGramas ? "g" : "kg" });
+  };
+  const confirmarEdicaoPeso = () => {
+    if (!editKg) return;
+    const novoKg = lerEditKg();
+    if (!novoKg || Math.abs(novoKg - editKg.de) < 1e-6) { setEditKg(null); return; }
+    const opAntiga = g.opcoes.find(o => Math.abs(Number(o.peso_kg) - editKg.de) < 1e-6);
+    if (!opAntiga) { setEditKg(null); return; }
+    // (22/11) se o novo peso já está marcado, só remove o antigo (evita duplicar)
+    const jaTem = g.opcoes.some(o => Math.abs(Number(o.peso_kg) - novoKg) < 1e-6 && o.id !== opAntiga.id);
+    if (jaTem) set({ opcoes: g.opcoes.filter(o => o.id !== opAntiga.id) });
+    else {
+      // preserva o nome personalizado se não for o padrão "N kg"
+      const nomeAntigo = String(opAntiga.nome || "");
+      const eraPadrao = norm(nomeAntigo) === norm(nomePeso(editKg.de));
+      set({ opcoes: g.opcoes.map(o => o.id === opAntiga.id ? { ...o, peso_kg: novoKg, ...(eraPadrao ? { nome: nomePeso(novoKg) } : {}) } : o).sort((a, b) => (Number(a.peso_kg) || 99) - (Number(b.peso_kg) || 99)) });
+    }
+    setEditKg(null);
+  };
   const pesoDoNome = (n: string) => { const m = n.replace(",", ".").match(/(\d+(?:\.\d+)?)\s*kg/i); return m ? Number(m[1]) : null; };
   const add = () => {
     const n = primeiraMaiuscula(novo);
@@ -548,10 +579,15 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
             const nServe = op ? numeroServe(op.serve) : null;
             return (
               <li key={kg} className={`esc-peso-li${on ? " on" : ""}`}>
-                <button type="button" className={`esc-peso${on ? " on" : ""}`} role="checkbox" aria-checked={on} onClick={() => alternarPeso(kg)}>
-                  <i className="esc-peso-ck" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
-                  <b>{nomePeso(kg)}</b>
-                </button>
+                <div className={`esc-peso${on ? " on" : ""}`}>
+                  <button type="button" className="esc-peso-ck-bt" role="checkbox" aria-checked={on} onClick={() => alternarPeso(kg)} aria-label={`${on ? "Tirar" : "Marcar"} ${nomePeso(kg)}`}>
+                    <i className="esc-peso-ck" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
+                  </button>
+                  <button type="button" className="esc-peso-nm-bt" onClick={() => on ? abrirEdicaoPeso(kg) : alternarPeso(kg)} aria-label={on ? `Mudar o peso ${nomePeso(kg)}` : `Marcar ${nomePeso(kg)}`}>
+                    <b>{nomePeso(kg)}</b>
+                    {on && <PencilSimple size={13} weight="bold" className="esc-peso-ed" aria-hidden="true" />}
+                  </button>
+                </div>
                 {precoKg > 0 && <span className="esc-peso-v">R$ {textoBRL(Math.round(kg * precoKg * 100) / 100)}</span>}
                 {temRend && <span className="esc-peso-rd">{on && nServe ? `${nServe} ${unRend}` : "—"}</span>}
               </li>
@@ -572,6 +608,23 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
             )}
           </li>
         </ul>
+        {/* (22/11) Janela "Editar peso" — abre ao tocar no nome de um peso já marcado */}
+        {editKg && (
+          <Janela aberta={true} aoFechar={() => setEditKg(null)} titulo={`Editar peso (${nomePeso(editKg.de)})`} tipo="conteudo" umaAcao
+            acoes={<Botao onClick={confirmarEdicaoPeso} disabled={!lerEditKg() || lerEditKg() === editKg.de}>Salvar</Botao>}>
+            <div className="esc-peso-ed-jan">
+              <label className="esc-peso-ed-in" aria-label="Novo peso">
+                <input autoFocus inputMode="decimal" placeholder={editKg.un === "kg" ? "Ex.: 1,2" : "Ex.: 800"} value={editKg.valor} onChange={e => setEditKg(k => k ? { ...k, valor: e.target.value } : k)} onFocus={selecionarValorAoFocar} />
+                <span className="esc-seg esc-seg--2 esc-kgg" role="radiogroup" aria-label="Unidade do peso">
+                  <button type="button" role="radio" aria-checked={editKg.un === "kg"} className={editKg.un === "kg" ? "on" : ""} onClick={() => setEditKg(k => k ? { ...k, un: "kg" } : k)}>kg</button>
+                  <button type="button" role="radio" aria-checked={editKg.un === "g"} className={editKg.un === "g" ? "on" : ""} onClick={() => setEditKg(k => k ? { ...k, un: "g" } : k)}>g</button>
+                </span>
+              </label>
+              <p className="esc-peso-ed-dica">De 0,05 kg a 50 kg.{precoKg > 0 && lerEditKg() > 0 ? ` Preço fica R$ ${textoBRL(Math.round(lerEditKg() * precoKg * 100) / 100)}.` : ""}</p>
+            </div>
+          </Janela>
+        )}
+
         {semPeso.length > 0 && (
           <ul className="esc-ops" style={{ marginTop: 12 }}>
             {semPeso.map(o => (

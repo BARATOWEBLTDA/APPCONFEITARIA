@@ -193,7 +193,7 @@ body .prod-modal--novo .rev-resumo + .rev { margin-top: 20px; }
 .esc-kg-preco input::placeholder { color: var(--ui-texto-3); font-weight: 500; }
 .esc-pesos { list-style: none; margin: 0; padding: 0; border: 1px solid var(--ui-borda); border-radius: 10px; background: var(--ui-branco); overflow: hidden; }
 .esc-pesos > li + li { border-top: 1px solid var(--ui-linha); }
-.esc-peso { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; margin: 0; padding: 0 14px; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.esc-peso { display: flex; align-items: center; gap: 0; width: 100%; min-height: 48px; margin: 0; padding: 0; background: none; }
 .esc-peso-ck { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 2px solid #D6CBD0; border-radius: 6px; color: var(--ui-branco); }
 .esc-peso.on .esc-peso-ck { border-color: var(--ui-rosa); background: var(--ui-rosa); }
 .esc-peso b { flex: 1; font-size: 15px; font-weight: 600; color: var(--ui-texto-3); }
@@ -514,3 +514,19 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .esc-pp-tx { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .esc-pp-tx b { font: 600 15px/1.2 inherit; color: var(--ui-texto); }
 .esc-pp-tx small { font: 500 13px/1.35 inherit; color: var(--ui-texto-2); }
+
+/* (22/11) peso editável: check e nome são botões separados */
+.esc-peso-ck-bt { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.esc-peso-nm-bt { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; height: 48px; padding: 0 10px 0 2px; margin: 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; border-radius: 8px; }
+.esc-peso-nm-bt:hover { background: rgba(0,0,0,.02); }
+.esc-peso .esc-peso-ed { flex: none; color: var(--ui-texto-2); opacity: 0; transition: opacity .15s; }
+.esc-peso.on .esc-peso-nm-bt:hover .esc-peso-ed,
+.esc-peso.on .esc-peso-nm-bt:focus-visible .esc-peso-ed { opacity: .7; }
+@media (hover: none) { .esc-peso.on .esc-peso-ed { opacity: .5; } } /* celular: mostra sempre pra indicar que edita */
+
+/* Janela "Editar peso" */
+.esc-peso-ed-jan { display: flex; flex-direction: column; gap: 10px; padding: 4px 0 2px; }
+.esc-peso-ed-in { display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 10px 0 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; background: #fff; }
+.esc-peso-ed-in:focus-within { border-color: var(--ui-rosa); }
+.esc-peso-ed-in input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; font: 600 18px/1 inherit; color: var(--ui-texto); text-align: right; }
+.esc-peso-ed-dica { margin: 0; font: 500 13px/1.35 inherit; color: var(--ui-texto-2); }
