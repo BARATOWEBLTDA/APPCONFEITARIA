@@ -79,7 +79,7 @@ function garantirTikTok() {
 }
 
 /** liga um pixel para um dono e já conta a visita da tela atual */
-export function ligarPixel(p: Plataforma, codigo: unknown, dono: DonoPixel, contarVisita = true) {
+export function ligarPixel(p: Plataforma, codigo: unknown, dono: DonoPixel, contarVisita = true, pessoa?: Record<string, string>) {
   // (12/11) no app da Play Store nenhum pixel roda (Segurança dos dados: sem ID de publicidade e sem compartilhar com a Meta)
   if (typeof window === "undefined" || noAppDaLoja || !codigoValido(p, codigo)) return;
   const id = limparCodigo(p, codigo as string);
@@ -87,7 +87,8 @@ export function ligarPixel(p: Plataforma, codigo: unknown, dono: DonoPixel, cont
   try {
     if (p === "meta") {
       garantirMeta();
-      if (!iniciadosMeta.has(id)) { window.fbq!("init", id); iniciadosMeta.add(id); }
+      // (21/11) correspondência avançada: com a pessoa logada, o pixel recebe e-mail/telefone (ele mesmo embaralha antes de enviar)
+      if (!iniciadosMeta.has(id)) { if (pessoa && Object.keys(pessoa).length) window.fbq!("init", id, pessoa); else window.fbq!("init", id); iniciadosMeta.add(id); }
     } else if (p === "google") {
       garantirGoogle(id);
       if (!iniciadosGoogle.has(id)) { window.gtag!("config", id, { send_page_view: false }); iniciadosGoogle.add(id); }
@@ -119,11 +120,11 @@ const NO_GOOGLE: Record<EventoPixel, string> = { ViewContent: "view_item", AddTo
 const NO_TIKTOK: Record<EventoPixel, string> = { ViewContent: "ViewContent", AddToCart: "AddToCart", InitiateCheckout: "InitiateCheckout", Purchase: "CompletePayment", Lead: "SubmitForm", CompleteRegistration: "CompleteRegistration", StartTrial: "StartTrial", Subscribe: "Subscribe" };
 
 /** manda um evento só para os pixels daquele dono */
-export function eventoDoDono(dono: DonoPixel, nome: EventoPixel, dados?: Record<string, unknown>) {
+export function eventoDoDono(dono: DonoPixel, nome: EventoPixel, dados?: Record<string, unknown>, eventID?: string) {
   if (typeof window === "undefined") return;
   const d = { currency: "BRL", ...(dados || {}) };
   const l = ligados[dono];
-  l.meta.forEach(id => { try { window.fbq?.("trackSingle", id, nome, d); } catch { /* bloqueador */ } });
+  l.meta.forEach(id => { try { if (eventID) window.fbq?.("trackSingle", id, nome, d, { eventID }); else window.fbq?.("trackSingle", id, nome, d); } catch { /* bloqueador */ } });
   if (l.google.size) { try { window.gtag?.("event", NO_GOOGLE[nome], { ...d, send_to: [...l.google] }); } catch { /* bloqueador */ } }
   l.tiktok.forEach(id => { try { window.ttq?.instance(id).track(NO_TIKTOK[nome], d); } catch { /* bloqueador */ } });
 }
@@ -136,3 +137,6 @@ export const iniciarTikTok = (id: unknown) => ligarPixel("tiktok", id, "cardapio
 export function pixelEvento(nome: "ViewContent" | "AddToCart" | "InitiateCheckout" | "Purchase" | "Lead", dados?: Record<string, unknown>) {
   eventoDoDono("cardapio", nome, dados);
 }
+
+/** (21/11) os códigos da Meta ligados para um dono (para repetir o evento pelo servidor) */
+export const pixelsLigados = (dono: DonoPixel) => [...ligados[dono].meta];

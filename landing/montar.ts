@@ -168,7 +168,9 @@ export function montarLanding(raiz: string, dist: string, versao: string) {
   const pixel = `<script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 ${PIXELS.map(id => `fbq('init', '${id}');`).join('\n')}
-fbq('track', 'PageView');
+window.__dlPv = 'pv.' + Date.now() + '.' + Math.random().toString(36).slice(2, 10);
+window.__dlPixels = ${JSON.stringify(PIXELS)};
+fbq('track', 'PageView', {}, { eventID: window.__dlPv });
 </script>`
   const fazerHtml = (corpoPagina: string, semRedirecionar = false) => `<!doctype html>
 <html lang="pt-BR">

@@ -226,14 +226,46 @@
   cards.forEach(function (c) { io.observe(c); });
 })();
 
-/* (04/11) Meta Pixel: clique em "Criar conta" conta como Lead. */
+/* (21/11) Meta: cada evento sai pelo pixel do navegador E pelo servidor (API de Conversões), com o mesmo código (event_id)
+   para a Meta juntar os dois. Os eventos levam valor, moeda e nome do produto. */
+var dlMeta = (function () {
+  var CAPI = 'https://epixsranjplmltzmdsbo.supabase.co/functions/v1/meta-capi';
+  function cookie(n) { var m = document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)')); return m ? decodeURIComponent(m[1]) : ''; }
+  var fbcGuardado = '';
+  function fbc() {
+    var c = cookie('_fbc'); if (c) return c;
+    if (fbcGuardado) return fbcGuardado;
+    var m = location.search.match(/[?&]fbclid=([^&#]+)/); fbcGuardado = m ? 'fb.1.' + Date.now() + '.' + decodeURIComponent(m[1]) : '';
+    return fbcGuardado;
+  }
+  function servidor(nome, id, dados) {
+    try {
+      var corpo = JSON.stringify({ event_name: nome, event_id: id, event_source_url: location.href.split('#')[0], fbp: cookie('_fbp'), fbc: fbc(), custom_data: dados || {}, pixels: window.__dlPixels || [] });
+      if (navigator.sendBeacon) navigator.sendBeacon(CAPI, new Blob([corpo], { type: 'text/plain' }));
+      else fetch(CAPI, { method: 'POST', body: corpo, keepalive: true }).catch(function () {});
+    } catch (e) { /* sem rede: segue só com o pixel */ }
+  }
+  function evento(nome, dados) {
+    var id = nome.toLowerCase() + '.' + Date.now() + '.' + Math.random().toString(36).slice(2, 10);
+    if (typeof window.fbq === 'function') { window.fbq('track', nome, dados || {}, { eventID: id }); }
+    servidor(nome, id, dados);
+  }
+  return { evento: evento, servidor: servidor };
+})();
+
 (function () {
+  var PRO = { value: 29.9, currency: 'BRL', content_name: 'Doonly PRO' };
+  var ehCheckout = function (l) { return /pay\.hotmart\.com/.test(l.getAttribute('href') || ''); };
   var links = document.querySelectorAll('.dl-root [data-dl-url="cadastro"]');
+  var temCheckout = Array.prototype.some.call(links, ehCheckout);
+  // a visita (o pixel já mandou no <head>, com este mesmo código) também vai pelo servidor; um instante depois, para o cookie _fbp existir
+  setTimeout(function () { if (window.__dlPv) dlMeta.servidor('PageView', window.__dlPv, {}); }, 1200);
+  // página da oferta do PRO: quem abriu viu o conteúdo
+  if (temCheckout) setTimeout(function () { dlMeta.evento('ViewContent', PRO); }, 1500);
   Array.prototype.forEach.call(links, function (link) {
     link.addEventListener('click', function () {
-      if (typeof window.fbq === 'function') { window.fbq('track', 'Lead'); }
-      // (21/11) botão que leva ao checkout da Hotmart: além do Lead, marca o início da compra
-      if (typeof window.fbq === 'function' && /pay\.hotmart\.com/.test(link.getAttribute('href') || '')) { window.fbq('track', 'InitiateCheckout'); }
+      if (ehCheckout(link)) { dlMeta.evento('Lead', PRO); dlMeta.evento('InitiateCheckout', PRO); }
+      else dlMeta.evento('Lead', { content_name: 'Cadastro Doonly', currency: 'BRL', value: 0 });
     });
   });
 })();
@@ -243,7 +275,7 @@
   var zaps = document.querySelectorAll('.dl-root [data-dl-zap]');
   Array.prototype.forEach.call(zaps, function (link) {
     link.addEventListener('click', function () {
-      if (typeof window.fbq === 'function') { window.fbq('track', 'Contact'); }
+      dlMeta.evento('Contact', {});
     });
   });
 })();
