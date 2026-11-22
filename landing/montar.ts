@@ -491,7 +491,7 @@ ${corpoPagina}
 .dl-root #comece .p2-compo__cel--2{right:0; bottom:0; transform:rotate(4deg);}
 .dl-root #comece .p2-compo__c{position:absolute; border-radius:12px; box-shadow:0 0 0 1px #EBDDE3, 0 22px 40px -22px rgba(60,10,35,.5);}
 .dl-root #comece .p2-compo__c--1{left:5%; top:0; width:36% !important; transform:rotate(-4deg);}
-.dl-root #comece .p2-compo__c--2{right:5%; top:1%; width:36% !important; transform:rotate(3deg);}
+.dl-root #comece .p2-compo__c--2{right:7%; top:0; width:25% !important; transform:rotate(3deg);}
 .dl-root #comece .p2-compo__c--3{left:31%; bottom:1%; width:38% !important; transform:rotate(-1.5deg);}
 @media (max-width:599px){ .dl-root #comece .p2-compo__c, .dl-root #comece .p2-compo__tela{border-radius:7px;} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
@@ -808,7 +808,7 @@ ${corpoPagina}
     corpoPro2 = corpoPro2.replace(FUNCS_B, () => `<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-labelledby="p2-mais-t">\n\t<div class="dl-container">\n\t\t<div class="dl-funcs">\n\t\t\t<h3 class="dl-funcs__titulo" id="p2-mais-t">E ainda tem muito mais</h3>\n\t\t\t<ul class="dl-funcs3">${MAIS.map(t => `<li class="dl-funcs3__item">${li0[1]}${t}</li>`).join('')}</ul>\n\t\t</div>\n\t</div>\n</section>\n`)
     // (21/11) oferta (#comece): composição com as telas reais em computador e celulares, antes da lista do que vem no PRO
     const im2 = (cls: string, arq: string, w: number, h: number) => `<img class="${cls}" src="/site/media/${arq}.webp" width="${w}" height="${h}" alt="" loading="lazy" decoding="async">`
-    const COMPO = `<div class="p2-compo" role="img" aria-label="O Doonly no computador e no celular: financeiro, pedidos, agenda e a Doo">${im2('p2-compo__c p2-compo__c--1', 'agenda-ped-1', 716, 314)}${im2('p2-compo__c p2-compo__c--2', 'fin-receber', 800, 452)}<div class="p2-compo__pc"><div class="p2-compo__tela">${im2('', 'fin-pc', 1600, 1000)}</div><i class="p2-compo__pe"></i><i class="p2-compo__base"></i></div><div class="p2-compo__cel p2-compo__cel--1">${im2('', 'cel-pedidos', 600, 1300)}</div><div class="p2-compo__cel p2-compo__cel--2">${im2('', 'doo-video', 600, 1300)}</div>${im2('p2-compo__c p2-compo__c--3', 'fin-sobrou', 900, 396)}</div>`
+    const COMPO = `<div class="p2-compo" role="img" aria-label="O Doonly no computador e no celular: cardápio digital, financeiro, agenda, orçamentos, clientes e a Doo">${im2('p2-compo__c p2-compo__c--1', 'agenda-ped-1', 716, 314)}${im2('p2-compo__c p2-compo__c--2', 'orc-ok', 716, 612)}<div class="p2-compo__pc"><div class="p2-compo__tela">${im2('', 'fin-pc', 1600, 1000)}</div><i class="p2-compo__pe"></i><i class="p2-compo__base"></i></div><div class="p2-compo__cel p2-compo__cel--1">${im2('', 'camada-1-06ed5e7f', 600, 1300)}</div><div class="p2-compo__cel p2-compo__cel--2">${im2('', 'doo-video', 600, 1300)}</div>${im2('p2-compo__c p2-compo__c--3', 'cli-card', 900, 383)}</div>`
     const ALVO_COMPO = /(<section class="dl-secao dl-secao--branca dl-comece" id="comece"[\s\S]*?<\/header>)/
     if (!ALVO_COMPO.test(corpoPro2)) throw new Error('pro2: cabeçalho da oferta não encontrado')
     corpoPro2 = corpoPro2.replace(ALVO_COMPO, (_m, a: string) => a + COMPO)
