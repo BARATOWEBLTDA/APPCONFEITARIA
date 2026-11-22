@@ -494,7 +494,30 @@ ${corpoPagina}
 .dl-root #comece .p2-compo__c--2{right:7%; top:0; width:25% !important; transform:rotate(3deg);}
 .dl-root #comece .p2-compo__c--3{left:31%; bottom:1%; width:38% !important; transform:rotate(-1.5deg);}
 @media (max-width:599px){ .dl-root #comece .p2-compo__c, .dl-root #comece .p2-compo__tela{border-radius:7px;} }
-.dl-root #comece .p2-fim{margin-bottom:clamp(30px,4vw,48px);}
+/* (21/11) final com cor: "a gente monta" escuro e a oferta em rosa com o cartão escuro (antes tudo claro, sem destaque) */
+.dl-root #equipe-faz{background:#0B0710;}
+.dl-root #equipe-faz .tt-eq-olho{color:#FF7DAE;}
+.dl-root #equipe-faz .dl-h2{color:#FFF6EE;}
+.dl-root #equipe-faz .tt-eq-sub{color:rgba(255,246,238,.78);}
+.dl-root #equipe-faz .tt-eq-card{background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1);}
+.dl-root #equipe-faz .tt-eq-card h3{color:#FFF6EE;}
+.dl-root #equipe-faz .tt-eq-card p{color:rgba(255,246,238,.72);}
+.dl-root #equipe-faz .tt-eq-ic{background:linear-gradient(135deg,#FF5C9A,#F42C7A); border-color:transparent; color:#fff;}
+.dl-root #comece{background:linear-gradient(180deg,#F42C7A 0%,#E21A6B 100%);}
+.dl-root #comece .dl-h2{color:#fff;}
+.dl-root #comece .dl-h2 .dl-h2__rosa{background:none; -webkit-text-fill-color:#3A0A1E; color:#3A0A1E; animation:none;}
+.dl-root #comece .tt-comece-sub{color:rgba(255,255,255,.92);}
+.dl-root #comece .tt-comece-sub b{color:#fff;}
+.dl-root #comece .dl-livre{background:#150E19; border:1px solid rgba(255,255,255,.14); box-shadow:0 40px 70px -34px rgba(60,0,30,.75);}
+.dl-root #comece .dl-livre__titulo{color:#FFF6EE;}
+.dl-root #comece .dl-livre__lista li, .dl-root #comece .dl-livre__lista li span{color:rgba(255,246,238,.9);}
+.dl-root #comece .dl-livre .p2-fim{margin:clamp(22px,3vw,30px) 0 4px;}
+.dl-root #comece .p2-duvidas h3, .dl-root #comece .p2-duvidas summary{color:#fff;}
+.dl-root #comece .p2-duvidas summary::after{color:#fff;}
+.dl-root #comece .p2-duvidas details{border-bottom-color:rgba(255,255,255,.32);}
+.dl-root #comece .p2-duvidas p{color:rgba(255,255,255,.92);}
+.dl-root #comece .p2-compo__c{box-shadow:0 22px 40px -20px rgba(60,0,30,.7);}
+.dl-root #comece .p2-compo__tela, .dl-root #comece .p2-compo__cel{box-shadow:0 30px 56px -26px rgba(60,0,30,.8);}
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -829,7 +852,11 @@ ${corpoPagina}
     corpoPro2 = corpoPro2.replace(eq0, () => eq)
     const ACAO = /(<div class="p2-duvidas">[\s\S]*?<\/details>\s*<\/div>)\s*(<div class="dl-comece__acao p2-fim">[\s\S]*?<\/a><\/div>)/
     if (!ACAO.test(corpoPro2)) throw new Error('pro2: botão da oferta ou dúvidas não encontrados')
-    corpoPro2 = corpoPro2.replace(ACAO, (_m, d: string, b: string) => b + d)
+    let botaoOferta = ''
+    corpoPro2 = corpoPro2.replace(ACAO, (_m, d: string, b: string) => { botaoOferta = b; return d })
+    const LISTA_OF = /(<ul class="dl-livre__lista">[\s\S]*?<\/ul>)/
+    if (!LISTA_OF.test(corpoPro2)) throw new Error('pro2: lista da oferta não encontrada')
+    corpoPro2 = corpoPro2.replace(LISTA_OF, (_m, u: string) => u + botaoOferta)   // (21/11) o botão fica DENTRO do cartão da lista
     const ULT = /(<li>(<span class="dl-livre__ck"[^>]*>(?:(?!<\/li>)[\s\S])*?<\/span>)\s*<span>Celular, computador e tablet<\/span>\s*<\/li>)/
     if (!ULT.test(corpoPro2)) throw new Error('pro2: último item da lista da oferta não encontrado')
     corpoPro2 = corpoPro2.replace(ULT, (_m, li: string, ck: string) => `${li}<li>${ck}<span>Aplicativo para Android</span></li>`)
