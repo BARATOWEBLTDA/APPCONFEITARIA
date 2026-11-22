@@ -512,10 +512,14 @@ ${corpoPagina}
 .dl-root #comece .dl-livre__titulo{color:#FFF6EE;}
 .dl-root #comece .dl-livre__lista li, .dl-root #comece .dl-livre__lista li span{color:rgba(255,246,238,.9);}
 .dl-root #comece .dl-livre .p2-fim{margin:clamp(22px,3vw,30px) 0 4px;}
-.dl-root #comece .p2-duvidas h3, .dl-root #comece .p2-duvidas summary{color:#fff;}
-.dl-root #comece .p2-duvidas summary::after{color:#fff;}
-.dl-root #comece .p2-duvidas details{border-bottom-color:rgba(255,255,255,.32);}
-.dl-root #comece .p2-duvidas p{color:rgba(255,255,255,.92);}
+.dl-root #comece .p2-duvidas h3{color:#fff; margin-bottom:16px;}
+.dl-root #comece .p2-duvidas details{background:#FFF6EE; border:0; border-radius:14px; padding:0 18px; margin-bottom:10px; box-shadow:0 14px 26px -18px rgba(60,0,30,.6);}
+.dl-root #comece .p2-duvidas summary{color:#3A1220; padding:17px 0;}
+.dl-root #comece .p2-duvidas summary::after{color:#F42C7A;}
+.dl-root #comece .p2-duvidas p{color:#5E4450; padding:0 0 18px;}
+.dl-root #comece .dl-livre .p2-fim .dl-btn{border:0; color:#fff; background:linear-gradient(90deg,#FF7DAE 0%,#F42C7A 25%,#FF8A6B 50%,#F42C7A 75%,#FF7DAE 100%); background-size:200% 100%; animation:p2-bt-grad 3.5s linear infinite; box-shadow:0 16px 30px -12px rgba(244,44,122,.75);}
+@keyframes p2-bt-grad{from{background-position:0% 50%} to{background-position:200% 50%}}
+@media (prefers-reduced-motion:reduce){ .dl-root #comece .dl-livre .p2-fim .dl-btn{animation:none;} }
 .dl-root #comece .p2-compo__c{box-shadow:0 22px 40px -20px rgba(60,0,30,.7);}
 .dl-root #comece .p2-compo__tela, .dl-root #comece .p2-compo__cel{box-shadow:0 30px 56px -26px rgba(60,0,30,.8);}
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
