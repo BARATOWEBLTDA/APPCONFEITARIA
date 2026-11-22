@@ -745,19 +745,28 @@ function LinhaRendimento({ g, set, nomeProduto = "" }: { g: GrupoTam; set: (p: P
   const nsR = comNum.map(o => Number(numeroServe(o.serve))).sort((x, y) => x - y);
   const resumo = ok ? (nsR.length > 1 && nsR[0] !== nsR[nsR.length - 1] ? `Serve de ${nsR[0]} a ${nsR[nsR.length - 1]} ${un}` : `Serve até ${nsR[0]} ${un}`) : "";
   // (6.154) chegou na tela dos tamanhos sem rendimento: balão chamando pelo nome para configurar.
-  // "Agora não" vale até fechar o app (não volta a cada produto); com rendimento definido, não aparece.
+  // (22/11) se a confeiteira já configurou rendimento em algum produto antes, ela já sabe que
+  // existe — não precisa lembrar mais. Fica marcado em localStorage para sempre (não só na sessão).
   const linhaRef = useRef<HTMLButtonElement>(null);
   const [dica, setDica] = useState(false);
   const { profile } = useProfile();
   const primeiroNome = String(profile?.nome || "").trim().split(/\s+/)[0] || "";
+  // Marca "já sabe" assim que algum produto estiver com rendimento (incluindo o próprio atual)
   useEffect(() => {
-    let dispensou = false;
-    try { dispensou = sessionStorage.getItem("doonly_rend_agora_nao") === "1"; } catch { /* sem armazenamento */ }
-    if (ok || dispensou) return;
+    if (!ok) return;
+    try { localStorage.setItem("doonly_rend_ja_sabe", "1"); } catch { /* sem armazenamento */ }
+  }, [ok]);
+  useEffect(() => {
+    if (ok) return; // o produto atual já tem rendimento: nada a lembrar
+    try {
+      // (22/11) lembrou alguma vez em outro produto? não mostra mais, pra sempre
+      if (localStorage.getItem("doonly_rend_ja_sabe") === "1") return;
+      if (localStorage.getItem("doonly_rend_agora_nao") === "1") return;
+    } catch { /* sem armazenamento */ }
     const t = window.setTimeout(() => setDica(true), 600);
     return () => window.clearTimeout(t);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const agoraNao = () => { setDica(false); try { sessionStorage.setItem("doonly_rend_agora_nao", "1"); } catch { /* sem armazenamento */ } };
+  }, [ok]);
+  const agoraNao = () => { setDica(false); try { localStorage.setItem("doonly_rend_agora_nao", "1"); } catch { /* sem armazenamento */ } };
   const exemplo = g.opcoes.slice(0, 2).map((o, i) => ({ nome: `${o.nome || (i ? "Grande" : "Pequeno")}${Number(o.peso_kg) > 0 && !/kg|\d\s*g\b/i.test(o.nome || "") ? ` · ${String(o.peso_kg).replace(".", ",")} kg` : ""}` /* (27/10) "1 kg" em vez de "1 kg · 1 kg" */, serve: i ? "Serve até 20 pessoas" : "Serve até 10 pessoas" }));
   return (<>
     {dica && (
