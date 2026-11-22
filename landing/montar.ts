@@ -880,6 +880,24 @@ ${corpoPagina}
     corpoPro2 = corpoPro2.replace(BARRA_BT, '$1Ver a oferta')
   }
   corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
+  // (21/11) raiz (doonly.com.br, cadastro grátis): a MESMA página da PRO; mudam os botões ("Criar minha conta grátis", para o
+  // cadastro), sai tudo o que fala de preço/oferta e sai a seção "a gente monta" (serviço só do PRO).
+  {
+    const CAD = 'https://doonly.com.br/cadastro'
+    let r = corpoPro2
+    const tira = (re: RegExp, nome: string, por = '') => { if (!re.test(r)) throw new Error('raiz: peça não encontrada: ' + nome); r = r.replace(re, por) }
+    tira(/<section class="dl-secao alignfull" id="equipe-faz"[\s\S]*?<\/section>\n?/, 'seção da equipe')
+    tira(/<span class="p2-prazo">[\s\S]*?<\/span>/g, 'etiqueta da oferta')
+    tira(/<h2 class="dl-h2" id="dl-comece-titulo">[\s\S]*?<\/h2>\s*<p class="tt-comece-sub">[\s\S]*?<\/p>/, 'título da oferta', '<h2 class="dl-h2" id="dl-comece-titulo">Comece agora. <span class="dl-h2__rosa">Crie sua conta grátis.</span></h2><p class="tt-comece-sub">Você cria a sua conta em poucos minutos e já começa a montar o seu cardápio.</p>')
+    tira(/<details><summary>Como funciona o R\$ 1\?<\/summary>[\s\S]*?<\/details>\s*<details><summary>Como eu garanto a oferta\?<\/summary>[\s\S]*?<\/details>/, 'dúvidas do R$ 1', '<details><summary>É grátis mesmo?</summary><p>Sim. Você cria a sua conta e usa o Doonly sem pagar. Alguns recursos fazem parte do plano PRO, que você pode testar grátis por 7 dias quando quiser.</p></details>')
+    tira(/ Se estiver sem tempo, a equipe do Doonly monta para você: você manda as fotos e os preços e a gente deixa o cardápio pronto\./, 'resposta da equipe')
+    r = r.split(HOTMART_PRO_R1).join(CAD)
+      .replace(/<a ([^>]*?)href="#comece"([^>]*)>(\s*(?:<span>)?\s*)(?:Quero o PRO|Ver a oferta)/g, (_m, a: string, b: string, c: string) => `<a ${a}href="${CAD}" data-dl-url="cadastro"${b}>${c}Criar minha conta grátis`)
+      .split('Quero o PRO por R$ 1').join('Criar minha conta grátis').split('Quero o PRO').join('Criar minha conta grátis')
+    const sobra = (r.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/g, '').match(/R\$ ?1\b(?![.,\d])|Black Friday|hotmart|Ver a oferta|29,90/gi) || [])
+    if (sobra.length) throw new Error('raiz: sobrou texto da oferta PRO: ' + sobra.slice(0, 5).join(' | '))
+    fs.writeFileSync(app, fazerHtml(r))
+  }
   fs.writeFileSync(path.join(dist, 'pro.html'), fazerHtml(corpoPro2))    // (21/11) doonly.com.br/pro passa a ser esta página nova; a /pro antiga continua em /testes
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect

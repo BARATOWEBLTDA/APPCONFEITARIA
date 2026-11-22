@@ -232,6 +232,8 @@
   Array.prototype.forEach.call(links, function (link) {
     link.addEventListener('click', function () {
       if (typeof window.fbq === 'function') { window.fbq('track', 'Lead'); }
+      // (21/11) botão que leva ao checkout da Hotmart: além do Lead, marca o início da compra
+      if (typeof window.fbq === 'function' && /pay\.hotmart\.com/.test(link.getAttribute('href') || '')) { window.fbq('track', 'InitiateCheckout'); }
     });
   });
 })();
