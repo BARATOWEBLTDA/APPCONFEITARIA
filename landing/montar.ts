@@ -865,6 +865,15 @@ ${corpoPagina}
     if (!ULT.test(corpoPro2)) throw new Error('pro2: último item da lista da oferta não encontrado')
     corpoPro2 = corpoPro2.replace(ULT, (_m, li: string, ck: string) => `${li}<li>${ck}<span>Aplicativo para Android</span></li>`)
   }
+  { // (21/11) barra do topo: no celular sai o botão; no computador (e dentro do menu) ele vira "Ver a oferta"
+    const CAB = /<header class="dl-cabecalho"[\s\S]*?<\/header>/
+    const c0 = corpoPro2.match(CAB)?.[0]
+    if (!c0 || !/dl-cabecalho__cta-celular/.test(c0) || !c0.includes('<span>Quero o PRO</span>')) throw new Error('pro2: botões da barra do topo não encontrados')
+    corpoPro2 = corpoPro2.replace(c0, () => c0.replace(/<a class="[^"]*dl-cabecalho__cta-celular"[\s\S]*?<\/a>/, '').replace('<span>Quero o PRO</span>', '<span>Ver a oferta</span>'))
+    const BARRA_BT = /(<a class="dl-barra__bt"[^>]*>)\s*Quero o PRO/
+    if (!BARRA_BT.test(corpoPro2)) throw new Error('pro2: botão da barra preta não encontrado')
+    corpoPro2 = corpoPro2.replace(BARRA_BT, '$1Ver a oferta')
+  }
   corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
