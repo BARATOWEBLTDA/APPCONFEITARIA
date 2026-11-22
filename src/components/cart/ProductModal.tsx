@@ -18,6 +18,8 @@ import { Produto } from '@/types/database'
 import { formatCurrency } from '@/utils/helpers'
 import type { EscolhasV3, EscolhaOpcao, PrecoBreakdownCarrinho, CartItem } from '@/types/cart'
 import { carregarGruposDoBanco, type GrupoOpcoes, type TipoGrupo, type OpcaoGenerica } from '@/lib/produto-grupos'
+import { linkWhatsApp } from '@/lib/telefone'
+import { lojaAtualWhatsApp } from '@/components/cardapio/lojaAtual'
 import type { KitQtdConfig } from '@/lib/kitQuantidade'
 import type { RegraConflitoTamanho, TipoAdicional } from '@/lib/produto-precificacao'
 import {
@@ -56,6 +58,8 @@ type GrupoCfg = GrupoOpcoes & {
   rendimento_unidade?: string
   modo_preco_tamanho?: string
   regra_conflito_tamanho?: RegraConflitoTamanho
+  /** (22/11) "nao" (padrão) | "cliente_digita" (calcula preço × kg) | "whatsapp" (sob consulta) */
+  peso_personalizado?: "nao" | "cliente_digita" | "whatsapp"
 }
 
 /** O item que vai pra sacola (ou pro pedido em edição) */
@@ -105,9 +109,16 @@ interface GrupoProps {
   corBotao: string
   /** texto do preço ao lado da opção ("" = não mostra) */
   precoDaOpcao: (g: GrupoOpcoes, op: Opcao) => string
+  /** (22/11) só no grupo tamanho com peso personalizado — a cliente digita o kg */
+  pesoLivreKg?: string
+  setPesoLivreKg?: (v: string) => void
+  precoKgDoProduto?: number
+  modoPesoLivreAtivo?: boolean
+  modoWhatsAppAtivo?: boolean
+  PESO_LIVRE_ID?: string
 }
 
-function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corBotao, precoDaOpcao }: GrupoProps) {
+function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corBotao, precoDaOpcao, pesoLivreKg, setPesoLivreKg, precoKgDoProduto = 0, modoPesoLivreAtivo, modoWhatsAppAtivo, PESO_LIVRE_ID }: GrupoProps) {
   const marcado = (id: string) => multi ? Array.isArray(valor) && valor.includes(id) : valor === id
   const qtdMarcada = multi ? (Array.isArray(valor) ? valor.length : 0) : (valor ? 1 : 0)
   const max = multi ? (g.max_selecionavel || 1) : 1
@@ -157,14 +168,28 @@ function Grupo({ chave, g, multi, valor, aoMudar, secoes, faltou, emFatias, corB
           const serve = serveOp(op)
           const esgotado = !!op.esgotado // (14/10) a confeiteira marcou esse tamanho como esgotado
           const bloqueado = esgotado || (multi && !on && max > 1 && qtdMarcada >= max)
+          const ePesoLivre = PESO_LIVRE_ID && op.id === PESO_LIVRE_ID
+          const subPesoLivre = ePesoLivre && modoPesoLivreAtivo ? (precoKgDoProduto > 0 ? `${formatCurrency(precoKgDoProduto)} o kg` : "Digite o peso em kg") : (ePesoLivre && modoWhatsAppAtivo ? "Pede pelo WhatsApp" : "")
           return (
-            <button key={op.id} type="button" className="pm-op" role={multi ? 'checkbox' : 'radio'} aria-checked={on} disabled={bloqueado} onClick={() => tocar(op.id)}>
-              <span className="pm-op-tx"><b>{nomeOp(op)}</b>{serve && <small>{serve}</small>}</span>
+            <Fragment key={op.id}>
+            <button type="button" className="pm-op" role={multi ? 'checkbox' : 'radio'} aria-checked={on} disabled={bloqueado} onClick={() => tocar(op.id)}>
+              <span className="pm-op-tx"><b>{ePesoLivre ? (modoPesoLivreAtivo ? "Outro peso" : "Outro peso — consultar") : nomeOp(op)}</b>{(ePesoLivre ? subPesoLivre : serve) && <small>{ePesoLivre ? subPesoLivre : serve}</small>}</span>
               {esgotado ? <span className="pm-op-p pm-op-esg">Esgotado</span> : preco && <span className="pm-op-p">{preco}</span>}
               <span className={`pm-ctl${multi ? ' cx' : ''}`} style={on ? { borderColor: corBotao, background: multi ? corBotao : '#fff' } : undefined} aria-hidden="true">
                 {on && (multi ? <Check size={14} weight="bold" color="#fff" /> : <i style={{ background: corBotao }} />)}
               </span>
             </button>
+            {ePesoLivre && on && modoPesoLivreAtivo && setPesoLivreKg && (
+              <div className="pm-peso-livre">
+                <label>
+                  <span>Peso</span>
+                  <input autoFocus inputMode="decimal" placeholder="Ex.: 2,5" value={pesoLivreKg || ""} onChange={e => setPesoLivreKg(e.target.value.replace(/[^\d,\.]/g, ""))} />
+                  <em>kg</em>
+                </label>
+                <small>De 0,05 kg a 50 kg. O preço atualiza automático.</small>
+              </div>
+            )}
+            </Fragment>
           )
         })}
       </div>
@@ -194,6 +219,8 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const [escolhaCobertura, setEscolhaCobertura] = useState<string | null>(null)
   const [escolhaSabor, setEscolhaSabor] = useState<string | null>(null)
   const [escolhaTamanho, setEscolhaTamanho] = useState<string | null>(null)
+  // (22/11) peso personalizado: a cliente digita o peso em kg quando o produto permite
+  const [pesoLivreKg, setPesoLivreKg] = useState<string>("")
 
   // ═══ Personalizações da biblioteca (aba /complementos) ══════════════
   // Buscamos direto no banco quando o modal abre. Se o dono cadastrou
@@ -282,7 +309,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       // (27/10) trocando de produto pelo "Peça também", os complementos marcados não passam para o próximo
       setExtrasMarcados(new Set()); setFrases({})
       setEscolhaMassa(null); setEscolhasRecheio([]); setEscolhaCobertura(null)
-      setEscolhaSabor(null); setEscolhaTamanho(null)
+      setEscolhaSabor(null); setEscolhaTamanho(null); setPesoLivreKg("")
       if (kitAtivo((product as ProdutoModal).kit_qtd)) setKitSel(selecaoInicial((product as ProdutoModal).kit_qtd))
     }
   }, [product, isOpen])
@@ -310,15 +337,39 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     return g.opcoes.find((o) => o.id === id) || null
   }
 
+  // (22/11) peso personalizado: injeta uma opção virtual "Outro peso" no grupo tamanho
+  const PESO_LIVRE_ID = "__peso_livre__"
+  const pesoPers = (gTamanho as GrupoCfg)?.peso_personalizado || "nao"
+  const precoKgDoProduto = Number((product as unknown as { preco_normal?: number | string })?.preco_normal) || 0
+  const temPrecoKg = precoKgDoProduto > 0
+  const modoPesoLivreAtivo = pesoPers === "cliente_digita" && temPrecoKg
+  const modoWhatsAppAtivo = pesoPers === "whatsapp"
+  const gTamanhoAumentado: GrupoCfg | null = (gTamanho && (modoPesoLivreAtivo || modoWhatsAppAtivo)) ? ({
+    ...gTamanho,
+    opcoes: [...gTamanho.opcoes, { id: PESO_LIVRE_ID, nome: modoPesoLivreAtivo ? "Outro peso" : "Outro peso — consultar", preco: 0 } as Opcao],
+  } as GrupoCfg) : (gTamanho as GrupoCfg | null)
+  const lerPesoLivreKg = (): number => {
+    const t = String(pesoLivreKg || "").replace(",", ".").trim()
+    const v = Number(t)
+    return v > 0 && v <= 50 ? v : 0
+  }
+
   const opMassa = acharOpcao(gMassa, escolhaMassa)
   const opCobertura = acharOpcao(gCobertura, escolhaCobertura)
   const opSabor = acharOpcao(gSabor, escolhaSabor)
-  const opTamanho = acharOpcao(gTamanho, escolhaTamanho)
+  const opTamanhoReal = acharOpcao(gTamanho, escolhaTamanho)
+  // (22/11) se a cliente escolheu "Outro peso": opção virtual com o peso digitado
+  const escolheuPesoLivre = escolhaTamanho === PESO_LIVRE_ID
+  const opTamanho: Opcao | null = escolheuPesoLivre
+    ? ({ id: PESO_LIVRE_ID, nome: modoPesoLivreAtivo && lerPesoLivreKg() > 0 ? `${String(lerPesoLivreKg()).replace(".", ",")} kg` : "Outro peso", preco: modoPesoLivreAtivo ? Math.round(lerPesoLivreKg() * precoKgDoProduto * 100) / 100 : 0, peso_kg: modoPesoLivreAtivo ? lerPesoLivreKg() : 0 } as Opcao)
+    : opTamanhoReal
   const opsRecheios = escolhasRecheio.map(id => acharOpcao(gRecheio, id)).filter(Boolean)
   // 10/10: tamanho "pelo peso" cadastrado sem o peso → lê o peso do nome da opção ("0,5kg", "500g").
   // O mesmo valor vale pro preço da opção, pro total e pro que vai pra sacola.
   const tamanhoPorPeso = (gTamanho as GrupoCfg)?.modo_preco_tamanho === 'por_peso'
-  const pesoOpTamanho = opTamanho ? pesoDoTamanho(opTamanho, tamanhoPorPeso) : 0
+  const pesoOpTamanho = escolheuPesoLivre
+    ? (modoPesoLivreAtivo ? lerPesoLivreKg() : 0)
+    : (opTamanho ? pesoDoTamanho(opTamanho, tamanhoPorPeso) : 0)
 
   // ═══ Cálculo do preço em tempo real ═══════════════════════════════
   const calculo = useMemo<PrecoBreakdownCarrinho>(() => {
@@ -434,10 +485,12 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     if (gCobertura && gCobertura.min_selecionavel > 0 && !escolhaCobertura) return false
     if (gSabor && gSabor.min_selecionavel > 0 && !escolhaSabor) return false
     if (gTamanho && gTamanho.min_selecionavel > 0 && !escolhaTamanho) return false
+    // (22/11) escolheu "Outro peso" no modo cliente_digita: precisa digitar um peso válido
+    if (escolheuPesoLivre && modoPesoLivreAtivo && !(lerPesoLivreKg() > 0)) return false
     if (gRecheio && gRecheio.min_selecionavel > 0 && escolhasRecheio.length < gRecheio.min_selecionavel) return false
     if (kitInfo && !kitInfo.completo) return false
     return true
-  }, [orcamento, gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length, kitInfo?.completo])
+  }, [orcamento, gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length, kitInfo?.completo, escolheuPesoLivre, modoPesoLivreAtivo, pesoLivreKg])
 
   // ═══ 08/10 · 3.29 — tela no estilo iFood ═══════════════════════════
   const caixaRef = useRef<HTMLDivElement>(null)
@@ -455,6 +508,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     if (kitInfo && !kitInfo.completo) return 'kit'
     if (orcamento) return null
     if (gTamanho && gTamanho.min_selecionavel > 0 && !escolhaTamanho) return 'tamanho'
+    if (escolheuPesoLivre && modoPesoLivreAtivo && !(lerPesoLivreKg() > 0)) return 'tamanho'
     if (gSabor && gSabor.min_selecionavel > 0 && !escolhaSabor) return 'sabor'
     if (gMassa && gMassa.min_selecionavel > 0 && !escolhaMassa) return 'massa'
     if (gRecheio && gRecheio.min_selecionavel > 0 && escolhasRecheio.length < gRecheio.min_selecionavel) return 'recheio'
@@ -657,6 +711,13 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
   const precoDaOpcao = (g: GrupoOpcoes, op: Opcao): string => {
     const comPromo = (v: number) => formatCurrency(comDesconto(v, descPct))
     if (g.tipo === 'tamanho') {
+      // (22/11) opção virtual "Outro peso": sob consulta ou calcula com o kg digitado
+      if (op.id === PESO_LIVRE_ID) {
+        if (modoWhatsAppAtivo) return 'Sob consulta'
+        if (modoPesoLivreAtivo && lerPesoLivreKg() > 0) return comPromo(Math.round(lerPesoLivreKg() * precoKgDoProduto * 100) / 100)
+        if (modoPesoLivreAtivo) return `${formatCurrency(precoKgDoProduto)}/kg`
+        return ''
+      }
       // regra "o preço vem do sabor": com um sabor de preço próprio escolhido, o tamanho não muda o preço
       if (disputaPreco && regraSabor === 'preco_sabor' && opSabor && opSabor.preco > 0) return ''
       const v = precoDoTamanho(op, tamanhoPorPeso, porKg)
@@ -723,7 +784,7 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
         </section>
       )}
       {!orcamento && (<>
-      {gTamanho && <Grupo {...doGrupo} chave="tamanho" g={gTamanho} multi={false} valor={escolhaTamanho} aoMudar={setEscolhaTamanho as AoMudar} />}
+      {gTamanhoAumentado && <Grupo {...doGrupo} chave="tamanho" g={gTamanhoAumentado} multi={false} valor={escolhaTamanho} aoMudar={setEscolhaTamanho as AoMudar} pesoLivreKg={pesoLivreKg} setPesoLivreKg={setPesoLivreKg} precoKgDoProduto={precoKgDoProduto} modoPesoLivreAtivo={modoPesoLivreAtivo} modoWhatsAppAtivo={modoWhatsAppAtivo} PESO_LIVRE_ID={PESO_LIVRE_ID} />}
       {gSabor && <Grupo {...doGrupo} chave="sabor" g={gSabor} multi={false} valor={escolhaSabor} aoMudar={setEscolhaSabor as AoMudar} />}
       {gMassa && <Grupo {...doGrupo} chave="massa" g={gMassa} multi={false} valor={escolhaMassa} aoMudar={setEscolhaMassa as AoMudar} />}
       {gRecheio && (
@@ -791,6 +852,14 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
       {/* (6.178) loja com os pedidos pausados: não deixa pôr na sacola (o cardápio continua para olhar) */}
       {lojaPausada && !orcamento && !onAdicionar ? <button type="button" className="pm-add so-texto" disabled style={{ background: '#B5AAB0', cursor: 'not-allowed' }}><span>Pedidos pausados no momento</span></button> :
       tamanhosEsgotados(product) ? <button type="button" className="pm-add so-texto" disabled style={{ background: '#B5AAB0', cursor: 'not-allowed' }}><span>Esgotado no momento</span></button> :
+      (escolheuPesoLivre && modoWhatsAppAtivo) ? (
+        <button type="button" className="pm-add so-texto" style={{ background: corBotao }} onClick={() => {
+          const tel = lojaAtualWhatsApp()
+          const txt = `Oi! Queria o *${(product as unknown as { nome?: string })?.nome || 'produto'}* em um tamanho diferente dos cadastrados.`
+          window.open(linkWhatsApp(tel, txt), '_blank', 'noopener,noreferrer')
+          onClose()
+        }}><span>Consultar no WhatsApp</span></button>
+      ) :
       <button type="button" className={`pm-add${faltou ? ' treme' : ''}${pendente ? ' so-texto pm-add--falta' : ''}`} style={{ background: corBotao }} onClick={tentarAdicionar}>
         <span>{pendente ? textoFalta(pendente) : (rotuloAdicionar || 'Adicionar')}</span>
         {!pendente && <strong>{formatCurrency(orcamento && !kitInfo ? r2(precoOrc * quantity) : totalDisplay)}</strong>}

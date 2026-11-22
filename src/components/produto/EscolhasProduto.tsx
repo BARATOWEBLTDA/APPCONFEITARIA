@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Destaque from "@/components/Destaque";
 import { useProfile } from "@/hooks/useProfile";
-import { CaretDown, Check, GearSix, Plus, Scales, Sparkle, Tag } from "@phosphor-icons/react";
+import { CaretDown, Check, GearSix, PencilSimple, Plus, Scales, Sparkle, Tag } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import Quadrados from "@/components/produto/Quadrados";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -27,7 +27,7 @@ type Chave = "tamanho" | "quantidade" | "massa" | "recheio" | "cobertura" | "sab
 type Opcao = { id: string; nome: string; adicional: number; preco?: number; tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade" };
 type Grupo = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: Opcao[]; sabor_tem_preco_proprio?: boolean };
 type OpTam = { id: string; nome: string; preco: number; peso_kg?: number | null; serve?: string };
-type GrupoTam = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: OpTam[]; modo_preco_tamanho?: string; nome_exibicao?: string; rendimento_unidade?: string; rendimento_predef?: string };
+type GrupoTam = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: OpTam[]; modo_preco_tamanho?: string; nome_exibicao?: string; rendimento_unidade?: string; rendimento_predef?: string; peso_personalizado?: "nao" | "cliente_digita" | "whatsapp" };
 type CampoGrupo = "grupo_massas" | "grupo_recheios" | "grupo_coberturas" | "grupo_sabores";
 /** O que esta tela lê e grava no formulário do produto (os outros campos passam direto) */
 export type FormEscolhas = {
@@ -335,6 +335,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
   const g: Grupo = { ativo: true, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], ...(form[campo] || {}) };
   const [nova, setNova] = useState("");
   const [avancado, setAvancado] = useState(false); // (14/10) janela "Avançado" (quantos, obrigatório, preço por sabor)
+  const [editando, setEditando] = useState<string | null>(null); // (22/11) id da opção cujo "Custa a mais" está aberto
   const set = (patch: Partial<Grupo>) => setForm(f => ({ ...f, [campo]: { ...g, ...(f[campo] || {}), ...patch } }));
   const precoProprio = chave === "sabor" && !!g.sabor_tem_preco_proprio;
   const plural = PLURAL[chave];
@@ -364,7 +365,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
         );
         return (
           <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
-            <p><b>Sem valor, já vem no preço.</b>Só coloque valor no que custa a mais.{temPeso ? " O botão “fixo/kg” do lado troca entre valor fixo e preço por kg do tamanho." : ""}</p></div>
+            <p><b>Sem valor, já vem no preço.</b>Só coloque valor no que custa a mais.</p></div>
         );
       })()}
       {(
@@ -376,12 +377,15 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
               <span role="cell" className="esc-tab-nm">{o.nome}</span>
               {!precoProprio && (
                 <span role="cell" className="esc-tab-add-cel">
-                  <label className="esc-tab-in" aria-label={`Valor a mais de ${o.nome}`}><span>+ R$</span>
-                    <input inputMode="numeric" placeholder="0,00" value={valorDe(o) > 0 ? textoBRL(valorDe(o)) : ""} onChange={e => mudarValor(o.id, mascaraBRL(e.target.value))} />
-                    {temPeso && (
-                      <button type="button" className={`esc-tipo${(o.tipo_adicional === "por_kg") ? " esc-tipo--kg" : ""}`} onClick={() => set({ opcoes: g.opcoes.map(x => x.id === o.id ? { ...x, tipo_adicional: x.tipo_adicional === "por_kg" ? "fixo" : "por_kg" } : x) })} aria-label={(o.tipo_adicional === "por_kg") ? "Mudar para preço fixo" : "Mudar para por kg"} title={(o.tipo_adicional === "por_kg") ? "Hoje: multiplica pelo peso do tamanho. Toque para virar preço fixo." : "Hoje: valor fixo. Toque para virar por kg (multiplica pelo peso do tamanho)."}>{(o.tipo_adicional === "por_kg") ? "/kg" : "fixo"}</button>
-                    )}
-                  </label>
+                  {valorDe(o) > 0 ? (
+                    <button type="button" className="esc-op-pill" onClick={() => setEditando(o.id)} aria-label={`Editar o quanto ${o.nome} custa a mais`}>
+                      <span className="esc-op-pill-v">+ R$ {textoBRL(valorDe(o))}</span>
+                      <span className="esc-op-pill-s">{o.tipo_adicional === "por_kg" ? "/kg" : "por pedido"}</span>
+                      <PencilSimple size={14} weight="bold" aria-hidden="true" />
+                    </button>
+                  ) : (
+                    <button type="button" className="esc-op-add" onClick={() => setEditando(o.id)}>+ Custa a mais</button>
+                  )}
                 </span>
               )}
               <span role="cell"><BotaoTirar className="esc-op-x" rotulo={`Tirar ${o.nome}`} onClick={() => set({ opcoes: g.opcoes.filter(x => x.id !== o.id) })} /></span>
@@ -396,6 +400,36 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
       )}
       {/* (14/10) sem os botões de sugestão embaixo da tabela (poluíam): a escolha já começa com 2 opções e ela cadastra as outras */}
       {/* (14/10) regras no "Avançado" (como o Rendimento): a tela abre direto nas opções */}
+      {/* (22/11) Janela "Custa a mais" — edita o valor e, se o produto tem peso, o modo (fixo × por kg) */}
+      {(() => {
+        const opEd = editando ? g.opcoes.find(o => o.id === editando) : null;
+        if (!opEd) return null;
+        const tipo = opEd.tipo_adicional === "por_kg" ? "por_kg" : "fixo";
+        const mudarTipo = (t: "fixo" | "por_kg") => set({ opcoes: g.opcoes.map(x => x.id === opEd.id ? { ...x, tipo_adicional: t } : x) });
+        return (
+          <Janela aberta={true} aoFechar={() => setEditando(null)} titulo={`Custo de "${opEd.nome}"`} tipo="conteudo" umaAcao
+            acoes={<Botao onClick={() => setEditando(null)}>Pronto</Botao>}>
+            <div className="esc-custo">
+              <label className="esc-custo-in" aria-label="Valor a mais"><span>+ R$</span>
+                <input autoFocus inputMode="numeric" placeholder="0,00" value={valorDe(opEd) > 0 ? textoBRL(valorDe(opEd)) : ""} onChange={e => mudarValor(opEd.id, mascaraBRL(e.target.value))} onFocus={selecionarValorAoFocar} />
+                <span className="esc-custo-suf">{tipo === "por_kg" ? "/kg" : "por pedido"}</span>
+              </label>
+              {temPeso && (
+                <div className="esc-custo-modo" role="radiogroup" aria-label="Como cobrar">
+                  <button type="button" role="radio" aria-checked={tipo === "fixo"} className={`esc-custo-op${tipo === "fixo" ? " esc-custo-op--on" : ""}`} onClick={() => mudarTipo("fixo")}>
+                    <span className="esc-custo-op-dot" aria-hidden="true" />
+                    <span className="esc-custo-op-tx"><b>Valor fixo</b><small>Soma esse valor ao preço do produto</small></span>
+                  </button>
+                  <button type="button" role="radio" aria-checked={tipo === "por_kg"} className={`esc-custo-op${tipo === "por_kg" ? " esc-custo-op--on" : ""}`} onClick={() => mudarTipo("por_kg")}>
+                    <span className="esc-custo-op-dot" aria-hidden="true" />
+                    <span className="esc-custo-op-tx"><b>Por kg</b><small>Multiplica pelo peso do tamanho escolhido</small></span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </Janela>
+        );
+      })()}
       <button type="button" className="esc-rend-linha esc-av-linha" onClick={() => setAvancado(true)}>
         <span className="esc-av-ic" aria-hidden="true"><GearSix size={20} weight="bold" /></span>
         <span className="esc-tx"><b>{QUANTAS[chave]}</b>
@@ -550,6 +584,8 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
           </ul>
         )}
         {mostraRend && <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />}
+        {/* (22/11) Peso personalizado — a cliente pede um peso fora da lista */}
+        <PesoPersonalizado g={g} set={set} modo="por_peso" precoKg={precoKg} />
         <div className="esc-aviso esc-aviso--nota esc-aviso--1"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Os valores você coloca em Preço e promoção.</p></div>
       </>)}
 
@@ -585,6 +621,8 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
           <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={add} disabled={!novo.trim()}>Cadastrar</button>
         </div>
         {mostraRend && g.opcoes.length > 0 && <LinhaRendimento g={g} set={set} nomeProduto={String(form.nome || "")} />}
+        {/* (22/11) Tamanho personalizado — modo WhatsApp (só consulta, sem preço automático) */}
+        <PesoPersonalizado g={g} set={set} modo="fixo" precoKg={0} />
         <div className="esc-aviso esc-aviso--nota esc-aviso--1"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Os valores você coloca em Preço e promoção.</p></div>
       </>)}
       {!porPeso && g.opcoes.length === 0 && (<>
@@ -599,6 +637,35 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
       </>)}
 
     </div>
+  );
+}
+
+/* ── (22/11) Peso personalizado — a cliente pede um peso fora dos cadastrados ──
+   · modo "por_peso": pode "cliente_digita" (calcula preço × kg) ou "whatsapp" (sob consulta)
+   · modo "fixo": só "whatsapp" (sem preço por kg pra calcular) */
+function PesoPersonalizado({ g, set, modo, precoKg }: { g: GrupoTam; set: (p: Partial<GrupoTam>) => void; modo: "por_peso" | "fixo"; precoKg: number }) {
+  const valor = (g.peso_personalizado || "nao") as "nao" | "cliente_digita" | "whatsapp";
+  const semPrecoKg = modo === "por_peso" && !(precoKg > 0);
+  return (
+    <>
+      <p className="esc-lbl" style={{ marginTop: 14 }}>Aceitar {modo === "por_peso" ? "peso" : "tamanho"} personalizado</p>
+      <div className="esc-pp">
+        <button type="button" className={`esc-pp-op${valor === "nao" ? " esc-pp-op--on" : ""}`} role="radio" aria-checked={valor === "nao"} onClick={() => set({ peso_personalizado: "nao" })}>
+          <span className="esc-pp-dot" aria-hidden="true" />
+          <span className="esc-pp-tx"><b>Não</b><small>Só os {modo === "por_peso" ? "pesos" : "tamanhos"} cadastrados acima</small></span>
+        </button>
+        {modo === "por_peso" && (
+          <button type="button" className={`esc-pp-op${valor === "cliente_digita" ? " esc-pp-op--on" : ""}${semPrecoKg ? " esc-pp-op--off" : ""}`} role="radio" aria-checked={valor === "cliente_digita"} aria-disabled={semPrecoKg || undefined} onClick={() => { if (!semPrecoKg) set({ peso_personalizado: "cliente_digita" }); }}>
+            <span className="esc-pp-dot" aria-hidden="true" />
+            <span className="esc-pp-tx"><b>Cliente digita o peso</b><small>{semPrecoKg ? "Falta o preço do kg lá em cima" : "O app multiplica pelo preço do kg automático"}</small></span>
+          </button>
+        )}
+        <button type="button" className={`esc-pp-op${valor === "whatsapp" ? " esc-pp-op--on" : ""}`} role="radio" aria-checked={valor === "whatsapp"} onClick={() => set({ peso_personalizado: "whatsapp" })}>
+          <span className="esc-pp-dot" aria-hidden="true" />
+          <span className="esc-pp-tx"><b>Consultar pelo WhatsApp</b><small>Sem preço automático: o cliente te chama no zap</small></span>
+        </button>
+      </div>
+    </>
   );
 }
 
