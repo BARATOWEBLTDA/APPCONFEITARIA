@@ -92,8 +92,16 @@ export function resumoRevisao(form: FormRevisao) {
     if (!g?.ativo || !(g.opcoes?.length)) return;
     const o = g.opcoes![0];
     // (14/10) com tamanho e "só o tamanho", o sabor não muda o preço
-    const v = g.sabor_tem_preco_proprio ? (temTam && !porPeso && g.regra_conflito_tamanho !== "preco_sabor" && g.regra_conflito_tamanho !== "tamanho_base_sabor_adicional" ? 0 : Number(o.preco) || 0) : Number(o.adicional) || 0;
-    linhas.push({ nome: o.nome, valor: v });
+    const valorBase = g.sabor_tem_preco_proprio ? (temTam && !porPeso && g.regra_conflito_tamanho !== "preco_sabor" && g.regra_conflito_tamanho !== "tamanho_base_sabor_adicional" ? 0 : Number(o.preco) || 0) : Number(o.adicional) || 0;
+    // (22/11) por kg: multiplica pelo peso do 1º tamanho (quando há); se não há peso, cai para fixo
+    const tipo = (o as unknown as { tipo_adicional?: string }).tipo_adicional;
+    let v = valorBase; let sufixoNome = "";
+    if (tipo === "por_kg" && valorBase > 0) {
+      const peso1 = Number((form.grupo_tamanhos?.opcoes || [])[0]?.peso_kg) || 0;
+      if (peso1 > 0) { v = valorBase * peso1; sufixoNome = ` (+${textoBRL(valorBase)}/kg × ${peso1} kg)`; }
+      else { sufixoNome = "/kg"; }
+    }
+    linhas.push({ nome: o.nome + sufixoNome, valor: v });
   });
   // (24/10) promoção em %: o cardápio tira o desconto de tudo (tamanho, kit, sabor e o que custa a mais).
   // O preço fixo e o do kg já vêm com o desconto em `base`; o resto recebe aqui (antes o exemplo saía sem o desconto)

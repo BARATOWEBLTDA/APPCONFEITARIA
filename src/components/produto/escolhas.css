@@ -469,3 +469,9 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .esc-rend-1 input { flex: none; width: 92px; height: 44px; padding: 0 8px; border: 1.5px solid var(--ui-borda-campo); border-radius: 8px; background: #fff; font-family: inherit; font-size: 16px; text-align: center; color: var(--ui-texto); }
 .esc-rend-1 input:focus { outline: none; border-color: var(--ui-rosa); }
 .esc-rend-1 em { flex: none; font-style: normal; color: var(--ui-texto-2); white-space: nowrap; }
+
+
+/* (22/11) toggle fixo/por kg do valor adicional da opção (massa/recheio/cobertura/sabor) */
+.esc-tab-in .esc-tipo { flex: none; margin-left: 4px; margin-right: -4px; padding: 0 8px; min-width: 42px; height: 26px; font-size: 12px; font-weight: 600; color: var(--ui-texto-2); background: var(--ui-cinza); border: 0; border-radius: 999px; cursor: pointer; }
+.esc-tab-in .esc-tipo--kg { color: #fff; background: var(--ui-rosa); }
+.esc-tab-in .esc-tipo:hover { filter: brightness(.96); }

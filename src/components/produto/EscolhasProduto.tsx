@@ -24,7 +24,7 @@ import "./escolhas.css";
  */
 
 type Chave = "tamanho" | "quantidade" | "massa" | "recheio" | "cobertura" | "sabor";
-type Opcao = { id: string; nome: string; adicional: number; preco?: number };
+type Opcao = { id: string; nome: string; adicional: number; preco?: number; tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade" };
 type Grupo = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: Opcao[]; sabor_tem_preco_proprio?: boolean };
 type OpTam = { id: string; nome: string; preco: number; peso_kg?: number | null; serve?: string };
 type GrupoTam = { ativo: boolean; min: number; max: number; distribuicao?: string; opcoes: OpTam[]; modo_preco_tamanho?: string; nome_exibicao?: string; rendimento_unidade?: string; rendimento_predef?: string };
@@ -308,7 +308,7 @@ function resumo(c: Chave, form: FormEscolhas): string {
   const g = form[CAMPO[c as "massa"]] as Grupo;
   if (!g.opcoes.length) return "Sem opções ainda";
   const quantos = g.max >= 99 ? "À vontade" : g.max === 1 ? "Escolhe 1" : `Até ${g.max}`;
-  const nomes = g.opcoes.map(o => (o.adicional > 0 ? `${o.nome} +R$ ${textoBRL(o.adicional)}` : o.nome)).join(", ");
+  const nomes = g.opcoes.map(o => (o.adicional > 0 ? `${o.nome} +R$ ${textoBRL(o.adicional)}${o.tipo_adicional === "por_kg" ? "/kg" : ""}` : o.nome)).join(", ");
   return `${quantos}${g.min >= 1 ? "" : " · opcional"} · ${nomes}`;
 }
 
@@ -329,6 +329,8 @@ function UsarDeOutro({ copias, onUsar }: { copias: Copia[]; onUsar: (c: Copia) =
 
 /* ── Massa, recheio, cobertura e sabor ── */
 function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "recheio" | "cobertura" | "sabor"; form: FormEscolhas; setForm: Props["setForm"]; outros?: FormEscolhas[] }) {
+  // (22/11) pode usar "+R$ X/kg" só quando o produto tem tamanho em kg (ou venda por kg)
+  const temPeso = (form.forma_venda === "kg") || !!(form.grupo_tamanhos?.modo_preco_tamanho === "por_peso") || (form.grupo_tamanhos?.opcoes || []).some(o => Number(o?.peso_kg) > 0);
   const campo = CAMPO[chave];
   const g: Grupo = { ativo: true, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], ...(form[campo] || {}) };
   const [nova, setNova] = useState("");
@@ -362,7 +364,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
         );
         return (
           <div className="esc-aviso"><span className="esc-aviso-ic" aria-hidden="true">i</span>
-            <p><b>Sem valor, já vem no preço.</b>Só coloque valor no que custa a mais.</p></div>
+            <p><b>Sem valor, já vem no preço.</b>Só coloque valor no que custa a mais.{temPeso ? " O botão “fixo/kg” do lado troca entre valor fixo e preço por kg do tamanho." : ""}</p></div>
         );
       })()}
       {(
@@ -373,9 +375,12 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
             <div key={o.id} className="esc-tab-l" role="row">
               <span role="cell" className="esc-tab-nm">{o.nome}</span>
               {!precoProprio && (
-                <span role="cell">
+                <span role="cell" className="esc-tab-add-cel">
                   <label className="esc-tab-in" aria-label={`Valor a mais de ${o.nome}`}><span>+ R$</span>
                     <input inputMode="numeric" placeholder="0,00" value={valorDe(o) > 0 ? textoBRL(valorDe(o)) : ""} onChange={e => mudarValor(o.id, mascaraBRL(e.target.value))} />
+                    {temPeso && (
+                      <button type="button" className={`esc-tipo${(o.tipo_adicional === "por_kg") ? " esc-tipo--kg" : ""}`} onClick={() => set({ opcoes: g.opcoes.map(x => x.id === o.id ? { ...x, tipo_adicional: x.tipo_adicional === "por_kg" ? "fixo" : "por_kg" } : x) })} aria-label={(o.tipo_adicional === "por_kg") ? "Mudar para preço fixo" : "Mudar para por kg"} title={(o.tipo_adicional === "por_kg") ? "Hoje: multiplica pelo peso do tamanho. Toque para virar preço fixo." : "Hoje: valor fixo. Toque para virar por kg (multiplica pelo peso do tamanho)."}>{(o.tipo_adicional === "por_kg") ? "/kg" : "fixo"}</button>
+                    )}
                   </label>
                 </span>
               )}
@@ -430,7 +435,7 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
       </Janela>
       <UsarDeOutro
         copias={copiasDe(outros, campo, gg => { const k = gg.opcoes.map((o) => norm(o.nome)).join("|"); return k === g.opcoes.map(o => norm(o.nome)).join("|") ? null : k; })}
-        onUsar={c => set({ opcoes: c.opcoes.map((o) => ({ id: uid(), nome: o.nome, adicional: Number(o.adicional) || 0, ...(o.preco ? { preco: o.preco } : {}) })),
+        onUsar={c => set({ opcoes: c.opcoes.map((o) => ({ id: uid(), nome: o.nome, adicional: Number(o.adicional) || 0, ...(o.preco ? { preco: o.preco } : {}), ...((o as unknown as { tipo_adicional?: string }).tipo_adicional ? { tipo_adicional: (o as unknown as { tipo_adicional: "fixo" | "por_kg" }).tipo_adicional } : {}) })),
           max: Number(c.grupo.max) || g.max, min: c.grupo.min ?? g.min, ...(chave === "sabor" ? { sabor_tem_preco_proprio: !!c.grupo.sabor_tem_preco_proprio } : {}) })} />
     </div>
   );

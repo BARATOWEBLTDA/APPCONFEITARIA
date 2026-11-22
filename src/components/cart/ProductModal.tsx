@@ -511,14 +511,23 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     if (!podeAdicionar) return
 
     const escolhas: EscolhasV3 = {}
-    if (opMassa) escolhas.massa = { id: opMassa.id, nome: opMassa.nome, adicional: opMassa.adicional || 0 }
-    if (opCobertura) escolhas.cobertura = { id: opCobertura.id, nome: opCobertura.nome, adicional: opCobertura.adicional || 0 }
+    const extraAd = (op: Opcao) => {
+      const rawAd = Number(op.adicional) || 0
+      const t = (op.tipo_adicional as string) || "fixo"
+      const cobrado = calcularAdicionalOpcao(op, ctxOpcao)
+      const o: { tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade"; adicional_cobrado?: number } = {}
+      if (t !== "fixo") o.tipo_adicional = t as "por_kg" | "por_unidade" | "por_quantidade"
+      if (rawAd > 0 && cobrado !== rawAd) o.adicional_cobrado = cobrado
+      return o
+    }
+    if (opMassa) escolhas.massa = { id: opMassa.id, nome: opMassa.nome, adicional: opMassa.adicional || 0, ...extraAd(opMassa) }
+    if (opCobertura) escolhas.cobertura = { id: opCobertura.id, nome: opCobertura.nome, adicional: opCobertura.adicional || 0, ...extraAd(opCobertura) }
     if (opsRecheios.length > 0) {
-      escolhas.recheios = opsRecheios.map(r => ({ id: r.id, nome: r.nome, adicional: r.adicional || 0 }))
+      escolhas.recheios = opsRecheios.map(r => ({ id: r.id, nome: r.nome, adicional: r.adicional || 0, ...extraAd(r) }))
     }
     if (opSabor) {
       const gs = grupos.find(x => x.tipo === 'sabor') as GrupoCfg
-      const e: EscolhaOpcao = { id: opSabor.id, nome: opSabor.nome, adicional: opSabor.adicional || 0 }
+      const e: EscolhaOpcao = { id: opSabor.id, nome: opSabor.nome, adicional: opSabor.adicional || 0, ...extraAd(opSabor) }
       if (gs?.sabor_tem_preco_proprio && opSabor.preco) e.preco_proprio = opSabor.preco
       escolhas.sabor = e
     }
@@ -672,6 +681,9 @@ export function ProductModal({ isOpen, onClose, product: produtoAberto, corBotao
     // tamanho e sabor com preço próprio não somam adicional no total
     // (6.157) valor por unidade (no peso livre, por kg — igual ao preço do topo, "por kg"); antes o por_kg mostrava × os kg
     const ad = calcularAdicionalOpcao(op, ctxOpcao)
+    // (22/11) "+R$ X/kg" antes de escolher o tamanho (deixa claro que vai multiplicar)
+    const valorBruto = Number(op.adicional) || 0
+    if ((op.tipo_adicional as string) === 'por_kg' && valorBruto > 0 && !pesoOpTamanho) return `+ ${formatCurrency(valorBruto)}/kg`
     // (17/11) o adicional é mostrado CHEIO (igual entra no total): o desconto da promoção vale só no preço base,
     // então mostrar o adicional com desconto (comPromo) dava um "+R$ 8,33" que não batia com o total.
     return ad > 0 ? `+ ${formatCurrency(ad)}` : ''

@@ -143,22 +143,30 @@ function personalizacoesV1ToLinhas(p: PersonalizacoesV1): Array<{ label: string;
     linhas.push({ label: "Tamanho", valor: p.tamanho.nome + extra })
   }
   if (p.sabor?.nome) {
+    const ex = p.sabor as { adicional?: number; adicional_cobrado?: number; tipo_adicional?: string }
+    const porKg = ex.tipo_adicional === "por_kg" && Number(ex.adicional) > 0
     linhas.push({
       label: "Sabor",
-      valor: p.sabor.nome,
-      adicional: p.sabor.adicional,
+      valor: p.sabor.nome + (porKg ? ` (+R$ ${Number(ex.adicional || 0).toFixed(2).replace(".", ",")}/kg)` : ""),
+      adicional: Number(ex.adicional_cobrado) > 0 ? ex.adicional_cobrado : p.sabor.adicional,
     })
   }
   if (p.massa?.nome) {
+    const ex = p.massa as { adicional?: number; adicional_cobrado?: number; tipo_adicional?: string }
+    const porKg = ex.tipo_adicional === "por_kg" && Number(ex.adicional) > 0
     linhas.push({
       label: "Massa",
-      valor: p.massa.nome,
-      adicional: p.massa.adicional,
+      valor: p.massa.nome + (porKg ? ` (+R$ ${Number(ex.adicional || 0).toFixed(2).replace(".", ",")}/kg)` : ""),
+      adicional: Number(ex.adicional_cobrado) > 0 ? ex.adicional_cobrado : p.massa.adicional,
     })
   }
   if (p.recheios && p.recheios.length > 0) {
-    const nomes = p.recheios.map(r => r.nome).join(", ")
-    const somaAdicional = p.recheios.reduce((s, r) => s + (r.adicional || 0), 0)
+    const nomes = p.recheios.map(r => (r as unknown as { tipo_adicional?: string; adicional?: number }).tipo_adicional === "por_kg" && Number((r as unknown as { adicional?: number }).adicional) > 0
+      ? `${r.nome} (+R$ ${Number((r as unknown as { adicional?: number }).adicional || 0).toFixed(2).replace(".", ",")}/kg)` : r.nome).join(", ")
+    const somaAdicional = p.recheios.reduce((s, r) => {
+      const ex = r as unknown as { adicional?: number; adicional_cobrado?: number }
+      return s + (Number(ex.adicional_cobrado) > 0 ? Number(ex.adicional_cobrado) : (Number(ex.adicional) || 0))
+    }, 0)
     linhas.push({
       label: p.recheios.length > 1 ? "Recheios" : "Recheio",
       valor: nomes,
@@ -166,10 +174,12 @@ function personalizacoesV1ToLinhas(p: PersonalizacoesV1): Array<{ label: string;
     })
   }
   if (p.cobertura?.nome) {
+    const ex = p.cobertura as { adicional?: number; adicional_cobrado?: number; tipo_adicional?: string }
+    const porKg = ex.tipo_adicional === "por_kg" && Number(ex.adicional) > 0
     linhas.push({
       label: "Cobertura",
-      valor: p.cobertura.nome,
-      adicional: p.cobertura.adicional,
+      valor: p.cobertura.nome + (porKg ? ` (+R$ ${Number(ex.adicional || 0).toFixed(2).replace(".", ",")}/kg)` : ""),
+      adicional: Number(ex.adicional_cobrado) > 0 ? ex.adicional_cobrado : p.cobertura.adicional,
     })
   }
 

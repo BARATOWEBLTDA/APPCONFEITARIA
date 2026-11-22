@@ -3,6 +3,10 @@ export interface EscolhaOpcao {
   id: string
   nome: string
   adicional?: number
+  /** (22/11) "fixo" (default) ou "por_kg" (multiplica pelo peso do tamanho escolhido) */
+  tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade"
+  /** (22/11) valor efetivamente cobrado por unidade (já multiplicado pelo peso quando por_kg) */
+  adicional_cobrado?: number
   preco_proprio?: number  // pra sabor com preço próprio
   preco_fixo?: number     // pra tamanho com preço fixo
   peso_kg?: number | null // pra tamanho

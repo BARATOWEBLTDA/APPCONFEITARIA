@@ -9,7 +9,7 @@ import { r2, somarReais } from "@/lib/moeda";
 import type { ExtraEscolhido } from "@/lib/kitTexto";
 
 /** Opção escolhida: o nome (formato antigo) ou a opção com nome */
-type NomeOuOpcao = string | { nome?: string } | null | undefined;
+type NomeOuOpcao = string | { nome?: string; adicional?: number; tipo_adicional?: string } | null | undefined;
 /** As escolhas gravadas no item (os dois formatos que o app grava) */
 type PersonalizacoesPDF = {
   sabor?: NomeOuOpcao; massa?: NomeOuOpcao; recheios?: NomeOuOpcao[]; recheio?: NomeOuOpcao; cobertura?: NomeOuOpcao;
@@ -67,15 +67,17 @@ const PAGAMENTO: Record<string, string> = { pix: "Pix", PIX: "Pix", dinheiro: "D
 export function escolhas(pz: PersonalizacoesPDF | null | undefined): string {
   if (!pz || typeof pz !== "object") return "";
   const nome = (v: NomeOuOpcao) => (!v ? "" : typeof v === "string" ? v : v.nome || "");
+  // (22/11) sufixo "(+R$ X/kg)" quando a opção foi cadastrada como por_kg
+  const sufKg = (v: NomeOuOpcao) => { if (!v || typeof v === "string") return ""; const ad = Number(v.adicional) || 0; return v.tipo_adicional === "por_kg" && ad > 0 ? ` (+R$ ${ad.toFixed(2).replace(".", ",")}/kg)` : ""; };
   const p: string[] = [];
   // (11/10) mesmo texto do resto do app: pelo peso sai "M (2 kg)"
   const tam = tamanhoDoItem({ personalizacoes: pz });
   if (tam) p.push(`Tamanho ${tam}`);
-  if (nome(pz.sabor)) p.push(`Sabor ${nome(pz.sabor)}`);
-  if (nome(pz.massa)) p.push(`Massa ${nome(pz.massa)}`);
-  const rec = Array.isArray(pz.recheios) ? pz.recheios.map(nome).filter(Boolean).join(" e ") : nome(pz.recheio);
+  if (nome(pz.sabor)) p.push(`Sabor ${nome(pz.sabor)}`+sufKg(pz.sabor));
+  if (nome(pz.massa)) p.push(`Massa ${nome(pz.massa)}`+sufKg(pz.massa));
+  const rec = Array.isArray(pz.recheios) ? pz.recheios.map(r => nome(r) ? (nome(r) + sufKg(r)) : "").filter(Boolean).join(" e ") : (nome(pz.recheio) + sufKg(pz.recheio));
   if (rec) p.push(`Recheio ${rec}`);
-  if (nome(pz.cobertura)) p.push(`Cobertura ${nome(pz.cobertura)}`);
+  if (nome(pz.cobertura)) p.push(`Cobertura ${nome(pz.cobertura)}`+sufKg(pz.cobertura));
   if (pz.kit?.sabores?.length) p.push(pz.kit.sabores.map((x) => `${x.nome} × ${x.qtd}`).join(" · "));
   if (Array.isArray(pz.extras) && pz.extras.length) p.push(`Adicionais: ${pz.extras.map((x) => nomeExtra(x)).filter(Boolean).join(", ")}`);
   return p.join(" · ");
