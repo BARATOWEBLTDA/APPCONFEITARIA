@@ -1,3 +1,4 @@
+import { TOPOS_PRONTOS_NO_AR } from "@/lib/toposBolo";
 import { BotaoFechar } from "@/components/base";
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -88,7 +89,7 @@ export default function BuscaRapida() {
       { g: PROD, t: "Ingredientes", ic: Basket, rota: "/insumos", chaves: "insumo ingrediente materia prima compra mercado embalagem preco" },
       { g: PROD, t: "Ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", chaves: "receita custo lucro margem preco sugerido rendimento" },
       { g: PROD, t: "Conversor de medidas", ic: Scales, rota: "/ferramentas/medidas", chaves: "ferramentas xicara colher gramas converter medida peso" },
-      { g: PROD, t: "Topos de bolo", ic: FlagBanner, rota: "/ferramentas/topos", chaves: "ferramentas topo topper imprimir arte pronto recortar papel festa" },
+      ...(TOPOS_PRONTOS_NO_AR ? [{ g: PROD, t: "Topos de bolo", ic: FlagBanner, rota: "/ferramentas/topos", chaves: "ferramentas topo topper imprimir arte pronto recortar papel festa" }] : []),
       { g: PROD, t: "Simulador de preço", ic: Sliders, rota: "/ferramentas/simulador", chaves: "ferramentas simular preco lucro margem quanto cobrar calculadora" },
       { g: PROD, t: "Produtos sem ficha técnica", ic: ListChecks, rota: "/ficha-tecnica", estado: { abrir: "sem-ficha" }, chaves: "falta ficha" },
       { g: PROD, t: "Custos", ic: Receipt, rota: "/custos", chaves: "custo fixos variaveis despesa gasto aluguel luz gas" },

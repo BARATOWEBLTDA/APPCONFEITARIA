@@ -1,3 +1,4 @@
+import { TOPOS_PRONTOS_NO_AR } from "@/lib/toposBolo";
 import { ROTAS_CARDAPIO } from "@/components/CardapioSubnav";
 const ROTAS_CATALOGO = ["/produtos", "/produtos/categorias", "/categorias", "/complementos"];
 import { PausarPedidos } from "@/components/loja/PausarPedidos";
@@ -282,7 +283,7 @@ export default function Layout() {
           <GrupoMenu id="ferramentas" aberto={grupoAberto === "ferramentas"} onAbrir={setGrupoAberto} rotulo="Ferramentas" icone={Wrench} rotas={["/ferramentas/medidas", "/ferramentas/simulador", "/ferramentas/topos", "/ferramentas"]} recolhido={recolhido}>
             <SubitemMenu to="/ferramentas/medidas" icone={Scales}>Conversor de medidas</SubitemMenu>
             <SubitemMenu to="/ferramentas/simulador" icone={Sliders}>Simulador de preço</SubitemMenu>
-            <SubitemMenu to="/ferramentas/topos" icone={FlagBanner}>Topos de bolo</SubitemMenu>
+            {TOPOS_PRONTOS_NO_AR && <SubitemMenu to="/ferramentas/topos" icone={FlagBanner}>Topos de bolo</SubitemMenu>}
           </GrupoMenu>
           {/* (04/11 · 6.42) a Doo saiu do menu: no computador ela é o balão flutuante no canto (doo-fab) */}
           <GrupoMenu id="conta" aberto={grupoAberto === "conta"} onAbrir={setGrupoAberto} rotulo="Minha conta" icone={Gear} rotas={["/configuracoes", "/minha-assinatura", "/assinar"]} recolhido={recolhido}>

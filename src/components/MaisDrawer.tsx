@@ -1,3 +1,4 @@
+import { TOPOS_PRONTOS_NO_AR } from "@/lib/toposBolo";
 import { useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -62,7 +63,7 @@ const GRUPOS: Grupo[] = [
   {
     label: "Ferramentas",
     items: [
-      { label: "Topos de bolo", desc: "Prontos pra imprimir", path: "/ferramentas/topos", Icone: FlagBanner },
+      ...(TOPOS_PRONTOS_NO_AR ? [{ label: "Topos de bolo", desc: "Prontos pra imprimir", path: "/ferramentas/topos", Icone: FlagBanner }] : []),
       { label: "Simulador de preço", desc: "Teste preços e veja o lucro", path: "/ferramentas/simulador", Icone: Sliders },
       { label: "Conversor de medidas", desc: "Xícaras e colheres em gramas", path: "/ferramentas/medidas", Icone: Scales },
     ],

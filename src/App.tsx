@@ -1,3 +1,4 @@
+import { TOPOS_PRONTOS_NO_AR } from "@/lib/toposBolo";
 import { VisitasDoApp } from "@/components/PixelsDoApp";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
@@ -542,7 +543,7 @@ export default function App() {
         {/* (24/10) Orçamentos: a cliente pede pelo link da loja e responde a proposta pelo link dela */}
         <Route path="/o/:codigo" element={<OrcamentoPedir />} />
         {/* (09/11) topo de bolo compartilhado: página aberta (logada, vai direto pro topo no app) */}
-        <Route path="/topo/:id" element={<TopoPublico />} />
+        <Route path="/topo/:id" element={TOPOS_PRONTOS_NO_AR ? <TopoPublico /> : <Navigate to="/" replace />} />
         <Route path="/orcamento/:token" element={<OrcamentoVer />} />
         {/* Fallback: rota antiga /cardapio/:slug — mantida por compat, redireciona internamente */}
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />
@@ -592,7 +593,7 @@ export default function App() {
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />
           <Route path="/ferramentas/medidas" element={<ConversorMedidas />} />
           <Route path="/ferramentas/simulador" element={<SimuladorPreco />} />
-          <Route path="/ferramentas/topos" element={<ToposBolo />} />
+          <Route path="/ferramentas/topos" element={TOPOS_PRONTOS_NO_AR ? <ToposBolo /> : <Navigate to="/inicio" replace />} />
           <Route path="/clientes" element={<Clientes />} />
           {/* (10/11) a tela Cadastros saiu: link antigo cai na Minha loja */}
           <Route path="/cadastros" element={<Navigate to="/cardapio" replace />} />

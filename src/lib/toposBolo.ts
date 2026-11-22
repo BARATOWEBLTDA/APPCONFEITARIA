@@ -8,6 +8,9 @@ export type ArquivoTopo = { caminho: string; nome: string; formato: string; tama
 export type CategoriaTopo = { id: string; nome: string; imagem_url: string | null; imagem_mini_url?: string | null; ordem: number; ativo: boolean };
 export type Topo = { id: string; categoria_id: string | null; titulo: string; capa_url: string | null; capa_mini_url?: string | null; arquivos: ArquivoTopo[]; tags: string[]; canva_url?: string | null; codigo?: string | null; ativo: boolean; ordem: number; created_at: string };
 
+/** (21/11) biblioteca de topos prontos OCULTA no app por enquanto (os arquivos saíram do Supabase para liberar espaço).
+ *  Para voltar: trocar para true. O painel admin dos topos continua funcionando. */
+export const TOPOS_PRONTOS_NO_AR = false;
 export const BUCKET_CAPAS = "topos-capas";
 export const BUCKET_ARQUIVOS = "topos-arquivos";
 /** o que o admin pode subir como arquivo do topo */
