@@ -1,0 +1,22 @@
+name: Baixar topos
+on:
+  push:
+    branches: [baixar-topos]
+permissions:
+  contents: write
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Baixar e compactar
+        env:
+          K: ${{ secrets.TOPOS_K }}
+        run: python3 .github/topos/baixar.py
+      - name: Publicar o ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat resumo.txt
+          gh release delete topos-backup --yes --cleanup-tag 2>/dev/null || true
+          gh release create topos-backup topos-doonly.zip resumo.txt --draft --title "Backup dos topos de bolo (21/11)" --notes "PDF, PNG e capas WebP dos topos, por categoria. Gerado antes de liberar espaço no Supabase." --target baixar-topos
