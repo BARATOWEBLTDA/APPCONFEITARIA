@@ -64,7 +64,7 @@
 .orc-etapas .on span { color: var(--ui-rosa-escuro); font-weight: 600; }
 .orc-etapas .ok span { color: var(--ui-texto); }
 .orc-card { margin: 0 0 12px; padding: 16px; background: var(--ui-branco); border: 1px solid var(--ui-borda); border-radius: var(--ui-raio-cartao); box-shadow: var(--ui-sombra-cartao); }
-.orc-card :is(h2, h3) { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
+.orc-card :is(h2, h3) { margin: 0 0 12px; padding: 0 0 10px; font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--ui-linha); }   /* (22/11) título com linha fina, padrão único das caixas */
 .orc-card :is(h2, h3) small { margin-left: 4px; font-size: 12.5px; font-weight: 400; font-style: italic; color: var(--ui-texto-3); }
 .orc-2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 @media (min-width: 600px) { .orc-2 { grid-template-columns: 1fr 1fr; } }
@@ -72,6 +72,19 @@
 /* (6.51) data, horário, "mais de um dia" e nome; no PC a data fica no calendário ao lado */
 .orc-ev { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "data hora" "varios varios" "nome nome"; gap: 12px; align-items: end; }
 .orc-ev--varios { grid-template-areas: "data fim" "varios varios" "hora hora" "nome nome"; }
+/* (22/11) as duas caixinhas selecionáveis no lugar do checkbox "Mais de um dia" */
+.orc-opcoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.orc-op { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 10px 12px; background: var(--ui-cinza); border: 0; border-radius: var(--ui-raio-m, 14px); font-family: inherit; text-align: left; color: var(--ui-texto); cursor: pointer; }
+.orc-op--on { background: #FFF6EE; box-shadow: inset 0 0 0 1.5px var(--ui-rosa); }
+.orc-op:hover:not(.orc-op--on) { background: var(--ui-coluna); }
+.orc-op-rd { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: var(--ui-branco); border: 2px solid #D6CBD0; border-radius: 50%; box-sizing: border-box; }
+.orc-op--on .orc-op-rd { border-color: var(--ui-rosa); }
+.orc-op-rd i { display: none; width: 10px; height: 10px; background: var(--ui-rosa); border-radius: 50%; }
+.orc-op--on .orc-op-rd i { display: block; }
+.orc-op-tx { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.orc-op-tx b { font-size: 15px; font-weight: 600; }
+.orc-op-tx small { font-size: 12.5px; color: var(--ui-texto-2); }
+@media (max-width: 420px) { .orc-opcoes { grid-template-columns: 1fr; } }
 .orc-ev-data { grid-area: data; } .orc-ev-hora { grid-area: hora; } .orc-ev-fim { grid-area: fim; } .orc-ev-varios { grid-area: varios; } .orc-ev-nome { grid-area: nome; }
 .orc-ev-data .ui-campo-r, .orc-ev-hora .ui-campo-r, .orc-ev-fim .ui-campo-r { margin-bottom: 6px; }
 .orc-varios { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0; border: 0; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ui-texto); cursor: pointer; white-space: nowrap; }

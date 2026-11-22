@@ -516,12 +516,17 @@ export default function OrcamentoEditar() {
                 <span className="ui-campo-r"><span>Horário</span></span>
                 <button type="button" className="cdata" onClick={() => setHoraAberta(true)} aria-label={`Horário: ${o.horario_evento ? o.horario_evento.slice(0, 5) : 'escolher'}`}>
                   <Clock size={20} weight="bold" aria-hidden="true" />
-                  <span className={o.horario_evento ? '' : 'ph'}>{o.horario_evento ? o.horario_evento.slice(0, 5) : '--:--'}</span>
+                  <span className={o.horario_evento ? '' : 'ph'}>{o.horario_evento ? o.horario_evento.slice(0, 5) : 'Definir'}</span>
                 </button>
               </div>
-              <button type="button" role="checkbox" aria-checked={varios} className="orc-varios orc-ev-varios" onClick={() => ligarVarios(!varios)}>
-                <i className="orc-chk" aria-hidden="true">{varios && <Check size={14} weight="bold" />}</i>O evento dura mais de um dia
-              </button>
+              <div className="orc-ev-varios orc-opcoes" role="radiogroup" aria-label="Duração do evento">
+                {([[false, 'Um dia só', 'Começa e termina no mesmo dia'], [true, 'Mais de um dia', 'Começa num dia e termina em outro']] as [boolean, string, string][]).map(([v, t, sub]) => (
+                  <button key={String(v)} type="button" role="radio" aria-checked={varios === v} className={`orc-op${varios === v ? ' orc-op--on' : ''}`} onClick={() => ligarVarios(v)}>
+                    <i className="orc-op-rd" aria-hidden="true"><i /></i>
+                    <span className="orc-op-tx"><b>{t}</b><small>{sub}</small></span>
+                  </button>
+                ))}
+              </div>
               {varios && (
                 <div className="orc-ev-fim">
                   <span className="ui-campo-r"><span>Último dia</span></span>
@@ -538,11 +543,7 @@ export default function OrcamentoEditar() {
           </section>
           </div>
           <section className="orc-card orc-e1-cal">
-            <h2 className="orc-h-acao">{varios ? 'Dias do evento' : 'Data do evento'}
-              <button type="button" role="checkbox" aria-checked={varios} className="orc-varios" onClick={() => ligarVarios(!varios)}>
-                <i className="orc-chk" aria-hidden="true">{varios && <Check size={14} weight="bold" />}</i>Mais de um dia
-              </button>
-            </h2>
+<h2>{varios ? 'Dias do evento' : 'Data do evento'}</h2>
             <CalendarioMes valor={o.data_evento || ''} fim={o.data_evento_fim} varios={varios} onChange={(ini, fim) => muda({ data_evento: ini, data_evento_fim: fim })} />
           </section>
         </div>)}

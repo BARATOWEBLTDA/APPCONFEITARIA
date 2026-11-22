@@ -50,7 +50,7 @@ export default function CalendarioMes({ valor, fim, varios, onChange }: {
       )}
       <div className="cmes-pe">
         {pe ? <b>{pe}</b>
-          : <small>{varios ? "Toque no primeiro e no último dia" : "Toque no dia do evento"}</small>}
+          : <small>{varios ? "Escolher o primeiro e o último dia" : "Escolher o dia do evento"}</small>}
         {varios && ini && !ate && <small>Agora toque no último dia</small>}
       </div>
     </div>
