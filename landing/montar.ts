@@ -478,6 +478,22 @@ ${corpoPagina}
 .dl-root #doo .p2-doo__foto{position:absolute; left:-17%; bottom:7%; width:34%; height:auto; border-radius:28%; box-shadow:0 0 0 4px #fff, 0 22px 34px -16px rgba(60,0,30,.8); transform:rotate(-7deg);}
 @media (max-width:1023px){ .dl-root #doo .p2-doo{margin-block:10px 14px;} }
 @media (max-width:1023px){ .dl-root :is(#fin,#orcamentos) :is(.p2-fin,.p2-orc){margin-block:6px 4px;} }
+.dl-root #comece .p2-compo{position:relative; width:100%; max-width:820px; margin:clamp(18px,3vw,34px) auto clamp(26px,4vw,48px); aspect-ratio:1/.74;}
+.dl-root #comece .p2-compo img{display:block; width:100%; max-width:none; height:auto;}
+.dl-root #comece .p2-compo__pc{position:absolute; left:13%; top:15%; width:74%;}
+.dl-root #comece .p2-compo__tela{padding:2%; background:#17111B; border-radius:12px; box-shadow:0 30px 60px -30px rgba(60,10,35,.55);}
+.dl-root #comece .p2-compo__tela img{border-radius:5px;}
+.dl-root #comece .p2-compo__pe{display:block; width:16%; height:0; padding-top:7%; margin:0 auto; background:linear-gradient(#CFC6CB,#E9E3E6);}
+.dl-root #comece .p2-compo__base{display:block; width:34%; height:0; padding-top:1.4%; margin:0 auto; border-radius:6px 6px 2px 2px; background:#D5CCD1; box-shadow:0 10px 16px -8px rgba(60,10,35,.4);}
+.dl-root #comece .p2-compo__cel{position:absolute; width:20%; padding:1%; border-radius:13% / 6%; background:#17111B; box-shadow:0 0 0 1px #3A2E40, 0 26px 44px -22px rgba(60,10,35,.6);}
+.dl-root #comece .p2-compo__cel img{border-radius:11% / 5%;}
+.dl-root #comece .p2-compo__cel--1{left:0; bottom:3%; transform:rotate(-4deg);}
+.dl-root #comece .p2-compo__cel--2{right:0; bottom:0; transform:rotate(4deg);}
+.dl-root #comece .p2-compo__c{position:absolute; border-radius:12px; box-shadow:0 0 0 1px #EBDDE3, 0 22px 40px -22px rgba(60,10,35,.5);}
+.dl-root #comece .p2-compo__c--1{left:5%; top:0; width:36% !important; transform:rotate(-4deg);}
+.dl-root #comece .p2-compo__c--2{right:5%; top:1%; width:36% !important; transform:rotate(3deg);}
+.dl-root #comece .p2-compo__c--3{left:31%; bottom:1%; width:38% !important; transform:rotate(-1.5deg);}
+@media (max-width:599px){ .dl-root #comece .p2-compo__c, .dl-root #comece .p2-compo__tela{border-radius:7px;} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
   const HERO_P2 = `<div class="p2-hero-acao">${BT_P2('Quero o PRO por R$ 1', 'dl-btn--medio')}<small>1º mês por R$ 1. Depois, R$ 29,90 por mês.</small><span class="p2-prazo">Oferta de Black Friday · até 30/11</span></div>`
@@ -790,6 +806,12 @@ ${corpoPagina}
     const MAIS = ['Cadastro de clientes', 'Aviso de aniversário dos clientes', 'Cupons de desconto', 'Taxa de entrega por bairro', 'Stories no cardápio', 'Mensagens prontas de WhatsApp',
       'Simulador de preço', 'Conversor de medidas', 'Topo de bolo com IA', 'Adicionais e complementos', 'Métricas do cardápio', 'Celular e computador']
     corpoPro2 = corpoPro2.replace(FUNCS_B, () => `<section class="dl-secao dl-secao--escura dl-recursos" id="funcs-b" aria-labelledby="p2-mais-t">\n\t<div class="dl-container">\n\t\t<div class="dl-funcs">\n\t\t\t<h3 class="dl-funcs__titulo" id="p2-mais-t">E ainda tem muito mais</h3>\n\t\t\t<ul class="dl-funcs3">${MAIS.map(t => `<li class="dl-funcs3__item">${li0[1]}${t}</li>`).join('')}</ul>\n\t\t</div>\n\t</div>\n</section>\n`)
+    // (21/11) oferta (#comece): composição com as telas reais em computador e celulares, antes da lista do que vem no PRO
+    const im2 = (cls: string, arq: string, w: number, h: number) => `<img class="${cls}" src="/site/media/${arq}.webp" width="${w}" height="${h}" alt="" loading="lazy" decoding="async">`
+    const COMPO = `<div class="p2-compo" role="img" aria-label="O Doonly no computador e no celular: financeiro, pedidos, agenda e a Doo">${im2('p2-compo__c p2-compo__c--1', 'agenda-ped-1', 716, 314)}${im2('p2-compo__c p2-compo__c--2', 'fin-receber', 800, 452)}<div class="p2-compo__pc"><div class="p2-compo__tela">${im2('', 'fin-pc', 1600, 1000)}</div><i class="p2-compo__pe"></i><i class="p2-compo__base"></i></div><div class="p2-compo__cel p2-compo__cel--1">${im2('', 'cel-pedidos', 600, 1300)}</div><div class="p2-compo__cel p2-compo__cel--2">${im2('', 'doo-video', 600, 1300)}</div>${im2('p2-compo__c p2-compo__c--3', 'fin-sobrou', 900, 396)}</div>`
+    const ALVO_COMPO = /(<section class="dl-secao dl-secao--branca dl-comece" id="comece"[\s\S]*?<\/header>)/
+    if (!ALVO_COMPO.test(corpoPro2)) throw new Error('pro2: cabeçalho da oferta não encontrado')
+    corpoPro2 = corpoPro2.replace(ALVO_COMPO, (_m, a: string) => a + COMPO)
   }
   corpoPro2 = CSS_P2.split('#funcionalidades').join(':is(#funcionalidades,#funcs-b)') + corpoPro2
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
