@@ -4,14 +4,13 @@ on:
     branches: [baixar-topos]
 permissions:
   contents: write
+  id-token: write
 jobs:
   zip:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Baixar e compactar
-        env:
-          K: ${{ secrets.TOPOS_K }}
         run: python3 .github/topos/baixar.py
       - name: Publicar o ZIP
         env:
