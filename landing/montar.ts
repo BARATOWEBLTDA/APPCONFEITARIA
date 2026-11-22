@@ -466,13 +466,16 @@ ${corpoPagina}
 .dl-root #orcamentos .p2-vai .p2-orc__ok{animation:p2-pop3 .55s 2.1s cubic-bezier(.2,.8,.3,1) both;}
 @keyframes p2-pop0{from{opacity:0; transform:scale(.8)} to{opacity:1; transform:none}}
 @keyframes p2-pop3{from{opacity:0; transform:translateY(12%) scale(.86)} to{opacity:1; transform:rotate(2deg)}}
-.dl-root #doo .p2-doo{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; width:100%; max-width:470px; margin-inline:auto;}
-.dl-root #doo .p2-doo img{width:100%; border-radius:14px; box-shadow:0 18px 30px -20px rgba(90,0,40,.6);}
-.dl-root #doo .p2-doo__heroi{grid-column:1/-1; width:82% !important; margin:0 auto 6px; border-radius:20px !important; box-shadow:0 30px 50px -26px rgba(60,0,30,.75) !important;}
-.dl-root #doo .p2-doo img:nth-child(odd):not(.p2-doo__heroi){transform:rotate(-1.5deg);}
-.dl-root #doo .p2-doo img:nth-child(even){transform:rotate(1.5deg);}
-.dl-root #doo .p2-pronta img:not(.p2-doo__heroi){opacity:0;}
-.dl-root #doo .p2-vai img:not(.p2-doo__heroi){animation:p2-pop0 .45s cubic-bezier(.2,.8,.3,1) both; animation-delay:calc(.25s + var(--i) * .13s);}
+.dl-root #doo .p2-doo{position:relative; width:min(72%,310px); margin-inline:auto; perspective:1500px;}
+.dl-root #doo .p2-iph{position:relative; padding:9px; border-radius:46px; background:linear-gradient(120deg,#3B3440,#17111B 40%,#0B070D); box-shadow:0 0 0 1.5px #5A4F60, inset 0 0 0 1.5px #0B070D, 26px 44px 60px -30px rgba(60,0,30,.8); transform:rotateY(-17deg) rotateX(4deg) rotateZ(1.5deg); transform-style:preserve-3d;}
+.dl-root #doo .p2-iph__video{display:block; width:100%; max-width:none; height:auto; aspect-ratio:600/1300; border-radius:38px; box-shadow:none; background:#F4F1F2; object-fit:cover;}
+.dl-root #doo .p2-iph__ilha{position:absolute; z-index:2; left:50%; top:17px; width:26%; height:0; padding-top:7.4%; margin-left:-13%; border-radius:999px; background:#000; display:none;}
+.dl-root #doo .p2-iph__b{position:absolute; width:4px; border-radius:3px; background:#4A4050;}
+.dl-root #doo .p2-iph__b--1{left:-4px; top:19%; height:6%;}
+.dl-root #doo .p2-iph__b--2{left:-4px; top:28%; height:10%;}
+.dl-root #doo .p2-iph__b--3{right:-4px; top:25%; height:13%;}
+.dl-root #doo .p2-doo__foto{position:absolute; left:-17%; bottom:7%; width:34%; height:auto; border-radius:28%; box-shadow:0 0 0 4px #fff, 0 22px 34px -16px rgba(60,0,30,.8); transform:rotate(-7deg);}
+@media (max-width:1023px){ .dl-root #doo .p2-doo{margin-block:10px 14px;} }
 @media (max-width:1023px){ .dl-root :is(#fin,#orcamentos) :is(.p2-fin,.p2-orc){margin-block:6px 4px;} }
 .p2-fim{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px;}
 </style>`
@@ -764,11 +767,11 @@ ${corpoPagina}
       'A cliente pede pelo seu link, você monta a proposta com itens, valores e sinal e envia. Quando ela aprova, o orçamento vira pedido na sua agenda.',
       [['Seu link de orçamento', 'A cliente pede por ele.'], ['Proposta com sua logo', 'Itens, fotos e valores.'], ['Sinal e validade', 'Você define as condições.'], ['Orçamento em PDF', 'Pronto para baixar e enviar.']],
       `<div class="p2-orc" role="img" aria-label="A proposta de orçamento que a cliente recebe, o botão de aprovar e o aviso de orçamento aprovado"><div class="p2-orc__folha">${IMGL('', 'orc-proposta', 716, 1580)}</div><div class="p2-orc__bt">${IMGL('', 'orc-aprovar', 480, 107)}</div><span class="p2-mao" aria-hidden="true"><i></i>${MAO}</span>${IMGL('p2-orc__ok', 'orc-ok', 716, 612)}</div>`)
-    const doo = area('rosa', 'doo', '07', 'Doo IA', 'Sua assistente de confeitaria.', 'É só pedir para a Doo.',
-      'A Doo é a inteligência artificial do Doonly. Ela calcula preço, cria receita com as quantidades, anota pedido pela conversa e escreve a legenda do seu Instagram.',
-      [['Calcular preço', 'De bolos e doces.'], ['Criar receita', 'Com as quantidades.'], ['Novo pedido', 'Anotado pela conversa.'], ['Legenda e respostas', 'Para Instagram e clientes.']],
-      `<div class="p2-doo" role="img" aria-label="A tela da Doo no app e o que você pode pedir para ela">${IMGL('p2-doo__heroi', 'doo-hero', 716, 408)}${[1, 2, 3, 5, 6, 7].map((n, i) => IMGL('', 'doo-i' + n, 332, 249, ` style="--i:${i}"`)).join('')}</div>`)
-    const ANIMA3 = `<script>(function(){if(!('IntersectionObserver' in window)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))return;[].forEach.call(document.querySelectorAll('#fin .p2-fin,#orcamentos .p2-orc,#doo .p2-doo'),function(c){c.classList.add('p2-pronta');new IntersectionObserver(function(e,o){if(e[0].isIntersecting){o.disconnect();var im=c.querySelectorAll('img'),n=0,foi=false,vai=function(){if(foi)return;foi=true;c.classList.add('p2-vai')};for(var i=0;i<im.length;i++){im[i].loading='eager';if(!im[i].complete){n++;im[i].addEventListener('load',function(){if(--n<=0)vai()});im[i].addEventListener('error',function(){if(--n<=0)vai()})}}if(!n)vai();setTimeout(vai,2500)}},{threshold:.4}).observe(c)})})()</script>`
+    const doo = area('rosa', 'doo', '07', 'Doo IA', 'Muito mais que uma assistente.', 'A sua amiga na confeitaria.',
+      'Pergunte como foi o seu mês e a Doo responde com os números do seu app: o que entrou, o que saiu, o que sobrou e qual produto dá mais lucro. Ela ainda sugere o que fazer e deixa pronto para você confirmar.',
+      [['Panorama do mês', 'Vendas, entradas e saídas.'], ['Lucro por produto', 'O campeão e o que rende pouco.'], ['Sugestões prontas', 'Ela cria o cupom, você confirma.'], ['Preço, receita e legenda', 'É só pedir na conversa.']],
+      `<div class="p2-doo"><div class="p2-iph"><i class="p2-iph__b p2-iph__b--1"></i><i class="p2-iph__b p2-iph__b--2"></i><i class="p2-iph__b p2-iph__b--3"></i><span class="p2-iph__ilha"></span><video class="dl-passo4__video p2-iph__video" muted loop playsinline preload="none" width="600" height="1300" poster="/site/media/doo-video.webp" aria-label="No app: a confeiteira pergunta como foi o mês, a Doo responde com as vendas, o que entrou, saiu e sobrou, o produto que dá mais lucro e sugere um cupom de 10%, que ela cria na conversa"><source src="/site/media/doo-video.webm" type="video/webm"><source src="/site/media/doo-video.mp4" type="video/mp4"></video></div>${IMGL('p2-doo__foto', 'doo-foto', 320, 320)}</div>`)
+    const ANIMA3 = `<script>(function(){if(!('IntersectionObserver' in window)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))return;[].forEach.call(document.querySelectorAll('#fin .p2-fin,#orcamentos .p2-orc'),function(c){c.classList.add('p2-pronta');new IntersectionObserver(function(e,o){if(e[0].isIntersecting){o.disconnect();var im=c.querySelectorAll('img'),n=0,foi=false,vai=function(){if(foi)return;foi=true;c.classList.add('p2-vai')};for(var i=0;i<im.length;i++){im[i].loading='eager';if(!im[i].complete){n++;im[i].addEventListener('load',function(){if(--n<=0)vai()});im[i].addEventListener('error',function(){if(--n<=0)vai()})}}if(!n)vai();setTimeout(vai,2500)}},{threshold:.4}).observe(c)})})()</script>`
     // as seções antigas do financeiro e da Doo (do molde da /pro) saem: viraram as áreas 05 e 07
     for (const [nome, re] of [['financeiro', /<section class="dl-secao dl-secao--clara dl-financeiro" id="financeiro"[\s\S]*?<\/section>\n?/], ['doo', /<section class="dl-secao dl-secao--escura dl-doo" id="doo-ia"[\s\S]*?<\/section>\n?/]] as [string, RegExp][]) {
       if (!re.test(corpoPro2)) throw new Error('pro2: seção antiga não encontrada: ' + nome)
