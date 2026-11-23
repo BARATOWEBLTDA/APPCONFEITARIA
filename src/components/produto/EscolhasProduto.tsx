@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Destaque from "@/components/Destaque";
 import { useProfile } from "@/hooks/useProfile";
-import { CaretDown, Check, GearSix, PencilSimple, Plus, Scales, Sparkle, Tag } from "@phosphor-icons/react";
+import { Books, BookmarkSimple, CaretDown, Check, GearSix, PencilSimple, Plus, Scales, Sparkle, Tag } from "@phosphor-icons/react";
 import KitQuantidadeEditor, { faltaKit } from "@/components/produto/KitQuantidadeEditor";
 import Quadrados from "@/components/produto/Quadrados";
 import { kitAtivo, presetKit, type KitQtdConfig } from "@/lib/kitQuantidade";
@@ -12,6 +12,7 @@ import { ProductModal } from "@/components/cart/ProductModal";
 import { CartProvider } from "@/context/CartContext";
 import type { Produto } from "@/types/database";
 import "./escolhas.css";
+import { listarBibliotecaOpcoes, salvarNaBiblioteca, apagarDaBiblioteca, listarTabelasTamanhos, salvarTabelaTamanhos, apagarTabelaTamanhos, type OpcaoBiblioteca, type TabelaTamanhosBiblioteca, type TipoBiblioteca } from "@/lib/bibliotecaOpcoes";
 
 /**
  * (13/10) "O cliente escolhe alguma coisa?" — UMA tela de escolhas pra todos os tipos de produto,
@@ -336,6 +337,46 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
   const [nova, setNova] = useState("");
   const [avancado, setAvancado] = useState(false); // (14/10) janela "Avançado" (quantos, obrigatório, preço por sabor)
   const [editando, setEditando] = useState<string | null>(null); // (22/11) id da opção cujo "Custa a mais" está aberto
+  // (22/11) Biblioteca de opções — importar/salvar entre produtos
+  const [bibAberta, setBibAberta] = useState(false);
+  const [bibItens, setBibItens] = useState<OpcaoBiblioteca[]>([]);
+  const [bibCarregando, setBibCarregando] = useState(false);
+  const [bibMarcados, setBibMarcados] = useState<Set<string>>(new Set());
+  const [bibSalvo, setBibSalvo] = useState<"" | "salvando" | "ok" | "erro">("");
+  const abrirBiblioteca = async () => {
+    if (precoProprio) return; // sabor com preço próprio não usa biblioteca (o preço é por sabor)
+    setBibAberta(true); setBibCarregando(true); setBibMarcados(new Set());
+    const items = await listarBibliotecaOpcoes(chave as TipoBiblioteca);
+    // (22/11) só mostra os que ainda não estão cadastrados aqui (evita duplicar)
+    const nomesAqui = new Set(g.opcoes.map(o => norm(o.nome)));
+    setBibItens(items.filter(it => !nomesAqui.has(norm(it.nome))));
+    setBibCarregando(false);
+  };
+  const importarBiblioteca = () => {
+    if (bibMarcados.size === 0) return;
+    const escolhidos = bibItens.filter(it => bibMarcados.has(it.id));
+    const novos = escolhidos.map(it => ({
+      id: uid(),
+      nome: it.nome,
+      adicional: Number(it.adicional) || 0,
+      ...(it.tipo_adicional && it.tipo_adicional !== "fixo" ? { tipo_adicional: it.tipo_adicional as "por_kg" | "por_unidade" | "por_quantidade" } : {}),
+      ...(precoProprio && it.preco ? { preco: Number(it.preco) } : {}),
+    }));
+    set({ opcoes: [...g.opcoes, ...novos] });
+    setBibAberta(false);
+  };
+  const salvarTudoNaBiblioteca = async () => {
+    if (precoProprio) return;
+    if (!g.opcoes.length) return;
+    setBibSalvo("salvando");
+    const r = await salvarNaBiblioteca(chave as TipoBiblioteca, g.opcoes.map(o => ({
+      nome: o.nome,
+      adicional: Number(o.adicional) || 0,
+      tipo_adicional: (o.tipo_adicional || "fixo") as string,
+    })));
+    setBibSalvo(r.ok ? "ok" : "erro");
+    window.setTimeout(() => setBibSalvo(""), 2500);
+  };
   const set = (patch: Partial<Grupo>) => setForm(f => ({ ...f, [campo]: { ...g, ...(f[campo] || {}), ...patch } }));
   const precoProprio = chave === "sabor" && !!g.sabor_tem_preco_proprio;
   const plural = PLURAL[chave];
@@ -396,6 +437,21 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
             <input placeholder={NOVA[chave]} value={nova} onChange={e => setNova(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addDigitado(); } }} aria-label={NOVA[chave].replace("…", "")} />
             <button type="button" className="esc-nova-bt esc-nova-bt--txt" onClick={addDigitado} disabled={!nova.trim()}>Cadastrar</button>
           </div>
+          {/* (22/11) Biblioteca: usar/salvar entre produtos — aparece só quando faz sentido (não aparece no sabor com preço próprio) */}
+          {!precoProprio && (
+            <div className="esc-tab-bib">
+              <button type="button" className="esc-bib-bt" onClick={abrirBiblioteca}>
+                <Books size={16} weight="bold" aria-hidden="true" />
+                Usar da biblioteca
+              </button>
+              {g.opcoes.length > 0 && (
+                <button type="button" className={`esc-bib-bt esc-bib-bt--2${bibSalvo ? " esc-bib-bt--" + bibSalvo : ""}`} onClick={salvarTudoNaBiblioteca} disabled={bibSalvo === "salvando"}>
+                  <BookmarkSimple size={16} weight={bibSalvo === "ok" ? "fill" : "bold"} aria-hidden="true" />
+                  {bibSalvo === "salvando" ? "Salvando…" : bibSalvo === "ok" ? "Salvo na biblioteca" : bibSalvo === "erro" ? "Erro ao salvar" : "Salvar na biblioteca"}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
       {/* (14/10) sem os botões de sugestão embaixo da tabela (poluíam): a escolha já começa com 2 opções e ela cadastra as outras */}
@@ -430,6 +486,47 @@ function CartaoGrupo({ chave, form, setForm, outros }: { chave: "massa" | "reche
           </Janela>
         );
       })()}
+      {/* (22/11) Janela "Biblioteca" — importar opções salvas de outros produtos */}
+      <Janela aberta={bibAberta} aoFechar={() => setBibAberta(false)} titulo={`Biblioteca de ${plural.toLowerCase()}`} tipo="conteudo" umaAcao
+        acoes={<Botao onClick={importarBiblioteca} disabled={bibMarcados.size === 0}>{bibMarcados.size > 0 ? `Importar (${bibMarcados.size})` : "Importar"}</Botao>}>
+        <div className="esc-bib-jan">
+          {bibCarregando ? (
+            <p className="esc-bib-vazio">Carregando…</p>
+          ) : bibItens.length === 0 ? (
+            <div className="esc-bib-vazio">
+              <p><b>Sua biblioteca está vazia.</b></p>
+              <p>Cadastre {plural.toLowerCase()} num produto e toque em “Salvar na biblioteca”. Depois, qualquer novo produto reaproveita.</p>
+            </div>
+          ) : (
+            <ul className="esc-bib-lista">
+              {bibItens.map(it => {
+                const on = bibMarcados.has(it.id);
+                return (
+                  <li key={it.id}>
+                    <button type="button" className={`esc-bib-item${on ? " on" : ""}`} role="checkbox" aria-checked={on} onClick={() => {
+                      const n = new Set(bibMarcados);
+                      if (n.has(it.id)) n.delete(it.id); else n.add(it.id);
+                      setBibMarcados(n);
+                    }}>
+                      <i className="esc-bib-ck" aria-hidden="true">{on && <Check size={14} weight="bold" />}</i>
+                      <span className="esc-bib-nm">{it.nome}</span>
+                      {Number(it.adicional) > 0 && (
+                        <span className="esc-bib-v">+ R$ {textoBRL(Number(it.adicional))}{it.tipo_adicional === "por_kg" ? "/kg" : ""}</span>
+                      )}
+                    </button>
+                    <button type="button" className="esc-bib-x" aria-label={`Apagar ${it.nome} da biblioteca`} onClick={async () => {
+                      if (!window.confirm(`Apagar “${it.nome}” da biblioteca?`)) return;
+                      const ok = await apagarDaBiblioteca(it.id);
+                      if (ok) setBibItens(bibItens.filter(x => x.id !== it.id));
+                    }}>×</button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </Janela>
+
       <button type="button" className="esc-rend-linha esc-av-linha" onClick={() => setAvancado(true)}>
         <span className="esc-av-ic" aria-hidden="true"><GearSix size={20} weight="bold" /></span>
         <span className="esc-tx"><b>{QUANTAS[chave]}</b>
@@ -508,6 +605,44 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
     return kg >= 0.05 && kg <= 50 ? Math.round(kg * 1000) / 1000 : null;
   };
   const addPeso = () => { const kg = lerPeso(novo); if (!kg) return; if (!marcados.has(kg)) alternarPeso(kg); setNovo(""); setVerOutroPeso(false); setUnNovo("kg"); };
+  // (22/11) Biblioteca de tabelas de tamanho — salvar/importar presets
+  const [tabBibAberta, setTabBibAberta] = useState(false);
+  const [tabBibItens, setTabBibItens] = useState<TabelaTamanhosBiblioteca[]>([]);
+  const [tabBibCarregando, setTabBibCarregando] = useState(false);
+  const [tabSalvarAberta, setTabSalvarAberta] = useState(false);
+  const [tabNomeSalvar, setTabNomeSalvar] = useState("");
+  const [tabSalvo, setTabSalvo] = useState<"" | "salvando" | "ok" | "erro">("");
+  const abrirTabelasBib = async () => {
+    setTabBibAberta(true); setTabBibCarregando(true);
+    const items = await listarTabelasTamanhos();
+    setTabBibItens(items);
+    setTabBibCarregando(false);
+  };
+  const usarTabela = (t: TabelaTamanhosBiblioteca) => {
+    const novasOpcoes = (t.opcoes_json || []).map(o => ({
+      id: uid(),
+      nome: String(o.nome || ""),
+      preco: Number(o.preco) || 0,
+      ...(Number(o.peso_kg) > 0 ? { peso_kg: Number(o.peso_kg) } : {}),
+      ...(o.serve ? { serve: o.serve } : {}),
+    }));
+    set({ opcoes: ordenarTamanhos(novasOpcoes), modo_preco_tamanho: t.modo_preco_tamanho, ...(t.rendimento_unidade ? { rendimento_unidade: t.rendimento_unidade } : {}) });
+    setTabBibAberta(false);
+  };
+  const salvarTabelaAgora = async () => {
+    if (!g.opcoes.length) return;
+    const nome = String(tabNomeSalvar || "").trim();
+    if (!nome) return;
+    setTabSalvo("salvando");
+    const r = await salvarTabelaTamanhos(nome, {
+      modo_preco_tamanho: g.modo_preco_tamanho || "preco_fixo",
+      opcoes: g.opcoes,
+      rendimento_unidade: g.rendimento_unidade,
+    });
+    setTabSalvo(r.ok ? "ok" : "erro");
+    if (r.ok) { setTabSalvarAberta(false); setTabNomeSalvar(""); }
+    window.setTimeout(() => setTabSalvo(""), 2500);
+  };
   // (22/11) edição de um peso já cadastrado (ex.: trocar 1 kg por 1,2 kg) — toca no nome do peso pra abrir
   const [editKg, setEditKg] = useState<{ de: number; valor: string; un: "kg" | "g" } | null>(null);
   const lerEditKg = (): number => {
@@ -678,6 +813,64 @@ function CartaoTamanho({ form, setForm, edicao = false }: { form: FormEscolhas; 
         <PesoPersonalizado g={g} set={set} modo="fixo" precoKg={0} />
         <div className="esc-aviso esc-aviso--nota esc-aviso--1"><span className="esc-aviso-ic" aria-hidden="true">i</span><p>Os valores você coloca em Preço e promoção.</p></div>
       </>)}
+      {/* (22/11) Biblioteca de tabelas de tamanho — salvar/importar presets inteiros */}
+      <div className="esc-tab-bib" style={{ marginTop: 14 }}>
+        <button type="button" className="esc-bib-bt" onClick={abrirTabelasBib}>
+          <Books size={16} weight="bold" aria-hidden="true" />
+          Usar uma tabela salva
+        </button>
+        {g.opcoes.length > 0 && (
+          <button type="button" className={`esc-bib-bt esc-bib-bt--2${tabSalvo ? " esc-bib-bt--" + tabSalvo : ""}`} onClick={() => setTabSalvarAberta(true)}>
+            <BookmarkSimple size={16} weight="bold" aria-hidden="true" />
+            Salvar esta tabela
+          </button>
+        )}
+      </div>
+
+      {/* (22/11) Janela: lista de tabelas salvas */}
+      <Janela aberta={tabBibAberta} aoFechar={() => setTabBibAberta(false)} titulo="Tabelas de tamanho salvas" tipo="conteudo" umaAcao
+        acoes={<Botao variante="secundario" onClick={() => setTabBibAberta(false)}>Fechar</Botao>}>
+        <div className="esc-bib-jan">
+          {tabBibCarregando ? (
+            <p className="esc-bib-vazio">Carregando…</p>
+          ) : tabBibItens.length === 0 ? (
+            <div className="esc-bib-vazio">
+              <p><b>Nenhuma tabela salva ainda.</b></p>
+              <p>Cadastre os tamanhos de um produto e toque em “Salvar esta tabela”. Depois, qualquer novo produto reaproveita.</p>
+            </div>
+          ) : (
+            <ul className="esc-bib-lista">
+              {tabBibItens.map(t => (
+                <li key={t.id}>
+                  <button type="button" className="esc-bib-item" onClick={() => usarTabela(t)}>
+                    <span className="esc-bib-nm"><b>{t.nome}</b>{" "}<small style={{ color: "var(--ui-texto-2)", fontWeight: 500 }}>· {(t.opcoes_json || []).length} {(t.opcoes_json || []).length === 1 ? "tamanho" : "tamanhos"} · {t.modo_preco_tamanho === "por_peso" ? "por quilo" : "preço fixo"}</small></span>
+                    <span className="esc-bib-v">Usar</span>
+                  </button>
+                  <button type="button" className="esc-bib-x" aria-label={`Apagar ${t.nome}`} onClick={async (e) => {
+                    e.stopPropagation();
+                    if (!window.confirm(`Apagar a tabela “${t.nome}”?`)) return;
+                    const ok = await apagarTabelaTamanhos(t.id);
+                    if (ok) setTabBibItens(tabBibItens.filter(x => x.id !== t.id));
+                  }}>×</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </Janela>
+
+      {/* (22/11) Janela: salvar a tabela atual */}
+      <Janela aberta={tabSalvarAberta} aoFechar={() => { setTabSalvarAberta(false); setTabNomeSalvar(""); }} titulo="Salvar essa tabela na biblioteca" tipo="conteudo" umaAcao
+        acoes={<Botao onClick={salvarTabelaAgora} disabled={!tabNomeSalvar.trim() || tabSalvo === "salvando"}>{tabSalvo === "salvando" ? "Salvando…" : "Salvar"}</Botao>}>
+        <div className="esc-bib-salvar">
+          <label>
+            <span>Nome da tabela</span>
+            <input autoFocus placeholder="Ex.: Bolo por kg (1 a 6 kg)" value={tabNomeSalvar} onChange={e => setTabNomeSalvar(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); salvarTabelaAgora(); } }} />
+          </label>
+          <p className="esc-bib-salvar-dica">Depois você usa essa tabela em qualquer produto novo com 1 toque.</p>
+        </div>
+      </Janela>
+
       {!porPeso && g.opcoes.length === 0 && (<>
         <p className="esc-lbl">Ou comece por um modelo</p>
         <div className="esc-modelos">

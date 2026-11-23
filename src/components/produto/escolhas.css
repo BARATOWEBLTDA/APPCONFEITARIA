@@ -530,3 +530,36 @@ body .prod-modal--novo .prod-section-label.red-t { margin-top: 24px !important; 
 .esc-peso-ed-in:focus-within { border-color: var(--ui-rosa); }
 .esc-peso-ed-in input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; font: 600 18px/1 inherit; color: var(--ui-texto); text-align: right; }
 .esc-peso-ed-dica { margin: 0; font: 500 13px/1.35 inherit; color: var(--ui-texto-2); }
+
+/* (22/11) Biblioteca de opções — botões e janela */
+.esc-tab-bib { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 0 2px; }
+.esc-bib-bt { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border: 1.5px solid var(--ui-borda); border-radius: 999px; background: #fff; color: var(--ui-texto-2); font: 600 13px/1 inherit; cursor: pointer; }
+.esc-bib-bt:hover { border-color: var(--ui-rosa); color: var(--ui-rosa-escuro); }
+.esc-bib-bt--2 { color: var(--ui-texto-3); }
+.esc-bib-bt--ok { color: var(--ui-rosa-escuro); border-color: var(--ui-rosa); background: #FFF6F9; }
+.esc-bib-bt--erro { color: #c0392b; border-color: #e5a9a0; }
+.esc-bib-bt--salvando { opacity: .6; cursor: default; }
+
+.esc-bib-jan { display: flex; flex-direction: column; gap: 10px; padding: 2px 0; max-height: 60vh; overflow: auto; }
+.esc-bib-vazio { padding: 24px 12px; text-align: center; color: var(--ui-texto-2); font-size: 14px; line-height: 1.45; }
+.esc-bib-vazio p { margin: 0 0 6px; }
+.esc-bib-vazio b { color: var(--ui-texto); font-weight: 600; }
+.esc-bib-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.esc-bib-lista li { display: flex; align-items: stretch; gap: 4px; }
+.esc-bib-item { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 12px; border: 1.5px solid var(--ui-borda); border-radius: 12px; background: #fff; text-align: left; cursor: pointer; }
+.esc-bib-item:hover { border-color: var(--ui-rosa); }
+.esc-bib-item.on { border-color: var(--ui-rosa); background: #FFF6F9; }
+.esc-bib-ck { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 2px solid #D6CBD0; border-radius: 6px; color: #fff; }
+.esc-bib-item.on .esc-bib-ck { border-color: var(--ui-rosa); background: var(--ui-rosa); }
+.esc-bib-nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 500; color: var(--ui-texto); }
+.esc-bib-v { flex: none; font-size: 13px; font-weight: 600; color: var(--ui-texto-2); }
+.esc-bib-x { flex: none; width: 44px; height: 56px; border: 0; background: transparent; color: var(--ui-texto-2); font-size: 24px; line-height: 1; cursor: pointer; border-radius: 10px; }
+.esc-bib-x:hover { color: #c0392b; background: rgba(192, 57, 43, .06); }
+
+/* (22/11) Salvar tabela: formulario simples */
+.esc-bib-salvar { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
+.esc-bib-salvar label { display: flex; flex-direction: column; gap: 6px; }
+.esc-bib-salvar label > span { font: 600 13px/1 inherit; color: var(--ui-texto-2); }
+.esc-bib-salvar label input { height: 52px; padding: 0 14px; border: 1.5px solid var(--ui-borda-campo); border-radius: 12px; background: #fff; font: 600 16px/1 inherit; color: var(--ui-texto); }
+.esc-bib-salvar label input:focus { outline: none; border-color: var(--ui-rosa); }
+.esc-bib-salvar-dica { margin: 0; font: 500 13px/1.4 inherit; color: var(--ui-texto-2); }
