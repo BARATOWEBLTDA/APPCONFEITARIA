@@ -22,9 +22,9 @@ const HOTMART_PRO = 'https://pay.hotmart.com/M107866310B?off=elyrqwi7&checkoutMo
 // "Virar PRO" do app; sck=lp-pro-r1 separa essa campanha no relatório da Hotmart. A /pro (7 dias) continua igual.
 const HOTMART_PRO_R1 = 'https://pay.hotmart.com/M107866310B?off=8ba1tara&checkoutMode=10&sck=lp-pro-r1'
 // (24/11) /vitalicio: página de Black Friday com pagamento único vitalício (R$ 17,90).
-// TROCAR este link pelo da nova oferta da Hotmart (pagamento único) quando o Bruno criar.
-// Enquanto isso o botão aponta pro checkout de R$ 1 (seguro, não leva pra link quebrado).
-const HOTMART_VITALICIO = HOTMART_PRO_R1  // TODO: trocar pela URL do checkout vitalício R$ 17,90
+// Produto novo na Hotmart (e-book "Doonly vitalício", D108642623N) porque a plataforma
+// não deixou cadastrar outro formato pra conta PRO; a ativação vai ser por e-mail casado.
+const HOTMART_VITALICIO = 'https://pay.hotmart.com/D108642623N?checkoutMode=10&sck=lp-vitalicio'
 const TROCAS_VITALICIO: [string, string][] = [
   ['Quero testar o PRO grátis por 7 dias', 'Quero o vitalício por R$ 17,90'],
   ['Teste o PRO grátis por 7 dias.', 'Vitalício por R$ 17,90 (pagamento único).'],
