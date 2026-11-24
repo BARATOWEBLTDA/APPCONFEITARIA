@@ -597,7 +597,7 @@ export default function Auth() {
           <div className="cadastro-link-wrap">
             <span>Não tem conta? </span>
             <button type="button" className="cadastro-link" onClick={() => setShowCadastro(true)}>
-              Criar conta grátis
+              Criar conta
             </button>
           </div>
         </form>
@@ -608,8 +608,8 @@ export default function Auth() {
         <NomeDoonly className="auth-nome" />
 
         <div className="auth-text-hdr">
-          {/* (21/10) "grátis" no título e no botão: deixa claro que não cobra nada */}
-          <h2 className="auth-h2">Crie sua conta grátis</h2>
+          {/* (24/11) sem "grátis" no título: a página de vendas vitalícia também cai aqui */}
+          <h2 className="auth-h2">Crie sua conta</h2>
           <p className="auth-p so-cel-bloco">Leva menos de 1 minuto.</p>
         </div>
 
@@ -816,7 +816,7 @@ export default function Auth() {
               <p className="auth-error" role="alert">{cadastroError}</p>
             )
           )}
-          <Botao type="submit" cheio className="cad-btn" carregando={cadastroLoading}>{cadastroLoading ? "Criando conta…" : "Criar conta grátis"}</Botao>
+          <Botao type="submit" cheio className="cad-btn" carregando={cadastroLoading}>{cadastroLoading ? "Criando conta…" : "Criar conta"}</Botao>
           <p className="cad-termos" style={{ fontSize: '12.5px', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: '1.5', margin: '0' }}>
             Ao criar sua conta, você concorda com nossos{' '}
             <a href="/termos" onClick={abrirDoc("termos")} style={{ color: '#C33A6E', fontWeight: 600, whiteSpace: 'nowrap' }}>Termos de uso</a>
