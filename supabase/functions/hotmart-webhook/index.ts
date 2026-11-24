@@ -23,6 +23,8 @@ const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SE
 });
 const HOTTOK = Deno.env.get("HOTMART_HOTTOK") || "";
 const PRODUTO_ID = (Deno.env.get("HOTMART_PRODUTO_ID") || "").trim();
+// (24/11) produto Doonly vitalício na Hotmart (compra única, PRO pra sempre)
+const PRODUTO_VITALICIO = (Deno.env.get("HOTMART_PRODUTO_VITALICIO") || "D108642623N").trim();
 
 const FOLGA_DIAS = 3;     // tolerância depois da data da próxima cobrança
 const PERIODO_DIAS = 31;  // se a Hotmart não informar a próxima cobrança
@@ -68,9 +70,10 @@ Deno.serve(async (req) => {
   const d = body?.data || {};
   if (!evento || !idEvento) return json(400, { erro: "evento sem id" });
 
-  // 2) Só o produto Doonly PRO (se configurado)
+  // 2) Só o produto Doonly PRO (ou o vitalício — se configurado)
   const produto = String(d?.product?.id ?? "");
-  if (PRODUTO_ID && produto && produto !== PRODUTO_ID) return json(200, { ok: true, ignorado: "outro produto" });
+  const eVitalicio = !!produto && produto === PRODUTO_VITALICIO;
+  if (PRODUTO_ID && produto && produto !== PRODUTO_ID && !eVitalicio) return json(200, { ok: true, ignorado: "outro produto" });
 
   // 3) Não processar o mesmo aviso duas vezes (a Hotmart pode reenviar)
   const { data: jaTem } = await sb.from("hotmart_eventos").select("id").eq("id", idEvento).maybeSingle();
@@ -98,7 +101,14 @@ Deno.serve(async (req) => {
   let expira: Date | null = null;
   let mudanca: Record<string, unknown> | null = null;
 
-  if (teste) {
+  if (eVitalicio && LIGAR.has(evento)) {
+    // (24/11) Doonly vitalício: compra única, PRO pra sempre. pro_expira_em fica NULL.
+    // O código do app trata NULL como "sem expiração" (ehPro = plano === "pro" && (!expira || expira > now)).
+    expira = null;
+    mudanca = { plano: "pro", pro_expira_em: null, assinatura_origem: "hotmart", assinatura_status: "vitalicia",
+      ...(transacao ? { hotmart_transacao: transacao } : {}) };
+    resultado = "vitalicio_ativado";
+  } else if (teste) {
     // Só os dias do teste: se a 1ª cobrança passar, a compra paga estende; se não, o PRO vence sozinho
     expira = maisDias(proxCobranca || maisDias(aprovadaEm, TESTE_DIAS), FOLGA_TESTE_DIAS);
     mudanca = { plano: "pro", pro_expira_em: expira.toISOString(), assinatura_origem: "hotmart", assinatura_status: "teste",
@@ -153,12 +163,12 @@ Deno.serve(async (req) => {
         }
       }
     } else if (LIGAR.has(evento)) {
-      resultado = teste ? "teste_sem_conta" : "sem_conta"; // aplicado automaticamente quando ela criar a conta com esse e-mail
+      resultado = eVitalicio ? "vitalicio_sem_conta" : (teste ? "teste_sem_conta" : "sem_conta"); // aplicado automaticamente quando ela criar a conta com esse e-mail
     } else {
       resultado += "_sem_conta";
       // (6.157) reembolso/estorno antes de criar a conta: o PRO guardado daquela compra não é mais aplicado no cadastro
       if (DESLIGAR.has(evento) && email) {
-        const { data: pend } = await sb.from("hotmart_eventos").select("id, transacao, assinante").eq("email", email).in("resultado", ["sem_conta", "teste_sem_conta"]);
+        const { data: pend } = await sb.from("hotmart_eventos").select("id, transacao, assinante").eq("email", email).in("resultado", ["sem_conta", "teste_sem_conta", "vitalicio_sem_conta"]);
         const alvo = ((pend as any[]) || []).filter(e => (!transacao && !assinante) || (transacao && String(e.transacao) === String(transacao)) || (assinante && String(e.assinante) === String(assinante)));
         if (alvo.length) {
           const { error: eP } = await sb.from("hotmart_eventos").update({ resultado: "reembolsado_sem_conta" }).in("id", alvo.map(e => e.id));
