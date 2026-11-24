@@ -21,6 +21,24 @@ const HOTMART_PRO = 'https://pay.hotmart.com/M107866310B?off=elyrqwi7&checkoutMo
 // (21/11) /pro2: a mesma página PRO, com a oferta da Black Friday do app (1º mês por R$ 1). É o mesmo checkout do botão
 // "Virar PRO" do app; sck=lp-pro-r1 separa essa campanha no relatório da Hotmart. A /pro (7 dias) continua igual.
 const HOTMART_PRO_R1 = 'https://pay.hotmart.com/M107866310B?off=8ba1tara&checkoutMode=10&sck=lp-pro-r1'
+// (24/11) /vitalicio: página de Black Friday com pagamento único vitalício (R$ 17,90).
+// TROCAR este link pelo da nova oferta da Hotmart (pagamento único) quando o Bruno criar.
+// Enquanto isso o botão aponta pro checkout de R$ 1 (seguro, não leva pra link quebrado).
+const HOTMART_VITALICIO = HOTMART_PRO_R1  // TODO: trocar pela URL do checkout vitalício R$ 17,90
+const TROCAS_VITALICIO: [string, string][] = [
+  ['Quero testar o PRO grátis por 7 dias', 'Quero o vitalício por R$ 17,90'],
+  ['Teste o PRO grátis por 7 dias.', 'Vitalício por R$ 17,90 (pagamento único).'],
+  ['Testar o PRO grátis por 7 dias', 'Quero o vitalício por R$ 17,90'],
+  ['São <b>7 dias grátis</b> para testar todas as funcionalidades do Doonly', '<b>Pagamento único de R$ 17,90</b> e acesso vitalício ao Doonly. Sem mensalidade, nunca.'],
+  ['Teste o PRO grátis.', 'Vitalício por R$ 17,90.'],
+  ['Testar o PRO grátis', 'Quero o vitalício'],
+  ['Quero o PRO por R$ 1 no 1º mês', 'Quero o vitalício por R$ 17,90'],
+  ['Quero o PRO por R$ 1', 'Quero o vitalício por R$ 17,90'],
+  ['PRO por apenas R$ 1 no 1º mês.', 'Doonly vitalício por R$ 17,90.'],
+  ['PRO por R$ 1', 'Doonly vitalício'],
+  ['1º mês por apenas R$ 1.', 'Pagamento único de R$ 17,90.'],
+  ['Depois, <b>R$ 29,90 por mês</b>: menos de R$ 1 por dia para usar tudo do Doonly', '<b>Paga uma vez</b> e usa pra sempre — sem mensalidade, nunca mais'],
+]
 const TROCAS_PRO2: [string, string][] = [
   ['Quero testar o PRO grátis por 7 dias', 'Quero o PRO por R$ 1 no 1º mês'],
   ['Teste o PRO grátis por 7 dias.', 'PRO por apenas R$ 1 no 1º mês.'],
@@ -901,6 +919,30 @@ ${corpoPagina}
     fs.writeFileSync(app, fazerHtml(r))
   }
   fs.writeFileSync(path.join(dist, 'pro.html'), fazerHtml(corpoPro2))    // (21/11) doonly.com.br/pro passa a ser esta página nova; a /pro antiga continua em /testes
+  // (24/11) /vitalicio: clona a /pro2 e troca oferta "R$ 1 no 1º mês" por "R$ 17,90 vitalício"
+  // sck separado: mesmo com link temporário, o relatório da Hotmart separa cliques da campanha vitalícia.
+  const HOTMART_VT_URL = HOTMART_VITALICIO.includes('sck=') ? HOTMART_VITALICIO : HOTMART_VITALICIO + (HOTMART_VITALICIO.includes('?') ? '&' : '?') + 'sck=lp-vitalicio'
+  const HOTMART_VT_URL_FINAL = HOTMART_VT_URL.replace('sck=lp-pro-r1', 'sck=lp-vitalicio')
+  let corpoVitalicio = corpoPro2.split(HOTMART_PRO_R1).join(HOTMART_VT_URL_FINAL)
+  for (const [de, para] of TROCAS_VITALICIO) corpoVitalicio = corpoVitalicio.split(de).join(para)
+  // Barra do topo: substitui a frase atual pela da Black Friday vitalícia
+  const BARRA_VT_DE_1 = '<span class="p2-unico">O único app feito só para confeitaria</span>'
+  const BARRA_VT_PARA = '<span class="p2-unico"><b>BLACK FRIDAY</b> — Doonly vitalício por R$ 17,90 <small style="opacity:.85">(de R$ 497)</small>. Oferta até domingo.</span>'
+  if (corpoVitalicio.includes(BARRA_VT_DE_1)) corpoVitalicio = corpoVitalicio.replace(BARRA_VT_DE_1, BARRA_VT_PARA)
+  // Prazo nos botões: "até 30/11" vira "até domingo" e etiqueta destaca vitalício
+  corpoVitalicio = corpoVitalicio.split('Oferta de Black Friday · até 30/11').join('Oferta vitalícia · até domingo')
+  // Dúvidas da oferta — substitui as duas de R$ 1 pelas de vitalício
+  const DUV_R1 = /<details><summary>Como funciona o R\$ 1\?<\/summary>[\s\S]*?<\/details>\s*<details><summary>Como eu garanto a oferta\?<\/summary>[\s\S]*?<\/details>/
+  const DUV_VT = `<details><summary>É vitalício mesmo?</summary><p>Sim. Você paga R$ 17,90 uma única vez e usa o Doonly PRO para sempre, sem mensalidade.</p></details>
+  <details><summary>Entra nas atualizações futuras?</summary><p>Entra. Toda nova funcionalidade do Doonly fica liberada pra você, sem pagar nada a mais.</p></details>
+  <details><summary>Como garanto essa oferta?</summary><p>Toque em "Quero o vitalício por R$ 17,90" e conclua o pagamento. O acesso ao PRO é liberado na sua conta do Doonly na hora.</p></details>`
+  corpoVitalicio = corpoVitalicio.replace(DUV_R1, DUV_VT)
+  // Subtexto do botão da abertura: "1º mês por R$ 1. Depois, R$ 29,90 por mês." → oferta vitalícia
+  corpoVitalicio = corpoVitalicio.split('1º mês por R$ 1. Depois, R$ 29,90 por mês.').join('Pagamento único de R$ 17,90. Acesso pra sempre.')
+  // #p2-meio (botão do meio) e depoimentos: sem R$ 29,90 nem "mês"
+  corpoVitalicio = corpoVitalicio.split('R$ 29,90 por mês').join('R$ 17,90 vitalício')
+  corpoVitalicio = corpoVitalicio.split('R$ 29,90/mês').join('R$ 17,90 vitalício')
+  fs.writeFileSync(path.join(dist, 'vitalicio.html'), fazerHtml(corpoVitalicio)) // doonly.com.br/vitalicio: Black Friday vitalícia por R$ 17,90
   fs.writeFileSync(path.join(dist, 'pro2.html'), fazerHtml(corpoPro2))   // doonly.com.br/pro2: PRO com 1º mês por R$ 1
   fs.writeFileSync(path.join(dist, 'testes.html'), fazerHtml(corpoProFinal, true)) // doonly.com.br/testes = igual /pro, sem redirect
 }

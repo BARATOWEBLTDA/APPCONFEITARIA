@@ -42,6 +42,10 @@
       "destination": "/pro2.html"
     },
     {
+      "source": "/vitalicio",
+      "destination": "/vitalicio.html"
+    },
+    {
       "source": "/testes",
       "destination": "/testes.html"
     },
