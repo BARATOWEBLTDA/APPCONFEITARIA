@@ -41,8 +41,9 @@ export const DIAS_TESTE = 7;
  * onde o pagamento é do Google, e para voltar a ela depois da Black: é só trocar o valor aqui.
  */
 export type OfertaPro = "teste7" | "real1";
-export const OFERTA_PRO: OfertaPro = noAppDaLoja ? "teste7" : "real1";
-const BLACK = OFERTA_PRO === "real1";
+// (25/11) Black Friday acabou: todo mundo volta pra 7 dias grátis. Pra ligar de novo é só trocar "teste7" por "real1".
+export const OFERTA_PRO: OfertaPro = "teste7";
+const BLACK = (OFERTA_PRO as OfertaPro) === "real1";
 /** Checkout do Doonly PRO na Hotmart; o sck só marca de qual oferta do app veio a venda (relatório da Hotmart) */
 export const CHECKOUT_HOTMART = BLACK
   ? "https://pay.hotmart.com/M107866310B?off=8ba1tara&checkoutMode=10&sck=app-r1"
